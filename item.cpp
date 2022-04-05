@@ -145,7 +145,7 @@ void Item::fireDamage(Position position) {
   fire->set();
   if (!burning && fire->isBurning()) {
     position.globalMessage(noBurningName + " catches fire");
-    modViewObject().setModifier(ViewObject::Modifier::BURNING);
+    modViewObject().setAttribute(ViewObject::Attribute::BURNING, min(1.0, double(fire->getBurnState()) / 50));
   }
 }
 
@@ -160,8 +160,8 @@ void Item::tick(Position position, bool carried) {
   PROFILE_BLOCK("Item::tick");
   if (fire->isBurning()) {
     INFO << getName() << " burning ";
-    position.fireDamage(0.2);
-    modViewObject().setModifier(ViewObject::Modifier::BURNING);
+    position.fireDamage(5);
+    modViewObject().setAttribute(ViewObject::Attribute::BURNING, min(1.0, double(fire->getBurnState()) / 50));
     fire->tick();
     if (!fire->isBurning()) {
       position.globalMessage(getTheName() + " burns out");
@@ -228,8 +228,6 @@ void Item::onHitCreature(Creature* c, const Attack& attack, int numItems) {
   if (attributes->effect && effectAppliedWhenThrown())
     attributes->effect->apply(c->getPosition(), attack.attacker);
   c->takeDamage(attack);
-  if (!c->isDead() && attributes->ownedEffect && *attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
-    c->affectByFire(1);
 }
 
 TimeInterval Item::getApplyTime() const {

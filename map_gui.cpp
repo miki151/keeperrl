@@ -688,7 +688,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     auto& shortShadow = renderer.getTileSet().getTileCoord("short_shadow");
     if (object.layer() == ViewLayer::FLOOR_BACKGROUND && shadowed.count(tilePos))
       renderer.drawTile(pos, shortShadow, size, Color(255, 255, 255, 170));
-    bool burning = object.hasModifier(ViewObject::Modifier::BURNING);
+    auto burning = object.getAttribute(ViewObject::Attribute::BURNING);
 
     drawHealthBar(renderer, tilePos, pos + move, size, object, index);
     if (curTimeReal.count() % 2000 < 800 && object.hasModifier(ViewObject::Modifier::TURNED_OFF)) {
@@ -707,7 +707,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
           if (auto& fxInfo = tile.getFX())
             fxViewManager->addFX(*genericId, *fxInfo);
         if (burning)
-          fxViewManager->addFX(*genericId, FXInfo{FXName::FIRE, Color::WHITE, 1.0f});
+          fxViewManager->addFX(*genericId, FXInfo{FXName::FIRE, Color::WHITE, 0.3f + 0.7f * *burning});
         bool bigTile = coord.front().size.x > Renderer::nominalSize;
         for (auto fx : object.particleEffects)
           fxViewManager->addFX(*genericId, fx, bigTile);
@@ -723,7 +723,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       color = Color(160, 0, 0);
     renderer.drawText(tile.symFont ? FontId::SYMBOL_FONT : FontId::TILE_FONT, size.y,
         blendNightColor(color, index), tilePos, tile.text, Renderer::HOR);
-    if (object.hasModifier(ViewObject::Modifier::BURNING))
+    if (object.getAttribute(ViewObject::Attribute::BURNING))
       renderer.drawText(FontId::SYMBOL_FONT, size.y, getFireColor(),
           pos + Vec2(size.x / 2, -3), u8"Ѡ", Renderer::HOR);
     if (object.hasModifier(ViewObject::Modifier::LOCKED))

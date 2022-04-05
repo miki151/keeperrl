@@ -19,5 +19,7 @@ struct BuffInfo {
   int SERIAL(price) = 50;
   Color SERIAL(color);
   optional<string> SERIAL(hatedGroupName);
-  SERIALIZE_ALL(NAMED(hatedGroupName), NAMED(name), OPTION(addedMessage), OPTION(removedMessage), NAMED(startEffect), NAMED(tickEffect), NAMED(endEffect), OPTION(stacks), OPTION(consideredBad), NAMED(description), OPTION(price), NAMED(color), NAMED(adjective))
+  double SERIAL(defenseMultiplier) = 1.0;
+  optional<AttrType> SERIAL(defenseMultiplierAttr);
+  SERIALIZE_ALL(OPTION(defenseMultiplier), OPTION(defenseMultiplierAttr), NAMED(hatedGroupName), NAMED(name), OPTION(addedMessage), OPTION(removedMessage), NAMED(startEffect), NAMED(tickEffect), NAMED(endEffect), OPTION(stacks), OPTION(consideredBad), NAMED(description), OPTION(price), NAMED(color), NAMED(adjective))
 };

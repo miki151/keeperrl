@@ -12,7 +12,7 @@
   name = "spell damage"
   viewId = { "spell_damage_icon" }
   adjective = "powerful"
-  absorptionCap = 20
+  absorptionCap = 25
   isAttackAttr = true
   meleeFX = {MAGIC_MISSILE_SPLASH}
   help = "Base damage value of magic attacks."
@@ -22,9 +22,20 @@
   name = "ranged damage"
   viewId = { "ranged_damage_icon" }
   adjective = "accurate"
-  absorptionCap = 15
+  absorptionCap = 25
   isAttackAttr = true
   help = "Base damage value of ranged attacks."
+}
+
+"FIRE_DAMAGE" {
+  name = "fire damage"
+  viewId = { "fire_damage_icon" }
+  adjective = "aflame"
+  absorptionCap = 25
+  bodyPartInjury = "is incinerated"
+  isAttackAttr = true
+  meleeFX = {FIREBALL_SPLASH}
+  help = "Base damage value of fire attacks."
 }
 
 "DEFENSE" {

@@ -3944,11 +3944,11 @@
       deathSound = none
       intrinsicAttacks = {
         TORSO {{{ Intrinsic { "fist_attack" }  "fists" 5 {
-            attackType = HIT attackMsg = SWING victimEffect = {1.0 Fire}} }}}
+            attackType = HIT attackMsg = SWING meleeAttackAttr = FIRE_DAMAGE } }}}
       }
     }
     attr = {
-      DAMAGE 20
+      FIRE_DAMAGE 20
       DEFENSE 30
     }
     permanentEffects = {

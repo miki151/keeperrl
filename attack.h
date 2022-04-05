@@ -24,8 +24,9 @@ class Creature;
 
 class Attack {
   public:
-  Attack(Creature* a, AttackLevel l, AttackType t, int s, AttrType d, vector<Effect> e = {})
-      : attacker(a), level(l), type(t), strength(s), damageType(d), effect(e) {}
+  Attack(Creature* a, AttackLevel l, AttackType t, int s, AttrType d, vector<Effect> e = {},
+      const char* harmlessMessage = "The attack is harmless")
+      : attacker(a), level(l), type(t), strength(s), damageType(d), effect(e), harmlessMessage(harmlessMessage) {}
 
   Creature* attacker = nullptr;
   AttackLevel level;
@@ -33,5 +34,6 @@ class Attack {
   int strength;
   AttrType damageType;
   vector<Effect> effect;
+  const char* harmlessMessage;
 };
 

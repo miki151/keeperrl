@@ -14,5 +14,6 @@ struct AttrInfo {
   bool SERIAL(isAttackAttr) = false;
   optional<FXInfo> SERIAL(meleeFX);
   string SERIAL(help);
-  SERIALIZE_ALL(NAMED(name), NAMED(viewId), NAMED(adjective), NAMED(absorptionCap), OPTION(modifierVariation), OPTION(wishedItemIncrease), OPTION(isAttackAttr), NAMED(meleeFX), NAMED(help))
+  optional<string> SERIAL(bodyPartInjury);
+  SERIALIZE_ALL(NAMED(bodyPartInjury), NAMED(name), NAMED(viewId), NAMED(adjective), NAMED(absorptionCap), OPTION(modifierVariation), OPTION(wishedItemIncrease), OPTION(isAttackAttr), NAMED(meleeFX), NAMED(help))
 };

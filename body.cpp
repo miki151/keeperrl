@@ -22,6 +22,7 @@
 #include "game_event.h"
 #include "effect_type.h"
 #include "resource_id.h"
+#include "content_factory.h"
 
 static double getDefaultWeight(Body::Size size) {
   switch (size) {
@@ -674,81 +675,84 @@ vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool ins
 
 void Body::affectPosition(Position position) {
   if (material == Material::FIRE)
-    position.fireDamage(0.2);
+    position.fireDamage(10);
 }
 
-static void youHit(const Creature* c, BodyPart part, AttackType type) {
-  switch (part) {
-    case BodyPart::BACK:
-        switch (type) {
-          case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the back!"); break;
-          case AttackType::BITE: c->you(MsgType::ARE, "bitten in the neck!"); break;
-          case AttackType::CUT: c->you(MsgType::YOUR, "throat is cut!"); break;
-          case AttackType::CRUSH: c->you(MsgType::YOUR, "spine is crushed!"); break;
-          case AttackType::HIT: c->you(MsgType::YOUR, "neck is broken!"); break;
-          case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the "_s +
-                                     Random.choose("back"_s, "neck"_s)); break;
-          case AttackType::SPELL: c->you(MsgType::ARE, "ripped to pieces!"); break;
-        }
-        break;
-    case BodyPart::HEAD:
-        switch (type) {
-          case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the " +
-                                      Random.choose("eye"_s, "neck"_s, "forehead"_s) + "!"); break;
-          case AttackType::BITE: c->you(MsgType::YOUR, "head is bitten off!"); break;
-          case AttackType::CUT: c->you(MsgType::YOUR, "head is chopped off!"); break;
-          case AttackType::CRUSH: c->you(MsgType::YOUR, "skull is shattered!"); break;
-          case AttackType::HIT: c->you(MsgType::YOUR, "neck is broken!"); break;
-          case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the eye!"); break;
-          case AttackType::SPELL: c->you(MsgType::YOUR, "head is ripped to pieces!"); break;
-        }
-        break;
-    case BodyPart::TORSO:
-        switch (type) {
-          case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the heart!"); break;
-          case AttackType::BITE: c->you(MsgType::YOUR, "internal organs are ripped out!"); break;
-          case AttackType::CUT: c->you(MsgType::ARE, "cut in half!"); break;
-          case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the " +
-                                     Random.choose("stomach"_s, "heart"_s) + "!"); break;
-          case AttackType::CRUSH: c->you(MsgType::YOUR, "ribs and internal organs are crushed!"); break;
-          case AttackType::HIT: c->you(MsgType::YOUR, "stomach receives a deadly blow!"); break;
-          case AttackType::SPELL: c->you(MsgType::ARE, "ripped to pieces!"); break;
-        }
-        break;
-    case BodyPart::ARM:
-        switch (type) {
-          case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the arm!"); break;
-          case AttackType::BITE: c->you(MsgType::YOUR, "arm is bitten off!"); break;
-          case AttackType::CUT: c->you(MsgType::YOUR, "arm is chopped off!"); break;
-          case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the arm!"); break;
-          case AttackType::CRUSH: c->you(MsgType::YOUR, "arm is smashed!"); break;
-          case AttackType::HIT: c->you(MsgType::YOUR, "arm is broken!"); break;
-          case AttackType::SPELL: c->you(MsgType::YOUR, "arm is ripped to pieces!"); break;
-        }
-        break;
-    case BodyPart::WING:
-        switch (type) {
-          case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the wing!"); break;
-          case AttackType::BITE: c->you(MsgType::YOUR, "wing is bitten off!"); break;
-          case AttackType::CUT: c->you(MsgType::YOUR, "wing is chopped off!"); break;
-          case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the wing!"); break;
-          case AttackType::CRUSH: c->you(MsgType::YOUR, "wing is smashed!"); break;
-          case AttackType::HIT: c->you(MsgType::YOUR, "wing is broken!"); break;
-          case AttackType::SPELL: c->you(MsgType::YOUR, "wing is ripped to pieces!"); break;
-        }
-        break;
-    case BodyPart::LEG:
-        switch (type) {
-          case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the leg!"); break;
-          case AttackType::BITE: c->you(MsgType::YOUR, "leg is bitten off!"); break;
-          case AttackType::CUT: c->you(MsgType::YOUR, "leg is cut off!"); break;
-          case AttackType::STAB: c->you(MsgType::YOUR, "stabbed in the leg!"); break;
-          case AttackType::CRUSH: c->you(MsgType::YOUR, "knee is crushed!"); break;
-          case AttackType::HIT: c->you(MsgType::YOUR, "leg is broken!"); break;
-          case AttackType::SPELL: c->you(MsgType::YOUR, "leg is ripped to pieces!"); break;
-        }
-        break;
-  }
+static void youHit(const Creature* c, BodyPart part, const Attack& attack, const ContentFactory* factory) {
+  if (auto& elem = factory->attrInfo.at(attack.damageType).bodyPartInjury)
+    c->you(MsgType::YOUR, getName(part) + " "_s + *elem + "!");
+  else
+    switch (part) {
+      case BodyPart::BACK:
+          switch (attack.type) {
+            case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the back!"); break;
+            case AttackType::BITE: c->you(MsgType::ARE, "bitten in the neck!"); break;
+            case AttackType::CUT: c->you(MsgType::YOUR, "throat is cut!"); break;
+            case AttackType::CRUSH: c->you(MsgType::YOUR, "spine is crushed!"); break;
+            case AttackType::HIT: c->you(MsgType::YOUR, "neck is broken!"); break;
+            case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the "_s +
+                                       Random.choose("back"_s, "neck"_s)); break;
+            case AttackType::SPELL: c->you(MsgType::ARE, "ripped to pieces!"); break;
+          }
+          break;
+      case BodyPart::HEAD:
+          switch (attack.type) {
+            case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the " +
+                                        Random.choose("eye"_s, "neck"_s, "forehead"_s) + "!"); break;
+            case AttackType::BITE: c->you(MsgType::YOUR, "head is bitten off!"); break;
+            case AttackType::CUT: c->you(MsgType::YOUR, "head is chopped off!"); break;
+            case AttackType::CRUSH: c->you(MsgType::YOUR, "skull is shattered!"); break;
+            case AttackType::HIT: c->you(MsgType::YOUR, "neck is broken!"); break;
+            case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the eye!"); break;
+            case AttackType::SPELL: c->you(MsgType::YOUR, "head is ripped to pieces!"); break;
+          }
+          break;
+      case BodyPart::TORSO:
+          switch (attack.type) {
+            case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the heart!"); break;
+            case AttackType::BITE: c->you(MsgType::YOUR, "internal organs are ripped out!"); break;
+            case AttackType::CUT: c->you(MsgType::ARE, "cut in half!"); break;
+            case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the " +
+                                       Random.choose("stomach"_s, "heart"_s) + "!"); break;
+            case AttackType::CRUSH: c->you(MsgType::YOUR, "ribs and internal organs are crushed!"); break;
+            case AttackType::HIT: c->you(MsgType::YOUR, "stomach receives a deadly blow!"); break;
+            case AttackType::SPELL: c->you(MsgType::ARE, "ripped to pieces!"); break;
+          }
+          break;
+      case BodyPart::ARM:
+          switch (attack.type) {
+            case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the arm!"); break;
+            case AttackType::BITE: c->you(MsgType::YOUR, "arm is bitten off!"); break;
+            case AttackType::CUT: c->you(MsgType::YOUR, "arm is chopped off!"); break;
+            case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the arm!"); break;
+            case AttackType::CRUSH: c->you(MsgType::YOUR, "arm is smashed!"); break;
+            case AttackType::HIT: c->you(MsgType::YOUR, "arm is broken!"); break;
+            case AttackType::SPELL: c->you(MsgType::YOUR, "arm is ripped to pieces!"); break;
+          }
+          break;
+      case BodyPart::WING:
+          switch (attack.type) {
+            case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the wing!"); break;
+            case AttackType::BITE: c->you(MsgType::YOUR, "wing is bitten off!"); break;
+            case AttackType::CUT: c->you(MsgType::YOUR, "wing is chopped off!"); break;
+            case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the wing!"); break;
+            case AttackType::CRUSH: c->you(MsgType::YOUR, "wing is smashed!"); break;
+            case AttackType::HIT: c->you(MsgType::YOUR, "wing is broken!"); break;
+            case AttackType::SPELL: c->you(MsgType::YOUR, "wing is ripped to pieces!"); break;
+          }
+          break;
+      case BodyPart::LEG:
+          switch (attack.type) {
+            case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the leg!"); break;
+            case AttackType::BITE: c->you(MsgType::YOUR, "leg is bitten off!"); break;
+            case AttackType::CUT: c->you(MsgType::YOUR, "leg is cut off!"); break;
+            case AttackType::STAB: c->you(MsgType::YOUR, "stabbed in the leg!"); break;
+            case AttackType::CRUSH: c->you(MsgType::YOUR, "knee is crushed!"); break;
+            case AttackType::HIT: c->you(MsgType::YOUR, "leg is broken!"); break;
+            case AttackType::SPELL: c->you(MsgType::YOUR, "leg is ripped to pieces!"); break;
+          }
+          break;
+      }
 }
 
 Body::DamageResult Body::takeDamage(const Attack& attack, Creature* creature, double damage) {
@@ -757,7 +761,8 @@ Body::DamageResult Body::takeDamage(const Attack& attack, Creature* creature, do
   if (auto part = getBodyPart(attack.level, creature->isAffected(LastingEffect::FLYING),
       creature->isAffected(LastingEffect::COLLAPSED)))
     if (isPartDamaged(*part, damage)) {
-      youHit(creature, *part, attack.type);
+      auto factory = creature->getGame()->getContentFactory();
+      youHit(creature, *part, attack, factory);
       if (injureBodyPart(creature, *part,
           contains({AttackType::CUT, AttackType::BITE}, attack.type) && bodyPartCanBeDropped(*part))) {
         creature->you(MsgType::DIE, "");
@@ -767,7 +772,7 @@ Body::DamageResult Body::takeDamage(const Attack& attack, Creature* creature, do
       creature->addEffect(LastingEffect::BLEEDING, 50_visible);
       if (health <= 0)
         health = 0.1;
-      creature->updateViewObject(creature->getGame()->getContentFactory());
+      creature->updateViewObject(factory);
       return Body::HURT;
     }
   if (health <= 0) {
@@ -961,12 +966,6 @@ bool Body::isImmuneTo(LastingEffect effect) const {
 bool Body::affectByAcid(Creature* c) {
   c->you(MsgType::ARE, "hurt by the acid");
   bleed(c, 0.2);
-  return health <= 0;
-}
-
-bool Body::affectByFire(Creature* c, double amount) {
-  c->you(MsgType::ARE, "burnt by the fire");
-  bleed(c, 6. * amount / double(1 + c->getAttr(AttrType("DEFENSE"))));
   return health <= 0;
 }
 

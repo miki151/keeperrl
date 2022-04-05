@@ -19,3 +19,14 @@
   color = ColorId RED
   hatedGroupName = "keepers"
 }
+
+"FIRE_RESISTANCE" {
+  name = "fire resistance"
+  adjective = "fire resistant"
+  description = "Creature's defense against fire attacks is increased by 30%."
+  addedMessage = ARE "fire resistant"
+  removedMessage = ARE "no longer fire resistant"
+  color = ColorId RED
+  defenseMultiplier = 3
+  defenseMultiplierAttr = FIRE_DAMAGE
+}

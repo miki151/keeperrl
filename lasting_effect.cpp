@@ -1032,7 +1032,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
         c->getBody().heal(c, 0.03);
       break;
     case LastingEffect::ON_FIRE:
-      c->getPosition().fireDamage(0.1);
+      c->getPosition().fireDamage(5);
       break;
     case LastingEffect::PLAGUE:
       if (!c->isAffected(LastingEffect::FROZEN)) {

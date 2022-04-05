@@ -158,7 +158,7 @@ void Square::getViewIndex(const ContentFactory* factory, ViewIndex& ret, const C
     auto obj = getInventory().getItems().back()->getViewObject();
     for (Item* it : getInventory().getItems())
       if (it->getFire().isBurning()) {
-        obj.setModifier(ViewObject::Modifier::BURNING);
+        obj.setAttribute(ViewObject::Attribute::BURNING, double(it->getFire().getBurnState()) / 50);
         break;
       }
     ret.insert(std::move(obj));

@@ -770,10 +770,10 @@ static void addFireEffect(FXManager& mgr) {
 
     ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
       defaultEmitParticle(ctx, em, pinst);
-      float mod = 0;//ctx.ps.params.scalar[0];
-      pinst.pos.x *= (1.0f + mod);
-      pinst.movement *= (1.0f + mod);
-      pinst.size *= (1.0f + mod * 0.25f);
+      float mod = ctx.ps.params.scalar[0];
+      pinst.pos.x *= mod;
+      pinst.movement *= mod;
+      pinst.size *= mod;
     };
 
     psdef.subSystems.emplace_back(ssdef);

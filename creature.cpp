@@ -1625,6 +1625,16 @@ bool Creature::takeDamage(const Attack& attack) {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       defense = LastingEffects::modifyCreatureDefense(this, effect, defense, attack.damageType);
+  auto factory = getGame()->getContentFactory();
+  auto modifyDefense = [&](BuffId id) {
+    auto& info = factory->buffs.at(id);
+    if (!info.defenseMultiplierAttr || info.defenseMultiplierAttr == attack.damageType)
+      defense *= info.defenseMultiplier;
+  };
+  for (auto& buff : buffs)
+    modifyDefense(buff.first);
+  for (auto& buff : buffPermanentCount)
+    modifyDefense(buff.first);  
   double damage = getDamage((double) attack.strength / defense);
   if (auto sound = attributes->getAttackSound(attack.type, damage > 0))
     addSound(*sound);
@@ -1643,7 +1653,7 @@ bool Creature::takeDamage(const Attack& attack) {
         return true;
     }
   } else
-    you(MsgType::GET_HIT_NODAMAGE);
+    message(attack.harmlessMessage);
   for (auto& e : attack.effect) {
     e.apply(position, attack.attacker);
     if (isDead())
@@ -1751,22 +1761,6 @@ bool Creature::heal(double amount) {
     return true;
   }
   return false;
-}
-
-bool Creature::affectByFire(double amount) {
-  if (steed && Random.roll(2))
-    steed->affectByFire(amount);
-  PROFILE;
-  if (!isAffected(LastingEffect::FIRE_RESISTANT)) {
-    if (getBody().affectByFire(this, amount)) {
-      verb("burn", "burns", "to death");
-      dieWithReason("burnt to death");
-    } else
-      removeEffect(LastingEffect::SLEEP);
-    addEffect(LastingEffect::ON_FIRE, 100_visible);
-    return true;
-  }
-  return addEffect(LastingEffect::ON_FIRE, 100_visible);
 }
 
 bool Creature::affectByIce(double amount) {

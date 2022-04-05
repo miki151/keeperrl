@@ -247,7 +247,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void dieNoReason(DropType = DropType::EVERYTHING);
   void dieWithReason(const string& reason, DropType = DropType::EVERYTHING);
 
-  bool affectByFire(double amount);
   bool affectByIce(double amount);
   bool affectByAcid();
   void setHeld(Creature* holding);

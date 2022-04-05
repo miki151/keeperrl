@@ -31,6 +31,8 @@
 #include "vision.h"
 #include "tile_gas.h"
 #include "tile_gas_info.h"
+#include "attack.h"
+#include "attack_level.h"
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {
@@ -810,20 +812,17 @@ void Position::updateMovementDueToFire() const {
     update(v);
 }
 
-bool Position::fireDamage(double amount) const {
+bool Position::fireDamage(int amount) const {
   PROFILE;
   bool res = false;
   for (auto furniture : modFurniture())
-    if (Random.chance(amount))
+    if (Random.chance(0.05 * amount))
       res |= furniture->fireDamage(*this);
-  if (Creature* creature = getCreature()) {
-    if (auto steed = creature->getSteed())
-      res |= steed->affectByFire(amount);
-    else
-      res |= creature->affectByFire(amount);
-  }
+  if (Creature* creature = getCreature())
+    creature->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), AttackType::HIT, amount,
+        AttrType("FIRE_DAMAGE"), {}, "The fire is harmless"));
   for (Item* it : getItems())
-    if (Random.chance(amount))
+    if (Random.chance(0.05 * amount))
       it->fireDamage(*this);
   return res;
 }

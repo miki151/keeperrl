@@ -898,7 +898,7 @@ static string getDescription(const Effects::Fire&, const ContentFactory*) {
 
 static bool apply(const Effects::Fire&, Position pos, Creature*) {
   pos.getGame()->addEvent(EventInfo::FX{pos, {FXName::FIREBALL_SPLASH}});
-  return pos.fireDamage(1);
+  return pos.fireDamage(20);
 }
 
 static optional<ViewId> getProjectile(const Effects::Fire&) {
