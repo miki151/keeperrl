@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "pretty_archive.h"
 
-void PrettyInputArchive::throwException(const StreamPosStack& positions, const string& message) {
+string PrettyInputArchive::positionToString(const StreamPosStack& positions) {
   string allPos;
   for (auto& pos : positions)
     if (pos.line > -1) {
@@ -10,7 +10,11 @@ void PrettyInputArchive::throwException(const StreamPosStack& positions, const s
         f = filenames[pos.filename] + ": "_s;
       allPos += f + "line: "_s + toString(pos.line) + " column: " + toString<int>(pos.column) + ":\n";
     }
-  throw PrettyException{allPos + message};
+  return allPos;
+}
+
+void PrettyInputArchive::throwException(const StreamPosStack& positions, const string& message) {
+  throw PrettyException{positionToString(positions) + message};
 }
 
 static bool contains(const vector<StreamChar>& a, const string& substring, int index) {
@@ -192,14 +196,17 @@ vector<StreamChar> PrettyInputArchive::preprocess(const vector<StreamChar>& cont
           for (int argNum : All(args)) {
             bool bodyInQuote = false;
             for (int bodyIndex = 0; bodyIndex < body.size(); ++bodyIndex) {
+              const auto started = bodyIndex;
               if (body[bodyIndex].c == '"' && (bodyIndex == 0 || body[bodyIndex - 1].c != '\\'))
                 bodyInQuote = !bodyInQuote;
               eatWhitespace(body, bodyIndex);
-              auto beginOccurrence = bodyIndex;
+              const auto beginOccurrence = bodyIndex;
               if (!bodyInQuote && scanWord(body, bodyIndex) == def->args[argNum]) {
                 replaceInStream(body, beginOccurrence, bodyIndex - beginOccurrence, args[argNum]);
                 bodyIndex = beginOccurrence + args[argNum].size();
               }
+              if (started != bodyIndex)
+                --bodyIndex;
             }
           }
           replaceInStream(ret, beginCall, argsPos - beginCall, body);
@@ -233,7 +240,7 @@ vector<StreamChar> removeFormatting(string contents, signed char filename) {
       while (contents[i] != '\n' && i < contents.size())
         ++i;
     }
-    else if (isOneOf(contents[i], '{', '}', ',', ')', '(') && !inQuote) {
+    else if (isOneOf(contents[i], '{', '}', ',', ')', '(', '+') && !inQuote) {
       addChar(cur, ' ');
       addChar(cur, contents[i]);
       addChar(cur, ' ');
@@ -416,13 +423,20 @@ void prettyEpilogue(PrettyInputArchive& ar1) {
 }
 
 void serialize(PrettyInputArchive& ar, string& t) {
-  auto bookmark = ar.bookmark();
-  string tmp;
-  ar.readText(tmp);
-  if (tmp[0] != '\"')
-    ar.error("Expected quoted string, got: " + tmp);
-  ar.seek(bookmark);
-  ar.readText(std::quoted(t));
+  t.clear();
+  while (true) {
+    auto bookmark = ar.bookmark();
+    string tmp;
+    ar.readText(tmp);
+    if (tmp[0] != '\"')
+      ar.error("Expected quoted string, got: " + tmp);
+    ar.seek(bookmark);
+    string next;
+    ar.readText(std::quoted(next));
+    t += next;
+    if (!ar.eatMaybe("+"))
+      break;
+  }
 }
 
 void serialize(PrettyInputArchive& ar, char& c) {
