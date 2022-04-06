@@ -189,26 +189,8 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::PEACEFULNESS:
         c->you(MsgType::BECOME, "peaceful");
         break;
-      case LastingEffect::MAGIC_RESISTANCE:
-        c->you(MsgType::ARE, "now resistant to magical attacks");
-        break;
-      case LastingEffect::MELEE_RESISTANCE:
-        c->you(MsgType::ARE, "now resistant to melee attacks");
-        break;
-      case LastingEffect::RANGED_RESISTANCE:
-        c->you(MsgType::ARE, "now resistant to ranged attacks");
-        break;
       case LastingEffect::CAPTURE_RESISTANCE:
         c->you(MsgType::ARE, "now resistant to capturing");
-        break;
-      case LastingEffect::MAGIC_VULNERABILITY:
-        c->you(MsgType::ARE, "now vulnerable to magical attacks");
-        break;
-      case LastingEffect::MELEE_VULNERABILITY:
-        c->you(MsgType::ARE, "now vulnerable to melee attacks");
-        break;
-      case LastingEffect::RANGED_VULNERABILITY:
-        c->you(MsgType::ARE, "now vulnerable to ranged attacks");
         break;
       case LastingEffect::ELF_VISION:
         c->you("can see through trees");
@@ -513,26 +495,8 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::PEACEFULNESS:
         c->you(MsgType::BECOME, "less peaceful");
         break;
-      case LastingEffect::MAGIC_RESISTANCE:
-        c->you(MsgType::FEEL, "less resistant to magical attacks");
-        break;
-      case LastingEffect::MELEE_RESISTANCE:
-        c->you(MsgType::FEEL, "less resistant to melee attacks");
-        break;
-      case LastingEffect::RANGED_RESISTANCE:
-        c->you(MsgType::FEEL, "less resistant to ranged attacks");
-        break;
       case LastingEffect::CAPTURE_RESISTANCE:
         c->you(MsgType::FEEL, "less resistant to capturing");
-        break;
-      case LastingEffect::MAGIC_VULNERABILITY:
-        c->you(MsgType::FEEL, "less vulnerable to magical attacks");
-        break;
-      case LastingEffect::MELEE_VULNERABILITY:
-        c->you(MsgType::FEEL, "less vulnerable to melee attacks");
-        break;
-      case LastingEffect::RANGED_VULNERABILITY:
-        c->you(MsgType::FEEL, "less vulnerable to ranged attacks");
         break;
       case LastingEffect::ELF_VISION:
         c->you("can't see through trees anymore");
@@ -766,9 +730,6 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::LIGHT_SOURCE: return "Source of light"_good;
     case LastingEffect::DARKNESS_SOURCE: return "Source of darkness"_good;
     case LastingEffect::PREGNANT: return "Pregnant"_good;
-    case LastingEffect::MAGIC_RESISTANCE: return "Resistant to magical attacks"_good;
-    case LastingEffect::MELEE_RESISTANCE: return "Resistant to melee attacks"_good;
-    case LastingEffect::RANGED_RESISTANCE: return "Resistant to ranged attacks"_good;
     case LastingEffect::CAPTURE_RESISTANCE: return "Resistant to capturing"_good;
     case LastingEffect::SPELL_DAMAGE: return "Deals magical damage"_good;
     case LastingEffect::ELF_VISION: return "Can see through trees"_good;
@@ -821,9 +782,6 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::BLIND: return "Blind"_bad;
     case LastingEffect::STUNNED: return "Unconscious"_bad;
     case LastingEffect::COLLAPSED: return "Collapsed"_bad;
-    case LastingEffect::MAGIC_VULNERABILITY: return "Vulnerable to magical attacks"_bad;
-    case LastingEffect::MELEE_VULNERABILITY: return "Vulnerable to melee attacks"_bad;
-    case LastingEffect::RANGED_VULNERABILITY: return "Vulnerable to ranged attacks"_bad;
     case LastingEffect::SUNLIGHT_VULNERABLE: return "Vulnerable to sunlight"_bad;
     case LastingEffect::SUMMONED: return "Time to live"_bad;
     case LastingEffect::HATE_UNDEAD:
@@ -917,22 +875,10 @@ double LastingEffects::modifyCreatureDefense(const Creature* c, LastingEffect e,
   };
   double baseMultiplier = 1.3;
   switch (e) {
-    case LastingEffect::MAGIC_RESISTANCE:
-      return multiplyFor(AttrType("SPELL_DAMAGE"), baseMultiplier);
-    case LastingEffect::MELEE_RESISTANCE:
-      return multiplyFor(AttrType("DAMAGE"), baseMultiplier);
-    case LastingEffect::RANGED_RESISTANCE:
-      return multiplyFor(AttrType("RANGED_DAMAGE"), baseMultiplier);
     case LastingEffect::CAPTURE_RESISTANCE:
       if (c->isCaptureOrdered())
         return defense * baseMultiplier;
       break;
-    case LastingEffect::MAGIC_VULNERABILITY:
-      return multiplyFor(AttrType("SPELL_DAMAGE"), 1.0 / baseMultiplier);
-    case LastingEffect::MELEE_VULNERABILITY:
-      return multiplyFor(AttrType("DAMAGE"), 1.0 / baseMultiplier);
-    case LastingEffect::RANGED_VULNERABILITY:
-      return multiplyFor(AttrType("RANGED_DAMAGE"), 1.0 / baseMultiplier);
     case LastingEffect::INVULNERABLE:
       return 1000000;
     default:
@@ -1160,13 +1106,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::STUNNED: return "stunning";
     case LastingEffect::INSANITY: return "insanity";
     case LastingEffect::PEACEFULNESS: return "love";
-    case LastingEffect::MAGIC_RESISTANCE: return "magic resistance";
-    case LastingEffect::MELEE_RESISTANCE: return "melee resistance";
-    case LastingEffect::RANGED_RESISTANCE: return "ranged resistance";
     case LastingEffect::CAPTURE_RESISTANCE: return "capture resistance";
-    case LastingEffect::MAGIC_VULNERABILITY: return "magic vulnerability";
-    case LastingEffect::MELEE_VULNERABILITY: return "melee vulnerability";
-    case LastingEffect::RANGED_VULNERABILITY: return "ranged vulnerability";
     case LastingEffect::LIGHT_SOURCE: return "light";
     case LastingEffect::DARKNESS_SOURCE: return "darkness";
     case LastingEffect::NIGHT_VISION: return "night vision";
@@ -1255,13 +1195,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::STUNNED: return "Allows enslaving as a prisoner, otherwise creature will die.";
     case LastingEffect::INSANITY: return "Makes the target hostile to every creature.";
     case LastingEffect::PEACEFULNESS: return "Makes the target friendly to every creature.";
-    case LastingEffect::MAGIC_RESISTANCE: return "Increases defense against magical attacks by 30%.";
-    case LastingEffect::MELEE_RESISTANCE: return "Increases defense against melee attacks by 30%.";
-    case LastingEffect::RANGED_RESISTANCE: return "Increases defense against ranged attacks by 30%.";
     case LastingEffect::CAPTURE_RESISTANCE: return "Increases defense by 30% when capture order is placed.";
-    case LastingEffect::MAGIC_VULNERABILITY: return "Decreases defense against magical attacks by 23%.";
-    case LastingEffect::MELEE_VULNERABILITY: return "Decreases defense against melee attacks by 23%.";
-    case LastingEffect::RANGED_VULNERABILITY: return "Decreases defense against ranged attacks by 23%.";
     case LastingEffect::DARKNESS_SOURCE: return "Causes the closest vicinity to become dark. Protects undead from sunlight.";
     case LastingEffect::LIGHT_SOURCE: return "Casts light on the closest surroundings.";
     case LastingEffect::NIGHT_VISION: return "Gives vision in the dark at full distance.";
@@ -1395,13 +1329,7 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::LIFE_SAVED:
       return 400;
     case LastingEffect::INVISIBLE:
-    case LastingEffect::MAGIC_RESISTANCE:
-    case LastingEffect::MELEE_RESISTANCE:
-    case LastingEffect::RANGED_RESISTANCE:
     case LastingEffect::CAPTURE_RESISTANCE:
-    case LastingEffect::MAGIC_VULNERABILITY:
-    case LastingEffect::MELEE_VULNERABILITY:
-    case LastingEffect::RANGED_VULNERABILITY:
     case LastingEffect::LIGHT_SOURCE:
     case LastingEffect::DARKNESS_SOURCE:
     case LastingEffect::PREGNANT:
@@ -1509,10 +1437,7 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
       return FXVariantName::BUFF_YELLOW;
     case LastingEffect::SPELL_DAMAGE:
       return FXVariantName::BUFF_PURPLE;
-    case LastingEffect::MAGIC_RESISTANCE:
-    case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::CAPTURE_RESISTANCE:
-    case LastingEffect::RANGED_RESISTANCE:
       return FXVariantName::BUFF_SKY_BLUE;
     case LastingEffect::FAST_CRAFTING:
       return FXVariantName::BUFF_BROWN;
@@ -1529,11 +1454,6 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
     case LastingEffect::PLAGUE_RESISTANT:
     case LastingEffect::POISON_RESISTANT:
       return FXVariantName::BUFF_GREEN2;
-    case LastingEffect::MAGIC_VULNERABILITY:
-    case LastingEffect::MELEE_VULNERABILITY:
-    case LastingEffect::RANGED_VULNERABILITY:
-      return FXVariantName::DEBUFF_ORANGE;
-
     case LastingEffect::TELEPATHY:
     case LastingEffect::ELF_VISION:
     case LastingEffect::ARCHER_VISION:
@@ -1586,10 +1506,7 @@ Color LastingEffects::getColor(LastingEffect effect) {
       return Color::YELLOW;
     case LastingEffect::INSANITY:
       return Color::PINK;
-    case LastingEffect::MAGIC_RESISTANCE:
-    case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::CAPTURE_RESISTANCE:
-    case LastingEffect::RANGED_RESISTANCE:
       return Color::SKY_BLUE;
     case LastingEffect::REGENERATION:
       return Color::RED;
@@ -1639,9 +1556,6 @@ static bool shouldAllyApplyInDanger(const Creature* victim, LastingEffect effect
     case LastingEffect::FLYING:
     case LastingEffect::LIGHT_SOURCE:
     case LastingEffect::DARKNESS_SOURCE:
-    case LastingEffect::MAGIC_RESISTANCE:
-    case LastingEffect::MELEE_RESISTANCE:
-    case LastingEffect::RANGED_RESISTANCE:
     case LastingEffect::CAPTURE_RESISTANCE:
     case LastingEffect::ELF_VISION:
     case LastingEffect::ARCHER_VISION:
@@ -1794,13 +1708,7 @@ TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
     case LastingEffect::PEACEFULNESS:
     case LastingEffect::INSANITY:
       return 20_visible;
-    case LastingEffect::MAGIC_VULNERABILITY:
-    case LastingEffect::MELEE_VULNERABILITY:
-    case LastingEffect::RANGED_VULNERABILITY:
     case LastingEffect::MAGIC_CANCELLATION:
-    case LastingEffect::MAGIC_RESISTANCE:
-    case LastingEffect::MELEE_RESISTANCE:
-    case LastingEffect::RANGED_RESISTANCE:
     case LastingEffect::CAPTURE_RESISTANCE:
     case LastingEffect::SUNLIGHT_VULNERABLE:
     case LastingEffect::OIL:

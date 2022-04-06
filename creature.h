@@ -98,7 +98,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   /** Morale is in the range [-1:1] **/
   optional<double> getMorale() const;
   void addMorale(double);
-  void take(PItem item);
+  void take(PItem item, const ContentFactory* = nullptr);
   void take(vector<PItem> item);
   const Equipment& getEquipment() const;
   Equipment& getEquipment();
@@ -179,7 +179,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   int getDefaultWeaponDamage() const;
   CreatureAction execute(Creature*, const char* verbSecond, const char* verbThird) const;
   CreatureAction applyItem(Item* item) const;
-  CreatureAction equip(Item* item) const;
+  CreatureAction equip(Item* item, const ContentFactory* = nullptr) const;
   CreatureAction unequip(Item* item) const;
   bool canEquipIfEmptySlot(const Item* item, string* reason = nullptr) const;
   bool canEquip(const Item* item) const;
@@ -289,7 +289,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool addEffect(BuffId, TimeInterval time, bool msg = true);
   bool addEffect(BuffId, TimeInterval time, GlobalTime, const ContentFactory*, bool msg = true);
   bool removeEffect(BuffId, bool msg = true);
-  bool addPermanentEffect(BuffId, int count = 1, bool msg = true);
+  bool addPermanentEffect(BuffId, int count = 1, bool msg = true, const ContentFactory* = nullptr);
   bool removePermanentEffect(BuffId, int count = 1, bool msg = true);
   bool isAffected(BuffId) const;
   bool isAffectedPermanently(BuffId) const;

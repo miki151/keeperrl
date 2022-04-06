@@ -99,9 +99,9 @@ append {
       {{Potion Lasting FLYING}               4        "GOLD" 8}
       {{Potion Heal { FLESH }}               4        "GOLD" 10      "advanced alchemy"}
       {{Potion Lasting BLIND}                4        "GOLD" 15      "advanced alchemy"}
-      {{Potion Lasting MELEE_RESISTANCE}     6        "GOLD" 20      "advanced alchemy"}
-      {{Potion Lasting MELEE_VULNERABILITY}  6        "GOLD" 40      "advanced alchemy"}
-      {{Potion Lasting MAGIC_VULNERABILITY}  6        "GOLD" 40      "advanced alchemy"}
+      {{Potion Lasting 20 MELEE_RESISTANCE}     6        "GOLD" 20      "advanced alchemy"}
+      {{Potion Lasting 20 MELEE_VULNERABILITY}  6        "GOLD" 40      "advanced alchemy"}
+      {{Potion Lasting 20   MAGIC_VULNERABILITY}  6        "GOLD" 40      "advanced alchemy"}
       {{Potion Lasting INVISIBLE}            6        "GOLD" 20      "advanced alchemy"}
       {{Potion Heal { SPIRIT }}              4        "GOLD" 20      "advanced alchemy"}
       {{GasPotion("FOG", "Releases a fog cloud")} 4   "GOLD" 10      "advanced alchemy"}

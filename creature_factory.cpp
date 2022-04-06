@@ -156,7 +156,7 @@ PCreature CreatureFactory::getAnimatedItem(const ContentFactory* factory, PItem 
             c.permanentEffects[LastingEffect::FLYING] = 1;
             ), SpellMap{});
   ret->setController(Monster::getFactory(MonsterAIFactory::monster()).get(ret.get()));
-  ret->take(std::move(item));
+  ret->take(std::move(item), factory);
   initializeAttributes(none, ret->getAttributes());
   return ret;
 }
@@ -577,7 +577,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
 
 void CreatureFactory::addInventory(Creature* c, const vector<ItemType>& items) {
   for (ItemType item : items)
-    c->take(item.get(contentFactory));
+    c->take(item.get(contentFactory), contentFactory);
 }
 
 PController CreatureFactory::getShopkeeper(vector<Vec2> shopArea, Creature* c) {
@@ -692,18 +692,18 @@ static EnumMap<BodyPart, int> getSpecialBeastBody(bool large, bool living, bool 
   return parts[(!large) * 4 + (!living) * 2 + wings];
 }
 
-static vector<LastingEffect> getResistanceAndVulnerability(RandomGen& random) {
-  vector<LastingEffect> resistances {
-      LastingEffect::MAGIC_RESISTANCE,
-      LastingEffect::MELEE_RESISTANCE,
-      LastingEffect::RANGED_RESISTANCE
+static vector<BuffId> getResistanceAndVulnerability(RandomGen& random) {
+  vector<BuffId> resistances {
+      BuffId("MAGIC_RESISTANCE"),
+      BuffId("MELEE_RESISTANCE"),
+      BuffId("RANGED_RESISTANCE")
   };
-  vector<LastingEffect> vulnerabilities {
-      LastingEffect::MAGIC_VULNERABILITY,
-      LastingEffect::MELEE_VULNERABILITY,
-      LastingEffect::RANGED_VULNERABILITY
+  vector<BuffId> vulnerabilities {
+      BuffId("MAGIC_VULNERABILITY"),
+      BuffId("MELEE_VULNERABILITY"),
+      BuffId("RANGED_VULNERABILITY")
   };
-  vector<LastingEffect> ret;
+  vector<BuffId> ret;
   ret.push_back(Random.choose(resistances));
   vulnerabilities.removeIndex(*resistances.findElement(ret[0]));
   ret.push_back(Random.choose(vulnerabilities));
@@ -726,7 +726,7 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
         c.attr[AttrType("MULTI_WEAPON")] = Random.get(0, 50);
         c.permanentEffects[p.humanoid ? LastingEffect::RIDER : LastingEffect::STEED] = true;
         for (auto effect : getResistanceAndVulnerability(Random))
-          c.permanentEffects[effect] = 1;
+          c.permanentBuffs.push_back(effect);
         if (p.large) {
           c.attr[AttrType("DAMAGE")] += 6;
           c.attr[AttrType("DEFENSE")] += 2;
@@ -768,12 +768,12 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
   PCreature c = get(std::move(attributes), tribe, factory, std::move(spells));
   if (body.isHumanoid()) {
     if (Random.roll(4))
-      c->take(ItemType(CustomItemId("Bow")).get(contentFactory));
+      c->take(ItemType(CustomItemId("Bow")).get(contentFactory), contentFactory);
     c->take(Random.choose(
           ItemType(CustomItemId("Sword")).setPrefixChance(1),
           ItemType(CustomItemId("BattleAxe")).setPrefixChance(1),
           ItemType(CustomItemId("WarHammer")).setPrefixChance(1))
-        .get(contentFactory));
+        .get(contentFactory), contentFactory);
   }
   return c;
 }

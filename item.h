@@ -102,7 +102,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getApplyMsgFirstPerson(const Creature* owner) const;
   optional<StatId> getProducedStat() const;
   bool hasEquipedEffect(LastingEffect) const;
-  void onEquip(Creature*, bool msg = true);
+  void onEquip(Creature*, bool msg = true, const ContentFactory* = nullptr);
   void onUnequip(Creature*, bool msg = true);
   void onOwned(Creature*, bool msg = true);
   void onDropped(Creature*, bool msg = true);

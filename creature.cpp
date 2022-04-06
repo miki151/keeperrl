@@ -762,7 +762,7 @@ bool Creature::canEquip(const Item* item) const {
   return canEquipIfEmptySlot(item, nullptr) && equipment->canEquip(item, this);
 }
 
-CreatureAction Creature::equip(Item* item) const {
+CreatureAction Creature::equip(Item* item, const ContentFactory* factory) const {
   string reason;
   if (!canEquipIfEmptySlot(item, &reason))
     return CreatureAction(reason);
@@ -773,7 +773,7 @@ CreatureAction Creature::equip(Item* item) const {
     INFO << getName().the() << " equip " << item->getName();
     secondPerson("You equip " + item->getTheName(false, self));
     thirdPerson(getName().the() + " equips " + item->getAName());
-    self->equipment->equip(item, slot, self);
+    self->equipment->equip(item, slot, self, factory ? factory : getGame()->getContentFactory());
     if (auto game = getGame())
       game->addEvent(EventInfo::ItemsEquipped{self, {item}});
     //self->spendTime();
@@ -1074,8 +1074,10 @@ bool Creature::removeEffect(BuffId id, bool msg) {
   return false;
 }
 
-bool Creature::addPermanentEffect(BuffId id, int count, bool msg) {
-  auto& info = getGame()->getContentFactory()->buffs.at(id);
+bool Creature::addPermanentEffect(BuffId id, int count, bool msg, const ContentFactory* factory) {
+  if (!factory)
+    factory = getGame()->getContentFactory();
+  auto& info = factory->buffs.at(id);
   if (++buffPermanentCount[id] == 1) {
     if (msg && info.addedMessage)
       you(info.addedMessage->first, info.addedMessage->second);
@@ -1782,10 +1784,10 @@ void Creature::take(vector<PItem> items) {
     take(std::move(elem));
 }
 
-void Creature::take(PItem item) {
+void Creature::take(PItem item, const ContentFactory* factory) {
   Item* ref = item.get();
   equipment->addItem(std::move(item), this);
-  if (auto action = equip(ref))
+  if (auto action = equip(ref, factory))
     action.perform(this);
 }
 

@@ -118,9 +118,9 @@ bool Item::hasEquipedEffect(LastingEffect l) const {
   return false;
 }
 
-void Item::onEquip(Creature* c, bool msg) {
+void Item::onEquip(Creature* c, bool msg, const ContentFactory* factory) {
   for (auto& e : attributes->equipedEffect)
-    addPermanentEffect(e, c, msg);
+    addPermanentEffect(e, c, msg, factory);
   if (attributes->equipedCompanion)
     c->getAttributes().companions.push_back(*attributes->equipedCompanion);
 }

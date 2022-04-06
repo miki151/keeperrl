@@ -20,6 +20,7 @@
 #include "equipment_slot.h"
 
 class Body;
+class ContentFactory;
 
 class Equipment {
   public:
@@ -29,7 +30,7 @@ class Equipment {
   bool hasItem(const Item*) const;
   bool isEquipped(const Item*) const;
   bool canEquip(const Item*, const Creature*) const;
-  void equip(Item*, EquipmentSlot, Creature*);
+  void equip(Item*, EquipmentSlot, Creature*, const ContentFactory* = nullptr);
   void unequip(Item*, Creature*);
   PItem removeItem(Item*, Creature*);
   int getMaxItems(EquipmentSlot, const Creature*) const;

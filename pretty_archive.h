@@ -127,6 +127,7 @@ class PrettyInputArchive {
     KeyVerifier dummyKeyVerifier;
     vector<string> filenames;
     void throwException(const StreamPosStack&, const string&);
+    string positionToString(const StreamPosStack&);
     using DefsMap = map<pair<string, int>, DefInfo>;
     pair<DefsMap, vector<StreamChar>> parseDefs(const vector<StreamChar>& content);
     vector<StreamChar> preprocess(const vector<StreamChar>& content);

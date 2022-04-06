@@ -85,13 +85,13 @@ bool removeEffect(const LastingOrBuff& l, Creature* c, bool msg) {
   );
 }
 
-bool addPermanentEffect(const LastingOrBuff& l, Creature* c, bool msg) {
+bool addPermanentEffect(const LastingOrBuff& l, Creature* c, bool msg, const ContentFactory* f) {
   return l.visit(
     [&](LastingEffect e) {
       return c->addPermanentEffect(e, 1, msg);
     },
     [&](BuffId id) {
-      return c->addPermanentEffect(id, msg);
+      return c->addPermanentEffect(id, 1, msg, f);
     }
   );
 }
@@ -102,7 +102,7 @@ bool removePermanentEffect(const LastingOrBuff& l, Creature* c, bool msg) {
       return c->removePermanentEffect(e, 1, msg);
     },
     [&](BuffId id) {
-      return c->removePermanentEffect(id, msg);
+      return c->removePermanentEffect(id, 1, msg);
     }
   );
 }

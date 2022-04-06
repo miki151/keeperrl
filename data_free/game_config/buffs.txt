@@ -20,46 +20,62 @@
   hatedGroupName = "keepers"
 }
 
-"FIRE_VULNERABILITY" {
-  name = "fire vulnerability"
-  adjective = "vulnerable to fire"
-  description = "Creature's defense against fire attacks is decreased by 23%."
-  addedMessage = ARE "vulnerable to fire"
-  removedMessage = ARE "no longer vulnerable to fire"
-  color = ColorId RED
+Def RESISTANCE(Name, Attr)
+{
+  name = Name + " resistance"
+  adjective = "resistant to " + Name
+  description = "Creature's defense against " + Name + " attacks is increased by 30%."
+  addedMessage = ARE "resistant to " + Name
+  removedMessage = ARE "no longer resistant to " + Name
+  color = ColorId SKY_BLUE
+  defenseMultiplier = 1.3
+  defenseMultiplierAttr = Attr
+}
+End
+
+"FIRE_RESISTANT" RESISTANCE("fire", FIRE_DAMAGE)
+"COLD_RESISTANT" RESISTANCE("cold", COLD_DAMAGE)
+"ACID_RESISTANT" RESISTANCE("acid", ACID_DAMAGE)
+"MELEE_RESISTANCE" RESISTANCE("melee", DAMAGE)
+"MAGIC_RESISTANCE" RESISTANCE("magic", SPELL_DAMAGE)
+"RANGED_RESISTANCE" RESISTANCE("ranged", RANGED_DAMAGE)
+
+Def VULNERABILITY(Name, Attr)
+{
+  name = Name + " vulnerability"
+  adjective = "vulnarable to " + Name
+  description = "Creature's defense against " + Name + " attacks is reduced by 23%."
+  addedMessage = ARE "vulnerable to " + Name
+  removedMessage = ARE "no longer vulnerable to " + Name
+  color = ColorId BROWN
   defenseMultiplier = 0.77
-  defenseMultiplierAttr = FIRE_DAMAGE
+  defenseMultiplierAttr = Attr
 }
+End
 
-"FIRE_RESISTANT" {
-  name = "fire resistance"
-  adjective = "resistant to fire"
-  description = "Creature's defense against fire attacks is increased by 30%."
-  addedMessage = ARE "resistant to fire"
-  removedMessage = ARE "no longer resistant to fire"
-  color = ColorId RED
-  defenseMultiplier = 1.3
-  defenseMultiplierAttr = FIRE_DAMAGE
-}
+"FIRE_VULNERABILITY" VULNERABILITY("fire", FIRE_DAMAGE)
+"COLD_VULNERABILITY" VULNERABILITY("cold", COLD_DAMAGE)
+"ACID_VULNERABILITY" VULNERABILITY("acid", ACID_DAMAGE)
+"MELEE_VULNERABILITY" VULNERABILITY("melee", DAMAGE)
+"MAGIC_VULNERABILITY" VULNERABILITY("magic", SPELL_DAMAGE)
+"RANGED_VULNERABILITY" VULNERABILITY("ranged", RANGED_DAMAGE)
 
-"COLD_RESISTANT" {
-  name = "cold resistance"
-  adjective = "resistant to cold"
-  description = "Creature's defense against cold attacks is increased by 30%."
-  addedMessage = ARE "resistant to cold"
-  removedMessage = ARE "no longer resistant to cold"
-  color = ColorId LIGHT_BLUE
-  defenseMultiplier = 1.3
-  defenseMultiplierAttr = COLD_DAMAGE
+Def IMMUNITY(Name, Attr)
+{
+  name = Name + " immunity"
+  adjective = "immune to " + Name
+  description = "Creature is immune to " + Name + " attacks."
+  addedMessage = ARE "immune to " + Name + " attacks"
+  removedMessage = ARE "no longer vulnerable to " + Name + " attacks"
+  color = ColorId WHITE
+  defenseMultiplier = 1000
+  defenseMultiplierAttr = Attr
 }
+End
 
-"ACID_RESISTANT" {
-  name = "acid resistance"
-  adjective = "resistant to acid"
-  description = "Creature's defense against acid attacks is increased by 30%."
-  addedMessage = ARE "resistant to acid"
-  removedMessage = ARE "no longer resistant to acid"
-  color = ColorId ORANGE
-  defenseMultiplier = 1.3
-  defenseMultiplierAttr = ACID_DAMAGE
-}
+"FIRE_IMMUNITY" IMMUNITY("fire", FIRE_DAMAGE)
+"COLD_IMMUNITY" IMMUNITY("cold", COLD_DAMAGE)
+"ACID_IMMUNITY" IMMUNITY("acid", ACID_DAMAGE)
+"MELEE_IMMUNITY" IMMUNITY("melee", DAMAGE)
+"MAGIC_IMMUNITY" IMMUNITY("magic", SPELL_DAMAGE)
+"RANGED_IMMUNITY" IMMUNITY("ranged", RANGED_DAMAGE)

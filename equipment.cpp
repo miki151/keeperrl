@@ -94,10 +94,10 @@ bool Equipment::canEquip(const Item* item, const Creature* c) const {
   return items[slot].size() < getMaxItems(slot, c);
 }
 
-void Equipment::equip(Item* item, EquipmentSlot slot, Creature* c) {
+void Equipment::equip(Item* item, EquipmentSlot slot, Creature* c, const ContentFactory* factory) {
   items[slot].push_back(item);
   equipped.push_back(item);
-  item->onEquip(c);
+  item->onEquip(c, true, factory);
   CHECK(inventory.hasItem(item));
 }
 

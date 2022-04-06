@@ -20,7 +20,7 @@ int getPrice(const LastingOrBuff&, const ContentFactory*);
 bool addEffect(const LastingOrBuff&, Creature*, optional<TimeInterval> duration, bool msg = true);
 bool addEffect(const LastingOrBuff&, Creature*, optional<TimeInterval> duration, GlobalTime, const ContentFactory*);
 bool removeEffect(const LastingOrBuff&, Creature*, bool msg = true);
-bool addPermanentEffect(const LastingOrBuff&, Creature*, bool msg = true);
+bool addPermanentEffect(const LastingOrBuff&, Creature*, bool msg = true, const ContentFactory* = nullptr);
 bool removePermanentEffect(const LastingOrBuff&, Creature*, bool msg = true);
 bool isConsideredBad(const LastingOrBuff&, const ContentFactory*);
 bool isAffected(const Creature*, const LastingOrBuff&);
