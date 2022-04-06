@@ -122,7 +122,8 @@ class LastingEffects {
   static optional<FXInfo> getApplicationFX(LastingEffect);
   static bool canProlong(LastingEffect);
   static bool obeysFormation(const Creature*, const Creature* against);
-  static EffectAIIntent shouldAIApply(const Creature* victim, LastingEffect, bool isEnemy);
+  static bool shouldEnemyApply(const Creature* victim, LastingEffect);
+  static bool shouldAllyApplyInDanger(const Creature* victim, LastingEffect);
   static AttrType modifyMeleeDamageAttr(const Creature* attacker, AttrType);
   static TimeInterval getDuration(const Creature* c, LastingEffect);
   static void runTests();

@@ -1544,7 +1544,7 @@ bool LastingEffects::obeysFormation(const Creature* c, const Creature* against) 
   return true;
 }
 
-static bool shouldAllyApplyInDanger(const Creature* victim, LastingEffect effect) {
+bool LastingEffects::shouldAllyApplyInDanger(const Creature* victim, LastingEffect effect) {
   switch (effect) {
     case LastingEffect::INVULNERABLE:
     case LastingEffect::LIFE_SAVED:
@@ -1571,72 +1571,11 @@ static bool shouldAllyApplyInDanger(const Creature* victim, LastingEffect effect
   }
 }
 
-static bool shouldAllyApplyInNoDanger(const Creature* victim, LastingEffect effect) {
-  switch (effect) {
-    case LastingEffect::DRUNK:
-      return true;
-    default:
-      return false;
-  }
-}
-
-static bool shouldAllyApply(const Creature* victim, LastingEffect effect) {
+bool LastingEffects::shouldEnemyApply(const Creature* victim, LastingEffect effect) {
   if (auto cancelled = getCancelledOneWay(effect))
-    if (victim->isAffected(*cancelled) && getAdjective(*cancelled).bad)
+    if (victim->isAffected(*cancelled) && !::getAdjective(*cancelled).bad)
       return true;
-  switch (effect) {
-    case LastingEffect::REGENERATION:
-      return victim->getBody().canHeal(HealthType::FLESH);
-    case LastingEffect::SATIATED:
-    case LastingEffect::RESTED:
-    case LastingEffect::FAST_CRAFTING:
-    case LastingEffect::FAST_TRAINING:
-    case LastingEffect::ENTERTAINER:
-    case LastingEffect::AMBUSH_SKILL:
-    case LastingEffect::SWIMMING_SKILL:
-    case LastingEffect::DISARM_TRAPS_SKILL:
-    case LastingEffect::CONSUMPTION_SKILL:
-    case LastingEffect::COPULATION_SKILL:
-    case LastingEffect::CROPS_SKILL:
-    case LastingEffect::SPIDER_SKILL:
-    case LastingEffect::EXPLORE_SKILL:
-    case LastingEffect::EXPLORE_NOCTURNAL_SKILL:
-    case LastingEffect::EXPLORE_CAVES_SKILL:
-    case LastingEffect::BRIDGE_BUILDING_SKILL:
-    case LastingEffect::NO_CARRY_LIMIT:
-      return true;
-    default:
-      return false;
-  }
-}
-
-static bool shouldEnemyApply(const Creature* victim, LastingEffect effect) {
-  if (auto cancelled = getCancelledOneWay(effect))
-    if (victim->isAffected(*cancelled) && !getAdjective(*cancelled).bad)
-      return true;
-  return getAdjective(effect).bad;
-}
-
-EffectAIIntent LastingEffects::shouldAIApply(const Creature* victim, LastingEffect effect, bool isEnemy) {
-  PROFILE_BLOCK("LastingEffects::shouldAIApply");
-  if (!affects(victim, effect))
-    return 0;
-  if (shouldEnemyApply(victim, effect))
-    return isEnemy ? 1 : -1;
-  if (isEnemy)
-    return -1;
-  bool isDanger = [&] {
-    if (auto intent = victim->getLastCombatIntent())
-      return intent->time > *victim->getGlobalTime() - 5_visible;
-    return false;
-  }();
-  if (isDanger) {
-    if (shouldAllyApplyInDanger(victim, effect))
-      return 1;
-  } else
-    if (shouldAllyApplyInNoDanger(victim, effect))
-      return 1;
-  return shouldAllyApply(victim, effect) ? 1 : 0;
+  return ::getAdjective(effect).bad;
 }
 
 AttrType LastingEffects::modifyMeleeDamageAttr(const Creature* attacker, AttrType type) {

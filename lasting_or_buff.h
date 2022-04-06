@@ -26,7 +26,7 @@ bool isConsideredBad(const LastingOrBuff&, const ContentFactory*);
 bool isAffected(const Creature*, const LastingOrBuff&);
 bool isAffected(const Creature*, const LastingOrBuff&, GlobalTime);
 bool isAffectedPermanently(const Creature*, const LastingOrBuff&);
-bool shouldAIApply(const LastingOrBuff&, bool enemy, const Creature*);
+EffectAIIntent shouldAIApply(const LastingOrBuff&, bool enemy, const Creature*);
 Color getColor(const LastingOrBuff&, const ContentFactory*);
 optional<string> getHatedGroupName(const LastingOrBuff&, const ContentFactory*);
 void serialize(PrettyInputArchive& ar1, LastingOrBuff&, const unsigned int);

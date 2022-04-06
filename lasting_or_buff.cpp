@@ -151,15 +151,43 @@ bool isAffectedPermanently(const Creature* c, const LastingOrBuff& l) {
   );
 }
 
-bool shouldAIApply(const LastingOrBuff& l, bool enemy, const Creature* c) {
+static bool shouldAllyApplyInDanger(const LastingOrBuff& l, const Creature* target, const ContentFactory* factory) {
   return l.visit(
     [&](LastingEffect e) {
-      return LastingEffects::shouldAIApply(c, e, enemy);
+      return LastingEffects::shouldAllyApplyInDanger(target, e);
     },
     [&](BuffId id) {
-      return c->getGame()->getContentFactory()->buffs.at(id).consideredBad == enemy;
+      return factory->buffs.at(id).combatConsumable;
     }
   );
+}
+
+static bool shouldEnemyApply(const LastingOrBuff& l, const Creature* target, const ContentFactory* factory) {
+  return l.visit(
+    [&](LastingEffect e) {
+      return LastingEffects::shouldEnemyApply(target, e);
+    },
+    [&](BuffId id) {
+      return factory->buffs.at(id).consideredBad;
+    }
+  );
+}
+
+EffectAIIntent shouldAIApply(const LastingOrBuff& l, bool enemy, const Creature* victim) {
+  auto factory = victim->getGame()->getContentFactory();
+  if (shouldEnemyApply(l, victim, factory))
+    return enemy ? 1 : -1;
+  if (enemy)
+    return -1;
+  bool isDanger = [&] {
+    if (auto intent = victim->getLastCombatIntent())
+      return intent->time > *victim->getGlobalTime() - 5_visible;
+    return false;
+  }();
+  if (isDanger == shouldAllyApplyInDanger(l, victim, factory))
+    return 1;
+  else
+    return -1;
 }
 
 Color getColor(const LastingOrBuff& l, const ContentFactory* f) {

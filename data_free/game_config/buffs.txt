@@ -7,17 +7,8 @@
   startEffect = IncreaseAttr DAMAGE 30
   endEffect = IncreaseAttr DAMAGE -30
   tickEffect = Heal {FLESH 0.01}
+  combatConsumable = true
   color = ColorId RED
-}
-
-"HATE_KEEPERS" {
-  name = "hates keepers"
-  adjective = "hateful"
-  description = "Hates all keepers"
-  addedMessage = ARE "hateful"
-  removedMessage = ARE "no longer hateful"
-  color = ColorId RED
-  hatedGroupName = "keepers"
 }
 
 Def RESISTANCE(Name, Attr)
@@ -31,6 +22,7 @@ Def RESISTANCE(Name, Attr)
   fx = BUFF_SKY_BLUE
   defenseMultiplier = 1.3
   defenseMultiplierAttr = Attr
+  combatConsumable = true
 }
 End
 
@@ -52,6 +44,7 @@ Def VULNERABILITY(Name, Attr)
   fx = DEBUFF_BROWN
   defenseMultiplier = 0.77
   defenseMultiplierAttr = Attr
+  consideredBad = true
 }
 End
 
@@ -73,6 +66,7 @@ Def IMMUNITY(Name, Attr)
   fx = BUFF_WHITE
   defenseMultiplier = 1000
   defenseMultiplierAttr = Attr
+  combatConsumable = true
 }
 End
 
