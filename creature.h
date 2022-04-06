@@ -408,7 +408,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   mutable Game* gameCache = nullptr;
   optional<GlobalTime> SERIAL(globalTime);
   void considerMovingFromInaccessibleSquare();
-  void updateLastingFX(ViewObject&);
+  void updateLastingFX(ViewObject&, const ContentFactory*);
   HeapAllocated<SpellMap> SERIAL(spellMap);
   optional<ViewId> SERIAL(primaryViewId);
   struct CompanionGroup {

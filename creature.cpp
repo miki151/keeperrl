@@ -266,7 +266,7 @@ CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
   });
 }
 
-void Creature::updateLastingFX(ViewObject& object) {
+void Creature::updateLastingFX(ViewObject& object, const ContentFactory* factory) {
   object.particleEffects.clear();
   if (phylactery)
     object.particleEffects.insert(FXVariantName::LICH);
@@ -275,6 +275,10 @@ void Creature::updateLastingFX(ViewObject& object) {
       if (isAffected(effect, *time))
         if (auto fx = LastingEffects::getFX(effect))
           object.particleEffects.insert(*fx);
+  for (auto& buff : buffs)
+    object.particleEffects.insert(factory->buffs.at(buff.first).fx);
+  for (auto& buff : buffPermanentCount)
+    object.particleEffects.insert(factory->buffs.at(buff.first).fx);
 }
 
 
@@ -1708,7 +1712,7 @@ void Creature::updateViewObject(const ContentFactory* factory) {
     object.setAttribute(ViewObject::Attribute::HEALTH, captureHealth);
   object.setDescription(getName().title());
   getPosition().setNeedsRenderUpdate(true);
-  updateLastingFX(object);
+  updateLastingFX(object, factory);
   object.partIds.clear();
   for (int i : All(automatonParts)) {
     if (i == 0 || automatonParts[i].layer != automatonParts[i - 1].layer)

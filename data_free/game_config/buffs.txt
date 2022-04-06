@@ -28,6 +28,7 @@ Def RESISTANCE(Name, Attr)
   addedMessage = ARE "resistant to " + Name
   removedMessage = ARE "no longer resistant to " + Name
   color = ColorId SKY_BLUE
+  fx = BUFF_SKY_BLUE
   defenseMultiplier = 1.3
   defenseMultiplierAttr = Attr
 }
@@ -48,6 +49,7 @@ Def VULNERABILITY(Name, Attr)
   addedMessage = ARE "vulnerable to " + Name
   removedMessage = ARE "no longer vulnerable to " + Name
   color = ColorId BROWN
+  fx = DEBUFF_BROWN
   defenseMultiplier = 0.77
   defenseMultiplierAttr = Attr
 }
@@ -68,6 +70,7 @@ Def IMMUNITY(Name, Attr)
   addedMessage = ARE "immune to " + Name + " attacks"
   removedMessage = ARE "no longer vulnerable to " + Name + " attacks"
   color = ColorId WHITE
+  fx = BUFF_WHITE
   defenseMultiplier = 1000
   defenseMultiplierAttr = Attr
 }

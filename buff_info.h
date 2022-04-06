@@ -4,6 +4,7 @@
 #include "attr_type.h"
 #include "effect.h"
 #include "msg_type.h"
+#include "fx_variant_name.h"
 
 struct BuffInfo {
   string SERIAL(name);
@@ -21,5 +22,6 @@ struct BuffInfo {
   optional<string> SERIAL(hatedGroupName);
   double SERIAL(defenseMultiplier) = 1.0;
   optional<AttrType> SERIAL(defenseMultiplierAttr);
-  SERIALIZE_ALL(OPTION(defenseMultiplier), OPTION(defenseMultiplierAttr), NAMED(hatedGroupName), NAMED(name), OPTION(addedMessage), OPTION(removedMessage), NAMED(startEffect), NAMED(tickEffect), NAMED(endEffect), OPTION(stacks), OPTION(consideredBad), NAMED(description), OPTION(price), NAMED(color), NAMED(adjective))
+  FXVariantName SERIAL(fx) = FXVariantName::BUFF_RED;
+  SERIALIZE_ALL(OPTION(fx), OPTION(defenseMultiplier), OPTION(defenseMultiplierAttr), NAMED(hatedGroupName), NAMED(name), OPTION(addedMessage), OPTION(removedMessage), NAMED(startEffect), NAMED(tickEffect), NAMED(endEffect), OPTION(stacks), OPTION(consideredBad), NAMED(description), OPTION(price), NAMED(color), NAMED(adjective))
 };
