@@ -906,13 +906,13 @@ static optional<ViewId> getProjectile(const Effects::Fire&) {
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Fire&, const Creature* victim, bool isEnemy) {
-  if (!victim->isAffected(BuffId("FIRE_RESISTANT")))
+  if (!victim->isAffected(BuffId("FIRE_IMMUNITY")))
     return isEnemy ? 1 : -1;
   return 0;
 }
 
 static bool isConsideredHostile(const Effects::Fire&, const Creature* victim) {
-  return !victim->isAffected(BuffId("FIRE_RESISTANT"));
+  return !victim->isAffected(BuffId("FIRE_IMMUNITY"));
 }
 
 static string getName(const Effects::Ice&, const ContentFactory*) {
@@ -928,13 +928,13 @@ static bool apply(const Effects::Ice& a, Position pos, Creature* attacker) {
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Ice&, const Creature* victim, bool isEnemy) {
-  if (!victim->isAffected(BuffId("COLD_RESISTANT")))
+  if (!victim->isAffected(BuffId("COLD_IMMUNITY")))
     return isEnemy ? 1 : -1;
   return 0;
 }
 
 static bool isConsideredHostile(const Effects::Ice&, const Creature* victim) {
-  return !victim->isAffected(BuffId("COLD_RESISTANT"));
+  return !victim->isAffected(BuffId("COLD_IMMUNITY"));
 }
 
 static string getName(const Effects::ReviveCorpse&, const ContentFactory*) {

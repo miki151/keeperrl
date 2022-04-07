@@ -447,7 +447,7 @@
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}}
       }
     }
-    permanentEffects = { FIRE_RESISTANT 1 } 
+    permanentEffects = { FIRE_IMMUNITY 1 } 
     name = {
       name = "devil"
     }
@@ -1124,7 +1124,7 @@
       droppedPartUpgrade = GrantAbility "fire breath"
     }
     permanentEffects = {
-      FIRE_RESISTANT 1
+      FIRE_IMMUNITY 1
       RANGED_VULNERABILITY 1
       STEED 1
       CAPTURE_RESISTANCE 1
@@ -1272,7 +1272,7 @@
     }
     permanentEffects = {
       RANGED_VULNERABILITY 1
-      COLD_RESISTANT 1
+      COLD_IMMUNITY 1
       STEED 1
       CAPTURE_RESISTANCE 1
     }
@@ -1342,7 +1342,7 @@
       drops = {{ "YellowDragonScales" } 1}
     }
     permanentEffects = {
-      ACID_RESISTANT 1
+      ACID_IMMUNITY 1
       RANGED_VULNERABILITY 1
       CAPTURE_RESISTANCE 1
       STEED 1
@@ -1418,7 +1418,7 @@
       }
     }
     permanentEffects = {
-      FIRE_RESISTANT 1
+      FIRE_IMMUNITY 1
       RANGED_VULNERABILITY 1
     }
     inventory = {
@@ -2150,7 +2150,6 @@
     permanentEffects = {
       MELEE_RESISTANCE 1
       SLOWED 1
-      FIRE_RESISTANT 1
     }
     name = {
       name = "lava golem"
@@ -2172,7 +2171,6 @@
       MELEE_RESISTANCE 1
       SLOWED 1
       MAGIC_VULNERABILITY 1
-      FIRE_RESISTANT 1
     }
     name = {
       name = "adamantine golem"
@@ -3960,7 +3958,6 @@
       DEFENSE 30
     }
     permanentEffects = {
-      FIRE_RESISTANT 1
       FLYING 1
     }
     name = {

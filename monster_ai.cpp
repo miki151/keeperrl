@@ -1132,7 +1132,7 @@ class AvoidFire : public Behaviour {
 
   virtual MoveInfo getMove() override {
     auto myPosition = creature->getPosition();
-    if (myPosition.isBurning() && !creature->isAffected(BuffId("FIRE_RESISTANT"))) {
+    if (myPosition.isBurning() && !creature->isAffected(BuffId("FIRE_IMMUNITY"))) {
       for (Position pos : myPosition.neighbors8(Random))
         if (!pos.isBurning())
           if (auto action = creature->move(pos))

@@ -2476,7 +2476,7 @@ MovementType Creature::getMovementTypeNotSteed(Game* game) const {
       getBody().canWade()})
     .setDestroyActions(EnumSet<DestroyAction::Type>([this](auto t) { return DestroyAction(t).canNavigate(this); }))
     .setForced(isAffected(LastingEffect::BLIND, time) || getHoldingCreature() || forceMovement)
-    .setFireResistant(isAffected(BuffId("FIRE_RESISTANT")))
+    .setFireResistant(isAffected(BuffId("FIRE_IMMUNITY")))
     .setSunlightVulnerable(isAffected(LastingEffect::SUNLIGHT_VULNERABLE, time)
         && !isAffected(LastingEffect::DARKNESS_SOURCE, time)
         && (!game || game->getSunlightInfo().getState() == SunlightState::DAY))
