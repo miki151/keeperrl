@@ -29,6 +29,7 @@
 #include "minion_equipment_type.h"
 #include "health_type.h"
 #include "automaton_part.h"
+#include "game.h"
 
 template <class Archive>
 void MinionEquipment::serialize(Archive& ar, const unsigned int) {
@@ -73,9 +74,9 @@ bool MinionEquipment::canUseItemType(const Creature* c, MinionEquipmentType type
     case MinionEquipmentType::TORCH:
       return !c->isAffected(LastingEffect::NIGHT_VISION);
     case MinionEquipmentType::HEALING:
-      return c->getBody().hasHealth(HealthType::FLESH);
+      return c->getBody().hasHealth(HealthType::FLESH, c->getGame()->getContentFactory());
     case MinionEquipmentType::MATERIALIZATION:
-      return c->getBody().hasHealth(HealthType::SPIRIT);
+      return c->getBody().hasHealth(HealthType::SPIRIT, c->getGame()->getContentFactory());
     case MinionEquipmentType::COMBAT_ITEM:
       return true;
     case MinionEquipmentType::ARMOR: {

@@ -43,7 +43,8 @@ enum class GameConfigId {
   EQUIPMENT_GROUPS,
   HELP,
   ATTR_INFO,
-  BUFFS
+  BUFFS,
+  BODY_MATERIALS
 };
 
 class GameConfig {

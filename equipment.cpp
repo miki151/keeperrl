@@ -34,8 +34,8 @@ map<EquipmentSlot, string> Equipment::slotTitles = {
 SERIALIZE_DEF(Equipment, inventory, items, equipped)
 SERIALIZATION_CONSTRUCTOR_IMPL(Equipment);
 
-void Equipment::addItem(PItem item, Creature* c) {
-  item->onOwned(c);
+void Equipment::addItem(PItem item, Creature* c, const ContentFactory* factory) {
+  item->onOwned(c, true, factory);
   inventory.addItem(std::move(item));
 }
 

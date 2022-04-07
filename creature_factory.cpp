@@ -67,7 +67,7 @@ class BoulderController : public Monster {
   virtual void makeMove() override {
     Position nextPos = creature->getPosition().plus(direction);
     if (Creature* c = nextPos.getCreature()) {
-      if (!c->getBody().isKilledByBoulder()) {
+      if (!c->getBody().isKilledByBoulder(creature->getGame()->getContentFactory())) {
         if (nextPos.canEnterEmpty(creature)) {
           creature->swapPosition(direction);
           return;
@@ -128,7 +128,7 @@ PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
             c.viewId = ViewId("boulder");
             c.attr[AttrType("DAMAGE")] = 250;
             c.attr[AttrType("DEFENSE")] = 250;
-            c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::HUGE);
+            c.body = Body::nonHumanoid(BodyMaterialId("ROCK"), Body::Size::HUGE);
             c.body->setDeathSound(none);
             c.permanentEffects[LastingEffect::BLIND] = 1;
             c.boulder = true;
@@ -145,7 +145,7 @@ PCreature CreatureFactory::getAnimatedItem(const ContentFactory* factory, PItem 
             for (auto& attr : factory->attrInfo)
               if (attr.second.isAttackAttr && item->getModifier(attr.first) > 0)
                 c.attr[attr.first] = item->getModifier(attr.first) + attrBonus;
-            c.body = Body::nonHumanoid(Body::Material::SPIRIT, Body::Size::SMALL);
+            c.body = Body::nonHumanoid(BodyMaterialId("SPIRIT"), Body::Size::SMALL);
             c.body->setDeathSound(none);
             c.name = "animated " + item->getName();
             c.gender = Gender::IT;
@@ -183,7 +183,7 @@ PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
             c.viewId = ViewId("boulder");
             c.attr[AttrType("DAMAGE")] = 250;
             c.attr[AttrType("DEFENSE")] = 250;
-            c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::HUGE);
+            c.body = Body::nonHumanoid(BodyMaterialId("ROCK"), Body::Size::HUGE);
             c.body->setDeathSound(none);
             c.body->setMinPushSize(Body::Size::LARGE);
             c.permanentEffects[LastingEffect::BLIND] = 1;
@@ -711,7 +711,7 @@ static vector<BuffId> getResistanceAndVulnerability(RandomGen& random) {
 }
 
 PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParams p, const ControllerFactory& factory) {
-  Body body = Body(p.humanoid, p.living ? Body::Material::FLESH : Body::Material::SPIRIT,
+  Body body = Body(p.humanoid, p.living ? BodyMaterialId("FLESH") : BodyMaterialId("SPIRIT"),
       p.large ? Body::Size::LARGE : Body::Size::MEDIUM);
   if (p.wings)
     body.addWithoutUpdatingPermanentEffects(BodyPart::WING, 2);
@@ -846,7 +846,7 @@ PCreature CreatureFactory::getSpirit(TribeId tribe, MonsterAIFactory aiFactory) 
   auto orig = [&] {
     for (auto id : Random.permutation(getAllCreatures())) {
       auto orig = fromId(id, tribe);
-      if (orig->getBody().hasBrain())
+      if (orig->getBody().hasBrain(contentFactory))
         return orig;
     }
     fail();
@@ -923,7 +923,6 @@ PCreature CreatureFactory::fromId(CreatureId id, TribeId t) {
   return fromId(id, t, MonsterAIFactory::monster());
 }
 
-
 PCreature CreatureFactory::makeCopy(Creature* c, const MonsterAIFactory& aiFactory) {
   auto attributes = c->getAttributes();
   initializeAttributes(*c->getAttributes().getCreatureId(), attributes);
@@ -940,6 +939,10 @@ PCreature CreatureFactory::makeCopy(Creature* c) {
 
 PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& f) {
   return fromId(id, t, f, {});
+}
+
+PCreature CreatureFactory::fromIdNoInventory(CreatureId id, TribeId t, const MonsterAIFactory& f) {
+  return get(id, t, f);
 }
 
 PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& factory, const vector<ItemType>& inventory) {

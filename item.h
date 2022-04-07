@@ -104,7 +104,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   bool hasEquipedEffect(LastingEffect) const;
   void onEquip(Creature*, bool msg = true, const ContentFactory* = nullptr);
   void onUnequip(Creature*, bool msg = true);
-  void onOwned(Creature*, bool msg = true);
+  void onOwned(Creature*, bool msg = true, const ContentFactory* factory = nullptr);
   void onDropped(Creature*, bool msg = true);
   virtual void fireDamage(Position);
   virtual void iceDamage(Position);

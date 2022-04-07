@@ -796,7 +796,8 @@ void Collective::onMinionKilled(Creature* victim, Creature* killer) {
     addRecordedEvent("the death of " + victim->getName().aOrTitle());
   if (killer && creatureConsideredPlayer(killer))
     attackedByPlayer = true;
-  string deathDescription = victim->getAttributes().getDeathDescription();
+  auto factory = getGame()->getContentFactory();
+  string deathDescription = victim->getAttributes().getDeathDescription(factory);
   control->onMemberKilled(victim, killer);
   if (hasTrait(victim, MinionTrait::PRISONER) && killer && getCreatures().contains(killer))
     returnResource({ResourceId("PRISONER_HEAD"), 1});
@@ -823,13 +824,12 @@ void Collective::onMinionKilled(Creature* victim, Creature* killer) {
     if (Random.chance(guardianInfo->probability)) {
       auto& extended = territory->getStandardExtended();
       if (!extended.empty())
-        Random.choose(extended).landCreature(getGame()->getContentFactory()->getCreatures().fromId(
-            guardianInfo->creature, getTribeId()));
+        Random.choose(extended).landCreature(factory->getCreatures().fromId(guardianInfo->creature, getTribeId()));
     }
 }
 
 void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
-  string deathDescription = victim->getAttributes().getDeathDescription();
+  string deathDescription = victim->getAttributes().getDeathDescription(getGame()->getContentFactory());
   if (victim->getTribe() != getTribe()) {
     if (victim->getStatus().contains(CreatureStatus::LEADER))
       addRecordedEvent("the slaying of " + victim->getName().aOrTitle());
@@ -1448,8 +1448,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
     if (auto usage = furniture->getUsageType()) {
       auto increaseLevel = [&] (ExperienceType exp) {
         double increase = 0.007 * efficiency * LastingEffects::getTrainingSpeed(c);
-        if (auto maxLevel = getGame()->getContentFactory()->furniture.getData(
-            furniture->getType()).getMaxTraining(exp))
+        if (auto maxLevel = contentFactory->furniture.getData(furniture->getType()).getMaxTraining(exp))
           increase = min(increase, maxLevel - c->getAttributes().getExpLevel(exp));
         if (increase > 0)
           c->increaseExpLevel(exp, increase);
@@ -1459,7 +1458,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
           case BuiltinUsageId::DEMON_RITUAL: {
             vector<Creature*> toHeal;
             for (auto c : getCreatures())
-              if (c->getBody().canHeal(HealthType::SPIRIT))
+              if (c->getBody().canHeal(HealthType::SPIRIT, contentFactory))
                 toHeal.push_back(c);
             if (!toHeal.empty()) {
               for (auto c : toHeal)

@@ -36,12 +36,6 @@
 void CreatureAttributes::initializeLastingEffects() {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     lastingEffects[effect] = GlobalTime(-500);
-  for (auto effect : ENUM_ALL(LastingEffect))
-    if (body->isIntrinsicallyAffected(effect))
-      permanentEffects[effect] = 1;
-  for (auto effect : {BuffId("COLD_RESISTANT"), BuffId("FIRE_RESISTANT"), BuffId("ACID_RESISTANT")})
-    if (body->isIntrinsicallyAffected(effect))
-      permanentBuffs.push_back(effect);
 }
 
 void CreatureAttributes::randomize() {
@@ -126,8 +120,8 @@ AIType CreatureAttributes::getAIType() const {
   return aiType;
 }
 
-string CreatureAttributes::getDeathDescription() const {
-  return deathDescription.value_or(body->getDeathDescription());
+string CreatureAttributes::getDeathDescription(const ContentFactory* factory) const {
+  return deathDescription.value_or(body->getDeathDescription(factory));
 }
 
 void CreatureAttributes::setDeathDescription(string c) {
@@ -222,17 +216,17 @@ optional<SoundId> CreatureAttributes::getAttackSound(AttackType type, bool damag
     return none;
 }
 
-string CreatureAttributes::getDescription() const {
-  return body->getDescription();
+string CreatureAttributes::getDescription(const ContentFactory* factory) const {
+  return body->getDescription(factory);
 }
 
-void CreatureAttributes::add(BodyPart p, int count) {
+void CreatureAttributes::add(BodyPart p, int count, const ContentFactory* factory) {
   for (auto effect : ENUM_ALL(LastingEffect))
-    if (body->isIntrinsicallyAffected(effect))
+    if (body->isIntrinsicallyAffected(effect, factory))
       --permanentEffects[effect];
   body->addWithoutUpdatingPermanentEffects(p, count);
   for (auto effect : ENUM_ALL(LastingEffect))
-    if (body->isIntrinsicallyAffected(effect))
+    if (body->isIntrinsicallyAffected(effect, factory))
       ++permanentEffects[effect];
 }
 

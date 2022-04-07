@@ -12,6 +12,7 @@
 #include "level.h"
 #include "sectors.h"
 #include "movement_type.h"
+#include "content_factory.h"
 
 namespace Impl {
 static bool applyToCreature(const CreaturePredicates::Enemy&, const Creature* victim, const Creature* attacker) {
@@ -198,12 +199,12 @@ static string getName(FurnitureType, const ContentFactory*) {
   return "furniture";
 }
 
-static bool applyToCreature(BodyMaterial m, const Creature* victim, const Creature* attacker) {
+static bool applyToCreature(BodyMaterialId m, const Creature* victim, const Creature* attacker) {
   return victim->getBody().getMaterial() == m;
 }
 
-static string getName(BodyMaterial m, const ContentFactory*) {
-  return "made of "_s + getMaterialName(m);
+static string getName(BodyMaterialId m, const ContentFactory* factory) {
+  return "made of "_s + factory->bodyMaterials.at(m).name;
 }
 
 static bool applyToCreature(CreaturePredicates::Spellcaster m, const Creature* victim, const Creature* attacker) {
@@ -276,7 +277,7 @@ static string getName(const CreaturePredicates::PopLimitReached, const ContentFa
 }
 
 static bool applyToCreature(const CreaturePredicates::Health& p, const Creature* victim, const Creature* attacker) {
-  auto health = victim->getBody().hasAnyHealth()
+  auto health = victim->getBody().hasAnyHealth(victim->getGame()->getContentFactory())
       ? victim->getBody().getHealth()
       : victim->getBody().getBodyPartHealth();
   return health >= p.from && health <= p.to;

@@ -546,7 +546,8 @@ class Fighter : public Behaviour {
     auto other = creature->getClosestEnemy(true);
     if (!other)
       return NoMove;
-    if (!LastingEffects::obeysFormation(creature, other) || !creature->getBody().hasBrain())
+    if (!LastingEffects::obeysFormation(creature, other) ||
+        !creature->getBody().hasBrain(creature->getGame()->getContentFactory()))
       return NoMove;
     auto myPosition = creature->getPosition();
     auto otherPosition = other->getPosition();
@@ -1020,8 +1021,8 @@ class ByCollective : public Behaviour {
         collective->getTerritory().contains(creature->getPosition()))) {
       const static EnumSet<MinionActivity> healingActivities {MinionActivity::SLEEP};
       auto currentActivity = collective->getCurrentActivity(creature).activity;
-      if (creature->getBody().canHeal(HealthType::FLESH) && !creature->isAffected(LastingEffect::POISON) &&
-          !healingActivities.contains(currentActivity))
+      if (creature->getBody().canHeal(HealthType::FLESH, creature->getGame()->getContentFactory()) &&
+          !creature->isAffected(LastingEffect::POISON) && !healingActivities.contains(currentActivity))
         for (MinionActivity activity : healingActivities) {
           if (creature->getAttributes().getMinionActivities().isAvailable(collective, creature, activity) &&
               collective->isActivityGood(creature, activity)) {

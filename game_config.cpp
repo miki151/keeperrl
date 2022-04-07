@@ -76,6 +76,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "attributes";
     case GameConfigId::BUFFS:
       return "buffs";
+    case GameConfigId::BODY_MATERIALS:
+      return "body_materials";
   }
 }
 

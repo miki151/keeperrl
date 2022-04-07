@@ -96,7 +96,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void onAttackedBy(Creature*);
   bool heal(double amount = 1000);
   /** Morale is in the range [-1:1] **/
-  optional<double> getMorale() const;
+  optional<double> getMorale(const ContentFactory* = nullptr) const;
   void addMorale(double);
   void take(PItem item, const ContentFactory* = nullptr);
   void take(vector<PItem> item);
@@ -277,9 +277,9 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   SERIALIZATION_DECL(Creature)
 
   bool addEffect(LastingEffect, TimeInterval time, bool msg = true);
-  bool addEffect(LastingEffect, TimeInterval time, GlobalTime, bool msg = true);
+  bool addEffect(LastingEffect, TimeInterval time, GlobalTime, bool msg = true, const ContentFactory* = nullptr);
   bool removeEffect(LastingEffect, bool msg = true);
-  bool addPermanentEffect(LastingEffect, int count = 1, bool msg = true);
+  bool addPermanentEffect(LastingEffect, int count = 1, bool msg = true, const ContentFactory* = nullptr);
   bool removePermanentEffect(LastingEffect, int count = 1, bool msg = true);
   bool isAffected(LastingEffect, optional<GlobalTime>) const;
   bool isAffected(LastingEffect, GlobalTime) const;

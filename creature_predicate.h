@@ -6,6 +6,7 @@
 #include "creature_id.h"
 #include "gender.h"
 #include "lasting_or_buff.h"
+#include "body_material_id.h"
 
 #define SIMPLE_PREDICATE(Name) \
   struct Name { \
@@ -122,6 +123,7 @@ struct Frequency {
 };
 
 using LastingEffect = LastingOrBuff;
+using BodyMaterial = BodyMaterialId;
 
 #define CREATURE_PREDICATE_LIST\
   X(Enemy, 0)\

@@ -22,6 +22,7 @@
 #include "tile_gas_type.h"
 #include "attr_type.h"
 #include "buff_id.h"
+#include "body_material_id.h"
 
 static const char* staticsInitialized = nullptr;
 
@@ -227,4 +228,5 @@ INST(StorageId)
 INST(TileGasType)
 INST(AttrType)
 INST(BuffId)
+INST(BodyMaterialId)
 #undef INST

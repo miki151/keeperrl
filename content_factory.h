@@ -24,6 +24,8 @@
 #include "attr_info.h"
 #include "buff_id.h"
 #include "buff_info.h"
+#include "body_material_id.h"
+#include "body_material.h"
 
 class KeyVerifier;
 class BuildInfo;
@@ -37,6 +39,7 @@ struct LayoutGenerator;
 struct TileGasInfo;
 struct PromotionInfo;
 struct BuffInfo;
+struct BodyMaterial;
 
 class ContentFactory {
   public:
@@ -74,6 +77,7 @@ class ContentFactory {
   map<AttrType, AttrInfo> SERIAL(attrInfo);
   vector<AttrType> SERIAL(attrOrder);
   unordered_map<BuffId, BuffInfo, CustomHash<BuffId>> SERIAL(buffs);
+  unordered_map<BodyMaterialId, BodyMaterial, CustomHash<BodyMaterialId>> SERIAL(bodyMaterials);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();

@@ -3,6 +3,7 @@
 #include "creature_attributes.h"
 #include "creature_name.h"
 #include "player_message.h"
+#include "game.h"
 
 SERIALIZE_DEF(MessageGenerator, type)
 SERIALIZATION_CONSTRUCTOR_IMPL(MessageGenerator)
@@ -19,6 +20,10 @@ static string addName(const string& s, const string& n) {
 
 static void addThird(const Creature* c, MsgType type, const string& param) {
   string msg, unseenMsg;
+  auto game = c->getGame();
+  if (!game)
+    return;
+  auto factory = game->getContentFactory();
   switch (type) {
     case MsgType::ARE: msg = c->getName().the() + " is " + param; break;
     case MsgType::YOUR: msg = c->getName().the() + "'s " + param; break;
@@ -32,7 +37,7 @@ static void addThird(const Creature* c, MsgType type, const string& param) {
         msg = c->getName().the() + " shatters into a thousand pieces!";
       else
         msg = c->getName().the() + " is " +
-          c->getAttributes().getDeathDescription() + "!";
+          c->getAttributes().getDeathDescription(factory) + "!";
       break;
     case MsgType::TELE_APPEAR: msg = c->getName().the() + " appears out of nowhere!"; break;
     case MsgType::TELE_DISAPPEAR: msg = c->getName().the() + " suddenly disappears!"; break;
@@ -65,7 +70,7 @@ static void addThird(const Creature* c, MsgType type, const string& param) {
     case MsgType::DROWN: msg = c->getName().the() + " drowns in the " + param; unseenMsg = "You hear a loud splash" ;break;
     case MsgType::SET_UP_TRAP: msg = c->getName().the() + " sets up the trap"; break;
     case MsgType::KILLED_BY: msg = c->getName().the() + " is "+
-        c->getAttributes().getDeathDescription() + " by " + param; break;
+        c->getAttributes().getDeathDescription(factory) + " by " + param; break;
     case MsgType::TURN: msg = c->getName().the() + " turns " + param; break;
     case MsgType::BECOME: msg = c->getName().the() + " becomes " + param; break;
     case MsgType::COPULATE: msg = c->getName().the() + " copulates " + param; break;

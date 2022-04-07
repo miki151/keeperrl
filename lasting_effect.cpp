@@ -76,10 +76,10 @@ static optional<LastingEffect> getPreventing(LastingEffect effect) {
   return ret[effect];
 }
 
-static optional<LastingEffect> getRequired(LastingEffect effect, const Creature *c) {
+static optional<LastingEffect> getRequired(LastingEffect effect, const Creature *c, const ContentFactory* factory) {
   switch (effect) {
     case LastingEffect::ON_FIRE:
-      if (c->getBody().burnsIntrinsically())
+      if (c->getBody().burnsIntrinsically(factory))
         return none;
       return LastingEffect::OIL;
     default:
@@ -337,13 +337,13 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
     }
 }
 
-bool LastingEffects::affects(const Creature* c, LastingEffect effect) {
-  if (c->getBody().isImmuneTo(effect))
+bool LastingEffects::affects(const Creature* c, LastingEffect effect, const ContentFactory* factory) {
+  if (c->getBody().isImmuneTo(effect, factory))
     return false;
   if (auto preventing = getPreventing(effect))
     if (c->isAffected(*preventing))
       return false;
-  if (auto required = getRequired(effect, c))
+  if (auto required = getRequired(effect, c, factory))
     if (!c->isAffected(*required))
       return false;
   return true;
@@ -392,6 +392,7 @@ void LastingEffects::onRemoved(Creature* c, LastingEffect effect, bool msg) {
 }
 
 void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
+  auto factory = c->getGame()->getContentFactory();
   switch (effect) {
     case LastingEffect::SLEEP:
       c->addEffect(LastingEffect::RESTED, 1000_visible);
@@ -413,7 +414,7 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       break;
     case LastingEffect::ON_FIRE:
       c->getPosition().removeCreatureLight(false);
-      if (c->getBody().burnsIntrinsically())
+      if (c->getBody().burnsIntrinsically(factory))
         c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
       break;
     case LastingEffect::SPYING:
@@ -546,7 +547,7 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         c->verb("no longer deal", "no longer deals", "magical damage");
         break;
       case LastingEffect::ON_FIRE:
-        if (c->getBody().burnsIntrinsically())
+        if (c->getBody().burnsIntrinsically(factory))
           c->verb("burn", "burns", "to death");
         else
           c->verb("stop", "stops", "burning");
@@ -1056,7 +1057,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
             if (hatedGroup && LastingOrBuff(*hatedGroup) == other->getAttributes().getHatedByEffect()) {
               other->addMorale(-0.05);
               other->you(MsgType::ARE, "offended");
-            } else if (other->getBody().hasBrain()) {
+            } else if (other->getBody().hasBrain(c->getGame()->getContentFactory())) {
               other->verb("laugh", "laughs");
               other->addMorale(0.01);
             } else
@@ -1259,7 +1260,8 @@ string LastingEffects::getDescription(LastingEffect type) {
 
 bool LastingEffects::canSee(const Creature* c1, const Creature* c2, GlobalTime time) {
   PROFILE_BLOCK("LastingEffects::canSee");
-  return c1->getPosition().dist8(c2->getPosition()).value_or(5) < 5 && c2->getBody().hasBrain() &&
+  return c1->getPosition().dist8(c2->getPosition()).value_or(5) < 5 &&
+      c2->getBody().hasBrain(c1->getGame()->getContentFactory()) &&
       c1->isAffected(LastingEffect::TELEPATHY, time);
 }
 

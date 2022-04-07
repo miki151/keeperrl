@@ -27,7 +27,6 @@ enum class GameSaveType;
 enum class CollectiveConfigId;
 enum class MsgType;
 enum class BodyPart;
-enum class BodyMaterial;
 enum class AttackType;
 enum class AttackLevel;
 enum class ExperienceType;
@@ -126,6 +125,7 @@ class WorkshopType;
 class CollectiveResourceId;
 class AttrType;
 class BuffId;
+class BodyMaterialId;
 using EffectAIIntent = int;
 
 using SteamId = unsigned long long;

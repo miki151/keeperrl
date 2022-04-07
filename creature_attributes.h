@@ -73,7 +73,7 @@ class CreatureAttributes {
   void setBaseAttr(AttrType, int);
   void setAIType(AIType);
   AIType getAIType() const;
-  string getDeathDescription() const;
+  string getDeathDescription(const ContentFactory*) const;
   void setDeathDescription(string);
   const Gender& getGender() const;
   double getExpLevel(ExperienceType type) const;
@@ -95,8 +95,8 @@ class CreatureAttributes {
   bool canEquip() const;
   void chatReaction(Creature* me, Creature* other);
   optional<string> getPetReaction(const Creature* me) const;
-  string getDescription() const;
-  void add(BodyPart, int count);
+  string getDescription(const ContentFactory*) const;
+  void add(BodyPart, int count, const ContentFactory*);
   bool isAffected(LastingEffect, GlobalTime) const;
   bool isAffectedPermanently(LastingEffect) const;
   GlobalTime getTimeOut(LastingEffect) const;

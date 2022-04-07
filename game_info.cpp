@@ -168,9 +168,9 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory)
   firstName = c->getName().firstOrBare();
   name = c->getName().bare();
   title = c->getName().title();
-  description = capitalFirst(c->getAttributes().getDescription());
+  description = capitalFirst(c->getAttributes().getDescription(contentFactory));
   viewId = c->getViewObject().getViewIdList();
-  morale = c->getMorale();
+  morale = c->getMorale(contentFactory);
   positionHash = c->getPosition().getHash();
   creatureId = c->getUniqueId();
   attributes = AttributeInfo::fromCreature(contentFactory, c);

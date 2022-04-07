@@ -91,11 +91,12 @@ RICH_ENUM(
 );
 
 struct Color;
+class ContentFactory;
 
 class LastingEffects {
   public:
   static void onAffected(Creature*, LastingEffect, bool msg);
-  static bool affects(const Creature*, LastingEffect);
+  static bool affects(const Creature*, LastingEffect, const ContentFactory*);
   static optional<LastingEffect> getSuppressor(LastingEffect);
   static void onRemoved(Creature*, LastingEffect, bool msg);
   static void onTimedOut(Creature*, LastingEffect, bool msg);

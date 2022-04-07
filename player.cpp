@@ -95,6 +95,7 @@ Player::~Player() {
 
 void Player::onEvent(const GameEvent& event) {
   using namespace EventInfo;
+  auto factory = getGame()->getContentFactory();
   event.visit<void>(
       [&](const CreatureMoved& info) {
         if (info.creature == creature)
@@ -109,7 +110,7 @@ void Player::onEvent(const GameEvent& event) {
       [&](const CreatureKilled& info) {
         auto pos = info.victim->getPosition();
         if (creature->canSee(pos))
-          if (auto anim = info.victim->getBody().getDeathAnimation())
+          if (auto anim = info.victim->getBody().getDeathAnimation(factory))
             getView()->animation(pos.getCoord(), *anim);
       },
       [&](const CreatureAttacked& info) {
@@ -120,7 +121,7 @@ void Player::onEvent(const GameEvent& event) {
             auto orientation = dir.getCardinalDir();
             if (info.damageAttr == AttrType("DAMAGE"))
               getView()->animation(pos.getCoord(), AnimationId::ATTACK, orientation);
-            else if (auto& fx = getGame()->getContentFactory()->attrInfo.at(info.damageAttr).meleeFX)
+            else if (auto& fx = factory->attrInfo.at(info.damageAttr).meleeFX)
               getView()->animation(FXSpawnInfo(*fx, pos.getCoord(), Vec2(0, 0)));
           }
         }

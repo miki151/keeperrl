@@ -722,7 +722,7 @@ class Test {
     CHECK(equipment.getItemsOwnedBy(human1.get()).contains(bow2.get()));
     equipment.updateOwners({human1.get()});
     CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 1);
-    human1->getBody().looseBodyPart(BodyPart::ARM);
+    human1->getBody().looseBodyPart(BodyPart::ARM, &contentFactory);
     for (int i : Range(5))
       equipment.updateOwners({human1.get()});
     CHECK(!equipment.isOwner(bow.get(), human1.get()));

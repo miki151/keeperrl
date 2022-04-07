@@ -101,9 +101,9 @@ vector<vector<Item*>> Item::stackItems(const ContentFactory* f, vector<Item*> it
   return ret;
 }
 
-void Item::onOwned(Creature* c, bool msg) {
+void Item::onOwned(Creature* c, bool msg, const ContentFactory* factory) {
   if (attributes->ownedEffect)
-    addPermanentEffect(*attributes->ownedEffect, c, msg);
+    addPermanentEffect(*attributes->ownedEffect, c, msg, factory);
 }
 
 void Item::onDropped(Creature* c, bool msg) {

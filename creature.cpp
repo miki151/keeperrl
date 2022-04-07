@@ -225,8 +225,9 @@ pair<CreatureAttributes, SpellMap> Creature::setAttributes(CreatureAttributes at
     item->onEquip(this, false);
   for (auto item : equipment->getItems())
     item->onOwned(this, false);
+  auto factory = getGame()->getContentFactory();
   for (auto effect : ENUM_ALL(LastingEffect))
-    if (!LastingEffects::affects(this, effect))
+    if (!LastingEffects::affects(this, effect, factory))
       removeEffect(effect, true);
   getName().setFirst(firstName);
   getAttributes().combatExperience = combatExp;
@@ -357,7 +358,7 @@ const EnumSet<CreatureStatus>& Creature::getStatus() const {
 
 bool Creature::canBeCaptured() const {
   PROFILE;
-  return getBody().canBeCaptured() && !isAffected(LastingEffect::STUNNED);
+  return getBody().canBeCaptured(getGame()->getContentFactory()) && !isAffected(LastingEffect::STUNNED);
 }
 
 void Creature::setCaptureOrder(bool state) {
@@ -927,9 +928,12 @@ bool Creature::addEffect(LastingEffect effect, TimeInterval time, bool msg) {
   return addEffect(effect, time, *getGlobalTime(), msg);
 }
 
-bool Creature::addEffect(LastingEffect effect, TimeInterval time, GlobalTime globalTime, bool msg) {
+bool Creature::addEffect(LastingEffect effect, TimeInterval time, GlobalTime globalTime, bool msg,
+    const ContentFactory* factory) {
   PROFILE;
-  if (LastingEffects::affects(this, effect)) {
+  if (!factory)
+    factory = getGame()->getContentFactory();
+  if (LastingEffects::affects(this, effect, factory)) {
     bool was = isAffected(effect, globalTime);
     if (!was || LastingEffects::canProlong(effect))
       attributes->addLastingEffect(effect, globalTime + time);
@@ -959,9 +963,11 @@ bool Creature::removeEffect(LastingEffect effect, bool msg) {
   return false;
 }
 
-bool Creature::addPermanentEffect(LastingEffect effect, int count, bool msg) {
+bool Creature::addPermanentEffect(LastingEffect effect, int count, bool msg, const ContentFactory* factory) {
   PROFILE;
-  if (LastingEffects::affects(this, effect)) {
+  if (!factory)
+    factory = getGame()->getContentFactory();
+  if (LastingEffects::affects(this, effect, factory)) {
     bool was = attributes->isAffectedPermanently(effect);
     attributes->addPermanentEffect(effect, count);
     if (!was && attributes->isAffectedPermanently(effect)) {
@@ -1175,7 +1181,7 @@ void Creature::onKilledOrCaptured(Creature* victim) {
     kills.push_back(KillInfo{victim->getUniqueId(), victim->getViewObject().getViewIdList()});
     if (victim->getStatus().contains(CreatureStatus::LEADER)) {
       auto registerSlaying = [] (Creature* me, Creature* victim) {
-        if (me->getBody().hasBrain()) {
+        if (me->getBody().hasBrain(me->getGame()->getContentFactory())) {
           auto victimName = victim->getName();
           victimName.setKillTitle(none);
           auto title = capitalFirst(victimName.bare()) + " Slayer";
@@ -1349,6 +1355,12 @@ void Creature::tick() {
 
 bool Creature::processBuffs() {
   auto factory = getGame()->getContentFactory();
+  for (auto effect : ENUM_ALL(LastingEffect))
+    if (!attributes->isAffectedPermanently(effect) && getBody().isIntrinsicallyAffected(effect, factory))
+      addPermanentEffect(effect, 1, false);
+  for (auto effect : factory->buffs)
+    if (!isAffectedPermanently(effect.first) && getBody().isIntrinsicallyAffected(effect.first, factory))
+      addPermanentEffect(effect.first, 1, false);
   auto buffsCopy = buffs;
   auto time = *getGlobalTime();
   for (int index : All(buffsCopy)) {
@@ -1706,7 +1718,7 @@ void Creature::updateViewObject(const ContentFactory* factory) {
   object.getCreatureStatus() = getStatus();
   object.setGoodAdjectives(combine(extractNames(getGoodAdjectives(factory)), true));
   object.setBadAdjectives(combine(extractNames(getBadAdjectives(factory)), true));
-  getBody().updateViewObject(object);
+  getBody().updateViewObject(object, factory);
   object.setModifier(ViewObject::Modifier::CAPTURE_BAR, capture);
   if (capture)
     object.setAttribute(ViewObject::Attribute::HEALTH, captureHealth);
@@ -1727,8 +1739,8 @@ void Creature::updateViewObject(const ContentFactory* factory) {
     steed->updateViewObject(factory);
 }
 
-optional<double> Creature::getMorale() const {
-  if (getBody().hasBrain())
+optional<double> Creature::getMorale(const ContentFactory* factory) const {
+  if (getBody().hasBrain(factory ? factory : getGame()->getContentFactory()))
     return min(1.0, max(-1.0, morale + LastingEffects::getMoraleIncrease(this, getGlobalTime())));
   return none;
 }
@@ -1790,7 +1802,7 @@ void Creature::take(vector<PItem> items) {
 
 void Creature::take(PItem item, const ContentFactory* factory) {
   Item* ref = item.get();
-  equipment->addItem(std::move(item), this);
+  equipment->addItem(std::move(item), this, factory);
   if (auto action = equip(ref, factory))
     action.perform(this);
 }
@@ -1912,11 +1924,12 @@ void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
   if (drops == DropType::EVERYTHING || drops == DropType::ONLY_INVENTORY)
     for (PItem& item : equipment->removeAllItems(this))
       position.dropItem(std::move(item));
+  auto factory = getGame()->getContentFactory();
   if (drops == DropType::EVERYTHING) {
-    position.dropItems(generateCorpse(getGame()->getContentFactory(), getGame()));
+    position.dropItems(generateCorpse(factory, getGame()));
     if (auto sound = getBody().getDeathSound())
       addSound(*sound);
-    if (getBody().hasHealth(HealthType::FLESH)) {
+    if (getBody().hasHealth(HealthType::FLESH, factory)) {
       auto addBlood = [](Position v) {
         for (auto f : v.modFurniture())
           if (f->onBloodNear(v)) {
@@ -2254,7 +2267,7 @@ CreatureAction Creature::dismount() const {
 bool Creature::canCopulateWith(const Creature* c) const {
   PROFILE;
   return isAffected(LastingEffect::COPULATION_SKILL) &&
-      c->getBody().canCopulateWith() &&
+      c->getBody().canCopulateWith(getGame()->getContentFactory()) &&
       c->attributes->getGender() != attributes->getGender() &&
       c->isAffected(LastingEffect::SLEEP);
 }
@@ -2785,10 +2798,10 @@ vector<AdjectiveInfo> Creature::getGoodAdjectives(const ContentFactory* factory)
     ret.push_back({"Bound to a phylactery",
         "The creature will respawn at its phylactery when it is killed"});
   ret.append(getLastingEffectAdjectives(factory, false));
-  if (getBody().isUndead())
+  if (getBody().isUndead(factory))
     ret.push_back({"Undead",
         "Undead creatures don't take regular damage and need to be killed by chopping up or using fire."});
-  if (auto morale = getMorale())
+  if (auto morale = getMorale(factory))
     if (*morale > 0)
       if (auto text = getMoraleText(*morale))
         ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
@@ -2801,7 +2814,7 @@ vector<AdjectiveInfo> Creature::getBadAdjectives(const ContentFactory* factory) 
   vector<AdjectiveInfo> ret;
   getBody().getBadAdjectives(ret);
   ret.append(getLastingEffectAdjectives(factory, true));
-  if (auto morale = getMorale())
+  if (auto morale = getMorale(factory))
     if (*morale < 0)
       if (auto text = getMoraleText(*morale))
         ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});

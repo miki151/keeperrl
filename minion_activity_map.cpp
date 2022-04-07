@@ -72,6 +72,7 @@ bool MinionActivityMap::canLock(MinionActivity t) {
 bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, MinionActivity t, bool ignoreTaskLock) const {
   if ((isLocked(col, c, t) || col->isActivityGroupLocked(c, t)) && !ignoreTaskLock)
     return false;
+  auto factory = col->getGame()->getContentFactory();
   switch (t) {
     case MinionActivity::IDLE:
       return true;
@@ -86,7 +87,7 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
           !c->getAttributes().isTrainingMaxedOut(ExperienceType::ARCHERY) &&
           !c->getEquipment().getItems(ItemIndex::RANGED_WEAPON).empty();
     case MinionActivity::BE_WHIPPED:
-      return !c->getBody().isImmuneTo(LastingEffect::ENTANGLED) &&
+      return !c->getBody().isImmuneTo(LastingEffect::ENTANGLED, factory) &&
           !c->getBody().isFarmAnimal() &&
           c->getBody().isHumanoid();
     case MinionActivity::POETRY:
@@ -95,18 +96,18 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
     case MinionActivity::BE_TORTURED:
       return col->hasTrait(c, MinionTrait::PRISONER);
     case MinionActivity::CRAFT:
-      for (auto& workshop : col->getGame()->getContentFactory()->workshopInfo)
+      for (auto& workshop : factory->workshopInfo)
         if (c->getAttr(workshop.second.attr) > 0)
           return true;
       return false;
     case MinionActivity::SLEEP:
-      return c->getBody().needsToSleep() && !c->isAffected(LastingEffect::POISON);
+      return c->getBody().isImmuneTo(LastingEffect::SLEEP, factory) && !c->isAffected(LastingEffect::POISON);
     case MinionActivity::EAT:
-      return c->getBody().needsToEat() && !col->hasTrait(c, MinionTrait::PRISONER);
+      return c->getBody().isImmuneTo(LastingEffect::SATIATED, factory) && !col->hasTrait(c, MinionTrait::PRISONER);
     case MinionActivity::COPULATE:
       return c->isAffected(LastingEffect::COPULATION_SKILL);
     case MinionActivity::RITUAL:
-      return c->getBody().canPerformRituals() && !col->hasTrait(c, MinionTrait::WORKER);
+      return c->getBody().canPerformRituals(factory) && !col->hasTrait(c, MinionTrait::WORKER);
     case MinionActivity::GUARDING1:
     case MinionActivity::GUARDING2:
     case MinionActivity::GUARDING3:

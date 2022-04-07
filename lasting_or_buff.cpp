@@ -88,7 +88,7 @@ bool removeEffect(const LastingOrBuff& l, Creature* c, bool msg) {
 bool addPermanentEffect(const LastingOrBuff& l, Creature* c, bool msg, const ContentFactory* f) {
   return l.visit(
     [&](LastingEffect e) {
-      return c->addPermanentEffect(e, 1, msg);
+      return c->addPermanentEffect(e, 1, msg, f);
     },
     [&](BuffId id) {
       return c->addPermanentEffect(id, 1, msg, f);

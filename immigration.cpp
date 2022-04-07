@@ -527,11 +527,14 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
   vector<SpecialTrait> specialTraits;
   auto contentFactory = immigration->collective->getGame()->getContentFactory();
   for (int i : Range(group.count)) {
-    immigrants.push_back(contentFactory->getCreatures().
-        fromId(info.getId(numGenerated), immigration->collective->getTribeId(),
-            MonsterAIFactory::collective(immigration->collective)));
     if (immigration->collective->getConfig().getStripSpawns() && info.stripEquipment)
-      immigrants.back()->getEquipment().removeAllItems(immigrants.back().get());
+      immigrants.push_back(contentFactory->getCreatures().
+          fromIdNoInventory(info.getId(numGenerated), immigration->collective->getTribeId(),
+              MonsterAIFactory::collective(immigration->collective)));
+    else
+      immigrants.push_back(contentFactory->getCreatures().
+          fromId(info.getId(numGenerated), immigration->collective->getTribeId(),
+              MonsterAIFactory::collective(immigration->collective)));
     for (auto& specialTrait : info.getSpecialTraits())
       if (Random.chance(specialTrait.prob)) {
         for (auto& trait1 : specialTrait.traits) {

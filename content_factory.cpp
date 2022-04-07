@@ -32,6 +32,7 @@ void ContentFactory::serialize(Archive& ar, const unsigned int) {
   ar(immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buffs);
   ar(buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping);
   ar(randomLayouts, tileGasTypes, promotions, dancePositions, equipmentGroups, scriptedHelp, attrInfo, attrOrder);
+  ar(bodyMaterials);
   creatures.setContentFactory(this);
 }
 
@@ -460,6 +461,10 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   if (auto error = config->readObject(buffsTmp, GameConfigId::BUFFS, &keyVerifier))
     return *error;
   buffs = convertKeysHash(buffsTmp);
+  map<PrimaryId<BodyMaterialId>, BodyMaterial> materialsTmp;
+  if (auto error = config->readObject(materialsTmp, GameConfigId::BODY_MATERIALS, &keyVerifier))
+    return *error;
+  bodyMaterials = convertKeysHash(materialsTmp);
   if (auto error = config->readObject(promotions, GameConfigId::PROMOTIONS, &keyVerifier))
     return *error;
   if (auto error = config->readObject(dancePositions, GameConfigId::DANCE_POSITIONS, &keyVerifier))

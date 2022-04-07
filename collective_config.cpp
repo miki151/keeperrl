@@ -59,12 +59,12 @@ void GuardianInfo::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(GuardianInfo);
 
-static optional<BedType> getBedType(const Creature* c) {
-  if (!c->getBody().needsToSleep())
+static optional<BedType> getBedType(const Creature* c, const ContentFactory* factory) {
+  if (!c->getBody().isImmuneTo(LastingEffect::SLEEP, factory))
     return none;
   if (c->getStatus().contains(CreatureStatus::PRISONER))
     return BedType::PRISON;
-  if (c->getBody().isUndead())
+  if (c->getBody().isUndead(factory))
     return BedType::COFFIN;
   if (c->getBody().isHumanoid())
     return BedType::BED;
@@ -76,7 +76,7 @@ void CollectiveConfig::addBedRequirementToImmigrants(vector<ImmigrantInfo>& immi
   for (auto& info : immigrantInfo) {
     PCreature c = factory->getCreatures().fromId(info.getId(0), TribeId::getDarkKeeper());
     if (info.getInitialRecruitment() == 0)
-      if (auto bedType = getBedType(c.get())) {
+      if (auto bedType = getBedType(c.get(), factory)) {
         bool hasBed = false;
         info.visitRequirements(makeVisitor(
             [&](const AttractionInfo& attraction) -> void {
@@ -270,7 +270,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
         return {[](const ContentFactory* f, const Collective*, const Creature* c, FurnitureType t) {
             if (!c)
               return !!f->furniture.getData(t).getBedType();
-            return getBedType(c) == f->furniture.getData(t).getBedType();
+            return getBedType(c, f) == f->furniture.getData(t).getBedType();
           }};
       case MinionActivity::EAT:
         return {[](const ContentFactory* f, const Collective* col, const Creature* c, FurnitureType t) {

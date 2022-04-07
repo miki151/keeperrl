@@ -812,7 +812,7 @@ static bool apply(const Effects::RemoveFurniture& e, Position pos, Creature*) {
 }
 
 static bool applyToCreature(const Effects::Heal& e, Creature* c, Creature*) {
-  if (c->getBody().canHeal(e.healthType)) {
+  if (c->getBody().canHeal(e.healthType, c->getGame()->getContentFactory())) {
     bool res = false;
     res |= c->heal(e.amount);
     res |= c->removeEffect(LastingEffect::BLEEDING);
@@ -858,7 +858,7 @@ static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Heal&
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Heal& e, const Creature* victim, bool isEnemy) {
-  if (victim->getBody().canHeal(e.healthType))
+  if (victim->getBody().canHeal(e.healthType, victim->getGame()->getContentFactory()))
     return isEnemy ? -1 : 1;
   return 0;
 }
@@ -1499,7 +1499,7 @@ static bool applyToCreature(const Effects::Polymorph& e, Creature* c, Creature*)
       return factory.getAttributesFromId(*e.into);
     for (auto id : Random.permutation(factory.getAllCreatures())) {
       auto attr = factory.getAttributesFromId(id);
-      if (attr.getBody().getMaterial() == BodyMaterial::FLESH && !attr.isAffectedPermanently(LastingEffect::PLAGUE))
+      if (attr.getBody().getMaterial() == BodyMaterialId("FLESH") && !attr.isAffectedPermanently(LastingEffect::PLAGUE))
         return attr;
     }
     fail();

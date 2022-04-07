@@ -41,6 +41,7 @@ class CreatureFactory {
   PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&);
   PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&, const vector<ItemType>& inventory);
   PCreature fromId(CreatureId, TribeId);
+  PCreature fromIdNoInventory(CreatureId, TribeId, const MonsterAIFactory&);
   PCreature makeCopy(Creature*, const MonsterAIFactory&);
   PCreature makeCopy(Creature*);
   static PController getShopkeeper(vector<Vec2> shopArea, Creature*);

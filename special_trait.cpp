@@ -39,7 +39,7 @@ void applySpecialTrait(GlobalTime globalTime, SpecialTrait trait, Creature* c, c
           addPermanentEffect(effect.effect, c);
       },
       [&] (ExtraBodyPart part) {
-        c->getAttributes().add(part.part, part.count);
+        c->getAttributes().add(part.part, part.count, factory);
         if (auto prefix = getExtraBodyPartPrefix(part)) {
           c->getName().addBarePrefix(*prefix);
         }

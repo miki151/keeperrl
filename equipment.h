@@ -24,7 +24,7 @@ class ContentFactory;
 
 class Equipment {
   public:
-  void addItem(PItem, Creature*);
+  void addItem(PItem, Creature*, const ContentFactory* = nullptr);
   void addItems(vector<PItem>, Creature*);
   const vector<Item*>& getSlotItems(EquipmentSlot slot) const;
   bool hasItem(const Item*) const;
