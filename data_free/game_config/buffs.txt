@@ -11,6 +11,18 @@
   color = ColorId RED
 }
 
+"INVULNERABLE" {
+  name = "invulnerability"
+  adjective = "invulnerable"
+  description = "Creature is immune to all types of damage."
+  addedMessage = ARE "invulnerable"
+  removedMessage = ARE "no longer invulnerable"
+  color = ColorId WHITE
+  fx = BUFF_WHITE
+  defenseMultiplier = 1000
+  combatConsumable = true
+}
+
 Def RESISTANCE(Name, Attr)
 {
   name = Name + " resistance"
