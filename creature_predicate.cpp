@@ -72,7 +72,7 @@ static bool applyToCreature(const CreaturePredicates::HatedBy& p, const Creature
 }
 
 static string getName(const CreaturePredicates::HatedBy& p, const ContentFactory* f) {
-  return *getHatedGroupName(p.effect, f);
+  return *f->buffs.at(p.effect).hatedGroupName;
 }
 
 static bool apply(const CreaturePredicates::Attacker& p, Position pos, const Creature* attacker) {

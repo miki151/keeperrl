@@ -201,19 +201,6 @@ Color getColor(const LastingOrBuff& l, const ContentFactory* f) {
   );
 }
 
-optional<string> getHatedGroupName(const LastingOrBuff& l, const ContentFactory* f) {
-  return l.visit(
-    [](LastingEffect e) -> optional<string> {
-      if (auto s = LastingEffects::getHatedGroupName(e))
-        return string(s);
-      return none;
-    },
-    [f](BuffId id) {
-      return f->buffs.at(id).hatedGroupName;
-    }
-  );
-}
-
 void serialize(PrettyInputArchive& ar1, LastingOrBuff& b, const unsigned int) {
   string s = ar1.peek();
   if (auto l = EnumInfo<LastingEffect>::fromStringSafe(s)) {

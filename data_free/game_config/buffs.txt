@@ -12,6 +12,25 @@
   color = ColorId RED
 }
 
+Def HATE(Name) {
+  name = "hate of " + Name
+  adjective = "hates all " + Name
+  description = "Makes the target hostile against all " + Name
+  addedMessage = ARE "full of hatred"
+  removedMessage = YOUR "hatred is gone"
+  hatedGroupName = Name
+  color = ColorId PINK
+  fx = BUFF_PINK
+}
+End
+
+"HATE_DWARVES" HATE("dwarves")
+"HATE_HUMANS" HATE("humans")
+"HATE_GREENSKINS" HATE("greenskins")
+"HATE_ELVES" HATE("elves")
+"HATE_UNDEAD" HATE("undead")
+"HATE_DRAGONS" HATE("dragons")
+
 "INVULNERABLE" {
   name = "invulnerability"
   adjective = "invulnerable"

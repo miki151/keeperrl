@@ -117,7 +117,7 @@ class CreatureAttributes {
   bool getCanJoinCollective() const;
   void setCanJoinCollective(bool);
   void increaseExpFromCombat(double attackDiff);
-  optional<LastingOrBuff> getHatedByEffect() const;
+  optional<BuffId> getHatedByEffect() const;
   void randomize();
   bool isInstantPrisoner() const;
 
@@ -167,7 +167,7 @@ class CreatureAttributes {
   optional<string> SERIAL(deathDescription);
   bool SERIAL(canJoinCollective) = true;
   optional<string> SERIAL(petReaction);
-  optional<LastingOrBuff> SERIAL(hatedByEffect);
+  optional<BuffId> SERIAL(hatedByEffect);
   bool SERIAL(instantPrisoner) = false;
   void initializeLastingEffects();
   CreatureInventory SERIAL(inventory);

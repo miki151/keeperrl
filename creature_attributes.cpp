@@ -405,7 +405,7 @@ void CreatureAttributes::setCanJoinCollective(bool b) {
   canJoinCollective = b;
 }
 
-optional<LastingOrBuff> CreatureAttributes::getHatedByEffect() const {
+optional<BuffId> CreatureAttributes::getHatedByEffect() const {
   return hatedByEffect;
 }
 

@@ -32,7 +32,7 @@ SIMPLE_PREDICATE(CanCreatureEnter);
 SIMPLE_PREDICATE(SameTribe);
 
 struct HatedBy {
-  LastingOrBuff SERIAL(effect);
+  BuffId SERIAL(effect);
   SERIALIZE_ALL(effect)
 };
 

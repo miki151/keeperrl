@@ -45,12 +45,6 @@ RICH_ENUM(
   SATIATED,
   RESTED,
   SUMMONED,
-  HATE_DWARVES,
-  HATE_UNDEAD,
-  HATE_HUMANS,
-  HATE_GREENSKINS,
-  HATE_ELVES,
-  HATE_DRAGONS,
   FAST_CRAFTING,
   FAST_TRAINING,
   SLOW_CRAFTING,
@@ -127,7 +121,6 @@ class LastingEffects {
   static AttrType modifyMeleeDamageAttr(const Creature* attacker, AttrType);
   static TimeInterval getDuration(const Creature* c, LastingEffect);
   static void runTests();
-  static const char* getHatedGroupName(LastingEffect);
   static Color getColor(LastingEffect);
   static bool losesControl(const Creature*);
   static bool doesntMove(const Creature*);
