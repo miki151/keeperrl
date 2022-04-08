@@ -8,6 +8,7 @@
   endEffect = IncreaseAttr DAMAGE -30
   tickEffect = Heal {FLESH 0.01}
   combatConsumable = true
+  canWishFor = false
   color = ColorId RED
 }
 
@@ -22,6 +23,7 @@
   defenseMultiplier = 1000
   combatConsumable = true
   canAbsorb = false
+  canWishFor = false
 }
 
 Def RESISTANCE(Name, Attr)
@@ -81,6 +83,7 @@ Def IMMUNITY(Name, Attr)
   defenseMultiplierAttr = Attr
   combatConsumable = true
   canAbsorb = false
+  canWishFor = false
 }
 End
 

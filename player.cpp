@@ -1119,6 +1119,19 @@ static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
         Range(1, 2)
       });
     }
+  for (auto& buff : factory->buffs)
+    if (buff.second.canWishFor) {
+      ret.push_back(WishedItemInfo {
+        ItemType(ItemTypes::Ring{buff.first}),
+        "ring of " + buff.second.name,
+        Range(1, 2)
+      });
+      ret.push_back(WishedItemInfo {
+        ItemType(ItemTypes::Amulet{buff.first}),
+        "amulet of " + buff.second.name,
+        Range(1, 2)
+      });
+    }
   vector<Effect> allEffects = Effect::getWishedForEffects(factory);
   for (auto& effect : allEffects) {
     ret.push_back(WishedItemInfo {

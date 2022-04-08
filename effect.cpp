@@ -2410,6 +2410,12 @@ vector<Effect> Effect::getWishedForEffects(const ContentFactory* factory) {
       allEffects.push_back(EffectType(Effects::Permanent{effect}));
       allEffects.push_back(EffectType(Effects::RemoveLasting{effect}));
     }
+  for (auto& buff : factory->buffs)
+    if (buff.second.canWishFor) {
+      allEffects.push_back(EffectType(Effects::Lasting{20_visible, buff.first}));
+      allEffects.push_back(EffectType(Effects::Permanent{buff.first}));
+      allEffects.push_back(EffectType(Effects::RemoveLasting{buff.first}));
+    }
   for (auto& attr : factory->attrInfo)
     allEffects.push_back(EffectType(Effects::IncreaseAttr{attr.first, attr.second.wishedItemIncrease}));
   return allEffects;
