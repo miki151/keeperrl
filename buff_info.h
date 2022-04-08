@@ -18,11 +18,12 @@ struct BuffInfo {
   bool SERIAL(consideredBad) = false;
   bool SERIAL(combatConsumable) = false;
   bool SERIAL(stacks) = false;
+  bool SERIAL(canAbsorb) = true;
   int SERIAL(price) = 50;
   Color SERIAL(color);
   optional<string> SERIAL(hatedGroupName);
   double SERIAL(defenseMultiplier) = 1.0;
   optional<AttrType> SERIAL(defenseMultiplierAttr);
   FXVariantName SERIAL(fx) = FXVariantName::BUFF_RED;
-  SERIALIZE_ALL(OPTION(combatConsumable), OPTION(fx), OPTION(defenseMultiplier), OPTION(defenseMultiplierAttr), NAMED(hatedGroupName), NAMED(name), OPTION(addedMessage), OPTION(removedMessage), NAMED(startEffect), NAMED(tickEffect), NAMED(endEffect), OPTION(stacks), OPTION(consideredBad), NAMED(description), OPTION(price), NAMED(color), NAMED(adjective))
+  SERIALIZE_ALL(OPTION(canAbsorb), OPTION(combatConsumable), OPTION(fx), OPTION(defenseMultiplier), OPTION(defenseMultiplierAttr), NAMED(hatedGroupName), NAMED(name), OPTION(addedMessage), OPTION(removedMessage), NAMED(startEffect), NAMED(tickEffect), NAMED(endEffect), OPTION(stacks), OPTION(consideredBad), NAMED(description), OPTION(price), NAMED(color), NAMED(adjective))
 };

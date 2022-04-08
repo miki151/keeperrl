@@ -2304,8 +2304,21 @@ CreatureAction Creature::consume(Creature* other) const {
   if (!other || !canConsume(other) || other->getPosition().dist8(getPosition()).value_or(2) > 1)
     return CreatureAction();
   return CreatureAction(this, [=] (Creature* self) {
+    auto factory = getGame()->getContentFactory();
+    vector<string> adjectives;
+    for (auto& buff : other->buffPermanentCount) {
+      auto& info = factory->buffs.at(buff.first);
+      if (info.canAbsorb) {
+        self->addPermanentEffect(buff.first);
+        adjectives.push_back(info.adjective);
+      }
+    }
     other->dieWithAttacker(self, Creature::DropType::ONLY_INVENTORY);
     self->attributes->consume(self, *other->attributes);
+    if (!adjectives.empty()) {
+      self->you(MsgType::BECOME, combine(adjectives));
+      self->addPersonalEvent(getName().the() + " becomes " + combine(adjectives));
+    }
     self->spendTime(2_visible);
   });
 }

@@ -21,6 +21,7 @@
   fx = BUFF_WHITE
   defenseMultiplier = 1000
   combatConsumable = true
+  canAbsorb = false
 }
 
 Def RESISTANCE(Name, Attr)
@@ -79,6 +80,7 @@ Def IMMUNITY(Name, Attr)
   defenseMultiplier = 1000
   defenseMultiplierAttr = Attr
   combatConsumable = true
+  canAbsorb = false
 }
 End
 
