@@ -859,7 +859,7 @@ CreatureAction Creature::applySquare(Position pos, FurnitureLayer layer) const {
 
 CreatureAction Creature::hide() const {
   PROFILE;
-  if (!isAffected(LastingEffect::AMBUSH_SKILL))
+  if (!isAffected(BuffId("AMBUSH_SKILL")))
     return CreatureAction("You don't have this skill.");
   if (auto furniture = getPosition().getFurniture(FurnitureLayer::MIDDLE))
     if (furniture->canHide())
@@ -1046,7 +1046,7 @@ bool Creature::addEffect(BuffId id, TimeInterval time, GlobalTime global, const 
     buffs.push_back(make_pair(id, global + time));
     if (++buffCount[id] == 1 || info.stacks) {
       if (msg && info.addedMessage)
-        you(info.addedMessage->first, info.addedMessage->second);
+        applyMessage(*info.addedMessage, this);
       if (info.startEffect)
         info.startEffect->applyToCreature(this);
       return true;
@@ -1069,7 +1069,7 @@ bool Creature::removeBuff(int index, bool msg) {
     if (buffCount[id] == 0)
       buffCount.erase(id);
     if (msg && info.removedMessage)
-      you(info.removedMessage->first, info.removedMessage->second);
+      applyMessage(*info.removedMessage, this);
     if (info.endEffect)
       info.endEffect->applyToCreature(this);
     return true;
@@ -1090,7 +1090,7 @@ bool Creature::addPermanentEffect(BuffId id, int count, bool msg, const ContentF
   auto& info = factory->buffs.at(id);
   if (++buffPermanentCount[id] == 1) {
     if (msg && info.addedMessage)
-      you(info.addedMessage->first, info.addedMessage->second);
+      applyMessage(*info.addedMessage, this);
     if (info.startEffect)
       info.startEffect->applyToCreature(this);
     return true;
@@ -1103,7 +1103,7 @@ bool Creature::removePermanentEffect(BuffId id, int count, bool msg) {
   if (--buffPermanentCount[id] <= 0) {
     buffPermanentCount.erase(id);
     if (msg && info.removedMessage)
-      you(info.removedMessage->first, info.removedMessage->second);
+      applyMessage(*info.removedMessage, this);
     if (info.endEffect)
       info.endEffect->applyToCreature(this);
     return true;
@@ -2266,7 +2266,7 @@ CreatureAction Creature::dismount() const {
 
 bool Creature::canCopulateWith(const Creature* c) const {
   PROFILE;
-  return isAffected(LastingEffect::COPULATION_SKILL) &&
+  return isAffected(BuffId("COPULATION_SKILL")) &&
       c->getBody().canCopulateWith(getGame()->getContentFactory()) &&
       c->attributes->getGender() != attributes->getGender() &&
       c->isAffected(LastingEffect::SLEEP);
@@ -2275,7 +2275,7 @@ bool Creature::canCopulateWith(const Creature* c) const {
 bool Creature::canConsume(const Creature* c) const {
   return c != this &&
       c->getBody().canConsume() &&
-      isAffected(LastingEffect::CONSUMPTION_SKILL) &&
+      isAffected(BuffId("CONSUMPTION_SKILL")) &&
       c->getTribeId() == tribe;
 }
 
@@ -2485,7 +2485,7 @@ MovementType Creature::getMovementTypeNotSteed(Game* game) const {
   return MovementType(hasAlternativeViewId() ? TribeSet::getFull() : getFriendlyTribes(), {
       true,
       isAffected(LastingEffect::FLYING, time),
-      isAffected(LastingEffect::SWIMMING_SKILL, time),
+      isAffected(BuffId("SWIMMING_SKILL")),
       getBody().canWade()})
     .setDestroyActions(EnumSet<DestroyAction::Type>([this](auto t) { return DestroyAction(t).canNavigate(this); }))
     .setForced(isAffected(LastingEffect::BLIND, time) || getHoldingCreature() || forceMovement)
@@ -2493,7 +2493,7 @@ MovementType Creature::getMovementTypeNotSteed(Game* game) const {
     .setSunlightVulnerable(isAffected(LastingEffect::SUNLIGHT_VULNERABLE, time)
         && !isAffected(LastingEffect::DARKNESS_SOURCE, time)
         && (!game || game->getSunlightInfo().getState() == SunlightState::DAY))
-    .setCanBuildBridge(isAffected(LastingEffect::BRIDGE_BUILDING_SKILL, time))
+    .setCanBuildBridge(isAffected(BuffId("BRIDGE_BUILDING_SKILL")))
     .setFarmAnimal(getBody().isFarmAnimal());
 }
 
@@ -2611,7 +2611,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
               return action.append([path = *currentPath](Creature* c) { c->shortestPath = path; });
             }
           if (auto bridge = pos2.getFurniture(FurnitureLayer::GROUND)->getDefaultBridge())
-            if (isAffected(LastingEffect::BRIDGE_BUILDING_SKILL))
+            if (isAffected(BuffId("BRIDGE_BUILDING_SKILL")))
               if (auto bridgeAction = construct(getPosition().getDir(pos2), *bridge))
                 return bridgeAction.append([path = *currentPath](Creature* c) { c->shortestPath = path; });
         }

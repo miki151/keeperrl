@@ -259,20 +259,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::PLAGUE_RESISTANT:
         c->you(MsgType::ARE, "resistant to plague");
         break;
-      case LastingEffect::AMBUSH_SKILL:
-      case LastingEffect::SWIMMING_SKILL:
-      case LastingEffect::DISARM_TRAPS_SKILL:
-      case LastingEffect::CONSUMPTION_SKILL:
-      case LastingEffect::COPULATION_SKILL:
-      case LastingEffect::CROPS_SKILL:
-      case LastingEffect::SPIDER_SKILL:
-      case LastingEffect::EXPLORE_SKILL:
-      case LastingEffect::EXPLORE_CAVES_SKILL:
-      case LastingEffect::EXPLORE_NOCTURNAL_SKILL:
-      case LastingEffect::BRIDGE_BUILDING_SKILL:
-      case LastingEffect::DISTILLATION_SKILL:
-        c->verb("acquire", "acquires", "the skill of "_s + getName(effect));
-        break;
       case LastingEffect::DISAPPEAR_DURING_DAY:
         c->you(MsgType::YOUR, "hours are numbered");
         break;
@@ -537,20 +523,6 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::FROZEN:
         c->verb("thaw", "thaws");
         break;
-      case LastingEffect::AMBUSH_SKILL:
-      case LastingEffect::SWIMMING_SKILL:
-      case LastingEffect::DISARM_TRAPS_SKILL:
-      case LastingEffect::CONSUMPTION_SKILL:
-      case LastingEffect::COPULATION_SKILL:
-      case LastingEffect::CROPS_SKILL:
-      case LastingEffect::SPIDER_SKILL:
-      case LastingEffect::EXPLORE_SKILL:
-      case LastingEffect::DISTILLATION_SKILL:
-      case LastingEffect::EXPLORE_CAVES_SKILL:
-      case LastingEffect::EXPLORE_NOCTURNAL_SKILL:
-      case LastingEffect::BRIDGE_BUILDING_SKILL:
-        c->verb("lose", "loses", "the skill of "_s + getName(effect));
-        break;
       case LastingEffect::DISAPPEAR_DURING_DAY:
         break;
       case LastingEffect::NO_CARRY_LIMIT:
@@ -699,18 +671,6 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::FAST_CRAFTING: return "Fast craftsman"_good;
     case LastingEffect::FAST_TRAINING: return "Fast trainee"_good;
     case LastingEffect::ENTERTAINER: return "Entertainer"_good;
-    case LastingEffect::AMBUSH_SKILL: return "Ambusher"_good;
-    case LastingEffect::SWIMMING_SKILL: return "Swimmer"_good;
-    case LastingEffect::DISARM_TRAPS_SKILL: return "Disarms traps"_good;
-    case LastingEffect::CONSUMPTION_SKILL: return "Absorbs"_good;
-    case LastingEffect::COPULATION_SKILL: return "Copulates"_good;
-    case LastingEffect::CROPS_SKILL: return "Farmer"_good;
-    case LastingEffect::SPIDER_SKILL: return "Weaves spider webs"_good;
-    case LastingEffect::EXPLORE_SKILL: return "Explores"_good;
-    case LastingEffect::EXPLORE_NOCTURNAL_SKILL: return "Explores at night"_good;
-    case LastingEffect::EXPLORE_CAVES_SKILL: return "Explores caves"_good;
-    case LastingEffect::BRIDGE_BUILDING_SKILL: return "Builds bridges"_good;
-    case LastingEffect::DISTILLATION_SKILL: return "Distiller"_good;
     case LastingEffect::NO_CARRY_LIMIT: return "Infinite carrying capacity"_good;
     case LastingEffect::SPYING: return "Spy"_good;
     case LastingEffect::LIFE_SAVED: return "Life will be saved"_good;
@@ -807,7 +767,6 @@ bool LastingEffects::inheritsFromSteed(LastingEffect e) {
     case LastingEffect::SPEED:
     case LastingEffect::SLOWED:
     case LastingEffect::FLYING:
-    case LastingEffect::SWIMMING_SKILL:
       return true;
     default:
       return false;
@@ -1076,18 +1035,6 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::SLOW_TRAINING: return "slow training";
     case LastingEffect::ENTERTAINER: return "entertainment";
     case LastingEffect::BAD_BREATH: return "smelly breath";
-    case LastingEffect::AMBUSH_SKILL: return "ambushing";
-    case LastingEffect::SWIMMING_SKILL: return "swimming";
-    case LastingEffect::DISARM_TRAPS_SKILL: return "trap disarming";
-    case LastingEffect::CONSUMPTION_SKILL: return "absorption";
-    case LastingEffect::COPULATION_SKILL: return "copulation";
-    case LastingEffect::CROPS_SKILL: return "farming";
-    case LastingEffect::DISTILLATION_SKILL: return "distillation";
-    case LastingEffect::SPIDER_SKILL: return "spider web weaving";
-    case LastingEffect::EXPLORE_SKILL: return "exploring";
-    case LastingEffect::EXPLORE_CAVES_SKILL: return "exploring caves";
-    case LastingEffect::EXPLORE_NOCTURNAL_SKILL: return "exploring at night";
-    case LastingEffect::BRIDGE_BUILDING_SKILL: return "bridge building";
     case LastingEffect::ON_FIRE: return "combustion";
     case LastingEffect::FROZEN: return "freezing";
     case LastingEffect::MAGIC_CANCELLATION: return "magic cancellation";
@@ -1158,18 +1105,6 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::SLOW_TRAINING: return "Decreases training and studying speed.";
     case LastingEffect::ENTERTAINER: return "Makes jokes, increasing morale of nearby creatures.";
     case LastingEffect::BAD_BREATH: return "Decreases morale of all nearby creatures.";
-    case LastingEffect::AMBUSH_SKILL: return "Can hide and ambush unsuspecting enemies. Press 'h' to hide on a tile that allows it.";
-    case LastingEffect::SWIMMING_SKILL: return "Can cross water without drowning.";
-    case LastingEffect::DISARM_TRAPS_SKILL: return "Can evade traps and disarm them.";
-    case LastingEffect::CONSUMPTION_SKILL: return "Can absorb other creatures and retain their attributes.";
-    case LastingEffect::COPULATION_SKILL: return "Can copulate with other creatures and give birth to hideous spawns.";
-    case LastingEffect::CROPS_SKILL: return "Can farm crops.";
-    case LastingEffect::SPIDER_SKILL: return "Can weave spider webs.";
-    case LastingEffect::EXPLORE_SKILL: return "Can explore surroundings.";
-    case LastingEffect::DISTILLATION_SKILL: return "Can distill alcohol.";
-    case LastingEffect::EXPLORE_CAVES_SKILL: return "Can explore caves.";
-    case LastingEffect::EXPLORE_NOCTURNAL_SKILL: return "Can explore surroundings at night.";
-    case LastingEffect::BRIDGE_BUILDING_SKILL: return "Creature will try to build bridges when travelling somewhere.";
     case LastingEffect::ON_FIRE: return "The creature is burning alive.";
     case LastingEffect::FROZEN: return "The creature is frozen and cannot move.";
     case LastingEffect::MAGIC_CANCELLATION: return "Prevents from casting any spells.";
@@ -1315,9 +1250,6 @@ bool LastingEffects::canConsume(LastingEffect effect) {
     case LastingEffect::SUMMONED:
     case LastingEffect::LIGHT_SOURCE:
     case LastingEffect::PREGNANT:
-    case LastingEffect::CONSUMPTION_SKILL:
-    case LastingEffect::COPULATION_SKILL:
-    case LastingEffect::CROPS_SKILL:
     case LastingEffect::ON_FIRE:
     case LastingEffect::FROZEN:
     case LastingEffect::PLAGUE:

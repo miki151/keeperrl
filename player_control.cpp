@@ -1134,7 +1134,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
           minionInfo.quarters = none;
       } else
         minionInfo.canAssignQuarters = false;
-      if (c->isAffected(LastingEffect::CONSUMPTION_SKILL))
+      if (c->isAffected(BuffId("CONSUMPTION_SKILL")))
         minionInfo.actions.push_back(PlayerInfo::CONSUME);
       minionInfo.actions.push_back(PlayerInfo::LOCATE);
     }
@@ -3454,8 +3454,8 @@ void PlayerControl::considerNewAttacks() {
 void PlayerControl::tick() {
   PROFILE_BLOCK("PlayerControl::tick");
   for (auto c : collective->getCreatures()) {
-    if (c->getAttributes().isAffectedPermanently(LastingEffect::BRIDGE_BUILDING_SKILL))
-      c->removePermanentEffect(LastingEffect::BRIDGE_BUILDING_SKILL, 1, false);
+    if (c->isAffectedPermanently(BuffId("BRIDGE_BUILDING_SKILL")))
+      c->removePermanentEffect(BuffId("BRIDGE_BUILDING_SKILL"), 1, false);
   }
   updateUnknownLocations();
   considerTransferingLostMinions();

@@ -202,7 +202,7 @@ CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const char* n
       c.attr[AttrType("DEFENSE")] = 28;
       c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
       c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
-      c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
+      c.permanentBuffs.push_back(BuffId("SWIMMING_SKILL"));
       c.name = name;);
 }
 
@@ -761,7 +761,7 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
             );
         }
         if (Random.roll(3))
-          c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
+          c.permanentBuffs.push_back(BuffId("SWIMMING_SKILL"));
         );
   initializeAttributes(id, attributes);
   auto spells = getSpellMap(attributes);

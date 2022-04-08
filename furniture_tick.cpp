@@ -32,7 +32,7 @@ static void handle(const FurnitureTickTypes::Trap& trap, Position pos, Furniture
       Position curPos = pos.plus(dirs[dirInd] * i);
       if (Creature* other = curPos.getCreature()) {
         if (!other->getTribe()->getFriendlyTribes().contains(furniture->getTribe())) {
-          if (!other->isAffected(LastingEffect::DISARM_TRAPS_SKILL)) {
+          if (!other->isAffected(BuffId("DISARM_TRAPS_SKILL"))) {
             pos.removeFurniture(furniture);
             trap.effects[dirInd].apply(pos, furniture->getCreator());
           } else {

@@ -105,7 +105,7 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
     case MinionActivity::EAT:
       return c->getBody().isImmuneTo(LastingEffect::SATIATED, factory) && !col->hasTrait(c, MinionTrait::PRISONER);
     case MinionActivity::COPULATE:
-      return c->isAffected(LastingEffect::COPULATION_SKILL);
+      return c->isAffected(BuffId("COPULATION_SKILL"));
     case MinionActivity::RITUAL:
       return c->getBody().canPerformRituals(factory) && !col->hasTrait(c, MinionTrait::WORKER);
     case MinionActivity::GUARDING1:
@@ -113,15 +113,15 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
     case MinionActivity::GUARDING3:
       return col->hasTrait(c, MinionTrait::FIGHTER);
     case MinionActivity::CROPS:
-      return c->isAffected(LastingEffect::CROPS_SKILL);
+      return c->isAffected(BuffId("CROPS_SKILL"));
     case MinionActivity::SPIDER:
-      return c->isAffected(LastingEffect::SPIDER_SKILL);
+      return c->isAffected(BuffId("SPIDER_SKILL"));
     case MinionActivity::EXPLORE_CAVES:
-      return c->isAffected(LastingEffect::EXPLORE_CAVES_SKILL);
+      return c->isAffected(BuffId("EXPLORE_CAVES_SKILL"));
     case MinionActivity::EXPLORE:
-      return c->isAffected(LastingEffect::EXPLORE_SKILL);
+      return c->isAffected(BuffId("EXPLORE_SKILL"));
     case MinionActivity::EXPLORE_NOCTURNAL:
-      return c->isAffected(LastingEffect::EXPLORE_NOCTURNAL_SKILL);
+      return c->isAffected(BuffId("EXPLORE_NOCTURNAL_SKILL"));
     case MinionActivity::PHYLACTERY:
       return !c->getPhylactery();
     case MinionActivity::CONSTRUCTION:
@@ -133,7 +133,7 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
     case MinionActivity::MINION_ABUSE:
       return col->hasTrait(c, MinionTrait::LEADER) && col == col->getGame()->getPlayerCollective();
     case MinionActivity::DISTILLATION:
-      return c->isAffected(LastingEffect::DISTILLATION_SKILL);
+      return c->isAffected(BuffId("DISTILLATION_SKILL"));
   }
 }
 

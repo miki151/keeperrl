@@ -12,6 +12,46 @@
   color = ColorId RED
 }
 
+Def SKILL(Name, Adjective, Description) {
+  name = Name
+  adjective = Adjective
+  addedMessage = "acquire" "acquires" "the skill of " + Name
+  removedMessage = "lose" "loses" "the skill of " + Name
+  description = Description
+  color = ColorId YELLOW
+  fx = BUFF_YELLOW
+}
+End
+
+"AMBUSH_SKILL" SKILL("ambushing", "Ambusher", "Can hide and ambush unsuspecting enemies. Press 'h' to hide on a tile that allows it.")
+"SWIMMING_SKILL" SKILL("swimming", "Swimmer", "Can cross water without drowning.")
+"DISARM_TRAPS_SKILL" SKILL("trap disarming", "Disarms traps", "Can evade traps and disarm them.")
+"CONSUMPTION_SKILL" SKILL("absorption", "Absorbs", "Can absorb other creatures and retain their attributes.")
+"COPULATION_SKILL" SKILL("copulation", "Copulates", "Can copulate with other creatures and give birth to hideous spawns.")
+"CROPS_SKILL" SKILL("farming", "Farmer", "Can farm crops.")
+"SPIDER_SKILL" SKILL("spider web weaving", "Weaves spider webs", "Can weave spider webs.")
+"EXPLORE_SKILL" SKILL("exploring", "Explores", "Can explore surroundings.")
+"EXPLORE_NOCTURNAL_SKILL" SKILL("exploring at night", "Explores at night", "Can explore surroundings at night.")
+"EXPLORE_CAVES_SKILL" SKILL("exploring caves", "Explores caves", "Can explore caves.")
+"BRIDGE_BUILDING_SKILL" SKILL("bridge building", "Builds bridges", "Creature will try to build bridges when travelling somewhere.")
+"DISTILLATION_SKILL" SKILL("distillation", "Distiller", "Can distill alcohol.")
+
+"SWIMMING_SKILL" modify {
+  inheritsFromSteed = true
+}
+
+"CONSUMPTION_SKILL" modify {
+  canAbsorb = false
+}
+
+"COPULATION_SKILL" modify {
+  canAbsorb = false
+}
+
+"CROPS_SKILL" modify {
+  canAbsorb = false
+}
+
 Def HATE(Name) {
   name = "hate of " + Name
   adjective = "hates all " + Name

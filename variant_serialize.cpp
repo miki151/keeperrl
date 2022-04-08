@@ -22,6 +22,7 @@
 #include "item_types.h"
 #include "furniture_usage.h"
 #include "furniture_tick.h"
+#include "buff_info.h"
 
 namespace cereal {
   namespace variant_detail {
@@ -91,6 +92,7 @@ namespace cereal {
   INST2(LevelConnection::EnemyLevelInfo_impl)
   INST2(FurnitureUsageType_impl)
   INST(LastingEffect, BuffId)
+  INST(YouMessage, VerbMessage)
 } // namespace cereal
 #undef INST
 #undef INST2
