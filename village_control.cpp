@@ -111,19 +111,22 @@ void VillageControl::onEvent(const GameEvent& event) {
         }
       },
       [&](const ItemsPickedUp& info) {
-        if (!collective->isConquered() && collective->getTerritory().contains(info.creature->getPosition())
-            && isEnemy(info.creature) && behaviour
-            && contains<StolenItems>(behaviour->triggers)
-            && getEnemyCollective()
-            && getEnemyCollective()->getCreatures().contains(info.creature)) {
-          bool wasTheft = false;
-          for (const Item* it : info.items)
-            if (myItems.contains(it) && !it->getShopkeeper(info.creature)) {
-              wasTheft = true;
-              ++stolenItemCount;
-              myItems.erase(it);
-            }
-          if (wasTheft) {
+        int numStolen = 0;
+        for (const Item* it : info.items)
+          if (myItems.contains(it) && !it->getShopkeeper(info.creature)) {
+            ++numStolen;
+            ++stolenItemCount;
+            myItems.erase(it);
+          }
+        if (numStolen > 0 && !collective->isConquered() &&
+            collective->getTerritory().contains(info.creature->getPosition())) {
+          if (isEnemy(info.creature) && behaviour
+              && contains<StolenItems>(behaviour->triggers)
+              && getEnemyCollective()
+              && getEnemyCollective()->getCreatures().contains(info.creature)) {
+            info.creature->privateMessage(PlayerMessage("You are going to regret this", MessagePriority::HIGH));
+          } else {
+            collective->getTribe()->onItemsStolen(info.creature);
             info.creature->privateMessage(PlayerMessage("You are going to regret this", MessagePriority::HIGH));
           }
         }
