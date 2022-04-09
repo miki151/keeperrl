@@ -74,7 +74,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(deathReason, nextPosIntent, globalTime, drops, promotions);
   ar(unknownAttackers, privateEnemies, holding, attributesStack);
   ar(controllerStack, kills, statuses, automatonParts, phylactery);
-  ar(difficultyPoints, points, capture, spellMap, killTitles, companions);
+  ar(difficultyPoints, points, capture, spellMap, killTitles, companions, combatExperience);
   ar(vision, debt, uniqueKills, lastCombatIntent, primaryViewId, steed, buffs, buffCount, buffPermanentCount);
 }
 
@@ -198,7 +198,6 @@ void Creature::pushAttributes(CreatureAttributes attr, SpellMap spells) {
 }
 
 pair<CreatureAttributes, SpellMap> Creature::setAttributes(CreatureAttributes attr, SpellMap spells) {
-  auto combatExp = getAttributes().combatExperience;
   auto firstName = getName().first();
   for (auto item : equipment->getAllEquipped())
     item->onUnequip(this, false);
@@ -230,7 +229,6 @@ pair<CreatureAttributes, SpellMap> Creature::setAttributes(CreatureAttributes at
     if (!LastingEffects::affects(this, effect, factory))
       removeEffect(effect, true);
   getName().setFirst(firstName);
-  getAttributes().combatExperience = combatExp;
   for (auto& b : attributes->permanentBuffs)
     addPermanentEffect(b, 1, false);
   attributes->permanentBuffs.clear();
@@ -1126,7 +1124,7 @@ int simulAttackPen(int attackers) {
 
 int Creature::getAttrBonus(AttrType type, bool includeWeapon) const {
   int def = getBody().getAttrBonus(type);
-  def += min(killTitles.size(), attributes->getRawAttr(type));
+  def += min(killTitles.size(), getRawAttr(type));
   for (auto& item : equipment->getAllEquipped())
     if (item->getClass() != ItemClass::WEAPON || type != item->getWeaponInfo().meleeAttackAttr)
       def += item->getModifier(type);
@@ -1139,7 +1137,7 @@ int Creature::getAttrBonus(AttrType type, bool includeWeapon) const {
 }
 
 int Creature::getAttr(AttrType type, bool includeWeapon) const {
-  return max(0, attributes->getRawAttr(type) + getAttrBonus(type, includeWeapon));
+  return max(0, getRawAttr(type) + getAttrBonus(type, includeWeapon));
 }
 
 int Creature::getSpecialAttr(AttrType type, const Creature* against) const {
@@ -1159,12 +1157,23 @@ int Creature::getPoints() const {
   return points;
 }
 
+int Creature::getRawAttr(AttrType type) const {
+  int ret = attributes->getRawAttr(type);
+  if (auto expType = getExperienceType(type))
+    ret += (int) min(combatExperience, attributes->getExpLevel(*expType));
+  return ret;
+}
+
+double Creature::getCombatExperience() const {
+  return combatExperience;
+}
+
 void Creature::updateCombatExperience(Creature* victim) {
   if (uniqueKills.insert(victim->getName().bare()).second) {
-    int curLevel = (int)getAttributes().getCombatExperience();
+    int curLevel = (int)combatExperience;
     constexpr double expIncrease = 0.2;
-    getAttributes().addCombatExperience(expIncrease);
-    int newLevel = (int)getAttributes().getCombatExperience();
+    combatExperience += expIncrease;
+    int newLevel = (int)combatExperience;
     if (curLevel != newLevel) {
       you(MsgType::ARE, "more experienced");
       addPersonalEvent(getName().a() + " reaches combat experience level " + toString(newLevel));

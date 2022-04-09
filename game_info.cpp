@@ -225,7 +225,7 @@ vector<AttributeInfo> AttributeInfo::fromCreature(const ContentFactory* contentF
     ret.push_back(AttributeInfo {
         capitalFirst(info.name),
         info.viewId,
-        c->getAttributes().getRawAttr(attr),
+        c->getRawAttr(attr),
         c->getAttrBonus(attr, true),
         info.help
     });

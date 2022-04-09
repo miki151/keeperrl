@@ -311,6 +311,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<CombatIntentInfo> getLastCombatIntent() const;
   void onKilledOrCaptured(Creature* victim);
   void updateCombatExperience(Creature* victim);
+  double getCombatExperience() const;
+  int getRawAttr(AttrType) const;
 
   void addSound(const Sound&) const;
   void updateViewObject(const ContentFactory*);
@@ -434,6 +436,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<AdjectiveInfo> getLastingEffectAdjectives(const ContentFactory*, bool bad) const;
   bool removeBuff(int index, bool msg);
   bool processBuffs();
+  double SERIAL(combatExperience) = 0;
 };
 
 struct AdjectiveInfo {

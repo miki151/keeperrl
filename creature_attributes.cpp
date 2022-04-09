@@ -70,7 +70,7 @@ void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) 
   ar(OPTION(cantEquip), OPTION(aiType), OPTION(canJoinCollective), OPTION(genderAlternatives), NAMED(promotionGroup));
   ar(OPTION(boulder), OPTION(noChase), OPTION(isSpecial), OPTION(spellSchools), OPTION(spells));
   ar(SKIP(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel), OPTION(inventory));
-  ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction), OPTION(combatExperience));
+  ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction));
   ar(OPTION(automatonParts), OPTION(specialAttr), NAMED(deathEffect), NAMED(chatEffect), OPTION(companions));
   ar(OPTION(maxPromotions), OPTION(afterKilledSomeone), SKIP(permanentBuffs));
   for (auto& a : attr)
@@ -134,10 +134,8 @@ const Gender& CreatureAttributes::getGender() const {
 
 int CreatureAttributes::getRawAttr(AttrType type) const {
   int ret = getValueMaybe(attr, type).value_or(0);
-  if (auto expType = getExperienceType(type)) {
+  if (auto expType = getExperienceType(type))
     ret += (int) expLevel[*expType];
-    ret += (int) min(combatExperience, expLevel[*expType]);
-  }
   return ret;
 }
 
@@ -161,19 +159,6 @@ void CreatureAttributes::increaseMaxExpLevel(ExperienceType type, int increase) 
 void CreatureAttributes::increaseExpLevel(ExperienceType type, double increase) {
   increase = max(0.0, min(increase, (double) maxLevelIncrease[type] - expLevel[type]));
   expLevel[type] += increase;
-}
-
-void CreatureAttributes::addCombatExperience(double v) {
-  combatExperience += v;
-  int maxExp = 0;
-  for (auto expType : ENUM_ALL(ExperienceType))
-    maxExp = max(maxExp, maxLevelIncrease[expType]);
-  if (combatExperience > maxExp)
-    combatExperience = maxExp;
-}
-
-double CreatureAttributes::getCombatExperience() const {
-  return combatExperience;
 }
 
 bool CreatureAttributes::isTrainingMaxedOut(ExperienceType type) const {

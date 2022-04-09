@@ -298,7 +298,7 @@ int MinionEquipment::getItemValue(const Creature* c, const Item* it) const {
   for (auto& mod : it->getModifierValues()) {
     sum += mod.second;
     if (mod.first == it->getWeaponInfo().meleeAttackAttr)
-      sum += c->getAttributes().getRawAttr(mod.first);
+      sum += c->getRawAttr(mod.first);
   }
   return sum;
 }

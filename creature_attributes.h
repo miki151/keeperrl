@@ -135,7 +135,6 @@ class CreatureAttributes {
   optional<string> SERIAL(promotionGroup);
   double SERIAL(promotionCost) = 1.0;
   int SERIAL(maxPromotions) = 5;
-  double SERIAL(combatExperience) = 0;
   vector<BuffId> SERIAL(permanentBuffs);
 
   private:

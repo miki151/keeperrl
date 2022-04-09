@@ -17,7 +17,7 @@ CreatureExperienceInfo getCreatureExperienceInfo(const ContentFactory* f, const 
       }
       return v;
     }),
-    c->getAttributes().getCombatExperience(),
+    c->getCombatExperience(),
     0
   };
 }

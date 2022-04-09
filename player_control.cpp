@@ -1498,7 +1498,7 @@ void PlayerControl::acceptPrisoner(int index) {
     victim->unbindPhylactery();
     if (victim->getBody().isHumanoid())
       victim->getAttributes().setBaseAttr(AttrType("DIGGING"),
-          max(15, victim->getAttributes().getRawAttr(AttrType("DIGGING"))));
+          max(15, victim->getRawAttr(AttrType("DIGGING"))));
     collective->addCreature(victim, {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
     addMessage(PlayerMessage("You enslave " + victim->getName().a()).setPosition(victim->getPosition()));
     for (auto& elem : copyOf(stunnedCreatures))
