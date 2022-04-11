@@ -305,7 +305,7 @@ End
         { 0.0 CostInfo "DEMON_PIETY" 1000 }
       }
       specialTraits = {
-        { 1.0 { SpecialAttr ICE_DAMAGE 12 HatedBy HATE_HUMANS }}
+        { 1.0 { SpecialAttr COLD_DAMAGE 12 HatedBy HATE_HUMANS }}
         { 1.0 { Lasting { SUMMONED 500 } }}
       }
     }
