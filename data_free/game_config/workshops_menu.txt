@@ -215,6 +215,8 @@ append {
       { item = {"FireHeadAda"} work = 2 tech = "advanced automatons" materialTab = true}
       { item = {"AcidHeadAda"} work = 2 tech = "advanced automatons" materialTab = true}
       { item = {"HumanoidHeadAda"} work = 2 tech = "automaton brains" materialTab = true}
+      { item = {"AutomatonArmsInfernite"} work = 2 tech = "automatons" materialTab = true}
+      { item = {"AutomatonArmsAdoxium"} work = 2 tech = "automatons" materialTab = true}
   } 
   "LABORATORY"
   {
