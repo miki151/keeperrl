@@ -1052,6 +1052,8 @@ void PlayerControl::handleRansom(bool pay) {
   if (pay && collective->hasResource({ResourceId("GOLD"), amount})) {
     collective->takeResource({ResourceId("GOLD"), amount});
     ransom.getAttacker()->onRansomPaid();
+    auto name = ransom.getAttacker()->getName();
+    getGame()->addAnalytics("ransom_paid", name ? name->full : "unknown");
   }
   ransomAttacks.removeIndex(0);
 }
