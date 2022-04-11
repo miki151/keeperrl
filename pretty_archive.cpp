@@ -108,7 +108,7 @@ optional<string> scanWord(const vector<StreamChar>& s, int& index) {
   int origIndex = index;
   while (index < s.size() && isspace(s[index].c))
     ++index;
-  while (index < s.size() && isalnum(s[index].c))
+  while (index < s.size() && (isalnum(s[index].c) || s[index].c == '_'))
     ret += s[index++].c;
   if (ret.empty()) {
     index = origIndex;
@@ -426,16 +426,22 @@ void serialize(PrettyInputArchive& ar, string& t) {
   t.clear();
   while (true) {
     auto bookmark = ar.bookmark();
-    string tmp;
-    ar.readText(tmp);
-    if (tmp[0] != '\"')
-      ar.error("Expected quoted string, got: " + tmp);
-    ar.seek(bookmark);
-    string next;
-    ar.readText(std::quoted(next));
-    t += next;
-    if (!ar.eatMaybe("+"))
-      break;
+    string tmp = ar.peek();
+    if (isdigit(tmp[0])) {
+      int value;
+      ar.is >> value;
+      t += toString(value);
+      if (!ar.eatMaybe("+"))
+        break;
+    } else {
+      if (tmp[0] != '\"')
+        ar.error("Expected quoted string, got: " + tmp);
+      string next;
+      ar.readText(std::quoted(next));
+      t += next;
+      if (!ar.eatMaybe("+"))
+        break;
+    }
   }
 }
 
@@ -484,4 +490,71 @@ EndPrettyInput& endInput() {
 SetRoundBracket& roundBracket() {
   static SetRoundBracket ret;
   return ret;
+}
+
+namespace {
+struct Expression {
+  PrettyInputArchive& ar;
+
+  char pop() {
+    char c = ' ';
+    while (isspace(c))
+      c = ar.is.get();
+    return c;
+  }
+
+  char peek() {
+    char c = ' ';
+    while (isspace(ar.is.peek()))
+      c = ar.is.get();
+    return ar.is.peek();
+  }
+
+  int factor() {
+    if (isdigit(peek()) || peek() == '-') {
+      int result;
+      ar.is >> result;
+      return result;
+    } else
+    if (peek() == '(') {
+      pop();
+      int result = expression();
+      pop();
+      return result;
+    }
+    ar.error("Error reading arithmetic expression: " + string(1, peek()));
+    return 0;
+  }
+
+  int term() {
+    int result = factor();
+    while (isOneOf(peek(), '*', '/')) {
+      if (pop() == '*')
+        result *= factor();
+      else
+        result /= factor();
+    }
+    return result;
+  }
+
+  int expression() {
+    int result = term();
+    while (isOneOf(peek(), '+', '-')) {
+      if (pop() == '+')
+       result += term();
+      else
+        result -= term();
+    }
+    return result;
+  }
+};
+}
+
+void serialize(PrettyInputArchive& ar, int& c) {
+  if (ar.isOpenBracket(BracketType::ROUND)) {
+    ar.openBracket(BracketType::ROUND);
+    c = Expression{ar}.expression();
+    ar.closeBracket(BracketType::ROUND);
+  } else
+    ar.readText(c);
 }

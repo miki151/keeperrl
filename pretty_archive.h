@@ -209,6 +209,7 @@ serialize(PrettyInputArchive& ar, T& t) {
 void serialize(PrettyInputArchive& ar, std::string& t);
 void serialize(PrettyInputArchive& ar, char& c);
 void serialize(PrettyInputArchive& ar, bool& c);
+void serialize(PrettyInputArchive& ar, int& c);
 
 struct PrettyFlag {
   bool value = false;
