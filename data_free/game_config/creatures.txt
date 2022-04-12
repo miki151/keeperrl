@@ -1089,7 +1089,7 @@
         HEAD {{{ Intrinsic { "bite_attack" } "fangs" 7 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {0.5 Fire} } }}}
+            victimEffect = {0.5 Fire{25}} } }}}
       }
     }
     permanentEffects = {
@@ -1107,6 +1107,7 @@
     attr = {
       DAMAGE 45
       DEFENSE 47
+      FIRE_DAMAGE 40
     }
     body = {
       type = FourLegged HUGE
@@ -1118,7 +1119,7 @@
         HEAD {{{ Intrinsic { "bite_attack" } "fangs" 15 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {0.5 Fire} } }}}
+            victimEffect = {0.5 Fire{30}} } }}}
       }
       drops = { { "RedDragonScales" } 1}
       droppedPartUpgrade = GrantAbility "fire breath"
@@ -1138,7 +1139,7 @@
     hatedByEffect = HATE_DRAGONS
     inventory = {
       { "GoldPiece" 120 200 }
-      { type = Glyph WEAPON VictimEffect 0.3 Fire chance = 0.3 }
+      { type = Glyph WEAPON VictimEffect 0.3 Fire{25} chance = 0.3 }
       { type = Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING chance = 0.3 }
       { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
@@ -1402,6 +1403,7 @@
       DEFENSE 75
       DAMAGE 75
       SPELL_DAMAGE 75
+      FIRE_DAMAGE 75
     }
     body = {
       type = Humanoid HUGE
@@ -1414,7 +1416,7 @@
             attackType = HIT
             meleeAttackAttr = SPELL_DAMAGE
             attackMsg = SPELL
-            victimEffect = {0.5 Fire}} }}}
+            victimEffect = {0.5 Fire{50}}} }}}
       }
     }
     permanentEffects = {
@@ -2144,7 +2146,7 @@
         ARM {{{ Intrinsic { "fist_attack" } "fists" 10 {
             attackType = HIT
             attackMsg = SWING
-            victimEffect = {0.3 Fire} } }}}
+            victimEffect = {0.3 Fire{30}} } }}}
       }
     }
     permanentEffects = {
@@ -2341,6 +2343,78 @@
     permanentEffects = append { SPEED 1 }
     name = {
       name = "light adamantine automaton"
+    }
+  }
+"AUTOMATON_CORPUS_INFERNITE" inherit "AUTOMATON_CORPUS_WOOD"
+  {
+    viewId = { "automaton_corpus" Rgb 220 148 148 255 }
+    attr = {
+      DEFENSE 50
+      FIRE_DAMAGE 30
+    }
+    body = append {
+      material = INFERNITE
+    }
+    name = {
+      name = "infernite automaton"
+    }
+  }
+"HEAVY_AUTOMATON_CORPUS_INFERNITE" inherit "AUTOMATON_CORPUS_INFERNITE"
+  {
+    viewId = { "automaton_heavy" Rgb 220 148 148 255 }
+    attr = append {
+      DEFENSE 60
+    }
+    permanentEffects = append { SLOWED 1 }
+    name = {
+      name = "heavy infernite automaton"
+    }
+  }
+"LIGHT_AUTOMATON_CORPUS_INFERNITE" inherit "AUTOMATON_CORPUS_INFERNITE"
+  {
+    viewId = { "automaton_light" Rgb 220 148 148 255 }
+    attr = append {
+      DEFENSE 30
+    }
+    permanentEffects = append { SPEED 1 }
+    name = {
+      name = "light infernite automaton"
+    }
+  }
+"AUTOMATON_CORPUS_ADOXIUM" inherit "AUTOMATON_CORPUS_WOOD"
+  {
+    viewId = { "automaton_corpus" Rgb 220 148 220 255 }
+    attr = {
+      DEFENSE 50
+      SPELL_DAMAGE 30
+    }
+    body = append {
+      material = ADOXIUM
+    }
+    name = {
+      name = "infernite automaton"
+    }
+  }
+"HEAVY_AUTOMATON_CORPUS_ADOXIUM" inherit "AUTOMATON_CORPUS_ADOXIUM"
+  {
+    viewId = { "automaton_heavy" Rgb 220 148 220 255 }
+    attr = append {
+      DEFENSE 60
+    }
+    permanentEffects = append { SLOWED 1 }
+    name = {
+      name = "heavy adoxium automaton"
+    }
+  }
+"LIGHT_AUTOMATON_CORPUS_ADOXIUM" inherit "AUTOMATON_CORPUS_ADOXIUM"
+  {
+    viewId = { "automaton_light" Rgb 220 148 220 255 }
+    attr = append {
+      DEFENSE 30
+    }
+    permanentEffects = append { SPEED 1 }
+    name = {
+      name = "light adoxium automaton"
     }
   }
 "ZOMBIE"
@@ -4695,7 +4769,7 @@ End
           attackMsg = THRUST
           itselfMessage = true
           victimEffect = {1.0 Suicide DIE}
-          attackerEffect = {CircularBlast Area 1 Fire Suicide DIE} } }}}
+          attackerEffect = {CircularBlast Area 1 Fire{30} Suicide DIE} } }}}
       }
     }
     chatReactionFriendly = "talks about explosives"

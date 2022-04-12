@@ -426,7 +426,7 @@ End
 "fire breath"
 {
   symbol = "🐲"
-  effect = Name "fire breath" Fire
+  effect = Name "fire breath" Fire{}
   fx = {FLAMETHROWER ColorId LIGHT_RED}
   range = 4
   cooldown = 30
@@ -455,7 +455,7 @@ End
 "fireball"
 {
   symbol = "🔥"
-  effect = Name "fireball" Fire
+  effect = Name "fireball" Fire {}
   fx = {FIREBALL}
   range = 4
   cooldown = 30
@@ -775,7 +775,7 @@ Def NoEffect() Unlock "nothing" End
 "balrogs whip"
 {
   symbol = "ℒ"
-  effect = Name "fiery whip" Description "Causes magical and fire damage" { Fire Damage SPELL_DAMAGE SPELL }
+  effect = Name "fiery whip" Description "Causes magical and fire damage" { Fire{} Damage SPELL_DAMAGE SPELL }
   fx = {BALROGS_WHIP ColorId LIGHT_RED}
   range = 4
   cooldown = 2

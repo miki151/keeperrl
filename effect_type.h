@@ -49,7 +49,10 @@ struct Heal {
   double SERIAL(amount) = 1;
   SERIALIZE_ALL(NAMED(healthType), OPTION(amount))
 };
-SIMPLE_EFFECT(Fire);
+struct Fire {
+  optional<int> SERIAL(amount);
+  SERIALIZE_ALL(NAMED(amount))
+};
 struct Ice {
   optional<int> SERIAL(amount);
   SERIALIZE_ALL(NAMED(amount))

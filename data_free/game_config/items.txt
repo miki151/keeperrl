@@ -42,7 +42,7 @@ Def ARCHER_HEAD(Suffix, Color, Adjective, ResourceId, Defense, Damage)
     weight = 4
     craftingCost = ResourceId 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "an adamantine arrow shooting head"
+      Name Adjective + " arrow shooting head"
       Description "Allows shooting arrows. Adds +" + Defense + " defense. Second head adds additional +" + Damage + " ranged damage."
       {
         IncreaseAttr RANGED_DAMAGE (Damage * 2)
@@ -58,42 +58,50 @@ Def ARCHER_HEAD(Suffix, Color, Adjective, ResourceId, Defense, Damage)
     storageIds = {"automaton_parts" "equipment"}
   }
 End
-Def FIRE_HEAD(Suffix, Color, Adjective, ResourceId, Defense)
+Def FIRE_HEAD(Suffix, Color, Adjective, ResourceId, Defense, Damage)
 "FireHead" + Suffix
   {
     viewId = { "automaton_fire" Rgb Color 255 }
-    name = "adamantine fire breathing head"
+    name = Adjective + " fire breathing head"
     shortName = "fire breathing"
     weight = 4
     craftingCost = ResourceId 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "an " + Adjective + " fire breathing head"
-      Description "Grants the \"fire breath\" ability. Adds +" + Defense + " defense."
+      Name Adjective + " fire breathing head"
+      Description "Grants the \"fire breath\" ability. Adds +" + Defense + " defense. Second head adds additional +" + Damage + " fire damage."
       {
-        GrantAbility "fire breath"
+        IncreaseAttr FIRE_DAMAGE (Damage * 2)
         IncreaseAttr DEFENSE Defense
         AddBodyPart HEAD 1 none
+        FirstSuccessful {
+          GrantAbility "fire breath"
+          IncreaseAttr FIRE_DAMAGE -Damage
+        }
         AddAutomatonPart 2 "fire" { "installed_fire" Rgb Color 255 }
       }
     upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 End
-Def ACID_HEAD(Suffix, Color, Adjective, ResourceId, Defense)
+Def ACID_HEAD(Suffix, Color, Adjective, ResourceId, Defense, Damage)
 "AcidHead" + Suffix
   {
     viewId = { "automaton_acid" Rgb Color 255 }
-    name = Suffix + " acid spitting head"
+    name = Adjective + " acid spitting head"
     shortName = "acid spitting"
     weight = 4
     craftingCost = ResourceId 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "an " + Adjective + " acid spitting head"
-      Description "Grants the \"acid stream\" ability. Adds +" + Defense + " defense."
+      Name Adjective + " acid spitting head"
+      Description "Grants the \"acid stream\" ability. Adds +" + Defense + " defense. Second head adds additional +" + Damage + " acid damage."
       {
-        GrantAbility "acid stream"
+        IncreaseAttr ACID_DAMAGE (Damage * 2)
         IncreaseAttr DEFENSE Defense
         AddBodyPart HEAD 1 none
+        FirstSuccessful {
+          GrantAbility "acid stream"
+          IncreaseAttr ACID_DAMAGE -Damage
+        }
         AddAutomatonPart 2 "acid" { "installed_acid" Rgb Color 255 }
       }
     upgradeType = {ARMOR}
@@ -215,22 +223,22 @@ DRILL("Wood", 180 140 55, "wooden", WOOD, 10)
 CRAFTING_ARMS("Wood", 180 140 55, "wooden", WOOD, 10)
 HUMANOID_HEAD("Iron", 140 148 148, "iron", IRON, 4)
 ARCHER_HEAD("Iron", 140 148 148, "iron", IRON, 4, 15)
-FIRE_HEAD("Iron", 140 148 148, "iron", IRON, 5)
-ACID_HEAD("Iron", 140 148 148, "iron", IRON, 5)
+FIRE_HEAD("Iron", 140 148 148, "iron", IRON, 5, 15)
+ACID_HEAD("Iron", 140 148 148, "iron", IRON, 5, 15)
 LEGS("Iron", 140 148 148, "iron", IRON, 5)
 ARMS("Iron", 140 148 148, "iron", IRON, 12, DAMAGE, "melee damage")
 DRILL("Iron", 140 148 148, "iron", IRON, 15)
 CRAFTING_ARMS("Iron", 140 148 148, "iron", IRON, 15)
 REPAIR_ARMS("Iron", 140 148 148, "iron", IRON, 5)
 HUMANOID_HEAD("Ada", 148 189 189, "admantine", ADA, 6)
-ARCHER_HEAD("Ada", 148 189 189, "admantine", ADA, 6, 20)
-FIRE_HEAD("Ada", 148 189 189, "admantine", ADA, 8)
-ACID_HEAD("Ada", 148 189 189, "admantine", ADA, 8)
-LEGS("Ada", 148 189 189, "admantine", ADA, 8)
-ARMS("Ada", 148 189 189, "admantine", ADA, 18, DAMAGE, "melee damage")
-DRILL("Ada", 148 189 189, "admantine", ADA, 20)
-CRAFTING_ARMS("Ada", 148 189 189, "admantine", ADA, 25)
-REPAIR_ARMS("Ada", 148 189 189, "admantine", ADA, 8)
+ARCHER_HEAD("Ada", 148 189 189, "adamantine", ADA, 6, 20)
+FIRE_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, 20)
+ACID_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, 20)
+LEGS("Ada", 148 189 189, "adamantine", ADA, 8)
+ARMS("Ada", 148 189 189, "adamantine", ADA, 18, DAMAGE, "melee damage")
+DRILL("Ada", 148 189 189, "adamantine", ADA, 20)
+CRAFTING_ARMS("Ada", 148 189 189, "adamantine", ADA, 25)
+REPAIR_ARMS("Ada", 148 189 189, "adamantine", ADA, 8)
 ARMS("Infernite", 220 148 148, "infernite", INFERNITE, 18, FIRE_DAMAGE, "fire damage")
 ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage")
 
@@ -323,7 +331,7 @@ ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage
       attackType = CUT
     }
     genPrefixes = {
-      1 VictimEffect 0.3 Fire
+      1 VictimEffect 0.3 Fire { 25 }
       1 VictimEffect 0.1 Lasting POISON
       1 LastingEffect RAGE
       1 JoinPrefixes {
@@ -346,7 +354,7 @@ ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage
     craftingCost = "ADA" 20
     genPrefixes = {
       1 VictimEffect 0.2 Acid{30}
-      1 VictimEffect 0.3 Fire
+      1 VictimEffect 0.3 Fire{30}
       1 VictimEffect 0.2 Lasting POISON
       1 LastingEffect RAGE
     }
@@ -365,7 +373,7 @@ End
     price = 200
     craftingCost = "INFERNITE" 20
     weaponInfo = append {
-      victimEffect = {0.5 Fire}
+      victimEffect = {0.5 Fire{40}}
     }
     carriedTickEffect = InferniteEffect()
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
@@ -441,7 +449,7 @@ End
     price = 1500
     craftingCost = "INFERNITE" 50
     weaponInfo = append {
-      victimEffect = {0.5 Fire}
+      victimEffect = {0.5 Fire{45}}
     }
     carriedTickEffect = InferniteEffect()
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
@@ -494,7 +502,7 @@ End
     price = 1000
     craftingCost = "INFERNITE" 40
     weaponInfo = append {
-      victimEffect = {0.5 Fire}
+      victimEffect = {0.5 Fire{45}}
     }
     carriedTickEffect = InferniteEffect()
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
@@ -593,7 +601,7 @@ End
     genPrefixes = {
       1 VictimEffect 0.2 Lasting INSANITY
       1 VictimEffect 0.2 DestroyEquipment
-      1 VictimEffect 0.5 Fire
+      1 VictimEffect 0.5 Fire{20}
     }
     maxUpgrades = 5
     equipmentGroup = "adoxium equipment"

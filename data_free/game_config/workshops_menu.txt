@@ -140,21 +140,25 @@ append {
   }
 }
 
+Def CORPUS(Id, Name, Resource, Tech, Slots)
+  { item = {Assembled{ Id Name {FIGHTER AUTOMATON}{AUTOMATONS_UPPER AUTOMATONS_LOWER} Slots}}
+    work = 8 cost = Resource tech = Tech applyImmediately = true notArtifact = true materialTab = true}
+End
+
+Def WORKER(Id, Color, Resource)
+  { item = {Assembled{Id "drilling automaton" {FIGHTER AUTOMATON}
+        {AUTOMATONS_UPPER AUTOMATONS_LOWER} 1 { { "installed_legs" Rgb Color 255 }
+            { "installed_drill" Rgb Color 255 }}}}
+    work = 8 cost = Resource tech = "automatons" applyImmediately = true notArtifact = true materialTab = true}
+End
+
 "gnomes"
 {
   "WORKSHOP"
   {
-      { item = {Assembled{ "AUTOMATON_WORKER_WOOD" "drilling automaton" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 1 { { "installed_legs" Rgb 180 140 55 255 }
-                { "installed_drill" Rgb 180 140 55 255 }}}}
-        work = 8 cost = "WOOD" 40 tech = "automatons" applyImmediately = true notArtifact = true}
-      { item = {Assembled{ "AUTOMATON_CORPUS_WOOD" "automaton corpus" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3}}
-        work = 8 cost = "WOOD" 30 tech = "automatons" applyImmediately = true notArtifact = true}
-      { item = {Assembled{ "LIGHT_AUTOMATON_CORPUS_WOOD" "light automaton corpus" {FIGHTER AUTOMATON} 
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 2}}
-        work = 8 cost = "WOOD" 20 tech = "advanced automatons" applyImmediately = true
-        notArtifact = true}
+      WORKER("AUTOMATON_WORKER_WOOD", 180 140 55, "WOOD" 40)
+      CORPUS("AUTOMATON_CORPUS_WOOD", "automaton corpus", "WOOD" 30, "automatons", 3)
+      CORPUS("LIGHT_AUTOMATON_CORPUS_WOOD", "light automaton corpus", "WOOD" 20, "automatons", 2)
       { item = {Assembled{ "HELICOPTER" "helicopterum" {FIGHTER AUTOMATON} 
             {AUTOMATONS_UPPER} 1}}
         work = 8 cost = "WOOD" 10 tech = "aerodynamics" applyImmediately = true notArtifact = true}
@@ -167,21 +171,10 @@ append {
   } 
   "FORGE"
   {
-      { item = {Assembled{ "AUTOMATON_WORKER_IRON" "drilling automaton" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 1 { { "installed_legs" Rgb 140 148 148 255 }
-                { "installed_drill" Rgb 140 148 148 255 }}}}
-        work = 8 cost = "IRON" 40 tech = "automatons" applyImmediately = true notArtifact = true materialTab = true}
-      { item = {Assembled{ "AUTOMATON_CORPUS_IRON" "automaton corpus" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3}}
-        work = 8 cost = "IRON" 30 tech = "automatons" applyImmediately = true notArtifact = true materialTab = true}
-      { item = {Assembled{ "LIGHT_AUTOMATON_CORPUS_IRON" "light automaton corpus" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 2}}
-        work = 8 cost = "IRON" 20 tech = "advanced automatons" applyImmediately = true
-        notArtifact = true materialTab = true}
-      { item = {Assembled{ "HEAVY_AUTOMATON_CORPUS_IRON" "heavy automaton corpus" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3}}
-        work = 8 cost = "IRON" 40 tech = "advanced automatons" applyImmediately = true
-        notArtifact = true materialTab = true}
+      WORKER("AUTOMATON_WORKER_IRON", 140 148 148, "IRON" 40)
+      CORPUS("AUTOMATON_CORPUS_IRON", "automaton corpus", "IRON" 30, "automatons", 3)
+      CORPUS("LIGHT_AUTOMATON_CORPUS_IRON", "light automaton corpus", "IRON" 20, "advanced automatons", 2)
+      CORPUS("HEAVY_AUTOMATON_CORPUS_IRON", "heavy automaton corpus", "IRON" 40, "advanced automatons", 3)
       { item = {"AutomatonLegsIron"} work = 2 tech = "automatons" materialTab = true}
       { item = {"AutomatonArmsIron"} work = 2 tech = "automatons" materialTab = true}
       { item = {"RepairAutomatonArmsIron"} work = 2 tech = "advanced automatons" materialTab = true}
@@ -191,21 +184,10 @@ append {
       { item = {"FireHeadIron"} work = 2 tech ="advanced automatons" materialTab = true}
       { item = {"AcidHeadIron"} work = 2 tech = "advanced automatons" materialTab = true}
       { item = {"HumanoidHeadIron"} work = 2 tech = "automaton brains" materialTab = true}
-      { item = {Assembled{ "AUTOMATON_WORKER_ADA" "drilling automaton" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3 { { "installed_legs" Rgb 148 189 189 255 }
-                { "installed_drill" Rgb 148 189 189 255 }}}}
-        work = 8 cost = "ADA" 30 tech = "automatons" applyImmediately = true notArtifact = true materialTab = true}
-      { item = {Assembled{ "AUTOMATON_CORPUS_ADA" "automaton corpus" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3}}
-        work = 8 cost = "ADA" 45 tech = "automatons" applyImmediately = true notArtifact = true materialTab = true}
-      { item = {Assembled{ "LIGHT_AUTOMATON_CORPUS_ADA" "light automaton corpus" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 2}}
-        work = 8 cost = "ADA" 20 tech = "advanced automatons" applyImmediately = true
-        notArtifact = true materialTab = true}
-      { item = {Assembled{ "HEAVY_AUTOMATON_CORPUS_ADA" "heavy automaton corpus" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3}}
-        work = 8 cost = "ADA" 40 tech = "advanced automatons" applyImmediately = true
-        notArtifact = true materialTab = true}
+      WORKER("AUTOMATON_WORKER_ADA", 148 189 189, "ADA" 40)
+      CORPUS("AUTOMATON_CORPUS_ADA", "automaton corpus", "ADA" 30, "automatons", 3)
+      CORPUS("LIGHT_AUTOMATON_CORPUS_ADA", "light automaton corpus", "ADA" 20, "advanced automatons", 2)
+      CORPUS("HEAVY_AUTOMATON_CORPUS_ADA", "heavy automaton corpus", "ADA" 40, "advanced automatons", 3)
       { item = {"AutomatonLegsAda"} work = 2 tech = "automatons" materialTab = true}
       { item = {"AutomatonArmsAda"} work = 2 tech = "automatons" materialTab = true}
       { item = {"RepairAutomatonArmsAda"} work = 2 tech = "advanced automatons" materialTab = true}
@@ -215,13 +197,19 @@ append {
       { item = {"FireHeadAda"} work = 2 tech = "advanced automatons" materialTab = true}
       { item = {"AcidHeadAda"} work = 2 tech = "advanced automatons" materialTab = true}
       { item = {"HumanoidHeadAda"} work = 2 tech = "automaton brains" materialTab = true}
+      CORPUS("AUTOMATON_CORPUS_INFERNITE", "automaton corpus", "INFERNITE" 30, "automatons", 3)
+      CORPUS("LIGHT_AUTOMATON_CORPUS_INFERNITE", "light automaton corpus", "INFERNITE" 20, "advanced automatons", 2)
+      CORPUS("HEAVY_AUTOMATON_CORPUS_INFERNITE", "heavy automaton corpus", "INFERNITE" 40, "advanced automatons", 3)
       { item = {"AutomatonArmsInfernite"} work = 2 tech = "automatons" materialTab = true}
+      CORPUS("AUTOMATON_CORPUS_ADOXIUM", "automaton corpus", "ADOXIUM" 30, "automatons", 3)
+      CORPUS("LIGHT_AUTOMATON_CORPUS_ADOXIUM", "light automaton corpus", "ADOXIUM" 20, "advanced automatons", 2)
+      CORPUS("HEAVY_AUTOMATON_CORPUS_ADOXIUM", "heavy automaton corpus", "ADOXIUM" 40, "advanced automatons", 3)
       { item = {"AutomatonArmsAdoxium"} work = 2 tech = "automatons" materialTab = true}
   } 
   "LABORATORY"
   {
-      {{Potion Fire} 4 "GOLD" 5}
-      {{Potion Name "more fire" Area 1 Fire} 8 "GOLD" 10}
+      {{Potion Fire{25}} 4 "GOLD" 5}
+      {{Potion Name "more fire" Area 1 Fire{20}} 8 "GOLD" 10}
       {{Potion Lasting OIL} 4 "GOLD" 15}
   }
 }
