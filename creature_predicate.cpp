@@ -106,6 +106,17 @@ static string getName(const CreaturePredicates::Ingredient& e, const ContentFact
   return "holding " + e.name;
 }
 
+static bool apply(const CreaturePredicates::OnTheGround& e, Position pos, const Creature*) {
+  for (auto& item : pos.getItems(ItemIndex::RUNE))
+    if (item->getIngredientType() == e.name)
+      return true;
+  return false;
+}
+
+static string getName(const CreaturePredicates::OnTheGround& e, const ContentFactory*) {
+  return "on the ground " + e.name;
+}
+
 static bool applyToCreature(LastingOrBuff e, const Creature* victim, const Creature* attacker) {
   return isAffected(victim, e);
 }

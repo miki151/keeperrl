@@ -41,6 +41,11 @@ struct Ingredient {
   SERIALIZE_ALL(name)
 };
 
+struct OnTheGround {
+  string SERIAL(name);
+  SERIALIZE_ALL(name)
+};
+
 struct Attacker {
   HeapAllocated<CreaturePredicate> SERIAL(pred);
   SERIALIZE_ALL(pred)
@@ -133,7 +138,7 @@ using BodyMaterial = BodyMaterialId;
   X(BodyMaterial, 4)\
   X(HatedBy, 5)\
   X(Ingredient, 6)\
-  X(Hidden, 7)\
+  X(OnTheGround, 7)\
   X(Flag, 8)\
   X(CreatureFlag, 9)\
   X(Name, 10)\
@@ -162,7 +167,8 @@ using BodyMaterial = BodyMaterialId;
   X(CanCreatureEnter, 33)\
   X(Area, 34)\
   X(Frequency, 35)\
-  X(SameTribe, 36)
+  X(SameTribe, 36)\
+  X(Hidden, 37)\
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST
