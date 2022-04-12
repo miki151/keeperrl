@@ -115,3 +115,19 @@
   intrinsicallyAffected = { COLD_IMMUNITY }
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
 }
+
+"INFERNITE" {
+  name = "infernite"
+  deathDescription = "destroyed"
+  intrinsicallyAffected = { FIRE_IMMUNITY }
+  immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
+  bodyPartItem = {"InferniteOre"}
+}
+
+"ADOXIUM" {
+  name = "adoxium"
+  deathDescription = "destroyed"
+  intrinsicallyAffected = { FIRE_IMMUNITY }
+  immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
+  bodyPartItem = {"AdoxiumOre"}
+}
