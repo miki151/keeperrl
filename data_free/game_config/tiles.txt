@@ -230,6 +230,8 @@
 { "automaton_repair" ")" ColorId LIGHT_BROWN }
 { "automaton_drill" ")" ColorId LIGHT_BROWN }
 { "automaton_crafting" ")" ColorId LIGHT_BROWN }
+{ "kaboom_head" ")" ColorId LIGHT_BROWN }
+{ "installed_kaboom_head" ")" ColorId LIGHT_BROWN }
 { "installed_head" ")" ColorId LIGHT_BROWN }
 { "installed_fire" ")" ColorId LIGHT_BROWN }
 { "installed_acid" ")" ColorId LIGHT_BROWN }

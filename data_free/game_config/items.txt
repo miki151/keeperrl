@@ -242,6 +242,30 @@ REPAIR_ARMS("Ada", 148 189 189, "adamantine", ADA, 8)
 ARMS("Infernite", 220 148 148, "infernite", INFERNITE, 18, FIRE_DAMAGE, "fire damage")
 ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage")
 
+"KaboomHead"
+  {
+    viewId = { "kaboom_head" }
+    name = "kaboom head"
+    shortName = "kaboom head"
+    weight = 4
+    craftingCost = IRON 15
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "kaboom head"
+      Description "Explodes, destroying the equiped automaton and wounding everything around it with +50 fire damage."
+      {
+        AddBodyPart HEAD 1 { Intrinsic { "touch_attack" } "self destruct" 1 {
+          attackType = HIT
+          meleeAttackAttr = FIRE_DAMAGE
+          attackMsg = THRUST
+          itselfMessage = true
+          attackerEffect = {Suicide DIE}
+          victimEffect = {1.0 CircularBlast 1.0 Area 1 Fire{50}} } }
+        AddAutomatonPart 2 "kaboom" { "installed_kaboom_head" }
+      }
+    upgradeType = {ARMOR}
+    storageIds = {"automaton_parts" "equipment"}
+  }
+
 "Knife"
   {
     viewId = { "knife" }

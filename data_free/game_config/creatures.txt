@@ -4765,7 +4765,7 @@ End
       intrinsicAttacks = {
         TORSO {{{ Intrinsic { "touch_attack" } "self destruct" 1 {
           attackType = HIT
-          meleeAttackAttr = SPELL_DAMAGE
+          meleeAttackAttr = FIRE_DAMAGE
           attackMsg = THRUST
           itselfMessage = true
           victimEffect = {1.0 Suicide DIE}
