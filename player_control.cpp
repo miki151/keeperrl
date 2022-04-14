@@ -1540,38 +1540,35 @@ vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() co
   return ret;
 }
 
-static FurnitureType getPrisonType(Creature* c) {
-  return FurnitureType(c->getBody().isHumanoid() ? "PRISON" : "BEAST_CAGE");
-}
-
 vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
   vector<ImmigrantDataInfo> ret;
   int index = -1;
   auto contentFactory = getGame()->getContentFactory();
   for (auto stack : getPrisonerImmigrantStack()) {
     auto c = stack.creatures[0];
-    const auto prisonType = contentFactory->furniture.getData(getPrisonType(c));
+    const auto prisonBedType = CollectiveConfig::getPrisonBedType(c);
     const int numPrisoners = collective->getCreatures(MinionTrait::PRISONER)
-        .filter([prisonType = getPrisonType(c)](auto other) {  return getPrisonType(other) == prisonType; })
+        .filter([&](auto other) {  return CollectiveConfig::getPrisonBedType(other) == prisonBedType; })
         .size();
     const int prisonSize = [&] {
+      int cnt = 0;
       auto& constructions = collective->getConstructions();
-      if (prisonType.getType() == FurnitureType("PRISON")) {
-        int cnt = 0;
-        for (auto& pos : constructions.getBuiltPositions(prisonType.getType()))
-          if (pos.isClosedOff(MovementType(MovementTrait::WALK).setPrisoner()))
-            ++cnt;
-        return cnt;
-      }
-      return constructions.getBuiltCount(prisonType.getType());
+      for (auto type : contentFactory->furniture.getBedFurniture(prisonBedType))
+        if (type == FurnitureType("PRISON")) {
+          for (auto& pos : constructions.getBuiltPositions(type))
+            if (pos.isClosedOff(MovementType(MovementTrait::WALK).setPrisoner()))
+              ++cnt;
+        } else
+          cnt += constructions.getBuiltCount(type);
+      return cnt;
     }();
     vector<string> requirements;
     const int missingSize = numPrisoners + 1 - prisonSize;
     if (missingSize > 0) {
       if (prisonSize == 0)
-        requirements.push_back("Requires a " + prisonType.getName());
+        requirements.push_back("Requires a "_s + getName(prisonBedType));
       else
-        requirements.push_back("Requires " + toString(missingSize) + " more " + prisonType.getName(missingSize));
+        requirements.push_back("Requires " + getPlural("more "_s + getName(prisonBedType), missingSize));  
     }
     if (stack.collective)
       requirements.push_back("Requires conquering " + stack.collective->getName()->full);

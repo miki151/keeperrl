@@ -59,11 +59,15 @@ void GuardianInfo::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(GuardianInfo);
 
+BedType CollectiveConfig::getPrisonBedType(const Creature* c) {
+  return c->getBody().isHumanoid() ? BedType::PRISON : BedType::CAGE;
+}
+
 static optional<BedType> getBedType(const Creature* c, const ContentFactory* factory) {
   if (!c->getBody().isImmuneTo(LastingEffect::SLEEP, factory))
     return none;
   if (c->getStatus().contains(CreatureStatus::PRISONER))
-    return BedType::PRISON;
+    return CollectiveConfig::getPrisonBedType(c);
   if (c->getBody().isUndead(factory))
     return BedType::COFFIN;
   if (c->getBody().isHumanoid())

@@ -9,3 +9,5 @@ RICH_ENUM(
     PRISON,
     CAGE
 );
+
+const char* getName(BedType);
