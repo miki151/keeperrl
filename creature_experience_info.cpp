@@ -12,7 +12,7 @@ CreatureExperienceInfo getCreatureExperienceInfo(const ContentFactory* f, const 
     EnumMap<ExperienceType, vector<pair<string, ViewId>>>([f](ExperienceType type) {
       vector<pair<string, ViewId>> v;
       for (auto attr : getAttrIncreases()[type]) {
-        auto& info = f->attrInfo.at(attr);
+        auto& info = f->attrInfo.at(attr.first);
         v.push_back(make_pair(info.name, info.viewId));
       }
       return v;

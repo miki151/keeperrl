@@ -135,7 +135,7 @@ const Gender& CreatureAttributes::getGender() const {
 int CreatureAttributes::getRawAttr(AttrType type) const {
   int ret = getValueMaybe(attr, type).value_or(0);
   if (auto expType = getExperienceType(type))
-    ret += (int) expLevel[*expType];
+    ret += expType->second * (int) expLevel[expType->first];
   return ret;
 }
 
@@ -165,10 +165,10 @@ bool CreatureAttributes::isTrainingMaxedOut(ExperienceType type) const {
   return getExpLevel(type) >= maxLevelIncrease[type];
 }
 
-void CreatureAttributes::increaseBaseExpLevel(ExperienceType type, double increase) {
+void CreatureAttributes::increaseBaseExpLevel(ExperienceType type, int increase) {
   for (auto attrType : getAttrIncreases()[type]) {
-    attr[attrType] += increase;
-    attr[attrType] = max(0, attr[attrType]);
+    attr[attrType.first] += increase * attrType.second;
+    attr[attrType.first] = max(0, attr[attrType.first]);
   }
 }
 

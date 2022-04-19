@@ -46,7 +46,7 @@ ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature* c, const ContentF
     if (maxExp[expType] > 0) {
       limits.push_back(ImmigrantCreatureInfo::TrainingInfo { expType, maxExp[expType] });
       for (auto attr : getAttrIncreases()[expType])
-        limits.back().attributes.push_back(factory->attrInfo.at(attr).viewId);
+        limits.back().attributes.push_back(factory->attrInfo.at(attr.first).viewId);
     }
   return ImmigrantCreatureInfo {
     c->getName().bare(),

@@ -1165,7 +1165,7 @@ int Creature::getPoints() const {
 int Creature::getRawAttr(AttrType type) const {
   int ret = attributes->getRawAttr(type);
   if (auto expType = getExperienceType(type))
-    ret += (int) min(combatExperience, attributes->getExpLevel(*expType));
+    ret += (int) min(combatExperience, attributes->getExpLevel(expType->first) * expType->second);
   return ret;
 }
 
