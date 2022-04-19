@@ -140,6 +140,7 @@ End
          { 0.10 { ExtraTraining SPELL 4}}
          { 0.05 { WorkshopType "LABORATORY" }}
          { 0.05 { SpecialAttr SPELL_DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
+         { 0.05 { AttrBonus SPELL_SPEED 30 }}
          { 0.03 { AttrBonus SPELL_DAMAGE 10 AttrBonus DEFENSE 10 Lasting { AGGRAVATES }}}
          { 0.02 { Lasting { HATE_ELVES } }}
          { 0.02 { Lasting { HATE_HUMANS } }}
@@ -160,6 +161,7 @@ End
          { 0.10 { Lasting { MAGIC_RESISTANCE } }}
          { 0.02 { Lasting { HATE_ELVES } }}
          { 0.02 { Lasting { HATE_HUMANS } }}
+         { 0.05 { AttrBonus SPELL_SPEED 30 }}
          { 0.01 { Lasting { ENTERTAINER } }}
       }
     }
@@ -255,6 +257,7 @@ End
          { 0.3 { Lasting { TELEPATHY } }}
          { 0.3 { Lasting { FIRE_RESISTANT } }}
          { 0.05 { Lasting { HATE_GREENSKINS } }}
+         { 0.02 { AttrBonus SPELL_SPEED 30 }}
          { 0.3 { Lasting { FLYING } }}
          { 0.1 { Lasting { ENTERTAINER } }}
          { 0.03 { AttrBonus SPELL_DAMAGE 10 AttrBonus DEFENSE 10 Lasting { AGGRAVATES }}}
@@ -414,6 +417,7 @@ End
       specialTraits = {
         { 0.15 { SpecialAttr DEFENSE 8 HatedBy HATE_UNDEAD }}
         { 0.03 { AttrBonus SPELL_DAMAGE 4 AttrBonus DEFENSE -4}}
+        { 0.02 { AttrBonus SPELL_SPEED 30 }}
         { 0.05 { ExtraTraining SPELL 2}}
         { 0.02 { Lasting { HATE_UNDEAD } }}
       }
@@ -429,6 +433,7 @@ End
       specialTraits = {
         { 0.15 { SpecialAttr DEFENSE 8 HatedBy HATE_UNDEAD }}
         { 0.05 { ExtraTraining SPELL 2}}
+        { 0.02 { AttrBonus SPELL_SPEED 30 }}
       }
     }
     {
@@ -715,6 +720,7 @@ End
       specialTraits = {
          { 0.05 { WorkshopType "LABORATORY" }}
          { 0.02 { Lasting { HATE_ELVES } }}
+         { 0.02 { AttrBonus SPELL_SPEED 30 }}
          { 0.02 { Lasting { HATE_HUMANS } }}
          { 0.01 { Lasting { ENTERTAINER } }}
       }
@@ -734,6 +740,7 @@ End
          { 0.10 { ExtraTraining SPELL 4}}
          { 0.15 { SpecialAttr SPELL_DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
          { 0.05 { WorkshopType "LABORATORY" }}
+         { 0.05 { AttrBonus SPELL_SPEED 30 }}
          { 0.02 { Lasting { HATE_ELVES } }}
          { 0.02 { Lasting { HATE_HUMANS } }}
          { 0.01 { Lasting { ENTERTAINER } }}
