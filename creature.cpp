@@ -246,7 +246,7 @@ CreatureAction Creature::castSpell(const Spell* spell) const {
 
 TimeInterval Creature::calculateSpellCooldown(Range cooldown) const {
   return TimeInterval(cooldown.getStart() +
-      (cooldown.getLength() - 1) * (100 - getAttr(AttrType("SPELL_SPEED"))) / 100);
+      (cooldown.getLength() - 1) * (100 - min(100, getAttr(AttrType("SPELL_SPEED")))) / 100);
 }
 
 CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
