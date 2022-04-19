@@ -78,6 +78,14 @@
   help = "Prevents defense penalty from multiple attacks in the same turn."
 }
 
+"SPELL_SPEED" {
+  name = "spell speed"
+  viewId = { "spell_speed_icon" }
+  adjective = "quickhanded"
+  absorptionCap = 25
+  help = "Affects spell cooldown times."
+}
+
 "DIGGING" {
   name = "digging"
   viewId = { "dig_icon" }

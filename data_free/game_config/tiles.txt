@@ -1,4 +1,5 @@
 { "furnace_icon" "1" ColorId WHITE }
+{ "spell_speed_icon" "1" ColorId WHITE }
 { "multi_weapon_icon" "1" ColorId WHITE }
 { "digging_icon" "1" ColorId WHITE }
 { "damage_icon" "1" ColorId WHITE }

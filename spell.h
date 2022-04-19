@@ -37,8 +37,8 @@ class Spell {
   STRUCT_DECLARATIONS(Spell)
   const string& getSymbol() const;
   const Effect& getEffect() const;
-  int getCooldown() const;
-  vector<string> getDescription(const ContentFactory*) const;
+  Range getCooldown() const;
+  vector<string> getDescription(const Creature*, const ContentFactory*) const;
   void addMessage(Creature*) const;
   optional<SoundId> getSound() const;
   bool canTargetSelf() const;
@@ -64,7 +64,7 @@ class Spell {
   optional<SpellId> SERIAL(upgrade);
   string SERIAL(symbol);
   HeapAllocated<Effect> SERIAL(effect);
-  int SERIAL(cooldown);
+  Range SERIAL(cooldown);
   pair<string, string> SERIAL(message) = {"cast a spell"_s, "casts a spell"_s};
   optional<SoundId> SERIAL(sound);
   int SERIAL(range) = 0;

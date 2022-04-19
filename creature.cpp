@@ -244,6 +244,11 @@ CreatureAction Creature::castSpell(const Spell* spell) const {
   return castSpell(spell, position);
 }
 
+TimeInterval Creature::calculateSpellCooldown(Range cooldown) const {
+  return TimeInterval(cooldown.getStart() +
+      (cooldown.getLength() - 1) * (100 - getAttr(AttrType("SPELL_SPEED"))) / 100);
+}
+
 CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
   if (spell->getType() == SpellType::SPELL && isAffected(LastingEffect::MAGIC_CANCELLATION))
     return CreatureAction("You can't cast spells while under the effect of "
@@ -259,7 +264,7 @@ CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
     spell->addMessage(c);
     if (spell->getType() == SpellType::SPELL)
       getGame()->getStatistics().add(StatId::SPELL_CAST);
-    c->spellMap->setReadyTime(c, spell, *getGlobalTime() + TimeInterval(spell->getCooldown()));
+    c->spellMap->setReadyTime(c, spell, *getGlobalTime() + calculateSpellCooldown(spell->getCooldown()));
     c->spendTime();
     spell->apply(c, target);
   });

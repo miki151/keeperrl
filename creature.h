@@ -267,6 +267,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void setController(PController);
   void popController();
 
+  TimeInterval calculateSpellCooldown(Range cooldown) const;
   CreatureAction castSpell(const Spell*) const;
   CreatureAction castSpell(const Spell*, Position) const;
   TimeInterval getSpellDelay(const Spell*) const;

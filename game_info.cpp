@@ -156,7 +156,7 @@ SpellSchoolInfo fillSpellSchool(const Creature* c, SpellSchoolId id, const Conte
           spell->getSymbol(),
           id.second,
           !c || c->getAttributes().getExpLevel(spellSchool.expType) >= id.second,
-          {spell->getDescription(factory)},
+          {spell->getDescription(c, factory)},
           none
         });
   }
@@ -193,7 +193,7 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory)
         spell->getSymbol(),
         none,
         true,
-        spell->getDescription(contentFactory),
+        spell->getDescription(c, contentFactory),
         c->isReady(spell) ? none : optional<TimeInterval>(c->getSpellDelay(spell)),
         false
     });

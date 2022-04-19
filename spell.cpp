@@ -43,7 +43,7 @@ const Effect& Spell::getEffect() const {
   return *effect;
 }
 
-int Spell::getCooldown() const {
+Range Spell::getCooldown() const {
   return cooldown;
 }
 
@@ -55,8 +55,11 @@ bool Spell::canTargetSelf() const {
   return targetSelf || range == 0;
 }
 
-vector<string> Spell::getDescription(const ContentFactory* f) const {
-  vector<string> description = {effect->getDescription(f), "Cooldown: " + toString(getCooldown())};
+vector<string> Spell::getDescription(const Creature* c, const ContentFactory* f) const {
+    vector<string> description = {effect->getDescription(f), "Cooldown: " + (c
+        ? toString(c->calculateSpellCooldown(cooldown))
+        : toString(cooldown))
+        };
   if (getRange() > 0)
     description.push_back("Range: " + toString(getRange()));
   return description;
