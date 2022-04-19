@@ -619,6 +619,7 @@ End
     name = "adoxium staff"
     modifiers = {
       SPELL_DAMAGE 13
+      SPELL_SPEED 10
     }
     price = 1800
     craftingCost = "ADOXIUM" 40
@@ -833,7 +834,7 @@ End
     price = 250
     craftingCost = "ADOXIUM" 2
     modifiers = append {
-      SPELL_DAMAGE 2
+      SPELL_SPEED 10
     }
   }
 "LeatherArmor"
@@ -1100,7 +1101,7 @@ End
     price = 1600
     craftingCost = "ADOXIUM" 40
     modifiers = append {
-      SPELL_DAMAGE 5
+      SPELL_SPEED 25
     }
     equipmentGroup = "adoxium equipment"
   }
@@ -1308,7 +1309,7 @@ End
     price = 400
     craftingCost = "ADOXIUM" 16
     modifiers = append {
-      SPELL_DAMAGE 4
+      SPELL_SPEED 15
     }
     equipmentGroup = "adoxium equipment"
   }
@@ -1323,6 +1324,7 @@ End
     modifiers = {
       SPELL_DAMAGE 2
       DAMAGE -2
+      SPELL_SPEED 5
     }
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
@@ -1339,6 +1341,7 @@ End
     modifiers = {
       SPELL_DAMAGE 4
       DAMAGE -4
+      SPELL_SPEED 10
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
@@ -1355,6 +1358,7 @@ End
     modifiers = {
       SPELL_DAMAGE 6
       DAMAGE -6
+      SPELL_SPEED 15
     }
     maxUpgrades = 4
     storageIds = {"armor" "equipment"}
@@ -1433,7 +1437,7 @@ End
     price = 500
     craftingCost = "ADOXIUM" 24
     modifiers = append {
-      SPELL_DAMAGE 3
+      SPELL_SPEED 10
     }
     equipmentGroup = "adoxium equipment"
   }
