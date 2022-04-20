@@ -981,7 +981,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
           IncreaseAttr DEFENSE 3
           Acid{30}
           Fire{30}
-          Lasting DAM_BONUS
+          Lasting 40 DAM_BONUS
           Lasting BLIND
           Lasting POISON
           Lasting BLEEDING
@@ -1784,12 +1784,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "bleeding totem"
   viewId = { "totem" Rgb 156 58 156 255 }
   lastingEffect = ENEMY BLEEDING 7
-}
-"DEFENSE_TOTEM" inherit "HEALING_TOTEM"
-{
-  name = "defense totem"
-  viewId = { "totem" Rgb 68 58 156 255 }
-  lastingEffect = ALLY DEF_BONUS 3
 }
 "ALARM_TRAP"
 {

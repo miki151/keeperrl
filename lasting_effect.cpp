@@ -157,12 +157,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::POISON:
         c->you(MsgType::ARE, "poisoned");
         break;
-      case LastingEffect::DAM_BONUS:
-        c->you(MsgType::FEEL, "more dangerous");
-        break;
-      case LastingEffect::DEF_BONUS:
-        c->you(MsgType::FEEL, "more protected");
-        break;
       case LastingEffect::SPEED:
         c->you(MsgType::ARE, "moving faster");
         break;
@@ -419,12 +413,6 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::SPEED:
         c->you(MsgType::ARE, "moving more slowly again");
         break;
-      case LastingEffect::DAM_BONUS:
-        c->you(MsgType::ARE, "less dangerous again");
-        break;
-      case LastingEffect::DEF_BONUS:
-        c->you(MsgType::ARE, "less protected again");
-        break;
       case LastingEffect::PANIC:
       case LastingEffect::RAGE:
       case LastingEffect::HALLU:
@@ -597,8 +585,6 @@ int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
       value -= attrBonus;
     if (c->isAffected(LastingEffect::RAGE, time))
       value += attrBonus;
-    if (c->isAffected(LastingEffect::DAM_BONUS, time))
-      value += attrBonus;
     if (c->isAffected(LastingEffect::SWARMER, time))
       value += c->getPosition().countSwarmers() - 1;
     modifyWithSpying(value);
@@ -617,8 +603,6 @@ int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
       value -= attrBonus;
     if (c->isAffected(LastingEffect::SLEEP, time))
       value -= attrBonus;
-    if (c->isAffected(LastingEffect::DEF_BONUS, time))
-      value += attrBonus;
     if (c->isAffected(LastingEffect::SATIATED, time))
       value += 1;
     if (c->isAffected(LastingEffect::RESTED, time))
@@ -648,8 +632,6 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::INVISIBLE: return "Invisible"_good;
     case LastingEffect::RAGE: return "Enraged"_good;
     case LastingEffect::HALLU: return "Hallucinating"_good;
-    case LastingEffect::DAM_BONUS: return "Damage bonus"_good;
-    case LastingEffect::DEF_BONUS: return "Defense bonus"_good;
     case LastingEffect::SLEEP_RESISTANT: return "Sleep resistant"_good;
     case LastingEffect::SPEED: return "Speed bonus"_good;
     case LastingEffect::POISON_RESISTANT: return "Poison resistant"_good;
@@ -1007,8 +989,6 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::RAGE: return "rage";
     case LastingEffect::HALLU: return "magic";
     case LastingEffect::SLEEP_RESISTANT: return "sleep resistance";
-    case LastingEffect::DAM_BONUS: return "damage";
-    case LastingEffect::DEF_BONUS: return "defense";
     case LastingEffect::SLEEP: return "sleep";
     case LastingEffect::IMMOBILE: return "immobility";
     case LastingEffect::TIED_UP:
@@ -1076,8 +1056,6 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::PANIC: return "Increases defense and lowers damage.";
     case LastingEffect::RAGE: return "Increases damage and lowers defense.";
     case LastingEffect::HALLU: return "Causes hallucinations.";
-    case LastingEffect::DAM_BONUS: return "Gives a damage bonus.";
-    case LastingEffect::DEF_BONUS: return "Gives a defense bonus.";
     case LastingEffect::SLEEP_RESISTANT: return "Prevents being put to sleep.";
     case LastingEffect::SLEEP: return "Puts to sleep.";
     case LastingEffect::IMMOBILE: return "Creature does not move.";
@@ -1183,9 +1161,6 @@ int LastingEffects::getPrice(LastingEffect e) {
       return 12;
     case LastingEffect::BLIND:
       return 16;
-    case LastingEffect::DAM_BONUS:
-    case LastingEffect::DEF_BONUS:
-      return 20;
     case LastingEffect::SLOWED:
     case LastingEffect::POISON_RESISTANT:
     case LastingEffect::SLEEP_RESISTANT:
@@ -1292,9 +1267,6 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
     case LastingEffect::BLEEDING:
       return FXVariantName::DEBUFF_RED;
 
-    case LastingEffect::DAM_BONUS:
-    case LastingEffect::DEF_BONUS:
-      return FXVariantName::BUFF_YELLOW;
     case LastingEffect::SPELL_DAMAGE:
       return FXVariantName::BUFF_PURPLE;
     case LastingEffect::CAPTURE_RESISTANCE:
@@ -1350,8 +1322,6 @@ Color LastingEffects::getColor(LastingEffect effect) {
       return Color::WHITE;
     case LastingEffect::SPEED:
       return Color::LIGHT_BLUE;
-    case LastingEffect::DAM_BONUS:
-    case LastingEffect::DEF_BONUS:
     case LastingEffect::DRUNK:
       return Color::YELLOW;
     case LastingEffect::AGGRAVATES:
@@ -1407,8 +1377,6 @@ bool LastingEffects::shouldAllyApplyInDanger(const Creature* victim, LastingEffe
   switch (effect) {
     case LastingEffect::LIFE_SAVED:
     case LastingEffect::INVISIBLE:
-    case LastingEffect::DAM_BONUS:
-    case LastingEffect::DEF_BONUS:
     case LastingEffect::SLEEP_RESISTANT:
     case LastingEffect::SPEED:
     case LastingEffect::FLYING:
@@ -1476,9 +1444,6 @@ TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
       return 15_visible;
     case LastingEffect::POISON:
       return 60_visible;
-    case LastingEffect::DEF_BONUS:
-    case LastingEffect::DAM_BONUS:
-      return 40_visible;
     case LastingEffect::BLIND:
       return 15_visible;
     case LastingEffect::INVISIBLE:

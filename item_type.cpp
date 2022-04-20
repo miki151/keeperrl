@@ -455,8 +455,6 @@ static ViewId getMushroomViewId(Effect e) {
         return e.lastingEffect.visit(
           [](LastingEffect e) {
             switch (e) {
-              case LastingEffect::DAM_BONUS: return ViewId("mushroom1");
-              case LastingEffect::DEF_BONUS: return ViewId("mushroom2");
               case LastingEffect::PANIC: return ViewId("mushroom3");
               case LastingEffect::HALLU: return ViewId("mushroom4");
               case LastingEffect::RAGE: return ViewId("mushroom5");
@@ -465,7 +463,11 @@ static ViewId getMushroomViewId(Effect e) {
               default: return ViewId("mushroom6");
             }
           },
-          [&](const auto&) {
+          [&](BuffId buff) {
+            if (buff == BuffId("DAM_BONUS"))
+              return ViewId("mushroom1");
+            if (buff == BuffId("DEF_BONUS"))
+              return ViewId("mushroom2");
             return ViewId("mushroom6");
           }
         );

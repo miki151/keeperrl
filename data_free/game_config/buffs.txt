@@ -12,6 +12,24 @@
   color = ColorId RED
 }
 
+Def ATTR_BUFF(Attr, Name, Amount, Adjective, Price) {
+  name = Name
+  adjective = Name + " bonus"
+  description = "Gives a +" + Amount + " " + Name + " bonus"
+  addedMessage = ARE "more " + Adjective
+  removedMessage = ARE "no longer " + Adjective
+  startEffect = IncreaseAttr Attr Amount
+  endEffect = IncreaseAttr Attr -Amount
+  combatConsumable = true
+  fx = BUFF_ORANGE
+  color = ColorId ORANGE
+  price = Price
+}
+End
+
+"DAM_BONUS" ATTR_BUFF(DAMAGE, "damage", 3, "dangerous", 20)
+"DEF_BONUS" ATTR_BUFF(DEFENSE, "defense", 3, "protected", 20)
+
 Def SKILL(Name, Adjective, Description) {
   name = Name
   adjective = Adjective

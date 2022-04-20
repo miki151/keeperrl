@@ -333,7 +333,7 @@ End
 "defense bonus"
 {
   symbol = "🛡"
-  effect = Name "defense bonus" Lasting DEF_BONUS
+  effect = Name "defense bonus" Lasting 40 DEF_BONUS
   cooldown = {30 81}
   sound = SPELL_DEX_BONUS
 }
@@ -341,7 +341,7 @@ End
 {
   upgrade = "defense bonus"
   symbol = "🛡"
-  effect = Name "advanced defense bonus" Lasting DEF_BONUS
+  effect = Name "advanced defense bonus" Lasting 40 DEF_BONUS
   targetSelf = true
   range = 1
   cooldown = {30 81}
@@ -351,14 +351,14 @@ End
 {
   upgrade = "advanced defense bonus"
   symbol = "🛡"
-  effect = Name "mass defense bonus" Area 10 Filter Not Enemy Lasting DEF_BONUS
+  effect = Name "mass defense bonus" Area 10 Filter Not Enemy Lasting 40 DEF_BONUS
   cooldown = {30 81}
   sound = SPELL_DEX_BONUS
 }
 "damage bonus"
 {
   symbol = "💪"
-  effect = Name "damage bonus" Lasting DAM_BONUS
+  effect = Name "damage bonus" Lasting 40 DAM_BONUS
   cooldown = {30 81}
   sound = SPELL_STR_BONUS
 }
@@ -366,7 +366,7 @@ End
 {
   upgrade = "damage bonus"
   symbol = "💪"
-  effect = Name "advanced damage bonus" Lasting DAM_BONUS
+  effect = Name "advanced damage bonus" Lasting 40 DAM_BONUS
   targetSelf = true
   range = 1
   cooldown = {30 81}
@@ -376,21 +376,21 @@ End
 {
   upgrade = "advanced damage bonus"
   symbol = "💪"
-  effect = Name "mass damage bonus" Area 10 Filter Not Enemy Lasting DAM_BONUS
+  effect = Name "mass damage bonus" Area 10 Filter Not Enemy Lasting 40 DAM_BONUS
   cooldown = {30 81}
   sound = SPELL_STR_BONUS
 }
 "bolster"
 {
   symbol = "🛡"
-  effect = Name "bolster" Area 1 Filter Not Enemy Lasting DEF_BONUS 
+  effect = Name "bolster" Area 1 Filter Not Enemy Lasting 40 DEF_BONUS 
   cooldown = {30 81}
   sound = SPELL_DEX_BONUS
 }
 "rally"
 {
   symbol = "💪"
-  effect = Name "rally" Area 1 Filter Not Enemy Lasting DAM_BONUS 
+  effect = Name "rally" Area 1 Filter Not Enemy Lasting 40 DAM_BONUS 
   cooldown = {30 81}
   sound = SPELL_DEX_BONUS
 }

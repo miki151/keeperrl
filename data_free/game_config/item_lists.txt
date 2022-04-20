@@ -118,8 +118,8 @@ End
 "goodMushrooms"
 {
   items = {
-    {{Mushroom Lasting DAM_BONUS} 1}
-    {{Mushroom Lasting DEF_BONUS} 1}
+    {{Mushroom Lasting 40 DAM_BONUS} 1}
+    {{Mushroom Lasting 40 DEF_BONUS} 1}
     {{Mushroom Lasting NIGHT_VISION} 1}
     {{Mushroom Lasting PANIC} 1}
     {{Mushroom Lasting REGENERATION} 1}
@@ -153,8 +153,8 @@ End
     }
     {0 2} {
       {Mushroom Lasting HALLU} 0.5
-      {Mushroom Lasting DAM_BONUS} 0.5
-      {Mushroom Lasting DEF_BONUS} 0.5
+      {Mushroom Lasting 40 DAM_BONUS} 0.5
+      {Mushroom Lasting 40 DEF_BONUS} 0.5
       {Mushroom Lasting NIGHT_VISION} 0.5
       {Mushroom Lasting REGENERATION} 0.5
       {Mushroom Lasting RAGE} 0.5
