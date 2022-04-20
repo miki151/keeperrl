@@ -30,6 +30,21 @@ End
 "DAM_BONUS" ATTR_BUFF(DAMAGE, "damage", 3, "dangerous", 20)
 "DEF_BONUS" ATTR_BUFF(DEFENSE, "defense", 3, "protected", 20)
 
+"KINGS_CHARGE" {
+  name = "king's charge"
+  adjective = "king's charge"
+  description = "Gives a +15 damage bonus"
+  addedMessage = "feel ready to die for your king" "seems ready to die for their king" ""
+  removedMessage = "no longer feel ready to die for your king" "no longer seems ready to die for their king" ""  
+  startEffect = IncreaseAttr DAMAGE 15
+  endEffect = IncreaseAttr DAMAGE -15
+  combatConsumable = true
+  fx = BUFF_PINK
+  color = ColorId PINK
+  price = 200
+}
+
+
 Def SKILL(Name, Adjective, Description) {
   name = Name
   adjective = Adjective

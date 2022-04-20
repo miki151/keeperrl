@@ -782,3 +782,14 @@ Def NoEffect() Unlock "nothing" End
   endOnly = true
   message = "lash your whip!" "lashes his whip!"
 }
+
+"kings charge"
+{
+  symbol = "👑"
+  effect = Name "king's charge" Description "All allies within the radius of 10 receive a +15 damage buff. Can only be used by a tribe leader." {
+    Filter Attacker CreatureStatus LEADER Area 10 Filter And{ Not Enemy Distance 1 none } Lasting 40 KINGS_CHARGE
+    Filter Not Attacker CreatureStatus LEADER CreatureMessage "are not worthy!" "is not worthy!"
+  }
+  cooldown = 300
+  sound = SPELL_STR_BONUS
+}

@@ -631,24 +631,23 @@ End
     maxUpgrades = 5
     equipmentGroup = "adoxium equipment"
   }
-"Scythe"
+"Sceptre"
   {
-    viewId = { "sword" }
-    name = "scythe"
+    viewId = { "sceptre" }
+    name = "sceptre"
     itemClass = WEAPON
     equipmentSlot = WEAPON
-    weight = 5
+    weight = 20
     modifiers = {
-      DAMAGE 12
+      DAMAGE 5
     }
-    price = 20
+    price = 2000
     weaponInfo = {
-      attackType = CUT
-      twoHanded = true
-      meleeAttackAttr = SPELL_DAMAGE
+      attackType = HIT
     }
+    equipedAbility = { "kings charge" }
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = "iron equipment"
+    equipmentGroup = "artifact equipment"
   }
 "Bow"
   {

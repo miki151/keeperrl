@@ -333,6 +333,7 @@
 { "battle_axe" ")" ColorId GREEN }
 { "ada_battle_axe" ")" ColorId LIGHT_BLUE }
 { "special_battle_axe" ")" ColorId LIGHT_GREEN }
+{ "sceptre" ")" ColorId RED }
 { "bow" ")" ColorId BROWN }
 { "archwood_bow" ")" ColorId LIGHT_BLUE }
 { "elven_bow" ")" ColorId YELLOW false "bow" }
