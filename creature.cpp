@@ -1520,6 +1520,18 @@ int Creature::getDefaultWeaponDamage() const {
     return 0;
 }
 
+AttrType Creature::modifyDamageAttr(AttrType type, const ContentFactory* factory) const {
+  for (auto& buff : buffs)
+    if (auto& mod = factory->buffs.at(buff.first).modifyDamageAttr)
+      if (mod->first == type)
+        return mod->second;
+  for (auto& buff : buffPermanentCount)
+    if (auto& mod = factory->buffs.at(buff.first).modifyDamageAttr)
+      if (mod->first == type)
+        return mod->second;
+  return type;
+}
+
 CreatureAction Creature::attack(Creature* other) const {
   CHECK(!other->isDead());
   if (!position.isSameLevel(other->getPosition()))
@@ -1540,7 +1552,7 @@ CreatureAction Creature::attack(Creature* other) const {
       const int damage = max(1, int(weapon.second * (getAttr(damageAttr, false) +
           getSpecialAttr(damageAttr, other) + weapon.first->getModifier(damageAttr))));
       AttackLevel attackLevel = Random.choose(getBody().getAttackLevels());
-      damageAttr = LastingEffects::modifyMeleeDamageAttr(this, damageAttr);
+      damageAttr = modifyDamageAttr(damageAttr, getGame()->getContentFactory());
       vector<Effect> victimEffects;
       for (auto& e : weaponInfo.victimEffect)
         if (Random.chance(e.chance))

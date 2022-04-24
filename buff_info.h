@@ -46,5 +46,6 @@ struct BuffInfo {
   double SERIAL(defenseMultiplier) = 1.0;
   optional<AttrType> SERIAL(defenseMultiplierAttr);
   FXVariantName SERIAL(fx) = FXVariantName::BUFF_RED;
-  SERIALIZE_ALL(OPTION(inheritsFromSteed), OPTION(canWishFor), OPTION(canAbsorb), OPTION(combatConsumable), OPTION(fx), OPTION(defenseMultiplier), OPTION(defenseMultiplierAttr), NAMED(hatedGroupName), NAMED(name), OPTION(addedMessage), OPTION(removedMessage), NAMED(startEffect), NAMED(tickEffect), NAMED(endEffect), OPTION(stacks), OPTION(consideredBad), NAMED(description), OPTION(price), NAMED(color), NAMED(adjective))
+  optional<pair<AttrType, AttrType>> SERIAL(modifyDamageAttr);
+  SERIALIZE_ALL(NAMED(modifyDamageAttr), OPTION(inheritsFromSteed), OPTION(canWishFor), OPTION(canAbsorb), OPTION(combatConsumable), OPTION(fx), OPTION(defenseMultiplier), OPTION(defenseMultiplierAttr), NAMED(hatedGroupName), NAMED(name), OPTION(addedMessage), OPTION(removedMessage), NAMED(startEffect), NAMED(tickEffect), NAMED(endEffect), OPTION(stacks), OPTION(consideredBad), NAMED(description), OPTION(price), NAMED(color), NAMED(adjective))
 };

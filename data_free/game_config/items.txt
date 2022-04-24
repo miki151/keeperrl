@@ -402,12 +402,10 @@ End
     name = "infernite sword"
     price = 200
     craftingCost = "INFERNITE" 20
-    weaponInfo = append {
-      victimEffect = {0.5 Fire{40}}
-    }
     carriedTickEffect = InferniteEffect()
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
     ownedEffect = LIGHT_SOURCE
+    equipedEffect = {FIRE_DAMAGE}
     equipmentGroup = "infernite equipment"
   }
 "ElvenSword"
@@ -482,12 +480,10 @@ End
     name = "infernite battle axe"
     price = 1500
     craftingCost = "INFERNITE" 50
-    weaponInfo = append {
-      victimEffect = {0.5 Fire{45}}
-    }
     carriedTickEffect = InferniteEffect()
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
     ownedEffect = LIGHT_SOURCE
+    equipedEffect = {FIRE_DAMAGE}
     equipmentGroup = "infernite equipment"
   }
 "WarHammer"
@@ -538,12 +534,10 @@ End
     name = "infernite war hammer"
     price = 1000
     craftingCost = "INFERNITE" 40
-    weaponInfo = append {
-      victimEffect = {0.5 Fire{45}}
-    }
     carriedTickEffect = InferniteEffect()
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
     ownedEffect = LIGHT_SOURCE
+    equipedEffect = {FIRE_DAMAGE}
     equipmentGroup = "infernite equipment"
   }
 "Club"

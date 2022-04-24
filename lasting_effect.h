@@ -32,7 +32,6 @@ RICH_ENUM(
   SLEEP_RESISTANT,
   CAPTURE_RESISTANCE,
   MAGIC_CANCELLATION,
-  SPELL_DAMAGE,
   ELF_VISION,
   ARCHER_VISION,
   NIGHT_VISION,
@@ -104,7 +103,6 @@ class LastingEffects {
   static bool obeysFormation(const Creature*, const Creature* against);
   static bool shouldEnemyApply(const Creature* victim, LastingEffect);
   static bool shouldAllyApplyInDanger(const Creature* victim, LastingEffect);
-  static AttrType modifyMeleeDamageAttr(const Creature* attacker, AttrType);
   static TimeInterval getDuration(const Creature* c, LastingEffect);
   static void runTests();
   static Color getColor(LastingEffect);

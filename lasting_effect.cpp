@@ -238,9 +238,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::MAGIC_CANCELLATION:
         c->you(MsgType::ARE, "unable to cast any spells!");
         break;
-      case LastingEffect::SPELL_DAMAGE:
-        c->verb("deal", "deals", "magical damage");
-        break;
       case LastingEffect::ON_FIRE:
         c->you(MsgType::ARE, "on fire!");
         break;
@@ -499,9 +496,6 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::MAGIC_CANCELLATION:
         c->verb("can", "can", "cast spells again");
         break;
-      case LastingEffect::SPELL_DAMAGE:
-        c->verb("no longer deal", "no longer deals", "magical damage");
-        break;
       case LastingEffect::ON_FIRE:
         if (c->getBody().burnsIntrinsically(factory))
           c->verb("burn", "burns", "to death");
@@ -641,7 +635,6 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::DARKNESS_SOURCE: return "Source of darkness"_good;
     case LastingEffect::PREGNANT: return "Pregnant"_good;
     case LastingEffect::CAPTURE_RESISTANCE: return "Resistant to capturing"_good;
-    case LastingEffect::SPELL_DAMAGE: return "Deals magical damage"_good;
     case LastingEffect::ELF_VISION: return "Can see through trees"_good;
     case LastingEffect::ARCHER_VISION: return "Can see through arrowslits"_good;
     case LastingEffect::NIGHT_VISION: return "Can see in the dark"_good;
@@ -1018,7 +1011,6 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::ON_FIRE: return "combustion";
     case LastingEffect::FROZEN: return "freezing";
     case LastingEffect::MAGIC_CANCELLATION: return "magic cancellation";
-    case LastingEffect::SPELL_DAMAGE: return "magical damage";
     case LastingEffect::DISAPPEAR_DURING_DAY: return "night life";
     case LastingEffect::NO_CARRY_LIMIT: return "infinite carrying capacity";
     case LastingEffect::SPYING: return "spying";
@@ -1086,7 +1078,6 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::ON_FIRE: return "The creature is burning alive.";
     case LastingEffect::FROZEN: return "The creature is frozen and cannot move.";
     case LastingEffect::MAGIC_CANCELLATION: return "Prevents from casting any spells.";
-    case LastingEffect::SPELL_DAMAGE: return "All dealt melee damage is transformed into magical damage.";
     case LastingEffect::DISAPPEAR_DURING_DAY: return "This creature is only active at night and disappears at dawn.";
     case LastingEffect::NO_CARRY_LIMIT: return "The creature can carry items without any weight limit.";
     case LastingEffect::SPYING: return "The creature can infiltrate enemy lines.";
@@ -1267,8 +1258,6 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
     case LastingEffect::BLEEDING:
       return FXVariantName::DEBUFF_RED;
 
-    case LastingEffect::SPELL_DAMAGE:
-      return FXVariantName::BUFF_PURPLE;
     case LastingEffect::CAPTURE_RESISTANCE:
       return FXVariantName::BUFF_SKY_BLUE;
     case LastingEffect::FAST_CRAFTING:
@@ -1341,8 +1330,6 @@ Color LastingEffects::getColor(LastingEffect effect) {
       return Color::RED;
     case LastingEffect::MAGIC_CANCELLATION:
       return Color::BROWN;
-    case LastingEffect::SPELL_DAMAGE:
-      return Color::PURPLE;
     case LastingEffect::FROZEN:
       return Color::BLUE;
     default:
@@ -1402,12 +1389,6 @@ bool LastingEffects::shouldEnemyApply(const Creature* victim, LastingEffect effe
     if (victim->isAffected(*cancelled) && !::getAdjective(*cancelled).bad)
       return true;
   return ::getAdjective(effect).bad;
-}
-
-AttrType LastingEffects::modifyMeleeDamageAttr(const Creature* attacker, AttrType type) {
-  if (attacker->isAffected(LastingEffect::SPELL_DAMAGE) && type == AttrType("DAMAGE"))
-    return AttrType("SPELL_DAMAGE");
-  return type;
 }
 
 static TimeInterval entangledTime(int strength) {

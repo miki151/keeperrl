@@ -438,6 +438,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool removeBuff(int index, bool msg);
   bool processBuffs();
   double SERIAL(combatExperience) = 0;
+  AttrType modifyDamageAttr(AttrType, const ContentFactory*) const;
 };
 
 struct AdjectiveInfo {

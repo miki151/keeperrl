@@ -30,6 +30,30 @@ End
 "DAM_BONUS" ATTR_BUFF(DAMAGE, "damage", 3, "dangerous", 20)
 "DEF_BONUS" ATTR_BUFF(DEFENSE, "defense", 3, "protected", 20)
 
+"SPELL_DAMAGE" {
+  name = "spell damage"
+  adjective = "deals magical damage"
+  description = "All dealt melee damage is transformed into magical damage."
+  addedMessage = "deal" "deals" "magical damage"
+  removedMessage = "no longer deal" "no longer deals" "magical damage"
+  fx = BUFF_PURPLE
+  color = ColorId PURPLE
+  price = 50
+  modifyDamageAttr = DAMAGE SPELL_DAMAGE
+}
+
+"FIRE_DAMAGE" {
+  name = "fire damage"
+  adjective = "deals fire damage"
+  description = "All dealt melee damage is transformed into fire damage."
+  addedMessage = "deal" "deals" "fire damage"
+  removedMessage = "no longer deal" "no longer deals" "fire damage"
+  fx = BUFF_RED
+  color = ColorId RED
+  price = 50
+  modifyDamageAttr = DAMAGE FIRE_DAMAGE
+}
+
 "KINGS_CHARGE" {
   name = "king's charge"
   adjective = "king's charge"
