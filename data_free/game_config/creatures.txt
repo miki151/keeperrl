@@ -43,6 +43,7 @@
     inventory = {
       # Here comes a list of items. The format of each element is defined in creature_inventory.h
       { "Robe"}
+      { "WoodenStaff" }
       # Take a look a CYCLOPS for a more detailed example.
     }
   }
@@ -2455,31 +2456,6 @@
     attr = append {
       DIGGING 8
     }
-  }
-"SKELETON"
-  {
-    viewId = { "skeleton" }
-    attr = {
-      DAMAGE 17
-      DEFENSE 13
-      RANGED_DAMAGE 5
-    }
-    body = {
-      type = Humanoid LARGE
-      material = BONE
-    }
-    permanentEffects = {
-      RANGED_RESISTANCE 1
-    }
-    maxLevelIncrease = {
-      MELEE 3
-      ARCHERY 4
-    }
-    aiType = RANGED
-    name = {
-      name = "skeleton"
-    }
-    hatedByEffect = HATE_UNDEAD
   }
 "VAMPIRE"
   {

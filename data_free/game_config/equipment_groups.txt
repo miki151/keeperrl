@@ -1,6 +1,6 @@
 "basic equipment" {"club"}
 "iron equipment" {"sword"}
-"adamantine equipment" {"ada_sword"}
+"adamantine equipment" {"sword" Rgb 148 189 189 255 }
 "infernite equipment" {"infernite_sword"}
 "adoxium equipment" {"adoxium_staff"}
 "artifact equipment" {"cyclops_helm"}

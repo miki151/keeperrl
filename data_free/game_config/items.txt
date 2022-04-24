@@ -269,6 +269,7 @@ ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage
 "Knife"
   {
     viewId = { "knife" }
+    equipedViewId = { "knife_v" }
     name = "knife"
     plural = "knives"
     itemClass = WEAPON
@@ -321,6 +322,7 @@ ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage
 "Spear"
   {
     viewId = { "spear" }
+    equipedViewId = { "spear_v" }
     name = "spear"
     itemClass = WEAPON
     equipmentSlot = WEAPON
@@ -342,6 +344,7 @@ ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage
 "Sword"
   {
     viewId = { "sword" }
+    equipedViewId = { "sword_v" }
     name = "sword"
     itemClass = WEAPON
     equipmentSlot = WEAPON
@@ -369,8 +372,10 @@ ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage
   }
 "AdaSword" inherit "Sword"
   {
-    viewId = { "ada_sword" }
+    viewId = { "sword" Rgb 148 189 189 255 }
+    equipedViewId = { "sword_v" Rgb 148 189 189 255 }
     name = "adamantine sword"
+    shortName = "adamantine"
     modifiers = {
       DAMAGE 11
     }
@@ -393,6 +398,7 @@ End
 "InferniteSword" inherit "AdaSword"
   {
     viewId = { "infernite_sword" }
+    equipedViewId = { "infernite_sword_v" }
     name = "infernite sword"
     price = 200
     craftingCost = "INFERNITE" 20
@@ -406,7 +412,8 @@ End
   }
 "ElvenSword"
   {
-    viewId = { "elven_sword" }
+    viewId = { "sword" ColorId LIGHT_GREEN }
+    equipedViewId = { "sword_v" ColorId LIGHT_GREEN }
     name = "elven sword"
     itemClass = WEAPON
     equipmentSlot = WEAPON
@@ -428,6 +435,7 @@ End
 "BattleAxe"
   {
     viewId = { "battle_axe" }
+    equipedViewId = { "battle_axe_v" }
     name = "battle axe"
     itemClass = WEAPON
     equipmentSlot = WEAPON
@@ -451,7 +459,8 @@ End
   }
 "AdaBattleAxe" inherit "BattleAxe"
   {
-    viewId = { "ada_battle_axe" }
+    viewId = { "battle_axe" Rgb 148 189 189 255 }
+    equipedViewId = { "battle_axe_v" Rgb 148 189 189 255 }
     shortName = "adamantine"
     name = "adamantine battle axe"
     modifiers = {
@@ -468,6 +477,7 @@ End
 "InferniteBattleAxe" inherit "AdaBattleAxe"
   {
     viewId = { "infernite_battle_axe" }
+    equipedViewId = { "infernite_battle_axe_v" }
     shortName = "infernite"
     name = "infernite battle axe"
     price = 1500
@@ -483,6 +493,7 @@ End
 "WarHammer"
   {
     viewId = { "war_hammer" }
+    equipedViewId = { "war_hammer_v" }
     name = "war hammer"
     itemClass = WEAPON
     equipmentSlot = WEAPON
@@ -505,7 +516,8 @@ End
   }
 "AdaWarHammer" inherit "WarHammer"
   {
-    viewId = { "ada_war_hammer" }
+    viewId = { "war_hammer" Rgb 148 189 189 255 }
+    equipedViewId = { "war_hammer_v" Rgb 148 189 189 255 }
     name = "adamantine war hammer"
     modifiers = {
       DAMAGE 15
@@ -521,6 +533,7 @@ End
 "InferniteWarHammer" inherit "AdaWarHammer"
   {
     viewId = { "infernite_war_hammer" }
+    equipedViewId = { "infernite_war_hammer_v" }
     shortName = "infernite"
     name = "infernite war hammer"
     price = 1000
@@ -536,6 +549,7 @@ End
 "Club"
   {
     viewId = { "club" }
+    equipedViewId = { "club_v" }
     name = "club"
     itemClass = WEAPON
     equipmentSlot = WEAPON
@@ -554,6 +568,7 @@ End
 "HeavyClub"
   {
     viewId = { "heavy_club" }
+    equipedViewId = { "heavy_club_v" }
     name = "heavy club"
     itemClass = WEAPON
     equipmentSlot = WEAPON
@@ -573,6 +588,7 @@ End
 "WoodenStaff"
   {
     viewId = { "wooden_staff" }
+    equipedViewId = { "wooden_staff_v" }
     name = "wooden staff"
     itemClass = WEAPON
     equipmentSlot = WEAPON
@@ -596,6 +612,7 @@ End
 "IronStaff" inherit "WoodenStaff"
   {
     viewId = { "iron_staff" }
+    equipedViewId = { "iron_staff_v" }
     name = "iron staff"
     modifiers = {
       SPELL_DAMAGE 8
@@ -616,6 +633,7 @@ End
 "AdoxiumStaff" inherit "IronStaff"
   {
     viewId = { "adoxium_staff" }
+    equipedViewId = { "adoxium_staff_v" }
     name = "adoxium staff"
     modifiers = {
       SPELL_DAMAGE 13
@@ -634,6 +652,7 @@ End
 "Sceptre"
   {
     viewId = { "sceptre" }
+    equipedViewId = { "sceptre_v" }
     name = "sceptre"
     itemClass = WEAPON
     equipmentSlot = WEAPON

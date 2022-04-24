@@ -10,27 +10,27 @@
 { "ranged_damage_icon" "1" ColorId WHITE }
 { "defense_icon" "1" ColorId WHITE }
 { "parry_icon" "1" ColorId WHITE }
-{ "keeper1" "@" ColorId PURPLE }
-{ "keeper2" "@" ColorId PURPLE }
-{ "keeper3" "@" ColorId PURPLE }
-{ "keeper4" "@" ColorId PURPLE }
-{ "keeper_f1" "@" ColorId PINK }
-{ "keeper_f2" "@" ColorId PINK }
-{ "keeper_f3" "@" ColorId PINK }
-{ "keeper_f4" "@" ColorId PINK  }
-{ "keeper_knight1" "@" ColorId YELLOW }
-{ "keeper_knight2" "@" ColorId YELLOW }
-{ "keeper_knight3" "@" ColorId YELLOW }
-{ "keeper_knight4" "@" ColorId YELLOW }
-{ "keeper_knight_f1" "@" ColorId YELLOW }
-{ "keeper_knight_f2" "@" ColorId YELLOW }
-{ "keeper_knight_f3" "@" ColorId YELLOW }
-{ "keeper_knight_f4" "@" ColorId YELLOW }
-{ "player" "@" ColorId WHITE  }
-{ "player_f" "@" ColorId YELLOW }
+{ viewId = "keeper1" symbol = "@" color = ColorId PURPLE weaponOrigin = {4 13} }
+{ viewId = "keeper2" symbol = "@" color = ColorId PURPLE weaponOrigin = {4 13} }
+{ viewId = "keeper3" symbol = "@" color = ColorId PURPLE weaponOrigin = {4 12} }
+{ viewId = "keeper4" symbol = "@" color = ColorId PURPLE weaponOrigin = {4 12} }
+{ viewId = "keeper_f1" symbol = "@" color = ColorId PINK weaponOrigin = {4 13} }
+{ viewId = "keeper_f2" symbol = "@" color = ColorId PINK weaponOrigin = {4 13} }
+{ viewId = "keeper_f3" symbol = "@" color = ColorId PINK weaponOrigin = {4 12} }
+{ viewId = "keeper_f4" symbol = "@" color = ColorId PINK weaponOrigin = {4 12} }
+{ viewId = "keeper_knight1" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 15} }
+{ viewId = "keeper_knight2" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 15} }
+{ viewId = "keeper_knight3" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 16} }
+{ viewId = "keeper_knight4" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 16} }
+{ viewId = "keeper_knight_f1" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 15} }
+{ viewId = "keeper_knight_f2" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 15} }
+{ viewId = "keeper_knight_f3" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 16} }
+{ viewId = "keeper_knight_f4" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 16} }
+{ viewId = "player" symbol = "@" color = ColorId WHITE weaponOrigin = {4 13}   }
+{ viewId = "player_f" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 14}   }
 { "demon_dweller" "U" ColorId PURPLE }
 { "demon_lord" "U" ColorId YELLOW }
-{ "vampire_warrior" "V" ColorId DARK_GRAY }
+{ viewId = "vampire_warrior" symbol = "V" color = ColorId DARK_GRAY weaponOrigin = {2 12} }
 { "vampire_lord" "V" ColorId PURPLE }
 { "vampire_brute" "V" ColorId LIGHT_BROWN }
 { "devil" "&" ColorId ORANGE }
@@ -41,7 +41,7 @@
 { "adoxie_hand_left" "u" ColorId PURPLE }
 { "adoxie_head" "U" ColorId PURPLE }
 { "adoxie_eye" "," ColorId PURPLE }
-{ "adoxie_priest" "@" ColorId PURPLE }
+{ viewId = "adoxie_priest" symbol = "@" color = ColorId PURPLE weaponOrigin = {4 13} }
 { "gargoyle" "&" ColorId ORANGE }
 { viewId = "scarecrow" symbol = "T" color = ColorId LIGHT_BLUE }
 { viewId = "gargoyle_statue" symbol = "&" color = ColorId LIGHT_GRAY
@@ -66,34 +66,35 @@
 { "elf_woman" "@" ColorId LIGHT_GREEN }
 { "elf_archer" "@" ColorId GREEN }
 { "elf_child" "@" ColorId LIGHT_GREEN }
-{ "elf_lord" "@" ColorId DARK_GREEN }
+{ viewId = "elf_lord" symbol = "@" color = ColorId DARK_GREEN weaponOrigin = {6 14} }
 { "dark_elf" "@" ColorId ALMOST_DARK_GRAY }
 { "dark_elf_woman" "@" ColorId ALMOST_DARK_GRAY }
-{ "dark_elf_warrior" "@" ColorId GRAY }
+{ viewId = "dark_elf_warrior" symbol = "@" color = ColorId GRAY weaponOrigin = {6 14} }
 { "dark_elf_child" "@" ColorId ALMOST_GRAY }
-{ "dark_elf_lord" "@" ColorId LIGHT_GRAY }
+{ viewId = "dark_elf_lord" symbol = "@" color = ColorId LIGHT_GRAY weaponOrigin = {6 14} }
 { "driad" "@" ColorId LIGHT_BROWN }
-{ "kobold" "k" ColorId LIGHT_BROWN }
-{ "lizardman" "@" ColorId LIGHT_BROWN }
+{ viewId = "kobold" symbol = "k" color = ColorId LIGHT_BROWN weaponOrigin = {7 17} }
+{ viewId = "lizardman" symbol = "@" color = ColorId LIGHT_BROWN weaponOrigin = {2 15} }
+{ viewId = "lizardlord" symbol = "@" color = ColorId BROWN weaponOrigin = {2 12} }
 { "lizardlord" "@" ColorId BROWN }
 { "imp" "i" ColorId LIGHT_BROWN }
 { "prisoner" "@" ColorId LIGHT_BROWN }
 { "chicken" "c" ColorId YELLOW }
 { "gnome" "g" ColorId GREEN }
 { "gnome_boss" "g" ColorId DARK_BLUE }
-{ "dwarf" "h" ColorId BLUE }
+{ viewId = "dwarf" symbol = "h" color = ColorId BLUE weaponOrigin = {3 17} }
 { "dwarf_player" "h" ColorId BLUE }
 { "dwarf_mage" "h" ColorId PINK }
 { "dwarf_crossbowman" "h" ColorId YELLOW }
-{ "dwarf_fighter" "h" ColorId DARK_BLUE }
+{ viewId = "dwarf_fighter" symbol = "h" color = ColorId DARK_BLUE weaponOrigin = {3 15} }
 { "dwarf_blacksmith" "h" ColorId WHITE }
 { "dwarf_mage_f" "h" ColorId PINK }
 { "dwarf_crossbowman_f" "h" ColorId YELLOW }
-{ "dwarf_fighter_f" "h" ColorId DARK_BLUE }
+{ viewId = "dwarf_fighter_f" symbol = "h" color = ColorId DARK_BLUE weaponOrigin = {3 15} }
 { "dwarf_blacksmith_f" "h" ColorId WHITE }
-{ "dwarf_baron" "h" ColorId PURPLE }
+{ viewId = "dwarf_baron" symbol = "h" color = ColorId PURPLE weaponOrigin = {3 15} }
 { "dwarf_female" "h" ColorId LIGHT_BLUE }
-{ "shopkeeper" "@" ColorId LIGHT_BLUE }
+{ viewId = "shopkeeper" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {3 14} }
 { "floor" "." ColorId LIGHT_GRAY }
 { "roof" "=" ColorId LIGHT_RED }
 { "floor_red" "." ColorId LIGHT_RED }
@@ -149,10 +150,10 @@
 { "guard_zone" "0" ColorId WHITE }
 { "phylactery_tether" " " ColorId BLACK }
 { "forbid_zone" "#" ColorId RED false "dig_mark" ColorId RED }
-{ "goblin_shaman" "o" ColorId YELLOW }
+{ viewId = "goblin_shaman" symbol = "o" color = ColorId YELLOW weaponOrigin = {21 17} }
 { "harpy" "R" ColorId YELLOW }
-{ "bandit" "@" ColorId DARK_BLUE }
-{ "doppleganger" "&" ColorId YELLOW }
+{ viewId = "bandit" symbol = "@" color = ColorId DARK_BLUE weaponOrigin = {4 15} }
+{ viewId = "doppleganger" symbol = "&" color = ColorId YELLOW weaponOrigin = {3 14} }
 { "ice_demon" "&" ColorId LIGHT_BLUE }
 { "succubus" "&" ColorId RED }
 { "ghost" "&" ColorId WHITE }
@@ -165,39 +166,39 @@
 { "kirin" "K" ColorId ORANGE }
 { "red_dragon" "D" ColorId RED }
 { "bone_dragon" "D" ColorId LIGHT_GRAY }
-{ viewId = "balrog" symbol = "&" color = ColorId RED fx = { SMOKE}}
+{ viewId = "balrog" symbol = "&" color = ColorId RED fx = { SMOKE} weaponOrigin = {2 23}}
 { "balrogs_whip" "(" ColorId RED }
-{ "cyclops" "C" ColorId GREEN }
+{ viewId = "cyclops" symbol = "C" color = ColorId GREEN weaponOrigin = {3 20} }
 { "yeti" "Y" ColorId WHITE }
-{ "minotaur" "M" ColorId PURPLE }
+{ viewId = "minotaur" symbol = "M" color = ColorId PURPLE weaponOrigin = {5 14} }
 { "soft_monster" "M" ColorId PINK }
 { "hydra" "H" ColorId PURPLE }
 { "shelob" "S" ColorId PURPLE }
-{ "witch" "@" ColorId BROWN }
-{ "witchman" "@" ColorId WHITE }
-{ "knight" "@" ColorId LIGHT_GRAY }
-{ "jester" "@" ColorId PINK }
-{ "priest" "@" ColorId SKY_BLUE }
+{ viewId = "witch" symbol = "@" color = ColorId BROWN weaponOrigin = {2 15} }
+{ viewId = "witchman" symbol = "@" color = ColorId WHITE weaponOrigin = {5 14} }
+{ viewId = "knight" symbol = "@" color = ColorId LIGHT_GRAY weaponOrigin = {4 14} }
+{ viewId = "jester" symbol = "@" color = ColorId PINK weaponOrigin = {3 18} }
+{ viewId = "priest" symbol = "@" color = ColorId SKY_BLUE weaponOrigin = {5 15} }
 { "cleric" "@" ColorId WHITE }
-{ "teuton" "@" ColorId ALMOST_WHITE }
+{ viewId = "teuton" symbol = "@" color = ColorId ALMOST_WHITE weaponOrigin = {4 16}   }
 { "teuton_boss" "@" ColorId PINK }
 { "artisan" "@" ColorId LIGHT_BROWN }
 { "friar" "@" ColorId DARK_BROWN }
 { "black_market_guard" "B" ColorId BROWN }
-{ "warrior" "@" ColorId DARK_GRAY }
+{ viewId = "warrior" symbol = "@" color = ColorId DARK_GRAY weaponOrigin = {6 14} }
 { "shaman" "@" ColorId YELLOW }
-{ "thief" "@" ColorId LIGHT_BROWN }
-{ "thief_leader" "@" ColorId BROWN }
-{ "sorcerer" "@" ColorId PURPLE }
+{ viewId = "thief" symbol = "@" color = ColorId LIGHT_BROWN weaponOrigin = {4 16} }
+{ viewId = "thief_leader" symbol = "@" color = ColorId BROWN weaponOrigin = {5 16} }
+{ viewId = "sorcerer" symbol = "@" color = ColorId PURPLE weaponOrigin = {4 14} }
 { "flying_carpet" "_" ColorId PINK }
-{ "duke1" "@" ColorId BLUE false "knightboss1" }
-{ "duke2" "@" ColorId BLUE false "knightboss2" }
-{ "duke3" "@" ColorId BLUE false "knightboss3" }
-{ "duke4" "@" ColorId BLUE false "knightboss4" }
-{ "duke_f1" "@" ColorId LIGHT_BLUE false "knightboss_f1" }
-{ "duke_f2" "@" ColorId LIGHT_BLUE false "knightboss_f2" }
-{ "duke_f3" "@" ColorId LIGHT_BLUE false "knightboss_f3" }
-{ "duke_f4" "@" ColorId LIGHT_BLUE false "knightboss_f4" }
+{ viewId = "duke1" symbol = "@" color = ColorId BLUE sprite = "knightboss1" weaponOrigin = {3 15} }
+{ viewId = "duke2" symbol = "@" color = ColorId BLUE sprite = "knightboss2" weaponOrigin = {3 15} }
+{ viewId = "duke3" symbol = "@" color = ColorId BLUE sprite = "knightboss3" weaponOrigin = {3 16} }
+{ viewId = "duke4" symbol = "@" color = ColorId BLUE sprite = "knightboss4" weaponOrigin = {4 14} }
+{ viewId = "duke_f1" symbol = "@" color = ColorId LIGHT_BLUE sprite = "knightboss_f1" weaponOrigin = {3 15} }
+{ viewId = "duke_f2" symbol = "@" color = ColorId LIGHT_BLUE sprite = "knightboss_f2" weaponOrigin = {3 15} }
+{ viewId = "duke_f3" symbol = "@" color = ColorId LIGHT_BLUE sprite = "knightboss_f3" weaponOrigin = {3 16} }
+{ viewId = "duke_f4" symbol = "@" color = ColorId LIGHT_BLUE sprite = "knightboss_f4" weaponOrigin = {4 14} }
 { "archer" "@" ColorId BROWN }
 { "peasant" "@" ColorId GREEN }
 { "peasant_woman" "@" ColorId GREEN }
@@ -242,23 +243,22 @@
 { "installed_repair" ")" ColorId LIGHT_BROWN }
 { "installed_drill" ")" ColorId LIGHT_BROWN }
 { "installed_crafting" ")" ColorId LIGHT_BROWN }
-{ "elementalist" "@" ColorId YELLOW }
+{ viewId = "elementalist" symbol = "@" color = ColorId YELLOW weaponOrigin = {4 11} }
 { "air_elemental" "E" ColorId LIGHT_BLUE }
 { "fire_elemental" "E" ColorId RED }
 { "water_elemental" "E" ColorId BLUE }
 { "earth_elemental" "E" ColorId GRAY }
 { "ent" "E" ColorId LIGHT_BROWN }
-{ "angel" "A" ColorId LIGHT_BLUE }
+{ viewId = "angel" symbol = "A" color = ColorId LIGHT_BLUE weaponOrigin = {3 19} }
 { "zombie" "Z" ColorId GREEN }
 { "zombie_artisan" "Z" ColorId LIGHT_BLUE }
 { "zombie_mage" "Z" ColorId PINK }
-{ "skeleton" "S" ColorId WHITE }
-{ "skeleton_warrior" "S" ColorId LIGHT_GRAY }
+{ viewId = "skeleton_warrior" symbol = "S" color = ColorId LIGHT_GRAY weaponOrigin = {3 16} }
 { "skeleton_archer" "S" ColorId LIGHT_BLUE }
 { "skeletal_abomination" "S" ColorId PURPLE }
 { "slasher" "S" ColorId LIGHT_BROWN }
-{ "juggernaut" "J" ColorId BROWN }
-{ "mummy" "Z" ColorId YELLOW }
+{ viewId = "juggernaut" symbol = "J" color = ColorId BROWN weaponOrigin = {26 13} }
+{ viewId = "mummy" symbol = "Z" color = ColorId YELLOW weaponOrigin = {4 11} }
 { "jackal" "d" ColorId LIGHT_BROWN }
 { "deer" "R" ColorId DARK_BROWN }
 { "horse" "H" ColorId LIGHT_BROWN }
@@ -275,7 +275,7 @@
 { "wolf" "d" ColorId DARK_BLUE }
 { "skeleton_wolf" "d" ColorId WHITE }
 { "feral_child" "d" ColorId YELLOW }
-{ "werewolf" "d" ColorId WHITE }
+{ viewId = "werewolf" symbol = "d" color = ColorId WHITE weaponOrigin = {3 15} }
 { "dog" "d" ColorId BROWN }
 { "husky" "d" ColorId LIGHT_GRAY }
 { viewId = "snowman" symbol = "@" color = ColorId WHITE
@@ -288,24 +288,24 @@
 { "polar_bear" "N" ColorId LIGHT_GRAY }
 { "bat" "b" ColorId DARK_GRAY }
 { "goblin_artificer" "o" ColorId GREEN }
-{ "goblin_keeper1" "o" ColorId PURPLE }
-{ "goblin_keeper2" "o" ColorId PURPLE }
-{ "goblin_keeper3" "o" ColorId PURPLE }
-{ "goblin_keeper4" "o" ColorId PURPLE }
-{ "goblin_guard" "o" ColorId DARK_GREEN }
+{ viewId = "goblin_keeper1" symbol = "o" color = ColorId PURPLE weaponOrigin = {4 15} }
+{ viewId = "goblin_keeper2" symbol = "o" color = ColorId PURPLE weaponOrigin = {4 15}}
+{ viewId = "goblin_keeper3" symbol = "o" color = ColorId PURPLE weaponOrigin = {4 15}}
+{ viewId = "goblin_keeper4" symbol = "o" color = ColorId PURPLE weaponOrigin = {4 15}}
+{ viewId = "goblin_guard" symbol = "o" color = ColorId DARK_GREEN weaponOrigin = {3 15} }
 { "goblin_kaboomer" "o" ColorId ORANGE }
-{ "troll" "O" ColorId DARK_GREEN }
+{ viewId = "troll" symbol = "O" color = ColorId DARK_GREEN weaponOrigin = {3 16} }
 { "goblin_archer" "o" ColorId LIGHT_BROWN }
 { "goblin_wizard" "o" ColorId LIGHT_BLUE }
-{ "goblin_warrior" "o" ColorId GREEN }
+{ viewId = "goblin_warrior" symbol = "o" color = ColorId GREEN weaponOrigin = {3 15} }
 { "goblin_priest" "o" ColorId WHITE }
 { "goblin_matron" "o" ColorId PINK }
 { "goblin_chickenmancer" "o" ColorId YELLOW }
 { "rat" "r" ColorId BROWN }
 { "black_rat" "r" ColorId GRAY }
-{ "rat_soldier" "@" ColorId BROWN }
+{ viewId = "rat_soldier" symbol = "@" color = ColorId BROWN weaponOrigin = {4 13} }
 { "rat_lady" "@" ColorId DARK_BROWN }
-{ "rat_king" "@" ColorId LIGHT_BROWN }
+{ viewId = "rat_king" symbol = "@" color = ColorId LIGHT_BROWN weaponOrigin = {4 13} }
 { "spider" "s" ColorId BROWN }
 { "fly" "b" ColorId GRAY }
 { "ant_worker" "a" ColorId BROWN }
@@ -319,35 +319,45 @@
 { "frozen_remains" "%" ColorId LIGHT_GRAY }
 { "dig_icon" "⛏" ColorId LIGHT_GRAY true }
 { "sword" ")" ColorId LIGHT_GRAY }
-{ "ada_sword" ")" ColorId LIGHT_BLUE }
+{ viewId = "sword_v" symbol = ")" color = ColorId LIGHT_GRAY weaponOrigin = {10 16} }
 { "infernite_sword" ")" ColorId RED }
+{ viewId = "infernite_sword_v" symbol = ")" color = ColorId RED weaponOrigin = {10 16} }
 { "infernite_battle_axe" ")" ColorId RED }
+{ viewId = "infernite_battle_axe_v" symbol = ")" color = ColorId RED weaponOrigin = {11 14} }
 { "infernite_war_hammer" ")" ColorId RED }
+{ viewId = "infernite_war_hammer_v" symbol = ")" color = ColorId RED weaponOrigin = {9 16} }
+{ viewId = "spear_v" symbol = "/" color = ColorId LIGHT_GRAY weaponOrigin = {14 15} }
 { "spear" "/" ColorId LIGHT_GRAY }
 { "special_sword" ")" ColorId YELLOW }
-{ "elven_sword" ")" ColorId GRAY }
 { "knife" ")" ColorId WHITE }
+{ viewId = "knife_v" symbol = ")" color = ColorId WHITE weaponOrigin = {12 15} }
 { "war_hammer" ")" ColorId BLUE }
-{ "ada_war_hammer" ")" ColorId LIGHT_BLUE }
+{ viewId = "war_hammer_v" symbol = ")" color = ColorId BLUE weaponOrigin = {9 16} }
 { "special_war_hammer" ")" ColorId LIGHT_BLUE }
+{ viewId = "battle_axe_v" symbol = ")" color = ColorId GREEN weaponOrigin = {11 14} }
 { "battle_axe" ")" ColorId GREEN }
-{ "ada_battle_axe" ")" ColorId LIGHT_BLUE }
 { "special_battle_axe" ")" ColorId LIGHT_GREEN }
 { "sceptre" ")" ColorId RED }
+{ viewId = "sceptre_v" symbol = ")" color = ColorId RED weaponOrigin = {13 13} }
 { "bow" ")" ColorId BROWN }
 { "archwood_bow" ")" ColorId LIGHT_BLUE }
 { "elven_bow" ")" ColorId YELLOW false "bow" }
 { "crossbow" ")" ColorId LIGHT_BROWN }
 { "arrow" "/" ColorId BROWN }
 { "wooden_staff" ")" ColorId DARK_BROWN }
+{ viewId = "wooden_staff_v" symbol = ")" color = ColorId DARK_BROWN weaponOrigin = {12 13} }
 { "iron_staff" ")" ColorId ORANGE }
+{ viewId = "iron_staff_v" symbol = ")" color = ColorId ORANGE weaponOrigin = {11 14} }
 { "adoxium_staff" ")" ColorId PINK }
+{ viewId = "adoxium_staff_v" symbol = ")" color = ColorId PINK weaponOrigin = {10 14} }
 { "force_bolt" "*" ColorId DARK_BLUE }
 { "fireball" "*" ColorId ORANGE }
 { "air_blast" "*" ColorId WHITE }
 { "stun_ray" "*" ColorId LIGHT_GREEN }
 { "club" ")" ColorId BROWN }
+{ viewId = "club_v" symbol = ")" color = ColorId BROWN weaponOrigin = {13 17} }
 { "heavy_club" ")" ColorId BROWN }
+{ viewId = "heavy_club_v" symbol = ")" color = ColorId BROWN weaponOrigin = {12 20} }
 { "scroll" "?" ColorId WHITE }
 { "amulet1" "\"" ColorId YELLOW }
 { "amulet2" "\"" ColorId YELLOW }
@@ -477,14 +487,14 @@
 { "special_bmbw" "B" ColorId ORANGE }
 { "special_bmgn" "B" ColorId GREEN }
 { "special_bmgw" "B" ColorId LIGHT_GREEN }
-{ "special_hlbn" "H" ColorId PURPLE }
-{ "special_hlbw" "H" ColorId LIGHT_RED }
 { "special_hlgn" "H" ColorId LIGHT_GRAY }
-{ "special_hlgw" "H" ColorId WHITE }
-{ "special_hmbn" "H" ColorId YELLOW }
-{ "special_hmbw" "H" ColorId ORANGE }
-{ "special_hmgn" "H" ColorId GREEN }
-{ "special_hmgw" "H" ColorId LIGHT_GREEN }
+{ viewId = "special_hlbn" symbol = "H" color = ColorId PURPLE weaponOrigin = {2 21} }
+{ viewId = "special_hlbw" symbol = "H" color = ColorId LIGHT_RED weaponOrigin = {2 20} }
+{ viewId = "special_hlgw" symbol = "H" color = ColorId WHITE weaponOrigin = {2 24} }
+{ viewId = "special_hmbn" symbol = "H" color = ColorId YELLOW weaponOrigin = {3 15} }
+{ viewId = "special_hmbw" symbol = "H" color = ColorId ORANGE weaponOrigin = {3 16} }
+{ viewId = "special_hmgn" symbol = "H" color = ColorId GREEN weaponOrigin = {4 15} }
+{ viewId = "special_hmgw" symbol = "H" color = ColorId LIGHT_GREEN weaponOrigin = {2 16} }
 { "halloween_kid1" "@" ColorId PINK }
 { "halloween_kid2" "@" ColorId PURPLE }
 { "halloween_kid3" "@" ColorId BLUE }

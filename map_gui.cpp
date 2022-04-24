@@ -662,6 +662,20 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       move.x -= object.hasModifier(ViewObject::Modifier::FLIPX) ? 2 * zoom : -2 * zoom;
       drawCreatureHighlights(renderer, steedObject, index, pos + movement, size, curTimeReal);
     }
+    if (object.weaponViewId && tile.weaponOrigin && !object.hasModifier(ViewObject::Modifier::STUNNED)) {
+      const Tile& weaponTile = renderer.getTileSet().getTile(*object.weaponViewId, spriteMode);
+      if (weaponTile.weaponOrigin) {
+        const auto& weaponCoord = weaponTile.getSpriteCoord(dirs);
+        bool flipped = object.hasModifier(ViewObject::Modifier::FLIPX);
+        auto orientation = Renderer::SpriteOrientation(false, flipped);
+        auto offset = flipped
+            ? Vec2(weaponCoord[0].size.x - weaponTile.weaponOrigin->x, weaponTile.weaponOrigin->y) -
+              Vec2(coord[0].size.x - tile.weaponOrigin->x, tile.weaponOrigin->y)
+            : *weaponTile.weaponOrigin - *tile.weaponOrigin;
+        renderer.drawTile(pos + move - ((coord[0].size - weaponCoord[0].size) / 2 + offset) * zoom, weaponCoord, size, color,
+            orientation, object.weaponViewId->getColor());
+      }
+    }
     if (tile.canMirror)
       renderer.drawTile(pos + move, coord, size, color,
           Renderer::SpriteOrientation((bool)(tilePos.getHash() & 1024), (bool)(tilePos.getHash() & 512)));
@@ -689,7 +703,6 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (object.layer() == ViewLayer::FLOOR_BACKGROUND && shadowed.count(tilePos))
       renderer.drawTile(pos, shortShadow, size, Color(255, 255, 255, 170));
     auto burning = object.getAttribute(ViewObject::Attribute::BURNING);
-
     drawHealthBar(renderer, tilePos, pos + move, size, object, index);
     if (curTimeReal.count() % 2000 < 800 && object.hasModifier(ViewObject::Modifier::TURNED_OFF)) {
       auto& icon = renderer.getTileSet().getTileCoord("power_off");

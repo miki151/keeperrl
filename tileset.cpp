@@ -188,6 +188,7 @@ void TileSet::loadModdedTiles(const vector<TileInfo>& tiles, bool useTiles) {
       t.highlightAbove = tile.highlightAbove;
       t.animated = tile.animated;
       t.canMirror = tile.canMirror;
+      t.weaponOrigin = tile.weaponOrigin;
       addTile(tile.viewId.data(), std::move(t));
     }
     addSymbol(tile.viewId.data(), symbol(tile.symbol, tile.color, tile.isSymbolFont));

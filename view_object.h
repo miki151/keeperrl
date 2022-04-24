@@ -92,6 +92,7 @@ class ViewObject {
 
   EnumSet<FXVariantName> particleEffects;
   vector<ViewId> partIds;
+  optional<ViewId> weaponViewId;
 
   private:
   EnumSet<Modifier> SERIAL(modifiers);

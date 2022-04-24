@@ -50,6 +50,7 @@ class ItemAttributes {
   SERIALIZATION_DECL(ItemAttributes)
 
   ViewId SERIAL(viewId);
+  optional<ViewId> SERIAL(equipedViewId);
   vector<ViewId> SERIAL(partIds);
   string SERIAL(name);
   string SERIAL(description);

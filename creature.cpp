@@ -1751,6 +1751,10 @@ void Creature::updateViewObject(const ContentFactory* factory) {
       || (isAffected(LastingEffect::TURNED_OFF) && isAffected(LastingEffect::FLYING)));
   if (steed)
     steed->updateViewObject(factory);
+  if (auto it = getFirstWeapon())
+    object.weaponViewId = it->getEquipedViewId();
+  else
+    object.weaponViewId = none;
 }
 
 optional<double> Creature::getMorale(const ContentFactory* factory) const {

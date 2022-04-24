@@ -289,6 +289,10 @@ const optional<string>& Item::getEquipmentGroup() const {
   return attributes->equipmentGroup;
 }
 
+ViewId Item::getEquipedViewId() const {
+  return attributes->equipedViewId.value_or(getViewObject().id());
+}
+
 int Item::getPrice() const {
   return attributes->price;
 }

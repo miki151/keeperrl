@@ -228,7 +228,7 @@ End
       }
     }
     {
-      ids = { "SKELETON" }
+      ids = { "SKELETON_ARCHER" }
       traits = { FIGHTER }
       frequency = 0.5
       spawnLocation = FurnitureType "GRAVE"
