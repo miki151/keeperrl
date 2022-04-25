@@ -18,6 +18,7 @@
 #include "options.h"
 #include "game_info.h"
 #include "unlocks.h"
+#include "item.h"
 
 TribeId getPlayerTribeId(TribeAlignment variant) {
   switch (variant) {
@@ -28,10 +29,13 @@ TribeId getPlayerTribeId(TribeAlignment variant) {
   }
 }
 
-static ViewId getUpgradedViewId(const Creature* c) {
+static ViewObject getUpgradedViewId(const Creature* c) {
+  auto object = c->getViewObject();
   if (!c->getAttributes().viewIdUpgrades.empty())
-    return c->getAttributes().viewIdUpgrades.back();
-  return c->getViewObject().id();
+    object.setId(c->getAttributes().viewIdUpgrades.back());
+  if (auto it = c->getFirstWeapon())
+    object.weaponViewId = it->getEquipedViewId();
+  return object;
 }
 
 variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,

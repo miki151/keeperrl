@@ -2051,6 +2051,9 @@ class ViewObjectGui : public GuiElem {
   ViewObjectGui(function<ViewId()> id, Vec2 sz, double sc, Color c)
       : object(std::move(id)), size(sz), scale(sc), color(c) {}
 
+  ViewObjectGui(function<ViewObject()> id, Vec2 sz, double sc, Color c)
+      : object(std::move(id)), size(sz), scale(sc), color(c) {}
+
   virtual void render(Renderer& renderer) override {
     object.match(
           [&](const ViewObject& obj) {
@@ -2061,6 +2064,9 @@ class ViewObjectGui : public GuiElem {
               renderer.drawViewObject(getBounds().topLeft(), id, true, scale, color);
           },
           [&](function<ViewId()> viewId) {
+            renderer.drawViewObject(getBounds().topLeft(), viewId(), true, scale, color);
+          },
+          [&](function<ViewObject()> viewId) {
             renderer.drawViewObject(getBounds().topLeft(), viewId(), true, scale, color);
           }
     );
@@ -2075,7 +2081,7 @@ class ViewObjectGui : public GuiElem {
   }
 
   private:
-  variant<ViewObject, vector<ViewId>, function<ViewId()>> object;
+  variant<ViewObject, vector<ViewId>, function<ViewId()>, function<ViewObject()>> object;
   Vec2 size;
   double scale;
   Color color;
@@ -2094,6 +2100,10 @@ SGuiElem GuiFactory::viewObject(ViewIdList list, double scale, Color color) {
 }
 
 SGuiElem GuiFactory::viewObject(function<ViewId()> id, double scale, Color color) {
+  return SGuiElem(new ViewObjectGui(std::move(id), Vec2(1, 1) * Renderer::nominalSize * scale, scale, color));
+}
+
+SGuiElem GuiFactory::viewObject(function<ViewObject()> id, double scale, Color color) {
   return SGuiElem(new ViewObjectGui(std::move(id), Vec2(1, 1) * Renderer::nominalSize * scale, scale, color));
 }
 

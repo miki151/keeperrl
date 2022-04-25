@@ -256,7 +256,7 @@ class View {
   enum class AvatarRole;
   struct AvatarData {
     vector<string> genderNames;
-    vector<ViewId> viewId;
+    vector<ViewObject> viewId;
     vector<vector<string>> firstNames;
     optional<TribeAlignment> alignment;
     string name;

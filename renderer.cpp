@@ -517,6 +517,13 @@ void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite
 }
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, double scale, Color color) {
+  const Tile& tile = tileSet->getTile(object.id(), useSprite);
+  if (object.weaponViewId && tile.weaponOrigin) {
+    const Tile& weaponTile = tileSet->getTile(*object.weaponViewId, useSprite);
+    if (weaponTile.weaponOrigin)
+      drawViewObject(pos - (*weaponTile.weaponOrigin - *tile.weaponOrigin) * scale, *object.weaponViewId,
+          useSprite, scale, Color::WHITE);
+  }
   drawViewObject(pos, object.id(), useSprite, scale, color);
 }
 

@@ -194,6 +194,7 @@ class GuiFactory {
       FontId = FontId::SYMBOL_FONT);
   SGuiElem crossOutText(Color);
   SGuiElem viewObject(const ViewObject&, double scale = 1, Color = Color::WHITE);
+  SGuiElem viewObject(function<ViewObject()>, double scale = 1, Color = Color::WHITE);
   SGuiElem viewObject(ViewId, double scale = 1, Color = Color::WHITE);
   SGuiElem viewObject(ViewIdList, double scale = 1, Color = Color::WHITE);
   SGuiElem viewObject(function<ViewId()>, double scale = 1, Color = Color::WHITE);
