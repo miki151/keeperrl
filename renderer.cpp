@@ -472,7 +472,7 @@ void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, Vec2 size, Co
           : (Vec2(nominalSize, nominalSize) - coord.size).mult(size) / (nominalSize * 2);
     Vec2 tileSize = scale ? coord.size * *scale : coord.size.mult(size) / nominalSize;
     if (coord.size.y > nominalSize)
-      off.y *= 2;
+      off.y -= 3 * size.y / nominalSize;
     drawSprite(pos + off, coord.pos.mult(coord.size), coord.size, *coord.texture, tileSize, color, orientation);
   };
   if (secondColor && coords.size() > 1) {

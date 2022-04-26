@@ -672,6 +672,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
             ? Vec2(weaponCoord[0].size.x - weaponTile.weaponOrigin->x, weaponTile.weaponOrigin->y) -
               Vec2(coord[0].size.x - tile.weaponOrigin->x, tile.weaponOrigin->y)
             : *weaponTile.weaponOrigin - *tile.weaponOrigin;
+        if (coord[0].size.y > Renderer::nominalSize)
+          offset.y += 3;
         renderer.drawTile(pos + move - ((coord[0].size - weaponCoord[0].size) / 2 + offset) * zoom, weaponCoord, size, color,
             orientation, object.weaponViewId->getColor());
       }
