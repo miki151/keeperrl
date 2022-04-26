@@ -2045,7 +2045,7 @@ SGuiElem GuiFactory::empty() {
 class ViewObjectGui : public GuiElem {
   public:
   ViewObjectGui(const ViewObject& obj, Vec2 sz, double sc, Color c) : object(obj), size(sz), scale(sc), color(c) {}
-  ViewObjectGui(vector<ViewId> id, Vec2 sz, double sc, Color c) : object(id), size(sz), scale(sc), color(c) {
+  ViewObjectGui(ViewIdList id, Vec2 sz, double sc, Color c) : object(id), size(sz), scale(sc), color(c) {
     //CHECK(int(id) >= 0 && int(id) < EnumInfo<ViewId>::size);
   }
   ViewObjectGui(function<ViewId()> id, Vec2 sz, double sc, Color c)
@@ -2059,9 +2059,8 @@ class ViewObjectGui : public GuiElem {
           [&](const ViewObject& obj) {
             renderer.drawViewObject(getBounds().topLeft(), obj, true, scale, color);
           },
-          [&](const vector<ViewId>& viewId) {
-            for (auto& id : viewId)
-              renderer.drawViewObject(getBounds().topLeft(), id, true, scale, color);
+          [&](const ViewIdList& viewId) {
+            renderer.drawViewObject(getBounds().topLeft(), viewId, true, scale, color);
           },
           [&](function<ViewId()> viewId) {
             renderer.drawViewObject(getBounds().topLeft(), viewId(), true, scale, color);
@@ -2081,7 +2080,7 @@ class ViewObjectGui : public GuiElem {
   }
 
   private:
-  variant<ViewObject, vector<ViewId>, function<ViewId()>, function<ViewObject()>> object;
+  variant<ViewObject, ViewIdList  , function<ViewId()>, function<ViewObject()>> object;
   Vec2 size;
   double scale;
   Color color;

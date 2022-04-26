@@ -1904,7 +1904,7 @@
     hatedByEffect = HATE_HUMANS
     inventory = {
       { "LeatherArmor"}
-      { "Club"}
+      { "WoodenStaff"}
       { "GoldPiece" 80 120 }
       { type = Glyph ARMOR ItemAttrBonus SPELL_DAMAGE 5 chance = 0.3 }
       { type = Glyph ARMOR LastingEffect FLYING chance = 0.3 }
@@ -4486,7 +4486,7 @@ End
     }
     hatedByEffect = HATE_GREENSKINS
     inventory = {
-      { "Sword"}
+      { "Sceptre"}
       { type = "LeatherBoots" chance = 0.3 }
     }
   }

@@ -79,6 +79,7 @@ class Renderer {
   void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, double scale = 1, Color = Color::WHITE);
   void drawViewObject(Vec2 pos, const ViewObject&);
   void drawViewObject(Vec2 pos, ViewId, bool useSprite, double scale = 1, Color = Color::WHITE);
+  void drawViewObject(Vec2 pos, vector<ViewId>, bool useSprite, double scale = 1, Color = Color::WHITE);
   void drawViewObject(Vec2 pos, ViewId, bool useSprite, Vec2 size, Color = Color::WHITE, SpriteOrientation = {});
   void drawViewObject(Vec2 pos, ViewId, Color = Color::WHITE);
   void drawAsciiBackground(ViewId, Rectangle bounds);

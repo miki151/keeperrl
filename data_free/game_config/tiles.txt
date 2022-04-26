@@ -186,7 +186,7 @@
 { "friar" "@" ColorId DARK_BROWN }
 { "black_market_guard" "B" ColorId BROWN }
 { viewId = "warrior" symbol = "@" color = ColorId DARK_GRAY weaponOrigin = {6 14} }
-{ "shaman" "@" ColorId YELLOW }
+{ viewId = "shaman" symbol = "@" color = ColorId YELLOW weaponOrigin = {6 14} }
 { viewId = "thief" symbol = "@" color = ColorId LIGHT_BROWN weaponOrigin = {4 16} }
 { viewId = "thief_leader" symbol = "@" color = ColorId BROWN weaponOrigin = {5 16} }
 { viewId = "sorcerer" symbol = "@" color = ColorId PURPLE weaponOrigin = {4 14} }

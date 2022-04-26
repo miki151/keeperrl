@@ -489,6 +489,24 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, Color color) {
   drawViewObject(pos, id, true, 1, color);
 }
 
+void Renderer::drawViewObject(Vec2 pos, ViewIdList id, bool useSprite, double scale, Color color) {
+  for (int i : All(id)) {
+    const Tile& tile = tileSet->getTile(id[i], useSprite);
+    if (tile.hasSpriteCoord()) {
+      optional<Color> colorVariant;
+      if (!tile.animated)
+        colorVariant = id[i].getColor();
+      auto thisPos = pos;
+      if (tile.weaponOrigin && i < id.size() - 1)
+        if (auto& orig = tileSet->getTile(id[i + 1], useSprite).weaponOrigin)
+          thisPos -= (*tile.weaponOrigin - *orig) * scale;
+      drawTile(thisPos, tile.getSpriteCoord(DirSet::fullSet()), Vec2(), color * tile.color, {}, colorVariant, scale);
+    } else
+      drawText(tile.symFont ? FontId::SYMBOL_FONT : FontId::TEXT_FONT, 20 * scale, color * tile.color,
+          pos + Vec2(scale * nominalSize / 2, 0), tile.text, HOR);
+  }
+}
+
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale, Color color) {
   const Tile& tile = tileSet->getTile(id, useSprite);
   if (tile.hasSpriteCoord()) {
