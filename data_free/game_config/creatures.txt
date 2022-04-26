@@ -3108,7 +3108,7 @@
     attr = {
       DAMAGE 22
       DEFENSE 14
-      SPELL_DAMAGE 16
+      SPELL_DAMAGE 36
       RANGED_DAMAGE 30 
     }
     aiType = RANGED
@@ -3133,7 +3133,7 @@
     }
     hatedByEffect = HATE_ELVES
     inventory = {
-      { type = "ElvenSword" prefixChance = 1 }
+      { "ElvenStaff" }
       { "LeatherArmor"}
       { "ElvenBow"}
       { "GoldPiece" 80 120 }
@@ -3239,7 +3239,7 @@
     attr = {
       DAMAGE 22
       DEFENSE 14
-      SPELL_DAMAGE 16 
+      SPELL_DAMAGE 36 
     }
     body = {
       type = Humanoid MEDIUM
@@ -3258,7 +3258,7 @@
     }
     hatedByEffect = HATE_ELVES
     inventory = {
-      { type = "ElvenSword" prefixChance = 1 }
+      { "ElvenStaff" }
       { "LeatherArmor"}
       { "ElvenBow"}
       { "GoldPiece" 80 120 }

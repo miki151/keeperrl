@@ -350,6 +350,8 @@
 { viewId = "iron_staff_v" symbol = ")" color = ColorId ORANGE weaponOrigin = {11 14} }
 { "adoxium_staff" ")" ColorId PINK }
 { viewId = "adoxium_staff_v" symbol = ")" color = ColorId PINK weaponOrigin = {10 14} }
+{ "elven_staff" ")" ColorId WHITE }
+{ viewId = "elven_staff_v" symbol = ")" color = ColorId WHITE weaponOrigin = {8 14} }
 { "force_bolt" "*" ColorId DARK_BLUE }
 { "fireball" "*" ColorId ORANGE }
 { "air_blast" "*" ColorId WHITE }

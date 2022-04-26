@@ -643,6 +643,15 @@ End
     maxUpgrades = 5
     equipmentGroup = "adoxium equipment"
   }
+"ElvenStaff" inherit "WoodenStaff"
+  {
+    viewId = { "elven_staff" }
+    equipedViewId = { "elven_staff_v" }
+    name = "elven staff"
+    modifiers = {
+      SPELL_SPEED 20
+    }
+  }
 "Sceptre"
   {
     viewId = { "sceptre" }
