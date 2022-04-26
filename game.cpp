@@ -767,6 +767,8 @@ static SavedGameInfo::MinionInfo getMinionInfo(const ContentFactory* factory, co
   SavedGameInfo::MinionInfo ret;
   ret.level = (int)c->getBestAttack(factory).value;
   ret.viewId = c->getViewObject().getViewIdList();
+  if (auto it = c->getFirstWeapon())
+    ret.viewId.push_front(it->getEquipedViewId());
   return ret;
 }
 
