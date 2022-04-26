@@ -34,7 +34,7 @@
 { "vampire_lord" "V" ColorId PURPLE }
 { "vampire_brute" "V" ColorId LIGHT_BROWN }
 { "devil" "&" ColorId ORANGE }
-{ "satan" "&" ColorId RED }
+{ viewId = "satan" symbol = "&" color = ColorId RED weaponOrigin = {6 23} }
 { "adoxie_foot_left" "u" ColorId PURPLE }
 { "adoxie_foot_right" "u" ColorId PURPLE }
 { "adoxie_hand_right" "u" ColorId PURPLE }
@@ -326,6 +326,8 @@
 { viewId = "infernite_battle_axe_v" symbol = ")" color = ColorId RED weaponOrigin = {11 14} }
 { "infernite_war_hammer" ")" ColorId RED }
 { viewId = "infernite_war_hammer_v" symbol = ")" color = ColorId RED weaponOrigin = {9 16} }
+{ "infernite_trident" ")" ColorId RED }
+{ viewId = "infernite_trident_v" symbol = ")" color = ColorId RED weaponOrigin = {7 16} }
 { viewId = "spear_v" symbol = "/" color = ColorId LIGHT_GRAY weaponOrigin = {14 15} }
 { "spear" "/" ColorId LIGHT_GRAY }
 { "special_sword" ")" ColorId YELLOW }

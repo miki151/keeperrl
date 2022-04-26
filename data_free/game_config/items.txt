@@ -540,6 +540,31 @@ End
     equipedEffect = {FIRE_DAMAGE}
     equipmentGroup = "infernite equipment"
   }
+"InferniteTrident"
+  {
+    viewId = { "infernite_trident" }
+    equipedViewId = { "infernite_trident_v" }
+    shortName = "infernite"
+    name = "infernite trident"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 8
+    modifiers = {
+      DAMAGE 25
+    }
+    price = 5000
+    weaponInfo = {
+      attackType = STAB
+      attackMsg = THRUST
+    }
+    craftingCost = "INFERNITE" 100
+    maxUpgrades = 10
+    autoEquipPredicate = LastingEffect FIRE_RESISTANT
+    ownedEffect = LIGHT_SOURCE
+    storageIds = {"weapons" "equipment"}
+    equipedEffect = {FIRE_DAMAGE}
+    equipmentGroup = "infernite equipment"
+  }
 "Club"
   {
     viewId = { "club" }

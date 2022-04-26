@@ -485,7 +485,7 @@
       fullTitle = true
     }
     inventory = {
-      { "InferniteBattleAxe" }
+      { "InferniteTrident" }
     }
   }
 "LOST_SOUL"
