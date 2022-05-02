@@ -161,9 +161,10 @@ void VillageControl::launchAttack(vector<Creature*> attackers) {
   if (Collective* enemy = getEnemyCollective()) {
     for (Creature* c : attackers) {
 //      if (getCollective()->getGame()->canTransferCreature(c, enemy->getLevel()->getModel()))
+      if (c->isAffected(LastingEffect::RIDER))
         if (auto steed = collective->getSteedOrRider(c))
           c->forceMount(steed);
-        collective->getGame()->transferCreature(c, enemy->getModel());
+      collective->getGame()->transferCreature(c, enemy->getModel());
     }
     optional<int> ransom;
     int hisGold = enemy->numResource(CollectiveResourceId("GOLD"));
