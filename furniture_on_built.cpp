@@ -27,7 +27,14 @@ template <typename BuildFun>
 static ZLevelResult tryBuilding(int numTries, BuildFun buildFun, const string& name) {
   for (int i : Range(numTries)) {
     try {
-      return buildFun();
+      return buildFun(true);
+    } catch (LevelGenException) {
+      INFO << "Retrying level gen";
+    }
+  }
+  for (int i : Range(numTries)) {
+    try {
+      return buildFun(false);
     } catch (LevelGenException) {
       INFO << "Retrying level gen";
     }
@@ -82,10 +89,10 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
       Level* targetLevel = nullptr;
       if (levelIndex == pos.getModel()->getMainLevelsDepth().getStart()) {
         auto levelSize = pos.getLevel()->getBounds().getSize();
-        auto newLevel = tryBuilding(20,
-            [&]{
+        auto newLevel = tryBuilding(50,
+            [&](bool withEnemies) {
               auto contentFactory = pos.getGame()->getContentFactory();
-              auto maker = getUpLevel(Random, contentFactory, -levelIndex + 1, pos);
+              auto maker = getUpLevel(Random, contentFactory, -levelIndex + 1, pos, withEnemies);
               auto level = pos.getModel()->buildUpLevel(contentFactory,
                   LevelBuilder(Random, contentFactory, levelSize.x, levelSize.y, true), std::move(maker.maker));
               return ZLevelResult{ level, maker.enemies.transform([&](auto& e) { return e.buildCollective(contentFactory); })};
@@ -104,8 +111,8 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
       Level* targetLevel = nullptr;
       if (levelIndex == pos.getModel()->getMainLevelsDepth().getEnd() - 1) {
         auto levelSize = pos.getLevel()->getBounds().getSize();
-        auto newLevel = tryBuilding(20,
-            [&]{
+        auto newLevel = tryBuilding(50,
+            [&](bool withEnemies) {
               auto contentFactory = pos.getGame()->getContentFactory();
               auto maker = getLevelMaker(Random, contentFactory, pos.getGame()->zLevelGroups,
                   levelIndex + 1, pos.getGame()->getPlayerCollective()->getTribeId(), levelSize);

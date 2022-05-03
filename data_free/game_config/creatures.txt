@@ -2557,6 +2557,7 @@
       RANGED_RESISTANCE 1
       FIRE_RESISTANT 1
       DARKNESS_SOURCE 1
+      DISTILLATION_SKILL 1
     }
     aiType = RANGED
     spellSchools = { "zombie mage" "illusion" }

@@ -881,6 +881,10 @@ bool Body::canPerformRituals(const ContentFactory* factory) const {
   return xhumanoid && !isImmuneTo(LastingEffect::TIED_UP, factory);
 }
 
+void Body::setCanBeCaptured(bool value) {
+  canCapture = value;
+}
+
 bool Body::canBeCaptured(const ContentFactory* factory) const {
   return !!canCapture ? *canCapture : !isImmuneTo(LastingEffect::TIED_UP, factory);
 }

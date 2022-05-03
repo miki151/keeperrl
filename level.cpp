@@ -560,11 +560,11 @@ void Level::tick() {
           above->unavailable[pos.getCoord()] = false;
           abovePos.addFurniture(getGame()->getContentFactory()->furniture.getFurniture(FurnitureType("ROOF"),
               TribeId::getMonster()));
-          if (col->getKnownTiles().isKnown(pos)) {
+          if (!!col && col->getKnownTiles().isKnown(pos)) {
             col->addKnownTile(abovePos);
             getGame()->getPlayerControl()->addToMemory(abovePos);
           }
-          if (col->getTerritory().contains(pos))
+          if (!!col && col->getTerritory().contains(pos))
             col->claimSquare(abovePos);
         }
       }
