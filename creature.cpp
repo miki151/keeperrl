@@ -1174,7 +1174,12 @@ double Creature::getCombatExperience() const {
 }
 
 void Creature::updateCombatExperience(Creature* victim) {
-  if (uniqueKills.insert(victim->getName().bare()).second) {
+  auto id = [&] () -> string {
+    if (auto id = victim->getAttributes().getCreatureId())
+      return id->data();
+    return victim->getName().bare();
+  }();
+  if (uniqueKills.insert(id).second) {
     int curLevel = (int)combatExperience;
     constexpr double expIncrease = 0.2;
     combatExperience += expIncrease;
