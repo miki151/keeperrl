@@ -34,6 +34,7 @@ WorkshopItem WorkshopItemCfg::get(const ContentFactory* factory) const {
     requireIngredient,
     notArtifact,
     applyImmediately,
-    materialTab
+    materialTab,
+    requiresUpgrades
   };
 }

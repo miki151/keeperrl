@@ -19,7 +19,8 @@ struct WorkshopItemCfg {
   bool SERIAL(notArtifact) = false;
   bool SERIAL(applyImmediately) = false;
   bool SERIAL(materialTab) = false;
-  SERIALIZE_ALL(NAMED(item), OPTION(work), NAMED(cost), NAMED(tech), NAMED(tutorialHighlight), OPTION(requireIngredient), OPTION(notArtifact), OPTION(applyImmediately), OPTION(materialTab))
+  bool SERIAL(requiresUpgrades) = false;
+  SERIALIZE_ALL(NAMED(item), OPTION(work), NAMED(cost), NAMED(tech), NAMED(tutorialHighlight), OPTION(requireIngredient), OPTION(notArtifact), OPTION(applyImmediately), OPTION(materialTab), OPTION(requiresUpgrades))
 };
 
 static_assert(std::is_nothrow_move_constructible<WorkshopItemCfg>::value, "T should be noexcept MoveConstructible");
@@ -41,7 +42,8 @@ struct WorkshopItem {
   bool SERIAL(notArtifact) = false;
   bool SERIAL(applyImmediately) = false;
   bool SERIAL(materialTab) = false;
-  SERIALIZE_ALL(type, name, pluralName, viewId, cost, workNeeded, techId, description, tutorialHighlight, upgradeType, maxUpgrades, requireIngredient, notArtifact, applyImmediately, materialTab)
+  bool SERIAL(requiresUpgrades) = false;
+  SERIALIZE_ALL(type, name, pluralName, viewId, cost, workNeeded, techId, description, tutorialHighlight, upgradeType, maxUpgrades, requireIngredient, notArtifact, applyImmediately, materialTab, requiresUpgrades)
 };
 
 struct WorkshopQueuedItem {

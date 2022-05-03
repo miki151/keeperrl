@@ -80,8 +80,8 @@ int Workshops::getLegendarySkillThreshold() {
 }
 
 static bool allowUpgrades(const WorkshopQueuedItem& item, int skillAmount, double morale) {
-  return item.runes.empty() || item.item.notArtifact ||
-      (skillAmount >= Workshops::getLegendarySkillThreshold() && morale >= 0);
+  return (!item.item.requiresUpgrades || !item.runes.empty()) && (item.runes.empty() || item.item.notArtifact ||
+      (skillAmount >= Workshops::getLegendarySkillThreshold() && morale >= 0));
 }
 
 bool Workshops::Type::isIdle(const Collective* collective, int skillAmount, double morale) const {

@@ -142,7 +142,8 @@ append {
 
 Def CORPUS(Id, Name, Resource, Tech, Slots)
   { item = {Assembled{ Id Name {FIGHTER AUTOMATON}{AUTOMATONS_UPPER AUTOMATONS_LOWER} Slots}}
-    work = 8 cost = Resource tech = Tech applyImmediately = true notArtifact = true materialTab = true}
+    work = 8 cost = Resource tech = Tech applyImmediately = true notArtifact = true materialTab = true
+    requiresUpgrades = true}
 End
 
 Def WORKER(Id, Color, Resource)

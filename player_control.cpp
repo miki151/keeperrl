@@ -1372,7 +1372,8 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
     int itemIndex, bool hasLegendarySkill) const {
   auto contentFactory = getGame()->getContentFactory();
   CollectiveInfo::QueuedItemInfo ret {item.state,
-        item.paid && (item.runes.empty() || item.item.notArtifact || hasLegendarySkill),
+        item.paid && (item.runes.empty() || item.item.notArtifact || hasLegendarySkill) &&
+            (!item.item.requiresUpgrades || !item.runes.empty()),
         getWorkshopItem(item.item, cnt), getImmigrantCreatureInfo(contentFactory, item.item.type),
         {}, {"", 0}, itemIndex, item.item.notArtifact};
   if (!item.paid)
@@ -1400,6 +1401,8 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
   }
   if (!item.runes.empty() && !item.item.notArtifact)
     ret.itemInfo.unavailableReason = "Requires a craftsman of legendary skills.";
+  if (item.runes.empty() && item.item.requiresUpgrades)
+    ret.itemInfo.unavailableReason = "Item cannot be crafted without applied upgrades.";
   ret.itemInfo.actions = {ItemAction::REMOVE};
   ret.maxUpgrades = {!item.item.upgradeType.empty() ? getItemTypeName(item.item.upgradeType[0]) : "", item.item.maxUpgrades};
   return ret;
