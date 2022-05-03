@@ -1247,6 +1247,7 @@ static vector<Creature*> summonPersonal(Creature* c, CreatureId id, bool updateS
       spirit->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, strength);
     }
     spirit->getAttributes().setCanJoinCollective(false);
+    spirit->getBody().setCanBeCaptured(false);
     if (!position)
       c->verb("have", "has", "summoned " + spirit->getName().a());
   }

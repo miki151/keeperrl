@@ -1069,6 +1069,10 @@ bool Body::canPerformRituals() const {
   return xhumanoid && !isImmuneTo(LastingEffect::TIED_UP);
 }
 
+void Body::setCanBeCaptured(bool value) {
+  canCapture = value;
+}
+
 bool Body::canBeCaptured() const {
   return !!canCapture ? *canCapture : !isImmuneTo(LastingEffect::TIED_UP);
 }

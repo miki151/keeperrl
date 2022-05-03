@@ -72,6 +72,7 @@ class Body {
   void setHumanoid(bool);
   void affectPosition(Position);
   void addBodyPart(BodyPart, int count);
+  void setCanBeCaptured(bool);
 
   enum DamageResult {
     NOT_HURT,
