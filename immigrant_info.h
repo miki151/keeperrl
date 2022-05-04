@@ -145,21 +145,7 @@ class ImmigrantInfo {
 
   const vector<SpecialTraitInfo>& getSpecialTraits() const;
 
-  ImmigrantInfo& addRequirement(double candidateProb, ImmigrantRequirement);
   ImmigrantInfo& addRequirement(ImmigrantRequirement);
-  ImmigrantInfo& setFrequency(double);
-  ImmigrantInfo& setSpawnLocation(SpawnLocation);
-  ImmigrantInfo& setInitialRecruitment(int);
-  ImmigrantInfo& setGroupSize(Range);
-  ImmigrantInfo& setKeybinding(Keybinding);
-  ImmigrantInfo& setSound(Sound);
-  ImmigrantInfo& setNoAuto();
-  ImmigrantInfo& setInvisible();
-  ImmigrantInfo& setLimit(int);
-  ImmigrantInfo& setTutorialHighlight(TutorialHighlight);
-  ImmigrantInfo& setHiddenInHelp();
-  ImmigrantInfo& addSpecialTrait(double chance, SpecialTrait);
-  ImmigrantInfo& addSpecialTrait(double chance, vector<SpecialTrait>);
 
   template <typename Visitor>
   void visitRequirements(const Visitor& visitor) const {
