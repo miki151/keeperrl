@@ -132,7 +132,6 @@ class ImmigrantInfo {
   const SpawnLocation& getSpawnLocation() const;
   Range getGroupSize() const;
   int getInitialRecruitment() const;
-  bool isAutoTeam() const;
   double getFrequency() const;
   bool isPersistent() const;
   bool isInvisible() const;
@@ -152,7 +151,6 @@ class ImmigrantInfo {
   ImmigrantInfo& setSpawnLocation(SpawnLocation);
   ImmigrantInfo& setInitialRecruitment(int);
   ImmigrantInfo& setGroupSize(Range);
-  ImmigrantInfo& setAutoTeam();
   ImmigrantInfo& setKeybinding(Keybinding);
   ImmigrantInfo& setSound(Sound);
   ImmigrantInfo& setNoAuto();
@@ -188,7 +186,6 @@ class ImmigrantInfo {
   SpawnLocation SERIAL(spawnLocation) = OutsideTerritory{};
   Range SERIAL(groupSize) = Range(1, 2);
   int SERIAL(initialRecruitment) = 0;
-  bool SERIAL(autoTeam) = false;
   bool SERIAL(consumeIds) = false;
   optional<Keybinding> SERIAL(keybinding);
   optional<Sound> SERIAL(sound);

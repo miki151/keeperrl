@@ -476,8 +476,6 @@ void Immigration::accept(int id, bool withMessage) {
   vector<Position> spawnPos = candidate.getSpawnPositions();
   if (spawnPos.size() < groupSize)
     return;
-  if (immigrantInfo.isAutoTeam() && groupSize > 1)
-    collective->getTeams().activate(collective->getTeams().createPersistent(creatures));
   if (withMessage)
     collective->addNewCreatureMessage(creatures);
   for (int i : All(creatures)) {
