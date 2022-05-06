@@ -1895,6 +1895,7 @@ void Creature::retire() {
     if (attributes->considerTimeout(effect, GlobalTime(1000000)))
       LastingEffects::onTimedOut(this, effect, false);
   spellMap->setAllReady();
+  attributes->promotionGroup = none;
 }
 
 void Creature::removeGameReferences() {
