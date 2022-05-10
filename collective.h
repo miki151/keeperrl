@@ -117,7 +117,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   const Territory& getTerritory() const;
   Territory& getTerritory();
   bool canClaimSquare(Position pos) const;
-  void claimSquare(Position);
+  void claimSquare(Position, bool includeStairs = false);
   void unclaimSquare(Position);
   const KnownTiles& getKnownTiles() const;
   void retire();

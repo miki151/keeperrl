@@ -874,13 +874,13 @@ void Collective::unclaimSquare(Position pos) {
       }
 }
 
-void Collective::claimSquare(Position pos) {
+void Collective::claimSquare(Position pos, bool includeStairs) {
   //CHECK(canClaimSquare(pos));
   territory->insert(pos);
   addKnownTile(pos);
   for (auto layer : {FurnitureLayer::FLOOR, FurnitureLayer::MIDDLE, FurnitureLayer::CEILING})
     if (auto furniture = pos.modFurniture(layer))
-      if (!furniture->forgetAfterBuilding()) {
+      if (!furniture->forgetAfterBuilding() && (includeStairs || !furniture->getSecondPart(pos))) {
         if (!constructions->containsFurniture(pos, furniture->getLayer()))
           constructions->addFurniture(pos, ConstructionMap::FurnitureInfo::getBuilt(furniture->getType()), layer);
         furniture->setTribe(getTribeId());

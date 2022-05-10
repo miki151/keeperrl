@@ -58,7 +58,7 @@ static void addStairs(Position pos, Level* targetLevel, FurnitureType stairsType
     collective->addKnownTile(v);
     pos.getGame()->getPlayerControl()->addToMemory(v);
   }
-  collective->claimSquare(landing);
+  collective->claimSquare(landing, true);
   for (auto pos : targetLevel->getAllPositions())
     if (auto f = pos.getFurniture(FurnitureLayer::MIDDLE))
       if (f->isClearFogOfWar())
