@@ -369,7 +369,7 @@ bool TileSet::loadTilesFromDir(const DirectoryPath& path, Vec2 size, bool overwr
 
 void TileSet::loadTextures() {
   for (auto& elem : texturesTmp) {
-    textures.push_back(unique<Texture>(elem.image));
+    textures.push_back(make_unique<Texture>(elem.image));
     SDL::SDL_FreeSurface(elem.image);
     for (auto& pos : elem.addedPositions)
       for (auto& coord : tileCoords[pos.first])

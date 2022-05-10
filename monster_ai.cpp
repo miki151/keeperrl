@@ -682,7 +682,7 @@ class Fighter : public Behaviour {
 
 class FighterStandGround : public Behaviour {
   public:
-  FighterStandGround(Creature* c) : Behaviour(c), fighter(unique<Fighter>(c)) {
+  FighterStandGround(Creature* c) : Behaviour(c), fighter(make_unique<Fighter>(c)) {
   }
 
   virtual MoveInfo getMove() override {
@@ -1256,7 +1256,7 @@ MonsterAIFactory MonsterAIFactory::collective(Collective* col) {
         new AvoidFire(c),
         new AdoxieSacrifice(c),
         new EffectsAI(c, col),
-        new ByCollective(c, col, unique<Fighter>(c)),
+        new ByCollective(c, col, make_unique<Fighter>(c)),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 10, 9, 6, 2, 1}, false);
       });
@@ -1343,7 +1343,7 @@ MonsterAIFactory MonsterAIFactory::summoned(Creature* leader) {
 MonsterAIFactory MonsterAIFactory::warlord(shared_ptr<vector<Creature*>> team, shared_ptr<EnumSet<TeamOrder>> orders) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
-          new WarlordBehaviour(c, unique<Fighter>(c), std::move(team), std::move(orders)),
+          new WarlordBehaviour(c, make_unique<Fighter>(c), std::move(team), std::move(orders)),
           new AvoidFire(c),
           new EffectsAI(c, nullptr),
           new MoveRandomly(c),

@@ -607,7 +607,7 @@ void handleEffect(TribeId tribe, Level::EffectsTable& effectsTable, vector<Posit
 void Position::addFurnitureEffect(TribeId tribe, const FurnitureEffectInfo& effect) const {
   auto& effectsTable = level->furnitureEffects[tribe.getKey()];
   if (!effectsTable)
-    effectsTable = unique<Level::EffectsTable>(level->getBounds());
+    effectsTable = make_unique<Level::EffectsTable>(level->getBounds());
   handleEffect(tribe, *effectsTable, getRectangle(Rectangle::centered(effect.radius)), effect,
       [&](vector<LastingEffect>& effects) { effects.push_back(effect.effect); },
       [&](Creature* c) { c->addPermanentEffect(effect.effect, 1, false); });

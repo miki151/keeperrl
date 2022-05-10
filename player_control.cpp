@@ -193,7 +193,7 @@ void PlayerControl::loadImmigrationAndWorkshops(ContentFactory* contentFactory,
   for (auto& group : keeperCreatureInfo.workshopGroups)
     for (auto& elem : contentFactory->workshopGroups.at(group))
       merged[elem.first].append(elem.second);
-  collective->setWorkshops(unique<Workshops>(std::move(merged), contentFactory));
+  collective->setWorkshops(make_unique<Workshops>(std::move(merged), contentFactory));
   for (auto& workshop : collective->getWorkshops().types)
     for (auto& option : workshop.second.getOptions())
       usedResources.insert(option.cost.id);

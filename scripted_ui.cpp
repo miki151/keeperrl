@@ -220,7 +220,7 @@ struct Container : ScriptedUIInterface {
   vector<SubElemInfo> getError(const string& s) const {
     static map<string, ScriptedUI> errors;
     if (!errors.count(s))
-      errors[s] = ScriptedUI{unique<Label>(s)};
+      errors[s] = ScriptedUI{make_unique<Label>(s)};
     return {SubElemInfo{errors.at(s), ScriptedUIData{}, Rectangle()}};
   }
 };
