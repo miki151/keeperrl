@@ -83,7 +83,7 @@ End
       }
       specialTraits = {
          { 0.03 { WorkshopType "WORKSHOP" Lasting { INSANITY } }}
-         { 1.0 { WorkshopType "FORGE" Lasting { INSANITY } }}
+         { 0.05 { WorkshopType "FORGE" Lasting { INSANITY } }}
          { 0.03 { Lasting { BAD_BREATH } }}
          { 0.01 { Lasting { ENTERTAINER } }}
       }
