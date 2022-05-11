@@ -1081,7 +1081,7 @@ static double getScore(string target, string candidate) {
   int result = 0;
   for (int i : Range(candidate.size() - n + 1))
     result += ngrams.count(candidate.substr(i, n));
-  return result - int(candidate.size()) / 6;
+  return result - double(candidate.size()) / 6;
 }
 
 struct WishedItemInfo {

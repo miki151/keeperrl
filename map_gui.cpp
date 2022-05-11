@@ -220,7 +220,7 @@ void MapGui::softScroll(double x, double y) {
 }
 
 bool MapGui::onKeyPressed2(SDL_Keysym key) {
-  const double scrollDist = 9 * 32 / layout->getSquareSize().x;
+  const double scrollDist = 9.0 * 32 / layout->getSquareSize().x;
   if (!keyScrolling)
     return false;
   switch (key.sym) {

@@ -528,7 +528,8 @@ class Fighter : public Behaviour {
         auto allyPos = ally->getPosition();
         /*if (allyPos.dist8(creature->getPosition()) == 1)
           return creature->castSpell(Spell::get(SpellId::HEAL_OTHER), allyPos);
-        else */if (auto healingPos = getHealingPosition(allyPos))
+        else */
+        if (auto healingPos = getHealingPosition(allyPos))
           return creature->moveTowards(*healingPos);
         else
           unsafeMove = creature->moveTowards(ally->getPosition());
