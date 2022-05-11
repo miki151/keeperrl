@@ -74,7 +74,6 @@ enum class ItemIndex;
 
 enum class CollectiveWarning;
 enum class SoundId;
-enum class Keybinding;
 enum class TutorialHighlight;
 
 enum class MessagePriority;
@@ -126,6 +125,7 @@ class CollectiveResourceId;
 class AttrType;
 class BuffId;
 class BodyMaterialId;
+class Keybinding;
 using EffectAIIntent = int;
 
 using SteamId = unsigned long long;

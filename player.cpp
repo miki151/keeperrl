@@ -452,7 +452,7 @@ void Player::mountAction() {
 
 void Player::fireAction() {
   for (auto spell : creature->getSpellMap().getAvailable(creature))
-    if (creature->isReady(spell) && spell->getKeybinding() == Keybinding::FIRE_PROJECTILE) {
+    if (creature->isReady(spell) && spell->getKeybinding() == Keybinding("FIRE_PROJECTILE")) {
       highlightedSpell = spell->getId();
       getView()->updateView(this, false);
       Vec2 origin = creature->getPosition().getCoord();

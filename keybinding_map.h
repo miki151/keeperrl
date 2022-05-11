@@ -11,4 +11,5 @@ class KeybindingMap {
   bool matches(Keybinding, SDL::SDL_Keysym);
 
   private:
+  unordered_map<Keybinding, SDL::SDL_Keysym, CustomHash<Keybinding>> bindings;
 };

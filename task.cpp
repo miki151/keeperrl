@@ -487,7 +487,7 @@ class ArcheryRange : public Task {
           return c->wait();
     }
     for (auto spell : c->getSpellMap().getAvailable(c))
-      if (spell->getKeybinding() == Keybinding::FIRE_PROJECTILE)
+      if (spell->getKeybinding() == Keybinding("FIRE_PROJECTILE"))
         if (auto move = c->castSpell(spell, shootInfo->target))
           return move.append(
               [this, target = shootInfo->target](Creature* c) {

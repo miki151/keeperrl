@@ -23,6 +23,7 @@
 #include "attr_type.h"
 #include "buff_id.h"
 #include "body_material_id.h"
+#include "keybinding.h"
 
 static const char* staticsInitialized = nullptr;
 
@@ -229,4 +230,5 @@ INST(TileGasType)
 INST(AttrType)
 INST(BuffId)
 INST(BodyMaterialId)
+INST(Keybinding)
 #undef INST

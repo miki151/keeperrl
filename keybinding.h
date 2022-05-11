@@ -1,8 +1,9 @@
 #pragma once
 
 #include "util.h"
+#include "content_id.h"
 
-RICH_ENUM(Keybinding,
-  CREATE_IMP,
-  FIRE_PROJECTILE
-);
+class Keybinding : public ContentId<Keybinding> {
+  public:
+  using ContentId::ContentId;
+};

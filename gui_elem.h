@@ -22,6 +22,7 @@
 #include "texture_id.h"
 #include "attr_type.h"
 #include "view_id.h"
+#include "keybinding.h"
 
 class ViewObject;
 class Clock;

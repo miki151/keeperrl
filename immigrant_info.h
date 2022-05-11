@@ -11,6 +11,7 @@
 #include "tech_id.h"
 #include "pretty_archive.h"
 #include "sunlight_info.h"
+#include "keybinding.h"
 
 class ContentFactory;
 struct SpecialTraitInfo;

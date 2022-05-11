@@ -20,6 +20,7 @@
 #include "spell_id.h"
 #include "view_id.h"
 #include "fx_info.h"
+#include "keybinding.h"
 
 class Effect;
 class Position;

@@ -829,6 +829,7 @@ vector<Button> PlayerControl::fillButtons() const {
     else
       buttons.back().help = combineSentences(concat({button.help}, unmetReqText));
     buttons.back().hotkey = button.hotkey;
+    buttons.back().key = button.key;
     buttons.back().groupName = button.groupName;
     buttons.back().hotkeyOpensGroup = button.hotkeyOpensGroup;
     buttons.back().tutorialHighlight = button.tutorialHighlight;

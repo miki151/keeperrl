@@ -22,6 +22,7 @@
 #include "creature_experience_info.h"
 #include "tech_id.h"
 #include "scripted_help_info.h"
+#include "keybinding.h"
 
 class PlayerMessage;
 class SpecialTrait;
@@ -252,11 +253,12 @@ class CollectiveInfo {
     enum { ACTIVE, GRAY_CLICKABLE, INACTIVE} HASH(state);
     string HASH(help);
     char HASH(hotkey);
+    optional<Keybinding> HASH(key);
     string HASH(groupName);
     bool HASH(hotkeyOpensGroup);
     optional<TutorialHighlight> HASH(tutorialHighlight);
     bool HASH(isBuilding);
-    HASH_ALL(viewId, name, cost, count, state, help, hotkey, groupName, hotkeyOpensGroup, tutorialHighlight, isBuilding)
+    HASH_ALL(viewId, name, cost, count, state, help, hotkey, key, groupName, hotkeyOpensGroup, tutorialHighlight, isBuilding)
   };
   vector<Button> HASH(buildings);
   string HASH(populationString);
