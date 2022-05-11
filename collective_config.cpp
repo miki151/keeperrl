@@ -64,7 +64,7 @@ BedType CollectiveConfig::getPrisonBedType(const Creature* c) {
 }
 
 static optional<BedType> getBedType(const Creature* c, const ContentFactory* factory) {
-  if (!c->getBody().isImmuneTo(LastingEffect::SLEEP, factory))
+  if (c->getBody().isImmuneTo(LastingEffect::SLEEP, factory))
     return none;
   if (c->getStatus().contains(CreatureStatus::PRISONER))
     return CollectiveConfig::getPrisonBedType(c);
