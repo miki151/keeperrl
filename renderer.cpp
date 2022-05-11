@@ -441,7 +441,7 @@ void Renderer::setVsync(bool on) {
 }
 
 Renderer::Renderer(Clock* clock, const string& title, const DirectoryPath& fontPath,
-    const FilePath& cursorP, const FilePath& clickedCursorP, const FilePath& logoPath)
+    const FilePath& cursorP, const FilePath& clickedCursorP, const FilePath& iconPath)
     : cursorPath(cursorP), clickedCursorPath(clickedCursorP), clock(clock) {
   CHECK(SDL::SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0) << SDL::SDL_GetError();
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
@@ -457,6 +457,8 @@ Renderer::Renderer(Clock* clock, const string& title, const DirectoryPath& fontP
   originalCursor = SDL::SDL_GetCursor();
   initOpenGL();
   loadFonts(fontPath, fonts);
+  auto icon = SDL::IMG_Load(iconPath.getPath());
+  SDL_SetWindowIcon(window, icon);
 }
 
 Vec2 getOffset(Vec2 sizeDiff, double scale) {

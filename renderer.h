@@ -36,7 +36,7 @@ class Renderer {
   static constexpr int nominalSize = 24;
 
   Renderer(Clock*, const string& windowTile, const DirectoryPath& fontPath, const FilePath& cursorPath,
-      const FilePath& clickedCursorPath, const FilePath& logoPath);
+      const FilePath& clickedCursorPath, const FilePath& iconPath);
   void setFullscreen(bool);
   void setFullscreenMode(int);
   void setVsync(bool);
