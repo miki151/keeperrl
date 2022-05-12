@@ -78,6 +78,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "buffs";
     case GameConfigId::BODY_MATERIALS:
       return "body_materials";
+    case GameConfigId::KEYS:
+      return "keys";
   }
 }
 

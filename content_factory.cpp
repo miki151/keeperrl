@@ -173,7 +173,6 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
   if (keeperCreatures.empty() || adventurerCreatures.empty())
     return "Keeper and adventurer lists must each contain at least 1 entry."_s;
   for (auto& keeperInfo : keeperCreatures) {
-    bool hotkeys[128] = {0};
     vector<BuildInfo> buildInfoTmp;
     set<string> allDataGroups;
     for (auto& group : buildInfo) {
@@ -210,13 +209,6 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
     for (auto& group : keeperInfo.second.buildingGroups)
       if (!allDataGroups.count(group))
         return "Building menu group \"" + group + "\" not found";
-    for (auto& info : buildInfoTmp) {
-      if (info.hotkey != '\0') {
-        if (hotkeys[int(info.hotkey)])
-          return "Hotkey \'" + string(1, info.hotkey) + "\' is used more than once in building menu";
-        hotkeys[int(info.hotkey)] = true;
-      }
-    }
     for (auto elem : keeperInfo.second.endlessEnemyGroups)
       if (!externalEnemies.count(elem))
         return "Undefined endless enemy group: \"" + elem + "\"";
@@ -469,6 +461,10 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
     return *error;
   if (auto error = config->readObject(dancePositions, GameConfigId::DANCE_POSITIONS, &keyVerifier))
     return *error;
+  map<PrimaryId<Keybinding>, KeybindingInfo> keysTmp;
+  if (auto error = config->readObject(keysTmp, GameConfigId::KEYS, &keyVerifier))
+    return *error;
+  keybindings = convertKeysHash(keysTmp);
   auto errors = keyVerifier.verify();
   if (!errors.empty())
     return errors.front();

@@ -1281,8 +1281,28 @@ SGuiElem GuiFactory::keyHandler(function<void(SDL_Keysym)> fun, bool capture) {
   return SGuiElem(new KeyHandler(fun, capture));
 }
 
+class KeybindingHandler : public GuiElem {
+  public:
+  KeybindingHandler(KeybindingMap* m, Keybinding key, function<void()> fun, bool cap)
+      : fun(std::move(fun)), keybindingMap(m), key(key), capture(cap) {}
+
+  virtual bool onKeyPressed2(SDL_Keysym sym) override {
+    if (keybindingMap->matches(key, sym)) {
+      fun();
+      return capture;
+    }
+    return false;
+  }
+
+  private:
+  function<void()> fun;
+  KeybindingMap* keybindingMap;
+  Keybinding key;
+  bool capture;
+};
+
 SGuiElem GuiFactory::keyHandler(function<void()> fun, Keybinding keybinding, bool capture) {
-  return keyHandler([=] (SDL_Keysym key) { if (keybindingMap->matches(keybinding, key)) fun(); }, capture);
+  return SGuiElem(new KeybindingHandler(keybindingMap, keybinding, std::move(fun), capture));
 }
 
 class KeyHandler2 : public GuiElem {

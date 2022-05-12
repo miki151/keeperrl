@@ -196,9 +196,9 @@ SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
     line.addElem(WL(viewObject, button.viewId), 35);
     auto tutorialHighlight = button.tutorialHighlight;
     if (button.state != CollectiveInfo::Button::ACTIVE)
-      line.addElemAuto(WL(label, button.name + " " + button.count, Color::GRAY, button.hotkey));
+      line.addElemAuto(WL(label, button.name + " " + button.count, Color::GRAY));
     else {
-      line.addElemAuto(WL(label, button.name + " " + button.count, Color::WHITE, button.hotkey));
+      line.addElemAuto(WL(label, button.name + " " + button.count, Color::WHITE));
     }
     if (button.cost)
       line.addBackElemAuto(drawCost(*button.cost));
@@ -222,7 +222,9 @@ SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
           [=]{ return !wasTutorialClicked(num, *tutorialHighlight); });
     return WL(setHeight, legendLineHeight, WL(stack, makeVec(
         getHintCallback({capitalFirst(button.help)}),
-        WL(keyHandler, std::move(buttonFun), button.key.value_or(Keybinding("NONE")), true),
+        button.hotkeyOpensGroup && !!button.key
+            ? WL(keyHandler, std::move(buttonFun), *button.key, true)
+            : WL(empty),
         WL(uiHighlightConditional, [=] { return getActiveButton(tab) == num; }),
         tutorialElem,
         line.buildHorizontalList())));
@@ -293,14 +295,16 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
       };
       auto line = WL(getListBuilder);
       line.addElem(WL(viewObject, buttons[i].viewId), 35);
-      char hotkey = buttons[i].hotkeyOpensGroup ? buttons[i].hotkey : 0;
+      optional<Keybinding> key;
+      if (buttons[i].hotkeyOpensGroup)
+        key = buttons[i].key;
       SGuiElem tutorialElem = WL(empty);
       if (tutorialHighlight)
         tutorialElem = WL(conditional, WL(tutorialHighlight),
              [=]{ return !wasTutorialClicked(combineHash(lastGroup), *tutorialHighlight); });
-      line.addElemAuto(WL(label, lastGroup, Color::WHITE, hotkey));
+      line.addElemAuto(WL(label, lastGroup, Color::WHITE));
       elems.addElem(WL(stack, makeVec(
-          WL(keyHandlerChar, buttonFunHotkey, hotkey, true, true),
+          buttons[i].key ? WL(keyHandler, buttonFunHotkey, *buttons[i].key, true) : WL(empty),
           WL(button, labelFun),
           tutorialElem,
           WL(uiHighlightConditional, [=] { return activeGroup == lastGroup;}),
@@ -1248,7 +1252,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info) {
           itemIndex = (*itemIndex + dir + totalElems) % totalElems;
         else
           itemIndex = 0;
-        lyingItemsScroll.set(*itemIndex * legendLineHeight + legendLineHeight / 2, clock->getRealMillis());
+        lyingItemsScroll.set(*itemIndex * legendLineHeight + legendLineHeight / 2.0, clock->getRealMillis());
     };
     content = WL(stack, makeVec(
           WL(focusable,

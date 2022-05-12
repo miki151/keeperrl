@@ -504,9 +504,8 @@ struct Expression {
   }
 
   char peek() {
-    char c = ' ';
     while (isspace(ar.is.peek()))
-      c = ar.is.get();
+      ar.is.get();
     return ar.is.peek();
   }
 

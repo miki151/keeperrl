@@ -95,12 +95,8 @@ PCollective CollectiveBuilder::build(const ContentFactory* contentFactory) const
   auto c = Collective::create(!!model ? model : level->getModel(), *tribe, generateName(), discoverable, contentFactory);
   c->init(std::move(*config));
   c->setControl(CollectiveControl::idle(c.get()));
-  bool wasLeader = false;
-  for (auto& elem : creatures) {
+  for (auto& elem : creatures)
     c->addCreature(elem.creature, elem.traits);
-    if (elem.traits.contains(MinionTrait::LEADER))
-      wasLeader = true;
-  }
   //CHECK(wasLeader || creatures.empty()) << "No leader added to collective " << c->getName()->full;
   for (Vec2 v : squares) {
     CHECK(level);
