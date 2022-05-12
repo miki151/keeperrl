@@ -15,7 +15,13 @@ KeybindingMap::KeybindingMap(const FilePath& path) {
 }
 
 static SDL::Uint16 getMod(SDL::Uint16 m) {
-  return m & (SDL::KMOD_LCTRL | SDL::KMOD_RCTRL | SDL::KMOD_LSHIFT | SDL::KMOD_RSHIFT | SDL::KMOD_LALT | SDL::KMOD_RALT);
+  if (m & SDL::KMOD_RCTRL)
+    m = m | SDL::KMOD_LCTRL;
+  if (m & SDL::KMOD_RSHIFT)
+    m = m | SDL::KMOD_LSHIFT;
+  if (m & SDL::KMOD_RALT)
+    m = m | SDL::KMOD_LALT;
+  return m & (SDL::KMOD_LCTRL | SDL::KMOD_LSHIFT | SDL::KMOD_LALT);
 }
 
 bool KeybindingMap::matches(Keybinding key, SDL::SDL_Keysym sym) {
@@ -74,11 +80,11 @@ string KeybindingMap::getText(SDL::SDL_Keysym sym) {
     return ret;
   }();
   string ret = keys.at(sym.sym);
-  if (sym.mod & (SDL::KMOD_LCTRL | SDL::KMOD_RCTRL))
+  if (sym.mod & SDL::KMOD_LCTRL)
     ret = "ctrl+" + ret;
-  if (sym.mod & (SDL::KMOD_LSHIFT | SDL::KMOD_RSHIFT))
+  if (sym.mod & SDL::KMOD_LSHIFT)
     ret = "shift+" + ret;
-  if (sym.mod & (SDL::KMOD_LALT | SDL::KMOD_RALT))
+  if (sym.mod & SDL::KMOD_LALT)
     ret = "alt+" + ret;
   return ret;
 }
@@ -95,11 +101,11 @@ void serialize(PrettyInputArchive& ar, SDL::SDL_Keysym& sym) {
     string s;
     ar.readText(s);
     if (s == "ctrl")
-      sym.mod = sym.mod | (SDL::KMOD_LCTRL | SDL::KMOD_RCTRL);
+      sym.mod = sym.mod | SDL::KMOD_LCTRL;
     else if (s == "shift")
-      sym.mod = sym.mod | (SDL::KMOD_LSHIFT | SDL::KMOD_RSHIFT);
+      sym.mod = sym.mod | SDL::KMOD_LSHIFT;
     else if (s == "alt")
-      sym.mod = sym.mod | (SDL::KMOD_LALT | SDL::KMOD_RALT);
+      sym.mod = sym.mod | SDL::KMOD_LALT;
     else if (auto code = getValueMaybe(keycodes, s)) {
       sym.sym = *code;
       break;
