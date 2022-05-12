@@ -561,16 +561,12 @@ void GuiBuilder::setGameSpeed(GameSpeed speed) {
   gameSpeed = speed;
 }
 
-static char getHotkeyChar(GuiBuilder::GameSpeed speed) {
-  return '1' + int(speed);
-}
-
-static SDL_Keycode getHotkey(GuiBuilder::GameSpeed speed) {
+static Keybinding getHotkey(GuiBuilder::GameSpeed speed) {
   switch (speed) {
-    case GuiBuilder::GameSpeed::SLOW: return SDL::SDLK_1;
-    case GuiBuilder::GameSpeed::NORMAL: return SDL::SDLK_2;
-    case GuiBuilder::GameSpeed::FAST: return SDL::SDLK_3;
-    case GuiBuilder::GameSpeed::VERY_FAST: return SDL::SDLK_4;
+    case GuiBuilder::GameSpeed::SLOW: return Keybinding("SPEED_SLOW");
+    case GuiBuilder::GameSpeed::NORMAL: return Keybinding("SPEED_NORMAL");
+    case GuiBuilder::GameSpeed::FAST: return Keybinding("SPEED_FAST");
+    case GuiBuilder::GameSpeed::VERY_FAST: return Keybinding("SPEED_VERY_FAST");
   }
 }
 
@@ -587,21 +583,17 @@ SGuiElem GuiBuilder::drawGameSpeedDialog() {
   vector<SGuiElem> hotkeys;
   lines.push_back(WL(stack,
         WL(uiHighlightMouseOver),
-        WL(getListBuilder, keyMargin)
-            .addElem(WL(label, "pause"))
-            .addElem(WL(label, "[space]")).buildHorizontalList(),
+        WL(label, "pause"),
         WL(button, pauseFun)));
-  hotkeys.push_back(WL(keyHandler, pauseFun, {gui.getKey(SDL::SDLK_SPACE)}));
+  hotkeys.push_back(WL(keyHandler, pauseFun, Keybinding("PAUSE")));
   for (GameSpeed speed : ENUM_ALL(GameSpeed)) {
     auto speedFun = [=] { gameSpeed = speed; gameSpeedDialogOpen = false; clock->cont();};
     auto colorFun = [this, speed] { return speed == gameSpeed ? Color::GREEN : Color::WHITE; };
     lines.push_back(WL(stack,
           WL(uiHighlightMouseOver),
-          WL(getListBuilder, keyMargin)
-              .addElem(WL(label, getGameSpeedName(speed), colorFun))
-              .addElem(WL(label, "'" + string(1, getHotkeyChar(speed)) + "' ", colorFun)).buildHorizontalList(),
+          WL(label, getGameSpeedName(speed), colorFun),
           WL(button, speedFun)));
-    hotkeys.push_back(WL(keyHandler, speedFun, {gui.getKey(getHotkey(speed))}));
+    hotkeys.push_back(WL(keyHandler, speedFun, getHotkey(speed)));
   }
   reverse(lines.begin(), lines.end());
   int margin = 20;

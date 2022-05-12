@@ -304,7 +304,6 @@ static int keeperMain(po::parser& commandLineFlags) {
   SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
-  KeybindingMap keybindingMap(userPath.file("keybindings.txt"));
   auto modsDir = userPath.subdirectory(gameConfigSubdir);
   auto allUnlocked = Unlocks::allUnlocked();
   if (commandLineFlags["simple_game"].was_set()) {
@@ -401,6 +400,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserInfoLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   atomic<bool> splashDone { false };
+  KeybindingMap keybindingMap(userPath.file("keybindings.txt"));
   GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap, freeDataPath.subdirectory("images"),
       tilesPresent ? optional<DirectoryPath>(paidDataPath.subdirectory("images")) : none);
   TileSet tileSet(paidDataPath.subdirectory("images"), modsDir, freeDataPath.subdirectory("ui"));

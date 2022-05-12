@@ -5,7 +5,13 @@
 #include "pretty_printing.h"
 
 KeybindingMap::KeybindingMap(const FilePath& path) {
-  PrettyPrinting::parseObject(bindings, {path}, nullptr);
+  while (true) {
+    if (auto error = PrettyPrinting::parseObject(bindings, {path}, nullptr)) {
+      USER_INFO << "Error loading keybindings: " << *error;
+      bindings.clear();
+    } else
+      break;  
+  }
 }
 
 static SDL::Uint16 getMod(SDL::Uint16 m) {
@@ -55,6 +61,7 @@ static const map<string, SDL::SDL_Keycode> keycodes {
   {"7", SDL::SDLK_7},
   {"8", SDL::SDLK_8},
   {"9", SDL::SDLK_9},
+  {"SPACE", SDL::SDLK_SPACE},
 };
 
 void serialize(PrettyInputArchive& ar, SDL::SDL_Keysym& sym) {
