@@ -354,6 +354,7 @@ void WindowView::rebuildGui() {
     tempGuiElems.back()->setBounds(getMapGuiBounds());
   }
   tempGuiElems.push_back(gui.keyHandler(bindMethod(&WindowView::keyboardAction, this)));
+  tempGuiElems.push_back(gui.keyHandler([this]{ zoom(0); }, Keybinding("ZOOM_MAP"), true));
   tempGuiElems.back()->setBounds(getMapGuiBounds());
   if (gameInfo.takingScreenshot) {
     right = gui.empty();
@@ -1426,7 +1427,6 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
     case SDL::SDLK_F7:
       presentList("", ListElem::convert(vector<string>(messageLog.begin(), messageLog.end())), true);
       break;
-    case SDL::SDLK_z: zoom(0); break;
     case SDL::SDLK_F2:
       if (!renderer.isMonkey()) {
         options->handle(this, OptionSet::GENERAL);
