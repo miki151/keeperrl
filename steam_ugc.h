@@ -6,6 +6,7 @@ RICH_ENUM(SteamFindOrder, votes, date, subscriptions, playtime);
 RICH_ENUM(SteamItemVisibility, public_, friends, private_);
 
 class ProgressMeter;
+struct ISteamUGC;
 
 namespace steam {
 
@@ -92,7 +93,7 @@ struct ItemInfo {
 };
 
 class UGC {
-  STEAM_IFACE_DECL(UGC)
+  STEAM_IFACE_DECL(UGC, ISteamUGC)
 
   int numSubscribedItems() const;
   vector<ItemId> subscribedItems() const;

@@ -8,10 +8,10 @@
 namespace steam {
 
 struct Friends::Impl {
-  intptr_t ptr;
+  ISteamFriends* ptr;
   std::map<CSteamID, string> userNames;
 
-  optional<string> updateUserName(CSteamID userID) {
+  optional<string> updateUserName(uint64_steamid userID) {
     string name = FUNC(GetFriendPersonaName)(ptr, userID);
     if (name.empty() || name == "[unknown]")
       return none;
@@ -20,7 +20,7 @@ struct Friends::Impl {
   }
 };
 
-Friends::Friends(intptr_t ptr) : ptr(ptr) {
+Friends::Friends(ISteamFriends* ptr) : ptr(ptr) {
   impl->ptr = ptr;
 }
 Friends::~Friends() = default;
@@ -39,23 +39,22 @@ vector<UserId> Friends::ids(unsigned flags) const {
 }
 
 void Friends::requestUserInfo(UserId userId, bool nameOnly) {
-  FUNC(RequestUserInformation)(ptr, CSteamID(userId), nameOnly);
+  FUNC(RequestUserInformation)(ptr, userId, nameOnly);
 }
 
 optional<string> Friends::retrieveUserName(UserId userId) {
   auto it = impl->userNames.find(CSteamID(userId));
   if (it != impl->userNames.end())
     return it->second;
-  return impl->updateUserName(CSteamID(userId));
+  return impl->updateUserName(userId);
 }
 
 string Friends::name() const {
   return FUNC(GetPersonaName)(ptr);
 }
 
-optional<int> Friends::retrieveUserAvatar(UserId userId, AvatarSize size) {
+optional<int> Friends::retrieveUserAvatar(UserId steamId, AvatarSize size) {
   int value = 0;
-  CSteamID steamId(userId);
   if (size == AvatarSize::small)
     value = FUNC(GetSmallFriendAvatar)(ptr, steamId);
   else if (size == AvatarSize::medium)

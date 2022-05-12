@@ -23,9 +23,9 @@ namespace steam {
   using int64 = long long;
   using uint64 = unsigned long long;
 
-#define STEAM_IFACE_DECL(name)                                                                                         \
-  intptr_t ptr;                                                                                                        \
-  name(intptr_t);                                                                                                      \
+#define STEAM_IFACE_DECL(name, Type)                                                                                         \
+  Type* ptr;                                                                                                        \
+  name(Type*);                                                                                                      \
   friend class Client;                                                                                                 \
                                                                                                                        \
   public:                                                                                                              \
@@ -35,8 +35,8 @@ namespace steam {
                                                                                                                        \
   static name& instance();
 
-#define STEAM_IFACE_IMPL(name)                                                                                         \
-  name::name(intptr_t ptr) : ptr(ptr) {                                                                                \
+#define STEAM_IFACE_IMPL(name, Type)                                                                                         \
+  name::name(Type* ptr) : ptr(ptr) {                                                                                \
   }                                                                                                                    \
   name::~name() = default;
 

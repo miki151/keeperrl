@@ -112,8 +112,6 @@ IVec2 FXRenderer::allocateFboSpace() {
   vector<pair<int, int>> ids;
   ids.reserve(systemDraws.size());
 
-  int totalPixels = 0;
-
   bool orderByHeight = false;
   for (int n = 0; n < systemDraws.size(); n++) {
     auto& draw = systemDraws[n];
@@ -124,7 +122,6 @@ IVec2 FXRenderer::allocateFboSpace() {
       while (size.y < h)
         size.y *= 2;
       ids.emplace_back(orderByHeight ? -h : 0, n);
-      totalPixels += w * h;
     }
   }
 
