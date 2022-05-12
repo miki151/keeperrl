@@ -65,7 +65,7 @@ struct UGC::Impl {
   optional<UGCUpdateHandle_t> updateHandle;
 };
 
-UGC::UGC(intptr_t ptr) : ptr(ptr) {
+UGC::UGC(ISteamUGC* ptr) : ptr(ptr) {
   static_assert(maxItemsPerPage <= (int)kNumUGCResultsPerPage, "");
 }
 UGC::~UGC() = default;
@@ -146,7 +146,7 @@ UGC::QueryId UGC::createFindQuery(const FindItemInfo& info, int pageId) {
 
   //auto match = k_EUGCMatchingUGCType_Items;
   auto match = k_EUGCMatchingUGCType_Items;
-  auto handle = FUNC(CreateQueryAllUGCRequest)(ptr, findOrderMap[info.order], match, appId, appId, pageId);
+  auto handle = FUNC(CreateQueryAllUGCRequestPage)(ptr, findOrderMap[info.order], match, appId, appId, pageId);
   CHECK(handle != k_UGCQueryHandleInvalid);
   // TODO: properly handle errors
 

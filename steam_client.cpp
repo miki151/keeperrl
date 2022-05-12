@@ -16,15 +16,15 @@
 namespace steam {
 
 struct Client::Ifaces {
-  Ifaces(intptr_t client, HSteamPipe pipeHandle, HSteamUser userHandle)
-      : userStats((intptr_t)FUNC(GetISteamUserStats)(client, userHandle, pipeHandle, STEAMUSERSTATS_INTERFACE_VERSION)),
-        friends((intptr_t)FUNC(GetISteamFriends)(client, userHandle, pipeHandle, STEAMFRIENDS_INTERFACE_VERSION)),
-        user((intptr_t)FUNC(GetISteamUser)(client, userHandle, pipeHandle, STEAMUSER_INTERFACE_VERSION)),
-        ugc((intptr_t)FUNC(GetISteamUGC)(client, userHandle, pipeHandle, STEAMUGC_INTERFACE_VERSION)),
-        utils((intptr_t)FUNC(GetISteamUtils)(client, pipeHandle, STEAMUTILS_INTERFACE_VERSION)) {
+  Ifaces(ISteamClient* client, HSteamPipe pipeHandle, HSteamUser userHandle)
+      : userStats(FUNC(GetISteamUserStats)(client, userHandle, pipeHandle, STEAMUSERSTATS_INTERFACE_VERSION)),
+        friends(FUNC(GetISteamFriends)(client, userHandle, pipeHandle, STEAMFRIENDS_INTERFACE_VERSION)),
+        user(FUNC(GetISteamUser)(client, userHandle, pipeHandle, STEAMUSER_INTERFACE_VERSION)),
+        ugc(FUNC(GetISteamUGC)(client, userHandle, pipeHandle, STEAMUGC_INTERFACE_VERSION)),
+        utils(FUNC(GetISteamUtils)(client, pipeHandle, STEAMUTILS_INTERFACE_VERSION)) {
   }
 
-  intptr_t userStats;
+  ISteamUserStats* userStats;
   Friends friends;
   User user;
   UGC ugc;
@@ -32,7 +32,7 @@ struct Client::Ifaces {
 };
 
 struct Client::Impl {
-  intptr_t client;
+  ISteamClient* client;
   HSteamPipe pipeHandle;
   HSteamUser userHandle;
   CallResult<NumberOfCurrentPlayers_t> nocp;
@@ -66,7 +66,7 @@ Client::Client() {
   s_instance = this;
 
   // TODO: handle errors, use Expected<>
-  auto client = (intptr_t)::SteamClient();
+  auto client = ::SteamClient();
   auto pipeHandle = FUNC(CreateSteamPipe)(client);
   auto userHandle = FUNC(ConnectToGlobalUser)(client, pipeHandle);
   impl.reset(new Impl{client, pipeHandle, userHandle});

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "steam_internal.h"
 #include "steam_utils.h"
 #include "steamworks/public/steam/isteamutils.h"
@@ -6,7 +7,7 @@
 
 namespace steam {
 
-Utils::Utils(intptr_t ptr) : ptr(ptr) {
+Utils::Utils(ISteamUtils* ptr) : ptr(ptr) {
 }
 Utils::~Utils() = default;
 
@@ -14,7 +15,7 @@ pair<int, int> Utils::imageSize(int image_id) const {
   uint32_t w = 0, h = 0;
   if (!FUNC(GetImageSize)(ptr, image_id, &w, &h))
     CHECK(false);
-  return {w, h};
+  return std::make_pair(int(w), int(h));
 }
 
 vector<unsigned char> Utils::imageData(int image_id) const {

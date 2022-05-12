@@ -4,11 +4,13 @@
 
 RICH_ENUM(SteamAvatarSize, small, medium, large);
 
+struct ISteamFriends;
+
 namespace steam {
 using AvatarSize = SteamAvatarSize;
 
 class Friends {
-  STEAM_IFACE_DECL(Friends)
+  STEAM_IFACE_DECL(Friends, ISteamFriends)
 
   static constexpr unsigned flag_all = 0xffff;
 

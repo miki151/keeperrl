@@ -2,10 +2,12 @@
 
 #include "steam_base.h"
 
+struct ISteamUtils;
+
 namespace steam {
 
 class Utils {
-  STEAM_IFACE_DECL(Utils);
+  STEAM_IFACE_DECL(Utils, ISteamUtils);
   friend struct CallResultBase;
 
   // TODO: return expected ?

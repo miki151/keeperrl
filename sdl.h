@@ -10,6 +10,8 @@
 #define GL_GLEXT_PROTOTYPES 1
 #endif
 
+#include "stdafx.h"
+
 namespace SDL {
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>

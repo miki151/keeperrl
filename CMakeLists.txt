@@ -1,8 +1,8 @@
 cmake_minimum_required (VERSION 2.6)
 project(keeper)
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # set default cxxflags
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-shift-count-overflow -ftemplate-depth=512 -DUSE_STEAMWORKS")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-shift-count-overflow -ftemplate-depth=512 -DUSE_STEAMWORKS -I /home/michal/keeperrl/extern/steamworks/public")
 # clang specific cflags
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags")

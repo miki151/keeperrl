@@ -6,7 +6,7 @@
 
 namespace steam {
 
-User::User(intptr_t ptr) : ptr(ptr) {
+User::User(ISteamUser* ptr) : ptr(ptr) {
 }
 User::~User() = default;
 
