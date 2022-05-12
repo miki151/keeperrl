@@ -62,6 +62,8 @@ static const map<string, SDL::SDL_Keycode> keycodes {
   {"8", SDL::SDLK_8},
   {"9", SDL::SDLK_9},
   {"SPACE", SDL::SDLK_SPACE},
+  {"COMMA", SDL::SDLK_COMMA},
+  {"PERIOD", SDL::SDLK_PERIOD},
 };
 
 void serialize(PrettyInputArchive& ar, SDL::SDL_Keysym& sym) {

@@ -1427,12 +1427,6 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       presentList("", ListElem::convert(vector<string>(messageLog.begin(), messageLog.end())), true);
       break;
     case SDL::SDLK_z: zoom(0); break;
-    case SDL::SDLK_COMMA:
-      inputQueue.push(UserInput{UserInputId::SCROLL_STAIRS, -1});
-      break;
-    case SDL::SDLK_PERIOD:
-      inputQueue.push(UserInput{UserInputId::SCROLL_STAIRS, 1});
-      break;
     case SDL::SDLK_F2:
       if (!renderer.isMonkey()) {
         options->handle(this, OptionSet::GENERAL);

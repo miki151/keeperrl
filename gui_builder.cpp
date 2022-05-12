@@ -4776,8 +4776,8 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
       auto ret = WL(preferredSize, legendLineHeight, legendLineHeight, WL(stack,
           WL(margins, WL(rectangle, Color(56, 36, 0), Color(57, 41, 0)), 2),
           WL(centerHoriz, WL(topMargin, -2, WL(mouseHighlight2,
-                                        WL(label, label, 24, enabled ? Color::YELLOW : Color::DARK_GRAY),
-                                        WL(label, label, 24, enabled ? textColor : Color::DARK_GRAY))))
+              WL(label, label, 24, enabled ? Color::YELLOW : Color::DARK_GRAY),
+              WL(label, label, 24, enabled ? textColor : Color::DARK_GRAY))))
       ));
       if (enabled)
         ret = WL(stack,
@@ -4787,11 +4787,16 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
     };
     auto line = WL(getListBuilder);
     if (!info->zLevels.empty())
-      line.addElemAuto(getButton(info->levelDepth > 0, "<", UserInput{UserInputId::SCROLL_STAIRS, -1 }));
+      line.addElemAuto(WL(stack,
+          getButton(info->levelDepth > 0, "<", UserInput{UserInputId::SCROLL_STAIRS, -1 }),
+          WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, -1}), Keybinding("SCROLL_Z_UP"))
+      ));
     line.addMiddleElem(WL(topMargin, 3, drawZLevelButton(*info, textColor)));
     if (!info->zLevels.empty())
-      line.addBackElemAuto(getButton(info->levelDepth < info->zLevels.size() - 1, ">",
-          UserInput{UserInputId::SCROLL_STAIRS, 1}));
+      line.addBackElemAuto(WL(stack,
+          getButton(info->levelDepth < info->zLevels.size() - 1, ">", UserInput{UserInputId::SCROLL_STAIRS, 1}),
+          WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, 1}), Keybinding("SCROLL_Z_DOWN"))
+      ));
     lines.addElem(WL(stack,
         WL(stopMouseMovement),
         WL(rectangle, Color(47, 31, 0), Color::BLACK),
