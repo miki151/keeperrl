@@ -17,12 +17,11 @@
 #include "view_id.h"
 #include "move_info.h"
 #include "fx_name.h"
-#include "keybinding.h"
 #include "vision.h"
 
 template <class Archive>
 void Spell::serializeImpl(Archive& ar, const unsigned int) {
-  ar(NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(message), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf), OPTION(blockedByWall), NAMED(projectileViewId), NAMED(maxHits), NAMED(keybinding), OPTION(type));
+  ar(NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(message), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf), OPTION(blockedByWall), NAMED(projectileViewId), NAMED(maxHits), OPTION(type));
 }
 
 template <class Archive>
@@ -174,10 +173,6 @@ void Spell::getAIMove(const Creature* c, MoveInfo& ret) const {
 
 bool Spell::isBlockedBy(const Creature* c, Position pos) const {
   return blockedByWall && pos.isDirEffectBlocked(c->getVision().getId());
-}
-
-optional<Keybinding> Spell::getKeybinding() const {
-  return keybinding;
 }
 
 SpellType Spell::getType() const {

@@ -66,6 +66,29 @@ static const map<string, SDL::SDL_Keycode> keycodes {
   {"PERIOD", SDL::SDLK_PERIOD},
 };
 
+string KeybindingMap::getText(SDL::SDL_Keysym sym) {
+  static unordered_map<SDL::SDL_Keycode, string> keys = [] {
+    unordered_map<SDL::SDL_Keycode, string> ret;
+    for (auto& elem : keycodes)
+      ret[elem.second] = elem.first;
+    return ret;
+  }();
+  string ret = keys.at(sym.sym);
+  if (sym.mod & (SDL::KMOD_LCTRL | SDL::KMOD_RCTRL))
+    ret = "ctrl+" + ret;
+  if (sym.mod & (SDL::KMOD_LSHIFT | SDL::KMOD_RSHIFT))
+    ret = "shift+" + ret;
+  if (sym.mod & (SDL::KMOD_LALT | SDL::KMOD_RALT))
+    ret = "alt+" + ret;
+  return ret;
+}
+
+optional<string> KeybindingMap::getText(Keybinding key) {
+  if (auto ks = getReferenceMaybe(bindings, key))
+    return getText(*ks);
+  return none;
+}
+
 void serialize(PrettyInputArchive& ar, SDL::SDL_Keysym& sym) {
   sym.mod = 0;
   while (true) {
@@ -73,11 +96,11 @@ void serialize(PrettyInputArchive& ar, SDL::SDL_Keysym& sym) {
     ar.readText(s);
     if (s == "ctrl")
       sym.mod = sym.mod | (SDL::KMOD_LCTRL | SDL::KMOD_RCTRL);
-    if (s == "shift")
+    else if (s == "shift")
       sym.mod = sym.mod | (SDL::KMOD_LSHIFT | SDL::KMOD_RSHIFT);
-    if (s == "alt")
+    else if (s == "alt")
       sym.mod = sym.mod | (SDL::KMOD_LALT | SDL::KMOD_RALT);
-    if (auto code = getValueMaybe(keycodes, s)) {
+    else if (auto code = getValueMaybe(keycodes, s)) {
       sym.sym = *code;
       break;
     } else

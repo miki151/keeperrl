@@ -52,7 +52,6 @@ class Spell {
   optional<SpellId> getUpgrade() const;
   void getAIMove(const Creature*, MoveInfo&) const;
   bool isBlockedBy(const Creature* c, Position pos) const;
-  optional<Keybinding> getKeybinding() const;
   SpellType getType() const;
   bool isFriendlyFire(const Creature* caster, Position to) const;
 
@@ -75,7 +74,6 @@ class Spell {
   bool SERIAL(targetSelf) = false;
   bool SERIAL(blockedByWall) = true;
   optional<int> SERIAL(maxHits);
-  optional<Keybinding> SERIAL(keybinding);
   SpellType SERIAL(type) = SpellType::SPELL;
   int checkTrajectory(const Creature* caster, Position to) const;
 };

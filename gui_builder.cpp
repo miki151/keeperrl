@@ -48,6 +48,7 @@
 #include "item_action.h"
 #include "ai_type.h"
 #include "container_range.h"
+#include "keybinding_map.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -1472,13 +1473,6 @@ vector<SGuiElem> GuiBuilder::drawEffectsList(const PlayerInfo& info, bool toolti
   return lines;
 }
 
-static string getKeybindingDesc(char c) {
-  if (c == ' ')
-    return "[Space]";
-  else
-    return "["_s + (char)toupper(c) + "]";
-}
-
 static string toStringRounded(double value, double precision) {
   return toString(precision * round(value / precision));
 }
@@ -1570,7 +1564,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
       isTutorial = true;
     if (info.commands[i].active)
       if (auto key = info.commands[i].keybinding)
-        keyElems.push_back(WL(keyHandlerChar, getButtonCallback({UserInputId::PLAYER_COMMAND, i}), *key));
+        keyElems.push_back(WL(keyHandler, getButtonCallback({UserInputId::PLAYER_COMMAND, i}), *key));
   }
   if (!info.commands.empty())
     list.addElem(WL(stack,
@@ -1589,15 +1583,18 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
                       exit = true;
                   };
                 auto labelColor = command.active ? Color::WHITE : Color::GRAY;
-                auto button = command.keybinding ? WL(buttonChar, buttonFun, *command.keybinding) : WL(button, buttonFun);
+                auto button = command.keybinding ? WL(keyHandler, buttonFun, *command.keybinding) : WL(button, buttonFun);
                 if (command.tutorialHighlight)
                   button = WL(stack, WL(tutorialHighlight), std::move(button));
+                auto label = command.name;
+                if (command.keybinding)
+                  if (auto text = gui.keybindingMap->getText(*command.keybinding))
+                    label = "[" + *text + "] " + std::move(label);
                 lines.addElem(WL(stack,
                     button,
                     command.active ? WL(uiHighlightMouseOver, Color::GREEN) : WL(empty),
                     WL(tooltip, {command.description}),
-                    WL(label, (command.keybinding ? getKeybindingDesc(*command.keybinding) + " " : ""_s) +
-                        command.name, labelColor)));
+                    WL(label, label, labelColor)));
               }
               drawMiniMenu(lines.buildVerticalList(), exit, bounds.bottomLeft(), 260, false);
          }))));

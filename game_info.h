@@ -140,7 +140,7 @@ class PlayerInfo {
   vector<PlayerInfo> HASH(teamInfos);
   struct CommandInfo {
     string HASH(name);
-    optional<char> HASH(keybinding);
+    optional<Keybinding> HASH(keybinding);
     string HASH(description);
     bool HASH(active);
     bool HASH(tutorialHighlight) = false;

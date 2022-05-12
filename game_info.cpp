@@ -157,7 +157,8 @@ SpellSchoolInfo fillSpellSchool(const Creature* c, SpellSchoolId id, const Conte
           id.second,
           !c || c->getAttributes().getExpLevel(spellSchool.expType) >= id.second,
           {spell->getDescription(c, factory)},
-          none
+          none,
+          false
         });
   }
   return ret;

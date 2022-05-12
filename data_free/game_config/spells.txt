@@ -642,7 +642,6 @@ Def NoEffect() Unlock "nothing" End
   cooldown = 1
   maxHits = 1
   projectileViewId = {"arrow"}
-  keybinding = FIRE_PROJECTILE
   message = "shoot an arrow" "shoots an arrow"
   type = ABILITY
 }
@@ -661,7 +660,6 @@ Def NoEffect() Unlock "nothing" End
   cooldown = 3
   maxHits = 1
   projectileViewId = {"arrow"}
-  keybinding = FIRE_PROJECTILE
   message = "shoot a bolt" "shoots a bolt"
   type = ABILITY
 }

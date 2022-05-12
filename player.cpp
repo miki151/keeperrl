@@ -452,7 +452,7 @@ void Player::mountAction() {
 
 void Player::fireAction() {
   for (auto spell : creature->getSpellMap().getAvailable(creature))
-    if (creature->isReady(spell) && spell->getKeybinding() == Keybinding("FIRE_PROJECTILE")) {
+    if (creature->isReady(spell) && spell->getRange() > 1 && !spell->isEndOnly()) {
       highlightedSpell = spell->getId();
       getView()->updateView(this, false);
       Vec2 origin = creature->getPosition().getCoord();
@@ -465,7 +465,7 @@ void Player::fireAction() {
           passable[v] = PassableInfo::STOPS_HERE;
       }
       auto res = chooseTarget(std::move(passable), spell->isEndOnly() ? TargetType::POSITION : TargetType::TRAJECTORY,
-          "Which direction?", *spell->getKeybinding());
+          "Which direction?", Keybinding("FIRE_PROJECTILE"));
       if (res.contains<none_t>())
         break;
       if (auto pos = res.getValueMaybe<Position>()) {
@@ -616,11 +616,12 @@ vector<Player::CommandInfo> Player::getCommands() const {
         if (!!creature->mount(c))
           canMount = true;
   return {
-    {PlayerInfo::CommandInfo{"Fire ranged weapon", 'f', "", true},
+    {PlayerInfo::CommandInfo{"Fire ranged weapon or spell", Keybinding("FIRE_PROJECTILE"), "", true},
       [] (Player* player) { player->fireAction(); }, false},
-    {PlayerInfo::CommandInfo{"Skip turn", ' ', "Skip this turn.", true},
+    {PlayerInfo::CommandInfo{"Skip turn", Keybinding("SKIP_TURN"), "Skip this turn.", true},
       [] (Player* player) { player->tryToPerform(player->creature->wait()); }, false},
-    {PlayerInfo::CommandInfo{"Wait", 'w', "Wait until all other team members make their moves (doesn't skip turn).",
+    {PlayerInfo::CommandInfo{"Wait", Keybinding("WAIT"),
+        "Wait until all other team members make their moves (doesn't skip turn).",
         getGame()->getPlayerCreatures().size() > 1},
       [] (Player* player) {
           player->getModel()->getTimeQueue().postponeMove(player->creature);
@@ -628,13 +629,13 @@ vector<Player::CommandInfo> Player::getCommands() const {
     /*{PlayerInfo::CommandInfo{"Travel", 't', "Travel to another site.", !getGame()->isSingleModel()},
       [] (Player* player) { player->getGame()->transferAction(player->getTeam()); }, false},*/
     creature->getSteed()
-      ? Player::CommandInfo{PlayerInfo::CommandInfo{"Dismount", 'm', "Dismount your steed.", true},
+      ? Player::CommandInfo{PlayerInfo::CommandInfo{"Dismount", Keybinding("MOUNT"), "Dismount your steed.", true},
             [] (Player* player) { player->tryToPerform(player->creature->dismount()); }, false}
-      : Player::CommandInfo{PlayerInfo::CommandInfo{"Mount", 'm', "Mount a steed.", canMount},
+      : Player::CommandInfo{PlayerInfo::CommandInfo{"Mount", Keybinding("MOUNT"), "Mount a steed.", canMount},
             [] (Player* player) { player->mountAction(); }, false},
-    Player::CommandInfo{PlayerInfo::CommandInfo{"Chat", 'c', "Chat with someone.", canChat},
+    Player::CommandInfo{PlayerInfo::CommandInfo{"Chat", Keybinding("CHAT"), "Chat with someone.", canChat},
       [] (Player* player) { player->chatAction(); }, false},
-    {PlayerInfo::CommandInfo{"Test path-finding", 'C', "Displays calculated path and processed tiles.", true},
+    /*{PlayerInfo::CommandInfo{"Test path-finding", 'C', "Displays calculated path and processed tiles.", true},
       [] (Player* player) {
         auto pos = player->getView()->chooseTarget(player->creature->getPosition().getCoord(),
             TargetType::POSITION, Table<PassableInfo>(), "Choose destination", none).getValueMaybe<Vec2>();
@@ -650,15 +651,16 @@ vector<Player::CommandInfo> Player::getCommands() const {
           player->getView()->chooseTarget(player->creature->getPosition().getCoord(), TargetType::SHOW_ALL, result,
               "Displaying calculated path and processed tiles", none);
         }
-      }, false},
-    {PlayerInfo::CommandInfo{"Hide", 'h', "Hide behind or under a terrain feature or piece of furniture.",
+      }, false},*/
+    {PlayerInfo::CommandInfo{"Hide", Keybinding("HIDE"), "Hide behind or under a terrain feature or piece of furniture.",
         !!creature->hide()},
       [] (Player* player) { player->hideAction(); }, false},
     /*{PlayerInfo::CommandInfo{"Pay for all items", 'p', "Pay debt to a shopkeeper.", true},
       [] (Player* player) { player->payForAllItemsAction();}, false},*/
-    {PlayerInfo::CommandInfo{"Drop everything", none, "Drop all items in possession.", !creature->getEquipment().isEmpty()},
+    {PlayerInfo::CommandInfo{"Drop everything", Keybinding("DROP_EVERYTHING"),
+        "Drop all items in possession.", !creature->getEquipment().isEmpty()},
       [] (Player* player) { auto c = player->creature; player->tryToPerform(c->drop(c->getEquipment().getItems())); }, false},
-    {PlayerInfo::CommandInfo{"Message history", 'M', "Show message history.", true},
+    {PlayerInfo::CommandInfo{"Message history", Keybinding("MESSAGE_HISTORY"), "Show message history.", true},
       [] (Player* player) { player->showHistory(); }, false},
 #ifndef RELEASE
     {PlayerInfo::CommandInfo{"Wait multiple turns", none, "", true},

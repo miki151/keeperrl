@@ -10,7 +10,9 @@ class KeybindingMap {
   public:
   KeybindingMap(const FilePath&);
   bool matches(Keybinding, SDL::SDL_Keysym);
-
+  static string getText(SDL::SDL_Keysym);
+  optional<string> getText(Keybinding);
+  
   private:
   unordered_map<Keybinding, SDL::SDL_Keysym, CustomHash<Keybinding>> bindings;
 };
