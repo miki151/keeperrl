@@ -1732,13 +1732,28 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
       vList.addElem(orderList.buildHorizontalList());
       vList.addSpace(legendLineHeight / 2);
     }
-    vList.addElem(WL(buttonLabel, "Control mode: "_s + getControlModeName(*info.controlMode) + "",
-        WL(button, getButtonCallback(UserInputId::TOGGLE_CONTROL_MODE), gui.getKey(SDL::SDLK_g))));
+    auto callback = getButtonCallback(UserInputId::TOGGLE_CONTROL_MODE);
+    auto label = "Control mode: "_s + getControlModeName(*info.controlMode);
+    auto keybinding = Keybinding("TOGGLE_CONTROL_MODE");
+    if (auto text = gui.keybindingMap->getText(keybinding))
+      label = "[" + *text + "] " + label;
+    vList.addElem(WL(stack,
+        WL(buttonLabel, label, WL(button, callback)),
+        WL(keyHandler, callback, keybinding)
+    ));
     vList.addSpace(legendLineHeight / 2);
   }
-  if (info.canExitControlMode)
-    vList.addElem(WL(buttonLabel, "Exit control mode",
-        WL(button, getButtonCallback(UserInputId::EXIT_CONTROL_MODE), gui.getKey(SDL::SDLK_u))));
+  if (info.canExitControlMode) {
+    auto callback = getButtonCallback(UserInputId::EXIT_CONTROL_MODE);
+    auto label = "Exit control mode"_s;
+    auto keybinding = Keybinding("EXIT_CONTROL_MODE");
+    if (auto text = gui.keybindingMap->getText(keybinding))
+      label = "[" + *text + "] " + label;
+    vList.addElem(WL(stack,
+        WL(buttonLabel, label, WL(button, callback)),
+        WL(keyHandler, callback, keybinding)
+    ));
+  }
   vList.addSpace(10);
   vList.addElem(WL(margins, WL(sprite, GuiFactory::TexId::HORI_LINE, GuiFactory::Alignment::TOP), -6, 0, -6, 0), 10);
   vector<SGuiElem> others;
