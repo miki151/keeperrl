@@ -4800,25 +4800,28 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
   }
   auto travelButton = [&] {
     if (gameInfo.tutorial || !gameInfo.isSingleMap)
-      return WL(stack,
-          getHintCallback({"Open world map. You can also press 't'."}),
+      return WL(stack, makeVec(
+          getHintCallback({"Open world map."}),
           WL(mouseHighlight2, WL(icon, GuiFactory::IconId::MINIMAP_WORLD2),
              WL(icon, GuiFactory::IconId::MINIMAP_WORLD1)),
           WL(conditional, WL(blink, WL(icon, GuiFactory::IconId::MINIMAP_WORLD2)), tutorialPredicate),
-          WL(button, getButtonCallback(UserInputId::DRAW_WORLD_MAP), gui.getKey(SDL::SDLK_t)));
+          WL(button, getButtonCallback(UserInputId::DRAW_WORLD_MAP)),
+          WL(keyHandler, getButtonCallback(UserInputId::DRAW_WORLD_MAP), Keybinding("OPEN_WORLD_MAP"))
+      ));
     else
       return WL(icon, GuiFactory::IconId::MINIMAP_WORLD1);
   }();
   return lines.addElemAuto(
       WL(centerHoriz, WL(minimapBar,
         WL(preferredSize, 48, 48, std::move(travelButton)),
-        WL(preferredSize, 48, 48, WL(stack,
-            getHintCallback({"Scroll to your character. You can also press 'k'."}),
+        WL(preferredSize, 48, 48, WL(stack, makeVec(
+            getHintCallback({"Scroll to your character."}),
             WL(mouseHighlight2, WL(icon, GuiFactory::IconId::MINIMAP_CENTER2),
                WL(icon, GuiFactory::IconId::MINIMAP_CENTER1)),
             WL(conditional, WL(blink, WL(icon, GuiFactory::IconId::MINIMAP_CENTER2)), tutorialPredicate),
-            WL(button, getButtonCallback(UserInputId::SCROLL_TO_HOME), gui.getKey(SDL::SDLK_k))
-            ))
+            WL(button, getButtonCallback(UserInputId::SCROLL_TO_HOME)),
+            WL(keyHandler, getButtonCallback(UserInputId::SCROLL_TO_HOME), Keybinding("SCROLL_TO_PC"))
+        )))
   ))).buildVerticalList();
 }
 
