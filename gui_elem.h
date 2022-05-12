@@ -81,7 +81,6 @@ class GuiFactory {
 
   SDL::SDL_Keysym getKey(SDL::SDL_Keycode);
   SGuiElem button(function<void()>, SDL::SDL_Keysym, bool capture = false);
-  SGuiElem buttonChar(function<void()>, char, bool capture = false, bool useAltIfWasdScrolling = false);
   SGuiElem button(function<void()>, bool capture = false);
   SGuiElem textField(int maxLength, function<string()> text, function<void(string)> callback);
   SGuiElem textFieldFocused(int maxLength, function<string()> text, function<void(string)> callback);
@@ -97,7 +96,6 @@ class GuiFactory {
   SGuiElem keyHandler(function<void(SDL::SDL_Keysym)>, bool capture = false);
   SGuiElem keyHandler(function<void()>, Keybinding, bool capture = false);
   SGuiElem keyHandler(function<void()>, vector<SDL::SDL_Keysym>, bool capture = false);
-  SGuiElem keyHandlerChar(function<void()>, char, bool capture = false, bool useAltIfWasdScrolling = false);
   SGuiElem stack(vector<SGuiElem>);
   SGuiElem stack(SGuiElem, SGuiElem);
   SGuiElem stack(SGuiElem, SGuiElem, SGuiElem);

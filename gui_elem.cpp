@@ -185,40 +185,6 @@ class ButtonKey : public ButtonElem {
   bool capture;
 };
 
-static optional<SDL_Keycode> getKey(char c) {
-  switch (c) {
-    case 'a': return SDL::SDLK_a;
-    case 'b': return SDL::SDLK_b;
-    case 'c': return SDL::SDLK_c;
-    case 'd': return SDL::SDLK_d;
-    case 'e': return SDL::SDLK_e;
-    case 'f': return SDL::SDLK_f;
-    case 'g': return SDL::SDLK_g;
-    case 'h': return SDL::SDLK_h;
-    case 'i': return SDL::SDLK_i;
-    case 'j': return SDL::SDLK_j;
-    case 'k': return SDL::SDLK_k;
-    case 'l': return SDL::SDLK_l;
-    case 'm': return SDL::SDLK_m;
-    case 'n': return SDL::SDLK_n;
-    case 'o': return SDL::SDLK_o;
-    case 'p': return SDL::SDLK_p;
-    case 'q': return SDL::SDLK_q;
-    case 'r': return SDL::SDLK_r;
-    case 's': return SDL::SDLK_s;
-    case 't': return SDL::SDLK_t;
-    case 'u': return SDL::SDLK_u;
-    case 'v': return SDL::SDLK_v;
-    case 'w': return SDL::SDLK_w;
-    case 'x': return SDL::SDLK_x;
-    case 'y': return SDL::SDLK_y;
-    case 'z': return SDL::SDLK_z;
-    case ' ': return SDL::SDLK_SPACE;
-    default: return none;
-  }
-  return none;
-}
-
 GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o, KeybindingMap* k,
     const DirectoryPath& freeImages, const optional<DirectoryPath>& nonFreeImages)
     : keybindingMap(k), clock(c), renderer(r), options(o), freeImagesPath(freeImages),
@@ -1326,44 +1292,6 @@ class KeyHandler2 : public GuiElem {
 
 SGuiElem GuiFactory::keyHandler(function<void()> fun, vector<SDL_Keysym> key, bool capture) {
   return SGuiElem(new KeyHandler2(fun, key, capture));
-}
-
-class KeyHandlerChar : public GuiElem {
-  public:
-  KeyHandlerChar(function<void()> f, char c, bool cap, function<bool()> rAlt) : fun(f), hotkey(c), requireAlt(rAlt),
-      capture(cap) {}
-
-  bool isHotkeyEvent(char c, SDL_Keysym key) {
-    return requireAlt() == GuiFactory::isAlt(key) &&
-      !GuiFactory::isCtrl(key) &&
-      ((!GuiFactory::isShift(key) && getKey(c) == key.sym) ||
-          (GuiFactory::isShift(key) && getKey(tolower(c)) == key.sym));
-  }
-
-  virtual bool onKeyPressed2(SDL_Keysym key) override {
-    if (isHotkeyEvent(hotkey, key)) {
-      fun();
-      return capture;
-    }
-    return false;
-  }
-
-  private:
-  function<void()> fun;
-  char hotkey;
-  function<bool()> requireAlt;
-  bool capture;
-};
-
-SGuiElem GuiFactory::keyHandlerChar(function<void ()> fun, char hotkey, bool capture, bool useAltIfWasdOn) {
-  return SGuiElem(new KeyHandlerChar(fun, hotkey, capture,
-       [=] { return useAltIfWasdOn && options->getBoolValue(OptionId::WASD_SCROLLING); }));
-}
-
-SGuiElem GuiFactory::buttonChar(function<void()> fun, char hotkey, bool capture, bool useAltIfWasdOn) {
-  return stack(
-      SGuiElem(new ButtonElem([=](Rectangle, Vec2) { fun(); }, capture)),
-      SGuiElem(keyHandlerChar(fun, hotkey, capture, useAltIfWasdOn)));
 }
 
 class ElemList : public GuiLayout {
