@@ -320,7 +320,6 @@ class GuiFactory {
   SGuiElem sprite(Texture&, double scale);
   SGuiElem getScrollbar();
   Vec2 getScrollButtonSize();
-  SDL::SDL_Keysym getHotkeyEvent(char) ;
 
   EnumMap<TexId, optional<Texture>> textures;
   vector<Texture> iconTextures;
