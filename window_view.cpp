@@ -686,23 +686,29 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
     Event event;
     if (renderer.pollEvent(event)) {
       considerResizeEvent(event);
-      if (event.type == SDL::SDL_KEYDOWN)
-        switch (event.key.keysym.sym) {
-          case SDL::SDLK_UP:
-          case SDL::SDLK_KP_8: refreshScreen(); return Vec2(0, -1);
-          case SDL::SDLK_KP_9: refreshScreen(); return Vec2(1, -1);
-          case SDL::SDLK_RIGHT:
-          case SDL::SDLK_KP_6: refreshScreen(); return Vec2(1, 0);
-          case SDL::SDLK_KP_3: refreshScreen(); return Vec2(1, 1);
-          case SDL::SDLK_DOWN:
-          case SDL::SDLK_KP_2: refreshScreen(); return Vec2(0, 1);
-          case SDL::SDLK_KP_1: refreshScreen(); return Vec2(-1, 1);
-          case SDL::SDLK_LEFT:
-          case SDL::SDLK_KP_4: refreshScreen(); return Vec2(-1, 0);
-          case SDL::SDLK_KP_7: refreshScreen(); return Vec2(-1, -1);
-          case SDL::SDLK_ESCAPE: refreshScreen(); return none;
-          default: break;
-        }
+      if (event.type == SDL::SDL_KEYDOWN) {
+        refreshScreen();
+        if (gui.keybindingMap->matches(Keybinding("WALK_NORTH"), event.key.keysym) ||
+            gui.keybindingMap->matches(Keybinding("WALK_NORTH2"), event.key.keysym))
+          return Vec2(0, -1);
+        if (gui.keybindingMap->matches(Keybinding("WALK_SOUTH"), event.key.keysym) ||
+            gui.keybindingMap->matches(Keybinding("WALK_SOUTH2"), event.key.keysym))
+          return Vec2(0, 1);
+        if (gui.keybindingMap->matches(Keybinding("WALK_WEST"), event.key.keysym) ||
+            gui.keybindingMap->matches(Keybinding("WALK_WEST2"), event.key.keysym))
+          return Vec2(-1, 0);
+        if (gui.keybindingMap->matches(Keybinding("WALK_EAST"), event.key.keysym) ||
+            gui.keybindingMap->matches(Keybinding("WALK_EAST2"), event.key.keysym))
+          return Vec2(1, 0);
+        if (gui.keybindingMap->matches(Keybinding("WALK_NORTH_WEST"), event.key.keysym))
+          return Vec2(-1, -1);
+        if (gui.keybindingMap->matches(Keybinding("WALK_NORTH_EAST"), event.key.keysym))
+          return Vec2(1, -1);
+        if (gui.keybindingMap->matches(Keybinding("WALK_SOUTH_WEST"), event.key.keysym))
+          return Vec2(-1, 1);
+        if (gui.keybindingMap->matches(Keybinding("WALK_SOUTH_EAST"), event.key.keysym))
+          return Vec2(1, 1);
+      }
       if (pos && event.type == SDL::SDL_MOUSEBUTTONDOWN) {
         if (event.button.button == SDL_BUTTON_LEFT)
           return (*pos - playerPos).getBearing();
