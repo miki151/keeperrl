@@ -1436,11 +1436,6 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
     case SDL::SDLK_F9:
       inputQueue.push(UserInputId::CHEAT_ATTRIBUTES);
       break;
-    case SDL::SDLK_TAB:
-      // TODO: put it under different shortcut?
-      //inputQueue.push(UserInputId::CHEAT_SPELLS);
-      //inputQueue.push(UserInputId::CHEAT_POTIONS);
-      break;
 #endif
     case SDL::SDLK_F7:
       presentList("", ListElem::convert(vector<string>(messageLog.begin(), messageLog.end())), true);
