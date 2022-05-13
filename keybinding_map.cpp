@@ -67,9 +67,23 @@ static const map<string, SDL::SDL_Keycode> keycodes {
   {"7", SDL::SDLK_7},
   {"8", SDL::SDLK_8},
   {"9", SDL::SDLK_9},
+  {"KEYPAD0", SDL::SDLK_KP_0},
+  {"KEYPAD1", SDL::SDLK_KP_1},
+  {"KEYPAD2", SDL::SDLK_KP_2},
+  {"KEYPAD3", SDL::SDLK_KP_3},
+  {"KEYPAD4", SDL::SDLK_KP_4},
+  {"KEYPAD5", SDL::SDLK_KP_5},
+  {"KEYPAD6", SDL::SDLK_KP_6},
+  {"KEYPAD7", SDL::SDLK_KP_7},
+  {"KEYPAD8", SDL::SDLK_KP_8},
+  {"KEYPAD9", SDL::SDLK_KP_9},
   {"SPACE", SDL::SDLK_SPACE},
   {"COMMA", SDL::SDLK_COMMA},
   {"PERIOD", SDL::SDLK_PERIOD},
+  {"UP", SDL::SDLK_UP},
+  {"DOWN", SDL::SDLK_DOWN},
+  {"LEFT", SDL::SDLK_LEFT},
+  {"RIGHT", SDL::SDLK_RIGHT},
 };
 
 string KeybindingMap::getText(SDL::SDL_Keysym sym) {

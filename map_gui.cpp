@@ -40,6 +40,7 @@
 #include "fx_manager.h"
 #include "fx_view_manager.h"
 #include "fx_renderer.h"
+#include "keybinding_map.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -223,53 +224,15 @@ bool MapGui::onKeyPressed2(SDL_Keysym key) {
   const double scrollDist = 9.0 * 32 / layout->getSquareSize().x;
   if (!keyScrolling)
     return false;
-  switch (key.sym) {
-    case SDL::SDLK_w:
-      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
-        break;
-      FALLTHROUGH;
-    case SDL::SDLK_UP:
-    case SDL::SDLK_KP_8:
-      softScroll(0, -scrollDist);
-      break;
-    case SDL::SDLK_KP_9:
-      softScroll(scrollDist, -scrollDist);
-      break;
-    case SDL::SDLK_d:
-      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
-        break;
-      FALLTHROUGH;
-    case SDL::SDLK_RIGHT:
-    case SDL::SDLK_KP_6:
-      softScroll(scrollDist, 0);
-      break;
-    case SDL::SDLK_KP_3:
-      softScroll(scrollDist, scrollDist);
-      break;
-    case SDL::SDLK_s:
-      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
-        break;
-      FALLTHROUGH;
-    case SDL::SDLK_DOWN:
-    case SDL::SDLK_KP_2:
-      softScroll(0, scrollDist);
-      break;
-    case SDL::SDLK_KP_1:
-      softScroll(-scrollDist, scrollDist);
-      break;
-    case SDL::SDLK_a:
-      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
-        break;
-      FALLTHROUGH;
-    case SDL::SDLK_LEFT:
-    case SDL::SDLK_KP_4:
-      softScroll(-scrollDist, 0);
-      break;
-    case SDL::SDLK_KP_7:
-      softScroll(-scrollDist, -scrollDist);
-      break;
-    default: break;
-  }
+  auto keybindings = guiFactory->keybindingMap;
+  if (keybindings->matches(Keybinding("SCROLL_MAP_UP"), key))
+    softScroll(0, -scrollDist);
+  if (keybindings->matches(Keybinding("SCROLL_MAP_DOWN"), key))
+    softScroll(0, scrollDist);
+  if (keybindings->matches(Keybinding("SCROLL_MAP_LEFT"), key))
+    softScroll(-scrollDist, 0);
+  if (keybindings->matches(Keybinding("SCROLL_MAP_RIGHT"), key))
+    softScroll(scrollDist, 0);
   return false;
 }
 

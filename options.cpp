@@ -34,7 +34,6 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::ONLINE, 1},
   {OptionId::GAME_EVENTS, 1},
   {OptionId::AUTOSAVE2, 1500},
-  {OptionId::WASD_SCROLLING, 0},
   {OptionId::SUGGEST_TUTORIAL, 1},
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
@@ -69,7 +68,6 @@ const map<OptionId, string> names {
   {OptionId::ONLINE, "Online features"},
   {OptionId::GAME_EVENTS, "Anonymous statistics"},
   {OptionId::AUTOSAVE2, "Number of turns between autosaves"},
-  {OptionId::WASD_SCROLLING, "WASD scrolling"},
   {OptionId::SUGGEST_TUTORIAL, ""},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
@@ -101,8 +99,6 @@ const map<OptionId, string> hints {
   {OptionId::GAME_EVENTS, "Enable sending anonymous statistics to the developer."},
   {OptionId::AUTOSAVE2, "Autosave the game every X number turns. "
     "The save file will be used to recover in case of a crash."},
-  {OptionId::WASD_SCROLLING, "Scroll the map using W-A-S-D keys. In this mode building shortcuts are accessed "
-    "using alt + letter."},
   {OptionId::ENDLESS_ENEMIES, "Turn on recurrent enemy waves that attack your dungeon."},
   {OptionId::ENEMY_AGGRESSION, "The chance of your dungeon being attacked by enemies"},
   {OptionId::KEEPER_WARNING, "Display a pop up window whenever your Keeper is in danger"},
@@ -129,7 +125,6 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::ONLINE,
       OptionId::GAME_EVENTS,
       OptionId::AUTOSAVE2,
-      OptionId::WASD_SCROLLING,
       OptionId::KEEPER_WARNING,
       OptionId::KEEPER_WARNING_PAUSE,
       OptionId::KEEPER_WARNING_TIMEOUT,
@@ -277,7 +272,6 @@ static bool isBoolean(OptionId id) {
     case OptionId::ASCII:
     case OptionId::FULLSCREEN:
     case OptionId::VSYNC:
-    case OptionId::WASD_SCROLLING:
     case OptionId::KEEPER_WARNING:
     case OptionId::KEEPER_WARNING_PAUSE:
     case OptionId::KEEP_SAVEFILES:
@@ -305,7 +299,6 @@ string Options::getValueString(OptionId id) {
     case OptionId::ASCII:
     case OptionId::FULLSCREEN:
     case OptionId::VSYNC:
-    case OptionId::WASD_SCROLLING:
     case OptionId::KEEPER_WARNING:
     case OptionId::KEEPER_WARNING_PAUSE:
       return getOnOff(value);
