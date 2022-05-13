@@ -224,7 +224,7 @@ bool MapGui::onKeyPressed2(SDL_Keysym key) {
   const double scrollDist = 9.0 * 32 / layout->getSquareSize().x;
   if (!keyScrolling)
     return false;
-  auto keybindings = guiFactory->keybindingMap;
+  auto keybindings = guiFactory->getKeybindingMap();
   if (keybindings->matches(Keybinding("SCROLL_MAP_UP"), key))
     softScroll(0, -scrollDist);
   if (keybindings->matches(Keybinding("SCROLL_MAP_DOWN"), key))

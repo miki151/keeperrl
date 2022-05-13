@@ -185,10 +185,9 @@ class ButtonKey : public ButtonElem {
   bool capture;
 };
 
-GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o, KeybindingMap* k,
+GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o,
     const DirectoryPath& freeImages, const optional<DirectoryPath>& nonFreeImages)
-    : keybindingMap(k), clock(c), renderer(r), options(o), freeImagesPath(freeImages),
-      nonFreeImagesPath(nonFreeImages) {
+    : clock(c), renderer(r), options(o), freeImagesPath(freeImages), nonFreeImagesPath(nonFreeImages) {
 }
 
 GuiFactory::~GuiFactory() {}
@@ -1268,7 +1267,11 @@ class KeybindingHandler : public GuiElem {
 };
 
 SGuiElem GuiFactory::keyHandler(function<void()> fun, Keybinding keybinding, bool capture) {
-  return SGuiElem(new KeybindingHandler(keybindingMap, keybinding, std::move(fun), capture));
+  return SGuiElem(new KeybindingHandler(options->getKeybindingMap(), keybinding, std::move(fun), capture));
+}
+
+KeybindingMap* GuiFactory::getKeybindingMap() {
+  return options->getKeybindingMap();
 }
 
 class KeyHandler2 : public GuiElem {

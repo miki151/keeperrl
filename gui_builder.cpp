@@ -1588,7 +1588,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
                   button = WL(stack, WL(tutorialHighlight), std::move(button));
                 auto label = command.name;
                 if (command.keybinding)
-                  if (auto text = gui.keybindingMap->getText(*command.keybinding))
+                  if (auto text = gui.getKeybindingMap()->getText(*command.keybinding))
                     label = "[" + *text + "] " + std::move(label);
                 lines.addElem(WL(stack,
                     button,
@@ -1735,7 +1735,7 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
     auto callback = getButtonCallback(UserInputId::TOGGLE_CONTROL_MODE);
     auto label = "Control mode: "_s + getControlModeName(*info.controlMode);
     auto keybinding = Keybinding("TOGGLE_CONTROL_MODE");
-    if (auto text = gui.keybindingMap->getText(keybinding))
+    if (auto text = gui.getKeybindingMap()->getText(keybinding))
       label = "[" + *text + "] " + label;
     vList.addElem(WL(stack,
         WL(buttonLabel, label, WL(button, callback)),
@@ -1747,7 +1747,7 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
     auto callback = getButtonCallback(UserInputId::EXIT_CONTROL_MODE);
     auto label = "Exit control mode"_s;
     auto keybinding = Keybinding("EXIT_CONTROL_MODE");
-    if (auto text = gui.keybindingMap->getText(keybinding))
+    if (auto text = gui.getKeybindingMap()->getText(keybinding))
       label = "[" + *text + "] " + label;
     vList.addElem(WL(stack,
         WL(buttonLabel, label, WL(button, callback)),

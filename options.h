@@ -66,11 +66,12 @@ namespace ScriptedUIDataElems {
 }
 
 class View;
+class KeybindingMap;
 
 class Options {
   public:
   typedef variant<int, string, vector<string>> Value;
-  Options(const FilePath& path);
+  Options(const FilePath& path, KeybindingMap*);
   bool getBoolValue(OptionId);
   string getStringValue(OptionId);
   vector<string> getVectorStringValue(OptionId);
@@ -90,6 +91,7 @@ class Options {
   void setChoices(OptionId, const vector<string>&);
   bool hasChoices(OptionId) const;
   optional<string> getHint(OptionId);
+  KeybindingMap* getKeybindingMap();
 
   private:
   optional<Value> readValue(OptionId, const vector<string>&);
@@ -105,6 +107,7 @@ class Options {
   EnumMap<OptionId, optional<Value>> overrides;
   EnumMap<OptionId, vector<string>> choices;
   EnumMap<OptionId, optional<Range>> limits;
+  KeybindingMap* keybindingMap;
 };
 
 

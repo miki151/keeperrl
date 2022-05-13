@@ -297,8 +297,8 @@ static int keeperMain(po::parser& commandLineFlags) {
   auto settingsPath = userPath.file("options.txt");
   if (commandLineFlags["restore_settings"].was_set())
     remove(settingsPath.getPath());
-  Options options(settingsPath);
-  Unlocks unlocks(&options, userPath.file("unlocks.txt"));
+  KeybindingMap keybindingMap(userPath.file("keybindings.txt"));
+  Options options(settingsPath, &keybindingMap);
   Random.init(int(time(nullptr)));
   auto installId = getInstallId(userPath.file("installId.txt"), Random);
   SoundLibrary* soundLibrary = nullptr;
@@ -400,8 +400,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserInfoLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   atomic<bool> splashDone { false };
-  KeybindingMap keybindingMap(userPath.file("keybindings.txt"));
-  GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap, freeDataPath.subdirectory("images"),
+  GuiFactory guiFactory(renderer, &clock, &options, freeDataPath.subdirectory("images"),
       tilesPresent ? optional<DirectoryPath>(paidDataPath.subdirectory("images")) : none);
   TileSet tileSet(paidDataPath.subdirectory("images"), modsDir, freeDataPath.subdirectory("ui"));
   renderer.setTileSet(&tileSet);
@@ -454,6 +453,7 @@ static int keeperMain(po::parser& commandLineFlags) {
       getMusicTracks(paidDataPath.subdirectory("music"), tilesPresent && !audioError),
       getMaxVolume());
   options.addTrigger(OptionId::MUSIC, [&jukebox](int volume) { jukebox.setCurrentVolume(volume); });
+  Unlocks unlocks(&options, userPath.file("unlocks.txt"));
   MainLoop loop(view.get(), &highscores, &fileSharing, paidDataPath, freeDataPath, userPath, modsDir, &options, &jukebox,
       &sokobanInput, &tileSet, &unlocks, saveVersion, modVersion);
   try {

@@ -160,7 +160,7 @@ vector<OptionId> Options::getOptions(OptionSet set) {
   return optionSets.at(set);
 }
 
-Options::Options(const FilePath& path) : filename(path) {
+Options::Options(const FilePath& path, KeybindingMap* k) : filename(path), keybindingMap(k) {
   readValues();
 }
 
@@ -497,3 +497,6 @@ void Options::writeValues() {
   }
 }
 
+KeybindingMap* Options::getKeybindingMap() {
+  return keybindingMap;
+}

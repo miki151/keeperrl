@@ -64,7 +64,7 @@ class GuiElem {
 
 class GuiFactory {
   public:
-  GuiFactory(Renderer&, Clock*, Options*, KeybindingMap*, const DirectoryPath& freeImages,
+  GuiFactory(Renderer&, Clock*, Options*, const DirectoryPath& freeImages,
       const optional<DirectoryPath>& nonFreeImages);
   void loadImages();
   ~GuiFactory();
@@ -309,7 +309,7 @@ class GuiFactory {
   SGuiElem rectangleBorder(Color);
   SGuiElem renderTopLayer(SGuiElem content);
 
-  KeybindingMap* keybindingMap;
+  KeybindingMap* getKeybindingMap();
   Clock* clock;
 
   private:
