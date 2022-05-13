@@ -236,8 +236,8 @@ void WindowView::drawMenuBackground(double barState, double mouthState) {
   Texture& menuMouth = gui.get(GuiFactory::TexId::MENU_MOUTH);
   double scale = double(renderer.getSize().y) / menuCore.getSize().y;
   int width = menuCore.getSize().x * scale;
-  double mouthPos1 = 184 * menuCore.getSize().x / 1920;
-  double mouthPos2 = 214 * menuCore.getSize().x / 1920;
+  double mouthPos1 = 184.0 * menuCore.getSize().x / 1920;
+  double mouthPos2 = 214.0 * menuCore.getSize().x / 1920;
   double mouthX = (renderer.getSize().x - (menuMouth.getSize().x + 5) * scale) / 2;
   renderer.drawFilledRectangle(mouthX, mouthPos1 * scale, 1 + mouthX + barState * menuMouth.getSize().x * scale,
       (mouthPos2 + menuMouth.getSize().y) * scale, Color(60, 76, 48));
@@ -353,8 +353,27 @@ void WindowView::rebuildGui() {
     }));
     tempGuiElems.back()->setBounds(getMapGuiBounds());
   }
-  tempGuiElems.push_back(gui.keyHandler(bindMethod(&WindowView::keyboardAction, this)));
-  tempGuiElems.push_back(gui.keyHandler([this]{ zoom(0); }, Keybinding("ZOOM_MAP"), true));
+  auto getMovement = [this](int x, int y) {
+    inputQueue.push(UserInput(UserInputId::MOVE, Vec2(x, y)));
+    mapGui->onMouseGone();
+  };
+  tempGuiElems.push_back(gui.stack(makeVec(
+      gui.keyHandler(bindMethod(&WindowView::keyboardAction, this)),
+      gui.keyHandler([this]{ zoom(0); }, Keybinding("ZOOM_MAP"), true),
+      gui.keyHandler([getMovement]{ getMovement(0, -1); }, Keybinding("WALK_NORTH"), true),
+      gui.keyHandler([getMovement]{ getMovement(0, 1); }, Keybinding("WALK_SOUTH"), true),
+      gui.keyHandler([getMovement]{ getMovement(1, 0); }, Keybinding("WALK_EAST"), true),
+      gui.keyHandler([getMovement]{ getMovement(-1, 0); }, Keybinding("WALK_WEST"), true),
+      gui.keyHandler([getMovement]{ getMovement(1, -1); }, Keybinding("WALK_NORTH_EAST"), true),
+      gui.keyHandler([getMovement]{ getMovement(-1, -1); }, Keybinding("WALK_NORTH_WEST"), true),
+      gui.keyHandler([getMovement]{ getMovement(1, 1); }, Keybinding("WALK_SOUTH_EAST"), true),
+      gui.keyHandler([getMovement]{ getMovement(-1, 1); }, Keybinding("WALK_SOUTH_WEST"), true),
+      gui.keyHandler([getMovement]{ getMovement(0, -1); }, Keybinding("WALK_NORTH2"), true),
+      gui.keyHandler([getMovement]{ getMovement(0, 1); }, Keybinding("WALK_SOUTH2"), true),
+      gui.keyHandler([getMovement]{ getMovement(1, 0); }, Keybinding("WALK_EAST2"), true),
+      gui.keyHandler([getMovement]{ getMovement(-1, 0); }, Keybinding("WALK_WEST2"), true)
+  )));
+  tempGuiElems.back()->setBounds(getMapGuiBounds());
   tempGuiElems.back()->setBounds(getMapGuiBounds());
   if (gameInfo.takingScreenshot) {
     right = gui.empty();
@@ -1372,13 +1391,6 @@ void WindowView::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
   gui.propagateEvent(event, guiElems);
 }
 
-UserInputId getDirActionId(const SDL_Keysym& key) {
-  if (GuiFactory::isCtrl(key))
-    return UserInputId::TRAVEL;
-  else
-    return UserInputId::MOVE;
-}
-
 // These commands will run even in blocking gui.
 void WindowView::keyboardActionAlways(const SDL_Keysym& key) {
   switch (key.sym) {
@@ -1436,42 +1448,6 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
     case SDL::SDLK_ESCAPE:
       if (!guiBuilder.clearActiveButton() && !renderer.isMonkey())
         inputQueue.push(UserInput(UserInputId::EXIT));
-      break;
-    case SDL::SDLK_UP:
-    case SDL::SDLK_KP_8:
-      inputQueue.push(UserInput(getDirActionId(key), Vec2(0, -1)));
-      mapGui->onMouseGone();
-      break;
-    case SDL::SDLK_KP_9:
-      inputQueue.push(UserInput(getDirActionId(key), Vec2(1, -1)));
-      mapGui->onMouseGone();
-      break;
-    case SDL::SDLK_RIGHT:
-    case SDL::SDLK_KP_6:
-      inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 0)));
-      mapGui->onMouseGone();
-      break;
-    case SDL::SDLK_KP_3:
-      inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 1)));
-      mapGui->onMouseGone();
-      break;
-    case SDL::SDLK_DOWN:
-    case SDL::SDLK_KP_2:
-      inputQueue.push(UserInput(getDirActionId(key), Vec2(0, 1)));
-      mapGui->onMouseGone();  
-      break;
-    case SDL::SDLK_KP_1:
-      inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 1)));
-      mapGui->onMouseGone();
-      break;
-    case SDL::SDLK_LEFT:
-    case SDL::SDLK_KP_4:
-      inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 0)));
-      mapGui->onMouseGone();
-      break;
-    case SDL::SDLK_KP_7:
-      inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1)));
-      mapGui->onMouseGone();
       break;
     default: break;
   }

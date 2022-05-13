@@ -332,7 +332,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool isCaptureOrdered() const;
   bool canBeCaptured() const;
   void removePrivateEnemy(const Creature*); 
-  void cheatAllSpells();
   const vector<AutomatonPart>& getAutomatonParts() const;
   bool isAutomaton() const;
   void addAutomatonPart(AutomatonPart);

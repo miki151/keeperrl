@@ -157,13 +157,6 @@ SpellMap& Creature::getSpellMap() {
   return *spellMap;
 }
 
-void Creature::cheatAllSpells() {
-  auto& spells = getGame()->getContentFactory()->getCreatures().getSpells();
-  for (auto& spell : spells)
-    spellMap->add(spell, ExperienceType::SPELL, 0);
-  spellMap->setAllReady();
-}
-
 bool Creature::isAutomaton() const {
   return !automatonParts.empty();
 }
