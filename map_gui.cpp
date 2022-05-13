@@ -220,7 +220,7 @@ void MapGui::softScroll(double x, double y) {
 }
 
 bool MapGui::onKeyPressed2(SDL_Keysym key) {
-  const double scrollDist = 9 * 32 / layout->getSquareSize().x;
+  const double scrollDist = 9.0 * 32 / layout->getSquareSize().x;
   if (!keyScrolling)
     return false;
   switch (key.sym) {
@@ -512,12 +512,12 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
     drawCreatureHighlight(renderer, pos, sz, Color::ORANGE.transparency(200), index);
   if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
       drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(200), index);
-  } else
-  if (object.hasModifier(ViewObject::Modifier::PLAYER_BLINK)) {
+  }
+  else if (object.hasModifier(ViewObject::Modifier::PLAYER_BLINK)) {
     if ((curTime.count() / 500) % 2 == 0)
       drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(200), index);
-  } else
-  if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT))
+  }
+  else if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT))
     drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(100), index);
   if (object.hasModifier(ViewObject::Modifier::CREATURE))
     if (isCreatureHighlighted(*object.getGenericId()))
