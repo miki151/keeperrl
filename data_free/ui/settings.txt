@@ -16,27 +16,54 @@ End
 
 {
   Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
-  Window(Width 500 MaxHeight 700 {
-    List(VERTICAL, MarginBottom(5, {
-        Using "callbackBool" Button()
-        Using "tooltip" GetTooltip(Label())
-        Horizontal {
-          Stretch Position(MIDDLE_STRETCHED_X, Using "name" Label())
-          {
-            Width 30 Height 30 {
-              Using "yes" CheckedBox()
-              Using "no" UncheckedBox()
-            }
-            Using "sliderData"
-              Width 120 Height 30 Sliding()
-            Height 25 Horizontal{
-              Using "decrease" StandardButton(Label("<"))
-              Using "value" Width 55 Position(MIDDLE, Label())
-              Using "increase" StandardButton(Label(">"))
-            }
-          }
-        }
-    }))
+  Window(Width 700 Height 700 {
+    Vertical {
+      If "options"
+        Position(MIDDLE, Horizontal {
+          Width 120 StandardButtonActivated(Label("General"))
+          Width 15 {}
+          Using "set_keys" Width 120 StandardButton(Label("Keybindings"))
+        })
+      If "keybindings"
+        Position(MIDDLE, Horizontal {
+          Using "set_options" Width 120 StandardButton(Label("General"))
+          Width 15 {}
+          Width 120 StandardButtonActivated(Label("Keybindings"))
+        })
+      Height 10 {}
+      Stretch Scrolling({
+        Using "options"
+          List(VERTICAL, {
+              Using "callbackBool" Button()
+              Using "tooltip" GetTooltip(Label())
+              Height 35 Horizontal {
+                Stretch Position(MIDDLE_STRETCHED_X, Using "name" Label())
+                {
+                  Width 30 Height 30 {
+                    Using "yes" CheckedBox()
+                    Using "no" UncheckedBox()
+                  }
+                  Using "sliderData"
+                    Width 120 Height 30 Sliding()
+                  Height 25 Horizontal{
+                    Using "decrease" StandardButton(Label("<"))
+                    Using "value" Width 55 Position(MIDDLE, Label())
+                    Using "increase" StandardButton(Label(">"))
+                  }
+                }
+              }
+          })
+          
+        Using "keybindings"
+          List(VERTICAL, Height 35 {
+              Using "label" Position(LEFT_CENTERED,Label())
+              Using "key" Position(RIGHT_CENTERED, Width 150 Label())
+              Using "clicked" Button(false)
+          })
+      })
+      Height 10 {}
+      Using "reset_keys" Position(MIDDLE, StandardButton(Label("Restore defaults")))
+    }
   })
 }
 

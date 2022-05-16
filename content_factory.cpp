@@ -47,6 +47,11 @@ map<Key, Value> convertKeys(const map<PrimaryId<Key>, Value>& m) {
 }
 
 template <typename Key, typename Value>
+vector<pair<Key, Value>> convertKeys(const vector<pair<PrimaryId<Key>, Value>>& v) {
+  return v.transform([](auto& elem) { return make_pair(Key(std::move(elem.first)), std::move(elem.second)); });
+}
+
+template <typename Key, typename Value>
 unordered_map<Key, Value, CustomHash<Key>> convertKeysHash(const map<PrimaryId<Key>, Value>& m) {
   unordered_map<Key, Value, CustomHash<Key>> ret;
   for (auto& elem : m)
@@ -461,10 +466,10 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
     return *error;
   if (auto error = config->readObject(dancePositions, GameConfigId::DANCE_POSITIONS, &keyVerifier))
     return *error;
-  map<PrimaryId<Keybinding>, KeybindingInfo> keysTmp;
+  vector<pair<PrimaryId<Keybinding>, KeybindingInfo>> keysTmp;
   if (auto error = config->readObject(keysTmp, GameConfigId::KEYS, &keyVerifier))
     return *error;
-  keybindings = convertKeysHash(keysTmp);
+  keybindings = convertKeys(keysTmp);
   auto errors = keyVerifier.verify();
   if (!errors.empty())
     return errors.front();

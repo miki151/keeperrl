@@ -295,9 +295,12 @@ static int keeperMain(po::parser& commandLineFlags) {
   Clock clock(!!maxTurns);
   userPath.createIfDoesntExist();
   auto settingsPath = userPath.file("options.txt");
-  if (commandLineFlags["restore_settings"].was_set())
-    remove(settingsPath.getPath());
-  KeybindingMap keybindingMap(userPath.file("keybindings.txt"));
+  auto userKeysPath = userPath.file("keybindings.txt");
+  if (commandLineFlags["restore_settings"].was_set()) {
+    settingsPath.erase();
+    userKeysPath.erase();
+  }
+  KeybindingMap keybindingMap(freeDataPath.file("default_keybindings.txt"), userKeysPath);
   Options options(settingsPath, &keybindingMap);
   Random.init(int(time(nullptr)));
   auto installId = getInstallId(userPath.file("installId.txt"), Random);

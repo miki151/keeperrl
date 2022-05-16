@@ -1,7 +1,9 @@
 #pragma once
 
+#include "util.h"
+
 struct KeybindingInfo {
-  template <typename Archive>
-  void serialize(Archive&, unsigned) {}
+  string SERIAL(name);
+  SERIALIZE_ALL(name)
 };
 

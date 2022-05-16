@@ -4,9 +4,13 @@
 #include "pretty_archive.h"
 #include "pretty_printing.h"
 
-KeybindingMap::KeybindingMap(const FilePath& path) {
+KeybindingMap::KeybindingMap(const FilePath& defaults, const FilePath& user)
+    : defaultsPath(defaults), userPath(user) {
+  vector<FilePath> paths { defaults };
+  if (user.exists())
+    paths.push_back(user);
   while (true) {
-    if (auto error = PrettyPrinting::parseObject(bindings, {path}, nullptr)) {
+    if (auto error = PrettyPrinting::parseObject(bindings, paths, nullptr)) {
       USER_INFO << "Error loading keybindings: " << *error;
       bindings.clear();
     } else
@@ -86,7 +90,7 @@ static const map<string, SDL::SDL_Keycode> keycodes {
   {"RIGHT", SDL::SDLK_RIGHT},
 };
 
-string KeybindingMap::getText(SDL::SDL_Keysym sym) {
+string KeybindingMap::getText(SDL::SDL_Keysym sym, string delimiter) {
   static unordered_map<SDL::SDL_Keycode, string> keys = [] {
     unordered_map<SDL::SDL_Keycode, string> ret;
     for (auto& elem : keycodes)
@@ -95,11 +99,11 @@ string KeybindingMap::getText(SDL::SDL_Keysym sym) {
   }();
   string ret = keys.at(sym.sym);
   if (sym.mod & SDL::KMOD_LCTRL)
-    ret = "ctrl+" + ret;
+    ret = "ctrl" + delimiter + ret;
   if (sym.mod & SDL::KMOD_LSHIFT)
-    ret = "shift+" + ret;
+    ret = "shift" + delimiter + ret;
   if (sym.mod & SDL::KMOD_LALT)
-    ret = "alt+" + ret;
+    ret = "alt" + delimiter + ret;
   return ret;
 }
 
@@ -109,6 +113,30 @@ optional<string> KeybindingMap::getText(Keybinding key) {
   return none;
 }
 
+void KeybindingMap::save() {
+  ofstream out(userPath.getPath());
+  for (auto& elem : bindings)
+    out << elem.first.data() << " modify " << getText(elem.second, " ") << endl;
+}
+
+void KeybindingMap::reset() {
+  if (auto error = PrettyPrinting::parseObject(bindings, {defaultsPath}, nullptr)) {
+    USER_INFO << "Error loading default keybindings: " << *error;
+    bindings.clear();
+  }
+  save();
+}
+
+bool KeybindingMap::set(Keybinding k, SDL::SDL_Keysym s) {
+  for (auto& elem : keycodes)
+    if (elem.second == s.sym) {
+      bindings[k] = s;
+      save();
+      return true;
+    }
+  return false;
+}
+  
 void serialize(PrettyInputArchive& ar, SDL::SDL_Keysym& sym) {
   sym.mod = 0;
   while (true) {

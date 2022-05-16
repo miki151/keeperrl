@@ -1407,7 +1407,8 @@ void WindowView::keyboardActionAlways(const SDL_Keysym& key) {
       renderer.getTileSet().clear();
       renderer.getTileSet().reload();
       renderer.getTileSet().loadTextures();
-      fxRenderer->loadTextures();
+      if (fxRenderer)
+        fxRenderer->loadTextures();
       gui.loadImages();
       break;
 #endif
@@ -1440,12 +1441,12 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
     case SDL::SDLK_F7:
       presentList("", ListElem::convert(vector<string>(messageLog.begin(), messageLog.end())), true);
       break;
-    case SDL::SDLK_F2:
+    /*case SDL::SDLK_F2:
       if (!renderer.isMonkey()) {
         options->handle(this, OptionSet::GENERAL);
         refreshScreen();
       }
-      break;
+      break;*/
     case SDL::SDLK_ESCAPE:
       if (!guiBuilder.clearActiveButton() && !renderer.isMonkey())
         inputQueue.push(UserInput(UserInputId::EXIT));

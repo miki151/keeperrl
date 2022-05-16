@@ -67,6 +67,7 @@ namespace ScriptedUIDataElems {
 
 class View;
 class KeybindingMap;
+class ContentFactory;
 
 class Options {
   public:
@@ -85,7 +86,7 @@ class Options {
   void setLimits(OptionId, Range);
   optional<Range> getLimits(OptionId);
   vector<OptionId> getOptions(OptionSet);
-  void handle(View*, OptionSet, int lastIndex = 0);
+  void handle(View*, const ContentFactory*, OptionSet, int lastIndex = 0);
   typedef function<void(int)> Trigger;
   void addTrigger(OptionId, Trigger trigger);
   void setChoices(OptionId, const vector<string>&);

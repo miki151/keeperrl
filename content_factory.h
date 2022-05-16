@@ -79,7 +79,7 @@ class ContentFactory {
   vector<AttrType> SERIAL(attrOrder);
   unordered_map<BuffId, BuffInfo, CustomHash<BuffId>> SERIAL(buffs);
   unordered_map<BodyMaterialId, BodyMaterial, CustomHash<BodyMaterialId>> SERIAL(bodyMaterials);
-  unordered_map<Keybinding, KeybindingInfo, CustomHash<Keybinding>> SERIAL(keybindings);
+  vector<pair<Keybinding, KeybindingInfo>> SERIAL(keybindings);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();

@@ -466,7 +466,7 @@ void Game::exitAction() {
     return false;
   }};
   data.elems["options"] = ScriptedUIDataElems::Callback{[this]{
-    getOptions()->handle(getView(), OptionSet::GENERAL);
+    getOptions()->handle(getView(), &*contentFactory, OptionSet::GENERAL);
     return false;
   }};
 #ifdef RELEASE
