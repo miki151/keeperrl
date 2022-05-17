@@ -223,8 +223,9 @@ SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
           [=]{ return !wasTutorialClicked(num, *tutorialHighlight); });
     return WL(setHeight, legendLineHeight, WL(stack, makeVec(
         getHintCallback({capitalFirst(button.help)}),
+        WL(button, buttonFun),
         button.hotkeyOpensGroup && !!button.key
-            ? WL(keyHandler, std::move(buttonFun), *button.key, true)
+            ? WL(keyHandler, buttonFun, *button.key, true)
             : WL(empty),
         WL(uiHighlightConditional, [=] { return getActiveButton(tab) == num; }),
         tutorialElem,
