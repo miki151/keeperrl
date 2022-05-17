@@ -2199,7 +2199,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       auto workshopType = furniture->getType() == FurnitureType("FURNACE")
           ? WorkshopType("FURNACE")
           : getGame()->getContentFactory()->getWorkshopType(furniture->getType());
-      if (furniture->hasUsageType(BuiltinUsageId::STUDY) || !!workshopType)
+      if (!!workshopType)
         index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
       if (chosenWorkshop && chosenWorkshop->type == workshopType)
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
