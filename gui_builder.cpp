@@ -224,7 +224,7 @@ SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
     return WL(setHeight, legendLineHeight, WL(stack, makeVec(
         getHintCallback({capitalFirst(button.help)}),
         WL(button, buttonFun),
-        button.hotkeyOpensGroup && !!button.key
+        !button.hotkeyOpensGroup && !!button.key
             ? WL(keyHandler, buttonFun, *button.key, true)
             : WL(empty),
         WL(uiHighlightConditional, [=] { return getActiveButton(tab) == num; }),
@@ -1584,7 +1584,9 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
                       exit = true;
                   };
                 auto labelColor = command.active ? Color::WHITE : Color::GRAY;
-                auto button = command.keybinding ? WL(keyHandler, buttonFun, *command.keybinding) : WL(button, buttonFun);
+                auto button = WL(button, buttonFun);
+                if (command.keybinding)
+                button = WL(stack, std::move(button), WL(keyHandler, buttonFun, *command.keybinding));
                 if (command.tutorialHighlight)
                   button = WL(stack, WL(tutorialHighlight), std::move(button));
                 auto label = command.name;
