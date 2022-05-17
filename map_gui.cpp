@@ -1064,7 +1064,7 @@ void MapGui::renderFloorObjects(Renderer& renderer, Vec2 size, milliseconds curr
     for (auto wpos : allTiles) {
       Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
       if (auto& index = objects[wpos])
-        if (spriteMode && index->hasObject(layer)) {
+        if (index->hasObject(layer)) {
           auto& obj = index->getObject(layer);
           const Tile& tile = renderer.getTileSet().getTile(obj.id(), spriteMode);
           if (layer == ViewLayer::FLOOR_BACKGROUND || !tile.moveUp)
@@ -1075,6 +1075,47 @@ void MapGui::renderFloorObjects(Renderer& renderer, Vec2 size, milliseconds curr
   render(ViewLayer::FLOOR_BACKGROUND);
   renderExtraBorders(renderer, currentTimeReal);
   render(ViewLayer::FLOOR);
+}
+
+void MapGui::renderAsciiObjects(Renderer& renderer, Vec2 size, milliseconds currentTimeReal) {
+  Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
+  Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
+  auto renderPos = [&] (Vec2 wpos, ViewLayer layer) {
+    const ViewIndex& index = *objects[wpos];
+    if (index.hasObject(layer)) {
+      auto object = index.getObject(layer);
+      Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
+      Vec2 movement = getMovementOffset(object, size, currentTimeGame, currentTimeReal, true, wpos);
+      drawObjectAbs(renderer, pos, object, size, movement, wpos, currentTimeReal, index);
+      if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos &&
+          object.layer() != ViewLayer::CREATURE && object.layer() != ViewLayer::ITEM)
+        lastHighlighted.object = object;
+      return true;
+    }
+    return false;
+  };
+  for (auto wpos : allTiles) {
+    if (!objects[wpos] || objects[wpos]->noObjects())
+      continue;
+    for (ViewLayer layer : {ViewLayer::CREATURE, ViewLayer::ITEM, ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND})
+      if (renderPos(wpos, layer)) {
+        if (lastHighlighted.tilePos && lastHighlighted.tilePos->y == wpos.y) {
+          if (!activeButton && lastHighlighted.creaturePos)
+            drawCreatureHighlight(renderer, *lastHighlighted.creaturePos, size, Color::ALMOST_WHITE,
+                *objects[*lastHighlighted.tilePos]);
+          else if (!getHighlightedFurniture() || !!activeButton)
+            drawSquareHighlight(renderer, topLeftCorner + (*lastHighlighted.tilePos - allTiles.topLeft()).mult(size),
+                size, squareHighlightColor);
+        }
+        break;
+      }
+  }
+  for (auto wpos : allTiles) {
+    if (!objects[wpos] || objects[wpos]->noObjects())
+      continue;
+    for (ViewLayer layer : {ViewLayer::TORCH1, ViewLayer::TORCH2})
+      renderPos(wpos, layer);
+  }
 }
 
 void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds currentTimeReal) {
@@ -1090,11 +1131,8 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
           Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
           const ViewIndex& index = *objects[wpos];
           const ViewObject* object = nullptr;
-          if (spriteMode) {
-            if (index.hasObject(layer))
-              object = &index.getObject(layer);
-          } else
-            object = index.getTopObject(layout->getLayers());
+          if (index.hasObject(layer))
+            object = &index.getObject(layer);
           if (object) {
             const Tile& tile = renderer.getTileSet().getTile(object->id(), spriteMode);
             if (layer != ViewLayer::FLOOR || tile.moveUp) {
@@ -1106,7 +1144,7 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
               }
           }
         }
-        if (lastHighlighted.tilePos && lastHighlighted.tilePos->y == ypos && (layer == ViewLayer::FLOOR || !spriteMode)) {
+        if (lastHighlighted.tilePos && lastHighlighted.tilePos->y == ypos && layer == ViewLayer::FLOOR) {
           if (!activeButton && lastHighlighted.creaturePos)
             drawCreatureHighlight(renderer, *lastHighlighted.creaturePos, size, Color::ALMOST_WHITE,
                 *objects[*lastHighlighted.tilePos]);
@@ -1114,8 +1152,6 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
             drawSquareHighlight(renderer, topLeftCorner + (*lastHighlighted.tilePos - allTiles.topLeft()).mult(size),
                 size, squareHighlightColor);
         }
-        if (!spriteMode)
-          break;
       }
     for (ViewLayer layer : layout->getLayers())
       if ((int)layer >= (int)ViewLayer::CREATURE) {
@@ -1127,11 +1163,8 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
           }
           const ViewIndex& index = *objects[wpos];
           const ViewObject* object = nullptr;
-          if (spriteMode) {
-            if (index.hasObject(layer))
-              object = &index.getObject(layer);
-          } else
-            object = index.getTopObject(layout->getLayers());
+          if (index.hasObject(layer))
+            object = &index.getObject(layer);
           if (object) {
             Vec2 movement = [&] {
               if (layer == ViewLayer::TORCH2 && index.hasObject(ViewLayer::CREATURE)) {
@@ -1158,15 +1191,19 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
     fxViewManager->beginFrame(renderer, zoom, offset.x, offset.y);
   }
   renderAndInitFoW(renderer, size);
-  renderFloorObjects(renderer, size, currentTimeReal);
-  if (spriteMode)
+  if (spriteMode) {
+    renderFloorObjects(renderer, size, currentTimeReal);
     renderFoWBorders(renderer, size);
+  }
   renderHighlights(renderer, size, currentTimeReal, true);
   if (fxViewManager)
     fxViewManager->drawUnorderedBackFX(renderer);
   renderShortestPaths(renderer, size);
   renderPhylacteries(renderer, size, currentTimeReal);
-  renderHighObjects(renderer, size, currentTimeReal);  
+  if (spriteMode)
+    renderHighObjects(renderer, size, currentTimeReal);
+  else
+    renderAsciiObjects(renderer, size, currentTimeReal);
   renderHighlights(renderer, size, currentTimeReal, false);
   if (fxViewManager) {
     fxViewManager->finishFrame();
