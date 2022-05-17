@@ -1586,7 +1586,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
                 auto labelColor = command.active ? Color::WHITE : Color::GRAY;
                 auto button = WL(button, buttonFun);
                 if (command.keybinding)
-                button = WL(stack, std::move(button), WL(keyHandler, buttonFun, *command.keybinding));
+                  button = WL(stack, std::move(button), WL(keyHandler, buttonFun, *command.keybinding));
                 if (command.tutorialHighlight)
                   button = WL(stack, WL(tutorialHighlight), std::move(button));
                 auto label = command.name;

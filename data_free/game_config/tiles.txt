@@ -287,7 +287,7 @@
 { "bear" "N" ColorId BROWN }
 { "polar_bear" "N" ColorId LIGHT_GRAY }
 { "bat" "b" ColorId DARK_GRAY }
-{ "goblin_artificer" "o" ColorId GREEN }
+{ "goblin_artificer" "o" ColorId LIGHT_BLUE }
 { viewId = "goblin_keeper1" symbol = "o" color = ColorId PURPLE weaponOrigin = {4 15} }
 { viewId = "goblin_keeper2" symbol = "o" color = ColorId PURPLE weaponOrigin = {4 15}}
 { viewId = "goblin_keeper3" symbol = "o" color = ColorId PURPLE weaponOrigin = {4 15}}
