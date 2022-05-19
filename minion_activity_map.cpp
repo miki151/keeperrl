@@ -101,9 +101,9 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
           return true;
       return false;
     case MinionActivity::SLEEP:
-      return c->getBody().isImmuneTo(LastingEffect::SLEEP, factory) && !c->isAffected(LastingEffect::POISON);
+      return !c->getBody().isImmuneTo(LastingEffect::SLEEP, factory) && !c->isAffected(LastingEffect::POISON);
     case MinionActivity::EAT:
-      return c->getBody().isImmuneTo(LastingEffect::SATIATED, factory) && !col->hasTrait(c, MinionTrait::PRISONER);
+      return !c->getBody().isImmuneTo(LastingEffect::SATIATED, factory) && !col->hasTrait(c, MinionTrait::PRISONER);
     case MinionActivity::COPULATE:
       return c->isAffected(BuffId("COPULATION_SKILL"));
     case MinionActivity::RITUAL:
