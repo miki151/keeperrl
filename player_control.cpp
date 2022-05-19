@@ -1615,17 +1615,17 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
         return TraitInfo{toStringWithSign(t.increase) + " " + factory->attrInfo.at(t.attr).name, t.increase <= 0};
       },
       [&] (const SpecialAttr& t) {
-        return TraitInfo{toStringWithSign(t.value) + " " + factory->attrInfo.at(t.attr).name + " " + 
+        return TraitInfo{toStringWithSign(t.value) + " " + factory->attrInfo.at(t.attr).name + " " +
             t.predicate.getName(factory),
             t.value < 0};
       },
       [&] (const Lasting& effect) {
         auto adj = getAdjective(effect.effect, factory);
         if (effect.time)
-          return TraitInfo{"Temporary trait: "_s + adj + " (" + toString(*effect.time) + " turns)", 
-              !isConsideredBad(effect.effect, factory)};
+          return TraitInfo{"Temporary trait: "_s + adj + " (" + toString(*effect.time) + " turns)",
+              isConsideredBad(effect.effect, factory)};
         else
-          return TraitInfo{"Permanent trait: "_s + adj, !isConsideredBad(effect.effect, factory)};
+          return TraitInfo{"Permanent trait: "_s + adj, isConsideredBad(effect.effect, factory)};
       },
       [&] (WorkshopType type) {
         return TraitInfo{"Legendary craftsman at: " + factory->workshopInfo.at(type).name, false};
