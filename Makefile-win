@@ -51,7 +51,7 @@ NAME = keeper
 
 ROOT = ./
 TOROOT = ./../
-IPATH = -I. -I./extern
+IPATH = -I. -I./extern -Iextern/steamworks/public
 
 CFLAGS += $(IPATH)
 
@@ -78,7 +78,7 @@ OPENAL = $(shell $(PKG_CONFIG) --libs openal)
 
 LIBS = -mwindows ${RES_FILE} -lvorbisfile -lvorbis -logg -ltheoradec -lSDL2_image -lkernel32 -luser32 -lgdi32 -lcomdlg32 \
 	   -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid -ldbghelp $(STEAM_LIBS) \
-	-lSDL2 -lSDL2main -lglu32 -lz -ljpeg $(OPENAL) -lopengl32 -lcurl -limagehlp -lpthread
+	-lSDL2 -lSDL2main -lglu32 -lz -ljpeg $(OPENAL) -lopengl32 -lcurl -limagehlp -lpthread -fuse-ld=lld
 
 ifdef debug
 	CFLAGS += -g
