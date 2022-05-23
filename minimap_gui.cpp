@@ -43,9 +43,11 @@ void MinimapGui::render(Renderer& renderer) {
       renderer.drawFilledRectangle(Rectangle(pos - rrad, pos + rrad), Color::BROWN);
   }
   Vec2 rad(3, 3);
-  Vec2 player = topLeft + (info.player - info.bounds.topLeft()) * scale;
-  if (player.inRectangle(target.minusMargin(rad.x)))
-    renderer.drawFilledRectangle(Rectangle(player - rad, player + rad), Color::BLUE);
+  if (info.player) {
+    Vec2 player = topLeft + (*info.player - info.bounds.topLeft()) * scale;
+    if (player.inRectangle(target.minusMargin(rad.x)))
+      renderer.drawFilledRectangle(Rectangle(player - rad, player + rad), Color::BLUE);
+  }
   for (Vec2 pos : info.enemies) {
     Vec2 v = (pos - info.bounds.topLeft()) * scale;
     renderer.drawFilledRectangle(Rectangle(topLeft + v - rad, topLeft + v + rad), Color::RED);
@@ -123,7 +125,10 @@ void MinimapGui::update(Rectangle bounds, const CreatureView* creature, Renderer
     updatePos(v);
   }
   memory.clearUpdated(level);
-  info.player = creature->getScrollCoord();
+  if (creature->showScrollCoordOnMinimap())
+    info.player = creature->getScrollCoord();
+  else
+    info.player = none;
   for (Vec2 pos : creature->getVisibleEnemies())
     if (pos.inRectangle(bounds))
       info.enemies.push_back(pos);

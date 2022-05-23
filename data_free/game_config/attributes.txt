@@ -75,7 +75,7 @@
   absorptionCap = 3
   modifierVariation = 0
   wishedItemIncrease = 2
-  help = "Prevents defense penalty from multiple attacks in the same turn."
+  help = "Prevents defense penalty from being surrounded."
 }
 
 "SPELL_SPEED" {

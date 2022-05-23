@@ -996,6 +996,10 @@ Vec2 Player::getScrollCoord() const {
   return creature->getPosition().getCoord();
 }
 
+bool Player::showScrollCoordOnMinimap() const {
+  return true;
+}
+
 Level* Player::getCreatureViewLevel() const {
   return creature->getLevel();
 }
