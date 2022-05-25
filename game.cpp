@@ -384,6 +384,10 @@ void Game::considerRealTimeRender() {
   }
 }
 
+void Game::setWasTransfered() {
+  wasTransfered = true;
+}
+
 // Return true when the player has just left turn-based mode so we don't increase time in that case.
 bool Game::updateModel(WModel model, double totalTime) {
   do {
@@ -525,27 +529,10 @@ void Game::presentWorldmap() {
   view->presentWorldmap(*campaign);
 }
 
-bool Game::transferAction(vector<Creature*> creatures) {
-  if (auto dest = view->chooseSite("Choose destination site:", *campaign,
-        getModelCoords(creatures[0]->getLevel()->getModel()))) {
-    WModel to = NOTNULL(models[*dest].get());
-    creatures = creatures.filter([&](const Creature* c) { return c->getPosition().getModel() != to; });
-    vector<PlayerInfo> cant;
-    for (Creature* c : copyOf(creatures))
-      if (!canTransferCreature(c, to)) {
-        cant.push_back(PlayerInfo(c, &*contentFactory));
-        creatures.removeElement(c);
-      }
-    if (!cant.empty() && !view->creatureInfo("These minions will be left behind due to sunlight. Continue?", true, cant))
-      return false;
-    if (!creatures.empty()) {
-      for (Creature* c : creatures)
-        transferCreature(c, models[*dest].get());
-      wasTransfered = true;
-      return true;
-    }
-  }
-  return false;
+Model* Game::chooseSite(const string& message, Model* current) const {
+  if (auto dest = view->chooseSite("Choose destination site:", *campaign, getModelCoords(current)))
+    return NOTNULL(models[*dest].get());
+  return nullptr;
 }
 
 void Game::considerRetiredLoadedEvent(Vec2 coord) {

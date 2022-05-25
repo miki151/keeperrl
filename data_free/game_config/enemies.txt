@@ -239,6 +239,7 @@ End
     maxPopulation = 16
   }
   behaviour = {
+    ambushChance = 0.1
     minPopulation = 0
     minTeamSize = 8
     triggers = {Gold 500}
@@ -376,6 +377,7 @@ End
     spawnGhosts = 6
   }
   behaviour = {
+    ambushChance = 0.1
     minPopulation = 3
     minTeamSize = 5
     triggers = {
@@ -447,6 +449,7 @@ End
   behaviour = {
     minPopulation = 7
     minTeamSize = 10
+    ambushChance = 0.05
     triggers = {
       RoomTrigger "THRONE" 0.0003
       RoomTrigger "IMPALED_HEAD" 0.0001
@@ -812,6 +815,7 @@ End
     alwaysMount = true
   }
   behaviour = {
+    ambushChance = 0.05
     minPopulation = 4
     minTeamSize = 4
     triggers = {StolenItems}
@@ -1245,6 +1249,7 @@ End
 "BANDITS" inherit "NO_AGGRO_BANDITS"
 {
   behaviour = {
+    ambushChance = 0.05
     minPopulation = 0
     minTeamSize = 3
     triggers = {Gold 500}
@@ -1280,6 +1285,7 @@ End
     maxPopulation = 10
   }
   behaviour = {
+    ambushChance = 0.1
     minPopulation = 0
     minTeamSize = 3
     triggers = {Gold 500}
@@ -1465,6 +1471,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
     spawnGhosts = 4
   }
   behaviour = {
+    ambushChance = 0.1
     minPopulation = 4
     minTeamSize = 4
     triggers = {
@@ -2374,6 +2381,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
     alwaysMount = true
   }
   behaviour = {
+    ambushChance = 0.1
     minPopulation = 3
     minTeamSize = 5
     triggers = {

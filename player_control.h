@@ -112,7 +112,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   public:
   PlayerControl(Private, Collective*, TribeAlignment);
 
-  protected:
+  //protected:
   // from CreatureView
   virtual const MapMemory& getMemory() const override;
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;

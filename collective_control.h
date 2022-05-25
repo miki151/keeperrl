@@ -27,6 +27,7 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) {}
   virtual void onRansomPaid() {}
   virtual void launchAllianceAttack(vector<Collective*> allies) { fail(); }
+  virtual bool considerVillainAmbush(const vector<Creature*>& travellers) { return false; }
   virtual vector<TriggerInfo> getAllTriggers(const Collective* against) const;
   vector<TriggerInfo> getTriggers(const Collective* against) const;
   virtual bool canPerformAttack() const { fail(); }

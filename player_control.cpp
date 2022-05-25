@@ -1989,11 +1989,7 @@ void PlayerControl::updateMinionVisibility(const Creature* c) {
 }
 
 void PlayerControl::addWindowMessage(ViewIdList viewId, const string& message) {
-  ScriptedUIState state;
-  auto data = ScriptedUIDataElems::Record{};
-  data.elems["message"] = message;
-  data.elems["view_id"] = viewId;
-  getView()->scriptedUI("unlock_message", data, state);
+  getView()->windowedMessage(viewId, message);
 }
 
 void PlayerControl::onEvent(const GameEvent& event) {

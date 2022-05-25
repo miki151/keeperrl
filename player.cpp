@@ -72,11 +72,12 @@
 #include "item_attributes.h"
 #include "keybinding.h"
 #include "task.h"
+#include "collective_control.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
   ar& SUBCLASS(Controller) & SUBCLASS(EventListener);
-  ar(travelling, travelDir, target, displayGreeting, levelMemory, messageBuffer);
+  ar(travelDir, target, displayGreeting, levelMemory, messageBuffer);
   ar(adventurer, visibilityMap, tutorial, unknownLocations, avatarLevel);
 }
 
@@ -312,36 +313,7 @@ bool Player::interruptedByEnemy() {
   return false;
 }
 
-void Player::travelAction() {
-/*  updateView = true;
-  if (!creature->move(travelDir) || getView()->travelInterrupt() || interruptedByEnemy()) {
-    travelling = false;
-    return;
-  }
-  tryToPerform(creature->move(travelDir));
-  const Location* currentLocation = creature->getPosition().getLocation();
-  if (lastLocation != currentLocation && currentLocation != nullptr && currentLocation->getName()) {
-    privateMessage("You arrive at " + addAParticle(*currentLocation->getName()));
-    travelling = false;
-    return;
-  }
-  vector<Vec2> squareDirs = creature->getPosition().getTravelDir();
-  if (squareDirs.size() != 2) {
-    travelling = false;
-    INFO << "Stopped by multiple routes";
-    return;
-  }
-  optional<int> myIndex = findElement(squareDirs, -travelDir);
-  if (!myIndex) { // This was an assertion but was failing
-    travelling = false;
-    INFO << "Stopped by bad travel data";
-    return;
-  }
-  travelDir = squareDirs[(*myIndex + 1) % 2];*/
-}
-
 void Player::targetAction() {
-  updateView = true;
   CHECK(target);
   if (creature->getPosition() == *target || getView()->travelInterrupt()) {
     target = none;
@@ -556,7 +528,7 @@ vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(Creature* 
     if (!creature->isAffected(LastingEffect::PEACEFULNESS))
       genAction(1, ViewObjectAction::ATTACK, false, creature->attack(c));
     genAction(1, ViewObjectAction::PET, false, creature->pet(c));
-    genAction(1, ViewObjectAction::MOUNT, false, creature->mount(c));    
+    genAction(1, ViewObjectAction::MOUNT, false, creature->mount(c));
   }
   if (creature == c) {
     genAction(0, ViewObjectAction::SKIP_TURN, true, creature->wait());
@@ -731,8 +703,6 @@ void Player::makeMove() {
     considerAdventurerMusic();
   else
     considerKeeperModeTravelMusic();
-  //if (updateView) { Check disabled so that we update in every frame to avoid some square refreshing issues.
-  updateView = false;
   for (Position pos : creature->getVisibleTiles())
     updateSquareMemory(pos);
   MEASURE(
@@ -751,23 +721,18 @@ void Player::makeMove() {
     getView()->updateView(this, false);
   }
   UserInput action = getView()->getAction();
-  if (travelling && action.getId() == UserInputId::IDLE)
-    travelAction();
-  else if (target && action.getId() == UserInputId::IDLE)
+  if (target && action.getId() == UserInputId::IDLE)
     targetAction();
   else {
     INFO << "Action " << int(action.getId());
-    bool wasJustTravelling = travelling || !!target;
+    bool wasJustTravelling = !!target;
     if (action.getId() != UserInputId::IDLE) {
-      if (action.getId() != UserInputId::REFRESH)
+      if (action.getId() != UserInputId::REFRESH) {
         retireMessages();
-      if (action.getId() == UserInputId::TILE_CLICK) {
-        travelling = false;
-        if (target)
-          target = none;
         getView()->resetCenter();
       }
-      updateView = true;
+      if (action.getId() == UserInputId::TILE_CLICK)
+        target = none;
     }
     if (!handleUserInput(action))
       switch (action.getId()) {
@@ -862,13 +827,11 @@ void Player::makeMove() {
           break;
         }
         case UserInputId::SCROLL_TO_HOME:
-          getView()->setScrollPos(creature->getPosition());
+          getView()->resetCenter();
           break;
         case UserInputId::DRAW_WORLD_MAP: {
-          if (canTravel()) {
-            if (getGame()->transferAction(getTeam()))
-              forceSteeds();
-          }
+          if (canTravel())
+            transferAction();
           break;
         }
         case UserInputId::CREATURE_DRAG_DROP: {
@@ -901,6 +864,38 @@ void Player::makeMove() {
     }
   }
   creature->getPosition().setNeedsRenderUpdate(true);
+}
+
+void Player::transferAction() {
+  auto view = getView();
+  auto game = getGame();
+  auto creatures = getTeam();
+  if (auto to = game->chooseSite("Choose destination site:", creatures[0]->getLevel()->getModel())) {
+    creatures = creatures.filter([&](const Creature* c) { return c->getPosition().getModel() != to; });
+    vector<PlayerInfo> cant;
+    auto contentFactory = getGame()->getContentFactory();
+    for (Creature* c : copyOf(creatures))
+      if (!game->canTransferCreature(c, to)) {
+        cant.push_back(PlayerInfo(c, contentFactory));
+        creatures.removeElement(c);
+      }
+    if (!cant.empty() && !view->creatureInfo("These minions will be left behind due to sunlight. Continue?", true, cant))
+      return;
+    if (!creatures.empty()) {
+      for (Creature* c : creatures) {
+        game->transferCreature(c, to);
+      }
+      game->setWasTransfered();
+    }
+    forceSteeds();
+    for (auto col : to->getCollectives())
+      if (!!col->getName() && col->getControl()->considerVillainAmbush(creatures)) {
+        view->updateView(this, false);
+        game->addAnalytics("ambushed", col->getName()->full);
+        getView()->windowedMessage({col->getName()->viewId}, "You have been ambushed!");
+        break;
+      }
+  }
 }
 
 void Player::showHistory() {
@@ -943,8 +938,7 @@ void Player::moveAction(Vec2 dir) {
     tryToPerform(creature->destroy(dir, DestroyAction::Type::BASH));
   if (!dirPos.isCovered() && dirPos.isUnavailable() && canTravel() && !getGame()->isSingleModel() &&
       creature->getPosition().getLevel() == getModel()->getGroundLevel()) {
-    if (getGame()->transferAction(getTeam()))
-      forceSteeds();
+    transferAction();
   }
 }
 
@@ -1045,7 +1039,7 @@ static double getScore(string target, string candidate) {
   int result = 0;
   for (int i : Range(candidate.size() - n + 1))
     result += ngrams.count(candidate.substr(i, n));
-  return result - int(candidate.size()) / 6;
+  return result - double(candidate.size()) / 6;
 }
 
 struct WishedItemInfo {

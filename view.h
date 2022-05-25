@@ -209,6 +209,8 @@ class View {
   /** Asks the player a yer-or-no question.*/
   bool yesOrNoPrompt(const string& message, bool defaultNo = false, ScriptedUIId = "yes_or_no");
 
+  void windowedMessage(ViewIdList, const string& message);
+
   /** Draws a window with some text. The text is formatted to fit the window.*/
   virtual void presentText(const string& title, const string& text) = 0;
   virtual void presentTextBelow(const string& title, const string& text) = 0;

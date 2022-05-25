@@ -188,6 +188,72 @@ void VillageControl::launchAttack(vector<Creature*> attackers) {
   }
 }
 
+bool VillageControl::considerVillainAmbush(const vector<Creature*>& travellers) {
+  if (!behaviour)
+    return false;
+  if (Random.chance(behaviour->ambushChance)) {
+    auto attackers = getAttackers();
+    if (!attackers.empty()) {
+      const int maxDist = 3;
+      unordered_map<Position, int, CustomHash<Position>> distance;
+      queue<Position> q;
+      auto add = [&](Position p, int dist) {
+        q.push(p);
+        distance[p] = dist;
+      };
+      for (auto c : travellers)
+        add(c->getPosition(), 0);
+      while (!q.empty()) {
+        auto pos = q.front();
+        q.pop();
+        int dist = distance.at(pos);
+        if (dist < maxDist)
+          for (auto v : pos.neighbors8())
+            if (!distance.count(v) && v.canEnterEmpty(attackers[0]))
+              add(v, dist + 1);
+      }
+      auto goodPos = getKeys(distance).filter([&](auto pos) {
+        if (distance.at(pos) != maxDist)
+          return false;
+        for (auto c : travellers)
+          if (c->canSee(pos))
+            return true;
+        return false;
+      });
+      if (goodPos.size() < attackers.size())
+        return false;
+      goodPos = Random.permutation(std::move(goodPos));
+      vector<Position> targets;
+      for (Creature* c : attackers) {
+        bool found = false;
+        for (auto pos : goodPos)
+          if (pos.canEnter(c)) {
+            goodPos.removeElement(pos);
+            targets.push_back(pos);
+            found = true;
+            break;
+          }
+        if (!found)
+          return false;
+      }
+      CHECK(targets.size() == attackers.size());
+      for (int i : All(attackers)) {
+        auto c = attackers[i];
+        if (c->isAffected(LastingEffect::RIDER))
+          if (auto steed = collective->getSteedOrRider(c))
+            c->forceMount(steed);
+        Random.choose(travellers)->addCombatIntent(c, Creature::CombatIntentInfo::Type::CHASE);
+        if (c->getPosition().getModel() == collective->getModel())
+          c->getPosition().moveCreature(targets[i]);
+        else
+          collective->getModel()->transferCreature(c->getPosition().getModel()->extractCreature(c), {targets[i]});
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
 void VillageControl::launchAllianceAttack(vector<Collective*> allies) {
   if (Collective* enemy = getEnemyCollective()) {
     auto attackers = collective->getLeaders();
@@ -275,6 +341,25 @@ bool VillageControl::isEnemy() const {
   return false;
 }
 
+vector<Creature*> VillageControl::getAttackers() const {
+  vector<Creature*> fighters = collective->getCreatures(MinionTrait::FIGHTER).filter([&](auto c) {
+    return collective->getTeams().getContaining(c).empty() && !c->isAffected(LastingEffect::INSANITY)
+        && !LastingEffects::restrictedMovement(c);
+  });
+  /*if (getCollective()->getGame()->isSingleModel())
+    fighters = filter(fighters, [this] (const Creature* c) {
+        return contains(getCollective()->getTerritory().getAll(), c->getPosition()); });*/
+  /*if (auto& name = collective->getName())
+    INFO << name->shortened << " fighters: " << int(fighters.size())
+      << (!collective->getTeams().getAll().empty() ? " attacking " : "");*/
+  vector<Creature*> allMembers = collective->getCreatures();
+  if (fighters.size() >= behaviour->minTeamSize &&
+      allMembers.size() >= behaviour->minPopulation + behaviour->minTeamSize)
+    return Random.permutation(fighters).getPrefix(
+          Random.get(behaviour->minTeamSize, min(fighters.size(), allMembers.size() - behaviour->minPopulation) + 1));
+  return {};
+}
+
 void VillageControl::update(bool) {
   considerCancellingAttack();
   acceptImmigration();
@@ -283,7 +368,6 @@ void VillageControl::update(bool) {
     if (c->getBody().isHumanoid())
       if (!c->isAffected(BuffId("BRIDGE_BUILDING_SKILL")))
         c->addPermanentEffect(BuffId("BRIDGE_BUILDING_SKILL"), 1, false);
-  vector<Creature*> allMembers = collective->getCreatures();
   for (auto team : collective->getTeams().getAll()) {
     for (const Creature* c : collective->getTeams().getMembers(team))
       if (!collective->hasTask(c)) {
@@ -298,20 +382,9 @@ void VillageControl::update(bool) {
       maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
     double prob = behaviour->getAttackProbability(this) / updateFreq;
     if (Random.chance(prob)) {
-      vector<Creature*> fighters = collective->getCreatures(MinionTrait::FIGHTER).filter([&](auto c) {
-        return collective->getTeams().getContaining(c).empty() && !c->isAffected(LastingEffect::INSANITY)
-            && !LastingEffects::restrictedMovement(c);
-      });
-      /*if (getCollective()->getGame()->isSingleModel())
-        fighters = filter(fighters, [this] (const Creature* c) {
-            return contains(getCollective()->getTerritory().getAll(), c->getPosition()); });*/
-      /*if (auto& name = collective->getName())
-        INFO << name->shortened << " fighters: " << int(fighters.size())
-          << (!collective->getTeams().getAll().empty() ? " attacking " : "");*/
-      if (fighters.size() >= behaviour->minTeamSize &&
-          allMembers.size() >= behaviour->minPopulation + behaviour->minTeamSize)
-      launchAttack(Random.permutation(fighters).getPrefix(
-        Random.get(behaviour->minTeamSize, min(fighters.size(), allMembers.size() - behaviour->minPopulation) + 1)));
+      auto attackers = getAttackers();
+      if (!attackers.empty())
+        launchAttack(attackers);
     }
   }
 }
