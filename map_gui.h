@@ -164,7 +164,12 @@ class MapGui : public GuiElem {
   optional<Coords> softCenter;
   Vec2 lastMousePos;
   optional<Vec2> lastMouseMove;
-  bool isScrollingNow = false;
+  enum class ScrollingState {
+    ACTIVE,
+    AFTER,
+    NONE
+  };
+  ScrollingState scrollingState = ScrollingState::NONE;
   double currentTimeGame = 0;
   struct ScreenMovement {
     milliseconds startTimeReal;
@@ -175,7 +180,6 @@ class MapGui : public GuiElem {
   Table<unordered_set<ViewId, CustomHash<ViewId>>> connectionMap;
   bool keyScrolling = false;
   bool mouseUI = false;
-  bool lockedView = true;
   optional<milliseconds> lastRightClick;
   EntityMap<Creature, int> teamHighlight;
   struct ActiveButtonInfo {

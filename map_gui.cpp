@@ -249,16 +249,15 @@ bool MapGui::onLeftClick(Vec2 v) {
 
 bool MapGui::onRightClick(Vec2 pos) {
   if (lastRightClick && clock->getRealMillis() - *lastRightClick < milliseconds{200}) {
-    lockedView = true;
     lastRightClick = none;
+    scrollingState = ScrollingState::NONE;
     return true;
   }
   lastRightClick = clock->getRealMillis();
   if (pos.inRectangle(getBounds())) {
     lastMousePos = pos;
-    isScrollingNow = true;
+    scrollingState = ScrollingState::ACTIVE;
     mouseOffset.x = mouseOffset.y = 0;
-    lockedView = false;
     return true;
   }
   return false;
@@ -293,7 +292,7 @@ bool MapGui::onMouseMove(Vec2 v) {
     inputQueue.push(UserInput(UserInputId::CREATURE_DRAG, draggedCandidate->id));
     guiFactory->getDragContainer().put(draggedCandidate->id, guiFactory->viewObject(draggedCandidate->viewId), v);
   }
-  if (isScrollingNow) {
+  if (scrollingState == ScrollingState::ACTIVE) {
     mouseOffset.x = double(v.x - lastMousePos.x) / layout->getSquareSize().x;
     mouseOffset.y = double(v.y - lastMousePos.y) / layout->getSquareSize().y;
     callbacks.refreshFun();
@@ -310,7 +309,7 @@ optional<MapGui::CreatureInfo> MapGui::getCreature(Vec2 mousePos) {
 }
 
 void MapGui::onMouseRelease(Vec2 v) {
-  if (isScrollingNow) {
+  if (scrollingState == ScrollingState::ACTIVE) {
     if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1) {
       if (auto c = getCreature(lastMousePos))
         inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK_EXTENDED, c->position));
@@ -320,7 +319,7 @@ void MapGui::onMouseRelease(Vec2 v) {
       center.x = min<double>(levelBounds.right(), max(0.0, center.x - mouseOffset.x));
       center.y = min<double>(levelBounds.bottom(), max(0.0, center.y - mouseOffset.y));
     }
-    isScrollingNow = false;
+    scrollingState = ScrollingState::AFTER;
     callbacks.refreshFun();
     mouseOffset.x = mouseOffset.y = 0;
   }
@@ -348,7 +347,7 @@ void MapGui::onMouseRelease(Vec2 v) {
       if (auto c = getCreature(*mouseHeldPos))
         inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK, c->position));
       else {
-        callbacks.leftClickFun(layout->projectOnMap(getBounds(), getScreenPos(), v));
+        callbacks.leftClickFun(layout->projectOnMap(getBounds(), getScreenPos(), *mouseHeldPos));
         considerContinuousLeftClick(v);
       }
     }
@@ -710,7 +709,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
 }
 
 void MapGui::resetScrolling() {
-  lockedView = true;
+  scrollingState = ScrollingState::NONE;
+  if (centeredCreaturePosition)
+    centeredCreaturePosition->softScroll = true;
 }
 
 void MapGui::clearCenter() {
@@ -1328,7 +1329,7 @@ void MapGui::considerScrollingToCreature() {
     Vec2 size = layout->getSquareSize();
     Vec2 offset;
     if (auto index = objects[info->pos])
-      if (index->hasObject(ViewLayer::CREATURE) && !!screenMovement)
+      if (index->hasObject(ViewLayer::CREATURE) && !!screenMovement && !info->softScroll)
         offset = getMovementOffset(index->getObject(ViewLayer::CREATURE), size, 0, clock->getRealMillis(), false, info->pos);
     double targetx = info->pos.x + (double)offset.x / size.x;
     double targety = info->pos.y + (double)offset.y / size.y;
@@ -1351,7 +1352,8 @@ void MapGui::render(Renderer& renderer) {
   PROFILE;
   auto currentTimeReal = clock->getRealMillis();
   updateFX(currentTimeReal);
-  considerScrollingToCreature();
+  if (scrollingState == ScrollingState::NONE)
+    considerScrollingToCreature();
   Vec2 size = layout->getSquareSize();
   lastHighlighted = getHighlightedInfo(size, currentTimeReal);
 
@@ -1527,15 +1529,19 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
     screenMovement = none;
   if (view->getCenterType() == CreatureView::CenterType::FOLLOW) {
     if (centeredCreaturePosition) {
-      centeredCreaturePosition->pos = view->getScrollCoord();
-      if (newTurn)
+      auto coord = view->getScrollCoord();
+      centeredCreaturePosition->pos = coord;
+      // Only make it a hard scroll if the screen is centered on the creature
+      if (newTurn && fabs(coord.x - center.x) < 2 && fabs(coord.y - center.y) < 2)
         centeredCreaturePosition->softScroll = false;
     } else
       centeredCreaturePosition = CenteredCreatureInfo { view->getScrollCoord(), true };
   } else {
     centeredCreaturePosition = none;
     if (!isCentered() ||
-        (view->getCenterType() == CreatureView::CenterType::STAY_ON_SCREEN && getDistanceToEdgeRatio(view->getScrollCoord()) < 0.33)) {
+        (view->getCenterType() == CreatureView::CenterType::STAY_ON_SCREEN &&
+        getDistanceToEdgeRatio(view->getScrollCoord()) < 0.33 &&
+        scrollingState == ScrollingState::NONE)) {
       setSoftCenter(view->getScrollCoord());
     }
   }

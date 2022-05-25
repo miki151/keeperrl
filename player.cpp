@@ -729,7 +729,6 @@ void Player::makeMove() {
     if (action.getId() != UserInputId::IDLE) {
       if (action.getId() != UserInputId::REFRESH) {
         retireMessages();
-        getView()->resetCenter();
       }
       if (action.getId() == UserInputId::TILE_CLICK)
         target = none;
@@ -856,13 +855,15 @@ void Player::makeMove() {
           avatarLevel->increaseLevel();
           break;
     #endif
-        default: break;
+        default:
+          return;
       }
     if (LastingEffects::losesControl(creature)) {
       onLostControl();
       return;
     }
   }
+  getView()->resetCenter();
   creature->getPosition().setNeedsRenderUpdate(true);
 }
 
