@@ -435,7 +435,7 @@ class VillageInfo {
   struct Village {
     optional<string> HASH(name);
     string HASH(tribeName);
-    ViewId HASH(viewId);
+    ViewIdList HASH(viewId);
     VillainType HASH(type);
     enum Access { ACTIVE, INACTIVE, LOCATION, NO_LOCATION };
     Access HASH(access);

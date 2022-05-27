@@ -114,6 +114,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void tick();
   void upgradeViewId(int level);
   ViewIdList getMaxViewIdUpgrade() const;
+  ViewIdList getViewIdWithWeapon() const;
 
   const CreatureName& getName() const;
   CreatureName& getName();

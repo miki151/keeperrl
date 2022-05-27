@@ -477,7 +477,7 @@ static int getKeeperUpgradeLevel(int dungeonLevel) {
 void Collective::update(bool currentlyActive) {
   for (auto leader : getLeaders()) {
     leader->upgradeViewId(getKeeperUpgradeLevel(dungeonLevel.level));
-    name->viewId = leader->getViewObject().id();
+    name->viewId = leader->getViewIdWithWeapon();
   }
   control->update(currentlyActive);
   if (config->hasImmigrantion(currentlyActive) && (!getLeaders().empty() || !hadALeader) && !isConquered())

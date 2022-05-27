@@ -68,7 +68,7 @@ optional<CollectiveName> CollectiveBuilder::generateName() const {
   if (!creatures.empty()) {
     CollectiveName ret;
     auto leader = creatures[0].creature;
-    ret.viewId = leader->getViewObject().id();
+    ret.viewId = leader->getViewIdWithWeapon();
     if (locationName && raceName)
       ret.full = capitalFirst(*raceName) + " of " + *locationName;
     else if (!!leader->getName().first())

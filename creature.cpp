@@ -1484,6 +1484,14 @@ ViewIdList Creature::getMaxViewIdUpgrade() const {
   return ret;
 }
 
+ViewIdList Creature::getViewIdWithWeapon() const {
+  auto ret = getViewObject().getViewIdList();
+  vector<Item*> it = equipment->getSlotItems(EquipmentSlot::WEAPON);
+  if (!it.empty())
+    ret.push_front(it[0]->getEquipedViewId());
+  return ret;
+}
+
 void Creature::dropUnsupportedEquipment() {
   for (auto slot : ENUM_ALL(EquipmentSlot)) {
     auto& items = equipment->getSlotItems(slot);

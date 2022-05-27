@@ -753,9 +753,7 @@ const vector<Creature*>& Game::getPlayerCreatures() const {
 static SavedGameInfo::MinionInfo getMinionInfo(const ContentFactory* factory, const Creature* c) {
   SavedGameInfo::MinionInfo ret;
   ret.level = (int)c->getBestAttack(factory).value;
-  ret.viewId = c->getViewObject().getViewIdList();
-  if (auto it = c->getFirstWeapon())
-    ret.viewId.push_front(it->getEquipedViewId());
+  ret.viewId = c->getViewIdWithWeapon();
   return ret;
 }
 
