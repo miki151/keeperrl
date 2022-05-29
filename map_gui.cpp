@@ -200,10 +200,6 @@ DirSet MapGui::getConnectionSet(Vec2 tilePos, const ViewId& id, const Tile& tile
   return ret;
 }
 
-void MapGui::setSoftCenter(Vec2 pos) {
-  setSoftCenter(pos.x, pos.y);
-}
-
 void MapGui::setSoftCenter(double x, double y) {
   Coords coords {x, y};
   if (softCenter != coords) {
@@ -710,8 +706,6 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
 
 void MapGui::resetScrolling() {
   scrollingState = ScrollingState::NONE;
-  if (centeredCreaturePosition)
-    centeredCreaturePosition->softScroll = true;
 }
 
 void MapGui::clearCenter() {
@@ -1325,21 +1319,15 @@ bool MapGui::isDraggedCreature() const {
 
 void MapGui::considerScrollingToCreature() {
   PROFILE;
-  if (auto& info = centeredCreaturePosition) {
+  if (auto pos = centeredCreaturePosition) {
     Vec2 size = layout->getSquareSize();
     Vec2 offset;
-    if (auto index = objects[info->pos])
-      if (index->hasObject(ViewLayer::CREATURE) && !!screenMovement && !info->softScroll)
-        offset = getMovementOffset(index->getObject(ViewLayer::CREATURE), size, 0, clock->getRealMillis(), false, info->pos);
-    double targetx = info->pos.x + (double)offset.x / size.x;
-    double targety = info->pos.y + (double)offset.y / size.y;
-    if (info->softScroll)
-      setSoftCenter(targetx, targety);
-    else
-      setCenter(targetx, targety);
-    // soft scrolling is done once when the creature is first controlled, so if we are centered then turn it off
-    if (fabs(center.x - targetx) + fabs(center.y - targety) < 0.01)
-      info->softScroll = false;
+    if (auto index = objects[*pos])
+      if (index->hasObject(ViewLayer::CREATURE) && !!screenMovement)
+        offset = getMovementOffset(index->getObject(ViewLayer::CREATURE), size, 0, clock->getRealMillis(), false, *pos);
+    double targetx = pos->x + (double)offset.x / size.x;
+    double targety = pos->y + (double)offset.y / size.y;
+    setCenter(targetx, targety);
   }
 }
 
@@ -1488,8 +1476,9 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
   updateShortestPaths(view, renderer, layout->getSquareSize(), currentTimeReal);
   // hacky way to detect that we're switching between real-time and turn-based and not between
   // team members in turn-based mode.
-  bool newView = (view->getCenterType() != previousView);
-  if (newView || level != previousLevel) {
+  const bool newView = (view->getCenterType() != previousView);
+  const bool newLevel = level != previousLevel;
+  if (newView || newLevel) {
     if (auto *inst = fx::FXManager::getInstance())
       inst->clearUnorderedEffects();
     for (Vec2 pos : level->getBounds())
@@ -1527,22 +1516,19 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
     }
   } else
     screenMovement = none;
-  if (view->getCenterType() == CreatureView::CenterType::FOLLOW) {
-    if (centeredCreaturePosition) {
-      auto coord = view->getScrollCoord();
-      centeredCreaturePosition->pos = coord;
-      // Only make it a hard scroll if the screen is centered on the creature
-      if (newTurn && fabs(coord.x - center.x) < 2 && fabs(coord.y - center.y) < 2)
-        centeredCreaturePosition->softScroll = false;
-    } else
-      centeredCreaturePosition = CenteredCreatureInfo { view->getScrollCoord(), true };
-  } else {
+  if (view->getCenterType() == CreatureView::CenterType::FOLLOW)
+    centeredCreaturePosition = view->getScrollCoord();
+  else {
     centeredCreaturePosition = none;
     if (!isCentered() ||
         (view->getCenterType() == CreatureView::CenterType::STAY_ON_SCREEN &&
         getDistanceToEdgeRatio(view->getScrollCoord()) < 0.33 &&
         scrollingState == ScrollingState::NONE)) {
-      setSoftCenter(view->getScrollCoord());
+      auto coord = view->getScrollCoord();
+      if (newLevel)
+        setCenter(coord.x, coord.y);
+      else
+        setSoftCenter(coord.x, coord.y);
     }
   }
 }

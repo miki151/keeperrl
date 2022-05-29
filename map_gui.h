@@ -110,7 +110,6 @@ class MapGui : public GuiElem {
   void renderHighlights(Renderer&, Vec2 size, milliseconds currentTimeReal, bool lowHighlights);
   optional<Vec2> getMousePos();
   void softScroll(double x, double y);
-  void setSoftCenter(Vec2);
   void setSoftCenter(double x, double y);
   HighlightedInfo lastHighlighted;
   void renderMapObjects(Renderer&, Vec2 size, milliseconds currentTimeReal);
@@ -206,11 +205,7 @@ class MapGui : public GuiElem {
   int lastMoveCounter = -1000;
   int currentMoveCounter = -1000;
   double getDistanceToEdgeRatio(Vec2);
-  struct CenteredCreatureInfo {
-    Vec2 pos;
-    bool softScroll;
-  };
-  optional<CenteredCreatureInfo> centeredCreaturePosition;
+  optional<Vec2> centeredCreaturePosition;
   DirSet getConnectionSet(Vec2 tilePos, const ViewId&, const Tile&);
   EntityMap<Creature, milliseconds> woundedInfo;
   EntityMap<Creature, int> furnitureUsageFX;
