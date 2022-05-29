@@ -359,7 +359,7 @@ void LastingEffects::onRemoved(Creature* c, LastingEffect effect, bool msg) {
 }
 
 void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
-  auto factory = c->getGame()->getContentFactory();
+  auto factory = !!c->getGame() ? c->getGame()->getContentFactory() : nullptr;
   switch (effect) {
     case LastingEffect::SLEEP:
       c->addEffect(LastingEffect::RESTED, 1000_visible);
@@ -381,7 +381,7 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       break;
     case LastingEffect::ON_FIRE:
       c->getPosition().removeCreatureLight(false);
-      if (c->getBody().burnsIntrinsically(factory))
+      if (factory && c->getBody().burnsIntrinsically(factory))
         c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
       break;
     case LastingEffect::SPYING:
@@ -497,7 +497,7 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         c->verb("can", "can", "cast spells again");
         break;
       case LastingEffect::ON_FIRE:
-        if (c->getBody().burnsIntrinsically(factory))
+        if (factory && c->getBody().burnsIntrinsically(factory))
           c->verb("burn", "burns", "to death");
         else
           c->verb("stop", "stops", "burning");
