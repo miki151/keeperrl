@@ -249,6 +249,7 @@
   viewId = { "impaled_head" }
   strength = 10
   destroyFX = { DESTROY_FURNITURE ColorId WHITE }
+  canBuildOutsideOfTerritory = true
 }
 
 Def BedHeal() Heal { FLESH 0.005 } End
