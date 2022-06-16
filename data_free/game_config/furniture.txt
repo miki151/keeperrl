@@ -1763,6 +1763,21 @@ Def BedHeal() Heal { FLESH 0.005 } End
   layer = FLOOR
   lastingEffect = ENEMY PEACEFULNESS 0
 }
+"HEALING_TOTEM"
+{
+  name = "healing totem"
+  viewId = { "totem" Rgb 156 58 68 255 }
+  lastingEffect = ALLY REGENERATION 3 # ALLY/ENEMY LastingEffect radius
+  blockMovement = true
+  canHideHere = true
+  strength = 100
+}
+"BLEEDING_TOTEM" inherit "HEALING_TOTEM"
+{
+  name = "bleeding totem"
+  viewId = { "totem" Rgb 156 58 156 255 }
+  lastingEffect = ENEMY BLEEDING 7
+}
 "ALARM_TRAP"
 {
   name = "alarm trap"

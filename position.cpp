@@ -609,16 +609,16 @@ void Position::addFurnitureEffect(TribeId tribe, const FurnitureEffectInfo& effe
   if (!effectsTable)
     effectsTable = make_unique<Level::EffectsTable>(level->getBounds());
   handleEffect(tribe, *effectsTable, getRectangle(Rectangle::centered(effect.radius)), effect,
-      [&](vector<LastingEffect>& effects) { effects.push_back(effect.effect); },
-      [&](Creature* c) { c->addPermanentEffect(effect.effect, 1, false); });
+      [&](vector<LastingOrBuff>& effects) { effects.push_back(effect.effect); },
+      [&](Creature* c) { addPermanentEffect(effect.effect, c, false); });
 }
 
 void Position::removeFurnitureEffect(TribeId tribe, const FurnitureEffectInfo& effect) const {
   auto& effectsTable = level->furnitureEffects[tribe.getKey()];
   CHECK(!!effectsTable);
   handleEffect(tribe, *effectsTable, getRectangle(Rectangle::centered(effect.radius)), effect,
-      [&](vector<LastingEffect>& effects) { effects.removeElement(effect.effect); },
-      [&](Creature* c) { c->removePermanentEffect(effect.effect, 1, false); });
+      [&](vector<LastingOrBuff>& effects) { effects.removeElement(effect.effect); },
+      [&](Creature* c) { removePermanentEffect(effect.effect, c, false); });
 }
 
 int Position::countSwarmers() const {

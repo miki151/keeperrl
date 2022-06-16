@@ -39,12 +39,12 @@
   {
   }
   {
-#    "BLEEDING_TOTEM"
+    "BLEEDING_TOTEM"
   }
 }
 "roomFurnitureAndBleedingTotem" inherit "roomFurniture"
 {
-#  unique = append { "BLEEDING_TOTEM" }
+  unique = append { "BLEEDING_TOTEM" }
 }
 "castleOutside"
 {
