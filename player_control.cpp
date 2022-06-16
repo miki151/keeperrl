@@ -3320,7 +3320,7 @@ optional<PlayerControl::KeeperDangerInfo> PlayerControl::checkKeeperDanger() con
           return prompt("is engaged in a fight with " + lastCombatIntent->attacker->getName().a());
       if (keeper->isAffected(LastingEffect::POISON))
         return prompt("is suffering from poisoning");
-      else if (keeper->isAffected(LastingEffect::BLEEDING))
+      else if (keeper->isAffected(BuffId("BLEEDING")))
         return prompt("is bleeding");
       else if (keeper->getBody().isWounded() &&
           leaderWoundedTime.getOrElse(keeper, -100_local) > getModel()->getLocalTime() - 10_visible)

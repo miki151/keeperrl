@@ -86,7 +86,6 @@
 #    { Furniture {{ "FLOOR_SPEED" }                "GOLD" 2 }       "Floor of speed"    "Floors" }
 #    { Furniture {{ "FLOOR_BLIND" }                "GOLD" 2 }       "Floor of blindness""Floors" }
 #    { Furniture {{ "FLOOR_INVI" }                "GOLD" 2 }       "Floor of invisibility""Floors" }
-#    { Furniture {{ "FLOOR_REGENER" }                "GOLD" 2 }       "Floor of regeneration""Floors" }
 #    { Furniture {{ "FLOOR_PEACE" }                "GOLD" 2 }       "Floor of peace""Floors" }
     { DestroyLayers {FLOOR}                                    "Remove floor"      "Floors" }
   }
@@ -402,8 +401,8 @@
   }
   "healing_totem"
   {
-    { Furniture {{ "HEALING_TOTEM" }        "GOLD"   60 }                   "Healing totem"     "Installations"
-        "Heals minions close by."}
+#    { Furniture {{ "HEALING_TOTEM" }        "GOLD"   60 }                   "Healing totem"     "Installations"
+#        "Heals minions close by."}
 #    { Furniture {{ "BLEEDING_TOTEM" }       "GOLD"   60 }                   "Bleeding totem"     "Installations"
 #        "Causes enemies close by to bleed."}
   }

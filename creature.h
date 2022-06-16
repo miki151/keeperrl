@@ -33,6 +33,7 @@
 #include "furniture_type.h"
 #include "attr_type.h"
 #include "buff_id.h"
+#include "player_message.h"
 
 class Level;
 class Tribe;
@@ -255,7 +256,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   void you(MsgType type, const string& param = "") const;
   void you(const string& param) const;
-  void verb(const string& second, const string& third, const string& param = "") const;
+  void verb(const string& second, const string& third, const string& param = "",
+      MessagePriority = MessagePriority::NORMAL) const;
   void secondPerson(const PlayerMessage&) const;
   void thirdPerson(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
   void thirdPerson(const PlayerMessage& playerCanSee) const;

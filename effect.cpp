@@ -815,7 +815,7 @@ static bool applyToCreature(const Effects::Heal& e, Creature* c, Creature*) {
   if (c->getBody().canHeal(e.healthType, c->getGame()->getContentFactory())) {
     bool res = false;
     res |= c->heal(e.amount);
-    res |= c->removeEffect(LastingEffect::BLEEDING);
+    res |= c->removeEffect(BuffId("BLEEDING"));
     if (e.amount > 0.5)
       c->addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_GREEN));
     return res;
@@ -832,7 +832,7 @@ static int getPrice(const Effects::Heal, const ContentFactory*) {
 static bool applyToCreature(const Effects::Bleed& e, Creature* c, Creature*) {
   c->getBody().bleed(c, e.amount);
   if (c->getBody().getHealth() <= 0) {
-    c->you(MsgType::DIE, e.deathReason);
+    c->you(MsgType::DIE_OF, e.deathReason);
     c->dieNoReason();
   }
   return true;
@@ -1441,7 +1441,7 @@ static string getDescription(const Effects::CreatureMessage&, const ContentFacto
 }
 
 static bool applyToCreature(const Effects::CreatureMessage& e, Creature* c, Creature*) {
-  c->verb(e.secondPerson, e.thirdPerson);
+  c->verb(e.secondPerson, e.thirdPerson, "", e.priority);
   return true;
 }
 
@@ -2454,7 +2454,7 @@ static int getPrice(const DefaultType& e, const ContentFactory*) {
 }
 
 int Effect::getPrice(const ContentFactory* f) const {
-    return effect->visit<int>([f](const auto& elem) { return ::getPrice(elem, f); });  
+    return effect->visit<int>([f](const auto& elem) { return ::getPrice(elem, f); });
 }
 
 SERIALIZE_DEF(Effect, effect)

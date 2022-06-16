@@ -391,7 +391,7 @@ ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage
   }
 Def InferniteEffect()
   Filter Not LastingEffect FIRE_RESISTANT {
-    CreatureMessage "are burnt by the infernite" "is burnt by the infernite"
+    CreatureMessage {"are burnt by the infernite" "is burnt by the infernite"}
     Bleed 0.01 "infernite"
   }
 End
@@ -448,7 +448,7 @@ End
       twoHanded = true
     }
     genPrefixes = {
-      1 VictimEffect 0.2 Lasting BLEEDING
+      1 VictimEffect 0.2 Lasting 50 BLEEDING
       1 LastingEffect RAGE
     }
     maxUpgrades = 1
@@ -467,7 +467,7 @@ End
     price = 150
     craftingCost = "ADA" 50
     genPrefixes = {
-      1 VictimEffect 0.5 Lasting BLEEDING
+      1 VictimEffect 0.5 Lasting 50 BLEEDING
     }
     maxUpgrades = 2
     equipmentGroup = "adamantine equipment"

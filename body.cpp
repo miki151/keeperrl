@@ -690,7 +690,7 @@ Body::DamageResult Body::takeDamage(const Attack& attack, Creature* creature, do
         creature->dieWithAttacker(attack.attacker);
         return Body::KILLED;
       }
-      creature->addEffect(LastingEffect::BLEEDING, 50_visible);
+      creature->addEffect(BuffId("BLEEDING"), 50_visible);
       if (health <= 0)
         health = 0.1;
       creature->updateViewObject(factory);

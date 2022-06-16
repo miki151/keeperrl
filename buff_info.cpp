@@ -10,7 +10,7 @@ void applyMessage(const BuffMessageInfo& msg, const Creature* c) {
     },
     [c](const VerbMessage& msg) {
       c->verb(msg.secondPerson, msg.thirdPerson, msg.message);
-    }    
+    }
   );
 }
 
@@ -24,5 +24,5 @@ void serialize(PrettyInputArchive& ar1, BuffMessageInfo& info, const unsigned in
     VerbMessage msg;
     ar1(msg);
     info = msg;
-  }  
+  }
 }

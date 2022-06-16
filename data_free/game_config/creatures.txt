@@ -1141,7 +1141,7 @@
     inventory = {
       { "GoldPiece" 120 200 }
       { type = Glyph WEAPON VictimEffect 0.3 Fire{25} chance = 0.3 }
-      { type = Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING chance = 0.3 }
+      { type = Glyph WEAPON VictimEffect 0.3 Lasting 50 BLEEDING chance = 0.3 }
       { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
@@ -1215,7 +1215,7 @@
     inventory = {
       { "GoldPiece" 120 200 }
       { type = Glyph WEAPON VictimEffect 0.3 Lasting BLIND chance = 1.0 }
-      { type = Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING chance = 0.3 }
+      { type = Glyph WEAPON VictimEffect 0.3 Lasting 50 BLEEDING chance = 0.3 }
       { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
@@ -1288,7 +1288,7 @@
     inventory = {
       { "GoldPiece" 120 200 }
       { type = Glyph WEAPON VictimEffect 0.3 Lasting FROZEN chance = 1.0 }
-      { type = Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING chance = 0.3 }
+      { type = Glyph WEAPON VictimEffect 0.3 Lasting 50 BLEEDING chance = 0.3 }
       { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
@@ -1359,7 +1359,7 @@
     inventory = {
       { "GoldPiece" 120 200 }
       { type = Glyph WEAPON VictimEffect 0.3 Acid{30} chance = 0.1 }
-      { type = Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING chance = 0.3 }
+      { type = Glyph WEAPON VictimEffect 0.3 Lasting 50 BLEEDING chance = 0.3 }
       { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
@@ -2474,7 +2474,7 @@
             attackType = BITE
             attackMsg = BITE
             attackerEffect = { RegrowBodyPart 1 }
-            victimEffect = { 0.1 Lasting BLEEDING  } } }}}
+            victimEffect = { 0.1 Lasting 50 BLEEDING  } } }}}
       }
     }
     chatReactionFriendly = "\"All men be cursed!\""
@@ -2519,7 +2519,7 @@
             attackType = BITE
             attackMsg = BITE
             attackerEffect = { RegrowBodyPart 1 }
-            victimEffect = { 0.1 Lasting BLEEDING  } } }}}
+            victimEffect = { 0.1 Lasting 50 BLEEDING  } } }}}
       }
     }
     chatReactionFriendly = "\"All men be cursed!\""
@@ -3337,7 +3337,7 @@
       DEFENSE 24
     }
     afterKilledSomeone = {
-      ApplyToSteed CreatureMessage "are more experienced" "is more experienced"
+      ApplyToSteed CreatureMessage { "are more experienced" "is more experienced"}
       ApplyToSteed Polymorph "WARHORSE" none
     }
   }

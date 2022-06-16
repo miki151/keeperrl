@@ -27,8 +27,6 @@ static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
       return LastingEffect::POISON;
     case LastingEffect::SLEEP_RESISTANT:
       return LastingEffect::SLEEP;
-    case LastingEffect::REGENERATION:
-      return LastingEffect::BLEEDING;
     default:
       return none;
   }
@@ -120,10 +118,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::FLYING:
         c->you(MsgType::ARE, "flying!");
         break;
-      case LastingEffect::BLEEDING:
-        c->secondPerson("You start bleeding");
-        c->thirdPerson(c->getName().the() + " starts bleeding");
-        break;
       case LastingEffect::COLLAPSED:
         c->you(MsgType::COLLAPSE);
         break;
@@ -195,9 +189,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::NIGHT_VISION:
         c->you("can see in the dark");
-        break;
-      case LastingEffect::REGENERATION:
-        c->you(MsgType::ARE, "regenerating");
         break;
       case LastingEffect::WARNING:
         c->you(MsgType::FEEL, "more aware of danger");
@@ -421,9 +412,6 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::TIED_UP:
         c->you(MsgType::BREAK_FREE, "");
         break;
-      case LastingEffect::BLEEDING:
-        c->you(MsgType::YOUR, "bleeding stops");
-        break;
       case LastingEffect::BLIND:
         c->you("can see again");
         break;
@@ -468,9 +456,6 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::NIGHT_VISION:
         c->you("can't see in the dark anymore");
-        break;
-      case LastingEffect::REGENERATION:
-        c->you(MsgType::ARE, "no longer regenerating");
         break;
       case LastingEffect::WARNING:
         c->you(MsgType::FEEL, "less aware of danger");
@@ -638,7 +623,6 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::ELF_VISION: return "Can see through trees"_good;
     case LastingEffect::ARCHER_VISION: return "Can see through arrowslits"_good;
     case LastingEffect::NIGHT_VISION: return "Can see in the dark"_good;
-    case LastingEffect::REGENERATION: return "Regenerating"_good;
     case LastingEffect::WARNING: return "Aware of danger"_good;
     case LastingEffect::TELEPATHY: return "Telepathic"_good;
     case LastingEffect::SATIATED: return "Satiated"_good;
@@ -662,7 +646,6 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::PEACEFULNESS: return "Peaceful"_bad;
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::PLAGUE: return "Infected with plague"_bad;
-    case LastingEffect::BLEEDING: return "Bleeding"_bad;
     case LastingEffect::SLEEP: return "Sleeping"_bad;
     case LastingEffect::ENTANGLED: return "Entangled"_bad;
     case LastingEffect::TIED_UP: return "Tied up"_bad;
@@ -817,22 +800,6 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
       }
       break;
     }
-    case LastingEffect::BLEEDING:
-      if (!c->isAffected(LastingEffect::FROZEN)) {
-        c->getBody().bleed(c, 0.03);
-        c->secondPerson(PlayerMessage("You are bleeding.", MessagePriority::HIGH));
-        c->thirdPerson(PlayerMessage(c->getName().the() + " is bleeding.", MessagePriority::HIGH));
-        if (c->getBody().getHealth() <= 0) {
-          c->you(MsgType::DIE_OF, "bleeding");
-          c->dieWithLastAttacker();
-          return true;
-        }
-      }
-      break;
-    case LastingEffect::REGENERATION:
-      if (!c->isAffected(LastingEffect::FROZEN))
-        c->getBody().heal(c, 0.03);
-      break;
     case LastingEffect::ON_FIRE:
       c->getPosition().fireDamage(5);
       break;
@@ -967,7 +934,6 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
 string LastingEffects::getName(LastingEffect type) {
   switch (type) {
     case LastingEffect::PREGNANT: return "pregnant";
-    case LastingEffect::BLEEDING: return "bleeding";
     case LastingEffect::SLOWED: return "slowness";
     case LastingEffect::SPEED: return "speed";
     case LastingEffect::BLIND: return "blindness";
@@ -995,7 +961,6 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::NIGHT_VISION: return "night vision";
     case LastingEffect::ELF_VISION: return "elf vision";
     case LastingEffect::ARCHER_VISION: return "arrowslit vision";
-    case LastingEffect::REGENERATION: return "regeneration";
     case LastingEffect::WARNING: return "warning";
     case LastingEffect::TELEPATHY: return "telepathy";
     case LastingEffect::SUNLIGHT_VULNERABLE: return "sunlight vulnerability";
@@ -1034,7 +999,6 @@ string LastingEffects::getDescription(LastingEffect type) {
   switch (type) {
     case LastingEffect::PREGNANT: return "This is no dream! This is really happening!";
     case LastingEffect::SLOWED: return "Causes unnaturally slow movement.";
-    case LastingEffect::BLEEDING: return "Causes loss of health points over time.";
     case LastingEffect::SPEED: return "Grants an extra move every turn.";
     case LastingEffect::BLIND: return "Causes blindness";
     case LastingEffect::INVISIBLE: return "Makes you invisible to enemies.";
@@ -1062,7 +1026,6 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::NIGHT_VISION: return "Gives vision in the dark at full distance.";
     case LastingEffect::ELF_VISION: return "Allows to see and shoot through trees.";
     case LastingEffect::ARCHER_VISION: return "Allows to see and shoot through arrowslits.";
-    case LastingEffect::REGENERATION: return "Recovers a little bit of health every turn.";
     case LastingEffect::WARNING: return "Warns about dangerous enemies and traps.";
     case LastingEffect::TELEPATHY: return "Allows you to detect other creatures with brains.";
     case LastingEffect::SUNLIGHT_VULNERABLE: return "Sunlight makes your body crumble to dust.";
@@ -1125,7 +1088,6 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::INSANITY:
     case LastingEffect::PEACEFULNESS:
     case LastingEffect::HALLU:
-    case LastingEffect::BLEEDING:
     case LastingEffect::SUNLIGHT_VULNERABLE:
     case LastingEffect::SATIATED:
     case LastingEffect::RESTED:
@@ -1146,7 +1108,6 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::NIGHT_VISION:
     case LastingEffect::ELF_VISION:
     case LastingEffect::ARCHER_VISION:
-    case LastingEffect::REGENERATION:
     case LastingEffect::FAST_CRAFTING:
     case LastingEffect::FAST_TRAINING:
       return 12;
@@ -1210,7 +1171,6 @@ bool LastingEffects::canConsume(LastingEffect effect) {
     case LastingEffect::SLEEP:
     case LastingEffect::ENTANGLED:
     case LastingEffect::TIED_UP:
-    case LastingEffect::BLEEDING:
     case LastingEffect::SATIATED:
     case LastingEffect::RESTED:
     case LastingEffect::SUMMONED:
@@ -1252,11 +1212,6 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
       return FXVariantName::BUFF_BLUE;
     case LastingEffect::SLOWED:
       return FXVariantName::DEBUFF_BLUE;
-
-    case LastingEffect::REGENERATION:
-      return FXVariantName::BUFF_RED;
-    case LastingEffect::BLEEDING:
-      return FXVariantName::DEBUFF_RED;
 
     case LastingEffect::CAPTURE_RESISTANCE:
       return FXVariantName::BUFF_SKY_BLUE;
@@ -1326,8 +1281,6 @@ Color LastingEffects::getColor(LastingEffect effect) {
       return Color::PINK;
     case LastingEffect::CAPTURE_RESISTANCE:
       return Color::SKY_BLUE;
-    case LastingEffect::REGENERATION:
-      return Color::RED;
     case LastingEffect::MAGIC_CANCELLATION:
       return Color::BROWN;
     case LastingEffect::FROZEN:
@@ -1372,7 +1325,6 @@ bool LastingEffects::shouldAllyApplyInDanger(const Creature* victim, LastingEffe
     case LastingEffect::CAPTURE_RESISTANCE:
     case LastingEffect::ELF_VISION:
     case LastingEffect::ARCHER_VISION:
-    case LastingEffect::REGENERATION:
     case LastingEffect::WARNING:
       return true;
     case LastingEffect::TELEPATHY:
@@ -1409,10 +1361,7 @@ TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
       return 60_visible;
     case LastingEffect::TIED_UP:
     case LastingEffect::WARNING:
-    case LastingEffect::REGENERATION:
     case LastingEffect::TELEPATHY:
-    case LastingEffect::BLEEDING:
-      return 50_visible;
     case LastingEffect::ENTANGLED:
       return entangledTime(c->getAttr(AttrType("DAMAGE")));
     case LastingEffect::HALLU:

@@ -41,7 +41,6 @@ static void addThird(const Creature* c, MsgType type, const string& param) {
       break;
     case MsgType::TELE_APPEAR: msg = c->getName().the() + " appears out of nowhere!"; break;
     case MsgType::TELE_DISAPPEAR: msg = c->getName().the() + " suddenly disappears!"; break;
-    case MsgType::BLEEDING_STOPS: msg = c->getName().the() + "'s bleeding stops."; break;
     case MsgType::DIE_OF: msg = c->getName().the() +
                           " dies" + (param.empty() ? string(".") : " of " + param); break;
     case MsgType::MISS_ATTACK: msg = c->getName().the() + addName(" misses", param); break;
@@ -116,7 +115,6 @@ static void addSecond(const Creature* c, MsgType type, const string& param) {
         c->secondPerson("You die!!");
       break;
     case MsgType::TELE_DISAPPEAR: msg = "You are standing somewhere else!"; break;
-    case MsgType::BLEEDING_STOPS: msg = "Your bleeding stops."; break;
     case MsgType::DIE_OF: msg = "You die" + (param.empty() ? string(".") : " of " + param); break;
     case MsgType::MISS_ATTACK: msg = "You miss " + param; break;
     case MsgType::MISS_THROWN_ITEM: msg = param + " misses you"; break;

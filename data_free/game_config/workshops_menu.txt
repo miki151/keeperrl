@@ -94,7 +94,7 @@ append {
       {{Potion Lasting POISON_RESISTANT}     4        "GOLD" 6}
       {{Potion Lasting SPEED}                4        "GOLD" 6}
       {{Potion Lasting TELEPATHY}            4        "GOLD" 6}
-      {{Potion Lasting REGENERATION}         4        "GOLD" 8}
+      {{Potion Lasting 50 REGENERATION}         4        "GOLD" 8}
       {{Potion Lasting POISON}               4        "GOLD" 8}
       {{Potion Lasting FLYING}               4        "GOLD" 8}
       {{Potion Heal { FLESH }}               4        "GOLD" 10      "advanced alchemy"}

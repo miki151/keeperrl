@@ -23,6 +23,7 @@
 #include "spell_school_id.h"
 #include "automaton_part.h"
 #include "lasting_or_buff.h"
+#include "player_message.h"
 
 #define SIMPLE_EFFECT(Name) \
   struct Name { \
@@ -239,7 +240,8 @@ struct UnseenMessage {
 struct CreatureMessage {
   string SERIAL(secondPerson);
   string SERIAL(thirdPerson);
-  SERIALIZE_ALL(secondPerson, thirdPerson)
+  MessagePriority SERIAL(priority) = MessagePriority::NORMAL;
+  SERIALIZE_ALL(NAMED(secondPerson), NAMED(thirdPerson), OPTION(priority))
 };
 struct PlayerMessage {
   string SERIAL(text);

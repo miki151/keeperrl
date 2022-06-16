@@ -30,6 +30,36 @@ End
 "DAM_BONUS" ATTR_BUFF(DAMAGE, "damage", 3, "dangerous", 20)
 "DEF_BONUS" ATTR_BUFF(DEFENSE, "defense", 3, "protected", 20)
 
+"REGENERATION" {
+  name = "regeneration"
+  description = "Recovers a little bit of health every turn."
+  addedMessage = ARE "regenerating"
+  removedMessage = ARE "no longer regenerating"
+  adjective = "regenerating"
+  tickEffect = Filter Not LastingEffect FROZEN Heal { FLESH 0.03 }
+  combatConsumable = true
+  price = 12
+  fx = BUFF_RED
+  color = ColorId RED
+}
+
+"BLEEDING" {
+  name = "bleeding"
+  description = "Causes loss of health points over time."
+  addedMessage = "start" "starts" "bleeding"
+  removedMessage = YOUR "bleeding stops"
+  adjective = "bleeding"
+  tickEffect = Filter Not LastingEffect FROZEN {
+    CreatureMessage { "are bleeding" "is bleeding" HIGH }
+    Bleed 0.03 "bleeding"
+  }
+  consideredBad = true
+  canAbsorb = false
+  price = 2
+  fx = DEBUFF_RED
+  color = ColorId RED
+}
+
 "SPELL_DAMAGE" {
   name = "spell damage"
   adjective = "deals magical damage"

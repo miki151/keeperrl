@@ -525,9 +525,9 @@ void Creature::you(const string& param) const {
   getController()->getMessageGenerator().add(this, param);
 }
 
-void Creature::verb(const string& second, const string& third, const string& param) const {
-  secondPerson("You "_s + second + (param.empty() ? "" : " " + param));
-  thirdPerson(getName().the() + " " + third + (param.empty() ? "" : " " + param));
+void Creature::verb(const string& second, const string& third, const string& param, MessagePriority priority) const {
+  secondPerson(PlayerMessage("You "_s + second + (param.empty() ? "" : " " + param), priority));
+  thirdPerson(PlayerMessage(getName().the() + " " + third + (param.empty() ? "" : " " + param), priority));
 }
 
 void Creature::secondPerson(const PlayerMessage& message) const {
@@ -1378,12 +1378,12 @@ bool Creature::processBuffs() {
   for (int index : All(buffsCopy)) {
     auto buff = buffsCopy[index];
     auto& info = factory->buffs.at(buff.first);
+    if (info.tickEffect)
+      info.tickEffect->applyToCreature(this);
     if (buff.second < time)
       removeBuff(index, true);
     if (isDead())
       return true;
-    if (info.tickEffect)
-      info.tickEffect->applyToCreature(this);
     if (isDead())
       return true;
   }
@@ -1392,7 +1392,7 @@ bool Creature::processBuffs() {
     if (info.tickEffect)
       info.tickEffect->applyToCreature(this);
     if (isDead())
-      return true;    
+      return true;
   }
   return false;
 }
@@ -1904,7 +1904,7 @@ bool Creature::considerSavingLife(DropType drops, const Creature* attacker) {
     }
     tryToDestroyLastingEffect(LastingEffect::LIFE_SAVED);
     heal();
-    removeEffect(LastingEffect::BLEEDING, false);
+    removeEffect(BuffId("BLEEDING"), false);
     getBody().healBodyParts(this, 1000);
     forceMovement = false;
     if (!position.canEnterEmpty(this))
@@ -1921,7 +1921,7 @@ bool Creature::considerPhylactery(DropType drops, const Creature* attacker) {
     secondPerson(PlayerMessage("You have escaped death!", MessagePriority::HIGH));
     thirdPerson(PlayerMessage(getName().the() + " has escaped death!", MessagePriority::HIGH));
     heal();
-    removeEffect(LastingEffect::BLEEDING, false);
+    removeEffect(BuffId("BLEEDING"), false);
     getBody().healBodyParts(this, 1000);
     forceMovement = false;
     auto pos = phylactery->pos;

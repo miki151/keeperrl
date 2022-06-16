@@ -276,12 +276,13 @@ ViewId getAmuletViewId(LastingOrBuff e) {
   return e.visit(
     [](LastingEffect e) {
       switch (e) {
-        case LastingEffect::REGENERATION: return ViewId("amulet1");
         case LastingEffect::WARNING: return ViewId("amulet2");
         default: return ViewId("amulet3");
       }
     },
-    [](BuffId) { 
+    [](BuffId buff) {
+      if (buff == BuffId("REGENERATION"))
+        return ViewId("amulet1");
       return ViewId("amulet3");
     }
   );
@@ -458,7 +459,6 @@ static ViewId getMushroomViewId(Effect e) {
               case LastingEffect::PANIC: return ViewId("mushroom3");
               case LastingEffect::HALLU: return ViewId("mushroom4");
               case LastingEffect::RAGE: return ViewId("mushroom5");
-              case LastingEffect::REGENERATION: return ViewId("mushroom6");
               case LastingEffect::NIGHT_VISION: return ViewId("mushroom7");
               default: return ViewId("mushroom6");
             }
@@ -468,6 +468,8 @@ static ViewId getMushroomViewId(Effect e) {
               return ViewId("mushroom1");
             if (buff == BuffId("DEF_BONUS"))
               return ViewId("mushroom2");
+            if (buff == BuffId("REGENERATION"))
+              return ViewId("mushroom6");
             return ViewId("mushroom6");
           }
         );

@@ -137,10 +137,10 @@ End
 Def TryMagicMissile()
   TryNoFriendlyFire(
     {
-      CreatureMessage "are hit by the missile" "is hit by the missile"
+      CreatureMessage {"are hit by the missile" "is hit by the missile"}
       Damage SPELL_DAMAGE SPELL
     },
-    CreatureMessage "are spared by the missile" "is spared by the missile"
+    CreatureMessage {"are spared by the missile" "is spared by the missile"}
   )
 End
 
@@ -633,10 +633,10 @@ Def NoEffect() Unlock "nothing" End
   effect = MinDistanceFromStrongEnemy(4) Name "shoot arrow" Description "Shoots an arrow"
       TryNoFriendlyFire(
         {
-          CreatureMessage "are hit by the arrow" "is hit by the arrow"
+          CreatureMessage { "are hit by the arrow" "is hit by the arrow"}
           Damage RANGED_DAMAGE SHOOT
         },
-        CreatureMessage "are spared by the arrow" "is spared by the arrow"
+        CreatureMessage { "are spared by the arrow" "is spared by the arrow"}
       )
   range = 7
   cooldown = 1
@@ -651,10 +651,10 @@ Def NoEffect() Unlock "nothing" End
   effect = MinDistanceFromStrongEnemy(4) Name "shoot bolt" Description "Shoots a bolt"
       TryNoFriendlyFire(
         {
-          CreatureMessage "are hit by the bolt" "is hit by the bolt"
+          CreatureMessage { "are hit by the bolt" "is hit by the bolt"}
           Damage RANGED_DAMAGE SHOOT
         },
-        CreatureMessage "are spared by the bolt" "is spared by the bolt"
+        CreatureMessage { "are spared by the bolt" "is spared by the bolt"}
       )
   range = 14
   cooldown = 3
@@ -786,7 +786,7 @@ Def NoEffect() Unlock "nothing" End
   symbol = "👑"
   effect = Name "king's charge" Description "All allies within the radius of 10 receive a +15 damage buff. Can only be used by a tribe leader." {
     Filter Attacker CreatureStatus LEADER Area 10 Filter And{ Not Enemy Distance 1 none } Lasting 40 KINGS_CHARGE
-    Filter Not Attacker CreatureStatus LEADER CreatureMessage "are not worthy!" "is not worthy!"
+    Filter Not Attacker CreatureStatus LEADER CreatureMessage { "are not worthy!" "is not worthy!" }
   }
   cooldown = 300
   sound = SPELL_STR_BONUS
