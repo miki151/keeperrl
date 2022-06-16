@@ -1023,6 +1023,7 @@
       POISON_RESISTANT 1
       RANGED_VULNERABILITY 1
       STEED 1
+      REGENERATION 1
     }
     name = {
       name = "green dragon"
@@ -1130,6 +1131,7 @@
       RANGED_VULNERABILITY 1
       STEED 1
       CAPTURE_RESISTANCE 1
+      REGENERATION 1
     }
     name = {
       name = "red dragon"
@@ -1204,6 +1206,7 @@
       TELEPATHY 1
       STEED 1
       CAPTURE_RESISTANCE 1
+      REGENERATION 1
     }
     name = {
       name = "black dragon"
@@ -1277,6 +1280,7 @@
       COLD_IMMUNITY 1
       STEED 1
       CAPTURE_RESISTANCE 1
+      REGENERATION 1
     }
     name = {
       name = "white dragon"
@@ -1348,6 +1352,7 @@
       RANGED_VULNERABILITY 1
       CAPTURE_RESISTANCE 1
       STEED 1
+      REGENERATION 1
     }
     name = {
       name = "yellow dragon"
