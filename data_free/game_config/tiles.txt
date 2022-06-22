@@ -296,7 +296,7 @@
 { "goblin_kaboomer" "o" ColorId ORANGE }
 { viewId = "troll" symbol = "O" color = ColorId DARK_GREEN weaponOrigin = {3 16} }
 { "goblin_archer" "o" ColorId LIGHT_BROWN }
-{ "goblin_wizard" "o" ColorId LIGHT_BLUE }
+{ viewId = "goblin_wizard" symbol = "o" color = ColorId LIGHT_BLUE weaponOrigin = {3 15} }
 { viewId = "goblin_warrior" symbol = "o" color = ColorId GREEN weaponOrigin = {3 15} }
 { "goblin_priest" "o" ColorId WHITE }
 { "goblin_matron" "o" ColorId PINK }

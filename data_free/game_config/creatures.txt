@@ -2398,7 +2398,7 @@
       material = ADOXIUM
     }
     name = {
-      name = "infernite automaton"
+      name = "adoxium automaton"
     }
   }
 "HEAVY_AUTOMATON_CORPUS_ADOXIUM" inherit "AUTOMATON_CORPUS_ADOXIUM"
