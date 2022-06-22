@@ -71,8 +71,7 @@ struct ViewId : ScriptedUIInterface {
       context.renderer->drawViewObject(area.topLeft(), *viewId, true, zoom, Color::WHITE);
     else
     if (auto ids = data.getReferenceMaybe<ScriptedUIDataElems::ViewIdList>())
-      for (auto& id : *ids)
-        context.renderer->drawViewObject(area.topLeft(), id, true, zoom, Color::WHITE);
+      context.renderer->drawViewObject(area.topLeft(), *ids, true, zoom, Color::WHITE);
     else
       context.renderer->drawText(Color::RED, area.topLeft(), "not a viewid");
   }

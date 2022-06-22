@@ -499,10 +499,16 @@ void Renderer::drawViewObject(Vec2 pos, ViewIdList id, bool useSprite, double sc
       if (!tile.animated)
         colorVariant = id[i].getColor();
       auto thisPos = pos;
-      if (tile.weaponOrigin && i < id.size() - 1)
-        if (auto& orig = tileSet->getTile(id[i + 1], useSprite).weaponOrigin)
-          thisPos -= (*tile.weaponOrigin - *orig) * scale;
-      drawTile(thisPos, tile.getSpriteCoord(DirSet::fullSet()), Vec2(), color * tile.color, {}, colorVariant, scale);
+      auto coord = tile.getSpriteCoord(DirSet::fullSet());
+      if (tile.weaponOrigin && i < id.size() - 1) {
+        auto creatureTile = tileSet->getTile(id[i + 1], useSprite);
+        if (creatureTile.weaponOrigin) {
+          auto weaponSize = coord[0].size;
+          auto creatureSize = creatureTile.getSpriteCoord(DirSet::fullSet())[0].size;
+          thisPos -= (*tile.weaponOrigin - *creatureTile.weaponOrigin + (creatureSize - weaponSize) / 2) * scale;
+        }
+      }
+      drawTile(thisPos, coord, Vec2(), color * tile.color, {}, colorVariant, scale);
     } else
       drawText(tile.symFont ? FontId::SYMBOL_FONT : FontId::TEXT_FONT, 20 * scale, color * tile.color,
           pos + Vec2(scale * nominalSize / 2, 0), tile.text, HOR);
@@ -540,9 +546,12 @@ void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite
   const Tile& tile = tileSet->getTile(object.id(), useSprite);
   if (object.weaponViewId && tile.weaponOrigin) {
     const Tile& weaponTile = tileSet->getTile(*object.weaponViewId, useSprite);
-    if (weaponTile.weaponOrigin)
-      drawViewObject(pos - (*weaponTile.weaponOrigin - *tile.weaponOrigin) * scale, *object.weaponViewId,
+    if (weaponTile.weaponOrigin) {
+      auto size = tile.getSpriteCoord(DirSet::fullSet())[0].size;
+      auto weaponSize = weaponTile.getSpriteCoord(DirSet::fullSet())[0].size;
+      drawViewObject(pos - (*weaponTile.weaponOrigin - *tile.weaponOrigin + (size - weaponSize) / 2) * scale, *object.weaponViewId,
           useSprite, scale, Color::WHITE);
+    }
   }
   drawViewObject(pos, object.id(), useSprite, scale, color);
 }

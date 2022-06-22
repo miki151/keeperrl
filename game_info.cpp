@@ -170,7 +170,7 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory)
   name = c->getName().bare();
   title = c->getName().title();
   description = capitalFirst(c->getAttributes().getDescription(contentFactory));
-  viewId = c->getViewObject().getViewIdList();
+  viewId = c->getViewIdWithWeapon();
   morale = c->getMorale(contentFactory);
   positionHash = c->getPosition().getHash();
   creatureId = c->getUniqueId();
