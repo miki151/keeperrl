@@ -819,10 +819,8 @@ static bool applyToCreature(const Effects::Heal& e, Creature* c, Creature*) {
     if (e.amount > 0.5)
       c->addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_GREEN));
     return res;
-  } else {
-    c->message("Nothing happens.");
+  } else
     return false;
-  }
 }
 
 static int getPrice(const Effects::Heal, const ContentFactory*) {
