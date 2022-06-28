@@ -1027,6 +1027,8 @@ optional<TimeInterval> Creature::getTimeRemaining(LastingEffect effect) const {
 }
 
 bool Creature::addEffect(BuffId id, TimeInterval time, GlobalTime global, const ContentFactory* f, bool msg) {
+  if (getBody().isImmuneTo(id, f))
+    return false;
   auto& info = f->buffs.at(id);
   auto add = [&] {
     if (!info.stacks)
