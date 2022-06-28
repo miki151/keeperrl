@@ -1051,7 +1051,6 @@
     }
     body = {
       type = FourLegged HUGE
-      corpseIngredientType = "dragon_corpse"
       addBodyPart = {
         WING 2
       }
