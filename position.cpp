@@ -43,7 +43,7 @@ SERIALIZABLE(Position)
 SERIALIZATION_CONSTRUCTOR_IMPL(Position);
 
 int Position::getHash() const {
-  return coord.getHash();
+  return coord.getHash() + (level ? level->levelId : 0);
 }
 
 Vec2 Position::getCoord() const {
