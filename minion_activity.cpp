@@ -21,6 +21,7 @@
 #include "body.h"
 #include "item.h"
 #include "dancing.h"
+#include "level.h"
 
 SERIALIZE_DEF(MinionActivities, allFurniture, activities)
 SERIALIZATION_CONSTRUCTOR_IMPL(MinionActivities)
@@ -262,15 +263,17 @@ PTask MinionActivities::generate(Collective* collective, Creature* c, MinionActi
       if (collective->getDancing().getTarget(c))
         return Task::dance(collective);
       auto& myTerritory = getIdlePositions(collective, c);
-      if (!myTerritory.empty() && collective->getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
-        if ((c->getPosition().isCovered() && myTerritory.count(c->getPosition()))) {
-          PROFILE_BLOCK("Stay in for the night");
-          return Task::idle();
-        }
-        auto indoors = limitToIndoors(myTerritory);
-        return Task::chain(Task::transferTo(collective->getModel()),
-            Task::stayIn(!indoors.empty() ? std::move(indoors) : myTerritory.asVector()));
-      }
+      if (auto p = collective->getTerritory().getCentralPoint())
+        if (p->getLevel()->depth == 0)
+          if (!myTerritory.empty() && collective->getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
+            if ((c->getPosition().isCovered() && myTerritory.count(c->getPosition()))) {
+              PROFILE_BLOCK("Stay in for the night");
+              return Task::idle();
+            }
+            auto indoors = limitToIndoors(myTerritory);
+            return Task::chain(Task::transferTo(collective->getModel()),
+                Task::stayIn(!indoors.empty() ? std::move(indoors) : myTerritory.asVector()));
+          }
       auto& pigstyPos = collective->getConstructions().getBuiltPositions(FurnitureType("PIGSTY"));
       if (pigstyPos.count(c->getPosition()) && !myTerritory.empty()) {
         PROFILE_BLOCK("Leave pigsty");
