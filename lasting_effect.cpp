@@ -1397,6 +1397,7 @@ TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
     case LastingEffect::SLEEP:
       return 200_visible;
     case LastingEffect::PEACEFULNESS:
+      return 5_visible;
     case LastingEffect::INSANITY:
       return 20_visible;
     case LastingEffect::MAGIC_CANCELLATION:
