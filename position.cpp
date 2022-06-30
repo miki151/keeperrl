@@ -230,6 +230,9 @@ void Position::removePortal() {
       if (isSameLevel(*other)) {
         for (auto& sectors : level->sectors)
           sectors.second.removeExtraConnection(coord, other->coord);
+      } else {
+        removeLandingLink();
+        other->removeLandingLink();
       }
     }
     portals->removePortal(*this);
