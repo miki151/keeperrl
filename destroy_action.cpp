@@ -67,6 +67,7 @@ DestroyAction::Type DestroyAction::getType() const {
 bool DestroyAction::canDestroyFriendly() const {
   switch (type) {
     case Type::BASH:
+    case Type::HOSTILE_DIG:
       return false;
     default:
       return true;
@@ -100,8 +101,8 @@ double DestroyAction::getDamage(Creature* c) const {
     case Type::CUT:
       return max(c->getAttr(AttrType("DAMAGE")), 15);
     case Type::HOSTILE_DIG:
-      return max(c->getAttr(AttrType("DIGGING")), 15) / 5;
+      return max(c->getAttr(AttrType("DIGGING")), 15) / 5.0;
     case Type::DIG:
-      return c->getAttr(AttrType("DIGGING")) / 5;
+      return c->getAttr(AttrType("DIGGING")) / 5.0;
    }
 }
