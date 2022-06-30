@@ -91,6 +91,7 @@ static void usePortal(Position pos, Creature* c) {
         c->getLevel()->changeLevel(*link, c);
         pos.getGame()->addEvent(EventInfo::FX{*otherPos, FXName::TELEPORT_OUT});
         pos.getGame()->addEvent(EventInfo::FX{pos, FXName::TELEPORT_IN});
+        return;
       }
     }
   }
