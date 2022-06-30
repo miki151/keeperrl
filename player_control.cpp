@@ -3155,6 +3155,9 @@ void PlayerControl::onSquareClick(Position pos) {
       auto otherLevel = getModel()->getLinkedLevel(pos.getLevel(), *link);
       if (!!getModel()->getMainLevelDepth(otherLevel)) {
         currentLevel = otherLevel;
+        auto newPos = currentLevel->getLandingSquares(*link)[0];
+        if (newPos.getCoord() != pos.getCoord())
+          setScrollPos(newPos);
         getView()->updateView(this, false);
       }
     }
