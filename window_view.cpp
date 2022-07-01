@@ -360,18 +360,18 @@ void WindowView::rebuildGui() {
   tempGuiElems.push_back(gui.stack(makeVec(
       gui.keyHandler(bindMethod(&WindowView::keyboardAction, this)),
       gui.keyHandler([this]{ zoom(0); }, Keybinding("ZOOM_MAP"), true),
-      gui.keyHandler([getMovement]{ getMovement(0, -1); }, Keybinding("WALK_NORTH"), true),
-      gui.keyHandler([getMovement]{ getMovement(0, 1); }, Keybinding("WALK_SOUTH"), true),
-      gui.keyHandler([getMovement]{ getMovement(1, 0); }, Keybinding("WALK_EAST"), true),
-      gui.keyHandler([getMovement]{ getMovement(-1, 0); }, Keybinding("WALK_WEST"), true),
-      gui.keyHandler([getMovement]{ getMovement(1, -1); }, Keybinding("WALK_NORTH_EAST"), true),
-      gui.keyHandler([getMovement]{ getMovement(-1, -1); }, Keybinding("WALK_NORTH_WEST"), true),
-      gui.keyHandler([getMovement]{ getMovement(1, 1); }, Keybinding("WALK_SOUTH_EAST"), true),
-      gui.keyHandler([getMovement]{ getMovement(-1, 1); }, Keybinding("WALK_SOUTH_WEST"), true),
-      gui.keyHandler([getMovement]{ getMovement(0, -1); }, Keybinding("WALK_NORTH2"), true),
-      gui.keyHandler([getMovement]{ getMovement(0, 1); }, Keybinding("WALK_SOUTH2"), true),
-      gui.keyHandler([getMovement]{ getMovement(1, 0); }, Keybinding("WALK_EAST2"), true),
-      gui.keyHandler([getMovement]{ getMovement(-1, 0); }, Keybinding("WALK_WEST2"), true)
+      gui.keyHandler([getMovement]{ getMovement(0, -1); }, Keybinding("WALK_NORTH"), false),
+      gui.keyHandler([getMovement]{ getMovement(0, 1); }, Keybinding("WALK_SOUTH"), false),
+      gui.keyHandler([getMovement]{ getMovement(1, 0); }, Keybinding("WALK_EAST"), false),
+      gui.keyHandler([getMovement]{ getMovement(-1, 0); }, Keybinding("WALK_WEST"), false),
+      gui.keyHandler([getMovement]{ getMovement(1, -1); }, Keybinding("WALK_NORTH_EAST"), false),
+      gui.keyHandler([getMovement]{ getMovement(-1, -1); }, Keybinding("WALK_NORTH_WEST"), false),
+      gui.keyHandler([getMovement]{ getMovement(1, 1); }, Keybinding("WALK_SOUTH_EAST"), false),
+      gui.keyHandler([getMovement]{ getMovement(-1, 1); }, Keybinding("WALK_SOUTH_WEST"), false),
+      gui.keyHandler([getMovement]{ getMovement(0, -1); }, Keybinding("WALK_NORTH2"), false),
+      gui.keyHandler([getMovement]{ getMovement(0, 1); }, Keybinding("WALK_SOUTH2"), false),
+      gui.keyHandler([getMovement]{ getMovement(1, 0); }, Keybinding("WALK_EAST2"), false),
+      gui.keyHandler([getMovement]{ getMovement(-1, 0); }, Keybinding("WALK_WEST2"), false)
   )));
   tempGuiElems.back()->setBounds(getMapGuiBounds());
   tempGuiElems.back()->setBounds(getMapGuiBounds());
