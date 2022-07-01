@@ -3594,6 +3594,7 @@
     body = {
       type = FourLegged SMALL
       weight = 1
+      canBeRevived = false
     }
     aiType = RANGED
     permanentEffects = {
