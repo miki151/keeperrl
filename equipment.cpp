@@ -117,7 +117,7 @@ PItem Equipment::removeItem(Item* item, Creature* c) {
   onRemoved(item, c);
   return inventory.removeItem(item);
 }
-  
+
 vector<PItem> Equipment::removeItems(const vector<Item*>& items, Creature* c) {
   vector<PItem> ret;
   for (Item*& it : copyOf(items))
