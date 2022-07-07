@@ -505,6 +505,7 @@ void ContentFactory::merge(ContentFactory f) {
   mergeMap(std::move(f.workshopInfo), workshopInfo);
   mergeMap(std::move(f.resourceInfo), resourceInfo);
   mergeMap(std::move(f.attrInfo), attrInfo);
+  mergeMap(std::move(f.tileGasTypes), tileGasTypes);
   for (auto t : f.attrOrder)
     if (!attrOrder.contains(t))
       attrOrder.push_back(t);

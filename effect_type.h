@@ -71,7 +71,7 @@ struct Enhance {
   SERIALIZE_ALL(type, amount)
 };
 struct EmitGas {
-  TileGasType SERIAL(type); 
+  TileGasType SERIAL(type);
   double SERIAL(amount) = 0.8;
   SERIALIZE_ALL(type, amount)
 };
