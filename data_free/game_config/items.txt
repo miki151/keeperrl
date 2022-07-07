@@ -180,7 +180,7 @@ Def CRAFTING_ARMS(Suffix, Color, Adjective, ResourceId, Skill)
     viewId = { "automaton_crafting" Rgb Color 255 }
     name = Adjective + " crafting arms"
     weight = 6
-    craftingCost = "ADA" 5
+    craftingCost = ResourceId 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
       Name Adjective + " crafting arms"
       Description "Increases all crafting attributes by " + Skill + "."
