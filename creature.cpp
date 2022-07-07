@@ -1377,15 +1377,13 @@ bool Creature::processBuffs() {
       addPermanentEffect(effect.first, 1, false);
   auto buffsCopy = buffs;
   auto time = *getGlobalTime();
-  for (int index : All(buffsCopy)) {
+  for (int index : All(buffsCopy).reverse()) {
     auto buff = buffsCopy[index];
     auto& info = factory->buffs.at(buff.first);
     if (info.tickEffect)
       info.tickEffect->applyToCreature(this);
     if (buff.second < time)
       removeBuff(index, true);
-    if (isDead())
-      return true;
     if (isDead())
       return true;
   }
@@ -2299,7 +2297,7 @@ CreatureAction Creature::dismount() const {
         self->forceDismount(dir);
         auto timeSpent = 1_visible;
         self->addMovementInfo(self->spendTime(timeSpent, getSpeedModifier(self))->setDirection(dir));
-      });  
+      });
   return CreatureAction();
 }
 
