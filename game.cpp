@@ -45,6 +45,7 @@
 #include "avatar_info.h"
 #include "scripted_ui.h"
 #include "scripted_ui_data.h"
+#include "body.h"
 
 template <class Archive>
 void Game::serialize(Archive& ar, const unsigned int version) {
@@ -138,7 +139,8 @@ PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup setup, AvatarInfo
   for (auto model : ret->getAllModels())
     model->setGame(ret.get());
   auto avatarCreature = avatar.playerCreature.get();
-  if (avatarCreature->getAttributes().isAffectedPermanently(LastingEffect::SUNLIGHT_VULNERABLE))
+  if (avatarCreature->getAttributes().isAffectedPermanently(LastingEffect::SUNLIGHT_VULNERABLE) ||
+      avatarCreature->getBody().isIntrinsicallyAffected(LastingEffect::SUNLIGHT_VULNERABLE, ret->getContentFactory()))
     ret->sunlightTimeOffset = 1501_visible;
   // Remove sunlight vulnerability temporarily otherwise placing the creature anywhere without cover will fail.
   avatarCreature->getAttributes().removePermanentEffect(LastingEffect::SUNLIGHT_VULNERABLE, 1);
