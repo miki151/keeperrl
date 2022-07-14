@@ -1,11 +1,11 @@
-"Welcome to KeeperRL Alpha 34! This patch was released on Feb 18, 2022.
+"Welcome to KeeperRL Alpha 35! This patch was released on July 4th, 2022.
 
 Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
 
-* Steed riding.
-* Z-level overhaul allowing building up, multiple stairs and inter-level portals.
-* New equipment restriction menu for chosen minion groups.
-* New, moddable help system.
+* Rebalanced combat favoring large numbers of units.
+* Equiped weapons rendered on units.
+* Configurable keybindings.
+* Moddable attributes, buffs, and body materials.
 
 If this is your first time playing KeeperRL, remember to start with the tutorial!
 "
