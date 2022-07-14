@@ -187,7 +187,7 @@ EffectAIIntent shouldAIApply(const LastingOrBuff& l, bool enemy, const Creature*
   if (isDanger == shouldAllyApplyInDanger(l, victim, factory))
     return 1;
   else
-    return -1;
+    return 0;
 }
 
 Color getColor(const LastingOrBuff& l, const ContentFactory* f) {
