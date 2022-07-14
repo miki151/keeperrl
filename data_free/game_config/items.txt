@@ -1090,6 +1090,7 @@ End
     modifiers = {
       DEFENSE 7
       SPELL_DAMAGE 4
+      ACID_DAMAGE 40
     }
     equipedAbility = {"acid stream"}
     maxUpgrades = 2
