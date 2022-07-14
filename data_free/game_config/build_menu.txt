@@ -439,7 +439,7 @@
         "Causes a huge boulder to roll towards the enemy." none { TechId "traps" }}
 
     { Furniture {{ "BLAST_TRAP" }          "WOOD" 20 }  "Blast trap"        "Traps"
-        "Causes a huge boulder to roll towards the enemy." none { TechId "traps" }}
+        "Causes an air blast to throw the enemy across a few tiles." none { TechId "traps" }}
 
     { Furniture {{ "GARGOYLE_TRAP" }       "STONE" 20 }  "Gargoyle"          "Traps"
         "Comes to life when an enemy comes near." none { TechId "traps" }}
