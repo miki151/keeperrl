@@ -359,7 +359,7 @@
         "Mark tiles to keep minions from entering."}
   }
 
-  "installations"
+  "installations_no_heads"
   {
     { Furniture {{ "BARRICADE" }     "WOOD" 5 }                    "Barricade"         "Installations"
         "Blocks enemy movement, but projectiles and spells can pass over it." }
@@ -383,7 +383,9 @@
 
     { Furniture {{ "WHIPPING_POST" } "WOOD"  20 }                  "Whipping post"     "Installations"
         "A place to whip your minions if they need a morale boost." }
+  }
 
+  "installations" inherit "installations_no_heads" append {
     { Furniture {{ "IMPALED_HEAD" }  "PRISONER_HEAD" 1 true}       "Prisoner head"     "Installations"
         "Impaled head of an executed prisoner. Aggravates enemies."}
   }
