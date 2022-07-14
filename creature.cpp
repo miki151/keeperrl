@@ -379,6 +379,7 @@ EnumSet<CreatureStatus>& Creature::getStatus() {
 
 optional<MovementInfo> Creature::spendTime(TimeInterval t, SpeedModifier speedModifier) {
   PROFILE;
+  getBody().affectPosition(position);
   if (!!getRider())
     return none;
   if (WModel m = position.getModel()) {
@@ -573,7 +574,6 @@ void Creature::makeMove() {
   updateViewObject(getGame()->getContentFactory());
   //INFO << getName().bare() << " morale " << getMorale();
   unknownAttackers.clear();
-  getBody().affectPosition(position);
   vision->update(this, time);
 }
 
@@ -1688,8 +1688,9 @@ bool Creature::takeDamage(const Attack& attack) {
   for (auto& buff : buffPermanentCount)
     modifyDefense(buff.first);  
   double damage = getDamage((double) attack.strength / defense);
-  if (auto sound = attributes->getAttackSound(attack.type, damage > 0))
-    addSound(*sound);
+  if (attack.withSound)
+    if (auto sound = attributes->getAttackSound(attack.type, damage > 0))
+      addSound(*sound);
   bool returnValue = damage > 0;
   if (damage > 0) {
     bool canCapture = capture && attack.attacker;

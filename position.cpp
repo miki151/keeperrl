@@ -823,7 +823,7 @@ bool Position::fireDamage(int amount) const {
       res |= furniture->fireDamage(*this);
   if (Creature* creature = getCreature())
     creature->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), AttackType::HIT, amount,
-        AttrType("FIRE_DAMAGE"), {}, "The fire is harmless"));
+        AttrType("FIRE_DAMAGE"), {}, "The fire is harmless", false));
   for (Item* it : getItems())
     if (Random.chance(0.05 * amount))
       it->fireDamage(*this);
