@@ -1464,8 +1464,9 @@ void Creature::tickCompanions() {
 
 vector<Creature*> Creature::getCompanions() const {
   vector<Creature*> ret;
-  for (auto& c : companions)
-    append(ret, c.creatures);
+  for (auto& group : companions)
+    for (auto c : group.creatures)
+      ret.push_back(c.get());
   return ret;
 }
 

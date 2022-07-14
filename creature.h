@@ -417,7 +417,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   HeapAllocated<SpellMap> SERIAL(spellMap);
   optional<ViewId> SERIAL(primaryViewId);
   struct CompanionGroup {
-    vector<Creature*> SERIAL(creatures);
+    vector<WeakPointer<Creature>> SERIAL(creatures);
     optional<AttrType> SERIAL(statsBase);
     SERIALIZE_ALL(creatures, statsBase)
   };

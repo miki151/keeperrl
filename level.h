@@ -219,4 +219,3 @@ class Level : public OwnedObject<Level> {
   void placeSwarmer(Vec2, Creature*);
   void unplaceSwarmer(Vec2, Creature*);
 };
-
