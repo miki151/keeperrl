@@ -573,7 +573,7 @@ vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool ins
       return makeVec(
           ItemType::corpse(name + " corpse", name + " skeleton", weight, factory, instantlyRotten,
             minionFood ? ItemClass::FOOD : ItemClass::CORPSE,
-            CorpseInfo {id, canBeRevived && material != BodyMaterialId("UNDEAD_FLESH"),
+            CorpseInfo {id, !corpseIngredientType && canBeRevived && material != BodyMaterialId("UNDEAD_FLESH"),
                 numBodyParts(BodyPart::HEAD) > 0, false},
             corpseIngredientType));
     if (auto& t = factory->bodyMaterials.at(material).bodyPartItem)
