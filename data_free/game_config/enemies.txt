@@ -579,6 +579,7 @@ End
     tribe = HUMAN
     inhabitants = {
       fighters = {
+        baseLevelIncrease = { MELEE -12 ARCHERY -12 }
         count = {2 5}
         all = {
           1 "KNIGHT"
