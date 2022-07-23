@@ -24,6 +24,7 @@
 #include "buff_id.h"
 #include "body_material_id.h"
 #include "keybinding.h"
+#include "key_verifier.h"
 
 static const char* staticsInitialized = nullptr;
 
@@ -178,12 +179,12 @@ void ContentId<T>::serialize(PrettyInputArchive& ar1, const unsigned int) {\
     string s;\
     ar1(s);\
     id = getId(s.data());\
-    ar1.keyVerifier.verifyContentId<T>(s);\
+    ar1.keyVerifier.verifyContentId<T>(ar1.positionToString(ar1.getCurrentPosition()), s);\
   } else {\
     auto s = ar1.peek();\
     ar1.eatMaybe(s);\
     id = getId(s.data());\
-    ar1.keyVerifier.verifyContentId<T>(s);\
+    ar1.keyVerifier.verifyContentId<T>(ar1.positionToString(ar1.getCurrentPosition()), s);\
   }\
 } \
 template<> template<>\

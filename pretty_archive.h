@@ -2,7 +2,6 @@
 
 #include "extern/iomanip.h"
 #include "util.h"
-#include "key_verifier.h"
 
 struct PrettyException {
   string text;
@@ -26,12 +25,14 @@ enum class BracketType {
   CURLY
 };
 
+class KeyVerifier;
+
 class PrettyInputArchive {
   public:
     PrettyInputArchive(const vector<string>& inputs, const vector<string>& filenames, KeyVerifier* v);
 
     string eat(const char* expected = nullptr);
-    
+
     struct LoaderInfo {
       string name;
       function<void(bool)> load;
@@ -49,6 +50,7 @@ class PrettyInputArchive {
     }
 
     void error(const string& s);
+    StreamPosStack getCurrentPosition();
 
     template <typename T>
     bool readMaybe(T& elem) {
@@ -124,7 +126,6 @@ class PrettyInputArchive {
     bool nextElemInherited = false;
     std::istringstream is;
     vector<StreamPosStack> streamPos;
-    KeyVerifier dummyKeyVerifier;
     vector<string> filenames;
     void throwException(const StreamPosStack&, const string&);
     string positionToString(const StreamPosStack&);

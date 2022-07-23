@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "pretty_archive.h"
+#include "key_verifier.h"
 
 string PrettyInputArchive::positionToString(const StreamPosStack& positions) {
   string allPos;
@@ -259,6 +260,8 @@ vector<StreamChar> removeFormatting(string contents, signed char filename) {
   return ret;
 }
 
+static KeyVerifier dummyKeyVerifier;
+
 PrettyInputArchive::PrettyInputArchive(const vector<string>& inputs, const vector<string>& filenames, KeyVerifier* v)
   : keyVerifier(v ? *v : dummyKeyVerifier), filenames(filenames) {
   vector<StreamChar> allInput;
@@ -323,10 +326,13 @@ string PrettyInputArchive::eat(const char* expected) {
   return s;
 }
 
-void PrettyInputArchive::error(const string& s) {
+StreamPosStack PrettyInputArchive::getCurrentPosition() {
   int n = (int) is.tellg();
-  auto pos = streamPos.empty() ? StreamPosStack() : streamPos[max(0, min<int>(n, streamPos.size() - 1))];
-  throwException(pos, s);
+  return streamPos.empty() ? StreamPosStack() : streamPos[max(0, min<int>(n, streamPos.size() - 1))];
+}
+
+void PrettyInputArchive::error(const string& s) {
+  throwException(getCurrentPosition(), s);
 }
 
 bool PrettyInputArchive::eatMaybe(const string& s) {

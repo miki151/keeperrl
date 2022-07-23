@@ -396,7 +396,7 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   if (auto res = readItems(config, &keyVerifier))
     return *res;
   if (auto res = config->readObject(equipmentGroups, GameConfigId::EQUIPMENT_GROUPS, &keyVerifier))
-    return *res;  
+    return *res;
   if (auto error = readResourceInfo(config, &keyVerifier))
     return *error;
   if (auto error = readCampaignInfo(config, &keyVerifier))

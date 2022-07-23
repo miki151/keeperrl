@@ -8,8 +8,8 @@ vector<string> KeyVerifier::verify() {
     /*for (auto& id : verifier.second.duplicateKeys)
       ret.push_back("Duplicate "_s + verifier.first.name() + " key: \"" + id + "\"");*/
     for (auto& id : verifier.second.toVerify)
-      if (!verifier.second.keys.count(id))
-        ret.push_back(verifier.first.name() + " not found: \""_s + id + "\"");
+      if (!verifier.second.keys.count(id.name))
+        ret.push_back(id.position + ": " + verifier.first.name() + " not found: \""_s + id.name + "\"");
   }
   return ret;
 }
