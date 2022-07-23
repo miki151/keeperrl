@@ -400,6 +400,7 @@ End
     viewId = { "infernite_sword" }
     equipedViewId = { "infernite_sword_v" }
     name = "infernite sword"
+    shortName = "infernite"
     price = 200
     craftingCost = "INFERNITE" 20
     carriedTickEffect = InferniteEffect()
