@@ -507,7 +507,8 @@ void Game::transferCreature(Creature* c, WModel to, const vector<Position>& dest
     };
     transfer(c);
     for (auto& summon : c->getCompanions())
-      transfer(summon);
+      if (c->getSteed() != summon)
+        transfer(summon);
   }
 }
 
