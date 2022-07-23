@@ -2273,9 +2273,9 @@ Creature* Creature::getSteed() const {
 void Creature::forceDismount(Vec2 v) {
   auto oldPos = position;
   CHECK(!!steed);
+  auto steedTmp = std::move(steed);
   position.moveCreature(v);
-  CHECK(!!steed);
-  oldPos.landCreature(std::move(steed));
+  oldPos.landCreature(std::move(steedTmp));
 }
 
 void Creature::tryToDismount() {
@@ -2539,7 +2539,7 @@ MovementType Creature::getMovementTypeNotSteed(Game* game) const {
 MovementType Creature::getMovementType(Game* game) const {
   PROFILE;
   if (steed)
-    return steed->getMovementType(game);
+    return steed->getMovementTypeNotSteed(game);
   else
     return getMovementTypeNotSteed(game);
 }
