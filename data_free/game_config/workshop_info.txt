@@ -1,5 +1,32 @@
-"WORKSHOP" { "WORKSHOP" "workshop" }
-"FORGE" { "FORGE" "forge" "forges" }
-"LABORATORY" { "LABORATORY" "laboratory" "concocts" }
-"JEWELER" { "JEWELLER" "jeweler" }
-"MORGUE" { "MORGUE_TABLE" "morgue" "raises" }
+"WORKSHOP" {
+  furniture = "WORKSHOP"
+  name = "workshop"
+  attr = "WORKSHOP"
+}
+
+"FORGE" {
+  furniture = "FORGE"
+  name = "forge"
+  verb = "forges"
+  attr = "FORGE"
+}
+
+"LABORATORY" {
+  furniture = "LABORATORY"
+  name = "laboratory"
+  verb = "concocts"
+  attr = "LABORATORY"
+}
+
+"JEWELER" {
+  furniture = "JEWELLER"
+  name = "jeweler"
+  attr = "JEWELER"
+}
+
+"MORGUE" {
+  furniture = "MORGUE_TABLE"
+  name = "morgue"
+  verb = "raises"
+  attr = "MORGUE"
+}

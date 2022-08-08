@@ -1,0 +1,241 @@
+"SUPER_BONUS" {
+  name = "super bonus"
+  adjective = "amazing"
+  description = "Super"
+  addedMessage = ARE "super"
+  removedMessage = ARE "no longer super"
+  startEffect = IncreaseAttr DAMAGE 30
+  endEffect = IncreaseAttr DAMAGE -30
+  tickEffect = Heal {FLESH 0.01}
+  combatConsumable = true
+  canWishFor = false
+  color = ColorId RED
+}
+
+Def ATTR_BUFF(Attr, Name, Amount, Adjective, Price) {
+  name = Name
+  adjective = Name + " bonus"
+  description = "Gives a +" + Amount + " " + Name + " bonus"
+  addedMessage = ARE "more " + Adjective
+  removedMessage = ARE "no longer " + Adjective
+  startEffect = IncreaseAttr Attr Amount
+  endEffect = IncreaseAttr Attr -Amount
+  combatConsumable = true
+  fx = BUFF_ORANGE
+  color = ColorId ORANGE
+  price = Price
+}
+End
+
+"DAM_BONUS" ATTR_BUFF(DAMAGE, "damage", 3, "dangerous", 20)
+"DEF_BONUS" ATTR_BUFF(DEFENSE, "defense", 3, "protected", 20)
+
+"REGENERATION" {
+  name = "regeneration"
+  description = "Recovers a little bit of health every turn."
+  addedMessage = ARE "regenerating"
+  removedMessage = ARE "no longer regenerating"
+  adjective = "regenerating"
+  tickEffect = Filter Not LastingEffect FROZEN Heal { FLESH 0.03 }
+  combatConsumable = true
+  price = 12
+  fx = BUFF_RED
+  color = ColorId RED
+}
+
+"BLEEDING" {
+  name = "bleeding"
+  description = "Causes loss of health points over time."
+  addedMessage = "start" "starts" "bleeding"
+  removedMessage = YOUR "bleeding stops"
+  adjective = "bleeding"
+  tickEffect = Filter Not LastingEffect FROZEN {
+    CreatureMessage { "are bleeding" "is bleeding" HIGH }
+    Bleed 0.03 "bleeding"
+  }
+  consideredBad = true
+  canAbsorb = false
+  price = 2
+  fx = DEBUFF_RED
+  color = ColorId RED
+}
+
+"SPELL_DAMAGE" {
+  name = "spell damage"
+  adjective = "deals magical damage"
+  description = "All dealt melee damage is transformed into magical damage."
+  addedMessage = "deal" "deals" "magical damage"
+  removedMessage = "no longer deal" "no longer deals" "magical damage"
+  fx = BUFF_PURPLE
+  color = ColorId PURPLE
+  price = 50
+  modifyDamageAttr = DAMAGE SPELL_DAMAGE
+}
+
+"FIRE_DAMAGE" {
+  name = "fire damage"
+  adjective = "deals fire damage"
+  description = "All dealt melee damage is transformed into fire damage."
+  addedMessage = "deal" "deals" "fire damage"
+  removedMessage = "no longer deal" "no longer deals" "fire damage"
+  fx = BUFF_RED
+  color = ColorId RED
+  price = 50
+  modifyDamageAttr = DAMAGE FIRE_DAMAGE
+}
+
+"KINGS_CHARGE" {
+  name = "king's charge"
+  adjective = "king's charge"
+  description = "Gives a +15 damage bonus"
+  addedMessage = "feel ready to die for your king" "seems ready to die for their king" ""
+  removedMessage = "no longer feel ready to die for your king" "no longer seems ready to die for their king" ""  
+  startEffect = IncreaseAttr DAMAGE 15
+  endEffect = IncreaseAttr DAMAGE -15
+  combatConsumable = true
+  fx = BUFF_PINK
+  color = ColorId PINK
+  price = 200
+}
+
+
+Def SKILL(Name, Adjective, Description) {
+  name = Name
+  adjective = Adjective
+  addedMessage = "acquire" "acquires" "the skill of " + Name
+  removedMessage = "lose" "loses" "the skill of " + Name
+  description = Description
+  color = ColorId YELLOW
+  fx = BUFF_YELLOW
+}
+End
+
+"AMBUSH_SKILL" SKILL("ambushing", "Ambusher", "Can hide and ambush unsuspecting enemies. Press 'h' to hide on a tile that allows it.")
+"SWIMMING_SKILL" SKILL("swimming", "Swimmer", "Can cross water without drowning.")
+"DISARM_TRAPS_SKILL" SKILL("trap disarming", "Disarms traps", "Can evade traps and disarm them.")
+"CONSUMPTION_SKILL" SKILL("absorption", "Absorbs", "Can absorb other creatures and retain their attributes.")
+"COPULATION_SKILL" SKILL("copulation", "Copulates", "Can copulate with other creatures and give birth to hideous spawns.")
+"CROPS_SKILL" SKILL("farming", "Farmer", "Can farm crops.")
+"SPIDER_SKILL" SKILL("spider web weaving", "Weaves spider webs", "Can weave spider webs.")
+"EXPLORE_SKILL" SKILL("exploring", "Explores", "Can explore surroundings.")
+"EXPLORE_NOCTURNAL_SKILL" SKILL("exploring at night", "Explores at night", "Can explore surroundings at night.")
+"EXPLORE_CAVES_SKILL" SKILL("exploring caves", "Explores caves", "Can explore caves.")
+"BRIDGE_BUILDING_SKILL" SKILL("bridge building", "Builds bridges", "Creature will try to build bridges when travelling somewhere.")
+"DISTILLATION_SKILL" SKILL("distillation", "Distiller", "Can distill alcohol.")
+
+"SWIMMING_SKILL" modify {
+  inheritsFromSteed = true
+}
+
+"CONSUMPTION_SKILL" modify {
+  canAbsorb = false
+}
+
+"COPULATION_SKILL" modify {
+  canAbsorb = false
+}
+
+"CROPS_SKILL" modify {
+  canAbsorb = false
+}
+
+Def HATE(Name) {
+  name = "hate of " + Name
+  adjective = "hates all " + Name
+  description = "Makes the target hostile against all " + Name
+  addedMessage = ARE "full of hatred"
+  removedMessage = YOUR "hatred is gone"
+  hatedGroupName = Name
+  color = ColorId PINK
+  fx = BUFF_PINK
+}
+End
+
+"HATE_DWARVES" HATE("dwarves")
+"HATE_HUMANS" HATE("humans")
+"HATE_GREENSKINS" HATE("greenskins")
+"HATE_ELVES" HATE("elves")
+"HATE_UNDEAD" HATE("undead")
+"HATE_DRAGONS" HATE("dragons")
+
+"INVULNERABLE" {
+  name = "invulnerability"
+  adjective = "invulnerable"
+  description = "Creature is immune to all types of damage."
+  addedMessage = ARE "invulnerable"
+  removedMessage = ARE "no longer invulnerable"
+  color = ColorId WHITE
+  fx = BUFF_WHITE
+  defenseMultiplier = 1000
+  combatConsumable = true
+  canAbsorb = false
+  canWishFor = false
+}
+
+Def RESISTANCE(Name, Attr)
+{
+  name = Name + " resistance"
+  adjective = "resistant to " + Name
+  description = "Creature's defense against " + Name + " attacks is increased by 30%."
+  addedMessage = ARE "resistant to " + Name
+  removedMessage = ARE "no longer resistant to " + Name
+  color = ColorId SKY_BLUE
+  fx = BUFF_SKY_BLUE
+  defenseMultiplier = 1.3
+  defenseMultiplierAttr = Attr
+  combatConsumable = true
+}
+End
+
+"FIRE_RESISTANT" RESISTANCE("fire", FIRE_DAMAGE)
+"COLD_RESISTANT" RESISTANCE("cold", COLD_DAMAGE)
+"ACID_RESISTANT" RESISTANCE("acid", ACID_DAMAGE)
+"MELEE_RESISTANCE" RESISTANCE("melee", DAMAGE)
+"MAGIC_RESISTANCE" RESISTANCE("magic", SPELL_DAMAGE)
+"RANGED_RESISTANCE" RESISTANCE("ranged", RANGED_DAMAGE)
+
+Def VULNERABILITY(Name, Attr)
+{
+  name = Name + " vulnerability"
+  adjective = "vulnarable to " + Name
+  description = "Creature's defense against " + Name + " attacks is reduced by 23%."
+  addedMessage = ARE "vulnerable to " + Name
+  removedMessage = ARE "no longer vulnerable to " + Name
+  color = ColorId BROWN
+  fx = DEBUFF_BROWN
+  defenseMultiplier = 0.77
+  defenseMultiplierAttr = Attr
+  consideredBad = true
+}
+End
+
+"FIRE_VULNERABILITY" VULNERABILITY("fire", FIRE_DAMAGE)
+"COLD_VULNERABILITY" VULNERABILITY("cold", COLD_DAMAGE)
+"ACID_VULNERABILITY" VULNERABILITY("acid", ACID_DAMAGE)
+"MELEE_VULNERABILITY" VULNERABILITY("melee", DAMAGE)
+"MAGIC_VULNERABILITY" VULNERABILITY("magic", SPELL_DAMAGE)
+"RANGED_VULNERABILITY" VULNERABILITY("ranged", RANGED_DAMAGE)
+
+Def IMMUNITY(Name, Attr)
+{
+  name = Name + " immunity"
+  adjective = "immune to " + Name
+  description = "Creature is immune to " + Name + " attacks."
+  addedMessage = ARE "immune to " + Name + " attacks"
+  removedMessage = ARE "no longer vulnerable to " + Name + " attacks"
+  color = ColorId WHITE
+  fx = BUFF_WHITE
+  defenseMultiplier = 1000
+  defenseMultiplierAttr = Attr
+  combatConsumable = true
+  canAbsorb = false
+  canWishFor = false
+}
+End
+
+"FIRE_IMMUNITY" IMMUNITY("fire", FIRE_DAMAGE)
+"COLD_IMMUNITY" IMMUNITY("cold", COLD_DAMAGE)
+"ACID_IMMUNITY" IMMUNITY("acid", ACID_DAMAGE)
+"MELEE_IMMUNITY" IMMUNITY("melee", DAMAGE)
+"MAGIC_IMMUNITY" IMMUNITY("magic", SPELL_DAMAGE)
+"RANGED_IMMUNITY" IMMUNITY("ranged", RANGED_DAMAGE)

@@ -25,6 +25,7 @@
 #include "vision_id.h"
 #include "furniture_layer.h"
 #include "creature_list.h"
+#include "lasting_or_buff.h"
 
 class Model;
 class Square;
@@ -147,8 +148,8 @@ class Level : public OwnedObject<Level> {
 
   Sectors& getSectors(const MovementType&) const;
   struct EffectSet {
-    vector<LastingEffect> SERIAL(friendly);
-    vector<LastingEffect> SERIAL(hostile);
+    vector<LastingOrBuff> SERIAL(friendly);
+    vector<LastingOrBuff> SERIAL(hostile);
     SERIALIZE_ALL(friendly, hostile)
   };
   using EffectsTable = Table<EffectSet>;
@@ -218,4 +219,3 @@ class Level : public OwnedObject<Level> {
   void placeSwarmer(Vec2, Creature*);
   void unplaceSwarmer(Vec2, Creature*);
 };
-

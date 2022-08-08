@@ -22,7 +22,6 @@
 #include "immigrant_info.h"
 #include "technology.h"
 #include "tribe_alignment.h"
-#include "skill.h"
 #include "creature_attributes.h"
 #include "spell_map.h"
 #include "view_object.h"
@@ -53,6 +52,12 @@
 #include "tile_gas_info.h"
 #include "promotion_info.h"
 #include "dancing.h"
+#include "attr_info.h"
+#include "buff_info.h"
+#include "body_material_id.h"
+#include "body_material.h"
+#include "keybinding.h"
+#include "keybinding_map.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const vector<string>& s, vector<string> filename, KeyVerifier* keyVerifier) {
@@ -108,7 +113,12 @@ ADD_IMP(map<string, vector<int>>)
 ADD_IMP(ScriptedUI)
 ADD_IMP(vector<PrimaryId<StorageId>>)
 ADD_IMP(map<PrimaryId<TileGasType>, TileGasInfo>)
+ADD_IMP(vector<pair<PrimaryId<AttrType>, AttrInfo>>)
 ADD_IMP(map<string, vector<PromotionInfo>>)
 ADD_IMP(vector<Dancing::Positions>)
 ADD_IMP(vector<pair<string, ViewId>>)
 ADD_IMP(vector<ScriptedHelpInfo>)
+ADD_IMP(map<PrimaryId<BuffId>, BuffInfo>)
+ADD_IMP(map<PrimaryId<BodyMaterialId>, BodyMaterial>)
+ADD_IMP(vector<pair<PrimaryId<Keybinding>, KeybindingInfo>>)
+ADD_IMP(unordered_map<Keybinding, SDL::SDL_Keysym, CustomHash<Keybinding>>)

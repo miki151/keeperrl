@@ -18,13 +18,16 @@
 #include "enums.h"
 #include "util.h"
 #include "effect.h"
+#include "attr_type.h"
 
 class Creature;
 
 class Attack {
   public:
-  Attack(Creature* a, AttackLevel l, AttackType t, int s, AttrType d, vector<Effect> e = {})
-      : attacker(a), level(l), type(t), strength(s), damageType(d), effect(e) {}
+  Attack(Creature* a, AttackLevel l, AttackType t, int s, AttrType d, vector<Effect> e = {},
+      const char* harmlessMessage = "The attack is harmless", bool withSound = true)
+      : attacker(a), level(l), type(t), strength(s), damageType(d), effect(e), harmlessMessage(harmlessMessage),
+        withSound(withSound) {}
 
   Creature* attacker = nullptr;
   AttackLevel level;
@@ -32,5 +35,7 @@ class Attack {
   int strength;
   AttrType damageType;
   vector<Effect> effect;
+  const char* harmlessMessage;
+  bool withSound;
 };
 

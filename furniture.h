@@ -18,6 +18,7 @@
 #include "furniture_usage.h"
 #include "furniture_tick.h"
 #include "storage_id.h"
+#include "lasting_or_buff.h"
 
 class TribeId;
 class Creature;
@@ -50,7 +51,7 @@ RICH_ENUM(
 struct FurnitureEffectInfo {
   enum class Target;
   Target SERIAL(target);
-  LastingEffect SERIAL(effect);
+  LastingOrBuff SERIAL(effect);
   int SERIAL(radius);
   SERIALIZE_ALL(target, effect, radius)
 };

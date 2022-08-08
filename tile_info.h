@@ -27,5 +27,6 @@ struct TileInfo {
   vector<string> SERIAL(extraBorders);
   optional<ViewId> SERIAL(connectionId);
   optional<FXInfo> SERIAL(fx);
-  SERIALIZE_ALL(NAMED(viewId), NAMED(symbol), NAMED(color), OPTION(isSymbolFont), NAMED(sprite), NAMED(spriteColor), OPTION(roundShadow), OPTION(wallShadow), OPTION(wallConnections), NAMED(mountainSides), NAMED(waterSides), NAMED(background), OPTION(roadConnections), OPTION(extraBorders), OPTION(moveUp), OPTION(animated), OPTION(canMirror), NAMED(southSide), NAMED(connectionId), OPTION(highlightAbove), NAMED(fx))
+  optional<Vec2> SERIAL(weaponOrigin);
+  SERIALIZE_ALL(NAMED(viewId), NAMED(symbol), NAMED(color), OPTION(isSymbolFont), NAMED(sprite), NAMED(spriteColor), OPTION(roundShadow), OPTION(wallShadow), OPTION(wallConnections), NAMED(mountainSides), NAMED(waterSides), NAMED(background), OPTION(roadConnections), OPTION(extraBorders), OPTION(moveUp), OPTION(animated), OPTION(canMirror), NAMED(southSide), NAMED(connectionId), OPTION(highlightAbove), NAMED(fx), NAMED(weaponOrigin))
 };

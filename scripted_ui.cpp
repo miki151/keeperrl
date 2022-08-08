@@ -19,7 +19,7 @@ enum class Direction;
 RICH_ENUM(EnumsDetail::TextureFlip, NONE, FLIP_X, FLIP_Y, FLIP_XY);
 RICH_ENUM(EnumsDetail::PlacementPos, MIDDLE, TOP_STRETCHED, BOTTOM_STRETCHED, LEFT_STRETCHED, RIGHT_STRETCHED,
     TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, LEFT_CENTERED, RIGHT_CENTERED, TOP_CENTERED, BOTTOM_CENTERED,
-    MIDDLE_STRETCHED_X, MIDDLE_STRETCHED_Y);
+    MIDDLE_STRETCHED_X, MIDDLE_STRETCHED_Y, SCREEN);
 RICH_ENUM(EnumsDetail::Direction, HORIZONTAL, VERTICAL);
 
 namespace ScriptedUIElems {
@@ -71,8 +71,7 @@ struct ViewId : ScriptedUIInterface {
       context.renderer->drawViewObject(area.topLeft(), *viewId, true, zoom, Color::WHITE);
     else
     if (auto ids = data.getReferenceMaybe<ScriptedUIDataElems::ViewIdList>())
-      for (auto& id : *ids)
-        context.renderer->drawViewObject(area.topLeft(), id, true, zoom, Color::WHITE);
+      context.renderer->drawViewObject(area.topLeft(), *ids, true, zoom, Color::WHITE);
     else
       context.renderer->drawText(Color::RED, area.topLeft(), "not a viewid");
   }
@@ -139,6 +138,45 @@ struct KeyHandler : ScriptedUIInterface {
 };
 
 REGISTER_SCRIPTED_UI(KeyHandler);
+
+struct KeyCatcher : ScriptedUIInterface {
+  void serialize(PrettyInputArchive& ar, const unsigned int v) {
+  }
+
+  void onKeypressed(const ScriptedUIData& data, ScriptedContext& context,
+      SDL::SDL_Keysym sym, Rectangle, EventCallback& callback) const override {
+    if (sym.sym == SDL::SDLK_LCTRL || sym.sym == SDL::SDLK_RCTRL ||
+        sym.sym == SDL::SDLK_LALT || sym.sym == SDL::SDLK_RALT ||
+        sym.sym == SDL::SDLK_LSHIFT || sym.sym == SDL::SDLK_RSHIFT)
+      return;
+    if (auto c = data.getReferenceMaybe<ScriptedUIDataElems::KeyCatcherCallback>()) {
+      c->fun(sym);
+      callback = [] { return true; };
+    } else {
+      USER_FATAL << "Expected callback";
+      fail();
+    }
+  }
+};
+
+REGISTER_SCRIPTED_UI(KeyCatcher);
+
+struct BlockEvents : ScriptedUIInterface {
+  void serialize(PrettyInputArchive& ar, const unsigned int v) {
+  }
+
+  void onKeypressed(const ScriptedUIData&, ScriptedContext&,
+      SDL::SDL_Keysym, Rectangle, EventCallback& callback) const override {
+    callback = [] { return false; };
+  }
+  
+  void onClick(const ScriptedUIData&, ScriptedContext&, MouseButtonId, Rectangle,
+      Vec2, EventCallback& callback) const override {
+    callback = [] { return false; };
+  }
+};
+
+REGISTER_SCRIPTED_UI(BlockEvents);
 
 struct Label : ScriptedUIInterface {
   Label(optional<string> text = none, int size = Renderer::textSize(), Color color = Color::WHITE)
@@ -220,7 +258,7 @@ struct Container : ScriptedUIInterface {
   vector<SubElemInfo> getError(const string& s) const {
     static map<string, ScriptedUI> errors;
     if (!errors.count(s))
-      errors[s] = ScriptedUI{unique<Label>(s)};
+      errors[s] = ScriptedUI{make_unique<Label>(s)};
     return {SubElemInfo{errors.at(s), ScriptedUIData{}, Rectangle()}};
   }
 };
@@ -307,6 +345,8 @@ struct Position : Container {
       case PlacementPos::RIGHT_CENTERED:
         return {SubElemInfo{elem, data, Rectangle(area.right() - size.x, area.middle().y - size.y / 2,
             area.right(), area.middle().y - size.y / 2 + size.y)}};
+      case PlacementPos::SCREEN:
+        return {SubElemInfo{elem, data, Rectangle(Vec2(0, 0), context.renderer->getSize())}};
     }
   }
 
@@ -511,8 +551,8 @@ struct Using : Container {
     if (isOneOf(key, "EXIT", "HIGHLIGHT_NEXT", "HIGHLIGHT_PREVIOUS")) {
       static ScriptedUIData fun = ScriptedUIDataElems::Callback{[] { return true; }};
       return elem->getSize(fun, context);
-    } else
-    if (auto record = data.getReferenceMaybe<ScriptedUIDataElems::Record>()) {
+    }
+    else if (auto record = data.getReferenceMaybe<ScriptedUIDataElems::Record>()) {
       if (auto value = getReferenceMaybe(record->elems, key))
         return elem->getSize(*value, context);
       else
@@ -526,6 +566,33 @@ struct Using : Container {
 };
 
 REGISTER_SCRIPTED_UI(Using);
+
+struct If : Container {
+  vector<SubElemInfo> getElemBounds(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
+    if (auto record = data.getReferenceMaybe<ScriptedUIDataElems::Record>()) {
+      if (record->elems.count(key))
+        return {SubElemInfo{elem, data, area}};
+      else
+        return {};
+    } else
+      return getError("not a record");
+  }
+
+  Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
+    if (auto record = data.getReferenceMaybe<ScriptedUIDataElems::Record>()) {
+      if (record->elems.count(key))
+        return elem->getSize(data, context);
+      else
+        return Vec2(0, 0);
+    }
+    return Vec2(100, 20);
+  }
+  string SERIAL(key);
+  ScriptedUI SERIAL(elem);
+  SERIALIZE_ALL(key, elem)
+};
+
+REGISTER_SCRIPTED_UI(If);
 
 struct Focusable : ScriptedUIInterface {
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
@@ -691,6 +758,8 @@ struct Scrollable : ScriptedUIInterface {
       if (id == MouseButtonId::WHEEL_UP)
         callback = [&] { scroll(context, -1); return false; };
     }
+    else if (!isOneOf(id, MouseButtonId::RELEASED, MouseButtonId::MOVED))
+      return;
     processScroller(data, context, bounds,
         [&] (Rectangle bounds) { elem->onClick(data, context, id, bounds, pos, callback); },
         [&] (Rectangle bounds) { scrollbar->onClick(data, context, id, bounds, pos, callback); }
@@ -755,7 +824,7 @@ struct Scroller : ScriptedUIInterface {
   void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
       Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
     if (id == MouseButtonId::LEFT && pos.inRectangle(bounds)) {
-      auto sliderHeight = slider->getSize(data, context).y;
+      double sliderHeight = slider->getSize(data, context).y;
       auto sliderPos = getSliderPos(data, context, bounds);
       callback = [pos, &context, bounds, sliderHeight, sliderPos] {
         context.state.scrollPos.setRatio(double(pos.y - sliderHeight / 2 - bounds.top()) / (bounds.height() - sliderHeight),
@@ -805,7 +874,7 @@ struct Slider : ScriptedUIInterface {
       return;
     auto& state = getSliderState(*sliderData, context);
     if ((id == MouseButtonId::LEFT && pos.inRectangle(bounds)) || (id == MouseButtonId::MOVED && state.sliderHeld)) {
-      auto sliderWidth = slider->getSize(data, context).x;
+      double sliderWidth = slider->getSize(data, context).x;
       auto& posCallback = sliderData->callback;
       callback = [pos, &state, bounds, sliderWidth, &posCallback,
           continuous = sliderData->continuousCallback] {

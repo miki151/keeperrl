@@ -6,7 +6,7 @@
 
 class SquareArray {
   public:
-  SquareArray(Rectangle bounds) : modified(bounds), readOnly(unique<Square>()) {}
+  SquareArray(Rectangle bounds) : modified(bounds), readOnly(make_unique<Square>()) {}
 
   Table<PSquare> SERIAL(modified);
   PSquare SERIAL(readOnly);
@@ -21,7 +21,7 @@ class SquareArray {
 
   Square* getWritable(Vec2 pos) {
     if (!modified[pos]) {
-      modified[pos] = unique<Square>();
+      modified[pos] = make_unique<Square>();
       ++numModified;
     }
     return modified[pos].get();

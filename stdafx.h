@@ -91,8 +91,7 @@ using std::string;
 
 using std::queue;
 using std::unique_ptr;
-template<typename T, typename... Args>
-std::unique_ptr<T> unique(Args&&... args) { return std::unique_ptr<T>(new T(std::forward<Args>(args)...)); }
+using std::make_unique;
 using std::shared_ptr;
 using std::weak_ptr;
 using std::make_shared;

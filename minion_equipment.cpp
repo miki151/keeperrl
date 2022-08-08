@@ -29,6 +29,7 @@
 #include "minion_equipment_type.h"
 #include "health_type.h"
 #include "automaton_part.h"
+#include "game.h"
 
 template <class Archive>
 void MinionEquipment::serialize(Archive& ar, const unsigned int) {
@@ -55,7 +56,7 @@ optional<MinionEquipmentType> MinionEquipment::getEquipmentType(const Item* it) 
     return MinionEquipmentType::ARMOR;
   if (auto& effect = it->getEffect())
     return effect->getMinionEquipmentType();
-  if (it->getOwnedEffect() == LastingEffect::LIGHT_SOURCE)
+  if (it->hasOwnedEffect(LastingEffect::LIGHT_SOURCE))
     return MinionEquipmentType::TORCH;
   return none;
 }
@@ -73,9 +74,9 @@ bool MinionEquipment::canUseItemType(const Creature* c, MinionEquipmentType type
     case MinionEquipmentType::TORCH:
       return !c->isAffected(LastingEffect::NIGHT_VISION);
     case MinionEquipmentType::HEALING:
-      return c->getBody().hasHealth(HealthType::FLESH);
+      return c->getBody().hasHealth(HealthType::FLESH, c->getGame()->getContentFactory());
     case MinionEquipmentType::MATERIALIZATION:
-      return c->getBody().hasHealth(HealthType::SPIRIT);
+      return c->getBody().hasHealth(HealthType::SPIRIT, c->getGame()->getContentFactory());
     case MinionEquipmentType::COMBAT_ITEM:
       return true;
     case MinionEquipmentType::ARMOR: {
@@ -294,17 +295,11 @@ void MinionEquipment::autoAssign(const Creature* creature, vector<Item*> possibl
 int MinionEquipment::getItemValue(const Creature* c, const Item* it) const {
   PROFILE;
   int sum = 0;
-  for (auto attr : ENUM_ALL(AttrType))
-    switch (attr) {
-      case AttrType::DAMAGE:
-      case AttrType::SPELL_DAMAGE:
-        if (it->getClass() != ItemClass::WEAPON || attr == it->getWeaponInfo().meleeAttackAttr)
-          sum += c->getAttributes().getRawAttr(attr) + it->getModifier(attr);
-        break;
-      default:
-        sum += it->getModifier(attr);
-        break;
-    }
+  for (auto& mod : it->getModifierValues()) {
+    sum += mod.second;
+    if (mod.first == it->getWeaponInfo().meleeAttackAttr)
+      sum += c->getRawAttr(mod.first);
+  }
   return sum;
 }
 

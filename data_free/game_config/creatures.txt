@@ -26,10 +26,7 @@
       DAMAGE 12
       DEFENSE 12
       SPELL_DAMAGE 20
-    }
-    # skill.h
-    skills = {
-      "LABORATORY" 0.2
+      LABORATORY 10
     }
     # lasting_effect.h
     permanentEffects = {
@@ -46,6 +43,7 @@
     inventory = {
       # Here comes a list of items. The format of each element is defined in creature_inventory.h
       { "Robe"}
+      { "WoodenStaff" }
       # Take a look a CYCLOPS for a more detailed example.
     }
   }
@@ -70,9 +68,9 @@
     maxLevelIncrease = {
       SPELL 12
     }
-    skills = {
-      "MORGUE" 1.0
-      "LABORATORY" 1.0
+    attr = append {
+      MORGUE 50
+      LABORATORY 50
     }
     permanentEffects = append {
       SUNLIGHT_VULNERABLE 1
@@ -93,6 +91,9 @@
     attr = {
       DAMAGE 20
       DEFENSE 16
+      MULTI_WEAPON 40
+      FURNACE 15
+      FORGE 10
     }
     body = {
       type = Humanoid LARGE
@@ -103,11 +104,6 @@
       fullTitle = true
     }
     viewIdUpgrades = { { "keeper_knight2" } { "keeper_knight3" } { "keeper_knight4" }}
-    skills = {
-      "FORGE" 0.2
-      "MULTI_WEAPON" 0.8
-      "FURNACE" 0.3
-    }
     permanentEffects = {
       RIDER 1
     }
@@ -140,6 +136,9 @@
     attr = {
       DAMAGE 20
       DEFENSE 16
+      MULTI_WEAPON 40
+      FURNACE 5
+      FORGE 10
     }
     body = {
       type = Humanoid LARGE
@@ -150,11 +149,6 @@
       fullTitle = true
     }
     viewIdUpgrades = { { "duke2" } { "duke3" } { "duke4" }}
-    skills = {
-      "FORGE" 0.2
-      "MULTI_WEAPON" 0.8
-      "FURNACE" 0.1
-    }
     permanentEffects = {
       RIDER 1
     }
@@ -272,7 +266,7 @@
       STEED 1
     }
     aiType = RANGED
-    companions = {5 false true 0.05 { "SPIRIT" }}
+    companions = {5 false SPELL_DAMAGE 0.05 { "SPIRIT" }}
     spells = { "advanced healing" "heal spirit" }
     chatReactionFriendly = "\"mhhhhhrrrr!\""
     chatReactionHostile = "\"mhhhhhrrrr!\""
@@ -454,7 +448,7 @@
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}}
       }
     }
-    permanentEffects = { FIRE_RESISTANT 1 } 
+    permanentEffects = { FIRE_IMMUNITY 1 } 
     name = {
       name = "devil"
     }
@@ -491,7 +485,7 @@
       fullTitle = true
     }
     inventory = {
-      { "InferniteBattleAxe" }
+      { "InferniteTrident" }
     }
   }
 "LOST_SOUL"
@@ -600,7 +594,7 @@
     viewId = { "ice_demon" }
     attr = {
       DEFENSE 30
-      DAMAGE 30
+      COLD_DAMAGE 30
     }
     body = {
       type = HumanoidLike LARGE
@@ -609,7 +603,8 @@
         ARM {{{ Intrinsic { "fist_attack" } "fists" 10 {
             attackType = HIT
             attackMsg = SWING
-            victimEffect = {0.3 Lasting FROZEN} } }}}
+            meleeAttackAttr = COLD_DAMAGE
+        } }}}
       }
     }
     name = {
@@ -656,7 +651,8 @@
     attr = {
       DAMAGE 14
       DEFENSE 14
-      SPELL_DAMAGE 20 
+      SPELL_DAMAGE 20
+      LABORATORY 35
     }
     body = {
       type = Humanoid MEDIUM
@@ -671,9 +667,6 @@
     gender = FEMALE
     chatReactionFriendly = "curses all humans"
     chatReactionHostile = "\"Die!\""
-    skills = {
-      "LABORATORY" 0.7
-    }
     maxLevelIncrease = {
       SPELL 4
     }
@@ -774,19 +767,17 @@
     attr = {
       DAMAGE 28
       DEFENSE 28
+      DIGGING 20
+      FURNACE 25
+      WORKSHOP 15
+      FORGE 15
+      LABORATORY 15
+      JEWELER 15
     }
     body = {
       type = Humanoid LARGE
       weight = 400
       droppedPartUpgrade = IncreaseAttr DEFENSE 5
-    }
-    skills = {
-      "DIGGING" 0.5
-      "WORKSHOP" 0.2
-      "FORGE" 0.2
-      "LABORATORY" 0.2
-      "JEWELER" 0.2
-      "FURNACE" 0.5
     }
     name = {
       name = "cyclops"
@@ -1032,6 +1023,7 @@
       POISON_RESISTANT 1
       RANGED_VULNERABILITY 1
       STEED 1
+      REGENERATION 1
     }
     name = {
       name = "green dragon"
@@ -1059,7 +1051,6 @@
     }
     body = {
       type = FourLegged HUGE
-      corpseIngredientType = "dragon_corpse"
       addBodyPart = {
         WING 2
       }
@@ -1099,7 +1090,7 @@
         HEAD {{{ Intrinsic { "bite_attack" } "fangs" 7 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {0.5 Fire} } }}}
+            victimEffect = {0.5 Fire{25}} } }}}
       }
     }
     permanentEffects = {
@@ -1117,6 +1108,7 @@
     attr = {
       DAMAGE 45
       DEFENSE 47
+      FIRE_DAMAGE 40
     }
     body = {
       type = FourLegged HUGE
@@ -1128,16 +1120,17 @@
         HEAD {{{ Intrinsic { "bite_attack" } "fangs" 15 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {0.5 Fire} } }}}
+            victimEffect = {0.5 Fire{30}} } }}}
       }
       drops = { { "RedDragonScales" } 1}
       droppedPartUpgrade = GrantAbility "fire breath"
     }
     permanentEffects = {
-      FIRE_RESISTANT 1
+      FIRE_IMMUNITY 1
       RANGED_VULNERABILITY 1
       STEED 1
       CAPTURE_RESISTANCE 1
+      REGENERATION 1
     }
     name = {
       name = "red dragon"
@@ -1148,8 +1141,8 @@
     hatedByEffect = HATE_DRAGONS
     inventory = {
       { "GoldPiece" 120 200 }
-      { type = Glyph WEAPON VictimEffect 0.3 Fire chance = 0.3 }
-      { type = Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING chance = 0.3 }
+      { type = Glyph WEAPON VictimEffect 0.3 Fire{25} chance = 0.3 }
+      { type = Glyph WEAPON VictimEffect 0.3 Lasting 50 BLEEDING chance = 0.3 }
       { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
@@ -1212,6 +1205,7 @@
       TELEPATHY 1
       STEED 1
       CAPTURE_RESISTANCE 1
+      REGENERATION 1
     }
     name = {
       name = "black dragon"
@@ -1223,7 +1217,7 @@
     inventory = {
       { "GoldPiece" 120 200 }
       { type = Glyph WEAPON VictimEffect 0.3 Lasting BLIND chance = 1.0 }
-      { type = Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING chance = 0.3 }
+      { type = Glyph WEAPON VictimEffect 0.3 Lasting 50 BLEEDING chance = 0.3 }
       { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
@@ -1235,7 +1229,7 @@
   {
     viewId = { "naga" Rgb 220 220 220 255 }
     attr = {
-      DAMAGE 25
+      COLD_DAMAGE 25
       DEFENSE 27
     }
     body = {
@@ -1248,7 +1242,8 @@
         HEAD {{{ Intrinsic { "bite_attack" } "fangs" 7 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {0.5 Ice} } }}}
+            meleeAttackAttr = COLD_DAMAGE
+        } }}}
       }
     }
     permanentEffects = {
@@ -1263,6 +1258,9 @@
 "WHITE_DRAGON" inherit "BLACK_DRAGON"
   {
     viewId = { "red_dragon" Rgb 240 240 240 255 }
+    attr = append {
+      COLD_DAMAGE 40
+    }
     body = {
       type = FourLegged HUGE
       corpseIngredientType = "dragon_corpse"
@@ -1278,9 +1276,10 @@
     }
     permanentEffects = {
       RANGED_VULNERABILITY 1
-      COLD_RESISTANT 1
+      COLD_IMMUNITY 1
       STEED 1
       CAPTURE_RESISTANCE 1
+      REGENERATION 1
     }
     name = {
       name = "white dragon"
@@ -1292,7 +1291,7 @@
     inventory = {
       { "GoldPiece" 120 200 }
       { type = Glyph WEAPON VictimEffect 0.3 Lasting FROZEN chance = 1.0 }
-      { type = Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING chance = 0.3 }
+      { type = Glyph WEAPON VictimEffect 0.3 Lasting 50 BLEEDING chance = 0.3 }
       { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
@@ -1303,7 +1302,7 @@
   {
     viewId = { "naga" Rgb 220 220 20 255 }
     attr = {
-      DAMAGE 25
+      ACID_DAMAGE 25
       DEFENSE 27
     }
     body = {
@@ -1316,7 +1315,7 @@
         HEAD {{{ Intrinsic { "bite_attack" } "fangs" 7 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {0.5 Acid} } }}}
+            meleeAttackAttr = ACID_DAMAGE } }}}
       }
     }
     permanentEffects = {
@@ -1331,6 +1330,9 @@
 "YELLOW_DRAGON" inherit "BLACK_DRAGON"
   {
     viewId = { "red_dragon" Rgb 240 200 0 255 }
+    attr = append {
+      ACID_DAMAGE 40
+    }
     body = {
       type = FourLegged HUGE
       corpseIngredientType = "dragon_corpse"
@@ -1345,10 +1347,11 @@
       drops = {{ "YellowDragonScales" } 1}
     }
     permanentEffects = {
-      ACID_RESISTANT 1
+      ACID_IMMUNITY 1
       RANGED_VULNERABILITY 1
       CAPTURE_RESISTANCE 1
       STEED 1
+      REGENERATION 1
     }
     name = {
       name = "yellow dragon"
@@ -1359,8 +1362,8 @@
     hatedByEffect = HATE_DRAGONS
     inventory = {
       { "GoldPiece" 120 200 }
-      { type = Glyph WEAPON VictimEffect 0.3 Acid chance = 0.1 }
-      { type = Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING chance = 0.3 }
+      { type = Glyph WEAPON VictimEffect 0.3 Acid{30} chance = 0.1 }
+      { type = Glyph WEAPON VictimEffect 0.3 Lasting 50 BLEEDING chance = 0.3 }
       { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
@@ -1405,6 +1408,7 @@
       DEFENSE 75
       DAMAGE 75
       SPELL_DAMAGE 75
+      FIRE_DAMAGE 75
     }
     body = {
       type = Humanoid HUGE
@@ -1417,11 +1421,11 @@
             attackType = HIT
             meleeAttackAttr = SPELL_DAMAGE
             attackMsg = SPELL
-            victimEffect = {0.5 Fire}} }}}
+            victimEffect = {0.5 Fire{50}}} }}}
       }
     }
     permanentEffects = {
-      FIRE_RESISTANT 1
+      FIRE_IMMUNITY 1
       RANGED_VULNERABILITY 1
     }
     inventory = {
@@ -1439,6 +1443,9 @@
     attr = {
       DAMAGE 16
       DEFENSE 14 
+      FURNACE 10
+      WORKSHOP 5
+      FORGE 5
     }
     body = {
       type = Humanoid LARGE
@@ -1448,11 +1455,6 @@
     }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
-    skills = {
-      "WORKSHOP" 0.3
-      "FORGE" 0.3
-      "FURNACE" 0.2
-    }
     permanentEffects = {
       RIDER 1
     }
@@ -1546,8 +1548,8 @@
     permanentEffects = append {
       DISTILLATION_SKILL 1
     }
-    skills = {
-      "LABORATORY" 0.4
+    attr = append {
+      LABORATORY 20
     }
     name = {
       name = "cleric"
@@ -1560,18 +1562,16 @@
     attr = {
       DAMAGE 10
       DEFENSE 10 
+      FURNACE 25
+      WORKSHOP 30
+      FORGE 30
+      JEWELER 30
     }
     body = {
       type = Humanoid MEDIUM
     }
     chatReactionFriendly = "talks about crafting"
     chatReactionHostile = "\"Die!\""
-    skills = {
-      "WORKSHOP" 0.6
-      "FORGE" 0.6
-      "JEWELER" 0.6
-      "FURNACE" 0.5
-    }
     aiType = RANGED
     name = {
       name = "artisan"
@@ -1580,11 +1580,10 @@
   }
 "ARTISAN_LEGEN" inherit "ARTISAN"
   {
-    skills = {
-      "WORKSHOP" 1.0
-      "FORGE" 1.0
-      "JEWELER" 1.0
-      "FURNACE" 0.5
+    attr = append {
+      WORKSHOP 50
+      FORGE 50
+      JEWELER 50
     }
     name = {
       name = "master artisan"
@@ -1600,6 +1599,7 @@
     attr = {
       DAMAGE 14
       DEFENSE 12
+      DIGGING 5
     }
     body = {
       type = Humanoid LARGE
@@ -1612,9 +1612,6 @@
       RIDER 1
     }
     aiType = RANGED
-    skills = {
-      "DIGGING" 0.1
-    }
     name = {
       name = "peasant"
     }
@@ -1861,15 +1858,13 @@
     attr = {
       DAMAGE 27
       DEFENSE 19 
+      WORKSHOP 15
     }
     body = {
       type = Humanoid LARGE
     }
     maxLevelIncrease = {
       MELEE 5
-    }
-    skills = {
-      "WORKSHOP" 0.3
     }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
@@ -1902,7 +1897,7 @@
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     aiType = RANGED
-    companions = {7 false true 0.05 { "SPIRIT" }}
+    companions = {7 false SPELL_DAMAGE 0.05 { "SPIRIT" }}
     spells = { "advanced healing" "defense bonus" "directed blast" "heal spirit" }
     maxLevelIncrease = {
       SPELL 5
@@ -1913,7 +1908,7 @@
     hatedByEffect = HATE_HUMANS
     inventory = {
       { "LeatherArmor"}
-      { "Club"}
+      { "WoodenStaff"}
       { "GoldPiece" 80 120 }
       { type = Glyph ARMOR ItemAttrBonus SPELL_DAMAGE 5 chance = 0.3 }
       { type = Glyph ARMOR LastingEffect FLYING chance = 0.3 }
@@ -1998,7 +1993,7 @@
       CROPS_SKILL 1
       RIDER 1
     }
-    companions = {1 true false 0.01 { "DOG" }}
+    companions = {1 true none 0.01 { "DOG" }}
     name = {
       name = "child"
       pluralName = "children"
@@ -2014,7 +2009,7 @@
 "ESKIMO_CHILD" inherit "CHILD"
   {
     viewId = { "eskimo_child" }
-    companions = {1 true false 0.01 { "HUSKY" }}
+    companions = {1 true none 0.01 { "HUSKY" }}
     permanentEffects = {}
   }
 "NATIVE_CHILD" inherit "CHILD"
@@ -2051,12 +2046,6 @@
       pluralName = "children"
     }
     hatedByEffect = HATE_HUMANS
-  }
-"PESEANT_PRISONER" inherit "PESEANT_PLAYER"
-  {
-    skills = {
-      "DIGGING" 0.3
-    }
   }
 "HALLOWEEN_KID"
   {
@@ -2162,13 +2151,12 @@
         ARM {{{ Intrinsic { "fist_attack" } "fists" 10 {
             attackType = HIT
             attackMsg = SWING
-            victimEffect = {0.3 Fire} } }}}
+            victimEffect = {0.3 Fire{30}} } }}}
       }
     }
     permanentEffects = {
       MELEE_RESISTANCE 1
       SLOWED 1
-      FIRE_RESISTANT 1
     }
     name = {
       name = "lava golem"
@@ -2179,7 +2167,8 @@
     viewId = { "ada_golem" }
     attr = {
       DAMAGE 36
-      DEFENSE 36 
+      DEFENSE 36
+      DIGGING 30
     }
     body = {
       type = HumanoidLike LARGE
@@ -2188,9 +2177,7 @@
     permanentEffects = {
       MELEE_RESISTANCE 1
       SLOWED 1
-      NAVIGATION_DIGGING_SKILL 1
       MAGIC_VULNERABILITY 1
-      FIRE_RESISTANT 1
     }
     name = {
       name = "adamantine golem"
@@ -2363,6 +2350,78 @@
       name = "light adamantine automaton"
     }
   }
+"AUTOMATON_CORPUS_INFERNITE" inherit "AUTOMATON_CORPUS_WOOD"
+  {
+    viewId = { "automaton_corpus" Rgb 220 148 148 255 }
+    attr = {
+      DEFENSE 50
+      FIRE_DAMAGE 30
+    }
+    body = append {
+      material = INFERNITE
+    }
+    name = {
+      name = "infernite automaton"
+    }
+  }
+"HEAVY_AUTOMATON_CORPUS_INFERNITE" inherit "AUTOMATON_CORPUS_INFERNITE"
+  {
+    viewId = { "automaton_heavy" Rgb 220 148 148 255 }
+    attr = append {
+      DEFENSE 60
+    }
+    permanentEffects = append { SLOWED 1 }
+    name = {
+      name = "heavy infernite automaton"
+    }
+  }
+"LIGHT_AUTOMATON_CORPUS_INFERNITE" inherit "AUTOMATON_CORPUS_INFERNITE"
+  {
+    viewId = { "automaton_light" Rgb 220 148 148 255 }
+    attr = append {
+      DEFENSE 30
+    }
+    permanentEffects = append { SPEED 1 }
+    name = {
+      name = "light infernite automaton"
+    }
+  }
+"AUTOMATON_CORPUS_ADOXIUM" inherit "AUTOMATON_CORPUS_WOOD"
+  {
+    viewId = { "automaton_corpus" Rgb 220 148 220 255 }
+    attr = {
+      DEFENSE 50
+      SPELL_DAMAGE 30
+    }
+    body = append {
+      material = ADOXIUM
+    }
+    name = {
+      name = "adoxium automaton"
+    }
+  }
+"HEAVY_AUTOMATON_CORPUS_ADOXIUM" inherit "AUTOMATON_CORPUS_ADOXIUM"
+  {
+    viewId = { "automaton_heavy" Rgb 220 148 220 255 }
+    attr = append {
+      DEFENSE 60
+    }
+    permanentEffects = append { SLOWED 1 }
+    name = {
+      name = "heavy adoxium automaton"
+    }
+  }
+"LIGHT_AUTOMATON_CORPUS_ADOXIUM" inherit "AUTOMATON_CORPUS_ADOXIUM"
+  {
+    viewId = { "automaton_light" Rgb 220 148 220 255 }
+    attr = append {
+      DEFENSE 30
+    }
+    permanentEffects = append { SPEED 1 }
+    name = {
+      name = "light adoxium automaton"
+    }
+  }
 "ZOMBIE"
   {
     viewId = { "zombie" }
@@ -2398,34 +2457,9 @@
   }
 "ZOMBIE_WORKER" inherit "ZOMBIE"
   {
-    skills = {
-      "DIGGING" 0.2
+    attr = append {
+      DIGGING 8
     }
-  }
-"SKELETON"
-  {
-    viewId = { "skeleton" }
-    attr = {
-      DAMAGE 17
-      DEFENSE 13
-      RANGED_DAMAGE 5
-    }
-    body = {
-      type = Humanoid LARGE
-      material = BONE
-    }
-    permanentEffects = {
-      RANGED_RESISTANCE 1
-    }
-    maxLevelIncrease = {
-      MELEE 3
-      ARCHERY 4
-    }
-    aiType = RANGED
-    name = {
-      name = "skeleton"
-    }
-    hatedByEffect = HATE_UNDEAD
   }
 "VAMPIRE"
   {
@@ -2444,7 +2478,7 @@
             attackType = BITE
             attackMsg = BITE
             attackerEffect = { RegrowBodyPart 1 }
-            victimEffect = { 0.1 Lasting BLEEDING  } } }}}
+            victimEffect = { 0.1 Lasting 50 BLEEDING  } } }}}
       }
     }
     chatReactionFriendly = "\"All men be cursed!\""
@@ -2489,7 +2523,7 @@
             attackType = BITE
             attackMsg = BITE
             attackerEffect = { RegrowBodyPart 1 }
-            victimEffect = { 0.1 Lasting BLEEDING  } } }}}
+            victimEffect = { 0.1 Lasting 50 BLEEDING  } } }}}
       }
     }
     chatReactionFriendly = "\"All men be cursed!\""
@@ -2585,7 +2619,7 @@
     chatReactionHostile = "\"Die!\""
     spellSchools = {}
     spells = { "heal spirit" }
-    companions = {4 false true 0.02 { "SPIRIT" }}
+    companions = {4 false SPELL_DAMAGE 0.02 { "SPIRIT" }}
     permanentEffects = {
       DISTILLATION_SKILL 1
     }
@@ -2602,15 +2636,13 @@
       DAMAGE 13
       DEFENSE 16
       RANGED_DAMAGE 15 
+      LABORATORY 15
     }
     body = {
       type = Humanoid LARGE
       addBodyPart = {
         WING 2
       }
-    }
-    skills = {
-      "LABORATORY" 0.3
     }
     aiType = RANGED
     gender = FEMALE
@@ -2657,17 +2689,15 @@
     viewId = { "gnome" }
     attr = {
       DAMAGE 12
-      DEFENSE 13 
+      DEFENSE 13
+      DIGGING 10 
+      FURNACE 10
+      WORKSHOP 25
+      FORGE 25
+      LABORATORY 25
     }
     body = {
       type = Humanoid MEDIUM
-    }
-    skills = {
-      "WORKSHOP" 0.5
-      "FORGE" 0.5
-      "LABORATORY" 0.5
-      "DIGGING" 0.2
-      "FURNACE" 0.2
     }
     aiType = RANGED
     permanentEffects = {
@@ -2686,14 +2716,12 @@
     attr = {
       DAMAGE 15
       DEFENSE 16 
+      JEWELER 50
     }
     body = {
       type = Humanoid MEDIUM
     }
     aiType = RANGED
-    skills = {
-      "JEWELER" 1
-    }
     chatReactionFriendly = "talks about digging"
     chatReactionHostile = "\"Die!\""
     name = {
@@ -2709,6 +2737,11 @@
     attr = {
       DAMAGE 12
       DEFENSE 13 
+      FURNACE 25
+      LABORATORY 15
+      WORKSHOP 30
+      FORGE 30
+      JEWELER 30
     }
     body = {
       type = Humanoid MEDIUM
@@ -2719,13 +2752,6 @@
       DISARM_TRAPS_SKILL 1
     }
     aiType = RANGED
-    skills = {
-      "LABORATORY" 0.3
-      "WORKSHOP" 0.6
-      "FORGE" 0.6
-      "JEWELER" 0.6
-      "FURNACE" 0.5
-    }
     name = {
       name = "goblin artificer"
       firstNameGen = "ORC"
@@ -2742,6 +2768,7 @@
     attr = {
       DAMAGE 5
       DEFENSE 15 
+      DIGGING 15
     }
     body = {
       type = Humanoid SMALL
@@ -2750,9 +2777,6 @@
     aiType = RANGED
     noChase = true
     cantEquip = true
-    skills = {
-      "DIGGING" 0.3
-    }
     chatReactionFriendly = "talks about digging"
     chatReactionHostile = "\"Die!\""
     permanentEffects = {
@@ -2789,6 +2813,9 @@
     attr = {
       DAMAGE 21
       DEFENSE 25 
+      DIGGING 30
+      FORGE 20
+      FURNACE 15
     }
     specialAttr = {
       DEFENSE { -7 Name "when outdoors" Not Indoors }
@@ -2802,16 +2829,11 @@
       pluralName = "dwarves"
       firstNameGen = "DWARF"
     }
-    skills = {
-      "FORGE" 0.4
-      "FURNACE" 0.3
-    }
     maxLevelIncrease = {
       MELEE 2
     }
     permanentEffects = {
       MAGIC_VULNERABILITY 1
-      NAVIGATION_DIGGING_SKILL 1
       UNSTABLE 1
     }
     chatReactionFriendly = "curses all orcs"
@@ -2831,13 +2853,11 @@
     name = append {
       fullTitle = true
     }
-    skills = {
-      "DIGGING" 0.6
-      "WORKSHOP" 0.2
-      "FORGE" 0.2
-      "LABORATORY" 0.2
-      "JEWELER" 0.2
-      "FURNACE" 0.2
+    attr = append {
+      WORKSHOP 10
+      FORGE 10
+      LABORATORY 10
+      JEWELER 10
     }
     permanentEffects = {
       DISTILLATION_SKILL 1
@@ -2875,6 +2895,8 @@
     attr = {
       DAMAGE 21
       DEFENSE 25 
+      DIGGING 25
+      WORKSHOP 25
     }
     specialAttr = {
       DEFENSE { -7 Name "when outdoors" Not Indoors }
@@ -2889,11 +2911,7 @@
       pluralName = "dwarves"
       firstNameGen = "DWARF"
     }
-    skills = {
-      "WORKSHOP" 0.5
-    }
     permanentEffects = {
-      NAVIGATION_DIGGING_SKILL 1
       MAGIC_VULNERABILITY 1
     }
     chatReactionFriendly = "curses all orcs"
@@ -2907,6 +2925,7 @@
     attr = {
       DAMAGE 35
       DEFENSE 35
+      DIGGING 35
     }
     maxLevelIncrease = {
       MELEE 10
@@ -2916,7 +2935,7 @@
       firstNameGen = "DWARF"
     }
     body = append {
-      droppedPartUpgrade = IncreaseSkill DIGGING 1.0
+      droppedPartUpgrade = IncreaseAttr DIGGING 20
     }
     inventory = {
       { type = "BattleAxe", alternative = "WarHammer" prefixChance = 1 }
@@ -2937,9 +2956,9 @@
       name = "dwarf blacksmith"
     }
     aiType = RANGED
-    skills = {
-      "FORGE" 1.0
-      "FURNACE" 0.8
+    attr = append {
+      FORGE 50
+      FURNACE 40    
     }
     inventory = {}
   }
@@ -3010,6 +3029,7 @@
     attr = {
       DAMAGE 14
       DEFENSE 6 
+      JEWELER 48
     }
     body = {
       type = Humanoid MEDIUM
@@ -3017,9 +3037,6 @@
     chatReactionFriendly = "curses all dwarves"
     chatReactionHostile = "\"Die!\""
     spells = { "healing" }
-    skills = {
-      "JEWELER" 0.9
-    }
     aiType = RANGED
     maxLevelIncrease = {
       SPELL 1
@@ -3096,7 +3113,7 @@
     attr = {
       DAMAGE 22
       DEFENSE 14
-      SPELL_DAMAGE 16
+      SPELL_DAMAGE 36
       RANGED_DAMAGE 30 
     }
     aiType = RANGED
@@ -3121,7 +3138,7 @@
     }
     hatedByEffect = HATE_ELVES
     inventory = {
-      { type = "ElvenSword" prefixChance = 1 }
+      { "ElvenStaff" }
       { "LeatherArmor"}
       { "ElvenBow"}
       { "GoldPiece" 80 120 }
@@ -3227,7 +3244,7 @@
     attr = {
       DAMAGE 22
       DEFENSE 14
-      SPELL_DAMAGE 16 
+      SPELL_DAMAGE 36 
     }
     body = {
       type = Humanoid MEDIUM
@@ -3246,7 +3263,7 @@
     }
     hatedByEffect = HATE_ELVES
     inventory = {
-      { type = "ElvenSword" prefixChance = 1 }
+      { "ElvenStaff" }
       { "LeatherArmor"}
       { "ElvenBow"}
       { "GoldPiece" 80 120 }
@@ -3324,7 +3341,7 @@
       DEFENSE 24
     }
     afterKilledSomeone = {
-      ApplyToSteed CreatureMessage "are more experienced" "is more experienced"
+      ApplyToSteed CreatureMessage { "are more experienced" "is more experienced"}
       ApplyToSteed Polymorph "WARHORSE" none
     }
   }
@@ -3577,6 +3594,7 @@
     body = {
       type = FourLegged SMALL
       weight = 1
+      canBeRevived = false
     }
     aiType = RANGED
     permanentEffects = {
@@ -3654,7 +3672,8 @@
     viewId = { "ant_worker" }
     attr = {
       DAMAGE 16
-      DEFENSE 16 
+      DEFENSE 16
+      DIGGING 20 
     }
     body = {
       type = NonHumanoid MEDIUM
@@ -3675,10 +3694,8 @@
     viewId = { "ant_soldier" }
     attr = {
       DAMAGE 30
-      DEFENSE 20 
-    }
-    permanentEffects = {
-      NAVIGATION_DIGGING_SKILL 1
+      DEFENSE 20
+      DIGGING 20
     }
     body = {
       type = NonHumanoid MEDIUM
@@ -3705,7 +3722,8 @@
     viewId = { "ant_queen" }
     attr = {
       DAMAGE 30
-      DEFENSE 26 
+      DEFENSE 26
+      DIGGING 20
     }
     body = {
       type = NonHumanoid MEDIUM
@@ -3949,13 +3967,11 @@
       DAMAGE 15
       DEFENSE 20
       SPELL_DAMAGE 25 
+      LABORATORY 50
     }
     body = {
       type = Humanoid LARGE
       droppedPartUpgrade = { IncreaseAttr DEFENSE 3 Permanent FIRE_RESISTANT }
-    }
-    skills = {
-      "LABORATORY" 1
     }
     maxLevelIncrease = {
       SPELL 9
@@ -3967,7 +3983,7 @@
       FIRE_RESISTANT 1
       MAGIC_RESISTANCE 1
     }
-    companions = {5 false true 0.1 { "FIRE_ELEMENTAL" "AIR_ELEMENTAL" "WATER_ELEMENTAL" "EARTH_ELEMENTAL" }}
+    companions = {5 false SPELL_DAMAGE 0.1 { "FIRE_ELEMENTAL" "AIR_ELEMENTAL" "WATER_ELEMENTAL" "EARTH_ELEMENTAL" }}
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     name = {
@@ -3990,15 +4006,14 @@
       deathSound = none
       intrinsicAttacks = {
         TORSO {{{ Intrinsic { "fist_attack" }  "fists" 5 {
-            attackType = HIT attackMsg = SWING victimEffect = {1.0 Fire}} }}}
+            attackType = HIT attackMsg = SWING meleeAttackAttr = FIRE_DAMAGE } }}}
       }
     }
     attr = {
-      DAMAGE 20
+      FIRE_DAMAGE 20
       DEFENSE 30
     }
     permanentEffects = {
-      FIRE_RESISTANT 1
       FLYING 1
     }
     name = {
@@ -4401,20 +4416,18 @@
     }
     body = {
       type = Humanoid LARGE
-      droppedPartUpgrade = { IncreaseAttr DEFENSE 5 AddCompanion 6 true false 0.1 { "FLY" } }
+      droppedPartUpgrade = { IncreaseAttr DEFENSE 5 AddCompanion 6 true none 0.1 { "FLY" } }
     }
     attr = {
       DAMAGE 12
       DEFENSE 50
       SPELL_DAMAGE 50
+      LABORATORY 50
     }
     permanentEffects = {
       NO_FRIENDLY_FIRE 1
     }
     aiType = RANGED
-    skills = {
-      "LABORATORY" 1.0
-    }
     maxLevelIncrease = {
       MELEE 2
       SPELL 4
@@ -4479,7 +4492,7 @@ End
     }
     hatedByEffect = HATE_GREENSKINS
     inventory = {
-      { "Sword"}
+      { "Sceptre"}
       { type = "LeatherBoots" chance = 0.3 }
     }
   }
@@ -4513,15 +4526,13 @@ End
     attr = {
       DAMAGE 10
       DEFENSE 10 
+      DIGGING 10
     }
     body = {
       type = Humanoid MEDIUM
     }
     chatReactionFriendly = "talks about digging"
     chatReactionHostile = "\"Die!\""
-    skills = {
-      "DIGGING" 0.5
-    }
     hatedByEffect = HATE_GREENSKINS
     gender = MALE
     aiType = RANGED
@@ -4559,6 +4570,9 @@ End
     attr = {
       DAMAGE 16
       DEFENSE 15
+      FURNACE 5
+      WORKSHOP 15
+      FORGE 15
     }
     body = {
       type = Humanoid MEDIUM
@@ -4568,11 +4582,6 @@ End
     name = {
       name = "goblin warrior"
       firstNameGen = "ORC"
-    }
-    skills = {
-      "WORKSHOP" 0.3
-      "FORGE" 0.3
-      "FURNACE" 0.1
     }
     permanentEffects = {
       RIDER 1
@@ -4629,12 +4638,10 @@ End
       DAMAGE 5
       DEFENSE 10
       SPELL_DAMAGE 16
+      LABORATORY 35
     }
     body = {
       type = Humanoid MEDIUM
-    }
-    skills = {
-      "LABORATORY" 0.7
     }
     chatReactionFriendly = "talks about black magic"
     chatReactionHostile = "\"Die!\""
@@ -4740,11 +4747,11 @@ End
       intrinsicAttacks = {
         TORSO {{{ Intrinsic { "touch_attack" } "self destruct" 1 {
           attackType = HIT
-          meleeAttackAttr = SPELL_DAMAGE
+          meleeAttackAttr = FIRE_DAMAGE
           attackMsg = THRUST
           itselfMessage = true
           victimEffect = {1.0 Suicide DIE}
-          attackerEffect = {CircularBlast Area 1 Fire Suicide DIE} } }}}
+          attackerEffect = {CircularBlast Area 1 Fire{30} Suicide DIE} } }}}
       }
     }
     chatReactionFriendly = "talks about explosives"
@@ -4820,12 +4827,10 @@ End
     attr = {
       DAMAGE 10
       DEFENSE 10
-    }
-    skills = {
-      "WORKSHOP" 0.6
-      "FORGE" 0.6
-      "JEWELER" 0.6
-      "FURNACE" 0.5
+      FURNACE 25
+      WORKSHOP 30
+      FORGE 30
+      JEWELER 30
     }
     maxLevelIncrease = {}
     name = {
@@ -4954,9 +4959,9 @@ End
   }
 "VAMPIRE_LORD_NECRO" inherit "VAMPIRE_LORD"
   {
-    skills = append {
-      "MORGUE" 0.5
-      "LABORATORY" 0.5
+    attr = append {
+      MORGUE 25
+      LABORATORY 25
     }
   }
 
@@ -4968,17 +4973,15 @@ End
     attr = {
       DAMAGE 16
       DEFENSE 14 
+      FURNACE 5
+      WORKSHOP 15
+      FORGE 15
     }
     body = {
       type = Humanoid LARGE
     }
     chatReactionFriendly = "curses all elves"
     chatReactionHostile = "\"Die!\""
-    skills = {
-      "WORKSHOP" 0.3
-      "FORGE" 0.3
-      "FURNACE" 0.1
-    }
     maxLevelIncrease = {
       MELEE 7
     }
@@ -4999,12 +5002,10 @@ End
       DAMAGE 12
       DEFENSE 8
       SPELL_DAMAGE 16 
+      LABORATORY 25
     }
     body = {
       type = Humanoid LARGE
-    }
-    skills = {
-      "LABORATORY" 0.7
     }
     aiType = RANGED
     chatReactionFriendly = "curses all elves"
@@ -5038,7 +5039,7 @@ End
     }
     spellSchools = {}
     spells = { "heal spirit" }
-    companions = {4 false true 0.02 { "SPIRIT" }}
+    companions = {4 false SPELL_DAMAGE 0.02 { "SPIRIT" }}
     permanentEffects = append {
       DISTILLATION_SKILL 1
     }
@@ -5066,6 +5067,9 @@ End
     attr = {
       DAMAGE 18
       DEFENSE 18 
+      FURNACE 25
+      WORKSHOP 25
+      FORGE 25
     }
     body = {
       type = Humanoid LARGE
@@ -5077,11 +5081,6 @@ End
     }
     permanentEffects = {
       MAGIC_VULNERABILITY 1
-    }
-    skills = {
-      "WORKSHOP" 0.5
-      "FORGE" 0.5
-      "FURNACE" 0.8
     }
     maxLevelIncrease = {
       MELEE 12

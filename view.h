@@ -209,6 +209,8 @@ class View {
   /** Asks the player a yer-or-no question.*/
   bool yesOrNoPrompt(const string& message, bool defaultNo = false, ScriptedUIId = "yes_or_no");
 
+  void windowedMessage(ViewIdList, const string& message);
+
   /** Draws a window with some text. The text is formatted to fit the window.*/
   virtual void presentText(const string& title, const string& text) = 0;
   virtual void presentTextBelow(const string& title, const string& text) = 0;
@@ -244,7 +246,7 @@ class View {
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
   using BugReportSaveCallback = function<void(FilePath)>;
 
-  bool confirmConflictingItems(const vector<Item*>&);
+  bool confirmConflictingItems(const ContentFactory*, const vector<Item*>&);
 
   virtual void setBugReportSaveCallback(BugReportSaveCallback) = 0;
 
@@ -256,7 +258,7 @@ class View {
   enum class AvatarRole;
   struct AvatarData {
     vector<string> genderNames;
-    vector<ViewId> viewId;
+    vector<ViewObject> viewId;
     vector<vector<string>> firstNames;
     optional<TribeAlignment> alignment;
     string name;

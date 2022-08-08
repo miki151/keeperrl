@@ -442,7 +442,7 @@ void Level::unplaceCreature(Creature* creature, Vec2 pos) {
   modSafeSquare(pos)->removeCreature(Position(pos, this));
   model->increaseMoveCounter();
   forEachEffect(pos, creature->getTribeId(),
-      [&] (LastingEffect effect) {creature->removePermanentEffect(effect, 1, false);});
+      [&] (LastingOrBuff effect) {removePermanentEffect(effect, creature, false);});
   for (auto v : Position(pos, this).neighbors8())
     if (auto c = v.getCreature())
       c->updateViewObjectFlanking();
@@ -461,10 +461,10 @@ void Level::placeCreature(Creature* creature, Vec2 pos) {
   model->increaseMoveCounter();
   int numEffects = 0;
   forEachEffect(pos, creature->getTribeId(),
-      [&] (LastingEffect effect) {creature->addPermanentEffect(effect, 1, false); ++numEffects;});
+      [&] (LastingOrBuff effect) {addPermanentEffect(effect, creature, false); ++numEffects;});
   int numEffectsPrev = 0;
   if (prevPos.getLevel() == this)
-    forEachEffect(prevPos.getCoord(), creature->getTribeId(), [&] (LastingEffect) {++numEffectsPrev;});
+    forEachEffect(prevPos.getCoord(), creature->getTribeId(), [&] (LastingOrBuff) {++numEffectsPrev;});
   if (numEffects > numEffectsPrev)
     creature->verb("feel", "feels", "the presence of a magical field");
   creature->updateViewObjectFlanking();

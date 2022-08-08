@@ -20,6 +20,7 @@
 #include "spell_id.h"
 #include "view_id.h"
 #include "fx_info.h"
+#include "keybinding.h"
 
 class Effect;
 class Position;
@@ -37,8 +38,8 @@ class Spell {
   STRUCT_DECLARATIONS(Spell)
   const string& getSymbol() const;
   const Effect& getEffect() const;
-  int getCooldown() const;
-  vector<string> getDescription(const ContentFactory*) const;
+  Range getCooldown() const;
+  vector<string> getDescription(const Creature*, const ContentFactory*) const;
   void addMessage(Creature*) const;
   optional<SoundId> getSound() const;
   bool canTargetSelf() const;
@@ -51,7 +52,6 @@ class Spell {
   optional<SpellId> getUpgrade() const;
   void getAIMove(const Creature*, MoveInfo&) const;
   bool isBlockedBy(const Creature* c, Position pos) const;
-  optional<Keybinding> getKeybinding() const;
   SpellType getType() const;
   bool isFriendlyFire(const Creature* caster, Position to) const;
 
@@ -64,7 +64,7 @@ class Spell {
   optional<SpellId> SERIAL(upgrade);
   string SERIAL(symbol);
   HeapAllocated<Effect> SERIAL(effect);
-  int SERIAL(cooldown);
+  Range SERIAL(cooldown);
   pair<string, string> SERIAL(message) = {"cast a spell"_s, "casts a spell"_s};
   optional<SoundId> SERIAL(sound);
   int SERIAL(range) = 0;
@@ -74,7 +74,6 @@ class Spell {
   bool SERIAL(targetSelf) = false;
   bool SERIAL(blockedByWall) = true;
   optional<int> SERIAL(maxHits);
-  optional<Keybinding> SERIAL(keybinding);
   SpellType SERIAL(type) = SpellType::SPELL;
   int checkTrajectory(const Creature* caster, Position to) const;
 };

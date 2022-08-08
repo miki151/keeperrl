@@ -2,10 +2,10 @@
 #include "special_trait.h"
 #include "creature.h"
 #include "creature_attributes.h"
-#include "skill.h"
 #include "body.h"
 #include "workshops.h"
 #include "intrinsic_attack.h"
+#include "content_factory.h"
 
 optional<string> getExtraBodyPartPrefix(const ExtraBodyPart& part) {
   switch (part.part) {
@@ -29,20 +29,17 @@ void applySpecialTrait(GlobalTime globalTime, SpecialTrait trait, Creature* c, c
       [&] (const AttrBonus& t) {
         c->getAttributes().increaseBaseAttr(t.attr, t.increase);
       },
-      [&] (const SkillId& t) {
-        c->getAttributes().getSkills().increaseValue(t, 0.9);
-      },
       [&] (const SpecialAttr& t) {
         c->getAttributes().specialAttr[t.attr].push_back(make_pair(t.value, t.predicate));
       },
       [&] (const Lasting& effect) {
         if (effect.time)
-          c->addEffect(effect.effect, *effect.time, globalTime, false);
+          addEffect(effect.effect, c, *effect.time, globalTime, factory);
         else
-          c->addPermanentEffect(effect.effect);
+          addPermanentEffect(effect.effect, c, false, factory);
       },
       [&] (ExtraBodyPart part) {
-        c->getAttributes().add(part.part, part.count);
+        c->getAttributes().add(part.part, part.count, factory);
         if (auto prefix = getExtraBodyPartPrefix(part)) {
           c->getName().addBarePrefix(*prefix);
         }
@@ -54,7 +51,7 @@ void applySpecialTrait(GlobalTime globalTime, SpecialTrait trait, Creature* c, c
         c->getBody().addIntrinsicAttack(a.part, std::move(attack));
       },
       [&] (WorkshopType type) {
-        c->getAttributes().getSkills().setValue(type, Workshops::getLegendarySkillThreshold());
+        c->getAttributes().setBaseAttr(factory->workshopInfo.at(type).attr, Workshops::getLegendarySkillThreshold());
       },
       [&] (CompanionInfo type) {
         c->getAttributes().companions.push_back(type);

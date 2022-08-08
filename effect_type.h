@@ -22,6 +22,8 @@
 #include "tile_gas_type.h"
 #include "spell_school_id.h"
 #include "automaton_part.h"
+#include "lasting_or_buff.h"
+#include "player_message.h"
 
 #define SIMPLE_EFFECT(Name) \
   struct Name { \
@@ -48,8 +50,14 @@ struct Heal {
   double SERIAL(amount) = 1;
   SERIALIZE_ALL(NAMED(healthType), OPTION(amount))
 };
-SIMPLE_EFFECT(Fire);
-SIMPLE_EFFECT(Ice);
+struct Fire {
+  optional<int> SERIAL(amount);
+  SERIALIZE_ALL(NAMED(amount))
+};
+struct Ice {
+  optional<int> SERIAL(amount);
+  SERIALIZE_ALL(NAMED(amount))
+};
 SIMPLE_EFFECT(DestroyEquipment);
 struct DestroyWalls {
   DestroyAction::Type SERIAL(action);
@@ -63,7 +71,7 @@ struct Enhance {
   SERIALIZE_ALL(type, amount)
 };
 struct EmitGas {
-  TileGasType SERIAL(type); 
+  TileGasType SERIAL(type);
   double SERIAL(amount) = 0.8;
   SERIALIZE_ALL(type, amount)
 };
@@ -94,7 +102,10 @@ struct SummonEnemy {
   SERIALIZE_ALL(creature, count, ttl)
 };
 SIMPLE_EFFECT(SummonElement);
-SIMPLE_EFFECT(Acid);
+struct Acid {
+  optional<int> SERIAL(amount);
+  SERIALIZE_ALL(NAMED(amount))
+};
 struct Alarm {
   bool SERIAL(silent) = false;
   SERIALIZE_ALL(silent)
@@ -102,21 +113,21 @@ struct Alarm {
 
 struct Lasting {
   optional<TimeInterval> SERIAL(duration);
-  LastingEffect SERIAL(lastingEffect);
+  LastingOrBuff SERIAL(lastingEffect);
   SERIALIZE_ALL(duration, lastingEffect)
   void serialize(PrettyInputArchive& ar1, const unsigned int);
 };
 
 struct RemoveLasting {
-  LastingEffect SERIAL(lastingEffect);
+  LastingOrBuff SERIAL(lastingEffect);
   SERIALIZE_ALL(lastingEffect)
 };
 struct Permanent {
-  LastingEffect SERIAL(lastingEffect);
+  LastingOrBuff SERIAL(lastingEffect);
   SERIALIZE_ALL(lastingEffect)
 };
 struct RemovePermanent {
-  LastingEffect SERIAL(lastingEffect);
+  LastingOrBuff SERIAL(lastingEffect);
   SERIALIZE_ALL(lastingEffect)
 };
 struct PlaceFurniture {
@@ -139,18 +150,6 @@ struct IncreaseAttr {
   int SERIAL(amount);
   const char* get(const char* ifIncrease, const char* ifDecrease) const;
   SERIALIZE_ALL(attr, amount)
-};
-struct IncreaseSkill {
-  SkillId SERIAL(skillid);
-  double SERIAL(amount);
-  const char* get(const char* ifIncrease, const char* ifDecrease) const;
-  SERIALIZE_ALL(skillid, amount)
-};
-struct IncreaseWorkshopSkill {
-  WorkshopType SERIAL(workshoptype);
-  double SERIAL(amount);
-  const char* get(const char* ifIncrease, const char* ifDecrease) const;
-  SERIALIZE_ALL(workshoptype, amount)
 };
 struct InjureBodyPart {
   BodyPart SERIAL(part);
@@ -241,7 +240,8 @@ struct UnseenMessage {
 struct CreatureMessage {
   string SERIAL(secondPerson);
   string SERIAL(thirdPerson);
-  SERIALIZE_ALL(secondPerson, thirdPerson)
+  MessagePriority SERIAL(priority) = MessagePriority::NORMAL;
+  SERIALIZE_ALL(NAMED(secondPerson), NAMED(thirdPerson), OPTION(priority))
 };
 struct PlayerMessage {
   string SERIAL(text);
@@ -469,8 +469,8 @@ struct ApplyToSteed : GenericModifierEffect {
   X(Description, 61)\
   X(Name, 62)\
   X(AI, 63)\
-  X(IncreaseSkill, 64)\
-  X(IncreaseWorkshopSkill, 65)\
+  X(ApplyToSteed, 64)\
+  X(ItemPrefix, 65)\
   X(AddAutomatonPart, 66)\
   X(AddMinionTrait, 67)\
   X(RemoveMinionTrait, 68)\
@@ -499,9 +499,7 @@ struct ApplyToSteed : GenericModifierEffect {
   X(Price, 91)\
   X(IncreaseMaxLevel, 92)\
   X(EquipmentType, 93)\
-  X(AddSpellSchool, 94)\
-  X(ItemPrefix, 95)\
-  X(ApplyToSteed, 96)
+  X(AddSpellSchool, 94)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

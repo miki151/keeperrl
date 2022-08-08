@@ -5,6 +5,8 @@
 #include "furniture_type.h"
 #include "creature_id.h"
 #include "gender.h"
+#include "lasting_or_buff.h"
+#include "body_material_id.h"
 
 #define SIMPLE_PREDICATE(Name) \
   struct Name { \
@@ -30,11 +32,16 @@ SIMPLE_PREDICATE(CanCreatureEnter);
 SIMPLE_PREDICATE(SameTribe);
 
 struct HatedBy {
-  LastingEffect SERIAL(effect);
+  BuffId SERIAL(effect);
   SERIALIZE_ALL(effect)
 };
 
 struct Ingredient {
+  string SERIAL(name);
+  SERIALIZE_ALL(name)
+};
+
+struct OnTheGround {
   string SERIAL(name);
   SERIALIZE_ALL(name)
 };
@@ -120,6 +127,9 @@ struct Frequency {
   SERIALIZE_ALL(value)
 };
 
+using LastingEffect = LastingOrBuff;
+using BodyMaterial = BodyMaterialId;
+
 #define CREATURE_PREDICATE_LIST\
   X(Enemy, 0)\
   X(Automaton, 1)\
@@ -128,7 +138,7 @@ struct Frequency {
   X(BodyMaterial, 4)\
   X(HatedBy, 5)\
   X(Ingredient, 6)\
-  X(Hidden, 7)\
+  X(OnTheGround, 7)\
   X(Flag, 8)\
   X(CreatureFlag, 9)\
   X(Name, 10)\
@@ -157,7 +167,8 @@ struct Frequency {
   X(CanCreatureEnter, 33)\
   X(Area, 34)\
   X(Frequency, 35)\
-  X(SameTribe, 36)
+  X(SameTribe, 36)\
+  X(Hidden, 37)\
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST
@@ -176,6 +187,6 @@ struct CreaturePredicate : CreaturePredicates::CreaturePredicate {
   using CreaturePredicates::CreaturePredicate::CreaturePredicate;
   bool apply(Position, const Creature* attacker) const;
   bool apply(Creature*, const Creature* attacker) const;
-  string getName() const;
-  string getNameInternal(bool negated = false) const;
+  string getName(const ContentFactory*) const;
+  string getNameInternal(const ContentFactory*, bool negated = false) const;
 };

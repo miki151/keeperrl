@@ -59,12 +59,16 @@ void GuardianInfo::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(GuardianInfo);
 
-static optional<BedType> getBedType(const Creature* c) {
-  if (!c->getBody().needsToSleep())
+BedType CollectiveConfig::getPrisonBedType(const Creature* c) {
+  return c->getBody().isHumanoid() ? BedType::PRISON : BedType::CAGE;
+}
+
+static optional<BedType> getBedType(const Creature* c, const ContentFactory* factory) {
+  if (c->getBody().isImmuneTo(LastingEffect::SLEEP, factory))
     return none;
   if (c->getStatus().contains(CreatureStatus::PRISONER))
-    return BedType::PRISON;
-  if (c->getBody().isUndead())
+    return CollectiveConfig::getPrisonBedType(c);
+  if (c->getBody().isUndead(factory))
     return BedType::COFFIN;
   if (c->getBody().isHumanoid())
     return BedType::BED;
@@ -76,7 +80,7 @@ void CollectiveConfig::addBedRequirementToImmigrants(vector<ImmigrantInfo>& immi
   for (auto& info : immigrantInfo) {
     PCreature c = factory->getCreatures().fromId(info.getId(0), TribeId::getDarkKeeper());
     if (info.getInitialRecruitment() == 0)
-      if (auto bedType = getBedType(c.get())) {
+      if (auto bedType = getBedType(c.get(), factory)) {
         bool hasBed = false;
         info.visitRequirements(makeVisitor(
             [&](const AttractionInfo& attraction) -> void {
@@ -270,7 +274,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
         return {[](const ContentFactory* f, const Collective*, const Creature* c, FurnitureType t) {
             if (!c)
               return !!f->furniture.getData(t).getBedType();
-            return getBedType(c) == f->furniture.getData(t).getBedType();
+            return getBedType(c, f) == f->furniture.getData(t).getBedType();
           }};
       case MinionActivity::EAT:
         return {[](const ContentFactory* f, const Collective* col, const Creature* c, FurnitureType t) {
@@ -313,13 +317,13 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
             if (t == FurnitureType("FURNACE")) {
               if (!c || !col)
                 return true;
-              auto skill = c->getAttributes().getSkills().getValue(SkillId::FURNACE);
+              auto skill = c->getAttr(AttrType("FURNACE"));
               return skill > 0 && !col->getFurnace().isIdle();
             } else
             if (auto type = f->getWorkshopType(t)) {
               if (!c || !col)
                 return true;
-              auto skill = c->getAttributes().getSkills().getValue(*type);
+              auto skill = c->getAttr(f->workshopInfo.at(*type).attr);
               auto workshop = getReferenceMaybe(col->getWorkshops().types, *type);
               return skill > 0 && !!workshop && !workshop->isIdle(col, skill, c->getMorale().value_or(0));
             } else

@@ -2,7 +2,6 @@
 
 #include "extern/iomanip.h"
 #include "util.h"
-#include "key_verifier.h"
 
 struct PrettyException {
   string text;
@@ -26,12 +25,14 @@ enum class BracketType {
   CURLY
 };
 
+class KeyVerifier;
+
 class PrettyInputArchive {
   public:
     PrettyInputArchive(const vector<string>& inputs, const vector<string>& filenames, KeyVerifier* v);
 
     string eat(const char* expected = nullptr);
-    
+
     struct LoaderInfo {
       string name;
       function<void(bool)> load;
@@ -49,6 +50,7 @@ class PrettyInputArchive {
     }
 
     void error(const string& s);
+    StreamPosStack getCurrentPosition();
 
     template <typename T>
     bool readMaybe(T& elem) {
@@ -124,9 +126,9 @@ class PrettyInputArchive {
     bool nextElemInherited = false;
     std::istringstream is;
     vector<StreamPosStack> streamPos;
-    KeyVerifier dummyKeyVerifier;
     vector<string> filenames;
     void throwException(const StreamPosStack&, const string&);
+    string positionToString(const StreamPosStack&);
     using DefsMap = map<pair<string, int>, DefInfo>;
     pair<DefsMap, vector<StreamChar>> parseDefs(const vector<StreamChar>& content);
     vector<StreamChar> preprocess(const vector<StreamChar>& content);
@@ -208,6 +210,7 @@ serialize(PrettyInputArchive& ar, T& t) {
 void serialize(PrettyInputArchive& ar, std::string& t);
 void serialize(PrettyInputArchive& ar, char& c);
 void serialize(PrettyInputArchive& ar, bool& c);
+void serialize(PrettyInputArchive& ar, int& c);
 
 struct PrettyFlag {
   bool value = false;
@@ -255,6 +258,20 @@ inline void serialize(Archive& ar1, VectorWithRoundBrackets<T>& v) {
   ar1(v.v);
 }
 
+template <typename T, typename H>
+inline void serialize(PrettyInputArchive& ar1, unordered_set<T, H>& v) {
+  if (!ar1.eatMaybe("append"))
+    v.clear();
+  auto bracketType = BracketType::CURLY;
+  ar1.openBracket(bracketType);
+  while (!ar1.isCloseBracket(bracketType)) {
+    T t;
+    ar1(t);
+    v.insert(std::move(t));
+  }
+  ar1.closeBracket(bracketType);
+}
+
 template <typename T, std::size_t N>
 inline void serialize(PrettyInputArchive& ar1, array<T, N>& a) {
   ar1.openBracket(BracketType::CURLY);
@@ -263,29 +280,29 @@ inline void serialize(PrettyInputArchive& ar1, array<T, N>& a) {
   ar1.closeBracket(BracketType::CURLY);
 }
 
-template <typename T, typename U>
-inline void serialize(PrettyInputArchive& ar1, map<T, U>& m) {
+template <typename M>
+inline void serializeMap(PrettyInputArchive& ar1, M& m) {
   if (!ar1.eatMaybe("append"))
     m.clear();
   string s;
   ar1.readText(s);
   if (s != "{")
     ar1.error("Expected list of items surrounded by { and }");
-  set<T> keys;
+  set<typename M::key_type> keys;
   while (1) {
     if (ar1.peek() == "}")
       break;
-    T key;
+    typename M::key_type key;
     ar1(key);
     if (ar1.peek() != "modify" && keys.count(key))
       ar1.error("Duplicate key");
     keys.insert(key);
-    U value;
+    typename M::mapped_type value;
     vector<long> toRead;
     bool wasInherited = false;
     bool modifying = false;
     if (ar1.eatMaybe("inherit") || (modifying = ar1.eatMaybe("modify"))) {
-      T inheritKey;
+      typename M::key_type inheritKey;
       ar1.inheritingKey = true;
       if (!modifying)
         ar1(inheritKey);
@@ -306,6 +323,16 @@ inline void serialize(PrettyInputArchive& ar1, map<T, U>& m) {
     m.insert(make_pair(std::move(key), std::move(value)));
   }
   ar1.eat("}");
+}
+
+template <typename T, typename U>
+inline void serialize(PrettyInputArchive& ar1, map<T, U>& m) {
+  serializeMap(ar1, m);
+}
+
+template <typename T, typename U, typename H>
+inline void serialize(PrettyInputArchive& ar1, unordered_map<T, U, H>& m) {
+  serializeMap(ar1, m);
 }
 
 template <typename T, typename U>

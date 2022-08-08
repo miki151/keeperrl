@@ -441,7 +441,7 @@ void Renderer::setVsync(bool on) {
 }
 
 Renderer::Renderer(Clock* clock, const string& title, const DirectoryPath& fontPath,
-    const FilePath& cursorP, const FilePath& clickedCursorP, const FilePath& logoPath)
+    const FilePath& cursorP, const FilePath& clickedCursorP, const FilePath& iconPath)
     : cursorPath(cursorP), clickedCursorPath(clickedCursorP), clock(clock) {
   CHECK(SDL::SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0) << SDL::SDL_GetError();
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
@@ -457,6 +457,8 @@ Renderer::Renderer(Clock* clock, const string& title, const DirectoryPath& fontP
   originalCursor = SDL::SDL_GetCursor();
   initOpenGL();
   loadFonts(fontPath, fonts);
+  auto icon = SDL::IMG_Load(iconPath.getPath());
+  SDL_SetWindowIcon(window, icon);
 }
 
 Vec2 getOffset(Vec2 sizeDiff, double scale) {
@@ -472,7 +474,7 @@ void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, Vec2 size, Co
           : (Vec2(nominalSize, nominalSize) - coord.size).mult(size) / (nominalSize * 2);
     Vec2 tileSize = scale ? coord.size * *scale : coord.size.mult(size) / nominalSize;
     if (coord.size.y > nominalSize)
-      off.y *= 2;
+      off.y -= 3 * size.y / nominalSize;
     drawSprite(pos + off, coord.pos.mult(coord.size), coord.size, *coord.texture, tileSize, color, orientation);
   };
   if (secondColor && coords.size() > 1) {
@@ -487,6 +489,30 @@ void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, Vec2 size, Co
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, Color color) {
   drawViewObject(pos, id, true, 1, color);
+}
+
+void Renderer::drawViewObject(Vec2 pos, ViewIdList id, bool useSprite, double scale, Color color) {
+  for (int i : All(id)) {
+    const Tile& tile = tileSet->getTile(id[i], useSprite);
+    if (tile.hasSpriteCoord()) {
+      optional<Color> colorVariant;
+      if (!tile.animated)
+        colorVariant = id[i].getColor();
+      auto thisPos = pos;
+      auto coord = tile.getSpriteCoord(DirSet::fullSet());
+      if (tile.weaponOrigin && i < id.size() - 1) {
+        auto creatureTile = tileSet->getTile(id[i + 1], useSprite);
+        if (creatureTile.weaponOrigin) {
+          auto weaponSize = coord[0].size;
+          auto creatureSize = creatureTile.getSpriteCoord(DirSet::fullSet())[0].size;
+          thisPos -= (*tile.weaponOrigin - *creatureTile.weaponOrigin + (creatureSize - weaponSize) / 2) * scale;
+        }
+      }
+      drawTile(thisPos, coord, Vec2(), color * tile.color, {}, colorVariant, scale);
+    } else
+      drawText(tile.symFont ? FontId::SYMBOL_FONT : FontId::TEXT_FONT, 20 * scale, color * tile.color,
+          pos + Vec2(scale * nominalSize / 2, 0), tile.text, HOR);
+  }
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale, Color color) {
@@ -517,6 +543,16 @@ void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite
 }
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, double scale, Color color) {
+  const Tile& tile = tileSet->getTile(object.id(), useSprite);
+  if (object.weaponViewId && tile.weaponOrigin) {
+    const Tile& weaponTile = tileSet->getTile(*object.weaponViewId, useSprite);
+    if (weaponTile.weaponOrigin) {
+      auto size = tile.getSpriteCoord(DirSet::fullSet())[0].size;
+      auto weaponSize = weaponTile.getSpriteCoord(DirSet::fullSet())[0].size;
+      drawViewObject(pos - (*weaponTile.weaponOrigin - *tile.weaponOrigin + (size - weaponSize) / 2) * scale, *object.weaponViewId,
+          useSprite, scale, Color::WHITE);
+    }
+  }
   drawViewObject(pos, object.id(), useSprite, scale, color);
 }
 

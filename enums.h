@@ -27,10 +27,8 @@ enum class GameSaveType;
 enum class CollectiveConfigId;
 enum class MsgType;
 enum class BodyPart;
-enum class BodyMaterial;
 enum class AttackType;
 enum class AttackLevel;
-enum class AttrType;
 enum class ExperienceType;
 enum class ItemClass;
 enum class EquipmentSlot;
@@ -68,7 +66,6 @@ class ViewId;
 enum class AnimationId;
 enum class MouseButtonId;
 
-enum class SkillId;
 enum class VisionId;
 
 enum class LastingEffect;
@@ -77,7 +74,6 @@ enum class ItemIndex;
 
 enum class CollectiveWarning;
 enum class SoundId;
-enum class Keybinding;
 enum class TutorialHighlight;
 
 enum class MessagePriority;
@@ -126,6 +122,10 @@ class NameGeneratorId;
 class BiomeId;
 class WorkshopType;
 class CollectiveResourceId;
+class AttrType;
+class BuffId;
+class BodyMaterialId;
+class Keybinding;
 using EffectAIIntent = int;
 
 using SteamId = unsigned long long;

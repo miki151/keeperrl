@@ -183,7 +183,6 @@ class GuiBuilder {
   SGuiElem drawAttributesOnPage(vector<SGuiElem>);
   SGuiElem drawEquipmentAndConsumables(const PlayerInfo&, bool infoOnly = false);
   SGuiElem drawEquipmentGroups(const PlayerInfo&);
-  vector<SGuiElem> drawSkillsList(const vector<SkillInfo>&);
   SGuiElem drawSpellsList(const vector<SpellInfo>&, GenericId creatureId, bool active);
   SGuiElem getSpellIcon(const SpellInfo&, int index, bool active, GenericId creatureId);
   vector<SGuiElem> drawEffectsList(const PlayerInfo&, bool withTooltip = true);
@@ -285,7 +284,6 @@ class GuiBuilder {
   vector<SGuiElem> getMultiLine(const string& text, Color, MenuType, int maxWidth, int fontSize);
   SGuiElem getHighlight(SGuiElem line, MenuType, const string& label, int numActive, optional<int>* highlight);
   string getPlayerTitle(PlayerInfo&);
-  SDL::SDL_KeyboardEvent getHotkeyEvent(char);
   shared_ptr<MapGui> mapGui;
   int getImmigrantAnimationOffset(milliseconds initTime);
   HeapAllocated<CallCache<SGuiElem>> cache;

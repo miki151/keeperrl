@@ -32,7 +32,7 @@ static void handle(const FurnitureTickTypes::Trap& trap, Position pos, Furniture
       Position curPos = pos.plus(dirs[dirInd] * i);
       if (Creature* other = curPos.getCreature()) {
         if (!other->getTribe()->getFriendlyTribes().contains(furniture->getTribe())) {
-          if (!other->isAffected(LastingEffect::DISARM_TRAPS_SKILL)) {
+          if (!other->isAffected(BuffId("DISARM_TRAPS_SKILL"))) {
             pos.removeFurniture(furniture);
             trap.effects[dirInd].apply(pos, furniture->getCreator());
           } else {
@@ -71,7 +71,7 @@ static void handle(const FurnitureTickTypes::MeteorShower, Position position, Fu
         continue;
     targetPoint.plus(direction * range).throwItem(
         makeVec(ItemType(CustomItemId("Rock")).get(position.getGame()->getContentFactory())),
-        Attack(furniture->getCreator(), AttackLevel::MIDDLE, AttackType::HIT, 25, AttrType::DAMAGE),
+        Attack(furniture->getCreator(), AttackLevel::MIDDLE, AttackType::HIT, 25, AttrType("DAMAGE")),
         10,
         position.minus(direction),
         VisionId::NORMAL);

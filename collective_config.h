@@ -97,7 +97,8 @@ class CollectiveConfig {
   bool alwaysMountSteeds() const;
 
   static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&, ContentFactory*);
-
+  static BedType getPrisonBedType(const Creature*);
+  
   bool hasImmigrantion(bool currentlyActiveModel) const;
   static const MinionActivityInfo& getActivityInfo(MinionActivity);
 

@@ -8,6 +8,10 @@
 
 struct ScriptedUIData;
 
+namespace SDL {
+struct SDL_Keysym;
+}
+
 namespace ScriptedUIDataElems {
 
 using Label = string;
@@ -17,12 +21,18 @@ struct Callback {
     FATAL << "Can't deserialize Callback";
   }
 };
+struct KeyCatcherCallback {
+  function<void(SDL::SDL_Keysym)> fun;
+  template <class Archive> void serialize(Archive& ar1, const unsigned int) {
+    FATAL << "Can't deserialize KeyCatcherCallback";
+  }
+};
 struct SliderData {
   function<bool(double)> callback;
   double initialPos;
   bool continuousCallback;
   template <class Archive> void serialize(Archive& ar1, const unsigned int) {
-    FATAL << "Can't deserialize Callback";
+    FATAL << "Can't deserialize SliderData";
   }
 };
 struct SliderState {
@@ -42,7 +52,8 @@ using ::ViewIdList;
   X(Callback, 2)\
   X(SliderData, 3)\
   X(Record, 4)\
-  X(List, 5)
+  X(List, 5)\
+  X(KeyCatcherCallback, 6)
 
 #define VARIANT_NAME ScriptedUIDataImpl
 #include "gen_variant.h"

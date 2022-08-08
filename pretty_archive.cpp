@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "pretty_archive.h"
+#include "key_verifier.h"
 
-void PrettyInputArchive::throwException(const StreamPosStack& positions, const string& message) {
+string PrettyInputArchive::positionToString(const StreamPosStack& positions) {
   string allPos;
   for (auto& pos : positions)
     if (pos.line > -1) {
@@ -10,7 +11,11 @@ void PrettyInputArchive::throwException(const StreamPosStack& positions, const s
         f = filenames[pos.filename] + ": "_s;
       allPos += f + "line: "_s + toString(pos.line) + " column: " + toString<int>(pos.column) + ":\n";
     }
-  throw PrettyException{allPos + message};
+  return allPos;
+}
+
+void PrettyInputArchive::throwException(const StreamPosStack& positions, const string& message) {
+  throw PrettyException{positionToString(positions) + message};
 }
 
 static bool contains(const vector<StreamChar>& a, const string& substring, int index) {
@@ -104,7 +109,7 @@ optional<string> scanWord(const vector<StreamChar>& s, int& index) {
   int origIndex = index;
   while (index < s.size() && isspace(s[index].c))
     ++index;
-  while (index < s.size() && isalnum(s[index].c))
+  while (index < s.size() && (isalnum(s[index].c) || s[index].c == '_'))
     ret += s[index++].c;
   if (ret.empty()) {
     index = origIndex;
@@ -192,14 +197,17 @@ vector<StreamChar> PrettyInputArchive::preprocess(const vector<StreamChar>& cont
           for (int argNum : All(args)) {
             bool bodyInQuote = false;
             for (int bodyIndex = 0; bodyIndex < body.size(); ++bodyIndex) {
+              const auto started = bodyIndex;
               if (body[bodyIndex].c == '"' && (bodyIndex == 0 || body[bodyIndex - 1].c != '\\'))
                 bodyInQuote = !bodyInQuote;
               eatWhitespace(body, bodyIndex);
-              auto beginOccurrence = bodyIndex;
+              const auto beginOccurrence = bodyIndex;
               if (!bodyInQuote && scanWord(body, bodyIndex) == def->args[argNum]) {
                 replaceInStream(body, beginOccurrence, bodyIndex - beginOccurrence, args[argNum]);
                 bodyIndex = beginOccurrence + args[argNum].size();
               }
+              if (started != bodyIndex)
+                --bodyIndex;
             }
           }
           replaceInStream(ret, beginCall, argsPos - beginCall, body);
@@ -233,7 +241,7 @@ vector<StreamChar> removeFormatting(string contents, signed char filename) {
       while (contents[i] != '\n' && i < contents.size())
         ++i;
     }
-    else if (isOneOf(contents[i], '{', '}', ',', ')', '(') && !inQuote) {
+    else if (isOneOf(contents[i], '{', '}', ',', ')', '(', '+') && !inQuote) {
       addChar(cur, ' ');
       addChar(cur, contents[i]);
       addChar(cur, ' ');
@@ -251,6 +259,8 @@ vector<StreamChar> removeFormatting(string contents, signed char filename) {
   }
   return ret;
 }
+
+static KeyVerifier dummyKeyVerifier;
 
 PrettyInputArchive::PrettyInputArchive(const vector<string>& inputs, const vector<string>& filenames, KeyVerifier* v)
   : keyVerifier(v ? *v : dummyKeyVerifier), filenames(filenames) {
@@ -316,10 +326,13 @@ string PrettyInputArchive::eat(const char* expected) {
   return s;
 }
 
-void PrettyInputArchive::error(const string& s) {
+StreamPosStack PrettyInputArchive::getCurrentPosition() {
   int n = (int) is.tellg();
-  auto pos = streamPos.empty() ? StreamPosStack() : streamPos[max(0, min<int>(n, streamPos.size() - 1))];
-  throwException(pos, s);
+  return streamPos.empty() ? StreamPosStack() : streamPos[max(0, min<int>(n, streamPos.size() - 1))];
+}
+
+void PrettyInputArchive::error(const string& s) {
+  throwException(getCurrentPosition(), s);
 }
 
 bool PrettyInputArchive::eatMaybe(const string& s) {
@@ -416,13 +429,26 @@ void prettyEpilogue(PrettyInputArchive& ar1) {
 }
 
 void serialize(PrettyInputArchive& ar, string& t) {
-  auto bookmark = ar.bookmark();
-  string tmp;
-  ar.readText(tmp);
-  if (tmp[0] != '\"')
-    ar.error("Expected quoted string, got: " + tmp);
-  ar.seek(bookmark);
-  ar.readText(std::quoted(t));
+  t.clear();
+  while (true) {
+    auto bookmark = ar.bookmark();
+    string tmp = ar.peek();
+    if (isdigit(tmp[0])) {
+      int value;
+      ar.is >> value;
+      t += toString(value);
+      if (!ar.eatMaybe("+"))
+        break;
+    } else {
+      if (tmp[0] != '\"')
+        ar.error("Expected quoted string, got: " + tmp);
+      string next;
+      ar.readText(std::quoted(next));
+      t += next;
+      if (!ar.eatMaybe("+"))
+        break;
+    }
+  }
 }
 
 void serialize(PrettyInputArchive& ar, char& c) {
@@ -470,4 +496,70 @@ EndPrettyInput& endInput() {
 SetRoundBracket& roundBracket() {
   static SetRoundBracket ret;
   return ret;
+}
+
+namespace {
+struct Expression {
+  PrettyInputArchive& ar;
+
+  char pop() {
+    char c = ' ';
+    while (isspace(c))
+      c = ar.is.get();
+    return c;
+  }
+
+  char peek() {
+    while (isspace(ar.is.peek()))
+      ar.is.get();
+    return ar.is.peek();
+  }
+
+  int factor() {
+    if (isdigit(peek()) || peek() == '-') {
+      int result;
+      ar.is >> result;
+      return result;
+    } else
+    if (peek() == '(') {
+      pop();
+      int result = expression();
+      pop();
+      return result;
+    }
+    ar.error("Error reading arithmetic expression: " + string(1, peek()));
+    return 0;
+  }
+
+  int term() {
+    int result = factor();
+    while (isOneOf(peek(), '*', '/')) {
+      if (pop() == '*')
+        result *= factor();
+      else
+        result /= factor();
+    }
+    return result;
+  }
+
+  int expression() {
+    int result = term();
+    while (isOneOf(peek(), '+', '-')) {
+      if (pop() == '+')
+       result += term();
+      else
+        result -= term();
+    }
+    return result;
+  }
+};
+}
+
+void serialize(PrettyInputArchive& ar, int& c) {
+  if (ar.isOpenBracket(BracketType::ROUND)) {
+    ar.openBracket(BracketType::ROUND);
+    c = Expression{ar}.expression();
+    ar.closeBracket(BracketType::ROUND);
+  } else
+    ar.readText(c);
 }

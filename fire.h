@@ -25,11 +25,12 @@ class Fire {
   void set();
   bool isBurning() const;
   bool isBurntOut() const;
+  int getBurnState() const;
 
   SERIALIZATION_DECL(Fire)
 
   private:
   int SERIAL(burnTime);
-  bool SERIAL(burning) = false;
+  optional<int> SERIAL(burnState);
 };
 

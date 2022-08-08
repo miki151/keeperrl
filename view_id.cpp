@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "util.h"
 #include "view_id.h"
+#include "key_verifier.h"
 
 ViewId::ViewId(ContentId::InternalId id) : ContentId(id) {}
 
@@ -56,7 +57,7 @@ void ViewId::serialize(PrettyInputArchive& ar1, unsigned) {
   if (colorInfo != Color::WHITE)
     color = colorInfo;
   *this = ViewId(id.data(), colorInfo);
-  ar1.keyVerifier.verifyContentId<ViewId>(id);
+  ar1.keyVerifier.verifyContentId<ViewId>(ar1.positionToString(ar1.getCurrentPosition()), id);
 }
 
 #include "text_serialization.h"

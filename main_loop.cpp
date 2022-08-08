@@ -841,6 +841,7 @@ void MainLoop::start(bool tilesPresent) {
   considerFreeVersionText(tilesPresent);
   considerGameEventsPrompt();
   int lastIndex = 0;
+  const auto vanillaContent = createContentFactory(true);
   while (1) {
     playMenuMusic();
     optional<int> choice;
@@ -856,7 +857,7 @@ void MainLoop::start(bool tilesPresent) {
         view->reset();
         break;
       }
-      case 1: options->handle(view, OptionSet::GENERAL); break;
+      case 1: options->handle(view, &vanillaContent, OptionSet::GENERAL); break;
       case 2: highscores->present(view); break;
       case 3: showCredits(dataFreePath.file("credits.txt")); break;
       case 4: return;

@@ -1,16 +1,16 @@
 EVIL_KEEPER {
     # Line goes like this:
     # ViewId EnemyId Villain-name Villain-type [always present on campaign map (false by default)]
-    {{ "duke4" } "KNIGHTS" "Knights" MAIN}
-    {{ "elf_lord" } "ELVES" "Elves" MAIN}
-    {{ "dwarf_baron" } "DWARVES" "Dwarves" MAIN}
+    {{ {"sword_v"} { "duke4" }} "KNIGHTS" "Knights" MAIN}
+    {{ { "elven_staff_v" ColorId LIGHT_GREEN } {"elf_lord"} } "ELVES" "Elves" MAIN}
+    {{ { "battle_axe_v"} {"dwarf_baron" } } "DWARVES" "Dwarves" MAIN}
     {{ "red_dragon" } "RED_DRAGON" "Red dragon" MAIN}
     {{ "red_dragon" Rgb 240 240 240 255 } "WHITE_DRAGON" "White dragon" MAIN}
-    {{ "elementalist" } "ELEMENTALIST" "Elementalist" MAIN}
+    {{ { "iron_staff_v"} {"elementalist"} } "ELEMENTALIST" "Elementalist" MAIN}
     {{ "red_dragon" Rgb 10 240 10 255 } "GREEN_DRAGON" "Green dragon" MAIN}
     {{ "lizardlord" } "LIZARDMEN" "Lizardmen" MAIN}
-    {{ "shaman" } "WARRIORS" "Warriors" MAIN}
-    {{ "thief_leader" } "THIEVES" "Thieves" MAIN}
+    {{ { "wooden_staff_v"} {"shaman"} } "WARRIORS" "Warriors" MAIN}
+    {{ { "sword_v" } {"thief_leader" }} "THIEVES" "Thieves" MAIN}
     {{ "demon_lord" } "DEMON_DEN" "Demon den" MAIN}
     {{ "dungeon_entrance" ColorId RED } "MAIN_DUNGEON" "Unremarkable dungeon" MAIN true}
 
@@ -26,7 +26,7 @@ EVIL_KEEPER {
     {{ "unknown_monster" } "GOBLIN_CAVE_ALLY" "Unknown" ALLY}
     {{ "unknown_monster" } "HARPY_CAVE" "Unknown" ALLY}
     {{ "unknown_monster" } "SOKOBAN" "Unknown" ALLY}
-    {{ "dark_elf_lord" } "DARK_ELVES_ALLY" "Dark elves" ALLY}
+    {{ { "elven_staff_v" } {"dark_elf_lord" }} "DARK_ELVES_ALLY" "Dark elves" ALLY}
     {{ "gnome_boss" } "GNOMES" "Gnomes" ALLY}
 }
 
@@ -34,8 +34,8 @@ LAWFUL_KEEPER {
     {{ "red_dragon" } "RED_DRAGON" "Red dragon" MAIN}
     {{ "red_dragon" Rgb 10 240 10 255 } "GREEN_DRAGON" "Green dragon" MAIN}
     {{ "red_dragon" Rgb 240 240 240 255 } "WHITE_DRAGON" "White dragon" MAIN}
-    {{ "dark_elf_lord" } "DARK_ELVES_ENEMY" "Dark elves" MAIN}
-    {{ "goblin_keeper4" } "GOBLIN_VILLAGE" "Goblin town" MAIN}
+    {{ { "elven_staff_v" } {"dark_elf_lord" }} "DARK_ELVES_ENEMY" "Dark elves" MAIN}
+    {{ { "sceptre_v"} {"goblin_keeper4" }} "GOBLIN_VILLAGE" "Goblin town" MAIN}
     {{ "demon_lord" } "DEMON_DEN" "Demon den" MAIN}
     {{ "lizardlord" } "LIZARDMEN" "Lizardmen" MAIN}
 
@@ -43,27 +43,27 @@ LAWFUL_KEEPER {
     {{ "cyclops" } "CYCLOPS" "Cyclops" LESSER}
     {{ "hydra" } "HYDRA" "Hydra" LESSER}
     {{ "zombie" } "CEMETERY" "Zombies" LESSER}
-    {{ "goblin_warrior" } "GOBLIN_CAVE" "Goblins" LESSER}
+    {{ {"sword_v"} {"goblin_warrior" }} "GOBLIN_CAVE" "Goblins" LESSER}
     {{ "harpy" } "HARPY_CAVE" "Harpies" LESSER}
     {{ "ant_queen" } "ANTS_OPEN" "Ants" LESSER}
     {{ "dungeon_entrance" ColorId RED } "MAIN_DUNGEON" "Unremarkable dungeon" MAIN true}
 
-    {{ "dwarf_baron" } "DWARVES" "Dwarves" ALLY}
-    {{ "teuton_boss" } "TEUTONS" "Teutonic Knights" ALLY}
+    {{ { "battle_axe_v"} {"dwarf_baron" } } "DWARVES" "Dwarves" ALLY}
+    {{ { "sword_v"} {"teuton_boss" } } "TEUTONS" "Teutonic Knights" ALLY}
 }
 
 EVIL_ADVENTURER {
-    {{ "duke4" } "KNIGHTS" "Knights" MAIN}
-    {{ "elf_lord" } "ELVES" "Elves" MAIN}
-    {{ "dwarf_baron" } "DWARVES" "Dwarves" MAIN}
+    {{ {"sword_v"} { "duke4" }} "KNIGHTS" "Knights" MAIN}
+    {{ { "elven_staff_v" } {"elf_lord"} } "ELVES" "Elves" MAIN}
+    {{ { "battle_axe_v"} {"dwarf_baron" } } "DWARVES" "Dwarves" MAIN}
     {{ "red_dragon" } "RED_DRAGON" "Red dragon" MAIN}
     {{ "red_dragon" Rgb 80 80 80 255 } "BLACK_DRAGON" "Black dragon" MAIN}
     {{ "red_dragon" Rgb 240 240 240 255 } "WHITE_DRAGON" "White dragon" MAIN}
-    {{ "elementalist" } "ELEMENTALIST" "Elementalist" MAIN}
+    {{ { "iron_staff_v"} {"elementalist"} } "ELEMENTALIST" "Elementalist" MAIN}
     {{ "red_dragon" Rgb 10 240 10 255 } "GREEN_DRAGON" "Green dragon" MAIN}
     {{ "lizardlord" } "LIZARDMEN" "Lizardmen" MAIN}
-    {{ "shaman" } "WARRIORS" "Warriors" MAIN}
-    {{ "thief_leader" } "THIEVES" "Thieves" MAIN}
+    {{ { "wooden_staff_v"} {"shaman"} } "WARRIORS" "Warriors" MAIN}
+    {{ { "sword_v" } {"thief_leader" }} "THIEVES" "Thieves" MAIN}
     {{ "demon_lord" } "DEMON_DEN" "Demon den" MAIN}
 
     {{ "ent" } "ENTS" "Tree spirits" LESSER}
@@ -75,7 +75,7 @@ EVIL_ADVENTURER {
     {{ "ant_queen" } "ANTS_OPEN" "Ants" LESSER}
     {{ "zombie" } "CEMETERY" "Zombies" LESSER}
 
-    {{ "dark_elf_lord" } "DARK_ELVES_ALLY" "Dark elves" ALLY}
+    {{ { "elven_staff_v" } {"dark_elf_lord" }} "DARK_ELVES_ALLY" "Dark elves" ALLY}
 }
 
 LAWFUL_ADVENTURER {
@@ -85,21 +85,21 @@ LAWFUL_ADVENTURER {
     {{ "red_dragon" Rgb 10 240 10 255 } "GREEN_DRAGON" "Green dragon" MAIN}
     {{ "shelob" } "SHELOB" "Giant spider" MAIN}
     {{ "ant_queen" } "ANTS_OPEN" "Ants" MAIN}
-    {{ "dark_elf_lord" } "DARK_ELVES_ENEMY" "Dark elves" MAIN}
-    {{ "goblin_keeper4" } "GOBLIN_VILLAGE" "Goblin town" MAIN}
+    {{ { "elven_staff_v" } {"dark_elf_lord" }} "DARK_ELVES_ENEMY" "Dark elves" MAIN}
+    {{ { "sceptre_v"} {"goblin_keeper4" }} "GOBLIN_VILLAGE" "Goblin town" MAIN}
     {{ "demon_lord" } "DEMON_DEN" "Demon den" MAIN}
     {{ "lizardlord" } "LIZARDMEN" "Lizardmen" MAIN}
 
-    {{ "bandit" } "BANDITS" "Bandits" LESSER}
+    {{ { "club_v" } {"bandit" } } "BANDITS" "Bandits" LESSER}
     {{ "cyclops" } "CYCLOPS" "Cyclops" LESSER}
     {{ "hydra" } "HYDRA" "Hydra" LESSER}
     {{ "zombie" } "CEMETERY" "Zombies" LESSER}
-    {{ "goblin_warrior" } "GOBLIN_CAVE" "Goblins" LESSER}
+    {{ {"sword_v"} {"goblin_warrior" }} "GOBLIN_CAVE" "Goblins" LESSER}
     {{ "harpy" } "HARPY_CAVE" "Harpies" LESSER}
     {{ "ant_queen" } "ANTS_OPEN" "Ants" LESSER}
     {{ "dungeon_entrance" ColorId RED } "MAIN_DUNGEON" "Unremarkable dungeon" MAIN true}
 
-    {{ "duke4" } "KNIGHTS" "Knights" ALLY}
-    {{ "elf_lord" } "ELVES" "Elves" ALLY}
-    {{ "dwarf_baron" } "DWARVES" "Dwarves" ALLY}
+    {{ {"sword_v"} { "duke4" }} "KNIGHTS" "Knights" ALLY}
+    {{ { "elven_staff_v" } {"dark_elf_lord" }} "ELVES" "Elves" ALLY}
+    {{ { "battle_axe_v"} {"dwarf_baron" } } "DWARVES" "Dwarves" ALLY}
 }

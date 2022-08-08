@@ -29,7 +29,6 @@ RICH_ENUM(OptionId,
   ONLINE,
   GAME_EVENTS,
   AUTOSAVE2,
-  WASD_SCROLLING,
   ZOOM_UI,
   DISABLE_MOUSE_WHEEL,
   DISABLE_CURSOR,
@@ -67,11 +66,13 @@ namespace ScriptedUIDataElems {
 }
 
 class View;
+class KeybindingMap;
+class ContentFactory;
 
 class Options {
   public:
   typedef variant<int, string, vector<string>> Value;
-  Options(const FilePath& path);
+  Options(const FilePath& path, KeybindingMap*);
   bool getBoolValue(OptionId);
   string getStringValue(OptionId);
   vector<string> getVectorStringValue(OptionId);
@@ -85,12 +86,13 @@ class Options {
   void setLimits(OptionId, Range);
   optional<Range> getLimits(OptionId);
   vector<OptionId> getOptions(OptionSet);
-  void handle(View*, OptionSet, int lastIndex = 0);
+  void handle(View*, const ContentFactory*, OptionSet, int lastIndex = 0);
   typedef function<void(int)> Trigger;
   void addTrigger(OptionId, Trigger trigger);
   void setChoices(OptionId, const vector<string>&);
   bool hasChoices(OptionId) const;
   optional<string> getHint(OptionId);
+  KeybindingMap* getKeybindingMap();
 
   private:
   optional<Value> readValue(OptionId, const vector<string>&);
@@ -106,6 +108,7 @@ class Options {
   EnumMap<OptionId, optional<Value>> overrides;
   EnumMap<OptionId, vector<string>> choices;
   EnumMap<OptionId, optional<Range>> limits;
+  KeybindingMap* keybindingMap;
 };
 
 

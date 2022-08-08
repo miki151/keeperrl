@@ -30,7 +30,7 @@
 #include "view_id.h"
 #include "color.h"
 
-RICH_ENUM(ViewObjectAttribute, HEALTH, WATER_DEPTH, LUXURY, MORALE, FLANKED_MOD);
+RICH_ENUM(ViewObjectAttribute, HEALTH, WATER_DEPTH, LUXURY, MORALE, FLANKED_MOD, BURNING);
 
 class ViewObject {
   public:
@@ -53,7 +53,7 @@ class ViewObject {
   ViewObject& resetAttribute(Attribute);
   optional<float> getAttribute(Attribute) const;
 
-  using CreatureAttributes = EnumMap<AttrType, std::uint16_t>;
+  using CreatureAttributes = vector<pair<ViewId, std::uint16_t>>;
   void setCreatureAttributes(CreatureAttributes);
   const optional<CreatureAttributes>& getCreatureAttributes() const;
 
@@ -92,6 +92,7 @@ class ViewObject {
 
   EnumSet<FXVariantName> particleEffects;
   vector<ViewId> partIds;
+  optional<ViewId> weaponViewId;
 
   private:
   EnumSet<Modifier> SERIAL(modifiers);

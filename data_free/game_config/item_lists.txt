@@ -118,11 +118,11 @@ End
 "goodMushrooms"
 {
   items = {
-    {{Mushroom Lasting DAM_BONUS} 1}
-    {{Mushroom Lasting DEF_BONUS} 1}
+    {{Mushroom Lasting 40 DAM_BONUS} 1}
+    {{Mushroom Lasting 40 DEF_BONUS} 1}
     {{Mushroom Lasting NIGHT_VISION} 1}
     {{Mushroom Lasting PANIC} 1}
-    {{Mushroom Lasting REGENERATION} 1}
+    {{Mushroom Lasting 50 REGENERATION} 1}
     {{Mushroom Lasting RAGE} 1}
   }
 }
@@ -153,10 +153,10 @@ End
     }
     {0 2} {
       {Mushroom Lasting HALLU} 0.5
-      {Mushroom Lasting DAM_BONUS} 0.5
-      {Mushroom Lasting DEF_BONUS} 0.5
+      {Mushroom Lasting 40 DAM_BONUS} 0.5
+      {Mushroom Lasting 40 DEF_BONUS} 0.5
       {Mushroom Lasting NIGHT_VISION} 0.5
-      {Mushroom Lasting REGENERATION} 0.5
+      {Mushroom Lasting 50 REGENERATION} 0.5
       {Mushroom Lasting RAGE} 0.5
       {Mushroom Lasting PANIC} 0.5
       {"Skeleton"} 1
@@ -357,7 +357,7 @@ End
   unique = {
     {Scroll Name "blacksmithing mastery" Price 800 
       Description "Contains secrets of legendary blacksmithing knowledge"
-      IncreaseWorkshopSkill "FORGE" 1} {1}
+      IncreaseAttr "FORGE" 50} {1}
   }
 }
 

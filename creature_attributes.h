@@ -19,7 +19,6 @@
 #include <functional>
 
 #include "util.h"
-#include "skill.h"
 #include "gender.h"
 #include "creature_name.h"
 #include "minion_activity_map.h"
@@ -74,7 +73,7 @@ class CreatureAttributes {
   void setBaseAttr(AttrType, int);
   void setAIType(AIType);
   AIType getAIType() const;
-  string getDeathDescription() const;
+  string getDeathDescription(const ContentFactory*) const;
   void setDeathDescription(string);
   const Gender& getGender() const;
   double getExpLevel(ExperienceType type) const;
@@ -82,24 +81,21 @@ class CreatureAttributes {
   const EnumMap<ExperienceType, int>& getMaxExpLevel() const;
   void increaseMaxExpLevel(ExperienceType, int increase);
   void increaseExpLevel(ExperienceType, double increase);
-  void addCombatExperience(double);
   double getCombatExperience() const;
   bool isTrainingMaxedOut(ExperienceType) const;
-  void increaseBaseExpLevel(ExperienceType type, double increase);
+  void increaseBaseExpLevel(ExperienceType type, int increase);
   vector<SpellSchoolId> getSpellSchools() const;
   void addSpellSchool(SpellSchoolId);
   optional<SoundId> getAttackSound(AttackType, bool damage) const;
   bool isBoulder() const;
-  Skillset& getSkills();
-  const Skillset& getSkills() const;
   ViewObject createViewObject() const;
   const heap_optional<ViewObject>& getIllusionViewObject() const;
   heap_optional<ViewObject>& getIllusionViewObject();
   bool canEquip() const;
   void chatReaction(Creature* me, Creature* other);
   optional<string> getPetReaction(const Creature* me) const;
-  string getDescription() const;
-  void add(BodyPart, int count);
+  string getDescription(const ContentFactory*) const;
+  void add(BodyPart, int count, const ContentFactory*);
   bool isAffected(LastingEffect, GlobalTime) const;
   bool isAffectedPermanently(LastingEffect) const;
   GlobalTime getTimeOut(LastingEffect) const;
@@ -120,7 +116,7 @@ class CreatureAttributes {
   bool getCanJoinCollective() const;
   void setCanJoinCollective(bool);
   void increaseExpFromCombat(double attackDiff);
-  optional<LastingEffect> getHatedByEffect() const;
+  optional<BuffId> getHatedByEffect() const;
   void randomize();
   bool isInstantPrisoner() const;
 
@@ -130,7 +126,7 @@ class CreatureAttributes {
   ViewId SERIAL(viewId);
   vector<ViewId> SERIAL(viewIdUpgrades);
   vector<ItemType> SERIAL(automatonParts);
-  EnumMap<AttrType, vector<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
+  map<AttrType, vector<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
   heap_optional<Effect> SERIAL(deathEffect);
   heap_optional<Effect> SERIAL(afterKilledSomeone);
 
@@ -138,13 +134,13 @@ class CreatureAttributes {
   optional<string> SERIAL(promotionGroup);
   double SERIAL(promotionCost) = 1.0;
   int SERIAL(maxPromotions) = 5;
-  double SERIAL(combatExperience) = 0;
+  vector<BuffId> SERIAL(permanentBuffs);
 
   private:
   void consumeEffects(Creature* self, const EnumMap<LastingEffect, int>&);
   heap_optional<ViewObject> SERIAL(illusionViewObject);
   CreatureName SERIAL(name);
-  EnumMap<AttrType, int> SERIAL(attr);
+  map<AttrType, int> SERIAL(attr);
   HeapAllocated<Body> SERIAL(body);
   optional<string> SERIAL(chatReactionFriendly);
   optional<string> SERIAL(chatReactionHostile);
@@ -157,7 +153,6 @@ class CreatureAttributes {
   bool SERIAL(boulder) = false;
   bool SERIAL(noChase) = false;
   bool SERIAL(isSpecial) = false;
-  Skillset SERIAL(skills);
   vector<SpellSchoolId> SERIAL(spellSchools);
   vector<SpellId> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
@@ -170,7 +165,7 @@ class CreatureAttributes {
   optional<string> SERIAL(deathDescription);
   bool SERIAL(canJoinCollective) = true;
   optional<string> SERIAL(petReaction);
-  optional<LastingEffect> SERIAL(hatedByEffect);
+  optional<BuffId> SERIAL(hatedByEffect);
   bool SERIAL(instantPrisoner) = false;
   void initializeLastingEffects();
   CreatureInventory SERIAL(inventory);

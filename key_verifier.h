@@ -1,18 +1,23 @@
 #pragma once
 
 #include "util.h"
+#include "pretty_archive.h"
 
 class KeyVerifier {
   public:
+  struct KeyInfo {
+    string name;
+    string position;
+  };
   struct Verifier {
-    set<string> toVerify;
+    vector<KeyInfo> toVerify;
     set<string> keys;
     vector<string> duplicateKeys;
   };
 
   template <typename T>
-  void verifyContentId(string id) {
-    verifiers[typeid(T)].toVerify.insert(std::move(id));
+  void verifyContentId(string pos, string id) {
+    verifiers[typeid(T)].toVerify.push_back({std::move(id), std::move(pos)});
   }
 
   template <typename T>

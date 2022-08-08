@@ -37,7 +37,7 @@ class IdleControl : public CollectiveControl {
   }
 
   SERIALIZATION_CONSTRUCTOR(IdleControl);
-  
+
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(CollectiveControl);

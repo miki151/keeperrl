@@ -42,7 +42,7 @@ class MinimapGui : public GuiElem {
     Rectangle bounds;
     unordered_set<Vec2, CustomHash<Vec2>> roads;
     vector<Vec2> enemies;
-    Vec2 player;
+    optional<Vec2> player;
     vector<Vec2> locations;
   } info;
 

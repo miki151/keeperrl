@@ -65,8 +65,8 @@
   initialTech = { "necromancy" }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "phylactery" "beds" "coffins"
-      "training" "morgue" "crafting" "embalming" "poetry" "distillery" "orders"
-      "installations" "magical_installations"
+      "training" "morgue" "crafting" "embalming" "poetry" "distillery" "furnace" "orders"
+      "installations_no_heads" "magical_installations"
   }
   workshopGroups = { "morgue" "basic_without_lab" "bows" }
   description = "Craft hordes of undead from the corpses of fallen enemies. "

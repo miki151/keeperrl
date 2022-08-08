@@ -30,13 +30,12 @@
 #include "minion_trait.h"
 #include "view_id.h"
 #include "companion_info.h"
+#include "game.h"
+#include "content_factory.h"
 
 void CreatureAttributes::initializeLastingEffects() {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     lastingEffects[effect] = GlobalTime(-500);
-  for (auto effect : ENUM_ALL(LastingEffect))
-    if (body->isIntrinsicallyAffected(effect))
-      permanentEffects[effect] = 1;
 }
 
 void CreatureAttributes::randomize() {
@@ -69,13 +68,13 @@ void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) 
   ar(NAMED(chatReactionHostile), NAMED(passiveAttack), OPTION(gender), OPTION(viewIdUpgrades), OPTION(promotionCost));
   ar(NAMED(body), OPTION(deathDescription), NAMED(hatedByEffect), OPTION(instantPrisoner));
   ar(OPTION(cantEquip), OPTION(aiType), OPTION(canJoinCollective), OPTION(genderAlternatives), NAMED(promotionGroup));
-  ar(OPTION(boulder), OPTION(noChase), OPTION(isSpecial), OPTION(skills), OPTION(spellSchools), OPTION(spells));
-  ar(OPTION(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel), OPTION(inventory));
-  ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction), OPTION(combatExperience));
+  ar(OPTION(boulder), OPTION(noChase), OPTION(isSpecial), OPTION(spellSchools), OPTION(spells));
+  ar(SKIP(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel), OPTION(inventory));
+  ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction));
   ar(OPTION(automatonParts), OPTION(specialAttr), NAMED(deathEffect), NAMED(chatEffect), OPTION(companions));
-  ar(OPTION(maxPromotions), OPTION(afterKilledSomeone));
-  for (auto a : ENUM_ALL(AttrType))
-    attr[a] = max(0, attr[a]);
+  ar(OPTION(maxPromotions), OPTION(afterKilledSomeone), SKIP(permanentBuffs));
+  for (auto& a : attr)
+    a.second = max(0, a.second);
 }
 
 template <class Archive>
@@ -121,8 +120,8 @@ AIType CreatureAttributes::getAIType() const {
   return aiType;
 }
 
-string CreatureAttributes::getDeathDescription() const {
-  return deathDescription.value_or(body->getDeathDescription());
+string CreatureAttributes::getDeathDescription(const ContentFactory* factory) const {
+  return deathDescription.value_or(body->getDeathDescription(factory));
 }
 
 void CreatureAttributes::setDeathDescription(string c) {
@@ -134,11 +133,9 @@ const Gender& CreatureAttributes::getGender() const {
 }
 
 int CreatureAttributes::getRawAttr(AttrType type) const {
-  int ret = attr[type];
-  if (auto expType = getExperienceType(type)) {
-    ret += (int) expLevel[*expType];
-    ret += (int) min(combatExperience, expLevel[*expType]);
-  }
+  int ret = getValueMaybe(attr, type).value_or(0);
+  if (auto expType = getExperienceType(type))
+    ret += expType->second * (int) expLevel[expType->first];
   return ret;
 }
 
@@ -164,27 +161,14 @@ void CreatureAttributes::increaseExpLevel(ExperienceType type, double increase) 
   expLevel[type] += increase;
 }
 
-void CreatureAttributes::addCombatExperience(double v) {
-  combatExperience += v;
-  int maxExp = 0;
-  for (auto expType : ENUM_ALL(ExperienceType))
-    maxExp = max(maxExp, maxLevelIncrease[expType]);
-  if (combatExperience > maxExp)
-    combatExperience = maxExp;
-}
-
-double CreatureAttributes::getCombatExperience() const {
-  return combatExperience;
-}
-
 bool CreatureAttributes::isTrainingMaxedOut(ExperienceType type) const {
   return getExpLevel(type) >= maxLevelIncrease[type];
 }
 
-void CreatureAttributes::increaseBaseExpLevel(ExperienceType type, double increase) {
+void CreatureAttributes::increaseBaseExpLevel(ExperienceType type, int increase) {
   for (auto attrType : getAttrIncreases()[type]) {
-    attr[attrType] += increase;
-    attr[attrType] = max(0, attr[attrType]);
+    attr[attrType.first] += increase * attrType.second;
+    attr[attrType.first] = max(0, attr[attrType.first]);
   }
 }
 
@@ -217,17 +201,17 @@ optional<SoundId> CreatureAttributes::getAttackSound(AttackType type, bool damag
     return none;
 }
 
-string CreatureAttributes::getDescription() const {
-  return body->getDescription();
+string CreatureAttributes::getDescription(const ContentFactory* factory) const {
+  return body->getDescription(factory);
 }
 
-void CreatureAttributes::add(BodyPart p, int count) {
+void CreatureAttributes::add(BodyPart p, int count, const ContentFactory* factory) {
   for (auto effect : ENUM_ALL(LastingEffect))
-    if (body->isIntrinsicallyAffected(effect))
+    if (body->isIntrinsicallyAffected(effect, factory))
       --permanentEffects[effect];
   body->addWithoutUpdatingPermanentEffects(p, count);
   for (auto effect : ENUM_ALL(LastingEffect))
-    if (body->isIntrinsicallyAffected(effect))
+    if (body->isIntrinsicallyAffected(effect, factory))
       ++permanentEffects[effect];
 }
 
@@ -292,26 +276,6 @@ static bool consumeProb() {
   return true;
 }
 
-static string getAttrNameMore(AttrType attr) {
-  switch (attr) {
-    case AttrType::DAMAGE: return "more dangerous";
-    case AttrType::DEFENSE: return "more protected";
-    case AttrType::SPELL_DAMAGE: return "more powerful";
-    case AttrType::RANGED_DAMAGE: return "more accurate";
-    case AttrType::PARRY: return "more evasive";
-  }
-}
-
-static int getAbsorbtionLevelCap(AttrType attr) {
-  switch (attr) {
-    case AttrType::DAMAGE: return 25;
-    case AttrType::DEFENSE: return 25;
-    case AttrType::SPELL_DAMAGE: return 20;
-    case AttrType::RANGED_DAMAGE: return 15;
-    case AttrType::PARRY: return 3;
-  }
-}
-
 template <typename T>
 void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj, const int& cap) {
   int hisCapped = (his > cap) ? cap : his;
@@ -339,22 +303,6 @@ void consumeAttr(heap_optional<T>& mine, const heap_optional<T>& his, vector<str
   }
 }
 
-void consumeAttr(Skillset& mine, const Skillset& his, vector<string>& adjectives) {
-  bool was = false;
-  for (SkillId id : ENUM_ALL(SkillId))
-    if (mine.getValue(id) < his.getValue(id)) {
-      mine.setValue(id, his.getValue(id));
-      was = true;
-    }
-  for (auto& elem : his.getWorkshopValues())
-    if (mine.getValue(elem.first) < elem.second) {
-      mine.setValue(elem.first, elem.second);
-      was = true;
-    }
-  if (was)
-    adjectives.push_back("more skillfull");
-}
-
 void CreatureAttributes::consumeEffects(Creature* self, const EnumMap<LastingEffect, int>& permanentEffects) {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (permanentEffects[effect] > 0 && !isAffectedPermanently(effect) && consumeProb() &&
@@ -369,12 +317,12 @@ void CreatureAttributes::consume(Creature* self, CreatureAttributes& other) {
   self->addPersonalEvent(self->getName().a() + " absorbs " + other.name.a());
   vector<string> adjectives;
   body->consumeBodyParts(self, other.getBody(), adjectives);
-  for (auto t : ENUM_ALL(AttrType))
-    consumeAttr(attr[t], other.attr[t], adjectives,
-      getAttrNameMore(t), getAbsorbtionLevelCap(t));
+  auto factory = self->getGame()->getContentFactory();
+  for (auto& t: factory->attrInfo)
+    consumeAttr(attr[t.first], other.attr[t.first], adjectives,
+      "more " + t.second.adjective, t.second.absorptionCap);
   consumeAttr(passiveAttack, other.passiveAttack, adjectives, "");
   consumeAttr(gender, other.gender, adjectives);
-  consumeAttr(skills, other.skills, adjectives);
   if (!adjectives.empty()) {
     self->you(MsgType::BECOME, combine(adjectives));
     self->addPersonalEvent(getName().the() + " becomes " + combine(adjectives));
@@ -388,14 +336,6 @@ string CreatureAttributes::getRemainingString(LastingEffect effect, GlobalTime t
 
 bool CreatureAttributes::isBoulder() const {
   return boulder;
-}
-
-Skillset& CreatureAttributes::getSkills() {
-  return skills;
-}
-
-const Skillset& CreatureAttributes::getSkills() const {
-  return skills;
 }
 
 ViewObject CreatureAttributes::createViewObject() const {
@@ -450,13 +390,20 @@ void CreatureAttributes::setCanJoinCollective(bool b) {
   canJoinCollective = b;
 }
 
-optional<LastingEffect> CreatureAttributes::getHatedByEffect() const {
+optional<BuffId> CreatureAttributes::getHatedByEffect() const {
   return hatedByEffect;
 }
 
 #include "pretty_archive.h"
 template<> void CreatureAttributes::serialize(PrettyInputArchive& ar1, unsigned version) {
+  map<LastingOrBuff, int> permanentEffects;
   serializeImpl(ar1, version);
+  ar1(OPTION(permanentEffects));
   ar1(endInput());
+  for (auto& elem : permanentEffects)
+    elem.first.visit(
+        [&](LastingEffect e) { this->permanentEffects[e] = elem.second  ; },
+        [&](BuffId e) { this->permanentBuffs.push_back(e); }
+    );
   initializeLastingEffects();
 }

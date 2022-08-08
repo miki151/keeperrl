@@ -40,7 +40,7 @@ void FurnitureEntry::handle(Furniture* f, Creature* c) {
         if (auto game = c->getGame()) // check in case the creature is placed here during level generation
           if (game->getTribe(f->getTribe())->isEnemy(c) && !c->hasAlternativeViewId()) {
             auto layer = f->getLayer();
-            if (type.invisible || !c->isAffected(LastingEffect::DISARM_TRAPS_SKILL)) {
+            if (type.invisible || !c->isAffected(BuffId("DISARM_TRAPS_SKILL"))) {
               if (!type.invisible)
                 c->you(MsgType::TRIGGER_TRAP, "");
               type.effect.apply(position, f->getCreator());
@@ -94,7 +94,7 @@ bool FurnitureEntry::isVisibleTo(const Furniture* f, const Creature* c) const {
   return entryData.visit(
       [&](const Trap& type) {
         return !c->getGame()->getTribe(f->getTribe())->isEnemy(c)
-            || (!type.invisible && c->isAffected(LastingEffect::DISARM_TRAPS_SKILL));
+            || (!type.invisible && c->isAffected(BuffId("DISARM_TRAPS_SKILL")));
       },
       [&](const auto&) {
         return true;

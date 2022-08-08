@@ -3,10 +3,10 @@
 #include "stdafx.h"
 #include "util.h"
 #include "enums.h"
+#include "view_id.h"
 
 struct BestAttack {
-  BestAttack(const Creature*);
-  AttrType HASH(attr);
-  double HASH(value);
-  HASH_ALL(attr, value)
+  ViewId HASH(viewId);
+  int HASH(value);
+  HASH_ALL(viewId, value)
 };

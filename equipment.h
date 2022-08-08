@@ -20,16 +20,17 @@
 #include "equipment_slot.h"
 
 class Body;
+class ContentFactory;
 
 class Equipment {
   public:
-  void addItem(PItem, Creature*);
+  void addItem(PItem, Creature*, const ContentFactory* = nullptr);
   void addItems(vector<PItem>, Creature*);
   const vector<Item*>& getSlotItems(EquipmentSlot slot) const;
   bool hasItem(const Item*) const;
   bool isEquipped(const Item*) const;
   bool canEquip(const Item*, const Creature*) const;
-  void equip(Item*, EquipmentSlot, Creature*);
+  void equip(Item*, EquipmentSlot, Creature*, const ContentFactory* = nullptr);
   void unequip(Item*, Creature*);
   PItem removeItem(Item*, Creature*);
   int getMaxItems(EquipmentSlot, const Creature*) const;

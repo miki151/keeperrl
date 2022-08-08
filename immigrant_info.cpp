@@ -16,7 +16,7 @@
 #include "content_factory.h"
 #include "special_trait.h"
 
-SERIALIZE_DEF(ImmigrantInfo, NAMED(ids), NAMED(frequency), OPTION(requirements), OPTION(traits), OPTION(spawnLocation), OPTION(groupSize), OPTION(autoTeam), OPTION(initialRecruitment), OPTION(consumeIds), NAMED(keybinding), NAMED(sound), OPTION(noAuto), NAMED(tutorialHighlight), OPTION(hiddenInHelp), OPTION(invisible), OPTION(specialTraits), OPTION(stripEquipment))
+SERIALIZE_DEF(ImmigrantInfo, NAMED(ids), NAMED(frequency), OPTION(requirements), OPTION(traits), OPTION(spawnLocation), OPTION(groupSize), OPTION(initialRecruitment), OPTION(consumeIds), NAMED(keybinding), NAMED(sound), OPTION(noAuto), NAMED(tutorialHighlight), OPTION(hiddenInHelp), OPTION(invisible), OPTION(specialTraits), OPTION(stripEquipment))
 SERIALIZATION_CONSTRUCTOR_IMPL(ImmigrantInfo)
 
 
@@ -80,10 +80,6 @@ int ImmigrantInfo::getInitialRecruitment() const {
   return initialRecruitment;
 }
 
-bool ImmigrantInfo::isAutoTeam() const {
-  return autoTeam;
-}
-
 double ImmigrantInfo::getFrequency() const {
   CHECK(frequency);
   return *frequency;
@@ -134,82 +130,6 @@ const vector<SpecialTraitInfo>& ImmigrantInfo::getSpecialTraits() const {
 
 ImmigrantInfo& ImmigrantInfo::addRequirement(ImmigrantRequirement t) {
   requirements.push_back({1, t});
-  return *this;
-}
-
-ImmigrantInfo& ImmigrantInfo::addRequirement(double prob, ImmigrantRequirement t) {
-  requirements.push_back({prob, t});
-  return *this;
-}
-
-ImmigrantInfo& ImmigrantInfo::setFrequency(double f) {
-  frequency = f;
-  return *this;
-}
-
-ImmigrantInfo& ImmigrantInfo::setSpawnLocation(SpawnLocation l) {
-  spawnLocation = l;
-  return *this;
-}
-
-ImmigrantInfo& ImmigrantInfo::setInitialRecruitment(int i) {
-  initialRecruitment = i;
-  return *this;
-}
-
-ImmigrantInfo& ImmigrantInfo::setGroupSize(Range r) {
-  groupSize = r;
-  return *this;
-}
-
-ImmigrantInfo& ImmigrantInfo::setAutoTeam() {
-  autoTeam = true;
-  return *this;
-}
-
-ImmigrantInfo& ImmigrantInfo::setKeybinding(Keybinding key) {
-  keybinding = key;
-  return *this;
-}
-
-ImmigrantInfo& ImmigrantInfo::setSound(Sound s) {
-  sound = s;
-  return *this;
-}
-
-ImmigrantInfo& ImmigrantInfo::setNoAuto() {
-  noAuto = true;
-  return *this;
-}
-
-ImmigrantInfo& ImmigrantInfo::setInvisible() {
-  invisible = true;
-  return *this;
-}
-
-ImmigrantInfo& ImmigrantInfo::setLimit(int num) {
-  consumeIds = true;
-  ids = vector<CreatureId>(num, ids[0]);
-  return *this;
-}
-
-ImmigrantInfo& ImmigrantInfo::setTutorialHighlight(TutorialHighlight h) {
-  tutorialHighlight = h;
-  return *this;
-}
-
-ImmigrantInfo& ImmigrantInfo::setHiddenInHelp() {
-  hiddenInHelp = true;
-  return *this;
-}
-
-ImmigrantInfo& ImmigrantInfo::addSpecialTrait(double chance, SpecialTrait trait) {
-  specialTraits.push_back({chance, {trait}});
-  return *this;
-}
-
-ImmigrantInfo& ImmigrantInfo::addSpecialTrait(double chance, vector<SpecialTrait> traits) {
-  specialTraits.push_back({chance, traits});
   return *this;
 }
 

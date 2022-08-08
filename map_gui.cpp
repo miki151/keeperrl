@@ -40,6 +40,7 @@
 #include "fx_manager.h"
 #include "fx_view_manager.h"
 #include "fx_renderer.h"
+#include "keybinding_map.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -199,10 +200,6 @@ DirSet MapGui::getConnectionSet(Vec2 tilePos, const ViewId& id, const Tile& tile
   return ret;
 }
 
-void MapGui::setSoftCenter(Vec2 pos) {
-  setSoftCenter(pos.x, pos.y);
-}
-
 void MapGui::setSoftCenter(double x, double y) {
   Coords coords {x, y};
   if (softCenter != coords) {
@@ -223,53 +220,15 @@ bool MapGui::onKeyPressed2(SDL_Keysym key) {
   const double scrollDist = 9.0 * 32 / layout->getSquareSize().x;
   if (!keyScrolling)
     return false;
-  switch (key.sym) {
-    case SDL::SDLK_w:
-      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
-        break;
-      FALLTHROUGH;
-    case SDL::SDLK_UP:
-    case SDL::SDLK_KP_8:
-      softScroll(0, -scrollDist);
-      break;
-    case SDL::SDLK_KP_9:
-      softScroll(scrollDist, -scrollDist);
-      break;
-    case SDL::SDLK_d:
-      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
-        break;
-      FALLTHROUGH;
-    case SDL::SDLK_RIGHT:
-    case SDL::SDLK_KP_6:
-      softScroll(scrollDist, 0);
-      break;
-    case SDL::SDLK_KP_3:
-      softScroll(scrollDist, scrollDist);
-      break;
-    case SDL::SDLK_s:
-      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
-        break;
-      FALLTHROUGH;
-    case SDL::SDLK_DOWN:
-    case SDL::SDLK_KP_2:
-      softScroll(0, scrollDist);
-      break;
-    case SDL::SDLK_KP_1:
-      softScroll(-scrollDist, scrollDist);
-      break;
-    case SDL::SDLK_a:
-      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
-        break;
-      FALLTHROUGH;
-    case SDL::SDLK_LEFT:
-    case SDL::SDLK_KP_4:
-      softScroll(-scrollDist, 0);
-      break;
-    case SDL::SDLK_KP_7:
-      softScroll(-scrollDist, -scrollDist);
-      break;
-    default: break;
-  }
+  auto keybindings = guiFactory->getKeybindingMap();
+  if (keybindings->matches(Keybinding("SCROLL_MAP_UP"), key))
+    softScroll(0, -scrollDist);
+  if (keybindings->matches(Keybinding("SCROLL_MAP_DOWN"), key))
+    softScroll(0, scrollDist);
+  if (keybindings->matches(Keybinding("SCROLL_MAP_LEFT"), key))
+    softScroll(-scrollDist, 0);
+  if (keybindings->matches(Keybinding("SCROLL_MAP_RIGHT"), key))
+    softScroll(scrollDist, 0);
   return false;
 }
 
@@ -286,16 +245,15 @@ bool MapGui::onLeftClick(Vec2 v) {
 
 bool MapGui::onRightClick(Vec2 pos) {
   if (lastRightClick && clock->getRealMillis() - *lastRightClick < milliseconds{200}) {
-    lockedView = true;
     lastRightClick = none;
+    scrollingState = ScrollingState::NONE;
     return true;
   }
   lastRightClick = clock->getRealMillis();
   if (pos.inRectangle(getBounds())) {
     lastMousePos = pos;
-    isScrollingNow = true;
+    scrollingState = ScrollingState::ACTIVE;
     mouseOffset.x = mouseOffset.y = 0;
-    lockedView = false;
     return true;
   }
   return false;
@@ -330,7 +288,7 @@ bool MapGui::onMouseMove(Vec2 v) {
     inputQueue.push(UserInput(UserInputId::CREATURE_DRAG, draggedCandidate->id));
     guiFactory->getDragContainer().put(draggedCandidate->id, guiFactory->viewObject(draggedCandidate->viewId), v);
   }
-  if (isScrollingNow) {
+  if (scrollingState == ScrollingState::ACTIVE) {
     mouseOffset.x = double(v.x - lastMousePos.x) / layout->getSquareSize().x;
     mouseOffset.y = double(v.y - lastMousePos.y) / layout->getSquareSize().y;
     callbacks.refreshFun();
@@ -347,7 +305,7 @@ optional<MapGui::CreatureInfo> MapGui::getCreature(Vec2 mousePos) {
 }
 
 void MapGui::onMouseRelease(Vec2 v) {
-  if (isScrollingNow) {
+  if (scrollingState == ScrollingState::ACTIVE) {
     if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1) {
       if (auto c = getCreature(lastMousePos))
         inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK_EXTENDED, c->position));
@@ -357,7 +315,7 @@ void MapGui::onMouseRelease(Vec2 v) {
       center.x = min<double>(levelBounds.right(), max(0.0, center.x - mouseOffset.x));
       center.y = min<double>(levelBounds.bottom(), max(0.0, center.y - mouseOffset.y));
     }
-    isScrollingNow = false;
+    scrollingState = ScrollingState::AFTER;
     callbacks.refreshFun();
     mouseOffset.x = mouseOffset.y = 0;
   }
@@ -385,7 +343,7 @@ void MapGui::onMouseRelease(Vec2 v) {
       if (auto c = getCreature(*mouseHeldPos))
         inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK, c->position));
       else {
-        callbacks.leftClickFun(layout->projectOnMap(getBounds(), getScreenPos(), v));
+        callbacks.leftClickFun(layout->projectOnMap(getBounds(), getScreenPos(), *mouseHeldPos));
         considerContinuousLeftClick(v);
       }
     }
@@ -512,12 +470,12 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
     drawCreatureHighlight(renderer, pos, sz, Color::ORANGE.transparency(200), index);
   if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
       drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(200), index);
-  } else
-  if (object.hasModifier(ViewObject::Modifier::PLAYER_BLINK)) {
+  }
+  else if (object.hasModifier(ViewObject::Modifier::PLAYER_BLINK)) {
     if ((curTime.count() / 500) % 2 == 0)
       drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(200), index);
-  } else
-  if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT))
+  }
+  else if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT))
     drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(100), index);
   if (object.hasModifier(ViewObject::Modifier::CREATURE))
     if (isCreatureHighlighted(*object.getGenericId()))
@@ -662,6 +620,22 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       move.x -= object.hasModifier(ViewObject::Modifier::FLIPX) ? 2 * zoom : -2 * zoom;
       drawCreatureHighlights(renderer, steedObject, index, pos + movement, size, curTimeReal);
     }
+    if (object.weaponViewId && tile.weaponOrigin && !object.hasModifier(ViewObject::Modifier::STUNNED)) {
+      const Tile& weaponTile = renderer.getTileSet().getTile(*object.weaponViewId, spriteMode);
+      if (weaponTile.weaponOrigin) {
+        const auto& weaponCoord = weaponTile.getSpriteCoord(dirs);
+        bool flipped = object.hasModifier(ViewObject::Modifier::FLIPX);
+        auto orientation = Renderer::SpriteOrientation(false, flipped);
+        auto offset = flipped
+            ? Vec2(weaponCoord[0].size.x - weaponTile.weaponOrigin->x, weaponTile.weaponOrigin->y) -
+              Vec2(coord[0].size.x - tile.weaponOrigin->x, tile.weaponOrigin->y)
+            : *weaponTile.weaponOrigin - *tile.weaponOrigin;
+        if (coord[0].size.y > Renderer::nominalSize)
+          offset.y += 3;
+        renderer.drawTile(pos + move - ((coord[0].size - weaponCoord[0].size) / 2 + offset) * zoom, weaponCoord, size, color,
+            orientation, object.weaponViewId->getColor());
+      }
+    }
     if (tile.canMirror)
       renderer.drawTile(pos + move, coord, size, color,
           Renderer::SpriteOrientation((bool)(tilePos.getHash() & 1024), (bool)(tilePos.getHash() & 512)));
@@ -688,8 +662,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     auto& shortShadow = renderer.getTileSet().getTileCoord("short_shadow");
     if (object.layer() == ViewLayer::FLOOR_BACKGROUND && shadowed.count(tilePos))
       renderer.drawTile(pos, shortShadow, size, Color(255, 255, 255, 170));
-    bool burning = object.hasModifier(ViewObject::Modifier::BURNING);
-
+    auto burning = object.getAttribute(ViewObject::Attribute::BURNING);
     drawHealthBar(renderer, tilePos, pos + move, size, object, index);
     if (curTimeReal.count() % 2000 < 800 && object.hasModifier(ViewObject::Modifier::TURNED_OFF)) {
       auto& icon = renderer.getTileSet().getTileCoord("power_off");
@@ -707,7 +680,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
           if (auto& fxInfo = tile.getFX())
             fxViewManager->addFX(*genericId, *fxInfo);
         if (burning)
-          fxViewManager->addFX(*genericId, FXInfo{FXName::FIRE, Color::WHITE, 1.0f});
+          fxViewManager->addFX(*genericId, FXInfo{FXName::FIRE, Color::WHITE, 0.3f + 0.7f * *burning});
         bool bigTile = coord.front().size.x > Renderer::nominalSize;
         for (auto fx : object.particleEffects)
           fxViewManager->addFX(*genericId, fx, bigTile);
@@ -723,7 +696,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       color = Color(160, 0, 0);
     renderer.drawText(tile.symFont ? FontId::SYMBOL_FONT : FontId::TILE_FONT, size.y,
         blendNightColor(color, index), tilePos, tile.text, Renderer::HOR);
-    if (object.hasModifier(ViewObject::Modifier::BURNING))
+    if (object.getAttribute(ViewObject::Attribute::BURNING))
       renderer.drawText(FontId::SYMBOL_FONT, size.y, getFireColor(),
           pos + Vec2(size.x / 2, -3), u8"Ѡ", Renderer::HOR);
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
@@ -732,7 +705,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
 }
 
 void MapGui::resetScrolling() {
-  lockedView = true;
+  scrollingState = ScrollingState::NONE;
 }
 
 void MapGui::clearCenter() {
@@ -1086,7 +1059,7 @@ void MapGui::renderFloorObjects(Renderer& renderer, Vec2 size, milliseconds curr
     for (auto wpos : allTiles) {
       Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
       if (auto& index = objects[wpos])
-        if (spriteMode && index->hasObject(layer)) {
+        if (index->hasObject(layer)) {
           auto& obj = index->getObject(layer);
           const Tile& tile = renderer.getTileSet().getTile(obj.id(), spriteMode);
           if (layer == ViewLayer::FLOOR_BACKGROUND || !tile.moveUp)
@@ -1097,6 +1070,47 @@ void MapGui::renderFloorObjects(Renderer& renderer, Vec2 size, milliseconds curr
   render(ViewLayer::FLOOR_BACKGROUND);
   renderExtraBorders(renderer, currentTimeReal);
   render(ViewLayer::FLOOR);
+}
+
+void MapGui::renderAsciiObjects(Renderer& renderer, Vec2 size, milliseconds currentTimeReal) {
+  Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
+  Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
+  auto renderPos = [&] (Vec2 wpos, ViewLayer layer) {
+    const ViewIndex& index = *objects[wpos];
+    if (index.hasObject(layer)) {
+      auto object = index.getObject(layer);
+      Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
+      Vec2 movement = getMovementOffset(object, size, currentTimeGame, currentTimeReal, true, wpos);
+      drawObjectAbs(renderer, pos, object, size, movement, wpos, currentTimeReal, index);
+      if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos &&
+          object.layer() != ViewLayer::CREATURE && object.layer() != ViewLayer::ITEM)
+        lastHighlighted.object = object;
+      return true;
+    }
+    return false;
+  };
+  for (auto wpos : allTiles) {
+    if (!objects[wpos] || objects[wpos]->noObjects())
+      continue;
+    for (ViewLayer layer : {ViewLayer::CREATURE, ViewLayer::ITEM, ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND})
+      if (renderPos(wpos, layer)) {
+        if (lastHighlighted.tilePos && lastHighlighted.tilePos->y == wpos.y) {
+          if (!activeButton && lastHighlighted.creaturePos)
+            drawCreatureHighlight(renderer, *lastHighlighted.creaturePos, size, Color::ALMOST_WHITE,
+                *objects[*lastHighlighted.tilePos]);
+          else if (!getHighlightedFurniture() || !!activeButton)
+            drawSquareHighlight(renderer, topLeftCorner + (*lastHighlighted.tilePos - allTiles.topLeft()).mult(size),
+                size, squareHighlightColor);
+        }
+        break;
+      }
+  }
+  for (auto wpos : allTiles) {
+    if (!objects[wpos] || objects[wpos]->noObjects())
+      continue;
+    for (ViewLayer layer : {ViewLayer::TORCH1, ViewLayer::TORCH2})
+      renderPos(wpos, layer);
+  }
 }
 
 void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds currentTimeReal) {
@@ -1112,11 +1126,8 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
           Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
           const ViewIndex& index = *objects[wpos];
           const ViewObject* object = nullptr;
-          if (spriteMode) {
-            if (index.hasObject(layer))
-              object = &index.getObject(layer);
-          } else
-            object = index.getTopObject(layout->getLayers());
+          if (index.hasObject(layer))
+            object = &index.getObject(layer);
           if (object) {
             const Tile& tile = renderer.getTileSet().getTile(object->id(), spriteMode);
             if (layer != ViewLayer::FLOOR || tile.moveUp) {
@@ -1128,7 +1139,7 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
               }
           }
         }
-        if (lastHighlighted.tilePos && lastHighlighted.tilePos->y == ypos && (layer == ViewLayer::FLOOR || !spriteMode)) {
+        if (lastHighlighted.tilePos && lastHighlighted.tilePos->y == ypos && layer == ViewLayer::FLOOR) {
           if (!activeButton && lastHighlighted.creaturePos)
             drawCreatureHighlight(renderer, *lastHighlighted.creaturePos, size, Color::ALMOST_WHITE,
                 *objects[*lastHighlighted.tilePos]);
@@ -1136,8 +1147,6 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
             drawSquareHighlight(renderer, topLeftCorner + (*lastHighlighted.tilePos - allTiles.topLeft()).mult(size),
                 size, squareHighlightColor);
         }
-        if (!spriteMode)
-          break;
       }
     for (ViewLayer layer : layout->getLayers())
       if ((int)layer >= (int)ViewLayer::CREATURE) {
@@ -1149,11 +1158,8 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
           }
           const ViewIndex& index = *objects[wpos];
           const ViewObject* object = nullptr;
-          if (spriteMode) {
-            if (index.hasObject(layer))
-              object = &index.getObject(layer);
-          } else
-            object = index.getTopObject(layout->getLayers());
+          if (index.hasObject(layer))
+            object = &index.getObject(layer);
           if (object) {
             Vec2 movement = [&] {
               if (layer == ViewLayer::TORCH2 && index.hasObject(ViewLayer::CREATURE)) {
@@ -1180,15 +1186,19 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
     fxViewManager->beginFrame(renderer, zoom, offset.x, offset.y);
   }
   renderAndInitFoW(renderer, size);
-  renderFloorObjects(renderer, size, currentTimeReal);
-  if (spriteMode)
+  if (spriteMode) {
+    renderFloorObjects(renderer, size, currentTimeReal);
     renderFoWBorders(renderer, size);
+  }
   renderHighlights(renderer, size, currentTimeReal, true);
   if (fxViewManager)
     fxViewManager->drawUnorderedBackFX(renderer);
   renderShortestPaths(renderer, size);
   renderPhylacteries(renderer, size, currentTimeReal);
-  renderHighObjects(renderer, size, currentTimeReal);  
+  if (spriteMode)
+    renderHighObjects(renderer, size, currentTimeReal);
+  else
+    renderAsciiObjects(renderer, size, currentTimeReal);
   renderHighlights(renderer, size, currentTimeReal, false);
   if (fxViewManager) {
     fxViewManager->finishFrame();
@@ -1309,21 +1319,15 @@ bool MapGui::isDraggedCreature() const {
 
 void MapGui::considerScrollingToCreature() {
   PROFILE;
-  if (auto& info = centeredCreaturePosition) {
+  if (auto pos = centeredCreaturePosition) {
     Vec2 size = layout->getSquareSize();
     Vec2 offset;
-    if (auto index = objects[info->pos])
+    if (auto index = objects[*pos])
       if (index->hasObject(ViewLayer::CREATURE) && !!screenMovement)
-        offset = getMovementOffset(index->getObject(ViewLayer::CREATURE), size, 0, clock->getRealMillis(), false, info->pos);
-    double targetx = info->pos.x + (double)offset.x / size.x;
-    double targety = info->pos.y + (double)offset.y / size.y;
-    if (info->softScroll)
-      setSoftCenter(targetx, targety);
-    else
-      setCenter(targetx, targety);
-    // soft scrolling is done once when the creature is first controlled, so if we are centered then turn it off
-    if (fabs(center.x - targetx) + fabs(center.y - targety) < 0.01)
-      info->softScroll = false;
+        offset = getMovementOffset(index->getObject(ViewLayer::CREATURE), size, 0, clock->getRealMillis(), false, *pos);
+    double targetx = pos->x + (double)offset.x / size.x;
+    double targety = pos->y + (double)offset.y / size.y;
+    setCenter(targetx, targety);
   }
 }
 
@@ -1336,7 +1340,8 @@ void MapGui::render(Renderer& renderer) {
   PROFILE;
   auto currentTimeReal = clock->getRealMillis();
   updateFX(currentTimeReal);
-  considerScrollingToCreature();
+  if (scrollingState == ScrollingState::NONE)
+    considerScrollingToCreature();
   Vec2 size = layout->getSquareSize();
   lastHighlighted = getHighlightedInfo(size, currentTimeReal);
 
@@ -1471,8 +1476,9 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
   updateShortestPaths(view, renderer, layout->getSquareSize(), currentTimeReal);
   // hacky way to detect that we're switching between real-time and turn-based and not between
   // team members in turn-based mode.
-  bool newView = (view->getCenterType() != previousView);
-  if (newView || level != previousLevel) {
+  const bool newView = (view->getCenterType() != previousView);
+  const bool newLevel = level != previousLevel;
+  if (newView || newLevel) {
     if (auto *inst = fx::FXManager::getInstance())
       inst->clearUnorderedEffects();
     for (Vec2 pos : level->getBounds())
@@ -1510,18 +1516,19 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
     }
   } else
     screenMovement = none;
-  if (view->getCenterType() == CreatureView::CenterType::FOLLOW) {
-    if (centeredCreaturePosition) {
-      centeredCreaturePosition->pos = view->getScrollCoord();
-      if (newTurn)
-        centeredCreaturePosition->softScroll = false;
-    } else
-      centeredCreaturePosition = CenteredCreatureInfo { view->getScrollCoord(), true };
-  } else {
+  if (view->getCenterType() == CreatureView::CenterType::FOLLOW)
+    centeredCreaturePosition = view->getScrollCoord();
+  else {
     centeredCreaturePosition = none;
     if (!isCentered() ||
-        (view->getCenterType() == CreatureView::CenterType::STAY_ON_SCREEN && getDistanceToEdgeRatio(view->getScrollCoord()) < 0.33)) {
-      setSoftCenter(view->getScrollCoord());
+        (view->getCenterType() == CreatureView::CenterType::STAY_ON_SCREEN &&
+        getDistanceToEdgeRatio(view->getScrollCoord()) < 0.33 &&
+        scrollingState == ScrollingState::NONE)) {
+      auto coord = view->getScrollCoord();
+      if (newLevel)
+        setCenter(coord.x, coord.y);
+      else
+        setSoftCenter(coord.x, coord.y);
     }
   }
 }

@@ -12,17 +12,18 @@
 #include "level.h"
 #include "sectors.h"
 #include "movement_type.h"
+#include "content_factory.h"
 
 namespace Impl {
 static bool applyToCreature(const CreaturePredicates::Enemy&, const Creature* victim, const Creature* attacker) {
   return !!attacker && victim->isEnemy(attacker);
 }
 
-static string getName(const CreaturePredicates::Enemy&) {
+static string getName(const CreaturePredicates::Enemy&, const ContentFactory*) {
   return "enemies";
 }
 
-static string getNameNegated(const CreaturePredicates::Enemy&) {
+static string getNameNegated(const CreaturePredicates::Enemy&, const ContentFactory*) {
   return "allies";
 }
 
@@ -30,7 +31,7 @@ static bool applyToCreature(const CreaturePredicates::SameTribe&, const Creature
   return !!attacker && victim->getTribeId() == attacker->getTribeId();
 }
 
-static string getName(const CreaturePredicates::SameTribe&) {
+static string getName(const CreaturePredicates::SameTribe&, const ContentFactory*) {
   return "own tribe";
 }
 
@@ -38,11 +39,11 @@ static bool applyToCreature(const CreaturePredicates::Automaton&, const Creature
   return victim->isAutomaton();
 }
 
-static string getName(const CreaturePredicates::Automaton&) {
+static string getName(const CreaturePredicates::Automaton&, const ContentFactory*) {
   return "automatons";
 }
 
-static string getNameNegated(const CreaturePredicates::Automaton&) {
+static string getNameNegated(const CreaturePredicates::Automaton&, const ContentFactory*) {
   return "non-automatons";
 }
 
@@ -50,7 +51,7 @@ static bool applyToCreature(const CreaturePredicates::Hidden&, const Creature* v
   return victim->isHidden() && !victim->knowsHiding(attacker);
 }
 
-static string getName(const CreaturePredicates::Hidden&) {
+static string getName(const CreaturePredicates::Hidden&, const ContentFactory*) {
   return "hidden";
 }
 
@@ -58,11 +59,11 @@ static bool apply(const CreaturePredicates::Name& e, Position pos, const Creatur
   return e.pred->apply(pos, attacker);
 }
 
-static string getNameTopLevel(const CreaturePredicates::Name& e) {
+static string getNameTopLevel(const CreaturePredicates::Name& e, const ContentFactory*) {
   return e.name;
 }
 
-static string getName(const CreaturePredicates::Name& e) {
+static string getName(const CreaturePredicates::Name& e, const ContentFactory*) {
   return e.name;
 }
 
@@ -70,28 +71,28 @@ static bool applyToCreature(const CreaturePredicates::HatedBy& p, const Creature
   return victim->getAttributes().getHatedByEffect() == p.effect;
 }
 
-static string getName(const CreaturePredicates::HatedBy& p) {
-  return LastingEffects::getHatedGroupName(p.effect);
+static string getName(const CreaturePredicates::HatedBy& p, const ContentFactory* f) {
+  return *f->buffs.at(p.effect).hatedGroupName;
 }
 
 static bool apply(const CreaturePredicates::Attacker& p, Position pos, const Creature* attacker) {
   return !!attacker && p.pred->apply(attacker->getPosition(), attacker);
 }
 
-static string getName(const CreaturePredicates::Attacker& p) {
-  return p.pred->getNameInternal();
+static string getName(const CreaturePredicates::Attacker& p, const ContentFactory* f) {
+  return p.pred->getNameInternal(f);
 }
 
 static bool apply(const CreaturePredicates::Not& p, Position pos, const Creature* attacker) {
   return !p.pred->apply(pos, attacker);
 }
 
-static string getName(const CreaturePredicates::Not& p) {
-  return p.pred->getNameInternal(true);
+static string getName(const CreaturePredicates::Not& p, const ContentFactory* f) {
+  return p.pred->getNameInternal(f, true);
 }
 
-static string getNameNegated(const CreaturePredicates::Not& p) {
-  return p.pred->getNameInternal();
+static string getNameNegated(const CreaturePredicates::Not& p, const ContentFactory* f) {
+  return p.pred->getNameInternal(f);
 }
 
 static bool applyToCreature(const CreaturePredicates::Ingredient& e, const Creature* victim, const Creature* attacker) {
@@ -101,23 +102,34 @@ static bool applyToCreature(const CreaturePredicates::Ingredient& e, const Creat
   return false;
 }
 
-static string getName(const CreaturePredicates::Ingredient& e) {
+static string getName(const CreaturePredicates::Ingredient& e, const ContentFactory*) {
   return "holding " + e.name;
 }
 
-static bool applyToCreature(LastingEffect e, const Creature* victim, const Creature* attacker) {
-  return victim->isAffected(e);
+static bool apply(const CreaturePredicates::OnTheGround& e, Position pos, const Creature*) {
+  for (auto& item : pos.getItems(ItemIndex::RUNE))
+    if (item->getIngredientType() == e.name)
+      return true;
+  return false;
 }
 
-static string getName(LastingEffect e) {
-  return "affected by " + LastingEffects::getName(e);
+static string getName(const CreaturePredicates::OnTheGround& e, const ContentFactory*) {
+  return "on the ground " + e.name;
+}
+
+static bool applyToCreature(LastingOrBuff e, const Creature* victim, const Creature* attacker) {
+  return isAffected(victim, e);
+}
+
+static string getName(LastingOrBuff e, const ContentFactory* f) {
+  return "affected by " + ::getName(e, f);
 }
 
 static bool applyToCreature(CreatureStatus s, const Creature* victim, const Creature* attacker) {
   return victim->getStatus().contains(s);
 }
 
-static string getName(CreatureStatus s) {
+static string getName(CreatureStatus s, const ContentFactory*) {
   return toLower(::getName(s)) + "s";
 }
 
@@ -125,7 +137,7 @@ static bool applyToCreature(CreatureId id, const Creature* victim, const Creatur
   return victim->getAttributes().getCreatureId() == id;
 }
 
-static string getName(CreatureId s) {
+static string getName(CreatureId s, const ContentFactory*) {
   return toLower(s.data());
 }
 
@@ -133,7 +145,7 @@ static bool apply(const CreaturePredicates::Flag& s, Position pos, const Creatur
   return pos.getGame()->effectFlags.count(s.name);
 }
 
-static string getName(const CreaturePredicates::Flag& s) {
+static string getName(const CreaturePredicates::Flag& s, const ContentFactory*) {
   return s.name;
 }
 
@@ -141,7 +153,7 @@ static bool applyToCreature(const CreaturePredicates::CreatureFlag& s, const Cre
   return victim->effectFlags.count(s.name);
 }
 
-static string getName(const CreaturePredicates::CreatureFlag& s) {
+static string getName(const CreaturePredicates::CreatureFlag& s, const ContentFactory*) {
   return s.name;
 }
 
@@ -149,7 +161,7 @@ static bool applyToCreature(const Gender& s, const Creature* victim, const Creat
   return victim->getAttributes().getGender() == s;
 }
 
-static string getName(const Gender& s) {
+static string getName(const Gender& s, const ContentFactory*) {
   return get(s, "males", "females", "genderless");
 }
 
@@ -157,7 +169,7 @@ static bool applyToCreature(const CreaturePredicates::Rider& s, const Creature* 
   return victim->getSteed();
 }
 
-static string getName(const CreaturePredicates::Rider& s) {
+static string getName(const CreaturePredicates::Rider& s, const ContentFactory*) {
   return "riders";
 }
 
@@ -165,7 +177,7 @@ static bool applyToCreature(const CreaturePredicates::Kills& s, const Creature* 
   return victim->getKills().size() >= s.cnt;
 }
 
-static string getName(const CreaturePredicates::Kills& s) {
+static string getName(const CreaturePredicates::Kills& s, const ContentFactory*) {
   return "those with a minimum of " + toString(s.cnt) + " kills";
 }
 
@@ -173,7 +185,7 @@ static bool apply(const CreaturePredicates::Unlocked& s, Position pos, const Cre
   return pos.getGame()->getUnlocks()->isUnlocked(s.id);
 }
 
-static string getName(const CreaturePredicates::Unlocked& s) {
+static string getName(const CreaturePredicates::Unlocked& s, const ContentFactory*) {
   return s.id;
 }
 
@@ -182,11 +194,11 @@ static bool apply(const CreaturePredicates::InTerritory& s, Position pos, const 
   return attacker && col && col->getCreatures().contains(attacker);
 }
 
-static string getNameTopLevel(const CreaturePredicates::InTerritory&) {
+static string getNameTopLevel(const CreaturePredicates::InTerritory&, const ContentFactory*) {
   return "when in territory";
 }
 
-static string getName(const CreaturePredicates::InTerritory&) {
+static string getName(const CreaturePredicates::InTerritory&, const ContentFactory*) {
   return "in territory";
 }
 
@@ -194,16 +206,16 @@ static bool apply(FurnitureType type, Position pos, const Creature* attacker) {
   return !!pos.getFurniture(type);
 }
 
-static string getName(FurnitureType) {
+static string getName(FurnitureType, const ContentFactory*) {
   return "furniture";
 }
 
-static bool applyToCreature(BodyMaterial m, const Creature* victim, const Creature* attacker) {
+static bool applyToCreature(BodyMaterialId m, const Creature* victim, const Creature* attacker) {
   return victim->getBody().getMaterial() == m;
 }
 
-static string getName(BodyMaterial m) {
-  return "made of "_s + getMaterialName(m);
+static string getName(BodyMaterialId m, const ContentFactory* factory) {
+  return "made of "_s + factory->bodyMaterials.at(m).name;
 }
 
 static bool applyToCreature(CreaturePredicates::Spellcaster m, const Creature* victim, const Creature* attacker) {
@@ -213,7 +225,7 @@ static bool applyToCreature(CreaturePredicates::Spellcaster m, const Creature* v
   return false;
 }
 
-static string getName(CreaturePredicates::Spellcaster) {
+static string getName(CreaturePredicates::Spellcaster, const ContentFactory*) {
   return "spellcasters";
 }
 
@@ -221,11 +233,11 @@ static bool applyToCreature(CreaturePredicates::Humanoid, const Creature* victim
   return victim->getBody().isHumanoid();
 }
 
-static string getName(CreaturePredicates::Humanoid) {
+static string getName(CreaturePredicates::Humanoid, const ContentFactory*) {
   return "humanoids";
 }
 
-static string getNameNegated(CreaturePredicates::Humanoid) {
+static string getNameNegated(CreaturePredicates::Humanoid, const ContentFactory*) {
   return "non-humanoids";
 }
 
@@ -241,7 +253,7 @@ static bool apply(CreaturePredicates::IsClosedOffPigsty, Position position, cons
   return position.isClosedOff(MovementType(MovementTrait::WALK).setFarmAnimal());
 }
 
-static string getName(const CreaturePredicates::IsClosedOffPigsty) {
+static string getName(const CreaturePredicates::IsClosedOffPigsty, const ContentFactory*) {
   return "inside an animal pen";
 }
 
@@ -249,7 +261,7 @@ static bool apply(CreaturePredicates::CanCreatureEnter, Position position, const
   return position.canEnter({MovementTrait::WALK});
 }
 
-static string getName(const CreaturePredicates::CanCreatureEnter) {
+static string getName(const CreaturePredicates::CanCreatureEnter, const ContentFactory*) {
   return "can enter position";
 }
 
@@ -257,7 +269,7 @@ static bool apply(CreaturePredicates::Frequency f, Position position, const Crea
   return position.getGame()->getGlobalTime().getVisibleInt() % f.value == 0;
 }
 
-static string getName(const CreaturePredicates::Frequency f) {
+static string getName(const CreaturePredicates::Frequency f, const ContentFactory*) {
   return "with frequency " + toString(f.value);
 }
 
@@ -267,22 +279,22 @@ static bool applyToCreature(CreaturePredicates::PopLimitReached, const Creature*
   return false;
 }
 
-static string getNameTopLevel(const CreaturePredicates::PopLimitReached) {
+static string getNameTopLevel(const CreaturePredicates::PopLimitReached, const ContentFactory*) {
   return "when population limit is reached";
 }
 
-static string getName(const CreaturePredicates::PopLimitReached) {
+static string getName(const CreaturePredicates::PopLimitReached, const ContentFactory*) {
   return "population limit is reached";
 }
 
 static bool applyToCreature(const CreaturePredicates::Health& p, const Creature* victim, const Creature* attacker) {
-  auto health = victim->getBody().hasAnyHealth()
+  auto health = victim->getBody().hasAnyHealth(victim->getGame()->getContentFactory())
       ? victim->getBody().getHealth()
       : victim->getBody().getBodyPartHealth();
   return health >= p.from && health <= p.to;
 }
 
-static string getName(const CreaturePredicates::Health& p) {
+static string getName(const CreaturePredicates::Health& p, const ContentFactory*) {
   return "with health between "_s + toString(p.from) + " and " + toString(p.to);
 }
 
@@ -290,15 +302,15 @@ static bool apply(CreaturePredicates::Night m, Position pos, const Creature*) {
   return pos.getGame()->getSunlightInfo().getState() == SunlightState::NIGHT;
 }
 
-static string getName(CreaturePredicates::Night m) {
+static string getName(CreaturePredicates::Night m, const ContentFactory*) {
   return "at night";
 }
 
-static string getNameNegated(CreaturePredicates::Night m) {
+static string getNameNegated(CreaturePredicates::Night m, const ContentFactory*) {
   return "during the day";
 }
 
-static string getName(const CreaturePredicates::Distance& p) {
+static string getName(const CreaturePredicates::Distance& p, const ContentFactory*) {
   auto ret = "distance"_s;
   if (p.min)
     ret += " from " + toString(*p.min);
@@ -312,7 +324,7 @@ static bool apply(const CreaturePredicates::Distance& e, Position pos, const Cre
   return dist >= e.min.value_or(-1) && dist < e.max.value_or(10000);
 }
 
-static string getName(const CreaturePredicates::DistanceD& p) {
+static string getName(const CreaturePredicates::DistanceD& p, const ContentFactory*) {
   auto ret = "distance"_s;
   if (p.min)
     ret += " from " + toString(*p.min);
@@ -328,7 +340,7 @@ static bool apply(const CreaturePredicates::DistanceD& e, Position pos, const Cr
   return dist >= e.min.value_or(-1) && dist <= e.max.value_or(10000);
 }
 
-static string getName(const CreaturePredicates::AIAfraidOf&) {
+static string getName(const CreaturePredicates::AIAfraidOf&, const ContentFactory*) {
   return "AI afraid of";
 }
 
@@ -340,11 +352,11 @@ static bool apply(CreaturePredicates::Indoors m, Position pos, const Creature*) 
   return pos.isCovered();
 }
 
-static string getName(CreaturePredicates::Indoors m) {
+static string getName(CreaturePredicates::Indoors m, const ContentFactory*) {
   return "when indoors";
 }
 
-static string getNameNegated(CreaturePredicates::Indoors m) {
+static string getNameNegated(CreaturePredicates::Indoors m, const ContentFactory*) {
   return "when outdoors";
 }
 
@@ -352,8 +364,8 @@ static bool apply(const CreaturePredicates::Translate& m, Position pos, const Cr
   return m.pred->apply(pos.plus(m.dir), attacker);
 }
 
-static string getName(const CreaturePredicates::Translate& m) {
-  return m.pred->getNameInternal();
+static string getName(const CreaturePredicates::Translate& m, const ContentFactory* f) {
+  return m.pred->getNameInternal(f);
 }
 
 static bool apply(const CreaturePredicates::Area& m, Position pos, const Creature* attacker) {
@@ -363,8 +375,8 @@ static bool apply(const CreaturePredicates::Area& m, Position pos, const Creatur
   return true;
 }
 
-static string getName(const CreaturePredicates::Area& m) {
-  return m.pred->getNameInternal();
+static string getName(const CreaturePredicates::Area& m, const ContentFactory* f) {
+  return m.pred->getNameInternal(f);
 }
 
 static bool apply(const CreaturePredicates::And& p, Position pos, const Creature* attacker) {
@@ -374,8 +386,8 @@ static bool apply(const CreaturePredicates::And& p, Position pos, const Creature
   return true;
 }
 
-static string getName(const CreaturePredicates::And& p) {
-  return combine(p.pred.transform([] (const auto& pred) { return pred.getNameInternal(); }));
+static string getName(const CreaturePredicates::And& p, const ContentFactory* f) {
+  return combine(p.pred.transform([f] (const auto& pred) { return pred.getNameInternal(f); }));
 }
 
 static bool apply(const CreaturePredicates::Or& p, Position pos, const Creature* attacker) {
@@ -385,18 +397,18 @@ static bool apply(const CreaturePredicates::Or& p, Position pos, const Creature*
   return false;
 }
 
-static string getName(const CreaturePredicates::Or& p) {
-  return combine(p.pred.transform([] (const auto& pred) { return pred.getNameInternal(); }), " or "_s);
+static string getName(const CreaturePredicates::Or& p, const ContentFactory* f) {
+  return combine(p.pred.transform([&] (const auto& pred) { return pred.getNameInternal(f); }), " or "_s);
 }
 
 template <typename T>
-static string getNameNegated(const T& p) {
-  return "not " + Impl::getName(p);
+static string getNameNegated(const T& p, const ContentFactory* f) {
+  return "not " + Impl::getName(p, f);
 }
 
 template <typename T>
-static string getNameTopLevel(const T& p) {
-  return "against " + Impl::getName(p);
+static string getNameTopLevel(const T& p, const ContentFactory* f) {
+  return "against " + Impl::getName(p, f);
 }
 
 template <typename T, REQUIRE(applyToCreature(TVALUE(const T&), TVALUE(const Creature*), TVALUE(const Creature*)))>
@@ -417,15 +429,15 @@ bool CreaturePredicate::apply(Creature* c, const Creature* attacker) const {
   return apply(c->getPosition(), attacker);
 }
 
-string CreaturePredicate::getName() const {
-  return visit<string>([&](const auto& p) { return Impl::getNameTopLevel(p); });
+string CreaturePredicate::getName(const ContentFactory* f) const {
+  return visit<string>([&](const auto& p) { return Impl::getNameTopLevel(p, f); });
 }
 
-string CreaturePredicate::getNameInternal(bool negated) const {
+string CreaturePredicate::getNameInternal(const ContentFactory* f, bool negated) const {
   if (negated)
-    return visit<string>([&](const auto& p) { return Impl::getNameNegated(p); });
+    return visit<string>([&](const auto& p) { return Impl::getNameNegated(p, f); });
   else
-    return visit<string>([&](const auto& p) { return Impl::getName(p); });
+    return visit<string>([&](const auto& p) { return Impl::getName(p, f); });
 }
 
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST

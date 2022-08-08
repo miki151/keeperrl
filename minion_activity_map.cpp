@@ -22,6 +22,7 @@
 #include "collective.h"
 #include "equipment.h"
 #include "game.h"
+#include "content_factory.h"
 
 bool MinionActivityMap::isActivityAutoGroupLocked(MinionActivity activity) {
   switch (activity) {
@@ -71,6 +72,7 @@ bool MinionActivityMap::canLock(MinionActivity t) {
 bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, MinionActivity t, bool ignoreTaskLock) const {
   if ((isLocked(col, c, t) || col->isActivityGroupLocked(c, t)) && !ignoreTaskLock)
     return false;
+  auto factory = col->getGame()->getContentFactory();
   switch (t) {
     case MinionActivity::IDLE:
       return true;
@@ -85,7 +87,7 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
           !c->getAttributes().isTrainingMaxedOut(ExperienceType::ARCHERY) &&
           !c->getEquipment().getItems(ItemIndex::RANGED_WEAPON).empty();
     case MinionActivity::BE_WHIPPED:
-      return !c->getBody().isImmuneTo(LastingEffect::ENTANGLED) &&
+      return !c->getBody().isImmuneTo(LastingEffect::ENTANGLED, factory) &&
           !c->getBody().isFarmAnimal() &&
           c->getBody().isHumanoid();
     case MinionActivity::POETRY:
@@ -94,29 +96,32 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
     case MinionActivity::BE_TORTURED:
       return col->hasTrait(c, MinionTrait::PRISONER);
     case MinionActivity::CRAFT:
-      return !c->getAttributes().getSkills().getWorkshopValues().empty();
+      for (auto& workshop : factory->workshopInfo)
+        if (c->getAttr(workshop.second.attr) > 0)
+          return true;
+      return false;
     case MinionActivity::SLEEP:
-      return c->getBody().needsToSleep() && !c->isAffected(LastingEffect::POISON);
+      return !c->getBody().isImmuneTo(LastingEffect::SLEEP, factory) && !c->isAffected(LastingEffect::POISON);
     case MinionActivity::EAT:
-      return c->getBody().needsToEat() && !col->hasTrait(c, MinionTrait::PRISONER);
+      return !c->getBody().isImmuneTo(LastingEffect::SATIATED, factory) && !col->hasTrait(c, MinionTrait::PRISONER);
     case MinionActivity::COPULATE:
-      return c->isAffected(LastingEffect::COPULATION_SKILL);
+      return c->isAffected(BuffId("COPULATION_SKILL"));
     case MinionActivity::RITUAL:
-      return c->getBody().canPerformRituals() && !col->hasTrait(c, MinionTrait::WORKER);
+      return c->getBody().canPerformRituals(factory) && !col->hasTrait(c, MinionTrait::WORKER);
     case MinionActivity::GUARDING1:
     case MinionActivity::GUARDING2:
     case MinionActivity::GUARDING3:
       return col->hasTrait(c, MinionTrait::FIGHTER);
     case MinionActivity::CROPS:
-      return c->isAffected(LastingEffect::CROPS_SKILL);
+      return c->isAffected(BuffId("CROPS_SKILL"));
     case MinionActivity::SPIDER:
-      return c->isAffected(LastingEffect::SPIDER_SKILL);
+      return c->isAffected(BuffId("SPIDER_SKILL"));
     case MinionActivity::EXPLORE_CAVES:
-      return c->isAffected(LastingEffect::EXPLORE_CAVES_SKILL);
+      return c->isAffected(BuffId("EXPLORE_CAVES_SKILL"));
     case MinionActivity::EXPLORE:
-      return c->isAffected(LastingEffect::EXPLORE_SKILL);
+      return c->isAffected(BuffId("EXPLORE_SKILL"));
     case MinionActivity::EXPLORE_NOCTURNAL:
-      return c->isAffected(LastingEffect::EXPLORE_NOCTURNAL_SKILL);
+      return c->isAffected(BuffId("EXPLORE_NOCTURNAL_SKILL"));
     case MinionActivity::PHYLACTERY:
       return !c->getPhylactery();
     case MinionActivity::CONSTRUCTION:
@@ -124,11 +129,11 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
     case MinionActivity::HAULING:
       return c->getBody().canPickUpItems() && col->hasTrait(c, MinionTrait::WORKER);
     case MinionActivity::DIGGING:
-      return c->getAttributes().getSkills().getValue(SkillId::DIGGING) > 0 && col->hasTrait(c, MinionTrait::WORKER);
+      return c->getAttr(AttrType("DIGGING")) > 0 && col->hasTrait(c, MinionTrait::WORKER);
     case MinionActivity::MINION_ABUSE:
       return col->hasTrait(c, MinionTrait::LEADER) && col == col->getGame()->getPlayerCollective();
     case MinionActivity::DISTILLATION:
-      return c->isAffected(LastingEffect::DISTILLATION_SKILL);
+      return c->isAffected(BuffId("DISTILLATION_SKILL"));
   }
 }
 

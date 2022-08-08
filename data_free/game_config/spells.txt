@@ -2,7 +2,7 @@
 {
   symbol = "❤️"
   effect = Heal { FLESH }
-  cooldown = 30
+  cooldown = {10 31}
   sound = SPELL_HEALING
 }
 "advanced healing"
@@ -12,7 +12,7 @@
   effect = Name "advanced healing" Heal { FLESH }
   range = 1
   targetSelf = true
-  cooldown = 15
+  cooldown = {10 31}
   sound = SPELL_HEALING
 }
 "expert healing"
@@ -22,14 +22,14 @@
   effect = Name "expert healing" Heal { FLESH }
   targetSelf = true
   range = 4
-  cooldown = 10
+  cooldown = {10 31}
   sound = SPELL_HEALING
 }
 "group healing"
 {
   symbol = "💕"
   effect = Name "group healing" Area 2 Filter Not Enemy Heal { FLESH }
-  cooldown = 50
+  cooldown = {25 51}
   sound = SPELL_HEALING
 }
 "heal spirit"
@@ -38,7 +38,7 @@
   effect = Name "heal spirit" Heal { SPIRIT }
   range = 1
   targetSelf = true
-  cooldown = 15
+  cooldown = {10 31}
   sound = SPELL_HEALING
 }
 "advanced heal spirit"
@@ -48,21 +48,21 @@
   effect = Name "advanced heal spirit" Heal { SPIRIT }
   targetSelf = true
   range = 4
-  cooldown = 10
+  cooldown = {10 31}
   sound = SPELL_HEALING
 }
 "heal spirit group"
 {
   symbol = "✴✴"
   effect = Name "heal spirit group" Area 2 Filter Not Enemy Heal { SPIRIT }
-  cooldown = 50
+  cooldown = {25 51}
   sound = SPELL_HEALING
 }
 "cure poison"
 {
   symbol = "⚕"
   effect = Name "cure poison" RemoveLasting POISON
-  cooldown = 50
+  cooldown = {25 51}
   sound = SPELL_CURE_POISON
 }
 "advanced cure poison"
@@ -70,7 +70,7 @@
   upgrade = "cure poison"
   symbol = "⚕"
   effect = Name "advanced cure poison" RemoveLasting POISON
-  cooldown = 50
+  cooldown = {25 51}
   targetSelf = true
   range = 1
   sound = SPELL_CURE_POISON
@@ -79,7 +79,7 @@
 {
   symbol = "👁"
   effect = Name "cure blindness" RemoveLasting BLIND
-  cooldown = 50
+  cooldown = {25 51}
   targetSelf = true
   range = 1
   sound = SPELL_CURE_POISON
@@ -88,14 +88,14 @@
 {
   symbol = "🕶️"
   effect = Name "blindness" Lasting 5 BLIND
-  cooldown = 10
+  cooldown = {1021}
   range = 5
 }
 "poison resistance"
 {
   symbol = "🐍"
   effect = Lasting POISON_RESISTANT
-  cooldown = 100
+  cooldown = {50 101}
   targetSelf = true
   range = 1
   sound = SPELL_CURE_POISON
@@ -106,7 +106,7 @@
   effect = Name "poison breath" Area 1 EmitGas "POISON_GAS" 0.5
   fx = {FLAMETHROWER ColorId GREEN}
   range = 4
-  cooldown = 30
+  cooldown = {15 31}
   sound = SPELL_BLAST
   message = "breathe poison!" "breathes poison!"
 }
@@ -114,7 +114,7 @@
 {
   symbol = "🐝"
   effect = Summon "FLY" {3 7} 100
-  cooldown = 40
+  cooldown = {30 61}
   sound = SPELL_SUMMON_INSECTS
 }
 
@@ -137,10 +137,10 @@ End
 Def TryMagicMissile()
   TryNoFriendlyFire(
     {
-      CreatureMessage "are hit by the missile" "is hit by the missile"
+      CreatureMessage {"are hit by the missile" "is hit by the missile"}
       Damage SPELL_DAMAGE SPELL
     },
-    CreatureMessage "are spared by the missile" "is spared by the missile"
+    CreatureMessage {"are spared by the missile" "is spared by the missile"}
   )
 End
 
@@ -151,7 +151,7 @@ End
       TryMagicMissile()
   fx = {MAGIC_MISSILE}
   range = 4
-  cooldown = 20
+  cooldown = {5 21}
   sound = SPELL_BLAST
 }
 "advanced magic missile"
@@ -162,7 +162,7 @@ End
       TryMagicMissile()
   fx = {MAGIC_MISSILE}
   range = 8
-  cooldown = 10
+  cooldown = {5 21}
   sound = SPELL_BLAST
 }
 "expert magic missile"
@@ -173,27 +173,27 @@ End
       TryMagicMissile()
   fx = {MAGIC_MISSILE}
   range = 12
-  cooldown = 5
+  cooldown = {5 21}
   sound = SPELL_BLAST
 }
 "deception"
 {
   symbol = "🎭"
   effect = Deception
-  cooldown = 60
+  cooldown = {30 61}
   sound = SPELL_DECEPTION
 }
 "fog cloud"
 {
   symbol = "🌫"
   effect = Name "fog" Description "Creates a fog cloud." Area 4 Filter DistanceD none 3.2 EmitGas "FOG" 1
-  cooldown = 40
+  cooldown = {30 61}
 }
 "invisibility"
 {
   symbol = "🕵️"
   effect = Lasting INVISIBLE
-  cooldown = 300
+  cooldown = {100 301}
   sound = SPELL_INVISIBILITY
 }
 "advanced invisibility"
@@ -201,14 +201,14 @@ End
   upgrade = "invisibility"
   symbol = "🕵️"
   effect = Name "advanced invisibility" Lasting INVISIBLE
-  cooldown = 150
+  cooldown = {100 301}
   sound = SPELL_INVISIBILITY
 }
 "escape"
 {
   symbol = "✈️"
   effect = Escape {}
-  cooldown = 80
+  cooldown = {50 101}
   sound = SPELL_TELEPORT
 }
 "blink"
@@ -223,7 +223,7 @@ End
   symbol = "🌀"
   effect = Teleport
   range = 3
-  cooldown = 200
+  cooldown = {50 201}
   endOnly = true
   sound = SPELL_TELEPORT
 }
@@ -233,7 +233,7 @@ End
   symbol = "🌀"
   effect = Name "advanced teleport" Teleport
   range = 8
-  cooldown = 160
+  cooldown = {50 201}
   endOnly = true
   sound = SPELL_TELEPORT
 }
@@ -251,7 +251,7 @@ End
   symbol = "😱"
   effect = Lasting PANIC
   range = 5
-  cooldown = 50
+  cooldown = {25 51}
   sound = SPELL_STR_BONUS
 }
 "pacify"
@@ -259,7 +259,7 @@ End
   symbol = "☮"
   effect = Name "pacify" Lasting PEACEFULNESS
   range = 2
-  cooldown = 150
+  cooldown = {20 61}
   endOnly = true
   sound = SPELL_STR_BONUS
 }
@@ -267,7 +267,7 @@ End
 {
   symbol = "🏃"
   effect = Lasting SPEED
-  cooldown = 120
+  cooldown = {30 61}
   sound = SPELL_SPEED_SELF
 }
 "advanced haste"
@@ -277,7 +277,7 @@ End
   effect = Name "advanced haste" Lasting SPEED
   targetSelf = true
   range = 1
-  cooldown = 120
+  cooldown = {30 61}
   sound = SPELL_SPEED_SELF
 }
 "warhorse_haste"
@@ -293,7 +293,7 @@ End
   symbol = "🐢"
   effect = Lasting SLOWED
   range = 3
-  cooldown = 120
+  cooldown = {30 61}
   sound = SPELL_SPEED_SELF
 }
 "magic cancellation"
@@ -301,7 +301,7 @@ End
   symbol = "🔮"
   effect = Lasting MAGIC_CANCELLATION
   range = 2
-  cooldown = 150
+  cooldown = {50 151}
   sound = SPELL_STR_BONUS
 }
 "directed blast"
@@ -310,7 +310,7 @@ End
   effect = Blast
   range = 4
   endOnly = true
-  cooldown = 30
+  cooldown = {5 21}
   sound = SPELL_BLAST
 }
 "pull"
@@ -319,100 +319,100 @@ End
   effect = Pull
   range = 6
 #    endOnly = true
-  cooldown = 30
+  cooldown = {5 21}
   sound = SPELL_BLAST
 }
 "circular blast"
 {
   symbol = "💥"
   effect = CircularBlast
-  cooldown = 50
+  cooldown = {5 21}
   sound = SPELL_AIR_BLAST
   message = "create an air blast!" "creates an air blast!"
 }
 "defense bonus"
 {
   symbol = "🛡"
-  effect = Name "defense bonus" Lasting DEF_BONUS
-  cooldown = 80
+  effect = Name "defense bonus" Lasting 40 DEF_BONUS
+  cooldown = {30 81}
   sound = SPELL_DEX_BONUS
 }
 "advanced defense bonus"
 {
   upgrade = "defense bonus"
   symbol = "🛡"
-  effect = Name "advanced defense bonus" Lasting DEF_BONUS
+  effect = Name "advanced defense bonus" Lasting 40 DEF_BONUS
   targetSelf = true
   range = 1
-  cooldown = 80
+  cooldown = {30 81}
   sound = SPELL_DEX_BONUS
 }
 "mass defense bonus"
 {
   upgrade = "advanced defense bonus"
   symbol = "🛡"
-  effect = Name "mass defense bonus" Area 10 Filter Not Enemy Lasting DEF_BONUS
-  cooldown = 80
+  effect = Name "mass defense bonus" Area 10 Filter Not Enemy Lasting 40 DEF_BONUS
+  cooldown = {30 81}
   sound = SPELL_DEX_BONUS
 }
 "damage bonus"
 {
   symbol = "💪"
-  effect = Name "damage bonus" Lasting DAM_BONUS
-  cooldown = 80
+  effect = Name "damage bonus" Lasting 40 DAM_BONUS
+  cooldown = {30 81}
   sound = SPELL_STR_BONUS
 }
 "advanced damage bonus"
 {
   upgrade = "damage bonus"
   symbol = "💪"
-  effect = Name "advanced damage bonus" Lasting DAM_BONUS
+  effect = Name "advanced damage bonus" Lasting 40 DAM_BONUS
   targetSelf = true
   range = 1
-  cooldown = 80
+  cooldown = {30 81}
   sound = SPELL_STR_BONUS
 }
 "mass damage bonus"
 {
   upgrade = "advanced damage bonus"
   symbol = "💪"
-  effect = Name "mass damage bonus" Area 10 Filter Not Enemy Lasting DAM_BONUS
-  cooldown = 80
+  effect = Name "mass damage bonus" Area 10 Filter Not Enemy Lasting 40 DAM_BONUS
+  cooldown = {30 81}
   sound = SPELL_STR_BONUS
 }
 "bolster"
 {
   symbol = "🛡"
-  effect = Name "bolster" Area 1 Filter Not Enemy Lasting DEF_BONUS 
-  cooldown = 70
+  effect = Name "bolster" Area 1 Filter Not Enemy Lasting 40 DEF_BONUS 
+  cooldown = {30 81}
   sound = SPELL_DEX_BONUS
 }
 "rally"
 {
   symbol = "💪"
-  effect = Name "rally" Area 1 Filter Not Enemy Lasting DAM_BONUS 
-  cooldown = 70
+  effect = Name "rally" Area 1 Filter Not Enemy Lasting 40 DAM_BONUS 
+  cooldown = {30 81}
   sound = SPELL_DEX_BONUS
 }
 "summon element"
 {
   symbol = "👾"
   effect = SummonElement
-  cooldown = 100
+  cooldown = {30 81}
   sound = SPELL_SUMMON_SPIRIT
 }
 "meteor shower"
 {
   symbol = "☄"
   effect = Name "meteor shower" PlaceFurniture "METEOR_SHOWER"
-  cooldown = 150
+  cooldown = {30 81}
   sound = SPELL_METEOR_SHOWER
 }
 "fire elemental"
 {
   symbol = "👾"
   effect = Name "fire elemental" Summon "FIRE_ELEMENTAL" { 1 2 } 100
-  cooldown = 100
+  cooldown = {30 81}
   sound = SPELL_FIRE_SPHERE_PET
 }
 "advanced fire elemental"
@@ -420,16 +420,16 @@ End
   upgrade = "fire elemental"
   symbol = "👾"
   effect = Name "advanced fire elemental" Summon "FIRE_ELEMENTAL" { 2 4 } 100
-  cooldown = 100
+  cooldown = {30 81}
   sound = SPELL_FIRE_SPHERE_PET
 }
 "fire breath"
 {
   symbol = "🐲"
-  effect = Name "fire breath" Fire
+  effect = Name "fire breath" Fire{}
   fx = {FLAMETHROWER ColorId LIGHT_RED}
   range = 4
-  cooldown = 30
+  cooldown = {15 31}
   sound = SPELL_BLAST
   message = "breathe fire!" "breathes fire!"
 }
@@ -439,7 +439,7 @@ End
   effect =  Name "firewall" CustomArea PlaceFurniture "FIRE_WALL" { {0 -2} {0 -1} {0 0} {0 1} {0 2} }
   endOnly = true
   range = 2
-  cooldown = 30
+  cooldown = {15 31}
   sound = SPELL_BLAST
 }
 "fire trap"
@@ -449,23 +449,23 @@ End
       { {0 -2} {1 -2} {2 -1} {2 0} {2 1} {1 2} {0 2} {-1 2} {-2 1} {-2 0} {-2 -1} {-1 -2} }
   endOnly = true
   range = 8
-  cooldown = 30
+  cooldown = {15 31}
   sound = SPELL_BLAST
 }
 "fireball"
 {
   symbol = "🔥"
-  effect = Name "fireball" Fire
+  effect = Name "fireball" Fire {}
   fx = {FIREBALL}
   range = 4
-  cooldown = 30
+  cooldown = {15 31}
   sound = SPELL_FIRE_SPHERE_PET
 }
 "earth elemental"
 {
   symbol = "👾"
   effect = Name "earth elemental" Summon "EARTH_ELEMENTAL" 1 100
-  cooldown = 100
+  cooldown = {30 81}
   sound = SPELL_FIRE_SPHERE_PET
 }
 "advanced earth elemental"
@@ -473,25 +473,25 @@ End
   upgrade = "earth elemental"
   symbol = "👾"
   effect = Name "advanced earth elemental" Summon "EARTH_ELEMENTAL" { 2 4 } 100
-  cooldown = 100
+  cooldown = {30 81}
   sound = SPELL_FIRE_SPHERE_PET
 }
 "ice cone"
 {
   symbol = "❄"
-  effect = Name "ice cone" Ice
+  effect = Name "ice cone" Ice{}
   fx = {FLAMETHROWER ColorId LIGHT_BLUE}
   range = 4
-  cooldown = 15
+  cooldown = {15 31}
   #sound = SPELL_FIRE_SPHERE_PET
 }
 "acid stream"
 {
   symbol = "🜅"
-  effect = Name "acid stream" Acid
+  effect = Name "acid stream" Acid{}
   fx = {FLAMETHROWER ColorId YELLOW}
   range = 4
-  cooldown = 5
+  cooldown = {15 31}
   message = "spit acid!" "spits acid!"
 }
 "black smoke breath"
@@ -500,7 +500,7 @@ End
   effect = Name "black smoke" Area 1 EmitGas "BLACK_SMOKE" 1
   fx = {FLAMETHROWER ColorId BLACK}
   range = 4
-  cooldown = 5
+  cooldown = {15 31}
   message = "breathe black smoke!" "breathes black smoke!"
 }
 "shove"
@@ -508,7 +508,7 @@ End
   symbol = "👉"
   effect = Shove
   range = 1
-  cooldown = 30
+  cooldown = {15 31}
   message = "use an ability" "uses an ability"
   type = ABILITY
 }
@@ -517,7 +517,7 @@ End
   symbol = "⇅"
   effect = SwapPosition
   range = 1
-  cooldown = 30
+  cooldown = {15 31}
   message = "use an ability" "uses an ability"
 }
 "black dragon blindness"
@@ -550,26 +550,26 @@ End
 {
   symbol = "👤👤"
   effect = DoubleTrouble
-  cooldown = 1000
+  cooldown = {300 1001}
 }
 "animate weapons"
 {
   symbol = "⚔️"
   effect = Name "animate weapons" AnimateItems 5 5 {30 50} WEAPON
-  cooldown = 200
+  cooldown = {50 201}
 }
 "animate corpses"
 {
   symbol = "👤"
   effect = Name "animate corpses" AnimateItems 3 5 {10 20} CORPSE
-  cooldown = 200
+  cooldown = {50 201}
 }
 "advanced animate corpses"
 {
   upgrade = "animate corpses"
   symbol = "👤"
   effect = Name "advanced animate corpses" AnimateItems 6 5 {30 50} CORPSE
-  cooldown = 100
+  cooldown = {50 201}
 }
 "adoxie right hand"
 {
@@ -633,16 +633,15 @@ Def NoEffect() Unlock "nothing" End
   effect = MinDistanceFromStrongEnemy(4) Name "shoot arrow" Description "Shoots an arrow"
       TryNoFriendlyFire(
         {
-          CreatureMessage "are hit by the arrow" "is hit by the arrow"
+          CreatureMessage { "are hit by the arrow" "is hit by the arrow"}
           Damage RANGED_DAMAGE SHOOT
         },
-        CreatureMessage "are spared by the arrow" "is spared by the arrow"
+        CreatureMessage { "are spared by the arrow" "is spared by the arrow"}
       )
   range = 7
   cooldown = 1
   maxHits = 1
   projectileViewId = {"arrow"}
-  keybinding = FIRE_PROJECTILE
   message = "shoot an arrow" "shoots an arrow"
   type = ABILITY
 }
@@ -652,16 +651,15 @@ Def NoEffect() Unlock "nothing" End
   effect = MinDistanceFromStrongEnemy(4) Name "shoot bolt" Description "Shoots a bolt"
       TryNoFriendlyFire(
         {
-          CreatureMessage "are hit by the bolt" "is hit by the bolt"
+          CreatureMessage { "are hit by the bolt" "is hit by the bolt"}
           Damage RANGED_DAMAGE SHOOT
         },
-        CreatureMessage "are spared by the bolt" "is spared by the bolt"
+        CreatureMessage { "are spared by the bolt" "is spared by the bolt"}
       )
   range = 14
   cooldown = 3
   maxHits = 1
   projectileViewId = {"arrow"}
-  keybinding = FIRE_PROJECTILE
   message = "shoot a bolt" "shoots a bolt"
   type = ABILITY
 }
@@ -669,7 +667,7 @@ Def NoEffect() Unlock "nothing" End
 {
   symbol = "👑"
   effect = Audience none
-  cooldown = 100
+  cooldown = {50 101}
 }
 "repair automaton"
 {
@@ -693,7 +691,7 @@ Def NoEffect() Unlock "nothing" End
   range = 5
   endOnly = true
   targetSelf = true
-  cooldown = 50
+  cooldown = {30 61}
   message = "play a trick!" "plays a trick!"
 }
 "shapeshift"
@@ -730,7 +728,7 @@ Def NoEffect() Unlock "nothing" End
   symbol = "🐤🐤"
   effect = Name "summon more chickens" Summon "CHICKEN" {3 5} 15
   message = "cluck" "clucks"
-  cooldown = 5
+  cooldown = {3 10}
   type = ABILITY
 }
 "chickenmorph"
@@ -740,7 +738,7 @@ Def NoEffect() Unlock "nothing" End
     Polymorph "CHICKEN" 10
     Permanent INVULNERABLE
   }
-  cooldown = 50
+  cooldown = {30 101}
   message = "cluck" "clucks"
   type = ABILITY
 }
@@ -756,7 +754,7 @@ Def NoEffect() Unlock "nothing" End
   targetSelf = true
   endOnly = true
   range = 5
-  cooldown = 50
+  cooldown = {30 101}
   message = "cluck" "clucks"
   type = ABILITY
 }
@@ -768,17 +766,28 @@ Def NoEffect() Unlock "nothing" End
       Polymorph "CHICKEN" 10
       AI And {} 1 -1 Permanent INVULNERABLE
     }
-  cooldown = 300
+  cooldown = {150 301}
   message = "cluck" "clucks"
   type = ABILITY
 }
 "balrogs whip"
 {
   symbol = "ℒ"
-  effect = Name "fiery whip" Description "Causes magical and fire damage" { Fire Damage SPELL_DAMAGE SPELL }
+  effect = Name "fiery whip" Description "Causes magical and fire damage" { Fire{} Damage SPELL_DAMAGE SPELL }
   fx = {BALROGS_WHIP ColorId LIGHT_RED}
   range = 4
   cooldown = 2
   endOnly = true
   message = "lash your whip!" "lashes his whip!"
+}
+
+"kings charge"
+{
+  symbol = "👑"
+  effect = Name "king's charge" Description "All allies within the radius of 10 receive a +15 damage buff. Can only be used by a tribe leader." {
+    Filter Attacker CreatureStatus LEADER Area 10 Filter And{ Not Enemy Distance 1 none } Lasting 40 KINGS_CHARGE
+    Filter Not Attacker CreatureStatus LEADER CreatureMessage { "are not worthy!" "is not worthy!" }
+  }
+  cooldown = 300
+  sound = SPELL_STR_BONUS
 }

@@ -39,7 +39,7 @@ int FurnitureFactory::getPopulationIncrease(FurnitureType type, int numBuilt) co
 
 PFurniture FurnitureFactory::getFurniture(FurnitureType type, TribeId tribe) const {
   USER_CHECK(furniture.count(type)) << "Furniture type not found " << type.data();
-  auto ret = unique<Furniture>(*furniture.at(type));
+  auto ret = make_unique<Furniture>(*furniture.at(type));
   ret->setTribe(tribe);
   return ret;
 }

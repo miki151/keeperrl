@@ -18,7 +18,7 @@ class ReadWriteArray {
   WType getWritable(Vec2 pos) {
     if (modified[pos] == -1)
       if (auto type = types[pos])
-        putElem(pos, unique<Type>(*getReadonly(pos)));
+        putElem(pos, make_unique<Type>(*getReadonly(pos)));
     if (modified[pos] > -1)
       return allModified[modified[pos]].get();
     else

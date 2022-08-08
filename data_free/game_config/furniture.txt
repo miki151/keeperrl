@@ -139,7 +139,7 @@
   usageFX = none
   diningFurniture = true
   usageType = UsageEffect "eat from" Filter Humanoid {
-    CreatureMessage "eat a steaming pig" "eats a steaming pig"
+    CreatureMessage { "eat a steaming pig" "eats a steaming pig"}
     Lasting SATIATED
   }
 }
@@ -155,7 +155,7 @@
   destroyFX = { DESTROY_FURNITURE Rgb 200 200 0 255 }
   diningFurniture = true
   usageType = UsageEffect "eat from" Filter Not Humanoid {
-    CreatureMessage "eat some hay" "eats some hay"
+    CreatureMessage { "eat some hay" "eats some hay"}
     Lasting SATIATED
   }
 }
@@ -237,7 +237,7 @@
   name = "throne"
   viewId = { "throne" }
   canHideHere = true
-  usageType = UsageEffect "sit on" { CreatureMessage "sit on the throne" "sits on the throne" Audience none }
+  usageType = UsageEffect "sit on" { CreatureMessage { "sit on the throne" "sits on the throne" } Audience none }
   luxury = 1.0
   strength = 80
   populationIncrease = { 10 none }
@@ -249,6 +249,7 @@
   viewId = { "impaled_head" }
   strength = 10
   destroyFX = { DESTROY_FURNITURE ColorId WHITE }
+  canBuildOutsideOfTerritory = true
 }
 
 Def BedHeal() Heal { FLESH 0.005 } End
@@ -772,7 +773,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "wheat"
   viewId = { "swish_wheat" }
-  usageType = UsageEffect "scythe " Chance 0.3 CreatureMessage "scythe the field" "scythes the field"
+  usageType = UsageEffect "scythe " Chance 0.3 CreatureMessage { "scythe the field" "scythes the field"}
   usageTime = 3
   layer = FLOOR
   viewLayer = FLOOR
@@ -918,7 +919,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   luxury = 0.7
   usageType = UsageEffect "drink from"
       {
-        CreatureMessage "take a sip" "takes a sip"
+        CreatureMessage { "take a sip" "takes a sip"}
         ChooseRandom {
           Heal { FLESH }
           Lasting SLEEP
@@ -942,7 +943,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   canHideHere = true
   strength = 80
   usageType = UsageEffect "desecrate" {
-    CreatureMessage "desecrate the altar" "desecrates the altar"
+    CreatureMessage { "desecrate the altar" "desecrates the altar"}
     DestroyWalls BASH
     ChooseRandom {
       {
@@ -979,12 +980,12 @@ Def BedHeal() Heal { FLESH 0.005 } End
           IncreaseAttr SPELL_DAMAGE 3
           IncreaseAttr DEFENSE -3
           IncreaseAttr DEFENSE 3
-          Acid
-          Fire
-          Lasting DAM_BONUS
+          Acid{30}
+          Fire{30}
+          Lasting 40 DAM_BONUS
           Lasting BLIND
           Lasting POISON
-          Lasting BLEEDING
+          Lasting 50 BLEEDING
           Lasting HALLU
         }
       }
@@ -993,16 +994,16 @@ Def BedHeal() Heal { FLESH 0.005 } End
         SummonEnemy "ANGEL" {3 6} none
       }
       {
-        CreatureMessage "find some gold coins in the cracks" "finds some gold coins in the cracks"
+        CreatureMessage { "find some gold coins in the cracks" "finds some gold coins in the cracks"}
         DropItems {"GoldPiece"} {50 100}
       }
       {
-        CreatureMessage "find a glyph in the cracks!" "finds a glyph in the cracks!"
+        CreatureMessage { "find a glyph in the cracks!" "finds a glyph in the cracks!"}
         ChooseRandom {
           DropItems {Glyph ARMOR ItemAttrBonus DAMAGE 2} {1}
           DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 2} {1}
           DropItems {Glyph ARMOR LastingEffect TELEPATHY} {1}
-          DropItems {Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING} {1}
+          DropItems {Glyph WEAPON VictimEffect 0.3 Lasting 50 BLEEDING} {1}
           DropItems {Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 2} {1}
         }
       }
@@ -1055,8 +1056,8 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "chest" }
   canHideHere = true
   usageType = UsageEffect "open" {
-    CreatureMessage "open the chest" "opens the chest"
-    CreatureMessage "find some equipment inside" "finds some equipment inside"
+    CreatureMessage { "open the chest" "opens the chest"}
+    CreatureMessage { "find some equipment inside" "finds some equipment inside"}
     ChooseRandom {
       DropItems {"ChainArmor"} 1
       DropItems {"IronBoots"} 1
@@ -1074,8 +1075,8 @@ Def BedHeal() Heal { FLESH 0.005 } End
 "PAMPHLET_CHEST" inherit "ARMOR_CHEST"
 {
   usageType = UsageEffect "open" {
-    CreatureMessage "open the chest" "opens the chest"
-    CreatureMessage "find some pamphlets inside" "finds some pamphlets inside"
+    CreatureMessage { "open the chest" "opens the chest"}
+    CreatureMessage { "find some pamphlets inside" "finds some pamphlets inside"}
     DropItems {"AdoxieScroll"} {10 20}
     RemoveFurniture "PAMPHLET_CHEST"
   }
@@ -1083,8 +1084,8 @@ Def BedHeal() Heal { FLESH 0.005 } End
 "ZOMBIE_CHEST" inherit "ARMOR_CHEST"
 {
   usageType = UsageEffect "open" {
-    CreatureMessage "open the chest" "opens the chest"
-    CreatureMessage "find a scroll inside" "finds a scroll inside"
+    CreatureMessage { "open the chest" "opens the chest"}
+    CreatureMessage { "find a scroll inside" "finds a scroll inside"}
     DropItems {"ZombieScroll"} 1
     RemoveFurniture "ZOMBIE_CHEST"
   }
@@ -1092,8 +1093,8 @@ Def BedHeal() Heal { FLESH 0.005 } End
 "KNIFE_CHEST" inherit "ARMOR_CHEST"
 {
   usageType = UsageEffect "open" {
-    CreatureMessage "open the chest" "opens the chest"
-    CreatureMessage "find an item inside" "finds an item inside"
+    CreatureMessage { "open the chest" "opens the chest"}
+    CreatureMessage { "find an item inside" "finds an item inside"}
     DropItems {"AssassinsKnife"} 1
     RemoveFurniture "KNIFE_CHEST"
   }
@@ -1101,8 +1102,8 @@ Def BedHeal() Heal { FLESH 0.005 } End
 "ADA_CHEST" inherit "ARMOR_CHEST"
 {
   usageType = UsageEffect "open" {
-    CreatureMessage "open the chest" "opens the chest"
-    CreatureMessage "find an item inside" "finds an item inside"
+    CreatureMessage {"open the chest" "opens the chest"}
+    CreatureMessage {"find an item inside" "finds an item inside"}
     ChooseRandom {
       DropItems {"AdaSword"} 1
       DropItems {"AdaBattleAxe"} 1
@@ -1120,8 +1121,8 @@ Def BedHeal() Heal { FLESH 0.005 } End
 "SWARMER_CHEST" inherit "ARMOR_CHEST"
 {
   usageType = UsageEffect "open" {
-    CreatureMessage "open the chest" "opens the chest"
-    CreatureMessage "find an item inside" "finds an item inside"
+    CreatureMessage { "open the chest" "opens the chest"}
+    CreatureMessage { "find an item inside" "finds an item inside"}
     DropItems {Potion Permanent SWARMER} 1
     Analytics "milestone" "swarmerChest"
     RemoveFurniture "SWARMER_CHEST"
@@ -1130,8 +1131,8 @@ Def BedHeal() Heal { FLESH 0.005 } End
 "BLACKSMITH_CHEST" inherit "ARMOR_CHEST"
 {
   usageType = UsageEffect "open" {
-    CreatureMessage "open the chest" "opens the chest"
-    CreatureMessage "find an item inside" "finds an item inside"
+    CreatureMessage { "open the chest" "opens the chest"}
+    CreatureMessage { "find an item inside" "finds an item inside"}
     ChooseRandom {
       DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 2} 1
       DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 3} 1
@@ -1150,8 +1151,8 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   fire = 0
   usageType = UsageEffect "open" {
-    CreatureMessage "open the chest" "opens the chest"
-    CreatureMessage "find an item inside" "finds an item inside"
+    CreatureMessage { "open the chest" "opens the chest"}
+    CreatureMessage { "find an item inside" "finds an item inside"}
     ChooseRandom {
       DropItems {"GoldPiece"} {30 100} 
       DropItems {PrefixChance 1 {"Sword"}} 1
@@ -1425,7 +1426,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     200 BOULDER
     30 DIG
     200 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
   summonedElement = "EARTH_ELEMENTAL"
   canBuildOutsideOfTerritory = true
@@ -1464,7 +1464,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     500 BOULDER
     70 DIG
     500 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
   canBuildOutsideOfTerritory = true
   destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
@@ -1480,7 +1479,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     500 BOULDER
     500 DIG
     500 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
 }
 "ADOXIUM_ORE" inherit "MOUNTAIN2"
@@ -1493,7 +1491,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     200 BOULDER
     220 DIG
     200 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
 }
 "INFERNITE_ORE" inherit "MOUNTAIN2"
@@ -1508,7 +1505,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     200 BOULDER
     220 DIG
     200 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
 }
 "IRON_ORE" inherit "MOUNTAIN2"
@@ -1521,7 +1517,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     200 BOULDER
     220 DIG
     200 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
 }
 "STONE" inherit "MOUNTAIN2"
@@ -1534,7 +1529,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     200 BOULDER
     250 DIG
     200 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
 }
 "GOLD_ORE" inherit "MOUNTAIN2"
@@ -1547,7 +1541,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     200 BOULDER
     220 DIG
     200 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
 }
 "DUNGEON_WALL"
@@ -1567,7 +1560,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     300 BOULDER
     100 DIG
     1900 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
   destroyFX = { ROCK_CLOUD Rgb 220 210 180 255 }
   tryDestroyFX = { ROCK_SPLINTERS Rgb 220 210 180 255 }
@@ -1602,7 +1594,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     300 BOULDER
     100 DIG
     1900 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
   canBuildOutsideOfTerritory = true
 }
@@ -1648,7 +1639,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     100 BOULDER
     100 DIG
     300 HOSTILE_DIG
-    300 HOSTILE_DIG_NO_SKILL
   }
   summonedElement = "ENT"
   fire = 100
@@ -1687,7 +1677,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     100 BOULDER
     100 DIG
     300 HOSTILE_DIG
-    300 HOSTILE_DIG_NO_SKILL
   }
 }
 "BLACK_WALL"
@@ -1766,14 +1755,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
   layer = FLOOR
   lastingEffect = ALLY INVISIBLE 0
 }
-"FLOOR_REGENER"
-{
-  name = "floor of regeneration"
-  viewId = { "floor_regen" }
-  luxury = 0.7
-  layer = FLOOR
-  lastingEffect = ALLY REGENERATION 0
-}
 "FLOOR_PEACE"
 {
   name = "floor of peace"
@@ -1796,12 +1777,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "bleeding totem"
   viewId = { "totem" Rgb 156 58 156 255 }
   lastingEffect = ENEMY BLEEDING 7
-}
-"DEFENSE_TOTEM" inherit "HEALING_TOTEM"
-{
-  name = "defense totem"
-  viewId = { "totem" Rgb 68 58 156 255 }
-  lastingEffect = ALLY DEF_BONUS 3
 }
 "ALARM_TRAP"
 {
@@ -2035,11 +2010,11 @@ Def Boulder(Id) {
   tickType = Effect
     Filter And { Not LastingEffect FLYING Not BodyMaterial SPIRIT Not LastingEffect IMMOBILE} {
       Chance 0.1 {
-        CreatureMessage "are stuck in the tar!" "is stuck in the tar!"
+        CreatureMessage { "are stuck in the tar!" "is stuck in the tar!"}
         Lasting IMMOBILE
       }
       Filter Not LastingEffect IMMOBILE Chance 0.5 {
-        CreatureMessage "are slowed down by the tar!" "is slowed down by the tar!"
+        CreatureMessage {"are slowed down by the tar!" "is slowed down by the tar!"}
         Lasting SLOWED
       }
     }

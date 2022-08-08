@@ -3,7 +3,6 @@
 #include "creature.h"
 #include "spell.h"
 #include "creature_name.h"
-#include "skill.h"
 #include "view_id.h"
 #include "level.h"
 #include "position.h"
@@ -22,13 +21,14 @@
 #include "special_trait.h"
 #include "automaton_part.h"
 #include "container_range.h"
+#include "experience_type.h"
 
 CreatureInfo::CreatureInfo(const Creature* c)
     : viewId(c->getViewObject().getViewIdList()),
       uniqueId(c->getUniqueId()),
       name(c->getName().bare()),
       stackName(c->getName().stack()),
-      bestAttack(c->getBestAttack()),
+      bestAttack(c->getBestAttack(c->getGame()->getContentFactory())),
       morale(c->getMorale()) {
 }
 
@@ -39,27 +39,21 @@ string PlayerInfo::getFirstName() const {
     return capitalFirst(name);
 }
 
-static vector<SkillInfo> getSkillNames(const Creature* c, const ContentFactory* factory) {
-  vector<SkillInfo> ret;
-  auto& skills = c->getAttributes().getSkills();
-  for (SkillId id : ENUM_ALL(SkillId))
-    if (skills.getValue(id) > 0)
-      ret.push_back(SkillInfo{Skill::get(id)->getNameForCreature(c), Skill::get(id)->getHelpText()});
-  for (auto& elem : skills.getWorkshopValues())
-    if (elem.second > 0)
-      ret.push_back(SkillInfo{skills.getNameForCreature(factory, elem.first),
-          skills.getHelpText(factory, elem.first)});
-  return ret;
-}
-
 ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature* c, const ContentFactory* factory) {
+  vector<ImmigrantCreatureInfo::TrainingInfo> limits;
+  auto maxExp = c->getAttributes().getMaxExpLevel();
+  for (auto expType : ENUM_ALL(ExperienceType))
+    if (maxExp[expType] > 0) {
+      limits.push_back(ImmigrantCreatureInfo::TrainingInfo { expType, maxExp[expType] });
+      for (auto attr : getAttrIncreases()[expType])
+        limits.back().attributes.push_back(factory->attrInfo.at(attr.first).viewId);
+    }
   return ImmigrantCreatureInfo {
     c->getName().bare(),
     c->getViewObject().getViewIdList(),
-    AttributeInfo::fromCreature(c),
+    AttributeInfo::fromCreature(factory, c),
     c->getAttributes().getSpellSchools().transform([](auto id) -> string { return id.data(); }),
-    c->getAttributes().getMaxExpLevel(),
-    getSkillNames(c, factory)
+    std::move(limits)
   };
 }
 
@@ -98,8 +92,8 @@ bool ItemInfo::representsSteed() const {
 ItemInfo ItemInfo::get(const Creature* creature, const vector<Item*>& stack, const ContentFactory* factory) {
   PROFILE;
   return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName(creature, stack.size() > 1);
-    c.fullName = stack[0]->getNameAndModifiers(false, creature);
+    c.name = stack[0]->getShortName(factory, creature, stack.size() > 1);
+    c.fullName = stack[0]->getNameAndModifiers(factory, false, creature);
     c.description = (creature && creature->isAffected(LastingEffect::BLIND))
         ? vector<string>() : stack[0]->getDescription(factory);
     c.number = stack.size();
@@ -142,7 +136,7 @@ static vector<ItemInfo> fillIntrinsicAttacks(const Creature* c, const ContentFac
 static vector<ItemInfo> getItemInfos(const Creature* c, const vector<Item*>& items, const ContentFactory* factory) {
   map<string, vector<Item*> > stacks = groupBy<Item*, string>(items,
       [&] (Item* const& item) {
-          return item->getNameAndModifiers(false, c) + (c->getEquipment().isEquipped(item) ? "(e)" : ""); });
+          return item->getNameAndModifiers(factory, false, c) + (c->getEquipment().isEquipped(item) ? "(e)" : ""); });
   vector<ItemInfo> ret;
   for (auto elem : stacks)
     ret.push_back(ItemInfo::get(c, elem.second, factory));
@@ -162,35 +156,36 @@ SpellSchoolInfo fillSpellSchool(const Creature* c, SpellSchoolId id, const Conte
           spell->getSymbol(),
           id.second,
           !c || c->getAttributes().getExpLevel(spellSchool.expType) >= id.second,
-          {spell->getDescription(factory)},
-          none
+          {spell->getDescription(c, factory)},
+          none,
+          false
         });
   }
   return ret;
 }
 
-PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory) : bestAttack(c) {
+PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory)
+    : bestAttack(c->getBestAttack(contentFactory))   {
   firstName = c->getName().firstOrBare();
   name = c->getName().bare();
   title = c->getName().title();
-  description = capitalFirst(c->getAttributes().getDescription());
-  viewId = c->getViewObject().getViewIdList();
-  morale = c->getMorale();
+  description = capitalFirst(c->getAttributes().getDescription(contentFactory));
+  viewId = c->getViewIdWithWeapon();
+  morale = c->getMorale(contentFactory);
   positionHash = c->getPosition().getHash();
   creatureId = c->getUniqueId();
-  attributes = AttributeInfo::fromCreature(c);
-  experienceInfo = getCreatureExperienceInfo(c);
+  attributes = AttributeInfo::fromCreature(contentFactory, c);
+  experienceInfo = getCreatureExperienceInfo(contentFactory, c);
   for (auto& id : c->getAttributes().getSpellSchools())
     spellSchools.push_back(fillSpellSchool(c, id, contentFactory));
   intrinsicAttacks = fillIntrinsicAttacks(c, contentFactory);
-  skills = getSkillNames(c, contentFactory);
   kills = c->getKills().transform([&](auto& info){ return info.viewId; });
   killTitles = c->getKillTitles();
   aiType = c->getAttributes().getAIType();
   effects.clear();
-  for (auto& adj : c->getBadAdjectives())
+  for (auto& adj : c->getBadAdjectives(contentFactory))
     effects.push_back({adj.name, adj.help, true});
-  for (auto& adj : c->getGoodAdjectives())
+  for (auto& adj : c->getGoodAdjectives(contentFactory))
     effects.push_back({adj.name, adj.help, false});
   spells.clear();
   for (auto spell : c->getSpellMap().getAvailable(c))
@@ -199,7 +194,7 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory) 
         spell->getSymbol(),
         none,
         true,
-        spell->getDescription(contentFactory),
+        spell->getDescription(c, contentFactory),
         c->isReady(spell) ? none : optional<TimeInterval>(c->getSpellDelay(spell)),
         false
     });
@@ -223,39 +218,20 @@ const CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) con
 }
 
 
-vector<AttributeInfo> AttributeInfo::fromCreature(const Creature* c) {
+vector<AttributeInfo> AttributeInfo::fromCreature(const ContentFactory* contentFactory, const Creature* c) {
   PROFILE;
-  auto genInfo = [c](AttrType type, const char* help) {
-    return AttributeInfo {
-        capitalFirst(getName(type)),
-        type,
-        c->getAttributes().getRawAttr(type),
-        c->getAttrBonus(type, true),
-        help
-    };
-  };
-  return {
-      genInfo(
-          AttrType::DAMAGE,
-          "Affects if and how much damage is dealt in combat."
-      ),
-      genInfo(
-          AttrType::DEFENSE,
-          "Affects if and how much damage is taken in combat."
-      ),
-      genInfo(
-          AttrType::SPELL_DAMAGE,
-          "Base value of magic attacks."
-      ),
-      genInfo(
-          AttrType::RANGED_DAMAGE,
-          "Affects if and how much damage is dealt when shooting a ranged weapon."
-      ),
-      genInfo(
-          AttrType::PARRY,
-          "Prevents defense penalty from multiple attacks in the same turn."
-      ),
-    };
+  vector<AttributeInfo> ret;
+  for (auto& attr : contentFactory->attrOrder) {
+    auto& info = contentFactory->attrInfo.at(attr);
+    ret.push_back(AttributeInfo {
+        capitalFirst(info.name),
+        info.viewId,
+        c->getRawAttr(attr),
+        c->getAttrBonus(attr, true),
+        info.help
+    });
+  }
+  return ret;  
 }
 
 STRUCT_IMPL(ImmigrantDataInfo)

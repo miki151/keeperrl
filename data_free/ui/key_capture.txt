@@ -1,0 +1,13 @@
+{
+  BlockEvents
+  Position(SCREEN, Fill(Rgb 0 0 0 150))
+  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
+  MiniWindow(Margins(10, {
+    Vertical {
+      Label("Enter key for:")
+      Height 20 {}
+      Using "text" Label()
+    }
+    Using "callback" KeyCatcher
+  }))
+}

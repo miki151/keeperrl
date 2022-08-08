@@ -9,31 +9,14 @@
 #include "intrinsic_attack.h"
 #include "effect.h"
 #include "furniture_type.h"
+#include "body_material_id.h"
+#include "lasting_or_buff.h"
 
 #undef HUGE
 
 
 class Attack;
 struct AdjectiveInfo;
-
-RICH_ENUM(BodyMaterial,
-  FLESH,
-  SPIRIT,
-  FIRE,
-  WATER,
-  UNDEAD_FLESH,
-  BONE,
-  ROCK,
-  CLAY,
-  WOOD,
-  IRON,
-  LAVA,
-  ADA,
-  GOLD,
-  ICE
-);
-
-const char* getMaterialName(BodyMaterial material);
 
 RICH_ENUM(BodySize,
   SMALL,
@@ -47,16 +30,15 @@ const char* getName(BodySize);
 class Body {
   public:
 
-  using Material = BodyMaterial;
   using Size = BodySize;
 
-  static Body humanoid(Material, Size);
+  static Body humanoid(BodyMaterialId, Size);
   static Body humanoid(Size);
-  static Body nonHumanoid(Material, Size);
+  static Body nonHumanoid(BodyMaterialId, Size);
   static Body nonHumanoid(Size);
   static Body humanoidSpirit(Size);
   static Body nonHumanoidSpirit(Size);
-  Body(bool humanoid, Material, Size);
+  Body(bool humanoid, BodyMaterialId, Size);
   // To add once the creature has been constructed, use CreatureAttributes::add().
   void addWithoutUpdatingPermanentEffects(BodyPart, int cnt);
   void setWeight(double);
@@ -83,25 +65,22 @@ class Body {
 
   bool tick(const Creature*);
   bool heal(Creature*, double amount);
-  bool affectByFire(Creature*, double amount);
-  bool isIntrinsicallyAffected(LastingEffect) const;
-  bool affectByAcid(Creature*);
-  bool isKilledByBoulder() const;
+  bool isIntrinsicallyAffected(LastingOrBuff, const ContentFactory*) const;
+  bool isKilledByBoulder(const ContentFactory*) const;
   bool canWade() const;
   bool isFarmAnimal() const;
-  bool canCopulateWith() const;
+  bool canCopulateWith(const ContentFactory*) const;
   bool canConsume() const;
   bool isWounded() const;
   bool isSeriouslyWounded() const;
   double getHealth() const;
   double getBodyPartHealth() const;
-  bool hasBrain() const;
+  bool hasBrain(const ContentFactory*) const;
   bool needsToEat() const;
-  bool needsToSleep() const;
-  bool burnsIntrinsically() const;
+  bool burnsIntrinsically(const ContentFactory*) const;
   bool canPush(const Body& other);
-  bool canPerformRituals() const;
-  bool canBeCaptured() const;
+  bool canPerformRituals(const ContentFactory*) const;
+  bool canBeCaptured(const ContentFactory*) const;
   vector<PItem> getCorpseItems(const string& name, UniqueEntity<Creature>::Id, bool instantlyRotten,
       const ContentFactory* factory, Game*) const;
   vector<AttackLevel> getAttackLevels() const;
@@ -113,26 +92,26 @@ class Body {
   int numBodyParts(BodyPart) const;
   void getBadAdjectives(vector<AdjectiveInfo>&) const;
   optional<Sound> getDeathSound() const;
-  optional<AnimationId> getDeathAnimation() const;
+  optional<AnimationId> getDeathAnimation(const ContentFactory*) const;
   bool injureBodyPart(Creature*, BodyPart, bool drop);
 
   bool healBodyParts(Creature*, int max);
-  bool fallsApartDueToLostBodyParts() const;
-  bool canHeal(HealthType) const;
-  bool isImmuneTo(LastingEffect effect) const;
-  bool hasHealth(HealthType) const;
-  bool hasAnyHealth() const;
+  bool fallsApartDueToLostBodyParts(const ContentFactory*) const;
+  bool canHeal(HealthType, const ContentFactory*) const;
+  bool isImmuneTo(LastingOrBuff, const ContentFactory*) const;
+  bool hasHealth(HealthType, const ContentFactory*) const;
+  bool hasAnyHealth(const ContentFactory*) const;
   FurnitureType getDiningFurniture() const;
 
-  const char* getDeathDescription() const;
+  const char* getDeathDescription(const ContentFactory*) const;
 
   void consumeBodyParts(Creature*, Body& other, vector<string>& adjectives);
 
-  Material getMaterial() const;
+  BodyMaterialId getMaterial() const;
   bool isHumanoid() const;
   bool canPickUpItems() const;
-  string getDescription() const;
-  void updateViewObject(ViewObject&) const;
+  string getDescription(const ContentFactory*) const;
+  void updateViewObject(ViewObject&, const ContentFactory*) const;
   int getCarryLimit() const;
   void bleed(Creature*, double amount);
   vector<pair<Item*, double>> chooseRandomWeapon(vector<Item*> weapons, vector<double> multipliers) const;
@@ -140,7 +119,7 @@ class Body {
   const EnumMap<BodyPart, vector<IntrinsicAttack> >& getIntrinsicAttacks() const;
   EnumMap<BodyPart, vector<IntrinsicAttack> >& getIntrinsicAttacks();
 
-  bool isUndead() const;
+  bool isUndead(const ContentFactory*) const;
   double getBoulderDamage() const;
 
   SERIALIZATION_DECL(Body)
@@ -153,13 +132,13 @@ class Body {
   BodyPart armOrWing() const;
   void clearInjured(BodyPart);
   void clearLost(BodyPart);
-  bool looseBodyPart(BodyPart);
-  bool injureBodyPart(BodyPart);
+  bool looseBodyPart(BodyPart, const ContentFactory*);
+  bool injureBodyPart(BodyPart, const ContentFactory*);
   void decreaseHealth(double amount);
-  bool isPartDamaged(BodyPart, double damage) const;
-  bool isCritical(BodyPart) const;
+  bool isPartDamaged(BodyPart, double damage, const ContentFactory*) const;
+  bool isCritical(BodyPart, const ContentFactory*) const;
   PItem getBodyPartItem(const string& creatureName, BodyPart, const ContentFactory*) const;
-  string getMaterialAndSizeAdjectives() const;
+  string getMaterialAndSizeAdjectives(const ContentFactory*) const;
   bool SERIAL(xhumanoid) = false;
   bool SERIAL(xCanPickUpItems) = false;
   Size SERIAL(size) = Size::LARGE;
@@ -167,7 +146,7 @@ class Body {
   EnumMap<BodyPart, int> SERIAL(bodyParts) = {{BodyPart::TORSO, 1}, {BodyPart::BACK, 1}};
   EnumMap<BodyPart, int> SERIAL(injuredBodyParts);
   EnumMap<BodyPart, int> SERIAL(lostBodyParts);
-  Material SERIAL(material) = Material::FLESH;
+  BodyMaterialId SERIAL(material) = BodyMaterialId("FLESH");
   double SERIAL(health) = 1;
   bool SERIAL(minionFood) = false;
   optional<SoundId> SERIAL(deathSound);

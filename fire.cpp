@@ -17,30 +17,32 @@
 
 #include "fire.h"
 
-SERIALIZE_DEF(Fire, burnTime, SKIP(burning))
+SERIALIZE_DEF(Fire, burnTime, SKIP(burnState))
 SERIALIZATION_CONSTRUCTOR_IMPL(Fire);
 
 Fire::Fire(int burnTime) : burnTime(burnTime) {}
 
-constexpr double epsilon = 0.001;
-
 void Fire::tick() {
   PROFILE_BLOCK("Fire::tick");
-  if (burning && burnTime > 0)
-    --burnTime;
+  if (burnState && *burnState < burnTime)
+    ++*burnState;
 }
 
 void Fire::set() {
-  if (!burning && burnTime > 0)
-    burning = true;
+  if (!burnState && burnTime > 0)
+    burnState = 0;
 }
 
 bool Fire::isBurning() const {
-  return burnTime > 0 && burning;
+  return burnState && *burnState < burnTime;
 }
 
 bool Fire::isBurntOut() const {
-  return burnTime == 0 && burning;
+  return burnTime == burnState;
+}
+
+int Fire::getBurnState() const {
+    return min(*burnState, burnTime - *burnState);
 }
 
 #include "pretty_archive.h"

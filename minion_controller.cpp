@@ -28,9 +28,9 @@ class MinionController : public Player {
   virtual vector<CommandInfo> getCommands() const override {
     auto tutorial = control->getTutorial();
     return concat(Player::getCommands(), {
-      {PlayerInfo::CommandInfo{"Absorb", 'a',
+      {PlayerInfo::CommandInfo{"Absorb", Keybinding("ABSORB"),
           "Absorb a friendly creature and inherit its attributes. Requires the absorbtion skill.",
-          creature->isAffected(LastingEffect::CONSUMPTION_SKILL)},
+          creature->isAffected(BuffId("CONSUMPTION_SKILL"))},
        [] (Player* player) { dynamic_cast<MinionController*>(player)->consumeAction();}, false},
     });
   }

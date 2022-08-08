@@ -31,8 +31,10 @@
 #include "creature_status.h"
 #include "view_id.h"
 #include "furniture_type.h"
+#include "attr_type.h"
+#include "buff_id.h"
+#include "player_message.h"
 
-class Skill;
 class Level;
 class Tribe;
 class ViewObject;
@@ -95,9 +97,9 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void onAttackedBy(Creature*);
   bool heal(double amount = 1000);
   /** Morale is in the range [-1:1] **/
-  optional<double> getMorale() const;
+  optional<double> getMorale(const ContentFactory* = nullptr) const;
   void addMorale(double);
-  void take(PItem item);
+  void take(PItem item, const ContentFactory* = nullptr);
   void take(vector<PItem> item);
   const Equipment& getEquipment() const;
   Equipment& getEquipment();
@@ -113,6 +115,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void tick();
   void upgradeViewId(int level);
   ViewIdList getMaxViewIdUpgrade() const;
+  ViewIdList getViewIdWithWeapon() const;
 
   const CreatureName& getName() const;
   CreatureName& getName();
@@ -178,7 +181,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   int getDefaultWeaponDamage() const;
   CreatureAction execute(Creature*, const char* verbSecond, const char* verbThird) const;
   CreatureAction applyItem(Item* item) const;
-  CreatureAction equip(Item* item) const;
+  CreatureAction equip(Item* item, const ContentFactory* = nullptr) const;
   CreatureAction unequip(Item* item) const;
   bool canEquipIfEmptySlot(const Item* item, string* reason = nullptr) const;
   bool canEquip(const Item* item) const;
@@ -222,7 +225,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   
   void increaseExpLevel(ExperienceType, double increase);
 
-  BestAttack getBestAttack() const;
+  BestAttack getBestAttack(const ContentFactory*) const;
 
   vector<pair<Item*, double>> getRandomWeapons() const;
   int getMaxSimultaneousWeapons() const;
@@ -246,9 +249,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void dieNoReason(DropType = DropType::EVERYTHING);
   void dieWithReason(const string& reason, DropType = DropType::EVERYTHING);
 
-  bool affectByFire(double amount);
-  bool affectByIce(double amount);
-  bool affectByAcid();
   void setHeld(Creature* holding);
   Creature* getHoldingCreature() const;
 
@@ -256,7 +256,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   void you(MsgType type, const string& param = "") const;
   void you(const string& param) const;
-  void verb(const string& second, const string& third, const string& param = "") const;
+  void verb(const string& second, const string& third, const string& param = "",
+      MessagePriority = MessagePriority::NORMAL) const;
   void secondPerson(const PlayerMessage&) const;
   void thirdPerson(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
   void thirdPerson(const PlayerMessage& playerCanSee) const;
@@ -269,6 +270,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void setController(PController);
   void popController();
 
+  TimeInterval calculateSpellCooldown(Range cooldown) const;
   CreatureAction castSpell(const Spell*) const;
   CreatureAction castSpell(const Spell*, Position) const;
   TimeInterval getSpellDelay(const Spell*) const;
@@ -279,18 +281,26 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   SERIALIZATION_DECL(Creature)
 
   bool addEffect(LastingEffect, TimeInterval time, bool msg = true);
-  bool addEffect(LastingEffect, TimeInterval time, GlobalTime, bool msg = true);
+  bool addEffect(LastingEffect, TimeInterval time, GlobalTime, bool msg = true, const ContentFactory* = nullptr);
   bool removeEffect(LastingEffect, bool msg = true);
-  bool addPermanentEffect(LastingEffect, int count = 1, bool msg = true);
+  bool addPermanentEffect(LastingEffect, int count = 1, bool msg = true, const ContentFactory* = nullptr);
   bool removePermanentEffect(LastingEffect, int count = 1, bool msg = true);
   bool isAffected(LastingEffect, optional<GlobalTime>) const;
   bool isAffected(LastingEffect, GlobalTime) const;
   bool isAffected(LastingEffect) const;
   optional<TimeInterval> getTimeRemaining(LastingEffect) const;
+  
+  bool addEffect(BuffId, TimeInterval time, bool msg = true);
+  bool addEffect(BuffId, TimeInterval time, GlobalTime, const ContentFactory*, bool msg = true);
+  bool removeEffect(BuffId, bool msg = true);
+  bool addPermanentEffect(BuffId, int count = 1, bool msg = true, const ContentFactory* = nullptr);
+  bool removePermanentEffect(BuffId, int count = 1, bool msg = true);
+  bool isAffected(BuffId) const;
+  bool isAffectedPermanently(BuffId) const;
 
   bool isUnknownAttacker(const Creature*) const;
-  vector<AdjectiveInfo> getGoodAdjectives() const;
-  vector<AdjectiveInfo> getBadAdjectives() const;
+  vector<AdjectiveInfo> getGoodAdjectives(const ContentFactory*) const;
+  vector<AdjectiveInfo> getBadAdjectives(const ContentFactory*) const;
 
   vector<string> popPersonalEvents();
   void addPersonalEvent(const string&);
@@ -305,9 +315,11 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<CombatIntentInfo> getLastCombatIntent() const;
   void onKilledOrCaptured(Creature* victim);
   void updateCombatExperience(Creature* victim);
+  double getCombatExperience() const;
+  int getRawAttr(AttrType) const;
 
   void addSound(const Sound&) const;
-  void updateViewObject();
+  void updateViewObject(const ContentFactory*);
   void updateViewObjectFlanking();
   void swapPosition(Vec2 direction, bool withExcuseMe = true);
   bool canSwapPositionWithEnemy(Creature* other) const;
@@ -323,7 +335,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool isCaptureOrdered() const;
   bool canBeCaptured() const;
   void removePrivateEnemy(const Creature*); 
-  void cheatAllSpells();
   const vector<AutomatonPart>& getAutomatonParts() const;
   bool isAutomaton() const;
   void addAutomatonPart(AutomatonPart);
@@ -402,19 +413,19 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   mutable Game* gameCache = nullptr;
   optional<GlobalTime> SERIAL(globalTime);
   void considerMovingFromInaccessibleSquare();
-  void updateLastingFX(ViewObject&);
+  void updateLastingFX(ViewObject&, const ContentFactory*);
   HeapAllocated<SpellMap> SERIAL(spellMap);
   optional<ViewId> SERIAL(primaryViewId);
   struct CompanionGroup {
-    vector<Creature*> SERIAL(creatures);
-    bool SERIAL(updateAttrs);
-    SERIALIZE_ALL(creatures, updateAttrs)
+    vector<WeakPointer<Creature>> SERIAL(creatures);
+    optional<AttrType> SERIAL(statsBase);
+    SERIALIZE_ALL(creatures, statsBase)
   };
   vector<CompanionGroup> SERIAL(companions);
   void tickCompanions();
   bool considerSavingLife(DropType, const Creature* attacker);
   void tryToDestroyLastingEffect(LastingEffect);
-  vector<AdjectiveInfo> getSpecialAttrAdjectives(bool good) const;
+  vector<AdjectiveInfo> getSpecialAttrAdjectives(const ContentFactory*, bool good) const;
   vector<AutomatonPart> SERIAL(automatonParts);
   vector<pair<CreatureAttributes, SpellMap>> SERIAL(attributesStack);
   optional<PhylacteryInfo> SERIAL(phylactery);
@@ -422,6 +433,14 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool considerPhylacteryOrSavingLife(DropType, const Creature* attacker);
   vector<PromotionInfo> SERIAL(promotions);
   PCreature SERIAL(steed);
+  vector<pair<BuffId, GlobalTime>> SERIAL(buffs);
+  unordered_map<BuffId, int, CustomHash<BuffId>> SERIAL(buffCount);
+  unordered_map<BuffId, int, CustomHash<BuffId>> SERIAL(buffPermanentCount);
+  vector<AdjectiveInfo> getLastingEffectAdjectives(const ContentFactory*, bool bad) const;
+  bool removeBuff(int index, bool msg);
+  bool processBuffs();
+  double SERIAL(combatExperience) = 0;
+  AttrType modifyDamageAttr(AttrType, const ContentFactory*) const;
 };
 
 struct AdjectiveInfo {

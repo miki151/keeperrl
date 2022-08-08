@@ -110,7 +110,6 @@ class MapGui : public GuiElem {
   void renderHighlights(Renderer&, Vec2 size, milliseconds currentTimeReal, bool lowHighlights);
   optional<Vec2> getMousePos();
   void softScroll(double x, double y);
-  void setSoftCenter(Vec2);
   void setSoftCenter(double x, double y);
   HighlightedInfo lastHighlighted;
   void renderMapObjects(Renderer&, Vec2 size, milliseconds currentTimeReal);
@@ -120,6 +119,7 @@ class MapGui : public GuiElem {
   void renderFoWBorders(Renderer&, Vec2 size);
   void renderFloorObjects(Renderer&, Vec2 size, milliseconds currentTimeReal);
   void renderHighObjects(Renderer&, Vec2 size, milliseconds currentTimeReal);
+  void renderAsciiObjects(Renderer&, Vec2 size, milliseconds currentTimeReal);
   Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, milliseconds curTimeReal, bool verticalMovement, Vec2 pos);
   bool considerCreatureClick(Vec2 mousePos);
   struct CreatureInfo {
@@ -163,7 +163,12 @@ class MapGui : public GuiElem {
   optional<Coords> softCenter;
   Vec2 lastMousePos;
   optional<Vec2> lastMouseMove;
-  bool isScrollingNow = false;
+  enum class ScrollingState {
+    ACTIVE,
+    AFTER,
+    NONE
+  };
+  ScrollingState scrollingState = ScrollingState::NONE;
   double currentTimeGame = 0;
   struct ScreenMovement {
     milliseconds startTimeReal;
@@ -174,7 +179,6 @@ class MapGui : public GuiElem {
   Table<unordered_set<ViewId, CustomHash<ViewId>>> connectionMap;
   bool keyScrolling = false;
   bool mouseUI = false;
-  bool lockedView = true;
   optional<milliseconds> lastRightClick;
   EntityMap<Creature, int> teamHighlight;
   struct ActiveButtonInfo {
@@ -201,11 +205,7 @@ class MapGui : public GuiElem {
   int lastMoveCounter = -1000;
   int currentMoveCounter = -1000;
   double getDistanceToEdgeRatio(Vec2);
-  struct CenteredCreatureInfo {
-    Vec2 pos;
-    bool softScroll;
-  };
-  optional<CenteredCreatureInfo> centeredCreaturePosition;
+  optional<Vec2> centeredCreaturePosition;
   DirSet getConnectionSet(Vec2 tilePos, const ViewId&, const Tile&);
   EntityMap<Creature, milliseconds> woundedInfo;
   EntityMap<Creature, int> furnitureUsageFX;

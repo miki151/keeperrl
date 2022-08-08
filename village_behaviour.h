@@ -20,6 +20,7 @@ class VillageBehaviour {
   vector<AttackTrigger> SERIAL(triggers);
   HeapAllocated<AttackBehaviour> SERIAL(attackBehaviour);
   optional<pair<double, int>> SERIAL(ransom);
+  double SERIAL(ambushChance) = 0.0;
 
   PTask getAttackTask(VillageControl* self) const;
   double getAttackProbability(const VillageControl* self) const;

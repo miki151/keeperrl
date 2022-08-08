@@ -34,8 +34,8 @@ map<EquipmentSlot, string> Equipment::slotTitles = {
 SERIALIZE_DEF(Equipment, inventory, items, equipped)
 SERIALIZATION_CONSTRUCTOR_IMPL(Equipment);
 
-void Equipment::addItem(PItem item, Creature* c) {
-  item->onOwned(c);
+void Equipment::addItem(PItem item, Creature* c, const ContentFactory* factory) {
+  item->onOwned(c, true, factory);
   inventory.addItem(std::move(item));
 }
 
@@ -94,10 +94,10 @@ bool Equipment::canEquip(const Item* item, const Creature* c) const {
   return items[slot].size() < getMaxItems(slot, c);
 }
 
-void Equipment::equip(Item* item, EquipmentSlot slot, Creature* c) {
+void Equipment::equip(Item* item, EquipmentSlot slot, Creature* c, const ContentFactory* factory) {
   items[slot].push_back(item);
   equipped.push_back(item);
-  item->onEquip(c);
+  item->onEquip(c, true, factory);
   CHECK(inventory.hasItem(item));
 }
 
@@ -117,7 +117,7 @@ PItem Equipment::removeItem(Item* item, Creature* c) {
   onRemoved(item, c);
   return inventory.removeItem(item);
 }
-  
+
 vector<PItem> Equipment::removeItems(const vector<Item*>& items, Creature* c) {
   vector<PItem> ret;
   for (Item*& it : copyOf(items))

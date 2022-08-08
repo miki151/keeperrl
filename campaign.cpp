@@ -6,10 +6,21 @@
 #include "campaign_type.h"
 #include "player_role.h"
 #include "villain_type.h"
+#include "pretty_archive.h"
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Campaign);
 
 SERIALIZE_DEF(Campaign, sites, playerPos, worldName, defeated, influencePos, influenceSize, playerRole, type, mapZoom)
+
+void VillainViewId::serialize(PrettyInputArchive& ar1, unsigned int) {
+  if (ar1.peek() == "{" && ar1.peek(2) == "{")
+    ar1(ids);
+  else {
+    ViewId id;
+    ar1(id);
+    ids.push_back(id);
+  }
+}
 
 const Table<Campaign::SiteInfo>& Campaign::getSites() const {
   return sites;
@@ -117,7 +128,7 @@ optional<VillainType> Campaign::SiteInfo::getVillainType() const {
 optional<ViewIdList> Campaign::SiteInfo::getDwellerViewId() const {
   if (dweller)
     return dweller->match(
-        [](const VillainInfo& info) { return ViewIdList{{info.viewId}}; },
+        [](const VillainInfo& info) { return ViewIdList{{info.viewId.ids}}; },
         [](const RetiredInfo& info) { return info.gameInfo.getViewId(); },
         [](const KeeperInfo& info) { return info.viewId; });
   else

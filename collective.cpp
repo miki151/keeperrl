@@ -93,9 +93,9 @@ PCollective Collective::create(WModel model, TribeId tribe, const optional<Colle
   auto ret = makeOwner<Collective>(Private {}, model, tribe, name, contentFactory);
   ret->subscribeTo(model);
   ret->discoverable = discoverable;
-  ret->workshops = unique<Workshops>(WorkshopArray(), contentFactory);
+  ret->workshops = make_unique<Workshops>(WorkshopArray(), contentFactory);
   ret->immigration = makeOwner<Immigration>(ret.get(), vector<ImmigrantInfo>());
-  ret->dancing = unique<Dancing>(contentFactory);
+  ret->dancing = make_unique<Dancing>(contentFactory);
   return ret;
 }
 
@@ -477,7 +477,7 @@ static int getKeeperUpgradeLevel(int dungeonLevel) {
 void Collective::update(bool currentlyActive) {
   for (auto leader : getLeaders()) {
     leader->upgradeViewId(getKeeperUpgradeLevel(dungeonLevel.level));
-    name->viewId = leader->getViewObject().id();
+    name->viewId = leader->getViewIdWithWeapon();
   }
   control->update(currentlyActive);
   if (config->hasImmigrantion(currentlyActive) && (!getLeaders().empty() || !hadALeader) && !isConquered())
@@ -617,16 +617,17 @@ void Collective::autoAssignSteeds() {
       setSteed(c, nullptr);
   vector<Creature*> freeSteeds = getCreatures().filter(
       [this] (auto c) { return c->isAffected(LastingEffect::STEED) && !getSteedOrRider(c);});
-  sort(freeSteeds.begin(), freeSteeds.end(), [](auto c1, auto c2) {
-      return c1->getBestAttack().value < c2->getBestAttack().value; });
+  auto factory = getGame()->getContentFactory();
+  sort(freeSteeds.begin(), freeSteeds.end(), [&](auto c1, auto c2) {
+      return c1->getBestAttack(factory).value < c2->getBestAttack(factory).value; });
   auto minions = getCreatures().filter([this] (auto c) {
     return c->isAffected(LastingEffect::RIDER) && !getSteedOrRider(c) && canUseEquipmentGroup(c, "steeds");
   });
-  sort(minions.begin(), minions.end(), [this](auto c1, auto c2) {
+  sort(minions.begin(), minions.end(), [&](auto c1, auto c2) {
       auto leader1 = hasTrait(c1, MinionTrait::LEADER);
       auto leader2 = hasTrait(c2, MinionTrait::LEADER);
       return (leader1 && !leader2) || (leader1 == leader2 &&
-          c1->getBestAttack().value > c2->getBestAttack().value); });
+          c1->getBestAttack(factory).value > c2->getBestAttack(factory).value); });
   for (auto c : minions) {
     if (freeSteeds.empty())
       break;
@@ -637,7 +638,8 @@ void Collective::autoAssignSteeds() {
           return freeSteeds[i];
       return nullptr;
     }();
-    if (bestAvailable && (!steed || steed->getBestAttack().value < bestAvailable->getBestAttack().value)) {
+    if (bestAvailable &&
+        (!steed || steed->getBestAttack(factory).value < bestAvailable->getBestAttack(factory).value)) {
       setSteed(c, bestAvailable);
       freeSteeds.removeElementMaybePreserveOrder(bestAvailable);
     }
@@ -794,7 +796,8 @@ void Collective::onMinionKilled(Creature* victim, Creature* killer) {
     addRecordedEvent("the death of " + victim->getName().aOrTitle());
   if (killer && creatureConsideredPlayer(killer))
     attackedByPlayer = true;
-  string deathDescription = victim->getAttributes().getDeathDescription();
+  auto factory = getGame()->getContentFactory();
+  string deathDescription = victim->getAttributes().getDeathDescription(factory);
   control->onMemberKilled(victim, killer);
   if (hasTrait(victim, MinionTrait::PRISONER) && killer && getCreatures().contains(killer))
     returnResource({ResourceId("PRISONER_HEAD"), 1});
@@ -821,13 +824,12 @@ void Collective::onMinionKilled(Creature* victim, Creature* killer) {
     if (Random.chance(guardianInfo->probability)) {
       auto& extended = territory->getStandardExtended();
       if (!extended.empty())
-        Random.choose(extended).landCreature(getGame()->getContentFactory()->getCreatures().fromId(
-            guardianInfo->creature, getTribeId()));
+        Random.choose(extended).landCreature(factory->getCreatures().fromId(guardianInfo->creature, getTribeId()));
     }
 }
 
 void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
-  string deathDescription = victim->getAttributes().getDeathDescription();
+  string deathDescription = victim->getAttributes().getDeathDescription(getGame()->getContentFactory());
   if (victim->getTribe() != getTribe()) {
     if (victim->getStatus().contains(CreatureStatus::LEADER))
       addRecordedEvent("the slaying of " + victim->getName().aOrTitle());
@@ -1446,8 +1448,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
     if (auto usage = furniture->getUsageType()) {
       auto increaseLevel = [&] (ExperienceType exp) {
         double increase = 0.007 * efficiency * LastingEffects::getTrainingSpeed(c);
-        if (auto maxLevel = getGame()->getContentFactory()->furniture.getData(
-            furniture->getType()).getMaxTraining(exp))
+        if (auto maxLevel = contentFactory->furniture.getData(furniture->getType()).getMaxTraining(exp))
           increase = min(increase, maxLevel - c->getAttributes().getExpLevel(exp));
         if (increase > 0)
           c->increaseExpLevel(exp, increase);
@@ -1457,7 +1458,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
           case BuiltinUsageId::DEMON_RITUAL: {
             vector<Creature*> toHeal;
             for (auto c : getCreatures())
-              if (c->getBody().canHeal(HealthType::SPIRIT))
+              if (c->getBody().canHeal(HealthType::SPIRIT, contentFactory))
                 toHeal.push_back(c);
             if (!toHeal.empty()) {
               for (auto c : toHeal)
@@ -1480,14 +1481,15 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
         }
     }
     if (furniture->getType() == FurnitureType("FURNACE")) {
-      auto craftingSkill = c->getAttributes().getSkills().getValue(SkillId::FURNACE);
+      auto craftingSkill = double(c->getAttr(AttrType("FURNACE"))) * 0.02;
       if (auto result = furnace->addWork(efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c)))
         returnResource(*result);
     }
     if (auto workshopType = contentFactory->getWorkshopType(furniture->getType()))
       if (auto workshop = getReferenceMaybe(workshops->types, *workshopType)) {
-        auto craftingSkill = c->getAttributes().getSkills().getValue(*workshopType);
-        auto result = workshop->addWork(this, efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c),
+        auto craftingSkill = c->getAttr(contentFactory->workshopInfo.at(*workshopType).attr);
+        auto result = workshop->addWork(this, efficiency * double(craftingSkill) * 0.02 
+            * LastingEffects::getCraftingSpeed(c),
             craftingSkill, c->getMorale().value_or(0));
         if (result.item) {
           if (result.item->getClass() == ItemClass::WEAPON)

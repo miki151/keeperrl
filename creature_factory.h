@@ -41,10 +41,11 @@ class CreatureFactory {
   PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&);
   PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&, const vector<ItemType>& inventory);
   PCreature fromId(CreatureId, TribeId);
+  PCreature fromIdNoInventory(CreatureId, TribeId, const MonsterAIFactory&);
   PCreature makeCopy(Creature*, const MonsterAIFactory&);
   PCreature makeCopy(Creature*);
   static PController getShopkeeper(vector<Vec2> shopArea, Creature*);
-  PCreature getAnimatedItem(PItem, TribeId, int attrBonus);
+  PCreature getAnimatedItem(const ContentFactory*, PItem, TribeId, int attrBonus);
   static PCreature getHumanForTests();
   PCreature getGhost(Creature*);
   static PCreature getIllusion(Creature*);

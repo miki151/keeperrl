@@ -90,10 +90,10 @@ bool Tutorial::canContinue(WConstGame game) const {
       for (auto& item : collective->getWorkshops().types.at(WorkshopType("WORKSHOP")).getQueued())
         if (item.item.type.type->getValueMaybe<CustomItemId>() == CustomItemId("Club"))
           ++numWeapons;
-      return numWeapons >= 1;
+      return numWeapons >= 2; // the keeper already has one weapon
     }
     case State::ORDER_CRAFTING:
-      return collective->getNumItems(ItemIndex::WEAPON) >= 1;
+      return collective->getNumItems(ItemIndex::WEAPON) >= 2;
     case State::EQUIP_WEAPON:
       for (auto c : collective->getCreatures(MinionTrait::FIGHTER))
         if (!collective->hasTrait(c, MinionTrait::LEADER) && !c->getEquipment().getSlotItems(EquipmentSlot::WEAPON).empty())
@@ -201,7 +201,7 @@ string Tutorial::getMessage() const {
           "and look in the lower right corner to check if they have enough light.";
     case State::FLOORS:
       return "Minions are also more efficient if there is a nice floor where they are working. For now you can only "
-          "afford wooden floors, but it should do.\n \n"
+          "afford wooden floors, but they should do.\n \n"
           "Make sure you have enough wood!";
     case State::BUILD_WORKSHOP:
       return "Your minions will need equipment, such as weapons, armor, and consumables, to be more deadly in "
@@ -226,7 +226,7 @@ string Tutorial::getMessage() const {
       return "You are ready to grow your military force. Three more goblin warrior immigrants should do.\n \n"
           "You can also invite goblin artificers, which don't fight, but are excellent craftsmen.";
     case State::EQUIP_ALL_FIGHTERS:
-      return "Craft clubs for all of your warriors, and the Keeper, and have them equipped. They will be needed soon.";
+      return "Craft clubs for all of your warriors, and have them equipped. They will be needed soon.";
     case State::CREATE_TEAM:
       return "Your tiny army is ready! Assemble a team by dragging your warriors onto the [new team] button. You can "
           "drag them straight from the map or from the minion menu.\n \n"

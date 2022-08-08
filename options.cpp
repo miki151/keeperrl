@@ -18,6 +18,8 @@
 #include "main_loop.h"
 #include "view.h"
 #include "scripted_ui_data.h"
+#include "keybinding_map.h"
+#include "content_factory.h"
 
 const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::HINTS, 1},
@@ -34,7 +36,6 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::ONLINE, 1},
   {OptionId::GAME_EVENTS, 1},
   {OptionId::AUTOSAVE2, 1500},
-  {OptionId::WASD_SCROLLING, 0},
   {OptionId::SUGGEST_TUTORIAL, 1},
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
@@ -69,7 +70,6 @@ const map<OptionId, string> names {
   {OptionId::ONLINE, "Online features"},
   {OptionId::GAME_EVENTS, "Anonymous statistics"},
   {OptionId::AUTOSAVE2, "Number of turns between autosaves"},
-  {OptionId::WASD_SCROLLING, "WASD scrolling"},
   {OptionId::SUGGEST_TUTORIAL, ""},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
@@ -101,8 +101,6 @@ const map<OptionId, string> hints {
   {OptionId::GAME_EVENTS, "Enable sending anonymous statistics to the developer."},
   {OptionId::AUTOSAVE2, "Autosave the game every X number turns. "
     "The save file will be used to recover in case of a crash."},
-  {OptionId::WASD_SCROLLING, "Scroll the map using W-A-S-D keys. In this mode building shortcuts are accessed "
-    "using alt + letter."},
   {OptionId::ENDLESS_ENEMIES, "Turn on recurrent enemy waves that attack your dungeon."},
   {OptionId::ENEMY_AGGRESSION, "The chance of your dungeon being attacked by enemies"},
   {OptionId::KEEPER_WARNING, "Display a pop up window whenever your Keeper is in danger"},
@@ -129,7 +127,6 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::ONLINE,
       OptionId::GAME_EVENTS,
       OptionId::AUTOSAVE2,
-      OptionId::WASD_SCROLLING,
       OptionId::KEEPER_WARNING,
       OptionId::KEEPER_WARNING_PAUSE,
       OptionId::KEEPER_WARNING_TIMEOUT,
@@ -165,7 +162,7 @@ vector<OptionId> Options::getOptions(OptionSet set) {
   return optionSets.at(set);
 }
 
-Options::Options(const FilePath& path) : filename(path) {
+Options::Options(const FilePath& path, KeybindingMap* k) : filename(path), keybindingMap(k) {
   readValues();
 }
 
@@ -277,7 +274,6 @@ static bool isBoolean(OptionId id) {
     case OptionId::ASCII:
     case OptionId::FULLSCREEN:
     case OptionId::VSYNC:
-    case OptionId::WASD_SCROLLING:
     case OptionId::KEEPER_WARNING:
     case OptionId::KEEPER_WARNING_PAUSE:
     case OptionId::KEEP_SAVEFILES:
@@ -305,7 +301,6 @@ string Options::getValueString(OptionId id) {
     case OptionId::ASCII:
     case OptionId::FULLSCREEN:
     case OptionId::VSYNC:
-    case OptionId::WASD_SCROLLING:
     case OptionId::KEEPER_WARNING:
     case OptionId::KEEPER_WARNING_PAUSE:
       return getOnOff(value);
@@ -426,7 +421,23 @@ void Options::handleSliding(OptionId option, ScriptedUIDataElems::Record& data, 
   data.elems.insert({"sliderData", std::move(res)});
 }
 
-void Options::handle(View* view, OptionSet set, int lastIndex) {
+static optional<SDL::SDL_Keysym> captureKey(View* view, const string& text) {
+  ScriptedUIState state;
+  optional<SDL::SDL_Keysym> ret;
+  ScriptedUIDataElems::Record main;
+  main.elems["callback"] = ScriptedUIDataElems::KeyCatcherCallback{
+    [&](SDL::SDL_Keysym k) {
+      ret = k;
+      return true;
+    }
+  };
+  main.elems["text"] = text;
+  view->scriptedUI("key_capture", main, state);
+  return ret;
+}
+
+void Options::handle(View* view, const ContentFactory* factory, OptionSet set, int lastIndex) {
+  bool keybindingsTab = false;
   auto optionSet = optionSets.at(set);
   if (!view->zoomUIAvailable())
     optionSet.removeElementMaybe(OptionId::ZOOM_UI);
@@ -448,7 +459,39 @@ void Options::handle(View* view, OptionSet set, int lastIndex) {
       }
       options.push_back(std::move(optionData));
     }
-    view->scriptedUI("settings", options, state);
+    ScriptedUIDataElems::List keybindings;
+    for (auto& key : factory->keybindings) {
+      auto r = ScriptedUIDataElems::Record{{
+          {"label", key.second.name},
+          {"key", ScriptedUIDataElems::Label{keybindingMap->getText(key.first).value_or("")}},
+          {"clicked", ScriptedUIDataElems::Callback { [&wasSet, key, view, this] {
+            auto captured = captureKey(view, key.second.name);
+            if (captured && captured->sym != SDL::SDLK_ESCAPE)
+               keybindingMap->set(key.first, *captured);
+            wasSet = true;
+            return true;
+          }}}
+      }};
+      keybindings.push_back(std::move(r));
+    }
+    ScriptedUIDataElems::Record main;
+    main.elems["set_options"] = ScriptedUIDataElems::Callback{
+        [&] { keybindingsTab = false; wasSet = true; return true; }
+    };
+    main.elems["set_keys"] = ScriptedUIDataElems::Callback{
+        [&] { keybindingsTab = true; wasSet = true; return true; }
+    };
+    if (keybindingsTab) {
+      main.elems["keybindings"] = std::move(keybindings);
+      main.elems["reset_keys"] = ScriptedUIDataElems::Callback {[this, &wasSet, view] {
+        if (view->yesOrNoPrompt("Are you sure you want to restore default keybindings?"))
+          keybindingMap->reset();
+        wasSet = true;
+        return true;
+      }};
+    } else
+      main.elems["options"] = std::move(options);
+    view->scriptedUI("settings", main, state);
     if (!wasSet)
       return;
   }
@@ -504,3 +547,6 @@ void Options::writeValues() {
   }
 }
 
+KeybindingMap* Options::getKeybindingMap() {
+  return keybindingMap;
+}

@@ -11,6 +11,7 @@
 #include "tech_id.h"
 #include "pretty_archive.h"
 #include "sunlight_info.h"
+#include "keybinding.h"
 
 class ContentFactory;
 struct SpecialTraitInfo;
@@ -132,7 +133,6 @@ class ImmigrantInfo {
   const SpawnLocation& getSpawnLocation() const;
   Range getGroupSize() const;
   int getInitialRecruitment() const;
-  bool isAutoTeam() const;
   double getFrequency() const;
   bool isPersistent() const;
   bool isInvisible() const;
@@ -146,22 +146,7 @@ class ImmigrantInfo {
 
   const vector<SpecialTraitInfo>& getSpecialTraits() const;
 
-  ImmigrantInfo& addRequirement(double candidateProb, ImmigrantRequirement);
   ImmigrantInfo& addRequirement(ImmigrantRequirement);
-  ImmigrantInfo& setFrequency(double);
-  ImmigrantInfo& setSpawnLocation(SpawnLocation);
-  ImmigrantInfo& setInitialRecruitment(int);
-  ImmigrantInfo& setGroupSize(Range);
-  ImmigrantInfo& setAutoTeam();
-  ImmigrantInfo& setKeybinding(Keybinding);
-  ImmigrantInfo& setSound(Sound);
-  ImmigrantInfo& setNoAuto();
-  ImmigrantInfo& setInvisible();
-  ImmigrantInfo& setLimit(int);
-  ImmigrantInfo& setTutorialHighlight(TutorialHighlight);
-  ImmigrantInfo& setHiddenInHelp();
-  ImmigrantInfo& addSpecialTrait(double chance, SpecialTrait);
-  ImmigrantInfo& addSpecialTrait(double chance, vector<SpecialTrait>);
 
   template <typename Visitor>
   void visitRequirements(const Visitor& visitor) const {
@@ -188,7 +173,6 @@ class ImmigrantInfo {
   SpawnLocation SERIAL(spawnLocation) = OutsideTerritory{};
   Range SERIAL(groupSize) = Range(1, 2);
   int SERIAL(initialRecruitment) = 0;
-  bool SERIAL(autoTeam) = false;
   bool SERIAL(consumeIds) = false;
   optional<Keybinding> SERIAL(keybinding);
   optional<Sound> SERIAL(sound);
