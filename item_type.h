@@ -7,7 +7,10 @@
 class ItemAttributes;
 class ContentFactory;
 class ItemTypeVariant;
+
+namespace ItemPrefixes {
 class VictimEffect;
+}
 
 class ItemType {
   public:
@@ -16,7 +19,7 @@ class ItemType {
   static ItemType beak(int damage);
   static ItemType fists(int damage);
   static ItemType fangs(int damage);
-  static ItemType fangs(int damage, VictimEffect);
+  static ItemType fangs(int damage, ItemPrefixes::VictimEffect);
   static ItemType spellHit(int damage);
   static PItem corpse(const string& name, const string& rottenName, double weight, const ContentFactory* f,
       bool instantlyRotten = false, ItemClass = ItemClass::CORPSE,

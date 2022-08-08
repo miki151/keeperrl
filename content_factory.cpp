@@ -24,10 +24,15 @@
 #include "layout_generator.h"
 #include "tile_gas_info.h"
 #include "promotion_info.h"
+#include "buff_info.h"
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
-  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping, randomLayouts, tileGasTypes, promotions, dancePositions, equipmentGroups, scriptedHelp);
+  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups);
+  ar(immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buffs);
+  ar(buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping);
+  ar(randomLayouts, tileGasTypes, promotions, dancePositions, equipmentGroups, scriptedHelp, attrInfo, attrOrder);
+  ar(bodyMaterials, keybindings);
   creatures.setContentFactory(this);
 }
 
@@ -39,6 +44,11 @@ map<Key, Value> convertKeys(const map<PrimaryId<Key>, Value>& m) {
   for (auto& elem : m)
     ret.insert(make_pair(Key(elem.first), std::move(elem.second)));
   return ret;
+}
+
+template <typename Key, typename Value>
+vector<pair<Key, Value>> convertKeys(const vector<pair<PrimaryId<Key>, Value>>& v) {
+  return v.transform([](auto& elem) { return make_pair(Key(std::move(elem.first)), std::move(elem.second)); });
 }
 
 template <typename Key, typename Value>
@@ -105,7 +115,7 @@ optional<string> ContentFactory::readFurnitureFactory(const GameConfig* config, 
   map<PrimaryId<FurnitureListId>, FurnitureList> furnitureLists;
   for (auto& elem : elems) {
     elem.second.setType(elem.first);
-    furnitureDefs.insert(make_pair(elem.first, unique<Furniture>(elem.second)));
+    furnitureDefs.insert(make_pair(elem.first, make_unique<Furniture>(elem.second)));
   }
   if (auto res = config->readObject(furnitureLists, GameConfigId::FURNITURE_LISTS, keyVerifier))
     return *res;
@@ -168,7 +178,6 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
   if (keeperCreatures.empty() || adventurerCreatures.empty())
     return "Keeper and adventurer lists must each contain at least 1 entry."_s;
   for (auto& keeperInfo : keeperCreatures) {
-    bool hotkeys[128] = {0};
     vector<BuildInfo> buildInfoTmp;
     set<string> allDataGroups;
     for (auto& group : buildInfo) {
@@ -205,13 +214,6 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
     for (auto& group : keeperInfo.second.buildingGroups)
       if (!allDataGroups.count(group))
         return "Building menu group \"" + group + "\" not found";
-    for (auto& info : buildInfoTmp) {
-      if (info.hotkey != '\0') {
-        if (hotkeys[int(info.hotkey)])
-          return "Hotkey \'" + string(1, info.hotkey) + "\' is used more than once in building menu";
-        hotkeys[int(info.hotkey)] = true;
-      }
-    }
     for (auto elem : keeperInfo.second.endlessEnemyGroups)
       if (!externalEnemies.count(elem))
         return "Undefined endless enemy group: \"" + elem + "\"";
@@ -394,7 +396,7 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   if (auto res = readItems(config, &keyVerifier))
     return *res;
   if (auto res = config->readObject(equipmentGroups, GameConfigId::EQUIPMENT_GROUPS, &keyVerifier))
-    return *res;  
+    return *res;
   if (auto error = readResourceInfo(config, &keyVerifier))
     return *error;
   if (auto error = readCampaignInfo(config, &keyVerifier))
@@ -445,10 +447,29 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   if (auto error = config->readObject(tileGasTmp, GameConfigId::TILE_GAS_TYPES, &keyVerifier))
     return *error;
   tileGasTypes = convertKeys(tileGasTmp);
+  vector<pair<PrimaryId<AttrType>, AttrInfo>> attrTmp;
+  if (auto error = config->readObject(attrTmp, GameConfigId::ATTR_INFO, &keyVerifier))
+    return *error;
+  for (auto& elem : attrTmp) {
+    attrOrder.push_back(elem.first);
+    attrInfo.insert(std::move(elem));
+  }
+  map<PrimaryId<BuffId>, BuffInfo> buffsTmp;
+  if (auto error = config->readObject(buffsTmp, GameConfigId::BUFFS, &keyVerifier))
+    return *error;
+  buffs = convertKeysHash(buffsTmp);
+  map<PrimaryId<BodyMaterialId>, BodyMaterial> materialsTmp;
+  if (auto error = config->readObject(materialsTmp, GameConfigId::BODY_MATERIALS, &keyVerifier))
+    return *error;
+  bodyMaterials = convertKeysHash(materialsTmp);
   if (auto error = config->readObject(promotions, GameConfigId::PROMOTIONS, &keyVerifier))
     return *error;
   if (auto error = config->readObject(dancePositions, GameConfigId::DANCE_POSITIONS, &keyVerifier))
     return *error;
+  vector<pair<PrimaryId<Keybinding>, KeybindingInfo>> keysTmp;
+  if (auto error = config->readObject(keysTmp, GameConfigId::KEYS, &keyVerifier))
+    return *error;
+  keybindings = convertKeys(keysTmp);
   auto errors = keyVerifier.verify();
   if (!errors.empty())
     return errors.front();
@@ -483,6 +504,13 @@ void ContentFactory::merge(ContentFactory f) {
   mergeMap(std::move(f.items), items);
   mergeMap(std::move(f.workshopInfo), workshopInfo);
   mergeMap(std::move(f.resourceInfo), resourceInfo);
+  mergeMap(std::move(f.attrInfo), attrInfo);
+  mergeMap(std::move(f.tileGasTypes), tileGasTypes);
+  mergeMap(std::move(f.buffs), buffs);
+  mergeMap(std::move(f.bodyMaterials), bodyMaterials);
+  for (auto t : f.attrOrder)
+    if (!attrOrder.contains(t))
+      attrOrder.push_back(t);
 }
 
 CreatureFactory& ContentFactory::getCreatures() {

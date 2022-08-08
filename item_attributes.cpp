@@ -30,10 +30,10 @@ void ItemAttributes::serializeImpl(Archive& ar, const unsigned int version) {
   ar(OPTION(applyTime), NAMED(ownedEffect), OPTION(maxUpgrades), OPTION(fragile), NAMED(effect), OPTION(uses), OPTION(usedUpMsg));
   ar(OPTION(displayUses), OPTION(modifiers), NAMED(shortName), OPTION(equipedEffect), NAMED(upgradeInfo), OPTION(effectDescription));
   ar(NAMED(applyMsgFirstPerson), NAMED(applyMsgThirdPerson), NAMED(applySound), OPTION(weaponInfo), OPTION(applyVerb));
-  ar(OPTION(prefixes), OPTION(genPrefixes), NAMED(ingredientType), OPTION(modifierVariation), OPTION(variationChance), OPTION(wishedCount));
+  ar(OPTION(prefixes), OPTION(genPrefixes), NAMED(ingredientType), OPTION(variationChance), OPTION(wishedCount));
   ar(OPTION(specialAttr), OPTION(partIds), OPTION(equipedCompanion), OPTION(upgradeType), OPTION(producedStat));
   ar(OPTION(effectAppliedWhenThrown), OPTION(applyPredicate), NAMED(storageIds), NAMED(carriedTickEffect), OPTION(craftingCost));
-  ar(OPTION(equipmentGroup), OPTION(autoEquipPredicate));
+  ar(OPTION(equipmentGroup), OPTION(autoEquipPredicate), NAMED(equipedViewId));
 }
 
 template <class Archive>

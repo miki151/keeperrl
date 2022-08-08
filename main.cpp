@@ -35,7 +35,6 @@
 #include "highscores.h"
 #include "main_loop.h"
 #include "clock.h"
-#include "skill.h"
 #include "parse_game.h"
 #include "vision.h"
 #include "model_builder.h"
@@ -256,7 +255,6 @@ static int keeperMain(po::parser& commandLineFlags) {
       [](const string& s) { ofstream("stacktrace.out") << s << "\n" << std::flush; } ));
   if (commandLineFlags["stderr"].was_set() || commandLineFlags["run_tests"].was_set())
     InfoLog.addOutput(DebugOutput::toStream(std::cerr));
-  Skill::init();
   if (commandLineFlags["run_tests"].was_set()) {
     testAll();
     return 0;
@@ -297,16 +295,18 @@ static int keeperMain(po::parser& commandLineFlags) {
   Clock clock(!!maxTurns);
   userPath.createIfDoesntExist();
   auto settingsPath = userPath.file("options.txt");
-  if (commandLineFlags["restore_settings"].was_set())
-    remove(settingsPath.getPath());
-  Options options(settingsPath);
-  Unlocks unlocks(&options, userPath.file("unlocks.txt"));
+  auto userKeysPath = userPath.file("keybindings.txt");
+  if (commandLineFlags["restore_settings"].was_set()) {
+    settingsPath.erase();
+    userKeysPath.erase();
+  }
+  KeybindingMap keybindingMap(freeDataPath.file("default_keybindings.txt"), userKeysPath);
+  Options options(settingsPath, &keybindingMap);
   Random.init(int(time(nullptr)));
   auto installId = getInstallId(userPath.file("installId.txt"), Random);
   SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
-  KeybindingMap keybindingMap(userPath.file("keybindings.txt"));
   auto modsDir = userPath.subdirectory(gameConfigSubdir);
   auto allUnlocked = Unlocks::allUnlocked();
   if (commandLineFlags["simple_game"].was_set()) {
@@ -393,8 +393,9 @@ static int keeperMain(po::parser& commandLineFlags) {
       contribDataPath,
       freeDataPath.file("images/mouse_cursor.png"),
       freeDataPath.file("images/mouse_cursor2.png"),
-      freeDataPath.file("images/succubi.png"));
+      freeDataPath.file("images/icon.png"));
   initializeGLExtensions();
+
 #ifndef RELEASE
   installOpenglDebugHandler();
 #endif
@@ -402,7 +403,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserInfoLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   atomic<bool> splashDone { false };
-  GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap, freeDataPath.subdirectory("images"),
+  GuiFactory guiFactory(renderer, &clock, &options, freeDataPath.subdirectory("images"),
       tilesPresent ? optional<DirectoryPath>(paidDataPath.subdirectory("images")) : none);
   TileSet tileSet(paidDataPath.subdirectory("images"), modsDir, freeDataPath.subdirectory("ui"));
   renderer.setTileSet(&tileSet);
@@ -416,10 +417,10 @@ static int keeperMain(po::parser& commandLineFlags) {
     auto particlesPath = paidDataPath.subdirectory("images").subdirectory("particles");
     if (particlesPath.exists()) {
       INFO << "FX: initialization";
-      fxManager = unique<fx::FXManager>();
-      fxRenderer = unique<fx::FXRenderer>(particlesPath, *fxManager);
+      fxManager = make_unique<fx::FXManager>();
+      fxRenderer = make_unique<fx::FXRenderer>(particlesPath, *fxManager);
       fxRenderer->loadTextures();
-      fxViewManager = unique<FXViewManager>(fxManager.get(), fxRenderer.get());
+      fxViewManager = make_unique<FXViewManager>(fxManager.get(), fxRenderer.get());
     }
   }
   auto loadThread = makeThread([&] {
@@ -455,6 +456,7 @@ static int keeperMain(po::parser& commandLineFlags) {
       getMusicTracks(paidDataPath.subdirectory("music"), tilesPresent && !audioError),
       getMaxVolume());
   options.addTrigger(OptionId::MUSIC, [&jukebox](int volume) { jukebox.setCurrentVolume(volume); });
+  Unlocks unlocks(&options, userPath.file("unlocks.txt"));
   MainLoop loop(view.get(), &highscores, &fileSharing, paidDataPath, freeDataPath, userPath, modsDir, &options, &jukebox,
       &sokobanInput, &tileSet, &unlocks, saveVersion, modVersion);
   try {

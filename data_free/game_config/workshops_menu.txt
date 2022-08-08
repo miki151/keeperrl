@@ -94,14 +94,14 @@ append {
       {{Potion Lasting POISON_RESISTANT}     4        "GOLD" 6}
       {{Potion Lasting SPEED}                4        "GOLD" 6}
       {{Potion Lasting TELEPATHY}            4        "GOLD" 6}
-      {{Potion Lasting REGENERATION}         4        "GOLD" 8}
+      {{Potion Lasting 50 REGENERATION}         4        "GOLD" 8}
       {{Potion Lasting POISON}               4        "GOLD" 8}
       {{Potion Lasting FLYING}               4        "GOLD" 8}
       {{Potion Heal { FLESH }}               4        "GOLD" 10      "advanced alchemy"}
       {{Potion Lasting BLIND}                4        "GOLD" 15      "advanced alchemy"}
-      {{Potion Lasting MELEE_RESISTANCE}     6        "GOLD" 20      "advanced alchemy"}
-      {{Potion Lasting MELEE_VULNERABILITY}  6        "GOLD" 40      "advanced alchemy"}
-      {{Potion Lasting MAGIC_VULNERABILITY}  6        "GOLD" 40      "advanced alchemy"}
+      {{Potion Lasting 20 MELEE_RESISTANCE}     6        "GOLD" 20      "advanced alchemy"}
+      {{Potion Lasting 20 MELEE_VULNERABILITY}  6        "GOLD" 40      "advanced alchemy"}
+      {{Potion Lasting 20   MAGIC_VULNERABILITY}  6        "GOLD" 40      "advanced alchemy"}
       {{Potion Lasting INVISIBLE}            6        "GOLD" 20      "advanced alchemy"}
       {{Potion Heal { SPIRIT }}              4        "GOLD" 20      "advanced alchemy"}
       {{GasPotion("FOG", "Releases a fog cloud")} 4   "GOLD" 10      "advanced alchemy"}
@@ -140,21 +140,26 @@ append {
   }
 }
 
+Def CORPUS(Id, Name, Resource, Tech, Slots)
+  { item = {Assembled{ Id Name {FIGHTER AUTOMATON}{AUTOMATONS_UPPER AUTOMATONS_LOWER} Slots}}
+    work = 8 cost = Resource tech = Tech applyImmediately = true notArtifact = true materialTab = true
+    requiresUpgrades = true}
+End
+
+Def WORKER(Id, Color, Resource)
+  { item = {Assembled{Id "drilling automaton" {FIGHTER AUTOMATON}
+        {AUTOMATONS_UPPER AUTOMATONS_LOWER} 1 { { "installed_legs" Rgb Color 255 }
+            { "installed_drill" Rgb Color 255 }}}}
+    work = 8 cost = Resource tech = "automatons" applyImmediately = true notArtifact = true materialTab = true}
+End
+
 "gnomes"
 {
   "WORKSHOP"
   {
-      { item = {Assembled{ "AUTOMATON_WORKER_WOOD" "drilling automaton" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 1 { { "installed_legs" Rgb 180 140 55 255 }
-                { "installed_drill" Rgb 180 140 55 255 }}}}
-        work = 8 cost = "WOOD" 40 tech = "automatons" applyImmediately = true notArtifact = true}
-      { item = {Assembled{ "AUTOMATON_CORPUS_WOOD" "automaton corpus" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3}}
-        work = 8 cost = "WOOD" 30 tech = "automatons" applyImmediately = true notArtifact = true}
-      { item = {Assembled{ "LIGHT_AUTOMATON_CORPUS_WOOD" "light automaton corpus" {FIGHTER AUTOMATON} 
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 2}}
-        work = 8 cost = "WOOD" 20 tech = "advanced automatons" applyImmediately = true
-        notArtifact = true}
+      WORKER("AUTOMATON_WORKER_WOOD", 180 140 55, "WOOD" 40)
+      CORPUS("AUTOMATON_CORPUS_WOOD", "automaton corpus", "WOOD" 30, "automatons", 3)
+      CORPUS("LIGHT_AUTOMATON_CORPUS_WOOD", "light automaton corpus", "WOOD" 20, "automatons", 2)
       { item = {Assembled{ "HELICOPTER" "helicopterum" {FIGHTER AUTOMATON} 
             {AUTOMATONS_UPPER} 1}}
         work = 8 cost = "WOOD" 10 tech = "aerodynamics" applyImmediately = true notArtifact = true}
@@ -167,21 +172,10 @@ append {
   } 
   "FORGE"
   {
-      { item = {Assembled{ "AUTOMATON_WORKER_IRON" "drilling automaton" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 1 { { "installed_legs" Rgb 140 148 148 255 }
-                { "installed_drill" Rgb 140 148 148 255 }}}}
-        work = 8 cost = "IRON" 40 tech = "automatons" applyImmediately = true notArtifact = true materialTab = true}
-      { item = {Assembled{ "AUTOMATON_CORPUS_IRON" "automaton corpus" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3}}
-        work = 8 cost = "IRON" 30 tech = "automatons" applyImmediately = true notArtifact = true materialTab = true}
-      { item = {Assembled{ "LIGHT_AUTOMATON_CORPUS_IRON" "light automaton corpus" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 2}}
-        work = 8 cost = "IRON" 20 tech = "advanced automatons" applyImmediately = true
-        notArtifact = true materialTab = true}
-      { item = {Assembled{ "HEAVY_AUTOMATON_CORPUS_IRON" "heavy automaton corpus" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3}}
-        work = 8 cost = "IRON" 40 tech = "advanced automatons" applyImmediately = true
-        notArtifact = true materialTab = true}
+      WORKER("AUTOMATON_WORKER_IRON", 140 148 148, "IRON" 40)
+      CORPUS("AUTOMATON_CORPUS_IRON", "automaton corpus", "IRON" 30, "automatons", 3)
+      CORPUS("LIGHT_AUTOMATON_CORPUS_IRON", "light automaton corpus", "IRON" 20, "advanced automatons", 2)
+      CORPUS("HEAVY_AUTOMATON_CORPUS_IRON", "heavy automaton corpus", "IRON" 40, "advanced automatons", 3)
       { item = {"AutomatonLegsIron"} work = 2 tech = "automatons" materialTab = true}
       { item = {"AutomatonArmsIron"} work = 2 tech = "automatons" materialTab = true}
       { item = {"RepairAutomatonArmsIron"} work = 2 tech = "advanced automatons" materialTab = true}
@@ -191,21 +185,10 @@ append {
       { item = {"FireHeadIron"} work = 2 tech ="advanced automatons" materialTab = true}
       { item = {"AcidHeadIron"} work = 2 tech = "advanced automatons" materialTab = true}
       { item = {"HumanoidHeadIron"} work = 2 tech = "automaton brains" materialTab = true}
-      { item = {Assembled{ "AUTOMATON_WORKER_ADA" "drilling automaton" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3 { { "installed_legs" Rgb 148 189 189 255 }
-                { "installed_drill" Rgb 148 189 189 255 }}}}
-        work = 8 cost = "ADA" 30 tech = "automatons" applyImmediately = true notArtifact = true materialTab = true}
-      { item = {Assembled{ "AUTOMATON_CORPUS_ADA" "automaton corpus" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3}}
-        work = 8 cost = "ADA" 45 tech = "automatons" applyImmediately = true notArtifact = true materialTab = true}
-      { item = {Assembled{ "LIGHT_AUTOMATON_CORPUS_ADA" "light automaton corpus" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 2}}
-        work = 8 cost = "ADA" 20 tech = "advanced automatons" applyImmediately = true
-        notArtifact = true materialTab = true}
-      { item = {Assembled{ "HEAVY_AUTOMATON_CORPUS_ADA" "heavy automaton corpus" {FIGHTER AUTOMATON}
-            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3}}
-        work = 8 cost = "ADA" 40 tech = "advanced automatons" applyImmediately = true
-        notArtifact = true materialTab = true}
+      WORKER("AUTOMATON_WORKER_ADA", 148 189 189, "ADA" 40)
+      CORPUS("AUTOMATON_CORPUS_ADA", "automaton corpus", "ADA" 30, "automatons", 3)
+      CORPUS("LIGHT_AUTOMATON_CORPUS_ADA", "light automaton corpus", "ADA" 20, "advanced automatons", 2)
+      CORPUS("HEAVY_AUTOMATON_CORPUS_ADA", "heavy automaton corpus", "ADA" 40, "advanced automatons", 3)
       { item = {"AutomatonLegsAda"} work = 2 tech = "automatons" materialTab = true}
       { item = {"AutomatonArmsAda"} work = 2 tech = "automatons" materialTab = true}
       { item = {"RepairAutomatonArmsAda"} work = 2 tech = "advanced automatons" materialTab = true}
@@ -215,11 +198,20 @@ append {
       { item = {"FireHeadAda"} work = 2 tech = "advanced automatons" materialTab = true}
       { item = {"AcidHeadAda"} work = 2 tech = "advanced automatons" materialTab = true}
       { item = {"HumanoidHeadAda"} work = 2 tech = "automaton brains" materialTab = true}
+      CORPUS("AUTOMATON_CORPUS_INFERNITE", "automaton corpus", "INFERNITE" 30, "automatons", 3)
+      CORPUS("LIGHT_AUTOMATON_CORPUS_INFERNITE", "light automaton corpus", "INFERNITE" 20, "advanced automatons", 2)
+      CORPUS("HEAVY_AUTOMATON_CORPUS_INFERNITE", "heavy automaton corpus", "INFERNITE" 40, "advanced automatons", 3)
+      { item = {"AutomatonArmsInfernite"} work = 2 tech = "automatons" materialTab = true}
+      CORPUS("AUTOMATON_CORPUS_ADOXIUM", "automaton corpus", "ADOXIUM" 30, "automatons", 3)
+      CORPUS("LIGHT_AUTOMATON_CORPUS_ADOXIUM", "light automaton corpus", "ADOXIUM" 20, "advanced automatons", 2)
+      CORPUS("HEAVY_AUTOMATON_CORPUS_ADOXIUM", "heavy automaton corpus", "ADOXIUM" 40, "advanced automatons", 3)
+      { item = {"AutomatonArmsAdoxium"} work = 2 tech = "automatons" materialTab = true}
+      { item = {"KaboomHead"} work = 3 tech = "advanced automatons" materialTab = true}
   } 
   "LABORATORY"
   {
-      {{Potion Fire} 4 "GOLD" 5}
-      {{Potion Name "more fire" Area 1 Fire} 8 "GOLD" 10}
+      {{Potion Fire{25}} 4 "GOLD" 5}
+      {{Potion Name "more fire" Area 1 Fire{20}} 8 "GOLD" 10}
       {{Potion Lasting OIL} 4 "GOLD" 15}
   }
 }
@@ -266,7 +258,7 @@ append {
       {{Balsam RemovePermanent SLOWED}      4 "GOLD" 3 "embalming"}
       {{Balsam Permanent SWARMER}           4 "GOLD" 3 "embalming"}
       {{Balsam Permanent NO_CARRY_LIMIT}    4 "GOLD" 3 "embalming"}
-      {{Balsam IncreaseSkill DIGGING      0.5}                    4 "GOLD" 3 "embalming"}
+      {{Balsam IncreaseAttr DIGGING        15}                    4 "GOLD" 3 "embalming"}
       {{Balsam IncreaseMaxLevel MELEE       3}                    4 "GOLD" 3 "embalming"}
       {{Balsam IncreaseMaxLevel SPELL       3}                    4 "GOLD" 3 "embalming"}
       {{Balsam IncreaseMaxLevel ARCHERY     3}                    4 "GOLD" 3 "embalming"}
@@ -290,11 +282,11 @@ append {
       {{Balsam Name "greater defense bonus"       IncreaseAttr DEFENSE       5} 8 "GOLD" 5 "advanced embalming"}
       {{Balsam Name "greater ranged damage bonus" IncreaseAttr RANGED_DAMAGE 5} 8 "GOLD" 5 "advanced embalming"}
       {{Balsam Name "greater spell damage bonus"  IncreaseAttr  SPELL_DAMAGE 5} 8 "GOLD" 5 "advanced embalming"}
-      {{Balsam IncreaseWorkshopSkill "MORGUE" 0.5}                8 "GOLD" 5 "advanced embalming"}
-      {{Balsam IncreaseWorkshopSkill "LABORATORY" 0.5}            8 "GOLD" 5 "advanced embalming"}
-      {{Balsam IncreaseWorkshopSkill "FORGE" 0.5}                 8 "GOLD" 5 "advanced embalming"}
-      {{Balsam IncreaseWorkshopSkill "WORKSHOP" 0.5  }            8 "GOLD" 5 "advanced embalming"}
-      {{Balsam { AddBodyPart ARM 2 none IncreaseSkill MULTI_WEAPON 0.5 }}
+      {{Balsam IncreaseAttr "MORGUE" 25}                            8 "GOLD" 5 "advanced embalming"}
+      {{Balsam IncreaseAttr "LABORATORY" 25}                        8 "GOLD" 5 "advanced embalming"}
+      {{Balsam IncreaseAttr "FORGE" 25}                             8 "GOLD" 5 "advanced embalming"}
+      {{Balsam IncreaseAttr "WORKSHOP" 25}                          8 "GOLD" 5 "advanced embalming"}
+      {{Balsam { AddBodyPart ARM 2 none IncreaseAttr MULTI_WEAPON 25 }}
           8 "GOLD" 5 "advanced embalming"}
       {{Balsam SpecialAttr DEFENSE       15 InTerritory}           12 "GOLD" 10 "master embalming"}
       {{Balsam SpecialAttr DAMAGE        15 CreatureStatus LEADER} 12 "GOLD" 10 "master embalming"}

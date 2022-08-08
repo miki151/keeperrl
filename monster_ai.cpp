@@ -26,7 +26,6 @@
 #include "equipment.h"
 #include "spell.h"
 #include "creature_name.h"
-#include "skill.h"
 #include "task.h"
 #include "game.h"
 #include "creature_attributes.h"
@@ -106,8 +105,8 @@ Item* Behaviour::getBestWeapon() {
   Item* best = nullptr;
   int damage = -1;
   for (Item* item : creature->getEquipment().getItems().filter(Item::classPredicate(ItemClass::WEAPON)))
-    if (item->getModifier(AttrType::DAMAGE) > damage) {
-      damage = item->getModifier(AttrType::DAMAGE);
+    if (item->getModifier(AttrType("DAMAGE")) > damage) {
+      damage = item->getModifier(AttrType("DAMAGE"));
       best = item;
     }
   return best;
@@ -548,7 +547,8 @@ class Fighter : public Behaviour {
     auto other = creature->getClosestEnemy(true);
     if (!other)
       return NoMove;
-    if (!LastingEffects::obeysFormation(creature, other) || !creature->getBody().hasBrain())
+    if (!LastingEffects::obeysFormation(creature, other) ||
+        !creature->getBody().hasBrain(creature->getGame()->getContentFactory()))
       return NoMove;
     auto myPosition = creature->getPosition();
     auto otherPosition = other->getPosition();
@@ -595,11 +595,11 @@ class Fighter : public Behaviour {
       if (spell->getRange() > 0 && spell->getEffect().effect->contains<Effects::Heal>())
         ret = FighterPosition::HEALER;
     if (ret != FighterPosition::HEALER && !creature->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).empty()
-        && creature->getAttr(AttrType::RANGED_DAMAGE) >= creature->getAttr(AttrType::DAMAGE))
+        && creature->getAttr(AttrType("RANGED_DAMAGE")) >= creature->getAttr(AttrType("DAMAGE")))
       ret = FighterPosition::RANGED;
     if (ret != FighterPosition::MELEE)
       for (auto ally : creature->getVisibleCreatures())
-        if (ally->isFriend(creature) && ally->getAttr(AttrType::DAMAGE) > creature->getAttr(AttrType::DAMAGE))
+        if (ally->isFriend(creature) && ally->getAttr(AttrType("DAMAGE")) > creature->getAttr(AttrType("DAMAGE")))
           return ret;
     return FighterPosition::MELEE;
   }
@@ -683,7 +683,7 @@ class Fighter : public Behaviour {
 
 class FighterStandGround : public Behaviour {
   public:
-  FighterStandGround(Creature* c) : Behaviour(c), fighter(unique<Fighter>(c)) {
+  FighterStandGround(Creature* c) : Behaviour(c), fighter(make_unique<Fighter>(c)) {
   }
 
   virtual MoveInfo getMove() override {
@@ -1022,8 +1022,8 @@ class ByCollective : public Behaviour {
         collective->getTerritory().contains(creature->getPosition()))) {
       const static EnumSet<MinionActivity> healingActivities {MinionActivity::SLEEP};
       auto currentActivity = collective->getCurrentActivity(creature).activity;
-      if (creature->getBody().canHeal(HealthType::FLESH) && !creature->isAffected(LastingEffect::POISON) &&
-          !healingActivities.contains(currentActivity))
+      if (creature->getBody().canHeal(HealthType::FLESH, creature->getGame()->getContentFactory()) &&
+          !creature->isAffected(LastingEffect::POISON) && !healingActivities.contains(currentActivity))
         for (MinionActivity activity : healingActivities) {
           if (creature->getAttributes().getMinionActivities().isAvailable(collective, creature, activity) &&
               collective->isActivityGood(creature, activity)) {
@@ -1133,7 +1133,7 @@ class AvoidFire : public Behaviour {
 
   virtual MoveInfo getMove() override {
     auto myPosition = creature->getPosition();
-    if (myPosition.isBurning() && !creature->isAffected(LastingEffect::FIRE_RESISTANT)) {
+    if (myPosition.isBurning() && !creature->isAffected(BuffId("FIRE_IMMUNITY"))) {
       for (Position pos : myPosition.neighbors8(Random))
         if (!pos.isBurning())
           if (auto action = creature->move(pos))
@@ -1199,7 +1199,7 @@ void MonsterAI::makeMove() {
         skipNextMoves = true;
     }
     if (pickItems)
-      for (auto& stack : Item::stackItems(creature->getPickUpOptions())) {
+      for (auto& stack : Item::stackItems(creature->getGame()->getContentFactory(), creature->getPickUpOptions())) {
         Item* item = stack[0];
         if (!item->isOrWasForSale() && creature->pickUp(stack))
           moves.push_back(MoveInfo({ behaviours[i]->itemValue(item) * weights[i], creature->pickUp(stack)}));
@@ -1257,7 +1257,7 @@ MonsterAIFactory MonsterAIFactory::collective(Collective* col) {
         new AvoidFire(c),
         new AdoxieSacrifice(c),
         new EffectsAI(c, col),
-        new ByCollective(c, col, unique<Fighter>(c)),
+        new ByCollective(c, col, make_unique<Fighter>(c)),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 10, 9, 6, 2, 1}, false);
       });
@@ -1344,7 +1344,7 @@ MonsterAIFactory MonsterAIFactory::summoned(Creature* leader) {
 MonsterAIFactory MonsterAIFactory::warlord(shared_ptr<vector<Creature*>> team, shared_ptr<EnumSet<TeamOrder>> orders) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
-          new WarlordBehaviour(c, unique<Fighter>(c), std::move(team), std::move(orders)),
+          new WarlordBehaviour(c, make_unique<Fighter>(c), std::move(team), std::move(orders)),
           new AvoidFire(c),
           new EffectsAI(c, nullptr),
           new MoveRandomly(c),

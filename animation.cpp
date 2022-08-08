@@ -61,5 +61,5 @@ class SpriteAnim : public Animation {
 };
  
 PAnimation Animation::fromId(AnimationId id, Dir orientation) {
-  return unique<SpriteAnim>(id, getDuration(id), orientation);
+  return make_unique<SpriteAnim>(id, getDuration(id), orientation);
 }

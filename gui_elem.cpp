@@ -185,44 +185,9 @@ class ButtonKey : public ButtonElem {
   bool capture;
 };
 
-static optional<SDL_Keycode> getKey(char c) {
-  switch (c) {
-    case 'a': return SDL::SDLK_a;
-    case 'b': return SDL::SDLK_b;
-    case 'c': return SDL::SDLK_c;
-    case 'd': return SDL::SDLK_d;
-    case 'e': return SDL::SDLK_e;
-    case 'f': return SDL::SDLK_f;
-    case 'g': return SDL::SDLK_g;
-    case 'h': return SDL::SDLK_h;
-    case 'i': return SDL::SDLK_i;
-    case 'j': return SDL::SDLK_j;
-    case 'k': return SDL::SDLK_k;
-    case 'l': return SDL::SDLK_l;
-    case 'm': return SDL::SDLK_m;
-    case 'n': return SDL::SDLK_n;
-    case 'o': return SDL::SDLK_o;
-    case 'p': return SDL::SDLK_p;
-    case 'q': return SDL::SDLK_q;
-    case 'r': return SDL::SDLK_r;
-    case 's': return SDL::SDLK_s;
-    case 't': return SDL::SDLK_t;
-    case 'u': return SDL::SDLK_u;
-    case 'v': return SDL::SDLK_v;
-    case 'w': return SDL::SDLK_w;
-    case 'x': return SDL::SDLK_x;
-    case 'y': return SDL::SDLK_y;
-    case 'z': return SDL::SDLK_z;
-    case ' ': return SDL::SDLK_SPACE;
-    default: return none;
-  }
-  return none;
-}
-
-GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o, KeybindingMap* k,
+GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o,
     const DirectoryPath& freeImages, const optional<DirectoryPath>& nonFreeImages)
-    : keybindingMap(k), clock(c), renderer(r), options(o), freeImagesPath(freeImages),
-      nonFreeImagesPath(nonFreeImages) {
+    : clock(c), renderer(r), options(o), freeImagesPath(freeImages), nonFreeImagesPath(nonFreeImages) {
 }
 
 GuiFactory::~GuiFactory() {}
@@ -1281,8 +1246,32 @@ SGuiElem GuiFactory::keyHandler(function<void(SDL_Keysym)> fun, bool capture) {
   return SGuiElem(new KeyHandler(fun, capture));
 }
 
+class KeybindingHandler : public GuiElem {
+  public:
+  KeybindingHandler(KeybindingMap* m, Keybinding key, function<void()> fun, bool cap)
+      : fun(std::move(fun)), keybindingMap(m), key(key), capture(cap) {}
+
+  virtual bool onKeyPressed2(SDL_Keysym sym) override {
+    if (keybindingMap->matches(key, sym)) {
+      fun();
+      return capture;
+    }
+    return false;
+  }
+
+  private:
+  function<void()> fun;
+  KeybindingMap* keybindingMap;
+  Keybinding key;
+  bool capture;
+};
+
 SGuiElem GuiFactory::keyHandler(function<void()> fun, Keybinding keybinding, bool capture) {
-  return keyHandler([=] (SDL_Keysym key) { if (keybindingMap->matches(keybinding, key)) fun(); }, capture);
+  return SGuiElem(new KeybindingHandler(options->getKeybindingMap(), keybinding, std::move(fun), capture));
+}
+
+KeybindingMap* GuiFactory::getKeybindingMap() {
+  return options->getKeybindingMap();
 }
 
 class KeyHandler2 : public GuiElem {
@@ -1306,44 +1295,6 @@ class KeyHandler2 : public GuiElem {
 
 SGuiElem GuiFactory::keyHandler(function<void()> fun, vector<SDL_Keysym> key, bool capture) {
   return SGuiElem(new KeyHandler2(fun, key, capture));
-}
-
-class KeyHandlerChar : public GuiElem {
-  public:
-  KeyHandlerChar(function<void()> f, char c, bool cap, function<bool()> rAlt) : fun(f), hotkey(c), requireAlt(rAlt),
-      capture(cap) {}
-
-  bool isHotkeyEvent(char c, SDL_Keysym key) {
-    return requireAlt() == GuiFactory::isAlt(key) &&
-      !GuiFactory::isCtrl(key) &&
-      ((!GuiFactory::isShift(key) && getKey(c) == key.sym) ||
-          (GuiFactory::isShift(key) && getKey(tolower(c)) == key.sym));
-  }
-
-  virtual bool onKeyPressed2(SDL_Keysym key) override {
-    if (isHotkeyEvent(hotkey, key)) {
-      fun();
-      return capture;
-    }
-    return false;
-  }
-
-  private:
-  function<void()> fun;
-  char hotkey;
-  function<bool()> requireAlt;
-  bool capture;
-};
-
-SGuiElem GuiFactory::keyHandlerChar(function<void ()> fun, char hotkey, bool capture, bool useAltIfWasdOn) {
-  return SGuiElem(new KeyHandlerChar(fun, hotkey, capture,
-       [=] { return useAltIfWasdOn && options->getBoolValue(OptionId::WASD_SCROLLING); }));
-}
-
-SGuiElem GuiFactory::buttonChar(function<void()> fun, char hotkey, bool capture, bool useAltIfWasdOn) {
-  return stack(
-      SGuiElem(new ButtonElem([=](Rectangle, Vec2) { fun(); }, capture)),
-      SGuiElem(keyHandlerChar(fun, hotkey, capture, useAltIfWasdOn)));
 }
 
 class ElemList : public GuiLayout {
@@ -2045,10 +1996,13 @@ SGuiElem GuiFactory::empty() {
 class ViewObjectGui : public GuiElem {
   public:
   ViewObjectGui(const ViewObject& obj, Vec2 sz, double sc, Color c) : object(obj), size(sz), scale(sc), color(c) {}
-  ViewObjectGui(vector<ViewId> id, Vec2 sz, double sc, Color c) : object(id), size(sz), scale(sc), color(c) {
+  ViewObjectGui(ViewIdList id, Vec2 sz, double sc, Color c) : object(id), size(sz), scale(sc), color(c) {
     //CHECK(int(id) >= 0 && int(id) < EnumInfo<ViewId>::size);
   }
   ViewObjectGui(function<ViewId()> id, Vec2 sz, double sc, Color c)
+      : object(std::move(id)), size(sz), scale(sc), color(c) {}
+
+  ViewObjectGui(function<ViewObject()> id, Vec2 sz, double sc, Color c)
       : object(std::move(id)), size(sz), scale(sc), color(c) {}
 
   virtual void render(Renderer& renderer) override {
@@ -2056,11 +2010,13 @@ class ViewObjectGui : public GuiElem {
           [&](const ViewObject& obj) {
             renderer.drawViewObject(getBounds().topLeft(), obj, true, scale, color);
           },
-          [&](const vector<ViewId>& viewId) {
-            for (auto& id : viewId)
-              renderer.drawViewObject(getBounds().topLeft(), id, true, scale, color);
+          [&](const ViewIdList& viewId) {
+            renderer.drawViewObject(getBounds().topLeft(), viewId, true, scale, color);
           },
           [&](function<ViewId()> viewId) {
+            renderer.drawViewObject(getBounds().topLeft(), viewId(), true, scale, color);
+          },
+          [&](function<ViewObject()> viewId) {
             renderer.drawViewObject(getBounds().topLeft(), viewId(), true, scale, color);
           }
     );
@@ -2075,7 +2031,7 @@ class ViewObjectGui : public GuiElem {
   }
 
   private:
-  variant<ViewObject, vector<ViewId>, function<ViewId()>> object;
+  variant<ViewObject, ViewIdList  , function<ViewId()>, function<ViewObject()>> object;
   Vec2 size;
   double scale;
   Color color;
@@ -2094,6 +2050,10 @@ SGuiElem GuiFactory::viewObject(ViewIdList list, double scale, Color color) {
 }
 
 SGuiElem GuiFactory::viewObject(function<ViewId()> id, double scale, Color color) {
+  return SGuiElem(new ViewObjectGui(std::move(id), Vec2(1, 1) * Renderer::nominalSize * scale, scale, color));
+}
+
+SGuiElem GuiFactory::viewObject(function<ViewObject()> id, double scale, Color color) {
   return SGuiElem(new ViewObjectGui(std::move(id), Vec2(1, 1) * Renderer::nominalSize * scale, scale, color));
 }
 
@@ -2845,27 +2805,6 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
   const int tabIconWidth = 42;
   for (int i = 0; i < 8; ++i)
     iconTextures.push_back(Texture(path.file("icons.png"), 0, i * tabIconWidth, tabIconWidth, tabIconWidth));
-  auto addAttr = [&](AttrType attr, Vec2 pos) {
-    const int width = 18;
-    attrTextures[attr] =
-        Texture(path.file("stat_icons.png"), pos.x * width, pos.y * width, width, width);
-  };
-  auto getAttrCoord = [&] (AttrType attr) {
-    switch (attr) {
-      case AttrType::DAMAGE:
-        return Vec2(0, 0);
-      case AttrType::DEFENSE:
-        return Vec2(1, 0);
-      case AttrType::SPELL_DAMAGE:
-        return Vec2(0, 1);
-      case AttrType::RANGED_DAMAGE:
-        return Vec2(1, 1);
-      case AttrType::PARRY:
-        return Vec2(5, 0);
-    }
-  };
-  for (auto attr : ENUM_ALL(AttrType))
-    addAttr(attr, getAttrCoord(attr));
   auto loadIcons = [&] (int width, int count, const char* file) {
     for (int i = 0; i < count; ++i)
       iconTextures.push_back(Texture(path.file(file), 0, i * width, width, width));
@@ -3211,10 +3150,6 @@ SGuiElem GuiFactory::background(SGuiElem content, Color color) {
 
 SGuiElem GuiFactory::icon(IconId id, Alignment alignment, Color color) {
   return sprite(iconTextures[(int) id], alignment, color);
-}
-
-SGuiElem GuiFactory::icon(AttrType attr) {
-  return sprite(*attrTextures[attr], Alignment::CENTER, Color::WHITE);
 }
 
 static int trans1 = 1094;

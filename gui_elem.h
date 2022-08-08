@@ -22,6 +22,7 @@
 #include "texture_id.h"
 #include "attr_type.h"
 #include "view_id.h"
+#include "keybinding.h"
 
 class ViewObject;
 class Clock;
@@ -63,7 +64,7 @@ class GuiElem {
 
 class GuiFactory {
   public:
-  GuiFactory(Renderer&, Clock*, Options*, KeybindingMap*, const DirectoryPath& freeImages,
+  GuiFactory(Renderer&, Clock*, Options*, const DirectoryPath& freeImages,
       const optional<DirectoryPath>& nonFreeImages);
   void loadImages();
   ~GuiFactory();
@@ -80,7 +81,6 @@ class GuiFactory {
 
   SDL::SDL_Keysym getKey(SDL::SDL_Keycode);
   SGuiElem button(function<void()>, SDL::SDL_Keysym, bool capture = false);
-  SGuiElem buttonChar(function<void()>, char, bool capture = false, bool useAltIfWasdScrolling = false);
   SGuiElem button(function<void()>, bool capture = false);
   SGuiElem textField(int maxLength, function<string()> text, function<void(string)> callback);
   SGuiElem textFieldFocused(int maxLength, function<string()> text, function<void(string)> callback);
@@ -96,7 +96,6 @@ class GuiFactory {
   SGuiElem keyHandler(function<void(SDL::SDL_Keysym)>, bool capture = false);
   SGuiElem keyHandler(function<void()>, Keybinding, bool capture = false);
   SGuiElem keyHandler(function<void()>, vector<SDL::SDL_Keysym>, bool capture = false);
-  SGuiElem keyHandlerChar(function<void()>, char, bool capture = false, bool useAltIfWasdScrolling = false);
   SGuiElem stack(vector<SGuiElem>);
   SGuiElem stack(SGuiElem, SGuiElem);
   SGuiElem stack(SGuiElem, SGuiElem, SGuiElem);
@@ -194,6 +193,7 @@ class GuiFactory {
       FontId = FontId::SYMBOL_FONT);
   SGuiElem crossOutText(Color);
   SGuiElem viewObject(const ViewObject&, double scale = 1, Color = Color::WHITE);
+  SGuiElem viewObject(function<ViewObject()>, double scale = 1, Color = Color::WHITE);
   SGuiElem viewObject(ViewId, double scale = 1, Color = Color::WHITE);
   SGuiElem viewObject(ViewIdList, double scale = 1, Color = Color::WHITE);
   SGuiElem viewObject(function<ViewId()>, double scale = 1, Color = Color::WHITE);
@@ -298,7 +298,6 @@ class GuiFactory {
 
   SGuiElem minimapBar(SGuiElem icon1, SGuiElem icon2);
   SGuiElem icon(IconId, Alignment = Alignment::CENTER, Color = Color::WHITE);
-  SGuiElem icon(AttrType);
   Texture& get(TexId);
   SGuiElem uiHighlightMouseOver(Color = Color::GREEN);
   SGuiElem uiHighlightConditional(function<bool()>, Color = Color::GREEN);
@@ -310,7 +309,7 @@ class GuiFactory {
   SGuiElem rectangleBorder(Color);
   SGuiElem renderTopLayer(SGuiElem content);
 
-  KeybindingMap* keybindingMap;
+  KeybindingMap* getKeybindingMap();
   Clock* clock;
 
   private:
@@ -321,11 +320,9 @@ class GuiFactory {
   SGuiElem sprite(Texture&, double scale);
   SGuiElem getScrollbar();
   Vec2 getScrollButtonSize();
-  SDL::SDL_Keysym getHotkeyEvent(char) ;
 
   EnumMap<TexId, optional<Texture>> textures;
   vector<Texture> iconTextures;
-  EnumMap<AttrType, optional<Texture>> attrTextures;
   Renderer& renderer;
   Options* options;
   DragContainer dragContainer;

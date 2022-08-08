@@ -12,7 +12,7 @@
 #include "villain_type.h"
 #include "attack_behaviour.h"
 
-SERIALIZE_DEF(VillageBehaviour, NAMED(minPopulation), NAMED(minTeamSize), OPTION(triggers), NAMED(attackBehaviour), OPTION(ransom))
+SERIALIZE_DEF(VillageBehaviour, NAMED(minPopulation), NAMED(minTeamSize), OPTION(triggers), NAMED(attackBehaviour), OPTION(ransom), OPTION(ambushChance))
 
 VillageBehaviour::VillageBehaviour() {}
 

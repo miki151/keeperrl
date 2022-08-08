@@ -14,18 +14,6 @@
     }
 }
 
-"peseant_prisoners"
-{
-    {
-      ids = { "PESEANT_PRISONER" }
-      traits = { WORKER NO_LIMIT NO_EQUIPMENT NO_LEISURE_ZONE }
-      spawnLocation = NearLeader
-      noAuto = true
-      invisible = true
-      initialRecruitment = 4
-    }
-}
-
 "peseants"
 {
     {
@@ -114,7 +102,7 @@ End
                 attackType = BITE
                 attackMsg = BITE
                 victimEffect = {0.1 Lasting POISON} } } } }
-         { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
+         { 0.01 { CompanionInfo 1 true none 0.1 { "WOLF" }}}
          { 0.01 { SpecialAttr DAMAGE 10 CreatureStatus LEADER }}
          { 0.03 { SpecialAttr DAMAGE 6 Name "when riding steed" Attacker Rider }}
          { 0.02 { SpecialAttr DEFENSE 8 HatedBy HATE_HUMANS }}
@@ -145,13 +133,14 @@ End
         { 0.0 MinTurnRequirement 500 }
       }
       specialTraits = {
-         { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
+         { 0.01 { CompanionInfo 1 true none 0.1 { "WOLF" }}}
          { 0.01 { SpecialAttr DEFENSE 10 HatedBy HATE_DRAGONS }}
          { 0.02 { SpecialAttr SPELL_DAMAGE 8 Not Humanoid }}
          { 0.03 { Lasting { RIDER } SpecialAttr SPELL_DAMAGE 6 Name "when riding steed" Attacker Rider }}
          { 0.10 { ExtraTraining SPELL 4}}
          { 0.05 { WorkshopType "LABORATORY" }}
          { 0.05 { SpecialAttr SPELL_DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
+         { 0.05 { AttrBonus SPELL_SPEED 30 }}
          { 0.03 { AttrBonus SPELL_DAMAGE 10 AttrBonus DEFENSE 10 Lasting { AGGRAVATES }}}
          { 0.02 { Lasting { HATE_ELVES } }}
          { 0.02 { Lasting { HATE_HUMANS } }}
@@ -172,6 +161,7 @@ End
          { 0.10 { Lasting { MAGIC_RESISTANCE } }}
          { 0.02 { Lasting { HATE_ELVES } }}
          { 0.02 { Lasting { HATE_HUMANS } }}
+         { 0.05 { AttrBonus SPELL_SPEED 30 }}
          { 0.01 { Lasting { ENTERTAINER } }}
       }
     }
@@ -224,7 +214,7 @@ End
         { 0.0 CostInfo "CORPSE" 1}
       }
       specialTraits = {
-         { 0.03 { CompanionInfo 1 true false 0.1 { "FLY" }}}
+         { 0.03 { CompanionInfo 1 true none 0.1 { "FLY" }}}
          { 0.2 { ExtraIntrinsicAttack
             HEAD
             { Intrinsic { "bite_attack" } "fangs" 5 {
@@ -238,7 +228,7 @@ End
       }
     }
     {
-      ids = { "SKELETON" }
+      ids = { "SKELETON_ARCHER" }
       traits = { FIGHTER }
       frequency = 0.5
       spawnLocation = FurnitureType "GRAVE"
@@ -262,11 +252,12 @@ End
         { 0.0 CostInfo "CORPSE" 1}
       }
       specialTraits = {
-         { 0.03 { CompanionInfo 1 true false 0.1 { "BAT" }}}
+         { 0.03 { CompanionInfo 1 true none 0.1 { "BAT" }}}
          { 0.02 { SpecialAttr SPELL_DAMAGE 7 HatedBy HATE_ELVES }}
          { 0.3 { Lasting { TELEPATHY } }}
          { 0.3 { Lasting { FIRE_RESISTANT } }}
          { 0.05 { Lasting { HATE_GREENSKINS } }}
+         { 0.02 { AttrBonus SPELL_SPEED 30 }}
          { 0.3 { Lasting { FLYING } }}
          { 0.1 { Lasting { ENTERTAINER } }}
          { 0.03 { AttrBonus SPELL_DAMAGE 10 AttrBonus DEFENSE 10 Lasting { AGGRAVATES }}}
@@ -317,7 +308,7 @@ End
         { 0.0 CostInfo "DEMON_PIETY" 1000 }
       }
       specialTraits = {
-        { 1.0 { SpecialAttr DAMAGE 12 HatedBy HATE_HUMANS }}
+        { 1.0 { SpecialAttr COLD_DAMAGE 12 HatedBy HATE_HUMANS }}
         { 1.0 { Lasting { SUMMONED 500 } }}
       }
     }
@@ -426,6 +417,7 @@ End
       specialTraits = {
         { 0.15 { SpecialAttr DEFENSE 8 HatedBy HATE_UNDEAD }}
         { 0.03 { AttrBonus SPELL_DAMAGE 4 AttrBonus DEFENSE -4}}
+        { 0.02 { AttrBonus SPELL_SPEED 30 }}
         { 0.05 { ExtraTraining SPELL 2}}
         { 0.02 { Lasting { HATE_UNDEAD } }}
       }
@@ -441,6 +433,7 @@ End
       specialTraits = {
         { 0.15 { SpecialAttr DEFENSE 8 HatedBy HATE_UNDEAD }}
         { 0.05 { ExtraTraining SPELL 2}}
+        { 0.02 { AttrBonus SPELL_SPEED 30 }}
       }
     }
     {
@@ -591,7 +584,7 @@ End
         { 0.0 AttractionInfo 0 {FurnitureType "COFFIN1"}}
       }
       specialTraits = {
-         { 0.03 { CompanionInfo 1 true false 0.1 { "FLY" }}}
+         { 0.03 { CompanionInfo 1 true none 0.1 { "FLY" }}}
          { 0.2 { ExtraIntrinsicAttack
             HEAD
             { Intrinsic { "bite_attack" } "fangs" 5 {
@@ -620,7 +613,7 @@ End
       traits = { WORKER NO_AUTO_EQUIPMENT }
       frequency = 1
       specialTraits = {
-         { 0.2 { SkillId DIGGING }}
+         { 0.2 { AttrBonus DIGGING 15 }}
       }
     }
     {
@@ -651,7 +644,7 @@ End
                 attackType = BITE
                 attackMsg = BITE
                 victimEffect = {0.1 Lasting POISON} } } } }
-         { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
+         { 0.01 { CompanionInfo 1 true none 0.1 { "WOLF" }}}
          { 0.01 { SpecialAttr DAMAGE 10 CreatureStatus LEADER }}
          { 0.02 { SpecialAttr DEFENSE 8 HatedBy HATE_HUMANS }}
          { 0.15 { SpecialAttr DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
@@ -727,6 +720,7 @@ End
       specialTraits = {
          { 0.05 { WorkshopType "LABORATORY" }}
          { 0.02 { Lasting { HATE_ELVES } }}
+         { 0.02 { AttrBonus SPELL_SPEED 30 }}
          { 0.02 { Lasting { HATE_HUMANS } }}
          { 0.01 { Lasting { ENTERTAINER } }}
       }
@@ -740,12 +734,13 @@ End
       }
       frequency = 0.3
       specialTraits = {
-         { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
+         { 0.01 { CompanionInfo 1 true none 0.1 { "WOLF" }}}
          { 0.01 { SpecialAttr DEFENSE 10 HatedBy HATE_DRAGONS }}
          { 0.02 { SpecialAttr SPELL_DAMAGE 8 Not Humanoid }}
          { 0.10 { ExtraTraining SPELL 4}}
          { 0.15 { SpecialAttr SPELL_DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
          { 0.05 { WorkshopType "LABORATORY" }}
+         { 0.05 { AttrBonus SPELL_SPEED 30 }}
          { 0.02 { Lasting { HATE_ELVES } }}
          { 0.02 { Lasting { HATE_HUMANS } }}
          { 0.01 { Lasting { ENTERTAINER } }}

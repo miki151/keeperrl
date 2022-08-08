@@ -46,6 +46,7 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
   virtual vector<TriggerInfo> getAllTriggers(const Collective* against) const override;
   virtual void launchAllianceAttack(vector<Collective*> allies) override;
   virtual bool canPerformAttack() const override;
+  virtual bool considerVillainAmbush(const vector<Creature*>& travellers) override;
 
   SERIALIZATION_DECL(VillageControl)
 
@@ -67,5 +68,6 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
   double SERIAL(maxEnemyPower) = 0;
   void healAllCreatures();
   bool isEnemy() const;
+  vector<Creature*> getAttackers() const;
 };
 

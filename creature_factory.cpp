@@ -67,7 +67,7 @@ class BoulderController : public Monster {
   virtual void makeMove() override {
     Position nextPos = creature->getPosition().plus(direction);
     if (Creature* c = nextPos.getCreature()) {
-      if (!c->getBody().isKilledByBoulder()) {
+      if (!c->getBody().isKilledByBoulder(creature->getGame()->getContentFactory())) {
         if (nextPos.canEnterEmpty(creature)) {
           creature->swapPosition(direction);
           return;
@@ -78,7 +78,7 @@ class BoulderController : public Monster {
           nextPos.globalMessage(creature->getName().the() + " crashes on " + c->getName().the());
           nextPos.unseenMessage("You hear a crash");
           creature->dieNoReason();
-          //c->takeDamage(Attack(creature, AttackLevel::MIDDLE, AttackType::HIT, 1000, AttrType::DAMAGE));
+          //c->takeDamage(Attack(creature, AttackLevel::MIDDLE, AttackType::HIT, 1000, AttrType("DAMAGE")));
           return;
         } else {
           c->you(MsgType::KILLED_BY, creature->getName().the());
@@ -89,9 +89,9 @@ class BoulderController : public Monster {
     if (auto furniture = nextPos.getFurniture(FurnitureLayer::MIDDLE))
       if (furniture->canDestroy(creature->getMovementType(), DestroyAction::Type::BOULDER) &&
           *furniture->getStrength(DestroyAction::Type::BOULDER) <
-          health * creature->getAttr(AttrType::DAMAGE)) {
+          health * creature->getAttr(AttrType("DAMAGE"))) {
         health -= *furniture->getStrength(DestroyAction::Type::BOULDER) /
-            (double) creature->getAttr(AttrType::DAMAGE);
+            (double) creature->getAttr(AttrType("DAMAGE"));
         creature->destroyImpl(direction, DestroyAction::Type::BOULDER);
       }
     if (auto action = creature->move(direction))
@@ -126,9 +126,9 @@ PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
   viewObject.setModifier(ViewObjectModifier::NO_UP_MOVEMENT);
   auto ret = makeOwner<Creature>(viewObject, tribe, CATTR(
             c.viewId = ViewId("boulder");
-            c.attr[AttrType::DAMAGE] = 250;
-            c.attr[AttrType::DEFENSE] = 250;
-            c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::HUGE);
+            c.attr[AttrType("DAMAGE")] = 250;
+            c.attr[AttrType("DEFENSE")] = 250;
+            c.body = Body::nonHumanoid(BodyMaterialId("ROCK"), Body::Size::HUGE);
             c.body->setDeathSound(none);
             c.permanentEffects[LastingEffect::BLIND] = 1;
             c.boulder = true;
@@ -138,12 +138,14 @@ PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
   return ret;
 }
 
-PCreature CreatureFactory::getAnimatedItem(PItem item, TribeId tribe, int attrBonus) {
+PCreature CreatureFactory::getAnimatedItem(const ContentFactory* factory, PItem item, TribeId tribe, int attrBonus) {
   auto ret = makeOwner<Creature>(tribe, CATTR(
             c.viewId = item->getViewObject().id();
-            c.attr[AttrType::DAMAGE] = item->getModifier(AttrType::DAMAGE) + attrBonus;
-            c.attr[AttrType::DEFENSE] = item->getModifier(AttrType::DEFENSE) + attrBonus;
-            c.body = Body::nonHumanoid(Body::Material::SPIRIT, Body::Size::SMALL);
+            c.attr[AttrType("DEFENSE")] = item->getModifier(AttrType("DEFENSE")) + attrBonus;
+            for (auto& attr : factory->attrInfo)
+              if (attr.second.isAttackAttr && item->getModifier(attr.first) > 0)
+                c.attr[attr.first] = item->getModifier(attr.first) + attrBonus;
+            c.body = Body::nonHumanoid(BodyMaterialId("SPIRIT"), Body::Size::SMALL);
             c.body->setDeathSound(none);
             c.name = "animated " + item->getName();
             c.gender = Gender::IT;
@@ -154,7 +156,7 @@ PCreature CreatureFactory::getAnimatedItem(PItem item, TribeId tribe, int attrBo
             c.permanentEffects[LastingEffect::FLYING] = 1;
             ), SpellMap{});
   ret->setController(Monster::getFactory(MonsterAIFactory::monster()).get(ret.get()));
-  ret->take(std::move(item));
+  ret->take(std::move(item), factory);
   initializeAttributes(none, ret->getAttributes());
   return ret;
 }
@@ -179,9 +181,9 @@ PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
   viewObject.setModifier(ViewObjectModifier::NO_UP_MOVEMENT).setModifier(ViewObjectModifier::REMEMBER);
   auto ret = makeOwner<Creature>(viewObject, tribe, CATTR(
             c.viewId = ViewId("boulder");
-            c.attr[AttrType::DAMAGE] = 250;
-            c.attr[AttrType::DEFENSE] = 250;
-            c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::HUGE);
+            c.attr[AttrType("DAMAGE")] = 250;
+            c.attr[AttrType("DEFENSE")] = 250;
+            c.body = Body::nonHumanoid(BodyMaterialId("ROCK"), Body::Size::HUGE);
             c.body->setDeathSound(none);
             c.body->setMinPushSize(Body::Size::LARGE);
             c.permanentEffects[LastingEffect::BLIND] = 1;
@@ -196,11 +198,11 @@ CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const char* n
       c.viewId = id;
       c.body = Body::nonHumanoid(Body::Size::LARGE);
       c.body->setDeathSound(none);
-      c.attr[AttrType::DAMAGE] = 28;
-      c.attr[AttrType::DEFENSE] = 28;
+      c.attr[AttrType("DAMAGE")] = 28;
+      c.attr[AttrType("DEFENSE")] = 28;
       c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
       c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
-      c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
+      c.permanentBuffs.push_back(BuffId("SWIMMING_SKILL"));
       c.name = name;);
 }
 
@@ -575,7 +577,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
 
 void CreatureFactory::addInventory(Creature* c, const vector<ItemType>& items) {
   for (ItemType item : items)
-    c->take(item.get(contentFactory));
+    c->take(item.get(contentFactory), contentFactory);
 }
 
 PController CreatureFactory::getShopkeeper(vector<Vec2> shopArea, Creature* c) {
@@ -615,8 +617,8 @@ PCreature CreatureFactory::getIllusion(Creature* creature) {
           c.illusionViewObject->setModifier(ViewObject::Modifier::INVISIBLE, false);
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
           c.body->setDeathSound(SoundId::MISSED_ATTACK);
-          c.attr[AttrType::DAMAGE] = 20; // just so it's not ignored by creatures
-          c.attr[AttrType::DEFENSE] = 1;
+          c.attr[AttrType("DAMAGE")] = 20; // just so it's not ignored by creatures
+          c.attr[AttrType("DEFENSE")] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.noAttackSound = true;
           c.canJoinCollective = false;
@@ -639,17 +641,21 @@ PCreature CreatureFactory::get(CreatureAttributes attr, TribeId tribe, const Con
   return ret;
 }
 
-static pair<optional<LastingEffect>, ItemType> getSpecialBeastAttack(bool large, bool living, bool wings) {
-  static vector<pair<optional<LastingEffect>, ItemType>> attacks {
+static pair<optional<LastingOrBuff>, ItemType> getSpecialBeastAttack(bool large, bool living, bool wings) {
+  static vector<pair<optional<LastingOrBuff>, ItemType>> attacks {
     {none, ItemType(ItemType::fangs(7))},
-    {LastingEffect::FIRE_RESISTANT, ItemType(ItemType::fangs(7, VictimEffect{0.7, EffectType(Effects::Fire{})}))},
-    {LastingEffect::FIRE_RESISTANT, ItemType(ItemType::fangs(7, VictimEffect{0.7, EffectType(Effects::Fire{})}))},
+    {LastingOrBuff(BuffId("FIRE_RESISTANT")), ItemType(ItemType::fangs(7,
+        ItemPrefixes::VictimEffect{0.7, EffectType(Effects::Fire{})}))},
+    {LastingOrBuff(BuffId("FIRE_RESISTANT")), ItemType(ItemType::fangs(7,
+        ItemPrefixes::VictimEffect{0.7, EffectType(Effects::Fire{})}))},
     {none, ItemType(ItemType::fists(7))},
-    {LastingEffect::POISON_RESISTANT,
-        ItemType(ItemType::fangs(7, VictimEffect{0.3, EffectType(Effects::Lasting{none, LastingEffect::POISON})}))},
+    {LastingOrBuff(LastingEffect::POISON_RESISTANT),
+        ItemType(ItemType::fangs(7,
+            ItemPrefixes::VictimEffect{0.3, EffectType(Effects::Lasting{none, LastingEffect::POISON})}))},
     {none, ItemType(ItemType::fangs(7))},
-    {LastingEffect::POISON_RESISTANT,
-        ItemType(ItemType::fangs(7, VictimEffect{0.3, EffectType(Effects::Lasting{none, LastingEffect::POISON})}))},
+    {LastingOrBuff(LastingEffect::POISON_RESISTANT),
+        ItemType(ItemType::fangs(7, 
+            ItemPrefixes::VictimEffect{0.3, EffectType(Effects::Lasting{none, LastingEffect::POISON})}))},
     {none, ItemType(ItemType::fists(7))},
   };
   return attacks[(!large) * 4 + (!living) * 2 + wings];
@@ -686,18 +692,18 @@ static EnumMap<BodyPart, int> getSpecialBeastBody(bool large, bool living, bool 
   return parts[(!large) * 4 + (!living) * 2 + wings];
 }
 
-static vector<LastingEffect> getResistanceAndVulnerability(RandomGen& random) {
-  vector<LastingEffect> resistances {
-      LastingEffect::MAGIC_RESISTANCE,
-      LastingEffect::MELEE_RESISTANCE,
-      LastingEffect::RANGED_RESISTANCE
+static vector<BuffId> getResistanceAndVulnerability(RandomGen& random) {
+  vector<BuffId> resistances {
+      BuffId("MAGIC_RESISTANCE"),
+      BuffId("MELEE_RESISTANCE"),
+      BuffId("RANGED_RESISTANCE")
   };
-  vector<LastingEffect> vulnerabilities {
-      LastingEffect::MAGIC_VULNERABILITY,
-      LastingEffect::MELEE_VULNERABILITY,
-      LastingEffect::RANGED_VULNERABILITY
+  vector<BuffId> vulnerabilities {
+      BuffId("MAGIC_VULNERABILITY"),
+      BuffId("MELEE_VULNERABILITY"),
+      BuffId("RANGED_VULNERABILITY")
   };
-  vector<LastingEffect> ret;
+  vector<BuffId> ret;
   ret.push_back(Random.choose(resistances));
   vulnerabilities.removeIndex(*resistances.findElement(ret[0]));
   ret.push_back(Random.choose(vulnerabilities));
@@ -705,7 +711,7 @@ static vector<LastingEffect> getResistanceAndVulnerability(RandomGen& random) {
 }
 
 PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParams p, const ControllerFactory& factory) {
-  Body body = Body(p.humanoid, p.living ? Body::Material::FLESH : Body::Material::SPIRIT,
+  Body body = Body(p.humanoid, p.living ? BodyMaterialId("FLESH") : BodyMaterialId("SPIRIT"),
       p.large ? Body::Size::LARGE : Body::Size::MEDIUM);
   if (p.wings)
     body.addWithoutUpdatingPermanentEffects(BodyPart::WING, 2);
@@ -714,21 +720,21 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
         c.viewId = getSpecialViewId(p.humanoid, p.large, p.living, p.wings);
         c.isSpecial = true;
         c.body = std::move(body);
-        c.attr[AttrType::DAMAGE] = Random.get(28, 34);
-        c.attr[AttrType::DEFENSE] = Random.get(28, 34);
-        c.attr[AttrType::SPELL_DAMAGE] = Random.get(28, 34);
+        c.attr[AttrType("DAMAGE")] = Random.get(28, 34);
+        c.attr[AttrType("DEFENSE")] = Random.get(28, 34);
+        c.attr[AttrType("SPELL_DAMAGE")] = Random.get(28, 34);
+        c.attr[AttrType("MULTI_WEAPON")] = Random.get(0, 50);
         c.permanentEffects[p.humanoid ? LastingEffect::RIDER : LastingEffect::STEED] = true;
         for (auto effect : getResistanceAndVulnerability(Random))
-          c.permanentEffects[effect] = 1;
+          c.permanentBuffs.push_back(effect);
         if (p.large) {
-          c.attr[AttrType::DAMAGE] += 6;
-          c.attr[AttrType::DEFENSE] += 2;
-          c.attr[AttrType::SPELL_DAMAGE] -= 6;
+          c.attr[AttrType("DAMAGE")] += 6;
+          c.attr[AttrType("DEFENSE")] += 2;
+          c.attr[AttrType("SPELL_DAMAGE")] -= 6;
         }
         if (p.humanoid) {
           for (auto& elem : contentFactory->workshopInfo)
-            c.skills.setValue(elem.first, Random.getDouble(0, 1));
-          c.skills.setValue(SkillId::MULTI_WEAPON, Random.getDouble(0, 1));
+            c.attr[elem.second.attr] = Random.get(0, 50);
           c.maxLevelIncrease[ExperienceType::MELEE] = 10;
           c.maxLevelIncrease[ExperienceType::SPELL] = 10;
           c.spellSchools = LIST(SpellSchoolId("mage"));
@@ -744,27 +750,30 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
         c.name.setFirst(nameGenerator->getNext(NameGeneratorId("DEMON")));
         if (!p.humanoid) {
           c.body->setBodyParts(getSpecialBeastBody(p.large, p.living, p.wings));
-          c.attr[AttrType::DAMAGE] += 5;
-          c.attr[AttrType::DEFENSE] += 5;
+          c.attr[AttrType("DAMAGE")] += 5;
+          c.attr[AttrType("DEFENSE")] += 5;
           auto attack = getSpecialBeastAttack(p.large, p.living, p.wings);
           c.body->addIntrinsicAttack(BodyPart::HEAD, attack.second);
           if (attack.first)
-            c.addPermanentEffect(*attack.first, 1);
+            attack.first->visit(
+                [&](LastingEffect e) { c.permanentEffects[e] = 1; },
+                [&](BuffId e) { c.permanentBuffs.push_back(e); }
+            );
         }
         if (Random.roll(3))
-          c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
+          c.permanentBuffs.push_back(BuffId("SWIMMING_SKILL"));
         );
   initializeAttributes(id, attributes);
   auto spells = getSpellMap(attributes);
   PCreature c = get(std::move(attributes), tribe, factory, std::move(spells));
   if (body.isHumanoid()) {
     if (Random.roll(4))
-      c->take(ItemType(CustomItemId("Bow")).get(contentFactory));
+      c->take(ItemType(CustomItemId("Bow")).get(contentFactory), contentFactory);
     c->take(Random.choose(
           ItemType(CustomItemId("Sword")).setPrefixChance(1),
           ItemType(CustomItemId("BattleAxe")).setPrefixChance(1),
           ItemType(CustomItemId("WarHammer")).setPrefixChance(1))
-        .get(contentFactory));
+        .get(contentFactory), contentFactory);
   }
   return c;
 }
@@ -837,7 +846,7 @@ PCreature CreatureFactory::getSpirit(TribeId tribe, MonsterAIFactory aiFactory) 
   auto orig = [&] {
     for (auto id : Random.permutation(getAllCreatures())) {
       auto orig = fromId(id, tribe);
-      if (orig->getBody().hasBrain())
+      if (orig->getBody().hasBrain(contentFactory))
         return orig;
     }
     fail();
@@ -914,7 +923,6 @@ PCreature CreatureFactory::fromId(CreatureId id, TribeId t) {
   return fromId(id, t, MonsterAIFactory::monster());
 }
 
-
 PCreature CreatureFactory::makeCopy(Creature* c, const MonsterAIFactory& aiFactory) {
   auto attributes = c->getAttributes();
   initializeAttributes(*c->getAttributes().getCreatureId(), attributes);
@@ -933,6 +941,10 @@ PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFacto
   return fromId(id, t, f, {});
 }
 
+PCreature CreatureFactory::fromIdNoInventory(CreatureId id, TribeId t, const MonsterAIFactory& f) {
+  return get(id, t, f);
+}
+
 PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& factory, const vector<ItemType>& inventory) {
   auto ret = get(id, t, factory);
   addInventory(ret.get(), inventory);
@@ -943,15 +955,15 @@ PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFacto
 PCreature CreatureFactory::getHumanForTests() {
   auto attributes = CATTR(
       c.viewId = ViewId("keeper1");
-      c.attr[AttrType::DAMAGE] = 12;
-      c.attr[AttrType::DEFENSE] = 12;
-      c.attr[AttrType::RANGED_DAMAGE] = 12;
+      c.attr[AttrType("DAMAGE")] = 12;
+      c.attr[AttrType("DEFENSE")] = 12;
+      c.attr[AttrType("RANGED_DAMAGE")] = 12;
       c.body = Body::humanoid(Body::Size::LARGE);
       c.name = "wizard";
       c.viewIdUpgrades = LIST(ViewId("keeper2"), ViewId("keeper3"), ViewId("keeper4"));
       c.name.setFirst("keeper"_s);
       c.name.useFullTitle();
-      c.skills.setValue(WorkshopType("LABORATORY"), 0.2);
+      //c.skills.setValue(WorkshopType("LABORATORY"), 0.2);
       c.maxLevelIncrease[ExperienceType::MELEE] = 7;
       c.maxLevelIncrease[ExperienceType::SPELL] = 12;
       //c.spells->add(SpellId::HEAL_SELF);

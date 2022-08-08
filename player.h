@@ -62,6 +62,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual const MapMemory& getMemory() const override;
   virtual void refreshGameInfo(GameInfo&) const override;
   virtual Vec2 getScrollCoord() const override;
+  virtual bool showScrollCoordOnMinimap() const override;
   virtual Level* getCreatureViewLevel() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getAnimationTime() const override;
@@ -133,7 +134,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void handleItems(const EntitySet<Item>&, ItemAction);
   void handleIntrinsicAttacks(const EntitySet<Item>&, ItemAction);
   bool interruptedByEnemy();
-  void travelAction();
   void targetAction();
   void payForAllItemsAction();
   void payForItemAction(const vector<Item*>&);
@@ -148,12 +148,10 @@ class Player : public Controller, public CreatureView, public EventListener<Play
       ItemPredicate = alwaysTrue<const Item*>());
   string getInventoryItemName(const Item*, bool plural) const;
   string getPluralName(Item* item, int num);
-  bool SERIAL(travelling) = false;
   Vec2 SERIAL(travelDir);
   optional<Position> SERIAL(target);
   bool SERIAL(adventurer);
   bool SERIAL(displayGreeting);
-  bool updateView = true;
   void retireMessages();
   string getRemainingString(LastingEffect) const;
   ItemInfo getFurnitureUsageInfo(const string& question, ViewId viewId) const;
@@ -170,5 +168,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void fillCurrentLevelInfo(GameInfo&) const;
   optional<SpellId> highlightedSpell;
   optional<GlobalTime> friendlyFireWarningCooldown;
+  void transferAction();
 };
 

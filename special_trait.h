@@ -7,10 +7,11 @@
 #include "item_type.h"
 #include "pretty_archive.h"
 #include "lasting_effect.h"
-#include "skill.h"
 #include "creature_predicate.h"
 #include "special_attr.h"
 #include "companion_info.h"
+#include "workshop_type.h"
+#include "lasting_or_buff.h"
 
 struct ExtraTraining {
   ExperienceType SERIAL(type);
@@ -44,7 +45,7 @@ struct OneOfTraits {
 };
 
 struct Lasting {
-  LastingEffect SERIAL(effect);
+  LastingOrBuff SERIAL(effect);
   optional<TimeInterval> SERIAL(time);
   SERIALIZE_ALL(NAMED(effect), NAMED(time))
 };
@@ -58,8 +59,7 @@ struct Lasting {
   X(OneOfTraits, 5)\
   X(ExtraBodyPart, 6)\
   X(ExtraIntrinsicAttack, 7)\
-  X(CompanionInfo, 8)\
-  X(SkillId, 9)
+  X(CompanionInfo, 8)
 
 #define VARIANT_NAME SpecialTrait
 

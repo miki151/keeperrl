@@ -156,9 +156,7 @@ void Furniture::destroy(Position pos, const DestroyAction& action, Creature* des
 void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& action) {
   if (auto& info = destroyedInfo[action.getType()]) {
     c->addSound(action.getSound());
-    double damage = max(c->getAttr(AttrType::DAMAGE), 15);
-    if (auto skill = action.getDestroyingSkillMultiplier())
-      damage *= c->getAttributes().getSkills().getValue(*skill);
+    double damage = action.getDamage(c);
     info->health -= damage / info->strength;
     updateViewObject();
     pos.setNeedsRenderAndMemoryUpdate(true);
@@ -226,12 +224,13 @@ void Furniture::tick(Position pos, FurnitureLayer supposedLayer) {
           << " " << (otherF ? (otherF->getName() + " " + EnumInfo<FurnitureLayer>::getString(otherF->getLayer())): "null"_s)
           << " " << (otherFMod ? (otherFMod->getName() + " " + EnumInfo<FurnitureLayer>::getString(otherFMod->getLayer())): "null"_s);
     }
+    auto burnState = fire->getBurnState();
     if (viewObject)
-      viewObject->setModifier(ViewObject::Modifier::BURNING);
+      viewObject->setAttribute(ViewObject::Attribute::BURNING, min(1.0, double(burnState) / 50));
     INFO << getName() << " burning ";
     for (Position v : pos.neighbors8())
-      v.fireDamage(0.02);
-    pos.fireDamage(0.5);
+      v.fireDamage(burnState / 5);
+    pos.fireDamage(burnState);
     fire->tick();
     if (fire->isBurntOut()) {
       switch (burnsDownMessage) {
@@ -572,7 +571,7 @@ bool Furniture::fireDamage(Position pos, bool withMessage) {
       if (withMessage)
         pos.globalMessage("The " + getName() + " catches fire");
       if (viewObject)
-        viewObject->setModifier(ViewObject::Modifier::BURNING);
+        viewObject->setAttribute(ViewObject::Attribute::BURNING, 0.3);
       pos.updateMovementDueToFire();
       pos.getLevel()->addTickingFurniture(pos.getCoord());
       pos.addCreatureLight(false);

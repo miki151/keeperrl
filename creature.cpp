@@ -64,6 +64,7 @@
 #include "ai_type.h"
 #include "companion_info.h"
 #include "promotion_info.h"
+#include "buff_info.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
@@ -73,8 +74,8 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(deathReason, nextPosIntent, globalTime, drops, promotions);
   ar(unknownAttackers, privateEnemies, holding, attributesStack);
   ar(controllerStack, kills, statuses, automatonParts, phylactery);
-  ar(difficultyPoints, points, capture, spellMap, killTitles, companions);
-  ar(vision, debt, uniqueKills, lastCombatIntent, primaryViewId, steed);
+  ar(difficultyPoints, points, capture, spellMap, killTitles, companions, combatExperience);
+  ar(vision, debt, uniqueKills, lastCombatIntent, primaryViewId, steed, buffs, buffCount, buffPermanentCount);
 }
 
 SERIALIZABLE(Creature)
@@ -91,7 +92,6 @@ Creature::Creature(const ViewObject& object, TribeId t, CreatureAttributes attr,
     obj->setModifier(ViewObject::Modifier::CREATURE);
   }
   capture = attributes->isInstantPrisoner();
-  //updateViewObject();
 }
 
 Creature::Creature(TribeId t, CreatureAttributes attr, SpellMap spellMap)
@@ -157,13 +157,6 @@ SpellMap& Creature::getSpellMap() {
   return *spellMap;
 }
 
-void Creature::cheatAllSpells() {
-  auto& spells = getGame()->getContentFactory()->getCreatures().getSpells();
-  for (auto& spell : spells)
-    spellMap->add(spell, ExperienceType::SPELL, 0);
-  spellMap->setAllReady();
-}
-
 bool Creature::isAutomaton() const {
   return !automatonParts.empty();
 }
@@ -198,17 +191,20 @@ void Creature::pushAttributes(CreatureAttributes attr, SpellMap spells) {
 }
 
 pair<CreatureAttributes, SpellMap> Creature::setAttributes(CreatureAttributes attr, SpellMap spells) {
-  auto combatExp = getAttributes().combatExperience;
   auto firstName = getName().first();
   for (auto item : equipment->getAllEquipped())
     item->onUnequip(this, false);
   for (auto item : equipment->getItems())
     item->onDropped(this, false);
   attr.copyLastingEffects(*attributes);
-  for (auto effect : ENUM_ALL(LastingEffect))
+  for (auto effect : ENUM_ALL(LastingEffect))  
     if (attributes->isAffectedPermanently(effect))
       LastingEffects::onRemoved(this, effect, false);
+  auto permanentBuffs = getKeys(buffPermanentCount);
+  for (auto b : permanentBuffs)
+    removePermanentEffect(b, 1, false);
   auto ret = make_pair(std::move(*attributes), std::move(*spellMap));
+  ret.first.permanentBuffs = std::move(permanentBuffs);
   attributes = std::move(attr);
   spellMap = std::move(spells);
   modViewObject() = attributes->createViewObject();
@@ -221,11 +217,14 @@ pair<CreatureAttributes, SpellMap> Creature::setAttributes(CreatureAttributes at
     item->onEquip(this, false);
   for (auto item : equipment->getItems())
     item->onOwned(this, false);
+  auto factory = getGame()->getContentFactory();
   for (auto effect : ENUM_ALL(LastingEffect))
-    if (!LastingEffects::affects(this, effect))
+    if (!LastingEffects::affects(this, effect, factory))
       removeEffect(effect, true);
   getName().setFirst(firstName);
-  getAttributes().combatExperience = combatExp;
+  for (auto& b : attributes->permanentBuffs)
+    addPermanentEffect(b, 1, false);
+  attributes->permanentBuffs.clear();
   return ret;
 }
 
@@ -236,6 +235,11 @@ void Creature::setViewId(ViewId id) {
 
 CreatureAction Creature::castSpell(const Spell* spell) const {
   return castSpell(spell, position);
+}
+
+TimeInterval Creature::calculateSpellCooldown(Range cooldown) const {
+  return TimeInterval(cooldown.getStart() +
+      (cooldown.getLength() - 1) * (100 - min(100, getAttr(AttrType("SPELL_SPEED")))) / 100);
 }
 
 CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
@@ -253,13 +257,13 @@ CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
     spell->addMessage(c);
     if (spell->getType() == SpellType::SPELL)
       getGame()->getStatistics().add(StatId::SPELL_CAST);
-    c->spellMap->setReadyTime(c, spell, *getGlobalTime() + TimeInterval(spell->getCooldown()));
+    c->spellMap->setReadyTime(c, spell, *getGlobalTime() + calculateSpellCooldown(spell->getCooldown()));
     c->spendTime();
     spell->apply(c, target);
   });
 }
 
-void Creature::updateLastingFX(ViewObject& object) {
+void Creature::updateLastingFX(ViewObject& object, const ContentFactory* factory) {
   object.particleEffects.clear();
   if (phylactery)
     object.particleEffects.insert(FXVariantName::LICH);
@@ -268,6 +272,10 @@ void Creature::updateLastingFX(ViewObject& object) {
       if (isAffected(effect, *time))
         if (auto fx = LastingEffects::getFX(effect))
           object.particleEffects.insert(*fx);
+  for (auto& buff : buffs)
+    object.particleEffects.insert(factory->buffs.at(buff.first).fx);
+  for (auto& buff : buffPermanentCount)
+    object.particleEffects.insert(factory->buffs.at(buff.first).fx);
 }
 
 
@@ -346,13 +354,13 @@ const EnumSet<CreatureStatus>& Creature::getStatus() const {
 
 bool Creature::canBeCaptured() const {
   PROFILE;
-  return getBody().canBeCaptured() && !isAffected(LastingEffect::STUNNED);
+  return getBody().canBeCaptured(getGame()->getContentFactory()) && !isAffected(LastingEffect::STUNNED);
 }
 
 void Creature::setCaptureOrder(bool state) {
   if (!state || canBeCaptured()) {
     capture = state;
-    updateViewObject();
+    updateViewObject(getGame()->getContentFactory());
     position.setNeedsRenderUpdate(true);
   }
 }
@@ -371,6 +379,7 @@ EnumSet<CreatureStatus>& Creature::getStatus() {
 
 optional<MovementInfo> Creature::spendTime(TimeInterval t, SpeedModifier speedModifier) {
   PROFILE;
+  getBody().affectPosition(position);
   if (!!getRider())
     return none;
   if (WModel m = position.getModel()) {
@@ -517,9 +526,9 @@ void Creature::you(const string& param) const {
   getController()->getMessageGenerator().add(this, param);
 }
 
-void Creature::verb(const string& second, const string& third, const string& param) const {
-  secondPerson("You "_s + second + (param.empty() ? "" : " " + param));
-  thirdPerson(getName().the() + " " + third + (param.empty() ? "" : " " + param));
+void Creature::verb(const string& second, const string& third, const string& param, MessagePriority priority) const {
+  secondPerson(PlayerMessage("You "_s + second + (param.empty() ? "" : " " + param), priority));
+  thirdPerson(PlayerMessage(getName().the() + " " + third + (param.empty() ? "" : " " + param), priority));
 }
 
 void Creature::secondPerson(const PlayerMessage& message) const {
@@ -556,17 +565,15 @@ void Creature::makeMove() {
     spendTime();
     return;
   }
-  //updateViewObject();
   {
     // Calls makeMove() while preventing Controller destruction by holding a shared_ptr on stack.
     // This is needed, otherwise Controller could be destroyed during makeMove() if creature committed suicide.
     shared_ptr<Controller> controllerTmp = controllerStack.back().giveMeSharedPointer();
     MEASURE(controllerTmp->makeMove(), "creature move time");
   }
-  updateViewObject();
+  updateViewObject(getGame()->getContentFactory());
   //INFO << getName().bare() << " morale " << getMorale();
   unknownAttackers.clear();
-  getBody().affectPosition(position);
   vision->update(this, time);
 }
 
@@ -692,8 +699,9 @@ CreatureAction Creature::pickUp(const vector<Item*>& itemsAll) const {
 }
 
 vector<vector<Item*>> Creature::stackItems(vector<Item*> items) const {
+  auto factory = getGame()->getContentFactory();
   map<string, vector<Item*> > stacks = groupBy<Item*, string>(items,
-      [this] (Item* const& item) { return item->getNameAndModifiers(false, this); });
+      [this, factory] (Item* const& item) { return item->getNameAndModifiers(factory, false, this); });
   return getValues(stacks);
 }
 
@@ -739,8 +747,8 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
     setReason("This item can't be equipped");
     return false;
   }
-  if (item->getModifier(AttrType::RANGED_DAMAGE) > 0 && item->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON &&
-      getAttr(AttrType::RANGED_DAMAGE, false) == 0 && attributes->getMaxExpLevel()[ExperienceType::ARCHERY] == 0) {
+  if (item->getModifier(AttrType("RANGED_DAMAGE")) > 0 && item->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON &&
+      getAttr(AttrType("RANGED_DAMAGE"), false) == 0 && attributes->getMaxExpLevel()[ExperienceType::ARCHERY] == 0) {
     setReason("You are not skilled in archery");
     return false;
   }
@@ -755,7 +763,7 @@ bool Creature::canEquip(const Item* item) const {
   return canEquipIfEmptySlot(item, nullptr) && equipment->canEquip(item, this);
 }
 
-CreatureAction Creature::equip(Item* item) const {
+CreatureAction Creature::equip(Item* item, const ContentFactory* factory) const {
   string reason;
   if (!canEquipIfEmptySlot(item, &reason))
     return CreatureAction(reason);
@@ -766,7 +774,7 @@ CreatureAction Creature::equip(Item* item) const {
     INFO << getName().the() << " equip " << item->getName();
     secondPerson("You equip " + item->getTheName(false, self));
     thirdPerson(getName().the() + " equips " + item->getAName());
-    self->equipment->equip(item, slot, self);
+    self->equipment->equip(item, slot, self, factory ? factory : getGame()->getContentFactory());
     if (auto game = getGame())
       game->addEvent(EventInfo::ItemsEquipped{self, {item}});
     //self->spendTime();
@@ -847,7 +855,7 @@ CreatureAction Creature::applySquare(Position pos, FurnitureLayer layer) const {
 
 CreatureAction Creature::hide() const {
   PROFILE;
-  if (!isAffected(LastingEffect::AMBUSH_SKILL))
+  if (!isAffected(BuffId("AMBUSH_SKILL")))
     return CreatureAction("You don't have this skill.");
   if (auto furniture = getPosition().getFurniture(FurnitureLayer::MIDDLE))
     if (furniture->canHide())
@@ -916,15 +924,19 @@ bool Creature::addEffect(LastingEffect effect, TimeInterval time, bool msg) {
   return addEffect(effect, time, *getGlobalTime(), msg);
 }
 
-bool Creature::addEffect(LastingEffect effect, TimeInterval time, GlobalTime globalTime, bool msg) {
+bool Creature::addEffect(LastingEffect effect, TimeInterval time, GlobalTime globalTime, bool msg,
+    const ContentFactory* factory) {
   PROFILE;
-  if (LastingEffects::affects(this, effect)) {
+  if (!factory)
+    factory = getGame()->getContentFactory();
+  if (LastingEffects::affects(this, effect, factory)) {
     bool was = isAffected(effect, globalTime);
     if (!was || LastingEffects::canProlong(effect))
       attributes->addLastingEffect(effect, globalTime + time);
     if (!was && isAffected(effect, globalTime)) {
       LastingEffects::onAffected(this, effect, msg);
-      updateViewObject();
+      if (auto g = getGame())
+        updateViewObject(g->getContentFactory());
       if (auto fx = LastingEffects::getApplicationFX(effect))
         addFX(*fx);
       return true;
@@ -939,23 +951,27 @@ bool Creature::removeEffect(LastingEffect effect, bool msg) {
   attributes->clearLastingEffect(effect);
   if (was && !isAffected(effect)) {
     LastingEffects::onRemoved(this, effect, msg);
-    updateViewObject();
+    if (auto g = getGame())
+      updateViewObject(g->getContentFactory());
     addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::WHITE));
     return true;
   }
   return false;
 }
 
-bool Creature::addPermanentEffect(LastingEffect effect, int count, bool msg) {
+bool Creature::addPermanentEffect(LastingEffect effect, int count, bool msg, const ContentFactory* factory) {
   PROFILE;
-  if (LastingEffects::affects(this, effect)) {
+  if (!factory)
+    factory = getGame()->getContentFactory();
+  if (LastingEffects::affects(this, effect, factory)) {
     bool was = attributes->isAffectedPermanently(effect);
     attributes->addPermanentEffect(effect, count);
     if (!was && attributes->isAffectedPermanently(effect)) {
       LastingEffects::onAffected(this, effect, msg);
       if (msg)
         message(PlayerMessage("The effect is permanent", MessagePriority::HIGH));
-      updateViewObject();
+      if (auto g = getGame())
+        updateViewObject(g->getContentFactory());
       return true;
     }
   }
@@ -968,7 +984,8 @@ bool Creature::removePermanentEffect(LastingEffect effect, int count, bool msg) 
   attributes->removePermanentEffect(effect, count);
   if (was && !isAffected(effect)) {
     LastingEffects::onRemoved(this, effect, msg);
-    updateViewObject();
+    if (auto g = getGame())
+      updateViewObject(g->getContentFactory());
     return true;
   }
   return false;
@@ -1009,6 +1026,97 @@ optional<TimeInterval> Creature::getTimeRemaining(LastingEffect effect) const {
   return none;
 }
 
+bool Creature::addEffect(BuffId id, TimeInterval time, GlobalTime global, const ContentFactory* f, bool msg) {
+  if (getBody().isImmuneTo(id, f))
+    return false;
+  auto& info = f->buffs.at(id);
+  auto add = [&] {
+    if (!info.stacks)
+      for (auto& b : buffs)
+        if (b.first == id) {
+          if (b.second < global + time)
+            b.second = global + time;
+          return false;
+        }
+    return true;
+  };
+  if (add()) {
+    buffs.push_back(make_pair(id, global + time));
+    if (++buffCount[id] == 1 || info.stacks) {
+      if (msg && info.addedMessage)
+        applyMessage(*info.addedMessage, this);
+      if (info.startEffect)
+        info.startEffect->applyToCreature(this);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool Creature::addEffect(BuffId id, TimeInterval time, bool msg) {
+  if (auto global = getGlobalTime())
+    return addEffect(id, time, *global, getGame()->getContentFactory(), msg);
+  return false;
+}
+
+bool Creature::removeBuff(int index, bool msg) {
+  auto id = buffs[index].first;
+  buffs.removeIndex(index);
+  auto& info = getGame()->getContentFactory()->buffs.at(id);
+  if (--buffCount[id] == 0 || info.stacks) {
+    if (buffCount[id] == 0)
+      buffCount.erase(id);
+    if (msg && info.removedMessage)
+      applyMessage(*info.removedMessage, this);
+    if (info.endEffect)
+      info.endEffect->applyToCreature(this);
+    return true;
+  }
+  return false;
+}
+
+bool Creature::removeEffect(BuffId id, bool msg) {
+  for (int i : All(buffs))
+    if (buffs[i].first == id)
+      return removeBuff(i, msg);
+  return false;
+}
+
+bool Creature::addPermanentEffect(BuffId id, int count, bool msg, const ContentFactory* factory) {
+  if (!factory)
+    factory = getGame()->getContentFactory();
+  auto& info = factory->buffs.at(id);
+  if (++buffPermanentCount[id] == 1) {
+    if (msg && info.addedMessage)
+      applyMessage(*info.addedMessage, this);
+    if (info.startEffect)
+      info.startEffect->applyToCreature(this);
+    return true;
+  }
+  return false;
+}
+
+bool Creature::removePermanentEffect(BuffId id, int count, bool msg) {
+  auto& info = getGame()->getContentFactory()->buffs.at(id);
+  if (--buffPermanentCount[id] <= 0) {
+    buffPermanentCount.erase(id);
+    if (msg && info.removedMessage)
+      applyMessage(*info.removedMessage, this);
+    if (info.endEffect)
+      info.endEffect->applyToCreature(this);
+    return true;
+  }
+  return false;
+}
+
+bool Creature::isAffected(BuffId id) const {
+  return buffCount.count(id) || buffPermanentCount.count(id);
+}
+
+bool Creature::isAffectedPermanently(BuffId id) const {
+  return buffPermanentCount.count(id);
+}
+
 // penalty to strength and dexterity per extra attacker in a single turn
 int simulAttackPen(int attackers) {
   return max(0, (attackers - 1) * 2);
@@ -1016,7 +1124,7 @@ int simulAttackPen(int attackers) {
 
 int Creature::getAttrBonus(AttrType type, bool includeWeapon) const {
   int def = getBody().getAttrBonus(type);
-  def += min(killTitles.size(), attributes->getRawAttr(type));
+  def += min(killTitles.size(), getRawAttr(type));
   for (auto& item : equipment->getAllEquipped())
     if (item->getClass() != ItemClass::WEAPON || type != item->getWeaponInfo().meleeAttackAttr)
       def += item->getModifier(type);
@@ -1029,16 +1137,17 @@ int Creature::getAttrBonus(AttrType type, bool includeWeapon) const {
 }
 
 int Creature::getAttr(AttrType type, bool includeWeapon) const {
-  return max(0, attributes->getRawAttr(type) + getAttrBonus(type, includeWeapon));
+  return max(0, getRawAttr(type) + getAttrBonus(type, includeWeapon));
 }
 
 int Creature::getSpecialAttr(AttrType type, const Creature* against) const {
   int ret = 0;
-  for (auto& elem : attributes->specialAttr[type])
-    if (elem.second.apply(against->getPosition(), this))
-      ret += elem.first;
+  if (auto elems = getReferenceMaybe(attributes->specialAttr, type))
+    for (auto& elem : *elems)
+      if (elem.second.apply(against->getPosition(), this))
+        ret += elem.first;
   for (auto& item : equipment->getAllEquipped())
-    if (auto& elem = item->getSpecialModifier(type))
+    if (auto elem = getValueMaybe(item->getSpecialModifiers(), type))
       if (elem->second.apply(against->getPosition(), this))
         ret += elem->first;
   return ret;
@@ -1048,12 +1157,28 @@ int Creature::getPoints() const {
   return points;
 }
 
+int Creature::getRawAttr(AttrType type) const {
+  int ret = attributes->getRawAttr(type);
+  if (auto expType = getExperienceType(type))
+    ret += (int) min(combatExperience, attributes->getExpLevel(expType->first) * expType->second);
+  return ret;
+}
+
+double Creature::getCombatExperience() const {
+  return combatExperience;
+}
+
 void Creature::updateCombatExperience(Creature* victim) {
-  if (uniqueKills.insert(victim->getName().bare()).second) {
-    int curLevel = (int)getAttributes().getCombatExperience();
+  auto id = [&] () -> string {
+    if (auto id = victim->getAttributes().getCreatureId())
+      return id->data();
+    return victim->getName().bare();
+  }();
+  if (uniqueKills.insert(id).second) {
+    int curLevel = (int)combatExperience;
     constexpr double expIncrease = 0.2;
-    getAttributes().addCombatExperience(expIncrease);
-    int newLevel = (int)getAttributes().getCombatExperience();
+    combatExperience += expIncrease;
+    int newLevel = (int)combatExperience;
     if (curLevel != newLevel) {
       you(MsgType::ARE, "more experienced");
       addPersonalEvent(getName().a() + " reaches combat experience level " + toString(newLevel));
@@ -1070,7 +1195,7 @@ void Creature::onKilledOrCaptured(Creature* victim) {
     kills.push_back(KillInfo{victim->getUniqueId(), victim->getViewObject().getViewIdList()});
     if (victim->getStatus().contains(CreatureStatus::LEADER)) {
       auto registerSlaying = [] (Creature* me, Creature* victim) {
-        if (me->getBody().hasBrain()) {
+        if (me->getBody().hasBrain(me->getGame()->getContentFactory())) {
           auto victimName = victim->getName();
           victimName.setKillTitle(none);
           auto title = capitalFirst(victimName.bare()) + " Slayer";
@@ -1176,6 +1301,9 @@ void Creature::considerMovingFromInaccessibleSquare() {
 }
 
 void Creature::tick() {
+  for (auto& b : attributes->permanentBuffs)
+    addPermanentEffect(b, 1, false);
+  attributes->permanentBuffs.clear();
   if (!!phylactery && !isSubscribed())
     subscribeTo(position.getModel());
   PROFILE_BLOCK("Creature::tick");
@@ -1227,7 +1355,10 @@ void Creature::tick() {
     if (isAffected(effect, time) && LastingEffects::tick(this, effect))
       return;
   }
-  updateViewObject();
+  if (processBuffs())
+    return;
+  auto factory = getGame()->getContentFactory();
+  updateViewObject(factory);
   if (getBody().tick(this)) {
     dieWithAttacker(lastAttacker);
     return;
@@ -1236,15 +1367,45 @@ void Creature::tick() {
     steed->tick();
 }
 
-static vector<Creature*> summonPersonal(Creature* c, CreatureId id, bool updateStats, int strength,
+bool Creature::processBuffs() {
+  auto factory = getGame()->getContentFactory();
+  for (auto effect : ENUM_ALL(LastingEffect))
+    if (!attributes->isAffectedPermanently(effect) && getBody().isIntrinsicallyAffected(effect, factory))
+      addPermanentEffect(effect, 1, false);
+  for (auto effect : factory->buffs)
+    if (!isAffectedPermanently(effect.first) && getBody().isIntrinsicallyAffected(effect.first, factory))
+      addPermanentEffect(effect.first, 1, false);
+  auto buffsCopy = buffs;
+  auto time = *getGlobalTime();
+  for (int index : All(buffsCopy).reverse()) {
+    auto buff = buffsCopy[index];
+    auto& info = factory->buffs.at(buff.first);
+    if (info.tickEffect)
+      info.tickEffect->applyToCreature(this);
+    if (buff.second < time)
+      removeBuff(index, true);
+    if (isDead())
+      return true;
+  }
+  for (auto& buff : buffPermanentCount) {
+    auto& info = factory->buffs.at(buff.first);
+    if (info.tickEffect)
+      info.tickEffect->applyToCreature(this);
+    if (isDead())
+      return true;
+  }
+  return false;
+}
+
+static vector<Creature*> summonPersonal(Creature* c, CreatureId id, optional<int> strength,
     optional<Position> position) {
   auto spirits = Effect::summon(c, id, 1, none, 0_visible, position);
   for (auto spirit : spirits) {
-    if (updateStats) {
-      spirit->getAttributes().setBaseAttr(AttrType::DAMAGE, strength);
-      spirit->getAttributes().setBaseAttr(AttrType::RANGED_DAMAGE, strength);
-      spirit->getAttributes().setBaseAttr(AttrType::DEFENSE, strength);
-      spirit->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, strength);
+    if (strength) {
+      spirit->getAttributes().setBaseAttr(AttrType("DEFENSE"), *strength);
+      for (auto& attr : c->getGame()->getContentFactory()->attrInfo)
+        if (attr.second.isAttackAttr)
+          spirit->getAttributes().setBaseAttr(attr.first, *strength);
     }
     spirit->getAttributes().setCanJoinCollective(false);
     spirit->getBody().setCanBeCaptured(false);
@@ -1282,27 +1443,30 @@ void Creature::tickCompanions() {
     for (auto elem : copyOf(summonsType.creatures)) {
       if (elem->isDead())
         summonsType.creatures.removeElement(elem);
-      else if (summonsType.updateAttrs) { // update the spirit's attributes
-        elem->getAttributes().setBaseAttr(AttrType::DAMAGE, getAttr(AttrType::SPELL_DAMAGE));
-        elem->getAttributes().setBaseAttr(AttrType::RANGED_DAMAGE, getAttr(AttrType::SPELL_DAMAGE));
-        elem->getAttributes().setBaseAttr(AttrType::DEFENSE, getAttr(AttrType::SPELL_DAMAGE));
-        elem->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, getAttr(AttrType::SPELL_DAMAGE));
+      else if (summonsType.statsBase) { // update the spirit's attributes
+        auto base = getAttr(*summonsType.statsBase);
+        elem->getAttributes().setBaseAttr(AttrType("DEFENSE"), base);
+        for (auto& attr : getGame()->getContentFactory()->attrInfo)
+          if (attr.second.isAttackAttr)
+            elem->getAttributes().setBaseAttr(attr.first, base);
       }
     }
   while (companions.size() < attributes->companions.size())
-    companions.push_back(CompanionGroup{{}, attributes->companions[companions.size()].updateStats});
+    companions.push_back(CompanionGroup{{}, attributes->companions[companions.size()].statsBase});
   for (int i : All(attributes->companions)) {
     auto& summonsInfo = attributes->companions[i];
     if (companions[i].creatures.size() < summonsInfo.count && Random.chance(summonsInfo.summonFreq))
-      append(companions[i].creatures, summonPersonal(this, Random.choose(summonsInfo.creatures), summonsInfo.updateStats,
-          getAttr(AttrType::SPELL_DAMAGE), summonsInfo.spawnAway ? getCompanionPosition(this) : none));
+      append(companions[i].creatures, summonPersonal(this, Random.choose(summonsInfo.creatures),
+          summonsInfo.statsBase ? optional<int>(getAttr(*summonsInfo.statsBase)) : optional<int>(),
+          summonsInfo.spawnAway ? getCompanionPosition(this) : none));
   }
 }
 
 vector<Creature*> Creature::getCompanions() const {
   vector<Creature*> ret;
-  for (auto& c : companions)
-    append(ret, c.creatures);
+  for (auto& group : companions)
+    for (auto c : group.creatures)
+      ret.push_back(c.get());
   return ret;
 }
 
@@ -1318,6 +1482,14 @@ ViewIdList Creature::getMaxViewIdUpgrade() const {
     ? attributes->viewIdUpgrades.back()
     : getViewObject().id()};
   ret.append(getViewObject().partIds);
+  return ret;
+}
+
+ViewIdList Creature::getViewIdWithWeapon() const {
+  auto ret = getViewObject().getViewIdList();
+  vector<Item*> it = equipment->getSlotItems(EquipmentSlot::WEAPON);
+  if (!it.empty())
+    ret.push_front(it[0]->getEquipedViewId());
   return ret;
 }
 
@@ -1356,6 +1528,18 @@ int Creature::getDefaultWeaponDamage() const {
     return 0;
 }
 
+AttrType Creature::modifyDamageAttr(AttrType type, const ContentFactory* factory) const {
+  for (auto& buff : buffs)
+    if (auto& mod = factory->buffs.at(buff.first).modifyDamageAttr)
+      if (mod->first == type)
+        return mod->second;
+  for (auto& buff : buffPermanentCount)
+    if (auto& mod = factory->buffs.at(buff.first).modifyDamageAttr)
+      if (mod->first == type)
+        return mod->second;
+  return type;
+}
+
 CreatureAction Creature::attack(Creature* other) const {
   CHECK(!other->isDead());
   if (!position.isSameLevel(other->getPosition()))
@@ -1376,7 +1560,7 @@ CreatureAction Creature::attack(Creature* other) const {
       const int damage = max(1, int(weapon.second * (getAttr(damageAttr, false) +
           getSpecialAttr(damageAttr, other) + weapon.first->getModifier(damageAttr))));
       AttackLevel attackLevel = Random.choose(getBody().getAttackLevels());
-      damageAttr = LastingEffects::modifyMeleeDamageAttr(this, damageAttr);
+      damageAttr = modifyDamageAttr(damageAttr, getGame()->getContentFactory());
       vector<Effect> victimEffects;
       for (auto& e : weaponInfo.victimEffect)
         if (Random.chance(e.chance))
@@ -1425,7 +1609,7 @@ void Creature::removePrivateEnemy(const Creature* c) {
 }
 
 constexpr double getDamage(double damageRatio) {
-  constexpr double minRatio = 0.6;  // the ratio at which the damage drops to 0
+  constexpr double minRatio = 0.3;  // the ratio at which the damage drops to 0
   constexpr double maxRatio = 2.2;     // the ratio at which the damage reaches 1
   constexpr double damageAtOne = 0.12;// damage dealt at a ratio of 1
   if (damageRatio <= minRatio)
@@ -1440,7 +1624,8 @@ constexpr double getDamage(double damageRatio) {
 
 bool Creature::captureDamage(double damage, Creature* attacker) {
   captureHealth -= damage;
-  updateViewObject();
+  auto factory = getGame()->getContentFactory();
+  updateViewObject(factory);
   if (captureHealth <= 0) {
     setCaptureOrder(false);
     if (attributes->isInstantPrisoner()) {
@@ -1453,7 +1638,7 @@ bool Creature::captureDamage(double damage, Creature* attacker) {
       if (auto rider = getRider())
         rider->tryToDismount();
       captureHealth = 1;
-      updateViewObject();
+      updateViewObject(factory);
       getGame()->addEvent(EventInfo::CreatureStunned{this, attacker});
     }
     return true;
@@ -1464,7 +1649,7 @@ bool Creature::captureDamage(double damage, Creature* attacker) {
 double Creature::getFlankedMod() const {
   if (!getGame())
     return 1.0;
-  int cnt = 1 + getAttr(AttrType::PARRY);
+  int cnt = 1 + getAttr(AttrType("PARRY"));
   for (auto pos : position.neighbors8())
     if (auto c = pos.getCreature()) {
       if (isEnemy(c))
@@ -1480,21 +1665,32 @@ bool Creature::takeDamage(const Attack& attack) {
     return steed->takeDamage(attack);
   PROFILE;
   const double hitPenalty = 0.95;
-  double defense = getAttr(AttrType::DEFENSE);
+  double defense = getAttr(AttrType("DEFENSE"));
   if (Creature* attacker = attack.attacker) {
     onAttackedBy(attacker);
     for (auto c : getVisibleCreatures())
       if (*c->getPosition().dist8(position) < 10)
         c->removeEffect(LastingEffect::SLEEP);
-    defense += getSpecialAttr(AttrType::DEFENSE, attacker);
+    defense += getSpecialAttr(AttrType("DEFENSE"), attacker);
   }
   defense *= getFlankedMod();
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       defense = LastingEffects::modifyCreatureDefense(this, effect, defense, attack.damageType);
+  auto factory = getGame()->getContentFactory();
+  auto modifyDefense = [&](BuffId id) {
+    auto& info = factory->buffs.at(id);
+    if (!info.defenseMultiplierAttr || info.defenseMultiplierAttr == attack.damageType)
+      defense *= info.defenseMultiplier;
+  };
+  for (auto& buff : buffs)
+    modifyDefense(buff.first);
+  for (auto& buff : buffPermanentCount)
+    modifyDefense(buff.first);  
   double damage = getDamage((double) attack.strength / defense);
-  if (auto sound = attributes->getAttackSound(attack.type, damage > 0))
-    addSound(*sound);
+  if (attack.withSound)
+    if (auto sound = attributes->getAttackSound(attack.type, damage > 0))
+      addSound(*sound);
   bool returnValue = damage > 0;
   if (damage > 0) {
     bool canCapture = capture && attack.attacker;
@@ -1510,7 +1706,7 @@ bool Creature::takeDamage(const Attack& attack) {
         return true;
     }
   } else
-    you(MsgType::GET_HIT_NODAMAGE);
+    message(attack.harmlessMessage);
   for (auto& e : attack.effect) {
     e.apply(position, attack.attacker);
     if (isDead())
@@ -1535,10 +1731,13 @@ void Creature::updateViewObjectFlanking() {
     object.resetAttribute(ViewObject::Attribute::FLANKED_MOD);
 }
 
-void Creature::updateViewObject() {
+void Creature::updateViewObject(const ContentFactory* factory) {
   PROFILE;
   auto& object = modViewObject();
-  object.setCreatureAttributes(ViewObject::CreatureAttributes([this](AttrType t) { return getAttr(t);}));
+  auto attrs = ViewObject::CreatureAttributes();
+  for (auto& attr : factory->attrInfo)
+    attrs.push_back(make_pair(attr.second.viewId, getAttr(attr.first)));
+  object.setCreatureAttributes(std::move(attrs));
   if (auto morale = getMorale())
     object.setAttribute(ViewObject::Attribute::MORALE, *morale);
   updateViewObjectFlanking();
@@ -1552,15 +1751,15 @@ void Creature::updateViewObject() {
   object.setModifier(ViewObject::Modifier::TURNED_OFF, isAffected(LastingEffect::TURNED_OFF));
   object.setModifier(ViewObject::Modifier::HIDDEN, hidden);
   object.getCreatureStatus() = getStatus();
-  object.setGoodAdjectives(combine(extractNames(getGoodAdjectives()), true));
-  object.setBadAdjectives(combine(extractNames(getBadAdjectives()), true));
-  getBody().updateViewObject(object);
+  object.setGoodAdjectives(combine(extractNames(getGoodAdjectives(factory)), true));
+  object.setBadAdjectives(combine(extractNames(getBadAdjectives(factory)), true));
+  getBody().updateViewObject(object, factory);
   object.setModifier(ViewObject::Modifier::CAPTURE_BAR, capture);
   if (capture)
     object.setAttribute(ViewObject::Attribute::HEALTH, captureHealth);
   object.setDescription(getName().title());
   getPosition().setNeedsRenderUpdate(true);
-  updateLastingFX(object);
+  updateLastingFX(object, factory);
   object.partIds.clear();
   for (int i : All(automatonParts)) {
     if (i == 0 || automatonParts[i].layer != automatonParts[i - 1].layer)
@@ -1572,11 +1771,15 @@ void Creature::updateViewObject() {
       (isAutomaton() && isAffected(LastingEffect::IMMOBILE))
       || (isAffected(LastingEffect::TURNED_OFF) && isAffected(LastingEffect::FLYING)));
   if (steed)
-    steed->updateViewObject();
+    steed->updateViewObject(factory);
+  if (auto it = getFirstWeapon())
+    object.weaponViewId = it->getEquipedViewId();
+  else
+    object.weaponViewId = none;
 }
 
-optional<double> Creature::getMorale() const {
-  if (getBody().hasBrain())
+optional<double> Creature::getMorale(const ContentFactory* factory) const {
+  if (getBody().hasBrain(factory ? factory : getGame()->getContentFactory()))
     return min(1.0, max(-1.0, morale + LastingEffects::getMoraleIncrease(this, getGlobalTime())));
   return none;
 }
@@ -1617,53 +1820,6 @@ bool Creature::heal(double amount) {
   return false;
 }
 
-bool Creature::affectByFire(double amount) {
-  if (steed && Random.roll(2))
-    steed->affectByFire(amount);
-  PROFILE;
-  if (!isAffected(LastingEffect::FIRE_RESISTANT)) {
-    if (getBody().affectByFire(this, amount)) {
-      verb("burn", "burns", "to death");
-      dieWithReason("burnt to death");
-    } else
-      removeEffect(LastingEffect::SLEEP);
-    addEffect(LastingEffect::ON_FIRE, 100_visible);
-    return true;
-  }
-  return addEffect(LastingEffect::ON_FIRE, 100_visible);
-}
-
-bool Creature::affectByIce(double amount) {
-  if (steed && Random.roll(2))
-    steed->affectByIce(amount);
-  return addEffect(LastingEffect::FROZEN, 5_visible);
-}
-
-bool Creature::affectByAcid() {
-  if (steed && Random.roll(2))
-    steed->affectByAcid();
-  if (!isAffected(LastingEffect::ACID_RESISTANT)) {
-    if (getBody().affectByAcid(this)) {
-      you(MsgType::ARE, "dissolved by acid");
-      dieWithReason("dissolved by acid");
-    } else
-      removeEffect(LastingEffect::SLEEP);
-    return true;
-  } else {
-    auto& items = equipment->getAllEquipped();
-    if (!items.empty()) {
-      auto item = Random.choose(items);
-      for (auto mod : ENUM_ALL(AttrType))
-        if (item->getModifier(mod) > 0) {
-          you(MsgType::YOUR, item->getName() + " corrodes");
-          item->addModifier(mod, -1);
-          return true;
-        }
-    }
-  }
-  return false;
-}
-
 void Creature::setHeld(Creature* c) {
   holding = c->getUniqueId();
 }
@@ -1683,10 +1839,10 @@ void Creature::take(vector<PItem> items) {
     take(std::move(elem));
 }
 
-void Creature::take(PItem item) {
+void Creature::take(PItem item, const ContentFactory* factory) {
   Item* ref = item.get();
-  equipment->addItem(std::move(item), this);
-  if (auto action = equip(ref))
+  equipment->addItem(std::move(item), this, factory);
+  if (auto action = equip(ref, factory))
     action.perform(this);
 }
 
@@ -1730,7 +1886,7 @@ static optional<Position> findInaccessiblePos(Position startingPos) {
 void Creature::tryToDestroyLastingEffect(LastingEffect effect) {
   removeEffect(effect, false);
   for (auto item : copyOf(equipment->getAllEquipped()))
-    if (item->getEquipedEffects().contains(effect)) {
+    if (item->hasEquipedEffect(effect)) {
       you(MsgType::YOUR, item->getName() + " crumbles to dust");
       equipment->removeItem(item, this);
       return;
@@ -1750,7 +1906,7 @@ bool Creature::considerSavingLife(DropType drops, const Creature* attacker) {
     }
     tryToDestroyLastingEffect(LastingEffect::LIFE_SAVED);
     heal();
-    removeEffect(LastingEffect::BLEEDING, false);
+    removeEffect(BuffId("BLEEDING"), false);
     getBody().healBodyParts(this, 1000);
     forceMovement = false;
     if (!position.canEnterEmpty(this))
@@ -1767,7 +1923,7 @@ bool Creature::considerPhylactery(DropType drops, const Creature* attacker) {
     secondPerson(PlayerMessage("You have escaped death!", MessagePriority::HIGH));
     thirdPerson(PlayerMessage(getName().the() + " has escaped death!", MessagePriority::HIGH));
     heal();
-    removeEffect(LastingEffect::BLEEDING, false);
+    removeEffect(BuffId("BLEEDING"), false);
     getBody().healBodyParts(this, 1000);
     forceMovement = false;
     auto pos = phylactery->pos;
@@ -1807,11 +1963,12 @@ void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
   if (drops == DropType::EVERYTHING || drops == DropType::ONLY_INVENTORY)
     for (PItem& item : equipment->removeAllItems(this))
       position.dropItem(std::move(item));
+  auto factory = getGame()->getContentFactory();
   if (drops == DropType::EVERYTHING) {
-    position.dropItems(generateCorpse(getGame()->getContentFactory(), getGame()));
+    position.dropItems(generateCorpse(factory, getGame()));
     if (auto sound = getBody().getDeathSound())
       addSound(*sound);
-    if (getBody().hasHealth(HealthType::FLESH)) {
+    if (getBody().hasHealth(HealthType::FLESH, factory)) {
       auto addBlood = [](Position v) {
         for (auto f : v.modFurniture())
           if (f->onBloodNear(v)) {
@@ -1925,8 +2082,18 @@ void Creature::increaseExpLevel(ExperienceType type, double increase) {
   }
 }
 
-BestAttack Creature::getBestAttack() const {
-  return BestAttack(this);
+BestAttack Creature::getBestAttack(const ContentFactory* factory) const {
+  auto viewId = factory->attrInfo.at(AttrType("DAMAGE")).viewId;
+  auto value = 0;
+  for (auto& a : factory->attrInfo)
+    if (a.second.isAttackAttr) {
+      auto damage = getAttr(a.first);
+      if (damage > value) {
+        value = damage;
+        viewId = a.second.viewId;
+      }
+    }
+  return {viewId, value};
 }
 
 CreatureAction Creature::give(Creature* whom, vector<Item*> items) const {
@@ -2107,9 +2274,9 @@ Creature* Creature::getSteed() const {
 void Creature::forceDismount(Vec2 v) {
   auto oldPos = position;
   CHECK(!!steed);
+  auto steedTmp = std::move(steed);
   position.moveCreature(v);
-  CHECK(!!steed);
-  oldPos.landCreature(std::move(steed));
+  oldPos.landCreature(std::move(steedTmp));
 }
 
 void Creature::tryToDismount() {
@@ -2133,14 +2300,14 @@ CreatureAction Creature::dismount() const {
         self->forceDismount(dir);
         auto timeSpent = 1_visible;
         self->addMovementInfo(self->spendTime(timeSpent, getSpeedModifier(self))->setDirection(dir));
-      });  
+      });
   return CreatureAction();
 }
 
 bool Creature::canCopulateWith(const Creature* c) const {
   PROFILE;
-  return isAffected(LastingEffect::COPULATION_SKILL) &&
-      c->getBody().canCopulateWith() &&
+  return isAffected(BuffId("COPULATION_SKILL")) &&
+      c->getBody().canCopulateWith(getGame()->getContentFactory()) &&
       c->attributes->getGender() != attributes->getGender() &&
       c->isAffected(LastingEffect::SLEEP);
 }
@@ -2148,7 +2315,7 @@ bool Creature::canCopulateWith(const Creature* c) const {
 bool Creature::canConsume(const Creature* c) const {
   return c != this &&
       c->getBody().canConsume() &&
-      isAffected(LastingEffect::CONSUMPTION_SKILL) &&
+      isAffected(BuffId("CONSUMPTION_SKILL")) &&
       c->getTribeId() == tribe;
 }
 
@@ -2177,8 +2344,21 @@ CreatureAction Creature::consume(Creature* other) const {
   if (!other || !canConsume(other) || other->getPosition().dist8(getPosition()).value_or(2) > 1)
     return CreatureAction();
   return CreatureAction(this, [=] (Creature* self) {
+    auto factory = getGame()->getContentFactory();
+    vector<string> adjectives;
+    for (auto& buff : other->buffPermanentCount) {
+      auto& info = factory->buffs.at(buff.first);
+      if (info.canAbsorb) {
+        self->addPermanentEffect(buff.first);
+        adjectives.push_back(info.adjective);
+      }
+    }
     other->dieWithAttacker(self, Creature::DropType::ONLY_INVENTORY);
     self->attributes->consume(self, *other->attributes);
+    if (!adjectives.empty()) {
+      self->you(MsgType::BECOME, combine(adjectives));
+      self->addPersonalEvent(getName().the() + " becomes " + combine(adjectives));
+    }
     self->spendTime(2_visible);
   });
 }
@@ -2186,7 +2366,7 @@ CreatureAction Creature::consume(Creature* other) const {
 template <typename Visitor>
 static void visitMaxSimultaneousWeapons(const Creature* c, Visitor visitor) {
   constexpr double minMultiplier = 0.5;
-  const double skillValue = c->getAttributes().getSkills().getValue(SkillId::MULTI_WEAPON);
+  const double skillValue = min(1.0, double(c->getAttr(AttrType("MULTI_WEAPON"))) * 0.02);
   visitor(1);
   if (skillValue < 0.01)
     return;
@@ -2262,10 +2442,10 @@ CreatureAction Creature::throwItem(Item* item, Position target, bool isFriendlyA
   auto dist = getThrowDistance(item);
   if (!dist)
     return CreatureAction(item->getTheName() + " is too heavy!");
-  int damage = getAttr(AttrType::RANGED_DAMAGE) + item->getModifier(AttrType::RANGED_DAMAGE);
+  int damage = getAttr(AttrType("RANGED_DAMAGE")) + item->getModifier(AttrType("RANGED_DAMAGE"));
   return CreatureAction(this, [=](Creature* self) {
     Attack attack(isFriendlyAI ? nullptr : self, Random.choose(getBody().getAttackLevels()),
-        item->getWeaponInfo().attackType, damage, AttrType::DAMAGE);
+        item->getWeaponInfo().attackType, damage, AttrType("DAMAGE"));
     secondPerson("You throw " + item->getAName(false, this));
     thirdPerson(getName().the() + " throws " + item->getAName());
     self->getPosition().throwItem(makeVec(self->equipment->removeItem(item, self)), attack, *dist, target, getVision().getId());
@@ -2345,30 +2525,32 @@ MovementType Creature::getMovementTypeNotSteed(Game* game) const {
   return MovementType(hasAlternativeViewId() ? TribeSet::getFull() : getFriendlyTribes(), {
       true,
       isAffected(LastingEffect::FLYING, time),
-      isAffected(LastingEffect::SWIMMING_SKILL, time),
+      isAffected(BuffId("SWIMMING_SKILL")),
       getBody().canWade()})
     .setDestroyActions(EnumSet<DestroyAction::Type>([this](auto t) { return DestroyAction(t).canNavigate(this); }))
     .setForced(isAffected(LastingEffect::BLIND, time) || getHoldingCreature() || forceMovement)
-    .setFireResistant(isAffected(LastingEffect::FIRE_RESISTANT, time))
+    .setFireResistant(isAffected(BuffId("FIRE_IMMUNITY")))
     .setSunlightVulnerable(isAffected(LastingEffect::SUNLIGHT_VULNERABLE, time)
         && !isAffected(LastingEffect::DARKNESS_SOURCE, time)
         && (!game || game->getSunlightInfo().getState() == SunlightState::DAY))
-    .setCanBuildBridge(isAffected(LastingEffect::BRIDGE_BUILDING_SKILL, time))
+    .setCanBuildBridge(isAffected(BuffId("BRIDGE_BUILDING_SKILL")))
     .setFarmAnimal(getBody().isFarmAnimal());
 }
 
 MovementType Creature::getMovementType(Game* game) const {
   PROFILE;
   if (steed)
-    return steed->getMovementType(game);
+    return steed->getMovementTypeNotSteed(game);
   else
     return getMovementTypeNotSteed(game);
 }
 
 int Creature::getDifficultyPoints() const {
-  difficultyPoints = max(difficultyPoints,
-      getAttr(AttrType::SPELL_DAMAGE) +
-      getAttr(AttrType::DEFENSE) + getAttr(AttrType::DAMAGE));
+  int value = getAttr(AttrType("DEFENSE"));
+  for (auto& attr : getGame()->getContentFactory()->attrInfo)
+    if (attr.second.isAttackAttr)
+      value += getAttr(attr.first);
+  difficultyPoints = max(value, difficultyPoints);
   return difficultyPoints;
 }
 
@@ -2469,7 +2651,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
               return action.append([path = *currentPath](Creature* c) { c->shortestPath = path; });
             }
           if (auto bridge = pos2.getFurniture(FurnitureLayer::GROUND)->getDefaultBridge())
-            if (isAffected(LastingEffect::BRIDGE_BUILDING_SKILL))
+            if (isAffected(BuffId("BRIDGE_BUILDING_SKILL")))
               if (auto bridgeAction = construct(getPosition().getDir(pos2), *bridge))
                 return bridgeAction.append([path = *currentPath](Creature* c) { c->shortestPath = path; });
         }
@@ -2577,7 +2759,8 @@ bool Creature::shouldAIAttack(const Creature* other) const {
 }
 
 bool Creature::shouldAIChase(const Creature* enemy) const {
-  return !!getFirstWeapon() && getBestAttack().value < 5 * enemy->getBestAttack().value;
+  auto factory = getGame()->getContentFactory();
+  return !!getFirstWeapon() && getBestAttack(factory).value < 5 * enemy->getBestAttack(factory).value;
 }
 
 vector<Position> Creature::getVisibleTiles() const {
@@ -2606,77 +2789,89 @@ const char* getMoraleText(double morale) {
   return nullptr;
 }
 
-vector<AdjectiveInfo> Creature::getSpecialAttrAdjectives(bool good) const {
+vector<AdjectiveInfo> Creature::getSpecialAttrAdjectives(const ContentFactory* factory, bool good) const {
   vector<AdjectiveInfo> ret;
-  for (auto attr : ENUM_ALL(AttrType)) {
-    auto withTip = [](string s) {
-      return AdjectiveInfo{s, s};
-    };
-    for (auto& elem : attributes->specialAttr[attr])
+  auto withTip = [](string s) {
+    return AdjectiveInfo{s, s};
+  };
+  for (auto& elems : attributes->specialAttr)
+    for (auto& elem : elems.second)
       if (elem.first > 0 == good)
         ret.push_back(withTip(
-            toStringWithSign(elem.first) + " " + ::getName(attr) + " " + elem.second.getName()));
-    for (auto& item : equipment->getAllEquipped())
-      if (auto& elem = item->getSpecialModifier(attr))
-        if (elem->first > 0 == good)
-          ret.push_back(withTip(
-              toStringWithSign(elem->first) + " " + ::getName(attr) + " " + elem->second.getName()));
-  }
+            toStringWithSign(elem.first) + " " + factory->attrInfo.at(elems.first).name + " " + 
+                elem.second.getName(factory)));
+  for (auto& item : equipment->getAllEquipped())
+    for (auto& elem : item->getSpecialModifiers())
+      if (elem.second.first > 0 == good)
+        ret.push_back(withTip(
+            toStringWithSign(elem.second.first) + " " + factory->attrInfo.at(elem.first).name + " " +
+                elem.second.second.getName(factory)));
   return ret;
 }
 
-vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
+vector<AdjectiveInfo> Creature::getLastingEffectAdjectives(const ContentFactory* factory, bool bad) const {
+  vector<AdjectiveInfo> ret;
+  auto time = getGlobalTime();
+  for (auto& buff : buffs) {
+    auto& info = factory->buffs.at(buff.first);
+    if (info.consideredBad == bad) {
+      ret.push_back({ capitalFirst(info.adjective), info.description });
+      if (time)
+        ret.back().name += "[" + toString(buff.second - *time) + "]";
+    }
+  }
+  for (auto& buff : buffPermanentCount) {
+    auto& info = factory->buffs.at(buff.first);
+    if (info.consideredBad == bad)
+      ret.push_back({ capitalFirst(info.adjective), info.description });
+  }
+  if (time) {
+    for (LastingEffect effect : ENUM_ALL(LastingEffect))
+      if (attributes->isAffected(effect, *time))
+        if (LastingEffects::isConsideredBad(effect) == bad) {
+          auto name = LastingEffects::getAdjective(effect);
+          ret.push_back({ name, LastingEffects::getDescription(effect) });
+          if (!attributes->isAffectedPermanently(effect))
+            ret.back().name += attributes->getRemainingString(effect, *getGlobalTime());
+        }
+  } else
+    for (LastingEffect effect : ENUM_ALL(LastingEffect))
+      if (attributes->isAffectedPermanently(effect))
+        if (LastingEffects::isConsideredBad(effect) == bad) {
+          auto name = LastingEffects::getAdjective(effect);
+          ret.push_back({ name, LastingEffects::getDescription(effect) });
+        }
+  return ret;
+}
+
+vector<AdjectiveInfo> Creature::getGoodAdjectives(const ContentFactory* factory) const {
   PROFILE;
   vector<AdjectiveInfo> ret;
   if (getPhylactery())
     ret.push_back({"Bound to a phylactery",
         "The creature will respawn at its phylactery when it is killed"});
-  if (auto time = getGlobalTime()) {
-    for (LastingEffect effect : ENUM_ALL(LastingEffect))
-      if (attributes->isAffected(effect, *time))
-        if (auto name = LastingEffects::getGoodAdjective(effect)) {
-          ret.push_back({ *name, LastingEffects::getDescription(effect) });
-          if (!attributes->isAffectedPermanently(effect))
-            ret.back().name += attributes->getRemainingString(effect, *getGlobalTime());
-        }
-  } else
-    for (LastingEffect effect : ENUM_ALL(LastingEffect))
-      if (attributes->isAffectedPermanently(effect))
-        if (auto name = LastingEffects::getGoodAdjective(effect))
-          ret.push_back({ *name, LastingEffects::getDescription(effect) });
-  if (getBody().isUndead())
+  ret.append(getLastingEffectAdjectives(factory, false));
+  if (getBody().isUndead(factory))
     ret.push_back({"Undead",
         "Undead creatures don't take regular damage and need to be killed by chopping up or using fire."});
-  if (auto morale = getMorale())
+  if (auto morale = getMorale(factory))
     if (*morale > 0)
       if (auto text = getMoraleText(*morale))
         ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
-  append(ret, getSpecialAttrAdjectives(true));
+  append(ret, getSpecialAttrAdjectives(factory, true));
   return ret;
 }
 
-vector<AdjectiveInfo> Creature::getBadAdjectives() const {
+vector<AdjectiveInfo> Creature::getBadAdjectives(const ContentFactory* factory) const {
   PROFILE;
   vector<AdjectiveInfo> ret;
   getBody().getBadAdjectives(ret);
-  if (auto time = getGlobalTime()) {
-    for (LastingEffect effect : ENUM_ALL(LastingEffect))
-      if (attributes->isAffected(effect, *time))
-        if (auto name = LastingEffects::getBadAdjective(effect)) {
-          ret.push_back({ *name, LastingEffects::getDescription(effect) });
-          if (!attributes->isAffectedPermanently(effect))
-            ret.back().name += attributes->getRemainingString(effect, *getGlobalTime());
-        }
-  } else
-    for (LastingEffect effect : ENUM_ALL(LastingEffect))
-      if (attributes->isAffectedPermanently(effect))
-        if (auto name = LastingEffects::getBadAdjective(effect))
-          ret.push_back({ *name, LastingEffects::getDescription(effect) });
-  if (auto morale = getMorale())
+  ret.append(getLastingEffectAdjectives(factory, true));
+  if (auto morale = getMorale(factory))
     if (*morale < 0)
       if (auto text = getMoraleText(*morale))
         ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
-  append(ret, getSpecialAttrAdjectives(false));
+  append(ret, getSpecialAttrAdjectives(factory, false));
   return ret;
 }
 

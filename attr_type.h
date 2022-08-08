@@ -1,13 +1,9 @@
 #pragma once
 
 #include "util.h"
+#include "content_id.h"
 
-RICH_ENUM(AttrType,
-  DAMAGE,
-  DEFENSE,
-  SPELL_DAMAGE,
-  RANGED_DAMAGE,
-  PARRY
-);
-
-extern string getName(AttrType);
+class AttrType : public ContentId<AttrType> {
+  public:
+  using ContentId::ContentId;
+};

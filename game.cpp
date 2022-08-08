@@ -45,6 +45,7 @@
 #include "avatar_info.h"
 #include "scripted_ui.h"
 #include "scripted_ui_data.h"
+#include "body.h"
 
 template <class Archive>
 void Game::serialize(Archive& ar, const unsigned int version) {
@@ -138,7 +139,8 @@ PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup setup, AvatarInfo
   for (auto model : ret->getAllModels())
     model->setGame(ret.get());
   auto avatarCreature = avatar.playerCreature.get();
-  if (avatarCreature->getAttributes().isAffectedPermanently(LastingEffect::SUNLIGHT_VULNERABLE))
+  if (avatarCreature->getAttributes().isAffectedPermanently(LastingEffect::SUNLIGHT_VULNERABLE) ||
+      avatarCreature->getBody().isIntrinsicallyAffected(LastingEffect::SUNLIGHT_VULNERABLE, ret->getContentFactory()))
     ret->sunlightTimeOffset = 1501_visible;
   // Remove sunlight vulnerability temporarily otherwise placing the creature anywhere without cover will fail.
   avatarCreature->getAttributes().removePermanentEffect(LastingEffect::SUNLIGHT_VULNERABLE, 1);
@@ -384,6 +386,10 @@ void Game::considerRealTimeRender() {
   }
 }
 
+void Game::setWasTransfered() {
+  wasTransfered = true;
+}
+
 // Return true when the player has just left turn-based mode so we don't increase time in that case.
 bool Game::updateModel(WModel model, double totalTime) {
   do {
@@ -466,7 +472,7 @@ void Game::exitAction() {
     return false;
   }};
   data.elems["options"] = ScriptedUIDataElems::Callback{[this]{
-    getOptions()->handle(getView(), OptionSet::GENERAL);
+    getOptions()->handle(getView(), &*contentFactory, OptionSet::GENERAL);
     return false;
   }};
 #ifdef RELEASE
@@ -501,7 +507,8 @@ void Game::transferCreature(Creature* c, WModel to, const vector<Position>& dest
     };
     transfer(c);
     for (auto& summon : c->getCompanions())
-      transfer(summon);
+      if (c->getSteed() != summon)
+        transfer(summon);
   }
 }
 
@@ -525,27 +532,10 @@ void Game::presentWorldmap() {
   view->presentWorldmap(*campaign);
 }
 
-bool Game::transferAction(vector<Creature*> creatures) {
-  if (auto dest = view->chooseSite("Choose destination site:", *campaign,
-        getModelCoords(creatures[0]->getLevel()->getModel()))) {
-    WModel to = NOTNULL(models[*dest].get());
-    creatures = creatures.filter([&](const Creature* c) { return c->getPosition().getModel() != to; });
-    vector<PlayerInfo> cant;
-    for (Creature* c : copyOf(creatures))
-      if (!canTransferCreature(c, to)) {
-        cant.push_back(PlayerInfo(c, &*contentFactory));
-        creatures.removeElement(c);
-      }
-    if (!cant.empty() && !view->creatureInfo("These minions will be left behind due to sunlight. Continue?", true, cant))
-      return false;
-    if (!creatures.empty()) {
-      for (Creature* c : creatures)
-        transferCreature(c, models[*dest].get());
-      wasTransfered = true;
-      return true;
-    }
-  }
-  return false;
+Model* Game::chooseSite(const string& message, Model* current) const {
+  if (auto dest = view->chooseSite("Choose destination site:", *campaign, getModelCoords(current)))
+    return NOTNULL(models[*dest].get());
+  return nullptr;
 }
 
 void Game::considerRetiredLoadedEvent(Vec2 coord) {
@@ -763,17 +753,19 @@ const vector<Creature*>& Game::getPlayerCreatures() const {
   return players;
 }
 
-static SavedGameInfo::MinionInfo getMinionInfo(const Creature* c) {
+static SavedGameInfo::MinionInfo getMinionInfo(const ContentFactory* factory, const Creature* c) {
   SavedGameInfo::MinionInfo ret;
-  ret.level = (int)c->getBestAttack().value;
-  ret.viewId = c->getViewObject().getViewIdList();
+  ret.level = (int)c->getBestAttack(factory).value;
+  ret.viewId = c->getViewIdWithWeapon();
   return ret;
 }
 
 SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
+  auto factory = contentFactory.get();
   auto sortMinions = [&](vector<Creature*>& minions, Creature* leader) {
-    sort(minions.begin(), minions.end(), [leader] (const Creature* c1, const Creature* c2) {
-        return c1 == leader || (c2 != leader && c1->getBestAttack().value > c2->getBestAttack().value);});
+    sort(minions.begin(), minions.end(), [&] (const Creature* c1, const Creature* c2) {
+        return c1 == leader ||
+            (c2 != leader && c1->getBestAttack(factory).value > c2->getBestAttack(factory).value);});
     CHECK(minions[0] == leader);
   };
   if (Collective* col = getPlayerCollective()) {
@@ -785,7 +777,7 @@ SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
     creatures.resize(min<int>(creatures.size(), 4));
     vector<SavedGameInfo::MinionInfo> minions;
     for (Creature* c : creatures)
-      minions.push_back(getMinionInfo(c));
+      minions.push_back(getMinionInfo(factory, c));
     optional<SavedGameInfo::RetiredEnemyInfo> retiredInfo;
     if (auto id = col->getEnemyId()) {
       retiredInfo = SavedGameInfo::RetiredEnemyInfo{*id, col->getVillainType()};
@@ -802,7 +794,7 @@ SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
           allCreatures.push_back(c);
     sortMinions(allCreatures, players[0]);
     return SavedGameInfo{
-        allCreatures.transform([](auto c) { return getMinionInfo(c); }),
+        allCreatures.transform([&](auto c) { return getMinionInfo(factory, c); }),
         none,
         players[0]->getName().bare(),
         getSaveProgressCount(),

@@ -15,7 +15,6 @@
 #include "monster_ai.h"
 #include "view_id.h"
 #include "item_attributes.h"
-#include "skill.h"
 #include "lasting_effect.h"
 #include "name_generator.h"
 #include "furniture_type.h"
@@ -26,45 +25,46 @@
 #include "item_types.h"
 #include "item_prefix.h"
 #include "statistics.h"
+#include "lasting_or_buff.h"
 
 STRUCT_IMPL(ItemType)
 
 ItemType ItemType::legs(int damage) {
   return ItemType(ItemTypes::Intrinsic{ViewId("leg_attack"), "legs", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::KICK}});
+        WeaponInfo{false, AttackType::HIT, AttrType("DAMAGE"), {}, {}, AttackMsg::KICK}});
 }
 
 ItemType ItemType::claws(int damage) {
   return ItemType(ItemTypes::Intrinsic{ViewId("claws_attack"), "claws", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::CLAW}});
+        WeaponInfo{false, AttackType::HIT, AttrType("DAMAGE"), {}, {}, AttackMsg::CLAW}});
 }
 
 ItemType ItemType::beak(int damage) {
   return ItemType(ItemTypes::Intrinsic{ViewId("beak_attack"), "beak", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::BITE}});
+        WeaponInfo{false, AttackType::HIT, AttrType("DAMAGE"), {}, {}, AttackMsg::BITE}});
 }
 
 ItemType ItemType::fists(int damage) {
   return ItemType(ItemTypes::Intrinsic{ViewId("fist_attack"), "fists", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::SWING}});
+        WeaponInfo{false, AttackType::HIT, AttrType("DAMAGE"), {}, {}, AttackMsg::SWING}});
 }
 
-static ItemType fangsBase(int damage, vector<VictimEffect> effect) {
+static ItemType fangsBase(int damage, vector<ItemPrefixes::VictimEffect> effect) {
   return ItemType(ItemTypes::Intrinsic{ViewId("bite_attack"), "fangs", damage,
-      WeaponInfo{false, AttackType::BITE, AttrType::DAMAGE, std::move(effect), {}, AttackMsg::BITE}});
+      WeaponInfo{false, AttackType::BITE, AttrType("DAMAGE"), std::move(effect), {}, AttackMsg::BITE}});
 }
 
 ItemType ItemType::fangs(int damage) {
   return fangsBase(damage, {});
 }
 
-ItemType ItemType::fangs(int damage, VictimEffect effect) {
+ItemType ItemType::fangs(int damage, ItemPrefixes::VictimEffect effect) {
   return fangsBase(damage, {std::move(effect)});
 }
 
 ItemType ItemType::spellHit(int damage) {
   return ItemType(ItemTypes::Intrinsic{ViewId("fist_attack"), "spell", damage,
-                                       WeaponInfo{false, AttackType::HIT, AttrType::SPELL_DAMAGE, {}, {}, AttackMsg::SPELL}});
+      WeaponInfo{false, AttackType::HIT, AttrType("SPELL_DAMAGE"), {}, {}, AttackMsg::SPELL}});
 }
 
 ItemType::ItemType(const ItemTypeVariant& v) : type(v) {
@@ -248,10 +248,10 @@ ItemAttributes ItemType::getAttributes(const ContentFactory* factory) const {
 
 PItem ItemType::get(const ContentFactory* factory) const {
   auto attributes = getAttributes(factory);
-  for (auto attr : ENUM_ALL(AttrType)) {
-    auto& mod = attributes.modifiers[attr];
-    auto& var = attributes.modifierVariation[attr];
-    if (Random.chance(attributes.variationChance) && mod > 0)
+  for (auto& elem : attributes.modifiers) {
+    auto var = factory->attrInfo.at(elem.first).modifierVariation;
+    auto& mod = elem.second;
+    if (Random.chance(attributes.variationChance) && var > 0)
       mod = max(1, mod + Random.get(-var, var + 1));
   }
   if (attributes.ingredientType)
@@ -272,20 +272,20 @@ PItem ItemType::get(const ContentFactory* factory) const {
   );
 }
 
-ViewId getRingViewId(LastingEffect e) {
-  switch (e) {
-    case LastingEffect::FIRE_RESISTANT: return ViewId("ring_red");
-    case LastingEffect::POISON_RESISTANT: return ViewId("ring_green");
-    default: return ViewId("ring_red");
-  }
-}
-
-ViewId getAmuletViewId(LastingEffect e) {
-  switch (e) {
-    case LastingEffect::REGENERATION: return ViewId("amulet1");
-    case LastingEffect::WARNING: return ViewId("amulet2");
-    default: return ViewId("amulet3");
-  }
+ViewId getAmuletViewId(LastingOrBuff e) {
+  return e.visit(
+    [](LastingEffect e) {
+      switch (e) {
+        case LastingEffect::WARNING: return ViewId("amulet2");
+        default: return ViewId("amulet3");
+      }
+    },
+    [](BuffId buff) {
+      if (buff == BuffId("REGENERATION"))
+        return ViewId("amulet1");
+      return ViewId("amulet3");
+    }
+  );
 }
 
 static const vector<pair<string, vector<string>>> badArtifactNames {
@@ -312,7 +312,7 @@ ItemAttributes ItemTypes::Corpse::getAttributes(const ContentFactory*) const {
   return getCorpseAttr("corpse", ItemClass::CORPSE, 100, true, none);
 }
 
-ItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory* f) const {
   return ITATTR(
       i.viewId = ViewId("scroll");
       i.name = getRandomPoem();
@@ -321,7 +321,7 @@ ItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory*) const {
       i.applyVerb = make_pair("read", "reads");
       i.effect = Effect(Effects::Area{10,
           Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::IncreaseMorale{-0.1})))});
-      i.price = i.effect->getPrice();
+      i.price = i.effect->getPrice(f);
       i.burnTime = 5;
       i.uses = 1;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
@@ -329,7 +329,7 @@ ItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory*) const {
   );
 }
 
-ItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory* f) const {
   return ITATTR(
       i.viewId = ViewId("scroll");
       i.shortName = getRandomPoemType();
@@ -339,7 +339,7 @@ ItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory*) const 
       i.applyVerb = make_pair("read", "reads");
       i.effect = Effect(Effects::Area{10,
           Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::IncreaseMorale{-0.1})))});
-      i.price = i.effect->getPrice();
+      i.price = i.effect->getPrice(f);
       i.burnTime = 5;
       i.uses = 1;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
@@ -357,7 +357,7 @@ ItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory* factory
       i.effect = Effect(Effects::AssembledMinion{creature, traits});
       i.name = itemName;
       i.weight = 1;
-      i.price = i.effect->getPrice();
+      i.price = i.effect->getPrice(factory);
       i.uses = 1;
       i.maxUpgrades = maxUpgrades;
       i.upgradeType = upgradeType;
@@ -383,10 +383,10 @@ ItemAttributes ItemTypes::Intrinsic::getAttributes(const ContentFactory* factory
  );
 }
 
-ItemAttributes ItemTypes::Ring::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::Ring::getAttributes(const ContentFactory* f) const {
   return ITATTR(
-      i.viewId = getRingViewId(lastingEffect);
-      i.shortName = LastingEffects::getName(lastingEffect);
+      i.viewId = ViewId("ring", getColor(lastingEffect, f));
+      i.shortName = getName(lastingEffect, f);
       i.equipedEffect.push_back(lastingEffect);
       i.name = "ring of " + *i.shortName;
       i.plural = "rings of " + *i.shortName;
@@ -398,15 +398,15 @@ ItemAttributes ItemTypes::Ring::getAttributes(const ContentFactory*) const {
   );
 }
 
-ItemAttributes ItemTypes::Amulet::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::Amulet::getAttributes(const ContentFactory* f) const {
   return ITATTR(
       i.viewId = getAmuletViewId(lastingEffect);
-      i.shortName = LastingEffects::getName(lastingEffect);
+      i.shortName = getName(lastingEffect, f);
       i.equipedEffect.push_back(lastingEffect);
       i.name = "amulet of " + *i.shortName;
       i.plural = "amulets of " + *i.shortName;
       i.equipmentSlot = EquipmentSlot::AMULET;
-      i.price = 5 * LastingEffects::getPrice(lastingEffect);
+      i.price = 5 * getPrice(lastingEffect, f);
       i.weight = 0.3;
       i.storageIds = LIST(StorageId("jewellery"), StorageId("equipment"));
       i.equipmentGroup = "jewellery"_s;
@@ -433,7 +433,7 @@ ItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory* factory) c
       i.fragile = true;
       i.weight = 0.3;
       i.effect = effect;
-      i.price = i.effect->getPrice();
+      i.price = i.effect->getPrice(factory);
       i.burnTime = 1;
       i.effectAppliedWhenThrown = true;
       i.uses = 1;
@@ -453,16 +453,26 @@ ItemAttributes ItemTypes::PrefixChance::getAttributes(const ContentFactory* fact
 static ViewId getMushroomViewId(Effect e) {
   return e.effect->visit<ViewId>(
       [&](const Effects::Lasting& e) {
-        switch (e.lastingEffect) {
-          case LastingEffect::DAM_BONUS: return ViewId("mushroom1");
-          case LastingEffect::DEF_BONUS: return ViewId("mushroom2");
-          case LastingEffect::PANIC: return ViewId("mushroom3");
-          case LastingEffect::HALLU: return ViewId("mushroom4");
-          case LastingEffect::RAGE: return ViewId("mushroom5");
-          case LastingEffect::REGENERATION: return ViewId("mushroom6");
-          case LastingEffect::NIGHT_VISION: return ViewId("mushroom7");
-          default: return ViewId("mushroom6");
-        }
+        return e.lastingEffect.visit(
+          [](LastingEffect e) {
+            switch (e) {
+              case LastingEffect::PANIC: return ViewId("mushroom3");
+              case LastingEffect::HALLU: return ViewId("mushroom4");
+              case LastingEffect::RAGE: return ViewId("mushroom5");
+              case LastingEffect::NIGHT_VISION: return ViewId("mushroom7");
+              default: return ViewId("mushroom6");
+            }
+          },
+          [&](BuffId buff) {
+            if (buff == BuffId("DAM_BONUS"))
+              return ViewId("mushroom1");
+            if (buff == BuffId("DEF_BONUS"))
+              return ViewId("mushroom2");
+            if (buff == BuffId("REGENERATION"))
+              return ViewId("mushroom6");
+            return ViewId("mushroom6");
+          }
+        );
       },
       [&](const auto&) {
         return ViewId("mushroom6");
@@ -478,9 +488,9 @@ ItemAttributes ItemTypes::Mushroom::getAttributes(const ContentFactory* factory)
       i.blindName = "mushroom"_s;
       i.itemClass= ItemClass::FOOD;
       i.weight = 0.1;
-      i.modifiers[AttrType::DAMAGE] = -15;
+      i.modifiers[AttrType("DAMAGE")] = -15;
       i.effect = effect;
-      i.price = i.effect->getPrice();
+      i.price = i.effect->getPrice(factory);
       i.uses = 1;
       i.storageIds = {StorageId("equipment")};
       i.equipmentGroup = "consumables"_s;
@@ -542,7 +552,7 @@ ItemAttributes ItemTypes::Scroll::getAttributes(const ContentFactory* factory) c
       i.applyVerb = make_pair("read", "reads");
       i.weight = 0.1;
       i.effect = effect;
-      i.price = i.effect->getPrice();
+      i.price = i.effect->getPrice(factory);
       i.burnTime = 5;
       i.uses = 1;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});

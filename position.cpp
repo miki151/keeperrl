@@ -31,6 +31,8 @@
 #include "vision.h"
 #include "tile_gas.h"
 #include "tile_gas_info.h"
+#include "attack.h"
+#include "attack_level.h"
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {
@@ -41,7 +43,7 @@ SERIALIZABLE(Position)
 SERIALIZATION_CONSTRUCTOR_IMPL(Position);
 
 int Position::getHash() const {
-  return coord.getHash();
+  return coord.getHash() + int((long long)level);
 }
 
 Vec2 Position::getCoord() const {
@@ -228,6 +230,9 @@ void Position::removePortal() {
       if (isSameLevel(*other)) {
         for (auto& sectors : level->sectors)
           sectors.second.removeExtraConnection(coord, other->coord);
+      } else {
+        removeLandingLink();
+        other->removeLandingLink();
       }
     }
     portals->removePortal(*this);
@@ -605,18 +610,18 @@ void handleEffect(TribeId tribe, Level::EffectsTable& effectsTable, vector<Posit
 void Position::addFurnitureEffect(TribeId tribe, const FurnitureEffectInfo& effect) const {
   auto& effectsTable = level->furnitureEffects[tribe.getKey()];
   if (!effectsTable)
-    effectsTable = unique<Level::EffectsTable>(level->getBounds());
+    effectsTable = make_unique<Level::EffectsTable>(level->getBounds());
   handleEffect(tribe, *effectsTable, getRectangle(Rectangle::centered(effect.radius)), effect,
-      [&](vector<LastingEffect>& effects) { effects.push_back(effect.effect); },
-      [&](Creature* c) { c->addPermanentEffect(effect.effect, 1, false); });
+      [&](vector<LastingOrBuff>& effects) { effects.push_back(effect.effect); },
+      [&](Creature* c) { addPermanentEffect(effect.effect, c, false); });
 }
 
 void Position::removeFurnitureEffect(TribeId tribe, const FurnitureEffectInfo& effect) const {
   auto& effectsTable = level->furnitureEffects[tribe.getKey()];
   CHECK(!!effectsTable);
   handleEffect(tribe, *effectsTable, getRectangle(Rectangle::centered(effect.radius)), effect,
-      [&](vector<LastingEffect>& effects) { effects.removeElement(effect.effect); },
-      [&](Creature* c) { c->removePermanentEffect(effect.effect, 1, false); });
+      [&](vector<LastingOrBuff>& effects) { effects.removeElement(effect.effect); },
+      [&](Creature* c) { removePermanentEffect(effect.effect, c, false); });
 }
 
 int Position::countSwarmers() const {
@@ -810,56 +815,45 @@ void Position::updateMovementDueToFire() const {
     update(v);
 }
 
-bool Position::fireDamage(double amount) const {
+bool Position::fireDamage(int amount) const {
   PROFILE;
   bool res = false;
   for (auto furniture : modFurniture())
-    if (Random.chance(amount))
+    if (Random.chance(0.05 * amount))
       res |= furniture->fireDamage(*this);
-  if (Creature* creature = getCreature()) {
-    if (auto steed = creature->getSteed())
-      res |= steed->affectByFire(amount);
-    else
-      res |= creature->affectByFire(amount);
-  }
+  if (Creature* creature = getCreature())
+    creature->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), AttackType::HIT, amount,
+        AttrType("FIRE_DAMAGE"), {}, "The fire is harmless", false));
   for (Item* it : getItems())
-    if (Random.chance(amount))
+    if (Random.chance(0.05 * amount))
       it->fireDamage(*this);
   return res;
 }
 
-bool Position::iceDamage() const {
+bool Position::iceDamage(int amount) const {
   PROFILE;
   bool res = false;
-  double amount = 1.0;
   for (auto furniture : modFurniture())
-    if (Random.chance(amount))
+    if (Random.chance(0.05 * amount))
       res |= furniture->iceDamage(*this);
-  if (Creature* creature = getCreature()) {
-    if (auto steed = creature->getSteed())
-      res |= steed->affectByIce(amount);
-    else
-      res |= creature->affectByIce(amount);
-  }
+  if (Creature* creature = getCreature())
+    creature->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), AttackType::HIT, amount,
+        AttrType("COLD_DAMAGE"), {}, "The cold is harmless"));
   for (Item* it : getItems())
-    if (Random.chance(amount))
+    if (Random.chance(0.05 * amount))
       it->iceDamage(*this);
   return res;
 }
 
-bool Position::acidDamage() const {
+bool Position::acidDamage(int amount) const {
   PROFILE;
   bool res = false;
-  double amount = 1.0;
   for (auto furniture : modFurniture())
-    if (Random.chance(amount))
+    if (Random.chance(0.05 * amount))
       res |= furniture->acidDamage(*this);
-  if (Creature* creature = getCreature()) {
-    if (auto steed = creature->getSteed())
-      res |= steed->affectByAcid();
-    else
-      res |= creature->affectByAcid();
-  }
+  if (Creature* creature = getCreature())
+    creature->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), AttackType::HIT, amount,
+        AttrType("ACID_DAMAGE"), {}, "The acid is harmless"));    
   /*for (Item* it : getItems())
     if (Random.chance(amount))
       it->acidDamage(*this);*/

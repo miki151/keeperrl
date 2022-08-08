@@ -22,6 +22,7 @@
 #include "creature_experience_info.h"
 #include "tech_id.h"
 #include "scripted_help_info.h"
+#include "keybinding.h"
 
 class PlayerMessage;
 class SpecialTrait;
@@ -73,13 +74,13 @@ struct ItemInfo {
 static_assert(std::is_nothrow_move_constructible<ItemInfo>::value, "T should be noexcept MoveConstructible");
 
 struct AttributeInfo {
-  static vector<AttributeInfo> fromCreature(const Creature*);
+  static vector<AttributeInfo> fromCreature(const ContentFactory*, const Creature*);
   string HASH(name);
-  AttrType HASH(attr);
+  ViewId HASH(viewId);
   int HASH(value);
   int HASH(bonus);
-  const char* HASH(help);
-  HASH_ALL(name, attr, value, bonus, help)
+  string HASH(help);
+  HASH_ALL(name, viewId, value, bonus, help)
 };
 
 struct AvatarLevelInfo {
@@ -109,12 +110,6 @@ struct SpellSchoolInfo {
   HASH_ALL(name, experienceType, spells)
 };
 
-struct SkillInfo {
-  string HASH(name);
-  string HASH(help);
-  HASH_ALL(name, help)
-};
-
 class PlayerInfo {
   public:
   PlayerInfo(const Creature*, const ContentFactory*);
@@ -122,7 +117,6 @@ class PlayerInfo {
   vector<AttributeInfo> HASH(attributes);
   optional<AvatarLevelInfo> HASH(avatarLevelInfo);
   BestAttack HASH(bestAttack);
-  vector<SkillInfo> HASH(skills);
   string HASH(firstName);
   string HASH(name);
   string HASH(groupName);
@@ -146,7 +140,7 @@ class PlayerInfo {
   vector<PlayerInfo> HASH(teamInfos);
   struct CommandInfo {
     string HASH(name);
-    optional<char> HASH(keybinding);
+    optional<Keybinding> HASH(keybinding);
     string HASH(description);
     bool HASH(active);
     bool HASH(tutorialHighlight) = false;
@@ -198,7 +192,7 @@ class PlayerInfo {
     HASH_ALL(viewId, name, locked);
   };
   vector<EquipmentGroupInfo> HASH(equipmentGroups);
-  HASH_ALL(attributes, skills, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo, spellSchools, kills, killTitles, canExitControlMode, equipmentGroups)
+  HASH_ALL(attributes, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo, spellSchools, kills, killTitles, canExitControlMode, equipmentGroups)
 };
 
 struct ImmigrantCreatureInfo {
@@ -206,9 +200,14 @@ struct ImmigrantCreatureInfo {
   ViewIdList HASH(viewId);
   vector<AttributeInfo> HASH(attributes);
   vector<string> HASH(spellSchools);
-  EnumMap<ExperienceType, int> HASH(trainingLimits);
-  vector<SkillInfo> HASH(skills);
-  HASH_ALL(name, viewId, attributes, spellSchools, trainingLimits, skills);
+  struct TrainingInfo {
+    ExperienceType HASH(expType);
+    int HASH(limit);
+    vector<ViewId> HASH(attributes);
+    HASH_ALL(expType, limit, attributes)
+  };
+  vector<TrainingInfo> HASH(trainingLimits);
+  HASH_ALL(name, viewId, attributes, spellSchools, trainingLimits);
 };
 
 ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature*, const ContentFactory*);
@@ -253,12 +252,12 @@ class CollectiveInfo {
     string HASH(count);
     enum { ACTIVE, GRAY_CLICKABLE, INACTIVE} HASH(state);
     string HASH(help);
-    char HASH(hotkey);
+    optional<Keybinding> HASH(key);
     string HASH(groupName);
     bool HASH(hotkeyOpensGroup);
     optional<TutorialHighlight> HASH(tutorialHighlight);
     bool HASH(isBuilding);
-    HASH_ALL(viewId, name, cost, count, state, help, hotkey, groupName, hotkeyOpensGroup, tutorialHighlight, isBuilding)
+    HASH_ALL(viewId, name, cost, count, state, help, key, groupName, hotkeyOpensGroup, tutorialHighlight, isBuilding)
   };
   vector<Button> HASH(buildings);
   string HASH(populationString);
@@ -436,7 +435,7 @@ class VillageInfo {
   struct Village {
     optional<string> HASH(name);
     string HASH(tribeName);
-    ViewId HASH(viewId);
+    ViewIdList HASH(viewId);
     VillainType HASH(type);
     enum Access { ACTIVE, INACTIVE, LOCATION, NO_LOCATION };
     Access HASH(access);

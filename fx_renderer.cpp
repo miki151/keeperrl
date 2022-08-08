@@ -26,7 +26,7 @@ struct FXRenderer::SystemDrawInfo {
 FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr), texturesPath(dataPath) {
   useFramebuffer = false;/*isOpenglFeatureAvailable(OpenglFeature::FRAMEBUFFER) &&
                    isOpenglFeatureAvailable(OpenglFeature::SEPARATE_BLEND_FUNC);*/
-  drawBuffers = unique<DrawBuffers>();
+  drawBuffers = make_unique<DrawBuffers>();
 }
 
 void FXRenderer::loadTextures() {
@@ -197,8 +197,8 @@ void FXRenderer::prepareOrdered() {
       INFO << "FX: creating FBO for ordered rendering (" << fboSize.x << ", " << fboSize.y << ")";
       orderedBlendFBO.reset();
       orderedAddFBO.reset();
-      orderedBlendFBO = unique<Framebuffer>(fboSize.x, fboSize.y);
-      orderedAddFBO = unique<Framebuffer>(fboSize.x, fboSize.y);
+      orderedBlendFBO = make_unique<Framebuffer>(fboSize.x, fboSize.y);
+      orderedAddFBO = make_unique<Framebuffer>(fboSize.x, fboSize.y);
     }
 
     // Positioning particles for FBO
@@ -245,8 +245,8 @@ void FXRenderer::setView(float zoom, float offsetX, float offsetY, int w, int h)
       INFO << "FX: creating FBO (" << size.x << ", " << size.y << ")";
       orderedBlendFBO.reset();
       orderedAddFBO.reset();
-      blendFBO = unique<Framebuffer>(size.x, size.y);
-      addFBO = unique<Framebuffer>(size.x, size.y);
+      blendFBO = make_unique<Framebuffer>(size.x, size.y);
+      addFBO = make_unique<Framebuffer>(size.x, size.y);
     }
   }
 }

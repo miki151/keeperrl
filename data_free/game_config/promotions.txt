@@ -31,13 +31,13 @@
         }
     
     "artisan" {"forge"}
-        Description "Increases crafting skill for all workshops by 16%"
+        Description "Increases crafting attributes for all workshops by 8"
         {
-          IncreaseWorkshopSkill "WORKSHOP" 0.16
-          IncreaseWorkshopSkill "FORGE" 0.16
-          IncreaseWorkshopSkill "LABORATORY" 0.16
-          IncreaseWorkshopSkill "JEWELER" 0.16
-          IncreaseSkill FURNACE 0.16
+          IncreaseAttr "WORKSHOP" 8
+          IncreaseAttr "FORGE" 8
+          IncreaseAttr "LABORATORY" 8
+          IncreaseAttr "JEWELER" 8
+          IncreaseAttr FURNACE 8
           Filter Gender MALE SetViewId {"dwarf_blacksmith"}
           Filter Gender FEMALE SetViewId {"dwarf_blacksmith_f"}
         }

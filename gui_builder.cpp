@@ -38,7 +38,6 @@
 #include "quarters.h"
 #include "team_order.h"
 #include "lasting_effect.h"
-#include "skill.h"
 #include "player_role.h"
 #include "tribe_alignment.h"
 #include "avatar_menu_option.h"
@@ -49,6 +48,7 @@
 #include "item_action.h"
 #include "ai_type.h"
 #include "container_range.h"
+#include "keybinding_map.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -197,9 +197,9 @@ SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
     line.addElem(WL(viewObject, button.viewId), 35);
     auto tutorialHighlight = button.tutorialHighlight;
     if (button.state != CollectiveInfo::Button::ACTIVE)
-      line.addElemAuto(WL(label, button.name + " " + button.count, Color::GRAY, button.hotkey));
+      line.addElemAuto(WL(label, button.name + " " + button.count, Color::GRAY));
     else {
-      line.addElemAuto(WL(label, button.name + " " + button.count, Color::WHITE, button.hotkey));
+      line.addElemAuto(WL(label, button.name + " " + button.count, Color::WHITE));
     }
     if (button.cost)
       line.addBackElemAuto(drawCost(*button.cost));
@@ -223,7 +223,10 @@ SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
           [=]{ return !wasTutorialClicked(num, *tutorialHighlight); });
     return WL(setHeight, legendLineHeight, WL(stack, makeVec(
         getHintCallback({capitalFirst(button.help)}),
-        WL(buttonChar, std::move(buttonFun), !button.hotkeyOpensGroup ? button.hotkey : 0, true, true),
+        WL(button, buttonFun),
+        !button.hotkeyOpensGroup && !!button.key
+            ? WL(keyHandler, buttonFun, *button.key, true)
+            : WL(empty),
         WL(uiHighlightConditional, [=] { return getActiveButton(tab) == num; }),
         tutorialElem,
         line.buildHorizontalList())));
@@ -294,14 +297,16 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
       };
       auto line = WL(getListBuilder);
       line.addElem(WL(viewObject, buttons[i].viewId), 35);
-      char hotkey = buttons[i].hotkeyOpensGroup ? buttons[i].hotkey : 0;
+      optional<Keybinding> key;
+      if (buttons[i].hotkeyOpensGroup)
+        key = buttons[i].key;
       SGuiElem tutorialElem = WL(empty);
       if (tutorialHighlight)
         tutorialElem = WL(conditional, WL(tutorialHighlight),
              [=]{ return !wasTutorialClicked(combineHash(lastGroup), *tutorialHighlight); });
-      line.addElemAuto(WL(label, lastGroup, Color::WHITE, hotkey));
+      line.addElemAuto(WL(label, lastGroup, Color::WHITE));
       elems.addElem(WL(stack, makeVec(
-          WL(keyHandlerChar, buttonFunHotkey, hotkey, true, true),
+          buttons[i].key ? WL(keyHandler, buttonFunHotkey, *buttons[i].key, true) : WL(empty),
           WL(button, labelFun),
           tutorialElem,
           WL(uiHighlightConditional, [=] { return activeGroup == lastGroup;}),
@@ -558,16 +563,12 @@ void GuiBuilder::setGameSpeed(GameSpeed speed) {
   gameSpeed = speed;
 }
 
-static char getHotkeyChar(GuiBuilder::GameSpeed speed) {
-  return '1' + int(speed);
-}
-
-static SDL_Keycode getHotkey(GuiBuilder::GameSpeed speed) {
+static Keybinding getHotkey(GuiBuilder::GameSpeed speed) {
   switch (speed) {
-    case GuiBuilder::GameSpeed::SLOW: return SDL::SDLK_1;
-    case GuiBuilder::GameSpeed::NORMAL: return SDL::SDLK_2;
-    case GuiBuilder::GameSpeed::FAST: return SDL::SDLK_3;
-    case GuiBuilder::GameSpeed::VERY_FAST: return SDL::SDLK_4;
+    case GuiBuilder::GameSpeed::SLOW: return Keybinding("SPEED_SLOW");
+    case GuiBuilder::GameSpeed::NORMAL: return Keybinding("SPEED_NORMAL");
+    case GuiBuilder::GameSpeed::FAST: return Keybinding("SPEED_FAST");
+    case GuiBuilder::GameSpeed::VERY_FAST: return Keybinding("SPEED_VERY_FAST");
   }
 }
 
@@ -584,21 +585,17 @@ SGuiElem GuiBuilder::drawGameSpeedDialog() {
   vector<SGuiElem> hotkeys;
   lines.push_back(WL(stack,
         WL(uiHighlightMouseOver),
-        WL(getListBuilder, keyMargin)
-            .addElem(WL(label, "pause"))
-            .addElem(WL(label, "[space]")).buildHorizontalList(),
+        WL(label, "pause"),
         WL(button, pauseFun)));
-  hotkeys.push_back(WL(keyHandler, pauseFun, {gui.getKey(SDL::SDLK_SPACE)}));
+  hotkeys.push_back(WL(keyHandler, pauseFun, Keybinding("PAUSE")));
   for (GameSpeed speed : ENUM_ALL(GameSpeed)) {
     auto speedFun = [=] { gameSpeed = speed; gameSpeedDialogOpen = false; clock->cont();};
     auto colorFun = [this, speed] { return speed == gameSpeed ? Color::GREEN : Color::WHITE; };
     lines.push_back(WL(stack,
           WL(uiHighlightMouseOver),
-          WL(getListBuilder, keyMargin)
-              .addElem(WL(label, getGameSpeedName(speed), colorFun))
-              .addElem(WL(label, "'" + string(1, getHotkeyChar(speed)) + "' ", colorFun)).buildHorizontalList(),
+          WL(label, getGameSpeedName(speed), colorFun),
           WL(button, speedFun)));
-    hotkeys.push_back(WL(keyHandler, speedFun, {gui.getKey(getHotkey(speed))}));
+    hotkeys.push_back(WL(keyHandler, speedFun, getHotkey(speed)));
   }
   reverse(lines.begin(), lines.end());
   int margin = 20;
@@ -1010,21 +1007,23 @@ vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const vector<AttributeInfo>& a
         attrText += toStringWithSign(elem.bonus);
       return WL(stack, getTooltip({elem.name, elem.help}, THIS_LINE),
           WL(horizontalList, makeVec(
-              WL(icon, elem.attr),
+              WL(viewObject, elem.viewId),
               WL(margins, WL(label, attrText), 0, 2, 0, 0)), 30));
     };
-    ret.push_back(cache->get(getValue, THIS_LINE, elem));
+    if (elem.value != 0 || elem.bonus != 0)
+      ret.push_back(cache->get(getValue, THIS_LINE, elem));
   }
   return ret;
 }
 
 vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const ViewObject::CreatureAttributes& attributes) {
   vector<SGuiElem> ret;
-  for (auto attr : ENUM_ALL(AttrType))
-    ret.push_back(
-        WL(horizontalList, makeVec(
-          WL(icon, attr),
-          WL(margins, WL(label, toString((int) attributes[attr])), 0, 2, 0, 0)), 30));
+  for (auto& attr : attributes)
+    if (attr.second > 0)
+      ret.push_back(
+          WL(horizontalList, makeVec(
+            WL(viewObject, attr.first),
+            WL(margins, WL(label, toString((int) attr.second)), 0, 2, 0, 0)), 30));
   return ret;
 }
 
@@ -1092,7 +1091,7 @@ vector<string> GuiBuilder::getItemHint(const ItemInfo& item) {
 
 SGuiElem GuiBuilder::drawBestAttack(const BestAttack& info) {
   return WL(getListBuilder, 30)
-      .addElem(WL(icon, info.attr))
+      .addElem(WL(viewObject, info.viewId))
       .addElem(WL(topMargin, 2, WL(label, toString((int) info.value))))
       .buildHorizontalList();
 }
@@ -1169,26 +1168,23 @@ SGuiElem GuiBuilder::drawImmigrantCreature(const ImmigrantCreatureInfo& creature
   lines.addSpace(legendLineHeight / 2);
   lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(creature.attributes)));
   bool trainingHeader = false;
-  for (auto expType : ENUM_ALL(ExperienceType))
-    if (creature.trainingLimits[expType] > 0) {
-      if (!trainingHeader)
-        lines.addElem(WL(label, "Training potential", Color::YELLOW));
-      trainingHeader = true;
-      auto line = WL(getListBuilder);
-      for (auto attr : getAttrIncreases()[expType]) {
-        line.addElem(WL(topMargin, -3, WL(icon, attr)), 22);
-      }
-      line.addSpace(15);
-      line.addElemAuto(WL(label, "+" + toString(creature.trainingLimits[expType])));
-      lines.addElem(line.buildHorizontalList());
+  for (auto& info : creature.trainingLimits) {
+    if (!trainingHeader)
+      lines.addElem(WL(label, "Training potential", Color::YELLOW));
+    trainingHeader = true;
+    auto line = WL(getListBuilder);
+    for (auto& viewId : info.attributes) {
+      line.addElem(WL(topMargin, -3, WL(viewObject, viewId)), 22);
     }
+    line.addSpace(15);
+    line.addElemAuto(WL(label, "+" + toString(info.limit)));
+    lines.addElem(line.buildHorizontalList());
+  }
   if (!creature.spellSchools.empty())
     lines.addElem(WL(getListBuilder)
         .addElemAuto(WL(label, "Spell schools: ", Color::YELLOW))
         .addElemAuto(WL(label, combine(creature.spellSchools, true)))
         .buildHorizontalList());
-  for (auto& line : drawSkillsList(creature.skills))
-    lines.addElem(std::move(line));
   return lines.buildVerticalList();
 }
 
@@ -1250,7 +1246,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info) {
           itemIndex = (*itemIndex + dir + totalElems) % totalElems;
         else
           itemIndex = 0;
-        lyingItemsScroll.set(*itemIndex * legendLineHeight + legendLineHeight / 2, clock->getRealMillis());
+        lyingItemsScroll.set(*itemIndex * legendLineHeight + legendLineHeight / 2.0, clock->getRealMillis());
     };
     content = WL(stack, makeVec(
           WL(focusable,
@@ -1422,18 +1418,6 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
   }
 }
 
-vector<SGuiElem> GuiBuilder::drawSkillsList(const vector<SkillInfo>& skills) {
-  vector<SGuiElem> lines;
-  if (!skills.empty()) {
-    lines.push_back(WL(label, "Skills", Color::YELLOW));
-    for (auto& elem : skills)
-      lines.push_back(WL(stack, getTooltip({elem.help}, THIS_LINE),
-            WL(label, capitalFirst(elem.name), Color::WHITE)));
-    lines.push_back(WL(empty));
-  }
-  return lines;
-}
-
 const Vec2 spellIconSize = Vec2(47, 47);
 
 SGuiElem GuiBuilder::getSpellIcon(const SpellInfo& spell, int index, bool active, GenericId creatureId) {
@@ -1490,13 +1474,6 @@ vector<SGuiElem> GuiBuilder::drawEffectsList(const PlayerInfo& info, bool toolti
   return lines;
 }
 
-static string getKeybindingDesc(char c) {
-  if (c == ' ')
-    return "[Space]";
-  else
-    return "["_s + (char)toupper(c) + "]";
-}
-
 static string toStringRounded(double value, double precision) {
   return toString(precision * round(value / precision));
 }
@@ -1509,9 +1486,9 @@ SGuiElem GuiBuilder::getExpIncreaseLine(const CreatureExperienceInfo& info, Expe
   int i = 0;
   vector<string> attrNames;
   auto attrIcons = WL(getListBuilder);
-  for (auto attr : getAttrIncreases()[type]) {
-    attrIcons.addElem(WL(topMargin, -3, WL(icon, attr)), 22);
-    attrNames.push_back(getName(attr));
+  for (auto& elem : info.attributes[type]) {
+    attrIcons.addElem(WL(topMargin, -3, WL(viewObject, elem.second)), 22);
+    attrNames.push_back(elem.first);
   }
   line.addElem(attrIcons.buildHorizontalList(), 80);
   if (!infoOnly)
@@ -1588,7 +1565,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
       isTutorial = true;
     if (info.commands[i].active)
       if (auto key = info.commands[i].keybinding)
-        keyElems.push_back(WL(keyHandlerChar, getButtonCallback({UserInputId::PLAYER_COMMAND, i}), *key));
+        keyElems.push_back(WL(keyHandler, getButtonCallback({UserInputId::PLAYER_COMMAND, i}), *key));
   }
   if (!info.commands.empty())
     list.addElem(WL(stack,
@@ -1607,23 +1584,26 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
                       exit = true;
                   };
                 auto labelColor = command.active ? Color::WHITE : Color::GRAY;
-                auto button = command.keybinding ? WL(buttonChar, buttonFun, *command.keybinding) : WL(button, buttonFun);
+                auto button = WL(button, buttonFun);
+                if (command.keybinding)
+                  button = WL(stack, std::move(button), WL(keyHandler, buttonFun, *command.keybinding));
                 if (command.tutorialHighlight)
                   button = WL(stack, WL(tutorialHighlight), std::move(button));
+                auto label = command.name;
+                if (command.keybinding)
+                  if (auto text = gui.getKeybindingMap()->getText(*command.keybinding))
+                    label = "[" + *text + "] " + std::move(label);
                 lines.addElem(WL(stack,
                     button,
                     command.active ? WL(uiHighlightMouseOver, Color::GREEN) : WL(empty),
                     WL(tooltip, {command.description}),
-                    WL(label, (command.keybinding ? getKeybindingDesc(*command.keybinding) + " " : ""_s) +
-                        command.name, labelColor)));
+                    WL(label, label, labelColor)));
               }
               drawMiniMenu(lines.buildVerticalList(), exit, bounds.bottomLeft(), 260, false);
          }))));
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
   list.addSpace();
-  for (auto& elem : drawSkillsList(info.skills))
-    list.addElem(std::move(elem));
   if (auto spells = drawSpellsList(info.spells, info.creatureId.getGenericId(), true)) {
     list.addElemAuto(std::move(spells));
     list.addSpace();
@@ -1755,13 +1735,28 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
       vList.addElem(orderList.buildHorizontalList());
       vList.addSpace(legendLineHeight / 2);
     }
-    vList.addElem(WL(buttonLabel, "Control mode: "_s + getControlModeName(*info.controlMode) + "",
-        WL(button, getButtonCallback(UserInputId::TOGGLE_CONTROL_MODE), gui.getKey(SDL::SDLK_g))));
+    auto callback = getButtonCallback(UserInputId::TOGGLE_CONTROL_MODE);
+    auto label = "Control mode: "_s + getControlModeName(*info.controlMode);
+    auto keybinding = Keybinding("TOGGLE_CONTROL_MODE");
+    if (auto text = gui.getKeybindingMap()->getText(keybinding))
+      label = "[" + *text + "] " + label;
+    vList.addElem(WL(stack,
+        WL(buttonLabel, label, WL(button, callback)),
+        WL(keyHandler, callback, keybinding)
+    ));
     vList.addSpace(legendLineHeight / 2);
   }
-  if (info.canExitControlMode)
-    vList.addElem(WL(buttonLabel, "Exit control mode",
-        WL(button, getButtonCallback(UserInputId::EXIT_CONTROL_MODE), gui.getKey(SDL::SDLK_u))));
+  if (info.canExitControlMode) {
+    auto callback = getButtonCallback(UserInputId::EXIT_CONTROL_MODE);
+    auto label = "Exit control mode"_s;
+    auto keybinding = Keybinding("EXIT_CONTROL_MODE");
+    if (auto text = gui.getKeybindingMap()->getText(keybinding))
+      label = "[" + *text + "] " + label;
+    vList.addElem(WL(stack,
+        WL(buttonLabel, label, WL(button, callback)),
+        WL(keyHandler, callback, keybinding)
+    ));
+  }
   vList.addSpace(10);
   vList.addElem(WL(margins, WL(sprite, GuiFactory::TexId::HORI_LINE, GuiFactory::Alignment::TOP), -6, 0, -6, 0), 10);
   vector<SGuiElem> others;
@@ -2454,8 +2449,6 @@ SGuiElem GuiBuilder::drawBestiaryPage(const PlayerInfo& minion) {
     leftLines.addElem(line.buildHorizontalList());
   }
   leftLines.addSpace();
-  for (auto& elem : drawSkillsList(minion.skills))
-    leftLines.addElem(std::move(elem));
   if (auto spells = drawSpellsList(minion.spells, minion.creatureId.getGenericId(), false))
     leftLines.addElemAuto(std::move(spells));
   int topMargin = list.getSize() + 20;
@@ -3444,13 +3437,16 @@ SGuiElem GuiBuilder::drawAIButton(const PlayerInfo& minion) {
 SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem> attrs) {
   if (attrs.empty())
     return WL(empty);
-  vector<SGuiElem> lines[2];
-  for (int i : All(attrs))
-    lines[i % 2].push_back(std::move(attrs[i]));
-  int elemWidth = 100;
-  return WL(verticalList, makeVec(
-      WL(horizontalList, std::move(lines[0]), elemWidth),
-      WL(horizontalList, std::move(lines[1]), elemWidth)), legendLineHeight);
+  vector<vector<SGuiElem>> lines = {{}};
+  for (int i : All(attrs)) {
+    lines.back().push_back(std::move(attrs[i]));
+    if (lines.back().size() >= 3)
+      lines.emplace_back();
+  }
+  auto list = WL(getListBuilder, legendLineHeight);
+  for (auto& elem : lines)
+    list.addElem(WL(horizontalList, std::move(elem), 100));
+  return list.buildVerticalList();
 }
 
 SGuiElem GuiBuilder::drawEquipmentGroups(const PlayerInfo& minion) {
@@ -3720,8 +3716,6 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const vector<ViewI
   if (minion.canAssignQuarters)
     leftLines.addElem(drawQuartersButton(minion, allQuarters));
   leftLines.addSpace();
-  for (auto& elem : drawSkillsList(minion.skills))
-    leftLines.addElem(std::move(elem));
   if (auto spells = drawSpellsList(minion.spells, minion.creatureId.getGenericId(), false))
     leftLines.addElemAuto(std::move(spells));
   int topMargin = list.getSize() + 20;
@@ -4797,8 +4791,8 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
       auto ret = WL(preferredSize, legendLineHeight, legendLineHeight, WL(stack,
           WL(margins, WL(rectangle, Color(56, 36, 0), Color(57, 41, 0)), 2),
           WL(centerHoriz, WL(topMargin, -2, WL(mouseHighlight2,
-                                        WL(label, label, 24, enabled ? Color::YELLOW : Color::DARK_GRAY),
-                                        WL(label, label, 24, enabled ? textColor : Color::DARK_GRAY))))
+              WL(label, label, 24, enabled ? Color::YELLOW : Color::DARK_GRAY),
+              WL(label, label, 24, enabled ? textColor : Color::DARK_GRAY))))
       ));
       if (enabled)
         ret = WL(stack,
@@ -4808,11 +4802,16 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
     };
     auto line = WL(getListBuilder);
     if (!info->zLevels.empty())
-      line.addElemAuto(getButton(info->levelDepth > 0, "<", UserInput{UserInputId::SCROLL_STAIRS, -1 }));
+      line.addElemAuto(WL(stack,
+          getButton(info->levelDepth > 0, "<", UserInput{UserInputId::SCROLL_STAIRS, -1 }),
+          WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, -1}), Keybinding("SCROLL_Z_UP"))
+      ));
     line.addMiddleElem(WL(topMargin, 3, drawZLevelButton(*info, textColor)));
     if (!info->zLevels.empty())
-      line.addBackElemAuto(getButton(info->levelDepth < info->zLevels.size() - 1, ">",
-          UserInput{UserInputId::SCROLL_STAIRS, 1}));
+      line.addBackElemAuto(WL(stack,
+          getButton(info->levelDepth < info->zLevels.size() - 1, ">", UserInput{UserInputId::SCROLL_STAIRS, 1}),
+          WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, 1}), Keybinding("SCROLL_Z_DOWN"))
+      ));
     lines.addElem(WL(stack,
         WL(stopMouseMovement),
         WL(rectangle, Color(47, 31, 0), Color::BLACK),
@@ -4821,25 +4820,28 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
   }
   auto travelButton = [&] {
     if (gameInfo.tutorial || !gameInfo.isSingleMap)
-      return WL(stack,
-          getHintCallback({"Open world map. You can also press 't'."}),
+      return WL(stack, makeVec(
+          getHintCallback({"Open world map."}),
           WL(mouseHighlight2, WL(icon, GuiFactory::IconId::MINIMAP_WORLD2),
              WL(icon, GuiFactory::IconId::MINIMAP_WORLD1)),
           WL(conditional, WL(blink, WL(icon, GuiFactory::IconId::MINIMAP_WORLD2)), tutorialPredicate),
-          WL(button, getButtonCallback(UserInputId::DRAW_WORLD_MAP), gui.getKey(SDL::SDLK_t)));
+          WL(button, getButtonCallback(UserInputId::DRAW_WORLD_MAP)),
+          WL(keyHandler, getButtonCallback(UserInputId::DRAW_WORLD_MAP), Keybinding("OPEN_WORLD_MAP"))
+      ));
     else
       return WL(icon, GuiFactory::IconId::MINIMAP_WORLD1);
   }();
   return lines.addElemAuto(
       WL(centerHoriz, WL(minimapBar,
         WL(preferredSize, 48, 48, std::move(travelButton)),
-        WL(preferredSize, 48, 48, WL(stack,
-            getHintCallback({"Scroll to your character. You can also press 'k'."}),
+        WL(preferredSize, 48, 48, WL(stack, makeVec(
+            getHintCallback({"Scroll to your character."}),
             WL(mouseHighlight2, WL(icon, GuiFactory::IconId::MINIMAP_CENTER2),
                WL(icon, GuiFactory::IconId::MINIMAP_CENTER1)),
             WL(conditional, WL(blink, WL(icon, GuiFactory::IconId::MINIMAP_CENTER2)), tutorialPredicate),
-            WL(button, getButtonCallback(UserInputId::SCROLL_TO_HOME), gui.getKey(SDL::SDLK_k))
-            ))
+            WL(button, getButtonCallback(UserInputId::SCROLL_TO_HOME)),
+            WL(keyHandler, getButtonCallback(UserInputId::SCROLL_TO_HOME), Keybinding("SCROLL_TO_PC"))
+        )))
   ))).buildVerticalList();
 }
 

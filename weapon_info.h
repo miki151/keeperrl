@@ -22,8 +22,8 @@ RICH_ENUM(AttackMsg,
 struct WeaponInfo {
   bool SERIAL(twoHanded) = false;
   AttackType SERIAL(attackType) = AttackType::HIT;
-  AttrType SERIAL(meleeAttackAttr) = AttrType::DAMAGE;
-  vector<VictimEffect> SERIAL(victimEffect);
+  AttrType SERIAL(meleeAttackAttr) = AttrType("DAMAGE");
+  vector<ItemPrefixes::VictimEffect> SERIAL(victimEffect);
   vector<Effect> SERIAL(attackerEffect);
   AttackMsg SERIAL(attackMsg) = AttackMsg::SWING;
   bool SERIAL(itselfMessage) = false;

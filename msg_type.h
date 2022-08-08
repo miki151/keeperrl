@@ -5,7 +5,6 @@
 RICH_ENUM(
   MsgType,
   FEEL, // better
-  BLEEDING_STOPS,
   COLLAPSE,
   FALL,
   FALL_ASLEEP,

@@ -3,7 +3,6 @@
 #include "util.h"
 
 class Sound;
-class Skill;
 
 class DestroyAction {
   public:
@@ -18,7 +17,7 @@ class DestroyAction {
   bool canDestroyFriendly() const;
   bool canNavigate(const Creature*) const;
   MinionActivity getMinionActivity() const;
-  optional<SkillId> getDestroyingSkillMultiplier() const;
+  double getDamage(Creature*) const;
 
   SERIALIZATION_DECL(DestroyAction)
 
@@ -31,6 +30,5 @@ RICH_ENUM(DestroyAction::Type,
   BASH,
   CUT,
   DIG,
-  HOSTILE_DIG,
-  HOSTILE_DIG_NO_SKILL
+  HOSTILE_DIG
 );

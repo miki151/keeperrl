@@ -36,7 +36,7 @@ class Renderer {
   static constexpr int nominalSize = 24;
 
   Renderer(Clock*, const string& windowTile, const DirectoryPath& fontPath, const FilePath& cursorPath,
-      const FilePath& clickedCursorPath, const FilePath& logoPath);
+      const FilePath& clickedCursorPath, const FilePath& iconPath);
   void setFullscreen(bool);
   void setFullscreenMode(int);
   void setVsync(bool);
@@ -79,6 +79,7 @@ class Renderer {
   void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, double scale = 1, Color = Color::WHITE);
   void drawViewObject(Vec2 pos, const ViewObject&);
   void drawViewObject(Vec2 pos, ViewId, bool useSprite, double scale = 1, Color = Color::WHITE);
+  void drawViewObject(Vec2 pos, vector<ViewId>, bool useSprite, double scale = 1, Color = Color::WHITE);
   void drawViewObject(Vec2 pos, ViewId, bool useSprite, Vec2 size, Color = Color::WHITE, SpriteOrientation = {});
   void drawViewObject(Vec2 pos, ViewId, Color = Color::WHITE);
   void drawAsciiBackground(ViewId, Rectangle bounds);

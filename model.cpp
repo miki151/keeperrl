@@ -387,7 +387,7 @@ bool Model::canTransferCreature(Creature* c, Vec2 travelDir) {
   return false;
 }
 
-vector<Creature*> Model::getAllCreatures() const { 
+vector<Creature*> Model::getAllCreatures() const {
   return timeQueue->getAllCreatures();
 }
 

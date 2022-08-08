@@ -13,10 +13,16 @@ class RetiredGames;
 
 struct CampaignSetup;
 
+struct VillainViewId {
+  ViewIdList SERIAL(ids);
+  SERIALIZE_ALL(ids)
+  void serialize(PrettyInputArchive& ar, unsigned int);
+};
+
 class Campaign {
   public:
   struct VillainInfo {
-    ViewId SERIAL(viewId);
+    VillainViewId SERIAL(viewId);
     EnemyId SERIAL(enemyId);
     string SERIAL(name);
     bool SERIAL(alwaysPresent) = false;

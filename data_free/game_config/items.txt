@@ -12,362 +12,112 @@
     effect = SummonEnemy "AUTOMATON" {1} 100
     storageIds = {"automaton_parts" "equipment"}
   }
-"HumanoidHeadWood"
+Def HUMANOID_HEAD(Suffix, Color, Adjective, ResourceId, Defense)
+"HumanoidHead" + Suffix
   {
-    viewId = { "automaton_head" Rgb 180 140 55 255 }
-    name = "wooden humanoid head"
+    viewId = { "automaton_head" Rgb Color 255 }
+    name = Adjective + " humanoid head"
     shortName = "humanoid head"
     weight = 4
+    craftingCost = ResourceId 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "a humanoid head"
-      Description "Allows using equipment."
+      Name "an " + Adjective + " humanoid head"
+      Description "Allows using equipment. Adds a +" + Defense + " defense bonus."
       {
+        IncreaseAttr DEFENSE Defense
         MakeHumanoid
         AddBodyPart HEAD 1 none
-        AddAutomatonPart 2 "humanoid" { "installed_head" Rgb 180 140 55 255 }
+        AddAutomatonPart 2 "humanoid" { "installed_head" Rgb Color 255 }
       }
-    storageIds = {"automaton_parts" "equipment"}
     upgradeType = {ARMOR}
+    storageIds = {"automaton_parts" "equipment"}
   }
-"ArcherHeadWood" inherit "HumanoidHeadWood"
+End
+Def ARCHER_HEAD(Suffix, Color, Adjective, ResourceId, Defense, Damage)
+"ArcherHead" + Suffix  
   {
-    viewId = { "automaton_arrow" Rgb 180 140 55 255 }
-    name = "wooden arrow shooting head"
+    viewId = { "automaton_arrow" Rgb Color 255 }
+    name = Adjective + " arrow shooting head"
     shortName = "arrow shooting"
+    weight = 4
+    craftingCost = ResourceId 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "an archer head"
-      Description "Allows shooting arrows. Second head adds additional +10 ranged damage."
+      Name Adjective + " arrow shooting head"
+      Description "Allows shooting arrows. Adds +" + Defense + " defense. Second head adds additional +" + Damage + " ranged damage."
       {
-        IncreaseAttr RANGED_DAMAGE 25
+        IncreaseAttr RANGED_DAMAGE (Damage * 2)
+        IncreaseAttr DEFENSE Defense
         AddBodyPart HEAD 1 none
         FirstSuccessful {
           GrantAbility "shoot arrow"
-          IncreaseAttr RANGED_DAMAGE -15
+          IncreaseAttr RANGED_DAMAGE -Damage
         }
-        AddAutomatonPart 2 "archer" { "installed_arrow" Rgb 180 140 55 255 }
-      }
-    upgradeType = {ARMOR}
-  }
-"AutomatonLegsWood"
-  {
-    viewId = { "automaton_legs" Rgb 180 140 55 255 }
-    name = "pair of wooden legs"
-    shortName = "wooden legs"
-    weight = 8
-    upgradeInfo = AUTOMATONS_LOWER AssembledCreatureEffect
-      Name "legs"
-      Description "Adds mobility. Second pair grants the \"jump\" ability."
-      {
-        AddBodyPart LEG 2 none
-        FirstSuccessful {
-          RemovePermanent IMMOBILE
-          GrantAbility "jump"
-        }
-        AddAutomatonPart 0 "" { "installed_legs" Rgb 180 140 55 255 }
+        AddAutomatonPart 2 "archer" { "installed_arrow" Rgb Color 255 }
       }
     upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
-"AutomatonArmsWood"
+End
+Def FIRE_HEAD(Suffix, Color, Adjective, ResourceId, Defense, Damage)
+"FireHead" + Suffix
   {
-    viewId = { "automaton_arms" Rgb 180 140 55 255 }
-    name = "pair of wooden arms"
-    shortName = "wooden arms"
-    weight = 6
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "arms"
-      Description "Grants a melee attack and +8 damage bonus."
-      {
-        IncreaseAttr DAMAGE 8
-        AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 { attackMsg = SWING } }
-        AddAutomatonPart 1 "melee" { "installed_arms" Rgb 180 140 55 255 }
-      }
-    upgradeType = {ARMOR}
-    storageIds = {"automaton_parts" "equipment"}
-  }
-"AutomatonDrillWood"
-  {
-    viewId = { "automaton_drill" Rgb 180 140 55 255 }
-    name = "wooden drill"
-    weight = 6
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "a drill"
-      Description "Increases the digging skill by 20."
-      {
-        IncreaseSkill DIGGING 0.2
-        AddMinionTrait WORKER
-        AddBodyPart ARM 2 none
-        AddAutomatonPart 1 "drill" { "installed_drill" Rgb 180 140 55 255 }
-      }
-    upgradeType = {ARMOR}
-    storageIds = {"automaton_parts" "equipment"}
-  }
-"AutomatonCraftingWood"
-  {
-    viewId = { "automaton_crafting" Rgb 180 140 55 255 }
-    name = "wooden crafting arms"
-    weight = 6
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "crafting arms"
-      Description "Increases all crafting skills by 20."
-      {
-        IncreaseWorkshopSkill "WORKSHOP" 0.2
-        IncreaseWorkshopSkill "FORGE" 0.2
-        IncreaseWorkshopSkill "LABORATORY" 0.2
-        IncreaseWorkshopSkill "JEWELER" 0.2
-        AddAutomatonPart 1 "crafting" { "installed_crafting" Rgb 180 140 55 255 }
-      }
-    upgradeType = {ARMOR}
-    storageIds = {"automaton_parts" "equipment"}
-  }
-"HumanoidHeadIron"
-  {
-    viewId = { "automaton_head" Rgb 140 148 148 255 }
-    name = "iron humanoid head"
-    shortName = "humanoid head"
-    weight = 4
-    craftingCost = "IRON" 5
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "an iron head"
-      Description "Allows using equipment. Adds +2 defense bonus."
-      {
-        IncreaseAttr DEFENSE 2
-        MakeHumanoid
-        AddBodyPart HEAD 1 none
-        AddAutomatonPart 2 "humanoid" { "installed_head" Rgb 140 148 148 255 }
-      }
-    upgradeType = {ARMOR}
-    storageIds = {"automaton_parts" "equipment"}
-  }
-"ArcherHeadIron" inherit "HumanoidHeadIron"
-  {
-    viewId = { "automaton_arrow" Rgb 140 148 148 255 }
-    name = "iron arrow shooting head"
-    shortName = "arrow shooting"
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "an iron archer head"
-      Description "Allows shooting arrows. Adds +2 defense. Second head adds additional +15 ranged damage."
-      {
-        IncreaseAttr RANGED_DAMAGE 30
-        IncreaseAttr DEFENSE 2
-        AddBodyPart HEAD 1 none
-        FirstSuccessful {
-          GrantAbility "shoot arrow"
-          IncreaseAttr RANGED_DAMAGE -15
-        }
-        AddAutomatonPart 2 "archer" { "installed_arrow" Rgb 140 148 148 255 }
-      }
-    upgradeType = {ARMOR}
-    storageIds = {"automaton_parts" "equipment"}
-  }
-"FireHeadIron" inherit "HumanoidHeadIron"
-  {
-    viewId = { "automaton_fire" Rgb 140 148 148 255 }
-    name = "iron fire breathing head"
+    viewId = { "automaton_fire" Rgb Color 255 }
+    name = Adjective + " fire breathing head"
     shortName = "fire breathing"
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "an iron fire breathing head"
-      Description "Grants the \"fire breath\" ability. Adds +2 defense."
-      {
-        GrantAbility "fire breath"
-        IncreaseAttr DEFENSE 2
-        AddBodyPart HEAD 1 none
-        AddAutomatonPart 2 "fire" { "installed_fire" Rgb 140 148 148 255 }
-      }
-    upgradeType = {ARMOR}
-    storageIds = {"automaton_parts" "equipment"}
-  }
-"AcidHeadIron" inherit "HumanoidHeadIron"
-  {
-    viewId = { "automaton_acid" Rgb 140 148 148 255 }
-    name = "iron acid spitting head"
-    shortName = "acid spitting"
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "an iron acid spitting head"
-      Description "Grants the \"acid stream\" ability. Adds +2 defense."
-      {
-        GrantAbility "acid stream"
-        IncreaseAttr DEFENSE 2
-        AddBodyPart HEAD 1 none
-        AddAutomatonPart 2 "acid" { "installed_acid" Rgb 140 148 148 255 }
-      }
-    upgradeType = {ARMOR}
-    storageIds = {"automaton_parts" "equipment"}
-  }
-"AutomatonLegsIron"
-  {
-    viewId = { "automaton_legs" Rgb 140 148 148 255 }
-    name = "pair of iron legs"
-    shortName = "iron legs"
-    weight = 8
-    craftingCost = "IRON" 5
-    upgradeInfo = AUTOMATONS_LOWER AssembledCreatureEffect
-      Description "Adds mobility. Second pair grants the \"jump\" ability."
-      Name "iron legs"
-      {
-        AddBodyPart LEG 2 none
-        FirstSuccessful {
-            RemovePermanent IMMOBILE
-            GrantAbility "jump"
-        }
-        AddAutomatonPart 0 "" { "installed_legs" Rgb 140 148 148 255 }
-      }
-    upgradeType = {ARMOR}
-    storageIds = {"automaton_parts" "equipment"}
-  }
-"AutomatonArmsIron"
-  {
-    viewId = { "automaton_arms" Rgb 140 148 148 255 }
-    name = "pair of iron arms"
-    shortName = "iron arms"
-    weight = 6
-    craftingCost = "IRON" 5
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "iron arms"
-      Description "Grants a melee attack and +12 damage bonus."
-      {
-        IncreaseAttr DAMAGE 12
-        AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 { attackMsg = SWING } }
-        AddAutomatonPart 1 "melee" { "installed_arms" Rgb 140 148 148 255 }
-      }
-    upgradeType = {WEAPON}
-    storageIds = {"automaton_parts" "equipment"}
-  }
-"AutomatonDrillIron"
-  {
-    viewId = { "automaton_drill" Rgb 140 148 148 255 }
-    name = "iron drill"
-    shortName = "iron drill"
-    weight = 6
-    craftingCost = "IRON" 5
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "an iron drill"
-      Description "Increases the digging skill by 30."
-      {
-        IncreaseSkill DIGGING 0.3
-        AddMinionTrait WORKER
-        AddBodyPart ARM 2 none
-        AddAutomatonPart 1 "drill" { "installed_drill" Rgb 140 148 148 255 }
-      }
-    storageIds = {"automaton_parts" "equipment"}
-  }
-"AutomatonCraftingIron"
-  {
-    viewId = { "automaton_crafting" Rgb 140 148 148 255 }
-    name = "iron crafting arms"
-    weight = 6
-    craftingCost = "IRON" 5
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "iron crafting arms"
-      Description "Increases all crafting skills by 30."
-      {
-        IncreaseWorkshopSkill "WORKSHOP" 0.3
-        IncreaseWorkshopSkill "FORGE" 0.3
-        IncreaseWorkshopSkill "LABORATORY" 0.3
-        IncreaseWorkshopSkill "JEWELER" 0.3
-        AddAutomatonPart 1 "crafting" { "installed_crafting" Rgb 140 148 148 255 }
-      }
-    storageIds = {"automaton_parts" "equipment"}
-  }
-"RepairAutomatonArmsIron" inherit "AutomatonArmsIron"
-  {
-    viewId = { "automaton_repair" Rgb 140 148 148 255 }
-    name = "pair of iron repair arms"
-    shortName = "repair arms"
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "iron repair arms"
-      Description "Grants the ability to repair other automatons. Adds +2 defense."
-      {
-        GrantAbility "repair automaton"
-        IncreaseAttr DEFENSE 2
-        AddBodyPart ARM 2 none
-        AddAutomatonPart 1 "repair" { "installed_repair" Rgb 140 148 148 255 }
-      }
-    storageIds = {"automaton_parts" "equipment"}
-  }
-"HumanoidHeadAda"
-  {
-    viewId = { "automaton_head" Rgb 148 189 189 255 }
-    name = "adamantine humanoid head"
-    shortName = "humanoid head"
     weight = 4
-    craftingCost = "ADA" 5
+    craftingCost = ResourceId 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "an adamantine humanoid head"
-      Description "Allows using equipment. Adds +2 defense bonus."
+      Name Adjective + " fire breathing head"
+      Description "Grants the \"fire breath\" ability. Adds +" + Defense + " defense. Second head adds additional +" + Damage + " fire damage."
       {
-        IncreaseAttr DEFENSE 4
-        MakeHumanoid
-        AddBodyPart HEAD 1 none
-        AddAutomatonPart 2 "humanoid" { "installed_head" Rgb 148 189 189 255 }
-      }
-    upgradeType = {ARMOR}
-    storageIds = {"automaton_parts" "equipment"}
-  }
-"ArcherHeadAda" inherit "HumanoidHeadAda"
-  {
-    viewId = { "automaton_arrow" Rgb 148 189 189 255 }
-    name = "adamantine arrow shooting head"
-    shortName = "arrow shooting"
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "an adamantine arrow shooting head"
-      Description "Allows shooting arrows. Adds +4 defense. Second head adds additional +20 ranged damage."
-      {
-        IncreaseAttr RANGED_DAMAGE 40
-        IncreaseAttr DEFENSE 4
+        IncreaseAttr FIRE_DAMAGE (Damage * 2)
+        IncreaseAttr DEFENSE Defense
         AddBodyPart HEAD 1 none
         FirstSuccessful {
-          GrantAbility "shoot arrow"
-          IncreaseAttr RANGED_DAMAGE -20
+          GrantAbility "fire breath"
+          IncreaseAttr FIRE_DAMAGE -Damage
         }
-        AddAutomatonPart 2 "archer" { "installed_arrow" Rgb 148 189 189 255 }
+        AddAutomatonPart 2 "fire" { "installed_fire" Rgb Color 255 }
       }
     upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
-"FireHeadAda" inherit "HumanoidHeadAda"
+End
+Def ACID_HEAD(Suffix, Color, Adjective, ResourceId, Defense, Damage)
+"AcidHead" + Suffix
   {
-    viewId = { "automaton_fire" Rgb 148 189 189 255 }
-    name = "adamantine fire breathing head"
-    shortName = "fire breathing"
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "an adamantine fire breathing head"
-      Description "Grants the \"fire breath\" ability. Adds +4 defense."
-      {
-        GrantAbility "fire breath"
-        IncreaseAttr DEFENSE 4
-        AddBodyPart HEAD 1 none
-        AddAutomatonPart 2 "fire" { "installed_fire" Rgb 148 189 189 255 }
-      }
-    upgradeType = {ARMOR}
-    storageIds = {"automaton_parts" "equipment"}
-  }
-"AcidHeadAda" inherit "HumanoidHeadAda"
-  {
-    viewId = { "automaton_acid" Rgb 148 189 189 255 }
-    name = "adamantine acid spitting head"
+    viewId = { "automaton_acid" Rgb Color 255 }
+    name = Adjective + " acid spitting head"
     shortName = "acid spitting"
+    weight = 4
+    craftingCost = ResourceId 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "an adamantine acid spitting head"
-      Description "Grants the \"acid stream\" ability. Adds +4 defense."
+      Name Adjective + " acid spitting head"
+      Description "Grants the \"acid stream\" ability. Adds +" + Defense + " defense. Second head adds additional +" + Damage + " acid damage."
       {
-        GrantAbility "acid stream"
-        IncreaseAttr DEFENSE 4
+        IncreaseAttr ACID_DAMAGE (Damage * 2)
+        IncreaseAttr DEFENSE Defense
         AddBodyPart HEAD 1 none
-        AddAutomatonPart 2 "acid" { "installed_acid" Rgb 148 189 189 255 }
+        FirstSuccessful {
+          GrantAbility "acid stream"
+          IncreaseAttr ACID_DAMAGE -Damage
+        }
+        AddAutomatonPart 2 "acid" { "installed_acid" Rgb Color 255 }
       }
     upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
-"AutomatonLegsAda"
+End
+Def LEGS(Suffix, Color, Adjective, ResourceId, Defense)
+"AutomatonLegs" + Suffix
   {
-    viewId = { "automaton_legs" Rgb 148 189 189 255 }
-    name = "pair of adamantine legs"
-    shortName = "adamantine legs"
+    viewId = { "automaton_legs" Rgb Color 255 }
+    name = "pair of " + Adjective + " legs"
+    shortName = Adjective + " legs"
     weight = 8
-    craftingCost = "ADA" 5
+    craftingCost = ResourceId 5
     upgradeInfo = AUTOMATONS_LOWER AssembledCreatureEffect
-      Name "adamantine legs"
+      Name Adjective + " legs"
       Description "Adds mobility. Second pair grants the \"jump\" ability."
       {
         AddBodyPart LEG 2 none
@@ -375,84 +125,151 @@
             RemovePermanent IMMOBILE
             GrantAbility "jump"
         }
-        AddAutomatonPart 0 "" { "installed_legs" Rgb 148 189 189 255 }
+        AddAutomatonPart 0 "" { "installed_legs" Rgb Color 255 }
       }
     upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
-"AutomatonArmsAda"
+End
+Def ARMS(Suffix, Color, Adjective, ResourceId, Damage, Attr, AttrName)
+"AutomatonArms" + Suffix
   {
-    viewId = { "automaton_arms" Rgb 148 189 189 255 }
-    name = "pair of adamantine arms"
-    shortName = "adamantine arms"
+    viewId = { "automaton_arms" Rgb Color 255 }
+    name = "pair of " + Adjective + " arms"
+    shortName = Adjective + " arms"
     weight = 6
-    craftingCost = "ADA" 5
+    craftingCost = ResourceId 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "adamantine arms"
-      Description "Grants a melee attack and +18 damage bonus."
+      Name Adjective + " arms"
+      Description "Grants a melee attack and a +" + Damage + " " + AttrName + " bonus."
       {
-        IncreaseAttr DAMAGE 18
-        AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 { attackMsg = SWING } }
-        AddAutomatonPart 1 "melee" { "installed_arms" Rgb 148 189 189 255 }
+        IncreaseAttr Attr Damage
+        AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 {
+          attackMsg = SWING
+          meleeAttackAttr = Attr
+        } }
+        AddAutomatonPart 1 "melee" { "installed_arms" Rgb Color 255 }
       }
     upgradeType = {WEAPON}
     storageIds = {"automaton_parts" "equipment"}
   }
-"AutomatonDrillAda"
+End
+Def DRILL(Suffix, Color, Adjective, ResourceId, Digging)
+"AutomatonDrill" + Suffix
   {
-    viewId = { "automaton_drill" Rgb 148 189 189 255 }
-    name = "adamantine drill"
-    shortName = "adamantine drill"
+    viewId = { "automaton_drill" Rgb Color 255 }
+    name = Adjective + " drill"
+    shortName = Adjective + " drill"
     weight = 6
-    craftingCost = "ADA" 5
+    craftingCost = ResourceId 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "an adamantine drill"
-      Description "Increases the digging skill by 50."
+      Name "an " + Adjective + " drill"
+      Description "Increases the digging attribute by +" + Digging + "."
       {
-        IncreaseSkill DIGGING 0.5
+        IncreaseAttr DIGGING Digging
         AddMinionTrait WORKER
         AddBodyPart ARM 2 none
-        AddAutomatonPart 1 "drill" { "installed_drill" Rgb 148 189 189 255 }
+        AddAutomatonPart 1 "drill" { "installed_drill" Rgb Color 255 }
       }
     storageIds = {"automaton_parts" "equipment"}
   }
-"AutomatonCraftingAda"
+End
+Def CRAFTING_ARMS(Suffix, Color, Adjective, ResourceId, Skill)
+"AutomatonCrafting" + Suffix
   {
-    viewId = { "automaton_crafting" Rgb 148 189 189 255 }
-    name = "adamantine crafting arms"
+    viewId = { "automaton_crafting" Rgb Color 255 }
+    name = Adjective + " crafting arms"
     weight = 6
-    craftingCost = "ADA" 5
+    craftingCost = ResourceId 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "adamantine crafting arms"
-      Description "Increases all crafting skills by 50."
+      Name Adjective + " crafting arms"
+      Description "Increases all crafting attributes by " + Skill + "."
       {
-        IncreaseWorkshopSkill "WORKSHOP" 0.5
-        IncreaseWorkshopSkill "FORGE" 0.5
-        IncreaseWorkshopSkill "LABORATORY" 0.5
-        IncreaseWorkshopSkill "JEWELER" 0.5
-        AddAutomatonPart 1 "crafting" { "installed_crafting" Rgb 148 189 189 255 }
+        IncreaseAttr "WORKSHOP" Skill
+        IncreaseAttr "FORGE" Skill
+        IncreaseAttr "LABORATORY" Skill
+        IncreaseAttr "JEWELER" Skill
+        AddAutomatonPart 1 "crafting" { "installed_crafting" Rgb Color 255 }
       }
     storageIds = {"automaton_parts" "equipment"}
   }
-"RepairAutomatonArmsAda" inherit "AutomatonArmsAda"
+End
+Def REPAIR_ARMS(Suffix, Color, Adjective, ResourceId, Defense)
+"RepairAutomatonArms" + Suffix
   {
-    viewId = { "automaton_repair" Rgb 148 189 189 255 }
-    name = "pair of adamantine repair arms"
+    viewId = { "automaton_repair" Rgb Color 255 }
+    name = "pair of " + Adjective + " repair arms"
     shortName = "repair arms"
+    weight = 6
+    craftingCost = ResourceId 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "adamantine repair arms"
-      Description "Grants the ability to repair other automatons. Adds +4 defense."
+      Name Adjective + " repair arms"
+      Description "Grants the ability to repair other automatons. Adds +" + Defense + " defense."
       {
         GrantAbility "repair automaton"
-        IncreaseAttr DEFENSE 4
+        IncreaseAttr DEFENSE Defense
         AddBodyPart ARM 2 none
-        AddAutomatonPart 1 "repair" { "installed_repair" Rgb 148 189 189 255 }
+        AddAutomatonPart 1 "repair" { "installed_repair" Rgb Color 255 }
       }
     storageIds = {"automaton_parts" "equipment"}
   }
+End
+
+HUMANOID_HEAD("Wood", 180 140 55, "wooden", WOOD, 2)
+ARCHER_HEAD("Wood", 180 140 55, "wooden", WOOD, 2, 12)
+LEGS("Wood", 180 140 55, "wooden", WOOD, 2)
+ARMS("Wood", 180 140 55, "wooden", WOOD, 8, DAMAGE, "melee damage")
+DRILL("Wood", 180 140 55, "wooden", WOOD, 10)
+CRAFTING_ARMS("Wood", 180 140 55, "wooden", WOOD, 10)
+HUMANOID_HEAD("Iron", 140 148 148, "iron", IRON, 4)
+ARCHER_HEAD("Iron", 140 148 148, "iron", IRON, 4, 15)
+FIRE_HEAD("Iron", 140 148 148, "iron", IRON, 5, 15)
+ACID_HEAD("Iron", 140 148 148, "iron", IRON, 5, 15)
+LEGS("Iron", 140 148 148, "iron", IRON, 5)
+ARMS("Iron", 140 148 148, "iron", IRON, 12, DAMAGE, "melee damage")
+DRILL("Iron", 140 148 148, "iron", IRON, 15)
+CRAFTING_ARMS("Iron", 140 148 148, "iron", IRON, 15)
+REPAIR_ARMS("Iron", 140 148 148, "iron", IRON, 5)
+HUMANOID_HEAD("Ada", 148 189 189, "admantine", ADA, 6)
+ARCHER_HEAD("Ada", 148 189 189, "adamantine", ADA, 6, 20)
+FIRE_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, 20)
+ACID_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, 20)
+LEGS("Ada", 148 189 189, "adamantine", ADA, 8)
+ARMS("Ada", 148 189 189, "adamantine", ADA, 18, DAMAGE, "melee damage")
+DRILL("Ada", 148 189 189, "adamantine", ADA, 20)
+CRAFTING_ARMS("Ada", 148 189 189, "adamantine", ADA, 25)
+REPAIR_ARMS("Ada", 148 189 189, "adamantine", ADA, 8)
+ARMS("Infernite", 220 148 148, "infernite", INFERNITE, 18, FIRE_DAMAGE, "fire damage")
+ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage")
+
+"KaboomHead"
+  {
+    viewId = { "kaboom_head" }
+    name = "kaboom head"
+    shortName = "kaboom head"
+    weight = 4
+    craftingCost = IRON 15
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "kaboom head"
+      Description "Explodes, destroying the equiped automaton and wounding everything around it with +50 fire damage."
+      {
+        AddBodyPart HEAD 1 { Intrinsic { "touch_attack" } "self destruct" 1 {
+          attackType = HIT
+          meleeAttackAttr = FIRE_DAMAGE
+          attackMsg = THRUST
+          itselfMessage = true
+          attackerEffect = {Suicide DIE}
+          victimEffect = {1.0 CircularBlast 1.0 Area 1 Fire{50}} } }
+        AddAutomatonPart 2 "kaboom" { "installed_kaboom_head" }
+      }
+    upgradeType = {ARMOR}
+    storageIds = {"automaton_parts" "equipment"}
+  }
+
 "Knife"
   {
     viewId = { "knife" }
+    equipedViewId = { "knife_v" }
     name = "knife"
     plural = "knives"
     itemClass = WEAPON
@@ -505,6 +322,7 @@
 "Spear"
   {
     viewId = { "spear" }
+    equipedViewId = { "spear_v" }
     name = "spear"
     itemClass = WEAPON
     equipmentSlot = WEAPON
@@ -526,6 +344,7 @@
 "Sword"
   {
     viewId = { "sword" }
+    equipedViewId = { "sword_v" }
     name = "sword"
     itemClass = WEAPON
     equipmentSlot = WEAPON
@@ -539,7 +358,7 @@
       attackType = CUT
     }
     genPrefixes = {
-      1 VictimEffect 0.3 Fire
+      1 VictimEffect 0.3 Fire { 25 }
       1 VictimEffect 0.1 Lasting POISON
       1 LastingEffect RAGE
       1 JoinPrefixes {
@@ -553,16 +372,18 @@
   }
 "AdaSword" inherit "Sword"
   {
-    viewId = { "ada_sword" }
+    viewId = { "sword" Rgb 148 189 189 255 }
+    equipedViewId = { "sword_v" Rgb 148 189 189 255 }
     name = "adamantine sword"
+    shortName = "adamantine"
     modifiers = {
       DAMAGE 11
     }
     price = 20
     craftingCost = "ADA" 20
     genPrefixes = {
-      1 VictimEffect 0.2 Acid
-      1 VictimEffect 0.3 Fire
+      1 VictimEffect 0.2 Acid{30}
+      1 VictimEffect 0.3 Fire{30}
       1 VictimEffect 0.2 Lasting POISON
       1 LastingEffect RAGE
     }
@@ -570,27 +391,28 @@
   }
 Def InferniteEffect()
   Filter Not LastingEffect FIRE_RESISTANT {
-    CreatureMessage "are burnt by the infernite" "is burnt by the infernite"
+    CreatureMessage {"are burnt by the infernite" "is burnt by the infernite"}
     Bleed 0.01 "infernite"
   }
 End
 "InferniteSword" inherit "AdaSword"
   {
     viewId = { "infernite_sword" }
+    equipedViewId = { "infernite_sword_v" }
     name = "infernite sword"
+    shortName = "infernite"
     price = 200
     craftingCost = "INFERNITE" 20
-    weaponInfo = append {
-      victimEffect = {0.5 Fire}
-    }
     carriedTickEffect = InferniteEffect()
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
     ownedEffect = LIGHT_SOURCE
+    equipedEffect = {FIRE_DAMAGE}
     equipmentGroup = "infernite equipment"
   }
 "ElvenSword"
   {
-    viewId = { "elven_sword" }
+    viewId = { "sword" ColorId LIGHT_GREEN }
+    equipedViewId = { "sword_v" ColorId LIGHT_GREEN }
     name = "elven sword"
     itemClass = WEAPON
     equipmentSlot = WEAPON
@@ -612,6 +434,7 @@ End
 "BattleAxe"
   {
     viewId = { "battle_axe" }
+    equipedViewId = { "battle_axe_v" }
     name = "battle axe"
     itemClass = WEAPON
     equipmentSlot = WEAPON
@@ -626,7 +449,7 @@ End
       twoHanded = true
     }
     genPrefixes = {
-      1 VictimEffect 0.2 Lasting BLEEDING
+      1 VictimEffect 0.2 Lasting 50 BLEEDING
       1 LastingEffect RAGE
     }
     maxUpgrades = 1
@@ -635,7 +458,8 @@ End
   }
 "AdaBattleAxe" inherit "BattleAxe"
   {
-    viewId = { "ada_battle_axe" }
+    viewId = { "battle_axe" Rgb 148 189 189 255 }
+    equipedViewId = { "battle_axe_v" Rgb 148 189 189 255 }
     shortName = "adamantine"
     name = "adamantine battle axe"
     modifiers = {
@@ -644,7 +468,7 @@ End
     price = 150
     craftingCost = "ADA" 50
     genPrefixes = {
-      1 VictimEffect 0.5 Lasting BLEEDING
+      1 VictimEffect 0.5 Lasting 50 BLEEDING
     }
     maxUpgrades = 2
     equipmentGroup = "adamantine equipment"
@@ -652,21 +476,21 @@ End
 "InferniteBattleAxe" inherit "AdaBattleAxe"
   {
     viewId = { "infernite_battle_axe" }
+    equipedViewId = { "infernite_battle_axe_v" }
     shortName = "infernite"
     name = "infernite battle axe"
     price = 1500
     craftingCost = "INFERNITE" 50
-    weaponInfo = append {
-      victimEffect = {0.5 Fire}
-    }
     carriedTickEffect = InferniteEffect()
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
     ownedEffect = LIGHT_SOURCE
+    equipedEffect = {FIRE_DAMAGE}
     equipmentGroup = "infernite equipment"
   }
 "WarHammer"
   {
     viewId = { "war_hammer" }
+    equipedViewId = { "war_hammer_v" }
     name = "war hammer"
     itemClass = WEAPON
     equipmentSlot = WEAPON
@@ -689,7 +513,8 @@ End
   }
 "AdaWarHammer" inherit "WarHammer"
   {
-    viewId = { "ada_war_hammer" }
+    viewId = { "war_hammer" Rgb 148 189 189 255 }
+    equipedViewId = { "war_hammer_v" Rgb 148 189 189 255 }
     name = "adamantine war hammer"
     modifiers = {
       DAMAGE 15
@@ -705,21 +530,46 @@ End
 "InferniteWarHammer" inherit "AdaWarHammer"
   {
     viewId = { "infernite_war_hammer" }
+    equipedViewId = { "infernite_war_hammer_v" }
     shortName = "infernite"
     name = "infernite war hammer"
     price = 1000
     craftingCost = "INFERNITE" 40
-    weaponInfo = append {
-      victimEffect = {0.5 Fire}
-    }
     carriedTickEffect = InferniteEffect()
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
     ownedEffect = LIGHT_SOURCE
+    equipedEffect = {FIRE_DAMAGE}
+    equipmentGroup = "infernite equipment"
+  }
+"InferniteTrident"
+  {
+    viewId = { "infernite_trident" }
+    equipedViewId = { "infernite_trident_v" }
+    shortName = "infernite"
+    name = "infernite trident"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 8
+    modifiers = {
+      DAMAGE 25
+    }
+    price = 5000
+    weaponInfo = {
+      attackType = STAB
+      attackMsg = THRUST
+    }
+    craftingCost = "INFERNITE" 100
+    maxUpgrades = 10
+    autoEquipPredicate = LastingEffect FIRE_RESISTANT
+    ownedEffect = LIGHT_SOURCE
+    storageIds = {"weapons" "equipment"}
+    equipedEffect = {FIRE_DAMAGE}
     equipmentGroup = "infernite equipment"
   }
 "Club"
   {
     viewId = { "club" }
+    equipedViewId = { "club_v" }
     name = "club"
     itemClass = WEAPON
     equipmentSlot = WEAPON
@@ -738,6 +588,7 @@ End
 "HeavyClub"
   {
     viewId = { "heavy_club" }
+    equipedViewId = { "heavy_club_v" }
     name = "heavy club"
     itemClass = WEAPON
     equipmentSlot = WEAPON
@@ -757,6 +608,7 @@ End
 "WoodenStaff"
   {
     viewId = { "wooden_staff" }
+    equipedViewId = { "wooden_staff_v" }
     name = "wooden staff"
     itemClass = WEAPON
     equipmentSlot = WEAPON
@@ -780,6 +632,7 @@ End
 "IronStaff" inherit "WoodenStaff"
   {
     viewId = { "iron_staff" }
+    equipedViewId = { "iron_staff_v" }
     name = "iron staff"
     modifiers = {
       SPELL_DAMAGE 8
@@ -800,38 +653,49 @@ End
 "AdoxiumStaff" inherit "IronStaff"
   {
     viewId = { "adoxium_staff" }
+    equipedViewId = { "adoxium_staff_v" }
     name = "adoxium staff"
     modifiers = {
       SPELL_DAMAGE 13
+      SPELL_SPEED 10
     }
     price = 1800
     craftingCost = "ADOXIUM" 40
     genPrefixes = {
       1 VictimEffect 0.2 Lasting INSANITY
       1 VictimEffect 0.2 DestroyEquipment
-      1 VictimEffect 0.5 Fire
+      1 VictimEffect 0.5 Fire{20}
     }
     maxUpgrades = 5
     equipmentGroup = "adoxium equipment"
   }
-"Scythe"
+"ElvenStaff" inherit "WoodenStaff"
   {
-    viewId = { "sword" }
-    name = "scythe"
+    viewId = { "elven_staff" }
+    equipedViewId = { "elven_staff_v" }
+    name = "elven staff"
+    modifiers = {
+      SPELL_SPEED 20
+    }
+  }
+"Sceptre"
+  {
+    viewId = { "sceptre" }
+    equipedViewId = { "sceptre_v" }
+    name = "sceptre"
     itemClass = WEAPON
     equipmentSlot = WEAPON
-    weight = 5
+    weight = 20
     modifiers = {
-      DAMAGE 12
+      DAMAGE 5
     }
-    price = 20
+    price = 2000
     weaponInfo = {
-      attackType = CUT
-      twoHanded = true
-      meleeAttackAttr = SPELL_DAMAGE
+      attackType = HIT
     }
+    equipedAbility = { "kings charge" }
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = "iron equipment"
+    equipmentGroup = "artifact equipment"
   }
 "Bow"
   {
@@ -1017,7 +881,7 @@ End
     price = 250
     craftingCost = "ADOXIUM" 2
     modifiers = append {
-      SPELL_DAMAGE 2
+      SPELL_SPEED 10
     }
   }
 "LeatherArmor"
@@ -1227,6 +1091,7 @@ End
     modifiers = {
       DEFENSE 7
       SPELL_DAMAGE 4
+      ACID_DAMAGE 40
     }
     equipedAbility = {"acid stream"}
     maxUpgrades = 2
@@ -1284,7 +1149,7 @@ End
     price = 1600
     craftingCost = "ADOXIUM" 40
     modifiers = append {
-      SPELL_DAMAGE 5
+      SPELL_SPEED 25
     }
     equipmentGroup = "adoxium equipment"
   }
@@ -1492,7 +1357,7 @@ End
     price = 400
     craftingCost = "ADOXIUM" 16
     modifiers = append {
-      SPELL_DAMAGE 4
+      SPELL_SPEED 15
     }
     equipmentGroup = "adoxium equipment"
   }
@@ -1507,6 +1372,7 @@ End
     modifiers = {
       SPELL_DAMAGE 2
       DAMAGE -2
+      SPELL_SPEED 5
     }
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
@@ -1523,6 +1389,7 @@ End
     modifiers = {
       SPELL_DAMAGE 4
       DAMAGE -4
+      SPELL_SPEED 10
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
@@ -1539,6 +1406,7 @@ End
     modifiers = {
       SPELL_DAMAGE 6
       DAMAGE -6
+      SPELL_SPEED 15
     }
     maxUpgrades = 4
     storageIds = {"armor" "equipment"}
@@ -1617,7 +1485,7 @@ End
     price = 500
     craftingCost = "ADOXIUM" 24
     modifiers = append {
-      SPELL_DAMAGE 3
+      SPELL_SPEED 10
     }
     equipmentGroup = "adoxium equipment"
   }
@@ -1708,10 +1576,10 @@ End
   }
 "SpiderRing"
   {
-    viewId = { "ring_red" }
+    viewId = { "ring" ColorId WHITE }
     name = "ring of spider summoning"
     shortName = "spider"
-    equipedCompanion = 5 true false 0.01 { "SPIDER" }
+    equipedCompanion = 5 true none 0.01 { "SPIDER" }
     weight = 0.05
     equipmentSlot = RINGS
     price = 1
@@ -1720,10 +1588,10 @@ End
   }
 "DragonRing" inherit "SpiderRing"
   {
-    viewId = { "ring_red" }
+    viewId = { "ring" ColorId PURPLE }
     name = "ring of dragon summoning"
     shortName = "dragon"
-    equipedCompanion = 1 true false 0.001 { "RED_DRAGON" "WHITE_DRAGON" "YELLOW_DRAGON" "GREEN_DRAGON" }
+    equipedCompanion = 1 true none 0.001 { "RED_DRAGON" "WHITE_DRAGON" "YELLOW_DRAGON" "GREEN_DRAGON" }
     price = 2000
   }
 "Rock"
@@ -1801,7 +1669,8 @@ End
     price = 4
     resourceId = "INFERNITE"
     weight = 0.5
-    carriedTickEffect = InferniteEffect()
+# Turn off as it causes too much frustration with losing workers
+#    carriedTickEffect = InferniteEffect()
 # With light source on minions will try to use it as a torch.
 #    ownedEffect = LIGHT_SOURCE
     storageIds = {"resources"}

@@ -85,6 +85,12 @@ Def StandardButton(Content) {
 }
 End
 
+Def StandardButtonActivated(Content) {
+  ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
+  Position(MIDDLE, Margins(10, 5, 10, 8, Content))
+}
+End
+
 Def StandardButtonInactive(Content) {
   ButtonLayout(BUTTON_BOTTOM, BUTTON_SIDE, BUTTON_CORNER)
   Position(MIDDLE, Margins(10, 5, 10, 8, Content))

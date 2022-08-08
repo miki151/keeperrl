@@ -19,7 +19,6 @@
 #include "creature_factory.h"
 #include "monster_ai.h"
 #include "effect.h"
-#include "skill.h"
 #include "tribe.h"
 #include "player.h"
 #include "monster.h"

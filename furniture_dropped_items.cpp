@@ -4,6 +4,7 @@
 #include "item.h"
 #include "player_message.h"
 #include "furniture.h"
+#include "game.h"
 
 SERIALIZE_DEF(FurnitureDroppedItems, dropData)
 SERIALIZATION_CONSTRUCTOR_IMPL(FurnitureDroppedItems)
@@ -13,7 +14,7 @@ FurnitureDroppedItems::FurnitureDroppedItems(FurnitureDroppedItems::DropData d) 
 }
 
 vector<PItem> FurnitureDroppedItems::handle(Position pos, const Furniture* f, vector<PItem> items) const {
-  for (auto& stack : Item::stackItems(getWeakPointers(items))) {
+  for (auto& stack : Item::stackItems(pos.getGame()->getContentFactory(), getWeakPointers(items))) {
     PlayerMessage message(stack[0]->getPluralTheNameAndVerb(stack.size(),
         dropData.verbSingle, dropData.verbPlural) + " in the " + f->getName());
     pos.globalMessage(message);

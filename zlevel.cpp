@@ -42,19 +42,19 @@ static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCount
       },
       [&](const FullZLevel& level) {
         optional<SettlementInfo> settlement;
-        optional<EnemyInfo> enemy;
+        vector<EnemyInfo> enemy;
         if (level.enemy) {
-          enemy = getEnemy(*level.enemy, contentFactory);
-          settlement = enemy->settlement;
-          CHECK(level.attackChance < 0.0001 || !!enemy->behaviour)
+          enemy.push_back(getEnemy(*level.enemy, contentFactory));
+          settlement = enemy[0].settlement;
+          CHECK(level.attackChance < 0.0001 || !!enemy[0].behaviour)
               << "Z-level enemy " << level.enemy->data() << " has positive attack chance, but no attack behaviour defined";
           if (Random.chance(level.attackChance)) {
-            enemy->behaviour->triggers.push_back(Immediate{});
+            enemy[0].behaviour->triggers.push_back(Immediate{});
           }
         }
         return LevelMakerResult{
             LevelMaker::getFullZLevel(Random, settlement, resources, size.x, tribe, *contentFactory),
-            vector<EnemyInfo>()
+            std::move(enemy)
         };
       });
 }
@@ -62,7 +62,7 @@ static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCount
 LevelMakerResult getLevelMaker(RandomGen& random, ContentFactory* contentFactory, const vector<string>& zLevelGroups,
     int depth, TribeId tribe, Vec2 size) {
   vector<ZLevelInfo> levels;
-  for (auto& group : zLevelGroups) 
+  for (auto& group : zLevelGroups)
     levels.append(contentFactory->zLevels.at(group));
   auto zLevel = *chooseZLevel(random, levels, depth);
   auto res = *chooseResourceCounts(random, contentFactory->resources, depth);

@@ -61,7 +61,7 @@ struct ScriptedSubclassAdder {
 #define REGISTER_SCRIPTED_UI(CLASS)\
 ScriptedSubclassAdder adder##CLASS(#CLASS,\
   [](PrettyInputArchive& ar1) -> unique_ptr<ScriptedUIInterface>{\
-    auto ret = unique<CLASS>();\
+    auto ret = make_unique<CLASS>();\
     ar1(*ret);\
     return std::move(ret);\
   }\

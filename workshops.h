@@ -16,7 +16,7 @@ class Workshops {
   typedef WorkshopItem Item;
   typedef WorkshopQueuedItem QueuedItem;
 
-  static double getLegendarySkillThreshold();
+  static int getLegendarySkillThreshold();
 
   class Type {
     public:
@@ -28,11 +28,11 @@ class Workshops {
       bool wasUpgraded;
       bool applyImmediately;
     };
-    WorkshopResult addWork(Collective*, double workAmount, double skillAmount, double morale);
+    WorkshopResult addWork(Collective*, double workAmount, int skillAmount, double morale);
     void queue(Collective*, int index, optional<int> queueIndex = none);
     vector<PItem> unqueue(Collective*, int index);
     void changeNumber(int index, int number);
-    bool isIdle(const Collective*, double skillAmount, double morale) const;
+    bool isIdle(const Collective*, int skillAmount, double morale) const;
     void addUpgrade(int index, PItem);
     PItem removeUpgrade(int itemIndex, int runeIndex);
     void updateState(Collective*);

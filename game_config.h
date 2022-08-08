@@ -41,7 +41,11 @@ enum class GameConfigId {
   PROMOTIONS,
   DANCE_POSITIONS,
   EQUIPMENT_GROUPS,
-  HELP
+  HELP,
+  ATTR_INFO,
+  BUFFS,
+  BODY_MATERIALS,
+  KEYS
 };
 
 class GameConfig {

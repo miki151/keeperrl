@@ -1549,7 +1549,7 @@ class HeapAllocated {
   template <class Archive>
   void serialize(Archive& ar1) {
     if (!elem && Archive::is_loading::value) {
-      elem = unique<T>();
+      elem = make_unique<T>();
     }
     CHECK(!!elem);
     ar1(*elem);
@@ -1611,18 +1611,18 @@ class heap_optional {
   }
 
   heap_optional& operator = (const T& t) {
-    elem = unique<T>(t);
+    elem = make_unique<T>(t);
     return *this;
   }
 
   heap_optional& operator = (T&& t) noexcept {
-    elem = unique<T>(std::move(t));
+    elem = make_unique<T>(std::move(t));
     return *this;
   }
 
   heap_optional& operator = (const heap_optional& t) noexcept {
     if (t.elem)
-      elem = unique<T>(*t.elem);
+      elem = make_unique<T>(*t.elem);
     else
       clear();
     return *this;

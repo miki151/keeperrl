@@ -77,6 +77,7 @@ class Tile {
   const optional<FXInfo>& getFX() const;
 
   bool animated = false;
+  optional<Vec2> weaponOrigin;
 
   private:
   Tile();

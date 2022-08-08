@@ -28,7 +28,7 @@ void Territory::remove(Position pos) {
 void Territory::setCentralPoint(Position pos) {
   centralPoint = pos;
 }
-  
+
 bool Territory::contains(Position pos) const {
   return allSquares.count(pos);
 }

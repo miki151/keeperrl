@@ -16,7 +16,6 @@
 #include "stdafx.h"
 #include "technology.h"
 #include "util.h"
-#include "skill.h"
 #include "collective.h"
 #include "level.h"
 #include "square.h"

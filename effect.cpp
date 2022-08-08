@@ -65,6 +65,7 @@
 #include "player.h"
 #include "tile_gas.h"
 #include "tile_gas_info.h"
+#include "buff_info.h"
 
 namespace {
 struct DefaultType {
@@ -130,8 +131,8 @@ static bool enhanceArmor(Creature* c, int mod, const string& msg) {
     for (Item* item : c->getEquipment().getSlotItems(slot))
       if (item->getClass() == ItemClass::ARMOR) {
         c->you(MsgType::YOUR, item->getName() + " " + msg);
-        if (item->getModifier(AttrType::DEFENSE) > 0 || mod > 0)
-          item->addModifier(AttrType::DEFENSE, mod);
+        if (item->getModifier(AttrType("DEFENSE")) > 0 || mod > 0)
+          item->addModifier(AttrType("DEFENSE"), mod);
         return true;
       }
   return false;
@@ -154,7 +155,7 @@ static bool summon(Creature* summoner, CreatureId id, Range count, bool hostile,
     return !Effect::summon(summoner, id, Random.get(count), ttl, 1_visible).empty();
 }
 
-static int getPrice(const Effects::Escape&) {
+static int getPrice(const Effects::Escape&, const ContentFactory*) {
   return 12;
 }
 
@@ -309,31 +310,15 @@ static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Equip
 }
 
 static bool applyToCreature(const Effects::Lasting& e, Creature* c, Creature*) {
-  return c->addEffect(e.lastingEffect, e.duration.value_or(LastingEffects::getDuration(c, e.lastingEffect)));
+  return addEffect(e.lastingEffect, c, e.duration);
 }
 
-static int getPrice(const Effects::Lasting& e) {
-  return LastingEffects::getPrice(e.lastingEffect);
-}
-
-static bool isConsideredHostile(LastingEffect effect) {
-  switch (effect) {
-    case LastingEffect::BLIND:
-    case LastingEffect::ENTANGLED:
-    case LastingEffect::HALLU:
-    case LastingEffect::INSANITY:
-    case LastingEffect::PANIC:
-    case LastingEffect::POISON:
-    case LastingEffect::SLOWED:
-    case LastingEffect::STUNNED:
-      return true;
-    default:
-      return false;
-  }
+static int getPrice(const Effects::Lasting& e, const ContentFactory* factory) {
+  return getPrice(e.lastingEffect, factory);
 }
 
 static bool isConsideredHostile(const Effects::Lasting& e, const Creature* victim) {
-  return LastingEffects::affects(victim, e.lastingEffect) && ::isConsideredHostile(e.lastingEffect);
+  return isConsideredBad(e.lastingEffect, victim->getGame()->getContentFactory()  );
 }
 
 static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Lasting& e) {
@@ -341,77 +326,53 @@ static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Lasti
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Lasting& e, const Creature* victim, bool isEnemy) {
-  if (victim->isAffected(e.lastingEffect))
+  if (isAffected(victim, e.lastingEffect))
     return 0;
-  return LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy);
-}
-
-static optional<FXInfo> getProjectileFX(LastingEffect effect) {
-  switch (effect) {
-    default:
-      return none;
-  }
-}
-
-static optional<FXInfo> getProjectileFX(const Effects::Lasting& e) {
-  return ::getProjectileFX(e.lastingEffect);
-}
-
-static optional<ViewId> getProjectile(LastingEffect effect) {
-  switch (effect) {
-    default:
-      return none;
-  }
-}
-
-static optional<ViewId> getProjectile(const Effects::Lasting& e) {
-  return ::getProjectile(e.lastingEffect);
+  return shouldAIApply(e.lastingEffect, isEnemy, victim);
 }
 
 static Color getColor(const Effects::Lasting& e, const ContentFactory* f) {
-  return LastingEffects::getColor(e.lastingEffect);
+  return getColor(e.lastingEffect, f);
 }
 
-static string getName(const Effects::Lasting& e, const ContentFactory*) {
-  return LastingEffects::getName(e.lastingEffect);
+static string getName(const Effects::Lasting& e, const ContentFactory* f) {
+  return getName(e.lastingEffect, f);
 }
 
-static string getDescription(const Effects::Lasting& e, const ContentFactory*) {
-  // Leave out the full stop.
-  string desc = LastingEffects::getDescription(e.lastingEffect);
-  return desc.substr(0, desc.size() - 1) + " for some turns.";
+static string getDescription(const Effects::Lasting& e, const ContentFactory* f) {
+  return getDescription(e.lastingEffect, f);
 }
 
 static bool applyToCreature(const Effects::RemoveLasting& e, Creature* c, Creature*) {
-  return c->removeEffect(e.lastingEffect);
+  return removeEffect(e.lastingEffect, c);
 }
 
-static string getName(const Effects::RemoveLasting& e, const ContentFactory*) {
-  return "remove " + LastingEffects::getName(e.lastingEffect);
+static string getName(const Effects::RemoveLasting& e, const ContentFactory* f) {
+  return "remove " + getName(e.lastingEffect, f);
 }
 
-static string getDescription(const Effects::RemoveLasting& e, const ContentFactory*) {
-  return "Removes/cures from effect: " + LastingEffects::getName(e.lastingEffect);
+static string getDescription(const Effects::RemoveLasting& e, const ContentFactory* f) {
+  return "Removes/cures from effect: " + getName(e.lastingEffect, f);
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::RemoveLasting& e, const Creature* victim, bool isEnemy) {
-  if (!victim->isAffected(e.lastingEffect))
+  if (!isAffected(victim, e.lastingEffect))
     return 0;
-  return -LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy);
+  return -shouldAIApply(e.lastingEffect, isEnemy, victim);
 }
 
 static bool applyToCreature(const Effects::IncreaseAttr& e, Creature* c, Creature*) {
-  c->you(MsgType::YOUR, ::getName(e.attr) + e.get(" improves", " wanes"));
+  c->you(MsgType::YOUR, c->getGame()->getContentFactory()->attrInfo.at(e.attr).name + e.get(" improves", " wanes"));
   c->getAttributes().increaseBaseAttr(e.attr, e.amount);
   return true;
 }
 
-static string getName(const Effects::IncreaseAttr& e, const ContentFactory*) {
-  return ::getName(e.attr) + e.get(" boost", " loss");
+static string getName(const Effects::IncreaseAttr& e, const ContentFactory* f) {
+  return f->attrInfo.at(e.attr).name + e.get(" boost", " loss");
 }
 
-static string getDescription(const Effects::IncreaseAttr& e, const ContentFactory*) {
-  return e.get("Increases", "Decreases") + " "_s + ::getName(e.attr) + " by " + toString(abs(e.amount));
+static string getDescription(const Effects::IncreaseAttr& e, const ContentFactory* f) {
+  return e.get("Increases", "Decreases") + " "_s + f->attrInfo.at(e.attr).name + " by " + toString(abs(e.amount));
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::IncreaseAttr& e, const Creature* victim, bool isEnemy) {
@@ -433,18 +394,20 @@ static const char* get(const Effects::SpecialAttr& a, const char* ifIncrease, co
 }
 
 static bool applyToCreature(const Effects::SpecialAttr& e, Creature* c, Creature*) {
-  c->you(MsgType::YOUR, ::getName(e.attr) + " " + e.predicate.getName() + get(e, " improves", " wanes"));
+  auto factory = c->getGame()->getContentFactory();
+  c->you(MsgType::YOUR, factory->attrInfo.at(e.attr).name + " "
+      + e.predicate.getName(factory) + get(e, " improves", " wanes"));
   c->getAttributes().specialAttr[e.attr].push_back(make_pair(e.value, e.predicate));
   return true;
 }
 
-static string getName(const Effects::SpecialAttr& e, const ContentFactory*) {
-  return ::getName(e.attr) + get(e, " boost", " loss") + " " + e.predicate.getName();
+static string getName(const Effects::SpecialAttr& e, const ContentFactory* f) {
+  return f->attrInfo.at(e.attr).name + get(e, " boost", " loss") + " " + e.predicate.getName(f);
 }
 
-static string getDescription(const Effects::SpecialAttr& e, const ContentFactory*) {
-  return get(e, "Increases", "Decreases") + " "_s + ::getName(e.attr)
-      + " " + e.predicate.getName() + " by " + toString(abs(e.value));
+static string getDescription(const Effects::SpecialAttr& e, const ContentFactory* f) {
+  return get(e, "Increases", "Decreases") + " "_s + f->attrInfo.at(e.attr).name
+      + " " + e.predicate.getName(f) + " by " + toString(abs(e.value));
 }
 
 static string get(const Effects::IncreaseMaxLevel& e, string inc, string dec) {
@@ -468,50 +431,6 @@ static string getDescription(const Effects::IncreaseMaxLevel& e, const ContentFa
       toString(std::fabs(e.value));
 }
 
-static bool applyToCreature(const Effects::IncreaseSkill& e, Creature* c, Creature*) {
-  c->you(MsgType::YOUR, ::getName(e.skillid) + e.get(" skill improves", " skill wanes"));
-  c->getAttributes().getSkills().increaseValue(e.skillid, e.amount);
-  return true;
-}
-
-static string getName(const Effects::IncreaseSkill& e, const ContentFactory*) {
-  return ::getName(e.skillid) + e.get(" proficency boost", " proficency loss");
-}
-
-static string getDescription(const Effects::IncreaseSkill& e, const ContentFactory*) {
-  return e.get("Increases", "Decreases") + " "_s + ::getName(e.skillid) + " by " + toString(fabs(e.amount));
-}
-
-const char* Effects::IncreaseSkill::get(const char* ifIncrease, const char* ifDecrease) const {
-  if (amount > 0)
-    return ifIncrease;
-  else
-    return ifDecrease;
-}
-
-static bool applyToCreature(const Effects::IncreaseWorkshopSkill& e, Creature* c, Creature*) {
-  c->you(MsgType::YOUR, c->getGame()->getContentFactory()->workshopInfo.at(e.workshoptype).name +
-      e.get(" proficiency improves", " proficiency wanes"));
-  c->getAttributes().getSkills().increaseValue(e.workshoptype, e.amount);
-  return true;
-}
-
-static string getName(const Effects::IncreaseWorkshopSkill& e, const ContentFactory* content_factory) {
-  return content_factory->workshopInfo.at(e.workshoptype).name + e.get(" proficency boost", " proficency loss");
-}
-
-static string getDescription(const Effects::IncreaseWorkshopSkill& e, const ContentFactory* content_factory) {
-  return e.get("Increases", "Decreases") + " "_s + content_factory->workshopInfo.at(e.workshoptype).name +
-      " proficiency by " + toString(fabs(e.amount));
-}
-
-const char* Effects::IncreaseWorkshopSkill::get(const char* ifIncrease, const char* ifDecrease) const {
-  if (amount > 0)
-    return ifIncrease;
-  else
-    return ifDecrease;
-}
-
 static bool applyToCreature(const Effects::AddCompanion& e, Creature* c, Creature*) {
   c->getAttributes().companions.push_back(e);
   return true;
@@ -526,42 +445,42 @@ static string getDescription(const Effects::AddCompanion& e, const ContentFactor
 }
 
 static bool applyToCreature(const Effects::Permanent& e, Creature* c, Creature*) {
-  return c->addPermanentEffect(e.lastingEffect);
+  return addPermanentEffect(e.lastingEffect, c);
 }
 
-static int getPrice(const Effects::Permanent& e) {
-  return LastingEffects::getPrice(e.lastingEffect) * 30;
+static int getPrice(const Effects::Permanent& e, const ContentFactory* f) {
+  return getPrice(e.lastingEffect, f) * 30;
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Permanent& e, const Creature* victim, bool isEnemy) {
-  if (victim->getAttributes().isAffectedPermanently(e.lastingEffect))
+  if (isAffectedPermanently(victim, e.lastingEffect))
     return 0;
-  return LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy);
+  return shouldAIApply(e.lastingEffect, isEnemy, victim);
 }
 
-static string getName(const Effects::Permanent& e, const ContentFactory*) {
-  return "permanent " + LastingEffects::getName(e.lastingEffect);
+static string getName(const Effects::Permanent& e, const ContentFactory* f) {
+  return "permanent " + getName(e.lastingEffect, f);
 }
 
-static string getDescription(const Effects::Permanent& e, const ContentFactory*) {
-  string desc = LastingEffects::getDescription(e.lastingEffect);
+static string getDescription(const Effects::Permanent& e, const ContentFactory* f) {
+  string desc = getDescription(e.lastingEffect, f);
   return desc.substr(0, desc.size() - 1) + " permanently.";
 }
 
 static Color getColor(const Effects::Permanent& e, const ContentFactory* f) {
-  return LastingEffects::getColor(e.lastingEffect);
+  return getColor(e.lastingEffect, f);
 }
 
 static bool applyToCreature(const Effects::RemovePermanent& e, Creature* c, Creature*) {
-  return c->removePermanentEffect(e.lastingEffect);
+  return removePermanentEffect(e.lastingEffect, c);
 }
 
-static string getName(const Effects::RemovePermanent& e, const ContentFactory*) {
-  return "remove permanent " + LastingEffects::getName(e.lastingEffect);
+static string getName(const Effects::RemovePermanent& e, const ContentFactory* f) {
+  return "remove permanent " + getName(e.lastingEffect, f);
 }
 
-static string getDescription(const Effects::RemovePermanent& e, const ContentFactory*) {
-  string desc = LastingEffects::getDescription(e.lastingEffect);
+static string getDescription(const Effects::RemovePermanent& e, const ContentFactory* f) {
+  string desc = getDescription(e.lastingEffect, f);
   return "Removes/cures from " + desc.substr(0, desc.size() - 1) + " permanently.";
 }
 
@@ -582,7 +501,7 @@ static string getName(const Effects::Acid&, const ContentFactory*) {
   return "acid";
 }
 
-static int getPrice(const Effects::Acid&) {
+static int getPrice(const Effects::Acid&, const ContentFactory*) {
   return 8;
 }
 
@@ -594,8 +513,8 @@ static Color getColor(const Effects::Acid&, const ContentFactory* f) {
   return Color::YELLOW;
 }
 
-static bool apply(const Effects::Acid&, Position pos, Creature*) {
-  return pos.acidDamage();
+static bool apply(const Effects::Acid& a, Position pos, Creature* attacker) {
+  return pos.acidDamage(a.amount.value_or(attacker ? attacker->getAttr(AttrType("ACID_DAMAGE")) : 10));
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Acid&, const Creature* victim, bool isEnemy) {
@@ -603,7 +522,7 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::Acid&, const Creatu
 }
 
 static bool isConsideredHostile(const Effects::Acid&, const Creature* victim) {
-  return !victim->isAffected(LastingEffect::ACID_RESISTANT);
+  return !victim->isAffected(BuffId("ACID_RESISTANT"));
 }
 
 static bool apply(const Effects::Summon& e, Position pos, Creature* attacker) {
@@ -649,7 +568,7 @@ static bool apply(const Effects::AssembledMinion& m, Position pos, Creature* att
         for (auto& part : (*c)->getAttributes().automatonParts) {
           auto item = part.get((*c)->getGame()->getContentFactory());
           if (auto& upgradeInfo = item->getUpgradeInfo()) {
-            if (auto effect = upgradeInfo->prefix->getReferenceMaybe<AssembledCreatureEffect>())
+            if (auto effect = upgradeInfo->prefix->getReferenceMaybe<ItemPrefixes::AssembledCreatureEffect>())
               effect->apply((*c)->getPosition());
             else
               USER_FATAL << "Premade automaton part \"" << item->getName()
@@ -774,11 +693,11 @@ static void airBlast(Creature* attacker, Position origin, Position position, Pos
     }
     c->addEffect(LastingEffect::COLLAPSED, 2_visible);
   }
-  for (auto& stack : Item::stackItems(position.getItems())) {
+  for (auto& stack : Item::stackItems(origin.getGame()->getContentFactory(), position.getItems())) {
     position.throwItem(
         position.removeItems(stack),
         Attack(attacker, Random.choose<AttackLevel>(),
-          stack[0]->getWeaponInfo().attackType, 15, AttrType::DAMAGE), maxDistance,
+          stack[0]->getWeaponInfo().attackType, 15, AttrType("DAMAGE")), maxDistance,
           position.plus(trajectory.back()), VisionId::NORMAL);
   }
   for (auto furniture : position.modFurniture())
@@ -893,27 +812,25 @@ static bool apply(const Effects::RemoveFurniture& e, Position pos, Creature*) {
 }
 
 static bool applyToCreature(const Effects::Heal& e, Creature* c, Creature*) {
-  if (c->getBody().canHeal(e.healthType)) {
+  if (c->getBody().canHeal(e.healthType, c->getGame()->getContentFactory())) {
     bool res = false;
     res |= c->heal(e.amount);
-    res |= c->removeEffect(LastingEffect::BLEEDING);
+    res |= c->removeEffect(BuffId("BLEEDING"));
     if (e.amount > 0.5)
       c->addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_GREEN));
     return res;
-  } else {
-    c->message("Nothing happens.");
+  } else
     return false;
-  }
 }
 
-static int getPrice(const Effects::Heal) {
+static int getPrice(const Effects::Heal, const ContentFactory*) {
   return 8;
 }
 
 static bool applyToCreature(const Effects::Bleed& e, Creature* c, Creature*) {
   c->getBody().bleed(c, e.amount);
   if (c->getBody().getHealth() <= 0) {
-    c->you(MsgType::DIE, e.deathReason);
+    c->you(MsgType::DIE_OF, e.deathReason);
     c->dieNoReason();
   }
   return true;
@@ -939,7 +856,7 @@ static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Heal&
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Heal& e, const Creature* victim, bool isEnemy) {
-  if (victim->getBody().canHeal(e.healthType))
+  if (victim->getBody().canHeal(e.healthType, victim->getGame()->getContentFactory()))
     return isEnemy ? -1 : 1;
   return 0;
 }
@@ -969,7 +886,7 @@ static string getName(const Effects::Fire&, const ContentFactory*) {
   return "fire";
 }
 
-static int getPrice(const Effects::Fire&) {
+static int getPrice(const Effects::Fire&, const ContentFactory*) {
   return 12;
 }
 
@@ -977,9 +894,9 @@ static string getDescription(const Effects::Fire&, const ContentFactory*) {
   return "Burns!";
 }
 
-static bool apply(const Effects::Fire&, Position pos, Creature*) {
+static bool apply(const Effects::Fire& a, Position pos, Creature* attacker) {
   pos.getGame()->addEvent(EventInfo::FX{pos, {FXName::FIREBALL_SPLASH}});
-  return pos.fireDamage(1);
+  return pos.fireDamage(a.amount.value_or(attacker ? attacker->getAttr(AttrType("FIRE_DAMAGE")) : 10));
 }
 
 static optional<ViewId> getProjectile(const Effects::Fire&) {
@@ -987,13 +904,13 @@ static optional<ViewId> getProjectile(const Effects::Fire&) {
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Fire&, const Creature* victim, bool isEnemy) {
-  if (!victim->isAffected(LastingEffect::FIRE_RESISTANT))
+  if (!victim->isAffected(BuffId("FIRE_IMMUNITY")))
     return isEnemy ? 1 : -1;
   return 0;
 }
 
 static bool isConsideredHostile(const Effects::Fire&, const Creature* victim) {
-  return !victim->isAffected(LastingEffect::FIRE_RESISTANT);
+  return !victim->isAffected(BuffId("FIRE_IMMUNITY"));
 }
 
 static string getName(const Effects::Ice&, const ContentFactory*) {
@@ -1004,18 +921,18 @@ static string getDescription(const Effects::Ice&, const ContentFactory*) {
   return "Freezes water and causes cold damage";
 }
 
-static bool apply(const Effects::Ice&, Position pos, Creature*) {
-  return pos.iceDamage();
+static bool apply(const Effects::Ice& a, Position pos, Creature* attacker) {
+  return pos.iceDamage(a.amount.value_or(attacker ? attacker->getAttr(AttrType("COLD_DAMAGE")) : 10));
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Ice&, const Creature* victim, bool isEnemy) {
-  if (!victim->isAffected(LastingEffect::COLD_RESISTANT))
+  if (!victim->isAffected(BuffId("COLD_IMMUNITY")))
     return isEnemy ? 1 : -1;
   return 0;
 }
 
 static bool isConsideredHostile(const Effects::Ice&, const Creature* victim) {
-  return !victim->isAffected(LastingEffect::COLD_RESISTANT);
+  return !victim->isAffected(BuffId("COLD_IMMUNITY"));
 }
 
 static string getName(const Effects::ReviveCorpse&, const ContentFactory*) {
@@ -1135,8 +1052,8 @@ static bool applyToCreature(const Effects::Damage& e, Creature* c, Creature* att
   CHECK(attacker) << "Unknown attacker";
   int value = attacker->getAttr(e.attr) + attacker->getSpecialAttr(e.attr, c);
   bool result = c->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), e.attackType, value, e.attr));
-  if (e.attr == AttrType::SPELL_DAMAGE)
-    c->addFX({FXName::MAGIC_MISSILE_SPLASH});
+  if (auto& fx = c->getGame()->getContentFactory()->attrInfo.at(e.attr).meleeFX)
+    c->addFX(*fx);
   return result;
 }
 
@@ -1156,12 +1073,12 @@ static bool isConsideredHostile(const Effects::Damage&, const Creature*) {
   return true;
 }
 
-static string getName(const Effects::Damage& e, const ContentFactory*) {
-  return ::getName(e.attr);
+static string getName(const Effects::Damage& e, const ContentFactory* f) {
+  return f->attrInfo.at(e.attr).name;
 }
 
-static string getDescription(const Effects::Damage& e, const ContentFactory*) {
-  return "Causes " + ::getName(e.attr);
+static string getDescription(const Effects::Damage& e, const ContentFactory* f) {
+  return "Causes " + f->attrInfo.at(e.attr).name;
 }
 
 template <>
@@ -1171,17 +1088,17 @@ double getSteedChance<Effects::FixedDamage>() {
 
 static bool applyToCreature(const Effects::FixedDamage& e, Creature* c, Creature*) {
   bool result = c->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), e.attackType, e.value, e.attr));
-  if (e.attr == AttrType::SPELL_DAMAGE)
-    c->addFX({FXName::MAGIC_MISSILE_SPLASH});
+  if (auto& fx = c->getGame()->getContentFactory()->attrInfo.at(e.attr).meleeFX)
+    c->addFX(*fx);
   return result;
 }
 
-static string getName(const Effects::FixedDamage& e, const ContentFactory*) {
-  return toString(e.value) + " " + ::getName(e.attr);
+static string getName(const Effects::FixedDamage& e, const ContentFactory* f) {
+  return toString(e.value) + " " + f->attrInfo.at(e.attr).name;
 }
 
-static string getDescription(const Effects::FixedDamage& e, const ContentFactory*) {
-  return "Causes " + toString(e.value) + " " + ::getName(e.attr);
+static string getDescription(const Effects::FixedDamage& e, const ContentFactory* f) {
+  return "Causes " + toString(e.value) + " " + f->attrInfo.at(e.attr).name;
 }
 
 static bool applyToCreature(const Effects::InjureBodyPart& e, Creature* c, Creature* attacker) {
@@ -1329,7 +1246,7 @@ static bool apply(const Effects::CustomArea& area, Position pos, Creature* attac
 }
 
 static bool applyToCreature(const Effects::Suicide& e, Creature* c, Creature* attacker) {
-  if (!c->isAffected(LastingEffect::INVULNERABLE)) {
+  if (!c->isAffected(BuffId("INVULNERABLE"))) {
     c->you(e.message, "");
     c->dieWithAttacker(attacker);
     return true;
@@ -1337,7 +1254,7 @@ static bool applyToCreature(const Effects::Suicide& e, Creature* c, Creature* at
   return false;
 }
 
-static int getPrice(const Effects::Suicide&) {
+static int getPrice(const Effects::Suicide&, const ContentFactory*) {
   return 8;
 }
 
@@ -1522,7 +1439,7 @@ static string getDescription(const Effects::CreatureMessage&, const ContentFacto
 }
 
 static bool applyToCreature(const Effects::CreatureMessage& e, Creature* c, Creature*) {
-  c->verb(e.secondPerson, e.thirdPerson);
+  c->verb(e.secondPerson, e.thirdPerson, "", e.priority);
   return true;
 }
 
@@ -1580,7 +1497,7 @@ static bool applyToCreature(const Effects::Polymorph& e, Creature* c, Creature*)
       return factory.getAttributesFromId(*e.into);
     for (auto id : Random.permutation(factory.getAllCreatures())) {
       auto attr = factory.getAttributesFromId(id);
-      if (attr.getBody().getMaterial() == BodyMaterial::FLESH && !attr.isAffectedPermanently(LastingEffect::PLAGUE))
+      if (attr.getBody().getMaterial() == BodyMaterialId("FLESH") && !attr.isAffectedPermanently(LastingEffect::PLAGUE))
         return attr;
     }
     fail();
@@ -1739,8 +1656,8 @@ static optional<ViewId> getProjectile(const Effects::GenericModifierEffect& e) {
   return e.effect->getProjectile();
 }
 
-static int getPrice(const Effects::GenericModifierEffect& e) {
-  return e.effect->getPrice();
+static int getPrice(const Effects::GenericModifierEffect& e, const ContentFactory* f) {
+  return e.effect->getPrice(f);
 }
 
 static bool canAutoAssignMinionEquipment(const Effects::GenericModifierEffect& e) {
@@ -1766,13 +1683,14 @@ static bool apply(const Effects::Chance& e, Position pos, Creature* attacker) {
 }
 
 static bool applyToCreature(const Effects::DoubleTrouble&, Creature* c, Creature*) {
-  PCreature copy = c->getGame()->getContentFactory()->getCreatures().makeCopy(c);
+  auto factory = c->getGame()->getContentFactory();
+  PCreature copy = factory->getCreatures().makeCopy(c);
   auto ttl = 50_visible;
   for (auto& item : c->getEquipment().getItems())
     if (!item->getResourceId() && !item->isDiscarded()) {
-      auto itemCopy = item->getCopy(c->getGame()->getContentFactory());
+      auto itemCopy = item->getCopy(factory);
       itemCopy->setTimeout(c->getGame()->getGlobalTime() + ttl + 10_visible);
-      copy->take(std::move(itemCopy));
+      copy->take(std::move(itemCopy), factory);
     }
   auto cRef = Effect::summonCreatures(c->getPosition(), makeVec(std::move(copy)));
   if (!cRef.empty()) {
@@ -1995,8 +1913,8 @@ static bool apply(const Effects::AnimateItems& m, Position pos, Creature* attack
   for (int i : Range(min(m.maxCount, candidates.size()))) {
     auto v = candidates[i].first;
     auto creature = pos.getGame()->getContentFactory()->getCreatures().
-        getAnimatedItem(v.removeItem(candidates[i].second), attacker->getTribeId(),
-            attacker->getAttr(AttrType::SPELL_DAMAGE));
+        getAnimatedItem(pos.getGame()->getContentFactory(), v.removeItem(candidates[i].second), attacker->getTribeId(),
+            attacker->getAttr(AttrType("SPELL_DAMAGE")));
     for (auto c : Effect::summonCreatures(v, makeVec(std::move(creature)))) {
       c->addEffect(LastingEffect::SUMMONED, TimeInterval{Random.get(m.time)}, false);
       res = true;
@@ -2320,11 +2238,11 @@ static EffectAIIntent shouldAIApply(const Effects::Filter& e, const Creature* ca
 }
 
 static string getName(const Effects::Filter& e, const ContentFactory* f) {
-  return e.effect->getName(f) + " (" + e.predicate.getName() + ")";
+  return e.effect->getName(f) + " (" + e.predicate.getName(f) + ")";
 }
 
 static string getDescription(const Effects::Filter& e, const ContentFactory* f) {
-  return e.effect->getDescription(f) + " (applied only to " + e.predicate.getName() + ")";
+  return e.effect->getDescription(f) + " (applied only to " + e.predicate.getName(f) + ")";
 }
 
 static bool apply(const Effects::ReturnFalse& e, Position pos, Creature* attacker) {
@@ -2351,7 +2269,7 @@ static EffectAIIntent shouldAIApply(const Effects::AI& e, const Creature* caster
   return origRes;
 }
 
-static int getPrice(const Effects::Price& e) {
+static int getPrice(const Effects::Price& e, const ContentFactory*) {
   return e.value;
 }
 
@@ -2466,7 +2384,7 @@ optional<ViewId> Effect::getProjectile() const {
   return effect->visit<optional<ViewId>>([&](const auto& elem) { return ::getProjectile(elem); } );
 }
 
-vector<Effect> Effect::getWishedForEffects() {
+vector<Effect> Effect::getWishedForEffects(const ContentFactory* factory) {
   vector<Effect> allEffects {
        Effect(Effects::Escape{}),
        Effect(Effects::Heal{HealthType::FLESH}),
@@ -2491,8 +2409,14 @@ vector<Effect> Effect::getWishedForEffects() {
       allEffects.push_back(EffectType(Effects::Permanent{effect}));
       allEffects.push_back(EffectType(Effects::RemoveLasting{effect}));
     }
-  for (auto attr : ENUM_ALL(AttrType))
-    allEffects.push_back(EffectType(Effects::IncreaseAttr{attr, (attr == AttrType::PARRY ? 2 : 5)}));
+  for (auto& buff : factory->buffs)
+    if (buff.second.canWishFor) {
+      allEffects.push_back(EffectType(Effects::Lasting{20_visible, buff.first}));
+      allEffects.push_back(EffectType(Effects::Permanent{buff.first}));
+      allEffects.push_back(EffectType(Effects::RemoveLasting{buff.first}));
+    }
+  for (auto& attr : factory->attrInfo)
+    allEffects.push_back(EffectType(Effects::IncreaseAttr{attr.first, attr.second.wishedItemIncrease}));
   return allEffects;
 }
 
@@ -2524,12 +2448,12 @@ Color Effect::getColor(const ContentFactory* f) const {
   return effect->visit<Color>([f, this](const auto& elem) { return ::getColor(elem, *this, f); });
 }
 
-static int getPrice(const DefaultType& e) {
+static int getPrice(const DefaultType& e, const ContentFactory*) {
   return 30;
 }
 
-int Effect::getPrice() const {
-    return effect->visit<int>([](const auto& elem) { return ::getPrice(elem); });  
+int Effect::getPrice(const ContentFactory* f) const {
+    return effect->visit<int>([f](const auto& elem) { return ::getPrice(elem, f); });
 }
 
 SERIALIZE_DEF(Effect, effect)
@@ -2548,6 +2472,8 @@ void Effects::Lasting::serialize(PrettyInputArchive& ar1, const unsigned int) {
   if (ar1.readMaybe(d))
     duration = TimeInterval(d);
   ar1(lastingEffect);
+  if (lastingEffect.contains<BuffId>() && !duration)
+    ar1.error("Buff duration is required");
 }
 
 namespace Effects {

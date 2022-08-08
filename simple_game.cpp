@@ -92,8 +92,8 @@ vector<pair<string, SimpleGame::SimpleAction>> SimpleGame::getActions() {
 
 void SimpleGame::update() {
   std::cout << "Minions: ";
-  for (auto& c : minions)
-    std::cout << c->getName().bare() << " " << c->getBestAttack().value << ", ";
+/*  for (auto& c : minions)
+    std::cout << c->getName().bare() << " " << c->getBestAttackValue() << ", ";
   std::cout << "\n";
   std::cout << "Researched technologies: ";
   for (auto& tech : technology.researched)
@@ -114,7 +114,7 @@ void SimpleGame::update() {
   for (int i : All(immigrants))
     if (meetsRequirements(immigrants[i])) {
       auto c = getCreature(factory, immigrants[i].getId(0));
-      std::cout << i << ". " << c->getName().bare() << "(" << c->getBestAttack().value << "), ";
+      std::cout << i << ". " << c->getName().bare() << "(" << c->getBestAttackValue() << "), ";
     }
   std::cout << "\n";
   auto actions = getActions();
@@ -126,5 +126,5 @@ void SimpleGame::update() {
   if (index >= 0 && index < actions.size())
     actions[index].second();
   else
-    std::cout << "Bad index\n";
+    std::cout << "Bad index\n";*/
 }

@@ -73,12 +73,12 @@ struct BuildInfo {
   string SERIAL(name);
   string SERIAL(groupName);
   string SERIAL(help);
-  char SERIAL(hotkey) = 0;
+  optional<Keybinding> SERIAL(key) = none;
   vector<Requirement> SERIAL(requirements);
   bool SERIAL(hotkeyOpensGroup) = false;
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
   bool SERIAL(isBuilding) = false;
-  SERIALIZE_ALL(NAMED(type), NAMED(name), OPTION(groupName), OPTION(help), OPTION(hotkey), OPTION(requirements), OPTION(hotkeyOpensGroup), NAMED(tutorialHighlight), OPTION(isBuilding))
+  SERIALIZE_ALL(NAMED(type), NAMED(name), OPTION(groupName), OPTION(help), NAMED(key), OPTION(requirements), OPTION(hotkeyOpensGroup), NAMED(tutorialHighlight), OPTION(isBuilding))
 };
 
 static_assert(std::is_nothrow_move_constructible<BuildInfo>::value, "T should be noexcept MoveConstructible");

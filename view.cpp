@@ -110,11 +110,19 @@ bool View::yesOrNoPrompt(const string& message, bool defaultNo, ScriptedUIId id)
   return ret;
 }
 
-bool View::confirmConflictingItems(const vector<Item*>& items) {
+void View::windowedMessage(ViewIdList id, const string& message) {
+  ScriptedUIState state;
+  auto data = ScriptedUIDataElems::Record{};
+  data.elems["message"] = message;
+  data.elems["view_id"] = id;
+  scriptedUI("unlock_message", data, state);
+}
+
+bool View::confirmConflictingItems(const ContentFactory* f, const vector<Item*>& items) {
   auto itemsList = ScriptedUIDataElems::List{};
   for (auto it : items) {
     auto data = ScriptedUIDataElems::Record{};
-    data.elems["item"] = it->getNameAndModifiers();
+    data.elems["item"] = it->getNameAndModifiers(f);
     data.elems["view_id"] = it->getViewObject().getViewIdList();
     itemsList.push_back(std::move(data));
   }

@@ -31,7 +31,6 @@
 #include "enemy_info.h"
 #include "game_time.h"
 #include "lasting_effect.h"
-#include "skill.h"
 #include "game_config.h"
 #include "build_info.h"
 #include "tribe_alignment.h"

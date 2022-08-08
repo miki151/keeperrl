@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "creature_predicate.h"
+#include "attr_type.h"
 
 struct SpecialAttr {
   AttrType SERIAL(attr);

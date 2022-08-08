@@ -72,11 +72,12 @@
 #include "item_attributes.h"
 #include "keybinding.h"
 #include "task.h"
+#include "collective_control.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
   ar& SUBCLASS(Controller) & SUBCLASS(EventListener);
-  ar(travelling, travelDir, target, displayGreeting, levelMemory, messageBuffer);
+  ar(travelDir, target, displayGreeting, levelMemory, messageBuffer);
   ar(adventurer, visibilityMap, tutorial, unknownLocations, avatarLevel);
 }
 
@@ -95,6 +96,7 @@ Player::~Player() {
 
 void Player::onEvent(const GameEvent& event) {
   using namespace EventInfo;
+  auto factory = getGame()->getContentFactory();
   event.visit<void>(
       [&](const CreatureMoved& info) {
         if (info.creature == creature)
@@ -109,7 +111,7 @@ void Player::onEvent(const GameEvent& event) {
       [&](const CreatureKilled& info) {
         auto pos = info.victim->getPosition();
         if (creature->canSee(pos))
-          if (auto anim = info.victim->getBody().getDeathAnimation())
+          if (auto anim = info.victim->getBody().getDeathAnimation(factory))
             getView()->animation(pos.getCoord(), *anim);
       },
       [&](const CreatureAttacked& info) {
@@ -118,10 +120,10 @@ void Player::onEvent(const GameEvent& event) {
           auto dir = info.attacker->getPosition().getDir(pos);
           if (dir.length8() == 1) {
             auto orientation = dir.getCardinalDir();
-            if (info.damageAttr == AttrType::DAMAGE)
+            if (info.damageAttr == AttrType("DAMAGE"))
               getView()->animation(pos.getCoord(), AnimationId::ATTACK, orientation);
-            else
-              getView()->animation(FXSpawnInfo({FXName::MAGIC_MISSILE_SPLASH}, pos.getCoord(), Vec2(0, 0)));
+            else if (auto& fx = factory->attrInfo.at(info.damageAttr).meleeFX)
+              getView()->animation(FXSpawnInfo(*fx, pos.getCoord(), Vec2(0, 0)));
           }
         }
       },
@@ -282,7 +284,7 @@ void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
       for (auto it : creature->getEquipment().getAllEquipped())
         if (it->isConflictingEquipment(items[0]))
           conflictingItems.push_back(it);
-      if (getView()->confirmConflictingItems(conflictingItems))
+      if (getView()->confirmConflictingItems(getGame()->getContentFactory(), conflictingItems))
         tryToPerform(creature->equip(items[0]));
       break;
     }
@@ -311,36 +313,7 @@ bool Player::interruptedByEnemy() {
   return false;
 }
 
-void Player::travelAction() {
-/*  updateView = true;
-  if (!creature->move(travelDir) || getView()->travelInterrupt() || interruptedByEnemy()) {
-    travelling = false;
-    return;
-  }
-  tryToPerform(creature->move(travelDir));
-  const Location* currentLocation = creature->getPosition().getLocation();
-  if (lastLocation != currentLocation && currentLocation != nullptr && currentLocation->getName()) {
-    privateMessage("You arrive at " + addAParticle(*currentLocation->getName()));
-    travelling = false;
-    return;
-  }
-  vector<Vec2> squareDirs = creature->getPosition().getTravelDir();
-  if (squareDirs.size() != 2) {
-    travelling = false;
-    INFO << "Stopped by multiple routes";
-    return;
-  }
-  optional<int> myIndex = findElement(squareDirs, -travelDir);
-  if (!myIndex) { // This was an assertion but was failing
-    travelling = false;
-    INFO << "Stopped by bad travel data";
-    return;
-  }
-  travelDir = squareDirs[(*myIndex + 1) % 2];*/
-}
-
 void Player::targetAction() {
-  updateView = true;
   CHECK(target);
   if (creature->getPosition() == *target || getView()->travelInterrupt()) {
     target = none;
@@ -451,7 +424,7 @@ void Player::mountAction() {
 
 void Player::fireAction() {
   for (auto spell : creature->getSpellMap().getAvailable(creature))
-    if (creature->isReady(spell) && spell->getKeybinding() == Keybinding::FIRE_PROJECTILE) {
+    if (creature->isReady(spell) && spell->getRange() > 1 && !spell->isEndOnly()) {
       highlightedSpell = spell->getId();
       getView()->updateView(this, false);
       Vec2 origin = creature->getPosition().getCoord();
@@ -464,7 +437,7 @@ void Player::fireAction() {
           passable[v] = PassableInfo::STOPS_HERE;
       }
       auto res = chooseTarget(std::move(passable), spell->isEndOnly() ? TargetType::POSITION : TargetType::TRAJECTORY,
-          "Which direction?", *spell->getKeybinding());
+          "Which direction?", Keybinding("FIRE_PROJECTILE"));
       if (res.contains<none_t>())
         break;
       if (auto pos = res.getValueMaybe<Position>()) {
@@ -555,7 +528,7 @@ vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(Creature* 
     if (!creature->isAffected(LastingEffect::PEACEFULNESS))
       genAction(1, ViewObjectAction::ATTACK, false, creature->attack(c));
     genAction(1, ViewObjectAction::PET, false, creature->pet(c));
-    genAction(1, ViewObjectAction::MOUNT, false, creature->mount(c));    
+    genAction(1, ViewObjectAction::MOUNT, false, creature->mount(c));
   }
   if (creature == c) {
     genAction(0, ViewObjectAction::SKIP_TURN, true, creature->wait());
@@ -615,11 +588,12 @@ vector<Player::CommandInfo> Player::getCommands() const {
         if (!!creature->mount(c))
           canMount = true;
   return {
-    {PlayerInfo::CommandInfo{"Fire ranged weapon", 'f', "", true},
+    {PlayerInfo::CommandInfo{"Fire ranged weapon or spell", Keybinding("FIRE_PROJECTILE"), "", true},
       [] (Player* player) { player->fireAction(); }, false},
-    {PlayerInfo::CommandInfo{"Skip turn", ' ', "Skip this turn.", true},
+    {PlayerInfo::CommandInfo{"Skip turn", Keybinding("SKIP_TURN"), "Skip this turn.", true},
       [] (Player* player) { player->tryToPerform(player->creature->wait()); }, false},
-    {PlayerInfo::CommandInfo{"Wait", 'w', "Wait until all other team members make their moves (doesn't skip turn).",
+    {PlayerInfo::CommandInfo{"Wait", Keybinding("WAIT"),
+        "Wait until all other team members make their moves (doesn't skip turn).",
         getGame()->getPlayerCreatures().size() > 1},
       [] (Player* player) {
           player->getModel()->getTimeQueue().postponeMove(player->creature);
@@ -627,13 +601,13 @@ vector<Player::CommandInfo> Player::getCommands() const {
     /*{PlayerInfo::CommandInfo{"Travel", 't', "Travel to another site.", !getGame()->isSingleModel()},
       [] (Player* player) { player->getGame()->transferAction(player->getTeam()); }, false},*/
     creature->getSteed()
-      ? Player::CommandInfo{PlayerInfo::CommandInfo{"Dismount", 'm', "Dismount your steed.", true},
+      ? Player::CommandInfo{PlayerInfo::CommandInfo{"Dismount", Keybinding("MOUNT"), "Dismount your steed.", true},
             [] (Player* player) { player->tryToPerform(player->creature->dismount()); }, false}
-      : Player::CommandInfo{PlayerInfo::CommandInfo{"Mount", 'm', "Mount a steed.", canMount},
+      : Player::CommandInfo{PlayerInfo::CommandInfo{"Mount", Keybinding("MOUNT"), "Mount a steed.", canMount},
             [] (Player* player) { player->mountAction(); }, false},
-    Player::CommandInfo{PlayerInfo::CommandInfo{"Chat", 'c', "Chat with someone.", canChat},
+    Player::CommandInfo{PlayerInfo::CommandInfo{"Chat", Keybinding("CHAT"), "Chat with someone.", canChat},
       [] (Player* player) { player->chatAction(); }, false},
-    {PlayerInfo::CommandInfo{"Test path-finding", 'C', "Displays calculated path and processed tiles.", true},
+    /*{PlayerInfo::CommandInfo{"Test path-finding", 'C', "Displays calculated path and processed tiles.", true},
       [] (Player* player) {
         auto pos = player->getView()->chooseTarget(player->creature->getPosition().getCoord(),
             TargetType::POSITION, Table<PassableInfo>(), "Choose destination", none).getValueMaybe<Vec2>();
@@ -649,15 +623,16 @@ vector<Player::CommandInfo> Player::getCommands() const {
           player->getView()->chooseTarget(player->creature->getPosition().getCoord(), TargetType::SHOW_ALL, result,
               "Displaying calculated path and processed tiles", none);
         }
-      }, false},
-    {PlayerInfo::CommandInfo{"Hide", 'h', "Hide behind or under a terrain feature or piece of furniture.",
+      }, false},*/
+    {PlayerInfo::CommandInfo{"Hide", Keybinding("HIDE"), "Hide behind or under a terrain feature or piece of furniture.",
         !!creature->hide()},
       [] (Player* player) { player->hideAction(); }, false},
     /*{PlayerInfo::CommandInfo{"Pay for all items", 'p', "Pay debt to a shopkeeper.", true},
       [] (Player* player) { player->payForAllItemsAction();}, false},*/
-    {PlayerInfo::CommandInfo{"Drop everything", none, "Drop all items in possession.", !creature->getEquipment().isEmpty()},
+    {PlayerInfo::CommandInfo{"Drop everything", Keybinding("DROP_EVERYTHING"),
+        "Drop all items in possession.", !creature->getEquipment().isEmpty()},
       [] (Player* player) { auto c = player->creature; player->tryToPerform(c->drop(c->getEquipment().getItems())); }, false},
-    {PlayerInfo::CommandInfo{"Message history", 'M', "Show message history.", true},
+    {PlayerInfo::CommandInfo{"Message history", Keybinding("MESSAGE_HISTORY"), "Show message history.", true},
       [] (Player* player) { player->showHistory(); }, false},
 #ifndef RELEASE
     {PlayerInfo::CommandInfo{"Wait multiple turns", none, "", true},
@@ -728,8 +703,6 @@ void Player::makeMove() {
     considerAdventurerMusic();
   else
     considerKeeperModeTravelMusic();
-  //if (updateView) { Check disabled so that we update in every frame to avoid some square refreshing issues.
-  updateView = false;
   for (Position pos : creature->getVisibleTiles())
     updateSquareMemory(pos);
   MEASURE(
@@ -748,199 +721,182 @@ void Player::makeMove() {
     getView()->updateView(this, false);
   }
   UserInput action = getView()->getAction();
-  if (travelling && action.getId() == UserInputId::IDLE)
-    travelAction();
-  else if (target && action.getId() == UserInputId::IDLE)
+  if (target && action.getId() == UserInputId::IDLE)
     targetAction();
   else {
     INFO << "Action " << int(action.getId());
-  vector<Vec2> direction;
-  bool travel = false;
-  bool wasJustTravelling = travelling || !!target;
-  if (action.getId() != UserInputId::IDLE) {
-    if (action.getId() != UserInputId::REFRESH)
-      retireMessages();
-    if (action.getId() == UserInputId::TILE_CLICK) {
-      travelling = false;
-      if (target)
+    bool wasJustTravelling = !!target;
+    if (action.getId() != UserInputId::IDLE) {
+      if (action.getId() != UserInputId::REFRESH) {
+        retireMessages();
+      }
+      if (action.getId() == UserInputId::TILE_CLICK)
         target = none;
-      getView()->resetCenter();
     }
-    updateView = true;
-  }
-  if (!handleUserInput(action))
-    switch (action.getId()) {
-      case UserInputId::TRAVEL: travel = true;
-        FALLTHROUGH;
-      case UserInputId::MOVE: direction.push_back(action.get<Vec2>()); break;
-      case UserInputId::TILE_CLICK: {
-        Position newPos = creature->getPosition().withCoord(action.get<Vec2>());
-        if (newPos.dist8(creature->getPosition()) == 1) {
-          Vec2 dir = creature->getPosition().getDir(newPos);
-          direction.push_back(dir);
-        } else
-        if (newPos != creature->getPosition() && !wasJustTravelling)
-          target = newPos;
-        break;
-      }
-      case UserInputId::INVENTORY_ITEM:
-        handleItems(action.get<InventoryItemInfo>().items, action.get<InventoryItemInfo>().action);
-        break;
-      case UserInputId::INTRINSIC_ATTACK:
-        handleIntrinsicAttacks(action.get<InventoryItemInfo>().items, action.get<InventoryItemInfo>().action);
-        break;
-      case UserInputId::PICK_UP_ITEM: pickUpItemAction(action.get<int>()); break;
-      case UserInputId::PICK_UP_ITEM_MULTI: pickUpItemAction(action.get<int>(), true); break;
-      case UserInputId::CAST_SPELL: spellAction(action.get<int>()); break;
-      case UserInputId::CREATURE_MAP_CLICK:
-        creatureClickAction(Position(action.get<Vec2>(), getLevel()), false);
-        break;
-      case UserInputId::CREATURE_MAP_CLICK_EXTENDED:
-        creatureClickAction(Position(action.get<Vec2>(), getLevel()), true);
-        break;
-      case UserInputId::EXIT: getGame()->exitAction(); return;
-      case UserInputId::APPLY_EFFECT: {
-        Effect effect;
-        if (auto error = PrettyPrinting::parseObject(effect, action.get<string>()))
-          getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
-        else
-          effect.apply(creature->getPosition(), creature);
-        break;
-      }
-      case UserInputId::CREATE_ITEM: {
-        ItemType item;
-        if (auto error = PrettyPrinting::parseObject(item, action.get<string>()))
-          getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
-        else
-          if (auto cnt = getView()->getNumber("Enter number of items", Range(1, 1000), 1))
-            creature->take(item/*.setPrefixChance(1)*/.get(*cnt, getGame()->getContentFactory()));
-        break;
-      }
-      case UserInputId::SUMMON_ENEMY: {
-        CreatureId id;
-        if (auto error = PrettyPrinting::parseObject(id, action.get<string>()))
-          getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
-        else {
-          auto factory = CreatureGroup::singleType(TribeId::getMonster(), id);
-          Effect::summon(creature->getPosition(), factory, 1, 1000_visible,
-              3_visible);
-        }
-        break;
-      }
-      case UserInputId::PLAYER_COMMAND: {
-        int index = action.get<int>();
-        auto commands = getCommands();
-        if (index >= 0 && index < commands.size()) {
-          commands[index].perform(this);
-          if (commands[index].actionKillsController)
-            return;
-        }
-        break;
-      }
-      case UserInputId::PAY_DEBT:
-        payForAllItemsAction();
-        break;
-      case UserInputId::TUTORIAL_CONTINUE:
-        if (tutorial)
-          tutorial->continueTutorial(getGame());
-        break;
-      case UserInputId::TUTORIAL_GO_BACK:
-        if (tutorial)
-          tutorial->goBack();
-        break;
-      case UserInputId::LEVEL_UP: {
-        while (1) {
-          auto info = getCreatureExperienceInfo(creature);
-          info.numAvailableUpgrades = avatarLevel->numResearchAvailable();
-          if (auto exp = getView()->getCreatureUpgrade(info)) {
-            creature->increaseExpLevel(*exp, 1);
-            ++avatarLevel->consumedLevels;
-          } else
-            break;
-        }
-        break;
-      }
-      case UserInputId::SCROLL_TO_HOME:
-        getView()->setScrollPos(creature->getPosition());
-        break;
-      case UserInputId::DRAW_WORLD_MAP: {
-        if (canTravel()) {
-          if (getGame()->transferAction(getTeam()))
-            forceSteeds();
-        }
-        break;
-      }
-      case UserInputId::CREATURE_DRAG_DROP: {
-        auto info = action.get<CreatureDropInfo>();
-        Position target(info.pos, getLevel());
-        for (auto c : getTeam())
-          if (c->getUniqueId() == info.creatureId) {
-            c->getController()->setDragTask(Task::goTo(target));
+    if (!handleUserInput(action))
+      switch (action.getId()) {
+        case UserInputId::MOVE:
+          moveAction(action.get<Vec2>());
+          break;
+        case UserInputId::TILE_CLICK: {
+          Position newPos = creature->getPosition().withCoord(action.get<Vec2>());
+          if (newPos.dist8(creature->getPosition()) == 1) {
+            Vec2 dir = creature->getPosition().getDir(newPos);
+            moveAction(dir);
           }
-        break;
-      }
-      case UserInputId::SCROLL_STAIRS:
-        scrollStairs(action.get<int>());
-        break;
-  #ifndef RELEASE
-      case UserInputId::CHEAT_ATTRIBUTES:
-        creature->getAttributes().increaseBaseAttr(AttrType::DAMAGE, 80);
-        creature->getAttributes().increaseBaseAttr(AttrType::DEFENSE, 80);
-        creature->getAttributes().increaseBaseAttr(AttrType::SPELL_DAMAGE, 80);
-        creature->addPermanentEffect(LastingEffect::SPEED);
-        creature->addPermanentEffect(LastingEffect::FLYING);
-        avatarLevel->increaseLevel();
-        break;
-      case UserInputId::CHEAT_SPELLS: {
-        creature->cheatAllSpells();
-        for (auto exp : ENUM_ALL(ExperienceType))
-          creature->increaseExpLevel(exp, 20);
-        break;
-      }
-      case UserInputId::CHEAT_POTIONS: {
-        /*auto &items = creature->getEquipment().getItems();
-        for (auto leType : ENUM_ALL(LastingEffect)) {
-          bool found = false;
-          for (auto &item : items)
-            if (auto &eff = item->getEffect())
-              if (auto le = eff->effect->getValueMaybe<Effects::Lasting>())
-                if (le->lastingEffect == leType) {
-                  found = true;
-                  break;
-                }
-          if (!found) {
-            ItemType itemType{ItemType::Potion{EffectType(Effects::Lasting{leType})}};
-            creature->take(itemType.get(getGame()->getContentFactory()));
-          }
-        }*/
-        break;
-      }
-  #endif
-      default: break;
-    }
-  if (LastingEffects::losesControl(creature)) {
-    onLostControl();
-    return;
-  }
-  for (Vec2 dir : direction)
-    if (travel) {
-      /*if (Creature* other = creature->getPosition().plus(dir).getCreature())
-        extendedAttackAction(other);
-      else {
-        vector<Vec2> squareDirs = creature->getPosition().getTravelDir();
-        if (findElement(squareDirs, dir)) {
-          travelDir = dir;
-          lastLocation = creature->getPosition().getLocation();
-          travelling = true;
-          travelAction();
+          else if (newPos != creature->getPosition() && !wasJustTravelling)
+            target = newPos;
+          break;
         }
-      }*/
-    } else {
-      moveAction(dir);
-      break;
+        case UserInputId::INVENTORY_ITEM:
+          handleItems(action.get<InventoryItemInfo>().items, action.get<InventoryItemInfo>().action);
+          break;
+        case UserInputId::INTRINSIC_ATTACK:
+          handleIntrinsicAttacks(action.get<InventoryItemInfo>().items, action.get<InventoryItemInfo>().action);
+          break;
+        case UserInputId::PICK_UP_ITEM: pickUpItemAction(action.get<int>()); break;
+        case UserInputId::PICK_UP_ITEM_MULTI: pickUpItemAction(action.get<int>(), true); break;
+        case UserInputId::CAST_SPELL: spellAction(action.get<int>()); break;
+        case UserInputId::CREATURE_MAP_CLICK:
+          creatureClickAction(Position(action.get<Vec2>(), getLevel()), false);
+          break;
+        case UserInputId::CREATURE_MAP_CLICK_EXTENDED:
+          creatureClickAction(Position(action.get<Vec2>(), getLevel()), true);
+          break;
+        case UserInputId::EXIT: getGame()->exitAction(); return;
+        case UserInputId::APPLY_EFFECT: {
+          Effect effect;
+          if (auto error = PrettyPrinting::parseObject(effect, action.get<string>()))
+            getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
+          else
+            effect.apply(creature->getPosition(), creature);
+          break;
+        }
+        case UserInputId::CREATE_ITEM: {
+          ItemType item;
+          if (auto error = PrettyPrinting::parseObject(item, action.get<string>()))
+            getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
+          else
+            if (auto cnt = getView()->getNumber("Enter number of items", Range(1, 1000), 1))
+              creature->take(item/*.setPrefixChance(1)*/.get(*cnt, getGame()->getContentFactory()));
+          break;
+        }
+        case UserInputId::SUMMON_ENEMY: {
+          CreatureId id;
+          if (auto error = PrettyPrinting::parseObject(id, action.get<string>()))
+            getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
+          else {
+            auto factory = CreatureGroup::singleType(TribeId::getMonster(), id);
+            Effect::summon(creature->getPosition(), factory, 1, 1000_visible,
+                3_visible);
+          }
+          break;
+        }
+        case UserInputId::PLAYER_COMMAND: {
+          int index = action.get<int>();
+          auto commands = getCommands();
+          if (index >= 0 && index < commands.size()) {
+            commands[index].perform(this);
+            if (commands[index].actionKillsController)
+              return;
+          }
+          break;
+        }
+        case UserInputId::PAY_DEBT:
+          payForAllItemsAction();
+          break;
+        case UserInputId::TUTORIAL_CONTINUE:
+          if (tutorial)
+            tutorial->continueTutorial(getGame());
+          break;
+        case UserInputId::TUTORIAL_GO_BACK:
+          if (tutorial)
+            tutorial->goBack();
+          break;
+        case UserInputId::LEVEL_UP: {
+          while (1) {
+            auto info = getCreatureExperienceInfo(getGame()->getContentFactory(), creature);
+            info.numAvailableUpgrades = avatarLevel->numResearchAvailable();
+            if (auto exp = getView()->getCreatureUpgrade(info)) {
+              creature->increaseExpLevel(*exp, 1);
+              ++avatarLevel->consumedLevels;
+            } else
+              break;
+          }
+          break;
+        }
+        case UserInputId::SCROLL_TO_HOME:
+          getView()->resetCenter();
+          break;
+        case UserInputId::DRAW_WORLD_MAP: {
+          if (canTravel())
+            transferAction();
+          break;
+        }
+        case UserInputId::CREATURE_DRAG_DROP: {
+          auto info = action.get<CreatureDropInfo>();
+          Position target(info.pos, getLevel());
+          for (auto c : getTeam())
+            if (c->getUniqueId() == info.creatureId) {
+              c->getController()->setDragTask(Task::goTo(target));
+            }
+          break;
+        }
+        case UserInputId::SCROLL_STAIRS:
+          scrollStairs(action.get<int>());
+          break;
+    #ifndef RELEASE
+        case UserInputId::CHEAT_ATTRIBUTES:
+          creature->getAttributes().increaseBaseAttr(AttrType("DAMAGE"), 80);
+          creature->getAttributes().increaseBaseAttr(AttrType("DEFENSE"), 80);
+          creature->getAttributes().increaseBaseAttr(AttrType("SPELL_DAMAGE"), 80);
+          creature->addPermanentEffect(LastingEffect::SPEED);
+          creature->addPermanentEffect(LastingEffect::FLYING);
+          avatarLevel->increaseLevel();
+          break;
+    #endif
+        default:
+          return;
+      }
+    if (LastingEffects::losesControl(creature)) {
+      onLostControl();
+      return;
     }
   }
+  getView()->resetCenter();
   creature->getPosition().setNeedsRenderUpdate(true);
+}
+
+void Player::transferAction() {
+  auto view = getView();
+  auto game = getGame();
+  auto creatures = getTeam();
+  if (auto to = game->chooseSite("Choose destination site:", creatures[0]->getLevel()->getModel())) {
+    creatures = creatures.filter([&](const Creature* c) { return c->getPosition().getModel() != to; });
+    vector<PlayerInfo> cant;
+    auto contentFactory = getGame()->getContentFactory();
+    for (Creature* c : copyOf(creatures))
+      if (!game->canTransferCreature(c, to)) {
+        cant.push_back(PlayerInfo(c, contentFactory));
+        creatures.removeElement(c);
+      }
+    if (!cant.empty() && !view->creatureInfo("These minions will be left behind due to sunlight. Continue?", true, cant))
+      return;
+    if (!creatures.empty()) {
+      for (Creature* c : creatures) {
+        game->transferCreature(c, to);
+      }
+      game->setWasTransfered();
+    }
+    forceSteeds();
+    for (auto col : to->getCollectives())
+      if (!!col->getName() && col->getControl()->considerVillainAmbush(creatures)) {
+        view->updateView(this, false);
+        game->addAnalytics("ambushed", col->getName()->full);
+        getView()->windowedMessage({col->getName()->viewId}, "You have been ambushed!");
+        break;
+      }
+  }
 }
 
 void Player::showHistory() {
@@ -983,8 +939,7 @@ void Player::moveAction(Vec2 dir) {
     tryToPerform(creature->destroy(dir, DestroyAction::Type::BASH));
   if (!dirPos.isCovered() && dirPos.isUnavailable() && canTravel() && !getGame()->isSingleModel() &&
       creature->getPosition().getLevel() == getModel()->getGroundLevel()) {
-    if (getGame()->transferAction(getTeam()))
-      forceSteeds();
+    transferAction();
   }
 }
 
@@ -1034,6 +989,10 @@ View* Player::getView() const {
 
 Vec2 Player::getScrollCoord() const {
   return creature->getPosition().getCoord();
+}
+
+bool Player::showScrollCoordOnMinimap() const {
+  return true;
 }
 
 Level* Player::getCreatureViewLevel() const {
@@ -1118,7 +1077,20 @@ static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
         Range(1, 2)
       });
     }
-  vector<Effect> allEffects = Effect::getWishedForEffects();
+  for (auto& buff : factory->buffs)
+    if (buff.second.canWishFor) {
+      ret.push_back(WishedItemInfo {
+        ItemType(ItemTypes::Ring{buff.first}),
+        "ring of " + buff.second.name,
+        Range(1, 2)
+      });
+      ret.push_back(WishedItemInfo {
+        ItemType(ItemTypes::Amulet{buff.first}),
+        "amulet of " + buff.second.name,
+        Range(1, 2)
+      });
+    }
+  vector<Effect> allEffects = Effect::getWishedForEffects(factory);
   for (auto& effect : allEffects) {
     ret.push_back(WishedItemInfo {
       ItemType(ItemTypes::Scroll{effect}),

@@ -1,0 +1,133 @@
+"FLESH" {
+  name = "flesh"
+  deathDescription = "killed"
+  healthType = FLESH
+  hasBrain = true
+  canCopulate = true
+  losingHeadsMeansDeath = true
+}
+
+"UNDEAD_FLESH" {
+  name = "rotting flesh"
+  deathDescription = "killed"
+  hasBrain = true
+  undead = true
+  intrinsicallyAffected = { SUNLIGHT_VULNERABLE }
+  immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING }
+  canCopulate = true
+}
+
+"SPIRIT" {
+  name = "ectoplasm"
+  deathDescription = "killed"
+  healthType = SPIRIT
+  canLoseBodyParts = false
+  intrinsicallyAffected = { ACID_IMMUNITY }
+  killedByBoulder = false
+  immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED TIED_UP ENTANGLED }
+}
+
+"FIRE" {
+  name = "fire"
+  deathDescription = "destroyed"
+  healthType = SPIRIT
+  canLoseBodyParts = false
+  intrinsicallyAffected = { ACID_IMMUNITY FIRE_IMMUNITY LIGHT_SOURCE }
+  killedByBoulder = false
+  immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED FROZEN TIED_UP ENTANGLED }
+}
+
+"WATER" {
+  name = "water"
+  deathDescription = "destroyed"
+  healthType = SPIRIT
+  canLoseBodyParts = false
+  intrinsicallyAffected = { FIRE_IMMUNITY }
+  immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED TIED_UP ENTANGLED }
+}
+
+"BONE" {
+  name = "bone"
+  undead = true
+  deathDescription = "destroyed"
+  immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING }
+  bodyPartItem = {"Bone"}
+}
+
+"ROCK" {
+  name = "rock"
+  deathDescription = "destroyed"
+  intrinsicallyAffected = { FIRE_IMMUNITY }
+  immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
+  bodyPartItem = {"Rock"}
+}
+
+"CLAY" {
+  name = "clay"
+  deathDescription = "destroyed"
+  intrinsicallyAffected = { FIRE_IMMUNITY }
+  immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
+  bodyPartItem = {"Rock"}
+}
+
+"WOOD" {
+  name = "wood"
+  deathDescription = "destroyed"
+  flamable = true
+  immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
+  bodyPartItem = {"WoodPlank"}
+}
+ 
+"IRON" {
+  name = "iron"
+  deathDescription = "destroyed"
+  intrinsicallyAffected = { FIRE_IMMUNITY }
+  immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
+  bodyPartItem = {"IronOre"}
+}
+ 
+"LAVA" {
+  name = "lava"
+  deathDescription = "destroyed"
+  intrinsicallyAffected = { FIRE_IMMUNITY }
+  immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
+}
+
+"ADA" {
+  name = "adamantium"
+  deathDescription = "destroyed"
+  intrinsicallyAffected = { FIRE_IMMUNITY }
+  immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
+  bodyPartItem = {"AdaOre"}
+}
+ 
+"GOLD" {
+  name = "gold"
+  deathDescription = "destroyed"
+  intrinsicallyAffected = { FIRE_IMMUNITY }
+  immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
+  bodyPartItem = {"GoldPiece"}
+}
+
+"ICE" {
+  name = "ice"
+  deathDescription = "destroyed"
+  intrinsicallyAffected = { COLD_IMMUNITY }
+  immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
+}
+
+"INFERNITE" {
+  name = "infernite"
+  deathDescription = "destroyed"
+  intrinsicallyAffected = { FIRE_IMMUNITY }
+  immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
+  bodyPartItem = {"InferniteOre"}
+}
+
+"ADOXIUM" {
+  name = "adoxium"
+  deathDescription = "destroyed"
+  intrinsicallyAffected = { FIRE_IMMUNITY }
+  immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
+  bodyPartItem = {"AdoxiumOre"}
+}

@@ -53,10 +53,10 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getName(bool plural = false, const Creature* owner = nullptr) const;
   string getTheName(bool plural = false, const Creature* owner = nullptr) const;
   string getAName(bool plural = false, const Creature* owner = nullptr) const;
-  string getNameAndModifiers(bool plural = false, const Creature* owner = nullptr) const;
+  string getNameAndModifiers(const ContentFactory*, bool plural = false, const Creature* owner = nullptr) const;
   const optional<string>& getArtifactName() const;
   void setArtifactName(const string&);
-  string getShortName(const Creature* owner = nullptr, bool plural = false) const;
+  string getShortName(const ContentFactory*, const Creature* owner = nullptr, bool plural = false) const;
   string getPluralName(int count) const;
   string getPluralTheName(int count) const;
   string getPluralAName(int count) const;
@@ -70,6 +70,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   ItemClass getClass() const;
   const vector<StorageId>& getStorageIds() const;
   const optional<string>& getEquipmentGroup() const;
+  ViewId getEquipedViewId() const;
 
   CostInfo getCraftingCost() const;
   int getPrice() const;
@@ -92,7 +93,8 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   bool isConflictingEquipment(const Item*) const;
   void addModifier(AttrType, int value);
   int getModifier(AttrType) const;
-  const optional<pair<int, CreaturePredicate>>& getSpecialModifier(AttrType) const;
+  const map<AttrType, int>& getModifierValues() const;
+  const map<AttrType, pair<int, CreaturePredicate>>& getSpecialModifiers() const;
   void tick(Position, bool carried);
   void applyPrefix(const ItemPrefix&, const ContentFactory*);
   void setTimeout(GlobalTime);
@@ -100,10 +102,10 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getApplyMsgThirdPerson(const Creature* owner) const;
   string getApplyMsgFirstPerson(const Creature* owner) const;
   optional<StatId> getProducedStat() const;
-  const vector<LastingEffect>& getEquipedEffects() const;
-  void onEquip(Creature*, bool msg = true);
+  bool hasEquipedEffect(LastingEffect) const;
+  void onEquip(Creature*, bool msg = true, const ContentFactory* = nullptr);
   void onUnequip(Creature*, bool msg = true);
-  void onOwned(Creature*, bool msg = true);
+  void onOwned(Creature*, bool msg = true, const ContentFactory* factory = nullptr);
   void onDropped(Creature*, bool msg = true);
   virtual void fireDamage(Position);
   virtual void iceDamage(Position);
@@ -117,7 +119,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   vector<string> getDescription(const ContentFactory*) const;
 
   CreaturePredicate getAutoEquipPredicate() const;
-  optional<LastingEffect> getOwnedEffect() const;
+  bool hasOwnedEffect(LastingEffect) const;
 
   const WeaponInfo& getWeaponInfo() const;
   void getAttackMsg(const Creature*, const string& enemyName) const;
@@ -127,7 +129,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   static ItemPredicate classPredicate(vector<ItemClass>);
   static ItemPredicate namePredicate(const string& name);
 
-  static vector<vector<Item*>> stackItems(vector<Item*>,
+  static vector<vector<Item*>> stackItems(const ContentFactory*, vector<Item*>,
       function<string(const Item*)> addSuffix = [](const Item*) { return ""; });
 
   virtual optional<CorpseInfo> getCorpseInfo() const;
@@ -141,7 +143,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   virtual void applySpecial(Creature*);
 
   private:
-  string getModifiers(bool shorten = false) const;
+  string getModifiers(const ContentFactory*, bool shorten = false) const;
   string getVisibleName(bool plural) const;
   string getBlindName(bool plural) const;
   HeapAllocated<ItemAttributes> SERIAL(attributes);
