@@ -101,10 +101,10 @@ void Equipment::equip(Item* item, EquipmentSlot slot, Creature* c, const Content
   CHECK(inventory.hasItem(item));
 }
 
-void Equipment::unequip(Item* item, Creature* c) {
+void Equipment::unequip(Item* item, Creature* c, const ContentFactory* factory) {
   items[item->getEquipmentSlot()].removeElement(item);
   equipped.removeElement(item);
-  item->onUnequip(c);
+  item->onUnequip(c, true, factory);
 }
 
 void Equipment::onRemoved(Item* item, Creature* c) {

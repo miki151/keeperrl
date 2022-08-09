@@ -786,7 +786,7 @@ CreatureAction Creature::equip(Item* item, const ContentFactory* factory) const 
     if (item->isConflictingEquipment(other))
       toUnequip.push_back(other);
   for (auto item : toUnequip) {
-    if (auto action = unequip(item))
+    if (auto action = unequip(item, factory))
       ret = ret.prepend(std::move(action));
     else
       return action;
@@ -794,7 +794,7 @@ CreatureAction Creature::equip(Item* item, const ContentFactory* factory) const 
   return ret;
 }
 
-CreatureAction Creature::unequip(Item* item) const {
+CreatureAction Creature::unequip(Item* item, const ContentFactory* factory) const {
   if (!equipment->isEquipped(item))
     return CreatureAction("This item is not equipped.");
   if (!getBody().isHumanoid())
@@ -809,7 +809,7 @@ CreatureAction Creature::unequip(Item* item) const {
         item->getTheName(false, this));
     thirdPerson(getName().the() + (slot == EquipmentSlot::WEAPON ? " sheathes " : " removes ") +
         item->getAName());
-    self->equipment->unequip(item, self);
+    self->equipment->unequip(item, self, factory);
     //self->spendTime();
   });
 }
@@ -1096,8 +1096,10 @@ bool Creature::addPermanentEffect(BuffId id, int count, bool msg, const ContentF
   return false;
 }
 
-bool Creature::removePermanentEffect(BuffId id, int count, bool msg) {
-  auto& info = getGame()->getContentFactory()->buffs.at(id);
+bool Creature::removePermanentEffect(BuffId id, int count, bool msg, const ContentFactory* factory) {
+  if (!factory)
+    factory = getGame()->getContentFactory();
+  auto& info = factory->buffs.at(id);
   if (--buffPermanentCount[id] <= 0) {
     buffPermanentCount.erase(id);
     if (msg && info.removedMessage)

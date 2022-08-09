@@ -31,7 +31,7 @@ class Equipment {
   bool isEquipped(const Item*) const;
   bool canEquip(const Item*, const Creature*) const;
   void equip(Item*, EquipmentSlot, Creature*, const ContentFactory* = nullptr);
-  void unequip(Item*, Creature*);
+  void unequip(Item*, Creature*, const ContentFactory* = nullptr);
   PItem removeItem(Item*, Creature*);
   int getMaxItems(EquipmentSlot, const Creature*) const;
   const vector<Item*>& getAllEquipped() const;

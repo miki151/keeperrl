@@ -125,9 +125,9 @@ void Item::onEquip(Creature* c, bool msg, const ContentFactory* factory) {
     c->getAttributes().companions.push_back(*attributes->equipedCompanion);
 }
 
-void Item::onUnequip(Creature* c, bool msg) {
+void Item::onUnequip(Creature* c, bool msg, const ContentFactory* factory) {
   for (auto& e : attributes->equipedEffect)
-    removePermanentEffect(e, c, msg);
+    removePermanentEffect(e, c, msg, factory);
   if (attributes->equipedCompanion)
     [&, &companions = c->getAttributes().companions] {
       for (int i : All(companions))

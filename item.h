@@ -98,13 +98,13 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   void tick(Position, bool carried);
   void applyPrefix(const ItemPrefix&, const ContentFactory*);
   void setTimeout(GlobalTime);
-  
+
   string getApplyMsgThirdPerson(const Creature* owner) const;
   string getApplyMsgFirstPerson(const Creature* owner) const;
   optional<StatId> getProducedStat() const;
   bool hasEquipedEffect(LastingEffect) const;
   void onEquip(Creature*, bool msg = true, const ContentFactory* = nullptr);
-  void onUnequip(Creature*, bool msg = true);
+  void onUnequip(Creature*, bool msg = true, const ContentFactory* = nullptr);
   void onOwned(Creature*, bool msg = true, const ContentFactory* factory = nullptr);
   void onDropped(Creature*, bool msg = true);
   virtual void fireDamage(Position);
