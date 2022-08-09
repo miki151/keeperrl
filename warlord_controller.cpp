@@ -154,11 +154,17 @@ class WarlordController : public Player, public EventListener<WarlordController>
         if (team->size() == 1)
           return true;
         if (isFullControl()) {
-          for (int i : Range(1, team->size()))
-            (*team)[i]->popController();
+          for (int i : Range(1, team->size())) {
+            auto c = (*team)[i];
+            if (!c->getRider() && c->isPlayer())
+              c->popController();
+          }
         } else
-          for (int i : Range(1, team->size()))
-            control((*team)[i]);
+          for (int i : Range(1, team->size())) {
+            auto c = (*team)[i];
+            if (!c->getRider())
+              control((*team)[i]);
+          }
         return true;
       case UserInputId::TEAM_MEMBER_ACTION: {
         auto& info = input.get<TeamMemberActionInfo>();
