@@ -522,7 +522,8 @@ class Corpses : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     Table<char> taken(area.right(), area.bottom());
-    auto creatures = inhabitants.generateCreatures(builder->getRandom(), &builder->getContentFactory()->getCreatures(),
+    auto factory = builder->getContentFactory();
+    auto creatures = inhabitants.generateCreatures(builder->getRandom(), &factory->getCreatures(),
         TribeId::getMonster(), MonsterAIFactory::monster());
     for (auto& minion : creatures) {
       PCreature& creature = minion.first;
@@ -534,7 +535,7 @@ class Corpses : public LevelMaker {
       } while (--numTries > 0 && (!builder->canPutItems(pos) || (!onPred.apply(builder, pos))));
       checkGen(numTries > 0);
       if (builder->getRandom().roll(10))
-        builder->putItems(pos, creature->getEquipment().removeAllItems(creature.get()));
+        builder->putItems(pos, creature->getEquipment().removeAllItems(creature.get(), factory));
       builder->putItems(pos, creature->generateCorpse(builder->getContentFactory(), nullptr, true));
       taken[pos] = 1;
     }
@@ -1684,7 +1685,8 @@ class ShopMaker : public LevelMaker {
       : shopInfo(std::move(shop)), tribe(info.tribe), shopkeeperDead(info.shopkeeperDead) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    PCreature shopkeeper = builder->getContentFactory()->getCreatures().fromId(CreatureId("SHOPKEEPER"), tribe,
+    auto factory = builder->getContentFactory();
+    PCreature shopkeeper = factory->getCreatures().fromId(CreatureId("SHOPKEEPER"), tribe,
         MonsterAIFactory::idle());
     shopkeeper->setController(CreatureFactory::getShopkeeper(builder->toGlobalCoordinates(area).getAllSquares(),
         shopkeeper.get()));
@@ -1696,15 +1698,15 @@ class ShopMaker : public LevelMaker {
     if (!shopkeeperDead)
       builder->putCreature(shopkeeperPos, std::move(shopkeeper));
     else {
-      builder->putItems(shopkeeperPos, shopkeeper->getEquipment().removeAllItems(shopkeeper.get()));
-      builder->putItems(shopkeeperPos, shopkeeper->generateCorpse(builder->getContentFactory(), nullptr, true));
+      builder->putItems(shopkeeperPos, shopkeeper->getEquipment().removeAllItems(shopkeeper.get(), factory));
+      builder->putItems(shopkeeperPos, shopkeeper->generateCorpse(factory, nullptr, true));
     }
     builder->putFurniture(pos[builder->getRandom().get(pos.size())], FurnitureParams{FurnitureType("GROUND_TORCH"),
         tribe});
-    auto itemList = builder->getContentFactory()->itemFactory.get(shopInfo.items);
+    auto itemList = factory->itemFactory.get(shopInfo.items);
     for (int i : Range(builder->getRandom().get(shopInfo.count))) {
       Vec2 v = pos[builder->getRandom().get(pos.size())];
-      builder->putItems(v, itemList.random(builder->getContentFactory()));
+      builder->putItems(v, itemList.random(factory));
     }
   }
 

@@ -197,7 +197,7 @@ pair<CreatureAttributes, SpellMap> Creature::setAttributes(CreatureAttributes at
   for (auto item : equipment->getItems())
     item->onDropped(this, false);
   attr.copyLastingEffects(*attributes);
-  for (auto effect : ENUM_ALL(LastingEffect))  
+  for (auto effect : ENUM_ALL(LastingEffect))
     if (attributes->isAffectedPermanently(effect))
       LastingEffects::onRemoved(this, effect, false);
   auto permanentBuffs = getKeys(buffPermanentCount);

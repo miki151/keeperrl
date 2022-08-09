@@ -106,9 +106,9 @@ void Item::onOwned(Creature* c, bool msg, const ContentFactory* factory) {
     addPermanentEffect(*attributes->ownedEffect, c, msg, factory);
 }
 
-void Item::onDropped(Creature* c, bool msg) {
+void Item::onDropped(Creature* c, bool msg, const ContentFactory* factory) {
   if (attributes->ownedEffect)
-    removePermanentEffect(*attributes->ownedEffect, c, msg);
+    removePermanentEffect(*attributes->ownedEffect, c, msg, factory);
 }
 
 bool Item::hasEquipedEffect(LastingEffect l) const {

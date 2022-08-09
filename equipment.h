@@ -39,7 +39,7 @@ class Equipment {
   const vector<Item*>& getItems(ItemIndex) const;
   Item* getItemById(UniqueEntity<Item>::Id) const;
   vector<PItem> removeItems(const vector<Item*>&, Creature*);
-  vector<PItem> removeAllItems(Creature*);
+  vector<PItem> removeAllItems(Creature*, const ContentFactory* = nullptr);
   double getTotalWeight() const;
   bool isEmpty() const;
   const ItemCounts& getCounts() const;
@@ -54,6 +54,6 @@ class Equipment {
   Inventory SERIAL(inventory);
   EnumMap<EquipmentSlot, vector<Item*>> SERIAL(items);
   vector<Item*> SERIAL(equipped);
-  void onRemoved(Item*, Creature*);
+  void onRemoved(Item*, Creature*, const ContentFactory*);
 };
 

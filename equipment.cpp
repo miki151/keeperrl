@@ -107,26 +107,31 @@ void Equipment::unequip(Item* item, Creature* c, const ContentFactory* factory) 
   item->onUnequip(c, true, factory);
 }
 
-void Equipment::onRemoved(Item* item, Creature* c) {
+void Equipment::onRemoved(Item* item, Creature* c, const ContentFactory* factory) {
   if (isEquipped(item))
-    unequip(item, c);
-  item->onDropped(c);
+    unequip(item, c, factory);
+  item->onDropped(c, true, factory);
 }
 
 PItem Equipment::removeItem(Item* item, Creature* c) {
-  onRemoved(item, c);
+  onRemoved(item, c, nullptr);
   return inventory.removeItem(item);
 }
 
 vector<PItem> Equipment::removeItems(const vector<Item*>& items, Creature* c) {
   vector<PItem> ret;
-  for (Item*& it : copyOf(items))
+  for (auto it : copyOf(items))
     ret.push_back(removeItem(it, c));
   return ret;
 }
 
-vector<PItem> Equipment::removeAllItems(Creature* c) {
-  return removeItems(inventory.getItems(), c);
+vector<PItem> Equipment::removeAllItems(Creature* c, const ContentFactory* factory) {
+  vector<PItem> ret;
+  for (auto it : copyOf(inventory.getItems())) {
+    onRemoved(it, c, factory);
+    ret.push_back(inventory.removeItem(it));
+  }
+  return ret;
 }
 
 double Equipment::getTotalWeight() const {
@@ -143,7 +148,7 @@ const ItemCounts& Equipment::getCounts() const {
 
 void Equipment::tick(Position pos, Creature* c) {
   for (auto& item : inventory.tick(pos, true))
-    onRemoved(item.get(), c);
+    onRemoved(item.get(), c, nullptr);
 }
 
 bool Equipment::containsAnyOf(const EntitySet<Item>& items) const {

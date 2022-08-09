@@ -106,7 +106,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   void onEquip(Creature*, bool msg = true, const ContentFactory* = nullptr);
   void onUnequip(Creature*, bool msg = true, const ContentFactory* = nullptr);
   void onOwned(Creature*, bool msg = true, const ContentFactory* factory = nullptr);
-  void onDropped(Creature*, bool msg = true);
+  void onDropped(Creature*, bool msg = true, const ContentFactory* factory = nullptr);
   virtual void fireDamage(Position);
   virtual void iceDamage(Position);
   const Fire& getFire() const;
