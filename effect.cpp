@@ -362,7 +362,8 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::RemoveLasting& e, c
 }
 
 static bool applyToCreature(const Effects::IncreaseAttr& e, Creature* c, Creature*) {
-  c->you(MsgType::YOUR, c->getGame()->getContentFactory()->attrInfo.at(e.attr).name + e.get(" improves", " wanes"));
+  if (auto game = c->getGame())
+    c->you(MsgType::YOUR, game->getContentFactory()->attrInfo.at(e.attr).name + e.get(" improves", " wanes"));
   c->getAttributes().increaseBaseAttr(e.attr, e.amount);
   return true;
 }
