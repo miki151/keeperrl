@@ -2623,8 +2623,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
           };
           for (auto& it : getItemUpgradesFor(item.item)) {
             auto index = getIndex(it.first->getName(), it.first->getViewObject().id());
-            if (increases[index] > 0) {
-              workshop.addUpgrade(info.itemIndex + increases[index] % info.numItems, it.second.removeItem(it.first));
+            auto itemIndex = info.itemIndex + increases[index] % info.numItems;
+            if (increases[index] > 0 && itemIndex < workshop.getQueued().size()) {
+              workshop.addUpgrade(itemIndex, it.second.removeItem(it.first));
               --increases[index];
             }
           }
