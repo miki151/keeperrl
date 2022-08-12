@@ -190,7 +190,7 @@ string Tutorial::getMessage() const {
           "Change the speed of the game using the keys 1-4 or by clicking in the "
           "lower left corner if it's taking too long.";
     case State::ACCEPT_IMMIGRANT:
-      return "Your dungeon has attracted an goblin warrior. "
+      return "Your dungeon has attracted a goblin warrior. "
           "Before your new minion joins you, you must fulfill a few requirements. "
           "Hover your mouse over the immigrant icon to see them. "
           "Once you are ready, accept the immigrant with a left click. Click on the '?' icon immediately to the left "
