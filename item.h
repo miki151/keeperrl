@@ -119,6 +119,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   vector<string> getDescription(const ContentFactory*) const;
 
   CreaturePredicate getAutoEquipPredicate() const;
+  const string& getEquipWarning() const;
   bool hasOwnedEffect(LastingEffect) const;
 
   const WeaponInfo& getWeaponInfo() const;

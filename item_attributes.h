@@ -99,6 +99,9 @@ class ItemAttributes {
   CostInfo SERIAL(craftingCost) = CostInfo::noCost();
   optional<string> SERIAL(equipmentGroup);
   CreaturePredicate SERIAL(autoEquipPredicate) = CreaturePredicates::And{};
+  string SERIAL(equipWarning) = "This item may potentially hurt your minion. Continue?";
 };
 
 static_assert(std::is_nothrow_move_constructible<ItemAttributes>::value, "T should be noexcept MoveConstructible");
+
+CEREAL_CLASS_VERSION(ItemAttributes, 1)

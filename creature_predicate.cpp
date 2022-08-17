@@ -360,6 +360,14 @@ static string getNameNegated(CreaturePredicates::Indoors m, const ContentFactory
   return "when outdoors";
 }
 
+static bool applyToCreature(const CreaturePredicates::AttributeAtLeast& a, const Creature* victim, const Creature*) {
+  return victim->getAttr(a.attr) >= a.value;
+}
+
+static string getName(const CreaturePredicates::AttributeAtLeast& a, const ContentFactory* f) {
+  return "at least " + toString(a.value) + " " + f->attrInfo.at(a.attr).name;
+}
+
 static bool apply(const CreaturePredicates::Translate& m, Position pos, const Creature* attacker) {
   return m.pred->apply(pos.plus(m.dir), attacker);
 }

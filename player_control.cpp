@@ -391,7 +391,7 @@ void PlayerControl::addEquipment(Creature* creature, EquipmentSlot slot) {
       && creature->canEquipIfEmptySlot(it, nullptr) && it->getEquipmentSlot() == slot; });
   if (chosenItem) {
     if (!chosenItem->getAutoEquipPredicate().apply(creature, nullptr) &&
-        !getView()->yesOrNoPrompt("This item may potentially hurt " + creature->getName().title() + ". Continue?"))
+        !getView()->yesOrNoPrompt(chosenItem->getEquipWarning()))
       return;
     vector<Item*> conflictingItems;
     for (auto it : collective->getMinionEquipment().getItemsOwnedBy(creature))

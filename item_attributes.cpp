@@ -34,6 +34,8 @@ void ItemAttributes::serializeImpl(Archive& ar, const unsigned int version) {
   ar(OPTION(specialAttr), OPTION(partIds), OPTION(equipedCompanion), OPTION(upgradeType), OPTION(producedStat));
   ar(OPTION(effectAppliedWhenThrown), OPTION(applyPredicate), NAMED(storageIds), NAMED(carriedTickEffect), OPTION(craftingCost));
   ar(OPTION(equipmentGroup), OPTION(autoEquipPredicate), NAMED(equipedViewId));
+  if (version >= 1)
+      ar(OPTION(equipWarning));
 }
 
 template <class Archive>

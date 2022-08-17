@@ -273,6 +273,10 @@ CreaturePredicate Item::getAutoEquipPredicate() const {
   return attributes->autoEquipPredicate;
 }
 
+const string& Item::getEquipWarning() const {
+  return attributes->equipWarning;
+}
+
 const WeaponInfo& Item::getWeaponInfo() const {
   return attributes->weaponInfo;
 }

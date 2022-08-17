@@ -1374,16 +1374,15 @@ End
       DAMAGE -2
       SPELL_SPEED 5
     }
+    autoEquipPredicate = AttributeAtLeast "SPELL_DAMAGE" 1
+    equipWarning = "Cornuthaums are only useful for spellcasters. Continue?"
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
   }
-"Cornuthaum2"
+"Cornuthaum2" inherit "Cornuthaum1"
   {
     viewId = { "cornuthaum2" }
     name = "ornate cornuthaum"
-    itemClass = ARMOR
-    equipmentSlot = HELMET
-    weight = 1
     price = 50
     craftingCost = "GOLD" 20
     modifiers = {
@@ -1392,15 +1391,11 @@ End
       SPELL_SPEED 10
     }
     maxUpgrades = 2
-    storageIds = {"armor" "equipment"}
   }
-"Cornuthaum3"
+"Cornuthaum3" inherit "Cornuthaum1"
   {
     viewId = { "cornuthaum3" }
     name = "sumptuous cornuthaum"
-    itemClass = ARMOR
-    equipmentSlot = HELMET
-    weight = 1
     price = 70
     craftingCost = "GOLD" 40
     modifiers = {
@@ -1409,7 +1404,6 @@ End
       SPELL_SPEED 15
     }
     maxUpgrades = 4
-    storageIds = {"armor" "equipment"}
   }
 "LeatherBoots"
   {
