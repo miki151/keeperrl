@@ -14,9 +14,11 @@ class KeybindingMap {
   optional<string> getText(Keybinding);
   bool set(Keybinding, SDL::SDL_Keysym);
   void reset();
-  
+
   private:
-  unordered_map<Keybinding, SDL::SDL_Keysym, CustomHash<Keybinding>> bindings;
+  using KeyMap = unordered_map<Keybinding, SDL::SDL_Keysym, CustomHash<Keybinding>>;
+  KeyMap bindings;
+  KeyMap defaults;
   FilePath defaultsPath;
   FilePath userPath;
   void save();

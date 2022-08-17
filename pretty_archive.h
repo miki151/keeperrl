@@ -290,7 +290,8 @@ inline void serializeMap(PrettyInputArchive& ar1, M& m) {
     ar1.error("Expected list of items surrounded by { and }");
   set<typename M::key_type> keys;
   while (1) {
-    if (ar1.peek() == "}")
+    auto keyText = ar1.peek();
+    if (keyText == "}")
       break;
     typename M::key_type key;
     ar1(key);
@@ -313,7 +314,7 @@ inline void serializeMap(PrettyInputArchive& ar1, M& m) {
       if (auto v = getReferenceMaybe(m, inheritKey))
         value = *v;
       else
-        ar1.error(modifying ? "Key to modify not found" : "Key to inherit not found");
+        ar1.error((modifying ? "Key to modify not found " : "Key to inherit not found ") + keyText);
     }
     if (wasInherited)
       ar1.loadInherited(value);

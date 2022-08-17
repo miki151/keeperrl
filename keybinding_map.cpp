@@ -7,6 +7,8 @@
 KeybindingMap::KeybindingMap(const FilePath& defaults, const FilePath& user)
     : defaultsPath(defaults), userPath(user) {
   vector<FilePath> paths { defaults };
+  if (auto error = PrettyPrinting::parseObject(this->defaults, paths, nullptr))
+    USER_FATAL << "Error loading default keybindings: " << *error;
   if (user.exists())
     paths.push_back(user);
   while (true) {
@@ -14,7 +16,7 @@ KeybindingMap::KeybindingMap(const FilePath& defaults, const FilePath& user)
       USER_INFO << "Error loading keybindings: " << *error;
       bindings.clear();
     } else
-      break;  
+      break;
   }
 }
 
@@ -115,8 +117,12 @@ optional<string> KeybindingMap::getText(Keybinding key) {
 
 void KeybindingMap::save() {
   ofstream out(userPath.getPath());
-  for (auto& elem : bindings)
-    out << elem.first.data() << " modify " << getText(elem.second, " ") << endl;
+  for (auto& elem : bindings) {
+    out << elem.first.data() << " ";
+    if (defaults.count(elem.first))
+      out << "modify ";
+    out << getText(elem.second, " ") << endl;
+  }
 }
 
 void KeybindingMap::reset() {
