@@ -106,6 +106,7 @@ optional<Position> Dancing::getTarget(Creature* creature) {
     return none;
   if (getNumActive(time) < curPos.minCount)
     return none;
+  CHECK(iteration >= 0) << iteration << " " << time << " " << currentDanceInfo->startTime << " " << numIterations;
   return currentDanceInfo->origin.plus(curPos.get(iteration, *creatureIndex) - curPos.coord[0][0]);
 }
 
