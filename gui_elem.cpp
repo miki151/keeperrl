@@ -185,9 +185,8 @@ class ButtonKey : public ButtonElem {
   bool capture;
 };
 
-GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o,
-    const DirectoryPath& freeImages, const optional<DirectoryPath>& nonFreeImages)
-    : clock(c), renderer(r), options(o), freeImagesPath(freeImages), nonFreeImagesPath(nonFreeImages) {
+GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o, const DirectoryPath& freeImages)
+    : clock(c), renderer(r), options(o), imagesPath(freeImages) {
 }
 
 GuiFactory::~GuiFactory() {}
@@ -2746,89 +2745,74 @@ Texture& GuiFactory::get(TexId id) {
 
 void GuiFactory::loadImages() {
   iconTextures.clear();
-  loadFreeImages(freeImagesPath);
-  if (nonFreeImagesPath)
-    loadNonFreeImages(*nonFreeImagesPath);
-}
-
-void GuiFactory::loadFreeImages(const DirectoryPath& path) {
-  textures[TexId::SCROLLBAR] = Texture(path.file("ui/scrollbar.png"));
-  textures[TexId::SCROLL_BUTTON] = Texture(path.file("ui/scrollmark.png"));
-  textures[TexId::BACKGROUND_PATTERN] = Texture(path.file("window_bg.png"));
+  textures[TexId::SCROLLBAR] = Texture(imagesPath.file("ui/scrollbar.png"));
+  textures[TexId::SCROLL_BUTTON] = Texture(imagesPath.file("ui/scrollmark.png"));
+  textures[TexId::BACKGROUND_PATTERN] = Texture(imagesPath.file("window_bg.png"));
   text = Color::WHITE;
   titleText = Color::YELLOW;
   inactiveText = Color::LIGHT_GRAY;
-  textures[TexId::HORI_CORNER1] = Texture(path.file("ui/horicorner1.png"));
-  textures[TexId::HORI_CORNER2] = Texture(path.file("ui/horicorner2.png"));
-  textures[TexId::HORI_LINE] = Texture(path.file("ui/horiline.png"));
-  textures[TexId::HORI_MIDDLE] = Texture(path.file("ui/horimiddle.png"));
-  textures[TexId::VERT_BAR] = Texture(path.file("ui/vertbar.png"));
-  textures[TexId::HORI_BAR] = Texture(path.file("ui/horibar.png"));
-  textures[TexId::CORNER_TOP_LEFT] = Texture(path.file("ui/cornerTOPL.png"));
-  textures[TexId::CORNER_TOP_RIGHT] = Texture(path.file("ui/cornerTOPR.png"));
-  textures[TexId::CORNER_BOTTOM_RIGHT] = Texture(path.file("ui/cornerBOTTOMR.png"));
+  textures[TexId::HORI_CORNER1] = Texture(imagesPath.file("ui/horicorner1.png"));
+  textures[TexId::HORI_CORNER2] = Texture(imagesPath.file("ui/horicorner2.png"));
+  textures[TexId::HORI_LINE] = Texture(imagesPath.file("ui/horiline.png"));
+  textures[TexId::HORI_MIDDLE] = Texture(imagesPath.file("ui/horimiddle.png"));
+  textures[TexId::VERT_BAR] = Texture(imagesPath.file("ui/vertbar.png"));
+  textures[TexId::HORI_BAR] = Texture(imagesPath.file("ui/horibar.png"));
+  textures[TexId::CORNER_TOP_LEFT] = Texture(imagesPath.file("ui/cornerTOPL.png"));
+  textures[TexId::CORNER_TOP_RIGHT] = Texture(imagesPath.file("ui/cornerTOPR.png"));
+  textures[TexId::CORNER_BOTTOM_RIGHT] = Texture(imagesPath.file("ui/cornerBOTTOMR.png"));
 
-  textures[TexId::HORI_BAR_MINI] = Texture(path.file("ui/horibarmini.png"));
-  textures[TexId::VERT_BAR_MINI] = Texture(path.file("ui/vertbarmini.png"));
-  textures[TexId::CORNER_MINI] = Texture(path.file("ui/cornermini.png"));
+  textures[TexId::HORI_BAR_MINI] = Texture(imagesPath.file("ui/horibarmini.png"));
+  textures[TexId::VERT_BAR_MINI] = Texture(imagesPath.file("ui/vertbarmini.png"));
+  textures[TexId::CORNER_MINI] = Texture(imagesPath.file("ui/cornermini.png"));
 
-  textures[TexId::BUTTON_BG] = Texture(path.file("ui/button_bg.png"));
-  textures[TexId::BUTTON_CORNER] = Texture(path.file("ui/button_corner.png"));
-  textures[TexId::BUTTON_BOTTOM] = Texture(path.file("ui/button_corner.png"), 7, 4, 1, 4);
-  textures[TexId::BUTTON_SIDE] = Texture(path.file("ui/button_corner.png"), 0, 0, 4, 1);
-  textures[TexId::BUTTON_CORNER_HIGHLIGHT] = Texture(path.file("ui/button_corner_highlight.png"));
-  textures[TexId::BUTTON_BOTTOM_HIGHLIGHT] = Texture(path.file("ui/button_corner_highlight.png"), 7, 4, 1, 4);
-  textures[TexId::BUTTON_SIDE_HIGHLIGHT] = Texture(path.file("ui/button_corner_highlight.png"), 0, 0, 4, 1);
+  textures[TexId::BUTTON_BG] = Texture(imagesPath.file("ui/button_bg.png"));
+  textures[TexId::BUTTON_CORNER] = Texture(imagesPath.file("ui/button_corner.png"));
+  textures[TexId::BUTTON_BOTTOM] = Texture(imagesPath.file("ui/button_corner.png"), 7, 4, 1, 4);
+  textures[TexId::BUTTON_SIDE] = Texture(imagesPath.file("ui/button_corner.png"), 0, 0, 4, 1);
+  textures[TexId::BUTTON_CORNER_HIGHLIGHT] = Texture(imagesPath.file("ui/button_corner_highlight.png"));
+  textures[TexId::BUTTON_BOTTOM_HIGHLIGHT] = Texture(imagesPath.file("ui/button_corner_highlight.png"), 7, 4, 1, 4);
+  textures[TexId::BUTTON_SIDE_HIGHLIGHT] = Texture(imagesPath.file("ui/button_corner_highlight.png"), 0, 0, 4, 1);
 
-  textures[TexId::HORI_BAR_MINI2] = Texture(path.file("ui/horibarmini2.png"));
-  textures[TexId::VERT_BAR_MINI2] = Texture(path.file("ui/vertbarmini2.png"));
-  textures[TexId::CORNER_MINI2] = Texture(path.file("ui/cornermini2.png"));
-  textures[TexId::CORNER_MINI2_LARGE] = Texture(path.file("ui/cornermini2_large.png"));
-  textures[TexId::IMMIGRANT_BG] = Texture(path.file("ui/immigrantbg.png"));
-  textures[TexId::IMMIGRANT2_BG] = Texture(path.file("ui/immigrant2bg.png"));
-  textures[TexId::SCROLL_UP] = Texture(path.file("ui/up.png"));
-  textures[TexId::SCROLL_DOWN] = Texture(path.file("ui/down.png"));
-  textures[TexId::WINDOW_CORNER] = Texture(path.file("ui/corner1.png"));
-  textures[TexId::WINDOW_CORNER_EXIT] = Texture(path.file("ui/corner2X.png"));
-  textures[TexId::WINDOW_CORNER_EXIT_HIGHLIGHT] = Texture(path.file("ui/corner2X_highlight.png"));
-  textures[TexId::WINDOW_VERT_BAR] = Texture(path.file("ui/vertibarmsg1.png"));
-  textures[TexId::MAIN_MENU_HIGHLIGHT] = Texture(path.file("ui/menu_highlight.png"));
-  textures[TexId::SPLASH1] = Texture(path.file("splash2f.png"));
-  textures[TexId::SPLASH2] = Texture(path.file("splash2e.png"));
-  textures[TexId::LOADING_SPLASH] = Texture(path.file(Random.choose(
+  textures[TexId::HORI_BAR_MINI2] = Texture(imagesPath.file("ui/horibarmini2.png"));
+  textures[TexId::VERT_BAR_MINI2] = Texture(imagesPath.file("ui/vertbarmini2.png"));
+  textures[TexId::CORNER_MINI2] = Texture(imagesPath.file("ui/cornermini2.png"));
+  textures[TexId::CORNER_MINI2_LARGE] = Texture(imagesPath.file("ui/cornermini2_large.png"));
+  textures[TexId::IMMIGRANT_BG] = Texture(imagesPath.file("ui/immigrantbg.png"));
+  textures[TexId::IMMIGRANT2_BG] = Texture(imagesPath.file("ui/immigrant2bg.png"));
+  textures[TexId::SCROLL_UP] = Texture(imagesPath.file("ui/up.png"));
+  textures[TexId::SCROLL_DOWN] = Texture(imagesPath.file("ui/down.png"));
+  textures[TexId::WINDOW_CORNER] = Texture(imagesPath.file("ui/corner1.png"));
+  textures[TexId::WINDOW_CORNER_EXIT] = Texture(imagesPath.file("ui/corner2X.png"));
+  textures[TexId::WINDOW_CORNER_EXIT_HIGHLIGHT] = Texture(imagesPath.file("ui/corner2X_highlight.png"));
+  textures[TexId::WINDOW_VERT_BAR] = Texture(imagesPath.file("ui/vertibarmsg1.png"));
+  textures[TexId::MAIN_MENU_HIGHLIGHT] = Texture(imagesPath.file("ui/menu_highlight.png"));
+  textures[TexId::SPLASH1] = Texture(imagesPath.file("splash2f.png"));
+  textures[TexId::SPLASH2] = Texture(imagesPath.file("splash2e.png"));
+  textures[TexId::LOADING_SPLASH] = Texture(imagesPath.file(Random.choose(
             "splash2a.png"_s,
             "splash2b.png"_s,
             "splash2c.png"_s,
             "splash2d.png"_s)));
-  textures[TexId::UI_HIGHLIGHT] = Texture(path.file("ui/ui_highlight.png"));
-  textures[TexId::MINIMAP_BAR] = Texture(path.file("minimap_bar.png"));
+  textures[TexId::UI_HIGHLIGHT] = Texture(imagesPath.file("ui/ui_highlight.png"));
+  textures[TexId::MINIMAP_BAR] = Texture(imagesPath.file("minimap_bar.png"));
   const int tabIconWidth = 42;
   for (int i = 0; i < 8; ++i)
-    iconTextures.push_back(Texture(path.file("icons.png"), 0, i * tabIconWidth, tabIconWidth, tabIconWidth));
+    iconTextures.push_back(Texture(imagesPath.file("icons.png"), 0, i * tabIconWidth, tabIconWidth, tabIconWidth));
   auto loadIcons = [&] (int width, int count, const char* file) {
     for (int i = 0; i < count; ++i)
-      iconTextures.push_back(Texture(path.file(file), 0, i * width, width, width));
+      iconTextures.push_back(Texture(imagesPath.file(file), 0, i * width, width, width));
   };
   loadIcons(16, 4, "morale_icons.png");
   loadIcons(16, 2, "team_icons.png");
   loadIcons(48, 6, "minimap_icons.png");
   loadIcons(32, 1, "expand_up.png");
   loadIcons(32, 1, "special_immigrant.png");
-}
-
-void GuiFactory::loadNonFreeImages(const DirectoryPath& path) {
-  textures[TexId::KEEPER_CHOICE] = Texture(path.file("keeper_choice.png"));
-  textures[TexId::ADVENTURER_CHOICE] = Texture(path.file("adventurer_choice.png"));
-  textures[TexId::KEEPER_HIGHLIGHT] = Texture(path.file("keeper_highlight.png"));
-  textures[TexId::ADVENTURER_HIGHLIGHT] = Texture(path.file("adventurer_highlight.png"));
-  textures[TexId::MENU_ITEM] = Texture(path.file("barmid.png"));
+  textures[TexId::MENU_ITEM] = Texture(imagesPath.file("barmid.png"));
   // If menu_core fails to load, try the lower resolution versions
-  if (auto tex = Texture::loadMaybe(path.file("menu_core.png"))) {
+  if (auto tex = Texture::loadMaybe(imagesPath.file("menu_core.png"))) {
     textures[TexId::MENU_CORE] = std::move(*tex);
-    textures[TexId::MENU_MOUTH] = Texture(path.file("menu_mouth.png"));
   } else {
-    textures[TexId::MENU_CORE] = Texture(path.file("menu_core_sm.png"));
-    textures[TexId::MENU_MOUTH] = Texture(path.file("menu_mouth_sm.png"));
+    textures[TexId::MENU_CORE] = Texture(imagesPath.file("menu_core_sm.png"));
   }
 }
 

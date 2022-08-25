@@ -15,7 +15,7 @@ class ScriptedUI;
 struct TileCoord {
   Vec2 size;
   Vec2 pos;
-  Texture* texture;
+  Texture* texture = nullptr;
 };
 
 class TileSet {

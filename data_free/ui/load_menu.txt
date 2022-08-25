@@ -3,42 +3,42 @@ Def LoadButtonSpacing() Height 10 {} End
 
 Def SavedGameContent() Vertical {
   {
-    MiniWindow2({
+    {
       Horizontal {
         Vertical {
-          Using "label" Label()
+          Horizontal { Using "label" Label() Using "warlord" Label(" (retired)") }
           Using "date" Label(none, 14, ColorId GRAY)
           Using "viewIds" List(HORIZONTAL, ViewId(1))
         }
         Stretch {}
-        Vertical {
+        Position(TOP_RIGHT, {
           Using "load" StandardButton(Label("Load game"))
           Using "warlord" StandardButton(Label("Play as a warlord"))
-        }
+        })
       }
-    })
-    MarginRight(2, Using "erase" Position(TOP_RIGHT, Height 14 Width 14 {
+    }
+    MarginRight(2, Using "erase" Position(BOTTOM_RIGHT, Height 20 Width 45 {
         Button()
-        Margins(4, -4, 0, 0, Label("x", 16, Rgb 200 100 100 255))
-        MouseOver Margins(4, -4, 0, 0, Label("x", 16, Rgb 255 200 200 255))
+        StandardButton(Label("erase", 16, Rgb 200 100 100 255))
     }))
   }
+  Position(BOTTOM_STRETCHED, Height 10 Texture(HORI_BAR_MINI2))
   LoadButtonSpacing()
 }
 End
 
-
 {
-  FocusKeys()
-  Width 600
-  Vertical {
-    MaxHeight 400
-      Using "games" Scrolling(List(VERTICAL, SavedGameContent()))
-    Stretch {}
-    Height 15 {}
-    Position(MIDDLE, Horizontal {
-      Width 150 Using "new" StandardButton(Height 20 Label("Start new game"))
-      Width 150 Using "EXIT" StandardButton(Height 20 Label("Go back"))
-    })
-  }
+  BlockEvents
+  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
+  Window({
+    FocusKeys()
+    Width 600
+    Vertical {
+      MaxHeight 400
+        Using "games" Scrolling(MarginRight(10, List(VERTICAL, SavedGameContent())))
+      Stretch {}
+      Height 15 {}
+      Position(MIDDLE, Width 150 Using "new" StandardButton(Height 20 Label("Start new game")))
+    }
+  })
 }

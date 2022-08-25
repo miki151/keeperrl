@@ -64,8 +64,7 @@ class GuiElem {
 
 class GuiFactory {
   public:
-  GuiFactory(Renderer&, Clock*, Options*, const DirectoryPath& freeImages,
-      const optional<DirectoryPath>& nonFreeImages);
+  GuiFactory(Renderer&, Clock*, Options*, const DirectoryPath& freeImages);
   void loadImages();
   ~GuiFactory();
 
@@ -326,8 +325,5 @@ class GuiFactory {
   Renderer& renderer;
   Options* options;
   DragContainer dragContainer;
-  DirectoryPath freeImagesPath;
-  optional<DirectoryPath> nonFreeImagesPath;
-  void loadNonFreeImages(const DirectoryPath&);
-  void loadFreeImages(const DirectoryPath&);
+  DirectoryPath imagesPath;
 };

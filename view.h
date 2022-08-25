@@ -243,7 +243,6 @@ class View {
 
   virtual void dungeonScreenshot(Vec2 size) = 0;
 
-  virtual void presentHighscores(const vector<HighscoreList>&) = 0;
   using BugReportSaveCallback = function<void(FilePath)>;
 
   bool confirmConflictingItems(const ContentFactory*, const vector<Item*>&);

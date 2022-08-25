@@ -56,7 +56,6 @@ class DummyView : public View {
   virtual optional<int> chooseItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollpos) override {
     return none;
   }
-  virtual void presentHighscores(const vector<HighscoreList>&) override {}
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) override {
     return CampaignActionId::CANCEL;
   }

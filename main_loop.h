@@ -61,9 +61,6 @@ class MainLoop {
   void getSaveOptions(const vector<pair<GameSaveType, string>>&,
       vector<ListElem>& options, vector<SaveFileInfo>& allFiles);
 
-  optional<SaveFileInfo> chooseSaveFile(const vector<ListElem>& options, const vector<SaveFileInfo>& allFiles,
-      string noSaveMsg, View*);
-
   void doWithSplash(const string& text, int totalProgress, function<void(ProgressMeter&)> fun,
     function<void()> cancelFun = nullptr);
 
@@ -74,7 +71,7 @@ class MainLoop {
   enum class ExitCondition;
   ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (WGame)> = nullptr,
       milliseconds stepTimeMilli = milliseconds{3}, optional<int> maxTurns = none);
-  void showCredits(const FilePath& path);
+  void showCredits();
   void showMods();
   void playMenuMusic();
   ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen&, ContentFactory*);

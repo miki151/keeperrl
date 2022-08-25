@@ -14,21 +14,24 @@ namespace EnumsDetail {
 enum class TextureFlip;
 enum class PlacementPos;
 enum class Direction;
+enum class TextureType;
 }
 
 RICH_ENUM(EnumsDetail::TextureFlip, NONE, FLIP_X, FLIP_Y, FLIP_XY);
 RICH_ENUM(EnumsDetail::PlacementPos, MIDDLE, TOP_STRETCHED, BOTTOM_STRETCHED, LEFT_STRETCHED, RIGHT_STRETCHED,
     TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, LEFT_CENTERED, RIGHT_CENTERED, TOP_CENTERED, BOTTOM_CENTERED,
-    MIDDLE_STRETCHED_X, MIDDLE_STRETCHED_Y, SCREEN);
+    MIDDLE_STRETCHED_X, MIDDLE_STRETCHED_Y, MIDDLE_FIT_Y, ENCAPSULATE, SCREEN);
 RICH_ENUM(EnumsDetail::Direction, HORIZONTAL, VERTICAL);
+RICH_ENUM(EnumsDetail::TextureType, REPEAT, FIT);
 
 namespace ScriptedUIElems {
 
 using namespace EnumsDetail;
 
-struct Texture : ScriptedUIInterface {
 
-  const ::Texture* getTexture(ScriptedContext& context) const {
+struct TextureImpl : ScriptedUIInterface {
+
+  const Texture* getTexture(ScriptedContext& context) const {
     if (id)
       return &context.factory->get(*id);
     if (auto ret = getReferenceMaybe(context.renderer->getTileSet().scriptedUITextures, scriptedId))
@@ -36,11 +39,17 @@ struct Texture : ScriptedUIInterface {
     return nullptr;
   }
   void render(const ScriptedUIData&, ScriptedContext& context, Rectangle area) const override {
-    if (auto texture = getTexture(context))
-      context.renderer->drawSprite(area.topLeft(), Vec2(0, 0), area.getSize(), *texture, none, none,
+    if (auto texture = getTexture(context)) {
+      optional<Vec2> targetSize;
+      Vec2 sourceSize = area.getSize();
+      if (type == TextureType::FIT) {
+        targetSize = area.getSize();
+        sourceSize = texture->getSize();
+      }
+      context.renderer->drawSprite(area.topLeft(), Vec2(0, 0), sourceSize, *texture, targetSize, none,
           Renderer::SpriteOrientation(flip == TextureFlip::FLIP_Y || flip == TextureFlip::FLIP_XY,
               flip == TextureFlip::FLIP_X || flip == TextureFlip::FLIP_XY));
-    else
+    } else
       context.renderer->drawText(Color::RED, area.topLeft(), "Texture not found \"" + scriptedId + "\"");
   }
 
@@ -51,19 +60,21 @@ struct Texture : ScriptedUIInterface {
       return Vec2(80, 20);
   }
 
+  TextureType SERIAL(type);
   optional<TextureId> SERIAL(id);
   string SERIAL(scriptedId);
   TextureFlip SERIAL(flip) = TextureFlip::NONE;
   template <class Archive> void serialize(Archive& ar, const unsigned int) {
+    ar(roundBracket());
     if (ar.peek(2)[0] == '\"')
-      ar(roundBracket(), NAMED(scriptedId));
+      ar(NAMED(scriptedId));
     else
-      ar(roundBracket(), NAMED(id));
-    ar(OPTION(flip));
+      ar(NAMED(id));
+    ar(  NAMED(type), OPTION(flip));
   }
 };
 
-REGISTER_SCRIPTED_UI(Texture);
+REGISTER_SCRIPTED_UI(TextureImpl);
 
 struct ViewId : ScriptedUIInterface {
   void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
@@ -108,6 +119,22 @@ struct Button : ScriptedUIInterface {
 };
 
 REGISTER_SCRIPTED_UI(Button);
+
+struct UrlButton : ScriptedUIInterface {
+  void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
+      Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
+    if (id == MouseButtonId::LEFT && pos.inRectangle(bounds))
+      callback = [url=this->url] {
+        openUrl(url);
+        return false;
+      };
+  }
+
+  string SERIAL(url);
+  SERIALIZE_ALL(roundBracket(), NAMED(url))
+};
+
+REGISTER_SCRIPTED_UI(UrlButton);
 
 struct KeyReader {
   SDL::SDL_Keycode key;
@@ -169,7 +196,7 @@ struct BlockEvents : ScriptedUIInterface {
       SDL::SDL_Keysym, Rectangle, EventCallback& callback) const override {
     callback = [] { return false; };
   }
-  
+
   void onClick(const ScriptedUIData&, ScriptedContext&, MouseButtonId, Rectangle,
       Vec2, EventCallback& callback) const override {
     callback = [] { return false; };
@@ -309,6 +336,16 @@ struct Position : Container {
       Rectangle area) const override {
     auto size = elem->getSize(data, context);
     switch (position) {
+      case PlacementPos::MIDDLE_FIT_Y: {
+        double scale = double(area.height()) / size.y;
+        return {SubElemInfo{elem, data, Rectangle(area.middle().x - scale * size.x / 2, area.top(),
+            area.middle().x - scale * size.x / 2 + scale * size.x, area.bottom())}};
+      }
+      case PlacementPos::ENCAPSULATE: {
+        double scale = max(double(area.height()) / size.y, double(area.width()) / size.x);
+        return {SubElemInfo{elem, data, Rectangle(area.middle() - size * scale / 2,
+            area.middle() - size * scale / 2 + size * scale)}};
+      }
       case PlacementPos::MIDDLE_STRETCHED_X:
         return {SubElemInfo{elem, data, Rectangle(area.left(), area.middle().y - size.y / 2,
             area.right(), area.middle().y - size.y / 2 + size.y)}};
@@ -529,6 +566,9 @@ REGISTER_SCRIPTED_UI(Vertical);
 
 struct Using : Container {
   vector<SubElemInfo> getElemBounds(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
+    if (auto record = data.getReferenceMaybe<ScriptedUIDataElems::Record>())
+      if (auto value = getReferenceMaybe(record->elems, key))
+        return {SubElemInfo{elem, *value, area}};
     if (key == "EXIT")
       return {SubElemInfo{elem, context.state.exit, area}};
     else
@@ -538,13 +578,7 @@ struct Using : Container {
     if (key == "HIGHLIGHT_PREVIOUS")
       return {SubElemInfo{elem, context.state.highlightPrevious, area}};
     else
-    if (auto record = data.getReferenceMaybe<ScriptedUIDataElems::Record>()) {
-      if (auto value = getReferenceMaybe(record->elems, key))
-        return {SubElemInfo{elem, *value, area}};
-      else
-        return {};
-    } else
-      return getError("not a record");
+      return {};
   }
 
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {

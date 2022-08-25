@@ -403,8 +403,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserInfoLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   atomic<bool> splashDone { false };
-  GuiFactory guiFactory(renderer, &clock, &options, freeDataPath.subdirectory("images"),
-      tilesPresent ? optional<DirectoryPath>(paidDataPath.subdirectory("images")) : none);
+  GuiFactory guiFactory(renderer, &clock, &options, freeDataPath.subdirectory("images"));
   TileSet tileSet(paidDataPath.subdirectory("images"), modsDir, freeDataPath.subdirectory("ui"));
   renderer.setTileSet(&tileSet);
   unique_ptr<fx::FXManager> fxManager;

@@ -257,19 +257,6 @@ void MainLoop::getSaveOptions(const vector<pair<GameSaveType, string>>& games, v
   }
 }
 
-optional<SaveFileInfo> MainLoop::chooseSaveFile(const vector<ListElem>& options,
-    const vector<SaveFileInfo>& allFiles, string noSaveMsg, View* view) {
-  if (options.empty()) {
-    view->presentText("", noSaveMsg);
-    return none;
-  }
-  auto ind = view->chooseFromList("Choose game", options, 0);
-  if (ind)
-    return allFiles[*ind];
-  else
-    return none;
-}
-
 enum class MainLoop::ExitCondition {
   ALLIES_WON,
   ENEMIES_WON,
@@ -467,11 +454,11 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
   while (1) {
     ContentFactory contentFactory;
     tileSet->clear();
-    doWithSplash("Loading gameplay data", [&] {
+    //doWithSplash("Loading gameplay data", [&] {
       contentFactory = createContentFactory(false);
       if (tileSet)
         tileSet->setTilePaths(contentFactory.tilePaths);
-    });
+    //});
     tileSet->loadTextures();
     if (options->getIntValue(OptionId::SUGGEST_TUTORIAL) == 1) {
       auto tutorialIndex = view->chooseFromList("", {ListElem("Would you like to start with the tutorial?", ListElem::TITLE),
@@ -524,22 +511,10 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
   }
 }
 
-void MainLoop::showCredits(const FilePath& path) {
-  ifstream in(path.getPath());
-  CHECK(!!in);
-  vector<ListElem> lines;
-  while (1) {
-    char buf[100];
-    in.getline(buf, 100);
-    if (!in)
-      break;
-    string s(buf);
-    if (s.back() == ':')
-      lines.emplace_back(s, ListElem::TITLE);
-    else
-      lines.emplace_back(s, ListElem::NORMAL);
-  }
-  view->presentList("Credits", lines, false);
+void MainLoop::showCredits() {
+  ScriptedUIState uiState{};
+  auto data = ScriptedUIDataElems::Record{};
+  view->scriptedUI("credits", data, uiState);
 }
 
 const auto modVersionFilename = "version_info";
@@ -840,26 +815,36 @@ void MainLoop::start(bool tilesPresent) {
   view->reset();
   considerFreeVersionText(tilesPresent);
   considerGameEventsPrompt();
-  int lastIndex = 0;
   const auto vanillaContent = createContentFactory(true);
   while (1) {
     playMenuMusic();
+    auto data = ScriptedUIDataElems::Record{};
     optional<int> choice;
-    choice = view->chooseFromList("", {
-        "Play", "Settings", "High scores", "Credits", "Quit"}, lastIndex, MenuType::MAIN);
+    PGame game;
+    data.elems["play"] = ScriptedUIDataElems::Callback{[&game, this] {
+      return !!(game = loadOrNewGame());
+    }};
+    data.elems["settings"] = ScriptedUIDataElems::Callback{[&vanillaContent, this] {
+      options->handle(view, &vanillaContent, OptionSet::GENERAL);
+      return false;
+    }};
+    data.elems["highscores"] = ScriptedUIDataElems::Callback{[this] {
+      highscores->present(view);
+      return false;
+    }};
+    data.elems["credits"] = ScriptedUIDataElems::Callback{[this] {
+      showCredits();
+      return false;
+    }};
+    data.elems["quit"] = ScriptedUIDataElems::Callback{[&choice] { choice = 4; return true;}};
+    ScriptedUIState uiState{};
+    view->scriptedUI("main_menu", data, uiState);
+    if (game)
+      playGame(std::move(game), true, false);
     if (!choice)
       continue;
-    lastIndex = *choice;
     switch (*choice) {
-      case 0: {
-        if (PGame game = loadOrNewGame())
-          playGame(std::move(game), true, false);
-        view->reset();
-        break;
-      }
-      case 1: options->handle(view, &vanillaContent, OptionSet::GENERAL); break;
-      case 2: highscores->present(view); break;
-      case 3: showCredits(dataFreePath.file("credits.txt")); break;
+      case 2: ; break;
       case 4: return;
     }
   }
@@ -1255,13 +1240,15 @@ PGame MainLoop::loadOrNewGame() {
     return prepareCampaign(Random);
   data.elems["games"] = std::move(games);
   bool newGame = false;
-  data.elems["new"] = ScriptedUIData{ScriptedUIDataElems::Callback{[&newGame]{ newGame = true; return true; }}};
+  data.elems["new"] = ScriptedUIData{ScriptedUIDataElems::Callback{[&newGame]{
+    newGame = true;
+    return true;
+  }}};
   ScriptedUIState uiState{};
   view->scriptedUI("load_menu", data, uiState);
   if (newGame) {
     if (auto res = prepareCampaign(Random))
-      return res;
-    return loadOrNewGame();
+      return std::move(res);
   } else if (savedGame) {
     if (PGame ret = loadGame(userPath.file(savedGame->filename))) {
       if (eraseSave())
@@ -1278,8 +1265,8 @@ PGame MainLoop::loadOrNewGame() {
     if (view->yesOrNoPrompt("Are you sure you want to erase " + eraseGame->filename + "?"))
       userPath.file(eraseGame->filename).erase();
     return loadOrNewGame();
-  } else
-    return nullptr;
+  }
+  return nullptr;
 }
 
 struct WarlordInfo {

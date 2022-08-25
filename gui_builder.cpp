@@ -3071,39 +3071,6 @@ static int getLineHeight(ListElem::ElemMod mod) {
   }
 }
 
-SGuiElem GuiBuilder::getMainMenuLinks(const string& personalMessage, SGuiElem elem) {
-  auto getButton = [&](const char* viewId, const char* label, const char* url) {
-    return WL(stack,
-        WL(button, [url] { openUrl(url); }),
-        WL(getListBuilder)
-          .addElem(WL(viewObject, ViewId(viewId)), 30)
-          .addElemAuto(WL(labelHighlight, label))
-          .buildHorizontalList()
-    );
-  };
-  auto makeWindow = [&](SGuiElem elem) {
-    return WL(centerHoriz, WL(translucentBackgroundWithBorder, WL(margins, std::move(elem), 15, 4, 15, 5)));
-  };
-  auto buttonsLine = makeWindow(WL(getListBuilder)
-      .addElemAuto(getButton("keeper4", "News", "https://keeperrl.com/category/News"))
-      .addSpace(100)
-      .addElemAuto(getButton("elementalist", "Wiki", "http://keeperrl.com/wiki"))
-      .addSpace(100)
-      .addElemAuto(getButton("jester", "Discord", "https://discordapp.com/invite/XZfCCs5"))
-      .addSpace(100)
-      .addElemAuto(getButton("gnome", "Github", "https://github.com/miki151/keeperrl"))
-      .buildHorizontalList());
-  if (!personalMessage.empty())
-    buttonsLine = WL(getListBuilder, legendLineHeight)
-        .addElemAuto(makeWindow(WL(label, personalMessage)))
-        .addSpace(10)
-        .addElem(std::move(buttonsLine))
-        .buildVerticalList();
-  return WL(stack, std::move(elem),
-      WL(fullScreen, WL(alignment, GuiFactory::Alignment::BOTTOM, WL(bottomMargin, 10, std::move(buttonsLine)))));
-
-}
-
 SGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& options,
     MenuType menuType, optional<int>* highlight, int* choice, vector<int>* positions) {
   auto lines = WL(getListBuilder, listLineHeight);
@@ -4719,42 +4686,6 @@ SGuiElem GuiBuilder::drawHighscorePage(const HighscoreList& page, ScrollPosition
     lines.addElem(WL(leftMargin, 30, line.buildHorizontalList()));
   }
   return WL(scrollable, lines.buildVerticalList(), scrollPos);
-}
-
-SGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore& sem, int& tabNum,
-    vector<ScrollPosition>& scrollPos, bool& online) {
-  vector<SGuiElem> pages;
-  int numTabs = list.size() / 2;
-  auto topLine = WL(getListBuilder, 200);
-  for (int i : All(list)) {
-    for (int j : All(list[i].scores))
-      if (list[i].scores[j].highlight) {
-        if (i < numTabs)
-          tabNum = i;
-        scrollPos[i] = ScrollPosition(j);
-      }
-    pages.push_back(WL(conditional, drawHighscorePage(list[i], &scrollPos[i]),
-          [&tabNum, i, &online, numTabs] { return (online && tabNum == i - numTabs) ||
-              (!online && tabNum == i) ; }));
-    if (i < numTabs)
-    topLine.addElem(WL(stack,
-        WL(margins, WL(uiHighlightConditional, [&tabNum, i] { return tabNum == i;}), 42, 0, 32, 0),
-        WL(centeredLabel, Renderer::HOR, list[i].name),
-        WL(button, [&tabNum, i] { tabNum = i;})));
-  }
-  SGuiElem onlineBut = WL(stack,
-      WL(label, "Online", [&online] { return online ? Color::GREEN : Color::WHITE;}),
-      WL(button, [&online] { online = !online; }));
-  Vec2 size = getMenuPosition(MenuType::NORMAL, 0).getSize();
-  return WL(preferredSize, size, WL(stack, makeVec(
-      WL(keyHandler, [&tabNum, numTabs] { tabNum = (tabNum + 1) % numTabs; }, {gui.getKey(SDL::SDLK_RIGHT)}),
-      WL(keyHandler, [&tabNum, numTabs] { tabNum = (tabNum + numTabs - 1) % numTabs; }, {gui.getKey(SDL::SDLK_LEFT)}),
-      WL(window,
-        WL(margin, WL(leftMargin, 25, std::move(onlineBut)),
-        WL(topMargin, 30, WL(margin, WL(leftMargin, 5, topLine.buildHorizontalListFit()),
-            WL(margins, WL(stack, std::move(pages)), 25, 60, 0, 30), legendLineHeight, GuiFactory::TOP)), legendLineHeight, GuiFactory::TOP),
-        [&] { sem.v(); }))));
-
 }
 
 SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textColor) {

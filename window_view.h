@@ -88,7 +88,6 @@ class WindowView: public View {
   virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) override;
   virtual optional<ExperienceType> getCreatureUpgrade(const CreatureExperienceInfo&) override;
   virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&, ScriptedUIState&) override;
-  virtual void presentHighscores(const vector<HighscoreList>&) override;
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
   virtual milliseconds getTimeMilli() override;
@@ -116,7 +115,6 @@ class WindowView: public View {
   Renderer& renderer;
   GuiFactory& gui;
   void processEvents();
-  void displayMenuSplash2();
   void displayOldSplash();
   void updateMinimap(const CreatureView*);
   void mapContinuousLeftClickFun(Vec2);
@@ -218,6 +216,7 @@ class WindowView: public View {
   template<typename T>
   T getBlockingGui(SyncQueue<T>& queue, SGuiElem elem, optional<Vec2> origin = none, bool darkenBackground = true) {
     TempClockPause pause(clock);
+    int origElemCount = blockingElems.size();
     if (darkenBackground && blockingElems.empty()) {
       blockingElems.push_back(gui.darken());
       blockingElems.back()->setBounds(Rectangle(renderer.getSize()));
@@ -232,11 +231,13 @@ class WindowView: public View {
     if (currentThreadId() == renderThreadId) {
       while (queue.isEmpty())
         refreshView();
-      blockingElems.clear();
+      while (blockingElems.size() > origElemCount)
+        blockingElems.pop_back();
       return *queue.popAsync();
     }
     T ret = queue.pop();
-    blockingElems.clear();
+    while (blockingElems.size() > origElemCount)
+      blockingElems.pop_back();
     return ret;
   }
   atomic<bool> splashDone;
@@ -244,7 +245,6 @@ class WindowView: public View {
   Options* options;
   Clock* clock;
   GuiBuilder guiBuilder;
-  void drawMenuBackground(double barState, double mouthState);
   atomic<int> zoomUI;
   void playSounds(const CreatureView*);
   vector<Sound> soundQueue;

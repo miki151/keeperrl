@@ -15,6 +15,7 @@ Def Sliding() {
 End
 
 {
+  BlockEvents
   Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
   Window(Width 700 Height 700 {
     Vertical {
@@ -53,7 +54,7 @@ End
                 }
               }
           })
-          
+
         Using "keybindings"
           List(VERTICAL, Height 35 {
               Using "label" Position(LEFT_CENTERED,Label())

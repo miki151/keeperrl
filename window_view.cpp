@@ -227,28 +227,6 @@ void WindowView::displayOldSplash() {
       menuPosition.top() - splash2.getSize().y - margin, splash2);
 }
 
-void WindowView::displayMenuSplash2() {
-  drawMenuBackground(0, 0);
-}
-
-void WindowView::drawMenuBackground(double barState, double mouthState) {
-  Texture& menuCore = gui.get(GuiFactory::TexId::MENU_CORE);
-  Texture& menuMouth = gui.get(GuiFactory::TexId::MENU_MOUTH);
-  double scale = double(renderer.getSize().y) / menuCore.getSize().y;
-  int width = menuCore.getSize().x * scale;
-  double mouthPos1 = 184.0 * menuCore.getSize().x / 1920;
-  double mouthPos2 = 214.0 * menuCore.getSize().x / 1920;
-  double mouthX = (renderer.getSize().x - (menuMouth.getSize().x + 5) * scale) / 2;
-  renderer.drawFilledRectangle(mouthX, mouthPos1 * scale, 1 + mouthX + barState * menuMouth.getSize().x * scale,
-      (mouthPos2 + menuMouth.getSize().y) * scale, Color(60, 76, 48));
-  renderer.drawImage((renderer.getSize().x - width) / 2, 0, menuCore, scale);
-  renderer.drawImage(mouthX, scale * (mouthPos1 * (1 - mouthState) + mouthPos2 * mouthState), menuMouth, scale);
-  renderer.drawText(Color::WHITE, Vec2(30, renderer.getSize().y - 40), "Version " BUILD_DATE " " BUILD_VERSION,
-      Renderer::NONE, 16);
-  renderer.drawText(Color::WHITE, Vec2(30, renderer.getSize().y - 21), "Install id: " + installId,
-      Renderer::NONE, 16);
-}
-
 void WindowView::getSmallSplash(const ProgressMeter* meter, const string& text, function<void()> cancelFun) {
   SGuiElem window = gui.miniWindow(gui.empty(), []{});
   Vec2 windowSize(500, cancelFun ? 90 : 70);
@@ -634,19 +612,11 @@ static Rectangle getBugReportPos(Renderer& renderer) {
 }
 
 void WindowView::refreshScreen(bool flipBuffer) {
-  {
-    if (zoomUI > -1) {
-      renderer.setZoom(zoomUI ? 2 : 1);
-      zoomUI = -1;
-    }
-    if (!gameReady) {
-      if (useTiles)
-        displayMenuSplash2();
-      else
-        displayOldSplash();
-    }
-    drawMap();
+  if (zoomUI > -1) {
+    renderer.setZoom(zoomUI ? 2 : 1);
+    zoomUI = -1;
   }
+  drawMap();
   auto bugReportPos = getBugReportPos(renderer);
   renderer.drawFilledRectangle(bugReportPos, Color::TRANSPARENT, Color::RED);
   renderer.drawText(Color::RED, bugReportPos.middle() - Vec2(0, 2), "report bug", Renderer::CenterType::HOR_VER);
@@ -942,8 +912,7 @@ void WindowView::presentWorldmap(const Campaign& campaign) {
 
 variant<View::AvatarChoice, AvatarMenuOption> WindowView::chooseAvatar(const vector<AvatarData>& avatars) {
   SyncQueue<variant<AvatarChoice, AvatarMenuOption>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.getMainMenuLinks(bugreportSharing->getPersonalMessage(),
-      guiBuilder.drawAvatarMenu(returnQueue, avatars)), none, false);
+  return getBlockingGui(returnQueue, guiBuilder.drawAvatarMenu(returnQueue, avatars), none, false);
 }
 
 CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, CampaignMenuState& state) {
@@ -1044,15 +1013,6 @@ void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> or
     sem.p();
   while (blockingElems.size() > origElemCount)
     blockingElems.pop_back();
-}
-
-void WindowView::presentHighscores(const vector<HighscoreList>& list) {
-  Semaphore sem;
-  int tabNum = 0;
-  bool online = false;
-  vector<ScrollPosition> scrollPos(list.size());
-  getBlockingGui(sem, guiBuilder.drawHighscores(list, sem, tabNum, scrollPos, online),
-      guiBuilder.getMenuPosition(MenuType::NORMAL, 0).topLeft());
 }
 
 optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options,
@@ -1156,8 +1116,6 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
             break;
         }
       }, true));
-  if (menuType == MenuType::MAIN || menuType == MenuType::MAIN_NO_TILES)
-    stuff = guiBuilder.getMainMenuLinks(bugreportSharing->getPersonalMessage(), std::move(stuff));
   while (1) {
     refreshScreen(false);
     stuff->setBounds(guiBuilder.getMenuPosition(menuType, options.size()));

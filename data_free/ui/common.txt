@@ -17,6 +17,10 @@ Def FocusKeys() {
 }
 End
 
+Def Texture(NAME) TextureImpl(NAME, REPEAT) End
+Def Texture(NAME, FLIP) TextureImpl(NAME, REPEAT, FLIP) End
+Def TextureFit(NAME) TextureImpl(NAME, FIT) End
+
 Def MiniWindow(Content) {
   Margins(6, Fill(Rgb 13 9 1 255))
   Margins(15, Content)
@@ -47,7 +51,7 @@ End
 
 Def Window(Content) {
   Height 200 {}
-  Margins(6, Fill(Rgb 15 11 9 255))
+  Margins(6, Width 0 Height 0 Texture(BACKGROUND_PATTERN))
   Margins(45, Content)
   Position(TOP_STRETCHED, Margins(6, 2, 6, 0, Texture(HORI_BAR)))
   Position(BOTTOM_STRETCHED, Margins(6, 0, 6, 2, Texture(HORI_BAR, FLIP_Y)))
