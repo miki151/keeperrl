@@ -48,8 +48,8 @@ Def BottomLinks()
 End
 
 Position(SCREEN, {
-  MarginRight(0, Position(ENCAPSULATE, TextureFit(MENU_CORE)))
-  Margins(0, Position(RIGHT_STRETCHED, MarginBottom(0, MarginRight(50, NonClosableWindow({
+  Position(ENCAPSULATE, TextureFit(MENU_CORE, FLIP_X))
+  Margins(0, Position(LEFT_STRETCHED, MarginBottom(0, MarginLeft(50, NonClosableWindow({
     FocusKeys()
     Width MenuWidth
     Position(TOP_CENTERED, Width (-50 + MenuWidth)

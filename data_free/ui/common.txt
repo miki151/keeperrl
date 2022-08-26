@@ -20,6 +20,7 @@ End
 Def Texture(NAME) TextureImpl(NAME, REPEAT) End
 Def Texture(NAME, FLIP) TextureImpl(NAME, REPEAT, FLIP) End
 Def TextureFit(NAME) TextureImpl(NAME, FIT) End
+Def TextureFit(NAME, FLIP) TextureImpl(NAME, FIT, FLIP) End
 
 Def MiniWindow(Content) {
   Margins(6, Fill(Rgb 13 9 1 255))

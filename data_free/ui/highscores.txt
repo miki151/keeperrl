@@ -22,13 +22,13 @@
         }
       )
       Height 30 {}
-      Using "list" List(VERTICAL,
+      Height 630 Scrolling(MarginRight(10, Using "list" List(VERTICAL,
         Height 30 Horizontal {
           Using "text" Label()
           Stretch {}
           Using "score" Label()
         }
-      )
+      )))
     }
   })
 }
