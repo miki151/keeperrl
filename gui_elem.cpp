@@ -2981,7 +2981,7 @@ SGuiElem GuiFactory::miniWindow() {
 
 SGuiElem GuiFactory::window(SGuiElem content, function<void()> onExitButton) {
   return stack(makeVec(
-        stopMouseMovement(),
+        fullScreen(stopMouseMovement()),
         alignment(Alignment::TOP_RIGHT, button(onExitButton, getKey(SDL::SDLK_ESCAPE), true), Vec2(38, 38)),
         rectangle(Color::BLACK),
         background(background1),
