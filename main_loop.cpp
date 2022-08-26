@@ -454,6 +454,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
   while (1) {
     ContentFactory contentFactory;
     tileSet->clear();
+    // Using a splash screen causes a segfault due to reloading the tileset while scriptedUI is running
     //doWithSplash("Loading gameplay data", [&] {
       contentFactory = createContentFactory(false);
       if (tileSet)
@@ -1280,11 +1281,12 @@ PGame MainLoop::prepareWarlord(const SaveFileInfo& fileInfo) {
   if (auto warlordInfo = loadFromFile<WarlordInfo>(userPath.file(fileInfo.filename))) {
     ContentFactory contentFactory;
     tileSet->clear();
-    doWithSplash("Loading gameplay data", [&] {
+    // Using a splash screen causes a segfault due to reloading the tileset while scriptedUI is running
+    //doWithSplash("Loading gameplay data", [&] {
       contentFactory = createContentFactory(false);
       if (tileSet)
         tileSet->setTilePaths(contentFactory.tilePaths);
-    });
+    //});
     tileSet->loadTextures();
     auto retiredGames = *getRetiredGames(CampaignType::FREE_PLAY);
     for (int i : All(retiredGames.getAllGames()))
