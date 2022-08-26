@@ -32,7 +32,7 @@ End
           Width 120 StandardButtonActivated(Label("Keybindings"))
         })
       Height 10 {}
-      Stretch Scrolling({
+      Stretch Scrolling(MarginRight(10, {
         Using "options"
           List(VERTICAL, {
               Using "callbackBool" Button()
@@ -61,7 +61,7 @@ End
               Using "key" Position(RIGHT_CENTERED, Width 150 Label())
               Using "clicked" Button(false)
           })
-      })
+      }))
       Height 10 {}
       Using "reset_keys" Position(MIDDLE, StandardButton(Label("Restore defaults")))
     }
