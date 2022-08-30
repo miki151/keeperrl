@@ -12,6 +12,8 @@ class FileSharing {
   public:
   FileSharing(const string& uploadUrl, const string& modVersion, int saveVersion, Options&, string installId);
 
+  const string& getInstallId() const;
+
   optional<string> uploadSite(const FilePath& path, const string& title, const OldSavedGameInfo&, ProgressMeter&,
       optional<string>& url);
   optional<string> downloadSite(const SaveFileInfo&, const DirectoryPath& targetDir, ProgressMeter&);

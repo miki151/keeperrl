@@ -29,6 +29,10 @@ FileSharing::~FileSharing() {
   uploadQueue.push(nullptr);
 }
 
+const string& FileSharing::getInstallId() const {
+  return installId;
+}
+
 struct CallbackData {
   function<void(double)> progressCallback;
   FileSharing* fileSharing;

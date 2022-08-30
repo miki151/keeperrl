@@ -57,6 +57,7 @@
 #include "tribe_alignment.h"
 #include "unlocks.h"
 #include "scripted_ui_data.h"
+#include "version.h"
 
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
@@ -838,6 +839,8 @@ void MainLoop::start(bool tilesPresent) {
       return false;
     }};
     data.elems["quit"] = ScriptedUIDataElems::Callback{[&choice] { choice = 4; return true;}};
+    data.elems["version"] = string(BUILD_DATE) + " " + BUILD_VERSION;
+    data.elems["install_id"] = fileSharing->getInstallId();
     ScriptedUIState uiState{};
     view->scriptedUI("main_menu", data, uiState);
     if (game)

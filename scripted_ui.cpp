@@ -535,14 +535,14 @@ REGISTER_SCRIPTED_UI(Horizontal);
 
 struct Vertical : Container {
   vector<SubElemInfo> getElemBounds(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
-  auto ranges = getStaticListBounds(area.getYRange(),
-      elems.transform([&](auto& elem) { return elem->getSize(data, context).y; }), stretchedElem);
-  vector<SubElemInfo> ret;
-  ret.reserve(ranges.size());
-  for (int i : All(ranges)) {
-    ret.push_back(SubElemInfo{elems[i], data, Rectangle(area.left(), ranges[i].getStart(), area.right(), ranges[i].getEnd())});
-  }
-  return ret;
+    auto ranges = getStaticListBounds(area.getYRange(),
+        elems.transform([&](auto& elem) { return elem->getSize(data, context).y; }), stretchedElem);
+    vector<SubElemInfo> ret;
+    ret.reserve(ranges.size());
+    for (int i : All(ranges)) {
+      ret.push_back(SubElemInfo{elems[i], data, Rectangle(area.left(), ranges[i].getStart(), area.right(), ranges[i].getEnd())});
+    }
+    return ret;
   }
 
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {

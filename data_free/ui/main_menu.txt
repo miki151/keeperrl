@@ -10,18 +10,18 @@ Def NonClosableWindow(Content) {
 }
 End
 
-Def TextColor 150 End
+Def TextColor() Rgb 150 150 150 255 End
 
 Def MenuButton(Name) Height 45  {
   TextureFit(MENU_ITEM)
-  Position(MIDDLE, MarginBottom(4, Label(Name, 22, Rgb TextColor() TextColor() TextColor() 255)))
+  Position(MIDDLE, MarginBottom(4, Label(Name, 22, TextColor())))
   Focusable Position(MIDDLE, MarginBottom(4, Label(Name, 22, Rgb 255 255 255 255)))
   Button()
 }
 End
 
 Def LinkButton(id, label, url) {
-  Horizontal { ViewId(1, {id}) Width 8 {} Label(label, 19, Rgb TextColor() TextColor() TextColor() 255) }
+  Horizontal { ViewId(1, {id}) Width 8 {} Label(label, 19, TextColor()) }
   MouseOver Horizontal { ViewId(1, {id}) Width 8 {} Label(label, 19, Rgb 255 255 255 255) }
   UrlButton(url)
 }
@@ -52,7 +52,7 @@ Position(SCREEN, {
   Margins(0, Position(LEFT_STRETCHED, MarginBottom(0, MarginLeft(50, NonClosableWindow({
     FocusKeys()
     Width MenuWidth
-    Position(TOP_CENTERED, Width (-50 + MenuWidth)
+    Position(MIDDLE_STRETCHED_Y, Width (-50 + MenuWidth)
     Vertical {
       Height 25 {}
       Height 55 TextureFit("logo4small")
@@ -66,6 +66,16 @@ Position(SCREEN, {
       Using "credits" MenuButton("Credits")
       Height Spacing {}
       Using "quit" MenuButton("Quit")
+      Stretch {}
+      Horizontal {
+        Label("Install id: ", 14, TextColor())
+        Using "install_id" Label(none, 14, TextColor())
+      }
+      Horizontal {
+        Label("Build: ", 14, TextColor())
+        Using "version" Label(none, 14, TextColor())
+      }
+      Height 15 {}
     })
   })))))
   BottomLinks()
