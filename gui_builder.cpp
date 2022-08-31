@@ -2037,12 +2037,16 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
           Color::YELLOW));
       vector<int> increases(elem.upgrades.size(), 0);
       int totalUsed = 0;
+      int totalAvailable = 0;
       disableTooltip = true;
       DestructorFunction dFun([this] { disableTooltip = false; });
       bool exit = false;
       auto cnt = elem.itemInfo.number;
-      for (auto& upgrade : elem.upgrades)
+      for (auto& upgrade : elem.upgrades) {
         totalUsed += upgrade.used;
+        totalAvailable += upgrade.count / cnt + upgrade.used;
+      }
+      totalAvailable = min(totalAvailable, elem.maxUpgrades.second);
       for (int i : All(elem.upgrades)) {
         auto& upgrade = elem.upgrades[i];
         auto idLine = WL(getListBuilder);
@@ -2064,8 +2068,34 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
               WL(tooltip, {upgrade.description})
         )));
       }
-      lines.addElem(WL(labelFun, [&totalUsed, &elem] {
-          return "Used slots: " + toString(totalUsed) + "/" + toString(elem.maxUpgrades.second); }));
+      auto label = WL(labelFun, [&] {
+        if (totalAvailable - totalUsed > 0)
+          return "Add top " + toString((totalAvailable - totalUsed) * cnt) + " upgrades"_s;
+        else
+          return "Clear all upgrades"_s;
+      });
+      auto action = WL(button, [&] {
+        if (totalAvailable - totalUsed > 0)
+          for (int i : All(elem.upgrades)) {
+            int toAdd = min(elem.upgrades[i].count - increases[i], (totalAvailable - totalUsed) * cnt);
+            totalUsed += toAdd / cnt;
+            increases[i] += toAdd;
+            if (totalUsed >= totalAvailable)
+              break;
+          }
+        else {
+          totalUsed = 0;
+          for (int i : All(elem.upgrades)) {
+            increases[i] = -elem.upgrades[i].used * cnt;
+          }
+        }
+      });
+      lines.addSpace(5);
+      lines.addElem(WL(getListBuilder)
+          .addElem(WL(labelFun, [&totalUsed, &elem] {
+              return "Used slots: " + toString(totalUsed) + "/" + toString(elem.maxUpgrades.second); }), 10)
+          .addBackElemAuto(WL(setWidth, 170, WL(standardButton, std::move(label), std::move(action), false)))
+          .buildHorizontalList());
       if (!elem.notArtifact)
         lines.addElem(WL(label, "Upgraded items can only be crafted by a craftsman of legendary skills.",
             Renderer::smallTextSize(), Color::LIGHT_GRAY));
