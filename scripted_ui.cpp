@@ -237,21 +237,30 @@ REGISTER_SCRIPTED_UI(Label);
 struct Paragraph : ScriptedUIInterface {
   Paragraph() {}
 
+  string getText(const ScriptedUIData& data) const {
+    if (text)
+      return *text;
+    if (auto label = data.getReferenceMaybe<ScriptedUIDataElems::Label>())
+      return label->data();
+    else
+      return "not a label";
+  }
+
   void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
-    for (auto line : Iter(context.factory->breakText(text, width, size)))
+    for (auto line : Iter(context.factory->breakText(getText(data), width, size)))
       context.renderer->drawText(font, size, color, area.topLeft() + Vec2(0, line.index() * size), *line);
   }
 
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
-    return Vec2(width, size * context.factory->breakText(text, width, size).size());
+    return Vec2(width, size * context.factory->breakText(getText(data), width, size).size());
   }
 
-  string SERIAL(text);
+  optional<string> SERIAL(text);
   int SERIAL(width);
   int SERIAL(size) = Renderer::textSize();
   Color SERIAL(color) = Color::WHITE;
   FontId SERIAL(font) = FontId::TEXT_FONT;
-  SERIALIZE_ALL(roundBracket(), NAMED(width), NAMED(text), OPTION(size), OPTION(color), OPTION(font))
+  SERIALIZE_ALL(roundBracket(), NAMED(width), OPTION(text), OPTION(size), OPTION(color), OPTION(font))
 };
 
 REGISTER_SCRIPTED_UI(Paragraph);
