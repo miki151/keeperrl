@@ -1,0 +1,17 @@
+{
+  #BlockEvents
+  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
+  Window(Width 700 MaxHeight 700 {
+    Vertical {
+      Stretch Using "messages" Scrolling(List(VERTICAL, {
+        Vertical {
+          Using "text" Paragraph(600)
+          Height 10 {}
+          Horizontal { Label("—") Using "author" Label() }
+          Height 25 {}
+        }
+      }))
+      Position(MIDDLE, Using "write_something" StandardButton(Label("Write something")))
+    }
+  })
+}
