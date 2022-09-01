@@ -33,7 +33,6 @@ class Collective;
 class CollectiveTeams;
 class MapMemory;
 class VisibilityMap;
-class ListElem;
 class UserInput;
 class MinionAction;
 struct TaskActionInfo;

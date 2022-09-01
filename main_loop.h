@@ -11,7 +11,6 @@ class Highscores;
 class FileSharing;
 class Options;
 class Jukebox;
-class ListElem;
 class Campaign;
 class Model;
 class RetiredGames;
@@ -58,8 +57,7 @@ class MainLoop {
   int getSaveVersion(const SaveFileInfo& save);
   void uploadFile(const FilePath& path, const string& title, const SavedGameInfo&);
   void saveUI(PGame&, GameSaveType type);
-  void getSaveOptions(const vector<pair<GameSaveType, string>>&,
-      vector<ListElem>& options, vector<SaveFileInfo>& allFiles);
+  vector<SaveFileInfo> getSaveOptions(const vector<GameSaveType>&);
 
   void doWithSplash(const string& text, int totalProgress, function<void(ProgressMeter&)> fun,
     function<void()> cancelFun = nullptr);

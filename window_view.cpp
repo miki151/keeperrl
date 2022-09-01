@@ -221,16 +221,6 @@ void WindowView::reset() {
   soundQueue.clear();
 }
 
-void WindowView::displayOldSplash() {
-  Rectangle menuPosition = guiBuilder.getMenuPosition(MenuType::MAIN_NO_TILES, 0);
-  int margin = 10;
-  renderer.drawImage(renderer.getSize().x / 2 - 415, menuPosition.bottom() + margin,
-      gui.get(GuiFactory::TexId::SPLASH1));
-  Texture& splash2 = gui.get(GuiFactory::TexId::SPLASH2);
-  renderer.drawImage((renderer.getSize().x - splash2.getSize().x) / 2,
-      menuPosition.top() - splash2.getSize().y - margin, splash2);
-}
-
 void WindowView::getSmallSplash(const ProgressMeter* meter, const string& text, function<void()> cancelFun) {
   SGuiElem window = gui.miniWindow(gui.empty(), []{});
   Vec2 windowSize(500, cancelFun ? 90 : 70);
@@ -628,26 +618,6 @@ void WindowView::refreshScreen(bool flipBuffer) {
     renderer.drawAndClearBuffer();
 }
 
-int indexHeight(const vector<ListElem>& options, int index) {
-  CHECK(index < options.size() && index >= 0);
-  int tmp = 0;
-  for (int i : All(options))
-    if (options[i].getMod() == ListElem::NORMAL && tmp++ == index)
-      return i;
-  FATAL << "Bad index " << int(options.size()) << " " << index;
-  return -1;
-}
-
-optional<int> reverseIndexHeight(const vector<ListElem>& options, int height) {
-  if (height < 0 || height >= options.size() || options[height].getMod() != ListElem::NORMAL)
-    return none;
-  int sub = 0;
-  for (int i : Range(height))
-    if (options[i].getMod() != ListElem::NORMAL)
-      ++sub;
-  return height - sub;
-}
-
 optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message) {
   TempClockPause pause(clock);
   gameInfo.messageBuffer = makeVec(PlayerMessage(message));
@@ -807,11 +777,6 @@ View::TargetResult WindowView::chooseTarget(Vec2 playerPos, TargetType targetTyp
 optional<int> WindowView::getNumber(const string& title, Range range, int initial, int increments) {
   SyncQueue<optional<int>> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawChooseNumberMenu(returnQueue, title, range, initial, increments));
-}
-
-optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
-    MenuType type, ScrollPosition* scrollPos, optional<UserInputId> exitAction) {
-  return chooseFromListInternal(title, options, index, type, scrollPos);
 }
 
 optional<string> WindowView::getText(const string& title, const string& value, int maxLength, const string& hint) {
@@ -1017,150 +982,6 @@ void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> or
     sem.p();
   while (blockingElems.size() > origElemCount)
     blockingElems.pop_back();
-}
-
-optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options,
-    optional<int> index1, MenuType menuType, ScrollPosition* scrollPos1) {
-  CHECK(!index1 || *index1 >= 0);
-  if (!useTiles && menuType == MenuType::MAIN)
-    menuType = MenuType::MAIN_NO_TILES;
-  if (options.size() == 0)
-    return none;
-  uiLock = true;
-  inputQueue.push(UserInputId::REFRESH);
-  TempClockPause pause(clock);
-  SyncQueue<optional<int>> returnQueue;
-  addReturnDialog<optional<int>>(returnQueue, [=] ()-> optional<int> {
-  renderer.flushEvents(SDL::SDL_KEYDOWN);
-  int choice = -1;
-  int count = 0;
-  ScrollPosition* scrollPos = scrollPos1;
-  optional<int> index = index1;
-  vector<int> indexes(options.size());
-  vector<int> optionIndexes;
-  int elemCount = 0;
-  for (int i : All(options)) {
-    if (options[i].getMod() == ListElem::NORMAL) {
-      indexes[count] = elemCount;
-      optionIndexes.push_back(i);
-      ++count;
-    }
-    if (options[i].getMod() != ListElem::TITLE && options[i].getMod() != ListElem::TEXT && options[i].getMod() != ListElem::HELP_TEXT)
-      ++elemCount;
-  }
-  if (optionIndexes.empty())
-    optionIndexes.push_back(0);
-  vector<int> positions;
-  SGuiElem stuff = gui.leftMargin(25, guiBuilder.drawListGui(capitalFirst(title), options, menuType, &index, &choice, &positions));
-  if (title.empty())
-    stuff = gui.topMargin(guiBuilder.getStandardLineHeight() / 2, std::move(stuff));
-  auto getScrollPos = [&](int index) {
-    if (index >= 0 && index < positions.size())
-      return positions[index];
-    else
-      return 0;
-  };
-  ScrollPosition localScrollPos(index ? getScrollPos(optionIndexes[*index]) : 0);
-  if (scrollPos == nullptr)
-    scrollPos = &localScrollPos;
-  SGuiElem dismissBut = gui.margins(gui.stack(makeVec(
-        gui.button([&](){ choice = -100; }),
-        gui.mouseHighlight2(gui.mainMenuHighlight()),
-        gui.centeredLabel(Renderer::HOR, "Dismiss"))), 0, 5, 0, 0);
-  switch (menuType) {
-    case MenuType::MAIN: break;
-    case MenuType::YES_NO_BELOW:
-    case MenuType::YES_NO:
-      stuff = gui.window(std::move(stuff), [&choice] { choice = -100;}); break;
-    default:
-      stuff = gui.scrollable(std::move(stuff), scrollPos);
-      stuff = gui.margins(std::move(stuff), 0, 15, 0, 0);
-      stuff = gui.margin(gui.centerHoriz(std::move(dismissBut), renderer.getTextLength("Dismiss") + 100),
-          std::move(stuff), 30, gui.BOTTOM);
-      stuff = gui.window(std::move(stuff), [&choice] { choice = -100;});
-      break;
-  }
-  optional<optional<int>> callbackRet;
-  auto scrollIndex = [&](int dir) {
-    if (count > 0) {
-      if (index)
-        index = (*index + dir + count) % count;
-      else
-        index = 0;
-      scrollPos->set(getScrollPos(optionIndexes[*index]), clock->getRealMillis());
-    } else
-      scrollPos->add(dir * 100, clock->getRealMillis());
-  };
-  stuff = gui.stack(
-      std::move(stuff),
-      gui.keyHandler([&] (SDL_Keysym key) {
-        switch (key.sym) {
-          case SDL::SDLK_KP_8:
-          case SDL::SDLK_UP:
-            scrollIndex(-1);
-            break;
-          case SDL::SDLK_KP_2:
-          case SDL::SDLK_DOWN:
-            scrollIndex(1);
-            break;
-          case SDL::SDLK_KP_5:
-          case SDL::SDLK_KP_ENTER:
-          case SDL::SDLK_RETURN:
-            if (count > 0 && index) {
-              CHECK(*index < indexes.size()) <<
-                  *index << " " << indexes.size() << " " << count << " " << options.size();
-              callbackRet = optional<int>(indexes[*index]);
-              break;
-            }
-            FALLTHROUGH;
-          case SDL::SDLK_ESCAPE:
-            callbackRet = optional<int>(none);
-            break;
-          default:
-            break;
-        }
-      }, true));
-  while (1) {
-    refreshScreen(false);
-    stuff->setBounds(guiBuilder.getMenuPosition(menuType, options.size()));
-    stuff->render(renderer);
-    renderer.drawAndClearBuffer();
-    Event event;
-    while (renderer.pollEvent(event)) {
-      propagateEvent(event, {stuff});
-      if (choice > -1) {
-        CHECK(choice < indexes.size()) << choice;
-        return indexes[choice];
-      }
-      if (choice == -100)
-        return none;
-      if (callbackRet)
-        return *callbackRet;
-      if (considerResizeEvent(event))
-        continue;
-    }
-  }
-  });
-  return returnQueue.pop();
-}
-
-void WindowView::presentText(const string& title, const string& text) {
-  TempClockPause pause(clock);
-  presentList(title, ListElem::convert({text}), false);
-}
-
-void WindowView::presentTextBelow(const string& title, const string& text) {
-  TempClockPause pause(clock);
-  presentList(title, ListElem::convert({text}), false, MenuType::NORMAL_BELOW);
-}
-
-void WindowView::presentList(const string& title, const vector<ListElem>& options, bool scrollDown, MenuType menu) {
-  vector<ListElem> conv(options);
-  for (ListElem& e : conv)
-    if (e.getMod() == ListElem::NORMAL)
-      e.setMod(ListElem::TEXT);
-  ScrollPosition scrollPos(scrollDown ? 10000000 : 0);
-  chooseFromListInternal(title, conv, none, menu, &scrollPos);
 }
 
 void WindowView::zoom(int dir) {
@@ -1400,10 +1221,10 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       inputQueue.push(UserInputId::CHEAT_ATTRIBUTES);
       break;
 #endif
-    case SDL::SDLK_F7:
-      presentList("", ListElem::convert(vector<string>(messageLog.begin(), messageLog.end())), true);
+    /*case SDL::SDLK_F7:
+      presentList("", vector<string>(messageLog.begin(), messageLog.end()), true);
       break;
-    /*case SDL::SDLK_F2:
+    case SDL::SDLK_F2:
       if (!renderer.isMonkey()) {
         options->handle(this, OptionSet::GENERAL);
         refreshScreen();

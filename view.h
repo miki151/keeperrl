@@ -49,54 +49,6 @@ namespace fx {
 }
 class FXViewManager;
 
-class ListElem {
-  public:
-  enum ElemMod {
-    NORMAL,
-    TEXT,
-    HELP_TEXT,
-    TITLE,
-    INACTIVE,
-  };
-
-  ListElem(const char*, ElemMod mod = NORMAL,
-      optional<UserInputId> triggerAction = none);
-  ListElem(const string& text = "", ElemMod mod = NORMAL,
-      optional<UserInputId> triggerAction = none);
-  ListElem(const string& text, const string& secColumn, ElemMod mod = NORMAL);
-
-  ListElem& setTip(const string&);
-  ListElem& setMessagePriority(MessagePriority);
-  optional<MessagePriority> getMessagePriority() const;
-
-  const string& getText() const;
-  const string& getSecondColumn() const;
-  const string& getTip() const;
-  ElemMod getMod() const;
-  optional<UserInputId> getAction() const;
-  void setMod(ElemMod);
-
-  static vector<ListElem> convert(const vector<string>&);
-
-  private:
-  string text;
-  string secondColumn;
-  string tooltip;
-  ElemMod mod;
-  optional<UserInputId> action;
-  optional<MessagePriority> messagePriority;
-};
-
-enum class MenuType {
-  NORMAL,
-  NORMAL_BELOW,
-  MAIN,
-  MAIN_NO_TILES,
-  GAME_CHOICE,
-  YES_NO,
-  YES_NO_BELOW
-};
-
 struct HighscoreList {
   string name;
   struct Elem {
@@ -193,11 +145,6 @@ class View {
   /** Returns whether a travel interrupt key is pressed at a given moment.*/
   virtual bool travelInterrupt() = 0;
 
-  /** Draws a window with some options for the player to choose. \paramname{index} indicates the highlighted item. 
-      Returns none if the player cancelled the choice.*/
-  virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
-
   /** Lets the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) = 0;
 
@@ -208,18 +155,15 @@ class View {
 
   /** Asks the player a yer-or-no question.*/
   bool yesOrNoPrompt(const string& message, bool defaultNo = false, ScriptedUIId = "yes_or_no");
+  optional<int> multiChoice(const string& message, const vector<string>&);
 
   void windowedMessage(ViewIdList, const string& message);
 
   /** Draws a window with some text. The text is formatted to fit the window.*/
-  virtual void presentText(const string& title, const string& text) = 0;
-  virtual void presentTextBelow(const string& title, const string& text) = 0;
+  void presentText(const string& title, const string& text);
+  void presentTextBelow(const string& title, const string& text);
 
   virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&, ScriptedUIState&) = 0;
-
-  /** Draws a window with a list of items.*/
-  virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      MenuType = MenuType::NORMAL) = 0;
 
   /** Lets the player choose a number. Returns none if the player cancelled the choice.*/
   virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) = 0;

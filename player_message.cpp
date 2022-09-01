@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "player_message.h"
 #include "view.h"
+#include "scripted_ui_data.h"
+#include "scripted_ui.h"
 
 PlayerMessage::PlayerMessage(const string& t, MessagePriority p) : text(makeSentence(t)), priority(p), freshness(1) {}
 PlayerMessage::PlayerMessage(const char* t, MessagePriority p) : text(makeSentence(t)), priority(p), freshness(1) {}
@@ -13,8 +15,18 @@ PlayerMessage PlayerMessage::announcement(const string& title, const string& tex
 }
 
 void PlayerMessage::presentMessages(View* view, const vector<PlayerMessage>& messages) {
-  view->presentList("Message history", messages.transform(
-        [](const PlayerMessage& msg) { return ListElem(msg.text).setMessagePriority(msg.priority);}), true);
+  auto list = ScriptedUIDataElems::List {};
+  for (int i : All(messages))
+    list.push_back(ScriptedUIDataElems::Record {{
+      {EnumInfo<MessagePriority>::getString(messages[i].priority), messages[i].text}
+    }});
+  if (messages.empty())
+    list.push_back(ScriptedUIDataElems::Record {{
+      {"NORMAL", "<No messages yet>"_s}
+    }});
+  ScriptedUIState state;
+  state.scrollPos.set(10000000, milliseconds{0});
+  view->scriptedUI("message_history", list, state);
 }
 
 optional<string> PlayerMessage::getAnnouncementTitle() const {

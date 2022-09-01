@@ -50,7 +50,7 @@ class WindowView: public View {
   static View* createLoggingView(OutputArchive& of, ViewParams);
   static View* createReplayView(InputArchive& ifs, ViewParams);
 
-  WindowView(ViewParams); 
+  WindowView(ViewParams);
   virtual void initialize(unique_ptr<fx::FXRenderer>, unique_ptr<FXViewManager>) override;
   virtual void reset() override;
   virtual void displaySplash(const ProgressMeter*, const string&, function<void()> cancelFun) override;
@@ -63,9 +63,6 @@ class WindowView: public View {
   virtual void updateView(CreatureView*, bool noRefresh) override;
   virtual void setScrollPos(Position) override;
   virtual void resetCenter() override;
-  virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr,
-      optional<UserInputId> exitAction = none) override;
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override;
   virtual TargetResult chooseTarget(Vec2 playerPos, TargetType, Table<PassableInfo> passable,
       const string& message, optional<Keybinding> cycleKey) override;
@@ -75,10 +72,6 @@ class WindowView: public View {
   virtual double getGameSpeed() override;
   virtual optional<int> chooseAtMouse(const vector<string>& elems) override;
 
-  virtual void presentText(const string& title, const string& text) override;
-  virtual void presentTextBelow(const string& title, const string& text) override;
-  virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      MenuType = MenuType::NORMAL) override;
   virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) override;
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint) override;
@@ -115,13 +108,10 @@ class WindowView: public View {
   Renderer& renderer;
   GuiFactory& gui;
   void processEvents();
-  void displayOldSplash();
   void updateMinimap(const CreatureView*);
   void mapContinuousLeftClickFun(Vec2);
   void mapRightClickFun(Vec2);
   Rectangle getTextInputPosition();
-  optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, optional<int> index,
-      MenuType, ScrollPosition*);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
   void rebuildGui();
@@ -131,7 +121,6 @@ class WindowView: public View {
   void keyboardAction(const SDL::SDL_Keysym&);
   void keyboardActionAlways(const SDL::SDL_Keysym&);
 
-  void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
   void drawAndClearBuffer();
   void getSmallSplash(const ProgressMeter*, const string& text, function<void()> cancelFun);

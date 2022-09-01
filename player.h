@@ -29,7 +29,6 @@ class View;
 class Model;
 class Creature;
 class Item;
-class ListElem;
 struct ItemInfo;
 class Game;
 class VisibilityMap;
@@ -144,8 +143,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void fireAction();
   void scrollStairs(int);
   void tryToCast(const Spell*, Position target);
-  void getItemNames(vector<Item*> it, vector<ListElem>& names, vector<vector<Item*> >& groups,
-      ItemPredicate = alwaysTrue<const Item*>());
   string getInventoryItemName(const Item*, bool plural) const;
   string getPluralName(Item* item, int num);
   Vec2 SERIAL(travelDir);

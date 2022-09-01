@@ -788,7 +788,7 @@ struct Scrollable : ScriptedUIInterface {
   void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle bounds) const override {
     processScroller(data, context, bounds,
         [&] (Rectangle contentBounds) { elem->render(data, context, contentBounds); },
-        [&] (Rectangle bounds) { scrollbar->render(data, context, bounds); }      
+        [&] (Rectangle bounds) { scrollbar->render(data, context, bounds); }
     );
   }
 

@@ -458,10 +458,9 @@ void Player::tryToCast(const Spell* spell, Position target) {
     }
     optional<int> res = 0;
     if (friendlyFireWarningCooldown.value_or(-10000_global) < getGame()->getGlobalTime())
-      res = getView()->chooseFromList("", {
-          ListElem("This move might harm your allies and make them hostile. Continue?", ListElem::TITLE),
-          ListElem("Yes"), ListElem("No"), ListElem("Yes, and don't ask for another 50 turns")
-      }, 0, MenuType::YES_NO);
+      res = getView()->multiChoice("This move might harm your allies and make them hostile. Continue?", {
+          "Yes", "No", "Yes, and don't ask for another 50 turns"
+      });
     if (res == 2)
       friendlyFireWarningCooldown = getGame()->getGlobalTime() + 50_visible;
     if (!res || res == 1)

@@ -1,0 +1,21 @@
+Def ChoiceButton() {
+  ButtonLayout(BUTTON_BOTTOM, BUTTON_SIDE, BUTTON_CORNER)
+  Using "callback" Focusable ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
+  Position(MIDDLE, Margins(14, 8, 10, 10, Using "text" Label()))
+  Using "callback" Button()
+}
+End
+
+
+{
+  BlockEvents
+  FocusKeys()
+  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
+  Window(MarginRight(30, MarginLeft(30, MaxHeight 700 {
+    Vertical {
+      Position(MIDDLE, Using "title" Label())
+      Height 25 {}
+      Stretch Position(MIDDLE, Using "options" List(VERTICAL, MarginBottom(10, ChoiceButton())))
+    }
+  })))
+}

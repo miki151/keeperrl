@@ -1,0 +1,12 @@
+{
+#  BlockEvents
+  FocusKeys()
+  Using "EXIT" { Button(true) { KeyHandler(SDLK_ESCAPE) KeyHandler(SDLK_RETURN)} }
+  Window(Width 700 MaxHeight 700 {
+      Scrolling(List(VERTICAL, {
+        Using "NORMAL" Paragraph(600)
+        Using "HIGH" Paragraph(600, none, 19, ColorId ORANGE)
+        Using "CRITICAL" Paragraph(600, none, 19, ColorId RED)
+      }))
+  })
+}

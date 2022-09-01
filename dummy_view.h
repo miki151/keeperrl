@@ -23,10 +23,6 @@ class DummyView : public View {
   virtual void resetCenter() override {}
   virtual UserInput getAction() override { return UserInputId::IDLE; }
   virtual bool travelInterrupt() override { return false; }
-  virtual optional<int> chooseFromList(const string&, const vector<ListElem>&, int = 0,
-      MenuType = MenuType::NORMAL, ScrollPosition* = nullptr, optional<UserInputId> = none) override {
-    return none;
-  }
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override {
     return none;
   }
@@ -34,10 +30,6 @@ class DummyView : public View {
       const string& message, optional<Keybinding> cycleKey) override {
     return none;
   }
-  virtual void presentText(const string&, const string&) override {}
-  virtual void presentTextBelow(const string&, const string&) override {}
-  virtual void presentList(const string&, const vector<ListElem>&, bool = false,
-      MenuType = MenuType::NORMAL) override {}
   virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) override {
     return none;
   }

@@ -30,7 +30,6 @@
 
 class Clock;
 class MinionAction;
-class ListElem;
 struct HighscoreList;
 class Options;
 class MapGui;
@@ -137,10 +136,10 @@ class GuiBuilder {
   optional<int> getActiveButton(CollectiveTab) const;
   GameSpeed getGameSpeed() const;
   void setGameSpeed(GameSpeed);
-  Rectangle getMenuPosition(MenuType, int numElems);
+  Rectangle getMenuPosition(int numElems);
   Rectangle getTextInputPosition();
-  SGuiElem drawListGui(const string& title, const vector<ListElem>& options,
-      MenuType, optional<int>* highlight, int* choice, vector<int>* positions);
+  SGuiElem drawListGui(const string& title, const vector<string>& options,
+      optional<int>* highlight, int* choice, vector<int>* positions);
   int getScrollPos(int index, int count);
   void setMapGui(shared_ptr<MapGui>);
   void clearHint();
@@ -280,8 +279,8 @@ class GuiBuilder {
   SGuiElem drawMinionAndLevel(ViewIdList, int level, int iconMult);
   vector<SDL::SDL_Keysym> getConfirmationKeys();
   optional<ItemAction> getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos, bool autoDefault);
-  vector<SGuiElem> getMultiLine(const string& text, Color, MenuType, int maxWidth, int fontSize);
-  SGuiElem getHighlight(SGuiElem line, MenuType, const string& label, int numActive, optional<int>* highlight);
+  vector<SGuiElem> getMultiLine(const string& text, Color, int maxWidth, int fontSize);
+  SGuiElem getHighlight(SGuiElem line, const string& label, int numActive, optional<int>* highlight);
   string getPlayerTitle(PlayerInfo&);
   shared_ptr<MapGui> mapGui;
   int getImmigrantAnimationOffset(milliseconds initTime);
@@ -318,7 +317,6 @@ class GuiBuilder {
       const vector<View::AvatarData>&);
   SGuiElem drawCreatureList(const vector<PlayerInfo>&, function<void(UniqueEntity<Creature>::Id)> button,
       int zoom = 2);
-  Color getElemColor(ListElem::ElemMod);
   SGuiElem drawAvatarsForRole(const vector<View::AvatarData>&, shared_ptr<int> avatarPage, shared_ptr<int> chosenAvatar,
       shared_ptr<int> gender, shared_ptr<View::AvatarRole> chosenRole);
   SGuiElem drawScreenshotOverlay();

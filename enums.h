@@ -32,7 +32,6 @@ enum class AttackLevel;
 enum class ExperienceType;
 enum class ItemClass;
 enum class EquipmentSlot;
-enum class MenuType;
 enum class OptionId;
 enum class CampaignType;
 enum class PlayerRole;

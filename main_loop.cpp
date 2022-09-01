@@ -242,22 +242,6 @@ void MainLoop::eraseSaveFile(const PGame& game, GameSaveType type) {
   getSavePath(game, type).erase();
 }
 
-void MainLoop::getSaveOptions(const vector<pair<GameSaveType, string>>& games, vector<ListElem>& options,
-    vector<SaveFileInfo>& allFiles) {
-  for (auto elem : games) {
-    vector<SaveFileInfo> files = getSaveFiles(userPath, getSaveSuffix(elem.first));
-    files = files.filter([this] (const SaveFileInfo& info) { return isCompatible(getSaveVersion(info));});
-    append(allFiles, files);
-    if (!files.empty()) {
-      options.emplace_back(elem.second, ListElem::TITLE);
-      append(options, files.transform(
-          [this] (const SaveFileInfo& info) {
-              auto nameAndVersion = getNameAndVersion(userPath.file(info.filename));
-              return ListElem(nameAndVersion->first, getDateString(info.date));}));
-    }
-  }
-}
-
 enum class MainLoop::ExitCondition {
   ALLIES_WON,
   ENEMIES_WON,
@@ -463,8 +447,11 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     //});
     tileSet->loadTextures();
     if (options->getIntValue(OptionId::SUGGEST_TUTORIAL) == 1) {
-      auto tutorialIndex = view->chooseFromList("", {ListElem("Would you like to start with the tutorial?", ListElem::TITLE),
-          ListElem("Yes"), ListElem("No"), ListElem("No, and don't ask me again")}, 0, MenuType::YES_NO);
+      auto tutorialIndex = view->multiChoice("Would you like to start with the tutorial?", {
+        "Yes",
+        "No",
+        "No, and don't ask me again"
+      });
       if (tutorialIndex == 0) {
         auto contentFactory2 = createContentFactory(true);
         if (auto ret = prepareTutorial(&contentFactory2))
@@ -785,14 +772,20 @@ ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
   return ret;
 }
 
+vector<SaveFileInfo> MainLoop::getSaveOptions(const vector<GameSaveType>& games) {
+  vector<SaveFileInfo> ret;
+  for (auto elem : games) {
+    vector<SaveFileInfo> files = getSaveFiles(userPath, getSaveSuffix(elem));
+    files = files.filter([this] (const SaveFileInfo& info) { return isCompatible(getSaveVersion(info));});
+    append(ret, files);
+  }
+  return ret;
+}
+
 void MainLoop::launchQuickGame(optional<int> maxTurns, bool tryToLoad) {
   PGame game;
   if (tryToLoad) {
-    vector<ListElem> optionsUnused;
-    vector<SaveFileInfo> files;
-    getSaveOptions({
-        {GameSaveType::AUTOSAVE, "Recovered games:"},
-        {GameSaveType::KEEPER, "Keeper games:"}, {GameSaveType::ADVENTURER, "Adventurer games:"}}, optionsUnused, files);
+    auto files = getSaveOptions({GameSaveType::AUTOSAVE, GameSaveType::KEEPER, GameSaveType::ADVENTURER});
     auto toLoad = std::min_element(files.begin(), files.end(),
         [](const auto& f1, const auto& f2) { return f1.date > f2.date; });
     if (toLoad != files.end())
