@@ -819,7 +819,6 @@ void Game::addAnalytics(const string& name, const string& value) {
 void Game::handleMessageBoard(Position pos, Creature* c) {
   auto gameId = getGameOrRetiredIdentifier(pos);
   auto boardId = int(combineHash(pos, gameId));
-  vector<ListElem> options;
   atomic<bool> cancelled(false);
   view->displaySplash(nullptr, "Fetching board contents...", [&] {
       cancelled = true;
@@ -840,22 +839,32 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
     view->presentText("", *error);
     return;
   }
+  auto data = ScriptedUIDataElems::Record{};
+  auto list = ScriptedUIDataElems::List{};
+  ScriptedUIState uiState{};
   for (auto message : messages) {
-    options.emplace_back(message.author + " wrote:", ListElem::TITLE);
-    options.emplace_back("\"" + message.text + "\"", ListElem::TEXT);
+    list.push_back(ScriptedUIDataElems::Record{
+      {
+        {"author", message.author},
+        {"text", "\"" + message.text + "\""}
+      }
+    });
   }
-  if (messages.empty())
-    options.emplace_back("The board is empty.", ListElem::TITLE);
-  options.emplace_back("", ListElem::TEXT);
-  options.emplace_back("[Write something]");
-  if (auto index = view->chooseFromList("", options))
-    if (auto text = view->getText("Enter message", "", 80)) {
-      if (text->size() >= 2) {
-        if (!fileSharing->uploadBoardMessage(gameId, boardId, c->getName().title(), *text))
-          view->presentText("", "Please enable online features in the settings.");
-      } else
-        view->presentText("", "The message was too short.");
-    }
+  data.elems["messages"] = std::move(list);
+  bool wrote = false;
+  data.elems["write_something"] = ScriptedUIDataElems::Callback{
+      [this, c, boardId, gameId] {
+        if (auto text = view->getText("Enter message", "", 80)) {
+          if (text->size() >= 2) {
+            if (!fileSharing->uploadBoardMessage(gameId, boardId, c->getName().title(), *text))
+              view->presentText("", "Please enable online features in the settings.");
+          } else
+            view->presentText("", "The message was too short.");
+        }
+        return true;
+      }
+  };
+  view->scriptedUI("message_board", data, uiState);
 }
 
 void Game::considerAllianceAttack() {
