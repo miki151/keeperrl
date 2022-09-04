@@ -968,7 +968,7 @@ void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> or
     blockingElems.back()->setBounds(Rectangle(renderer.getSize()));*/
     blockingElems.push_back(gui.keyHandler(bindMethod(&WindowView::keyboardActionAlways, this)));
   }
-  propagateMousePosition({elem});
+  //propagateMousePosition({elem});
   blockingElems.push_back(elem);
   if (currentThreadId() == renderThreadId)
     while (!sem.get()) {

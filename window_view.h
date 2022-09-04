@@ -215,7 +215,7 @@ class WindowView: public View {
     origin->y = max(0, origin->y);
     Vec2 size(*elem->getPreferredWidth(), min(renderer.getSize().y - origin->y, *elem->getPreferredHeight()));
     elem->setBounds(Rectangle(*origin, *origin + size));
-    propagateMousePosition({elem});
+    //propagateMousePosition({elem});
     blockingElems.push_back(std::move(elem));
     if (currentThreadId() == renderThreadId) {
       while (queue.isEmpty())
