@@ -1,5 +1,6 @@
 #include "util.h"
 #include "sdl.h"
+#include "steam_input.h"
 
 #define LIST_KEYS \
 X(SDLK_UNKNOWN)\
@@ -238,16 +239,22 @@ X(SDLK_KBDILLUMDOWN)\
 X(SDLK_KBDILLUMUP)\
 X(SDLK_EJECT)\
 X(SDLK_SLEEP)\
+X(C_MENU_SELECT)\
+X(C_MENU_CANCEL)\
+X(C_MENU_DOWN)\
+X(C_MENU_UP)\
+
+using namespace SDL;
 
 const char* getString(SDL::SDL_Keycode key) {
-#define X(Code) if (key == SDL::Code) return #Code;
+#define X(Code) if (key == Code) return #Code;
   LIST_KEYS
 #undef X
   fail();
 }
 
 optional<SDL::SDL_Keycode> keycodeFromString(const char* key) {
-#define X(Code) if (!strcmp(key, #Code)) return SDL::Code;
+#define X(Code) if (!strcmp(key, #Code)) return Code;
   LIST_KEYS
 #undef X
   return none;

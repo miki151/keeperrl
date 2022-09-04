@@ -1,6 +1,6 @@
 
 {
-  Using "EXIT" { Button(true) { KeyHandler(SDLK_ESCAPE) KeyHandler(SDLK_RETURN) KeyHandler(SDLK_KP_ENTER) } }
+  ExitButtonsWithEnter()
   Window(MarginLeft(10, MarginBottom(10, {
     Position(LEFT_CENTERED, Margins(6, Using "view_id" ViewId(2)))
     Position(MIDDLE, MarginLeft(80, MarginRight(80, Using "message" Label())))

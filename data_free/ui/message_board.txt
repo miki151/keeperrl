@@ -1,6 +1,6 @@
 {
-  #BlockEvents
-  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
+  BlockEvents
+  ExitButtons()
   Window(Width 700 MaxHeight 700 {
     Vertical {
       Stretch Using "messages" Scrolling(List(VERTICAL, {

@@ -16,7 +16,8 @@ End
 
 {
   BlockEvents
-  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
+  ExitButtons()
+  FocusKeys()
   Window(Width 700 Height 700 {
     Vertical {
       If "options"
@@ -35,7 +36,7 @@ End
       Stretch Scrolling(MarginRight(10, {
         Using "options"
           List(VERTICAL, {
-              Using "callbackBool" Button()
+              Using "callbackBool" { Focusable Frame(ColorId WHITE) Button() }
               Using "tooltip" GetTooltip(Label())
               Height 35 Horizontal {
                 Stretch Position(MIDDLE_STRETCHED_X, Using "name" Label())

@@ -27,6 +27,7 @@
 #include "gzstream.h"
 #include "opengl.h"
 #include "tileset.h"
+#include "steam_input.h"
 
 void Renderer::renderDeferredSprites() {
   static vector<SDL::GLfloat> vertices;
@@ -444,9 +445,9 @@ void Renderer::setFpsLimit(int fps) {
   fpsLimit = fps;
 }
 
-Renderer::Renderer(Clock* clock, const string& title, const DirectoryPath& fontPath,
+Renderer::Renderer(Clock* clock, MySteamInput* i, const string& title, const DirectoryPath& fontPath,
     const FilePath& cursorP, const FilePath& clickedCursorP, const FilePath& iconPath)
-    : cursorPath(cursorP), clickedCursorPath(clickedCursorP), clock(clock) {
+    : cursorPath(cursorP), clickedCursorPath(clickedCursorP), clock(clock), steamInput(i) {
   CHECK(SDL::SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0) << SDL::SDL_GetError();
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MINOR_VERSION, 1 );
@@ -648,6 +649,19 @@ void Renderer::considerMouseMoveEvent(Event& ev) {
 
 bool Renderer::pollEvent(Event& ev) {
   CHECK(currentThreadId() == *renderThreadId);
+  if (steamInput)
+    if (auto e = steamInput->getEvent()) {
+      std::cout << "SI event " << *e << std::endl;
+      ev.type = SDL::SDL_KEYDOWN;
+      ev.key = SDL::SDL_KeyboardEvent {
+          ev.type,
+          0, 0,
+          SDL_PRESSED,
+          0, 0, 0,
+          SDL::SDL_Keysym { SDL::SDL_Scancode{} , (SDL::SDL_Keycode) *e }
+      };
+      return true;
+    }
   if (monkey) {
     if (Random.roll(2))
       return pollEventOrFromQueue(ev);

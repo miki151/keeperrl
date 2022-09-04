@@ -9,6 +9,7 @@
 #include "clock.h"
 #include "container_range.h"
 #include "tileset.h"
+#include "steam_input.h"
 
 namespace EnumsDetail {
 enum class TextureFlip;
@@ -662,7 +663,8 @@ struct Focusable : ScriptedUIInterface {
 
   void onKeypressed(const ScriptedUIData& data, ScriptedContext& context,
       SDL::SDL_Keysym sym, Rectangle bounds, EventCallback& callback) const override {
-    if (isOneOf(sym.sym, SDL::SDLK_KP_ENTER, SDL::SDLK_RETURN) && context.elemCounter == context.state.highlightedElem)
+    if (isOneOf(sym.sym, SDL::SDLK_KP_ENTER, SDL::SDLK_RETURN, C_MENU_SELECT) &&
+        context.elemCounter == context.state.highlightedElem)
       performAction(data, context, callback);
     callback = [&, y = bounds.middle().y, callback, myCounter = context.elemCounter] {
       auto ret = callback ? callback() : false;
@@ -672,7 +674,7 @@ struct Focusable : ScriptedUIInterface {
     };
     ++context.elemCounter;
   }
-  
+
   ScriptedUI SERIAL(elem);
   SERIALIZE_ALL(elem)
 };

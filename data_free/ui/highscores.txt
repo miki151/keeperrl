@@ -1,6 +1,6 @@
 {
   BlockEvents
-  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
+  ExitButtons()
   Window(Width 700 Height 700 {
     Vertical {
       Position(MIDDLE,

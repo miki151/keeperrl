@@ -57,6 +57,7 @@
 #include "fx_view_manager.h"
 #include "layout_renderer.h"
 #include "unlocks.h"
+#include "steam_input.h"
 
 #include "stack_printer.h"
 
@@ -374,11 +375,14 @@ static int keeperMain(po::parser& commandLineFlags) {
     battleTest(new DummyView(&clock), nullptr);
     return 0;
   }
+  unique_ptr<MySteamInput> steamInput;
 #ifdef USE_STEAMWORKS
+  steamInput = make_unique<MySteamInput>();
   optional<steam::Client> steamClient;
   if (appConfig.get<int>("steamworks") > 0) {
     if (steam::initAPI()) {
       steamClient.emplace();
+      steamInput->init();
       INFO << "\n" << steamClient->info();
     }
 #ifdef RELEASE
@@ -389,6 +393,7 @@ static int keeperMain(po::parser& commandLineFlags) {
 #endif
   Renderer renderer(
       &clock,
+      steamInput.get(),
       "KeeperRL",
       contribDataPath,
       freeDataPath.file("images/mouse_cursor.png"),

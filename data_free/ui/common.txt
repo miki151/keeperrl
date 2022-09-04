@@ -12,9 +12,23 @@ End
 Def FocusKeys() {
   Using "HIGHLIGHT_PREVIOUS" { KeyHandler(SDLK_LEFT) KeyHandler(SDLK_KP_4) }
   Using "HIGHLIGHT_NEXT" { KeyHandler(SDLK_RIGHT) KeyHandler(SDLK_KP_6) }
-  Using "HIGHLIGHT_PREVIOUS" { KeyHandler(SDLK_UP) KeyHandler(SDLK_KP_8) }
-  Using "HIGHLIGHT_NEXT" { KeyHandler(SDLK_DOWN) KeyHandler(SDLK_KP_2) }
+  Using "HIGHLIGHT_PREVIOUS" { KeyHandler(SDLK_UP) KeyHandler(SDLK_KP_8) KeyHandler(C_MENU_UP) }
+  Using "HIGHLIGHT_NEXT" { KeyHandler(SDLK_DOWN) KeyHandler(SDLK_KP_2) KeyHandler(C_MENU_DOWN) }
 }
+End
+
+Def ExitButtons()
+  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) KeyHandler(C_MENU_CANCEL) }
+End
+
+Def ExitButtonsWithEnter()
+  Using "EXIT" {
+    Button(true)
+    KeyHandler(SDLK_ESCAPE)
+    KeyHandler(C_MENU_CANCEL)
+    KeyHandler(SDLK_RETURN)
+    KeyHandler(SDLK_KP_ENTER)
+  }
 End
 
 Def Texture(NAME) TextureImpl(NAME, REPEAT) End
@@ -126,7 +140,7 @@ Def GetTooltip(Content)
 End
 
 Def YesOrNo() {
-  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
+  ExitButtons()
   FocusKeys()
   Window(
     Vertical {

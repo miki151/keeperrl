@@ -1,6 +1,6 @@
 
 {
-  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
+  ExitButtons()
   FocusKeys()
   Window(
     Vertical {

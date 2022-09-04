@@ -29,7 +29,7 @@ End
 
 {
   BlockEvents
-  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
+  ExitButtons()
   Window({
     FocusKeys()
     Width 600

@@ -1,7 +1,7 @@
 {
   BlockEvents
   FocusKeys()
-  Using "EXIT" { Button(true) { KeyHandler(SDLK_ESCAPE) KeyHandler(SDLK_RETURN)} }
+  ExitButtonsWithEnter()
   Window(Width 700 MaxHeight 700 {
     Scrolling(Vertical {
       Using "title" Label()

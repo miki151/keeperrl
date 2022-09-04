@@ -27,6 +27,7 @@
 class ViewObject;
 class Clock;
 class TileSet;
+class MySteamInput;
 struct TileCoord;
 
 struct sth_stash;
@@ -35,8 +36,8 @@ class Renderer {
   public:
   static constexpr int nominalSize = 24;
 
-  Renderer(Clock*, const string& windowTile, const DirectoryPath& fontPath, const FilePath& cursorPath,
-      const FilePath& clickedCursorPath, const FilePath& iconPath);
+  Renderer(Clock*, MySteamInput*, const string& windowTile, const DirectoryPath& fontPath,
+      const FilePath& cursorPath, const FilePath& clickedCursorPath, const FilePath& iconPath);
   void setFullscreen(bool);
   void setFullscreenMode(int);
   void setVsync(bool);
@@ -180,7 +181,7 @@ class Renderer {
   optional<DirectoryPath> animationDirectory;
   Clock* clock;
   TileSet* tileSet = nullptr;
+  MySteamInput* steamInput = nullptr;
   bool keypressed[SDL::SDL_NUM_SCANCODES] = {0};
   void updateKeypressed(const Event&);
 };
-
