@@ -49,6 +49,7 @@
 #include "ai_type.h"
 #include "container_range.h"
 #include "keybinding_map.h"
+#include "steam_input.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -1754,7 +1755,8 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
       label = "[" + *text + "] " + label;
     vList.addElem(WL(stack,
         WL(buttonLabel, label, WL(button, callback)),
-        WL(keyHandler, callback, keybinding)
+        WL(keyHandler, callback, keybinding),
+        WL(keyHandler, callback, {gui.getKey(C_EXIT_CONTROL_MODE)})
     ));
   }
   vList.addSpace(10);
@@ -4662,13 +4664,15 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
     if (!info->zLevels.empty())
       line.addElemAuto(WL(stack,
           getButton(info->levelDepth > 0, "<", UserInput{UserInputId::SCROLL_STAIRS, -1 }),
-          WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, -1}), Keybinding("SCROLL_Z_UP"))
+          WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, -1}), Keybinding("SCROLL_Z_UP")),
+          WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, -1}), {gui.getKey(C_ZLEVEL_UP)})
       ));
     line.addMiddleElem(WL(topMargin, 3, drawZLevelButton(*info, textColor)));
     if (!info->zLevels.empty())
       line.addBackElemAuto(WL(stack,
           getButton(info->levelDepth < info->zLevels.size() - 1, ">", UserInput{UserInputId::SCROLL_STAIRS, 1}),
-          WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, 1}), Keybinding("SCROLL_Z_DOWN"))
+          WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, 1}), Keybinding("SCROLL_Z_DOWN")),
+          WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, 1}), {gui.getKey(C_ZLEVEL_DOWN)})
       ));
     lines.addElem(WL(stack,
         WL(stopMouseMovement),

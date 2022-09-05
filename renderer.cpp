@@ -651,7 +651,6 @@ bool Renderer::pollEvent(Event& ev) {
   CHECK(currentThreadId() == *renderThreadId);
   if (steamInput)
     if (auto e = steamInput->getEvent()) {
-      std::cout << "SI event " << *e << std::endl;
       ev.type = SDL::SDL_KEYDOWN;
       ev.key = SDL::SDL_KeyboardEvent {
           ev.type,
@@ -669,6 +668,10 @@ bool Renderer::pollEvent(Event& ev) {
     return true;
   } else
     return pollEventOrFromQueue(ev);
+}
+
+MySteamInput* Renderer::getSteamInput() {
+  return steamInput;
 }
 
 void Renderer::flushEvents(EventType type) {
@@ -759,5 +762,7 @@ void Renderer::makeScreenshot(const FilePath& path, Rectangle bounds) {
 void playfile(const char *fname, SDL::SDL_Window* screen, Renderer&, bool withAudio);
 
 void Renderer::playVideo(const string& path, bool withAudio) {
+  steamInput->pushActionSet(MySteamInput::ActionSet::MENU);
   playfile(path.data(), window, *this, withAudio);
+  steamInput->popActionSet();
 }

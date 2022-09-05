@@ -23,6 +23,7 @@
 #include "gui_builder.h"
 #include "clock.h"
 #include "sound.h"
+#include "steam_input.h"
 
 class SoundLibrary;
 class ViewIndex;
@@ -205,6 +206,8 @@ class WindowView: public View {
   template<typename T>
   T getBlockingGui(SyncQueue<T>& queue, SGuiElem elem, optional<Vec2> origin = none, bool darkenBackground = true) {
     TempClockPause pause(clock);
+    renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
+    auto o = OnExit([this] { renderer.getSteamInput()->popActionSet(); });
     int origElemCount = blockingElems.size();
     if (darkenBackground && blockingElems.empty()) {
       blockingElems.push_back(gui.darken());

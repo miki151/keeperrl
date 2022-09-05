@@ -117,6 +117,7 @@ class Renderer {
   void loadAnimations();
   void makeScreenshot(const FilePath&, Rectangle bounds);
   void renderDeferredSprites();
+  MySteamInput* getSteamInput();
 
   private:
   friend class Texture;

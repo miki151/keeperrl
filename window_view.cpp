@@ -43,6 +43,7 @@
 #include "target_type.h"
 #include "keybinding_map.h"
 #include "mouse_button_id.h"
+#include "steam_input.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -958,6 +959,8 @@ void WindowView::logMessage(const std::string& message) {
 
 void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> origin) {
   TempClockPause pause(clock);
+  renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
+  auto o = OnExit([this] { renderer.getSteamInput()->popActionSet(); });
   bool origOrigin = !!origin;
   if (!origin)
     origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
@@ -1230,6 +1233,7 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
         refreshScreen();
       }
       break;*/
+    case C_OPEN_MENU:
     case SDL::SDLK_ESCAPE:
       if (!guiBuilder.clearActiveButton() && !renderer.isMonkey())
         inputQueue.push(UserInput(UserInputId::EXIT));
