@@ -1481,6 +1481,9 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
     const optional<TutorialInfo>& tutorial) {
   selectionSize = view->getSelectionSize();
   playerPosition = view->getPlayerPosition();
+  renderer.getSteamInput()->setGameActionLayer(!!playerPosition
+      ? MySteamInput::GameActionLayer::TURNED_BASED
+      : MySteamInput::GameActionLayer::REAL_TIME);
   if (tutorial) {
     tutorialHighlightLow = tutorial->highlightedSquaresLow;
     tutorialHighlightHigh = tutorial->highlightedSquaresHigh;

@@ -25,6 +25,8 @@ void MySteamInput::init() {
     actionHandles[C_WALK] = steamInput->GetDigitalActionHandle("walk");
     joyHandles[ControllerJoy::SCROLLING] = steamInput->GetAnalogActionHandle("map_scrolling_joy");
     joyHandles[ControllerJoy::WALKING] = steamInput->GetAnalogActionHandle("walking_joy");
+    gameActionLayers[GameActionLayer::TURNED_BASED] = steamInput->GetActionSetHandle("TurnBased");
+    gameActionLayers[GameActionLayer::REAL_TIME] = steamInput->GetActionSetHandle("RealTime");
     controllers = vector<InputHandle_t>(STEAM_INPUT_MAX_COUNT, 0);
     steamInput->RunFrame();
     int cnt = steamInput->GetConnectedControllers(controllers.data());
@@ -51,6 +53,14 @@ pair<double, double> MySteamInput::getJoyPos(ControllerJoy j) {
     }
   }
   return {0, 0};
+}
+
+void MySteamInput::setGameActionLayer(GameActionLayer layer) {
+  if (actionSetStack.back() == ActionSet::GAME)
+    if (auto steamInput = SteamInput()) {
+      steamInput->DeactivateAllActionSetLayers(STEAM_INPUT_HANDLE_ALL_CONTROLLERS);
+      steamInput->ActivateActionSetLayer(STEAM_INPUT_HANDLE_ALL_CONTROLLERS, gameActionLayers.at(layer));
+    }
 }
 
 void MySteamInput::popActionSet() {

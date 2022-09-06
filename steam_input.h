@@ -34,7 +34,12 @@ class MySteamInput {
     MENU,
     GAME
   };
+  enum class GameActionLayer {
+    TURNED_BASED,
+    REAL_TIME
+  };
   map<ActionSet, Handle> actionSets;
+  map<GameActionLayer, Handle> gameActionLayers;
   map<ControllerKey, Handle> actionHandles;
   vector<Handle> controllers;
   map<ControllerJoy, Handle> joyHandles;
@@ -46,5 +51,6 @@ class MySteamInput {
   vector<ActionSet> actionSetStack;
   void pushActionSet(ActionSet);
   void popActionSet();
+  void setGameActionLayer(GameActionLayer);
   pair<double, double> getJoyPos(ControllerJoy);
 };
