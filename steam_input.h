@@ -18,7 +18,13 @@ enum ControllerKey {
   C_TOGGLE_CONTROL_MODE,
   C_CHAT,
   C_FIRE_PROJECTILE,
-  C_WAIT
+  C_WAIT,
+  C_WALK
+};
+
+enum class ControllerJoy {
+  WALKING,
+  SCROLLING
 };
 
 class MySteamInput {
@@ -31,6 +37,7 @@ class MySteamInput {
   map<ActionSet, Handle> actionSets;
   map<ControllerKey, Handle> actionHandles;
   vector<Handle> controllers;
+  map<ControllerJoy, Handle> joyHandles;
   void init();
   void setMenuActionSet();
   void setGameActionSet();
@@ -39,4 +46,5 @@ class MySteamInput {
   vector<ActionSet> actionSetStack;
   void pushActionSet(ActionSet);
   void popActionSet();
+  pair<double, double> getJoyPos(ControllerJoy);
 };

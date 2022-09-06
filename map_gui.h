@@ -120,6 +120,7 @@ class MapGui : public GuiElem {
   void renderFloorObjects(Renderer&, Vec2 size, milliseconds currentTimeReal);
   void renderHighObjects(Renderer&, Vec2 size, milliseconds currentTimeReal);
   void renderAsciiObjects(Renderer&, Vec2 size, milliseconds currentTimeReal);
+  void renderWalkingJoy(Renderer&, Vec2 size);
   Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, milliseconds curTimeReal, bool verticalMovement, Vec2 pos);
   bool considerCreatureClick(Vec2 mousePos);
   struct CreatureInfo {
@@ -224,7 +225,9 @@ class MapGui : public GuiElem {
   void renderPhylacteries(Renderer&, Vec2 tileSize, milliseconds currentTimeReal);
   void updateShortestPaths(CreatureView*, Renderer&, Vec2 tileSize, milliseconds curTimeReal);
   bool isDraggedCreature() const;
+  void handleJoyScrolling(pair<double, double> dir, milliseconds time);
   Color squareHighlightColor;
   vector<Vec2> redMarks;
   vector<Vec2> greenMarks;
+  optional<Vec2> playerPosition;
 };

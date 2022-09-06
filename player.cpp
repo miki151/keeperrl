@@ -1385,6 +1385,10 @@ const vector<Vec2>& Player::getUnknownLocations(const Level* level) const {
   return unknownLocations->getOnLevel(level);
 }
 
+optional<Vec2> Player::getPlayerPosition() const  {
+  return creature->getPosition().getCoord();
+}
+
 vector<vector<Vec2>> Player::getPermanentPaths() const {
   vector<vector<Vec2>> ret;
   for (auto c : getTeam())

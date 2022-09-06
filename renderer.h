@@ -118,6 +118,7 @@ class Renderer {
   void makeScreenshot(const FilePath&, Rectangle bounds);
   void renderDeferredSprites();
   MySteamInput* getSteamInput();
+  Vec2 getWalkingJoyPos();
 
   private:
   friend class Texture;

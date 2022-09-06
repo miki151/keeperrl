@@ -22,6 +22,9 @@ void MySteamInput::init() {
     actionHandles[C_CHAT] = steamInput->GetDigitalActionHandle("chat");
     actionHandles[C_FIRE_PROJECTILE] = steamInput->GetDigitalActionHandle("fire_projectile");
     actionHandles[C_WAIT] = steamInput->GetDigitalActionHandle("wait");
+    actionHandles[C_WALK] = steamInput->GetDigitalActionHandle("walk");
+    joyHandles[ControllerJoy::SCROLLING] = steamInput->GetAnalogActionHandle("map_scrolling_joy");
+    joyHandles[ControllerJoy::WALKING] = steamInput->GetAnalogActionHandle("walking_joy");
     controllers = vector<InputHandle_t>(STEAM_INPUT_MAX_COUNT, 0);
     steamInput->RunFrame();
     int cnt = steamInput->GetConnectedControllers(controllers.data());
@@ -37,6 +40,17 @@ void MySteamInput::pushActionSet(ActionSet a) {
     steamInput->ActivateActionSet(STEAM_INPUT_HANDLE_ALL_CONTROLLERS, actionSets.at(a));
     std::cout << "Action set " << int(a) << std::endl;
   }
+}
+
+pair<double, double> MySteamInput::getJoyPos(ControllerJoy j) {
+  if (auto steamInput = SteamInput()) {
+    steamInput->RunFrame();
+    for (auto input : controllers) {
+      auto ret = steamInput->GetAnalogActionData(input, joyHandles.at(j));
+      return {ret.x, ret.y};
+    }
+  }
+  return {0, 0};
 }
 
 void MySteamInput::popActionSet() {

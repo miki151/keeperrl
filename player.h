@@ -70,6 +70,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual vector<Vec2> getHighlightedPathTo(Vec2) const override;
   virtual vector<vector<Vec2>> getPathTo(UniqueEntity<Creature>::Id, Vec2) const override;
   virtual vector<vector<Vec2>> getPermanentPaths() const override;
+  virtual optional<Vec2> getPlayerPosition() const override;
 
   // from Controller
   virtual void onKilled(Creature* attacker) override;

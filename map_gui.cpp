@@ -1199,6 +1199,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
     renderHighObjects(renderer, size, currentTimeReal);
   else
     renderAsciiObjects(renderer, size, currentTimeReal);
+  renderWalkingJoy(renderer, size);
   renderHighlights(renderer, size, currentTimeReal, false);
   if (fxViewManager) {
     fxViewManager->finishFrame();
@@ -1288,6 +1289,17 @@ void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, milliseconds c
   }
 }
 
+void MapGui::handleJoyScrolling(pair<double, double> dir, milliseconds time) {
+  if (!!lastScrollUpdate && dir != make_pair(0.0, 0.0)) {
+    double diff = double((time - *lastScrollUpdate).count()) / 40;
+    center.x += diff * dir.first;
+    center.y -= diff * dir.second;
+    softCenter = none;
+    scrollingState = ScrollingState::AFTER;
+  }
+  lastScrollUpdate = time;
+}
+
 void MapGui::processScrolling(milliseconds time) {
   PROFILE;
   if (!!softCenter && !!lastScrollUpdate) {
@@ -1365,6 +1377,25 @@ void MapGui::render(Renderer& renderer) {
           toString(abs(selectionSize->x) + 1) + "x" + toString(abs(selectionSize->y) + 1), Renderer::NONE, size.y / 2);
   }
   processScrolling(currentTimeReal);
+}
+
+void MapGui::renderWalkingJoy(Renderer& renderer, Vec2 size) {
+  if (playerPosition) {
+    auto pos = renderer.getWalkingJoyPos();
+    Vec2 offset;
+    if (auto index = objects[*playerPosition])
+      if (index->hasObject(ViewLayer::CREATURE) && !!screenMovement)
+        offset = getMovementOffset(index->getObject(ViewLayer::CREATURE), size, 0, clock->getRealMillis(), false, *playerPosition);
+    if (pos != Vec2(0, 0)) {
+      Vec2 wpos = projectOnScreen(*playerPosition + pos);
+      auto dir = pos.getBearing();
+      auto coord = renderer.getTileSet().getTileCoord("arrow" + toString(int(dir.getCardinalDir()))).getOnlyElement();
+      auto color = Color::WHITE;
+      if (auto index = objects[*playerPosition])
+        color = blendNightColor(Color::WHITE, *index);
+      renderer.drawTile(wpos + offset, {coord}, size, color);
+    }
+  }
 }
 
 bool MapGui::onClick(MouseButtonId b, Vec2 v) {
@@ -1449,6 +1480,7 @@ void MapGui::updateShortestPaths(CreatureView* view, Renderer& renderer, Vec2 ti
 void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* mapLayout, bool smoothMovement, bool ui,
     const optional<TutorialInfo>& tutorial) {
   selectionSize = view->getSelectionSize();
+  playerPosition = view->getPlayerPosition();
   if (tutorial) {
     tutorialHighlightLow = tutorial->highlightedSquaresLow;
     tutorialHighlightHigh = tutorial->highlightedSquaresHigh;
@@ -1473,6 +1505,7 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
   mouseUI = ui;
   layout = mapLayout;
   auto currentTimeReal = clock->getRealMillis();
+  handleJoyScrolling(renderer.getSteamInput()->getJoyPos(ControllerJoy::SCROLLING), currentTimeReal);
   updateShortestPaths(view, renderer, layout->getSquareSize(), currentTimeReal);
   // hacky way to detect that we're switching between real-time and turn-based and not between
   // team members in turn-based mode.

@@ -344,7 +344,11 @@ void WindowView::rebuildGui() {
       gui.keyHandler([getMovement]{ getMovement(0, -1); }, Keybinding("WALK_NORTH2"), false),
       gui.keyHandler([getMovement]{ getMovement(0, 1); }, Keybinding("WALK_SOUTH2"), false),
       gui.keyHandler([getMovement]{ getMovement(1, 0); }, Keybinding("WALK_EAST2"), false),
-      gui.keyHandler([getMovement]{ getMovement(-1, 0); }, Keybinding("WALK_WEST2"), false)
+      gui.keyHandler([getMovement]{ getMovement(-1, 0); }, Keybinding("WALK_WEST2"), false),
+      gui.keyHandler([getMovement, this]{
+        auto res = renderer.getWalkingJoyPos();
+        getMovement(res.x, res.y);
+      }, {gui.getKey(C_WALK)}, true)
   )));
   tempGuiElems.back()->setBounds(getMapGuiBounds());
   tempGuiElems.back()->setBounds(getMapGuiBounds());
