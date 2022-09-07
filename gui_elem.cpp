@@ -1282,24 +1282,28 @@ KeybindingMap* GuiFactory::getKeybindingMap() {
 
 class KeyHandler2 : public GuiElem {
   public:
-  KeyHandler2(function<void()> f, vector<SDL_Keysym> k, bool cap) : fun(f), key(k), capture(cap) {}
+  KeyHandler2(function<void(Rectangle)> f, vector<SDL_Keysym> k, bool cap) : fun(f), key(k), capture(cap) {}
 
   virtual bool onKeyPressed2(SDL_Keysym k) override {
     for (auto& elem : key)
       if (GuiFactory::keyEventEqual(k, elem)) {
-        fun();
+        fun(getBounds());
         return capture;
       }
     return false;
   }
 
   private:
-  function<void()> fun;
+  function<void(Rectangle)> fun;
   vector<SDL_Keysym> key;
   bool capture;
 };
 
 SGuiElem GuiFactory::keyHandler(function<void()> fun, vector<SDL_Keysym> key, bool capture) {
+  return SGuiElem(new KeyHandler2([fun = std::move(fun)](Rectangle) { fun();}, key, capture));
+}
+
+SGuiElem GuiFactory::keyHandlerRect(function<void(Rectangle)> fun, vector<SDL::SDL_Keysym> key, bool capture) {
   return SGuiElem(new KeyHandler2(fun, key, capture));
 }
 
@@ -2970,7 +2974,7 @@ SGuiElem GuiFactory::miniWindow(SGuiElem content, function<void()> onExitButton,
         rectangle(Color::BLACK),
         background(background1));
   if (onExitButton)
-    ret.push_back(reverseButton(onExitButton, {getKey(SDL::SDLK_ESCAPE)}, captureExitClick));
+    ret.push_back(reverseButton(onExitButton, {getKey(SDL::SDLK_ESCAPE), getKey(C_MENU_CANCEL)}, captureExitClick));
   append(ret, {
         margins(std::move(content), 1),
         miniBorder()
@@ -3147,7 +3151,7 @@ static int trans1 = 1094;
 static int trans2 = 1693;
 
 SGuiElem GuiFactory::uiHighlightMouseOver(Color c) {
-  return mouseHighlight2(margins(uiHighlight(c), -8, -3, -3, 3));
+  return mouseHighlight2(uiHighlightLine(c));
 }
 
 SGuiElem GuiFactory::uiHighlight(Color c) {
@@ -3155,7 +3159,7 @@ SGuiElem GuiFactory::uiHighlight(Color c) {
 }
 
 SGuiElem GuiFactory::uiHighlightLine(Color c) {
-  return margins(uiHighlight(c), -8, -3, -3, 3);
+  return margins(uiHighlight(c), -8, -3, -8, 3);
   //return leftMargin(-8, topMargin(-4, sprite(TexId::UI_HIGHLIGHT, Alignment::LEFT_STRETCHED, c)));
 }
 

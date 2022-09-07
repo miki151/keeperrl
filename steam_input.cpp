@@ -23,6 +23,7 @@ void MySteamInput::init() {
     actionHandles[C_FIRE_PROJECTILE] = steamInput->GetDigitalActionHandle("fire_projectile");
     actionHandles[C_WAIT] = steamInput->GetDigitalActionHandle("wait");
     actionHandles[C_WALK] = steamInput->GetDigitalActionHandle("walk");
+    actionHandles[C_COMMANDS] = steamInput->GetDigitalActionHandle("commands");
     joyHandles[ControllerJoy::SCROLLING] = steamInput->GetAnalogActionHandle("map_scrolling_joy");
     joyHandles[ControllerJoy::WALKING] = steamInput->GetAnalogActionHandle("walking_joy");
     gameActionLayers[GameActionLayer::TURNED_BASED] = steamInput->GetActionSetHandle("TurnBased");
@@ -58,6 +59,7 @@ pair<double, double> MySteamInput::getJoyPos(ControllerJoy j) {
 void MySteamInput::setGameActionLayer(GameActionLayer layer) {
   if (actionSetStack.back() == ActionSet::GAME)
     if (auto steamInput = SteamInput()) {
+      //std::cout << "Game action layer " << int(layer) << std::endl;
       steamInput->DeactivateAllActionSetLayers(STEAM_INPUT_HANDLE_ALL_CONTROLLERS);
       steamInput->ActivateActionSetLayer(STEAM_INPUT_HANDLE_ALL_CONTROLLERS, gameActionLayers.at(layer));
     }

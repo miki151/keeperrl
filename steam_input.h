@@ -19,7 +19,8 @@ enum ControllerKey {
   C_CHAT,
   C_FIRE_PROJECTILE,
   C_WAIT,
-  C_WALK
+  C_WALK,
+  C_COMMANDS
 };
 
 enum class ControllerJoy {

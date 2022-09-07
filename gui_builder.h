@@ -188,6 +188,8 @@ class GuiBuilder {
   function<void()> getButtonCallback(UserInput);
   void drawMiniMenu(SGuiElem, function<bool()> done, Vec2 menuPos, int width, bool darkBg);
   void drawMiniMenu(SGuiElem, bool& exit, Vec2 menuPos, int width, bool darkBg);
+  void drawMiniMenu(vector<SGuiElem>, vector<function<void()>>, Vec2 menuPos, int width, bool darkBg,
+      bool exitOnCallback = true);
   void showAttackTriggers(const vector<VillageInfo::Village::TriggerInfo>&, Vec2 pos);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
   SGuiElem getVillageActionButton(UniqueEntity<Collective>::Id, VillageInfo::Village::ActionInfo);
