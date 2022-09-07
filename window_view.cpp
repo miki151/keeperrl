@@ -471,6 +471,8 @@ void WindowView::propagateMousePosition(const vector<SGuiElem>& elems) {
   ev.type = SDL::SDL_MOUSEMOTION;
   ev.motion.x = renderer.getMousePos().x;
   ev.motion.y = renderer.getMousePos().y;
+  ev.motion.xrel = 0;
+  ev.motion.yrel = 0;
   gui.propagateEvent(ev, elems);
 }
 

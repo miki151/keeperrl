@@ -57,7 +57,7 @@ class MapGui : public GuiElem {
 
   virtual void render(Renderer&) override;
   virtual bool onClick(MouseButtonId, Vec2) override;
-  virtual bool onMouseMove(Vec2) override;
+  virtual bool onMouseMove(Vec2, Vec2) override;
   virtual void onMouseGone() override;
   virtual bool onKeyPressed2(SDL::SDL_Keysym) override;
 

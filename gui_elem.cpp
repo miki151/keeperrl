@@ -129,7 +129,7 @@ class ReleaseButton : public GuiElem {
     }
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     if (!pos.inRectangle(getBounds()))
       clicked = false;
     return false;
@@ -386,7 +386,7 @@ SGuiElem GuiFactory::mouseWheel(function<void(bool)> fun) {
 
 class StopMouseMovement : public GuiElem {
   public:
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     return pos.inRectangle(getBounds());
   }
 
@@ -494,7 +494,7 @@ class DrawScripted : public GuiElem {
     return ret;
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     context.elemCounter = 0;
     context.sliderCounter = 0;
     context.tooltipCounter = 0;
@@ -976,11 +976,11 @@ class GuiLayout : public GuiElem {
     return false;
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     bool gone = false;
     for (int i : AllReverse(elems)) {
       if (!gone && isVisible(i)) {
-        gone = elems[i]->onMouseMove(pos);
+        gone = elems[i]->onMouseMove(pos, rel);
       } else
         elems[i]->onMouseGone();
     }
@@ -1080,8 +1080,8 @@ class External : public GuiElem {
     return elem->onClick(b, v);
   }
 
-  virtual bool onMouseMove(Vec2 v) override {
-    return elem->onMouseMove(v);
+  virtual bool onMouseMove(Vec2 v, Vec2 rel) override {
+    return elem->onMouseMove(v, rel);
   }
 
   virtual void onMouseGone() override {
@@ -2179,7 +2179,7 @@ class MouseOverAction : public GuiElem {
     }
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     if ((!in || !outCallback) && pos.inRectangle(getBounds())) {
       callback();
       in = true;
@@ -2218,7 +2218,7 @@ class MouseButtonHeld : public GuiStack {
     on = false;
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     if (!pos.inRectangle(getBounds()))
       on = false;
     return false;
@@ -2268,7 +2268,7 @@ class MouseHighlight : public MouseHighlightBase {
     }
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     if (pos.inRectangle(getBounds())) {
       *highlighted = myIndex;
       canTurnOff = true;
@@ -2297,7 +2297,7 @@ class MouseHighlight2 : public GuiStack {
     over = false;
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     over = pos.inRectangle(getBounds());
     return over && capture;
   }
@@ -2335,7 +2335,7 @@ class Tooltip2 : public GuiElem {
       : elem(std::move(e)), size(*elem->getPreferredWidth(), *elem->getPreferredHeight()), positionFun(pos) {
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     canRender = pos.inRectangle(getBounds());
     return false;
   }
@@ -2378,7 +2378,7 @@ class Tooltip : public GuiElem {
       lastTimeOut(c->getRealMillis()), clock(c), delay(d) {
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     canRender = pos.inRectangle(getBounds());
     return false;
   }
@@ -2458,7 +2458,7 @@ class ScrollArea : public GuiElem {
     content->onMouseGone();
   }
 
-  virtual bool onMouseMove(Vec2 v) override {
+  virtual bool onMouseMove(Vec2 v, Vec2 rel) override {
     if (clickPos) {
       scrollPos = *clickPos - v;
       scrollPos->x = max(0, min(*content->getPreferredWidth() - getBounds().width(), scrollPos->x));
@@ -2466,7 +2466,7 @@ class ScrollArea : public GuiElem {
       return true;
     } else {
       if (v.inRectangle(getBounds()))
-        return content->onMouseMove(v);
+        return content->onMouseMove(v, rel);
       else
         content->onMouseGone();
       return false;
@@ -2579,7 +2579,7 @@ class ScrollBar : public GuiLayout {
     return false;
   }
 
-  virtual bool onMouseMove(Vec2 v) override {
+  virtual bool onMouseMove(Vec2 v, Vec2 rel) override {
     if (*held != notHeld)
       scrollPos->reset(getBounds().height() / 2 + scrollLength() * calcPos(v.y - *held));
     return false;
@@ -2631,9 +2631,9 @@ class Scrollable : public GuiElem {
     content->onMouseGone();
   }
 
-  virtual bool onMouseMove(Vec2 v) override {
+  virtual bool onMouseMove(Vec2 v, Vec2 rel) override {
     if (v.inRectangle(getBounds()))
-      return content->onMouseMove(v);
+      return content->onMouseMove(v, rel);
     else
       content->onMouseGone();
     return false;
@@ -2717,7 +2717,7 @@ class Slider : public GuiLayout {
     return false;
   }
 
-  virtual bool onMouseMove(Vec2 v) override {
+  virtual bool onMouseMove(Vec2 v, Vec2 rel) override {
     if (held)
       setPositionFromClick(v);
     return false;
@@ -3206,7 +3206,8 @@ void GuiFactory::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
       bool captured = false;
       for (auto elem : guiElems)
         if (!captured)
-          captured |= elem->onMouseMove(Vec2(event.motion.x, event.motion.y));
+          captured |= elem->onMouseMove(Vec2(event.motion.x, event.motion.y),
+              Vec2(event.motion.xrel, event.motion.yrel));
         else
           elem->onMouseGone();
       break;}

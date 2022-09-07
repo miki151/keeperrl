@@ -279,7 +279,9 @@ void MapGui::considerContinuousLeftClick(Vec2 mousePos) {
   }
 }
 
-bool MapGui::onMouseMove(Vec2 v) {
+bool MapGui::onMouseMove(Vec2 v, Vec2 rel) {
+  if (rel == Vec2(0, 0))
+    return false;
   lastMouseMove = v;
   auto draggedCreature = isDraggedCreature();
   if (v.inRectangle(getBounds()) && mouseHeldPos && !draggedCreature)
@@ -1463,7 +1465,7 @@ void MapGui::updateShortestPaths(CreatureView* view, Renderer& renderer, Vec2 ti
   phylacteries = view->getCreatureViewLevel()->getPhylacteries();
   if (auto pos = projectOnMap(renderer.getMousePos())) {
     auto highlightedInfo = getHighlightedInfo(tileSize, curTimeReal);
-    if (highlightedInfo.tilePos) {
+    if (!!lastMouseMove && highlightedInfo.tilePos) {
       auto highlightedPath = view->getHighlightedPathTo(*highlightedInfo.tilePos);
         if (!highlightedPath.empty())
           shortestPath.push_back(highlightedPath);
