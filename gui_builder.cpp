@@ -4681,23 +4681,25 @@ SGuiElem GuiBuilder::drawHighscorePage(const HighscoreList& page, ScrollPosition
 }
 
 SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textColor) {
+  auto callback = [this, info] (Rectangle bounds) {
+    vector<SGuiElem> lines;
+    vector<function<void()>> callbacks;
+    int maxWidth = 0;
+    for (int i : All(info.zLevels)) {
+      callbacks.push_back([i, this, &info] {
+        this->callbacks.input(UserInput{UserInputId::SCROLL_STAIRS, i - info.levelDepth});
+      });
+      auto elem = WL(labelHighlight, info.zLevels[i]);
+      maxWidth = max(maxWidth, *elem->getPreferredWidth());
+      lines.push_back(WL(centerHoriz, std::move(elem)));
+    }
+    drawMiniMenu(std::move(lines), std::move(callbacks),
+        Vec2(bounds.middle().x - maxWidth / 2 - 30, bounds.bottom()), maxWidth + 60, false);
+  };
   return WL(stack,
       WL(centerHoriz, WL(labelHighlight, info.name, textColor)),
-      info.zLevels.empty() ? WL(empty) : WL(buttonRect, [this, info] (Rectangle bounds) {
-          vector<SGuiElem> lines;
-          vector<function<void()>> callbacks;
-          int maxWidth = 0;
-          for (int i : All(info.zLevels)) {
-            callbacks.push_back([i, this, &info] {
-              this->callbacks.input(UserInput{UserInputId::SCROLL_STAIRS, i - info.levelDepth});
-            });
-            auto elem = WL(labelHighlight, info.zLevels[i]);
-            maxWidth = max(maxWidth, *elem->getPreferredWidth());
-            lines.push_back(WL(centerHoriz, std::move(elem)));
-          }
-          drawMiniMenu(std::move(lines), std::move(callbacks),
-              Vec2(bounds.middle().x - maxWidth / 2 - 30, bounds.bottom()), maxWidth + 60, false);
-        }));
+      info.zLevels.empty() ? WL(empty) : WL(buttonRect, callback),
+      WL(keyHandlerRect, callback, {gui.getKey(C_CHANGE_Z_LEVEL)}, true));
 }
 
 SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {

@@ -24,6 +24,7 @@ void MySteamInput::init() {
     actionHandles[C_WAIT] = steamInput->GetDigitalActionHandle("wait");
     actionHandles[C_WALK] = steamInput->GetDigitalActionHandle("walk");
     actionHandles[C_COMMANDS] = steamInput->GetDigitalActionHandle("commands");
+    actionHandles[C_CHANGE_Z_LEVEL] = steamInput->GetDigitalActionHandle("change_z_level");
     joyHandles[ControllerJoy::SCROLLING] = steamInput->GetAnalogActionHandle("map_scrolling_joy");
     joyHandles[ControllerJoy::WALKING] = steamInput->GetAnalogActionHandle("walking_joy");
     gameActionLayers[GameActionLayer::TURNED_BASED] = steamInput->GetActionSetHandle("TurnBased");

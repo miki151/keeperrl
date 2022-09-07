@@ -20,7 +20,8 @@ enum ControllerKey {
   C_FIRE_PROJECTILE,
   C_WAIT,
   C_WALK,
-  C_COMMANDS
+  C_COMMANDS,
+  C_CHANGE_Z_LEVEL,
 };
 
 enum class ControllerJoy {
