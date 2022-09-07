@@ -1205,17 +1205,21 @@ vector<SDL_Keysym> GuiBuilder::getConfirmationKeys() {
       gui.getKey(SDL::SDLK_RETURN),
       gui.getKey(SDL::SDLK_KP_ENTER),
       gui.getKey(SDL::SDLK_KP_5),
-      gui.getKey(C_PICK_UP)
+      gui.getKey(C_MENU_SELECT)
   };
 }
 
 SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info) {
   if (info.lyingItems.empty()) {
+    if (playerOverlayFocused)
+      renderer.getSteamInput()->popActionSet();
     playerOverlayFocused = false;
     itemIndex = none;
     return WL(empty);
   }
   if (lastPlayerPositionHash && lastPlayerPositionHash != info.positionHash) {
+    if (playerOverlayFocused)
+      renderer.getSteamInput()->popActionSet();
     playerOverlayFocused = false;
     itemIndex = none;
   }
@@ -1245,7 +1249,9 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info) {
           WL(leftMargin, 3, WL(label, title, Color::YELLOW)),
           WL(scrollable, WL(verticalList, std::move(lines), legendLineHeight), &lyingItemsScroll),
           legendLineHeight, GuiFactory::TOP),
-        WL(keyHandler, [=] { callbacks.input({UserInputId::PICK_UP_ITEM, 0});}, getConfirmationKeys(), true));
+        WL(keyHandler, [=] { callbacks.input({UserInputId::PICK_UP_ITEM, 0});}, getConfirmationKeys(), true),
+        WL(keyHandler, [=] { if (renderer.getWalkingJoyPos() == Vec2(0, 0))
+            callbacks.input({UserInputId::PICK_UP_ITEM, 0}); }, {gui.getKey(C_WALK)}));
   else {
     auto updateScrolling = [this, totalElems] (int dir) {
         if (itemIndex)
@@ -1260,12 +1266,19 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info) {
                   WL(keyHandler, [=] { if (itemIndex) { callbacks.input({UserInputId::PICK_UP_ITEM, *itemIndex});}},
                     getConfirmationKeys(), true),
                   WL(keyHandler, [=] { updateScrolling(1); },
-                    {gui.getKey(SDL::SDLK_DOWN), gui.getKey(SDL::SDLK_KP_2)}, true),
+                    {gui.getKey(SDL::SDLK_DOWN), gui.getKey(SDL::SDLK_KP_2), gui.getKey(C_MENU_DOWN)}, true),
                   WL(keyHandler, [=] { updateScrolling(-1); },
-                    {gui.getKey(SDL::SDLK_UP), gui.getKey(SDL::SDLK_KP_8)}, true)),
-              getConfirmationKeys(), {gui.getKey(SDL::SDLK_ESCAPE)}, playerOverlayFocused),
+                    {gui.getKey(SDL::SDLK_UP), gui.getKey(SDL::SDLK_KP_8), gui.getKey(C_MENU_UP)}, true)),
+              getConfirmationKeys(), {gui.getKey(SDL::SDLK_ESCAPE), gui.getKey(C_MENU_CANCEL)}, playerOverlayFocused),
           WL(keyHandler, [=] { if (!playerOverlayFocused) { itemIndex = 0; lyingItemsScroll.reset();} },
               getConfirmationKeys()),
+          WL(keyHandler, [=] {
+              if (!playerOverlayFocused && renderer.getWalkingJoyPos() == Vec2(0, 0)) {
+                playerOverlayFocused = true;
+                renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
+                itemIndex = 0;
+                lyingItemsScroll.reset();
+              }}, {gui.getKey(C_WALK)}),
           WL(keyHandler, [=] { itemIndex = none; }, {gui.getKey(SDL::SDLK_ESCAPE)}),
           WL(margin,
             WL(leftMargin, 3, WL(label, title, Color::YELLOW)),

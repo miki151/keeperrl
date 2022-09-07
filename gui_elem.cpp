@@ -29,6 +29,7 @@
 #include "scripted_ui_data.h"
 #include "mouse_button_id.h"
 #include "tileset.h"
+#include "steam_input.h"
 
 #include "sdl.h"
 
@@ -1114,13 +1115,16 @@ SGuiElem GuiFactory::external(GuiElem* elem) {
 
 class Focusable : public GuiStack {
   public:
-  Focusable(SGuiElem content, vector<SDL_Keysym> focus, vector<SDL_Keysym> defocus, bool& foc) :
-      GuiStack(makeVec(std::move(content))), focusEvent(focus), defocusEvent(defocus), focused(foc) {}
+  Focusable(SGuiElem content, Renderer& renderer, vector<SDL_Keysym> focus, vector<SDL_Keysym> defocus,
+      bool& foc)
+    : GuiStack(makeVec(std::move(content))), focusEvent(focus), defocusEvent(defocus), focused(foc),
+      renderer(renderer) {}
 
   virtual bool onClick(MouseButtonId b, Vec2 pos) override {
     if (b == MouseButtonId::LEFT) {
       if (focused && !pos.inRectangle(getBounds())) {
         focused = false;
+        renderer.getSteamInput()->popActionSet();
         return true;
       }
       return GuiLayout::onClick(b, pos);
@@ -1133,12 +1137,14 @@ class Focusable : public GuiStack {
       for (auto& elem : focusEvent)
         if (GuiFactory::keyEventEqual(elem, key)) {
           focused = true;
+          renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
           return true;
         }
     if (focused)
       for (auto& elem : defocusEvent)
         if (GuiFactory::keyEventEqual(elem, key)) {
           focused = false;
+          renderer.getSteamInput()->popActionSet();
           return true;
         }
     if (focused) {
@@ -1152,11 +1158,12 @@ class Focusable : public GuiStack {
   vector<SDL_Keysym> focusEvent;
   vector<SDL_Keysym> defocusEvent;
   bool& focused;
+  Renderer& renderer;
 };
 
 SGuiElem GuiFactory::focusable(SGuiElem content, vector<SDL_Keysym> focusEvent,
     vector<SDL_Keysym> defocusEvent, bool& focused) {
-  return SGuiElem(new Focusable(std::move(content), focusEvent, defocusEvent, focused));
+  return SGuiElem(new Focusable(std::move(content), renderer, focusEvent, defocusEvent, focused));
 }
 
 class KeyHandler : public GuiElem {
