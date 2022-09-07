@@ -1201,7 +1201,12 @@ int GuiBuilder::getScrollPos(int index, int count) {
 }
 
 vector<SDL_Keysym> GuiBuilder::getConfirmationKeys() {
-  return {gui.getKey(SDL::SDLK_RETURN), gui.getKey(SDL::SDLK_KP_ENTER), gui.getKey(SDL::SDLK_KP_5)};
+  return {
+      gui.getKey(SDL::SDLK_RETURN),
+      gui.getKey(SDL::SDLK_KP_ENTER),
+      gui.getKey(SDL::SDLK_KP_5),
+      gui.getKey(C_PICK_UP)
+  };
 }
 
 SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info) {
