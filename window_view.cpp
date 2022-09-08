@@ -347,7 +347,8 @@ void WindowView::rebuildGui() {
       gui.keyHandler([getMovement]{ getMovement(-1, 0); }, Keybinding("WALK_WEST2"), false),
       gui.keyHandler([getMovement, this]{
         auto res = renderer.getDiscreteJoyPos(ControllerJoy::WALKING);
-        getMovement(res.x, res.y);
+        if (res != Vec2(0, 0))
+          getMovement(res.x, res.y);
       }, {gui.getKey(C_WALK)}, true)
   )));
   tempGuiElems.back()->setBounds(getMapGuiBounds());

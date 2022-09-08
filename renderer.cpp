@@ -582,6 +582,8 @@ void Renderer::setAnimationsDirectory(const DirectoryPath& path) {
 }
 
 void Renderer::drawAndClearBuffer() {
+  if (steamInput)
+    steamInput->runFrame();
   renderDeferredSprites();
   CHECK_OPENGL_ERROR();
   if (fpsLimit) {

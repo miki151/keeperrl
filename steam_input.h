@@ -44,9 +44,13 @@ class MySteamInput {
     TURNED_BASED,
     REAL_TIME
   };
+  struct ActionInfo {
+    Handle handle;
+    string name;
+  };
   map<ActionSet, Handle> actionSets;
   map<GameActionLayer, Handle> gameActionLayers;
-  map<ControllerKey, Handle> actionHandles;
+  map<ControllerKey, ActionInfo> actionHandles;
   vector<Handle> controllers;
   map<ControllerJoy, Handle> joyHandles;
   void init();
@@ -59,4 +63,5 @@ class MySteamInput {
   void popActionSet();
   void setGameActionLayer(GameActionLayer);
   pair<double, double> getJoyPos(ControllerJoy);
+  void runFrame();
 };
