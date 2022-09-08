@@ -76,7 +76,7 @@ class GuiBuilder {
     SGuiElem elem;
     enum Alignment { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, GAME_SPEED, MINIONS, IMMIGRATION, VILLAINS, TUTORIAL, MAP_HINT, CENTER } alignment;
   };
-  SGuiElem drawPlayerOverlay(const PlayerInfo&);
+  SGuiElem drawPlayerOverlay(const PlayerInfo&, bool dummy);
   void drawOverlays(vector<OverlayInfo>&, GameInfo&);
   SGuiElem drawMessages(const vector<PlayerMessage>&, int guiLength);
   SGuiElem drawGameSpeedDialog();
