@@ -670,10 +670,10 @@ bool Renderer::pollEvent(Event& ev) {
     return pollEventOrFromQueue(ev);
 }
 
-Vec2 Renderer::getWalkingJoyPos() {
+Vec2 Renderer::getDiscreteJoyPos(ControllerJoy joy) {
   Vec2 ret;
   if (steamInput) {
-    auto pos = steamInput->getJoyPos(ControllerJoy::WALKING);
+    auto pos = steamInput->getJoyPos(joy);
     if (pos.first <= -0.5)
       ret.x = -1;
     else if (pos.first >= 0.5)

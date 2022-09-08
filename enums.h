@@ -104,6 +104,7 @@ enum class VillainGroup;
 enum class AIType;
 enum class StatId;
 enum class CollectiveTab;
+enum class ControllerJoy;
 
 struct TileGasType;
 struct FXInfo;

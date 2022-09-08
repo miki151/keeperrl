@@ -1383,7 +1383,7 @@ void MapGui::render(Renderer& renderer) {
 
 void MapGui::renderWalkingJoy(Renderer& renderer, Vec2 size) {
   if (playerPosition) {
-    auto pos = renderer.getWalkingJoyPos();
+    auto pos = renderer.getDiscreteJoyPos(ControllerJoy::WALKING);
     Vec2 offset;
     if (auto index = objects[*playerPosition])
       if (index->hasObject(ViewLayer::CREATURE) && !!screenMovement)

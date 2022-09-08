@@ -22,11 +22,14 @@ enum ControllerKey {
   C_WALK,
   C_COMMANDS,
   C_CHANGE_Z_LEVEL,
+  C_DIRECTION_CONFIRM,
+  C_DIRECTION_CANCEL,
 };
 
 enum class ControllerJoy {
   WALKING,
-  SCROLLING
+  SCROLLING,
+  DIRECTION
 };
 
 class MySteamInput {
@@ -34,7 +37,8 @@ class MySteamInput {
   using Handle = unsigned long long;
   enum class ActionSet {
     MENU,
-    GAME
+    GAME,
+    DIRECTION
   };
   enum class GameActionLayer {
     TURNED_BASED,

@@ -1250,7 +1250,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info) {
           WL(scrollable, WL(verticalList, std::move(lines), legendLineHeight), &lyingItemsScroll),
           legendLineHeight, GuiFactory::TOP),
         WL(keyHandler, [=] { callbacks.input({UserInputId::PICK_UP_ITEM, 0});}, getConfirmationKeys(), true),
-        WL(keyHandler, [=] { if (renderer.getWalkingJoyPos() == Vec2(0, 0))
+        WL(keyHandler, [=] { if (renderer.getDiscreteJoyPos(ControllerJoy::WALKING) == Vec2(0, 0))
             callbacks.input({UserInputId::PICK_UP_ITEM, 0}); }, {gui.getKey(C_WALK)}));
   else {
     auto updateScrolling = [this, totalElems] (int dir) {
@@ -1273,7 +1273,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info) {
           WL(keyHandler, [=] { if (!playerOverlayFocused) { itemIndex = 0; lyingItemsScroll.reset();} },
               getConfirmationKeys()),
           WL(keyHandler, [=] {
-              if (!playerOverlayFocused && renderer.getWalkingJoyPos() == Vec2(0, 0)) {
+              if (!playerOverlayFocused && renderer.getDiscreteJoyPos(ControllerJoy::WALKING) == Vec2(0, 0)) {
                 playerOverlayFocused = true;
                 renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
                 itemIndex = 0;

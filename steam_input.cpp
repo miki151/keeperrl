@@ -6,6 +6,7 @@ void MySteamInput::init() {
     steamInput->Init(true);
     actionSets[ActionSet::MENU] = steamInput->GetActionSetHandle("MenuControls");
     actionSets[ActionSet::GAME] = steamInput->GetActionSetHandle("GameControls");
+    actionSets[ActionSet::DIRECTION] = steamInput->GetActionSetHandle("DirectionChoiceControls");
     actionHandles[C_MENU_UP] = steamInput->GetDigitalActionHandle("menu_up");
     actionHandles[C_MENU_DOWN] = steamInput->GetDigitalActionHandle("menu_down");
     actionHandles[C_MENU_SELECT] = steamInput->GetDigitalActionHandle("menu_select");
@@ -25,8 +26,11 @@ void MySteamInput::init() {
     actionHandles[C_WALK] = steamInput->GetDigitalActionHandle("walk");
     actionHandles[C_COMMANDS] = steamInput->GetDigitalActionHandle("commands");
     actionHandles[C_CHANGE_Z_LEVEL] = steamInput->GetDigitalActionHandle("change_z_level");
+    actionHandles[C_DIRECTION_CONFIRM] = steamInput->GetDigitalActionHandle("direction_confirm");
+    actionHandles[C_DIRECTION_CANCEL] = steamInput->GetDigitalActionHandle("direction_cancel");
     joyHandles[ControllerJoy::SCROLLING] = steamInput->GetAnalogActionHandle("map_scrolling_joy");
     joyHandles[ControllerJoy::WALKING] = steamInput->GetAnalogActionHandle("walking_joy");
+    joyHandles[ControllerJoy::DIRECTION] = steamInput->GetAnalogActionHandle("direction_joy");
     gameActionLayers[GameActionLayer::TURNED_BASED] = steamInput->GetActionSetHandle("TurnBased");
     gameActionLayers[GameActionLayer::REAL_TIME] = steamInput->GetActionSetHandle("RealTime");
     controllers = vector<InputHandle_t>(STEAM_INPUT_MAX_COUNT, 0);
@@ -78,8 +82,9 @@ optional<ControllerKey> MySteamInput::getEvent() {
   if (auto steamInput = SteamInput()) {
     steamInput->RunFrame();
     for (auto input : controllers)
-      for (auto action : actionHandles)
-        if (steamInput->GetDigitalActionData(input, action.second).bState) {
+      for (auto action : actionHandles) {
+        auto res = steamInput->GetDigitalActionData(input, action.second);
+        if (res.bState && res.bActive) {
           if (!pressed) {
             pressed = true;
             std::cout << "SI " << int(action.first) - (1 << 20) << std::endl;
@@ -87,7 +92,11 @@ optional<ControllerKey> MySteamInput::getEvent() {
           } else
             return none;
         }
+      }
   }
-  pressed = false;
+  if (pressed) {
+    std::cout << "Nothing pressed " << std::endl;
+    pressed = false;
+  }
   return none;
 }

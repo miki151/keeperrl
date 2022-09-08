@@ -346,7 +346,7 @@ void WindowView::rebuildGui() {
       gui.keyHandler([getMovement]{ getMovement(1, 0); }, Keybinding("WALK_EAST2"), false),
       gui.keyHandler([getMovement]{ getMovement(-1, 0); }, Keybinding("WALK_WEST2"), false),
       gui.keyHandler([getMovement, this]{
-        auto res = renderer.getWalkingJoyPos();
+        auto res = renderer.getDiscreteJoyPos(ControllerJoy::WALKING);
         getMovement(res.x, res.y);
       }, {gui.getKey(C_WALK)}, true)
   )));
@@ -632,13 +632,33 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
   addReturnDialog<optional<Vec2>>(returnQueue, [=] ()-> optional<Vec2> {
   rebuildGui();
   refreshScreen();
+  renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::DIRECTION);
+  auto o = OnExit([this] { renderer.getSteamInput()->popActionSet(); });
   do {
-    auto pos = mapGui->projectOnMap(renderer.getMousePos());
+    optional<Vec2> mousePos;
     Event event;
+    auto controllerDir = renderer.getDiscreteJoyPos(ControllerJoy::DIRECTION);
     if (renderer.pollEvent(event)) {
       considerResizeEvent(event);
+      if (event.type == SDL::SDL_MOUSEMOTION)
+        mousePos = Vec2(event.motion.x, event.motion.y);
       if (event.type == SDL::SDL_KEYDOWN) {
         refreshScreen();
+        switch (event.key.keysym.sym) {
+          case SDL::SDLK_ESCAPE:
+          case C_DIRECTION_CANCEL:
+            return none;
+          case C_DIRECTION_CONFIRM:
+            if (controllerDir != Vec2(0, 0))
+              return controllerDir;
+            break;
+          case C_MENU_UP:
+            return Vec2(0, -1);
+          case C_MENU_DOWN:
+            return Vec2(0, 1);
+          default:
+            break;
+        }
         if (gui.getKeybindingMap()->matches(Keybinding("WALK_NORTH"), event.key.keysym) ||
             gui.getKeybindingMap()->matches(Keybinding("WALK_NORTH2"), event.key.keysym))
           return Vec2(0, -1);
@@ -660,16 +680,18 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
         if (gui.getKeybindingMap()->matches(Keybinding("WALK_SOUTH_EAST"), event.key.keysym))
           return Vec2(1, 1);
       }
-      if (pos && event.type == SDL::SDL_MOUSEBUTTONDOWN) {
+      if (mousePos && event.type == SDL::SDL_MOUSEBUTTONDOWN) {
         if (event.button.button == SDL_BUTTON_LEFT)
-          return (*pos - playerPos).getBearing();
+          return (*mousePos - playerPos).getBearing();
         else
           return none;
       }
     }
     refreshScreen(false);
-    if (pos && pos != playerPos) {
-      Vec2 dir = (*pos - playerPos).getBearing();
+    Vec2 dir = controllerDir;
+    if (mousePos && mousePos != playerPos)
+      Vec2 dir = (*mousePos - playerPos).getBearing();
+    if (dir != Vec2(0, 0)) {
       Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(),
           playerPos.x + dir.x, playerPos.y + dir.y);
       if (currentTileLayout.sprites) {
