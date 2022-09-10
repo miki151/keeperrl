@@ -47,6 +47,7 @@ class MySteamInput {
   struct ActionInfo {
     Handle handle;
     string name;
+    ActionSet actionSet;
   };
   map<ActionSet, Handle> actionSets;
   map<GameActionLayer, Handle> gameActionLayers;
@@ -64,4 +65,6 @@ class MySteamInput {
   void setGameActionLayer(GameActionLayer);
   pair<double, double> getJoyPos(ControllerJoy);
   void runFrame();
+  queue<ControllerKey> actionQueue;
+  bool actionLayerPresent = false;
 };
