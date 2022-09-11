@@ -66,5 +66,5 @@ class MySteamInput {
   pair<double, double> getJoyPos(ControllerJoy);
   void runFrame();
   queue<ControllerKey> actionQueue;
-  bool actionLayerPresent = false;
+  optional<GameActionLayer> actionLayer;
 };

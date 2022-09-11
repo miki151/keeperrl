@@ -50,7 +50,7 @@ void MySteamInput::init() {
 }
 
 void MySteamInput::runFrame() {
-  if (actionSetStack.back() == ActionSet::GAME && !actionLayerPresent)
+  if (actionSetStack.back() == ActionSet::GAME && !actionLayer)
     return;
   if (auto steamInput = SteamInput()) {
     steamInput->RunFrame();
@@ -58,8 +58,9 @@ void MySteamInput::runFrame() {
       for (auto input : controllers)
         for (auto action : actionHandles)
           if (action.second.actionSet == actionSetStack.back() &&
-              steamInput->GetDigitalActionData(input, action.second.handle).bState)
+              steamInput->GetDigitalActionData(input, action.second.handle).bState) {
             return true;
+          }
       return false;
     }();
     if (!nowPressed) {
@@ -85,7 +86,7 @@ void MySteamInput::pushActionSet(ActionSet a) {
     steamInput->DeactivateAllActionSetLayers(STEAM_INPUT_HANDLE_ALL_CONTROLLERS);
     steamInput->ActivateActionSet(STEAM_INPUT_HANDLE_ALL_CONTROLLERS, actionSets.at(a));
     std::cout << "Pushed action set " << int(a) << std::endl;
-    actionLayerPresent = false;
+    actionLayer = none;
     /*if (a == ActionSet::GAME) {
       steamInput->ActivateActionSetLayer(STEAM_INPUT_HANDLE_ALL_CONTROLLERS, gameActionLayers.at(GameActionLayer::TURNED_BASED));
       std::cout << "Layer " << int(GameActionLayer::TURNED_BASED) << std::endl;
@@ -104,11 +105,11 @@ pair<double, double> MySteamInput::getJoyPos(ControllerJoy j) {
 }
 
 void MySteamInput::setGameActionLayer(GameActionLayer layer) {
-  if (actionSetStack.back() == ActionSet::GAME)
+  if (actionSetStack.back() == ActionSet::GAME && actionLayer != layer)
     if (auto steamInput = SteamInput()) {
       steamInput->DeactivateAllActionSetLayers(STEAM_INPUT_HANDLE_ALL_CONTROLLERS);
       steamInput->ActivateActionSetLayer(STEAM_INPUT_HANDLE_ALL_CONTROLLERS, gameActionLayers.at(layer));
-      actionLayerPresent = true;
+      actionLayer = layer;
     }
 }
 
@@ -120,7 +121,7 @@ void MySteamInput::popActionSet() {
     steamInput->DeactivateAllActionSetLayers(STEAM_INPUT_HANDLE_ALL_CONTROLLERS);
     steamInput->ActivateActionSet(STEAM_INPUT_HANDLE_ALL_CONTROLLERS, actionSets.at(actionSetStack.back()));
     std::cout << "Popped action set " << int(prev) << " now: " << int(actionSetStack.back()) << std::endl;
-    actionLayerPresent = false;
+    actionLayer = none;
     /*if (actionSetStack.back() == ActionSet::GAME) {
       steamInput->DeactivateAllActionSetLayers(STEAM_INPUT_HANDLE_ALL_CONTROLLERS);
       steamInput->ActivateActionSetLayer(STEAM_INPUT_HANDLE_ALL_CONTROLLERS, gameActionLayers.at(GameActionLayer::TURNED_BASED));
