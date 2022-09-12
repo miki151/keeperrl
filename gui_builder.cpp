@@ -4842,7 +4842,8 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
              WL(icon, GuiFactory::IconId::MINIMAP_WORLD1)),
           WL(conditional, WL(blink, WL(icon, GuiFactory::IconId::MINIMAP_WORLD2)), tutorialPredicate),
           WL(button, getButtonCallback(UserInputId::DRAW_WORLD_MAP)),
-          WL(keyHandler, getButtonCallback(UserInputId::DRAW_WORLD_MAP), Keybinding("OPEN_WORLD_MAP"))
+          WL(keyHandler, getButtonCallback(UserInputId::DRAW_WORLD_MAP), Keybinding("OPEN_WORLD_MAP")),
+          WL(keyHandler, getButtonCallback(UserInputId::DRAW_WORLD_MAP), {gui.getKey(C_WORLD_MAP)})
       ));
     else
       return WL(icon, GuiFactory::IconId::MINIMAP_WORLD1);
