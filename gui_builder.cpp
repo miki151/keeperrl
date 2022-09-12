@@ -1761,6 +1761,18 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
               WL(keyHandlerRect, [=](Rectangle bounds) { if (inventoryIndex == i) callback(bounds); },
                   getConfirmationKeys(), true)
           ), [this, i] { return inventoryIndex == i; }),
+          WL(conditionalStopKeys,
+              WL(keyHandlerRect, [i, this, size = list.getSize()](Rectangle bounds) {
+                *inventoryIndex = i;
+                inventoryScroll.set(size - 50, milliseconds{0});
+              }, {gui.getKey(C_MENU_DOWN)}, true),
+              [this, i, cnt = info.inventory.size()] { return inventoryIndex == (i - 1 + cnt) % cnt; }),
+          WL(conditionalStopKeys,
+              WL(keyHandlerRect, [i, this, size = list.getSize()](Rectangle bounds) {
+                *inventoryIndex = i;
+                inventoryScroll.set(size - 50, milliseconds{0});
+              }, {gui.getKey(C_MENU_UP)}, true),
+              [this, i, cnt = info.inventory.size()] { return inventoryIndex == (i + 1) % cnt; }),
           getItemLine(item, callback))
       );
     }
@@ -1790,16 +1802,12 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
         inventoryIndex = 0;
         renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
       }, {gui.getKey(C_INVENTORY)}, true),
-      WL(conditionalStopKeys, WL(stack,
-          WL(keyHandler, [this, inventoryCnt = info.inventory.size()] {
-            *inventoryIndex = (*inventoryIndex + 1) % inventoryCnt; }, {gui.getKey(C_MENU_DOWN)}, true),
-          WL(keyHandler, [this, inventoryCnt = info.inventory.size()] {
-            *inventoryIndex = (*inventoryIndex + inventoryCnt - 1) % inventoryCnt; }, {gui.getKey(C_MENU_UP)}, true),
+      WL(conditionalStopKeys,
           WL(keyHandler, [this] {
             renderer.getSteamInput()->popActionSet();
             inventoryIndex = none;
-          }, {gui.getKey(C_MENU_CANCEL)}, true)
-        ), [this] { return !!inventoryIndex;} ),
+            inventoryScroll.reset();
+          }, {gui.getKey(C_MENU_CANCEL)}, true), [this] { return !!inventoryIndex;} ),
       list.buildVerticalList()
   ));
 }
