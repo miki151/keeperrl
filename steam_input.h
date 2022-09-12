@@ -5,6 +5,8 @@
 enum ControllerKey {
   C_MENU_UP = (1 << 20),
   C_MENU_DOWN,
+  C_MENU_LEFT,
+  C_MENU_RIGHT,
   C_MENU_SELECT,
   C_MENU_CANCEL,
   C_ZLEVEL_UP,
@@ -22,6 +24,7 @@ enum ControllerKey {
   C_WALK,
   C_COMMANDS,
   C_INVENTORY,
+  C_ABILITIES,
   C_CHANGE_Z_LEVEL,
   C_DIRECTION_CONFIRM,
   C_DIRECTION_CANCEL,

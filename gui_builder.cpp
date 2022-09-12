@@ -1502,10 +1502,22 @@ const Vec2 spellIconSize = Vec2(47, 47);
 SGuiElem GuiBuilder::getSpellIcon(const SpellInfo& spell, int index, bool active, GenericId creatureId) {
   vector<SGuiElem> ret;
   if (!spell.timeout) {
-    ret.push_back(WL(mouseHighlight2, WL(standardButtonHighlight), WL(standardButton)));
+    auto callback = getButtonCallback({UserInputId::CAST_SPELL, index});
+    if (active) {
+      ret.push_back(WL(mouseHighlight2, WL(standardButtonHighlight), WL(standardButton)));
+      ret.push_back(WL(conditionalStopKeys, WL(stack,
+          WL(standardButtonHighlight),
+          WL(keyHandler, [=] {
+            abilityIndex = none;
+            renderer.getSteamInput()->popActionSet();
+            callback();
+          }, { gui.getKey(C_MENU_SELECT)}, true)
+      ), [this, index] { return abilityIndex == index; }));
+    } else
+      ret.push_back(WL(rectangleBorder, Color::WHITE));
     ret.push_back(WL(centerHoriz, WL(centerVert, WL(labelUnicode, spell.symbol, Color::WHITE))));
     if (active)
-      ret.push_back(WL(button, getButtonCallback({UserInputId::CAST_SPELL, index})));
+      ret.push_back(WL(button, callback));
   } else {
     ret.push_back(WL(standardButton));
     ret.push_back(WL(centerHoriz, WL(centerVert, WL(labelUnicode, spell.symbol, Color::GRAY))));
@@ -1526,7 +1538,8 @@ SGuiElem GuiBuilder::drawSpellsList(const vector<SpellInfo>& spells, GenericId c
     auto line = WL(getListBuilder);
     for (int index : All(spells)) {
       auto& elem = spells[index];
-      line.addElemAuto(getSpellIcon(elem, index, active, creatureId));
+      auto icon = getSpellIcon(elem, index, active, creatureId);
+      line.addElemAuto(std::move(icon));
       if (line.getLength() >= spellsPerRow) {
         list.addElem(line.buildHorizontalList());
         line.clear();
@@ -1534,7 +1547,42 @@ SGuiElem GuiBuilder::drawSpellsList(const vector<SpellInfo>& spells, GenericId c
     }
     if (!line.isEmpty())
       list.addElem(line.buildHorizontalList());
-    return list.buildVerticalList();
+    auto ret = list.buildVerticalList();
+    if (active) {
+      auto getNextSpell = [spells](int curIndex, int inc) -> optional<int> {
+        int module = (spells.size() + spellsPerRow - 1) / spellsPerRow * spellsPerRow;
+        for (int i : All(spells)) {
+          int index = (curIndex + (i + 1) * inc + module) % module;
+          if (index < spells.size() && !spells[index].timeout)
+            return index;
+        }
+        return none;
+      };
+      ret = WL(stack,
+          WL(keyHandler, [this, getNextSpell] {
+            abilityIndex = getNextSpell(-1, 1);
+            if (abilityIndex)
+              renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
+          }, {gui.getKey(C_ABILITIES)}, true),
+          WL(conditionalStopKeys, WL(stack, makeVec(
+              WL(keyHandler, [=, cnt = spells.size()] { abilityIndex = getNextSpell(*abilityIndex, 1); },
+                  {gui.getKey(C_MENU_RIGHT)}, true),
+              WL(keyHandler, [=, cnt = spells.size()] { abilityIndex = getNextSpell(*abilityIndex, -1); },
+                  {gui.getKey(C_MENU_LEFT)}, true),
+              WL(keyHandler, [=, cnt = spells.size()] { abilityIndex = getNextSpell(*abilityIndex, 5); },
+                  {gui.getKey(C_MENU_DOWN)}, true),
+              WL(keyHandler, [=, cnt = spells.size()] {
+                abilityIndex = getNextSpell(*abilityIndex, -5);
+              }, {gui.getKey(C_MENU_UP)}, true),
+              WL(keyHandler, [this] {
+                abilityIndex = none;
+                renderer.getSteamInput()->popActionSet();
+              }, {gui.getKey(C_MENU_CANCEL)}, true)
+          )), [this] { return !!abilityIndex; }),
+          std::move(ret)
+      );
+    }
+    return ret;
   } else
     return nullptr;
 }

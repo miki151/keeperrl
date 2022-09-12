@@ -21,6 +21,8 @@ void MySteamInput::init() {
     actionSets[ActionSet::DIRECTION] = steamInput->GetActionSetHandle("DirectionChoiceControls");
     actionHandles[C_MENU_UP] = getActionInfo("menu_up", ActionSet::MENU);
     actionHandles[C_MENU_DOWN] = getActionInfo("menu_down", ActionSet::MENU);
+    actionHandles[C_MENU_LEFT] = getActionInfo("menu_left", ActionSet::MENU);
+    actionHandles[C_MENU_RIGHT] = getActionInfo("menu_right", ActionSet::MENU);
     actionHandles[C_MENU_SELECT] = getActionInfo("menu_select", ActionSet::MENU);
     actionHandles[C_MENU_CANCEL] = getActionInfo("menu_cancel", ActionSet::MENU);
     actionHandles[C_ZLEVEL_UP] = getActionInfo("z_level_up", ActionSet::GAME);
@@ -38,6 +40,7 @@ void MySteamInput::init() {
     actionHandles[C_WALK] = getActionInfo("walk", ActionSet::GAME);
     actionHandles[C_COMMANDS] = getActionInfo("commands", ActionSet::GAME);
     actionHandles[C_INVENTORY] = getActionInfo("inventory", ActionSet::GAME);
+    actionHandles[C_ABILITIES] = getActionInfo("abilities", ActionSet::GAME);
     actionHandles[C_CHANGE_Z_LEVEL] = getActionInfo("change_z_level", ActionSet::GAME);
     actionHandles[C_DIRECTION_CONFIRM] = getActionInfo("direction_confirm", ActionSet::DIRECTION);
     actionHandles[C_DIRECTION_CANCEL] = getActionInfo("direction_cancel", ActionSet::DIRECTION);

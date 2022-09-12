@@ -233,6 +233,7 @@ class GuiBuilder {
   optional<int> itemIndex;
   bool playerOverlayFocused = false;
   optional<int> inventoryIndex;
+  optional<int> abilityIndex;
   optional<int> lastPlayerPositionHash;
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
   int scrollbarsHeld2 = GuiFactory::getHeldInitValue();
