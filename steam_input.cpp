@@ -37,6 +37,7 @@ void MySteamInput::init() {
     actionHandles[C_WAIT] = getActionInfo("wait", ActionSet::GAME);
     actionHandles[C_WALK] = getActionInfo("walk", ActionSet::GAME);
     actionHandles[C_COMMANDS] = getActionInfo("commands", ActionSet::GAME);
+    actionHandles[C_INVENTORY] = getActionInfo("inventory", ActionSet::GAME);
     actionHandles[C_CHANGE_Z_LEVEL] = getActionInfo("change_z_level", ActionSet::GAME);
     actionHandles[C_DIRECTION_CONFIRM] = getActionInfo("direction_confirm", ActionSet::DIRECTION);
     actionHandles[C_DIRECTION_CANCEL] = getActionInfo("direction_cancel", ActionSet::DIRECTION);
@@ -73,6 +74,7 @@ void MySteamInput::runFrame() {
           auto res = steamInput->GetDigitalActionData(input, action.second.handle);
           if (res.bState) {
             actionQueue.push(action.first);
+            std::cout << "Pressed " << action.second.name << std::endl;
             pressed = true;
           }
         }

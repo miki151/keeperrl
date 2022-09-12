@@ -1249,7 +1249,9 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
           WL(leftMargin, 3, WL(label, title, Color::YELLOW)),
           WL(scrollable, WL(verticalList, std::move(lines), legendLineHeight), &lyingItemsScroll),
           legendLineHeight, GuiFactory::TOP),
-        WL(keyHandler, [=] { callbacks.input({UserInputId::PICK_UP_ITEM, 0});}, getConfirmationKeys(), true),
+        WL(conditionalStopKeys,
+            WL(keyHandler, [=] { callbacks.input({UserInputId::PICK_UP_ITEM, 0});}, getConfirmationKeys(), true),
+            [this] { return playerOverlayFocused; }),
         WL(keyHandler, [=] { if (renderer.getDiscreteJoyPos(ControllerJoy::WALKING) == Vec2(0, 0))
             callbacks.input({UserInputId::PICK_UP_ITEM, 0}); }, {gui.getKey(C_WALK)}));
   else {
@@ -1270,8 +1272,10 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
                   WL(keyHandler, [=] { updateScrolling(-1); },
                     {gui.getKey(SDL::SDLK_UP), gui.getKey(SDL::SDLK_KP_8), gui.getKey(C_MENU_UP)}, true)),
               getConfirmationKeys(), {gui.getKey(SDL::SDLK_ESCAPE), gui.getKey(C_MENU_CANCEL)}, playerOverlayFocused),
-          WL(keyHandler, [=] { if (!playerOverlayFocused) { itemIndex = 0; lyingItemsScroll.reset();} },
-              getConfirmationKeys()),
+          WL(conditionalStopKeys,
+              WL(keyHandler, [=] { if (!playerOverlayFocused) { itemIndex = 0; lyingItemsScroll.reset();} },
+                  getConfirmationKeys()),
+              [this] { return playerOverlayFocused; }),
           WL(keyHandler, [=] {
               if (!playerOverlayFocused && renderer.getDiscreteJoyPos(ControllerJoy::WALKING) == Vec2(0, 0)) {
                 playerOverlayFocused = true;
@@ -1694,17 +1698,33 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
     list.addSpace();
   }
   if (!info.inventory.empty()) {
+    if (inventoryIndex && *inventoryIndex >= info.inventory.size())
+      inventoryIndex = info.inventory.size() - 1;
     list.addElem(WL(label, "Inventory", Color::YELLOW));
-    for (auto& item : info.inventory)
-      list.addElem(getItemLine(item, [=](Rectangle butBounds) {
-            if (auto choice = getItemChoice(item, butBounds.bottomLeft() + Vec2(50, 0), false))
-              callbacks.input({UserInputId::INVENTORY_ITEM, InventoryItemInfo{item.ids, *choice}});}));
+    for (int i : All(info.inventory)) {
+      auto& item = info.inventory[i];
+      auto callback = [=](Rectangle butBounds) {
+        if (auto choice = getItemChoice(item, butBounds.bottomLeft() + Vec2(50, 0), false))
+          callbacks.input({UserInputId::INVENTORY_ITEM, InventoryItemInfo{item.ids, *choice}});
+      };
+      list.addElem(WL(stack,
+          WL(conditionalStopKeys, WL(stack,
+              WL(uiHighlightLine),
+              WL(keyHandlerRect, [=](Rectangle bounds) { if (inventoryIndex == i) callback(bounds); },
+                  getConfirmationKeys(), true)
+          ), [this, i] { return inventoryIndex == i; }),
+          getItemLine(item, callback))
+      );
+    }
     double totWeight = 0;
     for (auto& item : info.inventory)
       totWeight += item.weight.value_or(0) * item.number;
     list.addElem(WL(label, "Total weight: " + getWeightString(totWeight)));
     list.addElem(WL(label, "Capacity: " +  (info.carryLimit ? getWeightString(*info.carryLimit) : "infinite"_s)));
     list.addSpace();
+  } else if (!!inventoryIndex) {
+    inventoryIndex = none;
+    renderer.getSteamInput()->popActionSet();
   }
   if (!info.intrinsicAttacks.empty()) {
     list.addElem(WL(label, "Intrinsic attacks", Color::YELLOW));
@@ -1717,7 +1737,23 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   if (!info.avatarLevelInfo)
     if (auto elem = drawTrainingInfo(info.experienceInfo))
       list.addElemAuto(std::move(elem));
-  return list.buildVerticalList();
+  return WL(stack, makeVec(
+      WL(keyHandler, [this] {
+        inventoryIndex = 0;
+        renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
+      }, {gui.getKey(C_INVENTORY)}, true),
+      WL(conditionalStopKeys, WL(stack,
+          WL(keyHandler, [this, inventoryCnt = info.inventory.size()] {
+            *inventoryIndex = (*inventoryIndex + 1) % inventoryCnt; }, {gui.getKey(C_MENU_DOWN)}, true),
+          WL(keyHandler, [this, inventoryCnt = info.inventory.size()] {
+            *inventoryIndex = (*inventoryIndex + inventoryCnt - 1) % inventoryCnt; }, {gui.getKey(C_MENU_UP)}, true),
+          WL(keyHandler, [this] {
+            renderer.getSteamInput()->popActionSet();
+            inventoryIndex = none;
+          }, {gui.getKey(C_MENU_CANCEL)}, true)
+        ), [this] { return !!inventoryIndex;} ),
+      list.buildVerticalList()
+  ));
 }
 
 static const char* getControlModeName(PlayerInfo::ControlMode m) {
@@ -3744,7 +3780,7 @@ SGuiElem GuiBuilder::drawChooseNumberMenu(SyncQueue<optional<int>>& queue, const
   auto confirmFun = [&queue, getCurrent] { queue.push(getCurrent());};
   lines.addElem(WL(centerHoriz, WL(getListBuilder)
       .addElemAuto(WL(stack,
-          WL(keyHandler, confirmFun, {gui.getKey(SDL::SDLK_RETURN), gui.getKey(C_MENU_SELECT)}, true),
+          WL(keyHandler, confirmFun, getConfirmationKeys(), true),
           WL(buttonLabel, "Confirm", confirmFun)))
       .addSpace(15)
       .addElemAuto(WL(buttonLabel, "Cancel", [&queue] { queue.push(none);}))

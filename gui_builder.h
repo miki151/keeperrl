@@ -232,6 +232,7 @@ class GuiBuilder {
   ScrollPosition minionPageScroll;
   optional<int> itemIndex;
   bool playerOverlayFocused = false;
+  optional<int> inventoryIndex;
   optional<int> lastPlayerPositionHash;
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
   int scrollbarsHeld2 = GuiFactory::getHeldInitValue();
