@@ -54,9 +54,9 @@ void MySteamInput::init() {
 }
 
 void MySteamInput::runFrame() {
-  if (actionSetStack.back() == ActionSet::GAME && !actionLayer)
-    return;
   if (auto steamInput = SteamInput()) {
+    if (actionSetStack.back() == ActionSet::GAME && !actionLayer)
+      return;
     steamInput->RunFrame();
     auto nowPressed = [&] {
       for (auto input : controllers)
