@@ -1339,22 +1339,22 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
   auto content = WL(stack,
       lines.buildVerticalList(),
       WL(keyHandler, [&] {
-        if (selected <= 0)
-          selected = callbacks.size();
-        for (int i : Range(selected).reverse())
-          if (!!callbacks[i]) {
-            selected = i;
+        for (int i : Range(elems.size())) {
+          auto ind = (selected - i - 1 + elems.size()) % elems.size();
+          if (!!callbacks[ind]) {
+            selected = ind;
             break;
           }
+        }
       }, {gui.getKey(SDL::SDLK_UP), gui.getKey(C_MENU_UP)}, true),
       WL(keyHandler, [&] {
-        if (selected >= callbacks.size() - 1)
-          selected = -1;
-        for (int i : Range(selected + 1, elems.size()))
-          if (!!callbacks[i]) {
-            selected = i;
+        for (int i : Range(elems.size())) {
+          auto ind = (selected + i + 1) % elems.size();
+          if (!!callbacks[ind]) {
+            selected = ind;
             break;
           }
+        }
       }, {gui.getKey(SDL::SDLK_DOWN), gui.getKey(C_MENU_DOWN)}, true),
       WL(keyHandler, [&] {
         if (selected >= 0 && selected < callbacks.size()) {
@@ -1488,7 +1488,6 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
             if (index && *index < itemInfo.actions.size())
               return itemInfo.actions[*index];
             break;
-          case C_MENU_CANCEL:
           case SDL::SDLK_ESCAPE:
             return none;
           default: break;

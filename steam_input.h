@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util.h"
+#include "sdl.h"
 
 enum ControllerKey {
   C_MENU_UP = (1 << 20),
@@ -8,7 +9,7 @@ enum ControllerKey {
   C_MENU_LEFT,
   C_MENU_RIGHT,
   C_MENU_SELECT,
-  C_MENU_CANCEL,
+  C_MENU_CANCEL = SDL::SDLK_ESCAPE,
   C_ZLEVEL_UP,
   C_ZLEVEL_DOWN,
   C_OPEN_MENU,
