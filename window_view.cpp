@@ -891,7 +891,7 @@ void WindowView::scriptedUI(ScriptedUIId id, const ScriptedUIData& data, Scripte
   return getBlockingGui(sem, gui.stack(gui.stopMouseMovement(), gui.scripted([&sem]{sem.v();}, id, data, state)));
 }
 
-optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& campaign, optional<Vec2> current) {
+optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& campaign, Vec2 current) {
   SyncQueue<optional<Vec2>> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawChooseSiteMenu(returnQueue, message, campaign, current));
 }

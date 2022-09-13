@@ -247,7 +247,7 @@ class View {
 
   virtual bool creatureInfo(const string& title, bool prompt, const vector<PlayerInfo>&) = 0;
 
-  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current = none) = 0;
+  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, Vec2 current) = 0;
 
   virtual void presentWorldmap(const Campaign&) = 0;
 

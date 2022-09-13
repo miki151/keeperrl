@@ -3848,17 +3848,17 @@ static Color getHighlightColor(VillainType type) {
     case VillainType::ALLY:
       return Color::GREEN;
     case VillainType::PLAYER:
-      return Color::WHITE;
+      return Color::TRANSPARENT;
     case VillainType::NONE:
       FATAL << "Tried to render villain of type NONE";
       return Color::WHITE;
   }
 }
 
-SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked, function<bool(Vec2)> activeFun,
-    function<void(Vec2)> clickFun){
+SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialPos){
   int iconScale = c.getMapZoom();
   int iconSize = 24 * iconScale;
+  campaignGridPointer = initialPos;
   auto rows = WL(getListBuilder, iconSize);
   auto& sites = c.getSites();
   for (int y : sites.getBounds().getYRange()) {
@@ -3887,28 +3887,20 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked,
         if (c.getPlayerPos() && c.isInInfluence(pos))
           elem.push_back(WL(viewObject, ViewId("square_highlight"), iconScale,
               getHighlightColor(*sites[pos].getVillainType())));
-        if (c.getPlayerPos() == pos && (!marked || !*marked)) // hacky way of checking this is adventurer embark position
-          elem.push_back(WL(viewObject, ViewId("square_highlight"), iconScale));
-        if (activeFun(pos))
+      }
+      if (campaignGridPointer)
+        elem.push_back(WL(conditional, WL(viewObject, ViewId("square_highlight"), iconScale),
+              [this, pos] { return campaignGridPointer == pos;}));
+      if (auto id = sites[x][y].getDwellerViewId()) {
+        if (campaignGridPointer && c.isInInfluence(pos))
           elem.push_back(WL(stack,
-                WL(button, [pos, clickFun] { clickFun(pos); }),
+                WL(button, [this, pos] { campaignGridPointer = pos; }),
                 WL(mouseHighlight2, WL(viewObject, ViewId("square_highlight"), iconScale))));
         elem.push_back(WL(topMargin, 1 * iconScale,
               WL(viewObject, ViewId("round_shadow"), iconScale, Color(255, 255, 255, 160))));
-        if (marked)
-          elem.push_back(WL(conditional, WL(viewObject, ViewId("square_highlight"), iconScale),
-                [marked, pos] { return *marked == pos;}));
         elem.push_back(WL(topMargin, -2 * iconScale, WL(viewObject, *id, iconScale)));
         if (c.isDefeated(pos))
           elem.push_back(WL(viewObject, ViewId("campaign_defeated"), iconScale));
-      } else {
-        if (activeFun(pos))
-          elem.push_back(WL(stack,
-                WL(button, [pos, clickFun] { clickFun(pos); }),
-                WL(mouseHighlight2, WL(viewObject, ViewId("square_highlight"), iconScale))));
-        if (marked)
-          elem.push_back(WL(conditional, WL(viewObject, ViewId("square_highlight"), iconScale),
-                [marked, pos] { return *marked == pos;}));
       }
       if (auto desc = sites[x][y].getDwellerDescription())
         elem.push_back(WL(tooltip, {*desc}, milliseconds{0}));
@@ -3921,9 +3913,42 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked,
   if (*mapContent->getPreferredWidth() > maxSize.x || *mapContent->getPreferredHeight() > maxSize.y)
     mapContent = WL(scrollArea, std::move(mapContent));
   int margin = 8;
+  if (campaignGridPointer)
+    mapContent = WL(stack, makeVec(
+        std::move(mapContent),
+        WL(keyHandler, [&c, this] { moveCampaignGridPointer(c, Dir::N); }, {gui.getKey(C_MENU_UP)}, true),
+        WL(keyHandler, [&c, this] { moveCampaignGridPointer(c, Dir::S); }, {gui.getKey(C_MENU_DOWN)}, true),
+        WL(keyHandler, [&c, this] { moveCampaignGridPointer(c, Dir::W); }, {gui.getKey(C_MENU_LEFT)}, true),
+        WL(keyHandler, [&c, this] { moveCampaignGridPointer(c, Dir::E); }, {gui.getKey(C_MENU_RIGHT)}, true)
+    ));
   return WL(preferredSize, maxSize + Vec2(margin, margin) * 2, WL(stack,
     WL(miniBorder2),
     WL(margins, std::move(mapContent), margin)));
+}
+
+void GuiBuilder::moveCampaignGridPointer(const Campaign& c, Dir dir) {
+  Vec2& cur = *campaignGridPointer;
+  auto bounds = c.getSites().getBounds();
+  switch (dir) {
+    case Dir::N:
+      if (cur.y > bounds.top())
+        --cur.y;
+      break;
+    case Dir::S:
+      if (cur.y < bounds.bottom() - 1)
+        ++cur.y;
+      break;
+    case Dir::E:
+      if (cur.x < bounds.right() - 1)
+        ++cur.x;
+      break;
+    case Dir::W:
+      if (cur.x > bounds.left())
+        --cur.x;
+      break;
+    default:
+      break;
+  }
 }
 
 SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign) {
@@ -3931,9 +3956,7 @@ SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign) {
   lines.addElem(WL(centerHoriz, WL(label, "Map of " + campaign.getWorldName())));
   lines.addElem(WL(centerHoriz, WL(label, "Use the travel command while controlling a minion or team "
           "to travel to another site.", Renderer::smallTextSize(), Color::LIGHT_GRAY)));
-  lines.addElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, nullptr,
-      [](Vec2) { return false; },
-      [](Vec2) { })));
+  lines.addElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, none)));
   lines.addSpace(legendLineHeight / 2);
   lines.addElem(WL(centerHoriz, WL(buttonLabel, "Close", [&] { sem.v(); })));
   return WL(preferredSize, 1000, 630,
@@ -3941,18 +3964,18 @@ SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign) {
 }
 
 SGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const string& message,
-    const Campaign& campaign, optional<Vec2>& sitePos) {
+    const Campaign& campaign, Vec2 initialPos) {
   auto lines = WL(getListBuilder, getStandardLineHeight());
   lines.addElem(WL(centerHoriz, WL(label, message)));
-  lines.addElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, &sitePos,
-      [&campaign](Vec2 pos) { return campaign.canTravelTo(pos); },
-      [&sitePos](Vec2 pos) { sitePos = pos; })));
+  lines.addElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, initialPos)));
   lines.addSpace(legendLineHeight / 2);
   lines.addElem(WL(centerHoriz, WL(getListBuilder)
-      .addElemAuto(WL(conditional,
-          WL(buttonLabel, "Confirm", [&] { queue.push(*sitePos); }),
+      .addElemAuto(WL(conditional, WL(stack,
+              WL(buttonLabel, "Confirm", [&] { queue.push(*campaignGridPointer); }),
+              WL(keyHandler, [&] { queue.push(*campaignGridPointer); }, {gui.getKey(C_MENU_SELECT)}, true)
+          ),
           WL(buttonLabelInactive, "Confirm"),
-          [&] { return !!sitePos; }))
+          [&] { return !!campaignGridPointer && campaign.isInInfluence(*campaignGridPointer); }))
       .addSpace(15)
       .addElemAuto(WL(buttonLabel, "Cancel",
           WL(button, [&queue] { queue.push(none); }, gui.getKey(SDL::SDLK_ESCAPE), true)))
@@ -4420,8 +4443,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
       optionsLines.addElem(
           drawOptionElem(id, [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});}, none));
   }
-  lines.addBackElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, nullptr,
-        [&campaign](Vec2 pos) { return campaign.canEmbark(pos); }, [](Vec2) {})));
+  lines.addBackElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, none)));
   lines.addSpace(10);
   lines.addBackElem(WL(centerHoriz, WL(getListBuilder)
         .addElemAuto(WL(conditional,

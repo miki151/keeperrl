@@ -93,8 +93,7 @@ class GuiBuilder {
   SGuiElem drawRetiredDungeonMenu(SyncQueue<variant<string, bool, none_t> >&, RetiredGames&, string searchString, int maxGames);
   SGuiElem drawWarlordMinionsMenu(SyncQueue<variant<int, bool>>& queue, const vector<PlayerInfo>&,
       vector<int>& chosen, int maxCount);
-  SGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
-      optional<Vec2>& sitePos);
+  SGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&, Vec2 initialPos);
   SGuiElem drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>&, const vector<View::AvatarData>&);
   SGuiElem drawWorldmap(Semaphore&, const Campaign&);
   SGuiElem drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
@@ -152,8 +151,8 @@ class GuiBuilder {
   SGuiElem withLine(int, SGuiElem);
   GuiFactory::ListBuilder withLine(int, GuiFactory::ListBuilder);
   SGuiElem getImmigrationHelpText();
-  SGuiElem drawCampaignGrid(const Campaign&, optional<Vec2>* markedPos, function<bool(Vec2)> activeFun,
-      function<void(Vec2)> clickFun);
+  SGuiElem drawCampaignGrid(const Campaign&, optional<Vec2> initialPos);
+  void moveCampaignGridPointer(const Campaign&, Dir);
   Renderer& renderer;
   GuiFactory& gui;
   Clock* clock;
@@ -228,6 +227,7 @@ class GuiBuilder {
   ScrollPosition libraryScroll;
   ScrollPosition minionPageScroll;
   optional<int> itemIndex;
+  optional<Vec2> campaignGridPointer;
   bool playerOverlayFocused = false;
   optional<int> inventoryIndex;
   optional<int> abilityIndex;

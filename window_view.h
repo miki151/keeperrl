@@ -89,7 +89,7 @@ class WindowView: public View {
   virtual bool isClockStopped() override;
   virtual void continueClock() override;
   virtual void addSound(const Sound&) override;
-  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current) override;
+  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, Vec2 current) override;
   virtual void presentWorldmap(const Campaign&) override;
   virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&) override;
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) override;

@@ -26,19 +26,12 @@ const Table<Campaign::SiteInfo>& Campaign::getSites() const {
   return sites;
 }
 
-bool Campaign::canEmbark(Vec2 pos) const {
-  switch (playerRole) {
-    case PlayerRole::ADVENTURER: return !!sites[pos].dweller;
-    case PlayerRole::KEEPER: return !sites[pos].dweller && !sites[pos].blocked;
-  }
-}
-
 CampaignType Campaign::getType() const {
   return type;
 }
 
 bool Campaign::canTravelTo(Vec2 pos) const {
-  return (isInInfluence(pos) || playerPos == pos) && !sites[pos].isEmpty();
+  return isInInfluence(pos) && !sites[pos].isEmpty();
 }
 
 optional<Vec2> Campaign::getPlayerPos() const {
@@ -153,6 +146,7 @@ void Campaign::refreshInfluencePos() {
   influencePos.clear();
   if (!playerPos)
     return;
+  influencePos.insert(*playerPos);
   for (double r = 1; r <= sites.getWidth() + sites.getHeight(); r += 0.1) {
     for (Vec2 v : sites.getBounds())
       if ((sites[v].getVillain() || sites[v].getRetired()) && v.distD(*playerPos) <= r)

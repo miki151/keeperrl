@@ -61,7 +61,7 @@ class DummyView : public View {
   virtual bool creatureInfo(const string& title, bool prompt, const vector<PlayerInfo>&) override {
     return false;
   }
-  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current = none) override {
+  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, Vec2 current) override {
     return none;
   }
   virtual optional<int> chooseAtMouse(const vector<string>& elems) override {
