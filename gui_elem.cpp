@@ -470,8 +470,12 @@ class DrawScripted : public GuiElem {
     context.tooltipCounter = 0;
     context.sliderCounter = 0;
     get()->render(data, context, getBounds());
-    if (auto& elem = context.state.highlightedElem)
-      *elem = (*elem % context.elemCounter + context.elemCounter) % context.elemCounter;
+    if (auto& elem = context.state.highlightedElem) {
+      if (context.elemCounter == 0)
+        elem = none;
+      else
+        *elem = (*elem % context.elemCounter + context.elemCounter) % context.elemCounter;
+    }
   }
 
   bool handleCallback(const EventCallback& callback) {
