@@ -1319,9 +1319,11 @@ static string getActionText(ItemAction a) {
 }
 
 void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> callbacks,
-    Vec2 menuPos, int width, bool darkBg, bool exitOnCallback) {
+    Vec2 menuPos, int width, bool darkBg, bool exitOnCallback, int* selected) {
   auto lines = WL(getListBuilder, legendLineHeight);
-  auto selected = -1;
+  auto selectedDefault = -1;
+  if (!selected)
+    selected = &selectedDefault;
   bool exit = false;
   for (int i : All(elems)) {
     vector<SGuiElem> stack = {std::move(elems[i])};
@@ -1332,7 +1334,7 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
           exit = true;
       }));
       stack.push_back(WL(uiHighlightMouseOver));
-      stack.push_back(WL(uiHighlightConditional, [&selected, i] { return i == selected; }));
+      stack.push_back(WL(uiHighlightConditional, [selected, i] { return i == *selected; }));
     }
     lines.addElem(WL(stack, std::move(stack)));
   }
@@ -1340,25 +1342,25 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
       lines.buildVerticalList(),
       WL(keyHandler, [&] {
         for (int i : Range(elems.size())) {
-          auto ind = (selected - i - 1 + elems.size()) % elems.size();
+          auto ind = (*selected - i - 1 + elems.size()) % elems.size();
           if (!!callbacks[ind]) {
-            selected = ind;
+            *selected = ind;
             break;
           }
         }
       }, {gui.getKey(SDL::SDLK_UP), gui.getKey(C_MENU_UP)}, true),
       WL(keyHandler, [&] {
         for (int i : Range(elems.size())) {
-          auto ind = (selected + i + 1) % elems.size();
+          auto ind = (*selected + i + 1) % elems.size();
           if (!!callbacks[ind]) {
-            selected = ind;
+            *selected = ind;
             break;
           }
         }
       }, {gui.getKey(SDL::SDLK_DOWN), gui.getKey(C_MENU_DOWN)}, true),
       WL(keyHandler, [&] {
-        if (selected >= 0 && selected < callbacks.size()) {
-          callbacks[selected]();
+        if (*selected >= 0 && *selected < callbacks.size()) {
+          callbacks[*selected]();
           if (exitOnCallback)
             exit = true;
         }
@@ -1720,7 +1722,8 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
           stack.push_back(WL(tooltip, {command.description}));
           lines.push_back(WL(stack, std::move(stack)));
         }
-        drawMiniMenu(std::move(lines), std::move(callbacks), bounds.bottomLeft(), 290, false);
+        drawMiniMenu(std::move(lines), std::move(callbacks), bounds.bottomLeft(), 290, false, true,
+            &commandsIndex);
     };
     list.addElem(WL(stack,
         WL(stack, std::move(keyElems)),

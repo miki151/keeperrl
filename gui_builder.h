@@ -189,7 +189,7 @@ class GuiBuilder {
   void drawMiniMenu(SGuiElem, function<bool()> done, Vec2 menuPos, int width, bool darkBg);
   void drawMiniMenu(SGuiElem, bool& exit, Vec2 menuPos, int width, bool darkBg);
   void drawMiniMenu(vector<SGuiElem>, vector<function<void()>>, Vec2 menuPos, int width, bool darkBg,
-      bool exitOnCallback = true);
+      bool exitOnCallback = true, int* selected = nullptr);
   void showAttackTriggers(const vector<VillageInfo::Village::TriggerInfo>&, Vec2 pos);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
   SGuiElem getVillageActionButton(UniqueEntity<Collective>::Id, VillageInfo::Village::ActionInfo);
@@ -235,6 +235,7 @@ class GuiBuilder {
   optional<int> inventoryIndex;
   optional<int> abilityIndex;
   optional<int> lastPlayerPositionHash;
+  int commandsIndex = -1;
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
   int scrollbarsHeld2 = GuiFactory::getHeldInitValue();
   CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
