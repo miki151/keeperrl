@@ -106,7 +106,6 @@ class GuiBuilder {
       bool& online);
   SGuiElem drawMinimapIcons(const GameInfo&);
   SGuiElem drawChooseNumberMenu(SyncQueue<optional<int>>&, const string& title, Range range, int initial, int increments);
-  SGuiElem drawCreatureUpgradeMenu(SyncQueue<optional<ExperienceType>>&, const CreatureExperienceInfo&);
 
   struct BugReportInfo {
     string text;
@@ -167,9 +166,7 @@ class GuiBuilder {
   vector<SGuiElem> drawPlayerAttributes(const vector<AttributeInfo>&);
   vector<SGuiElem> drawPlayerAttributes(const ViewObject::CreatureAttributes&);
   SGuiElem drawBestAttack(const BestAttack&);
-  SGuiElem drawTrainingInfo(const CreatureExperienceInfo&,
-      function<void(optional<ExperienceType>)> increaseCallback = nullptr, bool infoOnly = false);
-  //SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
+  SGuiElem drawTrainingInfo(const CreatureExperienceInfo&, bool infoOnly = false);
   SGuiElem drawBuildings(const vector<CollectiveInfo::Button>&, const optional<TutorialInfo>&);
   SGuiElem bottomBandCache;
   SGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id current, optional<TeamId> teamId);
@@ -299,8 +296,7 @@ class GuiBuilder {
   SGuiElem drawMapHintOverlay();
   SGuiElem getClickActions(const ViewObject&);
   vector<string> hint;
-  SGuiElem getExpIncreaseLine(const CreatureExperienceInfo&, ExperienceType,
-      function<void()> increaseCallback = nullptr, bool infoOnly = false);
+  SGuiElem getExpIncreaseLine(const CreatureExperienceInfo&, ExperienceType, bool infoOnly = false);
   optional<int> highlightedTeamMember;
   SGuiElem drawQuartersButton(const PlayerInfo&, const vector<ViewId>& allQuarters);
   SGuiElem drawWarningWindow(const CollectiveInfo::RebellionChance&);

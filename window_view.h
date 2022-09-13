@@ -80,7 +80,6 @@ class WindowView: public View {
   virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
       const vector<ItemInfo>&, ScrollPosition* scrollPos) override;
   virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) override;
-  virtual optional<ExperienceType> getCreatureUpgrade(const CreatureExperienceInfo&) override;
   virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&, ScriptedUIState&) override;
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;

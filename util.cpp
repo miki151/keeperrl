@@ -130,6 +130,9 @@ template optional<double> fromStringSafe<double>(const string&);
 template optional<SteamId> fromStringSafe<SteamId>(const string&);
 template optional<string> fromStringSafe<string>(const string&);
 
+string toStringRounded(double value, double precision) {
+  return toString(precision * round(value / precision));
+}
 
 template <class T>
 optional<T> fromStringSafe(const string& s){

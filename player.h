@@ -159,7 +159,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   optional<GlobalTime> lastEnemyInterruption;
   void updateSquareMemory(Position);
   HeapAllocated<DungeonLevel> SERIAL(avatarLevel);
-  void fillDungeonLevel(PlayerInfo&) const;
+  void playerLevelDialog();
   vector<unordered_set<ViewIdList, CustomHash<ViewIdList>>> halluIds;
   void generateHalluIds();
   ViewIdList shuffleViewId(const ViewIdList&) const;

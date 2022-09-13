@@ -73,6 +73,7 @@
 #include "keybinding.h"
 #include "task.h"
 #include "collective_control.h"
+#include "scripted_ui_data.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -146,6 +147,8 @@ void Player::onEvent(const GameEvent& event) {
           else
             privateMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
           avatarLevel->onKilledVillain(info.collective->getVillainType());
+          if (avatarLevel->numResearchAvailable() > 0)
+            playerLevelDialog();
         }
       },
       [&](const FX& info) {
@@ -633,6 +636,8 @@ vector<Player::CommandInfo> Player::getCommands() const {
       [] (Player* player) { auto c = player->creature; player->tryToPerform(c->drop(c->getEquipment().getItems())); }, false},
     {PlayerInfo::CommandInfo{"Message history", Keybinding("MESSAGE_HISTORY"), "Show message history.", true},
       [] (Player* player) { player->showHistory(); }, false},
+    {PlayerInfo::CommandInfo{"Level up", Keybinding("LEVEL_UP"), "Level up your character.", true},
+      [] (Player* player) { player->playerLevelDialog(); }, false},
 #ifndef RELEASE
     {PlayerInfo::CommandInfo{"Wait multiple turns", none, "", true},
       [] (Player* player) {
@@ -812,18 +817,9 @@ void Player::makeMove() {
           if (tutorial)
             tutorial->goBack();
           break;
-        case UserInputId::LEVEL_UP: {
-          while (1) {
-            auto info = getCreatureExperienceInfo(getGame()->getContentFactory(), creature);
-            info.numAvailableUpgrades = avatarLevel->numResearchAvailable();
-            if (auto exp = getView()->getCreatureUpgrade(info)) {
-              creature->increaseExpLevel(*exp, 1);
-              ++avatarLevel->consumedLevels;
-            } else
-              break;
-          }
+        case UserInputId::LEVEL_UP:
+          playerLevelDialog();
           break;
-        }
         case UserInputId::SCROLL_TO_HOME:
           getView()->resetCenter();
           break;
@@ -1283,13 +1279,46 @@ vector<TeamMemberAction> Player::getTeamMemberActions(const Creature* member) co
   return {};
 }
 
-void Player::fillDungeonLevel(PlayerInfo& info) const {
-  info.avatarLevelInfo.emplace();
-  info.avatarLevelInfo->level = avatarLevel->level + 1;
-  info.avatarLevelInfo->viewId = creature->getViewObject().getViewIdList();
-  info.avatarLevelInfo->title = creature->getName().title();
-  info.avatarLevelInfo->progress = avatarLevel->progress;
-  info.avatarLevelInfo->numAvailable = avatarLevel->numResearchAvailable();
+void Player::playerLevelDialog() {
+  ScriptedUIState state;
+  auto data = ScriptedUIDataElems::Record{};
+  int available = avatarLevel->numResearchAvailable();
+  data.elems["heading"] = getPlural("point", available) + " available";
+  auto upgrades = ScriptedUIDataElems::List{};
+  auto factory = getGame()->getContentFactory();
+  bool levelledUp = false;
+  for (auto expType : ENUM_ALL(ExperienceType)) {
+    auto data = ScriptedUIDataElems::Record{};
+    auto icons = ScriptedUIDataElems::List{};
+    vector<string> attrNames;
+    for (auto attr : getAttrIncreases()[expType]) {
+      auto& info = factory->attrInfo.at(attr.first);
+      icons.push_back(ViewIdList{info.viewId});
+      attrNames.push_back(info.name);
+    }
+    data.elems["icons"] = std::move(icons);
+    data.elems["value"] = toString<int>(creature->getAttributes().getExpLevel(expType));
+    auto limit = toString(creature->getAttributes().getMaxExpLevel()[expType]);
+    data.elems["limit"] = limit;
+    data.elems["tooltip"] = ScriptedUIDataElems::List{
+      getName(expType) + " training."_s,
+      "Increases " + combine(attrNames) + ".",
+      "The creature's limit for this type of training is " + limit + "."
+    };
+    if (available > 0)
+      data.elems["callback"] = ScriptedUIDataElems::Callback{ [expType, this, &levelledUp] {
+        creature->increaseExpLevel(expType, 1);
+        ++avatarLevel->consumedLevels;
+        levelledUp = true;
+        return true;
+      }};
+    upgrades.push_back(std::move(data));
+  }
+  data.elems["upgrades"] = std::move(upgrades);
+  data.elems["combat_exp"] = toStringRounded(creature->getCombatExperience(), 0.01);
+  getView()->scriptedUI("adventurer_level", data, state);
+  if (levelledUp)
+    playerLevelDialog();
 }
 
 void Player::fillCurrentLevelInfo(GameInfo& gameInfo) const {
@@ -1315,7 +1344,6 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.scriptedHelp = contentFactory->scriptedHelp;
   gameInfo.playerInfo = PlayerInfo(creature, contentFactory);
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
-  fillDungeonLevel(info);
   if (getGame()->getPlayerCollective())
     info.controlMode = getGame()->getPlayerCreatures().size() == 1 ? PlayerInfo::LEADER : PlayerInfo::FULL;
   auto team = getTeam();

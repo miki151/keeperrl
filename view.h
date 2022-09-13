@@ -179,8 +179,6 @@ class View {
 
   virtual optional<int> chooseItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollpos) = 0;
 
-  virtual optional<ExperienceType> getCreatureUpgrade(const CreatureExperienceInfo&) = 0;
-
   virtual optional<int> chooseAtMouse(const vector<string>& elems) = 0;
 
   virtual optional<ModAction> getModAction(int highlighted, const vector<ModInfo>&) = 0;

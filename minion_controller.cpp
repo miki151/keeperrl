@@ -55,7 +55,6 @@ class MinionController : public Player {
         gameInfo.keeperInDanger = info->warning;
     auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
     info.canExitControlMode = true;
-    info.avatarLevelInfo = none;
     if (auto team = control->getCurrentTeam()) {
       info.teamOrders.emplace();
       for (auto order : ENUM_ALL(TeamOrder))

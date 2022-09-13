@@ -115,7 +115,6 @@ class PlayerInfo {
   PlayerInfo(const Creature*, const ContentFactory*);
   string getFirstName() const;
   vector<AttributeInfo> HASH(attributes);
-  optional<AvatarLevelInfo> HASH(avatarLevelInfo);
   BestAttack HASH(bestAttack);
   string HASH(firstName);
   string HASH(name);
@@ -192,7 +191,7 @@ class PlayerInfo {
     HASH_ALL(viewId, name, locked);
   };
   vector<EquipmentGroupInfo> HASH(equipmentGroups);
-  HASH_ALL(attributes, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo, spellSchools, kills, killTitles, canExitControlMode, equipmentGroups)
+  HASH_ALL(attributes, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, spellSchools, kills, killTitles, canExitControlMode, equipmentGroups)
 };
 
 struct ImmigrantCreatureInfo {

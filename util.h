@@ -66,6 +66,9 @@ T fromString(const string& s) {
 template <class T>
 optional<T> fromStringSafe(const string& s);
 
+
+string toStringRounded(double value, double precision);
+
 template <typename T, typename Fun>
 T lambdaConstruct(Fun fun) {
   T ret {};

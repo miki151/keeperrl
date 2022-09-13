@@ -886,14 +886,6 @@ optional<int> WindowView::choosePillageItem(const string& title, const vector<It
       getOverlayPosition(GuiBuilder::OverlayInfo::BOTTOM_LEFT, height, width, rightBarWidthCollective, bottomBarHeightCollective));
 }
 
-optional<ExperienceType> WindowView::getCreatureUpgrade(const CreatureExperienceInfo& info) {
-  SyncQueue<optional<ExperienceType>> returnQueue;
-  if (auto menu = guiBuilder.drawCreatureUpgradeMenu(returnQueue, info))
-    return getBlockingGui(returnQueue, std::move(menu));
-  else
-    return none;
-}
-
 void WindowView::scriptedUI(ScriptedUIId id, const ScriptedUIData& data, ScriptedUIState& state) {
   Semaphore sem;
   return getBlockingGui(sem, gui.stack(gui.stopMouseMovement(), gui.scripted([&sem]{sem.v();}, id, data, state)));

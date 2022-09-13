@@ -104,7 +104,6 @@ class WarlordController : public Player, public EventListener<WarlordController>
   virtual void refreshGameInfo(GameInfo& gameInfo) const override {
     Player::refreshGameInfo(gameInfo);
     auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
-    info.avatarLevelInfo = none;
     info.teamOrders = *teamOrders;
     info.controlMode = isFullControl() ? PlayerInfo::ControlMode::FULL : PlayerInfo::ControlMode::LEADER;
   }

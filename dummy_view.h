@@ -67,9 +67,6 @@ class DummyView : public View {
   virtual optional<int> chooseAtMouse(const vector<string>& elems) override {
     return none;
   }
-  virtual optional<ExperienceType> getCreatureUpgrade(const CreatureExperienceInfo&) override {
-    return none;
-  }
   virtual optional<ModAction> getModAction(int highlighted, const vector<ModInfo>&) override {
     return none;
   }
