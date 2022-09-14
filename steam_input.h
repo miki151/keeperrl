@@ -30,6 +30,10 @@ enum ControllerKey {
   C_WORLD_MAP,
   C_DIRECTION_CONFIRM,
   C_DIRECTION_CANCEL,
+  C_BUILDINGS_UP,
+  C_BUILDINGS_DOWN,
+  C_BUILDINGS_LEFT,
+  C_BUILDINGS_RIGHT
 };
 
 enum class ControllerJoy {
