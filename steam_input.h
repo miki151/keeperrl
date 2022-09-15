@@ -33,7 +33,8 @@ enum ControllerKey {
   C_BUILDINGS_UP,
   C_BUILDINGS_DOWN,
   C_BUILDINGS_LEFT,
-  C_BUILDINGS_RIGHT
+  C_BUILDINGS_RIGHT,
+  C_SHIFT
 };
 
 enum class ControllerJoy {
@@ -75,6 +76,7 @@ class MySteamInput {
   void setGameActionLayer(GameActionLayer);
   pair<double, double> getJoyPos(ControllerJoy);
   void runFrame();
+  bool isPressed(ControllerKey);
   queue<ControllerKey> actionQueue;
   optional<GameActionLayer> actionLayer;
 };

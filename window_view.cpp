@@ -171,7 +171,9 @@ void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FX
 }
 
 bool WindowView::isKeyPressed(SDL::SDL_Scancode code) {
-  return SDL::SDL_GetKeyboardState(nullptr)[code];
+  auto steamInput = renderer.getSteamInput();
+  return SDL::SDL_GetKeyboardState(nullptr)[code] ||
+      (code == SDL::SDL_SCANCODE_LSHIFT && steamInput && steamInput->isPressed(C_SHIFT));
 }
 
 void WindowView::mapContinuousLeftClickFun(Vec2 pos) {
