@@ -243,16 +243,23 @@ static optional<int> getFirstActive(const vector<CollectiveInfo::Button>& button
 }
 
 static optional<int> getNextActive(const vector<CollectiveInfo::Button>& buttons, int begin,
-    optional<int> current) {
+    optional<int> current, int direction) {
   if (!current)
     return getFirstActive(buttons, begin);
   CHECK(*current >= begin);
   int i = *current;
   do {
-    ++i;
-    if (buttons[i].groupName != buttons[begin].groupName)
-      i = begin;
-    if (current == i)
+    i += direction;
+    if (i < 0 || i >= buttons.size() || buttons[i].groupName != buttons[begin].groupName) {
+      if (direction == 1)
+        i = begin;
+      else {
+        int ind = begin;
+        while (ind + 1 < buttons.size() && buttons[ind + 1].groupName == buttons[begin].groupName)
+          ++ind;
+        i = ind;
+      }
+    } if (current == i)
       return none;
   } while (buttons[i].state != CollectiveInfo::Button::ACTIVE);
   return i;
@@ -264,8 +271,94 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
   auto elems = WL(getListBuilder, legendLineHeight);
   elems.addSpace(5);
   string lastGroup;
+  keypressOnly.push_back(WL(conditionalStopKeys,
+      WL(keyHandler, [this, newGroup = buttons.back().groupName] {
+        setActiveGroup(newGroup, none);
+        collectiveTabActive = false;
+      }, {gui.getKey(C_BUILDINGS_UP)}, true),
+      [this] {
+        return collectiveTabActive && collectiveTab == CollectiveTab::BUILDINGS && !activeGroup && !activeButton;
+      }
+  ));
+  keypressOnly.push_back(WL(conditionalStopKeys,
+      WL(keyHandler, [this, buttons] {
+        if (!!activeButton)
+          setActiveGroup(buttons[activeButton->num].groupName, none);
+        else {
+          collectiveTabActive = false;
+          clearActiveButton();
+        }
+      }, {gui.getKey(C_CHANGE_Z_LEVEL), gui.getKey(C_BUILDINGS_LEFT)}, true),
+      [this] {
+        return collectiveTab == CollectiveTab::BUILDINGS && (!!activeGroup || !!activeButton);
+      }
+  ));
   for (int i : All(buttons)) {
     if (!buttons[i].groupName.empty() && buttons[i].groupName != lastGroup) {
+      keypressOnly.push_back(WL(conditionalStopKeys,
+          WL(keyHandler, [this, newGroup = buttons[i].groupName, i, buttons, lastGroup] {
+            optional<string> group;
+            int button;
+            if (!activeButton) {
+              group = newGroup;
+              if (auto firstBut = getNextActive(buttons, i, none, 1))
+                button = *firstBut;
+              else return;
+            } else
+              button = activeButton->num;
+            setActiveButton(CollectiveTab::BUILDINGS, button, buttons[button].viewId, group, none,
+                buttons[button].isBuilding);
+          }, {/*gui.getKey(C_MENU_SELECT), */gui.getKey(C_BUILDINGS_RIGHT)}, true),
+          [this, newGroup = buttons[i].groupName] {
+            return collectiveTab == CollectiveTab::BUILDINGS && activeGroup == newGroup;
+          }
+      ));
+      keypressOnly.push_back(WL(conditionalStopKeys,
+          WL(keyHandler, [this, newGroup = buttons[i].groupName, i, buttons] {
+            if (auto newBut = getNextActive(buttons, i, getActiveButton(CollectiveTab::BUILDINGS), 1))
+              setActiveButton(CollectiveTab::BUILDINGS, *newBut, buttons[*newBut].viewId, newGroup, none,
+                  buttons[*newBut].isBuilding);
+          }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
+          [this, newGroup = buttons[i].groupName] {
+            return collectiveTab == CollectiveTab::BUILDINGS && !!activeButton && activeGroup == newGroup;
+          }
+      ));
+      keypressOnly.push_back(WL(conditionalStopKeys,
+          WL(keyHandler, [this, newGroup = buttons[i].groupName, i, buttons] {
+            if (auto newBut = getNextActive(buttons, i, getActiveButton(CollectiveTab::BUILDINGS), -1))
+              setActiveButton(CollectiveTab::BUILDINGS, *newBut, buttons[*newBut].viewId, newGroup, none,
+                  buttons[*newBut].isBuilding);
+          }, {gui.getKey(C_BUILDINGS_UP)}, true),
+          [this, newGroup = buttons[i].groupName] {
+            return collectiveTab == CollectiveTab::BUILDINGS &&
+                activeGroup == newGroup;
+          }
+      ));
+      keypressOnly.push_back(WL(conditionalStopKeys,
+          WL(keyHandler, [this, newGroup = buttons[i].groupName] {
+            setActiveGroup(newGroup, none);
+            collectiveTabActive = false;
+          }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
+          [this, lastGroup, backGroup = buttons.back().groupName] {
+            return collectiveTab == CollectiveTab::BUILDINGS && !activeButton && (
+                activeGroup == lastGroup || (!activeGroup && lastGroup.empty() && collectiveTabActive)
+                     || (activeGroup == backGroup && lastGroup.empty()));
+          }
+      ));
+      keypressOnly.push_back(WL(conditionalStopKeys,
+          WL(keyHandler, [this, lastGroup, backGroup = buttons.back().groupName] {
+            if (lastGroup.empty()) {
+              collectiveTabActive = true;
+              clearActiveButton();
+            } else {
+              setActiveGroup(lastGroup, none);
+              collectiveTabActive = false;
+            }
+          }, {gui.getKey(C_BUILDINGS_UP)}, true),
+          [this, newGroup = buttons[i].groupName] {
+            return collectiveTab == CollectiveTab::BUILDINGS && activeGroup == newGroup && !activeButton;
+          }
+      ));
       lastGroup = buttons[i].groupName;
       optional<TutorialHighlight> tutorialHighlight;
       if (tutorial)
@@ -276,13 +369,13 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
       function<void()> buttonFunHotkey = [=] {
         if (activeGroup != lastGroup) {
           setCollectiveTab(tab);
-          if (auto firstBut = getNextActive(buttons, i, none))
+          if (auto firstBut = getNextActive(buttons, i, none, 1))
             setActiveButton(tab, *firstBut, buttons[*firstBut].viewId, lastGroup, tutorialHighlight,
                 buttons[*firstBut].isBuilding);
           else
             setActiveGroup(lastGroup, tutorialHighlight);
         } else
-        if (auto newBut = getNextActive(buttons, i, getActiveButton(tab)))
+        if (auto newBut = getNextActive(buttons, i, getActiveButton(tab), 1))
           setActiveButton(tab, *newBut, buttons[*newBut].viewId, lastGroup, tutorialHighlight,
               buttons[*newBut].isBuilding);
         else
@@ -467,10 +560,33 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
         WL(icon, gui.HELP)
     );
     for (int i : All(buttons)) {
-      buttons[i] = WL(stack,
-          WL(conditional, getIconHighlight(Color::GREEN), [this, i] { return int(collectiveTab) == i;}),
+      buttons[i] = WL(stack, makeVec(
+          WL(conditional, getIconHighlight(Color::GREEN), [this, i] {
+            return int(collectiveTab) == i && collectiveTabActive;
+          }),
           std::move(buttons[i]),
-          WL(button, [this, i]() { setCollectiveTab(CollectiveTab(i)); }));
+          WL(button, [this, i]() { setCollectiveTab(CollectiveTab(i)); }),
+          WL(keyHandler, [this] {
+            collectiveTabActive = true;
+          }, {gui.getKey(C_BUILDINGS_UP)}, true),
+          WL(conditionalStopKeys, WL(keyHandler, [this] {
+              collectiveTabActive = false;
+              clearActiveButton();
+            }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true),
+            [this] { return collectiveTabActive == true; }),
+          WL(conditionalStopKeys,
+              WL(keyHandler, [this, i]() { setCollectiveTab(CollectiveTab(i)); },
+                  {gui.getKey(C_BUILDINGS_RIGHT)}, true),
+              [this, i, cnt = buttons.size()] {
+                return collectiveTabActive && int(collectiveTab) == (i - 1 + cnt) % cnt;
+              }),
+          WL(conditionalStopKeys,
+              WL(keyHandler, [this, i]() { setCollectiveTab(CollectiveTab(i)); },
+                  {gui.getKey(C_BUILDINGS_LEFT)}, true),
+              [this, i, cnt = buttons.size()] {
+                return collectiveTabActive && int(collectiveTab) == (i + 1) % cnt;
+              })
+      ));
     }
     if (info.tutorial) {
       if (info.tutorial->highlights.contains(TutorialHighlight::RESEARCH))
@@ -529,12 +645,35 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
     SGuiElem butGui = WL(margins,
         WL(centerHoriz, buttonList.buildHorizontalList()), 0, 5, 9, 5);
     auto bottomLine = WL(getListBuilder);
+    auto speedMenu = [&] (Rectangle rect) {
+      vector<SGuiElem> lines;
+      vector<function<void()>> callbacks;
+      int selected = EnumInfo<GameSpeed>::size;
+      for (GameSpeed speed : ENUM_ALL_REVERSE(GameSpeed)) {
+        if (gameSpeed == speed)
+          selected = callbacks.size();
+        callbacks.push_back([this, speed] { gameSpeed = speed; clock->cont();});
+        lines.push_back(WL(label, getGameSpeedName(speed)));
+      }
+      lines.push_back(WL(label, "pause"));
+      callbacks.push_back([this] {
+        if (clock->isPaused())
+          clock->cont();
+        else
+          clock->pause();
+      });
+      drawMiniMenu(std::move(lines), std::move(callbacks), rect.topLeft() - Vec2(0, 180), 190, true, true, &selected);
+    };
     bottomLine.addElemAuto(WL(stack,
         WL(getListBuilder)
             .addElemAuto(WL(label, "speed: "))
             .addElem(WL(labelFun, [this] { return getCurrentGameSpeedName();},
               [this] { return clock->isPaused() ? Color::RED : Color::WHITE; }), 70).buildHorizontalList(),
-        WL(button, [&] { gameSpeedDialogOpen = !gameSpeedDialogOpen; })));
+        WL(buttonRect, speedMenu),
+        WL(conditionalStopKeys,
+            WL(keyHandlerRect, speedMenu, {gui.getKey(C_BUILDINGS_LEFT)}, true),
+            [this]{ return !collectiveTabActive && !activeButton && !activeGroup;})
+    ));
     int modifiedSquares = info.modifiedSquares;
     int totalSquares = info.totalSquares;
     bottomLine.addBackElem(WL(stack,
@@ -575,36 +714,19 @@ static Keybinding getHotkey(GuiBuilder::GameSpeed speed) {
 
 SGuiElem GuiBuilder::drawGameSpeedDialog() {
   int keyMargin = 95;
-  auto pauseFun = [=] {
+  auto pauseFun = [this] {
     if (clock->isPaused())
       clock->cont();
     else
       clock->pause();
-    gameSpeedDialogOpen = false;
   };
-  vector<SGuiElem> lines;
   vector<SGuiElem> hotkeys;
-  lines.push_back(WL(stack,
-        WL(uiHighlightMouseOver),
-        WL(label, "pause"),
-        WL(button, pauseFun)));
   hotkeys.push_back(WL(keyHandler, pauseFun, Keybinding("PAUSE")));
   for (GameSpeed speed : ENUM_ALL(GameSpeed)) {
-    auto speedFun = [=] { gameSpeed = speed; gameSpeedDialogOpen = false; clock->cont();};
-    auto colorFun = [this, speed] { return speed == gameSpeed ? Color::GREEN : Color::WHITE; };
-    lines.push_back(WL(stack,
-          WL(uiHighlightMouseOver),
-          WL(label, getGameSpeedName(speed), colorFun),
-          WL(button, speedFun)));
+    auto speedFun = [=] { gameSpeed = speed; clock->cont();};
     hotkeys.push_back(WL(keyHandler, speedFun, getHotkey(speed)));
   }
-  reverse(lines.begin(), lines.end());
-  int margin = 20;
-  Vec2 size(150 + 2 * margin, legendLineHeight * lines.size() - 10 + 2 * margin);
-  SGuiElem dialog = WL(miniWindow,
-      WL(margins, WL(verticalList, std::move(lines), legendLineHeight), margin));
-  return WL(stack, WL(stack, std::move(hotkeys)),
-      WL(preferredSize, size, WL(conditional, std::move(dialog), [this] { return gameSpeedDialogOpen; })));
+  return WL(stack, hotkeys);
 }
 
 SGuiElem GuiBuilder::drawSpecialTrait(const ImmigrantDataInfo::SpecialTraitInfo& trait) {

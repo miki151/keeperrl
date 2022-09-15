@@ -130,7 +130,7 @@ class GuiBuilder {
   bool clearActiveButton();
   void setActiveButton(CollectiveTab, int num, ViewId, optional<string> activeGroup, optional<TutorialHighlight>,
       bool buildingSelected);
-  void setActiveGroup(const string&, optional<TutorialHighlight>);
+  void setActiveGroup(const string& group, optional<TutorialHighlight>);
   optional<int> getActiveButton(CollectiveTab) const;
   GameSpeed getGameSpeed() const;
   void setGameSpeed(GameSpeed);
@@ -236,8 +236,8 @@ class GuiBuilder {
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
   int scrollbarsHeld2 = GuiFactory::getHeldInitValue();
   CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
+  bool collectiveTabActive = false;
   MinionTab minionTab = MinionTab::INVENTORY;
-  bool gameSpeedDialogOpen = false;
   enum BottomWindowId {
     IMMIGRATION_HELP,
     ALL_VILLAINS,
