@@ -128,7 +128,7 @@ pair<double, double> MySteamInput::getJoyPos(ControllerJoy j) {
 }
 
 void MySteamInput::setGameActionLayer(GameActionLayer layer) {
-  if (actionSetStack.back() == ActionSet::GAME && actionLayer != layer)
+  if (SteamInput() && actionSetStack.back() == ActionSet::GAME && actionLayer != layer)
     if (auto steamInput = SteamInput()) {
       steamInput->DeactivateAllActionSetLayers(STEAM_INPUT_HANDLE_ALL_CONTROLLERS);
       steamInput->ActivateActionSetLayer(STEAM_INPUT_HANDLE_ALL_CONTROLLERS, gameActionLayers.at(layer));

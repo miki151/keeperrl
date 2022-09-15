@@ -2,9 +2,9 @@
 
 set -e
 
-sh ./windows_make.sh
-sh ./win64_make.sh
-sh ./osx_make.sh
+#sh ./windows_make.sh
+#sh ./win64_make.sh
+#sh ./osx_make.sh
 sh ./linux_make.sh
 
 cp -R data ~/sdk/tools/ContentBuilder/content/common/
