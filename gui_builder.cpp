@@ -655,6 +655,8 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
         callbacks.push_back([this, speed] { gameSpeed = speed; clock->cont();});
         lines.push_back(WL(label, getGameSpeedName(speed)));
       }
+      if (clock->isPaused())
+        selected = callbacks.size();
       lines.push_back(WL(label, "pause"));
       callbacks.push_back([this] {
         if (clock->isPaused())
@@ -726,7 +728,7 @@ SGuiElem GuiBuilder::drawGameSpeedDialog() {
     auto speedFun = [=] { gameSpeed = speed; clock->cont();};
     hotkeys.push_back(WL(keyHandler, speedFun, getHotkey(speed)));
   }
-  return WL(stack, hotkeys);
+  return WL(preferredSize, Vec2(10, 10), WL(stack, hotkeys));
 }
 
 SGuiElem GuiBuilder::drawSpecialTrait(const ImmigrantDataInfo::SpecialTraitInfo& trait) {
