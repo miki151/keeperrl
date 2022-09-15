@@ -2178,6 +2178,24 @@ SGuiElem GuiFactory::translate(function<Vec2()> f, SGuiElem e) {
   return SGuiElem(new TranslateGui2(std::move(e), f));
 }
 
+class TranslateAbsolute : public GuiLayout {
+  public:
+  TranslateAbsolute(SGuiElem e, function<Vec2()> v) : GuiLayout(makeVec(std::move(e))), vec(v) {
+  }
+
+  virtual Rectangle getElemBounds(int num) override {
+    auto pos = vec();
+    return Rectangle(pos, pos + Vec2(*elems[0]->getPreferredWidth(), *elems[0]->getPreferredHeight()));
+  }
+
+  private:
+  function<Vec2()> vec;
+};
+
+SGuiElem GuiFactory::translateAbsolute(function<Vec2()> f, SGuiElem elem) {
+  return SGuiElem(new TranslateAbsolute(std::move(elem), std::move(f)));
+}
+
 SGuiElem GuiFactory::onRenderedAction(function<void()> fun) {
   return SGuiElem(new DrawCustom([=] (Renderer& r, Rectangle bounds) { fun(); }));
 }

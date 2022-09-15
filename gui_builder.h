@@ -232,6 +232,7 @@ class GuiBuilder {
   optional<int> inventoryIndex;
   optional<int> abilityIndex;
   optional<int> lastPlayerPositionHash;
+  optional<int> techIndex;
   int commandsIndex = -1;
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
   int scrollbarsHeld2 = GuiFactory::getHeldInitValue();

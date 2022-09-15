@@ -206,6 +206,7 @@ class GuiFactory {
   };
   SGuiElem translate(SGuiElem, Vec2 pos, optional<Vec2> size = none, TranslateCorner = TranslateCorner::TOP_LEFT);
   SGuiElem translate(function<Vec2()>, SGuiElem);
+  SGuiElem translateAbsolute(function<Vec2()>, SGuiElem);
   SGuiElem centerHoriz(SGuiElem, optional<int> width = none);
   SGuiElem centerVert(SGuiElem, optional<int> height = none);
   SGuiElem onRenderedAction(function<void()>);

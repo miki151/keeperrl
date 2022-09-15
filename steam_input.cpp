@@ -47,6 +47,7 @@ void MySteamInput::init() {
     actionHandles[C_BUILDINGS_DOWN] = getActionInfo("buildings_down", ActionSet::GAME);
     actionHandles[C_BUILDINGS_LEFT] = getActionInfo("buildings_left", ActionSet::GAME);
     actionHandles[C_BUILDINGS_RIGHT] = getActionInfo("buildings_right", ActionSet::GAME);
+    actionHandles[C_BUILDINGS_CONFIRM] = getActionInfo("buildings_confirm", ActionSet::GAME);
     actionHandles[C_SHIFT] = getActionInfo("shift", ActionSet::GAME);
     actionHandles[C_DIRECTION_CONFIRM] = getActionInfo("direction_confirm", ActionSet::DIRECTION);
     actionHandles[C_DIRECTION_CANCEL] = getActionInfo("direction_cancel", ActionSet::DIRECTION);

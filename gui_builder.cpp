@@ -2553,6 +2553,13 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
   auto& info = collectiveInfo.libraryInfo;
   const int rightElemMargin = 10;
   auto lines = WL(getListBuilder, legendLineHeight);
+  int numPromotions = collectiveInfo.minionPromotions.size();
+  int numTechs = info.available.size();
+  if (techIndex && *techIndex >= numPromotions + numTechs) {
+    techIndex = numPromotions + numTechs - 1;
+    if (*techIndex < 0)
+      techIndex = none;
+  }
   lines.addSpace(5);
   lines.addElem(WL(renderInBounds, WL(getListBuilder)
       .addElemAuto(WL(topMargin, -2, WL(viewObject, collectiveInfo.avatarLevelInfo.viewId)))
@@ -2567,12 +2574,7 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
   //lines.addElem(WL(rightMargin, rightElemMargin, WL(alignment, GuiFactory::Alignment::RIGHT, drawCost(info.resource))));
   if (info.warning)
     lines.addElem(WL(label, *info.warning, Renderer::smallTextSize(), Color::RED));
-  auto emptyElem = WL(empty);
-  auto getUnlocksTooltip = [&] (auto& elem) {
-    return WL(tooltip2, drawTechUnlocks(elem),
-        [=](const Rectangle&) { return emptyElem->getBounds().topRight() + Vec2(35, 0); });
-  };
-  if (!collectiveInfo.minionPromotions.empty()) {
+  if (numPromotions > 0) {
     lines.addElem(WL(label, "Promotions:", Color::YELLOW));
     lines.addElem(WL(label, "(" + getPlural("item", collectiveInfo.availablePromotions) + " available)", Color::YELLOW));
     vector<SGuiElem> minionLabels;
@@ -2596,50 +2598,74 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
             getTooltip({makeSentence(info.description)}, i * 100 + index + THIS_LINE)));
       }
       line.addSpace(14);
+      auto callback = [id = elem.id, options = elem.options, this] (Rectangle bounds) {
+        vector<SGuiElem> lines = {WL(label, "Promotion type:")};
+        vector<function<void()>> callbacks = { nullptr };
+        optional<int> ret;
+        for (int i : All(options)) {
+          callbacks.push_back([&ret, i] { ret = i;});
+          lines.push_back(WL(stack,
+                WL(getListBuilder)
+                    .addElemAuto(WL(viewObject, options[i].viewId))
+                    .addSpace(10)
+                    .addElemAuto(WL(label, options[i].name))
+                    .buildHorizontalList(),
+                WL(tooltip, {makeSentence(options[i].description)})
+                ));
+        }
+        drawMiniMenu(std::move(lines), std::move(callbacks), bounds.bottomLeft(), 200, false);
+        if (ret)
+          this->callbacks.input({UserInputId::CREATURE_PROMOTE, PromotionActionInfo{id, *ret}});
+      };
       if (elem.canAdvance) {
-        lines.addElem(WL(stack,
+        lines.addElem(WL(stack, makeVec(
             WL(uiHighlightMouseOver, Color::GREEN),
+            WL(conditional, WL(uiHighlightLine), [this, i] { return techIndex == i; }),
             line.buildHorizontalList(),
-                WL(buttonRect, [id = elem.id, options = elem.options, this] (Rectangle bounds) {
-                    vector<SGuiElem> lines = {WL(label, "Promotion type:")};
-                    vector<function<void()>> callbacks = { nullptr };
-                    optional<int> ret;
-                    for (int i : All(options)) {
-                      callbacks.push_back([&ret, i] { ret = i;});
-                      lines.push_back(WL(stack,
-                            WL(getListBuilder)
-                                .addElemAuto(WL(viewObject, options[i].viewId))
-                                .addSpace(10)
-                                .addElemAuto(WL(label, options[i].name))
-                                .buildHorizontalList(),
-                            WL(tooltip, {makeSentence(options[i].description)})
-                            ));
-                    }
-                    drawMiniMenu(std::move(lines), std::move(callbacks), bounds.bottomLeft(), 200, false);
-                    if (ret)
-                      this->callbacks.input({UserInputId::CREATURE_PROMOTE, PromotionActionInfo{id, *ret}});
-              })
-            ));
+            WL(buttonRect, callback),
+            WL(conditionalStopKeys,
+                WL(keyHandlerRect, callback, {gui.getKey(C_BUILDINGS_CONFIRM), gui.getKey(C_BUILDINGS_RIGHT)}, true),
+                [this, i] { return collectiveTab == CollectiveTab::TECHNOLOGY && techIndex == i; })
+        )));
       } else
         lines.addElem(line.buildHorizontalList());
     }
   }
-  if (!info.available.empty()) {
+  auto emptyElem = WL(empty);
+  auto getUnlocksTooltip = [&] (auto& elem) {
+    return WL(translateAbsolute, [=]() { return emptyElem->getBounds().topRight() + Vec2(35, 0); },
+        drawTechUnlocks(elem));
+  };
+  if (numTechs > 0) {
     lines.addElem(WL(label, "Research:", Color::YELLOW));
     lines.addElem(WL(label, "(" + getPlural("item", collectiveInfo.avatarLevelInfo.numAvailable) + " available)", Color::YELLOW));
     for (int i : All(info.available)) {
       auto& elem = info.available[i];
       auto line = WL(renderInBounds, WL(label, capitalFirst(getName(elem.id)), elem.active ? Color::WHITE : Color::GRAY));
-      line = WL(stack, std::move(line), getUnlocksTooltip(elem));
+      line = WL(stack,
+          std::move(line),
+          WL(mouseHighlight2, getUnlocksTooltip(elem)),
+          WL(conditional, getUnlocksTooltip(elem), [=] { return techIndex == i + numPromotions;})
+      );
       if (elem.tutorialHighlight && tutorial && tutorial->highlights.contains(*elem.tutorialHighlight))
         line = WL(stack, WL(tutorialHighlight), std::move(line));
       if (i == 0)
         line = WL(stack, std::move(line), emptyElem);
       if (elem.active)
-        line = WL(stack,
+        line = WL(stack, makeVec(
             WL(uiHighlightMouseOver, Color::GREEN),
+            WL(conditional, WL(uiHighlightLine), [this, i, numPromotions] {
+              return techIndex == i + numPromotions;
+            }),
             std::move(line),
-            WL(button, getButtonCallback({UserInputId::LIBRARY_ADD, elem.id})));
+            WL(button, getButtonCallback({UserInputId::LIBRARY_ADD, elem.id})),
+            WL(conditionalStopKeys,
+                WL(keyHandler, getButtonCallback({UserInputId::LIBRARY_ADD, elem.id}),
+                    {gui.getKey(C_BUILDINGS_CONFIRM), gui.getKey(C_BUILDINGS_RIGHT)}, true),
+                [this, i, numPromotions] {
+                  return collectiveTab == CollectiveTab::TECHNOLOGY && techIndex == i + numPromotions;
+                })
+        ));
       lines.addElem(WL(rightMargin, rightElemMargin, std::move(line)));
     }
     lines.addSpace(legendLineHeight * 2 / 3);
@@ -2649,11 +2675,51 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
   for (int i : All(info.researched)) {
     auto& elem = info.researched[i];
     auto line = WL(renderInBounds, WL(label, capitalFirst(getName(elem.id)), Color::GRAY));
-    line = WL(stack, std::move(line), getUnlocksTooltip(elem));
+    line = WL(stack, std::move(line), WL(mouseHighlight2, getUnlocksTooltip(elem)));
     lines.addElem(WL(rightMargin, rightElemMargin, std::move(line)));
   }
+  auto getNextIndex = [numPromotions, numTechs] (optional<int> cur, int dir) -> optional<int> {
+    if (numPromotions + numTechs == 0)
+      return none;
+    if (!cur)
+      return dir == 1 ? 0 : numPromotions + numTechs - 1;
+    else
+      return (*cur + dir + numPromotions + numTechs) % (numPromotions + numTechs);
+  };
+  auto isIndexActive = [techs = info.available, promotions = collectiveInfo.minionPromotions] (int index) {
+    return (index < promotions.size() && promotions[index].canAdvance)
+        || (index >= promotions.size() && techs[index - promotions.size()].active);
+  };
+  auto advanceIndex = [this, getNextIndex, isIndexActive] (int dir) {
+    if (techIndex == 0 && dir == -1) {
+      techIndex = none;
+      collectiveTabActive = true;
+    } else {
+      auto index = getNextIndex(techIndex, dir);
+      if (!index)
+        return;
+      auto start = index;
+      while (!isIndexActive(*index)) {
+        index = getNextIndex(*index, dir);
+        if (index == start)
+          break;
+      }
+      techIndex = index;
+      collectiveTabActive = false;
+    }
+  };
+  auto content = WL(stack,
+      lines.buildVerticalList(),
+      WL(conditionalStopKeys, WL(stack,
+          WL(keyHandler, [advanceIndex] { advanceIndex(1); }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
+          WL(keyHandler, [advanceIndex] { advanceIndex(-1); }, {gui.getKey(C_BUILDINGS_UP)}, true)),
+          [this] { return collectiveTab == CollectiveTab::TECHNOLOGY && (!!techIndex || collectiveTabActive); }),
+      WL(conditionalStopKeys,
+          WL(keyHandler, [this] { techIndex = none; }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true),
+          [this] { return collectiveTab == CollectiveTab::TECHNOLOGY && !!techIndex; })
+  );
   const int margin = 0;
-  return WL(margins, WL(scrollable, lines.buildVerticalList(), &libraryScroll, &scrollbarsHeld), margin);
+  return WL(margins, std::move(content), margin);
 }
 
 SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo::ChosenCreatureInfo& chosenCreature,
