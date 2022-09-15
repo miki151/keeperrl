@@ -308,7 +308,7 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
               button = activeButton->num;
             setActiveButton(CollectiveTab::BUILDINGS, button, buttons[button].viewId, group, none,
                 buttons[button].isBuilding);
-          }, {/*gui.getKey(C_MENU_SELECT), */gui.getKey(C_BUILDINGS_RIGHT)}, true),
+          }, {gui.getKey(C_BUILDINGS_CONFIRM), gui.getKey(C_BUILDINGS_RIGHT)}, true),
           [this, newGroup = buttons[i].groupName] {
             return collectiveTab == CollectiveTab::BUILDINGS && activeGroup == newGroup;
           }
@@ -2693,19 +2693,19 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
         || (index >= promotions.size() && techs[index - promotions.size()].active);
   };
   auto advanceIndex = [this, getNextIndex, isIndexActive] (int dir) {
-    if (techIndex == 0 && dir == -1) {
+    auto index = getNextIndex(techIndex, dir);
+    if (!index)
+      return;
+    auto start = index;
+    while (!isIndexActive(*index)) {
+      index = getNextIndex(*index, dir);
+      if (index == start)
+        break;
+    }
+    if (dir == -1 && !!techIndex && *index >= *techIndex) {
       techIndex = none;
       collectiveTabActive = true;
     } else {
-      auto index = getNextIndex(techIndex, dir);
-      if (!index)
-        return;
-      auto start = index;
-      while (!isIndexActive(*index)) {
-        index = getNextIndex(*index, dir);
-        if (index == start)
-          break;
-      }
       techIndex = index;
       collectiveTabActive = false;
     }
