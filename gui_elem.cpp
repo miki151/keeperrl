@@ -2612,6 +2612,18 @@ class ScrollBar : public GuiLayout {
     return false;
   }
 
+  virtual bool onKeyPressed2(SDL::SDL_Keysym key) override {
+    if (key.sym == C_MENU_SCROLL_UP) {
+      addScrollPos(- wheelScrollUnit);
+      return true;
+    }
+    if (key.sym == C_MENU_SCROLL_DOWN) {
+      addScrollPos(wheelScrollUnit);
+      return true;
+    }
+    return false;
+  }
+
   virtual bool onMouseMove(Vec2 v, Vec2 rel) override {
     if (*held != notHeld)
       scrollPos->reset(getBounds().height() / 2 + scrollLength() * calcPos(v.y - *held));

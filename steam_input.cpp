@@ -21,6 +21,8 @@ void MySteamInput::init() {
     actionSets[ActionSet::DIRECTION] = steamInput->GetActionSetHandle("DirectionChoiceControls");
     actionHandles[C_MENU_UP] = getActionInfo("menu_up", ActionSet::MENU);
     actionHandles[C_MENU_DOWN] = getActionInfo("menu_down", ActionSet::MENU);
+    actionHandles[C_MENU_SCROLL_UP] = getActionInfo("menu_scroll_up", ActionSet::MENU);
+    actionHandles[C_MENU_SCROLL_DOWN] = getActionInfo("menu_scroll_down", ActionSet::MENU);
     actionHandles[C_MENU_LEFT] = getActionInfo("menu_left", ActionSet::MENU);
     actionHandles[C_MENU_RIGHT] = getActionInfo("menu_right", ActionSet::MENU);
     actionHandles[C_MENU_SELECT] = getActionInfo("menu_select", ActionSet::MENU);

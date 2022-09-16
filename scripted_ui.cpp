@@ -817,7 +817,11 @@ struct Scrollable : ScriptedUIInterface {
 
   void onKeypressed(const ScriptedUIData& data, ScriptedContext& context,
       SDL::SDL_Keysym sym, Rectangle bounds, EventCallback& callback) const override {
-    processScroller(data, context, bounds,
+    if (sym.sym == C_MENU_SCROLL_DOWN)
+      callback = [&] { scroll(context,1); return false; };
+    else if (sym.sym == C_MENU_SCROLL_UP)
+      callback = [&] { scroll(context, -1); return false; };
+    else processScroller(data, context, bounds,
         [&] (Rectangle contentBounds) {
           elem->onKeypressed(data, context, sym, contentBounds, callback);
           callback = [&context, callback, bounds] {
