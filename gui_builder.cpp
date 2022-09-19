@@ -1850,8 +1850,6 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
     list.addSpace();
   }
   if (!info.inventory.empty()) {
-    if (inventoryIndex && *inventoryIndex >= info.inventory.size())
-      inventoryIndex = info.inventory.size() - 1;
     list.addElem(WL(label, "Inventory", Color::YELLOW));
     for (int i : All(info.inventory)) {
       auto& item = info.inventory[i];
@@ -2031,7 +2029,7 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
   for (int i : All(info.teamInfos)) {
     auto& elem = info.teamInfos[i];
     if (elem.creatureId != info.creatureId)
-      others.push_back(WL(conditional, drawPlayerInventory(elem), [this, i]{ return highlightedTeamMember == i;}));
+      others.push_back(WL(conditionalStopKeys, drawPlayerInventory(elem), [this, i]{ return highlightedTeamMember == i;}));
     else
       others.push_back(WL(conditional, drawPlayerInventory(info),
           [this, i]{ return !highlightedTeamMember || highlightedTeamMember == i;}));
