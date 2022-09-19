@@ -1663,7 +1663,7 @@ SGuiElem GuiBuilder::drawSpellsList(const vector<SpellInfo>& spells, GenericId c
     auto ret = list.buildVerticalList();
     if (active) {
       auto getNextSpell = [spells](int curIndex, int inc) -> optional<int> {
-        int module = (spells.size() + spellsPerRow - 1) / spellsPerRow * spellsPerRow;
+        int module = abs(inc) == 1 ? spells.size() : (spells.size() + spellsPerRow - 1) / spellsPerRow * spellsPerRow;
         for (int i : All(spells)) {
           int index = (curIndex + (i + 1) * inc + module) % module;
           if (index < spells.size() && !spells[index].timeout)
@@ -1678,14 +1678,25 @@ SGuiElem GuiBuilder::drawSpellsList(const vector<SpellInfo>& spells, GenericId c
               renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
           }, {gui.getKey(C_ABILITIES)}, true),
           WL(conditionalStopKeys, WL(stack, makeVec(
-              WL(keyHandler, [=, cnt = spells.size()] { abilityIndex = getNextSpell(*abilityIndex, 1); },
-                  {gui.getKey(C_MENU_RIGHT)}, true),
-              WL(keyHandler, [=, cnt = spells.size()] { abilityIndex = getNextSpell(*abilityIndex, -1); },
-                  {gui.getKey(C_MENU_LEFT)}, true),
-              WL(keyHandler, [=, cnt = spells.size()] { abilityIndex = getNextSpell(*abilityIndex, 5); },
-                  {gui.getKey(C_MENU_DOWN)}, true),
+              WL(keyHandler, [=, cnt = spells.size()] { 
+                abilityIndex = getNextSpell(*abilityIndex, 1);
+                if (!abilityIndex)
+                  renderer.getSteamInput()->popActionSet();
+              }, {gui.getKey(C_MENU_RIGHT)}, true),
+              WL(keyHandler, [=, cnt = spells.size()] {
+                abilityIndex = getNextSpell(*abilityIndex, -1);
+                if (!abilityIndex)
+                  renderer.getSteamInput()->popActionSet();
+              }, {gui.getKey(C_MENU_LEFT)}, true),
+              WL(keyHandler, [=, cnt = spells.size()] {
+                abilityIndex = getNextSpell(*abilityIndex, 5);
+                if (!abilityIndex)
+                  renderer.getSteamInput()->popActionSet();
+              }, {gui.getKey(C_MENU_DOWN)}, true),
               WL(keyHandler, [=, cnt = spells.size()] {
                 abilityIndex = getNextSpell(*abilityIndex, -5);
+                if (!abilityIndex)
+                  renderer.getSteamInput()->popActionSet();
               }, {gui.getKey(C_MENU_UP)}, true),
               WL(keyHandler, [this] {
                 abilityIndex = none;
