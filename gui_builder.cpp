@@ -1365,7 +1365,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
             WL(keyHandler, [=] { callbacks.input({UserInputId::PICK_UP_ITEM, 0});}, getConfirmationKeys(), true),
             [this] { return playerOverlayFocused; }),
         WL(keyHandler, [=] { if (renderer.getDiscreteJoyPos(ControllerJoy::WALKING) == Vec2(0, 0))
-            callbacks.input({UserInputId::PICK_UP_ITEM, 0}); }, {gui.getKey(C_WALK)}));
+            callbacks.input({UserInputId::PICK_UP_ITEM, 0}); }, concat(getConfirmationKeys(), {gui.getKey(C_WALK)})));
   else {
     auto updateScrolling = [this, totalElems] (int dir) {
         if (itemIndex)
