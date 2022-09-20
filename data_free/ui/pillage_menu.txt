@@ -1,0 +1,32 @@
+{
+  ExitButtons()
+  FocusKeys()
+  Position(SCREEN, Fill(Rgb 0 0 0 150))
+  Position(SCREEN, Position(BOTTOM_LEFT, MarginLeft(370, MarginBottom(93, Width 380
+  MiniWindow({
+    Using "EXIT" Button(true)
+    Vertical {
+      Horizontal {
+        Position(MIDDLE, Using "title" Label())
+        Stretch {}
+        Using "choose_all" StandardButton(Label("Choose all"))
+      }
+      Height 10 {}
+      Using "elems" List(VERTICAL,
+        Height 30 {
+          Using "callback" Focusable MarginTop(-2, Frame(ColorId WHITE))
+          Using "callback" Button()
+          Using "tooltip" GetTooltip(List(VERTICAL, Height 30 Label()))
+          Horizontal {
+            Using "view_id" ViewId()
+            Width 5 {}
+            {
+              Using "name" Label(none, 19, ColorId GRAY)
+              If "callback" Using "name" Label()
+            }
+          }
+        }
+      )
+    }
+  })))))
+}

@@ -42,9 +42,6 @@ class DummyView : public View {
       const vector<ItemInfo>&, ScrollPosition* scrollPos) override {
     return none;
   }
-  virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) override {
-    return none;
-  }
   virtual optional<int> chooseItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollpos) override {
     return none;
   }

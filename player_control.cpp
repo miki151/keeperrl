@@ -958,20 +958,6 @@ void PlayerControl::handleTrading(Collective* ally) {
   }
 }
 
-static ItemInfo getPillageItemInfo(const ContentFactory* factory, const vector<Item*>& stack, bool noStorage) {
-  return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName(factory, nullptr, stack.size() > 1);
-    c.fullName = stack[0]->getNameAndModifiers(factory, false);
-    c.description = stack[0]->getDescription(factory);
-    c.number = stack.size();
-    c.viewId = stack[0]->getViewObject().getViewIdList();
-    for (auto it : stack)
-      c.ids.insert(it->getUniqueId());
-    c.unavailable = noStorage;
-    c.unavailableReason = noStorage ? "No storage is available for this item." : "";
-  );
-}
-
 auto getPillagePositions(const Collective* col) {
   return iterateVectors(col->getTerritory().getAll(), col->getTerritory().getStandardExtended());
 }
@@ -1015,6 +1001,7 @@ bool PlayerControl::canPillage(const Collective* col) const {
 void PlayerControl::handlePillage(Collective* col) {
   ScrollPosition scrollPos;
   auto factory = getGame()->getContentFactory();
+  ScriptedUIState state;
   while (1) {
     struct PillageOption {
       vector<Item*> items;
@@ -1025,22 +1012,47 @@ void PlayerControl::handlePillage(Collective* col) {
       options.push_back({elem, collective->getStoragePositions(elem.front()->getStorageIds())});
     if (options.empty())
       return;
-    vector<ItemInfo> itemInfo = options.transform([&] (const PillageOption& it) {
-            return getPillageItemInfo(factory, it.items, it.storage.empty());});
-    auto index = getView()->choosePillageItem("Pillage " + col->getName()->full, itemInfo, &scrollPos);
-    if (!index)
-      break;
-    if (index == -1) {
+    auto data = ScriptedUIDataElems::Record{};
+    bool chosen = false;
+    data.elems["title"] = "Pillage " + col->getName()->full;
+    data.elems["choose_all"] = ScriptedUIDataElems::Callback { [&] {
       for (auto& elem : options)
         if (!elem.storage.empty())
           Random.choose(elem.storage.asVector()).dropItems(retrievePillageItems(col, elem.items));
-    } else {
-      CHECK(!options[*index].storage.empty());
-      Random.choose(options[*index].storage.asVector()).dropItems(retrievePillageItems(col, options[*index].items));
+      chosen = true;
+      return true;
+    }};
+    auto elems = ScriptedUIDataElems::List{};
+    for (int i : All(options)) {
+      auto& option = options[i];
+      auto elem = ScriptedUIDataElems::Record{};
+      elem.elems["view_id"] = option.items[0]->getViewObject().getViewIdList();
+      string label;
+      if (option.items.size() > 1)
+        label = toString(option.items.size()) + " ";
+      label += option.items[0]->getShortName(factory, nullptr, option.items.size() > 1);
+      elem.elems["name"] = capitalFirst(std::move(label));
+      auto tooltipElems = ScriptedUIDataElems::List {
+        capitalFirst(option.items[0]->getNameAndModifiers(getGame()->getContentFactory()))
+      };
+      for (auto& elem : option.items[0]->getDescription(factory))
+        tooltipElems.push_back(elem);
+      elem.elems["tooltip"] = std::move(tooltipElems);
+      if (!option.storage.empty())
+        elem.elems["callback"] = ScriptedUIDataElems::Callback { [option, col, this, &chosen] {
+          CHECK(!option.storage.empty());
+          Random.choose(option.storage.asVector()).dropItems(retrievePillageItems(col, option.items));
+          chosen = true;
+          return true;
+        }};
+      elems.push_back(elem);
     }
+    data.elems["elems"] = std::move(elems);
+    getView()->scriptedUI("pillage_menu", data, state);
+    if (!chosen)
+      break;
     if (auto& name = col->getName())
       collective->addRecordedEvent("the pillaging of " + name->full);
-    getView()->updateView(this, true);
   }
 }
 
@@ -2410,8 +2422,10 @@ void PlayerControl::setChosenWorkshop(optional<ChosenWorkshopInfo> info) {
     }
   };
   refreshHighlights();
-  if (info)
-    clearChosenInfo();
+  if (info) {
+    chosenCreature = none;
+    chosenTeam = none;
+  }
   chosenWorkshop = info;
   refreshHighlights();
 }

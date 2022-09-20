@@ -175,8 +175,6 @@ class View {
   virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
       const vector<ItemInfo>&, ScrollPosition* scrollPos) = 0;
 
-  virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) = 0;
-
   virtual optional<int> chooseItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollpos) = 0;
 
   virtual optional<int> chooseAtMouse(const vector<string>& elems) = 0;

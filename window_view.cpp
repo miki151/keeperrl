@@ -879,15 +879,6 @@ optional<UniqueEntity<Item>::Id> WindowView::chooseTradeItem(const string& title
       getOverlayPosition(GuiBuilder::OverlayInfo::BOTTOM_LEFT, height, width, rightBarWidthCollective, bottomBarHeightCollective));
 }
 
-optional<int> WindowView::choosePillageItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollPos) {
-  SyncQueue<optional<int>> returnQueue;
-  auto menu = guiBuilder.drawPillageItemMenu(returnQueue, title, items, scrollPos);
-  int width = *menu->getPreferredWidth();
-  int height = *menu->getPreferredHeight();
-  return getBlockingGui(returnQueue, std::move(menu),
-      getOverlayPosition(GuiBuilder::OverlayInfo::BOTTOM_LEFT, height, width, rightBarWidthCollective, bottomBarHeightCollective));
-}
-
 void WindowView::scriptedUI(ScriptedUIId id, const ScriptedUIData& data, ScriptedUIState& state) {
   Semaphore sem;
   return getBlockingGui(sem, gui.stack(gui.stopMouseMovement(), gui.scripted([&sem]{sem.v();}, id, data, state)));
