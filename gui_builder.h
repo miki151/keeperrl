@@ -339,6 +339,7 @@ class GuiBuilder {
   SGuiElem drawKeeperDangerOverlay(const string&);
   SGuiElem drawBoolOptionElem(OptionId, string name);
   SGuiElem drawCreatureTooltip(const PlayerInfo&);
+  vector<SDL::SDL_Keysym> getOverlayCloseKeys();
   ScriptedUIState scriptedUIState;
   ScriptedUIData scriptedUIData;
 };

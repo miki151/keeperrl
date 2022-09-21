@@ -3015,7 +3015,8 @@ SGuiElem GuiFactory::miniWindow(SGuiElem content, function<void()> onExitButton,
         rectangle(Color::BLACK),
         background(background1));
   if (onExitButton)
-    ret.push_back(reverseButton(onExitButton, {getKey(SDL::SDLK_ESCAPE), getKey(C_MENU_CANCEL)}, captureExitClick));
+    ret.push_back(reverseButton(onExitButton,
+        {getKey(SDL::SDLK_ESCAPE), getKey(C_MENU_CANCEL), getKey(C_CHANGE_Z_LEVEL)}, captureExitClick));
   append(ret, {
         margins(std::move(content), 1),
         miniBorder()
