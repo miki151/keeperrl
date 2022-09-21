@@ -335,6 +335,8 @@ void WindowView::rebuildGui() {
   tempGuiElems.push_back(gui.stack(makeVec(
       gui.keyHandler(bindMethod(&WindowView::keyboardAction, this)),
       gui.keyHandler([this]{ zoom(0); }, Keybinding("ZOOM_MAP"), true),
+      gui.keyHandler([this]{ zoom(0); }, {gui.getKey(C_ZOOM)}, true),
+      gui.keyHandler([this]{ guiBuilder.toggleEnlargedMinimap(); }, {gui.getKey(C_MINI_MAP)}, true),
       gui.keyHandler([getMovement]{ getMovement(0, -1); }, Keybinding("WALK_NORTH"), false),
       gui.keyHandler([getMovement]{ getMovement(0, 1); }, Keybinding("WALK_SOUTH"), false),
       gui.keyHandler([getMovement]{ getMovement(1, 0); }, Keybinding("WALK_EAST"), false),

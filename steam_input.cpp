@@ -45,6 +45,8 @@ void MySteamInput::init() {
     actionHandles[C_ABILITIES] = getActionInfo("abilities", ActionSet::GAME);
     actionHandles[C_CHANGE_Z_LEVEL] = getActionInfo("change_z_level", ActionSet::GAME);
     actionHandles[C_WORLD_MAP] = getActionInfo("world_map", ActionSet::GAME);
+    actionHandles[C_MINI_MAP] = getActionInfo("mini_map", ActionSet::GAME);
+    actionHandles[C_ZOOM] = getActionInfo("zoom", ActionSet::GAME);
     actionHandles[C_BUILDINGS_UP] = getActionInfo("buildings_up", ActionSet::GAME);
     actionHandles[C_BUILDINGS_DOWN] = getActionInfo("buildings_down", ActionSet::GAME);
     actionHandles[C_BUILDINGS_LEFT] = getActionInfo("buildings_left", ActionSet::GAME);

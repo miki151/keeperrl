@@ -725,6 +725,7 @@ SGuiElem GuiBuilder::drawGameSpeedDialog() {
   };
   vector<SGuiElem> hotkeys;
   hotkeys.push_back(WL(keyHandler, pauseFun, Keybinding("PAUSE")));
+  hotkeys.push_back(WL(keyHandler, pauseFun, {gui.getKey(C_BUILDINGS_CONFIRM)}));
   for (GameSpeed speed : ENUM_ALL(GameSpeed)) {
     auto speedFun = [=] { gameSpeed = speed; clock->cont();};
     hotkeys.push_back(WL(keyHandler, speedFun, getHotkey(speed)));
