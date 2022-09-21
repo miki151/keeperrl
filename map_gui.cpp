@@ -280,9 +280,8 @@ void MapGui::considerContinuousLeftClick(Vec2 mousePos) {
 }
 
 bool MapGui::onMouseMove(Vec2 v, Vec2 rel) {
-  if (rel == Vec2(0, 0))
-    return false;
-  lastMouseMove = v;
+  if (rel != Vec2(0, 0))
+    lastMouseMove = v;
   auto draggedCreature = isDraggedCreature();
   if (v.inRectangle(getBounds()) && mouseHeldPos && !draggedCreature)
     considerContinuousLeftClick(v);
