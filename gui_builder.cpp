@@ -3116,7 +3116,7 @@ SGuiElem GuiBuilder::drawScreenshotOverlay() {
   const int height = 360;
   const int margin = 20;
   return WL(preferredSize, width, height, WL(stack,
-      WL(keyHandler, getButtonCallback(UserInputId::CANCEL_SCREENSHOT), getCloseKeys(), true),
+      WL(keyHandler, getButtonCallback(UserInputId::CANCEL_SCREENSHOT), getOverlayCloseKeys(), true),
       WL(rectangle, Color::TRANSPARENT, Color::LIGHT_GRAY),
       WL(translate, WL(centerHoriz, WL(miniWindow, WL(margins, WL(getListBuilder, legendLineHeight)
               .addElem(WL(labelMultiLineWidth, "Your dungeon will be shared in Steam Workshop with an attached screenshot. "
