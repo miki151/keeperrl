@@ -53,6 +53,13 @@ void GuiElem::setPreferredBounds(Vec2 origin) {
   setBounds(Rectangle(origin, origin + Vec2(*getPreferredWidth(), *getPreferredHeight())));
 }
 
+optional<Vec2> GuiElem::getPreferredSize() {
+  if (auto w = getPreferredWidth())
+    if (auto h = getPreferredHeight())
+      return Vec2(*w, *h);
+  return none;
+}
+
 static map<int, int> lineNumbers;
 static int totalGuiElems = 0;
 

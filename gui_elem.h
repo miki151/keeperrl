@@ -47,6 +47,7 @@ class GuiElem {
   virtual bool onTextInput(const char*) { return false; }
   virtual optional<int> getPreferredWidth() { return none; }
   virtual optional<int> getPreferredHeight() { return none; }
+  optional<Vec2> getPreferredSize();
 
   void setPreferredBounds(Vec2 origin);
   void setBounds(Rectangle);

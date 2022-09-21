@@ -664,7 +664,8 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
         else
           clock->pause();
       });
-      drawMiniMenu(std::move(lines), std::move(callbacks), rect.topLeft() - Vec2(0, 180), 190, true, true, &selected);
+      drawMiniMenu(std::move(lines), std::move(callbacks), {}, rect.topLeft() - Vec2(0, 180), 190, true,
+          true, &selected);
     };
     bottomLine.addElemAuto(WL(stack,
         WL(getListBuilder)
@@ -945,14 +946,15 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info) {
 void GuiBuilder::drawAllVillainsMenu(Vec2 pos, const VillageInfo& info) {
   vector<SGuiElem> lines;
   vector<function<void()>> callbacks;
+  vector<SGuiElem> tooltips;
   if (info.numMainVillains > 0) {
     lines.push_back(WL(label, toString(info.numConqueredMainVillains) + "/" + toString(info.numMainVillains) +
         " main villains conquered"));
     callbacks.push_back(nullptr);
+    tooltips.push_back(nullptr);
   }
   for (int i : All(info.villages)) {
     auto& elem = info.villages[i];
-    auto infoOverlay = drawVillainInfoOverlay(elem, false);
     auto labelColor = Color::WHITE;
     if (elem.access == elem.INACTIVE)
       labelColor = Color::GRAY;
@@ -975,18 +977,18 @@ void GuiBuilder::drawAllVillainsMenu(Vec2 pos, const VillageInfo& info) {
                 VillageActionInfo{elem.id, *elem.action}}));
     } else
       callbacks.push_back(nullptr);
-    lines.push_back(WL(stack,
-        WL(getListBuilder)
-            .addElemAuto(WL(setWidth, 34, WL(centerVert, WL(centerHoriz, WL(stack,
-                 WL(bottomMargin, -3, WL(viewObject, ViewId("round_shadow"), 1, Color(255, 255, 255, 160))),
-                 WL(bottomMargin, 5, WL(viewObject, elem.viewId))
-            )))))
-            .addElemAuto(WL(rightMargin, 5, WL(translate, WL(renderInBounds, std::move(label)), Vec2(0, 0))))
-            .buildHorizontalList(),
-        WL(tooltip2, std::move(infoOverlay), [=](const Rectangle& r) { return r.topRight();})));
+    lines.push_back(WL(getListBuilder)
+        .addElemAuto(WL(setWidth, 34, WL(centerVert, WL(centerHoriz, WL(stack,
+             WL(bottomMargin, -3, WL(viewObject, ViewId("round_shadow"), 1, Color(255, 255, 255, 160))),
+             WL(bottomMargin, 5, WL(viewObject, elem.viewId))
+        )))))
+        .addElemAuto(WL(rightMargin, 5, WL(translate, WL(renderInBounds, std::move(label)), Vec2(0, 0))))
+        .buildHorizontalList());
+    tooltips.push_back(drawVillainInfoOverlay(elem, false));
   }
   int height = lines.size() * legendLineHeight;
-  drawMiniMenu(std::move(lines), std::move(callbacks), pos - Vec2(20, height + 30), 350, true, true);
+  drawMiniMenu(std::move(lines), std::move(callbacks), std::move(tooltips), pos - Vec2(20, height + 30),
+      350, true, true);
 }
 
 SGuiElem GuiBuilder::drawImmigrationOverlay(const vector<ImmigrantDataInfo>& immigrants,
@@ -1421,7 +1423,7 @@ static string getActionText(ItemAction a) {
 }
 
 void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> callbacks,
-    Vec2 menuPos, int width, bool darkBg, bool exitOnCallback, int* selected) {
+    vector<SGuiElem> tooltips, Vec2 menuPos, int width, bool darkBg, bool exitOnCallback, int* selected) {
   auto lines = WL(getListBuilder, legendLineHeight);
   auto selectedDefault = -1;
   if (!selected)
@@ -1429,14 +1431,23 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
   bool exit = false;
   for (int i : All(elems)) {
     vector<SGuiElem> stack = {std::move(elems[i])};
-    if (callbacks[i]) {
-      stack.push_back(WL(button, [&exit, exitOnCallback, c = callbacks[i]] {
-        c();
-        if (exitOnCallback)
-          exit = true;
-      }));
+    if (callbacks[i] || i < tooltips.size()) {
+      if (callbacks[i])
+        stack.push_back(WL(button, [&exit, exitOnCallback, c = callbacks[i]] {
+          c();
+          if (exitOnCallback)
+            exit = true;
+        }));
       stack.push_back(WL(uiHighlightMouseOver));
       stack.push_back(WL(uiHighlightConditional, [selected, i] { return i == *selected; }));
+      if (i < tooltips.size() && !!tooltips[i]) {
+        stack.push_back(WL(conditional,
+            WL(translate, WL(renderTopLayer, tooltips[i]), Vec2(0, 0), *tooltips[i]->getPreferredSize(),
+                GuiFactory::TranslateCorner::TOP_RIGHT),
+            [selected, i] { return i == *selected; }));
+        stack.push_back(WL(tooltip2, tooltips[i],
+            [](Rectangle rect) { return rect.topRight(); }));
+      }
     }
     lines.addElem(WL(stack, std::move(stack)));
   }
@@ -1445,7 +1456,7 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
       WL(keyHandler, [&] {
         for (int i : Range(elems.size())) {
           auto ind = (*selected - i - 1 + elems.size()) % elems.size();
-          if (!!callbacks[ind]) {
+          if (!!callbacks[ind] || (ind < tooltips.size() && !!tooltips[ind])) {
             *selected = ind;
             break;
           }
@@ -1454,14 +1465,14 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
       WL(keyHandler, [&] {
         for (int i : Range(elems.size())) {
           auto ind = (*selected + i + 1) % elems.size();
-          if (!!callbacks[ind]) {
+          if (!!callbacks[ind] || (ind < tooltips.size() && !!tooltips[ind])) {
             *selected = ind;
             break;
           }
         }
       }, {gui.getKey(SDL::SDLK_DOWN), gui.getKey(C_MENU_DOWN)}, true),
       WL(keyHandler, [&] {
-        if (*selected >= 0 && *selected < callbacks.size()) {
+        if (*selected >= 0 && *selected < callbacks.size() && !!callbacks[*selected]) {
           callbacks[*selected]();
           if (exitOnCallback)
             exit = true;
@@ -1513,7 +1524,7 @@ optional<int> GuiBuilder::chooseAtMouse(const vector<string>& elems) {
     list.push_back(WL(label, elems[i]));
     callbacks.push_back([i, &ret] { ret = i; });
   }
-  drawMiniMenu(std::move(list), std::move(callbacks), renderer.getMousePos(), 200, false);
+  drawMiniMenu(std::move(list), std::move(callbacks), {}, renderer.getMousePos(), 200, false);
   return ret;
 }
 
@@ -1791,6 +1802,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
     auto callback = [this, commands = info.commands] (Rectangle bounds) {
         vector<SGuiElem> lines;
         vector<function<void()>> callbacks;
+        vector<SGuiElem> tooltips;
         optional<UserInput> result;
         for (int i : All(commands)) {
           auto& command = commands[i];
@@ -1811,11 +1823,14 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
             if (auto text = gui.getKeybindingMap()->getText(*command.keybinding))
               label = "[" + *text + "] " + std::move(label);
           stack.push_back(WL(label, label, labelColor));
-          stack.push_back(WL(tooltip, {command.description}));
+          if (!command.description.empty())
+            tooltips.push_back(WL(miniWindow, WL(margins, WL(label, command.description), 15)));
+          else
+            tooltips.push_back(WL(empty));
           lines.push_back(WL(stack, std::move(stack)));
         }
-        drawMiniMenu(std::move(lines), std::move(callbacks), bounds.bottomLeft(), 290, false, true,
-            &commandsIndex);
+        drawMiniMenu(std::move(lines), std::move(callbacks), std::move(tooltips), bounds.bottomLeft(),
+            290, false, true, &commandsIndex);
     };
     list.addElem(WL(stack,
         WL(stack, std::move(keyElems)),
@@ -1957,7 +1972,7 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
                 });
                 lines.push_back(WL(label, getText(getText(action))));
               }
-              drawMiniMenu(std::move(lines), std::move(callbacks), bounds.bottomLeft(), 200, false);
+              drawMiniMenu(std::move(lines), std::move(callbacks), {}, bounds.bottomLeft(), 200, false);
               if (ret)
                 this->callbacks.input({UserInputId::TEAM_MEMBER_ACTION, TeamMemberActionInfo{*ret, memberId}});
         }),
@@ -2614,7 +2629,7 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
                 WL(tooltip, {makeSentence(options[i].description)})
                 ));
         }
-        drawMiniMenu(std::move(lines), std::move(callbacks), bounds.bottomLeft(), 200, false);
+        drawMiniMenu(std::move(lines), std::move(callbacks), {}, bounds.bottomLeft(), 200, false);
         if (ret)
           this->callbacks.input({UserInputId::CREATURE_PROMOTE, PromotionActionInfo{id, *ret}});
       };
@@ -3495,7 +3510,7 @@ SGuiElem GuiBuilder::drawQuartersButton(const PlayerInfo& minion, const vector<V
                 .buildHorizontalList());
             callbacks.push_back([i, &retAction] { retAction(i); });
           }
-          drawMiniMenu(std::move(lines), std::move(callbacks), bounds.bottomLeft(), 100, true);
+          drawMiniMenu(std::move(lines), std::move(callbacks), {}, bounds.bottomLeft(), 100, true);
         }));
 }
 
@@ -3690,7 +3705,7 @@ SGuiElem GuiBuilder::drawEquipmentGroups(const PlayerInfo& minion) {
         if (!group.locked == type)
           ret.flip.insert(group.name);
     });
-    drawMiniMenu(std::move(lines), std::move(callbacks), bounds.bottomLeft(), 350, true, false);
+    drawMiniMenu(std::move(lines), std::move(callbacks), {}, bounds.bottomLeft(), 350, true, false);
     this->callbacks.input({UserInputId::EQUIPMENT_GROUP_ACTION, ret});
   }));
 }
@@ -4931,7 +4946,7 @@ SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textCo
       maxWidth = max(maxWidth, *elem->getPreferredWidth());
       lines.push_back(WL(centerHoriz, std::move(elem)));
     }
-    drawMiniMenu(std::move(lines), std::move(callbacks),
+    drawMiniMenu(std::move(lines), std::move(callbacks), {},
         Vec2(bounds.middle().x - maxWidth / 2 - 30, bounds.bottom()), maxWidth + 60, false);
   };
   return WL(stack,
