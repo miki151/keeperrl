@@ -186,7 +186,6 @@ class GuiBuilder {
       bool exitOnCallback = true, int* selected = nullptr);
   void showAttackTriggers(const vector<VillageInfo::Village::TriggerInfo>&, Vec2 pos);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
-  SGuiElem getVillageActionButton(UniqueEntity<Collective>::Id, VillageInfo::Village::ActionInfo);
   SGuiElem drawHighscorePage(const HighscoreList&, ScrollPosition* scrollPos);
   SGuiElem drawTeams(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease, bool leftRight);
@@ -239,7 +238,6 @@ class GuiBuilder {
   MinionTab minionTab = MinionTab::INVENTORY;
   enum BottomWindowId {
     IMMIGRATION_HELP,
-    ALL_VILLAINS,
     TASKS,
     BESTIARY,
     SPELL_SCHOOLS,
@@ -301,7 +299,7 @@ class GuiBuilder {
   SGuiElem drawWarningWindow(const CollectiveInfo::RebellionChance&);
   SGuiElem drawRebellionChanceText(CollectiveInfo::RebellionChance);
   SGuiElem drawVillainsOverlay(const VillageInfo&);
-  SGuiElem drawAllVillainsOverlay(const VillageInfo&);
+  void drawAllVillainsMenu(Vec2 pos, const VillageInfo&);
   SGuiElem drawVillainInfoOverlay(const VillageInfo::Village&, bool showDismissHint);
   SGuiElem drawVillainType(VillainType);
   SGuiElem drawLyingItemsList(const string& title, const ItemCounts&, int maxWidth);

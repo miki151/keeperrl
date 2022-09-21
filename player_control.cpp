@@ -916,14 +916,11 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   if ((info.isConquered = col->isConquered())) {
     info.triggers.clear();
     if (canPillage(col))
-      info.actions.push_back({VillageAction::PILLAGE, none});
+      info.action = VillageAction::PILLAGE;
   } else if (!col->getTribe()->isEnemy(collective->getTribe())) {
     if (collective->isKnownVillainLocation(col)) {
       if (col->hasTradeItems())
-        info.actions.push_back({VillageAction::TRADE, none});
-    } else if (getGame()->isVillainActive(col)) {
-      if (col->hasTradeItems())
-        info.actions.push_back({VillageAction::TRADE, string("You must discover the location of the ally in order to trade.")});
+        info.action = VillageAction::TRADE;
     }
   }
   return info;

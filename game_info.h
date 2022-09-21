@@ -439,21 +439,16 @@ class VillageInfo {
     enum Access { ACTIVE, INACTIVE, LOCATION, NO_LOCATION };
     Access HASH(access);
     bool HASH(isConquered);
-    struct ActionInfo {
-      VillageAction HASH(action);
-      optional<string> HASH(disabledReason);
-      HASH_ALL(action, disabledReason)
-    };
     struct TriggerInfo {
       string HASH(name);
       double HASH(value);
       HASH_ALL(name, value)
     };
-    vector<ActionInfo> HASH(actions);
+    optional<VillageAction> HASH(action);
     vector<TriggerInfo> HASH(triggers);
     UniqueEntity<Collective>::Id HASH(id);
     bool HASH(attacking);
-    HASH_ALL(name, tribeName, access, isConquered, actions, triggers, id, viewId, type, attacking)
+    HASH_ALL(name, tribeName, access, isConquered, action, triggers, id, viewId, type, attacking)
   };
   int HASH(numMainVillains);
   int HASH(numConqueredMainVillains);

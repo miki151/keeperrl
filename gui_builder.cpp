@@ -869,9 +869,6 @@ SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info, bo
     }
     lines.addElem(line.buildHorizontalList());
   }
-  for (auto action : info.actions)
-    if (action.disabledReason)
-      lines.addElem(WL(label, *action.disabledReason, Color::ORANGE));
   if (showDismissHint)
     lines.addElem(WL(label, "Right click to dismiss", Renderer::smallTextSize(), Color::WHITE), legendLineHeight * 2 / 3);
   return WL(miniWindow, WL(margins, lines.buildVerticalList(), 15));
@@ -897,9 +894,7 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info) {
               .addElemAuto(WL(translate, WL(label, "All villains"), Vec2(0, labelOffsetY)))
               .addSpace(10)
               .buildHorizontalList(),
-          WL(conditional, WL(margins, WL(rectangle, Color(0, 255, 0, 100)), -7, 2, 2, 2),
-              [this] { return bottomWindow == ALL_VILLAINS; }),
-          WL(button, [this] { toggleBottomWindow(ALL_VILLAINS); })
+          WL(buttonRect, [this, info] (Rectangle rect) { drawAllVillainsMenu(rect.topLeft(), info); })
     ));
   for (int i : All(info.villages)) {
     SGuiElem label;
@@ -914,14 +909,12 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info) {
       labelText = "triggered";
       label = WL(label, labelText, Color::ORANGE);
     } else
-      for (auto& action : elem.actions)
-        if (!action.disabledReason) {
-          labelText = getVillageActionText(action.action);
-          label = WL(label, labelText, Color::GREEN);
-          button = WL(button, getButtonCallback({UserInputId::VILLAGE_ACTION,
-              VillageActionInfo{elem.id, action.action}}));
-          break;
-        }
+      if (elem.action) {
+        labelText = getVillageActionText(*elem.action);
+        label = WL(label, labelText, Color::GREEN);
+        button = WL(button, getButtonCallback({UserInputId::VILLAGE_ACTION,
+            VillageActionInfo{elem.id, *elem.action}}));
+      }
     if (!label || info.dismissedInfos.count({elem.id, labelText}))
       continue;
     label = WL(translate, std::move(label), Vec2(0, labelOffsetY));
@@ -949,12 +942,13 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info) {
         WL(translucentBackgroundWithBorder, WL(topMargin, 0, lines.buildHorizontalList()))));
 }
 
-SGuiElem GuiBuilder::drawAllVillainsOverlay(const VillageInfo& info) {
-  auto lines = WL(getListBuilder, legendLineHeight);
+void GuiBuilder::drawAllVillainsMenu(Vec2 pos, const VillageInfo& info) {
+  vector<SGuiElem> lines;
+  vector<function<void()>> callbacks;
   if (info.numMainVillains > 0) {
-    lines.addElem(WL(label, toString(info.numConqueredMainVillains) + "/" + toString(info.numMainVillains) +
+    lines.push_back(WL(label, toString(info.numConqueredMainVillains) + "/" + toString(info.numMainVillains) +
         " main villains conquered"));
-    lines.addSpace(legendLineHeight / 2);
+    callbacks.push_back(nullptr);
   }
   for (int i : All(info.villages)) {
     auto& elem = info.villages[i];
@@ -972,19 +966,16 @@ SGuiElem GuiBuilder::drawAllVillainsOverlay(const VillageInfo& info) {
     auto label = WL(label, capitalFirst(name), labelColor);
     if (elem.isConquered)
       label = WL(stack, std::move(label), WL(crossOutText, Color::RED));
-    for (auto& action : elem.actions)
-      if (!action.disabledReason) {
-        label = WL(stack,
-            WL(getListBuilder)
-                .addElemAuto(std::move(label))
-                .addBackElemAuto(WL(label, " ["_s + getVillageActionText(action.action) + "]", Color::GREEN))
-                .buildHorizontalList(),
-            WL(button, getButtonCallback({UserInputId::VILLAGE_ACTION,
-                  VillageActionInfo{elem.id, action.action}}))
-        );
-        break;
-      }
-    lines.addElem(WL(stack,
+    if (!!elem.action) {
+      label = WL(getListBuilder)
+          .addElemAuto(std::move(label))
+          .addBackElemAuto(WL(label, " ["_s + getVillageActionText(*elem.action) + "]", Color::GREEN))
+          .buildHorizontalList();
+      callbacks.push_back(getButtonCallback({UserInputId::VILLAGE_ACTION,
+                VillageActionInfo{elem.id, *elem.action}}));
+    } else
+      callbacks.push_back(nullptr);
+    lines.push_back(WL(stack,
         WL(getListBuilder)
             .addElemAuto(WL(setWidth, 34, WL(centerVert, WL(centerHoriz, WL(stack,
                  WL(bottomMargin, -3, WL(viewObject, ViewId("round_shadow"), 1, Color(255, 255, 255, 160))),
@@ -994,9 +985,8 @@ SGuiElem GuiBuilder::drawAllVillainsOverlay(const VillageInfo& info) {
             .buildHorizontalList(),
         WL(tooltip2, std::move(infoOverlay), [=](const Rectangle& r) { return r.topRight();})));
   }
-  return WL(setWidth, 350, WL(miniWindow, WL(margins, WL(stack,
-        WL(stopMouseMovement),
-        WL(scrollable, lines.buildVerticalList(), &tasksScroll, &scrollbarsHeld)), 15), [this] { bottomWindow = none; }, true));
+  int height = lines.size() * legendLineHeight;
+  drawMiniMenu(std::move(lines), std::move(callbacks), pos - Vec2(20, height + 30), 350, true, true);
 }
 
 SGuiElem GuiBuilder::drawImmigrationOverlay(const vector<ImmigrantDataInfo>& immigrants,
@@ -3170,9 +3160,6 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
       if (bottomWindow == IMMIGRATION_HELP)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationHelp, this), THIS_LINE,
             collectiveInfo), OverlayInfo::BOTTOM_LEFT});
-      if (bottomWindow == ALL_VILLAINS)
-        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawAllVillainsOverlay, this), THIS_LINE,
-            info.villageInfo), OverlayInfo::BOTTOM_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawGameSpeedDialog, this), THIS_LINE),
            OverlayInfo::GAME_SPEED});
       break;
