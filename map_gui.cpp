@@ -1292,14 +1292,14 @@ void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, milliseconds c
 }
 
 void MapGui::handleJoyScrolling(pair<double, double> dir, milliseconds time) {
-  if (!!lastScrollUpdate && dir != make_pair(0.0, 0.0)) {
-    double diff = double((time - *lastScrollUpdate).count()) / 40;
+  if (!!lastJoyScrollUpdate && dir != make_pair(0.0, 0.0)) {
+    double diff = double((time - *lastJoyScrollUpdate).count()) / 40;
     center.x += diff * dir.first;
     center.y -= diff * dir.second;
     softCenter = none;
     scrollingState = ScrollingState::AFTER;
   }
-  lastScrollUpdate = time;
+  lastJoyScrollUpdate = time;
 }
 
 void MapGui::processScrolling(milliseconds time) {

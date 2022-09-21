@@ -137,6 +137,7 @@ class MapGui : public GuiElem {
   Callbacks callbacks;
   SyncQueue<UserInput>& inputQueue;
   optional<milliseconds> lastScrollUpdate;
+  optional<milliseconds> lastJoyScrollUpdate;
   Clock* clock;
   optional<Vec2> mouseHeldPos;
   optional<CreatureInfo> draggedCandidate;
