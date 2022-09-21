@@ -1889,9 +1889,6 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
     list.addElem(WL(label, "Total weight: " + getWeightString(totWeight)));
     list.addElem(WL(label, "Capacity: " +  (info.carryLimit ? getWeightString(*info.carryLimit) : "infinite"_s)));
     list.addSpace();
-  } else if (!!inventoryIndex) {
-    inventoryIndex = none;
-    renderer.getSteamInput()->popActionSet();
   }
   if (!info.intrinsicAttacks.empty()) {
     list.addElem(WL(label, "Intrinsic attacks", Color::YELLOW));
