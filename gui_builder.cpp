@@ -2664,7 +2664,11 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
       auto line = WL(renderInBounds, WL(label, capitalFirst(getName(elem.id)), elem.active ? Color::WHITE : Color::GRAY));
       line = WL(stack,
           std::move(line),
-          WL(mouseHighlight2, getUnlocksTooltip(elem)),
+          WL(conditional, WL(mouseHighlight2, getUnlocksTooltip(elem)),
+              [this] { return !techIndex;}),
+          WL(conditional, WL(uiHighlightLine), [this, i, numPromotions] {
+            return techIndex == i + numPromotions;
+          }),
           WL(conditional, getUnlocksTooltip(elem), [=] { return techIndex == i + numPromotions;})
       );
       if (elem.tutorialHighlight && tutorial && tutorial->highlights.contains(*elem.tutorialHighlight))
@@ -2674,9 +2678,6 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
       if (elem.active)
         line = WL(stack, makeVec(
             WL(uiHighlightMouseOver, Color::GREEN),
-            WL(conditional, WL(uiHighlightLine), [this, i, numPromotions] {
-              return techIndex == i + numPromotions;
-            }),
             std::move(line),
             WL(button, getButtonCallback({UserInputId::LIBRARY_ADD, elem.id})),
             WL(conditionalStopKeys,
@@ -2708,7 +2709,7 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
   };
   auto isIndexActive = [techs = info.available, promotions = collectiveInfo.minionPromotions] (int index) {
     return (index < promotions.size() && promotions[index].canAdvance)
-        || (index >= promotions.size() && techs[index - promotions.size()].active);
+        || (index >= promotions.size());
   };
   auto advanceIndex = [this, getNextIndex, isIndexActive] (int dir) {
     auto index = getNextIndex(techIndex, dir);
