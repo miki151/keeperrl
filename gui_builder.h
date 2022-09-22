@@ -74,12 +74,12 @@ class GuiBuilder {
 
   struct OverlayInfo {
     SGuiElem elem;
-    enum Alignment { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, GAME_SPEED, MINIONS, IMMIGRATION, VILLAINS, TUTORIAL, MAP_HINT, CENTER } alignment;
+    enum Alignment { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, MINIONS, IMMIGRATION, VILLAINS, TUTORIAL, MAP_HINT, CENTER } alignment;
   };
   SGuiElem drawPlayerOverlay(const PlayerInfo&, bool dummy);
   void drawOverlays(vector<OverlayInfo>&, GameInfo&);
   SGuiElem drawMessages(const vector<PlayerMessage>&, int guiLength);
-  SGuiElem drawGameSpeedDialog();
+  SGuiElem getGameSpeedHotkeys();
   SGuiElem drawImmigrationOverlay(const vector<ImmigrantDataInfo>&, const optional<TutorialInfo>&, bool drawHelp);
   SGuiElem drawImmigrationHelp(const CollectiveInfo&);
   typedef function<void(Rectangle, optional<int>)> ItemMenuCallback;

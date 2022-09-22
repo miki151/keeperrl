@@ -675,7 +675,8 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
         WL(buttonRect, speedMenu),
         WL(conditionalStopKeys,
             WL(keyHandlerRect, speedMenu, {gui.getKey(C_BUILDINGS_LEFT)}, true),
-            [this]{ return !collectiveTabActive && !activeButton && !activeGroup;})
+            [this]{ return !collectiveTabActive && !activeButton && !activeGroup;}),
+        getGameSpeedHotkeys()
     ));
     int modifiedSquares = info.modifiedSquares;
     int totalSquares = info.totalSquares;
@@ -715,8 +716,7 @@ static Keybinding getHotkey(GuiBuilder::GameSpeed speed) {
   }
 }
 
-SGuiElem GuiBuilder::drawGameSpeedDialog() {
-  int keyMargin = 95;
+SGuiElem GuiBuilder::getGameSpeedHotkeys() {
   auto pauseFun = [this] {
     if (clock->isPaused())
       clock->cont();
@@ -725,12 +725,12 @@ SGuiElem GuiBuilder::drawGameSpeedDialog() {
   };
   vector<SGuiElem> hotkeys;
   hotkeys.push_back(WL(keyHandler, pauseFun, Keybinding("PAUSE")));
-  hotkeys.push_back(WL(keyHandler, pauseFun, {gui.getKey(C_BUILDINGS_CONFIRM)}));
+  hotkeys.push_back(WL(keyHandler, pauseFun, {gui.getKey(C_BUILDINGS_CONFIRM)}, true));
   for (GameSpeed speed : ENUM_ALL(GameSpeed)) {
     auto speedFun = [=] { gameSpeed = speed; clock->cont();};
     hotkeys.push_back(WL(keyHandler, speedFun, getHotkey(speed)));
   }
-  return WL(preferredSize, Vec2(10, 10), WL(stack, hotkeys));
+  return WL(stack, hotkeys);
 }
 
 SGuiElem GuiBuilder::drawSpecialTrait(const ImmigrantDataInfo::SpecialTraitInfo& trait) {
@@ -3176,8 +3176,6 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
       if (bottomWindow == IMMIGRATION_HELP)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationHelp, this), THIS_LINE,
             collectiveInfo), OverlayInfo::BOTTOM_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawGameSpeedDialog, this), THIS_LINE),
-           OverlayInfo::GAME_SPEED});
       break;
     }
     case GameInfo::InfoType::PLAYER: {
