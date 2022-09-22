@@ -280,15 +280,22 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
         return collectiveTabActive && collectiveTab == CollectiveTab::BUILDINGS && !activeGroup && !activeButton;
       }
   ));
-  keypressOnly.push_back(WL(conditionalStopKeys,
-      WL(keyHandler, [this, buttons] {
-        if (!!activeButton)
-          setActiveGroup(buttons[activeButton->num].groupName, none);
-        else {
-          collectiveTabActive = false;
-          clearActiveButton();
-        }
-      }, {gui.getKey(C_CHANGE_Z_LEVEL), gui.getKey(C_BUILDINGS_LEFT)}, true),
+  keypressOnly.push_back(WL(conditionalStopKeys, WL(stack,
+          WL(keyHandler, [this, buttons] {
+            collectiveTabActive = false;
+            clearActiveButton();
+          }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true),
+          WL(keyHandler, [this, buttons] {
+            if (!!activeButton && !!activeGroup)
+              setActiveGroup(buttons[activeButton->num].groupName, none);
+            else if (!!activeButton)
+              activeGroup = buttons[activeButton->num].groupName;
+            else {
+              collectiveTabActive = false;
+              clearActiveButton();
+            }
+          }, {gui.getKey(C_BUILDINGS_LEFT)}, true)
+      ),
       [this] {
         return collectiveTab == CollectiveTab::BUILDINGS && (!!activeGroup || !!activeButton);
       }
