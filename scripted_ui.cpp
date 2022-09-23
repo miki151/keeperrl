@@ -653,10 +653,16 @@ struct Focusable : ScriptedUIInterface {
     Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
     if (id == MouseButtonId::MOVED) {
       if (pos.inRectangle(bounds))
-        callback = [counter = context.elemCounter, &context] { context.state.highlightedElem = counter; return false; };
+        callback = [counter = context.elemCounter, &context, old = std::move(callback)] {
+          context.state.highlightedElem = counter;
+          return old ? old() : false;
+        };
       else
       if (context.state.highlightedElem == context.elemCounter)
-        callback = [&] { context.state.highlightedElem = none; return false;};
+        callback = [&context, old = std::move(callback)] {
+          context.state.highlightedElem = none;
+          return old ? old() : false;
+        };
     }
     ++context.elemCounter;
   }
@@ -989,14 +995,14 @@ struct Tooltip : Container {
     auto time = getValueMaybe(context.state.tooltipTimeouts, context.tooltipCounter);
     if (id == MouseButtonId::MOVED) {
       if (pos.inRectangle(bounds) && !time)
-        callback = [&, counter = context.tooltipCounter] {
+        callback = [&, counter = context.tooltipCounter, old = std::move(callback)] {
           context.state.tooltipTimeouts.insert({counter, Clock::getRealMillis() + milliseconds{500}});
-          return false;
+          return old ? old() : false;
         };
       if (!pos.inRectangle(bounds) && context.state.tooltipTimeouts.count(context.tooltipCounter))
-        callback = [&, counter = context.tooltipCounter] {
+        callback = [&, counter = context.tooltipCounter, old = std::move(callback)] {
           context.state.tooltipTimeouts.erase(counter);
-          return false;
+          return old ? old() : false;
         };
     }
   }

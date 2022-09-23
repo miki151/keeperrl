@@ -41,7 +41,7 @@ Def TopButtonWidth() 160 End
         Using "options"
           List(VERTICAL, {
               Using "callbackBool" { Focusable MarginLeft(-7, MarginRight(-10, NewHighlight())) Button() }
-              #Using "tooltip" GetTooltip(Label())
+              Using "tooltip" GetTooltip(Label())
               Height 35 Horizontal {
                 Stretch Position(MIDDLE_STRETCHED_X, Using "name" Label())
                 {
