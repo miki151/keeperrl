@@ -779,7 +779,13 @@ SGuiElem GuiFactory::buttonLabelSelected(const string& s, function<void()> f, bo
   auto text = label(s, Color::WHITE);
   if (centerHorizontally)
     text = centerHoriz(text);
-  auto ret = stack(margins(stack(standardButtonHighlight(), button(std::move(f))), -7, -5, -7, 3),
+  auto ret = stack(margins(stack(
+          standardButton(),
+          button(std::move(f)),
+          leftMargin(8, sprite(TexId::UI_HIGHLIGHT, Alignment::LEFT_CENTER)),
+          rightMargin(8, sprite(TexId::UI_HIGHLIGHT, Alignment::RIGHT_CENTER))
+      ),
+      -7, -5, -7, 3),
       std::move(text));
   if (matchTextWidth)
     ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
@@ -2806,7 +2812,6 @@ void GuiFactory::loadImages() {
   textures[TexId::HORI_CORNER1] = Texture(imagesPath.file("ui/horicorner1.png"));
   textures[TexId::HORI_CORNER2] = Texture(imagesPath.file("ui/horicorner2.png"));
   textures[TexId::HORI_LINE] = Texture(imagesPath.file("ui/horiline.png"));
-  textures[TexId::HORI_MIDDLE] = Texture(imagesPath.file("ui/horimiddle.png"));
   textures[TexId::VERT_BAR] = Texture(imagesPath.file("ui/vertbar.png"));
   textures[TexId::HORI_BAR] = Texture(imagesPath.file("ui/horibar.png"));
   textures[TexId::CORNER_TOP_LEFT] = Texture(imagesPath.file("ui/cornerTOPL.png"));
@@ -2838,13 +2843,6 @@ void GuiFactory::loadImages() {
   textures[TexId::WINDOW_CORNER_EXIT_HIGHLIGHT] = Texture(imagesPath.file("ui/corner2X_highlight.png"));
   textures[TexId::WINDOW_VERT_BAR] = Texture(imagesPath.file("ui/vertibarmsg1.png"));
   textures[TexId::MAIN_MENU_HIGHLIGHT] = Texture(imagesPath.file("ui/menu_highlight.png"));
-  textures[TexId::SPLASH1] = Texture(imagesPath.file("splash2f.png"));
-  textures[TexId::SPLASH2] = Texture(imagesPath.file("splash2e.png"));
-  textures[TexId::LOADING_SPLASH] = Texture(imagesPath.file(Random.choose(
-            "splash2a.png"_s,
-            "splash2b.png"_s,
-            "splash2c.png"_s,
-            "splash2d.png"_s)));
   textures[TexId::UI_HIGHLIGHT] = Texture(imagesPath.file("ui/ui_highlight.png"));
   textures[TexId::MINIMAP_BAR] = Texture(imagesPath.file("minimap_bar.png"));
   const int tabIconWidth = 42;
@@ -3189,15 +3187,16 @@ SGuiElem GuiFactory::icon(IconId id, Alignment alignment, Color color) {
   return sprite(iconTextures[(int) id], alignment, color);
 }
 
-static int trans1 = 1094;
-static int trans2 = 1693;
+Color GuiFactory::highlightColor() {
+  return Color(96, 86, 78, 120);
+}
 
 SGuiElem GuiFactory::uiHighlightMouseOver(Color c) {
   return mouseHighlight2(uiHighlightLine(c));
 }
 
 SGuiElem GuiFactory::uiHighlight(Color c) {
-  return rectangle(c.transparency(trans1), c.transparency(trans2));
+  return rectangle(c);
 }
 
 SGuiElem GuiFactory::uiHighlightLine(Color c) {

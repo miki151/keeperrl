@@ -14,30 +14,34 @@ Def Sliding() {
 }
 End
 
+
+Def TopButtonWidth() 160 End
+
 {
   BlockEvents
   ExitButtons()
   FocusKeys()
-  Window(Width 700 Height 700 {
+  WindowNoMargin(Width 700 Height 700 {
     Vertical {
+      Height 10 {}
       If "options"
         Position(MIDDLE, Horizontal {
-          Width 120 StandardButtonActivated(Label("General"))
+          Width TopButtonWidth() StandardButtonActivated(Label("General"))
           Width 15 {}
-          Using "set_keys" Width 120 StandardButton(Label("Keybindings"))
+          Using "set_keys" Width TopButtonWidth() StandardButton(Label("Keybindings"))
         })
       If "keybindings"
         Position(MIDDLE, Horizontal {
-          Using "set_options" Width 120 StandardButton(Label("General"))
+          Using "set_options" Width TopButtonWidth() StandardButton(Label("General"))
           Width 15 {}
-          Width 120 StandardButtonActivated(Label("Keybindings"))
+          Width TopButtonWidth() StandardButtonActivated(Label("Keybindings"))
         })
       Height 10 {}
-      Stretch Scrolling(MarginRight(10, {
+      Stretch Scrolling(Margins(15, MarginRight(10, {
         Using "options"
           List(VERTICAL, {
-              Using "callbackBool" { Focusable Frame(ColorId WHITE) Button() }
-              Using "tooltip" GetTooltip(Label())
+              Using "callbackBool" { Focusable MarginLeft(-7, MarginRight(-10, NewHighlight())) Button() }
+              #Using "tooltip" GetTooltip(Label())
               Height 35 Horizontal {
                 Stretch Position(MIDDLE_STRETCHED_X, Using "name" Label())
                 {
@@ -62,9 +66,10 @@ End
               Using "key" Position(RIGHT_CENTERED, Width 150 Label())
               Using "clicked" Button(false)
           })
-      }))
+      })))
       Height 10 {}
       Using "reset_keys" Position(MIDDLE, StandardButton(Label("Restore defaults")))
+      Height 10 {}
     }
   })
 }

@@ -14,17 +14,17 @@
       Height 10 {}
       Using "elems" List(VERTICAL,
         Height 30 {
-          Using "callback" Focusable MarginTop(-2, Frame(ColorId WHITE))
+          Using "callback" Focusable NewHighlight()
           Using "callback" Button()
           Using "tooltip" GetTooltip(List(VERTICAL, Height 30 Label()))
-          Horizontal {
+          Position(MIDDLE_STRETCHED_X, Horizontal {
             Using "view_id" ViewId()
             Width 5 {}
             {
               Using "name" Label(none, 19, ColorId GRAY)
               If "callback" Using "name" Label()
             }
-          }
+          })
         }
       )
     }

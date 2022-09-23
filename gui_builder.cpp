@@ -568,7 +568,7 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
     );
     for (int i : All(buttons)) {
       buttons[i] = WL(stack, makeVec(
-          WL(conditional, getIconHighlight(Color::GREEN), [this, i] {
+          WL(conditional, getIconHighlight(GuiFactory::highlightColor()), [this, i] {
             return int(collectiveTab) == i && collectiveTabActive;
           }),
           std::move(buttons[i]),

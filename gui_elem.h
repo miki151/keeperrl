@@ -301,10 +301,11 @@ class GuiFactory {
   SGuiElem minimapBar(SGuiElem icon1, SGuiElem icon2);
   SGuiElem icon(IconId, Alignment = Alignment::CENTER, Color = Color::WHITE);
   Texture& get(TexId);
-  SGuiElem uiHighlightMouseOver(Color = Color::GREEN);
-  SGuiElem uiHighlightConditional(function<bool()>, Color = Color::GREEN);
-  SGuiElem uiHighlightLine(Color = Color::GREEN);
-  SGuiElem uiHighlight(Color = Color::GREEN);
+  static Color highlightColor();
+  SGuiElem uiHighlightMouseOver(Color = highlightColor());
+  SGuiElem uiHighlightConditional(function<bool()>, Color = highlightColor());
+  SGuiElem uiHighlightLine(Color = highlightColor());
+  SGuiElem uiHighlight(Color = highlightColor());
   SGuiElem blink(SGuiElem);
   SGuiElem blink(SGuiElem, SGuiElem);
   SGuiElem tutorialHighlight();

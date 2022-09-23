@@ -64,10 +64,10 @@ Def MiniWindow2(Content) {
 }
 End
 
-Def Window(Content) {
+Def WindowImpl(Content, Margin) {
   Height 200 {}
   Margins(6, Width 0 Height 0 Texture(BACKGROUND_PATTERN))
-  Margins(45, Content)
+  Margins(Margin, Content)
   Position(TOP_STRETCHED, Margins(6, 2, 6, 0, Texture(HORI_BAR)))
   Position(BOTTOM_STRETCHED, Margins(6, 0, 6, 2, Texture(HORI_BAR, FLIP_Y)))
   Position(RIGHT_STRETCHED, MarginRight(6, Texture(WINDOW_VERT_BAR)))
@@ -82,6 +82,9 @@ Def Window(Content) {
   Position(BOTTOM_LEFT, Texture(WINDOW_CORNER, FLIP_Y))
 }
 End
+
+Def Window(Content) WindowImpl(Content, 45) End
+Def WindowNoMargin(Content) WindowImpl(Content, 30) End
 
 Def ButtonLayout(BOTTOM1, SIDE, CORNER) {
   Texture(BUTTON_BG)
@@ -104,9 +107,15 @@ Def StandardButton(Content) {
 }
 End
 
+Def NewHighlight()
+  MarginTop(2, MarginBottom(2, MarginLeft(-5, Fill(Rgb 96 86 78 120))))
+End
+
 Def StandardButtonActivated(Content) {
-  ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
+  ButtonLayout(BUTTON_BOTTOM, BUTTON_SIDE, BUTTON_CORNER)
   Position(MIDDLE, Margins(10, 5, 10, 8, Content))
+  Position(LEFT_CENTERED, MarginLeft(8, Texture(UI_HIGHLIGHT)))
+  Position(RIGHT_CENTERED, MarginRight(8, Texture(UI_HIGHLIGHT)))
 }
 End
 
