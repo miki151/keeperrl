@@ -574,6 +574,7 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
           std::move(buttons[i]),
           WL(button, [this, i]() { setCollectiveTab(CollectiveTab(i)); }),
           WL(keyHandler, [this] {
+            clearActiveButton();
             collectiveTabActive = true;
           }, {gui.getKey(C_BUILDINGS_UP)}, true),
           WL(conditionalStopKeys, WL(keyHandler, [this] {
