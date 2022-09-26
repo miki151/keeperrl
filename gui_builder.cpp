@@ -2683,12 +2683,12 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
       auto& elem = info.available[i];
       auto line = WL(renderInBounds, WL(label, capitalFirst(getName(elem.id)), elem.active ? Color::WHITE : Color::GRAY));
       line = WL(stack,
-          std::move(line),
           WL(conditional, WL(mouseHighlight2, getUnlocksTooltip(elem)),
               [this] { return !techIndex;}),
           WL(conditional, WL(uiHighlightLine), [this, i, numPromotions] {
             return techIndex == i + numPromotions;
           }),
+          std::move(line),
           WL(conditional, getUnlocksTooltip(elem), [=] { return techIndex == i + numPromotions;})
       );
       if (elem.tutorialHighlight && tutorial && tutorial->highlights.contains(*elem.tutorialHighlight))
@@ -2716,7 +2716,11 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
   for (int i : All(info.researched)) {
     auto& elem = info.researched[i];
     auto line = WL(renderInBounds, WL(label, capitalFirst(getName(elem.id)), Color::GRAY));
-    line = WL(stack, std::move(line), WL(mouseHighlight2, getUnlocksTooltip(elem)));
+    line = WL(stack,
+        std::move(line),
+        WL(conditional, WL(mouseHighlight2, getUnlocksTooltip(elem)),
+            [this] { return !techIndex;})
+    );
     lines.addElem(WL(rightMargin, rightElemMargin, std::move(line)));
   }
   auto getNextIndex = [numPromotions, numTechs] (optional<int> cur, int dir) -> optional<int> {
