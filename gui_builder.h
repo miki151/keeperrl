@@ -217,7 +217,7 @@ class GuiBuilder {
   ScrollPosition minionButtonsScroll;
   ScrollPosition minionsScroll;
   ScrollPosition lyingItemsScroll;
-  ScrollPosition villagesScroll;
+  ScrollPosition miniMenuScroll;
   ScrollPosition tasksScroll;
   ScrollPosition workshopsScroll;
   ScrollPosition workshopsScroll2;

@@ -1434,6 +1434,7 @@ static string getActionText(ItemAction a) {
 void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> callbacks,
     vector<SGuiElem> tooltips, Vec2 menuPos, int width, bool darkBg, bool exitOnCallback, int* selected) {
   auto lines = WL(getListBuilder, legendLineHeight);
+  auto allElems = vector<SGuiElem>();
   auto selectedDefault = -1;
   if (!selected)
     selected = &selectedDefault;
@@ -1458,7 +1459,8 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
             [](Rectangle rect) { return rect.topRight(); }));
       }
     }
-    lines.addElem(WL(stack, std::move(stack)));
+    allElems.push_back(WL(stack, std::move(stack)));
+    lines.addElem(allElems.back());
   }
   auto content = WL(stack,
       lines.buildVerticalList(),
@@ -1467,6 +1469,7 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
           auto ind = (*selected - i - 1 + elems.size()) % elems.size();
           if (!!callbacks[ind] || (ind < tooltips.size() && !!tooltips[ind])) {
             *selected = ind;
+            miniMenuScroll.setRelative(allElems[ind]->getBounds().top(), clock->getRealMillis());
             break;
           }
         }
@@ -1476,6 +1479,7 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
           auto ind = (*selected + i + 1) % elems.size();
           if (!!callbacks[ind] || (ind < tooltips.size() && !!tooltips[ind])) {
             *selected = ind;
+            miniMenuScroll.setRelative(allElems[ind]->getBounds().top(), clock->getRealMillis());
             break;
           }
         }
@@ -1493,7 +1497,9 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
 
 void GuiBuilder::drawMiniMenu(SGuiElem elem, bool& exit, Vec2 menuPos, int width, bool darkBg) {
   int margin = 15;
-  elem = WL(scrollable, WL(margins, std::move(elem), 5 + margin, margin, 5 + margin, margin));
+  miniMenuScroll.reset();
+  elem = WL(scrollable, WL(margins, std::move(elem), 5 + margin, margin, 5 + margin, margin),
+      &miniMenuScroll, &scrollbarsHeld);
   elem = WL(miniWindow, std::move(elem),
           [&] { exit = true; });
   drawMiniMenu(std::move(elem), [&]{ return exit; }, menuPos, width, darkBg);
@@ -1689,7 +1695,7 @@ SGuiElem GuiBuilder::drawSpellsList(const vector<SpellInfo>& spells, GenericId c
             abilityIndex = getNextSpell(-1, 1);
             if (abilityIndex) {
               renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
-              inventoryScroll.setRelative(firstSpell->getBounds().top(), milliseconds{0});
+              inventoryScroll.setRelative(firstSpell->getBounds().top(), clock->getRealMillis());
             }
           }, {gui.getKey(C_ABILITIES)}, true),
           WL(conditionalStopKeys, WL(stack, makeVec(
@@ -1881,19 +1887,22 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
       auto elem = WL(stack,
           WL(conditionalStopKeys, WL(stack,
               WL(uiHighlightLine),
-              WL(keyHandlerRect, [=](Rectangle bounds) { if (inventoryIndex == i) callback(bounds); },
-                  getConfirmationKeys(), true)
+              WL(keyHandlerRect, [=](Rectangle bounds) {
+                if (inventoryIndex == i) {
+                  callback(bounds);
+                }
+              }, getConfirmationKeys(), true)
           ), [this, i] { return inventoryIndex == i; }),
           WL(conditionalStopKeys,
               WL(keyHandlerRect, [i, this, size = list.getSize()](Rectangle bounds) {
                 *inventoryIndex = i;
-                inventoryScroll.setRelative(bounds.top(), milliseconds{0});
+                inventoryScroll.setRelative(bounds.top(), clock->getRealMillis());
               }, {gui.getKey(C_MENU_DOWN)}, true),
               [this, i, cnt = info.inventory.size()] { return inventoryIndex == (i - 1 + cnt) % cnt; }),
           WL(conditionalStopKeys,
               WL(keyHandlerRect, [i, this, size = list.getSize()](Rectangle bounds) {
                 *inventoryIndex = i;
-                inventoryScroll.setRelative(bounds.top(), milliseconds{0});
+                inventoryScroll.setRelative(bounds.top(), clock->getRealMillis());
               }, {gui.getKey(C_MENU_UP)}, true),
               [this, i, cnt = info.inventory.size()] { return inventoryIndex == (i + 1) % cnt; }),
           getItemLine(item, callback));
@@ -1922,7 +1931,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
       WL(keyHandler, [this, firstInventoryItem] {
         inventoryIndex = 0;
         renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
-        inventoryScroll.setRelative(firstInventoryItem->getBounds().top(), milliseconds{0});
+        inventoryScroll.setRelative(firstInventoryItem->getBounds().top(), clock->getRealMillis());
       }, {gui.getKey(C_INVENTORY)}, true),
       WL(conditionalStopKeys,
           WL(keyHandler, [this] {
