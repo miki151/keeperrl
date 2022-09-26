@@ -1659,9 +1659,12 @@ SGuiElem GuiBuilder::drawSpellsList(const vector<SpellInfo>& spells, GenericId c
     auto list = WL(getListBuilder, spellIconSize.y);
     list.addElem(WL(label, "Abilities", Color::YELLOW), legendLineHeight);
     auto line = WL(getListBuilder);
+    SGuiElem firstSpell;
     for (int index : All(spells)) {
       auto& elem = spells[index];
       auto icon = getSpellIcon(elem, index, active, creatureId);
+      if (!firstSpell)
+        firstSpell = icon;
       line.addElemAuto(std::move(icon));
       if (line.getLength() >= spellsPerRow) {
         list.addElem(line.buildHorizontalList());
@@ -1682,13 +1685,15 @@ SGuiElem GuiBuilder::drawSpellsList(const vector<SpellInfo>& spells, GenericId c
         return none;
       };
       ret = WL(stack,
-          WL(keyHandler, [this, getNextSpell] {
+          WL(keyHandler, [this, getNextSpell, firstSpell] {
             abilityIndex = getNextSpell(-1, 1);
-            if (abilityIndex)
+            if (abilityIndex) {
               renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
+              inventoryScroll.setRelative(firstSpell->getBounds().top(), milliseconds{0});
+            }
           }, {gui.getKey(C_ABILITIES)}, true),
           WL(conditionalStopKeys, WL(stack, makeVec(
-              WL(keyHandler, [=, cnt = spells.size()] { 
+              WL(keyHandler, [=, cnt = spells.size()] {
                 abilityIndex = getNextSpell(*abilityIndex, 1);
                 if (!abilityIndex)
                   renderer.getSteamInput()->popActionSet();
@@ -1711,6 +1716,7 @@ SGuiElem GuiBuilder::drawSpellsList(const vector<SpellInfo>& spells, GenericId c
               WL(keyHandler, [this] {
                 abilityIndex = none;
                 renderer.getSteamInput()->popActionSet();
+                inventoryScroll.reset();
               }, {gui.getKey(C_MENU_CANCEL)}, true)
           )), [this] { return !!abilityIndex; }),
           std::move(ret)
@@ -1863,6 +1869,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
         WL(button, getButtonCallback(UserInputId::PAY_DEBT))));
     list.addSpace();
   }
+  SGuiElem firstInventoryItem;
   if (!info.inventory.empty()) {
     list.addElem(WL(label, "Inventory", Color::YELLOW));
     for (int i : All(info.inventory)) {
@@ -1871,7 +1878,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
         if (auto choice = getItemChoice(item, butBounds.bottomLeft() + Vec2(50, 0), false))
           callbacks.input({UserInputId::INVENTORY_ITEM, InventoryItemInfo{item.ids, *choice}});
       };
-      list.addElem(WL(stack,
+      auto elem = WL(stack,
           WL(conditionalStopKeys, WL(stack,
               WL(uiHighlightLine),
               WL(keyHandlerRect, [=](Rectangle bounds) { if (inventoryIndex == i) callback(bounds); },
@@ -1880,17 +1887,19 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
           WL(conditionalStopKeys,
               WL(keyHandlerRect, [i, this, size = list.getSize()](Rectangle bounds) {
                 *inventoryIndex = i;
-                inventoryScroll.set(size - 50, milliseconds{0});
+                inventoryScroll.setRelative(bounds.top(), milliseconds{0});
               }, {gui.getKey(C_MENU_DOWN)}, true),
               [this, i, cnt = info.inventory.size()] { return inventoryIndex == (i - 1 + cnt) % cnt; }),
           WL(conditionalStopKeys,
               WL(keyHandlerRect, [i, this, size = list.getSize()](Rectangle bounds) {
                 *inventoryIndex = i;
-                inventoryScroll.set(size - 50, milliseconds{0});
+                inventoryScroll.setRelative(bounds.top(), milliseconds{0});
               }, {gui.getKey(C_MENU_UP)}, true),
               [this, i, cnt = info.inventory.size()] { return inventoryIndex == (i + 1) % cnt; }),
-          getItemLine(item, callback))
-      );
+          getItemLine(item, callback));
+      if (!firstInventoryItem)
+        firstInventoryItem = elem;
+      list.addElem(std::move(elem));
     }
     double totWeight = 0;
     for (auto& item : info.inventory)
@@ -1910,9 +1919,10 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   if (auto elem = drawTrainingInfo(info.experienceInfo))
     list.addElemAuto(std::move(elem));
   return WL(stack, makeVec(
-      WL(keyHandler, [this] {
+      WL(keyHandler, [this, firstInventoryItem] {
         inventoryIndex = 0;
         renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
+        inventoryScroll.setRelative(firstInventoryItem->getBounds().top(), milliseconds{0});
       }, {gui.getKey(C_INVENTORY)}, true),
       WL(conditionalStopKeys,
           WL(keyHandler, [this] {

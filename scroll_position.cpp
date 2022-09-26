@@ -10,6 +10,13 @@ ScrollPosition::ScrollPosition() {
 ScrollPosition::ScrollPosition(double pos) : start(pos), target(pos) {
 }
 
+void ScrollPosition::setRelative(double val, milliseconds currentTime) {
+  if (knownBounds)
+    set(target + val- knownBounds->first, currentTime);
+  else
+    set(val, currentTime);
+}
+
 void ScrollPosition::set(double val, milliseconds currentTime) {
   start = get(currentTime);
   targetTime = currentTime + scrollTime;

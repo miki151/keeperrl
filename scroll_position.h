@@ -9,6 +9,7 @@ class ScrollPosition {
   ScrollPosition();
   explicit ScrollPosition(double pos);
   void set(double, milliseconds);
+  void setRelative(double, milliseconds);
   void setRatio(double, milliseconds);
   void reset(double);
   void setBounds(double min, double max);
