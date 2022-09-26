@@ -1440,7 +1440,7 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
     selected = &selectedDefault;
   bool exit = false;
   for (int i : All(elems)) {
-    vector<SGuiElem> stack = {std::move(elems[i])};
+    vector<SGuiElem> stack;
     if (callbacks[i] || i < tooltips.size()) {
       if (callbacks[i])
         stack.push_back(WL(button, [&exit, exitOnCallback, c = callbacks[i]] {
@@ -1459,6 +1459,7 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
             [](Rectangle rect) { return rect.topRight(); }));
       }
     }
+    stack.push_back(std::move(elems[i]));
     allElems.push_back(WL(stack, std::move(stack)));
     lines.addElem(allElems.back());
   }
@@ -4983,7 +4984,12 @@ SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textCo
   return WL(stack,
       WL(centerHoriz, WL(labelHighlight, info.name, textColor)),
       info.zLevels.empty() ? WL(empty) : WL(buttonRect, callback),
-      WL(keyHandlerRect, callback, {gui.getKey(C_CHANGE_Z_LEVEL)}, true));
+      WL(keyHandlerRect, [this, callback](Rectangle bounds) {
+        if (!bottomWindow)
+          callback(bounds);
+        else
+          closeOverlayWindows();
+      }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true));
 }
 
 SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
