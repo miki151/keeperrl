@@ -4979,7 +4979,7 @@ SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textCo
       lines.push_back(WL(centerHoriz, std::move(elem)));
     }
     drawMiniMenu(std::move(lines), std::move(callbacks), {},
-        Vec2(bounds.middle().x - maxWidth / 2 - 30, bounds.bottom()), maxWidth + 60, false);
+        Vec2(bounds.middle().x - maxWidth / 2 - 30, bounds.bottom()), maxWidth + 60, true);
   };
   return WL(stack,
       WL(centerHoriz, WL(labelHighlight, info.name, textColor)),
