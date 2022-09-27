@@ -84,4 +84,7 @@ class MySteamInput {
   bool isPressed(ControllerKey);
   queue<ControllerKey> actionQueue;
   optional<GameActionLayer> actionLayer;
+  private:
+  void detectControllers();
+  optional<milliseconds> lastControllersCheck;
 };

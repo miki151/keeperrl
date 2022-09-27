@@ -1,14 +1,20 @@
 #include "steam_input.h"
 #include "extern/steamworks/public/steam/isteaminput.h"
+#include "clock.h"
 
 void MySteamInput::init() {
   if (auto steamInput = SteamInput()) {
     steamInput->Init(true);
-    controllers = vector<InputHandle_t>(STEAM_INPUT_MAX_COUNT, 0);
-    steamInput->RunFrame();
-    int cnt = steamInput->GetConnectedControllers(controllers.data());
-    controllers.resize(cnt);
-    CHECK(cnt > 0) << "No controller found";
+    detectControllers();
+  }
+}
+
+void MySteamInput::detectControllers() {
+  auto currentTime = Clock::getRealMillis();
+  if (!!lastControllersCheck && currentTime - *lastControllersCheck < milliseconds{1000})
+    return;
+  lastControllersCheck = currentTime;
+  if (auto steamInput = SteamInput()) {
     auto getActionInfo = [&] (string name, ActionSet actionSet) {
       return ActionInfo {
         steamInput->GetDigitalActionHandle(name.data()),
@@ -60,7 +66,25 @@ void MySteamInput::init() {
     joyHandles[ControllerJoy::DIRECTION] = steamInput->GetAnalogActionHandle("direction_joy");
     gameActionLayers[GameActionLayer::TURNED_BASED] = steamInput->GetActionSetHandle("TurnBased");
     gameActionLayers[GameActionLayer::REAL_TIME] = steamInput->GetActionSetHandle("RealTime");
-    pushActionSet(ActionSet::GAME);
+    if (actionSetStack.empty())
+      pushActionSet(ActionSet::GAME);
+    vector<InputHandle_t> controllersTmp(STEAM_INPUT_MAX_COUNT, 0);
+    steamInput->RunFrame();
+    int cnt = steamInput->GetConnectedControllers(controllersTmp.data());
+    if (cnt == controllers.size())
+      return;
+    std::cout << "Detected " << cnt << " controllers" << std::endl;
+    controllersTmp.resize(cnt);
+    controllers = controllersTmp;
+    steamInput->RunFrame();
+    for (auto c : controllers) {
+      steamInput->DeactivateAllActionSetLayers(c);
+      auto actionSet = actionSetStack.back();
+      steamInput->ActivateActionSet(c, actionSets.at(actionSet));
+      CHECK(steamInput->GetCurrentActionSet(c) == actionSets.at(actionSet));
+      if (actionSet == ActionSet::GAME && !!actionLayer)
+        steamInput->ActivateActionSetLayer(c, gameActionLayers.at(*actionLayer));
+    }
   }
 }
 
@@ -77,6 +101,7 @@ bool MySteamInput::isPressed(ControllerKey key) {
 
 void MySteamInput::runFrame() {
   if (auto steamInput = SteamInput()) {
+    detectControllers();
     if (actionSetStack.back() == ActionSet::GAME && !actionLayer)
       return;
     steamInput->RunFrame();
