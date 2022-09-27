@@ -1962,7 +1962,7 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
   auto teamList = WL(getListBuilder);
   for (int i : All(info.teamInfos)) {
     auto& member = info.teamInfos[i];
-    auto icon = WL(margins, WL(viewObject, member.viewId, 2), 1);
+    auto icon = WL(margins, WL(viewObject, member.viewId, 1), 1);
     if (member.creatureId != info.creatureId)
       icon = WL(stack,
           WL(mouseHighlight2, getIconHighlight(Color::GREEN)),
@@ -1974,8 +1974,8 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
       if (member.creatureId == info.creatureId)
         icon = WL(stack,
             std::move(icon),
-            WL(translate, WL(translucentBackgroundPassMouse, WL(translate, WL(labelUnicode, u8"⬆"), Vec2(2, -1))),
-                Vec2(16, 50), Vec2(17, 21))
+            WL(translate, WL(translate, WL(labelUnicode, u8"⬆", Color::WHITE, 14), Vec2(2, -1)),
+                Vec2(6, 30), Vec2(17, 21))
         );
       if (member.isPlayerControlled)
         icon = WL(stack,
@@ -2007,7 +2007,7 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
       );
     }
     teamList.addElemAuto(std::move(icon));
-    if (teamList.getLength() >= 5) {
+    if (teamList.getLength() >= 9) {
       vList.addElemAuto(WL(margins, teamList.buildHorizontalList(), 0, 25, 0, 0));
       teamList.clear();
     }
