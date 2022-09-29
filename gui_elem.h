@@ -82,7 +82,8 @@ class GuiFactory {
   SDL::SDL_Keysym getKey(SDL::SDL_Keycode);
   SGuiElem button(function<void()>, SDL::SDL_Keysym, bool capture = false);
   SGuiElem button(function<void()>, bool capture = false);
-  SGuiElem textField(int maxLength, function<string()> text, function<void(string)> callback);
+  SGuiElem textField(int maxLength, function<string()> text, function<void(string)> callback,
+      function<bool()> controllerFocus);
   SGuiElem textFieldFocused(int maxLength, function<string()> text, function<void(string)> callback);
   SGuiElem buttonPos(function<void(Rectangle, Vec2)>);
   SGuiElem buttonRightClick(function<void()>);
@@ -167,11 +168,16 @@ class GuiFactory {
       bool centerHorizontally = false, bool unicode = false);
   SGuiElem buttonLabel(const string&, function<void()> button, bool matchTextWidth = true,
       bool centerHorizontally = false, bool unicode = false);
+
+  SGuiElem buttonLabelFocusable(const string&, function<void()> button, function<bool()> focused,
+      bool matchTextWidth = true, bool centerHorizontally = false, bool unicode = false);
   SGuiElem buttonLabelBlink(const string&, function<void()> button);
-  SGuiElem buttonLabelWithMargin(const string&, bool matchTextWidth = true);
+  SGuiElem buttonLabelWithMargin(const string&, function<bool()> focused);
   SGuiElem buttonLabelSelected(const string&, function<void()> button, bool matchTextWidth = true,
       bool centerHorizontally = false);
-  SGuiElem buttonLabelInactive(const string&, bool matchTextWidth = true);
+  SGuiElem buttonLabelSelectedFocusable(const string&, function<void()> button, function<bool()> focused,
+      bool matchTextWidth = true, bool centerHorizontally = false);
+  SGuiElem buttonLabelInactive(const string&, bool matchTextWidth = true, bool centerText = false);
   SGuiElem labelHighlight(const string&, Color = Color::WHITE, char hotkey = 0);
   SGuiElem labelHighlightBlink(const string& s, Color, Color, char hotkey = 0);
   SGuiElem label(const string&, int size, Color = Color::WHITE);
@@ -234,6 +240,7 @@ class GuiFactory {
   SGuiElem tooltip2(SGuiElem, PositionFun);
   SGuiElem darken();
   SGuiElem stopMouseMovement();
+  SGuiElem stopKeyEvents();
   SGuiElem fullScreen(SGuiElem);
   SGuiElem absolutePosition(SGuiElem content, Vec2 pos);
   SGuiElem alignment(GuiFactory::Alignment, SGuiElem, optional<Vec2> size = none);

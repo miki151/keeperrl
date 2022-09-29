@@ -2037,7 +2037,7 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
     if (auto text = gui.getKeybindingMap()->getText(keybinding))
       label = "[" + *text + "] " + label;
     vList.addElem(WL(stack,
-        WL(buttonLabel, label, WL(button, callback)),
+        WL(buttonLabel, label, callback),
         WL(keyHandler, callback, keybinding)
     ));
     vList.addSpace(legendLineHeight / 2);
@@ -2049,7 +2049,7 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
     if (auto text = gui.getKeybindingMap()->getText(keybinding))
       label = "[" + *text + "] " + label;
     vList.addElem(WL(stack,
-        WL(buttonLabel, label, WL(button, callback)),
+        WL(buttonLabel, label, callback),
         WL(keyHandler, callback, keybinding),
         WL(keyHandler, callback, {gui.getKey(C_EXIT_CONTROL_MODE)})
     ));
@@ -4213,18 +4213,25 @@ static const char* getText(AvatarMenuOption option) {
 SGuiElem GuiBuilder::drawGenderButtons(const vector<View::AvatarData>& avatars,
     shared_ptr<int> gender, shared_ptr<int> chosenAvatar) {
   vector<SGuiElem> genderOptions;
-  for (int avatarIndex : All(avatars))
-    if (!avatars[avatarIndex].genderNames.empty()) {
-      auto& avatar = avatars[avatarIndex];
+  for (int index : All(avatars))
+    if (!avatars[index].genderNames.empty()) {
+      auto& avatar = avatars[index];
       auto genderList = WL(getListBuilder);
       if (avatar.viewId.size() > 1 || !avatar.settlementNames)
         for (int i : All(avatar.viewId)) {
           auto selectFun = [i, gender] { *gender = i; };
+          auto focusedFun = [this, i] { return avatarIndex == AvatarIndexElems::GenderIndex{i};};
           genderList.addElemAuto(WL(conditional,
-              WL(conditional, WL(buttonLabelSelected, capitalFirst(avatar.genderNames[i]), selectFun, false, true),
-                  WL(buttonLabel, capitalFirst(capitalFirst(avatar.genderNames[i])), selectFun, false, true),
-                [gender, i] { return *gender == i; }),
-              [=] { return avatarIndex == *chosenAvatar; }));
+              WL(conditional,
+                  WL(buttonLabelSelectedFocusable, capitalFirst(avatar.genderNames[i]), selectFun, focusedFun,
+                      false, true),
+                  WL(stack,
+                      WL(buttonLabelFocusable, capitalFirst(capitalFirst(avatar.genderNames[i])), selectFun, focusedFun,
+                          false, true),
+                      WL(conditionalStopKeys, WL(keyHandler, selectFun, getConfirmationKeys(), true), focusedFun)
+                  ),
+                  [gender, i] { return *gender == i; }),
+              [=] { return index == *chosenAvatar; }));
         }
       genderOptions.push_back(genderList.buildHorizontalListFit(0.2));
     }
@@ -4241,27 +4248,42 @@ const auto randomFirstNameTag = "<random>"_s;
 SGuiElem GuiBuilder::drawFirstNameButtons(const vector<View::AvatarData>& avatars,
     shared_ptr<int> gender, shared_ptr<int> chosenAvatar, shared_ptr<int> chosenName) {
   vector<SGuiElem> firstNameOptions = {};
-  for (int avatarIndex : All(avatars)) {
-    auto& avatar = avatars[avatarIndex];
-    for (int genderIndex : All(avatar.viewId)) 
+  for (int index : All(avatars)) {
+    auto& avatar = avatars[index];
+    for (int genderIndex : All(avatar.viewId))
       if (avatar.firstNames.size() > genderIndex) {
+        auto focusedRollFun = [this] {
+          return avatarIndex == AvatarIndexElems::RollNameIndex{};
+        };
+        auto focusedNameFun = [this] {
+          return avatarIndex == AvatarIndexElems::EnterNameIndex{};
+        };
+        auto rollFunConfirm = [=] { options->setValue(avatar.nameOption, randomFirstNameTag); ++*chosenName; };
         auto elem = WL(getListBuilder)
             .addElemAuto(WL(label, avatar.settlementNames ? "Settlement: " : "First name: "))
-            .addMiddleElem(WL(textField, maxFirstNameLength,
-                [=] {
-                  auto entered = options->getValueString(avatar.nameOption);
-                  return entered == randomFirstNameTag ?
-                      avatar.firstNames[genderIndex][*chosenName % avatar.firstNames[genderIndex].size()] :
-                      entered;
-                },
-                [=] (string s) {
-                  options->setValue(avatar.nameOption, s);
-                }))
+            .addMiddleElem(WL(stack,
+                WL(textField, maxFirstNameLength,
+                    [=] {
+                      auto entered = options->getValueString(avatar.nameOption);
+                      return entered == randomFirstNameTag ?
+                          avatar.firstNames[genderIndex][*chosenName % avatar.firstNames[genderIndex].size()] :
+                          entered;
+                    },
+                    [=] (string s) {
+                      options->setValue(avatar.nameOption, s);
+                    },
+                    focusedNameFun),
+                WL(conditional, WL(topMargin, -4, WL(bottomMargin, 4, WL(rectangle, Color::TRANSPARENT, Color::WHITE))),
+                    focusedNameFun)
+            ))
             .addSpace(10)
-            .addBackElemAuto(WL(buttonLabel, "🔄", [=] { options->setValue(avatar.nameOption, randomFirstNameTag); ++*chosenName; }, true, false, true))
+            .addBackElemAuto(WL(stack,
+                WL(buttonLabelFocusable, "🔄", rollFunConfirm, focusedRollFun, true, false, true),
+                WL(conditionalStopKeys, WL(keyHandler, rollFunConfirm, getConfirmationKeys(), true), focusedRollFun)
+            ))
             .buildHorizontalList();
-        firstNameOptions.push_back(WL(conditional, std::move(elem),
-            [=]{ return getChosenGender(gender, chosenAvatar, avatars) == genderIndex && avatarIndex == *chosenAvatar; }));
+        firstNameOptions.push_back(WL(conditionalStopKeys, std::move(elem),
+            [=]{ return getChosenGender(gender, chosenAvatar, avatars) == genderIndex && index == *chosenAvatar; }));
       }
   }
   return WL(stack, std::move(firstNameOptions));
@@ -4297,17 +4319,22 @@ SGuiElem GuiBuilder::drawRoleButtons(shared_ptr<View::AvatarRole> chosenRole, sh
           return true;
       return false;
     }();
-    if (hasAvatars)
+    if (hasAvatars) {
+      auto focusedFun = [this, role] { return avatarIndex == AvatarIndexElems::RoleIndex{int(role)};};
       roleList.addElemAuto(
-          WL(conditional, WL(buttonLabelSelected, capitalFirst(getName(role)), chooseFun, false, true),
-              WL(buttonLabel, capitalFirst(getName(role)), chooseFun, false, true),
+          WL(conditional,
+              WL(buttonLabelSelectedFocusable, capitalFirst(getName(role)), chooseFun, focusedFun,
+                  false, true),
+              WL(stack,
+                  WL(buttonLabelFocusable, capitalFirst(getName(role)), chooseFun, focusedFun, false, true),
+                  WL(conditionalStopKeys, WL(keyHandler, chooseFun, getConfirmationKeys(), true), focusedFun)
+              ),
               [chosenRole, role] { return *chosenRole == role; })
       );
+    }
   }
   return roleList.buildHorizontalListFit(0.2);
 }
-
-constexpr int avatarsPerPage = 10;
 
 SGuiElem GuiBuilder::drawChosenCreatureButtons(View::AvatarRole role, shared_ptr<int> chosenAvatar, shared_ptr<int> gender,
     int page, const vector<View::AvatarData>& avatars) {
@@ -4321,20 +4348,33 @@ SGuiElem GuiBuilder::drawChosenCreatureButtons(View::AvatarRole role, shared_ptr
     auto viewIdFun = [gender, id = elem.viewId] { return id[min(*gender, id.size() - 1)]; };
     if (elem.role == role) {
       if (processed >= start && processed < end) {
-        if (elem.unlocked)
+        Vec2 coord(line.getLength(), allLines.getLength());
+        if (elem.unlocked) {
+          auto selectFun = [i, chosenAvatar]{ *chosenAvatar = i; };
+          auto icon = WL(stack,
+              WL(conditionalStopKeys, WL(stack,
+                  WL(uiHighlight),
+                  WL(keyHandler, selectFun, getConfirmationKeys(), true)
+              ), [this, coord] { return avatarIndex == AvatarIndexElems::CreatureIndex{coord};}),
+              WL(viewObject, viewIdFun, 2)
+          );
           line.addElemAuto(WL(stack,
-              WL(button, [i, chosenAvatar]{ *chosenAvatar = i; }),
+              WL(button, selectFun),
               WL(mouseHighlight2,
-                  WL(rightMargin, 10, WL(topMargin, -5, WL(viewObject, viewIdFun, 2))),
+                  WL(rightMargin, 10, WL(topMargin, -5, icon)),
                   WL(rightMargin, 10, WL(conditional2,
-                      WL(topMargin, -5, WL(viewObject, viewIdFun, 2)),
-                      WL(viewObject, viewIdFun, 2), [=](GuiElem*){ return *chosenAvatar == i;})))
+                      WL(topMargin, -5, icon),
+                      icon, [=](GuiElem*){ return *chosenAvatar == i;})))
           ));
-        else
-          line.addElemAuto(WL(rightMargin, 10, WL(viewObject, ViewId("unknown_monster", Color::GRAY), 2)));
+        } else
+          line.addElemAuto(WL(stack,
+              WL(conditionalStopKeys, WL(rightMargin, 10, WL(uiHighlight)),
+                  [this, coord] { return avatarIndex == AvatarIndexElems::CreatureIndex{coord};}),
+              WL(rightMargin, 10, WL(viewObject, ViewId("unknown_monster", Color::GRAY), 2))
+          ));
       }
       ++processed;
-      if (line.getLength() >= 5) {
+      if (line.getLength() >= avatarsPerPage / 2) {
         allLines.addElemAuto(line.buildHorizontalList());
         line.clear();
       }
@@ -4357,27 +4397,49 @@ SGuiElem GuiBuilder::drawAvatarsForRole(const vector<View::AvatarData>& avatars,
     vector<SGuiElem> avatarPages;
     const int numPages = 1 + (numAvatars - 1) / avatarsPerPage;
     for (int page = 0; page < numPages; ++page)
-      avatarPages.push_back(WL(conditional,
+      avatarPages.push_back(WL(conditionalStopKeys,
           drawChosenCreatureButtons(role, chosenAvatar, gender, page, avatars),
           [avatarPage, page] { return *avatarPage == page; }));
     maxAvatarPagesHeight = max(maxAvatarPagesHeight, *avatarPages[0]->getPreferredHeight());
     if (numPages > 1) {
+      auto leftFocused = [this] {
+        return avatarIndex == AvatarIndexElems::PageButtonsIndex{0};
+      };
+      auto rightFocused = [this] {
+        return avatarIndex == AvatarIndexElems::PageButtonsIndex{1};
+      };
+      auto leftAction = [this, avatarPage, &avatars, chosenAvatar, chosenRole] {
+        *avatarPage = max(0, *avatarPage - 1);
+        if (*avatarPage == 0)
+          avatarIndex.right(avatars, *chosenAvatar, *chosenRole, 0);
+      };
+      auto rightAction = [this, numPages, avatarPage, &avatars, chosenAvatar, chosenRole] {
+        *avatarPage = min(numPages - 1, *avatarPage + 1);
+        if (*avatarPage == numPages - 1)
+          avatarIndex.left(avatars, *chosenAvatar, *chosenRole, numPages - 1);
+      };
       avatarPages.push_back(WL(alignment, GuiFactory::Alignment::BOTTOM_RIGHT,
           WL(translate,
               WL(getListBuilder, 24)
-                .addElem(WL(conditional2,
-                    WL(buttonLabel, "<", [avatarPage]{ *avatarPage = max(0, *avatarPage - 1); }),
+                .addElem(WL(conditional2, WL(stack,
+                        WL(buttonLabelFocusable, "<", leftAction, leftFocused),
+                        WL(conditionalStopKeys, WL(keyHandler, leftAction, getConfirmationKeys(), true),
+                            leftFocused)
+                    ),
                     WL(buttonLabelInactive, "<"),
                     [=] (GuiElem*) { return *avatarPage > 0; }))
-                .addElem(WL(conditional2,
-                    WL(buttonLabel, ">", [=]{ *avatarPage = min(numPages - 1, *avatarPage + 1); }),
+                .addElem(WL(conditional2, WL(stack,
+                        WL(buttonLabelFocusable, ">", rightAction, rightFocused),
+                        WL(conditionalStopKeys, WL(keyHandler, rightAction, getConfirmationKeys(), true),
+                            rightFocused)
+                    ),
                     WL(buttonLabelInactive, ">"),
                     [=] (GuiElem*) { return *avatarPage < numPages - 1; }))
                 .buildHorizontalList(),
              Vec2(12, 32), Vec2(48, 30)
           )));
     }
-    avatarsForRole.push_back(WL(conditional, WL(stack, std::move(avatarPages)),
+    avatarsForRole.push_back(WL(conditionalStopKeys, WL(stack, std::move(avatarPages)),
         [chosenRole, role] { return *chosenRole == role; }));
   }
   return WL(setHeight, maxAvatarPagesHeight, WL(stack, std::move(avatarsForRole)));
@@ -4385,6 +4447,7 @@ SGuiElem GuiBuilder::drawAvatarsForRole(const vector<View::AvatarData>& avatars,
 
 SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>& queue,
     const vector<View::AvatarData>& avatars) {
+  avatarIndex.assign(AvatarIndexElems::RoleIndex{0});
   for (auto& avatar : avatars)
     if (options->getValueString(avatar.nameOption).empty())
       options->setValue(avatar.nameOption, randomFirstNameTag);
@@ -4405,7 +4468,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   rightLines.addSpace(12);
   rightLines.addElem(WL(labelFun, [&avatars, chosenAvatar] {
         if (auto alignment = avatars[*chosenAvatar].alignment)
-          return capitalFirst(avatars[*chosenAvatar].name) + 
+          return capitalFirst(avatars[*chosenAvatar].name) +
             ", " + getName(*alignment);
         else
           return capitalFirst(avatars[*chosenAvatar].name);
@@ -4420,7 +4483,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   for (int avatarIndex : All(avatars)) {
     auto& avatar = avatars[avatarIndex];
     const auto maxWidth = 750;
-    auto description = 
+    auto description =
         WL(labelMultiLineWidth, avatar.description, legendLineHeight, maxWidth, Renderer::textSize(), Color::LIGHT_GRAY);
     descriptions.push_back(WL(conditional,
         std::move(description),
@@ -4428,32 +4491,57 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   }
   lines.addBackElem(WL(stack, descriptions), 2.5 * legendLineHeight);
   lines.addBackSpace(10);
-  lines.addBackElem(WL(centerHoriz, WL(buttonLabel, "Start new game",
-      [&queue, chosenAvatar, chosenName, gender, &avatars, this] {
-        auto chosenGender = getChosenGender(gender, chosenAvatar, avatars);
-        auto& avatar = avatars[*chosenAvatar];
-        if (options->getValueString(avatar.nameOption).empty())
-          options->setValue(avatar.nameOption, randomFirstNameTag);
-        auto enteredName = options->getValueString(avatar.nameOption);
-        if (enteredName == randomFirstNameTag && !avatars[*chosenAvatar].firstNames.empty()) {
-          auto& firstNames = avatars[*chosenAvatar].firstNames[chosenGender];
-          enteredName = firstNames[*chosenName % firstNames.size()];
-        }
-        queue.push(View::AvatarChoice{*chosenAvatar, chosenGender, enteredName});
-      })));
+  auto startGameFun = [&queue, chosenAvatar, chosenName, gender, &avatars, this] {
+    auto chosenGender = getChosenGender(gender, chosenAvatar, avatars);
+    auto& avatar = avatars[*chosenAvatar];
+    if (options->getValueString(avatar.nameOption).empty())
+      options->setValue(avatar.nameOption, randomFirstNameTag);
+    auto enteredName = options->getValueString(avatar.nameOption);
+    if (enteredName == randomFirstNameTag && !avatars[*chosenAvatar].firstNames.empty()) {
+      auto& firstNames = avatars[*chosenAvatar].firstNames[chosenGender];
+      enteredName = firstNames[*chosenName % firstNames.size()];
+    }
+    queue.push(View::AvatarChoice{*chosenAvatar, chosenGender, enteredName});
+  };
+  auto startGameFocusedFun = [this]{ return avatarIndex == AvatarIndexElems::StartNewGameIndex{};};
+  lines.addBackElem(WL(stack,
+      WL(centerHoriz, WL(buttonLabelFocusable, "Start new game", startGameFun, startGameFocusedFun)),
+      WL(conditionalStopKeys, WL(keyHandler, startGameFun, getConfirmationKeys(), true), startGameFocusedFun)
+  ));
   auto menuLines = WL(getListBuilder, legendLineHeight)
       .addElemAuto(
           WL(preferredSize, 800, 370, WL(window, WL(margins,
               lines.buildVerticalList(), 15), [&queue]{ queue.push(AvatarMenuOption::GO_BACK); })));
   auto othersLine = WL(getListBuilder);
   for (auto option : ENUM_ALL(AvatarMenuOption)) {
-    othersLine.addElemAuto(
-        WL(stack,
-              WL(button, [&queue, option]{ queue.push(option); }),
-              WL(buttonLabelWithMargin, getText(option), false)));
+    auto bottomButtonFocusedFun = [this, option] {
+      return avatarIndex == AvatarIndexElems::BottomButtonsIndex{int(option)};
+    };
+    auto confirmFun = [&queue, option]{ queue.push(option); };
+    othersLine.addElemAuto(WL(stack,
+        WL(button, confirmFun),
+        WL(buttonLabelWithMargin, getText(option), bottomButtonFocusedFun),
+        WL(conditionalStopKeys, WL(keyHandler, confirmFun, getConfirmationKeys(), true),
+            bottomButtonFocusedFun)
+    ));
   }
   menuLines.addElem(WL(margins, othersLine.buildHorizontalListFit(), 40, 0, 40, 0), 30);
-  return menuLines.buildVerticalList();
+  return WL(stack, makeVec(
+      WL(stopKeyEvents),
+      WL(keyHandler, [this, &avatars, chosenAvatar, chosenRole, avatarPage] {
+        avatarIndex.left(avatars, *chosenAvatar, *chosenRole, *avatarPage);
+      }, {gui.getKey(C_MENU_LEFT)}, true),
+      WL(keyHandler, [this, &avatars, chosenAvatar, chosenRole, avatarPage]{
+        avatarIndex.right(avatars, *chosenAvatar, *chosenRole, *avatarPage);
+      }, {gui.getKey(C_MENU_RIGHT)}, true),
+      WL(keyHandler, [this, &avatars, chosenAvatar, chosenRole, avatarPage]{
+        avatarIndex.up(avatars, *chosenAvatar, *chosenRole, *avatarPage);
+      }, {gui.getKey(C_MENU_UP)}, true),
+      WL(keyHandler, [this, &avatars, chosenAvatar, chosenRole, avatarPage]{
+        avatarIndex.down(avatars, *chosenAvatar, *chosenRole, *avatarPage);
+      }, {gui.getKey(C_MENU_DOWN)}, true),
+      menuLines.buildVerticalList()
+  ));
 }
 
 SGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease, bool leftRight) {

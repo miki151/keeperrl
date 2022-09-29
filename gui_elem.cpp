@@ -218,9 +218,10 @@ SGuiElem GuiFactory::button(function<void()> fun, bool capture) {
 namespace  {
 class TextFieldElem : public GuiElem {
   public:
-  TextFieldElem(function<string()> text, function<void(string)> callback, int maxLength, Clock* clock, bool alwaysFocused)
-      : callback(std::move(callback)), getText(std::move(text)), clock(clock), maxLength(maxLength),
-        alwaysFocused(alwaysFocused) {}
+  TextFieldElem(function<string()> text, function<void(string)> callback, function<bool()> controllerFocus,
+      int maxLength, Clock* clock, bool alwaysFocused, MySteamInput* steamInput)
+      : callback(std::move(callback)), getText(std::move(text)), controllerFocus(std::move(controllerFocus)),
+        clock(clock), maxLength(maxLength), alwaysFocused(alwaysFocused), steamInput(steamInput) {}
 
   virtual bool onClick(MouseButtonId b, Vec2 pos) override {
     if (b == MouseButtonId::LEFT) {
@@ -271,10 +272,17 @@ class TextFieldElem : public GuiElem {
         case SDL::SDLK_RETURN:
           callback(current);
           focused = false;
+          if (steamInput)
+            steamInput->dismissFloatingKeyboard();
           return true;
         default:
           break;
       }
+      return true;
+    } else if (steamInput && sym.sym == C_MENU_SELECT && controllerFocus()) {
+      focused = true;
+      if (steamInput)
+        steamInput->showFloatingKeyboard(getBounds());
       return true;
     }
     return false;
@@ -294,21 +302,26 @@ class TextFieldElem : public GuiElem {
   private:
   function<void(string)> callback;
   function<string()> getText;
+  function<bool()> controllerFocus;
   Clock* clock;
   int maxLength;
   bool focused = false;
   bool alwaysFocused = false;
+  MySteamInput* steamInput;
 };
 }
 
-SGuiElem GuiFactory::textField(int maxLength, function<string()> text, function<void(string)> callback) {
+SGuiElem GuiFactory::textField(int maxLength, function<string()> text, function<void(string)> callback,
+    function<bool()> controllerFocus) {
   return topMargin(-4, bottomMargin(4,
-      make_shared<TextFieldElem>(std::move(text), std::move(callback), maxLength, clock, false)));
+      make_shared<TextFieldElem>(std::move(text), std::move(callback), std::move(controllerFocus),
+          maxLength, clock, false, renderer.getSteamInput())));
 }
 
 SGuiElem GuiFactory::textFieldFocused(int maxLength, function<string()> text, function<void(string)> callback) {
   return topMargin(-4, bottomMargin(4,
-      make_shared<TextFieldElem>(std::move(text), std::move(callback), maxLength, clock, true)));
+      make_shared<TextFieldElem>(std::move(text), std::move(callback), []{return false;},
+          maxLength, clock, true, nullptr)));
 }
 
 SGuiElem GuiFactory::buttonPos(function<void (Rectangle, Vec2)> fun) {
@@ -390,21 +403,6 @@ class MouseWheel : public GuiElem {
 
 SGuiElem GuiFactory::mouseWheel(function<void(bool)> fun) {
   return SGuiElem(new MouseWheel(fun));
-}
-
-class StopMouseMovement : public GuiElem {
-  public:
-  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
-    return pos.inRectangle(getBounds());
-  }
-
-  virtual bool onClick(MouseButtonId, Vec2 pos) override {
-    return pos.inRectangle(getBounds());
-  }
-};
-
-SGuiElem GuiFactory::stopMouseMovement() {
-  return SGuiElem(new StopMouseMovement());
 }
 
 class DrawCustom : public GuiElem {
@@ -730,6 +728,21 @@ SGuiElem GuiFactory::buttonLabel(const string& s, function<void()> f, bool match
   return buttonLabel(s, button(std::move(f)), matchTextWidth, centerHorizontally, unicode);
 }
 
+SGuiElem GuiFactory::buttonLabelFocusable(const string& text, function<void()> callback, function<bool()> focused,
+    bool matchTextWidth, bool centerHorizontally, bool unicode) {
+  auto ret = margins(stack(
+        mouseHighlight2(standardButtonHighlight(),
+            conditional(standardButtonHighlight(), standardButton(), std::move(focused))),
+        button(std::move(callback))),
+      -7, -5, -7, 3);
+  auto content = unicode ? labelUnicode(text) : label(text);
+  if (matchTextWidth)
+    ret = setWidth(*content->getPreferredWidth() + 1, std::move(ret));
+  if (centerHorizontally)
+    content = centerHoriz(std::move(content));
+  return stack(ret, std::move(content));
+}
+
 SGuiElem GuiFactory::buttonLabelBlink(const string& s, function<void()> f) {
   return standardButtonBlink(label(s), button(std::move(f)), true);
 }
@@ -761,17 +774,15 @@ SGuiElem GuiFactory::standardButtonBlink(SGuiElem content, SGuiElem button, bool
   return stack(ret, std::move(content));
 }
 
-SGuiElem GuiFactory::buttonLabelWithMargin(const string& s, bool matchTextWidth) {
+SGuiElem GuiFactory::buttonLabelWithMargin(const string& s, function<bool()> focused) {
   auto ret = mouseHighlight2(
       stack(
           standardButtonHighlight(),
           centerVert(centerHoriz(margins(label(s, Color::WHITE), 0, 0, 0, 5)))),
       stack(
-          standardButton(),
+          conditional(standardButtonHighlight(), standardButton(), std::move(focused)),
           centerVert(centerHoriz(margins(label(s, Color::WHITE), 0, 0, 0, 5))))
   );
-  if (matchTextWidth)
-    ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
   return ret;
 }
 
@@ -792,10 +803,31 @@ SGuiElem GuiFactory::buttonLabelSelected(const string& s, function<void()> f, bo
   return ret;
 }
 
-SGuiElem GuiFactory::buttonLabelInactive(const string& s, bool matchTextWidth) {
+SGuiElem GuiFactory::buttonLabelSelectedFocusable(const string& s, function<void()> f, function<bool()> focused,
+    bool matchTextWidth, bool centerHorizontally) {
+  auto text = label(s, Color::WHITE);
+  if (centerHorizontally)
+    text = centerHoriz(std::move(text));
+  auto ret = stack(margins(stack(
+          conditional(standardButtonHighlight(), standardButton(), std::move(focused)),
+          button(std::move(f)),
+          leftMargin(8, sprite(TexId::UI_HIGHLIGHT, Alignment::LEFT_CENTER)),
+          rightMargin(8, sprite(TexId::UI_HIGHLIGHT, Alignment::RIGHT_CENTER))
+      ),
+      -7, -5, -7, 3),
+      std::move(text));
+  if (matchTextWidth)
+    ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
+  return ret;
+}
+
+SGuiElem GuiFactory::buttonLabelInactive(const string& s, bool matchTextWidth, bool centerHorizontally) {
+  auto text = label(s, Color::GRAY);
+  if (centerHorizontally)
+    text = centerHoriz(text);
   auto ret = stack(
       margins(standardButton(), -7, -5, -7, 3),
-      label(s, Color::GRAY));
+      std::move(text));
   if (matchTextWidth)
     ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
   return ret;
@@ -1196,6 +1228,25 @@ class KeyHandler : public GuiElem {
   function<void(SDL_Keysym)> fun;
   bool capture;
 };
+
+class StopMouseMovement : public GuiElem {
+  public:
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
+    return pos.inRectangle(getBounds());
+  }
+
+  virtual bool onClick(MouseButtonId, Vec2 pos) override {
+    return pos.inRectangle(getBounds());
+  }
+};
+
+SGuiElem GuiFactory::stopKeyEvents() {
+  return SGuiElem(new KeyHandler([](SDL_Keysym) {}, true));
+}
+
+SGuiElem GuiFactory::stopMouseMovement() {
+  return SGuiElem(new StopMouseMovement());
+}
 
 class RenderInBounds : public GuiStack {
   public:

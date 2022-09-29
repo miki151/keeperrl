@@ -73,6 +73,8 @@ class MySteamInput {
   void init();
   void setMenuActionSet();
   void setGameActionSet();
+  void showFloatingKeyboard(Rectangle field);
+  void dismissFloatingKeyboard();
   optional<ControllerKey> getEvent();
   bool pressed = false;
   vector<ActionSet> actionSetStack;

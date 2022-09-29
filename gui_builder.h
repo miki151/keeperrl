@@ -27,6 +27,7 @@
 #include "view_object.h"
 #include "item_counts.h"
 #include "scripted_ui_data.h"
+#include "avatar_index.h"
 
 class Clock;
 class MinionAction;
@@ -230,6 +231,7 @@ class GuiBuilder {
   optional<int> abilityIndex;
   optional<int> lastPlayerPositionHash;
   optional<int> techIndex;
+  AvatarIndex avatarIndex;
   int commandsIndex = -1;
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
   int scrollbarsHeld2 = GuiFactory::getHeldInitValue();

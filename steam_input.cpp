@@ -1,5 +1,6 @@
 #include "steam_input.h"
 #include "extern/steamworks/public/steam/isteaminput.h"
+#include "extern/steamworks/public/steam/isteamutils.h"
 #include "clock.h"
 
 void MySteamInput::init() {
@@ -189,4 +190,13 @@ optional<ControllerKey> MySteamInput::getEvent() {
     return a;
   }
   return none;
+}
+
+void MySteamInput::showFloatingKeyboard(Rectangle field) {
+  SteamUtils()->ShowFloatingGamepadTextInput(k_EFloatingGamepadTextInputModeModeSingleLine,
+      field.left(), field.top(), field.width(), field.height());
+}
+
+void MySteamInput::dismissFloatingKeyboard() {
+  SteamUtils()->DismissFloatingGamepadTextInput();
 }
