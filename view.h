@@ -211,8 +211,6 @@ class View {
 
   struct CampaignMenuState {
     bool helpText;
-    bool retiredWindow;
-    bool options;
   };
   struct CampaignOptions {
     const Campaign& campaign;

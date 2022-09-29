@@ -4679,6 +4679,71 @@ SGuiElem GuiBuilder::drawBiomeMenu(SyncQueue<CampaignAction>& queue,
   return lines.buildVerticalList();
 }
 
+SGuiElem GuiBuilder::drawRetiredDungeonsButton(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions) {
+  if (campaignOptions.retired) {
+    auto& retiredGames = *campaignOptions.retired;
+    return WL(buttonLabel, "Add retired dungeons", WL(buttonRect, [&](Rectangle r) {
+      while (1) {
+        auto retiredMenuLines = WL(getListBuilder, getStandardLineHeight());
+        retiredMenuLines.addElem(WL(getListBuilder)
+            .addElemAuto(WL(label, "Search: "))
+            .addElem(WL(textFieldFocused, 10, [ret = campaignOptions.searchString] { return ret; },
+                [&queue](string s){ queue.push(CampaignAction(CampaignActionId::SEARCH_RETIRED, std::move(s)));}), 200)
+            .addSpace(10)
+            .addElemAuto(WL(buttonLabel, "X",
+                [&queue]{ queue.push(CampaignAction(CampaignActionId::SEARCH_RETIRED, string()));}))
+            .buildHorizontalList()
+        );
+        bool exit = false;
+        bool clicked = false;
+        auto addedDungeons = drawRetiredGames(retiredGames, [&] {
+          queue.push(CampaignActionId::UPDATE_MAP);
+          clicked = true;
+          exit = true;
+        }, none, "");
+        int addedHeight = addedDungeons.getSize();
+        if (!addedDungeons.isEmpty()) {
+          retiredMenuLines.addElem(WL(label, "Added:", Color::YELLOW));
+          retiredMenuLines.addElem(addedDungeons.buildVerticalList(), addedHeight);
+        }
+        GuiFactory::ListBuilder retiredList = drawRetiredGames(retiredGames, [&] {
+          queue.push(CampaignActionId::UPDATE_MAP);
+          clicked = true;
+          exit = true;
+        }, options->getIntValue(OptionId::MAIN_VILLAINS), campaignOptions.searchString);
+        if (retiredList.isEmpty())
+          retiredList.addElem(WL(label, "No retired dungeons found :("));
+        else
+          retiredMenuLines.addElem(WL(label, "Local:", Color::YELLOW));
+        retiredMenuLines.addElemAuto(retiredList.buildVerticalList());
+        drawMiniMenu(retiredMenuLines.buildVerticalList(), exit, r.bottomLeft(), 444, true);
+        if (!clicked)
+          break;
+      }
+    }));
+  }
+  return WL(buttonLabelInactive, "Add retired dungeons");
+}
+
+SGuiElem GuiBuilder::drawCampaignSettingsButton(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions) {
+  return WL(buttonLabel, "Difficulty", WL(buttonRect, [&](Rectangle rect) {
+    while (1) {
+      auto optionsLines = WL(getListBuilder, getStandardLineHeight());
+      bool exit = false;
+      bool clicked = false;
+      for (OptionId id : campaignOptions.options)
+        optionsLines.addElem(drawOptionElem(id, [id, &queue, &clicked, &exit] {
+          queue.push({CampaignActionId::UPDATE_OPTION, id});
+          clicked = true;
+          exit = true;
+        }, none));
+      drawMiniMenu(optionsLines.buildVerticalList(), exit, rect.bottomLeft(), 444, true);
+      if (!clicked)
+        break;
+    }
+  }));
+}
+
 SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
     View::CampaignMenuState& menuState) {
   const auto& campaign = campaignOptions.campaign;
@@ -4709,42 +4774,10 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
             WL(buttonLabel, "Help", [&] { menuState.helpText = !menuState.helpText; })));
   lines.addElem(WL(leftMargin, optionMargin, WL(label, "World name: " + campaign.getWorldName())));
   lines.addSpace(10);
-  auto retiredMenuLines = WL(getListBuilder, getStandardLineHeight());
-  if (retiredGames) {
-    retiredMenuLines.addElem(WL(getListBuilder)
-        .addElemAuto(WL(label, "Search: "))
-        .addElem(WL(textFieldFocused, 10, [ret = campaignOptions.searchString] { return ret; },
-            [&queue](string s){ queue.push(CampaignAction(CampaignActionId::SEARCH_RETIRED, std::move(s)));}), 200)
-        .addSpace(10)
-        .addElemAuto(WL(buttonLabel, "X",
-            [&queue]{ queue.push(CampaignAction(CampaignActionId::SEARCH_RETIRED, string()));}))
-        .buildHorizontalList()
-    );
-    auto addedDungeons = drawRetiredGames(
-        *retiredGames, [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, none, "");
-    int addedHeight = addedDungeons.getSize();
-    if (!addedDungeons.isEmpty()) {
-      retiredMenuLines.addElem(WL(label, "Added:", Color::YELLOW));
-      retiredMenuLines.addElem(addedDungeons.buildVerticalList(), addedHeight);
-    }
-    GuiFactory::ListBuilder retiredList = drawRetiredGames(*retiredGames,
-        [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, options->getIntValue(OptionId::MAIN_VILLAINS), campaignOptions.searchString);
-    if (retiredList.isEmpty())
-      retiredList.addElem(WL(label, "No retired dungeons found :("));
-    else
-      retiredMenuLines.addElem(WL(label, "Local:", Color::YELLOW));
-    retiredMenuLines.addElemAuto(retiredList.buildVerticalList());
-    lines.addElem(WL(leftMargin, optionMargin,
-        WL(buttonLabel, "Add retired dungeons", [&menuState] { menuState.retiredWindow = !menuState.retiredWindow;})));
-  }
-  auto optionsLines = WL(getListBuilder, getStandardLineHeight());
+  lines.addElem(WL(leftMargin, optionMargin, drawRetiredDungeonsButton(queue, campaignOptions)));
   if (!campaignOptions.options.empty()) {
     lines.addSpace(10);
-    lines.addElem(WL(leftMargin, optionMargin,
-        WL(buttonLabel, "Difficulty", [&menuState] { menuState.options = !menuState.options;})));
-    for (OptionId id : campaignOptions.options)
-      optionsLines.addElem(
-          drawOptionElem(id, [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});}, none));
+    lines.addElem(WL(leftMargin, optionMargin, drawCampaignSettingsButton(queue, campaignOptions)));
   }
   lines.addBackElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, none)));
   lines.addSpace(10);
@@ -4775,18 +4808,6 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
                 WL(margins, WL(labelMultiLine, campaignOptions.introText, legendLineHeight), 10)),
             closeHelp), 100, 50, 100, 280),
             [&menuState] { return menuState.helpText;}));
-  auto addOverlay = [&] (GuiFactory::ListBuilder builder, bool& visible) {
-    int size = 500;
-    if (!builder.isEmpty())
-      interior.push_back(
-            WL(conditionalStopKeys, WL(translate, WL(miniWindow2,
-                WL(margins, WL(scrollable, WL(topMargin, 3, builder.buildVerticalList())), 10),
-                [&] { visible = false;}), Vec2(30, 70),
-                    Vec2(444, 50 + size)),
-            [&visible] { return visible;}));
-  };
-  addOverlay(std::move(retiredMenuLines), menuState.retiredWindow);
-  addOverlay(std::move(optionsLines), menuState.options);
   return
       WL(preferredSize, 1000, 705,
          WL(window, WL(margins, WL(stack, std::move(interior)), 5),

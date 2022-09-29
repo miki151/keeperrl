@@ -349,7 +349,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
   int numBlocked = 0.6 * size.x * size.y;
   Table<Campaign::SiteInfo> terrain = getTerrain(random, size, numBlocked);
   auto retired = genRetired(type);
-  View::CampaignMenuState menuState { true, false, false};
+  View::CampaignMenuState menuState { true };
   string searchString;
   int chosenBiome = 0;
   struct BiomeData {

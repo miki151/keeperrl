@@ -193,6 +193,9 @@ class GuiBuilder {
   SGuiElem drawOptionElem(OptionId, function<void()> onChanged, optional<string> defaultString);
   GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, optional<int> maxActive,
       string searchString);
+  SGuiElem drawRetiredDungeonsButton(SyncQueue<CampaignAction>&, View::CampaignOptions);
+  SGuiElem drawCampaignSettingsButton(SyncQueue<CampaignAction>&, View::CampaignOptions);
+
   SGuiElem drawImmigrantInfo(const ImmigrantDataInfo&);
   SGuiElem drawSpecialTrait(const ImmigrantDataInfo::SpecialTraitInfo&);
   SGuiElem minionsCache;
