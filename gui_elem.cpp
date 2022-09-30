@@ -728,14 +728,51 @@ SGuiElem GuiFactory::buttonLabel(const string& s, function<void()> f, bool match
   return buttonLabel(s, button(std::move(f)), matchTextWidth, centerHorizontally, unicode);
 }
 
+vector<SDL_Keysym> GuiFactory::getConfirmationKeys() {
+  return {
+      getKey(SDL::SDLK_RETURN),
+      getKey(SDL::SDLK_KP_ENTER),
+      getKey(SDL::SDLK_KP_5),
+      getKey(C_MENU_SELECT)
+  };
+}
+
+SGuiElem GuiFactory::buttonLabelFocusable(SGuiElem content, function<void()> callback, function<bool()> focused,
+    bool matchTextWidth, bool centerHorizontally) {
+  return stack(
+      buttonLabelFocusableImpl(std::move(content), button(callback), focused, matchTextWidth, centerHorizontally),
+      conditionalStopKeys(keyHandler(callback, getConfirmationKeys(), true), focused)
+  );
+}
+
 SGuiElem GuiFactory::buttonLabelFocusable(const string& text, function<void()> callback, function<bool()> focused,
     bool matchTextWidth, bool centerHorizontally, bool unicode) {
+  return buttonLabelFocusable(unicode ? labelUnicode(text) : label(text), callback, focused,
+          matchTextWidth, centerHorizontally);
+}
+
+SGuiElem GuiFactory::buttonLabelFocusable(const string& text, function<void(Rectangle)> callback, function<bool()> focused,
+    bool matchTextWidth, bool centerHorizontally, bool unicode) {
+  return stack(
+      buttonLabelFocusableImpl(unicode ? labelUnicode(text) : label(text), buttonRect(callback), focused,
+          matchTextWidth, centerHorizontally),
+      conditionalStopKeys(keyHandlerRect(callback, getConfirmationKeys(), true), focused)
+  );
+}
+
+/*SGuiElem GuiFactory::buttonLabelFocusable(const string& text, function<void()> callback, function<bool()> focused,
+    bool matchTextWidth, bool centerHorizontally, bool unicode) {
+  return buttonLabelFocusable(text, button(std::move(callback)), std::move(focused), 
+      matchTextWidth, centerHorizontally, unicode);
+}*/
+
+SGuiElem GuiFactory::buttonLabelFocusableImpl(SGuiElem content, SGuiElem button, function<bool()> focused,
+    bool matchTextWidth, bool centerHorizontally) {
   auto ret = margins(stack(
         mouseHighlight2(standardButtonHighlight(),
             conditional(standardButtonHighlight(), standardButton(), std::move(focused))),
-        button(std::move(callback))),
+        std::move(button)),
       -7, -5, -7, 3);
-  auto content = unicode ? labelUnicode(text) : label(text);
   if (matchTextWidth)
     ret = setWidth(*content->getPreferredWidth() + 1, std::move(ret));
   if (centerHorizontally)

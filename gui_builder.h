@@ -28,6 +28,7 @@
 #include "item_counts.h"
 #include "scripted_ui_data.h"
 #include "avatar_index.h"
+#include "campaign_menu_index.h"
 
 class Clock;
 class MinionAction;
@@ -235,6 +236,7 @@ class GuiBuilder {
   optional<int> lastPlayerPositionHash;
   optional<int> techIndex;
   AvatarIndex avatarIndex;
+  CampaignMenuIndex campaignMenuIndex;
   int commandsIndex = -1;
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
   int scrollbarsHeld2 = GuiFactory::getHeldInitValue();
@@ -281,7 +283,6 @@ class GuiBuilder {
       function<void()> onMultiClick = nullptr, bool forceEnableTooltip = false, bool renderInBounds = true);
   vector<string> getItemHint(const ItemInfo&);
   SGuiElem drawMinionAndLevel(ViewIdList, int level, int iconMult);
-  vector<SDL::SDL_Keysym> getConfirmationKeys();
   optional<ItemAction> getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos, bool autoDefault);
   vector<SGuiElem> getMultiLine(const string& text, Color, int maxWidth, int fontSize);
   SGuiElem getHighlight(SGuiElem line, const string& label, int numActive, optional<int>* highlight);

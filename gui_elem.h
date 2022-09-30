@@ -80,6 +80,7 @@ class GuiFactory {
   static bool keyEventEqual(const SDL::SDL_Keysym&, const SDL::SDL_Keysym&);
 
   SDL::SDL_Keysym getKey(SDL::SDL_Keycode);
+  vector<SDL::SDL_Keysym> getConfirmationKeys();
   SGuiElem button(function<void()>, SDL::SDL_Keysym, bool capture = false);
   SGuiElem button(function<void()>, bool capture = false);
   SGuiElem textField(int maxLength, function<string()> text, function<void(string)> callback,
@@ -169,7 +170,11 @@ class GuiFactory {
   SGuiElem buttonLabel(const string&, function<void()> button, bool matchTextWidth = true,
       bool centerHorizontally = false, bool unicode = false);
 
+  SGuiElem buttonLabelFocusable(SGuiElem content, function<void()> button, function<bool()> focused,
+      bool matchTextWidth = true, bool centerHorizontally = false);
   SGuiElem buttonLabelFocusable(const string&, function<void()> button, function<bool()> focused,
+      bool matchTextWidth = true, bool centerHorizontally = false, bool unicode = false);
+  SGuiElem buttonLabelFocusable(const string&, function<void(Rectangle)> button, function<bool()> focused,
       bool matchTextWidth = true, bool centerHorizontally = false, bool unicode = false);
   SGuiElem buttonLabelBlink(const string&, function<void()> button);
   SGuiElem buttonLabelWithMargin(const string&, function<bool()> focused);
@@ -330,6 +335,8 @@ class GuiFactory {
   SGuiElem sprite(Texture&, double scale);
   SGuiElem getScrollbar();
   Vec2 getScrollButtonSize();
+  SGuiElem buttonLabelFocusableImpl(SGuiElem content, SGuiElem button, function<bool()> focused,
+      bool matchTextWidth = true, bool centerHorizontally = false);
 
   EnumMap<TexId, optional<Texture>> textures;
   vector<Texture> iconTextures;

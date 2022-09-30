@@ -1313,15 +1313,6 @@ int GuiBuilder::getScrollPos(int index, int count) {
   return max(0, min(count - 1, index - 3));
 }
 
-vector<SDL_Keysym> GuiBuilder::getConfirmationKeys() {
-  return {
-      gui.getKey(SDL::SDLK_RETURN),
-      gui.getKey(SDL::SDLK_KP_ENTER),
-      gui.getKey(SDL::SDLK_KP_5),
-      gui.getKey(C_MENU_SELECT)
-  };
-}
-
 SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
   if (info.lyingItems.empty()) {
     if (playerOverlayFocused)
@@ -1363,10 +1354,10 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
           WL(scrollable, WL(verticalList, std::move(lines), legendLineHeight), &lyingItemsScroll),
           legendLineHeight, GuiFactory::TOP),
         WL(conditionalStopKeys,
-            WL(keyHandler, [=] { callbacks.input({UserInputId::PICK_UP_ITEM, 0});}, getConfirmationKeys(), true),
+            WL(keyHandler, [=] { callbacks.input({UserInputId::PICK_UP_ITEM, 0});}, gui.getConfirmationKeys(), true),
             [this] { return playerOverlayFocused; }),
         WL(keyHandler, [=] { if (renderer.getDiscreteJoyPos(ControllerJoy::WALKING) == Vec2(0, 0))
-            callbacks.input({UserInputId::PICK_UP_ITEM, 0}); }, concat(getConfirmationKeys(), {gui.getKey(C_WALK)})));
+            callbacks.input({UserInputId::PICK_UP_ITEM, 0}); }, concat(gui.getConfirmationKeys(), {gui.getKey(C_WALK)})));
   else {
     auto updateScrolling = [this, totalElems] (int dir) {
         if (itemIndex)
@@ -1379,15 +1370,15 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
           WL(focusable,
               WL(stack,
                   WL(keyHandler, [=] { if (itemIndex) { callbacks.input({UserInputId::PICK_UP_ITEM, *itemIndex});}},
-                    getConfirmationKeys(), true),
+                    gui.getConfirmationKeys(), true),
                   WL(keyHandler, [=] { updateScrolling(1); },
                     {gui.getKey(SDL::SDLK_DOWN), gui.getKey(SDL::SDLK_KP_2), gui.getKey(C_MENU_DOWN)}, true),
                   WL(keyHandler, [=] { updateScrolling(-1); },
                     {gui.getKey(SDL::SDLK_UP), gui.getKey(SDL::SDLK_KP_8), gui.getKey(C_MENU_UP)}, true)),
-              getConfirmationKeys(), {gui.getKey(SDL::SDLK_ESCAPE), gui.getKey(C_MENU_CANCEL)}, playerOverlayFocused),
+              gui.getConfirmationKeys(), {gui.getKey(SDL::SDLK_ESCAPE), gui.getKey(C_MENU_CANCEL)}, playerOverlayFocused),
           WL(conditionalStopKeys,
               WL(keyHandler, [=] { if (!playerOverlayFocused) { itemIndex = 0; lyingItemsScroll.reset();} },
-                  getConfirmationKeys()),
+                  gui.getConfirmationKeys()),
               [this] { return playerOverlayFocused; }),
           WL(keyHandler, [=] {
               if (!playerOverlayFocused && renderer.getDiscreteJoyPos(ControllerJoy::WALKING) == Vec2(0, 0)) {
@@ -1491,7 +1482,7 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
           if (exitOnCallback)
             exit = true;
         }
-      }, getConfirmationKeys(), true)
+      }, gui.getConfirmationKeys(), true)
   );
   drawMiniMenu(std::move(content), exit, menuPos, width, darkBg);
 }
@@ -1892,7 +1883,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
                 if (inventoryIndex == i) {
                   callback(bounds);
                 }
-              }, getConfirmationKeys(), true)
+              }, gui.getConfirmationKeys(), true)
           ), [this, i] { return inventoryIndex == i; }),
           WL(conditionalStopKeys,
               WL(keyHandlerRect, [i, this, size = list.getSize()](Rectangle bounds) {
@@ -4007,7 +3998,7 @@ SGuiElem GuiBuilder::drawChooseNumberMenu(SyncQueue<optional<int>>& queue, const
   auto confirmFun = [&queue, getCurrent] { queue.push(getCurrent());};
   lines.addElem(WL(centerHoriz, WL(getListBuilder)
       .addElemAuto(WL(stack,
-          WL(keyHandler, confirmFun, getConfirmationKeys(), true),
+          WL(keyHandler, confirmFun, gui.getConfirmationKeys(), true),
           WL(buttonLabel, "Confirm", confirmFun)))
       .addSpace(15)
       .addElemAuto(WL(buttonLabel, "Cancel", [&queue] { queue.push(none);}))
@@ -4225,11 +4216,8 @@ SGuiElem GuiBuilder::drawGenderButtons(const vector<View::AvatarData>& avatars,
               WL(conditional,
                   WL(buttonLabelSelectedFocusable, capitalFirst(avatar.genderNames[i]), selectFun, focusedFun,
                       false, true),
-                  WL(stack,
-                      WL(buttonLabelFocusable, capitalFirst(capitalFirst(avatar.genderNames[i])), selectFun, focusedFun,
-                          false, true),
-                      WL(conditionalStopKeys, WL(keyHandler, selectFun, getConfirmationKeys(), true), focusedFun)
-                  ),
+                  WL(buttonLabelFocusable, capitalFirst(capitalFirst(avatar.genderNames[i])), selectFun, focusedFun,
+                      false, true),
                   [gender, i] { return *gender == i; }),
               [=] { return index == *chosenAvatar; }));
         }
@@ -4277,10 +4265,7 @@ SGuiElem GuiBuilder::drawFirstNameButtons(const vector<View::AvatarData>& avatar
                     focusedNameFun)
             ))
             .addSpace(10)
-            .addBackElemAuto(WL(stack,
-                WL(buttonLabelFocusable, "🔄", rollFunConfirm, focusedRollFun, true, false, true),
-                WL(conditionalStopKeys, WL(keyHandler, rollFunConfirm, getConfirmationKeys(), true), focusedRollFun)
-            ))
+            .addBackElemAuto(WL(buttonLabelFocusable, "🔄", rollFunConfirm, focusedRollFun, true, false, true))
             .buildHorizontalList();
         firstNameOptions.push_back(WL(conditionalStopKeys, std::move(elem),
             [=]{ return getChosenGender(gender, chosenAvatar, avatars) == genderIndex && index == *chosenAvatar; }));
@@ -4325,10 +4310,7 @@ SGuiElem GuiBuilder::drawRoleButtons(shared_ptr<View::AvatarRole> chosenRole, sh
           WL(conditional,
               WL(buttonLabelSelectedFocusable, capitalFirst(getName(role)), chooseFun, focusedFun,
                   false, true),
-              WL(stack,
-                  WL(buttonLabelFocusable, capitalFirst(getName(role)), chooseFun, focusedFun, false, true),
-                  WL(conditionalStopKeys, WL(keyHandler, chooseFun, getConfirmationKeys(), true), focusedFun)
-              ),
+              WL(buttonLabelFocusable, capitalFirst(getName(role)), chooseFun, focusedFun, false, true),
               [chosenRole, role] { return *chosenRole == role; })
       );
     }
@@ -4354,7 +4336,7 @@ SGuiElem GuiBuilder::drawChosenCreatureButtons(View::AvatarRole role, shared_ptr
           auto icon = WL(stack,
               WL(conditionalStopKeys, WL(stack,
                   WL(uiHighlight),
-                  WL(keyHandler, selectFun, getConfirmationKeys(), true)
+                  WL(keyHandler, selectFun, gui.getConfirmationKeys(), true)
               ), [this, coord] { return avatarIndex == AvatarIndexElems::CreatureIndex{coord};}),
               WL(viewObject, viewIdFun, 2)
           );
@@ -4421,18 +4403,12 @@ SGuiElem GuiBuilder::drawAvatarsForRole(const vector<View::AvatarData>& avatars,
       avatarPages.push_back(WL(alignment, GuiFactory::Alignment::BOTTOM_RIGHT,
           WL(translate,
               WL(getListBuilder, 24)
-                .addElem(WL(conditional2, WL(stack,
-                        WL(buttonLabelFocusable, "<", leftAction, leftFocused),
-                        WL(conditionalStopKeys, WL(keyHandler, leftAction, getConfirmationKeys(), true),
-                            leftFocused)
-                    ),
+                .addElem(WL(conditional2,
+                    WL(buttonLabelFocusable, "<", leftAction, leftFocused),
                     WL(buttonLabelInactive, "<"),
                     [=] (GuiElem*) { return *avatarPage > 0; }))
-                .addElem(WL(conditional2, WL(stack,
-                        WL(buttonLabelFocusable, ">", rightAction, rightFocused),
-                        WL(conditionalStopKeys, WL(keyHandler, rightAction, getConfirmationKeys(), true),
-                            rightFocused)
-                    ),
+                .addElem(WL(conditional2,
+                    WL(buttonLabelFocusable, ">", rightAction, rightFocused),
                     WL(buttonLabelInactive, ">"),
                     [=] (GuiElem*) { return *avatarPage < numPages - 1; }))
                 .buildHorizontalList(),
@@ -4504,10 +4480,8 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
     queue.push(View::AvatarChoice{*chosenAvatar, chosenGender, enteredName});
   };
   auto startGameFocusedFun = [this]{ return avatarIndex == AvatarIndexElems::StartNewGameIndex{};};
-  lines.addBackElem(WL(stack,
-      WL(centerHoriz, WL(buttonLabelFocusable, "Start new game", startGameFun, startGameFocusedFun)),
-      WL(conditionalStopKeys, WL(keyHandler, startGameFun, getConfirmationKeys(), true), startGameFocusedFun)
-  ));
+  lines.addBackElem(
+      WL(centerHoriz, WL(buttonLabelFocusable, "Start new game", startGameFun, startGameFocusedFun)));
   auto menuLines = WL(getListBuilder, legendLineHeight)
       .addElemAuto(
           WL(preferredSize, 800, 370, WL(window, WL(margins,
@@ -4521,7 +4495,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
     othersLine.addElemAuto(WL(stack,
         WL(button, confirmFun),
         WL(buttonLabelWithMargin, getText(option), bottomButtonFocusedFun),
-        WL(conditionalStopKeys, WL(keyHandler, confirmFun, getConfirmationKeys(), true),
+        WL(conditionalStopKeys, WL(keyHandler, confirmFun, gui.getConfirmationKeys(), true),
             bottomButtonFocusedFun)
     ));
   }
@@ -4666,14 +4640,20 @@ SGuiElem GuiBuilder::drawMenuWarning(View::CampaignOptions::WarningType type) {
 SGuiElem GuiBuilder::drawBiomeMenu(SyncQueue<CampaignAction>& queue,
     const vector<View::CampaignOptions::BiomeInfo>& biomes, int chosen) {
   auto lines = WL(getListBuilder, legendLineHeight);
-  lines.addElem(WL(label, "base biome: " + biomes[chosen].name));
+  lines.addElem(WL(getListBuilder)
+    .addElemAuto(WL(label, "base biome: "))
+    .addElemAuto(WL(viewObject, biomes[chosen].viewId))
+    .addSpace(5)
+    .addElemAuto(WL(label, biomes[chosen].name))
+    .buildHorizontalList()
+  );
+  lines.addSpace(5);
   auto choices = WL(getListBuilder);
   for (int i : All(biomes)) {
-    choices.addElemAuto(WL(stack,
-        i == chosen ? WL(standardButtonHighlight) : WL(standardButton),
-        WL(margins, WL(viewObject, biomes[i].viewId), 5, 5, 5, 5),
-        WL(button, [&queue, i] { queue.push({CampaignActionId::BIOME, i}); })
-    ));
+    choices.addElem(WL(setHeight, 32, WL(setWidth, 24, WL(buttonLabelFocusable,
+        WL(viewObject, biomes[i].viewId),
+        [&queue, i] { queue.push({CampaignActionId::BIOME, i}); },
+        [this, i] { return campaignMenuIndex == CampaignMenuElems::Biome{i};}, false))), 36);
   }
   lines.addElemAuto(choices.buildHorizontalList());
   return lines.buildVerticalList();
@@ -4682,7 +4662,7 @@ SGuiElem GuiBuilder::drawBiomeMenu(SyncQueue<CampaignAction>& queue,
 SGuiElem GuiBuilder::drawRetiredDungeonsButton(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions) {
   if (campaignOptions.retired) {
     auto& retiredGames = *campaignOptions.retired;
-    return WL(buttonLabel, "Add retired dungeons", WL(buttonRect, [&](Rectangle r) {
+    auto selectFun = [this, &queue, &retiredGames, campaignOptions](Rectangle r) {
       while (1) {
         auto retiredMenuLines = WL(getListBuilder, getStandardLineHeight());
         retiredMenuLines.addElem(WL(getListBuilder)
@@ -4720,13 +4700,15 @@ SGuiElem GuiBuilder::drawRetiredDungeonsButton(SyncQueue<CampaignAction>& queue,
         if (!clicked)
           break;
       }
-    }));
+    };
+    auto focusedFun = [this] { return campaignMenuIndex == CampaignMenuElems::RetiredDungeons{};};
+    return WL(buttonLabelFocusable, "Add retired dungeons", selectFun, focusedFun);
   }
   return WL(buttonLabelInactive, "Add retired dungeons");
 }
 
 SGuiElem GuiBuilder::drawCampaignSettingsButton(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions) {
-  return WL(buttonLabel, "Difficulty", WL(buttonRect, [&](Rectangle rect) {
+  auto callback = [this, &queue, campaignOptions](Rectangle rect) {
     while (1) {
       auto optionsLines = WL(getListBuilder, getStandardLineHeight());
       bool exit = false;
@@ -4741,11 +4723,14 @@ SGuiElem GuiBuilder::drawCampaignSettingsButton(SyncQueue<CampaignAction>& queue
       if (!clicked)
         break;
     }
-  }));
+  };
+  auto focusedFun = [this] { return campaignMenuIndex == CampaignMenuElems::Settings{};};
+  return WL(buttonLabelFocusable, "Difficulty", callback, focusedFun);
 }
 
 SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
     View::CampaignMenuState& menuState) {
+  campaignMenuIndex.assign(CampaignMenuElems::Help{});
   const auto& campaign = campaignOptions.campaign;
   auto& retiredGames = campaignOptions.retired;
   auto lines = WL(getListBuilder, getStandardLineHeight());
@@ -4754,24 +4739,26 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   int optionMargin = 50;
   centerLines.addElem(WL(centerHoriz,
        WL(label, "Game mode: "_s + getGameTypeName(campaign.getType()))));
-  rightLines.addElem(WL(leftMargin, -55,
-      WL(buttonLabel, "Change",
-      WL(buttonRect, [&queue, this, campaignOptions] (Rectangle bounds) {
-          auto lines = WL(getListBuilder, legendLineHeight);
-          bool exit = false;
-          for (auto& info : campaignOptions.availableTypes) {
-            lines.addElem(WL(buttonLabel, getGameTypeName(info.type),
-                [&, info] { queue.push({CampaignActionId::CHANGE_TYPE, info.type}); exit = true; }));
-            for (auto& desc : info.description)
-              lines.addElem(WL(leftMargin, 0, WL(label, "- " + desc, Color::LIGHT_GRAY, Renderer::smallTextSize())),
-                  legendLineHeight * 2 / 3);
-            lines.addSpace(legendLineHeight / 3);
-          }
-          drawMiniMenu(lines.buildVerticalList(), exit, bounds.bottomLeft(), 350, true);
-      }))));
+  auto changeFun = [&queue, this, campaignOptions] (Rectangle bounds) {
+    auto lines = WL(getListBuilder, legendLineHeight);
+    bool exit = false;
+    for (auto& info : campaignOptions.availableTypes) {
+      lines.addElem(WL(buttonLabel, getGameTypeName(info.type),
+          [&, info] { queue.push({CampaignActionId::CHANGE_TYPE, info.type}); exit = true; }));
+      for (auto& desc : info.description)
+        lines.addElem(WL(leftMargin, 0, WL(label, "- " + desc, Color::LIGHT_GRAY, Renderer::smallTextSize())),
+            legendLineHeight * 2 / 3);
+      lines.addSpace(legendLineHeight / 3);
+    }
+    drawMiniMenu(lines.buildVerticalList(), exit, bounds.bottomLeft(), 350, true);
+  };
+  auto changeFocusedFun = [this]{return campaignMenuIndex == CampaignMenuElems::ChangeMode{};};
+  rightLines.addElem(WL(leftMargin, -55, WL(buttonLabelFocusable, "Change", changeFun, changeFocusedFun)));
   centerLines.addSpace(10);
+  auto helpFocusedFun = [this]{return campaignMenuIndex == CampaignMenuElems::Help{};};
+  auto helpFun = [&] { menuState.helpText = !menuState.helpText; };
   centerLines.addElem(WL(centerHoriz,
-            WL(buttonLabel, "Help", [&] { menuState.helpText = !menuState.helpText; })));
+      WL(buttonLabelFocusable, "Help", helpFun, helpFocusedFun)));
   lines.addElem(WL(leftMargin, optionMargin, WL(label, "World name: " + campaign.getWorldName())));
   lines.addSpace(10);
   lines.addElem(WL(leftMargin, optionMargin, drawRetiredDungeonsButton(queue, campaignOptions)));
@@ -4782,22 +4769,36 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   lines.addBackElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, none)));
   lines.addSpace(10);
   lines.addBackElem(WL(centerHoriz, WL(getListBuilder)
-        .addElemAuto(WL(conditional,
-            WL(buttonLabel, "Confirm", [&] { queue.push(CampaignActionId::CONFIRM); }),
-            WL(buttonLabelInactive, "Confirm"),
-            [&campaign] { return !!campaign.getPlayerPos(); }))
+        .addElemAuto(WL(buttonLabelFocusable, "Confirm", [&] { queue.push(CampaignActionId::CONFIRM); },
+            [this] { return campaignMenuIndex == CampaignMenuElems::Confirm{};}))
         .addSpace(20)
-        .addElemAuto(WL(buttonLabel, "Re-roll map", [&queue] { queue.push(CampaignActionId::REROLL_MAP);}))
+        .addElemAuto(WL(buttonLabelFocusable, "Re-roll map", [&] { queue.push(CampaignActionId::REROLL_MAP); },
+            [this] { return campaignMenuIndex == CampaignMenuElems::RollMap{};}))
         .addSpace(20)
-        .addElemAuto(WL(buttonLabel, "Go back",
-            WL(button, [&queue] { queue.push(CampaignActionId::CANCEL); }, gui.getKey(SDL::SDLK_ESCAPE))))
+        .addElemAuto(WL(buttonLabelFocusable, "Go back", [&] { queue.push(CampaignActionId::CANCEL); },
+            [this] { return campaignMenuIndex == CampaignMenuElems::Back{};}))
         .buildHorizontalList()));
   if (campaignOptions.warning)
     rightLines.addElem(WL(leftMargin, -20, drawMenuWarning(*campaignOptions.warning)));
   if (!campaignOptions.biomes.empty())
     rightLines.addElemAuto(drawBiomeMenu(queue, campaignOptions.biomes, campaignOptions.chosenBiome));
   int retiredPosX = 640;
-  vector<SGuiElem> interior;
+  vector<SGuiElem> interior {
+      WL(stopKeyEvents),
+      WL(keyHandler, [this, campaignOptions] {
+        campaignMenuIndex.left(campaignOptions);
+      }, {gui.getKey(C_MENU_LEFT)}, true),
+      WL(keyHandler, [this, campaignOptions]{
+        campaignMenuIndex.right(campaignOptions);
+      }, {gui.getKey(C_MENU_RIGHT)}, true),
+      WL(keyHandler, [this, campaignOptions] {
+        campaignMenuIndex.up(campaignOptions);
+      }, {gui.getKey(C_MENU_UP)}, true),
+      WL(keyHandler, [this, campaignOptions]{
+        campaignMenuIndex.down(campaignOptions);
+      }, {gui.getKey(C_MENU_DOWN)}, true),
+      WL(keyHandler, [&] { queue.push(CampaignActionId::CANCEL); }, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
+  };
   interior.push_back(lines.buildVerticalList());
   interior.push_back(centerLines.buildVerticalList());
   interior.push_back(WL(margins, rightLines.buildVerticalList(), retiredPosX, 0, 50, 0));
