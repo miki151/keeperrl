@@ -194,8 +194,8 @@ class GuiBuilder {
   SGuiElem drawOptionElem(OptionId, function<void()> onChanged, optional<string> defaultString);
   GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, optional<int> maxActive,
       string searchString);
-  SGuiElem drawRetiredDungeonsButton(SyncQueue<CampaignAction>&, View::CampaignOptions);
-  SGuiElem drawCampaignSettingsButton(SyncQueue<CampaignAction>&, View::CampaignOptions);
+  SGuiElem drawRetiredDungeonsButton(SyncQueue<CampaignAction>&, View::CampaignOptions, View::CampaignMenuState& state);
+  SGuiElem drawCampaignSettingsButton(SyncQueue<CampaignAction>&, View::CampaignOptions, View::CampaignMenuState& state);
 
   SGuiElem drawImmigrantInfo(const ImmigrantDataInfo&);
   SGuiElem drawSpecialTrait(const ImmigrantDataInfo::SpecialTraitInfo&);
@@ -236,7 +236,6 @@ class GuiBuilder {
   optional<int> lastPlayerPositionHash;
   optional<int> techIndex;
   AvatarIndex avatarIndex;
-  CampaignMenuIndex campaignMenuIndex;
   int commandsIndex = -1;
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
   int scrollbarsHeld2 = GuiFactory::getHeldInitValue();
@@ -330,7 +329,8 @@ class GuiBuilder {
   function<void(Rectangle)> getAIButtonFun(const PlayerInfo&);
   SGuiElem drawSpellSchoolLabel(const SpellSchoolInfo&);
   SGuiElem drawResources(const vector<CollectiveInfo::Resource>&, const optional<TutorialInfo>&, int width);
-  SGuiElem drawBiomeMenu(SyncQueue<CampaignAction>&, const vector<View::CampaignOptions::BiomeInfo>&, int chosen);
+  SGuiElem drawBiomeMenu(SyncQueue<CampaignAction>&, const vector<View::CampaignOptions::BiomeInfo>&,
+      View::CampaignMenuState& state, int chosen);
   SGuiElem drawBestiaryOverlay(const vector<PlayerInfo>&, int index);
   SGuiElem drawBestiaryButtons(const vector<PlayerInfo>&, int index);
   SGuiElem drawBestiaryPage(const PlayerInfo&);

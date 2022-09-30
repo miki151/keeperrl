@@ -1,5 +1,6 @@
+#pragma once
+
 #include "util.h"
-#include "view.h"
 
 namespace CampaignMenuElems {
   EMPTY_STRUCT(RetiredDungeons);
@@ -18,12 +19,13 @@ namespace CampaignMenuElems {
 }
 
 struct CampaignMenuIndex : public CampaignMenuElems::CampaignMenuIndexVariant {
+  using CampaignMenuElems::CampaignMenuIndexVariant::CampaignMenuIndexVariant;
   template <typename T>
   void assign(T elem) {
     *((CampaignMenuElems::CampaignMenuIndexVariant*)this) = std::move(elem);
   }
-  void left(const View::CampaignOptions&);
-  void right(const View::CampaignOptions&);
-  void up(const View::CampaignOptions&);
-  void down(const View::CampaignOptions&);
+  void left();
+  void right(int numBiomes);
+  void up();
+  void down();
 };

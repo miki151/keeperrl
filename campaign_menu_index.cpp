@@ -2,7 +2,7 @@
 
 using namespace CampaignMenuElems;
 
-void CampaignMenuIndex::left(const View::CampaignOptions&) {
+void CampaignMenuIndex::left() {
   visit(
       [&](Help) {
         assign(RetiredDungeons{});
@@ -27,7 +27,7 @@ void CampaignMenuIndex::left(const View::CampaignOptions&) {
   );
 }
 
-void CampaignMenuIndex::right(const View::CampaignOptions& o) {
+void CampaignMenuIndex::right(int numBiomes) {
   visit(
       [&](Help) {
         assign(Biome{0});
@@ -39,7 +39,7 @@ void CampaignMenuIndex::right(const View::CampaignOptions& o) {
         assign(Help{});
       },
       [&](Biome b) {
-        if (b.value < o.biomes.size() - 1) {
+        if (b.value < numBiomes - 1) {
           ++b.value;
           assign(b);
         }
@@ -54,7 +54,7 @@ void CampaignMenuIndex::right(const View::CampaignOptions& o) {
   );
 }
 
-void CampaignMenuIndex::up(const View::CampaignOptions&) {
+void CampaignMenuIndex::up() {
   visit(
       [&](Help) {
         assign(ChangeMode{});
@@ -81,7 +81,7 @@ void CampaignMenuIndex::up(const View::CampaignOptions&) {
   );
 }
 
-void CampaignMenuIndex::down(const View::CampaignOptions&) {
+void CampaignMenuIndex::down() {
   visit(
       [&](Help) {
         assign(Confirm{});

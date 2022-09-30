@@ -25,6 +25,7 @@
 #include "enum_variant.h"
 #include "unique_entity.h"
 #include "view_id.h"
+#include "campaign_menu_index.h"
 
 class CreatureView;
 class Level;
@@ -211,6 +212,7 @@ class View {
 
   struct CampaignMenuState {
     bool helpText;
+    CampaignMenuIndex index;
   };
   struct CampaignOptions {
     const Campaign& campaign;

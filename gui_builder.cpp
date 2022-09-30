@@ -4638,7 +4638,7 @@ SGuiElem GuiBuilder::drawMenuWarning(View::CampaignOptions::WarningType type) {
 }
 
 SGuiElem GuiBuilder::drawBiomeMenu(SyncQueue<CampaignAction>& queue,
-    const vector<View::CampaignOptions::BiomeInfo>& biomes, int chosen) {
+    const vector<View::CampaignOptions::BiomeInfo>& biomes, View::CampaignMenuState& state, int chosen) {
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElem(WL(getListBuilder)
     .addElemAuto(WL(label, "base biome: "))
@@ -4653,13 +4653,14 @@ SGuiElem GuiBuilder::drawBiomeMenu(SyncQueue<CampaignAction>& queue,
     choices.addElem(WL(setHeight, 32, WL(setWidth, 24, WL(buttonLabelFocusable,
         WL(viewObject, biomes[i].viewId),
         [&queue, i] { queue.push({CampaignActionId::BIOME, i}); },
-        [this, i] { return campaignMenuIndex == CampaignMenuElems::Biome{i};}, false))), 36);
+        [&state, i] { return state.index == CampaignMenuElems::Biome{i};}, false))), 36);
   }
   lines.addElemAuto(choices.buildHorizontalList());
   return lines.buildVerticalList();
 }
 
-SGuiElem GuiBuilder::drawRetiredDungeonsButton(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions) {
+SGuiElem GuiBuilder::drawRetiredDungeonsButton(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
+    View::CampaignMenuState& state) {
   if (campaignOptions.retired) {
     auto& retiredGames = *campaignOptions.retired;
     auto selectFun = [this, &queue, &retiredGames, campaignOptions](Rectangle r) {
@@ -4701,13 +4702,14 @@ SGuiElem GuiBuilder::drawRetiredDungeonsButton(SyncQueue<CampaignAction>& queue,
           break;
       }
     };
-    auto focusedFun = [this] { return campaignMenuIndex == CampaignMenuElems::RetiredDungeons{};};
+    auto focusedFun = [&state] { return state.index == CampaignMenuElems::RetiredDungeons{};};
     return WL(buttonLabelFocusable, "Add retired dungeons", selectFun, focusedFun);
   }
   return WL(buttonLabelInactive, "Add retired dungeons");
 }
 
-SGuiElem GuiBuilder::drawCampaignSettingsButton(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions) {
+SGuiElem GuiBuilder::drawCampaignSettingsButton(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
+    View::CampaignMenuState& state) {
   auto callback = [this, &queue, campaignOptions](Rectangle rect) {
     while (1) {
       auto optionsLines = WL(getListBuilder, getStandardLineHeight());
@@ -4724,13 +4726,12 @@ SGuiElem GuiBuilder::drawCampaignSettingsButton(SyncQueue<CampaignAction>& queue
         break;
     }
   };
-  auto focusedFun = [this] { return campaignMenuIndex == CampaignMenuElems::Settings{};};
+  auto focusedFun = [&state] { return state.index == CampaignMenuElems::Settings{};};
   return WL(buttonLabelFocusable, "Difficulty", callback, focusedFun);
 }
 
 SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
     View::CampaignMenuState& menuState) {
-  campaignMenuIndex.assign(CampaignMenuElems::Help{});
   const auto& campaign = campaignOptions.campaign;
   auto& retiredGames = campaignOptions.retired;
   auto lines = WL(getListBuilder, getStandardLineHeight());
@@ -4752,50 +4753,50 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
     }
     drawMiniMenu(lines.buildVerticalList(), exit, bounds.bottomLeft(), 350, true);
   };
-  auto changeFocusedFun = [this]{return campaignMenuIndex == CampaignMenuElems::ChangeMode{};};
+  auto changeFocusedFun = [&menuState]{return menuState.index == CampaignMenuElems::ChangeMode{};};
   rightLines.addElem(WL(leftMargin, -55, WL(buttonLabelFocusable, "Change", changeFun, changeFocusedFun)));
   centerLines.addSpace(10);
-  auto helpFocusedFun = [this]{return campaignMenuIndex == CampaignMenuElems::Help{};};
+  auto helpFocusedFun = [&menuState]{return menuState.index == CampaignMenuElems::Help{};};
   auto helpFun = [&] { menuState.helpText = !menuState.helpText; };
   centerLines.addElem(WL(centerHoriz,
       WL(buttonLabelFocusable, "Help", helpFun, helpFocusedFun)));
   lines.addElem(WL(leftMargin, optionMargin, WL(label, "World name: " + campaign.getWorldName())));
   lines.addSpace(10);
-  lines.addElem(WL(leftMargin, optionMargin, drawRetiredDungeonsButton(queue, campaignOptions)));
+  lines.addElem(WL(leftMargin, optionMargin, drawRetiredDungeonsButton(queue, campaignOptions, menuState)));
   if (!campaignOptions.options.empty()) {
     lines.addSpace(10);
-    lines.addElem(WL(leftMargin, optionMargin, drawCampaignSettingsButton(queue, campaignOptions)));
+    lines.addElem(WL(leftMargin, optionMargin, drawCampaignSettingsButton(queue, campaignOptions, menuState)));
   }
   lines.addBackElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, none)));
   lines.addSpace(10);
   lines.addBackElem(WL(centerHoriz, WL(getListBuilder)
         .addElemAuto(WL(buttonLabelFocusable, "Confirm", [&] { queue.push(CampaignActionId::CONFIRM); },
-            [this] { return campaignMenuIndex == CampaignMenuElems::Confirm{};}))
+            [&menuState]{return menuState.index == CampaignMenuElems::Confirm{};}))
         .addSpace(20)
         .addElemAuto(WL(buttonLabelFocusable, "Re-roll map", [&] { queue.push(CampaignActionId::REROLL_MAP); },
-            [this] { return campaignMenuIndex == CampaignMenuElems::RollMap{};}))
+            [&menuState]{return menuState.index == CampaignMenuElems::RollMap{};}))
         .addSpace(20)
         .addElemAuto(WL(buttonLabelFocusable, "Go back", [&] { queue.push(CampaignActionId::CANCEL); },
-            [this] { return campaignMenuIndex == CampaignMenuElems::Back{};}))
+            [&menuState]{return menuState.index == CampaignMenuElems::Back{};}))
         .buildHorizontalList()));
   if (campaignOptions.warning)
     rightLines.addElem(WL(leftMargin, -20, drawMenuWarning(*campaignOptions.warning)));
   if (!campaignOptions.biomes.empty())
-    rightLines.addElemAuto(drawBiomeMenu(queue, campaignOptions.biomes, campaignOptions.chosenBiome));
+    rightLines.addElemAuto(drawBiomeMenu(queue, campaignOptions.biomes, menuState, campaignOptions.chosenBiome));
   int retiredPosX = 640;
   vector<SGuiElem> interior {
       WL(stopKeyEvents),
-      WL(keyHandler, [this, campaignOptions] {
-        campaignMenuIndex.left(campaignOptions);
+      WL(keyHandler, [&menuState] {
+        menuState.index.left();
       }, {gui.getKey(C_MENU_LEFT)}, true),
-      WL(keyHandler, [this, campaignOptions]{
-        campaignMenuIndex.right(campaignOptions);
+      WL(keyHandler, [&menuState, numBiomes = campaignOptions.biomes.size()]{
+        menuState.index.right(numBiomes);
       }, {gui.getKey(C_MENU_RIGHT)}, true),
-      WL(keyHandler, [this, campaignOptions] {
-        campaignMenuIndex.up(campaignOptions);
+      WL(keyHandler, [&menuState] {
+        menuState.index.up();
       }, {gui.getKey(C_MENU_UP)}, true),
-      WL(keyHandler, [this, campaignOptions]{
-        campaignMenuIndex.down(campaignOptions);
+      WL(keyHandler, [&menuState]{
+        menuState.index.down();
       }, {gui.getKey(C_MENU_DOWN)}, true),
       WL(keyHandler, [&] { queue.push(CampaignActionId::CANCEL); }, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
   };

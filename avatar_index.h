@@ -1,3 +1,5 @@
+#pragma once
+
 #include "util.h"
 #include "view.h"
 
