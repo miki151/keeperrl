@@ -340,7 +340,7 @@ void MapGui::onMouseRelease(Vec2 v) {
     if (mouseHeldPos->distD(v) > 10) {
       if (!isDraggedCreature())
         considerContinuousLeftClick(v);
-    } else {
+    } else if (!!lastMouseMove) {
       if (auto c = getCreature(*mouseHeldPos))
         inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK, c->position));
       else {
