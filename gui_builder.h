@@ -191,11 +191,12 @@ class GuiBuilder {
   SGuiElem drawHighscorePage(const HighscoreList&, ScrollPosition* scrollPos);
   SGuiElem drawTeams(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease, bool leftRight);
-  SGuiElem drawOptionElem(OptionId, function<void()> onChanged, optional<string> defaultString);
+  SGuiElem drawOptionElem(OptionId, function<void()> onChanged, function<bool()> focused);
   GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, optional<int> maxActive,
       string searchString);
-  SGuiElem drawRetiredDungeonsButton(SyncQueue<CampaignAction>&, View::CampaignOptions, View::CampaignMenuState& state);
-  SGuiElem drawCampaignSettingsButton(SyncQueue<CampaignAction>&, View::CampaignOptions, View::CampaignMenuState& state);
+  SGuiElem drawRetiredDungeonsButton(SyncQueue<CampaignAction>&, View::CampaignOptions, View::CampaignMenuState&);
+  SGuiElem drawCampaignSettingsButton(SyncQueue<CampaignAction>&, View::CampaignOptions, View::CampaignMenuState&);
+  SGuiElem drawGameModeButton(SyncQueue<CampaignAction>&, View::CampaignOptions, View::CampaignMenuState&);
 
   SGuiElem drawImmigrantInfo(const ImmigrantDataInfo&);
   SGuiElem drawSpecialTrait(const ImmigrantDataInfo::SpecialTraitInfo&);

@@ -4519,16 +4519,16 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
 }
 
 SGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease, bool leftRight) {
-  string plus = leftRight ? "<"  : "+";
-  string minus = leftRight ? ">"  : "-";
+  string plus = leftRight ? ">"  : "+";
+  string minus = leftRight ? "<"  : "-";
   return WL(margins, WL(getListBuilder)
-      .addElem(canIncrease
-          ? WL(buttonLabel, plus, [callback] { callback(1); }, false)
-          : WL(buttonLabelInactive, plus, false), 10)
-      .addSpace(12)
       .addElem(canDecrease
           ? WL(buttonLabel, minus, [callback] { callback(-1); }, false)
           : WL(buttonLabelInactive, minus, false), 10)
+      .addSpace(12)
+      .addElem(canIncrease
+          ? WL(buttonLabel, plus, [callback] { callback(1); }, false)
+          : WL(buttonLabelInactive, plus, false), 10)
       .buildHorizontalList(), 0, 2, 0, 2);
 }
 
@@ -4546,25 +4546,24 @@ SGuiElem GuiBuilder::drawBoolOptionElem(OptionId id, string name) {
   );
 }
 
-SGuiElem GuiBuilder::drawOptionElem(OptionId id, function<void()> onChanged, optional<string> defaultString) {
-  auto getValue = [id, options = this->options, defaultString] {
-    string valueString = options->getValueString(id);
-    if (!valueString.empty() || !defaultString)
-      return valueString;
-    else
-      return *defaultString;
-  };
+SGuiElem GuiBuilder::drawOptionElem(OptionId id, function<void()> onChanged, function<bool()> focused) {
   string name = options->getName(id);
   SGuiElem ret;
   auto limits = options->getLimits(id);
   int value = options->getIntValue(id);
+  auto changeFun = [=] (int v) { options->setValue(id, value + v); onChanged();};
   ret = WL(getListBuilder)
-      .addElem(WL(labelFun, [=]{ return name + ": " + getValue(); }), renderer.getTextLength(name) + 20)
-      .addBackElemAuto(drawPlusMinus([=] (int v) { options->setValue(id, value + v); onChanged();},
+      .addElem(WL(labelFun, [=]{ return name + ": " + options->getValueString(id); }), renderer.getTextLength(name) + 20)
+      .addBackElemAuto(drawPlusMinus(changeFun,
           value < limits->getEnd() - 1, value > limits->getStart(), options->hasChoices(id)))
       .buildHorizontalList();
   return WL(stack,
       WL(tooltip, {options->getHint(id).value_or("")}),
+      WL(conditionalStopKeys, WL(stack,
+          WL(margins, WL(uiHighlight), -4, -4, -15, 4),
+          WL(keyHandler, [=] { if (value < limits->getEnd() - 1) changeFun(1); }, {gui.getKey(C_MENU_RIGHT)}, true),
+          WL(keyHandler, [=] { if (value > limits->getStart()) changeFun(-1); }, {gui.getKey(C_MENU_LEFT)}, true)
+      ), focused),
       std::move(ret)
   );
 }
@@ -4711,23 +4710,64 @@ SGuiElem GuiBuilder::drawRetiredDungeonsButton(SyncQueue<CampaignAction>& queue,
 SGuiElem GuiBuilder::drawCampaignSettingsButton(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
     View::CampaignMenuState& state) {
   auto callback = [this, &queue, campaignOptions](Rectangle rect) {
+    int focused = 0;
     while (1) {
       auto optionsLines = WL(getListBuilder, getStandardLineHeight());
       bool exit = false;
       bool clicked = false;
-      for (OptionId id : campaignOptions.options)
+      for (int index : All(campaignOptions.options)) {
+        auto id = campaignOptions.options[index];
         optionsLines.addElem(drawOptionElem(id, [id, &queue, &clicked, &exit] {
           queue.push({CampaignActionId::UPDATE_OPTION, id});
           clicked = true;
           exit = true;
-        }, none));
-      drawMiniMenu(optionsLines.buildVerticalList(), exit, rect.bottomLeft(), 444, true);
+        }, [index, &focused] { return focused == index; }));
+      }
+      int cnt = campaignOptions.options.size();
+      auto content = WL(stack,
+        optionsLines.buildVerticalList(),
+        WL(keyHandler, [&focused, cnt] { focused = (focused + 1) % cnt; },
+            {gui.getKey(C_MENU_DOWN)}, true),
+        WL(keyHandler, [&focused, cnt] { focused = (focused + cnt - 1) % cnt; },
+            {gui.getKey(C_MENU_UP)}, true)
+      );
+      drawMiniMenu(std::move(content), exit, rect.bottomLeft(), 444, true);
       if (!clicked)
         break;
     }
   };
   auto focusedFun = [&state] { return state.index == CampaignMenuElems::Settings{};};
   return WL(buttonLabelFocusable, "Difficulty", callback, focusedFun);
+}
+
+SGuiElem GuiBuilder::drawGameModeButton(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
+    View::CampaignMenuState& menuState) {
+  auto changeFun = [&queue, this, campaignOptions] (Rectangle bounds) {
+    auto lines = WL(getListBuilder, legendLineHeight);
+    bool exit = false;
+    int focused = 0;
+    for (int index : All(campaignOptions.availableTypes)) {
+      auto& info = campaignOptions.availableTypes[index];
+      lines.addElem(WL(buttonLabelFocusable, getGameTypeName(info.type),
+          [&, info] { queue.push({CampaignActionId::CHANGE_TYPE, info.type}); exit = true; },
+          [&focused, index] { return index == focused;}));
+      for (auto& desc : info.description)
+        lines.addElem(WL(leftMargin, 0, WL(label, "- " + desc, Color::LIGHT_GRAY, Renderer::smallTextSize())),
+            legendLineHeight * 2 / 3);
+      lines.addSpace(legendLineHeight / 3);
+    }
+    int cnt = campaignOptions.availableTypes.size();
+    auto content = WL(stack,
+      lines.buildVerticalList(),
+      WL(keyHandler, [&focused, cnt] { focused = (focused + 1) % cnt; },
+          {gui.getKey(C_MENU_DOWN)}, true),
+      WL(keyHandler, [&focused, cnt] { focused = (focused + cnt - 1) % cnt; },
+          {gui.getKey(C_MENU_UP)}, true)
+    );
+    drawMiniMenu(std::move(content), exit, bounds.bottomLeft(), 350, true);
+  };
+  auto changeFocusedFun = [&menuState] {return menuState.index == CampaignMenuElems::ChangeMode{};};
+  return WL(buttonLabelFocusable, "Change", changeFun, changeFocusedFun);
 }
 
 SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
@@ -4740,21 +4780,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   int optionMargin = 50;
   centerLines.addElem(WL(centerHoriz,
        WL(label, "Game mode: "_s + getGameTypeName(campaign.getType()))));
-  auto changeFun = [&queue, this, campaignOptions] (Rectangle bounds) {
-    auto lines = WL(getListBuilder, legendLineHeight);
-    bool exit = false;
-    for (auto& info : campaignOptions.availableTypes) {
-      lines.addElem(WL(buttonLabel, getGameTypeName(info.type),
-          [&, info] { queue.push({CampaignActionId::CHANGE_TYPE, info.type}); exit = true; }));
-      for (auto& desc : info.description)
-        lines.addElem(WL(leftMargin, 0, WL(label, "- " + desc, Color::LIGHT_GRAY, Renderer::smallTextSize())),
-            legendLineHeight * 2 / 3);
-      lines.addSpace(legendLineHeight / 3);
-    }
-    drawMiniMenu(lines.buildVerticalList(), exit, bounds.bottomLeft(), 350, true);
-  };
-  auto changeFocusedFun = [&menuState]{return menuState.index == CampaignMenuElems::ChangeMode{};};
-  rightLines.addElem(WL(leftMargin, -55, WL(buttonLabelFocusable, "Change", changeFun, changeFocusedFun)));
+  rightLines.addElem(WL(leftMargin, -55, drawGameModeButton(queue, campaignOptions, menuState)));
   centerLines.addSpace(10);
   auto helpFocusedFun = [&menuState]{return menuState.index == CampaignMenuElems::Help{};};
   auto helpFun = [&] { menuState.helpText = !menuState.helpText; };
