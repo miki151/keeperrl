@@ -246,7 +246,8 @@ class TextFieldElem : public GuiElem {
       toDraw += "|";
     if (isFocused() && !alwaysFocused)
       r.setTopLayer();
-    r.drawFilledRectangle(rectBounds, Color::BLACK, isFocused() ? Color::WHITE : Color::GRAY);
+    r.drawFilledRectangle(rectBounds, Color::BLACK,
+        (isFocused() || controllerFocus()) ? Color::WHITE : Color::GRAY);
     if (!isFocused())
       r.setScissor(bounds.minusMargin(1));
     r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(6, 6), toDraw);

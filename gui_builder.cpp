@@ -1487,9 +1487,10 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
   drawMiniMenu(std::move(content), exit, menuPos, width, darkBg);
 }
 
-void GuiBuilder::drawMiniMenu(SGuiElem elem, bool& exit, Vec2 menuPos, int width, bool darkBg) {
+void GuiBuilder::drawMiniMenu(SGuiElem elem, bool& exit, Vec2 menuPos, int width, bool darkBg, bool resetScrolling) {
   int margin = 15;
-  miniMenuScroll.reset();
+  if (resetScrolling)
+    miniMenuScroll.reset();
   elem = WL(scrollable, WL(margins, std::move(elem), 5 + margin, margin, 5 + margin, margin),
       &miniMenuScroll, &scrollbarsHeld);
   elem = WL(miniWindow, std::move(elem),
@@ -4249,21 +4250,17 @@ SGuiElem GuiBuilder::drawFirstNameButtons(const vector<View::AvatarData>& avatar
         auto rollFunConfirm = [=] { options->setValue(avatar.nameOption, randomFirstNameTag); ++*chosenName; };
         auto elem = WL(getListBuilder)
             .addElemAuto(WL(label, avatar.settlementNames ? "Settlement: " : "First name: "))
-            .addMiddleElem(WL(stack,
-                WL(textField, maxFirstNameLength,
-                    [=] {
-                      auto entered = options->getValueString(avatar.nameOption);
-                      return entered == randomFirstNameTag ?
-                          avatar.firstNames[genderIndex][*chosenName % avatar.firstNames[genderIndex].size()] :
-                          entered;
-                    },
-                    [=] (string s) {
-                      options->setValue(avatar.nameOption, s);
-                    },
-                    focusedNameFun),
-                WL(conditional, WL(topMargin, -4, WL(bottomMargin, 4, WL(rectangle, Color::TRANSPARENT, Color::WHITE))),
-                    focusedNameFun)
-            ))
+            .addMiddleElem(WL(textField, maxFirstNameLength,
+                [=] {
+                  auto entered = options->getValueString(avatar.nameOption);
+                  return entered == randomFirstNameTag ?
+                      avatar.firstNames[genderIndex][*chosenName % avatar.firstNames[genderIndex].size()] :
+                      entered;
+                },
+                [=] (string s) {
+                  options->setValue(avatar.nameOption, s);
+                },
+                focusedNameFun))
             .addSpace(10)
             .addBackElemAuto(WL(buttonLabelFocusable, "🔄", rollFunConfirm, focusedRollFun, true, false, true))
             .buildHorizontalList();
@@ -4568,11 +4565,13 @@ SGuiElem GuiBuilder::drawOptionElem(OptionId id, function<void()> onChanged, fun
   );
 }
 
-GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, function<void()> reloadCampaign,
-    optional<int> maxActive, string searchString) {
+pair<GuiFactory::ListBuilder, vector<SGuiElem>> GuiBuilder::drawRetiredGames(RetiredGames& retired,
+    function<void()> reloadCampaign, optional<int> maxActive, string searchString,
+    function<bool(int)> isFocused) {
   auto lines = WL(getListBuilder, legendLineHeight);
   const vector<RetiredGames::RetiredGame>& allGames = retired.getAllGames();
   bool displayActive = !maxActive;
+  vector<SGuiElem> added = 0;
   for (int i : All(allGames)) {
     if (i == retired.getNumLocal() && !displayActive)
       lines.addElem(WL(label, allGames[i].subscribed ? "Subscribed:" : "Online:", Color::YELLOW));
@@ -4590,11 +4589,18 @@ GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, func
         header.addElem(drawMinionAndLevel(minion.viewId, minion.level, 1), 25);
       header.addSpace(20);
       if (retired.isActive(i))
-        header.addBackElemAuto(WL(buttonLabel, "Remove", [i, reloadCampaign, &retired] { retired.setActive(i, false); reloadCampaign();}));
+        header.addBackElemAuto(WL(buttonLabelFocusable, "Remove",
+            [i, reloadCampaign, &retired] { retired.setActive(i, false); reloadCampaign();},
+            [isFocused, numAdded = added.size()]{ return isFocused(numAdded);}));
       else if (!maxedOut)
-        header.addBackElemAuto(WL(buttonLabel, "Add", [i, reloadCampaign, &retired] { retired.setActive(i, true); reloadCampaign();}));
+        header.addBackElemAuto(WL(buttonLabelFocusable, "Add",
+            [i, reloadCampaign, &retired] { retired.setActive(i, true); reloadCampaign();},
+            [isFocused, numAdded = added.size()]{ return isFocused(numAdded);}));
       header.addBackSpace(10);
-      lines.addElem(header.buildHorizontalList());
+      auto addedElem = header.buildHorizontalList();
+      if (!maxedOut)
+        added.push_back(addedElem);
+      lines.addElem(addedElem);
       auto detailsList = WL(getListBuilder);
       if (allGames[i].numTotal > 0)
         detailsList.addElemAuto(WL(stack,
@@ -4617,7 +4623,7 @@ GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, func
       lines.addSpace(legendLineHeight / 3);
     }
   }
-  return lines;
+  return make_pair(std::move(lines), std::move(added));
 }
 
 static const char* getGameTypeName(CampaignType type) {
@@ -4663,40 +4669,77 @@ SGuiElem GuiBuilder::drawRetiredDungeonsButton(SyncQueue<CampaignAction>& queue,
   if (campaignOptions.retired) {
     auto& retiredGames = *campaignOptions.retired;
     auto selectFun = [this, &queue, &retiredGames, campaignOptions](Rectangle r) {
+      int focused = 1;
+      string searchString;
+      bool exit = false;
+      bool clicked = false;
+      auto searchField = WL(textField, 10, [&searchString] { return searchString; },
+        [&](string s){
+          exit = true;
+          clicked = true;
+          searchString = s;
+        },
+        [&focused] { return focused == 0; });
       while (1) {
+        exit = false;
+        clicked = false;
         auto retiredMenuLines = WL(getListBuilder, getStandardLineHeight());
-        retiredMenuLines.addElem(WL(getListBuilder)
-            .addElemAuto(WL(label, "Search: "))
-            .addElem(WL(textFieldFocused, 10, [ret = campaignOptions.searchString] { return ret; },
-                [&queue](string s){ queue.push(CampaignAction(CampaignActionId::SEARCH_RETIRED, std::move(s)));}), 200)
-            .addSpace(10)
-            .addElemAuto(WL(buttonLabel, "X",
-                [&queue]{ queue.push(CampaignAction(CampaignActionId::SEARCH_RETIRED, string()));}))
-            .buildHorizontalList()
-        );
-        bool exit = false;
-        bool clicked = false;
+        retiredMenuLines.addSpace(); // placeholder for the search field which needs to be stack on top
+        // to catch keypress events
         auto addedDungeons = drawRetiredGames(retiredGames, [&] {
           queue.push(CampaignActionId::UPDATE_MAP);
           clicked = true;
           exit = true;
-        }, none, "");
-        int addedHeight = addedDungeons.getSize();
-        if (!addedDungeons.isEmpty()) {
+        }, none, "", [&focused] (int i) { return i == focused - 1; });
+        vector<SGuiElem> dungeonElems { searchField };
+        dungeonElems.append(addedDungeons.second);
+        int addedHeight = addedDungeons.first.getSize();
+        if (!addedDungeons.first.isEmpty()) {
           retiredMenuLines.addElem(WL(label, "Added:", Color::YELLOW));
-          retiredMenuLines.addElem(addedDungeons.buildVerticalList(), addedHeight);
+          retiredMenuLines.addElem(addedDungeons.first.buildVerticalList(), addedHeight);
         }
-        GuiFactory::ListBuilder retiredList = drawRetiredGames(retiredGames, [&] {
+        auto retiredList = drawRetiredGames(retiredGames, [&] {
           queue.push(CampaignActionId::UPDATE_MAP);
           clicked = true;
           exit = true;
-        }, options->getIntValue(OptionId::MAIN_VILLAINS), campaignOptions.searchString);
-        if (retiredList.isEmpty())
-          retiredList.addElem(WL(label, "No retired dungeons found :("));
+        }, options->getIntValue(OptionId::MAIN_VILLAINS), searchString,
+            [focusedOffset = dungeonElems.size(), &focused] (int i) {
+              return i == focused - focusedOffset; });
+        dungeonElems.append(retiredList.second);
+        if (retiredList.first.isEmpty())
+          retiredList.first.addElem(WL(label, "No retired dungeons found :("));
         else
           retiredMenuLines.addElem(WL(label, "Local:", Color::YELLOW));
-        retiredMenuLines.addElemAuto(retiredList.buildVerticalList());
-        drawMiniMenu(retiredMenuLines.buildVerticalList(), exit, r.bottomLeft(), 444, true);
+        retiredMenuLines.addElemAuto(retiredList.first.buildVerticalList());
+        focused = min(focused, dungeonElems.size() - 1);
+        auto content = WL(stack, makeVec(
+            retiredMenuLines.buildVerticalList(),
+            WL(keyHandler, [&] {
+              if (focused == -1)
+                focused = 0;
+              focused = (focused + 1) % dungeonElems.size();
+              miniMenuScroll.setRelative(dungeonElems[focused]->getBounds().top(), Clock::getRealMillis());
+            }, {gui.getKey(C_MENU_DOWN)}, true),
+            WL(keyHandler, [&] {
+              if (focused == -1)
+                focused = 0;
+              focused = (focused + dungeonElems.size() - 1) % dungeonElems.size();
+              miniMenuScroll.setRelative(dungeonElems[focused]->getBounds().top(), Clock::getRealMillis());
+            }, {gui.getKey(C_MENU_UP)}, true),
+            WL(keyHandler, [&focused] { if (focused == 0) focused = -1; },
+                {gui.getKey(C_MENU_RIGHT)}, true),
+            WL(keyHandler, [&focused] { if (focused == -1) focused = 0; },
+            {gui.getKey(C_MENU_LEFT)}, true),
+            WL(setHeight, getStandardLineHeight(), WL(getListBuilder)
+                .addElemAuto(WL(label, "Search: "))
+                .addElem(searchField, 200)
+                .addSpace(10)
+                .addElemAuto(WL(buttonLabelFocusable, "X",
+                    [&]{ searchString.clear(); exit = true; clicked = true;},
+                    [&focused] { return focused == -1; }))
+            .buildHorizontalList())
+        ));
+        drawMiniMenu(std::move(content), exit, r.bottomLeft(), 444, true, false);
         if (!clicked)
           break;
       }
@@ -4900,14 +4943,15 @@ SGuiElem GuiBuilder::drawRetiredDungeonMenu(SyncQueue<variant<string, bool, none
       .buildHorizontalList()
   );
   auto dungeonLines = gui.getListBuilder(legendLineHeight);
-  auto addedDungeons = drawRetiredGames(retired, [&queue] { queue.push(none);}, none, "");
+  auto addedDungeons = drawRetiredGames(retired, [&queue] { queue.push(none);}, none, "",
+      [](int){return false;}).first;
   int addedHeight = addedDungeons.getSize();
   if (!addedDungeons.isEmpty()) {
     dungeonLines.addElem(WL(label, "Added:", Color::YELLOW));
     dungeonLines.addElem(addedDungeons.buildVerticalList(), addedHeight);
   }
   GuiFactory::ListBuilder retiredList = drawRetiredGames(retired,
-      [&queue] { queue.push(none);}, maxGames, searchString);
+      [&queue] { queue.push(none);}, maxGames, searchString, [](int){return false;}).first;
   if (retiredList.isEmpty() && addedDungeons.isEmpty())
     retiredList.addElem(WL(label, "No retired dungeons found :("));
   if (!retiredList.isEmpty())

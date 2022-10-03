@@ -183,7 +183,7 @@ class GuiBuilder {
   SGuiElem drawMinionActions(const PlayerInfo&, const optional<TutorialInfo>&);
   function<void()> getButtonCallback(UserInput);
   void drawMiniMenu(SGuiElem, function<bool()> done, Vec2 menuPos, int width, bool darkBg);
-  void drawMiniMenu(SGuiElem, bool& exit, Vec2 menuPos, int width, bool darkBg);
+  void drawMiniMenu(SGuiElem, bool& exit, Vec2 menuPos, int width, bool darkBg, bool resetScrolling = true);
   void drawMiniMenu(vector<SGuiElem>, vector<function<void()>>, vector<SGuiElem> tooltips, Vec2 menuPos,
       int width, bool darkBg, bool exitOnCallback = true, int* selected = nullptr);
   void showAttackTriggers(const vector<VillageInfo::Village::TriggerInfo>&, Vec2 pos);
@@ -192,8 +192,9 @@ class GuiBuilder {
   SGuiElem drawTeams(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease, bool leftRight);
   SGuiElem drawOptionElem(OptionId, function<void()> onChanged, function<bool()> focused);
-  GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, optional<int> maxActive,
-      string searchString);
+  pair<GuiFactory::ListBuilder, vector<SGuiElem>> drawRetiredGames(RetiredGames&,
+      function<void()> reloadCampaign, optional<int> maxActive,
+      string searchString, function<bool(int)> isFocused);
   SGuiElem drawRetiredDungeonsButton(SyncQueue<CampaignAction>&, View::CampaignOptions, View::CampaignMenuState&);
   SGuiElem drawCampaignSettingsButton(SyncQueue<CampaignAction>&, View::CampaignOptions, View::CampaignMenuState&);
   SGuiElem drawGameModeButton(SyncQueue<CampaignAction>&, View::CampaignOptions, View::CampaignMenuState&);

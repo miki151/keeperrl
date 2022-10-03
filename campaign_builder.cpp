@@ -350,7 +350,6 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
   Table<Campaign::SiteInfo> terrain = getTerrain(random, size, numBlocked);
   auto retired = genRetired(type);
   View::CampaignMenuState menuState { true, CampaignMenuIndex{CampaignMenuElems::Help{}} };
-  string searchString;
   int chosenBiome = 0;
   struct BiomeData {
     BiomeId id;
@@ -390,14 +389,10 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
               getIntroText(),
               getAvailableTypes().transform([](CampaignType t) -> View::CampaignOptions::CampaignTypeInfo {
                   return {t, getCampaignTypeDescription(t)};}),
-              getMenuWarning(type),
-              searchString}, menuState);
+              getMenuWarning(type)}, menuState);
       switch (action.getId()) {
         case CampaignActionId::BIOME:
           chosenBiome = action.get<int>();
-          break;
-        case CampaignActionId::SEARCH_RETIRED:
-          searchString = action.get<string>();
           break;
         case CampaignActionId::REROLL_MAP:
           terrain = getTerrain(random, size, numBlocked);

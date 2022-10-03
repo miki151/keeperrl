@@ -67,7 +67,6 @@ enum class CampaignActionId {
   CONFIRM,
   UPDATE_OPTION,
   CHANGE_TYPE,
-  SEARCH_RETIRED,
   BIOME
 };
 
@@ -80,7 +79,6 @@ enum class PassableInfo {
 
 class CampaignAction : public EnumVariant<CampaignActionId, TYPES(OptionId, CampaignType, string, int),
   ASSIGN(CampaignType, CampaignActionId::CHANGE_TYPE),
-  ASSIGN(string, CampaignActionId::SEARCH_RETIRED),
   ASSIGN(int, CampaignActionId::BIOME),
   ASSIGN(OptionId, CampaignActionId::UPDATE_OPTION)> {
     using EnumVariant::EnumVariant;
@@ -232,7 +230,6 @@ class View {
     vector<CampaignTypeInfo> availableTypes;
     enum WarningType { NO_RETIRE };
     optional<WarningType> warning;
-    string searchString;
   };
 
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) = 0;
