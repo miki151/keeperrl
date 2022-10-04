@@ -1796,7 +1796,7 @@ SGuiElem GuiBuilder::drawTrainingInfo(const CreatureExperienceInfo& info, bool i
     return nullptr;
 }
 
-SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
+SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) {
   auto list = WL(getListBuilder, legendLineHeight);
   list.addSpace();
   auto titleLine = WL(getListBuilder);
@@ -1871,6 +1871,8 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   SGuiElem firstInventoryItem;
   if (!info.inventory.empty()) {
     list.addElem(WL(label, "Inventory", Color::YELLOW));
+    if (withKeys && !!inventoryIndex)
+      inventoryIndex = min(*inventoryIndex, info.inventory.size() - 1);
     for (int i : All(info.inventory)) {
       auto& item = info.inventory[i];
       auto callback = [=](Rectangle butBounds) {
@@ -1909,6 +1911,10 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
     list.addElem(WL(label, "Total weight: " + getWeightString(totWeight)));
     list.addElem(WL(label, "Capacity: " +  (info.carryLimit ? getWeightString(*info.carryLimit) : "infinite"_s)));
     list.addSpace();
+  } else if (withKeys && !!inventoryIndex) {
+    renderer.getSteamInput()->popActionSet();
+    inventoryIndex = none;
+    inventoryScroll.reset();
   }
   if (!info.intrinsicAttacks.empty()) {
     list.addElem(WL(label, "Intrinsic attacks", Color::YELLOW));
@@ -1946,7 +1952,7 @@ static const char* getControlModeName(PlayerInfo::ControlMode m) {
 
 SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
   if (!info.controlMode)
-    return WL(margins, WL(scrollable, drawPlayerInventory(info), &inventoryScroll, &scrollbarsHeld), 6, 0, 15, 5);
+    return WL(margins, WL(scrollable, drawPlayerInventory(info, true), &inventoryScroll, &scrollbarsHeld), 6, 0, 15, 5);
   if (highlightedTeamMember && *highlightedTeamMember >= info.teamInfos.size())
     highlightedTeamMember = none;
   auto getIconHighlight = [&] (Color c) { return WL(topMargin, -1, WL(uiHighlight, c)); };
@@ -2052,9 +2058,9 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
   for (int i : All(info.teamInfos)) {
     auto& elem = info.teamInfos[i];
     if (elem.creatureId != info.creatureId)
-      others.push_back(WL(conditionalStopKeys, drawPlayerInventory(elem), [this, i]{ return highlightedTeamMember == i;}));
+      others.push_back(WL(conditionalStopKeys, drawPlayerInventory(elem, false), [this, i]{ return highlightedTeamMember == i;}));
     else
-      others.push_back(WL(conditional, drawPlayerInventory(info),
+      others.push_back(WL(conditional, drawPlayerInventory(info, true),
           [this, i]{ return !highlightedTeamMember || highlightedTeamMember == i;}));
   }
   vList.addElemAuto(WL(stack, std::move(others)));

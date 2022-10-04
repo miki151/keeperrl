@@ -67,7 +67,7 @@ class GuiBuilder {
   SGuiElem getTurnInfoGui(const GlobalTime& turn);
   SGuiElem drawBottomPlayerInfo(const GameInfo&);
   SGuiElem drawRightPlayerInfo(const PlayerInfo&);
-  SGuiElem drawPlayerInventory(const PlayerInfo&);
+  SGuiElem drawPlayerInventory(const PlayerInfo&, bool withKeys);
   SGuiElem drawRightBandInfo(GameInfo&);
   SGuiElem drawMinions(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawBottomBandInfo(GameInfo&, int width);
