@@ -734,7 +734,9 @@ vector<SDL_Keysym> GuiFactory::getConfirmationKeys() {
       getKey(SDL::SDLK_RETURN),
       getKey(SDL::SDLK_KP_ENTER),
       getKey(SDL::SDLK_KP_5),
-      getKey(C_MENU_SELECT)
+      getKey(C_MENU_SELECT),
+      getKey(C_BUILDINGS_CONFIRM),
+      getKey(C_WALK)
   };
 }
 

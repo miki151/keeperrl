@@ -399,8 +399,17 @@ void WindowView::rebuildGui() {
           bottom = guiBuilder.drawBottomBandInfo(gameInfo, bottomBarBounds->width());
           break;
     }
-  guiBuilder.drawOverlays(overlays, gameInfo);
   if (gameInfo.infoType != GameInfo::InfoType::SPECTATOR) {
+    if (!gameInfo.takingScreenshot) {
+      tempGuiElems.push_back(gui.mainDecoration(rightBarWidth, bottomBarHeight, topBarHeight));
+      tempGuiElems.back()->setBounds(Rectangle(renderer.getSize()));
+    }
+    tempGuiElems.push_back(gui.margins(std::move(right), 20, 20, 10, 0));
+    tempGuiElems.back()->setBounds(Rectangle(Vec2(0, 0),
+          Vec2(rightBarWidth, renderer.getSize().y - rightBottomMargin)));
+    tempGuiElems.push_back(gui.margins(std::move(bottom), 105, 10, 105, 0));
+    tempGuiElems.back()->setBounds(*bottomBarBounds);
+    guiBuilder.drawOverlays(overlays, gameInfo);
     overlays.push_back({guiBuilder.drawMessages(gameInfo.messageBuffer, renderer.getSize().x - rightBarWidth),
                        GuiBuilder::OverlayInfo::MESSAGES});
     for (auto& overlay : overlays) {
@@ -413,15 +422,6 @@ void WindowView::rebuildGui() {
           tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(*width, *height)));
         }
     }
-    if (!gameInfo.takingScreenshot) {
-      tempGuiElems.push_back(gui.mainDecoration(rightBarWidth, bottomBarHeight, topBarHeight));
-      tempGuiElems.back()->setBounds(Rectangle(renderer.getSize()));
-    }
-    tempGuiElems.push_back(gui.margins(std::move(right), 20, 20, 10, 0));
-    tempGuiElems.back()->setBounds(Rectangle(Vec2(0, 0),
-          Vec2(rightBarWidth, renderer.getSize().y - rightBottomMargin)));
-    tempGuiElems.push_back(gui.margins(std::move(bottom), 105, 10, 105, 0));
-    tempGuiElems.back()->setBounds(*bottomBarBounds);
   }
   propagateMousePosition(getClickableGuiElems());
 }

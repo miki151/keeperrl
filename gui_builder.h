@@ -79,7 +79,7 @@ class GuiBuilder {
     enum Alignment { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, MINIONS, IMMIGRATION, VILLAINS, TUTORIAL, MAP_HINT, CENTER } alignment;
   };
   SGuiElem drawPlayerOverlay(const PlayerInfo&, bool dummy);
-  void drawOverlays(vector<OverlayInfo>&, GameInfo&);
+  void drawOverlays(vector<OverlayInfo>&, const GameInfo&);
   SGuiElem drawMessages(const vector<PlayerMessage>&, int guiLength);
   SGuiElem getGameSpeedHotkeys();
   SGuiElem drawImmigrationOverlay(const vector<ImmigrantDataInfo>&, const optional<TutorialInfo>&, bool drawHelp);
@@ -207,7 +207,7 @@ class GuiBuilder {
   int technologyHash = 0;
   int bestiaryIndex = 0;
   int spellSchoolIndex = 0;
-  optional<OverlayInfo> speedDialog;
+  optional<Vec2> workshopIndex;
   int rightBandInfoHash = 0;
   SGuiElem rightBandInfoCache;
   SGuiElem immigrationCache;
@@ -270,7 +270,8 @@ class GuiBuilder {
       const optional<TutorialInfo>&);
   SGuiElem minionsOverlayCache;
   int minionsOverlayHash = 0;
-  SGuiElem drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopInfo&, const optional<TutorialInfo>&,
+      optional<Vec2> dummyIndex);
   SGuiElem workshopsOverlayCache;
   int workshopsOverlayHash = 0;
   SGuiElem drawTasksOverlay(const CollectiveInfo&);
@@ -311,8 +312,9 @@ class GuiBuilder {
   SGuiElem drawVillainType(VillainType);
   SGuiElem drawLyingItemsList(const string& title, const ItemCounts&, int maxWidth);
   SGuiElem drawTickBox(shared_ptr<bool> value, const string& title);
+  function<void(Rectangle)> getItemUpgradeCallback(const CollectiveInfo::QueuedItemInfo&);
   SGuiElem drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&);
-  SGuiElem drawItemCountButton(const CollectiveInfo::QueuedItemInfo&);
+  function<void(Rectangle)> getItemCountCallback(const CollectiveInfo::QueuedItemInfo&);
   SGuiElem drawGenderButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar);
   SGuiElem drawFirstNameButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar,
       shared_ptr<int> chosenName);
