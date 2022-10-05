@@ -2423,11 +2423,12 @@ class MouseHighlight2 : public GuiStack {
   MouseHighlight2(SGuiElem h, SGuiElem h2, bool capture)
       : GuiStack(h2 ? makeVec(std::move(h), std::move(h2)) : makeVec(std::move(h))), capture(capture) {}
 
-  virtual void render(Renderer& r) override {
-    if (over)
-      elems[0]->render(r);
-    else if (elems.size() > 1)
-      elems[1]->render(r);
+  virtual bool isVisible(int index) override {
+    switch (index) {
+      case 0: return over;
+      case 1: return !over;
+    }
+    fail();
   }
 
   virtual void onMouseGone() override {
