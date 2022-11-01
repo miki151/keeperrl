@@ -2562,8 +2562,6 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
   vector<SGuiElem> optionElems;
   for (int itemIndex : All(options)) {
     auto& elem = options[itemIndex].itemInfo;
-    if (elem.hidden)
-      continue;
     auto line = WL(getListBuilder);
     line.addElem(WL(viewObject, elem.viewId), 35);
     auto label = WL(label, elem.name, elem.unavailable ? Color::GRAY : Color::WHITE);

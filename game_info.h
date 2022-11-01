@@ -66,9 +66,8 @@ struct ItemInfo {
   optional<pair<ViewId, int>> HASH(price);
   optional<double> HASH(weight);
   bool HASH(tutorialHighlight);
-  bool HASH(hidden);
   heap_optional<ItemInfo> HASH(ingredient);
-  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, unavailableReason, weight, tutorialHighlight, intrinsicAttackState, intrinsicExtraAttack, viewIdModifiers, hidden, ingredient)
+  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, unavailableReason, weight, tutorialHighlight, intrinsicAttackState, intrinsicExtraAttack, viewIdModifiers, ingredient)
 };
 
 static_assert(std::is_nothrow_move_constructible<ItemInfo>::value, "T should be noexcept MoveConstructible");
