@@ -272,6 +272,7 @@ class GuiBuilder {
   int minionsOverlayHash = 0;
   SGuiElem drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopInfo&, const optional<TutorialInfo>&,
       optional<Vec2> dummyIndex);
+  void updateWorkshopIndex(const CollectiveInfo::ChosenWorkshopInfo&);
   SGuiElem workshopsOverlayCache;
   int workshopsOverlayHash = 0;
   SGuiElem drawTasksOverlay(const CollectiveInfo&);

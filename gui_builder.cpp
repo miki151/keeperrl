@@ -2665,15 +2665,6 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
     queuedElems.push_back(guiElem);
     lines2.addElem(guiElem);
   }
-  if (workshopIndex) {
-    if (queuedElems.empty())
-      workshopIndex->y = 0;
-    switch (workshopIndex->y) {
-      case 0: workshopIndex->x = min(workshopIndex->x, optionElems.size() - 1); break;
-      case 1: workshopIndex->x = min(workshopIndex->x, queuedElems.size() - 1); break;
-      case 2: workshopIndex->x = min(workshopIndex->x, info.resourceTabs.size() - 1); break;
-    }
-  }
   return WL(preferredSize, 940, 600,
     WL(miniWindow, WL(stack, makeVec(
       WL(keyHandler, [this, ind = info.index] {
@@ -2728,6 +2719,18 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
               margin))
           .buildHorizontalList()
   ))));
+}
+
+void GuiBuilder::updateWorkshopIndex(const CollectiveInfo::ChosenWorkshopInfo& info) {
+  if (workshopIndex) {
+    if (info.queued.empty())
+      workshopIndex->y = 0;
+    switch (workshopIndex->y) {
+      case 0: workshopIndex->x = min(workshopIndex->x, info.options.size() - 1); break;
+      case 1: workshopIndex->x = min(workshopIndex->x, info.queued.size() - 1); break;
+      case 2: workshopIndex->x = min(workshopIndex->x, info.resourceTabs.size() - 1); break;
+    }
+  }
 }
 
 static string getName(TechId id) {
@@ -3346,10 +3349,11 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, const GameInfo& info) {
       else if (collectiveInfo.chosenCreature)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
             *collectiveInfo.chosenCreature, collectiveInfo.allQuarters, info.tutorial), OverlayInfo::TOP_LEFT});
-      else if (collectiveInfo.chosenWorkshop)
+      else if (collectiveInfo.chosenWorkshop) {
+        updateWorkshopIndex(*collectiveInfo.chosenWorkshop);
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,
             *collectiveInfo.chosenWorkshop, info.tutorial, workshopIndex), OverlayInfo::TOP_LEFT});
-      else if (bottomWindow == TASKS)
+      } else if (bottomWindow == TASKS)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), THIS_LINE,
             collectiveInfo), OverlayInfo::TOP_LEFT});
       else if (collectiveInfo.nextWave)
