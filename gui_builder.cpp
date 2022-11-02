@@ -1347,6 +1347,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
   if (itemIndex.value_or(-1) >= totalElems)
     itemIndex = totalElems - 1;
   SGuiElem content;
+  auto pickupKeys = {gui.getKey(C_WALK), gui.getKey(SDL::SDLK_RETURN), gui.getKey(SDL::SDLK_KP_ENTER)};
   if (totalElems == 1 && !playerOverlayFocused)
     content = WL(stack,
         WL(margin,
@@ -1357,7 +1358,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
             WL(keyHandler, [=] { callbacks.input({UserInputId::PICK_UP_ITEM, 0});}, gui.getConfirmationKeys(), true),
             [this] { return playerOverlayFocused; }),
         WL(keyHandler, [=] { if (renderer.getDiscreteJoyPos(ControllerJoy::WALKING) == Vec2(0, 0))
-            callbacks.input({UserInputId::PICK_UP_ITEM, 0}); }, concat(gui.getConfirmationKeys(), {gui.getKey(C_WALK)})));
+            callbacks.input({UserInputId::PICK_UP_ITEM, 0}); }, pickupKeys));
   else {
     auto updateScrolling = [this, totalElems] (int dir) {
         if (itemIndex)
@@ -1375,18 +1376,9 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
                     {gui.getKey(SDL::SDLK_DOWN), gui.getKey(SDL::SDLK_KP_2), gui.getKey(C_MENU_DOWN)}, true),
                   WL(keyHandler, [=] { updateScrolling(-1); },
                     {gui.getKey(SDL::SDLK_UP), gui.getKey(SDL::SDLK_KP_8), gui.getKey(C_MENU_UP)}, true)),
-              gui.getConfirmationKeys(), {gui.getKey(SDL::SDLK_ESCAPE), gui.getKey(C_MENU_CANCEL)}, playerOverlayFocused),
-          WL(conditionalStopKeys,
-              WL(keyHandler, [=] { if (!playerOverlayFocused) { itemIndex = 0; lyingItemsScroll.reset();} },
-                  gui.getConfirmationKeys()),
-              [this] { return playerOverlayFocused; }),
-          WL(keyHandler, [=] {
-              if (!playerOverlayFocused && renderer.getDiscreteJoyPos(ControllerJoy::WALKING) == Vec2(0, 0)) {
-                playerOverlayFocused = true;
-                renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
-                itemIndex = 0;
-                lyingItemsScroll.reset();
-              }}, {gui.getKey(C_WALK)}),
+              pickupKeys,
+              {gui.getKey(SDL::SDLK_ESCAPE), gui.getKey(C_MENU_CANCEL)},
+              playerOverlayFocused),
           WL(keyHandler, [=] { itemIndex = none; }, {gui.getKey(SDL::SDLK_ESCAPE)}),
           WL(margin,
             WL(leftMargin, 3, WL(label, title, Color::YELLOW)),

@@ -348,14 +348,8 @@ void WindowView::rebuildGui() {
       gui.keyHandler([getMovement]{ getMovement(0, -1); }, Keybinding("WALK_NORTH2"), false),
       gui.keyHandler([getMovement]{ getMovement(0, 1); }, Keybinding("WALK_SOUTH2"), false),
       gui.keyHandler([getMovement]{ getMovement(1, 0); }, Keybinding("WALK_EAST2"), false),
-      gui.keyHandler([getMovement]{ getMovement(-1, 0); }, Keybinding("WALK_WEST2"), false),
-      gui.keyHandler([getMovement, this]{
-        auto res = renderer.getDiscreteJoyPos(ControllerJoy::WALKING);
-        if (res != Vec2(0, 0))
-          getMovement(res.x, res.y);
-      }, {gui.getKey(C_WALK)}, true)
+      gui.keyHandler([getMovement]{ getMovement(-1, 0); }, Keybinding("WALK_WEST2"), false)
   )));
-  tempGuiElems.back()->setBounds(getMapGuiBounds());
   tempGuiElems.back()->setBounds(getMapGuiBounds());
   if (gameInfo.takingScreenshot) {
     right = gui.empty();
@@ -423,6 +417,15 @@ void WindowView::rebuildGui() {
         }
     }
   }
+  tempGuiElems.push_back(gui.keyHandlerBool([getMovement, this]{
+    auto res = renderer.getDiscreteJoyPos(ControllerJoy::WALKING);
+    if (res != Vec2(0, 0)) {
+      getMovement(res.x, res.y);
+      return true;
+    }
+    return false;
+  }, {gui.getKey(C_WALK)}));
+  tempGuiElems.back()->setBounds(getMapGuiBounds());
   propagateMousePosition(getClickableGuiElems());
 }
 

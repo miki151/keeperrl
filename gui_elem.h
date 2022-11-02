@@ -97,6 +97,7 @@ class GuiFactory {
   SGuiElem mouseWheel(function<void(bool)>);
   SGuiElem keyHandler(function<void(SDL::SDL_Keysym)>, bool capture = false);
   SGuiElem keyHandler(function<void()>, Keybinding, bool capture = false);
+  SGuiElem keyHandlerBool(function<bool()>, vector<SDL::SDL_Keysym>);
   SGuiElem keyHandler(function<void()>, vector<SDL::SDL_Keysym>, bool capture = false);
   SGuiElem keyHandlerRect(function<void(Rectangle)>, vector<SDL::SDL_Keysym>, bool capture = false);
   SGuiElem stack(vector<SGuiElem>);

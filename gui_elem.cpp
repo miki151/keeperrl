@@ -1390,25 +1390,29 @@ KeybindingMap* GuiFactory::getKeybindingMap() {
 
 class KeyHandler2 : public GuiElem {
   public:
-  KeyHandler2(function<void(Rectangle)> f, vector<SDL_Keysym> k, bool cap) : fun(f), key(k), capture(cap) {}
+  KeyHandler2(function<void(Rectangle)> f, vector<SDL_Keysym> k, bool cap)
+      : fun([f, cap] (Rectangle r) { f(r); return cap; }), key(k) {}
+  KeyHandler2(function<bool(Rectangle)> f, vector<SDL_Keysym> k) : fun(f), key(k) {}
 
   virtual bool onKeyPressed2(SDL_Keysym k) override {
     for (auto& elem : key)
       if (GuiFactory::keyEventEqual(k, elem)) {
-        fun(getBounds());
-        return capture;
+        return fun(getBounds());
       }
     return false;
   }
 
   private:
-  function<void(Rectangle)> fun;
+  function<bool(Rectangle)> fun;
   vector<SDL_Keysym> key;
-  bool capture;
 };
 
 SGuiElem GuiFactory::keyHandler(function<void()> fun, vector<SDL_Keysym> key, bool capture) {
   return SGuiElem(new KeyHandler2([fun = std::move(fun)](Rectangle) { fun();}, key, capture));
+}
+
+SGuiElem GuiFactory::keyHandlerBool(function<bool()> fun, vector<SDL_Keysym> key) {
+  return SGuiElem(new KeyHandler2([fun = std::move(fun)](Rectangle) { return fun();}, key));
 }
 
 SGuiElem GuiFactory::keyHandlerRect(function<void(Rectangle)> fun, vector<SDL::SDL_Keysym> key, bool capture) {
