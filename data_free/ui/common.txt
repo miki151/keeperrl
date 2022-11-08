@@ -9,6 +9,8 @@ Def Margins(Left, Top, Right, Bottom, Content)
   MarginLeft(Left, MarginTop(Top, MarginRight(Right, MarginBottom(Bottom, Content))))
 End
 
+Def BlockEvents() { BlockMouseEvents() BlockKeyEvents } End
+
 Def FocusKeys() {
   Using "HIGHLIGHT_PREVIOUS" { KeyHandler(SDLK_LEFT) KeyHandler(SDLK_KP_4) }
   Using "HIGHLIGHT_NEXT" { KeyHandler(SDLK_RIGHT) KeyHandler(SDLK_KP_6) }
@@ -99,6 +101,14 @@ Def ButtonLayout(BOTTOM1, SIDE, CORNER) {
 }
 End
 
+Def StandardButtonNotFocusable(Content) {
+  ButtonLayout(BUTTON_BOTTOM, BUTTON_SIDE, BUTTON_CORNER)
+  MouseOver ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
+  Position(MIDDLE, Margins(10, 5, 10, 8, Content))
+  Button()
+}
+End
+
 Def StandardButton(Content) {
   ButtonLayout(BUTTON_BOTTOM, BUTTON_SIDE, BUTTON_CORNER)
   Focusable ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
@@ -125,23 +135,25 @@ Def StandardButtonInactive(Content) {
 }
 End
 
-Def Scrolling(Content)
+Def Scrolling(Content) Scrolling(0, Content) End
+
+Def Scrolling(ScrollIndex, Content)
   Scrollable(Width 20
       Vertical {
         Position(MIDDLE, {
           Texture(SCROLL_UP)
-          ScrollButton(-1)
+          ScrollButton(-1, ScrollIndex)
         })
         Stretch {
           MarginLeft(-9, MarginRight(-9, Texture(SCROLLBAR)))
-          Scroller Position(MIDDLE, Texture(SCROLL_BUTTON))
+          Scroller(Position(MIDDLE, Texture(SCROLL_BUTTON)), ScrollIndex)
         }
         Position(MIDDLE, {
-          ScrollButton(1)
+          ScrollButton(1, ScrollIndex)
           Texture(SCROLL_DOWN)
         })
       },
-      Content)
+      Content, ScrollIndex)
 End
 
 Def GetTooltip(Content)

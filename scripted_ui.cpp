@@ -189,22 +189,31 @@ struct KeyCatcher : ScriptedUIInterface {
 
 REGISTER_SCRIPTED_UI(KeyCatcher);
 
-struct BlockEvents : ScriptedUIInterface {
+struct BlockMouseEvents : ScriptedUIInterface {
+  void onClick(const ScriptedUIData&, ScriptedContext&, MouseButtonId id, Rectangle,
+      Vec2, EventCallback& callback) const override {
+    if (!eventTypes || eventTypes->contains(id))
+      callback = [] { return false; };
+  }
+
+  optional<EnumSet<MouseButtonId>> SERIAL(eventTypes);
+  SERIALIZE_ALL(roundBracket(), NAMED(eventTypes))
+};
+
+REGISTER_SCRIPTED_UI(BlockMouseEvents);
+
+struct BlockKeyEvents : ScriptedUIInterface {
   void serialize(PrettyInputArchive& ar, const unsigned int v) {
   }
 
   void onKeypressed(const ScriptedUIData&, ScriptedContext&,
-      SDL::SDL_Keysym, Rectangle, EventCallback& callback) const override {
-    callback = [] { return false; };
-  }
-
-  void onClick(const ScriptedUIData&, ScriptedContext&, MouseButtonId, Rectangle,
-      Vec2, EventCallback& callback) const override {
-    callback = [] { return false; };
+      SDL::SDL_Keysym sym, Rectangle, EventCallback& callback) const override {
+    if (sym.sym != SDL::SDLK_F8)
+      callback = [] { return false; };
   }
 };
 
-REGISTER_SCRIPTED_UI(BlockEvents);
+REGISTER_SCRIPTED_UI(BlockKeyEvents);
 
 struct Label : ScriptedUIInterface {
   Label(optional<string> text = none, int size = Renderer::textSize(), Color color = Color::WHITE)
@@ -700,7 +709,7 @@ struct MouseOver : Container {
     if (context.renderer->getMousePos().inRectangle(bounds))
       elem->render(data, context, bounds);
   }
-  
+
   ScriptedUI SERIAL(elem);
   SERIALIZE_ALL(elem)
 };
@@ -758,8 +767,8 @@ struct List : Container {
 
 REGISTER_SCRIPTED_UI(List);
 
-static void scroll(const ScriptedContext& context, int dir) {
-  context.state.scrollPos.add(100 * dir, Clock::getRealMillis());
+static void scroll(const ScriptedContext& context, int scrollIndex, int dir) {
+  context.state.scrollPos[scrollIndex].add(100 * dir, Clock::getRealMillis());
 }
 
 struct Scrollable : ScriptedUIInterface {
@@ -783,7 +792,7 @@ struct Scrollable : ScriptedUIInterface {
     if (height <= bounds.height())
       contentFun(bounds);
     else {
-      int offset = context.state.scrollPos.get(Clock::getRealMillis(), 0, height - bounds.height());
+      int offset = context.state.scrollPos[index].get(Clock::getRealMillis(), 0, height - bounds.height());
       int scrollBarWidth = scrollbar->getSize(data, context).x;
       auto contentBounds = getContentBounds(bounds, offset, scrollBarWidth, height);
       context.renderer->setScissor(bounds);
@@ -804,10 +813,10 @@ struct Scrollable : ScriptedUIInterface {
       Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
     if (pos.inRectangle(bounds)) {
       if (id == MouseButtonId::WHEEL_DOWN)
-        callback = [&] { scroll(context, 1); return false; };
+        callback = [&] { scroll(context, index, 1); return false; };
       else
       if (id == MouseButtonId::WHEEL_UP)
-        callback = [&] { scroll(context, -1); return false; };
+        callback = [&] { scroll(context, index, -1); return false; };
     }
     else if (!isOneOf(id, MouseButtonId::RELEASED, MouseButtonId::MOVED))
       return;
@@ -824,19 +833,19 @@ struct Scrollable : ScriptedUIInterface {
   void onKeypressed(const ScriptedUIData& data, ScriptedContext& context,
       SDL::SDL_Keysym sym, Rectangle bounds, EventCallback& callback) const override {
     if (sym.sym == C_MENU_SCROLL_DOWN)
-      callback = [&] { scroll(context,1); return false; };
+      callback = [&] { scroll(context, index,1); return false; };
     else if (sym.sym == C_MENU_SCROLL_UP)
-      callback = [&] { scroll(context, -1); return false; };
+      callback = [&] { scroll(context, index, -1); return false; };
     else processScroller(data, context, bounds,
-        [&] (Rectangle contentBounds) {
+        [&, index = this->index] (Rectangle contentBounds) {
           elem->onKeypressed(data, context, sym, contentBounds, callback);
-          callback = [&context, callback, bounds] {
+          callback = [&context, callback, bounds, index] {
             context.highlightedElemHeight = none;
             auto ret = callback ? callback() : false;
             if (auto height = context.highlightedElemHeight)
               if (needsScrolling(bounds.getYRange(), *height) &&
-                  !context.state.scrollPos.isScrolling(Clock::getRealMillis()))
-                context.state.scrollPos.add(*height - bounds.middle().y, Clock::getRealMillis());
+                  !context.state.scrollPos[index].isScrolling(Clock::getRealMillis()))
+                context.state.scrollPos[index].add(*height - bounds.middle().y, Clock::getRealMillis());
             context.highlightedElemHeight = none;
             return ret;
           };
@@ -847,7 +856,8 @@ struct Scrollable : ScriptedUIInterface {
 
   ScriptedUI SERIAL(scrollbar);
   ScriptedUI SERIAL(elem);
-  SERIALIZE_ALL(roundBracket(), NAMED(scrollbar), NAMED(elem))
+  int SERIAL(index) = 0;
+  SERIALIZE_ALL(roundBracket(), NAMED(scrollbar), NAMED(elem), NAMED(index))
 };
 
 REGISTER_SCRIPTED_UI(Scrollable);
@@ -856,10 +866,11 @@ struct ScrollButton : ScriptedUIInterface {
   void onClick(const ScriptedUIData&, ScriptedContext& context, MouseButtonId id,
       Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
     if (id == MouseButtonId::LEFT && pos.inRectangle(bounds))
-      callback = [&] { scroll(context, direction); return false; };
+      callback = [&] { scroll(context, index, direction); return false; };
   }
   int SERIAL(direction);
-  SERIALIZE_ALL(roundBracket(), NAMED(direction))
+  int SERIAL(index) = 0;
+  SERIALIZE_ALL(roundBracket(), NAMED(direction), NAMED(index))
 };
 
 REGISTER_SCRIPTED_UI(ScrollButton);
@@ -868,10 +879,10 @@ struct Scroller : ScriptedUIInterface {
   Rectangle getSliderPos(const ScriptedUIData& data, ScriptedContext& context, Rectangle bounds) const {
     auto height = slider->getSize(data, context).y;
     if (auto& held = context.state.scrollButtonHeld)
-      context.state.scrollPos.setRatio(
+      context.state.scrollPos[index].setRatio(
           double(context.renderer->getMousePos().y - *held - bounds.top()) / (bounds.height() - height),
           Clock::getRealMillis());
-    auto pos = bounds.top() + context.state.scrollPos.getRatio(
+    auto pos = bounds.top() + context.state.scrollPos[index].getRatio(
         Clock::getRealMillis()) * (bounds.height() - height);
     return Rectangle(bounds.left(), pos, bounds.right(), pos + height);
   }
@@ -881,8 +892,8 @@ struct Scroller : ScriptedUIInterface {
     if (id == MouseButtonId::LEFT && pos.inRectangle(bounds)) {
       double sliderHeight = slider->getSize(data, context).y;
       auto sliderPos = getSliderPos(data, context, bounds);
-      callback = [pos, &context, bounds, sliderHeight, sliderPos] {
-        context.state.scrollPos.setRatio(double(pos.y - sliderHeight / 2 - bounds.top()) / (bounds.height() - sliderHeight),
+      callback = [pos, &context, bounds, sliderHeight, sliderPos, index = this->index] {
+        context.state.scrollPos[index].setRatio(double(pos.y - sliderHeight / 2 - bounds.top()) / (bounds.height() - sliderHeight),
             Clock::getRealMillis());
         if (pos.inRectangle(sliderPos))
           context.state.scrollButtonHeld = pos.y - sliderPos.top();
@@ -902,7 +913,8 @@ struct Scroller : ScriptedUIInterface {
   }
 
   ScriptedUI SERIAL(slider);
-  SERIALIZE_ALL(slider)
+  int SERIAL(index) = 0;
+  SERIALIZE_ALL(roundBracket(), NAMED(slider), NAMED(index))
 };
 
 REGISTER_SCRIPTED_UI(Scroller);

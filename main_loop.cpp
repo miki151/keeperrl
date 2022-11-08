@@ -672,29 +672,125 @@ vector<ModInfo> MainLoop::getOnlineMods() {
 
 void MainLoop::showMods() {
   int highlighted = 0;
+  int modIndex = 0;
+  ScriptedUIState uiState{};
+  uiState.highlightedElem = modIndex;
   vector<ModInfo> onlineMods = getOnlineMods();
   while (1) {
+    bool clicked = false;
+    auto getModInfo = [&] (ModInfo& mod) {
+      auto modInfo = ScriptedUIDataElems::Record{{
+        {"name"_s, mod.name},
+        {"author"_s, mod.details.author},
+        {"description"_s, mod.details.description},
+      }};
+      if (mod.upvotes + mod.downvotes > 0) {
+        const int maxStars = 5;
+        int rating = maxStars * mod.upvotes / (mod.downvotes + mod.upvotes);
+        auto stars = ScriptedUIDataElems::List{};
+        for (int j = 0; j < maxStars; ++j)
+          stars.push_back(j < rating ? "★"_s : "☆"_s);
+        modInfo.elems["stars"] = std::move(stars);
+      }
+      auto getCallback = [&mod, &onlineMods, &clicked, this](const string& action) -> ScriptedUIDataElems::Callback {
+        if (action == "Activate")
+          return {[this, &clicked, name = mod.name] {
+            options->addVectorStringValue(OptionId::CURRENT_MOD2, name);
+            clicked = true;
+            return true;
+          }};
+        else if (action == "Deactivate")
+          return {[this, &clicked, name = mod.name] {
+            options->removeVectorStringValue(OptionId::CURRENT_MOD2, name);
+            clicked = true;
+            return true;
+          }};
+        else if (action == "Download" || action == "Update")
+          return {[this, &clicked, &mod] {
+            downloadMod(mod);
+            clicked = true;
+            return true;
+          }};
+        else if (action == "Upload")
+          return {[this, &clicked, &mod, &onlineMods] {
+            uploadMod(mod);
+            onlineMods = getOnlineMods();
+            clicked = true;
+            return true;
+          }};
+        fail();
+      };
+      for (auto& action : mod.actions)
+        modInfo.elems[action] = getCallback(action);
+      if (mod.versionInfo.steamId != 0)
+        modInfo.elems["show_workshop"] = ScriptedUIDataElems::Callback {
+            [id = mod.versionInfo.steamId] {
+              openUrl("https://steamcommunity.com/sharedfiles/filedetails/?id=" + toString(id));
+              return false;
+            }
+        };
+      return modInfo;
+    };
     vector<ModInfo> allMods = getAllMods(onlineMods);
-    auto choice = view->getModAction(highlighted, allMods);
-    if (!choice)
+    auto getState = [](const ModInfo& mod) {
+      if (mod.isLocal)
+        return 0;
+      if (mod.isSubscribed)
+        return 1;
+      else
+        return 2;
+    };
+    sort(allMods.begin(), allMods.end(), [getState](const ModInfo& m1, const ModInfo& m2) {
+      return std::forward_as_tuple(getState(m1), m1.name)
+           < std::forward_as_tuple(getState(m2), m2.name);
+    });
+    auto modLists = vector<ScriptedUIDataElems::List>(4);
+    for (int i : All(allMods)) {
+      auto& mod = allMods[i];
+      auto modButton = ScriptedUIDataElems::Record{{
+        {"name"_s, mod.name},
+        {"choose"_s, ScriptedUIDataElems::Callback{[&modIndex, &clicked, i, &uiState] {
+          modIndex = i; uiState.highlightedElem = i; clicked = true; return true;
+        }}}
+      }};
+      if (i == modIndex)
+        modButton.elems["selected"] = "xyz"_s;
+      if (mod.isActive)
+        modButton.elems["active"] = "xyz"_s;
+      modLists[getState(mod)].push_back(std::move(modButton));
+    }
+    auto data = ScriptedUIDataElems::Record{{
+      {"upload", ScriptedUIDataElems::Callback{ [this, &clicked] { createNewMod(); clicked = true; return true;} }},
+      {"local", modLists[0]},
+      {"subscribed", modLists[1]},
+      {"online", modLists[2]},
+      {"selected_mod", getModInfo(allMods[modIndex])},
+    }};
+    auto oldFunNext = *uiState.highlightNext.getValueMaybe<ScriptedUIDataElems::Callback>();
+    auto oldFunPrev = *uiState.highlightPrevious.getValueMaybe<ScriptedUIDataElems::Callback>();
+    uiState.highlightNext = ScriptedUIDataElems::Callback{
+      [&oldFunNext, &modIndex, &uiState, &allMods, &clicked] {
+        oldFunNext.fun();
+        uiState.highlightedElem = max(0, min(allMods.size() - 1, *uiState.highlightedElem));
+        modIndex = *uiState.highlightedElem;
+        clicked = true;
+        return true;
+      }
+    };
+    uiState.highlightPrevious = ScriptedUIDataElems::Callback{
+      [&oldFunPrev, &modIndex, &uiState, &allMods, &clicked] {
+        oldFunPrev.fun();
+        uiState.highlightedElem = max(0, min(allMods.size() - 1, *uiState.highlightedElem));
+        modIndex = *uiState.highlightedElem;
+        clicked = true;
+        return true;
+      }
+    };
+    view->scriptedUI("mods", data, uiState);
+    uiState.highlightNext = oldFunNext;
+    uiState.highlightPrevious = oldFunPrev;
+    if (!clicked)
       break;
-    highlighted = choice->index;
-    if (highlighted == -1) {
-      createNewMod();
-      return showMods();
-    }
-    auto& chosenMod = allMods[highlighted];
-    auto action = chosenMod.actions[choice->actionId];
-    if (action == "Activate")
-      options->addVectorStringValue(OptionId::CURRENT_MOD2, allMods[highlighted].name);
-    else if (action == "Deactivate")
-      options->removeVectorStringValue(OptionId::CURRENT_MOD2, allMods[highlighted].name);
-    else if (action == "Download" || action == "Update")
-      downloadMod(chosenMod);
-    else if (action == "Upload") {
-      uploadMod(chosenMod);
-      onlineMods = getOnlineMods();
-    }
   }
 }
 

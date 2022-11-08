@@ -64,9 +64,6 @@ class DummyView : public View {
   virtual optional<int> chooseAtMouse(const vector<string>& elems) override {
     return none;
   }
-  virtual optional<ModAction> getModAction(int highlighted, const vector<ModInfo>&) override {
-    return none;
-  }
   virtual void presentWorldmap(const Campaign&) override {}
   virtual void animateObject(Vec2 begin, Vec2 end, optional<ViewId>, optional<FXInfo>) override {}
   virtual void animation(Vec2 pos, AnimationId, Dir) override {}

@@ -1,5 +1,5 @@
 {
-  BlockEvents
+  BlockEvents()
   Position(SCREEN, Fill(Rgb 0 0 0 150))
   ExitButtons()
   MiniWindow(Margins(10, {

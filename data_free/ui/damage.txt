@@ -1,7 +1,7 @@
 
 Def P(Text) Paragraph(500, Text) End
 
-MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,  
+MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,
   Vertical {
     Horizontal{ViewId(1, {"sword"}) Width 10 {} Label("Damage calculation")}
     Height 30 {}

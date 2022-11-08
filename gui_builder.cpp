@@ -432,7 +432,7 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo& info) {
             .addElemAuto(WL(label, *info.title))
             .buildHorizontalList(),
         WL(button, [this, scriptedId = info.scriptedId]() {
-          scriptedUIState.scrollPos.reset();
+          scriptedUIState.scrollPos[0].reset();
           if (bottomWindow == SCRIPTED_HELP && scriptedHelpId == scriptedId)
             bottomWindow = none;
           else
@@ -5203,93 +5203,6 @@ SGuiElem GuiBuilder::drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Crea
   int margin = 15;
   return WL(setWidth, 2 * margin + windowWidth,
       WL(window, WL(margins, lines.buildVerticalList(), margin), [&queue] { queue.push(none); }));
-}
-
-SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int highlighted, const vector<ModInfo>& mods) {
-  auto localItems = WL(getListBuilder, legendLineHeight);
-  auto subscribedItems = WL(getListBuilder, legendLineHeight);
-  auto onlineItems = WL(getListBuilder, legendLineHeight);
-  auto activeItems = WL(getListBuilder, legendLineHeight);;
-  shared_ptr<int> chosenMod = make_shared<int>(highlighted);
-  vector<SGuiElem> modPages;
-  const int margin = 15;
-  const int pageWidth = 480;
-  const int listWidth = 200;
-  for (int i : All(mods)) {
-    auto name = mods[i].name;
-    auto itemLabel =
-    WL(stack,
-        WL(renderInBounds, WL(label, name)),
-        WL(uiHighlightConditional, [chosenMod, i] { return *chosenMod == i; }),
-        WL(button, [chosenMod, i] { *chosenMod = i; })
-    );
-    if (mods[i].isActive)
-      activeItems.addElem(std::move(itemLabel));
-    else if (mods[i].isLocal)
-      localItems.addElem(std::move(itemLabel));
-    else if (mods[i].isSubscribed)
-      subscribedItems.addElem(std::move(itemLabel));
-    else
-      onlineItems.addElem(std::move(itemLabel));
-    auto lines = WL(getListBuilder, legendLineHeight);
-    auto stars = WL(getListBuilder);
-    if (mods[i].upvotes + mods[i].downvotes > 0) {
-      const int maxStars = 5;
-      double rating = double(mods[i].upvotes) / (mods[i].downvotes + mods[i].upvotes);
-      for (int j = 0; j < 5; ++j)
-        stars.addElemAuto(WL(labelUnicode, j < rating * maxStars ? "★" : "☆", Color::YELLOW));
-    }
-    lines.addElem(WL(getListBuilder)
-        .addElemAuto(WL(label, mods[i].name))
-        .addBackElemAuto(stars.buildHorizontalList())
-        .buildHorizontalList());
-    lines.addElem(WL(label, !mods[i].details.author.empty() ? ("by " + mods[i].details.author) : "",
-        Renderer::smallTextSize(), Color::LIGHT_GRAY));
-    lines.addMiddleElem(WL(scrollable, WL(labelMultiLineWidth, mods[i].details.description, legendLineHeight,
-        pageWidth - 2 * margin - 60)));
-    lines.addSpace(10);
-    auto buttons = WL(getListBuilder);
-    for (int j : All(mods[i].actions)) {
-      buttons.addElemAuto(
-          WL(buttonLabel, mods[i].actions[j], [&queue, i, j] { queue.push(ModAction{i, j}); })
-      );
-      buttons.addSpace(15);
-    }
-    if (mods[i].versionInfo.steamId != 0) {
-      buttons.addElemAuto(
-          WL(buttonLabel, "Show in Steam Workshop", [id = mods[i].versionInfo.steamId] {
-            openUrl("https://steamcommunity.com/sharedfiles/filedetails/?id=" + toString(id));
-          })
-      );
-      buttons.addSpace(15);
-    }
-    lines.addBackElem(buttons.buildHorizontalList());
-    modPages.push_back(WL(conditional,
-        lines.buildVerticalList(),
-        [chosenMod, i] { return *chosenMod == i; }
-    ));
-  }
-  auto allItems = WL(getListBuilder, legendLineHeight);
-  auto addList = [&] (GuiFactory::ListBuilder& list, const char* title) {
-    if (!list.isEmpty()) {
-      allItems.addSpace(legendLineHeight / 2);
-      allItems.addElem(WL(label, title, Color::YELLOW));
-      allItems.addElemAuto(list.buildVerticalList());
-    }
-  };
-  addList(activeItems, "Active:");
-  addList(localItems, "Installed:");
-  addList(subscribedItems, "Subscribed:");
-  addList(onlineItems, "Online:");
-  allItems.addSpace(15);
-  allItems.addElem(WL(buttonLabel, "Create new", [&queue] { queue.push(ModAction{-1, 0}); }));
-  const int windowWidth = 2 * margin + pageWidth + listWidth;
-  return WL(preferredSize, windowWidth, 400,
-      WL(window, WL(margins, WL(getListBuilder)
-          .addElem(WL(scrollable, WL(rightMargin, 10, allItems.buildVerticalList())), listWidth)
-          .addSpace(25)
-          .addMiddleElem(WL(stack, std::move(modPages)))
-          .buildHorizontalList(), margin), [&queue] { queue.push(none); }));
 }
 
 SGuiElem GuiBuilder::drawHighscorePage(const HighscoreList& page, ScrollPosition *scrollPos) {

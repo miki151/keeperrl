@@ -25,7 +25,7 @@ void PlayerMessage::presentMessages(View* view, const vector<PlayerMessage>& mes
       {"NORMAL", "<No messages yet>"_s}
     }});
   ScriptedUIState state;
-  state.scrollPos.set(10000000, milliseconds{0});
+  state.scrollPos[0].set(10000000, milliseconds{0});
   view->scriptedUI("message_history", list, state);
 }
 

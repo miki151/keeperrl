@@ -73,7 +73,7 @@ struct ScriptedUIData : ScriptedUIDataElems::ScriptedUIDataImpl {
 
 
 struct ScriptedUIState {
-  ScrollPosition scrollPos;
+  map<int, ScrollPosition> scrollPos;
   optional<int> scrollButtonHeld;
   optional<int> highlightedElem;
   unordered_map<int, ScriptedUIDataElems::SliderState> sliderState;
