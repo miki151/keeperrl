@@ -29,9 +29,9 @@ End
 
 {
   BlockEvents
+  ExitButtons()
   Window({
     FocusKeys()
-    ExitButtons()
     Width 600
     Vertical {
       MaxHeight 400
