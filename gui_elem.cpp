@@ -1158,50 +1158,6 @@ SGuiElem GuiFactory::stack(SGuiElem g1, SGuiElem g2, SGuiElem g3, SGuiElem g4) {
   return stack(makeVec(std::move(g1), std::move(g2), std::move(g3), std::move(g4)));
 }
 
-class External : public GuiElem {
-  public:
-  External(GuiElem* e) : elem(e) {}
-
-  virtual void render(Renderer& r) override {
-    elem->render(r);
-  }
-
-  virtual bool onClick(MouseButtonId b, Vec2 v) override {
-    return elem->onClick(b, v);
-  }
-
-  virtual bool onMouseMove(Vec2 v, Vec2 rel) override {
-    return elem->onMouseMove(v, rel);
-  }
-
-  virtual void onMouseGone() override {
-    elem->onMouseGone();
-  }
-
-  virtual void onRefreshBounds() override {
-    elem->setBounds(getBounds());
-  }
-
-  virtual bool onKeyPressed2(SDL_Keysym ev) override {
-    return elem->onKeyPressed2(ev);
-  }
-
-  virtual optional<int> getPreferredWidth() override {
-    return elem->getPreferredWidth();
-  }
-
-  virtual optional<int> getPreferredHeight() override {
-    return elem->getPreferredHeight();
-  }
-
-  private:
-  GuiElem* elem;
-};
-
-SGuiElem GuiFactory::external(GuiElem* elem) {
-  return SGuiElem(new External(elem)); 
-}
-
 class Focusable : public GuiStack {
   public:
   Focusable(SGuiElem content, Renderer& renderer, vector<SDL_Keysym> focus, vector<SDL_Keysym> defocus,

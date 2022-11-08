@@ -185,9 +185,7 @@ class GuiBuilder {
   void drawMiniMenu(SGuiElem, bool& exit, Vec2 menuPos, int width, bool darkBg, bool resetScrolling = true);
   void drawMiniMenu(vector<SGuiElem>, vector<function<void()>>, vector<SGuiElem> tooltips, Vec2 menuPos,
       int width, bool darkBg, bool exitOnCallback = true, int* selected = nullptr);
-  void showAttackTriggers(const vector<VillageInfo::Village::TriggerInfo>&, Vec2 pos);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
-  SGuiElem drawHighscorePage(const HighscoreList&, ScrollPosition* scrollPos);
   SGuiElem drawTeams(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease, bool leftRight);
   SGuiElem drawOptionElem(OptionId, function<void()> onChanged, function<bool()> focused);

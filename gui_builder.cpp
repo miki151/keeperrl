@@ -704,7 +704,7 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
         std::move(main), 18, gui.BOTTOM);
     rightBandInfoCache = WL(margin, std::move(butGui), std::move(main), 55, gui.TOP);
   }
-  return WL(external, rightBandInfoCache.get());
+  return rightBandInfoCache;
 }
 
 GuiBuilder::GameSpeed GuiBuilder::getGameSpeed() const {
@@ -2202,7 +2202,7 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, const optional<Tuto
     }
     minionsCache = WL(scrollable, list.buildVerticalList(), &minionsScroll, &scrollbarsHeld);
   }
-  return WL(external, minionsCache.get());
+  return minionsCache;
 }
 
 const int taskMapWindowWidth = 400;
@@ -5203,18 +5203,6 @@ SGuiElem GuiBuilder::drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Crea
   int margin = 15;
   return WL(setWidth, 2 * margin + windowWidth,
       WL(window, WL(margins, lines.buildVerticalList(), margin), [&queue] { queue.push(none); }));
-}
-
-SGuiElem GuiBuilder::drawHighscorePage(const HighscoreList& page, ScrollPosition *scrollPos) {
-  auto lines = WL(getListBuilder, legendLineHeight);
-  for (auto& elem : page.scores) {
-    auto line = WL(getListBuilder);
-    Color color = elem.highlight ? Color::GREEN : Color::WHITE;
-    line.addElemAuto(WL(label, elem.text, color));
-    line.addBackElem(WL(label, elem.score, color), 130);
-    lines.addElem(WL(leftMargin, 30, line.buildHorizontalList()));
-  }
-  return WL(scrollable, lines.buildVerticalList(), scrollPos);
 }
 
 SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textColor) {

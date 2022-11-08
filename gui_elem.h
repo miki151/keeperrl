@@ -104,7 +104,6 @@ class GuiFactory {
   SGuiElem stack(SGuiElem, SGuiElem);
   SGuiElem stack(SGuiElem, SGuiElem, SGuiElem);
   SGuiElem stack(SGuiElem, SGuiElem, SGuiElem, SGuiElem);
-  SGuiElem external(GuiElem*);
   SGuiElem rectangle(Color color, optional<Color> borderColor = none);
   SGuiElem scripted(function<void()> endCallback, ScriptedUIId, const ScriptedUIData&, ScriptedUIState&);
   class ListBuilder {
