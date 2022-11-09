@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
+/* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
 
  This file is part of KeeperRL.
 
@@ -1920,9 +1920,11 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) 
     list.addElemAuto(std::move(elem));
   return WL(stack, makeVec(
       WL(keyHandler, [this, firstInventoryItem] {
-        inventoryIndex = 0;
-        renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
-        inventoryScroll.setRelative(firstInventoryItem->getBounds().top(), clock->getRealMillis());
+        if (!!firstInventoryItem) {
+          inventoryIndex = 0;
+          renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
+          inventoryScroll.setRelative(firstInventoryItem->getBounds().top(), clock->getRealMillis());
+        }
       }, {gui.getKey(C_INVENTORY)}, true),
       WL(conditionalStopKeys,
           WL(keyHandler, [this] {
