@@ -2042,8 +2042,7 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
       label = "[" + *text + "] " + label;
     vList.addElem(WL(stack,
         WL(buttonLabel, label, callback),
-        WL(keyHandler, callback, keybinding),
-        WL(keyHandler, callback, {gui.getKey(C_EXIT_CONTROL_MODE)})
+        WL(keyHandler, callback, keybinding)
     ));
   }
   vList.addSpace(10);

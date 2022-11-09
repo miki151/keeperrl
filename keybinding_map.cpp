@@ -3,6 +3,7 @@
 #include "gui_elem.h"
 #include "pretty_archive.h"
 #include "pretty_printing.h"
+#include "steam_input.h"
 
 KeybindingMap::KeybindingMap(const FilePath& defaults, const FilePath& user)
     : defaultsPath(defaults), userPath(user) {
@@ -31,6 +32,14 @@ static SDL::Uint16 getMod(SDL::Uint16 m) {
 }
 
 bool KeybindingMap::matches(Keybinding key, SDL::SDL_Keysym sym) {
+  static unordered_map<ControllerKey, Keybinding, CustomHash<ControllerKey>> controllerBindings {
+      {C_WAIT, Keybinding("WAIT")},
+      {C_EXIT_CONTROL_MODE, Keybinding("EXIT_CONTROL_MODE")},
+      {C_TOGGLE_CONTROL_MODE, Keybinding("TOGGLE_CONTROL_MODE")},
+  };
+  if (auto k = getValueMaybe(controllerBindings, (ControllerKey)sym.sym))
+    if (key == *k)
+      return true;
   if (auto k = getReferenceMaybe(bindings, key))
     return k->sym == sym.sym && getMod(k->mod) == getMod(sym.mod);
   return false;

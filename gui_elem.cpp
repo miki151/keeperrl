@@ -1311,7 +1311,7 @@ class AlignmentGui : public GuiLayout {
 SGuiElem GuiFactory::alignment(GuiFactory::Alignment alignment, SGuiElem content, optional<Vec2> size) {
   return SGuiElem(new AlignmentGui(std::move(content), alignment, size));
 }
- 
+
 SGuiElem GuiFactory::keyHandler(function<void(SDL_Keysym)> fun, bool capture) {
   return SGuiElem(new KeyHandler(fun, capture));
 }
