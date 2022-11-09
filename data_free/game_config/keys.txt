@@ -32,6 +32,8 @@
 "HIDE" "Hide"
 "EXIT_CONTROL_MODE" "Exit control mode"
 "TOGGLE_CONTROL_MODE" "Toggle control mode between leader and full-control"
+"STAND_GROUND" "Team members won't follow the leader."
+"IGNORE_ENEMIES" "Team members won't chase enemies and only fight those that are adjacent."
 "ZOOM_MAP" "Zoom the map in and out"
 "SCROLL_MAP_UP" "Scroll the map north"
 "SCROLL_MAP_DOWN" "Scroll the map south"

@@ -34,6 +34,9 @@ static SDL::Uint16 getMod(SDL::Uint16 m) {
 bool KeybindingMap::matches(Keybinding key, SDL::SDL_Keysym sym) {
   static unordered_map<ControllerKey, Keybinding, CustomHash<ControllerKey>> controllerBindings {
       {C_WAIT, Keybinding("WAIT")},
+      {C_SKIP_TURN, Keybinding("SKIP_TURN")},
+      {C_STAND_GROUND, Keybinding("STAND_GROUND")},
+      {C_IGNORE_ENEMIES, Keybinding("IGNORE_ENEMIES")},
       {C_EXIT_CONTROL_MODE, Keybinding("EXIT_CONTROL_MODE")},
       {C_TOGGLE_CONTROL_MODE, Keybinding("TOGGLE_CONTROL_MODE")},
   };

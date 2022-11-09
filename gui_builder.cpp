@@ -2016,7 +2016,8 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
             info.teamOrders->contains(order)
                 ? WL(buttonLabelSelected, getName(order), switchFun)
                 : WL(buttonLabel, getName(order), switchFun),
-            getTooltip({getDescription(order)}, THIS_LINE)
+            getTooltip({getDescription(order)}, THIS_LINE),
+            WL(keyHandler, switchFun, getKeybinding(order))
         ));
         orderList.addSpace(15);
       }

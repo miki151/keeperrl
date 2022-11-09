@@ -46,6 +46,9 @@ void MySteamInput::detectControllers() {
     actionHandles[C_CHAT] = getActionInfo("chat", ActionSet::GAME);
     actionHandles[C_FIRE_PROJECTILE] = getActionInfo("fire_projectile", ActionSet::GAME);
     actionHandles[C_WAIT] = getActionInfo("wait", ActionSet::GAME);
+    actionHandles[C_SKIP_TURN] = getActionInfo("skip_turn", ActionSet::GAME);
+    actionHandles[C_STAND_GROUND] = getActionInfo("stand_ground", ActionSet::GAME);
+    actionHandles[C_IGNORE_ENEMIES] = getActionInfo("ignore_enemies", ActionSet::GAME);
     actionHandles[C_WALK] = getActionInfo("walk", ActionSet::GAME);
     actionHandles[C_COMMANDS] = getActionInfo("commands", ActionSet::GAME);
     actionHandles[C_INVENTORY] = getActionInfo("inventory", ActionSet::GAME);
