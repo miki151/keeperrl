@@ -225,36 +225,31 @@ void WindowView::reset() {
 }
 
 void WindowView::getSmallSplash(const ProgressMeter* meter, const string& text, function<void()> cancelFun) {
-  SGuiElem window = gui.miniWindow(gui.empty(), []{});
-  Vec2 windowSize(500, cancelFun ? 90 : 70);
-  string cancelText = "[cancel]";
+  renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
+  auto o = OnExit([this] { renderer.getSteamInput()->popActionSet(); });
+  auto elems = ScriptedUIDataElems::Record {{
+    {"text", text},
+    {"barCallback", ScriptedUIDataElems::DynamicWidthCallback { [meter] {
+      return meter ? meter->getProgress() : 0.0;}}}
+  }};
+  if (cancelFun)
+    elems.elems["cancelCallback"] = ScriptedUIDataElems::Callback { [cancelFun] { cancelFun(); return true; }};
+  ScriptedUIData data = std::move(elems);
+  ScriptedUIState state;
+  auto elem = gui.scripted([]{}, ScriptedUIId("loading_screen"), data, state);
+  auto windowSize = *elem->getPreferredSize();
   Rectangle bounds((renderer.getSize() - windowSize) / 2, (renderer.getSize() + windowSize) / 2);
   Rectangle progressBar(bounds.minusMargin(15));
-  window->setBounds(bounds);
+  elem->setBounds(bounds);
   while (!splashDone) {
     refreshScreen(false);
-    window->render(renderer);
-    double progress = meter ? meter->getProgress() : 0;
-    if (progress > 0) {
-      Rectangle bar(progressBar.topLeft(), Vec2(1 + progressBar.left() * (1.0 - progress) +
-            progressBar.right() * progress, progressBar.bottom()));
-      renderer.drawFilledRectangle(bar, Color::DARK_GREEN.transparency(50));
-    }
-    renderer.drawText(Color::WHITE, Vec2(bounds.middle().x, bounds.top() + 20), text, Renderer::HOR);
-    Rectangle cancelBut(bounds.middle().x - renderer.getTextLength(cancelText) / 2, bounds.top() + 50,
-        bounds.middle().x + renderer.getTextLength(cancelText) / 2, bounds.top() + 80);
-    if (cancelFun)
-      renderer.drawText(Color::LIGHT_BLUE, cancelBut.topLeft(), cancelText);
+    elem->render(renderer);
     renderer.drawAndClearBuffer();
     sleep_for(milliseconds(30));
     Event event;
     while (renderer.pollEvent(event)) {
-      propagateEvent(event, {});
+      propagateEvent(event, {elem});
       considerResizeEvent(event);
-      if (event.type == SDL::SDL_MOUSEBUTTONDOWN && cancelFun) {
-        if (Vec2(event.button.x, event.button.y).inRectangle(cancelBut))
-          cancelFun();
-      }
     }
   }
 }

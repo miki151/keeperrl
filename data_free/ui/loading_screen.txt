@@ -1,0 +1,9 @@
+
+MiniWindow(Margins(5, MinWidth 300 {
+  Using "barCallback" Margins(-3, DynamicWidth Fill(Rgb 0 150 0 50))
+  Position(MIDDLE, Vertical {
+    Using "text" Label()
+    Height 10 {}
+    Using "cancelCallback" Position(MIDDLE, StandardButton(Label("Cancel")))
+  })
+}))

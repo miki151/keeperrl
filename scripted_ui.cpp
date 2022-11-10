@@ -481,6 +481,45 @@ struct MaxHeight : Width {
 
 REGISTER_SCRIPTED_UI(MaxHeight);
 
+struct MinWidth : Width {
+  Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
+    auto size = elem->getSize(data, context);
+    return Vec2(max(size.x, value), size.y);
+  }
+};
+
+REGISTER_SCRIPTED_UI(MinWidth);
+
+struct MinHeight : Width {
+  Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
+    auto size = elem->getSize(data, context);
+    return Vec2(size.x, max(size.y, value));
+  }
+};
+
+REGISTER_SCRIPTED_UI(MinHeight);
+
+struct DynamicWidth : Container {
+  vector<SubElemInfo> getElemBounds(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
+    if (auto c = data.getReferenceMaybe<ScriptedUIDataElems::DynamicWidthCallback>())
+      return {SubElemInfo{elem, data, Rectangle(
+          area.left(),
+          area.top(),
+          area.left() + c->fun() * area.width(),
+          area.bottom())}};
+    return {SubElemInfo{elem, data, area}};
+  }
+
+  Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
+    return elem->getSize(data, context);
+  }
+
+  ScriptedUI SERIAL(elem);
+  SERIALIZE_ALL(elem)
+};
+
+REGISTER_SCRIPTED_UI(DynamicWidth);
+
 static vector<Range> getStaticListBounds(Range total, vector<int> widths, int stretched) {
   vector<Range> ret;
   ret.reserve(widths.size());

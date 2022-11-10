@@ -27,6 +27,12 @@ struct KeyCatcherCallback {
     FATAL << "Can't deserialize KeyCatcherCallback";
   }
 };
+struct DynamicWidthCallback {
+  function<double()> fun;
+  template <class Archive> void serialize(Archive& ar1, const unsigned int) {
+    FATAL << "Can't deserialize DynamicWidthCallback";
+  }
+};
 struct SliderData {
   function<bool(double)> callback;
   double initialPos;
@@ -53,7 +59,8 @@ using ::ViewIdList;
   X(SliderData, 3)\
   X(Record, 4)\
   X(List, 5)\
-  X(KeyCatcherCallback, 6)
+  X(KeyCatcherCallback, 6)\
+  X(DynamicWidthCallback, 7)
 
 #define VARIANT_NAME ScriptedUIDataImpl
 #include "gen_variant.h"
