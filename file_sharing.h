@@ -34,7 +34,7 @@ class FileSharing {
     string author;
     bool isFriend;
   };
-  expected<vector<SiteInfo>, string> listSites(CancelFlag&);
+  expected<vector<SiteInfo>, string> listSites(CancelFlag&, ProgressMeter&);
 
   typedef map<string, string> GameEvent;
   bool uploadGameEvent(const GameEvent&, bool requireGameEventsPermission = true);
@@ -49,7 +49,7 @@ class FileSharing {
   expected<vector<BoardMessage>, string> getBoardMessages(CancelFlag&, int boardId);
   bool uploadBoardMessage(const string& gameId, int hash, const string& author, const string& text);
 
-  expected<vector<ModInfo>, string> getOnlineMods(CancelFlag&);
+  expected<vector<ModInfo>, string> getOnlineMods(CancelFlag&, ProgressMeter&);
   optional<string> downloadMod(CancelFlag&, const string& name, SteamId, const DirectoryPath& modsDir,
       ProgressMeter&);
   optional<string> uploadMod(CancelFlag&, ModInfo& modInfo, const DirectoryPath& modsDir, ProgressMeter&);
@@ -77,8 +77,8 @@ class FileSharing {
   optional<string> uploadContent(vector<UploadedFile>, const char* url, const CallbackData&, int timeout);
   optional<string> uploadSiteToSteam(CancelFlag&, const FilePath&, const string& title, const OldSavedGameInfo&,
       ProgressMeter&, optional<string>& url);
-  optional<vector<ModInfo>> getSteamMods(CancelFlag&);
-  optional<vector<SiteInfo>> getSteamSites(CancelFlag&);
+  optional<vector<ModInfo>> getSteamMods(CancelFlag&, ProgressMeter&);
+  optional<vector<SiteInfo>> getSteamSites(CancelFlag&,ProgressMeter&);
   optional<string> downloadSteamMod(CancelFlag&, SteamId, const string& name,
       const DirectoryPath& modsDir, ProgressMeter&);
   optional<string> downloadSteamSite(CancelFlag&, const SaveFileInfo&, const DirectoryPath& targetDir,

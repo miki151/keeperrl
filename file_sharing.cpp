@@ -363,7 +363,7 @@ static optional<SiteConquestInfo> parseSiteConquest(const vector<string>& fields
   return elem;
 }
 
-expected<vector<FileSharing::SiteInfo>, string> FileSharing::listSites(CancelFlag& cancel) {
+expected<vector<FileSharing::SiteInfo>, string> FileSharing::listSites(CancelFlag& cancel, ProgressMeter& progress) {
   if (!options.getBoolValue(OptionId::ONLINE))
     return make_unexpected("Please enable online features in the settings in order to download retired dungeons!"_s);
   vector<SiteConquestInfo> conquestInfo;
@@ -371,7 +371,7 @@ expected<vector<FileSharing::SiteInfo>, string> FileSharing::listSites(CancelFla
     if (auto content = downloadContent(cancel, uploadUrl + "/get_sites.php"))
       conquestInfo = parseLines<SiteConquestInfo>(*content, parseSiteConquest);
   });
-  optional<vector<FileSharing::SiteInfo>> ret = getSteamSites(cancel);
+  optional<vector<FileSharing::SiteInfo>> ret = getSteamSites(cancel, progress);
   if (!ret)
     if (auto content = downloadContent(cancel, uploadUrl + "/dungeons.txt"))
       ret = parseLines<FileSharing::SiteInfo>(*content, parseSite);
@@ -458,7 +458,8 @@ static vector<T> removeDuplicates(vector<T> input) {
   return ret;
 }
 
-static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel, vector<string> tags) {
+static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel, vector<string> tags,
+    ProgressMeter& progress) {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable())
     return none;
@@ -527,6 +528,7 @@ static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel,
   };
   vector<steam::ItemInfo> infos;
   for (int i = 0; i < items.size(); i += steam::UGC::maxItemsPerPage) {
+    progress.setProgress(float(i) / items.size());
     auto results = getForPage(items.getSubsequence(i, steam::UGC::maxItemsPerPage));
     if (cancel)
       return none;
@@ -565,9 +567,9 @@ static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel,
 #endif
 }
 
-optional<vector<ModInfo>> FileSharing::getSteamMods(CancelFlag& cancel) {
+optional<vector<ModInfo>> FileSharing::getSteamMods(CancelFlag& cancel, ProgressMeter& progress) {
   vector<ModInfo> out;
-  auto infos1 = getSteamItems(cancel.flag, {"Mod"_s, modVersion});
+  auto infos1 = getSteamItems(cancel.flag, {"Mod"_s, modVersion}, progress);
   if (!infos1 || cancel.flag)
     return none;
   auto& infos = *infos1;
@@ -591,9 +593,9 @@ optional<vector<ModInfo>> FileSharing::getSteamMods(CancelFlag& cancel) {
   return out;
 }
 
-optional<vector<FileSharing::SiteInfo>> FileSharing::getSteamSites(CancelFlag& cancel) {
+optional<vector<FileSharing::SiteInfo>> FileSharing::getSteamSites(CancelFlag& cancel, ProgressMeter& progress) {
   vector<SiteInfo> out;
-  auto infos1 = getSteamItems(cancel.flag, {"Dungeon"_s, toString(saveVersion)});
+  auto infos1 = getSteamItems(cancel.flag, {"Dungeon"_s, toString(saveVersion)}, progress);
   if (!infos1 || cancel.flag)
     return none;
   auto& infos = *infos1;
@@ -614,10 +616,10 @@ optional<vector<FileSharing::SiteInfo>> FileSharing::getSteamSites(CancelFlag& c
   return out;
 }
 
-expected<vector<ModInfo>, string> FileSharing::getOnlineMods(CancelFlag& cancel) {
+expected<vector<ModInfo>, string> FileSharing::getOnlineMods(CancelFlag& cancel, ProgressMeter& progress) {
   if (!options.getBoolValue(OptionId::ONLINE))
     return make_unexpected("Please enable online features in the settings in order to download mods."_s);
-  if (auto steamMods = getSteamMods(cancel))
+  if (auto steamMods = getSteamMods(cancel, progress))
     return *steamMods;
   if (auto content = downloadContent(cancel, uploadUrl + "/get_mods.txt"))
     return parseLines<ModInfo>(*content, [this](auto& e) { return parseModInfo(e, modVersion);});

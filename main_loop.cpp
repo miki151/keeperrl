@@ -374,9 +374,9 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
       vector<FileSharing::SiteInfo> onlineSites;
       optional<string> error;
       FileSharing::CancelFlag cancel;
-      doWithSplash("Fetching list of retired dungeons from the server...",
-          [&] {
-            if (auto sites = fileSharing->listSites(cancel))
+      doWithSplash("Fetching list of retired dungeons from the server...", 1,
+          [&] (ProgressMeter& progress) {
+            if (auto sites = fileSharing->listSites(cancel, progress))
               onlineSites = *sites;
             else
               error = sites.error();
@@ -660,7 +660,7 @@ vector<ModInfo> MainLoop::getOnlineMods() {
   FileSharing::CancelFlag cancel;
   doWithSplash( "Downloading list of online mods...", 1,
       [&] (ProgressMeter& meter) {
-        if (auto mods = fileSharing->getOnlineMods(cancel))
+        if (auto mods = fileSharing->getOnlineMods(cancel, meter))
           ret = *mods;
         else
           error = mods.error();
