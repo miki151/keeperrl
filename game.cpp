@@ -819,15 +819,14 @@ void Game::addAnalytics(const string& name, const string& value) {
 void Game::handleMessageBoard(Position pos, Creature* c) {
   auto gameId = getGameOrRetiredIdentifier(pos);
   auto boardId = int(combineHash(pos, gameId));
-  atomic<bool> cancelled(false);
+  FileSharing::CancelFlag cancel;
   view->displaySplash(nullptr, "Fetching board contents...", [&] {
-      cancelled = true;
-      fileSharing->cancel();
-      });
+    cancel.cancel();
+  });
   vector<FileSharing::BoardMessage> messages;
   optional<string> error;
   thread t([&] {
-    if (auto m = fileSharing->getBoardMessages(boardId))
+    if (auto m = fileSharing->getBoardMessages(cancel, boardId))
       messages = *m;
     else
       error = m.error();

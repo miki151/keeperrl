@@ -18,13 +18,14 @@ Highscores::Highscores(const FilePath& local, FileSharing& sharing, Options* o)
 
 vector<Highscores::Score> Highscores::downloadHighscores(View* view) const {
   vector<Score> ret;
+  FileSharing::CancelFlag cancel;
   view->doWithSplash("Downloading online highscores...", 1,
       [&] (ProgressMeter&) {
-        ret = fromString(fileSharing.downloadHighscores(highscoreVersion));
-        fileSharing.uploadHighscores(localPath);
+        ret = fromString(fileSharing.downloadHighscores(cancel, highscoreVersion));
+        fileSharing.uploadHighscores(cancel, localPath);
       },
       [&] {
-        fileSharing.cancel();
+        cancel.cancel();
       }
   );
   return ret;
@@ -34,7 +35,8 @@ void Highscores::add(Score s) {
   s.version = highscoreVersion;
   localScores.push_back(s);
   saveToFile(localScores, localPath);
-  fileSharing.uploadHighscores(localPath);
+  FileSharing::CancelFlag cancel;
+  fileSharing.uploadHighscores(cancel, localPath);
 }
 
 vector<Highscores::Score> Highscores::fromStream(istream& in) {

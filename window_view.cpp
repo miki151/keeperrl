@@ -1102,9 +1102,10 @@ bool WindowView::considerBugReportEvent(Event& event) {
         return true;
       ProgressMeter meter(1.0);
       optional<string> result;
-      displaySplash(&meter, "Uploading bug report", [this]{bugreportSharing->cancel();});
+      FileSharing::CancelFlag cancel;
+      displaySplash(&meter, "Uploading bug report", [&cancel]{ cancel.cancel(); });
       thread t([&] {
-        result = bugreportSharing->uploadBugReport(bugreportInfo->text, savefile, screenshot, meter);
+        result = bugreportSharing->uploadBugReport(cancel, bugreportInfo->text, savefile, screenshot, meter);
         clearSplash();
       });
       refreshView();

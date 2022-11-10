@@ -184,22 +184,21 @@ int MainLoop::getSaveVersion(const SaveFileInfo& save) {
 }
 
 void MainLoop::uploadFile(const FilePath& path, const string& title, const SavedGameInfo& info) {
-  atomic<bool> cancelled(false);
+  FileSharing::CancelFlag cancel;
   optional<string> error;
   optional<string> url;
   doWithSplash("Uploading "_s + path.getPath() + "...", 1,
       [&] (ProgressMeter& meter) {
-        error = fileSharing->uploadSite(path, title, getOldInfo(info), meter, url);
+        error = fileSharing->uploadSite(cancel, path, title, getOldInfo(info), meter, url);
       },
       [&] {
-        cancelled = true;
-        fileSharing->cancel();
+        cancel.cancel();
       });
   if (url)
     if (view->yesOrNoPrompt("Your retired dungeon has been uploaded to Steam Workshop. "
         "Would you like to open its page in your browser now?"))
       openUrl("https://steamcommunity.com/sharedfiles/filedetails/?id=" + *url);
-  if (error && !cancelled)
+  if (error && !cancel.flag)
     view->presentText("Error uploading file", *error);
 }
 
@@ -374,14 +373,17 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
               ret.addLocal(*saved, info, false);
       vector<FileSharing::SiteInfo> onlineSites;
       optional<string> error;
+      FileSharing::CancelFlag cancel;
       doWithSplash("Fetching list of retired dungeons from the server...",
           [&] {
-            if (auto sites = fileSharing->listSites())
+            if (auto sites = fileSharing->listSites(cancel))
               onlineSites = *sites;
             else
               error = sites.error();
           },
-          [&] { fileSharing->cancel(); });
+          [&] {
+            cancel.cancel();
+          });
       if (error)
         view->presentText("", *error);
       for (auto& elem : onlineSites)
@@ -598,12 +600,12 @@ vector<ModInfo> MainLoop::getAllMods(const vector<ModInfo>& onlineMods) {
 }
 
 void MainLoop::downloadMod(ModInfo& mod) {
-  atomic<bool> cancelled(false);
   optional<string> error;
+  FileSharing::CancelFlag cancel;
   doWithSplash("Downloading mod \"" + mod.name + "\"...", 1,
       [&] (ProgressMeter& meter) {
         modsDir.createIfDoesntExist();
-        error = fileSharing->downloadMod(mod.name, mod.versionInfo.steamId, modsDir, meter);
+        error = fileSharing->downloadMod(cancel, mod.name, mod.versionInfo.steamId, modsDir, meter);
         if (!error) {
           updateLocalModVersion(mod.name, mod.versionInfo);
           updateLocalModDetails(mod.name, mod.details);
@@ -611,10 +613,9 @@ void MainLoop::downloadMod(ModInfo& mod) {
         }
       },
       [&] {
-        cancelled = true;
-        fileSharing->cancel();
+        cancel.cancel();
       });
-  if (error && !cancelled)
+  if (error && !cancel.flag)
     view->presentText("Error downloading file", *error);
 }
 
@@ -625,18 +626,17 @@ void MainLoop::uploadMod(ModInfo& mod) {
     view->presentText("Mod \"" + mod.name + "\" has errors: ", *err);
     return;
   }
-  atomic<bool> cancelled(false);
+  FileSharing::CancelFlag cancel;
   optional<string> error;
   doWithSplash("Uploading mod \"" + mod.name + "\"...", 1,
       [&] (ProgressMeter& meter) {
-        error = fileSharing->uploadMod(mod, modsDir, meter);
+        error = fileSharing->uploadMod(cancel, mod, modsDir, meter);
         updateLocalModVersion(mod.name, mod.versionInfo);
       },
       [&] {
-        cancelled = true;
-        fileSharing->cancel();
+        cancel.cancel();
       });
-  if (error && !cancelled)
+  if (error && !cancel.flag)
     view->presentText("Error uploading mod:", *error);
 }
 
@@ -657,15 +657,19 @@ void MainLoop::createNewMod() {
 vector<ModInfo> MainLoop::getOnlineMods() {
   vector<ModInfo> ret;
   optional<string> error;
+  FileSharing::CancelFlag cancel;
   doWithSplash( "Downloading list of online mods...", 1,
       [&] (ProgressMeter& meter) {
-        if (auto mods = fileSharing->getOnlineMods())
+        if (auto mods = fileSharing->getOnlineMods(cancel))
           ret = *mods;
         else
           error = mods.error();
         sort(ret.begin(), ret.end(), [](const ModInfo& m1, const ModInfo& m2) { return m1.upvotes > m2.upvotes; });
-      }, [&]{fileSharing->cancel();  });
-  if (error)
+      },
+      [&]{
+        cancel.cancel();
+      });
+  if (error && !cancel.flag)
     view->presentText("", *error);
   return ret;
 }
@@ -1257,17 +1261,16 @@ PGame MainLoop::loadGame(const FilePath& file) {
 }
 
 bool MainLoop::downloadGame(const SaveFileInfo& file) {
-  atomic<bool> cancelled(false);
+  FileSharing::CancelFlag cancel;
   optional<string> error;
   doWithSplash("Downloading " + file.filename + "...", 1,
       [&] (ProgressMeter& meter) {
-        error = fileSharing->downloadSite(file, userPath, meter);
+        error = fileSharing->downloadSite(cancel, file, userPath, meter);
       },
       [&] {
-        cancelled = true;
-        fileSharing->cancel();
+        cancel.cancel();
       });
-  if (error && !cancelled)
+  if (error && !cancel.flag)
     view->presentText("Error downloading file", *error);
   return !error;
 }
