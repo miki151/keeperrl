@@ -4,6 +4,9 @@ MiniWindow(Margins(5, MinWidth 300 {
   Position(MIDDLE, Vertical {
     Using "text" Label()
     Height 10 {}
-    Using "cancelCallback" Position(MIDDLE, StandardButton(Label("Cancel")))
+    Using "cancelCallback" {
+      KeyHandler ( SDLK_ESCAPE )
+      Position(MIDDLE, StandardButton(Label("Cancel")))
+    }
   })
 }))
