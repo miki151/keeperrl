@@ -884,6 +884,11 @@ vector<SaveFileInfo> MainLoop::getSaveOptions(const vector<GameSaveType>& games)
 
 void MainLoop::launchQuickGame(optional<int> maxTurns, bool tryToLoad) {
   PGame game;
+  tileSet->clear();
+  auto contentFactory = createContentFactory(true);
+  if (tileSet)
+    tileSet->setTilePaths(contentFactory.tilePaths);
+  tileSet->loadTextures();
   if (tryToLoad) {
     auto files = getSaveOptions({GameSaveType::AUTOSAVE, GameSaveType::KEEPER, GameSaveType::ADVENTURER});
     auto toLoad = std::min_element(files.begin(), files.end(),
@@ -891,7 +896,6 @@ void MainLoop::launchQuickGame(optional<int> maxTurns, bool tryToLoad) {
     if (toLoad != files.end())
       game = loadGame(userPath.file((*toLoad).filename));
   }
-  auto contentFactory = createContentFactory(true);
   if (!game) {
     AvatarInfo avatar = getQuickGameAvatar(view, contentFactory.keeperCreatures, &contentFactory.getCreatures());
     CampaignBuilder builder(view, Random, options, contentFactory.villains, contentFactory.gameIntros, avatar);
