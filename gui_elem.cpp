@@ -1344,6 +1344,10 @@ KeybindingMap* GuiFactory::getKeybindingMap() {
   return options->getKeybindingMap();
 }
 
+MySteamInput* GuiFactory::getSteamInput() {
+  return renderer.getSteamInput();
+}
+
 class KeyHandler2 : public GuiElem {
   public:
   KeyHandler2(function<void(Rectangle)> f, vector<SDL_Keysym> k, bool cap)
@@ -3279,6 +3283,13 @@ SGuiElem GuiFactory::rectangleBorder(Color col) {
 
 SGuiElem GuiFactory::sprite(TexId id, Alignment a, optional<Color> c) {
   return sprite(get(id), a, false, false, Vec2(0, 0), c);
+}
+
+SGuiElem GuiFactory::steamInputGlyph(FilePath path, Alignment alignment, optional<Color> color) {
+  if (!steamInputTextures.count(path.getPath()))
+    steamInputTextures.insert(make_pair(path.getPath(), Texture(path)));
+  auto& texture = steamInputTextures.at(path.getPath());
+  return preferredSize(Vec2(24, 24), sprite(texture, 24));
 }
 
 SGuiElem GuiFactory::sprite(Texture& t, Alignment a, Color c) {

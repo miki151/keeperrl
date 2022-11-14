@@ -87,9 +87,11 @@ class MySteamInput {
   pair<double, double> getJoyPos(ControllerJoy);
   void runFrame();
   bool isPressed(ControllerKey);
+  const char* getGlyph(ControllerKey);
   queue<ControllerKey> actionQueue;
   optional<GameActionLayer> actionLayer;
   private:
   void detectControllers();
   optional<milliseconds> lastControllersCheck;
+  unordered_map<ControllerKey, string, CustomHash<ControllerKey>> actionGlyphs;
 };

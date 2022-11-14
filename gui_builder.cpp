@@ -1330,7 +1330,9 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
   lastPlayerPositionHash = info.positionHash;
   vector<SGuiElem> lines;
   const int maxElems = 6;
-  const string title = "Click or press [Enter]:";
+  auto title = gui.getKeybindingMap()->getGlyph(WL(label, "Click or press ", Color::YELLOW), &gui, C_WALK,
+      "[Enter]"_s, Color::YELLOW);
+  title = WL(leftMargin, 3, std::move(title));
   int numElems = min<int>(maxElems, info.lyingItems.size());
   Vec2 size = Vec2(380, (1 + numElems) * legendLineHeight);
   if (!info.lyingItems.empty()) {
@@ -1351,7 +1353,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
   if (totalElems == 1 && !playerOverlayFocused)
     content = WL(stack,
         WL(margin,
-          WL(leftMargin, 3, WL(label, title, Color::YELLOW)),
+          title,
           WL(scrollable, WL(verticalList, std::move(lines), legendLineHeight), &lyingItemsScroll),
           legendLineHeight, GuiFactory::TOP),
         WL(conditionalStopKeys,
@@ -1381,7 +1383,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
               playerOverlayFocused),
           WL(keyHandler, [=] { itemIndex = none; }, {gui.getKey(SDL::SDLK_ESCAPE)}),
           WL(margin,
-            WL(leftMargin, 3, WL(label, title, Color::YELLOW)),
+            title,
             WL(scrollable, WL(verticalList, std::move(lines), legendLineHeight), &lyingItemsScroll),
             legendLineHeight, GuiFactory::TOP)));
   }
@@ -1824,11 +1826,10 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) 
             //stack.push_back(WL(stack, std::move(button), WL(keyHandler, buttonFun, *command.keybinding)));
           if (command.tutorialHighlight)
             stack.push_back(WL(tutorialHighlight));
-          auto label = command.name;
+          auto label = WL(label, command.name, labelColor);
           if (command.keybinding)
-            if (auto text = gui.getKeybindingMap()->getText(*command.keybinding))
-              label = "[" + *text + "] " + std::move(label);
-          stack.push_back(WL(label, label, labelColor));
+            label = gui.getKeybindingMap()->getGlyph(std::move(label), &gui, *command.keybinding, labelColor);
+          stack.push_back(std::move(label));
           if (!command.description.empty())
             tooltips.push_back(WL(miniWindow, WL(margins, WL(label, command.description), 15)));
           else
@@ -2025,24 +2026,22 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
       vList.addSpace(legendLineHeight / 2);
     }
     auto callback = getButtonCallback(UserInputId::TOGGLE_CONTROL_MODE);
-    auto label = "Control mode: "_s + getControlModeName(*info.controlMode);
     auto keybinding = Keybinding("TOGGLE_CONTROL_MODE");
-    if (auto text = gui.getKeybindingMap()->getText(keybinding))
-      label = "[" + *text + "] " + label;
+    auto label = gui.getKeybindingMap()->getGlyph(
+        WL(label, "Control mode: "_s + getControlModeName(*info.controlMode)),
+        &gui, keybinding);
     vList.addElem(WL(stack,
-        WL(buttonLabel, label, callback),
+        WL(standardButton, label, WL(button, callback)),
         WL(keyHandler, callback, keybinding)
     ));
     vList.addSpace(legendLineHeight / 2);
   }
   if (info.canExitControlMode) {
     auto callback = getButtonCallback(UserInputId::EXIT_CONTROL_MODE);
-    auto label = "Exit control mode"_s;
     auto keybinding = Keybinding("EXIT_CONTROL_MODE");
-    if (auto text = gui.getKeybindingMap()->getText(keybinding))
-      label = "[" + *text + "] " + label;
+    auto label = gui.getKeybindingMap()->getGlyph(WL(label, "Exit control mode"_s), &gui, keybinding);
     vList.addElem(WL(stack,
-        WL(buttonLabel, label, callback),
+        WL(standardButton, label, WL(button, callback)),
         WL(keyHandler, callback, keybinding)
     ));
   }

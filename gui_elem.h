@@ -258,6 +258,7 @@ class GuiFactory {
 
   using TexId = TextureId;
   SGuiElem sprite(TexId, Alignment, optional<Color> = none);
+  SGuiElem steamInputGlyph(FilePath, Alignment, optional<Color> = none);
   SGuiElem repeatedPattern(Texture& tex);
   SGuiElem background(Color);
   SGuiElem highlight(double height);
@@ -325,6 +326,7 @@ class GuiFactory {
   SGuiElem renderTopLayer(SGuiElem content);
 
   KeybindingMap* getKeybindingMap();
+  MySteamInput* getSteamInput();
   Clock* clock;
 
   private:
@@ -339,6 +341,7 @@ class GuiFactory {
       bool matchTextWidth = true, bool centerHorizontally = false);
 
   EnumMap<TexId, optional<Texture>> textures;
+  unordered_map<string, Texture> steamInputTextures;
   vector<Texture> iconTextures;
   Renderer& renderer;
   Options* options;

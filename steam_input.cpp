@@ -78,6 +78,7 @@ void MySteamInput::detectControllers() {
     if (cnt == controllers.size())
       return;
     std::cout << "Detected " << cnt << " controllers" << std::endl;
+    actionGlyphs.clear();
     controllersTmp.resize(cnt);
     controllers = controllersTmp;
     steamInput->RunFrame();
@@ -103,6 +104,13 @@ bool MySteamInput::isPressed(ControllerKey key) {
   return false;
 }
 
+const char* MySteamInput::getGlyph(ControllerKey key) {
+  if (auto v = getReferenceMaybe(actionGlyphs, key))
+    if (!v->empty())
+      return v->data();
+  return nullptr;
+}
+
 void MySteamInput::runFrame() {
   if (auto steamInput = SteamInput()) {
     detectControllers();
@@ -111,11 +119,19 @@ void MySteamInput::runFrame() {
     steamInput->RunFrame();
     auto nowPressed = [&] {
       for (auto input : controllers)
-        for (auto action : actionHandles)
+        for (auto action : actionHandles) {
+          EInputActionOrigin origins[STEAM_INPUT_MAX_ORIGINS];
+          auto a = actionSets.at(action.second.actionSet);
+          if (actionLayer)
+            a = gameActionLayers.at(*actionLayer);
+          auto res = steamInput->GetDigitalActionOrigins(input, a, action.second.handle, origins);
+          if (res > 0)
+            actionGlyphs[action.first] = steamInput->GetGlyphPNGForActionOrigin(origins[0], k_ESteamInputGlyphSize_Small, 0);
           if (action.second.actionSet == actionSetStack.back() &&
               steamInput->GetDigitalActionData(input, action.second.handle).bState) {
             return true;
           }
+        }
       return false;
     }();
     if (!nowPressed) {

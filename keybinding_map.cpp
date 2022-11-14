@@ -31,18 +31,21 @@ static SDL::Uint16 getMod(SDL::Uint16 m) {
   return m & (SDL::KMOD_LCTRL | SDL::KMOD_LSHIFT | SDL::KMOD_LALT);
 }
 
-bool KeybindingMap::matches(Keybinding key, SDL::SDL_Keysym sym) {
-  static unordered_map<ControllerKey, Keybinding, CustomHash<ControllerKey>> controllerBindings {
-      {C_WAIT, Keybinding("WAIT")},
-      {C_SKIP_TURN, Keybinding("SKIP_TURN")},
-      {C_STAND_GROUND, Keybinding("STAND_GROUND")},
-      {C_IGNORE_ENEMIES, Keybinding("IGNORE_ENEMIES")},
-      {C_EXIT_CONTROL_MODE, Keybinding("EXIT_CONTROL_MODE")},
-      {C_TOGGLE_CONTROL_MODE, Keybinding("TOGGLE_CONTROL_MODE")},
+static optional<ControllerKey> getControllerMapping(Keybinding key) {
+  static unordered_map<Keybinding, ControllerKey, CustomHash<Keybinding>> controllerBindings {
+      {Keybinding("WAIT"), C_WAIT},
+      {Keybinding("SKIP_TURN"), C_SKIP_TURN},
+      {Keybinding("STAND_GROUND"), C_STAND_GROUND},
+      {Keybinding("IGNORE_ENEMIES"), C_IGNORE_ENEMIES},
+      {Keybinding("EXIT_CONTROL_MODE"), C_EXIT_CONTROL_MODE},
+      {Keybinding("TOGGLE_CONTROL_MODE"), C_TOGGLE_CONTROL_MODE},
   };
-  if (auto k = getValueMaybe(controllerBindings, (ControllerKey)sym.sym))
-    if (key == *k)
-      return true;
+  return getValueMaybe(controllerBindings, key);
+}
+
+bool KeybindingMap::matches(Keybinding key, SDL::SDL_Keysym sym) {
+  if (getControllerMapping(key) == (ControllerKey)sym.sym)
+    return true;
   if (auto k = getReferenceMaybe(bindings, key))
     return k->sym == sym.sym && getMod(k->mod) == getMod(sym.mod);
   return false;
@@ -127,6 +130,32 @@ optional<string> KeybindingMap::getText(Keybinding key) {
   return none;
 }
 
+SGuiElem KeybindingMap::getGlyph(SGuiElem label, GuiFactory* f, optional<ControllerKey> key, optional<string> alternative, Color color) {
+  SGuiElem add;
+  auto steamInput = f->getSteamInput();
+  if (steamInput && !steamInput->controllers.empty()) {
+    if (key)
+      if (auto path = steamInput->getGlyph(*key))
+        add = f->steamInputGlyph(FilePath::fromFullPath(path), GuiFactory::Alignment::CENTER_STRETCHED, color);
+  } else if (alternative)
+    add = f->label(*alternative, color);
+  if (add)
+    label = f->getListBuilder()
+        .addElemAuto(std::move(label))
+        .addElemAuto(f->label(" [", color))
+        .addElemAuto(std::move(add))
+        .addElemAuto(f->label("]  ", color))
+        .buildHorizontalList();
+  return label;
+}
+
+SGuiElem KeybindingMap::getGlyph(SGuiElem label, GuiFactory* f, Keybinding key, Color color) {
+  optional<string> alternative;
+  if (auto k = getReferenceMaybe(bindings, key))
+    alternative = getText(*k);
+  return getGlyph(std::move(label), f, getControllerMapping(key), std::move(alternative), color);
+}
+
 void KeybindingMap::save() {
   ofstream out(userPath.getPath());
   for (auto& elem : bindings) {
@@ -154,7 +183,7 @@ bool KeybindingMap::set(Keybinding k, SDL::SDL_Keysym s) {
     }
   return false;
 }
-  
+
 void serialize(PrettyInputArchive& ar, SDL::SDL_Keysym& sym) {
   sym.mod = 0;
   while (true) {
