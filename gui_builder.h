@@ -239,7 +239,6 @@ class GuiBuilder {
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
   int scrollbarsHeld2 = GuiFactory::getHeldInitValue();
   CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
-  bool collectiveTabActive = false;
   MinionTab minionTab = MinionTab::INVENTORY;
   enum BottomWindowId {
     IMMIGRATION_HELP,
