@@ -718,7 +718,7 @@ View::TargetResult WindowView::chooseTarget(Vec2 playerPos, TargetType targetTyp
     if (renderer.pollEvent(event)) {
       considerResizeEvent(event);
       if (event.type == SDL::SDL_KEYDOWN) {
-        if (event.key.keysym.sym == SDL::SDLK_ESCAPE) {
+        if (gui.getKeybindingMap()->matches(Keybinding("EXIT_MENU"), event.key.keysym)) {
           refreshScreen();
           return none;
         }

@@ -314,18 +314,16 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
             return collectiveTab == CollectiveTab::BUILDINGS && activeGroup == newGroup;
           }
       ));
-      keypressOnly.push_back(
-          WL(keyHandlerBool, [this, newGroup = buttons[i].groupName, i, buttons] {
-            if (collectiveTab == CollectiveTab::BUILDINGS) {
-              if (activeGroup == newGroup && !!activeButton)
-                if (auto newBut = getNextActive(buttons, i, getActiveButton(CollectiveTab::BUILDINGS), 1)) {
-                  setActiveButton(CollectiveTab::BUILDINGS, *newBut, buttons[*newBut].viewId, newGroup, none,
-                      buttons[*newBut].isBuilding);
-                  return true;
-                }
-            }
-            return false;
-          }, {gui.getKey(C_BUILDINGS_DOWN)}));
+      keypressOnly.push_back(WL(conditionalStopKeys,
+          WL(keyHandler, [this, newGroup = buttons[i].groupName, i, buttons] {
+            if (auto newBut = getNextActive(buttons, i, getActiveButton(CollectiveTab::BUILDINGS), 1))
+              setActiveButton(CollectiveTab::BUILDINGS, *newBut, buttons[*newBut].viewId, newGroup, none,
+                  buttons[*newBut].isBuilding);
+          }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
+          [this, newGroup = buttons[i].groupName] {
+            return collectiveTab == CollectiveTab::BUILDINGS && !!activeButton && activeGroup == newGroup;
+          }
+      ));
       keypressOnly.push_back(WL(conditionalStopKeys,
           WL(keyHandler, [this, newGroup = buttons[i].groupName, i, buttons] {
             if (auto newBut = getNextActive(buttons, i, getActiveButton(CollectiveTab::BUILDINGS), -1))
@@ -1343,9 +1341,9 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
                   WL(keyHandler, [=] { updateScrolling(-1); },
                     {gui.getKey(SDL::SDLK_UP), gui.getKey(SDL::SDLK_KP_8), gui.getKey(C_MENU_UP)}, true)),
               pickupKeys,
-              {gui.getKey(SDL::SDLK_ESCAPE), gui.getKey(C_MENU_CANCEL)},
+              Keybinding("EXIT_MENU"),
               playerOverlayFocused),
-          WL(keyHandler, [=] { itemIndex = none; }, {gui.getKey(SDL::SDLK_ESCAPE)}),
+          WL(keyHandler, [=] { itemIndex = none; }, Keybinding("EXIT_MENU")),
           WL(margin,
             title,
             WL(scrollable, WL(verticalList, std::move(lines), legendLineHeight), &lyingItemsScroll),
@@ -1674,7 +1672,7 @@ SGuiElem GuiBuilder::drawSpellsList(const vector<SpellInfo>& spells, GenericId c
                 abilityIndex = none;
                 renderer.getSteamInput()->popActionSet();
                 inventoryScroll.reset();
-              }, {gui.getKey(C_MENU_CANCEL)}, true)
+              }, Keybinding("EXIT_MENU"), true)
           )), [this] { return !!abilityIndex; }),
           std::move(ret)
       );
@@ -1896,7 +1894,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) 
             renderer.getSteamInput()->popActionSet();
             inventoryIndex = none;
             inventoryScroll.reset();
-          }, {gui.getKey(C_MENU_CANCEL)}, true), [this] { return !!inventoryIndex;} ),
+          }, Keybinding("EXIT_MENU"), true), [this] { return !!inventoryIndex;} ),
       list.buildVerticalList()
   ));
 }
@@ -3624,7 +3622,8 @@ vector<SGuiElem> GuiBuilder::drawItemMenu(const vector<ItemInfo>& items, ItemMen
     lines.push_back(getItemLine(items[i], [=] (Rectangle bounds) { callback(bounds, i);}, nullptr, true));
   if (doneBut)
     lines.push_back(WL(stack,
-          WL(button, [=] { callback(Rectangle(), none); }, gui.getKey(SDL::SDLK_ESCAPE)),
+          WL(button, [=] { callback(Rectangle(), none); }),
+          WL(keyHandler, [=] { callback(Rectangle(), none); }, Keybinding("EXIT_MENU")),
           WL(centeredLabel, Renderer::HOR, "[done]", Color::LIGHT_BLUE)));
   return lines;
 }
@@ -4302,8 +4301,10 @@ SGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
           WL(buttonLabelInactive, "Confirm"),
           [&] { return !!campaignGridPointer && campaign.isInInfluence(*campaignGridPointer); }))
       .addSpace(15)
-      .addElemAuto(WL(buttonLabel, "Cancel",
-          WL(button, [&queue] { queue.push(none); }, gui.getKey(SDL::SDLK_ESCAPE), true)))
+      .addElemAuto(WL(buttonLabel, "Cancel", WL(stack,
+          WL(button, [&queue] { queue.push(none); }, true),
+          WL(keyHandler, [&] { queue.push(*campaignGridPointer); }, Keybinding("EXIT_MENU"), true)
+      )))
       .buildHorizontalList()));
   return WL(preferredSize, 1000, 600,
       WL(window, WL(margins, lines.buildVerticalList(), 15), [&queue] { queue.push(none); }));
@@ -4985,7 +4986,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
       WL(keyHandler, [&menuState]{
         menuState.index.down();
       }, {gui.getKey(C_MENU_DOWN)}, true),
-      WL(keyHandler, [&] { queue.push(CampaignActionId::CANCEL); }, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
+      WL(keyHandler, [&] { queue.push(CampaignActionId::CANCEL); }, Keybinding("EXIT_MENU"), true),
   };
   interior.push_back(lines.buildVerticalList());
   interior.push_back(centerLines.buildVerticalList());
@@ -5316,6 +5317,7 @@ optional<string> GuiBuilder::getTextInput(const string& title, const string& val
               break;
           case SDL::SDLK_KP_ENTER:
           case SDL::SDLK_RETURN: return text;
+          case C_MENU_CANCEL:
           case SDL::SDLK_ESCAPE: return none;
           default: break;
         }

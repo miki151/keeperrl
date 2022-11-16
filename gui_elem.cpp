@@ -268,6 +268,7 @@ class TextFieldElem : public GuiElem {
           callback(current);
           break;
         }
+        case C_MENU_CANCEL:
         case SDL::SDLK_ESCAPE:
         case SDL::SDLK_KP_ENTER:
         case SDL::SDLK_RETURN:
@@ -1160,10 +1161,10 @@ SGuiElem GuiFactory::stack(SGuiElem g1, SGuiElem g2, SGuiElem g3, SGuiElem g4) {
 
 class Focusable : public GuiStack {
   public:
-  Focusable(SGuiElem content, Renderer& renderer, vector<SDL_Keysym> focus, vector<SDL_Keysym> defocus,
-      bool& foc)
+  Focusable(SGuiElem content, Renderer& renderer, KeybindingMap* keybindingMap, vector<SDL_Keysym> focus,
+      Keybinding defocus, bool& foc)
     : GuiStack(makeVec(std::move(content))), focusEvent(focus), defocusEvent(defocus), focused(foc),
-      renderer(renderer) {}
+      renderer(renderer), keybindingMap(keybindingMap) {}
 
   virtual bool onClick(MouseButtonId b, Vec2 pos) override {
     if (b == MouseButtonId::LEFT) {
@@ -1186,12 +1187,11 @@ class Focusable : public GuiStack {
           return true;
         }
     if (focused)
-      for (auto& elem : defocusEvent)
-        if (GuiFactory::keyEventEqual(elem, key)) {
-          focused = false;
-          renderer.getSteamInput()->popActionSet();
-          return true;
-        }
+      if (keybindingMap->matches(defocusEvent, key)) {
+        focused = false;
+        renderer.getSteamInput()->popActionSet();
+        return true;
+      }
     if (focused) {
       GuiLayout::onKeyPressed2(key);
       return true;
@@ -1201,14 +1201,15 @@ class Focusable : public GuiStack {
 
   private:
   vector<SDL_Keysym> focusEvent;
-  vector<SDL_Keysym> defocusEvent;
+  Keybinding defocusEvent;
   bool& focused;
   Renderer& renderer;
+  KeybindingMap* keybindingMap;
 };
 
 SGuiElem GuiFactory::focusable(SGuiElem content, vector<SDL_Keysym> focusEvent,
-    vector<SDL_Keysym> defocusEvent, bool& focused) {
-  return SGuiElem(new Focusable(std::move(content), renderer, focusEvent, defocusEvent, focused));
+    Keybinding defocusEvent, bool& focused) {
+  return SGuiElem(new Focusable(std::move(content), renderer, getKeybindingMap(), focusEvent, defocusEvent, focused));
 }
 
 class KeyHandler : public GuiElem {
@@ -3089,7 +3090,8 @@ SGuiElem GuiFactory::miniWindow() {
 SGuiElem GuiFactory::window(SGuiElem content, function<void()> onExitButton) {
   return stack(makeVec(
         fullScreen(stopMouseMovement()),
-        alignment(Alignment::TOP_RIGHT, button(onExitButton, getKey(SDL::SDLK_ESCAPE), true), Vec2(38, 38)),
+        keyHandler(onExitButton, Keybinding("EXIT_MENU"), true),
+        alignment(Alignment::TOP_RIGHT, button(onExitButton, true), Vec2(38, 38)),
         rectangle(Color::BLACK),
         background(background1),
         margins(std::move(content), 20, 35, 20, 30),
@@ -3286,10 +3288,13 @@ SGuiElem GuiFactory::sprite(TexId id, Alignment a, optional<Color> c) {
 }
 
 SGuiElem GuiFactory::steamInputGlyph(FilePath path, Alignment alignment, optional<Color> color) {
+  return preferredSize(Vec2(24, 24), sprite(steamInputTexture(path), 24));
+}
+
+Texture& GuiFactory::steamInputTexture(FilePath path) {
   if (!steamInputTextures.count(path.getPath()))
     steamInputTextures.insert(make_pair(path.getPath(), Texture(path)));
-  auto& texture = steamInputTextures.at(path.getPath());
-  return preferredSize(Vec2(24, 24), sprite(texture, 24));
+  return steamInputTextures.at(path.getPath());
 }
 
 SGuiElem GuiFactory::sprite(Texture& t, Alignment a, Color c) {

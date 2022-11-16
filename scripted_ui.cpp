@@ -10,6 +10,8 @@
 #include "container_range.h"
 #include "tileset.h"
 #include "steam_input.h"
+#include "keybinding.h"
+#include "keybinding_map.h"
 
 namespace EnumsDetail {
 enum class TextureFlip;
@@ -188,6 +190,60 @@ struct KeyCatcher : ScriptedUIInterface {
 };
 
 REGISTER_SCRIPTED_UI(KeyCatcher);
+
+struct KeybindingHandler : ScriptedUIInterface {
+  void onKeypressed(const ScriptedUIData& data, ScriptedContext& context,
+      SDL::SDL_Keysym sym, Rectangle, EventCallback& callback) const override {
+    if (context.factory->getKeybindingMap()->matches(key, sym))
+      performAction(data, context, callback);
+  }
+
+  Keybinding SERIAL(key);
+  SERIALIZE_ALL(roundBracket(), NAMED(key));
+};
+
+REGISTER_SCRIPTED_UI(KeybindingHandler);
+
+struct RenderKeybinding : ScriptedUIInterface {
+  static variant<Texture*, string> getKeybindingGlyph(GuiFactory* f, Keybinding binding) {
+    auto steamInput = f->getSteamInput();
+    if (steamInput && !steamInput->controllers.empty()) {
+      if (auto key = KeybindingMap::getControllerMapping(binding))
+        if (auto path = steamInput->getGlyph(*key))
+          return &f->steamInputTexture(FilePath::fromFullPath(path));
+    }
+    if (auto k = f->getKeybindingMap()->getText(binding))
+      return "[" + *k + "]";
+    return ""_s;
+  }
+
+  void render(const ScriptedUIData&, ScriptedContext& context, Rectangle area) const override {
+    getKeybindingGlyph(context.factory, key).visit(
+        [&](const string& text) {
+          context.renderer->drawText(Color::WHITE, area.topLeft(), text);
+        },
+        [&](Texture* texture) {
+          context.renderer->drawSprite(area.topLeft(), Vec2(0, 0), texture->getSize(), *texture, Vec2(24, 24));
+        }
+    );
+  }
+
+  Vec2 getSize(const ScriptedUIData&, ScriptedContext& context) const override {
+    return getKeybindingGlyph(context.factory, key).visit(
+        [&](const string& text) {
+          return Vec2(context.renderer->getTextLength(text), 20);
+        },
+        [&](Texture* texture) {
+          return Vec2(24, 24);
+        }
+    );
+  }
+
+  Keybinding SERIAL(key);
+  SERIALIZE_ALL(roundBracket(), NAMED(key));
+};
+
+REGISTER_SCRIPTED_UI(RenderKeybinding);
 
 struct BlockMouseEvents : ScriptedUIInterface {
   void onClick(const ScriptedUIData&, ScriptedContext&, MouseButtonId id, Rectangle,

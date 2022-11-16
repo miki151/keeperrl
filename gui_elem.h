@@ -92,8 +92,7 @@ class GuiFactory {
   SGuiElem buttonRect(function<void(Rectangle buttonBounds)>);
   SGuiElem releaseLeftButton(function<void()>, optional<Keybinding> = none);
   SGuiElem releaseRightButton(function<void()>);
-  SGuiElem focusable(SGuiElem content, vector<SDL::SDL_Keysym> focusEvent,
-      vector<SDL::SDL_Keysym> defocusEvent, bool& focused);
+  SGuiElem focusable(SGuiElem content, vector<SDL::SDL_Keysym> focusEvent, Keybinding, bool& focused);
   SGuiElem mouseWheel(function<void(bool)>);
   SGuiElem keyHandler(function<void(SDL::SDL_Keysym)>, bool capture = false);
   SGuiElem keyHandler(function<void()>, Keybinding, bool capture = false);
@@ -259,6 +258,7 @@ class GuiFactory {
   using TexId = TextureId;
   SGuiElem sprite(TexId, Alignment, optional<Color> = none);
   SGuiElem steamInputGlyph(FilePath, Alignment, optional<Color> = none);
+  Texture& steamInputTexture(FilePath);
   SGuiElem repeatedPattern(Texture& tex);
   SGuiElem background(Color);
   SGuiElem highlight(double height);

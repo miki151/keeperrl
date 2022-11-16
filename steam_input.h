@@ -4,8 +4,8 @@
 #include "sdl.h"
 
 enum ControllerKey {
-  C_MENU_CANCEL = SDL::SDLK_ESCAPE,
-  C_MENU_UP = (1 << 20),
+  C_MENU_CANCEL = (1 << 20),
+  C_MENU_UP,
   C_MENU_DOWN,
   C_MENU_LEFT,
   C_MENU_RIGHT,

@@ -31,7 +31,7 @@ static SDL::Uint16 getMod(SDL::Uint16 m) {
   return m & (SDL::KMOD_LCTRL | SDL::KMOD_LSHIFT | SDL::KMOD_LALT);
 }
 
-static optional<ControllerKey> getControllerMapping(Keybinding key) {
+optional<ControllerKey> KeybindingMap::getControllerMapping(Keybinding key) {
   static unordered_map<Keybinding, ControllerKey, CustomHash<Keybinding>> controllerBindings {
       {Keybinding("WAIT"), C_WAIT},
       {Keybinding("SKIP_TURN"), C_SKIP_TURN},
@@ -39,6 +39,7 @@ static optional<ControllerKey> getControllerMapping(Keybinding key) {
       {Keybinding("IGNORE_ENEMIES"), C_IGNORE_ENEMIES},
       {Keybinding("EXIT_CONTROL_MODE"), C_EXIT_CONTROL_MODE},
       {Keybinding("TOGGLE_CONTROL_MODE"), C_TOGGLE_CONTROL_MODE},
+      {Keybinding("EXIT_MENU"), C_MENU_CANCEL},
   };
   return getValueMaybe(controllerBindings, key);
 }
@@ -105,6 +106,7 @@ static const map<string, SDL::SDL_Keycode> keycodes {
   {"DOWN", SDL::SDLK_DOWN},
   {"LEFT", SDL::SDLK_LEFT},
   {"RIGHT", SDL::SDLK_RIGHT},
+  {"ESCAPE", SDL::SDLK_ESCAPE},
 };
 
 string KeybindingMap::getText(SDL::SDL_Keysym sym, string delimiter) {
@@ -116,11 +118,11 @@ string KeybindingMap::getText(SDL::SDL_Keysym sym, string delimiter) {
   }();
   string ret = keys.at(sym.sym);
   if (sym.mod & SDL::KMOD_LCTRL)
-    ret = "ctrl" + delimiter + ret;
+    ret = "Ctrl" + delimiter + ret;
   if (sym.mod & SDL::KMOD_LSHIFT)
-    ret = "shift" + delimiter + ret;
+    ret = "Shift" + delimiter + ret;
   if (sym.mod & SDL::KMOD_LALT)
-    ret = "alt" + delimiter + ret;
+    ret = "Alt" + delimiter + ret;
   return ret;
 }
 
@@ -138,13 +140,12 @@ SGuiElem KeybindingMap::getGlyph(SGuiElem label, GuiFactory* f, optional<Control
       if (auto path = steamInput->getGlyph(*key))
         add = f->steamInputGlyph(FilePath::fromFullPath(path), GuiFactory::Alignment::CENTER_STRETCHED, color);
   } else if (alternative)
-    add = f->label(*alternative, color);
+    add = f->label("[" + *alternative + "]", color);
   if (add)
     label = f->getListBuilder()
         .addElemAuto(std::move(label))
-        .addElemAuto(f->label(" [", color))
+        .addSpace(10)
         .addElemAuto(std::move(add))
-        .addElemAuto(f->label("]  ", color))
         .buildHorizontalList();
   return label;
 }

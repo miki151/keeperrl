@@ -51,3 +51,4 @@
 "WALK_NORTH_WEST" "Walk north-west"
 "WALK_SOUTH_EAST" "Walk south-east"
 "WALK_SOUTH_WEST" "Walk south-west"
+"EXIT_MENU" "Exit/cancel"

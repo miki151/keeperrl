@@ -20,14 +20,13 @@ Def FocusKeys() {
 End
 
 Def ExitButtons()
-  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) KeyHandler(C_MENU_CANCEL) }
+  Using "EXIT" { Button(true) KeybindingHandler(EXIT_MENU) }
 End
 
 Def ExitButtonsWithEnter()
   Using "EXIT" {
     Button(true)
-    KeyHandler(SDLK_ESCAPE)
-    KeyHandler(C_MENU_CANCEL)
+    KeybindingHandler(EXIT_MENU)
     KeyHandler(SDLK_RETURN)
     KeyHandler(SDLK_KP_ENTER)
   }
