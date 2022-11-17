@@ -61,7 +61,8 @@ void MySteamInput::detectControllers() {
     actionHandles[C_MINIONS_MENU] = getActionInfo("minions_menu", ActionSet::GAME);
     actionHandles[C_TECH_MENU] = getActionInfo("tech_menu", ActionSet::GAME);
     actionHandles[C_HELP_MENU] = getActionInfo("help_menu", ActionSet::GAME);
-    actionHandles[C_SPEED_MENU] = getActionInfo("speed_menu", ActionSet::GAME);
+    actionHandles[C_SPEED_UP] = getActionInfo("speed_up", ActionSet::GAME);
+    actionHandles[C_SPEED_DOWN] = getActionInfo("speed_down", ActionSet::GAME);
     actionHandles[C_BUILDINGS_UP] = getActionInfo("buildings_up", ActionSet::GAME);
     actionHandles[C_BUILDINGS_DOWN] = getActionInfo("buildings_down", ActionSet::GAME);
     actionHandles[C_BUILDINGS_LEFT] = getActionInfo("buildings_left", ActionSet::GAME);

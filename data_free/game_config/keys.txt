@@ -52,3 +52,5 @@
 "WALK_SOUTH_EAST" "Walk south-east"
 "WALK_SOUTH_WEST" "Walk south-west"
 "EXIT_MENU" "Exit/cancel"
+"SPEED_UP" "Increase game speed"
+"SPEED_DOWN" "Decrease game speed"

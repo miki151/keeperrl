@@ -645,7 +645,6 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
             .addElem(WL(labelFun, [this] { return getCurrentGameSpeedName();},
               [this] { return clock->isPaused() ? Color::RED : Color::WHITE; }), 70).buildHorizontalList(),
         WL(buttonRect, speedMenu),
-        WL(keyHandlerRect, speedMenu, {gui.getKey(C_SPEED_MENU)}, true),
         getGameSpeedHotkeys()
     ));
     int modifiedSquares = info.modifiedSquares;
@@ -696,6 +695,14 @@ SGuiElem GuiBuilder::getGameSpeedHotkeys() {
   vector<SGuiElem> hotkeys;
   hotkeys.push_back(WL(keyHandler, pauseFun, Keybinding("PAUSE")));
   hotkeys.push_back(WL(keyHandler, pauseFun, {gui.getKey(C_BUILDINGS_CONFIRM)}, true));
+  hotkeys.push_back(WL(keyHandler, [this] {
+    if (int(gameSpeed) < EnumInfo<GameSpeed>::size - 1)
+      gameSpeed = GameSpeed(int(gameSpeed) + 1);
+  }, Keybinding("SPEED_UP")));
+  hotkeys.push_back(WL(keyHandler, [this] {
+    if (int(gameSpeed) > 0)
+      gameSpeed = GameSpeed(int(gameSpeed) - 1);
+  }, Keybinding("SPEED_DOWN")));
   for (GameSpeed speed : ENUM_ALL(GameSpeed)) {
     auto speedFun = [=] { gameSpeed = speed; clock->cont();};
     hotkeys.push_back(WL(keyHandler, speedFun, getHotkey(speed)));

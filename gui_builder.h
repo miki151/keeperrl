@@ -253,7 +253,7 @@ class GuiBuilder {
   string scriptedHelpId;
   void toggleBottomWindow(BottomWindowId);
   void openScriptedHelp(string);
-  atomic<GameSpeed> gameSpeed;
+  GameSpeed gameSpeed = GameSpeed(0);
   const char* getGameSpeedName(GameSpeed) const;
   const char* getCurrentGameSpeedName() const;
 
