@@ -549,7 +549,7 @@ class DrawScripted : public GuiElem {
 
 SGuiElem GuiFactory::scripted(function<void()> endCallback, ScriptedUIId id, const ScriptedUIData& data,
     ScriptedUIState& state) {
-  if (!getSteamInput()->controllers.empty())
+  if (!state.highlightedElem && !getSteamInput()->controllers.empty())
     state.highlightedElem = 0;
   return SGuiElem(new DrawScripted(ScriptedContext{&renderer, this, endCallback, state, 0, 0}, id, std::move(data)));
 }
