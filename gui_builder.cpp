@@ -1343,10 +1343,8 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
               WL(stack,
                   WL(keyHandler, [=] { if (itemIndex) { callbacks.input({UserInputId::PICK_UP_ITEM, *itemIndex});}},
                     gui.getConfirmationKeys(), true),
-                  WL(keyHandler, [=] { updateScrolling(1); },
-                    {gui.getKey(SDL::SDLK_DOWN), gui.getKey(SDL::SDLK_KP_2), gui.getKey(C_MENU_DOWN)}, true),
-                  WL(keyHandler, [=] { updateScrolling(-1); },
-                    {gui.getKey(SDL::SDLK_UP), gui.getKey(SDL::SDLK_KP_8), gui.getKey(C_MENU_UP)}, true)),
+                  WL(keyHandler, [=] { updateScrolling(1); }, Keybinding("MENU_DOWN"), true),
+                  WL(keyHandler, [=] { updateScrolling(-1); }, Keybinding("MENU_UP"), true)),
               pickupKeys,
               Keybinding("EXIT_MENU"),
               playerOverlayFocused),
@@ -1428,7 +1426,7 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
             break;
           }
         }
-      }, {gui.getKey(SDL::SDLK_UP), gui.getKey(C_MENU_UP)}, true),
+      }, Keybinding("MENU_UP"), true),
       WL(keyHandler, [&] {
         for (int i : Range(elems.size())) {
           auto ind = (*selected + i + 1) % elems.size();
@@ -1438,7 +1436,7 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
             break;
           }
         }
-      }, {gui.getKey(SDL::SDLK_DOWN), gui.getKey(C_MENU_DOWN)}, true),
+      }, Keybinding("MENU_DOWN"), true),
       WL(keyHandler, [&] {
         if (*selected >= 0 && *selected < callbacks.size() && !!callbacks[*selected]) {
           callbacks[*selected]();
@@ -1596,7 +1594,7 @@ SGuiElem GuiBuilder::getSpellIcon(const SpellInfo& spell, int index, bool active
             abilityIndex = none;
             renderer.getSteamInput()->popActionSet();
             callback();
-          }, { gui.getKey(C_MENU_SELECT)}, true)
+          }, Keybinding("MENU_SELECT"), true)
       ), [this, index] { return abilityIndex == index; }));
     } else
       ret.push_back(WL(rectangleBorder, Color::WHITE));
@@ -1659,22 +1657,22 @@ SGuiElem GuiBuilder::drawSpellsList(const vector<SpellInfo>& spells, GenericId c
                 abilityIndex = getNextSpell(*abilityIndex, 1);
                 if (!abilityIndex)
                   renderer.getSteamInput()->popActionSet();
-              }, {gui.getKey(C_MENU_RIGHT)}, true),
+              }, Keybinding("MENU_RIGHT"), true),
               WL(keyHandler, [=, cnt = spells.size()] {
                 abilityIndex = getNextSpell(*abilityIndex, -1);
                 if (!abilityIndex)
                   renderer.getSteamInput()->popActionSet();
-              }, {gui.getKey(C_MENU_LEFT)}, true),
+              }, Keybinding("MENU_LEFT"), true),
               WL(keyHandler, [=, cnt = spells.size()] {
                 abilityIndex = getNextSpell(*abilityIndex, 5);
                 if (!abilityIndex)
                   renderer.getSteamInput()->popActionSet();
-              }, {gui.getKey(C_MENU_DOWN)}, true),
+              }, Keybinding("MENU_DOWN"), true),
               WL(keyHandler, [=, cnt = spells.size()] {
                 abilityIndex = getNextSpell(*abilityIndex, -5);
                 if (!abilityIndex)
                   renderer.getSteamInput()->popActionSet();
-              }, {gui.getKey(C_MENU_UP)}, true),
+              }, Keybinding("MENU_UP"), true),
               WL(keyHandler, [this] {
                 abilityIndex = none;
                 renderer.getSteamInput()->popActionSet();
@@ -1854,13 +1852,13 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) 
               WL(keyHandlerRect, [i, this, size = list.getSize()](Rectangle bounds) {
                 *inventoryIndex = i;
                 inventoryScroll.setRelative(bounds.top(), clock->getRealMillis());
-              }, {gui.getKey(C_MENU_DOWN)}, true),
+              }, Keybinding("MENU_DOWN"), true),
               [this, i, cnt = info.inventory.size()] { return inventoryIndex == (i - 1 + cnt) % cnt; }),
           WL(conditionalStopKeys,
               WL(keyHandlerRect, [i, this, size = list.getSize()](Rectangle bounds) {
                 *inventoryIndex = i;
                 inventoryScroll.setRelative(bounds.top(), clock->getRealMillis());
-              }, {gui.getKey(C_MENU_UP)}, true),
+              }, Keybinding("MENU_UP"), true),
               [this, i, cnt = info.inventory.size()] { return inventoryIndex == (i + 1) % cnt; }),
           getItemLine(item, callback));
       if (!firstInventoryItem)
@@ -2396,11 +2394,11 @@ function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInf
           WL(keyHandler, [&] {
             selected = (selected + 1) % activeElems.size();
             miniMenuScroll.setRelative(activeElems[selected]->getBounds().top(), Clock::getRealMillis());
-          }, {gui.getKey(C_MENU_DOWN)}, true),
+          }, Keybinding("MENU_DOWN"), true),
           WL(keyHandler, [&] {
             selected = (selected + activeElems.size() - 1) % activeElems.size();
             miniMenuScroll.setRelative(activeElems[selected]->getBounds().top(), Clock::getRealMillis());
-          }, {gui.getKey(C_MENU_UP)}, true)
+          }, Keybinding("MENU_UP"), true)
       );
       drawMiniMenu(std::move(content), exit, bounds.bottomLeft(), 500, false);
       callbacks.input({UserInputId::WORKSHOP_UPGRADE, WorkshopUpgradeInfo{elem.itemIndex, increases, cnt}});
@@ -4247,10 +4245,10 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
   if (campaignGridPointer)
     mapContent = WL(stack, makeVec(
         std::move(mapContent),
-        WL(keyHandler, [&c, this] { moveCampaignGridPointer(c, Dir::N); }, {gui.getKey(C_MENU_UP)}, true),
-        WL(keyHandler, [&c, this] { moveCampaignGridPointer(c, Dir::S); }, {gui.getKey(C_MENU_DOWN)}, true),
-        WL(keyHandler, [&c, this] { moveCampaignGridPointer(c, Dir::W); }, {gui.getKey(C_MENU_LEFT)}, true),
-        WL(keyHandler, [&c, this] { moveCampaignGridPointer(c, Dir::E); }, {gui.getKey(C_MENU_RIGHT)}, true)
+        WL(keyHandler, [&c, this] { moveCampaignGridPointer(c, Dir::N); }, Keybinding("MENU_UP"), true),
+        WL(keyHandler, [&c, this] { moveCampaignGridPointer(c, Dir::S); }, Keybinding("MENU_DOWN"), true),
+        WL(keyHandler, [&c, this] { moveCampaignGridPointer(c, Dir::W); }, Keybinding("MENU_LEFT"), true),
+        WL(keyHandler, [&c, this] { moveCampaignGridPointer(c, Dir::E); }, Keybinding("MENU_RIGHT"), true)
     ));
   return WL(preferredSize, maxSize + Vec2(margin, margin) * 2, WL(stack,
     WL(miniBorder2),
@@ -4303,7 +4301,7 @@ SGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
   lines.addElem(WL(centerHoriz, WL(getListBuilder)
       .addElemAuto(WL(conditional, WL(stack,
               WL(buttonLabel, "Confirm", [&] { queue.push(*campaignGridPointer); }),
-              WL(keyHandler, [&] { queue.push(*campaignGridPointer); }, {gui.getKey(C_MENU_SELECT)}, true)
+              WL(keyHandler, [&] { queue.push(*campaignGridPointer); }, Keybinding("MENU_SELECT"), true)
           ),
           WL(buttonLabelInactive, "Confirm"),
           [&] { return !!campaignGridPointer && campaign.isInInfluence(*campaignGridPointer); }))
@@ -4546,7 +4544,10 @@ SGuiElem GuiBuilder::drawAvatarsForRole(const vector<View::AvatarData>& avatars,
 
 SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>& queue,
     const vector<View::AvatarData>& avatars) {
-  avatarIndex.assign(AvatarIndexElems::RoleIndex{0});
+  if (gui.getSteamInput()->controllers.empty())
+    avatarIndex.assign(AvatarIndexElems::None{});
+  else
+    avatarIndex.assign(AvatarIndexElems::RoleIndex{0});
   for (auto& avatar : avatars)
     if (options->getValueString(avatar.nameOption).empty())
       options->setValue(avatar.nameOption, randomFirstNameTag);
@@ -4627,16 +4628,16 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
       WL(stopKeyEvents),
       WL(keyHandler, [this, &avatars, chosenAvatar, chosenRole, avatarPage] {
         avatarIndex.left(avatars, *chosenAvatar, *chosenRole, *avatarPage);
-      }, {gui.getKey(C_MENU_LEFT)}, true),
+      }, Keybinding("MENU_LEFT"), true),
       WL(keyHandler, [this, &avatars, chosenAvatar, chosenRole, avatarPage]{
         avatarIndex.right(avatars, *chosenAvatar, *chosenRole, *avatarPage);
-      }, {gui.getKey(C_MENU_RIGHT)}, true),
+      }, Keybinding("MENU_RIGHT"), true),
       WL(keyHandler, [this, &avatars, chosenAvatar, chosenRole, avatarPage]{
         avatarIndex.up(avatars, *chosenAvatar, *chosenRole, *avatarPage);
-      }, {gui.getKey(C_MENU_UP)}, true),
+      }, Keybinding("MENU_UP"), true),
       WL(keyHandler, [this, &avatars, chosenAvatar, chosenRole, avatarPage]{
         avatarIndex.down(avatars, *chosenAvatar, *chosenRole, *avatarPage);
-      }, {gui.getKey(C_MENU_DOWN)}, true),
+      }, Keybinding("MENU_DOWN"), true),
       menuLines.buildVerticalList()
   ));
 }
@@ -4845,17 +4846,17 @@ SGuiElem GuiBuilder::drawRetiredDungeonsButton(SyncQueue<CampaignAction>& queue,
                 focused = 0;
               focused = (focused + 1) % dungeonElems.size();
               miniMenuScroll.setRelative(dungeonElems[focused]->getBounds().top(), Clock::getRealMillis());
-            }, {gui.getKey(C_MENU_DOWN)}, true),
+            }, Keybinding("MENU_DOWN"), true),
             WL(keyHandler, [&] {
               if (focused == -1)
                 focused = 0;
               focused = (focused + dungeonElems.size() - 1) % dungeonElems.size();
               miniMenuScroll.setRelative(dungeonElems[focused]->getBounds().top(), Clock::getRealMillis());
-            }, {gui.getKey(C_MENU_UP)}, true),
+            }, Keybinding("MENU_UP"), true),
             WL(keyHandler, [&focused] { if (focused == 0) focused = -1; },
-                {gui.getKey(C_MENU_RIGHT)}, true),
+                Keybinding("MENU_RIGHT"), true),
             WL(keyHandler, [&focused] { if (focused == -1) focused = 0; },
-            {gui.getKey(C_MENU_LEFT)}, true),
+                Keybinding("MENU_LEFT"), true),
             WL(setHeight, getStandardLineHeight(), WL(getListBuilder)
                 .addElemAuto(WL(label, "Search: "))
                 .addElem(searchField, 200)
@@ -4896,9 +4897,9 @@ SGuiElem GuiBuilder::drawCampaignSettingsButton(SyncQueue<CampaignAction>& queue
       auto content = WL(stack,
         optionsLines.buildVerticalList(),
         WL(keyHandler, [&focused, cnt] { focused = (focused + 1) % cnt; },
-            {gui.getKey(C_MENU_DOWN)}, true),
+            Keybinding("MENU_DOWN"), true),
         WL(keyHandler, [&focused, cnt] { focused = (focused + cnt - 1) % cnt; },
-            {gui.getKey(C_MENU_UP)}, true)
+            Keybinding("MENU_UP"), true)
       );
       drawMiniMenu(std::move(content), exit, rect.bottomLeft(), 444, true);
       if (!clicked)
@@ -4929,9 +4930,9 @@ SGuiElem GuiBuilder::drawGameModeButton(SyncQueue<CampaignAction>& queue, View::
     auto content = WL(stack,
       lines.buildVerticalList(),
       WL(keyHandler, [&focused, cnt] { focused = (focused + 1) % cnt; },
-          {gui.getKey(C_MENU_DOWN)}, true),
+          Keybinding("MENU_DOWN"), true),
       WL(keyHandler, [&focused, cnt] { focused = (focused + cnt - 1) % cnt; },
-          {gui.getKey(C_MENU_UP)}, true)
+          Keybinding("MENU_UP"), true)
     );
     drawMiniMenu(std::move(content), exit, bounds.bottomLeft(), 350, true);
   };
@@ -4941,6 +4942,8 @@ SGuiElem GuiBuilder::drawGameModeButton(SyncQueue<CampaignAction>& queue, View::
 
 SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
     View::CampaignMenuState& menuState) {
+  if (menuState.index == CampaignMenuElems::None{} && !gui.getSteamInput()->controllers.empty())
+    menuState.index = CampaignMenuElems::Help{};
   const auto& campaign = campaignOptions.campaign;
   auto& retiredGames = campaignOptions.retired;
   auto lines = WL(getListBuilder, getStandardLineHeight());
@@ -4983,16 +4986,16 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
       WL(stopKeyEvents),
       WL(keyHandler, [&menuState] {
         menuState.index.left();
-      }, {gui.getKey(C_MENU_LEFT)}, true),
+      }, Keybinding("MENU_LEFT"), true),
       WL(keyHandler, [&menuState, numBiomes = campaignOptions.biomes.size()]{
         menuState.index.right(numBiomes);
-      }, {gui.getKey(C_MENU_RIGHT)}, true),
+      }, Keybinding("MENU_RIGHT"), true),
       WL(keyHandler, [&menuState] {
         menuState.index.up();
-      }, {gui.getKey(C_MENU_UP)}, true),
+      }, Keybinding("MENU_UP"), true),
       WL(keyHandler, [&menuState]{
         menuState.index.down();
-      }, {gui.getKey(C_MENU_DOWN)}, true),
+      }, Keybinding("MENU_DOWN"), true),
       WL(keyHandler, [&] { queue.push(CampaignActionId::CANCEL); }, Keybinding("EXIT_MENU"), true),
   };
   interior.push_back(lines.buildVerticalList());

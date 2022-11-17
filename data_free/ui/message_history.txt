@@ -1,6 +1,6 @@
 {
   BlockEvents
-  FocusKeys()
+  FocusKeysVertical()
   ExitButtonsWithEnter()
   Window(Width 700 MaxHeight 700 {
       Scrolling(List(VERTICAL, {

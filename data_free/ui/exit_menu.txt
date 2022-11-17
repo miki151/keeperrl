@@ -23,7 +23,7 @@ End
 
 {
   ExitButtons()
-  FocusKeys()
+  FocusKeysHorizontal()
   Window(
     Horizontal {
       Using "save" IconButton("portal", "Save and exit")

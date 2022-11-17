@@ -50,7 +50,7 @@ End
 Position(SCREEN, {
   Position(ENCAPSULATE, TextureFit(MENU_CORE, FLIP_X))
   Margins(0, Position(LEFT_STRETCHED, MarginBottom(0, MarginLeft(50, NonClosableWindow({
-    FocusKeys()
+    FocusKeysVertical()
     Width MenuWidth
     Position(MIDDLE_STRETCHED_Y, Width (-50 + MenuWidth)
     Vertical {

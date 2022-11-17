@@ -1,6 +1,6 @@
 {
   ExitButtons()
-  FocusKeys()
+  FocusKeysVertical()
   Position(SCREEN, Fill(Rgb 0 0 0 150))
   Position(SCREEN, Position(BOTTOM_LEFT, MarginLeft(370, MarginBottom(93, Width 380
   MiniWindow({

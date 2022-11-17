@@ -1,6 +1,6 @@
 {
   ExitButtons()
-  FocusKeys()
+  FocusKeysVertical()
   Window(MarginLeft(10, MarginBottom(10, Width 450 Height 230 {
     Vertical {
       Label("Training", 19, ColorId YELLOW)

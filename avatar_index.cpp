@@ -23,6 +23,9 @@ void AvatarIndex::left(const vector<View::AvatarData>& avatars, int chosenAvatar
     int avatarPage) {
   int numAvatars = getNumAvatars(avatars, chosenRole, avatarPage);
   visit(
+    [&](None) {
+      assign(RoleIndex{0});
+    },
     [&](const RoleIndex& i) {
       if (i.value > 0)
         assign(RoleIndex{i.value - 1});
@@ -77,6 +80,9 @@ void AvatarIndex::right(const vector<View::AvatarData>& avatars, int chosenAvata
       assign(CreatureIndex{Vec2(0, 0)});
   };
   visit(
+    [&](None) {
+      assign(RoleIndex{0});
+    },
     [&](const RoleIndex& i) {
       if (i.value == 0)
         assign(RoleIndex{1});
@@ -128,6 +134,9 @@ void AvatarIndex::up(const vector<View::AvatarData>& avatars, int chosenAvatar, 
       assign(RoleIndex{row});
   };
   visit(
+    [&](None) {
+      assign(RoleIndex{0});
+    },
     [&](const GenderIndex& i) {
       assign(RoleIndex{i.value});
     },
@@ -157,6 +166,9 @@ void AvatarIndex::down(const vector<View::AvatarData>& avatars, int chosenAvatar
     int avatarPage) {
   int numAvatars = getNumAvatars(avatars, chosenRole, avatarPage);
   visit(
+    [&](None) {
+      assign(RoleIndex{0});
+    },
     [&](const RoleIndex& i) {
       if (!avatars[chosenAvatar].settlementNames)
         assign(GenderIndex{min(avatars[chosenAvatar].genderNames.size() - 1, i.value)});

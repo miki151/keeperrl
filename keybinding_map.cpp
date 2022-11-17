@@ -42,6 +42,11 @@ optional<ControllerKey> KeybindingMap::getControllerMapping(Keybinding key) {
       {Keybinding("EXIT_MENU"), C_MENU_CANCEL},
       {Keybinding("SPEED_UP"), C_SPEED_UP},
       {Keybinding("SPEED_DOWN"), C_SPEED_DOWN},
+      {Keybinding("MENU_DOWN"), C_MENU_DOWN},
+      {Keybinding("MENU_UP"), C_MENU_UP},
+      {Keybinding("MENU_LEFT"), C_MENU_LEFT},
+      {Keybinding("MENU_RIGHT"), C_MENU_RIGHT},
+      {Keybinding("MENU_SELECT"), C_MENU_SELECT},
   };
   return getValueMaybe(controllerBindings, key);
 }
@@ -109,6 +114,7 @@ static const map<string, SDL::SDL_Keycode> keycodes {
   {"LEFT", SDL::SDLK_LEFT},
   {"RIGHT", SDL::SDLK_RIGHT},
   {"ESCAPE", SDL::SDLK_ESCAPE},
+  {"ENTER", SDL::SDLK_RETURN},
 };
 
 string KeybindingMap::getText(SDL::SDL_Keysym sym, string delimiter) {

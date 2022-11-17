@@ -773,7 +773,7 @@ struct Focusable : ScriptedUIInterface {
 
   void onKeypressed(const ScriptedUIData& data, ScriptedContext& context,
       SDL::SDL_Keysym sym, Rectangle bounds, EventCallback& callback) const override {
-    if (isOneOf(sym.sym, SDL::SDLK_KP_ENTER, SDL::SDLK_RETURN, C_MENU_SELECT) &&
+    if (context.factory->getKeybindingMap()->matches(Keybinding("MENU_SELECT"), sym) &&
         context.elemCounter == context.state.highlightedElem)
       performAction(data, context, callback);
     callback = [&, y = bounds.middle().y, callback, myCounter = context.elemCounter] {

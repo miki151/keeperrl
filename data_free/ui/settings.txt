@@ -20,7 +20,7 @@ Def TopButtonWidth() 160 End
 {
   BlockEvents
   ExitButtons()
-  FocusKeys()
+  FocusKeysVertical()
   WindowNoMargin(Width 700 Height 700 {
     Vertical {
       Height 10 {}

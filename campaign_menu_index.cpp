@@ -4,6 +4,9 @@ using namespace CampaignMenuElems;
 
 void CampaignMenuIndex::left() {
   visit(
+      [&](None) {
+        assign(Help{});
+      },
       [&](Help) {
         assign(RetiredDungeons{});
       },
@@ -29,6 +32,9 @@ void CampaignMenuIndex::left() {
 
 void CampaignMenuIndex::right(int numBiomes) {
   visit(
+      [&](None) {
+        assign(Help{});
+      },
       [&](Help) {
         assign(Biome{0});
       },
@@ -56,6 +62,9 @@ void CampaignMenuIndex::right(int numBiomes) {
 
 void CampaignMenuIndex::up() {
   visit(
+      [&](None) {
+        assign(Help{});
+      },
       [&](Help) {
         assign(ChangeMode{});
       },
@@ -83,6 +92,9 @@ void CampaignMenuIndex::up() {
 
 void CampaignMenuIndex::down() {
   visit(
+      [&](None) {
+        assign(Help{});
+      },
       [&](Help) {
         assign(Confirm{});
       },

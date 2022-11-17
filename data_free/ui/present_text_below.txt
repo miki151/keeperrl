@@ -1,6 +1,6 @@
 {
   BlockEvents
-  FocusKeys()
+  FocusKeysVertical()
   ExitButtonsWithEnter()
   Position(SCREEN, Position(BOTTOM_CENTERED, Window(Width 700 MaxHeight 700 {
     Vertical {

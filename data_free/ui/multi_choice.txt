@@ -9,7 +9,7 @@ End
 
 {
   BlockEvents
-  FocusKeys()
+  FocusKeysVertical()
   ExitButtons()
   Window(MarginRight(30, MarginLeft(30, MaxHeight 700 {
     Vertical {

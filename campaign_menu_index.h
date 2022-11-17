@@ -14,8 +14,9 @@ namespace CampaignMenuElems {
   EMPTY_STRUCT(Confirm);
   EMPTY_STRUCT(RollMap);
   EMPTY_STRUCT(Back);
+  EMPTY_STRUCT(None);
   using CampaignMenuIndexVariant = variant<RetiredDungeons, Settings, ChangeMode, Help, Biome, Confirm,
-      RollMap, Back>;
+      RollMap, Back, None>;
 }
 
 struct CampaignMenuIndex : public CampaignMenuElems::CampaignMenuIndexVariant {

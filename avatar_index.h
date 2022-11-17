@@ -33,8 +33,9 @@ namespace AvatarIndexElems {
     int value;
     COMPARE_ALL(value)
   };
+  EMPTY_STRUCT(None);
   using AvatarIndexVariant = variant<RoleIndex, GenderIndex, NameIndex, CreatureIndex, EnterNameIndex, RollNameIndex,
-      StartNewGameIndex, BottomButtonsIndex, PageButtonsIndex>;
+      StartNewGameIndex, BottomButtonsIndex, PageButtonsIndex, None>;
 }
 
 struct AvatarIndex : public AvatarIndexElems::AvatarIndexVariant {

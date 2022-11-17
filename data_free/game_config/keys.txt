@@ -54,3 +54,8 @@
 "EXIT_MENU" "Exit/cancel"
 "SPEED_UP" "Increase game speed"
 "SPEED_DOWN" "Decrease game speed"
+"MENU_UP" "Navigate menu up"
+"MENU_DOWN" "Navigate menu down"
+"MENU_LEFT" "Navigate menu left"
+"MENU_RIGHT" "Navigate menu right"
+"MENU_SELECT" "Select/confirm menu item"

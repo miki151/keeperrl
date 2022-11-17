@@ -219,9 +219,10 @@ namespace  {
 class TextFieldElem : public GuiElem {
   public:
   TextFieldElem(function<string()> text, function<void(string)> callback, function<bool()> controllerFocus,
-      int maxLength, Clock* clock, bool alwaysFocused, MySteamInput* steamInput)
+      int maxLength, Clock* clock, bool alwaysFocused, MySteamInput* steamInput, KeybindingMap* keybindingMap)
       : callback(std::move(callback)), getText(std::move(text)), controllerFocus(std::move(controllerFocus)),
-        clock(clock), maxLength(maxLength), alwaysFocused(alwaysFocused), steamInput(steamInput) {}
+        clock(clock), maxLength(maxLength), alwaysFocused(alwaysFocused), steamInput(steamInput),
+        keybindingMap(keybindingMap) {}
 
   virtual bool onClick(MouseButtonId b, Vec2 pos) override {
     if (b == MouseButtonId::LEFT) {
@@ -281,7 +282,7 @@ class TextFieldElem : public GuiElem {
           break;
       }
       return true;
-    } else if (steamInput && sym.sym == C_MENU_SELECT && controllerFocus()) {
+    } else if (keybindingMap->matches(Keybinding("MENU_SELECT"), sym) && controllerFocus()) {
       focused = true;
       if (steamInput)
         steamInput->showFloatingKeyboard(getBounds());
@@ -310,6 +311,7 @@ class TextFieldElem : public GuiElem {
   bool focused = false;
   bool alwaysFocused = false;
   MySteamInput* steamInput;
+  KeybindingMap* keybindingMap;
 };
 }
 
@@ -317,13 +319,13 @@ SGuiElem GuiFactory::textField(int maxLength, function<string()> text, function<
     function<bool()> controllerFocus) {
   return topMargin(-4, bottomMargin(4,
       make_shared<TextFieldElem>(std::move(text), std::move(callback), std::move(controllerFocus),
-          maxLength, clock, false, renderer.getSteamInput())));
+          maxLength, clock, false, getSteamInput(), getKeybindingMap())));
 }
 
 SGuiElem GuiFactory::textFieldFocused(int maxLength, function<string()> text, function<void(string)> callback) {
   return topMargin(-4, bottomMargin(4,
       make_shared<TextFieldElem>(std::move(text), std::move(callback), []{return false;},
-          maxLength, clock, true, nullptr)));
+          maxLength, clock, true, nullptr, getKeybindingMap())));
 }
 
 SGuiElem GuiFactory::buttonPos(function<void (Rectangle, Vec2)> fun) {
@@ -545,7 +547,10 @@ class DrawScripted : public GuiElem {
   ScriptedContext context;
 };
 
-SGuiElem GuiFactory::scripted(function<void()> endCallback, ScriptedUIId id, const ScriptedUIData& data, ScriptedUIState& state) {
+SGuiElem GuiFactory::scripted(function<void()> endCallback, ScriptedUIId id, const ScriptedUIData& data,
+    ScriptedUIState& state) {
+  if (!getSteamInput()->controllers.empty())
+    state.highlightedElem = 0;
   return SGuiElem(new DrawScripted(ScriptedContext{&renderer, this, endCallback, state, 0, 0}, id, std::move(data)));
 }
 
@@ -1319,25 +1324,30 @@ SGuiElem GuiFactory::keyHandler(function<void(SDL_Keysym)> fun, bool capture) {
 
 class KeybindingHandler : public GuiElem {
   public:
-  KeybindingHandler(KeybindingMap* m, Keybinding key, function<void()> fun, bool cap)
+  KeybindingHandler(KeybindingMap* m, Keybinding key, function<void(Rectangle)> fun, bool cap)
       : fun(std::move(fun)), keybindingMap(m), key(key), capture(cap) {}
 
   virtual bool onKeyPressed2(SDL_Keysym sym) override {
     if (keybindingMap->matches(key, sym)) {
-      fun();
+      fun(getBounds());
       return capture;
     }
     return false;
   }
 
   private:
-  function<void()> fun;
+  function<void(Rectangle)> fun;
   KeybindingMap* keybindingMap;
   Keybinding key;
   bool capture;
 };
 
 SGuiElem GuiFactory::keyHandler(function<void()> fun, Keybinding keybinding, bool capture) {
+  return SGuiElem(new KeybindingHandler(options->getKeybindingMap(), keybinding,
+      [fun = std::move(fun)](Rectangle) { fun(); }, capture));
+}
+
+SGuiElem GuiFactory::keyHandlerRect(function<void(Rectangle)> fun, Keybinding keybinding, bool capture) {
   return SGuiElem(new KeybindingHandler(options->getKeybindingMap(), keybinding, std::move(fun), capture));
 }
 
@@ -3209,7 +3219,7 @@ class TextInputElem : public GuiElem {
   virtual bool onKeyPressed2(SDL::SDL_Keysym key) override {
     if (key.sym == SDL::SDLK_BACKSPACE) {
       if (!text->empty())
-      text->pop_back();
+        text->pop_back();
       return true;
     } else
       return false;

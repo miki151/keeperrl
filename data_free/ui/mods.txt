@@ -21,7 +21,7 @@ End
 {
   BlockEvents
   ExitButtons()
-  FocusKeys()
+  FocusKeysVertical()
   WindowNoMargin(Width 900 Height 700 MarginTop(15, MarginBottom(15, {
     Horizontal {
       Width 300 Scrolling(0, Vertical {
@@ -41,15 +41,15 @@ End
         Stretch Using "description" Scrolling(1, MarginRight(30, Paragraph(520)))
         Horizontal {
           Using "Activate" {
-            { KeyHandler(C_MENU_SELECT) KeyHandler(SDLK_RETURN) }
+            KeybindingHandler(MENU_SELECT)
             StandardButtonNotFocusable(Label("Activate"))
           }
           Using "Deactivate" {
-            { KeyHandler(C_MENU_SELECT) KeyHandler(SDLK_RETURN) }
+            KeybindingHandler(MENU_SELECT)
             StandardButtonNotFocusable(Label("Dectivate"))
           }
           Using "Download" {
-            { KeyHandler(C_MENU_SELECT) KeyHandler(SDLK_RETURN) }
+            KeybindingHandler(MENU_SELECT)
             StandardButtonNotFocusable(Label("Download"))
           }
           Using "Update" StandardButtonNotFocusable(Label("Update"))

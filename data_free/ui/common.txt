@@ -11,11 +11,15 @@ End
 
 Def BlockEvents() { BlockMouseEvents() BlockKeyEvents } End
 
-Def FocusKeys() {
-  Using "HIGHLIGHT_PREVIOUS" { KeyHandler(SDLK_LEFT) KeyHandler(SDLK_KP_4) }
-  Using "HIGHLIGHT_NEXT" { KeyHandler(SDLK_RIGHT) KeyHandler(SDLK_KP_6) }
-  Using "HIGHLIGHT_PREVIOUS" { KeyHandler(SDLK_UP) KeyHandler(SDLK_KP_8) KeyHandler(C_MENU_UP) }
-  Using "HIGHLIGHT_NEXT" { KeyHandler(SDLK_DOWN) KeyHandler(SDLK_KP_2) KeyHandler(C_MENU_DOWN) }
+Def FocusKeysVertical() {
+  Using "HIGHLIGHT_PREVIOUS" { KeybindingHandler(MENU_UP) KeyHandler(SDLK_KP_8) }
+  Using "HIGHLIGHT_NEXT" { KeybindingHandler(MENU_DOWN) KeyHandler(SDLK_KP_2) }
+}
+End
+
+Def FocusKeysHorizontal() {
+  Using "HIGHLIGHT_PREVIOUS" { KeybindingHandler(MENU_LEFT) KeyHandler(SDLK_KP_4) }
+  Using "HIGHLIGHT_NEXT" { KeybindingHandler(MENU_RIGHT) KeyHandler(SDLK_KP_6) }
 }
 End
 
@@ -161,7 +165,7 @@ End
 
 Def YesOrNo() {
   ExitButtons()
-  FocusKeys()
+  FocusKeysHorizontal()
   Window(
     Vertical {
       Using "message" Position(MIDDLE, MarginLeft(40, MarginRight(40, Label())))
