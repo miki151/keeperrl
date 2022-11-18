@@ -454,12 +454,12 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo& info) {
     if (elem.index() >= numBuiltinPages && !!elem->viewId && !!elem->title)
       addScriptedButton(*elem);
   return WL(stack, makeVec(
-      lines.buildVerticalList(),
       WL(keyHandler, [this] {
         helpIndex = 0;
         setCollectiveTab(CollectiveTab::KEY_MAPPING);
       }, {gui.getKey(C_HELP_MENU)}, true),
       WL(conditionalStopKeys, WL(stack,
+          lines.buildVerticalList(),
           WL(keyHandler, [this] {
             helpIndex = none;
           }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true),
