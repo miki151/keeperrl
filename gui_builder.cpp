@@ -409,21 +409,24 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
 
 SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo& info) {
   auto lines = WL(getListBuilder, legendLineHeight);
-  auto addScriptedButton = [this, &lines] (const ScriptedHelpInfo& info) {
-    lines.addElem(WL(standardButton,
+  int buttonCnt = 0;
+  auto addScriptedButton = [this, &lines, &buttonCnt] (const ScriptedHelpInfo& info) {
+    lines.addElem(WL(buttonLabelFocusable,
         WL(getListBuilder)
             .addElemAuto(WL(topMargin, -2, WL(viewObject, *info.viewId)))
             .addSpace(5)
             .addElemAuto(WL(label, *info.title))
             .buildHorizontalList(),
-        WL(button, [this, scriptedId = info.scriptedId]() {
+        [this, scriptedId = info.scriptedId]() {
           scriptedUIState.scrollPos[0].reset();
           if (bottomWindow == SCRIPTED_HELP && scriptedHelpId == scriptedId)
             bottomWindow = none;
           else
             openScriptedHelp(scriptedId);
-        })
+        },
+        [this, buttonCnt] { return helpIndex == buttonCnt; }
     ));
+    ++buttonCnt;
     lines.addSpace(5);
   };
   constexpr int numBuiltinPages = 6;
@@ -431,14 +434,16 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo& info) {
     if (elem.index() < numBuiltinPages && !!elem->viewId && !!elem->title)
       addScriptedButton(*elem);
   lines.addSpace(15);
-  auto addBuiltinButton = [this, &lines] (ViewId viewId, string name, BottomWindowId windowId) {
-    lines.addElem(WL(standardButton,
+  auto addBuiltinButton = [this, &lines, &buttonCnt] (ViewId viewId, string name, BottomWindowId windowId) {
+    lines.addElem(WL(buttonLabelFocusable,
         WL(getListBuilder)
             .addElemAuto(WL(topMargin, -2, WL(viewObject, viewId)))
             .addElemAuto(WL(label, name))
             .buildHorizontalList(),
-        WL(button, [this, windowId]() { toggleBottomWindow(windowId); })
+        [this, windowId]() { toggleBottomWindow(windowId); },
+        [this, buttonCnt] { return helpIndex == buttonCnt; }
     ));
+    ++buttonCnt;
     lines.addSpace(5);
   };
   addBuiltinButton(ViewId("special_bmbw"), "Bestiary", BESTIARY);
@@ -448,7 +453,22 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo& info) {
   for (auto elem : Iter(info.scriptedHelp))
     if (elem.index() >= numBuiltinPages && !!elem->viewId && !!elem->title)
       addScriptedButton(*elem);
-  return lines.buildVerticalList();
+  return WL(stack, makeVec(
+      lines.buildVerticalList(),
+      WL(keyHandler, [this] {
+        helpIndex = 0;
+        setCollectiveTab(CollectiveTab::KEY_MAPPING);
+      }, {gui.getKey(C_HELP_MENU)}, true),
+      WL(conditionalStopKeys, WL(stack,
+          WL(keyHandler, [this] {
+            helpIndex = none;
+          }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true),
+          WL(keyHandler, [this, buttonCnt] { helpIndex = (helpIndex.value_or(-1) + 1) % buttonCnt; },
+              {gui.getKey(C_BUILDINGS_DOWN)}, true),
+          WL(keyHandler, [this, buttonCnt] { helpIndex = (helpIndex.value_or(1) - 1 + buttonCnt) % buttonCnt; },
+              {gui.getKey(C_BUILDINGS_UP)}, true)
+      ), [this] { return collectiveTab == CollectiveTab::KEY_MAPPING; })
+  ));
 }
 
 void GuiBuilder::addFpsCounterTick() {
@@ -2993,6 +3013,14 @@ SGuiElem GuiBuilder::drawBestiaryOverlay(const vector<PlayerInfo>& creatures, in
   return WL(preferredSize, 640 + minionListWidth, 600,
       WL(miniWindow, WL(stack,
           WL(keyHandler, [=] { toggleBottomWindow(BottomWindowId::BESTIARY); }, getOverlayCloseKeys(), true),
+          WL(keyHandler, [this, cnt = creatures.size()] {
+            bestiaryIndex = (bestiaryIndex + 1) % cnt;
+            minionButtonsScroll.set(bestiaryIndex * legendLineHeight, Clock::getRealMillis());
+          }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
+          WL(keyHandler, [this, cnt = creatures.size()] {
+            bestiaryIndex = (bestiaryIndex - 1 + cnt) % cnt;
+            minionButtonsScroll.set(bestiaryIndex * legendLineHeight, Clock::getRealMillis());
+          }, {gui.getKey(C_BUILDINGS_UP)}, true),
           WL(margins, std::move(menu), margin))));
 }
 
@@ -3034,6 +3062,14 @@ SGuiElem GuiBuilder::drawSpellSchoolsOverlay(const vector<SpellSchoolInfo>& scho
   return WL(preferredSize, 440 + minionListWidth, 600,
       WL(miniWindow, WL(stack,
           WL(keyHandler, [=] { toggleBottomWindow(BottomWindowId::SPELL_SCHOOLS); }, getOverlayCloseKeys(), true),
+          WL(keyHandler, [this, cnt = schools.size()] {
+            spellSchoolIndex = (spellSchoolIndex + 1) % cnt;
+            minionButtonsScroll.set(spellSchoolIndex * legendLineHeight, Clock::getRealMillis());
+          }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
+          WL(keyHandler, [this, cnt = schools.size()] {
+            spellSchoolIndex = (spellSchoolIndex - 1 + cnt) % cnt;
+            minionButtonsScroll.set(spellSchoolIndex * legendLineHeight, Clock::getRealMillis());
+          }, {gui.getKey(C_BUILDINGS_UP)}, true),
           WL(margins, std::move(menu), margin))));
 }
 
@@ -3057,6 +3093,12 @@ SGuiElem GuiBuilder::drawItemsHelpOverlay(const vector<ItemInfo>& items) {
   return WL(preferredSize, itemsListWidth, 600,
       WL(miniWindow, WL(stack,
           WL(keyHandler, [=] { toggleBottomWindow(BottomWindowId::ITEMS_HELP); }, getOverlayCloseKeys(), true),
+          WL(keyHandler, [this] {
+            minionButtonsScroll.add(100, Clock::getRealMillis());
+          }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
+          WL(keyHandler, [this] {
+            minionButtonsScroll.add(-100, Clock::getRealMillis());
+          }, {gui.getKey(C_BUILDINGS_UP)}, true),
           WL(margins, std::move(leftSide), margin))));
 }
 
@@ -3348,8 +3390,14 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, const GameInfo& info) {
         }));
     }
     scriptedUIData = std::move(data);
-    ret.push_back({gui.scripted([this]{ bottomWindow = none; }, scriptedHelpId, scriptedUIData, scriptedUIState),
-        OverlayInfo::TOP_LEFT});
+    ret.push_back({
+        WL(stack,
+            gui.scripted([this]{ bottomWindow = none; }, scriptedHelpId, scriptedUIData, scriptedUIState),
+            WL(keyHandler, [this]{ bottomWindow = none; },
+                {gui.getKey(SDL::SDLK_ESCAPE), gui.getKey(C_MENU_CANCEL), gui.getKey(C_CHANGE_Z_LEVEL)}, true)
+        ),
+        OverlayInfo::TOP_LEFT
+    });
   }
   if (bottomWindow == BESTIARY) {
     if (bestiaryIndex >= info.encyclopedia->bestiary.size())
