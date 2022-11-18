@@ -865,7 +865,7 @@ static const char* getVillageActionText(VillageAction action) {
 SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info) {
   const int labelOffsetY = 3;
   auto lines = WL(getListBuilder);
-  lines.addSpace(90);
+  lines.addSpace(50);
   if (!info.villages.empty())
     lines.addElemAuto(WL(stack,
           WL(getListBuilder)
@@ -875,6 +875,8 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info) {
               .buildHorizontalList(),
           WL(buttonRect, [this, info] (Rectangle rect) { drawAllVillainsMenu(rect.topLeft(), info); })
     ));
+  else
+    return gui.empty();
   for (int i : All(info.villages)) {
     SGuiElem label;
     string labelText;

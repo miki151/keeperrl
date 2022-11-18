@@ -22,29 +22,39 @@ End
 
 Def LinkButton(id, label, url) {
   Horizontal { ViewId(1, {id}) Width 8 {} Label(label, 19, TextColor()) }
-  MouseOver Horizontal { ViewId(1, {id}) Width 8 {} Label(label, 19, Rgb 255 255 255 255) }
-  UrlButton(url)
+  UrlButton(
+      Horizontal { ViewId(1, {id}) Width 8 {} Label(label, 19, Rgb 255 255 255 255) }
+      url)
 }
 End
 
 Def MenuWidth 300 End
 
 Def BottomLinks()
-  Margins(5, Position(BOTTOM_STRETCHED, Position(MIDDLE, Height 33 {
+  Margins(0, Position(BOTTOM_STRETCHED,{
     Frame(Rgb 255 255 255 255)
     Fill(Rgb 0 0 0 200)
-    MarginLeft(20, MarginRight(20, MarginTop(4, {
-      Horizontal {
+    Margins(10, {
+      Vertical {
         LinkButton("keeper4", "News", "https://keeperrl.com/category/News")
-        Width 100 {}
+        Height 10 {}
         LinkButton("elementalist", "Wiki", "http://keeperrl.com/wiki")
-        Width 100 {}
+        Height 10 {}
         LinkButton("jester", "Discord", "https://discordapp.com/invite/XZfCCs5")
-        Width 100 {}
+        Height 10 {}
         LinkButton("gnome", "Github", "https://github.com/miki151/keeperrl")
+        Height 10 {}
+        Horizontal {
+          Label("Install id: ", 14, TextColor())
+          Using "install_id" Label(none, 14, TextColor())
+        }
+        Horizontal {
+          Label("Build: ", 14, TextColor())
+          Using "version" Label(none, 14, TextColor())
+        }
       }
-    })))
-  })))
+    })
+  }))
 End
 
 Position(SCREEN, {
@@ -67,16 +77,8 @@ Position(SCREEN, {
       Height Spacing {}
       Using "quit" MenuButton("Quit")
       Stretch {}
-      Horizontal {
-        Label("Install id: ", 14, TextColor())
-        Using "install_id" Label(none, 14, TextColor())
-      }
-      Horizontal {
-        Label("Build: ", 14, TextColor())
-        Using "version" Label(none, 14, TextColor())
-      }
+      BottomLinks()
       Height 15 {}
     })
   })))))
-  BottomLinks()
 })

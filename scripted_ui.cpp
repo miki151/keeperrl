@@ -123,22 +123,6 @@ struct Button : ScriptedUIInterface {
 
 REGISTER_SCRIPTED_UI(Button);
 
-struct UrlButton : ScriptedUIInterface {
-  void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
-      Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
-    if (id == MouseButtonId::LEFT && pos.inRectangle(bounds))
-      callback = [url=this->url] {
-        openUrl(url);
-        return false;
-      };
-  }
-
-  string SERIAL(url);
-  SERIALIZE_ALL(roundBracket(), NAMED(url))
-};
-
-REGISTER_SCRIPTED_UI(UrlButton);
-
 struct KeyReader {
   SDL::SDL_Keycode key;
   void serialize(PrettyInputArchive& ar, const unsigned int v) {
@@ -771,11 +755,15 @@ struct Focusable : ScriptedUIInterface {
     ++context.elemCounter;
   }
 
+  virtual void onClicked(const ScriptedUIData& data, ScriptedContext& context, EventCallback& callback) const {
+    performAction(data, context, callback);
+  }
+
   void onKeypressed(const ScriptedUIData& data, ScriptedContext& context,
       SDL::SDL_Keysym sym, Rectangle bounds, EventCallback& callback) const override {
     if (context.factory->getKeybindingMap()->matches(Keybinding("MENU_SELECT"), sym) &&
         context.elemCounter == context.state.highlightedElem)
-      performAction(data, context, callback);
+      onClicked(data, context, callback);
     callback = [&, y = bounds.middle().y, callback, myCounter = context.elemCounter] {
       auto ret = callback ? callback() : false;
       if (context.state.highlightedElem == myCounter)
@@ -790,6 +778,31 @@ struct Focusable : ScriptedUIInterface {
 };
 
 REGISTER_SCRIPTED_UI(Focusable);
+
+struct UrlButton : Focusable {
+  void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
+      Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
+    if (id == MouseButtonId::LEFT && pos.inRectangle(bounds))
+      callback = [url=this->url] {
+        openUrl(url);
+        return false;
+      };
+    Focusable::onClick(data, context, id, bounds, pos, callback);
+  }
+
+  virtual void onClicked(const ScriptedUIData& data, ScriptedContext& context, EventCallback& callback) const override {
+    callback = [url=this->url] {
+      openUrl(url);
+      return false;
+    };
+  }
+
+  string SERIAL(url);
+  SERIALIZE_ALL(roundBracket(), NAMED(elem), NAMED(url))
+};
+
+REGISTER_SCRIPTED_UI(UrlButton);
+
 
 struct MouseOver : Container {
   vector<SubElemInfo> getElemBounds(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {

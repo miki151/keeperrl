@@ -2876,14 +2876,10 @@ void GuiFactory::loadImages() {
   text = Color::WHITE;
   titleText = Color::YELLOW;
   inactiveText = Color::LIGHT_GRAY;
-  textures[TexId::HORI_CORNER1] = Texture(imagesPath.file("ui/horicorner1.png"));
-  textures[TexId::HORI_CORNER2] = Texture(imagesPath.file("ui/horicorner2.png"));
   textures[TexId::HORI_LINE] = Texture(imagesPath.file("ui/horiline.png"));
   textures[TexId::VERT_BAR] = Texture(imagesPath.file("ui/vertbar.png"));
   textures[TexId::HORI_BAR] = Texture(imagesPath.file("ui/horibar.png"));
-  textures[TexId::CORNER_TOP_LEFT] = Texture(imagesPath.file("ui/cornerTOPL.png"));
-  textures[TexId::CORNER_TOP_RIGHT] = Texture(imagesPath.file("ui/cornerTOPR.png"));
-  textures[TexId::CORNER_BOTTOM_RIGHT] = Texture(imagesPath.file("ui/cornerBOTTOMR.png"));
+  textures[TexId::CORNER_3] = Texture(imagesPath.file("ui/corner3.png"));
 
   textures[TexId::HORI_BAR_MINI] = Texture(imagesPath.file("ui/horibarmini.png"));
   textures[TexId::VERT_BAR_MINI] = Texture(imagesPath.file("ui/vertbarmini.png"));
@@ -3127,16 +3123,14 @@ SGuiElem GuiFactory::mainDecoration(int rightBarWidth, int bottomBarHeight, opti
                        : empty(),
           sprite(get(TexId::VERT_BAR), Alignment::RIGHT, false, true),
           sprite(get(TexId::VERT_BAR), Alignment::LEFT),
-          sprite(get(TexId::CORNER_TOP_LEFT), Alignment::TOP_RIGHT, false, true, Vec2(8, 0)),
-          sprite(get(TexId::CORNER_TOP_RIGHT), Alignment::TOP_LEFT, false, true),
-          sprite(get(TexId::CORNER_BOTTOM_RIGHT), Alignment::BOTTOM_LEFT, false, true)
+          sprite(get(TexId::CORNER_3), Alignment::TOP_RIGHT, false, false),
+          sprite(get(TexId::CORNER_3), Alignment::TOP_LEFT, false, true),
+          sprite(get(TexId::CORNER_3), Alignment::BOTTOM_LEFT, true, true),
+          sprite(get(TexId::CORNER_3), Alignment::BOTTOM_RIGHT, true, false)
       )),
-      stack(makeVec(
+      stack(
           margin(background(background1), empty(), bottomBarHeight, BOTTOM),
-          sprite(get(TexId::HORI_LINE), Alignment::BOTTOM),
- //         sprite(get(TexId::HORI_MIDDLE), Alignment::BOTTOM_CENTER),
-          sprite(get(TexId::HORI_CORNER1), Alignment::BOTTOM_RIGHT, false, true),
-          sprite(get(TexId::HORI_CORNER2), Alignment::BOTTOM_LEFT, false, true, Vec2(-93, 0)))),
+          sprite(get(TexId::HORI_LINE), Alignment::BOTTOM)),
       rightBarWidth,
       LEFT);
 }

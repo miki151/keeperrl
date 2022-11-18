@@ -435,7 +435,7 @@ Vec2 WindowView::getOverlayPosition(GuiBuilder::OverlayInfo::Alignment alignment
     case GuiBuilder::OverlayInfo::TOP_LEFT:
       return Vec2(rightBarWidth + sideOffset, rightWindowHeight);
     case GuiBuilder::OverlayInfo::IMMIGRATION:
-      return Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight - 21 - height);
+      return Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight - height);
     case GuiBuilder::OverlayInfo::VILLAINS:
       return Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight - height);
     case GuiBuilder::OverlayInfo::BOTTOM_LEFT:
