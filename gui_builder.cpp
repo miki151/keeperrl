@@ -1321,7 +1321,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
   lastPlayerPositionHash = info.positionHash;
   vector<SGuiElem> lines;
   const int maxElems = 6;
-  auto title = gui.getKeybindingMap()->getGlyph(WL(label, "Click or press ", Color::YELLOW), &gui, C_WALK,
+  auto title = gui.getKeybindingMap()->getGlyph(WL(label, "Lying here: ", Color::YELLOW), &gui, C_WALK,
       "[Enter]"_s, Color::YELLOW);
   title = WL(leftMargin, 3, std::move(title));
   int numElems = min<int>(maxElems, info.lyingItems.size());
@@ -1351,7 +1351,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
             WL(keyHandler, [=] { callbacks.input({UserInputId::PICK_UP_ITEM, 0});}, gui.getConfirmationKeys(), true),
             [this] { return playerOverlayFocused; }),
         WL(keyHandler, [=] { if (renderer.getDiscreteJoyPos(ControllerJoy::WALKING) == Vec2(0, 0))
-            callbacks.input({UserInputId::PICK_UP_ITEM, 0}); }, pickupKeys));
+            callbacks.input({UserInputId::PICK_UP_ITEM, 0}); }, pickupKeys, true));
   else {
     auto updateScrolling = [this, totalElems] (int dir) {
         if (itemIndex)
@@ -1370,6 +1370,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
               pickupKeys,
               Keybinding("EXIT_MENU"),
               playerOverlayFocused),
+          WL(keyHandler, [this] { itemIndex = 0; }, pickupKeys),
           WL(keyHandler, [=] { itemIndex = none; }, Keybinding("EXIT_MENU")),
           WL(margin,
             title,
@@ -5184,8 +5185,9 @@ SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textCo
       maxWidth = max(maxWidth, *elem->getPreferredWidth());
       lines.push_back(WL(centerHoriz, std::move(elem)));
     }
+    int selected = info.levelDepth;
     drawMiniMenu(std::move(lines), std::move(callbacks), {},
-        Vec2(bounds.middle().x - maxWidth / 2 - 30, bounds.bottom()), maxWidth + 60, true);
+        Vec2(bounds.middle().x - maxWidth / 2 - 30, bounds.bottom()), maxWidth + 60, true, true, &selected);
   };
   return WL(stack,
       WL(centerHoriz, WL(labelHighlight, info.name, textColor)),
