@@ -1409,7 +1409,7 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
     vector<SGuiElem> tooltips, Vec2 menuPos, int width, bool darkBg, bool exitOnCallback, int* selected) {
   auto lines = WL(getListBuilder, legendLineHeight);
   auto allElems = vector<SGuiElem>();
-  auto selectedDefault = -1;
+  auto selectedDefault = gui.getSteamInput()->controllers.empty() ? -1 : 0;
   if (!selected)
     selected = &selectedDefault;
   bool exit = false;
@@ -1534,72 +1534,17 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
     return none;
   if (itemInfo.actions.size() == 1 && autoDefault)
     return itemInfo.actions[0];
-  renderer.flushEvents(SDL::SDL_KEYDOWN);
-  renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
-  auto o = OnExit([this] { renderer.getSteamInput()->popActionSet(); });
-  int choice = -1;
-  optional<int> index = 0;
-  disableTooltip = true;
-  DestructorFunction dFun([this] { disableTooltip = false; });
-  vector<string> options = itemInfo.actions.transform(bindFunction(getActionText));
-  options.push_back("cancel");
-  int count = options.size();
-  SGuiElem stuff = WL(margins,
-      drawListGui("", options, &index, &choice, nullptr), 20, 15, 15, 10);
-  stuff = WL(miniWindow, WL(margins, std::move(stuff), 0));
-  Vec2 size(*stuff->getPreferredWidth() + 15, *stuff->getPreferredHeight());
-  menuPos.x = min(menuPos.x, renderer.getSize().x - size.x);
-  menuPos.y = min(menuPos.y, renderer.getSize().y - size.y);
-  while (1) {
-    callbacks.refreshScreen();
-    stuff->setBounds(Rectangle(menuPos, menuPos + size));
-    stuff->render(renderer);
-    renderer.drawAndClearBuffer();
-    Event event;
-    while (renderer.pollEvent(event)) {
-      gui.propagateEvent(event, {stuff});
-      if (choice > -1 && index) {
-        if (*index < itemInfo.actions.size())
-          return itemInfo.actions[*index];
-        else
-          return none;
-      }
-      if (choice == -100)
-        return none;
-      if (event.type == SDL::SDL_MOUSEBUTTONDOWN &&
-          !Vec2(event.button.x, event.button.x).inRectangle(stuff->getBounds()))
-        return none;
-      auto scrollIndex = [&](int dir) {
-        if (index)
-          index = (*index + dir + count) % count;
-        else
-          index = 0;
-      };
-      if (event.type == SDL::SDL_KEYDOWN)
-        switch (event.key.keysym.sym) {
-          case C_MENU_UP:
-          case SDL::SDLK_KP_8:
-          case SDL::SDLK_UP:
-            scrollIndex(-1);
-            break;
-          case C_MENU_DOWN:
-          case SDL::SDLK_KP_2:
-          case SDL::SDLK_DOWN:
-            scrollIndex(1);
-            break;
-          case C_MENU_SELECT:
-          case SDL::SDLK_KP_5:
-          case SDL::SDLK_KP_ENTER:
-          case SDL::SDLK_RETURN:
-            if (index && *index < itemInfo.actions.size())
-              return itemInfo.actions[*index];
-            break;
-          case SDL::SDLK_ESCAPE:
-            return none;
-          default: break;
-        }
-    }
+  vector<SGuiElem> elems;
+  vector<function<void()>> callbacks;
+  int width = 120;
+  optional<ItemAction> result;
+  for (auto action : itemInfo.actions) {
+    elems.push_back(WL(label, getActionText(action)));
+    callbacks.push_back([&result, action] { result = action; });
+    width = max(width, *elems.back()->getPreferredWidth());
   }
+  drawMiniMenu(elems, callbacks, {}, menuPos, width, false);
+  return result;
 }
 
 const Vec2 spellIconSize = Vec2(47, 47);
