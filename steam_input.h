@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "sdl.h"
+#include "file_path.h"
 
 enum ControllerKey {
   C_MENU_CANCEL = (1 << 20),
@@ -41,6 +42,7 @@ enum ControllerKey {
   C_MINIONS_MENU,
   C_TECH_MENU,
   C_HELP_MENU,
+  C_VILLAINS_MENU,
   C_SPEED_UP,
   C_SPEED_DOWN,
   C_BUILDINGS_UP,
@@ -93,7 +95,7 @@ class MySteamInput {
   pair<double, double> getJoyPos(ControllerJoy);
   void runFrame();
   bool isPressed(ControllerKey);
-  const char* getGlyph(ControllerKey);
+  optional<FilePath> getGlyph(ControllerKey);
   queue<ControllerKey> actionQueue;
   optional<GameActionLayer> actionLayer;
   private:

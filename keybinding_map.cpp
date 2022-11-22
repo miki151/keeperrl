@@ -140,15 +140,14 @@ optional<string> KeybindingMap::getText(Keybinding key) {
   return none;
 }
 
-SGuiElem KeybindingMap::getGlyph(SGuiElem label, GuiFactory* f, optional<ControllerKey> key, optional<string> alternative, Color color) {
+SGuiElem KeybindingMap::getGlyph(SGuiElem label, GuiFactory* f, optional<ControllerKey> key, optional<string> alternative) {
   SGuiElem add;
   auto steamInput = f->getSteamInput();
   if (steamInput && !steamInput->controllers.empty()) {
     if (key)
-      if (auto path = steamInput->getGlyph(*key))
-        add = f->steamInputGlyph(FilePath::fromFullPath(path), GuiFactory::Alignment::CENTER_STRETCHED, color);
+      add = f->steamInputGlyph(*key  );
   } else if (alternative)
-    add = f->label("[" + *alternative + "]", color);
+    add = f->label("[" + *alternative + "]");
   if (add)
     label = f->getListBuilder()
         .addElemAuto(std::move(label))
@@ -158,11 +157,11 @@ SGuiElem KeybindingMap::getGlyph(SGuiElem label, GuiFactory* f, optional<Control
   return label;
 }
 
-SGuiElem KeybindingMap::getGlyph(SGuiElem label, GuiFactory* f, Keybinding key, Color color) {
+SGuiElem KeybindingMap::getGlyph(SGuiElem label, GuiFactory* f, Keybinding key) {
   optional<string> alternative;
   if (auto k = getReferenceMaybe(bindings, key))
     alternative = getText(*k);
-  return getGlyph(std::move(label), f, getControllerMapping(key), std::move(alternative), color);
+  return getGlyph(std::move(label), f, getControllerMapping(key), std::move(alternative));
 }
 
 void KeybindingMap::save() {

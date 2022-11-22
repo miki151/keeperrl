@@ -206,6 +206,7 @@ class GuiBuilder {
   int spellSchoolIndex = 0;
   optional<Vec2> workshopIndex;
   optional<int> helpIndex = 0;
+  optional<int> villainsIndex;
   int rightBandInfoHash = 0;
   SGuiElem rightBandInfoCache;
   SGuiElem immigrationCache;

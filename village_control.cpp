@@ -153,7 +153,7 @@ void VillageControl::updateAggression(EnemyAggressionLevel level) {
       break;
     case EnemyAggressionLevel::EXTREME:
       if (behaviour && !behaviour->triggers.empty())
-        behaviour->triggers.push_back(Timer{Random.get(2000, 4000)});
+        behaviour->triggers.push_back(Timer{10});
       break;
     default:
       break;

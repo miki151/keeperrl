@@ -23,6 +23,7 @@
 #include "attr_type.h"
 #include "view_id.h"
 #include "keybinding.h"
+#include "steam_input.h"
 
 class ViewObject;
 class Clock;
@@ -258,7 +259,7 @@ class GuiFactory {
 
   using TexId = TextureId;
   SGuiElem sprite(TexId, Alignment, optional<Color> = none);
-  SGuiElem steamInputGlyph(FilePath, Alignment, optional<Color> = none);
+  SGuiElem steamInputGlyph(ControllerKey, int size = 24);
   Texture& steamInputTexture(FilePath);
   SGuiElem repeatedPattern(Texture& tex);
   SGuiElem background(Color);
@@ -316,10 +317,12 @@ class GuiFactory {
   SGuiElem icon(IconId, Alignment = Alignment::CENTER, Color = Color::WHITE);
   Texture& get(TexId);
   static Color highlightColor();
+  static Color highlightColor(int transparency);
   SGuiElem uiHighlightMouseOver(Color = highlightColor());
-  SGuiElem uiHighlightConditional(function<bool()>, Color = highlightColor());
+  SGuiElem uiHighlightLineConditional(function<bool()>, Color = highlightColor());
   SGuiElem uiHighlightLine(Color = highlightColor());
   SGuiElem uiHighlight(Color = highlightColor());
+  SGuiElem uiHighlightConditional(function<bool()>, Color = highlightColor());
   SGuiElem blink(SGuiElem);
   SGuiElem blink(SGuiElem, SGuiElem);
   SGuiElem tutorialHighlight();

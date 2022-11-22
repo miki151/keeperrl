@@ -3249,6 +3249,10 @@ SGuiElem GuiFactory::icon(IconId id, Alignment alignment, Color color) {
   return sprite(iconTextures[(int) id], alignment, color);
 }
 
+Color GuiFactory::highlightColor(int transparency) {
+  return Color(96, 86, 78, transparency);
+}
+
 Color GuiFactory::highlightColor() {
   return Color(96, 86, 78, 120);
 }
@@ -3279,8 +3283,12 @@ SGuiElem GuiFactory::tutorialHighlight() {
   return blink(uiHighlightLine(Color::YELLOW));
 }
 
-SGuiElem GuiFactory::uiHighlightConditional(function<bool()> cond, Color c) {
+SGuiElem GuiFactory::uiHighlightLineConditional(function<bool()> cond, Color c) {
   return conditional(uiHighlightLine(c), cond);
+}
+
+SGuiElem GuiFactory::uiHighlightConditional(function<bool()> cond, Color c) {
+  return conditional(uiHighlight(c), cond);
 }
 
 SGuiElem GuiFactory::rectangleBorder(Color col) {
@@ -3291,8 +3299,15 @@ SGuiElem GuiFactory::sprite(TexId id, Alignment a, optional<Color> c) {
   return sprite(get(id), a, false, false, Vec2(0, 0), c);
 }
 
-SGuiElem GuiFactory::steamInputGlyph(FilePath path, Alignment alignment, optional<Color> color) {
-  return preferredSize(Vec2(24, 24), sprite(steamInputTexture(path), 24));
+SGuiElem GuiFactory::steamInputGlyph(ControllerKey key, int size) {
+  return preferredSize(Vec2(size, size), drawCustom(
+      [this, key, size] (Renderer& r, Rectangle bounds) {
+        if (auto path = getSteamInput()->getGlyph(key)) {
+          auto& tex = steamInputTexture(*path);
+          Vec2 texSize = tex.getSize();
+          r.drawSprite(bounds.topLeft(), Vec2(0, 0), texSize, tex, Vec2(size, size));
+        }
+      }));
 }
 
 Texture& GuiFactory::steamInputTexture(FilePath path) {

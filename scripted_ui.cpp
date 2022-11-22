@@ -194,7 +194,7 @@ struct RenderKeybinding : ScriptedUIInterface {
     if (steamInput && !steamInput->controllers.empty()) {
       if (auto key = KeybindingMap::getControllerMapping(binding))
         if (auto path = steamInput->getGlyph(*key))
-          return &f->steamInputTexture(FilePath::fromFullPath(path));
+          return &f->steamInputTexture(*path);
     }
     if (auto k = f->getKeybindingMap()->getText(binding))
       return "[" + *k + "]";

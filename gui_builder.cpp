@@ -118,6 +118,7 @@ void GuiBuilder::closeOverlayWindows() {
   callbacks.input({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()});
   callbacks.input({UserInputId::WORKSHOP, -1});
   bottomWindow = none;
+  villainsIndex = none;
 }
 
 bool GuiBuilder::isEnlargedMinimap() const {
@@ -228,7 +229,7 @@ SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
         !button.hotkeyOpensGroup && !!button.key
             ? WL(keyHandler, buttonFun, *button.key, true)
             : WL(empty),
-        WL(uiHighlightConditional, [=] { return getActiveButton(tab) == num; }),
+        WL(uiHighlightLineConditional, [=] { return getActiveButton(tab) == num; }),
         tutorialElem,
         line.buildHorizontalList())));
   };
@@ -395,7 +396,7 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
           buttons[i].key ? WL(keyHandler, buttonFunHotkey, *buttons[i].key, true) : WL(empty),
           WL(button, labelFun),
           tutorialElem,
-          WL(uiHighlightConditional, [=] { return activeGroup == lastGroup;}),
+          WL(uiHighlightLineConditional, [=] { return activeGroup == lastGroup;}),
           line.buildHorizontalList())));
     }
     if (buttons[i].groupName.empty())
@@ -829,6 +830,15 @@ SGuiElem GuiBuilder::drawVillainType(VillainType type) {
   return WL(label, getName(type), getColor(type));
 }
 
+static const char* getVillageActionText(VillageAction action) {
+  switch (action) {
+    case VillageAction::TRADE:
+      return "trade";
+    case VillageAction::PILLAGE:
+      return "pillage";
+  }
+}
+
 SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info, bool showDismissHint) {
   auto lines = WL(getListBuilder, legendLineHeight);
   string name = info.tribeName;
@@ -868,39 +878,55 @@ SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info, bo
     }
     lines.addElem(line.buildHorizontalList());
   }
-  if (showDismissHint)
-    lines.addElem(WL(label, "Right click to dismiss", Renderer::smallTextSize(), Color::WHITE), legendLineHeight * 2 / 3);
-  return WL(miniWindow, WL(margins, lines.buildVerticalList(), 15));
-}
-
-static const char* getVillageActionText(VillageAction action) {
-  switch (action) {
-    case VillageAction::TRADE:
-      return "trade";
-    case VillageAction::PILLAGE:
-      return "pillage";
+  if (showDismissHint) {
+    if (gui.getSteamInput()->controllers.empty())
+      lines.addElem(WL(label, "Right click to dismiss", Renderer::smallTextSize()), legendLineHeight * 2 / 3);
+    else {
+      auto line = WL(getListBuilder)
+          .addElemAuto(gui.steamInputGlyph(C_WORLD_MAP, 16))
+          .addElemAuto(WL(label, " to dismiss", Renderer::smallTextSize()));
+      if (!!info.action)
+        line.addSpace(30)
+            .addElemAuto(gui.steamInputGlyph(C_BUILDINGS_CONFIRM, 16))
+            .addElemAuto(WL(label, " to "_s + getVillageActionText(*info.action), Renderer::smallTextSize()));
+      lines.addElem(std::move(line).buildHorizontalList(), legendLineHeight * 2 / 3);
+    }
   }
+  return WL(miniWindow, WL(margins, lines.buildVerticalList(), 15));
 }
 
 SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info) {
   const int labelOffsetY = 3;
   auto lines = WL(getListBuilder);
   lines.addSpace(50);
-  if (!info.villages.empty())
+  int buttonsCnt = 0;
+  auto getHighlight = [&] {
+    return WL(margins, WL(translate,
+        WL(uiHighlightConditional,
+            [this, buttonsCnt] { return villainsIndex == buttonsCnt; },
+            GuiFactory::highlightColor(200)),
+        Vec2(0, labelOffsetY)), 0, -1, 0, 5);
+  };
+  if (!info.villages.empty()) {
+    auto callback = [this, info] (Rectangle rect) { drawAllVillainsMenu(rect.topLeft(), info); };
     lines.addElemAuto(WL(stack,
-          WL(getListBuilder)
-              .addElem(WL(icon, GuiFactory::EXPAND_UP), 12)
-              .addElemAuto(WL(translate, WL(label, "All villains"), Vec2(0, labelOffsetY)))
-              .addSpace(10)
-              .buildHorizontalList(),
-          WL(buttonRect, [this, info] (Rectangle rect) { drawAllVillainsMenu(rect.topLeft(), info); })
+        WL(leftMargin, -10, getHighlight()),
+        WL(getListBuilder)
+            .addElem(WL(icon, GuiFactory::EXPAND_UP), 12)
+            .addElemAuto(WL(translate, WL(label, "All villains"), Vec2(0, labelOffsetY)))
+            .addSpace(10)
+            .buildHorizontalList(),
+        WL(buttonRect, callback),
+        WL(conditionalStopKeys, WL(keyHandlerRect, callback, {gui.getKey(C_BUILDINGS_CONFIRM)}, true),
+            [this, buttonsCnt] { return villainsIndex == buttonsCnt; })
     ));
-  else
+  } else
     return gui.empty();
+  ++buttonsCnt;
   for (int i : All(info.villages)) {
     SGuiElem label;
     string labelText;
-    SGuiElem button = WL(empty);
+    function<void()> actionCallback = [](){};
     auto& elem = info.villages[i];
     if (elem.attacking) {
       labelText = "attacking";
@@ -913,18 +939,24 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info) {
       if (elem.action) {
         labelText = getVillageActionText(*elem.action);
         label = WL(label, labelText, Color::GREEN);
-        button = WL(button, getButtonCallback({UserInputId::VILLAGE_ACTION,
-            VillageActionInfo{elem.id, *elem.action}}));
+        actionCallback = getButtonCallback({UserInputId::VILLAGE_ACTION,
+            VillageActionInfo{elem.id, *elem.action}});
       }
     if (!label || info.dismissedInfos.count({elem.id, labelText}))
       continue;
     label = WL(translate, std::move(label), Vec2(0, labelOffsetY));
     auto infoOverlay = drawVillainInfoOverlay(elem, true);
-    int infoOverlayHeight = *infoOverlay->getPreferredHeight();
+    auto infoOverlaySize = *infoOverlay->getPreferredSize();
+    auto dismissCallback = getButtonCallback({UserInputId::DISMISS_VILLAGE_INFO,
+        DismissVillageInfo{elem.id, labelText}});
     lines.addElemAuto(WL(stack, makeVec(
-        std::move(button),
-        WL(releaseRightButton, getButtonCallback({UserInputId::DISMISS_VILLAGE_INFO,
-            DismissVillageInfo{elem.id, labelText}})),
+        getHighlight(),
+        WL(button, actionCallback),
+        WL(releaseRightButton, dismissCallback),
+        WL(conditionalStopKeys, WL(stack,
+                WL(keyHandler, dismissCallback, {gui.getKey(C_WORLD_MAP)}, true),
+                WL(keyHandler, actionCallback, {gui.getKey(C_BUILDINGS_CONFIRM)}, true)
+            ), [this, buttonsCnt] { return villainsIndex == buttonsCnt; }),
         WL(onMouseRightButtonHeld, WL(margins, WL(rectangle, Color(255, 0, 0, 100)), 0, 2, 2, 2)),
         WL(getListBuilder)
             .addElemAuto(WL(stack,
@@ -934,12 +966,25 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info) {
                      WL(viewObject, elem.viewId)))))))
             .addElemAuto(WL(rightMargin, 5, WL(translate, std::move(label), Vec2(-2, 0))))
             .buildHorizontalList(),
-        WL(conditional, getTooltip2(std::move(infoOverlay), [=](const Rectangle& r) { return r.topLeft() - Vec2(0, 0 + infoOverlayHeight);}),
-            [this]{return !bottomWindow;})
+        WL(conditional, WL(preferredSize, 5, 5, WL(translate, infoOverlay, Vec2(0, -infoOverlaySize.y), infoOverlaySize)),
+            [this, buttonsCnt] { return villainsIndex == buttonsCnt; }),
+        WL(conditional, getTooltip2(infoOverlay, [=](const Rectangle& r) { return r.topLeft() - Vec2(0, 0 + infoOverlaySize.y);}),
+            [this]{return !bottomWindow && !villainsIndex;})
     )));
+    ++buttonsCnt;
   }
+  if (villainsIndex)
+    villainsIndex = min(buttonsCnt - 1, *villainsIndex);
   return WL(setHeight, 29, WL(stack,
         WL(stopMouseMovement),
+        WL(keyHandler, [this] { villainsIndex = 0; }, {gui.getKey(C_VILLAINS_MENU)}, true),
+        WL(conditionalStopKeys, WL(stack,
+            WL(keyHandler, [this] { villainsIndex = none; }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true),
+            WL(keyHandler, [this, buttonsCnt] { villainsIndex = (*villainsIndex + 1) % buttonsCnt; },
+                {gui.getKey(C_BUILDINGS_RIGHT)}, true),
+            WL(keyHandler, [this, buttonsCnt] { villainsIndex = (*villainsIndex - 1 + buttonsCnt) % buttonsCnt; },
+                {gui.getKey(C_BUILDINGS_LEFT)}, true)
+        ), [this] { return !!villainsIndex; }),
         WL(translucentBackgroundWithBorder, WL(topMargin, 0, lines.buildHorizontalList()))));
 }
 
@@ -1322,7 +1367,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
   vector<SGuiElem> lines;
   const int maxElems = 6;
   auto title = gui.getKeybindingMap()->getGlyph(WL(label, "Lying here: ", Color::YELLOW), &gui, C_WALK,
-      "[Enter]"_s, Color::YELLOW);
+      "[Enter]"_s);
   title = WL(leftMargin, 3, std::move(title));
   int numElems = min<int>(maxElems, info.lyingItems.size());
   Vec2 size = Vec2(380, (1 + numElems) * legendLineHeight);
@@ -1424,7 +1469,7 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
             exit = true;
         }));
       stack.push_back(WL(uiHighlightMouseOver));
-      stack.push_back(WL(uiHighlightConditional, [selected, i] { return i == *selected; }));
+      stack.push_back(WL(uiHighlightLineConditional, [selected, i] { return i == *selected; }));
       if (i < tooltips.size() && !!tooltips[i]) {
         stack.push_back(WL(conditional,
             WL(translate, WL(renderTopLayer, tooltips[i]), Vec2(0, 0), *tooltips[i]->getPreferredSize(),
@@ -1763,7 +1808,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) 
             stack.push_back(WL(tutorialHighlight));
           auto label = WL(label, command.name, labelColor);
           if (command.keybinding)
-            label = gui.getKeybindingMap()->getGlyph(std::move(label), &gui, *command.keybinding, labelColor);
+            label = gui.getKeybindingMap()->getGlyph(std::move(label), &gui, *command.keybinding);
           stack.push_back(std::move(label));
           if (!command.description.empty())
             tooltips.push_back(WL(miniWindow, WL(margins, WL(label, command.description), 15)));
@@ -2056,7 +2101,7 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
     lines.addElemAuto(WL(stack, makeVec(
             WL(conditional, WL(tutorialHighlight),
                 [=]{ return !wasTutorialClicked(0, TutorialHighlight::CONTROL_TEAM) && isTutorialHighlight; }),
-            WL(uiHighlightConditional, [team] () { return team.highlight; }),
+            WL(uiHighlightLineConditional, [team] () { return team.highlight; }),
             WL(uiHighlightMouseOver),
             WL(mouseOverAction, [team, this] { mapGui->highlightTeam(team.members); },
                 [team, this] { mapGui->unhighlightTeam(team.members); }),
@@ -2104,7 +2149,7 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, const optional<Tuto
               callbacks.input(UserInput(UserInputId::CREATURE_DRAG, id));
               gui.getDragContainer().put(group, WL(viewObject, viewId), Vec2(-100, -100));
           }),
-          WL(uiHighlightConditional, [highlight = elem.highlight]{return highlight;}),
+          WL(uiHighlightLineConditional, [highlight = elem.highlight]{return highlight;}),
           line.buildHorizontalList()
        )));
     };
@@ -3560,8 +3605,8 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
       list.addElem(WL(stack, makeVec(
             cache->get(selectButton, THIS_LINE, minionId),
             WL(leftMargin, teamId ? -10 : 0, WL(stack,
-                 WL(uiHighlightConditional, [=] { return !teamId && mapGui->isCreatureHighlighted(minionId);}, Color::YELLOW),
-                 WL(uiHighlightConditional, [=] { return current == minionId;}))),
+                 WL(uiHighlightLineConditional, [=] { return !teamId && mapGui->isCreatureHighlighted(minionId);}, Color::YELLOW),
+                 WL(uiHighlightLineConditional, [=] { return current == minionId;}))),
             WL(dragSource, minionId, [=]{ return WL(viewObject, minion.viewId);}),
             // not sure if this did anything...
             /*WL(button, [this, minionId, viewId = minion.viewId] {

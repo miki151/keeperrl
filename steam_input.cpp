@@ -61,6 +61,7 @@ void MySteamInput::detectControllers() {
     actionHandles[C_MINIONS_MENU] = getActionInfo("minions_menu", ActionSet::GAME);
     actionHandles[C_TECH_MENU] = getActionInfo("tech_menu", ActionSet::GAME);
     actionHandles[C_HELP_MENU] = getActionInfo("help_menu", ActionSet::GAME);
+    actionHandles[C_VILLAINS_MENU] = getActionInfo("villains_menu", ActionSet::GAME);
     actionHandles[C_SPEED_UP] = getActionInfo("speed_up", ActionSet::GAME);
     actionHandles[C_SPEED_DOWN] = getActionInfo("speed_down", ActionSet::GAME);
     actionHandles[C_BUILDINGS_UP] = getActionInfo("buildings_up", ActionSet::GAME);
@@ -110,11 +111,11 @@ bool MySteamInput::isPressed(ControllerKey key) {
   return false;
 }
 
-const char* MySteamInput::getGlyph(ControllerKey key) {
+optional<FilePath> MySteamInput::getGlyph(ControllerKey key) {
   if (auto v = getReferenceMaybe(actionGlyphs, key))
     if (!v->empty())
-      return v->data();
-  return nullptr;
+      return FilePath::fromFullPath(*v);
+  return none;
 }
 
 void MySteamInput::runFrame() {
