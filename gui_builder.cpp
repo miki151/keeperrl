@@ -2696,7 +2696,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
 
 void GuiBuilder::updateWorkshopIndex(const CollectiveInfo::ChosenWorkshopInfo& info) {
   if (workshopIndex) {
-    if (info.queued.empty())
+    if (workshopIndex->y == 1 && info.queued.empty())
       workshopIndex->y = 0;
     switch (workshopIndex->y) {
       case 0: workshopIndex->x = min(workshopIndex->x, info.options.size() - 1); break;
