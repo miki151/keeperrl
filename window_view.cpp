@@ -188,11 +188,9 @@ void WindowView::mapContinuousLeftClickFun(Vec2 pos) {
       else*/
       if (collectiveTab == CollectiveTab::BUILDINGS) {
         if (activeBuilding && (isKeyPressed(SDL::SDL_SCANCODE_LSHIFT) || isKeyPressed(SDL::SDL_SCANCODE_RSHIFT)))
-          inputQueue.push(UserInput(UserInputId::RECT_SELECTION, BuildingClickInfo{pos, *activeBuilding}));
-        else if (activeBuilding && (isKeyPressed(SDL::SDL_SCANCODE_LCTRL) || isKeyPressed(SDL::SDL_SCANCODE_RCTRL)))
           inputQueue.push(UserInput(UserInputId::RECT_DESELECTION, pos));
         else if (activeBuilding)
-          inputQueue.push(UserInput(UserInputId::BUILD, BuildingClickInfo{pos, *activeBuilding}));
+          inputQueue.push(UserInput(UserInputId::RECT_SELECTION, BuildingClickInfo{pos, *activeBuilding}));
       }
       break;
     default:
