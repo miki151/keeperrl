@@ -2160,17 +2160,6 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, const optional<Tuto
               WL(label, "Show message history"),
               WL(button, getButtonCallback(UserInputId::SHOW_HISTORY))));
     list.addSpace();
-    if (!info.onGoingAttacks.empty()) {
-      list.addElem(WL(label, "Ongoing attacks:", Color::WHITE));
-      for (auto& elem : info.onGoingAttacks)
-        list.addElem(WL(stack,
-            WL(button, getButtonCallback({UserInputId::GO_TO_ENEMY, elem.creatureId})),
-            WL(uiHighlightMouseOver),
-            WL(getListBuilder)
-                .addElem(WL(viewObject, elem.viewId), 30)
-                .addElemAuto(WL(label, elem.attacker))
-                .buildHorizontalList()));
-    }
     minionsCache = WL(scrollable, list.buildVerticalList(), &minionsScroll, &scrollbarsHeld);
   }
   return minionsCache;

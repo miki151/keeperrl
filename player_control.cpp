@@ -1944,10 +1944,6 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
         collective->hasResource({ResourceId("GOLD"), *elem.getRansom()})};
     break;
   }
-  for (auto& elem : notifiedAttacks)
-    if (elem.isOngoing())
-      info.onGoingAttacks.push_back(CollectiveInfo::OnGoingAttack{elem.getAttackerViewId(), elem.getAttackerName(),
-          elem.getCreatures()[0]->getUniqueId()});
   const auto maxEnemyCountdown = 500_visible;
   if (auto& enemies = getModel()->getExternalEnemies())
     if (auto nextWave = enemies->getNextWave()) {

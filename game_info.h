@@ -404,13 +404,6 @@ class CollectiveInfo {
     HASH_ALL(amount, attacker, canAfford)
   };
   optional<Ransom> HASH(ransom);
-  struct OnGoingAttack {
-    ViewIdList HASH(viewId);
-    string HASH(attacker);
-    UniqueEntity<Creature>::Id HASH(creatureId);
-    HASH_ALL(viewId, attacker, creatureId)
-  };
-  vector<OnGoingAttack> HASH(onGoingAttacks);
   struct NextWave {
     ViewIdList HASH(viewId);
     string HASH(attacker);
@@ -425,7 +418,7 @@ class CollectiveInfo {
   };
   optional<RebellionChance> HASH(rebellionChance);
   vector<ViewId> HASH(allQuarters);
-  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, ransom, onGoingAttacks, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, minionPromotions, availablePromotions, allQuarters, rebellionChance, avatarLevelInfo, populationString)
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, ransom, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, minionPromotions, availablePromotions, allQuarters, rebellionChance, avatarLevelInfo, populationString)
 };
 
 class VillageInfo {
