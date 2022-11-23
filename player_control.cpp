@@ -2301,8 +2301,6 @@ Level* PlayerControl::getCreatureViewLevel() const {
   return getCurrentLevel();
 }
 
-static enum Selection { SELECT, DESELECT, NONE } selection = NONE;
-
 void PlayerControl::controlSingle(Creature* c) {
   CHECK(getCreatures().contains(c));
   CHECK(!c->isDead());
@@ -2860,26 +2858,37 @@ void PlayerControl::processInput(View* view, UserInput input) {
         updateSelectionSquares();
         if (rectSelection) {
           rectSelection->corner2 = info.pos;
-        } else
+        } else {
           rectSelection = CONSTRUCT(SelectionInfo, c.corner1 = c.corner2 = info.pos;);
+          selection = Selection::NONE;
+          handleSelection(info.pos, buildInfo[info.building], true);
+          rectSelection->deselect = (selection == Selection::DESELECT);
+          selection = Selection::NONE;
+        }
         updateSelectionSquares();
       } else
         handleSelection(info.pos, buildInfo[info.building], false);
       break;
     }
-    case UserInputId::RECT_DESELECTION:
-      updateSelectionSquares();
+    case UserInputId::RECT_CONFIRM:
       if (rectSelection) {
-        rectSelection->corner2 = input.get<Vec2>();
-      } else
-        rectSelection = CONSTRUCT(SelectionInfo, c.corner1 = c.corner2 = input.get<Vec2>(); c.deselect = true;);
+        auto box = Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2});
+        for (Vec2 v : box) {
+          auto w = v;
+          if (rectSelection->corner1.x != box.left())
+            w.x = box.left() + box.right() - 1 - w.x;
+          if (rectSelection->corner1.y != box.top())
+            w.y = box.top() + box.bottom() - 1 - w.y;
+          std::cout << w << endl;
+          handleSelection(w, buildInfo[input.get<BuildingClickInfo>().building], false);
+        }
+      }
+      FALLTHROUGH;
+    case UserInputId::RECT_CANCEL:
       updateSelectionSquares();
+      rectSelection = none;
+      selection = Selection::NONE;
       break;
-    case UserInputId::BUILD: {
-      auto& info = input.get<BuildingClickInfo>();
-      handleSelection(info.pos, buildInfo[info.building], false);
-      break;
-    }
     case UserInputId::VILLAGE_ACTION: {
       auto& info = input.get<VillageActionInfo>();
       if (Collective* village = getVillain(info.id))
@@ -2914,18 +2923,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::TUTORIAL_GO_BACK:
       if (tutorial)
         tutorial->goBack();
-      break;
-    case UserInputId::RECT_CONFIRM:
-      if (rectSelection) {
-        selection = rectSelection->deselect ? DESELECT : SELECT;
-        for (Vec2 v : Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2}))
-          handleSelection(v, buildInfo[input.get<BuildingClickInfo>().building], true, rectSelection->deselect);
-      }
-      FALLTHROUGH;
-    case UserInputId::RECT_CANCEL:
-      updateSelectionSquares();
-      rectSelection = none;
-      selection = NONE;
       break;
     case UserInputId::EXIT: getGame()->exitAction(); return;
     case UserInputId::IDLE: break;
@@ -2988,24 +2985,28 @@ void PlayerControl::updateSelectionSquares() {
 }
 
 void PlayerControl::handleDestructionOrder(Position position, HighlightType highlightType,
-    DestroyAction destructionType) {
+    DestroyAction destructionType, bool dryRun) {
   bool markedToDig = collective->getTaskMap().getHighlightType(position) == highlightType;
-  if (markedToDig && selection != SELECT) {
-    collective->cancelMarkedTask(position);
-    getView()->addSound(SoundId::DIG_UNMARK);
-    selection = DESELECT;
+  if (markedToDig && selection != Selection::SELECT) {
+    if (!dryRun) {
+      collective->cancelMarkedTask(position);
+      getView()->addSound(SoundId::DIG_UNMARK);
+    }
+    selection = Selection::DESELECT;
   } else
-  if (!markedToDig && selection != DESELECT) {
+  if (!markedToDig && selection != Selection::DESELECT) {
     if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE))
       if (furniture->canDestroy(destructionType)) {
-        collective->orderDestruction(position, destructionType);
-        getView()->addSound(SoundId::DIG_MARK);
-        selection = SELECT;
+        if (!dryRun) {
+          collective->orderDestruction(position, destructionType);
+          getView()->addSound(SoundId::DIG_MARK);
+        }
+        selection = Selection::SELECT;
       }
   }
 }
 
-void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool rectangle, bool deselectOnly) {
+void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool dryRun) {
   PROFILE;
   Position position(pos, getCurrentLevel());
   for (auto& req : building.requirements)
@@ -3013,12 +3014,10 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       return;
   if (position.isUnavailable())
     return;
-  if (!deselectOnly && rectangle && !building.canSelectRectangle())
-    return;
-  handleSelection(position, building.type);
+  handleSelection(position, building.type, dryRun);
 }
 
-void PlayerControl::handleSelection(Position position, const BuildInfoTypes::BuildType& building) {
+void PlayerControl::handleSelection(Position position, const BuildInfoTypes::BuildType& building, bool dryRun) {
   building.visit<void>(
     [&](const BuildInfoTypes::ImmediateDig&) {
       auto furniture = position.modFurniture(FurnitureLayer::MIDDLE);
@@ -3046,10 +3045,10 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
         if (f && !f->isBuilt(position, layer)) {
           collective->removeUnbuiltFurniture(position, layer);
           getView()->addSound(SoundId::DIG_UNMARK);
-          selection = SELECT;
+          selection = Selection::SELECT;
         } else
         if (collective->getKnownTiles().isKnown(position) && !position.isBurning()) {
-          selection = SELECT;
+          selection = Selection::SELECT;
           optional<Position> otherPos;
           if (auto f = position.getFurniture(layer))
             otherPos = f->getSecondPart(position);
@@ -3068,51 +3067,58 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
       }
     },
     [&](const BuildInfoTypes::ForbidZone) {
-      if (position.isTribeForbidden(getTribeId()) && selection != SELECT) {
-        position.allowMovementForTribe(getTribeId());
-        selection = DESELECT;
+      if (position.isTribeForbidden(getTribeId()) && selection != Selection::SELECT) {
+        if (!dryRun)
+          position.allowMovementForTribe(getTribeId());
+        selection = Selection::DESELECT;
       } else
-      if (!position.isTribeForbidden(getTribeId()) && selection != DESELECT) {
-        position.forbidMovementForTribe(getTribeId());
-        selection = SELECT;
+      if (!position.isTribeForbidden(getTribeId()) && selection != Selection::DESELECT) {
+        if (!dryRun)
+          position.forbidMovementForTribe(getTribeId());
+        selection = Selection::SELECT;
       }
     },
     [&](const BuildInfoTypes::CutTree&) {
-      handleDestructionOrder(position, HighlightType::CUT_TREE, DestroyAction::Type::CUT);
+      handleDestructionOrder(position, HighlightType::CUT_TREE, DestroyAction::Type::CUT, dryRun);
     },
     [&](const BuildInfoTypes::Dig&) {
-      handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::DIG);
+      handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::DIG, dryRun);
     },
     [&](const BuildInfoTypes::Chain& c) {
       for (auto& elem : c)
-        handleSelection(position, elem);
+        handleSelection(position, elem, dryRun);
     },
     [&](ZoneId zone) {
       auto& zones = collective->getZones();
-      if (zones.isZone(position, zone) && selection != SELECT) {
-        collective->eraseZone(position, zone);
-        selection = DESELECT;
-      } else if (selection != DESELECT && !zones.isZone(position, zone) &&
+      if (zones.isZone(position, zone) && selection != Selection::SELECT) {
+        if (!dryRun)
+          collective->eraseZone(position, zone);
+        selection = Selection::DESELECT;
+      } else if (selection != Selection::DESELECT && !zones.isZone(position, zone) &&
           collective->getKnownTiles().isKnown(position) &&
           zones.canSet(position, zone, collective)) {
-        collective->setZone(position, zone);
-        selection = SELECT;
+        if (!dryRun)
+          collective->setZone(position, zone);
+        selection = Selection::SELECT;
       }
     },
     [&](BuildInfoTypes::ClaimTile) {
-      if (collective->canClaimSquare(position))
+      if (!dryRun && collective->canClaimSquare(position))
         collective->claimSquare(position);
     },
     [&](BuildInfoTypes::UnclaimTile) {
-      collective->unclaimSquare(position);
-      if (NOTNULL(position.getFurniture(FurnitureLayer::GROUND))->getViewObject()->id() == ViewId("keeper_floor")) {
-        position.modFurniture(FurnitureLayer::GROUND)->getViewObject()->setId(ViewId("floor"));
-        position.setNeedsRenderAndMemoryUpdate(true);
-        updateSquareMemory(position);
+      if (!dryRun) {
+        collective->unclaimSquare(position);
+        if (NOTNULL(position.getFurniture(FurnitureLayer::GROUND))->getViewObject()->id() == ViewId("keeper_floor")) {
+          position.modFurniture(FurnitureLayer::GROUND)->getViewObject()->setId(ViewId("floor"));
+          position.setNeedsRenderAndMemoryUpdate(true);
+          updateSquareMemory(position);
+        }
       }
     },
     [&](BuildInfoTypes::Dispatch) {
-      collective->setPriorityTasks(position);
+      if (!dryRun)
+        collective->setPriorityTasks(position);
     },
     [&](BuildInfoTypes::PlaceMinion) {
       auto& factory = getGame()->getContentFactory()->getCreatures();
@@ -3139,8 +3145,9 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
           return;
       }
       bool removed = false;
-      if (!!currentPlanned && selection != SELECT) {
-        collective->removeUnbuiltFurniture(position, layer);
+      if (!!currentPlanned && selection != Selection::SELECT) {
+        if (!dryRun)
+          collective->removeUnbuiltFurniture(position, layer);
         removed = true;
       }
       while (nextIndex < info.types.size() && !collective->canAddFurniture(position, info.types[nextIndex]))
@@ -3148,14 +3155,17 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
       int totalCount = 0;
       for (auto type : info.types)
         totalCount += collective->getConstructions().getTotalCount(type);
-      if (nextIndex < info.types.size() && selection != DESELECT &&
+      if (nextIndex < info.types.size() && selection != Selection::DESELECT &&
           (!info.limit || *info.limit > totalCount)) {
-        collective->addFurniture(position, info.types[nextIndex], info.cost, info.noCredit);
-        selection = SELECT;
-        getView()->addSound(SoundId::ADD_CONSTRUCTION);
+        if (!dryRun) {
+          collective->addFurniture(position, info.types[nextIndex], info.cost, info.noCredit);
+          getView()->addSound(SoundId::ADD_CONSTRUCTION);
+        }
+        selection = Selection::SELECT;
       } else if (removed) {
-        selection = DESELECT;
-        getView()->addSound(SoundId::DIG_UNMARK);
+        if (!dryRun)
+          getView()->addSound(SoundId::DIG_UNMARK);
+        selection = Selection::DESELECT;
       }
     }
   );

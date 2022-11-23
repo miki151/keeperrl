@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
+/* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
 
    This file is part of KeeperRL.
 
@@ -183,15 +183,8 @@ void WindowView::mapContinuousLeftClickFun(Vec2 pos) {
   auto collectiveTab = guiBuilder.getCollectiveTab();
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::BAND:
-/*      if (collectiveTab == CollectiveTab::MINIONS)
-        inputQueue.push(UserInput(UserInputId::MOVE_TO, pos));
-      else*/
-      if (collectiveTab == CollectiveTab::BUILDINGS) {
-        if (activeBuilding && (isKeyPressed(SDL::SDL_SCANCODE_LSHIFT) || isKeyPressed(SDL::SDL_SCANCODE_RSHIFT)))
-          inputQueue.push(UserInput(UserInputId::RECT_DESELECTION, pos));
-        else if (activeBuilding)
+      if (collectiveTab == CollectiveTab::BUILDINGS && activeBuilding)
           inputQueue.push(UserInput(UserInputId::RECT_SELECTION, BuildingClickInfo{pos, *activeBuilding}));
-      }
       break;
     default:
       break;

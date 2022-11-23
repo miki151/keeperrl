@@ -166,8 +166,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void commandTeam(TeamId);
   void setScrollPos(Position);
 
-  void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
-  void handleSelection(Position, const BuildInfoTypes::BuildType&);
+  void handleSelection(Vec2 pos, const BuildInfo&, bool dryRun);
+  void handleSelection(Position, const BuildInfoTypes::BuildType&, bool dryRun);
   vector<CollectiveInfo::Button> fillButtons() const;
   VillageInfo::Village getVillageInfo(const Collective* enemy) const;
   string getTriggerLabel(const AttackTrigger&) const;
@@ -296,8 +296,9 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<pair<ViewId,int>> getCostObj(const optional<CostInfo>&) const;
   ViewId getViewId(const BuildInfoTypes::BuildType&) const;
   EntityMap<Creature, LocalTime> leaderWoundedTime;
-  void handleDestructionOrder(Position position, HighlightType, DestroyAction);
+  void handleDestructionOrder(Position position, HighlightType, DestroyAction, bool dryRun);
   unordered_set<CollectiveResourceId, CustomHash<CollectiveResourceId>> SERIAL(usedResources);
   optional<vector<Collective*>> SERIAL(allianceAttack);
+  enum class Selection { SELECT, DESELECT, NONE } selection = Selection::NONE;
 };
 
