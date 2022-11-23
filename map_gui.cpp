@@ -62,8 +62,8 @@ static Color getFireColor() {
   return Color(200 + Random.get(-fireVar, fireVar), Random.get(fireVar), Random.get(fireVar), 150);
 }
 
-void MapGui::setActiveButton(ViewId id, CollectiveTab tab, int index, bool isBuilding) {
-  activeButton = ActiveButtonInfo{id, index, tab, isBuilding};
+void MapGui::setActiveButton(ViewId id, int index, bool isBuilding) {
+  activeButton = ActiveButtonInfo{id, index, isBuilding};
 }
 
 void MapGui::clearActiveButton() {

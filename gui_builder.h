@@ -127,10 +127,9 @@ class GuiBuilder {
   void toggleEnlargedMinimap();
   void closeOverlayWindowsAndClearButton();
   bool clearActiveButton();
-  void setActiveButton(CollectiveTab, int num, ViewId, optional<string> activeGroup, optional<TutorialHighlight>,
-      bool buildingSelected);
+  void setActiveButton(int num, ViewId, optional<string> activeGroup, optional<TutorialHighlight>, bool buildingSelected);
   void setActiveGroup(const string& group, optional<TutorialHighlight>);
-  optional<int> getActiveButton(CollectiveTab) const;
+  optional<int> getActiveButton() const;
   GameSpeed getGameSpeed() const;
   void setGameSpeed(GameSpeed);
   Rectangle getMenuPosition(int numElems);
@@ -212,11 +211,7 @@ class GuiBuilder {
   SGuiElem immigrationCache;
   int immigrationHash = 0;
   optional<string> activeGroup;
-  struct ActiveButton {
-    CollectiveTab tab;
-    int num;
-  };
-  optional<ActiveButton> activeButton;
+  optional<int> activeButton;
   ScrollPosition inventoryScroll;
   ScrollPosition playerStatsScroll;
   ScrollPosition buildingsScroll;
@@ -263,7 +258,7 @@ class GuiBuilder {
   enum class CounterMode { FPS, LAT, SMOD };
   CounterMode counterMode = CounterMode::FPS;
 
-  SGuiElem getButtonLine(CollectiveInfo::Button, int num, CollectiveTab, const optional<TutorialInfo>&);
+  SGuiElem getButtonLine(CollectiveInfo::Button, int num, const optional<TutorialInfo>&);
   SGuiElem drawMinionsOverlay(const CollectiveInfo::ChosenCreatureInfo&, const vector<ViewId>& allQuarters,
       const optional<TutorialInfo>&);
   SGuiElem minionsOverlayCache;

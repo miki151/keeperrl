@@ -142,7 +142,7 @@ void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FX
   mapGui.reset(new MapGui({
       bindMethod(&WindowView::mapContinuousLeftClickFun, this),
       [this] (Vec2 pos) {
-        if (!guiBuilder.getActiveButton(CollectiveTab::BUILDINGS)) {
+        if (!guiBuilder.getActiveButton()) {
           guiBuilder.closeOverlayWindowsAndClearButton();
           inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));
         }
@@ -178,8 +178,7 @@ bool WindowView::isKeyPressed(SDL::SDL_Scancode code) {
 
 void WindowView::mapContinuousLeftClickFun(Vec2 pos) {
   guiBuilder.closeOverlayWindows();
-  optional<int> activeLibrary = guiBuilder.getActiveButton(CollectiveTab::TECHNOLOGY);
-  optional<int> activeBuilding = guiBuilder.getActiveButton(CollectiveTab::BUILDINGS);
+  optional<int> activeBuilding = guiBuilder.getActiveButton();
   auto collectiveTab = guiBuilder.getCollectiveTab();
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::BAND:
@@ -1141,9 +1140,7 @@ void WindowView::processEvents() {
         break;
       case SDL::SDL_MOUSEBUTTONUP:
         if (event.button.button == SDL_BUTTON_LEFT) {
-          if (auto building = guiBuilder.getActiveButton(CollectiveTab::BUILDINGS))
-            inputQueue.push(UserInput(UserInputId::RECT_CONFIRM, BuildingClickInfo{Vec2(0, 0), *building}));
-          else if (auto building = guiBuilder.getActiveButton(CollectiveTab::TECHNOLOGY))
+          if (auto building = guiBuilder.getActiveButton())
             inputQueue.push(UserInput(UserInputId::RECT_CONFIRM, BuildingClickInfo{Vec2(0, 0), *building}));
           else if (gameInfo.infoType == GameInfo::InfoType::BAND)
             inputQueue.push(UserInputId::RECT_CANCEL);
