@@ -2753,7 +2753,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       if (Creature* c = getCreature(input.get<Creature::Id>())) {
         if (auto creatureId = getView()->chooseCreature("Choose minion to absorb",
             getConsumptionTargets(c).transform(
-                [&] (const Creature* c) { return PlayerInfo(c, getGame()->getContentFactory());}), "cancel"))
+                [&] (const Creature* c) { return PlayerInfo(c, getGame()->getContentFactory());}), "Cancel"))
           if (Creature* consumed = getCreature(*creatureId))
             collective->setTask(c, Task::consume(consumed));
       }

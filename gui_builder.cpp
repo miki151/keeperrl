@@ -5154,31 +5154,72 @@ SGuiElem GuiBuilder::drawCreatureTooltip(const PlayerInfo& info) {
 
 SGuiElem GuiBuilder::drawCreatureList(const vector<PlayerInfo>& creatures,
     function<void(UniqueEntity<Creature>::Id)> button, int zoom) {
+  if (!gui.getSteamInput()->controllers.empty())
+    creatureListIndex = Vec2(0, 0);
   auto minionLines = WL(getListBuilder, 20 * zoom);
   auto line = WL(getListBuilder, 30 * zoom);
+  const auto numColumns = 12 / zoom + 1;
   for (auto& elem : creatures) {
+    auto tooltip = drawCreatureTooltip(elem);
     auto icon = WL(stack,
-        WL(tooltip2, drawCreatureTooltip(elem), [](auto& r) { return r.bottomLeft(); }),
+        WL(tooltip2, tooltip, [](auto& r) { return r.bottomLeft(); }),
         WL(margins, WL(stack, WL(viewObject, elem.viewId, zoom),
           WL(label, toString((int) elem.bestAttack.value), 10 * zoom)), 5, 5, 5, 5));
-    if (button)
-      line.addElemAuto(WL(stack,
-            WL(mouseHighlight2, WL(uiHighlight)),
-            WL(button, [id = elem.creatureId, button] { button(id); }),
-            std::move(icon)));
-    else
+    if (button) {
+      auto tooltipSize = *tooltip->getPreferredSize();
+      line.addElemAuto(WL(stack, makeVec(
+          WL(conditionalStopKeys, WL(stack,
+              WL(uiHighlight),
+              WL(keyHandler, [id = elem.creatureId, button] { button(id); }, Keybinding("MENU_SELECT"), true),
+              WL(renderTopLayer, WL(preferredSize, 5, 5, WL(translate, tooltip, Vec2(-tooltipSize.x, 0), tooltipSize)))
+          ), [this, ind = Vec2(line.getLength(), minionLines.getLength() / 2)] {
+            return creatureListIndex == ind;
+          }),
+          WL(mouseHighlight2, WL(uiHighlight)),
+          WL(button, [id = elem.creatureId, button] { button(id); }),
+          std::move(icon))));
+    } else
       line.addElemAuto(std::move(icon));
-    if (line.getLength() > 12 / zoom) {
-      minionLines.addElemAuto(WL(centerHoriz, line.buildHorizontalList()));
+    if (line.getLength() >= numColumns) {
+      minionLines.addElemAuto(line.buildHorizontalList());
       minionLines.addSpace(10 * zoom);
       line.clear();
     }
   }
   if (!line.isEmpty()) {
-    minionLines.addElemAuto(WL(centerHoriz, line.buildHorizontalList()));
+    minionLines.addElemAuto(line.buildHorizontalList());
     minionLines.addSpace(10 * zoom);
   }
-  return minionLines.buildVerticalList();
+  const auto numRows = (creatures.size() + numColumns - 1) / numColumns;
+  const auto lastRow = creatures.size() % numColumns;
+  return WL(stack, makeVec(
+      WL(keyHandler, [this, numRows, lastRow, numColumns] {
+        if (!creatureListIndex)
+          creatureListIndex = Vec2(0, 0);
+        creatureListIndex->x = (creatureListIndex->x + 1) % (creatureListIndex->y == numRows - 1 ? lastRow : numColumns);
+      }, Keybinding("MENU_RIGHT"), true),
+      WL(keyHandler, [this, numRows, lastRow, numColumns] {
+        if (!creatureListIndex)
+          creatureListIndex = Vec2(0, 0);
+        int mod = creatureListIndex->y == numRows - 1 ? lastRow : numColumns;
+        creatureListIndex->x = (creatureListIndex->x + mod - 1) % mod;
+      }, Keybinding("MENU_LEFT"), true),
+      WL(keyHandler, [this, numRows, lastRow] {
+        if (!creatureListIndex)
+          creatureListIndex = Vec2(0, 0);
+        creatureListIndex->y = (creatureListIndex->y + numRows - 1) % numRows;
+        if (creatureListIndex->y == numRows - 1)
+          creatureListIndex->x = min(creatureListIndex->x, lastRow - 1);
+      }, Keybinding("MENU_UP"), true),
+      WL(keyHandler, [this, numRows, lastRow] {
+        if (!creatureListIndex)
+          creatureListIndex = Vec2(0, 0);
+        creatureListIndex->y = (creatureListIndex->y + 1) % numRows;
+        if (creatureListIndex->y == numRows - 1)
+          creatureListIndex->x = min(creatureListIndex->x, lastRow - 1);
+      }, Keybinding("MENU_DOWN"), true),
+      minionLines.buildVerticalList()
+  ));
 }
 
 SGuiElem GuiBuilder::drawCreatureInfo(SyncQueue<bool>& queue, const string& title, bool prompt,
@@ -5189,15 +5230,22 @@ SGuiElem GuiBuilder::drawCreatureInfo(SyncQueue<bool>& queue, const string& titl
   lines.addMiddleElem(WL(scrollable, WL(margins, drawCreatureList(creatures, nullptr), 10)));
   lines.addSpace(15);
   auto bottomLine = WL(getListBuilder)
-      .addElemAuto(WL(buttonLabel, "Confirm", [&queue] { queue.push(true);}));
+      .addElemAuto(WL(standardButton,
+          gui.getKeybindingMap()->getGlyph(WL(label, "Confirm"), &gui, C_MENU_SELECT, none),
+          WL(button, [&queue] { queue.push(true);})));
   if (prompt) {
     bottomLine.addSpace(20);
-    bottomLine.addElemAuto(WL(buttonLabel, "Cancel", [&queue] { queue.push(false);}));
+    bottomLine.addElemAuto(WL(standardButton,
+          gui.getKeybindingMap()->getGlyph(WL(label, "Cancel"), &gui, C_MENU_CANCEL, none),
+          WL(button, [&queue] { queue.push(false);})));
   }
   lines.addBackElem(WL(centerHoriz, bottomLine.buildHorizontalList()));
   int margin = 15;
-  return WL(setWidth, 2 * margin + windowWidth,
-      WL(window, WL(margins, lines.buildVerticalList(), margin), [&queue] { queue.push(false); }));
+  return WL(stack,
+      WL(keyHandler, [&queue] { queue.push(true);}, Keybinding("MENU_SELECT"), true),
+      WL(setWidth, 2 * margin + windowWidth,
+          WL(window, WL(margins, lines.buildVerticalList(), margin), [&queue] { queue.push(false); }))
+  );
 }
 
 SGuiElem GuiBuilder::drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,
@@ -5207,9 +5255,11 @@ SGuiElem GuiBuilder::drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Crea
   const int windowWidth = 480;
   lines.addMiddleElem(WL(scrollable, WL(margins, drawCreatureList(team, [&queue] (auto id) { queue.push(id); }), 10)));
   lines.addSpace(15);
-  if (!cancelText.empty())
-    lines.addBackElem(WL(centerHoriz, WL(buttonLabel, cancelText, WL(button, [&queue] { queue.push(none);}))), legendLineHeight);
-  int margin = 15;
+  if (!cancelText.empty()) {
+    lines.addBackElem(WL(centerHoriz, WL(standardButton,
+        gui.getKeybindingMap()->getGlyph(WL(label, cancelText), &gui, C_MENU_CANCEL, none),
+        WL(button, [&queue] { queue.push(none);}))), legendLineHeight);
+  } int margin = 15;
   return WL(setWidth, 2 * margin + windowWidth,
       WL(window, WL(margins, lines.buildVerticalList(), margin), [&queue] { queue.push(none); }));
 }
