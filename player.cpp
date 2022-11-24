@@ -641,7 +641,7 @@ vector<Player::CommandInfo> Player::getCommands() const {
 #ifndef RELEASE
     {PlayerInfo::CommandInfo{"Wait multiple turns", none, "", true},
       [] (Player* player) {
-        if (auto num = player->getView()->getNumber("Wait how many turns?", Range(1, 2000), 30, 1))
+        if (auto num = player->getView()->getNumber("Wait how many turns?", Range(1, 2000), 30))
           for (int i : Range(*num))
             player->tryToPerform(player->creature->wait());
       }, false},

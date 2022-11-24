@@ -273,7 +273,7 @@ static optional<int> getIntInterval(OptionId id) {
       return 50;
     default:
       return none;
-  }  
+  }
 }
 
 static bool isBoolean(OptionId id) {

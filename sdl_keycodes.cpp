@@ -243,6 +243,8 @@ X(C_MENU_SELECT)\
 X(C_MENU_CANCEL)\
 X(C_MENU_DOWN)\
 X(C_MENU_UP)\
+X(C_MENU_LEFT)\
+X(C_MENU_RIGHT)\
 
 using namespace SDL;
 

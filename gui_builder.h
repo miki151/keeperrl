@@ -103,7 +103,7 @@ class GuiBuilder {
   SGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<ScrollPosition>& scrollPos,
       bool& online);
   SGuiElem drawMinimapIcons(const GameInfo&);
-  SGuiElem drawChooseNumberMenu(SyncQueue<optional<int>>&, const string& title, Range range, int initial, int increments);
+  optional<int> getNumber(const string& title, Vec2 position, Range, int initial);
 
   struct BugReportInfo {
     string text;

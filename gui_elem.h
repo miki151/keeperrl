@@ -255,7 +255,6 @@ class GuiFactory {
   SGuiElem renderInBounds(SGuiElem);
   using CustomDrawFun = function<void(Renderer&, Rectangle)>;
   SGuiElem drawCustom(CustomDrawFun);
-  SGuiElem slider(SGuiElem button, shared_ptr<int> position, int max);
 
   using TexId = TextureId;
   SGuiElem sprite(TexId, Alignment, optional<Color> = none);

@@ -783,9 +783,8 @@ View::TargetResult WindowView::chooseTarget(Vec2 playerPos, TargetType targetTyp
   return returnQueue.pop();
 }
 
-optional<int> WindowView::getNumber(const string& title, Range range, int initial, int increments) {
-  SyncQueue<optional<int>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawChooseNumberMenu(returnQueue, title, range, initial, increments));
+optional<int> WindowView::getNumber(const string& title, Range range, int initial) {
+  return guiBuilder.getNumber(title, renderer.getSize() / 2 - Vec2(225, 0), range, initial);
 }
 
 optional<string> WindowView::getText(const string& title, const string& value, int maxLength, const string& hint) {

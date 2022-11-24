@@ -180,4 +180,8 @@ Def YesOrNo() {
 }
 End
 
-
+Def Sliding() {
+  Position(MIDDLE_STRETCHED_X, Height 5 Fill(ColorId GRAY))
+  Slider Width 6 Position(MIDDLE_STRETCHED_X, Height 20 Fill(ColorId WHITE))
+}
+End

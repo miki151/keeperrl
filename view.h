@@ -165,7 +165,7 @@ class View {
   virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&, ScriptedUIState&) = 0;
 
   /** Lets the player choose a number. Returns none if the player cancelled the choice.*/
-  virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) = 0;
+  virtual optional<int> getNumber(const string& title, Range range, int initial) = 0;
 
   /** Lets the player input a string. Returns none if the player cancelled the choice.*/
   virtual optional<string> getText(const string& title, const string& value, int maxLength,

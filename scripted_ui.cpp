@@ -113,12 +113,13 @@ void performAction(const ScriptedUIData& data, ScriptedContext& context, EventCa
 struct Button : ScriptedUIInterface {
   void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
       Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
-    if (id == MouseButtonId::LEFT && (pos.inRectangle(bounds) == !reverse))
+    if (id == buttonId && (pos.inRectangle(bounds) == !reverse))
       performAction(data, context, callback);
   }
 
   bool SERIAL(reverse);
-  SERIALIZE_ALL(roundBracket(), OPTION(reverse))
+  MouseButtonId SERIAL(buttonId) = MouseButtonId::LEFT;
+  SERIALIZE_ALL(roundBracket(), OPTION(reverse), OPTION(buttonId))
 };
 
 REGISTER_SCRIPTED_UI(Button);
@@ -189,15 +190,16 @@ struct KeybindingHandler : ScriptedUIInterface {
 REGISTER_SCRIPTED_UI(KeybindingHandler);
 
 struct RenderKeybinding : ScriptedUIInterface {
-  static variant<Texture*, string> getKeybindingGlyph(GuiFactory* f, Keybinding binding) {
+  variant<Texture*, string> getKeybindingGlyph(GuiFactory* f, Keybinding binding) const {
     auto steamInput = f->getSteamInput();
     if (steamInput && !steamInput->controllers.empty()) {
       if (auto key = KeybindingMap::getControllerMapping(binding))
         if (auto path = steamInput->getGlyph(*key))
           return &f->steamInputTexture(*path);
     }
-    if (auto k = f->getKeybindingMap()->getText(binding))
-      return "[" + *k + "]";
+    if (!controllerOnly)
+      if (auto k = f->getKeybindingMap()->getText(binding))
+        return "[" + *k + "]";
     return ""_s;
   }
 
@@ -224,7 +226,8 @@ struct RenderKeybinding : ScriptedUIInterface {
   }
 
   Keybinding SERIAL(key);
-  SERIALIZE_ALL(roundBracket(), NAMED(key));
+  bool SERIAL(controllerOnly) = false;
+  SERIALIZE_ALL(roundBracket(), NAMED(key), OPTION(controllerOnly));
 };
 
 REGISTER_SCRIPTED_UI(RenderKeybinding);

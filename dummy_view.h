@@ -30,7 +30,7 @@ class DummyView : public View {
       const string& message, optional<Keybinding> cycleKey) override {
     return none;
   }
-  virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) override {
+  virtual optional<int> getNumber(const string& title, Range range, int initial) override {
     return none;
   }
   virtual optional<string> getText(const string& title, const string& value, int maxLength,

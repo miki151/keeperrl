@@ -73,7 +73,7 @@ class WindowView: public View {
   virtual double getGameSpeed() override;
   virtual optional<int> chooseAtMouse(const vector<string>& elems) override;
 
-  virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) override;
+  virtual optional<int> getNumber(const string& title, Range range, int initial) override;
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint) override;
   virtual optional<int> chooseItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollpos) override;

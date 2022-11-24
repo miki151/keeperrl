@@ -1,0 +1,48 @@
+
+{
+  ExitButtons()
+  Using "decrease" Button(buttonId = WHEEL_UP)
+  Using "increase" Button(buttonId = WHEEL_DOWN)
+  Vertical {
+    Using "title" Label()
+    Height 10 {}
+    Horizontal {
+      Using "decrease" StandardButtonNotFocusable(Horizontal {
+        Label("<")
+        Width 5 {}
+        KeybindingHandler("MENU_LEFT")
+        RenderKeybinding("MENU_LEFT", true)
+      })
+      Width 5 {}
+      Stretch Using "slider" Sliding()
+      Width 5 {}
+      Using "increase" StandardButtonNotFocusable(Horizontal {
+        Label(">")
+        Width 5 {}
+        KeybindingHandler("MENU_RIGHT")
+        RenderKeybinding("MENU_RIGHT", true)
+      })
+    }
+    #Horizontal {
+    #  Using "range_begin" Label()
+      Stretch Position(MIDDLE, Using "current" Label())
+    #  Using "range_end" Label()
+    #}
+    Height 10 {}
+    Position(MIDDLE, Horizontal {
+      Using "confirm" StandardButtonNotFocusable(Horizontal {
+        Label("Confirm")
+        Width 5 {}
+        KeybindingHandler("MENU_SELECT")
+        RenderKeybinding("MENU_SELECT", true)
+      })
+      Width 5 {}
+      Using "EXIT" StandardButtonNotFocusable(Horizontal {
+        Label("Cancel")
+        Width 5 {}
+        KeybindingHandler("EXIT_MENU")
+        RenderKeybinding("EXIT_MENU", true)
+      })
+    })
+  }
+}

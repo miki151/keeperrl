@@ -2425,17 +2425,68 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
     return WL(buttonLabel, "upgrade", button);
 }
 
+optional<int> GuiBuilder::getNumber(const string& title, Vec2 position, Range range, int initial) {
+  ScriptedUIState state;
+  int result = initial;
+  bool confirmed = false;
+  while (true) {
+    bool changed = false;
+    ScriptedUIData data = ScriptedUIDataElems::Record {{
+      {"title", title},
+      {"range_begin", toString(range.getStart())},
+      {"range_end", toString(range.getEnd())},
+      {"current", toString(result)},
+      {"confirm", ScriptedUIDataElems::Callback {
+          [&confirmed] { confirmed = true; return true; }
+      }},
+      {"slider", ScriptedUIDataElems::SliderData {
+        [range, &result, &changed] (double value) {
+          int newResult = value * range.getLength() + range.getStart();
+          if (newResult != result) {
+            result = newResult;
+            changed = true;
+            return true;
+          }
+          return false;
+        },
+        double(result - range.getStart()) / range.getLength(),
+        true
+      }},
+      {"increase", ScriptedUIDataElems::Callback {
+        [range, &state, &result, &changed] {
+          changed = true;
+          result = min(range.getEnd(), result + 1);
+          state.sliderState.clear();
+          return true;
+        },
+      }},
+      {"decrease", ScriptedUIDataElems::Callback {
+        [range, &state, &result, &changed] {
+          changed = true;
+          state.sliderState.clear();
+          result = max(range.getStart(), result - 1);
+          return true;
+        },
+      }}
+    }};
+    bool exit = false;
+    auto ui = gui.scripted([&]{exit = true; }, ScriptedUIId("number_menu"), data, state);
+    drawMiniMenu(std::move(ui), exit, position, 450, false);
+    if (!changed)
+      break;
+  }
+  if (confirmed)
+    return result;
+  else
+    return none;
+}
+
 function<void(Rectangle)> GuiBuilder::getItemCountCallback(const CollectiveInfo::QueuedItemInfo& elem) {
   return [=] (Rectangle bounds) {
-      auto lines = WL(getListBuilder, legendLineHeight);
-      disableTooltip = true;
-      DestructorFunction dFun([this] { disableTooltip = false; });
-      bool exit = false;
-      SyncQueue<optional<int>> res;
-      lines.addElem(drawChooseNumberMenu(res, "Change the number of items.", Range(0, 100), elem.itemInfo.number, 1), 200);
-      drawMiniMenu(lines.buildVerticalList(), [&]{return !res.isEmpty(); }, bounds.bottomLeft(), 450, false);
-      if (auto cnt = res.pop())
-        callbacks.input({UserInputId::WORKSHOP_CHANGE_COUNT, WorkshopCountInfo{elem.itemIndex, elem.itemInfo.number, *cnt}});
+    auto value = getNumber("Change the number of items.", bounds.bottomLeft(), Range(0, 100), elem.itemInfo.number);
+    if (!!value && *value != elem.itemInfo.number)
+      callbacks.input({UserInputId::WORKSHOP_CHANGE_COUNT, WorkshopCountInfo{elem.itemIndex, elem.itemInfo.number,
+          *value}});
   };
 }
 
@@ -4114,41 +4165,6 @@ SGuiElem GuiBuilder::drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id
   return WL(setWidth, 380,
       WL(miniWindow, WL(margins, WL(scrollable, lines.buildVerticalList(), scrollPos), 15),
           [&queue] { queue.push(none); }));
-}
-
-SGuiElem GuiBuilder::drawChooseNumberMenu(SyncQueue<optional<int>>& queue, const string& title,
-    Range range, int initial, int increments) {
-  auto lines = WL(getListBuilder, legendLineHeight);
-  lines.addElem(WL(centerHoriz, WL(label, title)));
-  lines.addSpace(legendLineHeight / 2);
-  auto currentChoice = make_shared<int>((initial - range.getStart()) / increments);
-  auto getCurrent = [range, currentChoice, increments] {
-    return range.getStart() + *currentChoice * increments;
-  };
-  const int sideMargin = 50;
-  lines.addElem(WL(leftMargin, sideMargin, WL(rightMargin, sideMargin, WL(stack,
-      WL(margins, WL(rectangle, Color::ALMOST_DARK_GRAY), 0, legendLineHeight / 3, 0, legendLineHeight / 3),
-      WL(slider, WL(preferredSize, 10, 25, WL(rectangle, Color::WHITE)), currentChoice,
-          range.getLength() / increments))
-  )));
-  const int width = 380;
-  lines.addElem(WL(stack,
-      WL(centerHoriz, WL(labelFun, [getCurrent]{ return toString(getCurrent()); }), 30),
-      WL(translate, WL(centeredLabel, Renderer::HOR, toString(range.getStart())), Vec2(sideMargin, 0), Vec2(1, 0)),
-      WL(translate, WL(centeredLabel, Renderer::HOR, toString(range.getEnd())), Vec2(-sideMargin, 0), Vec2(1, 0),
-          GuiFactory::TranslateCorner::TOP_RIGHT)
-  ));
-  auto confirmFun = [&queue, getCurrent] { queue.push(getCurrent());};
-  lines.addElem(WL(centerHoriz, WL(getListBuilder)
-      .addElemAuto(WL(stack,
-          WL(keyHandler, confirmFun, gui.getConfirmationKeys(), true),
-          WL(buttonLabel, "Confirm", confirmFun)))
-      .addSpace(15)
-      .addElemAuto(WL(buttonLabel, "Cancel", [&queue] { queue.push(none);}))
-      .buildHorizontalList()
-  ));
-  return WL(setWidth, width,
-      WL(miniWindow, WL(margins, lines.buildVerticalList(), 15), [&queue] { queue.push(none); }));
 }
 
 SGuiElem GuiBuilder::drawTickBox(shared_ptr<bool> value, const string& title) {
