@@ -26,6 +26,7 @@
 #include "unique_entity.h"
 #include "view_id.h"
 #include "campaign_menu_index.h"
+#include "keybinding.h"
 
 class CreatureView;
 class Level;
