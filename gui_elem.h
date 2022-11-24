@@ -212,6 +212,7 @@ class GuiFactory {
   SGuiElem viewObject(function<ViewId()>, double scale = 1, Color = Color::WHITE);
   SGuiElem asciiBackground(ViewId);
   enum class TranslateCorner {
+    TOP_LEFT_SHIFTED,
     TOP_LEFT,
     TOP_RIGHT,
     BOTTOM_LEFT,

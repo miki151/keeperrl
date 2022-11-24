@@ -2205,8 +2205,10 @@ class TranslateGui : public GuiLayout {
 
   Vec2 getCorner(Vec2 size) {
     switch (corner) {
-      case Corner::TOP_LEFT:
+      case Corner::TOP_LEFT_SHIFTED:
         return getBounds().topLeft() - Vec2(size.x, 0);
+      case Corner::TOP_LEFT:
+        return getBounds().topLeft();
       case Corner::TOP_RIGHT:
         return getBounds().topRight();
       case Corner::BOTTOM_LEFT:
