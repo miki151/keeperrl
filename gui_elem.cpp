@@ -2203,10 +2203,10 @@ class TranslateGui : public GuiLayout {
       : GuiLayout(makeVec(std::move(e))), pos(p), size(s), corner(corner) {
   }
 
-  Vec2 getCorner() {
+  Vec2 getCorner(Vec2 size) {
     switch (corner) {
       case Corner::TOP_LEFT:
-        return getBounds().topLeft();
+        return getBounds().topLeft() - Vec2(size.x, 0);
       case Corner::TOP_RIGHT:
         return getBounds().topRight();
       case Corner::BOTTOM_LEFT:
@@ -2218,7 +2218,7 @@ class TranslateGui : public GuiLayout {
 
   virtual Rectangle getElemBounds(int num) override {
     Vec2 sz = size ? *size : getBounds().getSize();
-    auto corner = getCorner();
+    auto corner = getCorner(sz);
     return Rectangle(corner + pos, corner + pos + sz);
   }
 

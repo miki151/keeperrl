@@ -2335,7 +2335,7 @@ function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInf
                 WL(keyHandler, callbackIncrease, {gui.getKey(C_MENU_RIGHT)}, true),
                 WL(keyHandler, callbackDecrease, {gui.getKey(C_MENU_LEFT)}, true),
                 tooltip ? WL(translate, WL(renderTopLayer, tooltip), Vec2(0, 0), *tooltip->getPreferredSize(),
-                    GuiFactory::TranslateCorner::BOTTOM_LEFT)
+                    GuiFactory::TranslateCorner::TOP_LEFT)
                     : WL(empty)
             ), [&selected, i] { return selected == i;}),
             idLine.buildHorizontalList(),
@@ -2557,7 +2557,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
   auto createControllerTooltip = [&] (SGuiElem content, bool rightSide) {
     if (content)
       return WL(conditional, WL(translate, WL(renderTopLayer, content), Vec2(0, 0), content->getPreferredSize(),
-            rightSide ? GuiFactory::TranslateCorner::BOTTOM_LEFT : GuiFactory::TranslateCorner::TOP_RIGHT),
+            rightSide ? GuiFactory::TranslateCorner::TOP_LEFT : GuiFactory::TranslateCorner::TOP_RIGHT),
         [this] { return !disableTooltip;});
     else
       return WL(empty);
@@ -2734,6 +2734,8 @@ void GuiBuilder::updateWorkshopIndex(const CollectiveInfo::ChosenWorkshopInfo& i
       case 2: workshopIndex->x = min(workshopIndex->x, info.resourceTabs.size() - 1); break;
     }
   }
+  else if (!gui.getSteamInput()->controllers.empty())
+    workshopIndex = Vec2(0, 0);
 }
 
 static string getName(TechId id) {
