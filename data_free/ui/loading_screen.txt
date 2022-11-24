@@ -6,7 +6,7 @@ MiniWindow(Margins(5, MinWidth 300 {
     Height 10 {}
     Using "cancelCallback" {
       KeybindingHandler(EXIT_MENU)
-      Position(MIDDLE, StandardButton(Horizontal { Label("Cancel") Width 10 {} RenderKeybinding(EXIT_MENU)}))
+      Position(MIDDLE, StandardButton(Horizontal { Label("Cancel") Width 10 {} RenderKeybinding(EXIT_MENU, true)}))
     }
   })
 }))
