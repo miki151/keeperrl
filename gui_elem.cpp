@@ -3196,7 +3196,7 @@ SGuiElem GuiFactory::blink(SGuiElem elem, SGuiElem elem2) {
 }
 
 SGuiElem GuiFactory::tutorialHighlight() {
-  return blink(uiHighlightLine(Color::YELLOW));
+  return blink(uiHighlightLine(Color::YELLOW.transparency(120)));
 }
 
 SGuiElem GuiFactory::uiHighlightLineConditional(function<bool()> cond, Color c) {

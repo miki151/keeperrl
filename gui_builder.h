@@ -204,7 +204,7 @@ class GuiBuilder {
   int bestiaryIndex = 0;
   int spellSchoolIndex = 0;
   optional<Vec2> workshopIndex;
-  optional<int> helpIndex = 0;
+  optional<int> helpIndex;
   optional<int> villainsIndex;
   optional<Vec2> creatureListIndex;
   int rightBandInfoHash = 0;
@@ -347,6 +347,9 @@ class GuiBuilder {
   vector<SDL::SDL_Keysym> getOverlayCloseKeys();
   ScriptedUIState scriptedUIState;
   ScriptedUIData scriptedUIData;
+  string leftClickText();
+  string rightClickText();
+  bool hasController() const;
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

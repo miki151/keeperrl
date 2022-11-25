@@ -50,6 +50,7 @@
 #include "container_range.h"
 #include "keybinding_map.h"
 #include "steam_input.h"
+#include "tutorial_state.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -291,8 +292,14 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
       }, {gui.getKey(C_BUILDINGS_MENU)}, true));
   for (int i : All(buttons)) {
     if (!buttons[i].groupName.empty() && buttons[i].groupName != lastGroup) {
+      optional<TutorialHighlight> tutorialHighlight;
+      if (tutorial)
+        for (int j = i; j < buttons.size() && buttons[i].groupName == buttons[j].groupName; ++j)
+          if (auto highlight = buttons[j].tutorialHighlight)
+            if (tutorial->highlights.contains(*highlight))
+              tutorialHighlight = *highlight;
       keypressOnly.push_back(WL(conditionalStopKeys,
-          WL(keyHandler, [this, newGroup = buttons[i].groupName, i, buttons, lastGroup] {
+          WL(keyHandler, [this, tutorialHighlight, newGroup = buttons[i].groupName, i, buttons, lastGroup] {
             optional<string> group;
             int button;
             if (!activeButton) {
@@ -302,33 +309,33 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
               else return;
             } else
               button = *activeButton;
-            setActiveButton(button, buttons[button].viewId, group, none, buttons[button].isBuilding);
+            setActiveButton(button, buttons[button].viewId, group, tutorialHighlight, buttons[button].isBuilding);
           }, {gui.getKey(C_BUILDINGS_CONFIRM), gui.getKey(C_BUILDINGS_RIGHT)}, true),
           [this, newGroup = buttons[i].groupName] {
             return collectiveTab == CollectiveTab::BUILDINGS && activeGroup == newGroup;
           }
       ));
       keypressOnly.push_back(WL(conditionalStopKeys,
-          WL(keyHandler, [this, newGroup = buttons[i].groupName, i, buttons] {
+          WL(keyHandler, [this, tutorialHighlight, newGroup = buttons[i].groupName, i, buttons] {
             if (auto newBut = getNextActive(buttons, i, getActiveButton(), 1))
-              setActiveButton(*newBut, buttons[*newBut].viewId, newGroup, none, buttons[*newBut].isBuilding);
+              setActiveButton(*newBut, buttons[*newBut].viewId, newGroup, tutorialHighlight, buttons[*newBut].isBuilding);
           }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
           [this, newGroup = buttons[i].groupName] {
             return collectiveTab == CollectiveTab::BUILDINGS && !!activeButton && activeGroup == newGroup;
           }
       ));
       keypressOnly.push_back(WL(conditionalStopKeys,
-          WL(keyHandler, [this, newGroup = buttons[i].groupName, i, buttons] {
+          WL(keyHandler, [this, tutorialHighlight, newGroup = buttons[i].groupName, i, buttons] {
             if (auto newBut = getNextActive(buttons, i, getActiveButton(), -1))
-              setActiveButton(*newBut, buttons[*newBut].viewId, newGroup, none, buttons[*newBut].isBuilding);
+              setActiveButton(*newBut, buttons[*newBut].viewId, newGroup, tutorialHighlight, buttons[*newBut].isBuilding);
           }, {gui.getKey(C_BUILDINGS_UP)}, true),
           [this, newGroup = buttons[i].groupName] {
             return collectiveTab == CollectiveTab::BUILDINGS && activeGroup == newGroup;
           }
       ));
       keypressOnly.push_back(WL(conditionalStopKeys,
-          WL(keyHandler, [this, newGroup = buttons[i].groupName] {
-            setActiveGroup(newGroup, none);
+          WL(keyHandler, [this, tutorialHighlight, newGroup = buttons[i].groupName] {
+            setActiveGroup(newGroup, tutorialHighlight);
           }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
           [this, lastGroup, backGroup = buttons.back().groupName] {
             return collectiveTab == CollectiveTab::BUILDINGS && !activeButton && (
@@ -336,20 +343,14 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
           }
       ));
       keypressOnly.push_back(WL(conditionalStopKeys,
-          WL(keyHandler, [this, nextGroup = lastGroup.empty() ? buttons.back().groupName : lastGroup] {
-            setActiveGroup(nextGroup, none);
+          WL(keyHandler, [this, tutorialHighlight, nextGroup = lastGroup.empty() ? buttons.back().groupName : lastGroup] {
+            setActiveGroup(nextGroup, tutorialHighlight);
           }, {gui.getKey(C_BUILDINGS_UP)}, true),
           [this, newGroup = buttons[i].groupName] {
             return collectiveTab == CollectiveTab::BUILDINGS && activeGroup == newGroup && !activeButton;
           }
       ));
       lastGroup = buttons[i].groupName;
-      optional<TutorialHighlight> tutorialHighlight;
-      if (tutorial)
-        for (int j = i; j < buttons.size() && buttons[i].groupName == buttons[j].groupName; ++j)
-          if (auto highlight = buttons[j].tutorialHighlight)
-            if (tutorial->highlights.contains(*highlight))
-              tutorialHighlight = *highlight;
       function<void()> buttonFunHotkey = [=] {
         if (activeGroup != lastGroup) {
           setCollectiveTab(CollectiveTab::BUILDINGS);
@@ -781,6 +782,10 @@ int GuiBuilder::getImmigrationBarWidth() const {
   return 40;
 }
 
+bool GuiBuilder::hasController() const {
+  return !gui.getSteamInput()->controllers.empty();
+}
+
 SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
   auto continueButton = WL(setHeight, legendLineHeight, WL(buttonLabelBlink, "Continue", [this] {
           callbacks.input(UserInputId::TUTORIAL_CONTINUE);
@@ -792,11 +797,11 @@ SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
   if (info.warning)
     warning = WL(label, *info.warning, Color::RED);
   else
-    warning = WL(label, "Press [Space] to unpause.",
+    warning = WL(label, "Press "_s + (hasController() ? "[A]" : "[Space]") + " to unpause.",
         [this]{ return clock->isPaused() ? Color::RED : Color::TRANSPARENT;});
   return WL(preferredSize, 520, 290, WL(stack, WL(darken), WL(rectangleBorder, Color::GRAY),
       WL(margins, WL(stack,
-        WL(labelMultiLine, info.message, legendLineHeight),
+        WL(labelMultiLine, getMessage(info.state, hasController()), legendLineHeight),
         WL(leftMargin, 50, WL(alignment, GuiFactory::Alignment::BOTTOM_CENTER, WL(setHeight, legendLineHeight, warning))),
         WL(alignment, GuiFactory::Alignment::BOTTOM_RIGHT, info.canContinue ? continueButton : WL(empty)),
         WL(leftMargin, 50, WL(alignment, GuiFactory::Alignment::BOTTOM_LEFT, info.canGoBack ? backButton : WL(empty)))
@@ -869,7 +874,7 @@ SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info, bo
     lines.addElem(line.buildHorizontalList());
   }
   if (showDismissHint) {
-    if (gui.getSteamInput()->controllers.empty())
+    if (!hasController())
       lines.addElem(WL(label, "Right click to dismiss", Renderer::smallTextSize()), legendLineHeight * 2 / 3);
     else {
       auto line = WL(getListBuilder)
@@ -1085,14 +1090,23 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const vector<ImmigrantDataInfo>& imm
         lines.buildVerticalList()));
 }
 
+string GuiBuilder::leftClickText() {
+  return hasController() ? "right trigger" : "left click";
+}
+
+string GuiBuilder::rightClickText() {
+  return hasController() ? "left trigger": "right click";
+}
+
 SGuiElem GuiBuilder::getImmigrationHelpText() {
-  return WL(labelMultiLine, "Welcome to the immigration system! The icons immediately to the left represent "
-                            "creatures that would "
-                            "like to join your dungeon. Left-click accepts, right-click rejects a candidate. "
-                            "Some creatures have requirements that you need to fulfill before "
-                            "they can join. Above this text you can examine all possible immigrants, along with their full "
-                            "requirements. You can also click on the icons to set automatic acception or rejection.",
-                            legendLineHeight);
+  return WL(labelMultiLine,
+      "Welcome to the immigration system! The icons immediately to the left represent "
+      "creatures that would "
+      "like to join your dungeon. " + capitalFirst(leftClickText()) + " accepts, " + rightClickText() + " rejects a candidate. "
+      "Some creatures have requirements that you need to fulfill before "
+      "they can join. Above this text you can examine all possible immigrants, along with their full "
+      "requirements. You can also click on the icons to set automatic acception or rejection.",
+      legendLineHeight);
 }
 
 SGuiElem GuiBuilder::drawImmigrationHelp(const CollectiveInfo& info) {
@@ -1445,7 +1459,7 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
     vector<SGuiElem> tooltips, Vec2 menuPos, int width, bool darkBg, bool exitOnCallback, int* selected) {
   auto lines = WL(getListBuilder, legendLineHeight);
   auto allElems = vector<SGuiElem>();
-  auto selectedDefault = gui.getSteamInput()->controllers.empty() ? -1 : 0;
+  auto selectedDefault = hasController() ? 0 : -1;
   if (!selected)
     selected = &selectedDefault;
   bool exit = false;
@@ -2734,7 +2748,7 @@ void GuiBuilder::updateWorkshopIndex(const CollectiveInfo::ChosenWorkshopInfo& i
       case 2: workshopIndex->x = min(workshopIndex->x, info.resourceTabs.size() - 1); break;
     }
   }
-  else if (!gui.getSteamInput()->controllers.empty())
+  else if (hasController())
     workshopIndex = Vec2(0, 0);
 }
 
@@ -3161,7 +3175,7 @@ SGuiElem GuiBuilder::getClickActions(const ViewObject& object) {
     lines.addSpace(legendLineHeight / 3);
   }
   if (!object.getExtendedActions().isEmpty()) {
-    lines.addElem(WL(label, "Right click:", Color::LIGHT_BLUE));
+    lines.addElem(WL(label, capitalFirst(rightClickText()) + ":", Color::LIGHT_BLUE));
     for (auto action : object.getExtendedActions())
       lines.addElem(WL(label, getText(action), Color::LIGHT_GRAY));
     lines.addSpace(legendLineHeight / 3);
@@ -4582,10 +4596,10 @@ SGuiElem GuiBuilder::drawAvatarsForRole(const vector<View::AvatarData>& avatars,
 
 SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>& queue,
     const vector<View::AvatarData>& avatars) {
-  if (gui.getSteamInput()->controllers.empty())
-    avatarIndex.assign(AvatarIndexElems::None{});
-  else
+  if (hasController())
     avatarIndex.assign(AvatarIndexElems::RoleIndex{0});
+  else
+    avatarIndex.assign(AvatarIndexElems::None{});
   for (auto& avatar : avatars)
     if (options->getValueString(avatar.nameOption).empty())
       options->setValue(avatar.nameOption, randomFirstNameTag);
@@ -4980,7 +4994,7 @@ SGuiElem GuiBuilder::drawGameModeButton(SyncQueue<CampaignAction>& queue, View::
 
 SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
     View::CampaignMenuState& menuState) {
-  if (menuState.index == CampaignMenuElems::None{} && !gui.getSteamInput()->controllers.empty())
+  if (menuState.index == CampaignMenuElems::None{} && hasController())
     menuState.index = CampaignMenuElems::Help{};
   const auto& campaign = campaignOptions.campaign;
   auto& retiredGames = campaignOptions.retired;
@@ -5154,7 +5168,7 @@ SGuiElem GuiBuilder::drawCreatureTooltip(const PlayerInfo& info) {
 
 SGuiElem GuiBuilder::drawCreatureList(const vector<PlayerInfo>& creatures,
     function<void(UniqueEntity<Creature>::Id)> button, int zoom) {
-  if (!gui.getSteamInput()->controllers.empty())
+  if (hasController())
     creatureListIndex = Vec2(0, 0);
   auto minionLines = WL(getListBuilder, 20 * zoom);
   auto line = WL(getListBuilder, 30 * zoom);
