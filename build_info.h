@@ -11,6 +11,7 @@
 #include "tech_id.h"
 #include "pretty_archive.h"
 #include "furniture_layer.h"
+#include "tutorial_highlight.h"
 
 namespace BuildInfoTypes {
   struct Furniture {
@@ -78,7 +79,21 @@ struct BuildInfo {
   bool SERIAL(hotkeyOpensGroup) = false;
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
   bool SERIAL(isBuilding) = false;
-  SERIALIZE_ALL(NAMED(type), NAMED(name), OPTION(groupName), OPTION(help), NAMED(key), OPTION(requirements), OPTION(hotkeyOpensGroup), NAMED(tutorialHighlight), OPTION(isBuilding))
+  template <class Archive>
+  void serializeImpl(Archive& ar1, const unsigned int) {
+    ar1(NAMED(type), NAMED(name), NAMED(groupName), OPTION(help), NAMED(key), OPTION(requirements), OPTION(hotkeyOpensGroup), NAMED(tutorialHighlight), OPTION(isBuilding));
+  }
+  template <class Archive>
+  void serialize(Archive& ar1, const unsigned int v) {
+    serializeImpl(ar1, v);
+  }
+
+  void serialize(PrettyInputArchive& ar1, const unsigned int v) {
+    serializeImpl(ar1, v);
+    ar1(endInput());
+    if (groupName.empty())
+      ar1.error("Group name for \"" + name + "\" is empty.");
+  }
 };
 
 static_assert(std::is_nothrow_move_constructible<BuildInfo>::value, "T should be noexcept MoveConstructible");

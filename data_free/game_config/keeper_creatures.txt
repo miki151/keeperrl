@@ -15,10 +15,10 @@
   zLevelGroups = { "basic" "evil" }
   initialTech = { "sorcery" }
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds"
+      "structure" "doors" "floors" "storage" "zones" "library" "beds"
       "dining table" "coffins" "pigsty"
-      "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "demon_shrine"
-      "prison" "orders" "installations" "minion_statues" "magical_installations" "healing_totem"
+      "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace"
+      "prison" "orders" "throne" "demon_shrine" "installations" "minion_statues" "magical_installations" "healing_totem"
       "traps"
   }
   workshopGroups = { "basic" "bows" }
@@ -45,9 +45,9 @@
   zLevelGroups = { "basic" "lawful" }
   initialTech = { "archery" }
   buildingGroups = {
-      "structure" "arrowslits" "doors" "floors" "storage" "zones" "library" "throne" "beds"
+      "structure" "arrowslits" "doors" "floors" "storage" "zones" "library" "beds"
       "dining table" "pigsty" "training" "crafting" "laboratory" "jeweller" "poetry" "distillery"
-      "furnace" "angel_shrine" "prison" "orders" "installations"
+      "furnace" "prison" "orders" "throne" "angel_shrine" "installations"
   }
   workshopGroups = { "basic" "bows" }
   description = "Play as a not-so-evil human race. Recruit knights, priests and angelic beings!"
@@ -64,9 +64,9 @@
   zLevelGroups = { "basic" "evil" }
   initialTech = { "necromancy" }
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "library" "phylactery" "beds" "coffins"
+      "structure" "doors" "floors" "storage" "zones" "library" "beds" "coffins"
       "training" "morgue" "crafting" "embalming" "poetry" "distillery" "furnace" "orders"
-      "installations_no_heads" "magical_installations"
+      "phylactery" "installations_no_heads" "magical_installations"
   }
   workshopGroups = { "morgue" "basic_without_lab" "bows" }
   description = "Craft hordes of undead from the corpses of fallen enemies. "
@@ -139,9 +139,9 @@
   zLevelGroups = { "basic" "evil" "goblins" }
   initialTech = { }
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "dining table" "coffins" 
+      "structure" "doors" "floors" "storage" "zones" "library" "beds" "dining table" "coffins" 
       "pigsty" "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "prison"
-      "orders" "installations" "minion_statues" "traps"
+      "orders" "throne" "installations" "minion_statues" "traps"
   }
   workshopGroups = { "basic" "bows" }
   description = "Play as a Goblin Keeper, and seek the legendary goblin matrons. This faction was originally created by RighteousSinner and Soft Monster for the Bonus Mod."
@@ -183,9 +183,9 @@
   zLevelGroups = { "basic" "evil" }
   initialTech = { }
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "throne" "beds"
+      "structure" "doors" "floors" "storage" "zones" "beds"
       "training_dummies" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "orders"
-      "installations" "traps"
+      "throne" "installations" "traps"
   }
   workshopGroups = { "basic" "crossbows" }
   description = "Build a dungeon as a lone cyclops."

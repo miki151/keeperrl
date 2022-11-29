@@ -90,10 +90,10 @@
 #    { Furniture {{ "FLOOR_PEACE" }                "GOLD" 2 }       "Floor of peace""Floors" }
     { DestroyLayers {FLOOR}                                    "Remove floor"      "Floors" }
   }
-  
+
   "storage"
   {
-    { Zone STORAGE_RESOURCES                                   "Resources"         "Storage" 
+    { Zone STORAGE_RESOURCES                                   "Resources"         "Storage"
         "Only wood, iron, granite, and adamantium can be stored here." "STORAGE" {} true RESOURCE_STORAGE}
 
     { Zone STORAGE_EQUIPMENT                                   "Equipment"         "Storage"
@@ -156,39 +156,28 @@
 
   "library"
   {
-    { Furniture {{ "BOOKCASE_WOOD" }   "WOOD" 15 }                 "Wooden bookcase"   "Library"  
+    { Furniture {{ "BOOKCASE_WOOD" }   "WOOD" 15 }                 "Wooden bookcase"   "Library"
         "Train your minions' magical powers here." "BOOKCASES"     {TechId "sorcery"} true BUILD_LIBRARY }
-    
+
     { Furniture {{ "BOOKCASE_IRON" }   "IRON" 15 }                 "Iron bookcase"     "Library"
         "Train your minions' magical powers here." none          {TechId "advanced sorcery"} }
- 
+
     { Furniture {{ "BOOKCASE_GOLD" }   "GOLD" 15 }                 "Golden bookcase"   "Library"
         "Train your minions' magical powers here." none           {TechId "master sorcery"}}
   }
- 
-  "throne"
-  {
-    { Furniture { types = { "THRONE" } cost = "GOLD" 500 limit = 1} "Throne" "" ""  none   {DungeonLevel 10} }
-  }
 
-  "phylactery"
-  {
-    { Furniture { types = { "PHYLACTERY" } cost = "GOLD" 500} "Phylactery" ""
-        "Free your soul from your body."  none }
-  }
- 
   "beds"
   {
     { Furniture {{ "BED1" }       "WOOD" 12 }                      "Basic bed"         "Living"
         "Humanoid minions sleep here." "BEDS" {} true  BUILD_BED }
- 
+
     { Furniture {{ "BED2" }       "IRON" 12 }                      "Fine bed"          "Living"
         "Humanoid minions sleep here." }
 
     { Furniture {{ "BED3" }       "GOLD" 12 }                      "Luxurious bed"     "Living"
         "Humanoid minions sleep here."}
   }
-   
+
   "dining table"
   {
     { Furniture {{ "DINING_TABLE" }"WOOD" 5 }                      "Dining table"      "Living"
@@ -301,17 +290,6 @@
     { Furniture {{ "AUTOMATON_ENGINE_ADA" } "ADA" 50 }                "Adamantine engine"   "Automaton engines"
         ""            none { TechId "automatons" }}
   }
-  "demon_shrine"
-  {
-    { Furniture {{ "DEMON_SHRINE" } "GOLD" 30 }                    "Demon shrine"      ""
-        "" none { TechId "demonology" }}
-  }
-
-  "angel_shrine"
-  {
-    { Furniture {{ "ANGEL_SHRINE" } "GOLD" 30 }                    "Angel shrine"      ""
-        "" none { TechId "worship" }}
-  }
 
   "prison"
   {
@@ -354,9 +332,32 @@
 
     { DestroyLayers {CEILING MIDDLE}                           "Remove construction" "Orders"
         "" "REMOVE_CONSTRUCTION" {} false REMOVE_CONSTRUCTION }
- 
+
     { ForbidZone                                               "Forbid zone"      "Orders"
         "Mark tiles to keep minions from entering."}
+  }
+
+  "throne"
+  {
+    { Furniture { types = { "THRONE" } cost = "GOLD" 500 limit = 1} "Throne" "Installations" ""  none   {DungeonLevel 10} }
+  }
+
+  "phylactery"
+  {
+    { Furniture { types = { "PHYLACTERY" } cost = "GOLD" 500} "Phylactery" "Installations"
+        "Free your soul from your body."  none }
+  }
+
+  "demon_shrine"
+  {
+    { Furniture {{ "DEMON_SHRINE" } "GOLD" 30 }                    "Demon shrine"      "Installations"
+        "Summon demons and other wicked spirits." none { TechId "demonology" }}
+  }
+
+  "angel_shrine"
+  {
+    { Furniture {{ "ANGEL_SHRINE" } "GOLD" 30 }                    "Angel shrine"      "Installations"
+        "Summon angels and other kind spirits." none { TechId "worship" }}
   }
 
   "installations_no_heads"
@@ -452,4 +453,4 @@
     { Furniture {{ "DESTROY_WALLS_TRAP" }  "WOOD" 20 }  "Crumble trap"     "Traps"
         "All walls up to two tiles away are destroyed." none        { TechId "advanced traps" }}
   }
- 
+
