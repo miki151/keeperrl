@@ -1857,7 +1857,7 @@
     viewId = { "warrior" }
     attr = {
       DAMAGE 27
-      DEFENSE 19 
+      DEFENSE 19
       WORKSHOP 15
     }
     body = {
@@ -1885,7 +1885,7 @@
     attr = {
       DAMAGE 27
       DEFENSE 19
-      SPELL_DAMAGE 30 
+      SPELL_DAMAGE 30
     }
     body = {
       type = Humanoid LARGE
@@ -1993,7 +1993,6 @@
       CROPS_SKILL 1
       RIDER 1
     }
-    companions = {1 true none 0.01 { "DOG" }}
     name = {
       name = "child"
       pluralName = "children"
@@ -2009,20 +2008,17 @@
 "ESKIMO_CHILD" inherit "CHILD"
   {
     viewId = { "eskimo_child" }
-    companions = {1 true none 0.01 { "HUSKY" }}
     permanentEffects = {}
   }
 "NATIVE_CHILD" inherit "CHILD"
   {
     viewId = { "native3" }
     permanentEffects = {}
-    companions = {}
   }
 "NOMAD_CHILD" inherit "CHILD"
   {
     viewId = { "nomad_child" }
     permanentEffects = {}
-    companions = {}
   }
 "SPIDER_FOOD"
   {
