@@ -301,7 +301,7 @@ class GuiBuilder {
   SGuiElem drawQuartersButton(const PlayerInfo&, const vector<ViewId>& allQuarters);
   SGuiElem drawWarningWindow(const CollectiveInfo::RebellionChance&);
   SGuiElem drawRebellionChanceText(CollectiveInfo::RebellionChance);
-  SGuiElem drawVillainsOverlay(const VillageInfo&);
+  SGuiElem drawVillainsOverlay(const VillageInfo&, optional<int> villainsIndexDummy);
   void drawAllVillainsMenu(Vec2 pos, const VillageInfo&);
   SGuiElem drawVillainInfoOverlay(const VillageInfo::Village&, bool showDismissHint);
   SGuiElem drawVillainType(VillainType);

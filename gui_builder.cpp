@@ -876,6 +876,8 @@ SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info, bo
   if (showDismissHint) {
     if (!hasController())
       lines.addElem(WL(label, "Right click to dismiss", Renderer::smallTextSize()), legendLineHeight * 2 / 3);
+    else if (!villainsIndex)
+      lines.addElem(WL(label, "Left trigger to dismiss", Renderer::smallTextSize()), legendLineHeight * 2 / 3);
     else {
       auto line = WL(getListBuilder)
           .addElemAuto(gui.steamInputGlyph(C_WORLD_MAP, 16))
@@ -890,7 +892,7 @@ SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info, bo
   return WL(miniWindow, WL(margins, lines.buildVerticalList(), 15));
 }
 
-SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info) {
+SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info, optional<int> villainsIndexDummy) {
   const int labelOffsetY = 3;
   auto lines = WL(getListBuilder);
   lines.addSpace(50);
@@ -3372,7 +3374,7 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, const GameInfo& info) {
     case GameInfo::InfoType::BAND: {
       auto& collectiveInfo = *info.playerInfo.getReferenceMaybe<CollectiveInfo>();
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawVillainsOverlay, this), THIS_LINE,
-          info.villageInfo), OverlayInfo::VILLAINS});
+          info.villageInfo, villainsIndex), OverlayInfo::VILLAINS});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), THIS_LINE,
           collectiveInfo.immigration, info.tutorial, !collectiveInfo.allImmigration.empty()),
           OverlayInfo::IMMIGRATION});
