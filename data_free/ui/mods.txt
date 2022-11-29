@@ -18,6 +18,12 @@ MarginLeft(18, Vertical {
 })
 End
 
+Def SelectButton(Text)
+{
+  KeybindingHandler(MENU_SELECT)
+  StandardButtonNotFocusable(Horizontal{ Label(Text) Width 10 {} RenderKeybinding(MENU_SELECT, true)})
+}
+End
 {
   BlockEvents
   ExitButtons()
@@ -25,7 +31,7 @@ End
   WindowNoMargin(Width 900 Height 700 MarginTop(15, MarginBottom(15, {
     Horizontal {
       Width 300 Scrolling(0, Vertical {
-          Using "local" ModList("Installed:")
+          Using "local" ModList("Downloaded:")
           Using "subscribed" ModList("Subscribed:")
           Using "online" ModList("Online:")
       })
@@ -40,18 +46,9 @@ End
         Height 15 {}
         Stretch Using "description" Scrolling(1, MarginRight(30, Paragraph(520)))
         Horizontal {
-          Using "Activate" {
-            KeybindingHandler(MENU_SELECT)
-            StandardButtonNotFocusable(Label("Activate"))
-          }
-          Using "Deactivate" {
-            KeybindingHandler(MENU_SELECT)
-            StandardButtonNotFocusable(Label("Dectivate"))
-          }
-          Using "Download" {
-            KeybindingHandler(MENU_SELECT)
-            StandardButtonNotFocusable(Label("Download"))
-          }
+          Using "Activate" SelectButton("Activate")
+          Using "Deactivate" SelectButton("Deactivate")
+          Using "Download" SelectButton("Download")
           Using "Update" StandardButtonNotFocusable(Label("Update"))
           Using "Upload" StandardButtonNotFocusable(Label("Upload"))
           Using "show_workshop" StandardButtonNotFocusable(Label("Show in Steam Workshop"))
