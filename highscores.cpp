@@ -205,6 +205,7 @@ void Highscores::present(View* view, optional<Score> lastAdded) const {
     return;
   vector<HighscoreList> lists;
   int tab = 0;
+  ScriptedUIState uiState{};
   while (1) {
     ScriptedUIDataElems::Record main;
     int index = 0;
@@ -234,7 +235,6 @@ void Highscores::present(View* view, optional<Score> lastAdded) const {
     main.elems["EXIT"] = ScriptedUIDataElems::Callback {
         [&exit] { exit = true; return true; }
     };
-    ScriptedUIState uiState{};
     view->scriptedUI("highscores", main, uiState);
     if (exit)
       break;
