@@ -270,7 +270,6 @@ class GuiBuilder {
   SGuiElem workshopsOverlayCache;
   int workshopsOverlayHash = 0;
   SGuiElem drawTasksOverlay(const CollectiveInfo&);
-  SGuiElem drawNextWaveOverlay(const CollectiveInfo::NextWave&);
   SGuiElem drawBuildingsOverlay(const vector<CollectiveInfo::Button>&, const optional<TutorialInfo>&);
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;
@@ -299,9 +298,11 @@ class GuiBuilder {
   SGuiElem drawQuartersButton(const PlayerInfo&, const vector<ViewId>& allQuarters);
   SGuiElem drawWarningWindow(const CollectiveInfo::RebellionChance&);
   SGuiElem drawRebellionChanceText(CollectiveInfo::RebellionChance);
-  SGuiElem drawVillainsOverlay(const VillageInfo&, optional<int> villainsIndexDummy);
+  SGuiElem drawVillainsOverlay(const VillageInfo&, const optional<CollectiveInfo::NextWave>&,
+      optional<int> villainsIndexDummy);
   void drawAllVillainsMenu(Vec2 pos, const VillageInfo&);
   SGuiElem drawVillainInfoOverlay(const VillageInfo::Village&, bool showDismissHint);
+  SGuiElem drawNextWaveOverlay(const CollectiveInfo::NextWave&);
   SGuiElem drawVillainType(VillainType);
   SGuiElem drawLyingItemsList(const string& title, const ItemCounts&, int maxWidth);
   SGuiElem drawTickBox(shared_ptr<bool> value, const string& title);

@@ -892,7 +892,25 @@ SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info, bo
   return WL(miniWindow, WL(margins, lines.buildVerticalList(), 15));
 }
 
-SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info, optional<int> villainsIndexDummy) {
+SGuiElem GuiBuilder::drawNextWaveOverlay(const CollectiveInfo::NextWave& info) {
+  auto lines = WL(getListBuilder, legendLineHeight);
+  lines.addElem(WL(label, capitalFirst(info.attacker)));
+  lines.addElem(WL(label, "Attacking in " + toString(info.numTurns.getVisibleInt()) + " turns!", Color::RED));
+  if (!hasController())
+    lines.addElem(WL(label, "Right click to dismiss", Renderer::smallTextSize()), legendLineHeight * 2 / 3);
+  else if (!villainsIndex)
+    lines.addElem(WL(label, "Left trigger to dismiss", Renderer::smallTextSize()), legendLineHeight * 2 / 3);
+  else {
+    auto line = WL(getListBuilder)
+        .addElemAuto(gui.steamInputGlyph(C_WORLD_MAP, 16))
+        .addElemAuto(WL(label, " to dismiss", Renderer::smallTextSize()));
+    lines.addElem(std::move(line).buildHorizontalList(), legendLineHeight * 2 / 3);
+  }
+  return WL(miniWindow, WL(margins, lines.buildVerticalList(), 15));
+}
+
+SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info, const optional<CollectiveInfo::NextWave>& nextWave,
+    optional<int> villainsIndexDummy) {
   const int labelOffsetY = 3;
   auto lines = WL(getListBuilder);
   lines.addSpace(50);
@@ -917,9 +935,44 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info, optional<int> 
         WL(conditionalStopKeys, WL(keyHandlerRect, callback, {gui.getKey(C_BUILDINGS_CONFIRM)}, true),
             [this, buttonsCnt] { return villainsIndex == buttonsCnt; })
     ));
-  } else
+    ++buttonsCnt;
+  } else if (!nextWave)
     return gui.empty();
-  ++buttonsCnt;
+  auto addVillainButton = [&](function<void()> dismissCallback, function<void()> actionCallback, SGuiElem label,
+      const ViewIdList& viewId, SGuiElem infoOverlay) {
+    auto infoOverlaySize = *infoOverlay->getPreferredSize();
+    lines.addElemAuto(WL(stack, makeVec(
+        getHighlight(),
+        WL(button, actionCallback),
+        WL(releaseRightButton, dismissCallback),
+        WL(conditionalStopKeys, WL(stack,
+                WL(keyHandler, dismissCallback, {gui.getKey(C_WORLD_MAP)}, true),
+                WL(keyHandler, actionCallback, {gui.getKey(C_BUILDINGS_CONFIRM)}, true)
+            ), [this, buttonsCnt] { return villainsIndex == buttonsCnt; }),
+        WL(onMouseRightButtonHeld, WL(margins, WL(rectangle, Color(255, 0, 0, 100)), 0, 2, 2, 2)),
+        WL(getListBuilder)
+            .addElemAuto(WL(stack,
+                 WL(setWidth, 34, WL(centerVert, WL(centerHoriz, WL(bottomMargin, -3,
+                     WL(viewObject, ViewId("round_shadow"), 1, Color(255, 255, 255, 160)))))),
+                 WL(setWidth, 34, WL(centerVert, WL(centerHoriz, WL(bottomMargin, 5,
+                     WL(viewObject, viewId)))))))
+            .addElemAuto(WL(rightMargin, 5, WL(translate, std::move(label), Vec2(-2, labelOffsetY))))
+            .buildHorizontalList(),
+        WL(conditional, WL(preferredSize, 5, 5, WL(translate, infoOverlay, Vec2(0, -infoOverlaySize.y), infoOverlaySize)),
+            [this, buttonsCnt] { return villainsIndex == buttonsCnt; }),
+        WL(conditional, getTooltip2(infoOverlay, [=](const Rectangle& r) { return r.topLeft() - Vec2(0, 0 + infoOverlaySize.y);}),
+            [this]{return !bottomWindow && !villainsIndex;})
+    )));
+    ++buttonsCnt;
+  };
+  if (nextWave)
+    addVillainButton(
+        getButtonCallback({UserInputId::DISMISS_NEXT_WAVE}),
+        []{},
+        WL(label, "next enemy wave", Color::RED),
+        nextWave->viewId,
+        drawNextWaveOverlay(*nextWave)
+    );
   for (int i : All(info.villages)) {
     SGuiElem label;
     string labelText;
@@ -939,34 +992,13 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info, optional<int> 
     }
     if (!label || info.dismissedInfos.count({elem.id, labelText}))
       continue;
-    label = WL(translate, std::move(label), Vec2(0, labelOffsetY));
-    auto infoOverlay = drawVillainInfoOverlay(elem, true);
-    auto infoOverlaySize = *infoOverlay->getPreferredSize();
-    auto dismissCallback = getButtonCallback({UserInputId::DISMISS_VILLAGE_INFO,
-        DismissVillageInfo{elem.id, labelText}});
-    lines.addElemAuto(WL(stack, makeVec(
-        getHighlight(),
-        WL(button, actionCallback),
-        WL(releaseRightButton, dismissCallback),
-        WL(conditionalStopKeys, WL(stack,
-                WL(keyHandler, dismissCallback, {gui.getKey(C_WORLD_MAP)}, true),
-                WL(keyHandler, actionCallback, {gui.getKey(C_BUILDINGS_CONFIRM)}, true)
-            ), [this, buttonsCnt] { return villainsIndex == buttonsCnt; }),
-        WL(onMouseRightButtonHeld, WL(margins, WL(rectangle, Color(255, 0, 0, 100)), 0, 2, 2, 2)),
-        WL(getListBuilder)
-            .addElemAuto(WL(stack,
-                 WL(setWidth, 34, WL(centerVert, WL(centerHoriz, WL(bottomMargin, -3,
-                     WL(viewObject, ViewId("round_shadow"), 1, Color(255, 255, 255, 160)))))),
-                 WL(setWidth, 34, WL(centerVert, WL(centerHoriz, WL(bottomMargin, 5,
-                     WL(viewObject, elem.viewId)))))))
-            .addElemAuto(WL(rightMargin, 5, WL(translate, std::move(label), Vec2(-2, 0))))
-            .buildHorizontalList(),
-        WL(conditional, WL(preferredSize, 5, 5, WL(translate, infoOverlay, Vec2(0, -infoOverlaySize.y), infoOverlaySize)),
-            [this, buttonsCnt] { return villainsIndex == buttonsCnt; }),
-        WL(conditional, getTooltip2(infoOverlay, [=](const Rectangle& r) { return r.topLeft() - Vec2(0, 0 + infoOverlaySize.y);}),
-            [this]{return !bottomWindow && !villainsIndex;})
-    )));
-    ++buttonsCnt;
+    addVillainButton(
+        getButtonCallback({UserInputId::DISMISS_VILLAGE_INFO, DismissVillageInfo{elem.id, labelText}}),
+        std::move(actionCallback),
+        std::move(label),
+        elem.viewId,
+        drawVillainInfoOverlay(elem, true)
+    );
   }
   if (villainsIndex)
     villainsIndex = min(buttonsCnt - 1, *villainsIndex);
@@ -2236,22 +2268,6 @@ SGuiElem GuiBuilder::drawWarningWindow(const CollectiveInfo::RebellionChance& re
     )));
 }
 
-SGuiElem GuiBuilder::drawNextWaveOverlay(const CollectiveInfo::NextWave& wave) {
-  auto lines = WL(getListBuilder, legendLineHeight);
-  lines.addElem(WL(label, "Next enemy wave:"));
-  lines.addElem(WL(getListBuilder)
-        .addElem(WL(viewObject, wave.viewId), 30)
-        .addElemAuto(WL(label, wave.attacker))// + " (" + toString(wave->count) + ")"))
-        .buildHorizontalList());
-  lines.addElem(WL(label, "Attacking in " + toString(wave.numTurns) + " turns."));
-  return WL(setWidth, 300, WL(translucentBackgroundWithBorder, WL(stack,
-        WL(margins, lines.buildVerticalList(), 10),
-        WL(alignment, GuiFactory::Alignment::TOP_RIGHT, WL(preferredSize, 40, 40, WL(stack,
-            WL(leftMargin, 22, WL(label, "x")),
-            WL(button, getButtonCallback(UserInputId::DISMISS_NEXT_WAVE)))))
-      )));
-}
-
 function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInfo::QueuedItemInfo& elem) {
   return [=] (Rectangle bounds) {
       auto lines = WL(getListBuilder, legendLineHeight);
@@ -3334,7 +3350,7 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, const GameInfo& info) {
     case GameInfo::InfoType::BAND: {
       auto& collectiveInfo = *info.playerInfo.getReferenceMaybe<CollectiveInfo>();
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawVillainsOverlay, this), THIS_LINE,
-          info.villageInfo, villainsIndex), OverlayInfo::VILLAINS});
+          info.villageInfo, collectiveInfo.nextWave, villainsIndex), OverlayInfo::VILLAINS});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), THIS_LINE,
           collectiveInfo.immigration, info.tutorial, !collectiveInfo.allImmigration.empty()),
           OverlayInfo::IMMIGRATION});
@@ -3348,9 +3364,6 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, const GameInfo& info) {
       } else if (bottomWindow == TASKS)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), THIS_LINE,
             collectiveInfo), OverlayInfo::TOP_LEFT});
-      else if (collectiveInfo.nextWave)
-        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawNextWaveOverlay, this), THIS_LINE,
-            *collectiveInfo.nextWave), OverlayInfo::TOP_LEFT});
       else if (collectiveInfo.rebellionChance)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWarningWindow, this), THIS_LINE,
             *collectiveInfo.rebellionChance), OverlayInfo::TOP_LEFT});
