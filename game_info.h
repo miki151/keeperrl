@@ -489,11 +489,10 @@ class GameInfo {
   optional<CurrentLevelInfo> HASH(currentLevel);
   const Encyclopedia* encyclopedia;
   bool HASH(isSingleMap) = false;
-  optional<string> HASH(keeperInDanger);
   vector<ScriptedHelpInfo> scriptedHelp; // this won't change during the game so don't hash
   vector<PlayerMessage> HASH(messageBuffer);
   bool HASH(takingScreenshot) = false;
-  HASH_ALL(infoType, time, playerInfo, villageInfo, sunlightInfo, messageBuffer, modifiedSquares, totalSquares, tutorial, currentLevel, takingScreenshot, isSingleMap, keeperInDanger)
+  HASH_ALL(infoType, time, playerInfo, villageInfo, sunlightInfo, messageBuffer, modifiedSquares, totalSquares, tutorial, currentLevel, takingScreenshot, isSingleMap)
 };
 
 struct AutomatonPart;

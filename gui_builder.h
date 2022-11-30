@@ -339,7 +339,6 @@ class GuiBuilder {
   SGuiElem drawItemsHelpButtons(const vector<ItemInfo>&);
   SGuiElem drawTechUnlocks(const CollectiveInfo::LibraryInfo::TechInfo&);
   SGuiElem drawZLevelButton(const CurrentLevelInfo&, Color textColor);
-  SGuiElem drawKeeperDangerOverlay(const string&);
   SGuiElem drawBoolOptionElem(OptionId, string name);
   SGuiElem drawCreatureTooltip(const PlayerInfo&);
   vector<SDL::SDL_Keysym> getOverlayCloseKeys();

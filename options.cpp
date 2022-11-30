@@ -50,7 +50,6 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::ENDLESS_ENEMIES, 2},
   {OptionId::ENEMY_AGGRESSION, 1},
   {OptionId::KEEPER_WARNING, 1},
-  {OptionId::KEEPER_WARNING_PAUSE, 1},
   {OptionId::KEEPER_WARNING_TIMEOUT, 200},
   {OptionId::SINGLE_THREAD, 0},
   {OptionId::UNLOCK_ALL, 0},
@@ -85,7 +84,6 @@ const map<OptionId, string> names {
   {OptionId::ENDLESS_ENEMIES, "Start endless enemy waves"},
   {OptionId::ENEMY_AGGRESSION, "Enemy aggression"},
   {OptionId::KEEPER_WARNING, "Keeper danger warning"},
-  {OptionId::KEEPER_WARNING_PAUSE, "Keeper danger auto-pause"},
   {OptionId::KEEPER_WARNING_TIMEOUT, "Keeper danger timeout"},
   {OptionId::SINGLE_THREAD, "Use a single thread for loading operations"},
   {OptionId::UNLOCK_ALL, "Unlock all hidden gameplay features"},
@@ -107,7 +105,6 @@ const map<OptionId, string> hints {
   {OptionId::ENDLESS_ENEMIES, "Turn on recurrent enemy waves that attack your dungeon."},
   {OptionId::ENEMY_AGGRESSION, "The chance of your dungeon being attacked by enemies"},
   {OptionId::KEEPER_WARNING, "Display a pop up window whenever your Keeper is in danger"},
-  {OptionId::KEEPER_WARNING_PAUSE, "Pause the game whenever your Keeper is in danger"},
   {OptionId::KEEPER_WARNING_TIMEOUT, "Number of turns before a new \"Keeper in danger\" warning is shown"},
   {OptionId::SINGLE_THREAD, "Please try this option if you're experiencing slow saving, loading, or map generation. "
         "Note: this will make the game unresponsive during the operation."},
@@ -132,7 +129,6 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::GAME_EVENTS,
       OptionId::AUTOSAVE2,
       OptionId::KEEPER_WARNING,
-      OptionId::KEEPER_WARNING_PAUSE,
       OptionId::KEEPER_WARNING_TIMEOUT,
       OptionId::SINGLE_THREAD,
       OptionId::UNLOCK_ALL,
@@ -283,7 +279,6 @@ static bool isBoolean(OptionId id) {
     case OptionId::FULLSCREEN:
     case OptionId::VSYNC:
     case OptionId::KEEPER_WARNING:
-    case OptionId::KEEPER_WARNING_PAUSE:
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:
     case OptionId::SUGGEST_TUTORIAL:
@@ -310,7 +305,6 @@ string Options::getValueString(OptionId id) {
     case OptionId::FULLSCREEN:
     case OptionId::VSYNC:
     case OptionId::KEEPER_WARNING:
-    case OptionId::KEEPER_WARNING_PAUSE:
       return getOnOff(value);
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:

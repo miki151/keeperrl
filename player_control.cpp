@@ -1847,9 +1847,6 @@ void PlayerControl::fillResources(CollectiveInfo& info) const {
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
-  if (getGame()->getOptions()->getBoolValue(OptionId::KEEPER_WARNING))
-    if (auto info = checkKeeperDanger())
-      gameInfo.keeperInDanger = info->warning;
   auto contentFactory = getGame()->getContentFactory();
   gameInfo.scriptedHelp = contentFactory->scriptedHelp;
   gameInfo.isSingleMap = getGame()->isSingleModel();
@@ -2911,13 +2908,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::SCROLL_STAIRS:
       scrollStairs(input.get<int>());
       break;
-    case UserInputId::CONTROL_KEEPER:
-      if (auto info = checkKeeperDanger())
-        controlSingle(info->c);
-      break;
-    case UserInputId::DISMISS_KEEPER_DANGER:
-      dismissKeeperWarning();
-      break;
     case UserInputId::TAKE_SCREENSHOT:
       getView()->dungeonScreenshot(input.get<Vec2>());
       getGame()->addEvent(EventInfo::RetiredGame{});
@@ -3297,17 +3287,26 @@ void PlayerControl::addToMemory(Position pos) {
   memory->update(pos, index);
 }
 
-optional<PlayerControl::KeeperDangerInfo> PlayerControl::checkKeeperDanger() const {
-  PROFILE;
+void PlayerControl::checkKeeperDanger() {
+  if (!getGame()->getOptions()->getBoolValue(OptionId::KEEPER_WARNING))
+    return;
   auto controlled = getControlled();
   for (auto c : controlled)
     if (collective->hasTrait(c, MinionTrait::LEADER))
-      return none;
+      return;
   for (auto keeper : collective->getLeaders()) {
     auto prompt = [&] (const string& reason) {
-      return KeeperDangerInfo{keeper,
+      auto res = getView()->multiChoice(
           (collective->getLeaders().size() > 1 ? capitalFirst(keeper->getName().a()) : "The Keeper")
-              + " " + reason + "."};
+              + " " + reason + ".",
+          {"Take control", "Dismiss for 200 turns", "Dismiss and don't show this message again"});
+      if (res == 0)
+        controlSingle(keeper);
+      else if (res == 2)
+        getGame()->getOptions()->setValue(OptionId::KEEPER_WARNING, 0);
+      else
+        nextKeeperWarning = getGame()->getGlobalTime() +
+            TimeInterval(getGame()->getOptions()->getIntValue(OptionId::KEEPER_WARNING_TIMEOUT));
     };
     if (!keeper->isDead() && !controlled.contains(keeper) &&
         nextKeeperWarning < collective->getGlobalTime()) {
@@ -3323,12 +3322,9 @@ optional<PlayerControl::KeeperDangerInfo> PlayerControl::checkKeeperDanger() con
         return prompt("is wounded");
     }
   }
-  return none;
 }
 
 void PlayerControl::dismissKeeperWarning() {
-  nextKeeperWarning = getGame()->getGlobalTime() +
-      TimeInterval(getGame()->getOptions()->getIntValue(OptionId::KEEPER_WARNING_TIMEOUT));
 }
 
 void PlayerControl::considerNightfallMessage() {
@@ -3466,16 +3462,7 @@ void PlayerControl::tick() {
   messages = messages.filter([&] (const PlayerMessage& msg) {
       return msg.getFreshness() > 0; });
   considerNightfallMessage();
-  if (getGame()->getOptions()->getBoolValue(OptionId::KEEPER_WARNING)) {
-    if (checkKeeperDanger()) {
-      if (getGame()->getOptions()->getBoolValue(OptionId::KEEPER_WARNING_PAUSE) &&
-        !wasPausedForWarning) {
-        getView()->stopClock();
-        wasPausedForWarning = true;
-      }
-    } else
-      wasPausedForWarning = false;
-  }
+  checkKeeperDanger();
   if (auto msg = collective->getWarnings().getNextWarning(getModel()->getLocalTime()))
     addMessage(PlayerMessage(*msg, MessagePriority::HIGH));
   considerNewAttacks();

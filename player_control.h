@@ -91,11 +91,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void onEvent(const GameEvent&);
   const vector<Creature*>& getControlled() const;
   void controlSingle(Creature*);
-  struct KeeperDangerInfo {
-    Creature* c;
-    string warning;
-  };
-  optional<KeeperDangerInfo> checkKeeperDanger() const;
+  void checkKeeperDanger();
   void dismissKeeperWarning();
 
   optional<TeamId> getCurrentTeam() const;
@@ -229,7 +225,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<SelectionInfo> rectSelection;
   void updateSelectionSquares();
   GlobalTime SERIAL(nextKeeperWarning) = GlobalTime(-1000);
-  bool wasPausedForWarning = false;
   struct ChosenCreatureInfo {
     UniqueEntity<Creature>::Id id;
     string group;

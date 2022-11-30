@@ -2210,27 +2210,6 @@ SGuiElem GuiBuilder::drawTasksOverlay(const CollectiveInfo& info) {
           margin))));
 }
 
-SGuiElem GuiBuilder::drawKeeperDangerOverlay(const string& message) {
-  auto lines = WL(getListBuilder, legendLineHeight);
-  int width = 600;
-  lines.addElemAuto(gui.labelMultiLineWidth(message, legendLineHeight, width));
-  lines.addSpace(legendLineHeight / 2);
-  lines.addElem(WL(getListBuilder)
-      .addElemAuto(WL(buttonLabel, "Take control", getButtonCallback(UserInputId::CONTROL_KEEPER)))
-      .addSpace(20)
-      .addElemAuto(WL(buttonLabel, "Dismiss for 200 turns", getButtonCallback(UserInputId::DISMISS_KEEPER_DANGER)))
-      .buildHorizontalList()
-  );
-  lines.addSpace(legendLineHeight / 2);
-  lines.addElem(WL(getListBuilder)
-        .addElemAuto(WL(label, "When the Keeper is in danger: "))
-        .addElemAuto(drawBoolOptionElem(OptionId::KEEPER_WARNING, "show this pop-up, "))
-        .addElemAuto(drawBoolOptionElem(OptionId::KEEPER_WARNING_PAUSE, "pause the game"))
-        .buildHorizontalList());
-  int margins = 20;
-  return WL(setWidth, width + margins, WL(miniWindow, WL(margins, lines.buildVerticalList(), margins)));
-}
-
 SGuiElem GuiBuilder::drawRebellionChanceText(CollectiveInfo::RebellionChance chance) {
   switch (chance) {
     case CollectiveInfo::RebellionChance::HIGH:
@@ -3359,10 +3338,7 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, const GameInfo& info) {
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), THIS_LINE,
           collectiveInfo.immigration, info.tutorial, !collectiveInfo.allImmigration.empty()),
           OverlayInfo::IMMIGRATION});
-      if (info.keeperInDanger)
-        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawKeeperDangerOverlay, this), THIS_LINE,
-             *info.keeperInDanger), OverlayInfo::TOP_LEFT});
-      else if (collectiveInfo.chosenCreature)
+      if (collectiveInfo.chosenCreature)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
             *collectiveInfo.chosenCreature, collectiveInfo.allQuarters, info.tutorial), OverlayInfo::TOP_LEFT});
       else if (collectiveInfo.chosenWorkshop) {
@@ -3389,9 +3365,6 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, const GameInfo& info) {
       auto& playerInfo = *info.playerInfo.getReferenceMaybe<PlayerInfo>();
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawPlayerOverlay, this), THIS_LINE,
           playerInfo, playerOverlayFocused), OverlayInfo::TOP_LEFT});
-      if (info.keeperInDanger)
-        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawKeeperDangerOverlay, this), THIS_LINE,
-             *info.keeperInDanger), OverlayInfo::TOP_LEFT});
       break;
     }
     default:
