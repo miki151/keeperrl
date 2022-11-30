@@ -873,29 +873,13 @@ SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info, bo
     }
     lines.addElem(line.buildHorizontalList());
   }
-  if (showDismissHint) {
-    if (!hasController())
-      lines.addElem(WL(label, "Right click to dismiss", Renderer::smallTextSize()), legendLineHeight * 2 / 3);
-    else if (!villainsIndex)
-      lines.addElem(WL(label, "Left trigger to dismiss", Renderer::smallTextSize()), legendLineHeight * 2 / 3);
-    else {
-      auto line = WL(getListBuilder)
-          .addElemAuto(gui.steamInputGlyph(C_WORLD_MAP, 16))
-          .addElemAuto(WL(label, " to dismiss", Renderer::smallTextSize()));
-      if (!!info.action)
-        line.addSpace(30)
-            .addElemAuto(gui.steamInputGlyph(C_BUILDINGS_CONFIRM, 16))
-            .addElemAuto(WL(label, " to "_s + getVillageActionText(*info.action), Renderer::smallTextSize()));
-      lines.addElem(std::move(line).buildHorizontalList(), legendLineHeight * 2 / 3);
-    }
-  }
+  if (showDismissHint)
+    lines.addElemAuto(getVillainDismissHint(info.action));
   return WL(miniWindow, WL(margins, lines.buildVerticalList(), 15));
 }
 
-SGuiElem GuiBuilder::drawNextWaveOverlay(const CollectiveInfo::NextWave& info) {
+SGuiElem GuiBuilder::getVillainDismissHint(optional<VillageAction> action) {
   auto lines = WL(getListBuilder, legendLineHeight);
-  lines.addElem(WL(label, capitalFirst(info.attacker)));
-  lines.addElem(WL(label, "Attacking in " + toString(info.numTurns.getVisibleInt()) + " turns!", Color::RED));
   if (!hasController())
     lines.addElem(WL(label, "Right click to dismiss", Renderer::smallTextSize()), legendLineHeight * 2 / 3);
   else if (!villainsIndex)
@@ -904,13 +888,67 @@ SGuiElem GuiBuilder::drawNextWaveOverlay(const CollectiveInfo::NextWave& info) {
     auto line = WL(getListBuilder)
         .addElemAuto(gui.steamInputGlyph(C_WORLD_MAP, 16))
         .addElemAuto(WL(label, " to dismiss", Renderer::smallTextSize()));
+    if (!!action)
+      line.addSpace(30)
+          .addElemAuto(gui.steamInputGlyph(C_BUILDINGS_CONFIRM, 16))
+          .addElemAuto(WL(label, " to "_s + getVillageActionText(*action), Renderer::smallTextSize()));
     lines.addElem(std::move(line).buildHorizontalList(), legendLineHeight * 2 / 3);
   }
+  return lines.buildVerticalList();
+}
+
+static Color getNextWaveColor(const CollectiveInfo::NextWave& info) {
+  if (info.numTurns.getVisibleInt() < 100)
+    return Color::RED;
+  if (info.numTurns.getVisibleInt() < 500)
+    return Color::ORANGE;
+  return Color::YELLOW;
+}
+
+SGuiElem GuiBuilder::drawNextWaveOverlay(const CollectiveInfo::NextWave& info) {
+  auto lines = WL(getListBuilder, legendLineHeight);
+  lines.addElem(WL(label, capitalFirst(info.attacker)));
+  lines.addElem(WL(label, "Attacking in " + toString(info.numTurns.getVisibleInt()) + " turns!",
+      getNextWaveColor(info)));
+  lines.addElemAuto(getVillainDismissHint(none));
+  return WL(miniWindow, WL(margins, lines.buildVerticalList(), 15));
+}
+
+static Color getRebellionChanceColor(CollectiveInfo::RebellionChance chance) {
+  switch (chance) {
+    case CollectiveInfo::RebellionChance::HIGH:
+      return Color::RED;
+    case CollectiveInfo::RebellionChance::MEDIUM:
+      return Color::ORANGE;
+    case CollectiveInfo::RebellionChance::LOW:
+      return Color::YELLOW;
+  }
+}
+
+static const char* getRebellionChanceText(CollectiveInfo::RebellionChance chance) {
+  switch (chance) {
+    case CollectiveInfo::RebellionChance::HIGH:
+      return "high";
+    case CollectiveInfo::RebellionChance::MEDIUM:
+      return "medium";
+    case CollectiveInfo::RebellionChance::LOW:
+      return "low";
+  }
+}
+
+SGuiElem GuiBuilder::drawRebellionOverlay(const CollectiveInfo::RebellionChance& rebellionChance) {
+  auto lines = WL(getListBuilder, legendLineHeight);
+  lines.addElem(WL(getListBuilder)
+      .addElemAuto(WL(label, "Chance of prisoner escape: "))
+      .addElemAuto(WL(label, getRebellionChanceText(rebellionChance), getRebellionChanceColor(rebellionChance)))
+      .buildHorizontalList());
+  lines.addElem(WL(label, "Remove prisoners or increase armed forces."));
+  lines.addElemAuto(getVillainDismissHint(none));
   return WL(miniWindow, WL(margins, lines.buildVerticalList(), 15));
 }
 
 SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info, const optional<CollectiveInfo::NextWave>& nextWave,
-    optional<int> villainsIndexDummy) {
+    const optional<CollectiveInfo::RebellionChance>& rebellionChance, optional<int> villainsIndexDummy) {
   const int labelOffsetY = 3;
   auto lines = WL(getListBuilder);
   lines.addSpace(50);
@@ -965,11 +1003,19 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info, const optional
     )));
     ++buttonsCnt;
   };
+  if (rebellionChance)
+    addVillainButton(
+        getButtonCallback({UserInputId::DISMISS_WARNING_WINDOW}),
+        []{},
+        WL(label, "rebellion risk", getRebellionChanceColor(*rebellionChance)),
+        {ViewId("prisoner")},
+        drawRebellionOverlay(*rebellionChance)
+    );
   if (nextWave)
     addVillainButton(
         getButtonCallback({UserInputId::DISMISS_NEXT_WAVE}),
         []{},
-        WL(label, "next enemy wave", Color::RED),
+        WL(label, "next enemy wave", getNextWaveColor(*nextWave)),
         nextWave->viewId,
         drawNextWaveOverlay(*nextWave)
     );
@@ -2242,32 +2288,6 @@ SGuiElem GuiBuilder::drawTasksOverlay(const CollectiveInfo& info) {
           margin))));
 }
 
-SGuiElem GuiBuilder::drawRebellionChanceText(CollectiveInfo::RebellionChance chance) {
-  switch (chance) {
-    case CollectiveInfo::RebellionChance::HIGH:
-      return WL(label, "high", Color::RED);
-    case CollectiveInfo::RebellionChance::MEDIUM:
-      return WL(label, "medium", Color::ORANGE);
-    case CollectiveInfo::RebellionChance::LOW:
-      return WL(label, "low", Color::YELLOW);
-  }
-}
-
-SGuiElem GuiBuilder::drawWarningWindow(const CollectiveInfo::RebellionChance& rebellionChance) {
-  auto lines = WL(getListBuilder, legendLineHeight);
-  lines.addElem(WL(getListBuilder)
-      .addElemAuto(WL(label, "Chance of prisoner escape: "))
-      .addElemAuto(drawRebellionChanceText(rebellionChance))
-      .buildHorizontalList());
-  lines.addElem(WL(label, "Remove prisoners or increase armed forces."));
-  return WL(setWidth, 400, WL(translucentBackgroundWithBorder, WL(stack,
-      WL(margins, lines.buildVerticalList(), 10),
-      WL(alignment, GuiFactory::Alignment::TOP_RIGHT, WL(preferredSize, 40, 40, WL(stack,
-          WL(leftMargin, 22, WL(label, "x")),
-          WL(button, getButtonCallback(UserInputId::DISMISS_WARNING_WINDOW)))))
-    )));
-}
-
 function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInfo::QueuedItemInfo& elem) {
   return [=] (Rectangle bounds) {
       auto lines = WL(getListBuilder, legendLineHeight);
@@ -3350,7 +3370,8 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, const GameInfo& info) {
     case GameInfo::InfoType::BAND: {
       auto& collectiveInfo = *info.playerInfo.getReferenceMaybe<CollectiveInfo>();
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawVillainsOverlay, this), THIS_LINE,
-          info.villageInfo, collectiveInfo.nextWave, villainsIndex), OverlayInfo::VILLAINS});
+              info.villageInfo, collectiveInfo.nextWave, collectiveInfo.rebellionChance, villainsIndex),
+          OverlayInfo::VILLAINS});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), THIS_LINE,
           collectiveInfo.immigration, info.tutorial, !collectiveInfo.allImmigration.empty()),
           OverlayInfo::IMMIGRATION});
@@ -3364,9 +3385,6 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, const GameInfo& info) {
       } else if (bottomWindow == TASKS)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), THIS_LINE,
             collectiveInfo), OverlayInfo::TOP_LEFT});
-      else if (collectiveInfo.rebellionChance)
-        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWarningWindow, this), THIS_LINE,
-            *collectiveInfo.rebellionChance), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), THIS_LINE,
           collectiveInfo.buildings, info.tutorial), OverlayInfo::TOP_LEFT});
       if (bottomWindow == IMMIGRATION_HELP)

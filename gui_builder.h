@@ -296,13 +296,13 @@ class GuiBuilder {
   SGuiElem getExpIncreaseLine(const CreatureExperienceInfo&, ExperienceType, bool infoOnly = false);
   optional<int> highlightedTeamMember;
   SGuiElem drawQuartersButton(const PlayerInfo&, const vector<ViewId>& allQuarters);
-  SGuiElem drawWarningWindow(const CollectiveInfo::RebellionChance&);
-  SGuiElem drawRebellionChanceText(CollectiveInfo::RebellionChance);
+  SGuiElem drawRebellionOverlay(const CollectiveInfo::RebellionChance&);
   SGuiElem drawVillainsOverlay(const VillageInfo&, const optional<CollectiveInfo::NextWave>&,
-      optional<int> villainsIndexDummy);
+      const optional<CollectiveInfo::RebellionChance>&, optional<int> villainsIndexDummy);
   void drawAllVillainsMenu(Vec2 pos, const VillageInfo&);
   SGuiElem drawVillainInfoOverlay(const VillageInfo::Village&, bool showDismissHint);
   SGuiElem drawNextWaveOverlay(const CollectiveInfo::NextWave&);
+  SGuiElem getVillainDismissHint(optional<VillageAction>);
   SGuiElem drawVillainType(VillainType);
   SGuiElem drawLyingItemsList(const string& title, const ItemCounts&, int maxWidth);
   SGuiElem drawTickBox(shared_ptr<bool> value, const string& title);
