@@ -107,7 +107,7 @@ template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
   ar(memory, introText, nextKeeperWarning, tribeAlignment);
-  ar(newAttacks, ransomAttacks, notifiedAttacks, messages, hints);
+  ar(newAttacks, notifiedAttacks, messages, hints);
   ar(visibilityMap, unknownLocations, dismissedVillageInfos, buildInfo);
   ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures, usedResources, allianceAttack);
 }
@@ -893,7 +893,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   info.attacking = false;
   for (auto& attack : notifiedAttacks)
     if (attack.getAttacker() == col && attack.isOngoing())
-        info.attacking = true;
+      info.attacking = true;
   auto addTriggers = [&] {
     for (auto& trigger : col->getTriggers(collective))
 //#ifdef RELEASE
@@ -1051,20 +1051,6 @@ void PlayerControl::handlePillage(Collective* col) {
     if (auto& name = col->getName())
       collective->addRecordedEvent("the pillaging of " + name->full);
   }
-}
-
-void PlayerControl::handleRansom(bool pay) {
-  if (ransomAttacks.empty())
-    return;
-  auto& ransom = ransomAttacks.front();
-  int amount = *ransom.getRansom();
-  if (pay && collective->hasResource({ResourceId("GOLD"), amount})) {
-    collective->takeResource({ResourceId("GOLD"), amount});
-    ransom.getAttacker()->onRansomPaid();
-    auto name = ransom.getAttacker()->getName();
-    getGame()->addAnalytics("ransom_paid", name ? name->full : "unknown");
-  }
-  ransomAttacks.removeIndex(0);
 }
 
 vector<Collective*> PlayerControl::getKnownVillains() const {
@@ -1938,11 +1924,6 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     if (auto c = collective->getTaskMap().getOwner(task))
       creature = c->getUniqueId();
     info.taskMap.push_back(CollectiveInfo::Task{task->getDescription(), creature, collective->getTaskMap().isPriorityTask(task)});
-  }
-  for (auto& elem : ransomAttacks) {
-    info.ransom = CollectiveInfo::Ransom {make_pair(ViewId("gold"), *elem.getRansom()), elem.getAttackerName(),
-        collective->hasResource({ResourceId("GOLD"), *elem.getRansom()})};
-    break;
   }
   const auto maxEnemyCountdown = 500_visible;
   if (auto& enemies = getModel()->getExternalEnemies())
@@ -2898,12 +2879,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
         }
       break;
     }
-    case UserInputId::PAY_RANSOM:
-      handleRansom(true);
-      break;
-    case UserInputId::IGNORE_RANSOM:
-      handleRansom(false);
-      break;
     case UserInputId::SHOW_HISTORY:
       PlayerMessage::presentMessages(getView(), messageHistory);
       break;
@@ -3456,16 +3431,24 @@ void PlayerControl::considerNewAttacks() {
   for (auto attack : copyOf(newAttacks))
     for (const Creature* c : attack.getCreatures())
       if (isConsideredAttacking(c, attack.getAttacker())) {
+        newAttacks.removeElement(attack);
         setScrollPos(c->getPosition().plus(Vec2(0, 5)));
         getView()->refreshView();
-        addWindowMessage(attack.getAttackerViewId(), "You are under attack by " + attack.getAttackerName() + "!");
+        if (attack.getRansom() && collective->hasResource({ResourceId("GOLD"), *attack.getRansom()})) {
+          if (getView()->yesOrNoPrompt(capitalFirst(attack.getAttackerName()) + " demand " +
+              toString(attack.getRansom()) + " gold for not attacking. Agree?", attack.getAttackerViewId(), true)) {
+            collective->takeResource({ResourceId("GOLD"), *attack.getRansom()});
+            attack.getAttacker()->onRansomPaid();
+            auto name = attack.getAttacker()->getName();
+            getGame()->addAnalytics("ransom_paid", name ? name->full : "unknown");
+            break;
+          }
+        } else
+          addWindowMessage(attack.getAttackerViewId(), "You are under attack by " + attack.getAttackerName() + "!");
         getGame()->setCurrentMusic(MusicType::BATTLE);
-        newAttacks.removeElement(attack);
         if (auto attacker = attack.getAttacker())
           collective->addKnownVillain(attacker);
         notifiedAttacks.push_back(attack);
-        if (attack.getRansom())
-          ransomAttacks.push_back(attack);
         break;
       }
 }
@@ -3495,12 +3478,6 @@ void PlayerControl::tick() {
   }
   if (auto msg = collective->getWarnings().getNextWarning(getModel()->getLocalTime()))
     addMessage(PlayerMessage(*msg, MessagePriority::HIGH));
-  for (auto attack : copyOf(ransomAttacks))
-    for (const Creature* c : attack.getCreatures())
-      if (collective->getTerritory().contains(c->getPosition())) {
-        ransomAttacks.removeElement(attack);
-        break;
-      }
   considerNewAttacks();
   considerAllianceAttack();
   if (notifiedAttacks.empty())

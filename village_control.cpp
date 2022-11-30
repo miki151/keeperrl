@@ -173,7 +173,7 @@ void VillageControl::launchAttack(vector<Creature*> attackers) {
     int hisGold = enemy->numResource(CollectiveResourceId("GOLD"));
     if (behaviour->ransom && hisGold >= behaviour->ransom->second)
       ransom = max<int>(behaviour->ransom->second,
-          (Random.getDouble(behaviour->ransom->first * 0.6, behaviour->ransom->first * 1.5)) * hisGold);
+          (Random.getDouble(behaviour->ransom->first * 0.6, behaviour->ransom->first)) * hisGold);
     TeamId team = collective->getTeams().createPersistent(attackers);
     collective->getTeams().activate(team);
     collective->freeTeamMembers(attackers);

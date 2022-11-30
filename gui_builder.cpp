@@ -928,17 +928,15 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info, optional<int> 
     if (elem.attacking) {
       labelText = "attacking";
       label = WL(label, labelText, Color::RED);
-    }
-    else if (!elem.triggers.empty()) {
+    } else if (!elem.triggers.empty()) {
       labelText = "triggered";
       label = WL(label, labelText, Color::ORANGE);
-    } else
-      if (elem.action) {
-        labelText = getVillageActionText(*elem.action);
-        label = WL(label, labelText, Color::GREEN);
-        actionCallback = getButtonCallback({UserInputId::VILLAGE_ACTION,
-            VillageActionInfo{elem.id, *elem.action}});
-      }
+    } else if (elem.action) {
+      labelText = getVillageActionText(*elem.action);
+      label = WL(label, labelText, Color::GREEN);
+      actionCallback = getButtonCallback({UserInputId::VILLAGE_ACTION,
+          VillageActionInfo{elem.id, *elem.action}});
+    }
     if (!label || info.dismissedInfos.count({elem.id, labelText}))
       continue;
     label = WL(translate, std::move(label), Vec2(0, labelOffsetY));
@@ -2212,24 +2210,6 @@ SGuiElem GuiBuilder::drawTasksOverlay(const CollectiveInfo& info) {
           margin))));
 }
 
-SGuiElem GuiBuilder::drawRansomOverlay(const CollectiveInfo::Ransom& ransom) {
-  auto lines = WL(getListBuilder, legendLineHeight);
-  lines.addElem(WL(label, ransom.attacker + " demand " + toString(ransom.amount.second)
-        + " gold for not attacking. Agree?"));
-  if (ransom.canAfford)
-    lines.addElem(WL(leftMargin, 25, WL(stack,
-          WL(mouseHighlight2, WL(highlight, legendLineHeight)),
-          WL(button, getButtonCallback(UserInputId::PAY_RANSOM)),
-          WL(label, "Yes"))));
-  else
-    lines.addElem(WL(leftMargin, 25, WL(label, "Yes", Color::GRAY)));
-  lines.addElem(WL(leftMargin, 25, WL(stack,
-        WL(mouseHighlight2, WL(highlight, legendLineHeight)),
-        WL(button, getButtonCallback(UserInputId::IGNORE_RANSOM)),
-        WL(label, "No"))));
-  return WL(setWidth, 600, WL(miniWindow, WL(margins, lines.buildVerticalList(), 20)));
-}
-
 SGuiElem GuiBuilder::drawKeeperDangerOverlay(const string& message) {
   auto lines = WL(getListBuilder, legendLineHeight);
   int width = 600;
@@ -3142,7 +3122,7 @@ SGuiElem GuiBuilder::drawItemsHelpOverlay(const vector<ItemInfo>& items) {
 }
 
 SGuiElem GuiBuilder::drawBuildingsOverlay(const vector<CollectiveInfo::Button>& buildings,
-    bool ransom, const optional<TutorialInfo>& tutorial) {
+    const optional<TutorialInfo>& tutorial) {
   vector<SGuiElem> elems;
   map<string, GuiFactory::ListBuilder> overlaysMap;
   int margin = 20;
@@ -3164,8 +3144,9 @@ SGuiElem GuiBuilder::drawBuildingsOverlay(const vector<CollectiveInfo::Button>& 
           WL(miniWindow, WL(stack,
               WL(keyHandler, [=] { clearActiveButton(); }, getOverlayCloseKeys(), true),
               WL(margins, lines.buildVerticalList(), margin))),
-          [ransom, this, groupName] {
-              return !ransom && collectiveTab == CollectiveTab::BUILDINGS && activeGroup == groupName;})));
+          [this, groupName] {
+              return collectiveTab == CollectiveTab::BUILDINGS && activeGroup == groupName;
+          })));
   }
   return WL(stack, std::move(elems));
 }
@@ -3381,9 +3362,6 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, const GameInfo& info) {
       if (info.keeperInDanger)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawKeeperDangerOverlay, this), THIS_LINE,
              *info.keeperInDanger), OverlayInfo::TOP_LEFT});
-      else if (collectiveInfo.ransom)
-        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
-            *collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
       else if (collectiveInfo.chosenCreature)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
             *collectiveInfo.chosenCreature, collectiveInfo.allQuarters, info.tutorial), OverlayInfo::TOP_LEFT});
@@ -3401,7 +3379,7 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, const GameInfo& info) {
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWarningWindow, this), THIS_LINE,
             *collectiveInfo.rebellionChance), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), THIS_LINE,
-          collectiveInfo.buildings, !!collectiveInfo.ransom, info.tutorial), OverlayInfo::TOP_LEFT});
+          collectiveInfo.buildings, info.tutorial), OverlayInfo::TOP_LEFT});
       if (bottomWindow == IMMIGRATION_HELP)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationHelp, this), THIS_LINE,
             collectiveInfo), OverlayInfo::BOTTOM_LEFT});

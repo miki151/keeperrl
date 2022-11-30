@@ -920,7 +920,7 @@ void Player::moveAction(Vec2 dir) {
   if (auto action = creature->forceMove(dir)) {
     string nextQuestion = getForceMovementQuestion(dirPos, creature);
     string hereQuestion = getForceMovementQuestion(creature->getPosition(), creature);
-    if (hereQuestion == nextQuestion || getView()->yesOrNoPrompt(nextQuestion, true))
+    if (hereQuestion == nextQuestion || getView()->yesOrNoPrompt(nextQuestion, none, true))
       action.perform(creature);
     return;
   }
@@ -1241,7 +1241,8 @@ void Player::generateHalluIds() {
 void Player::onKilled(Creature* attacker) {
   unsubscribe();
   getView()->updateView(this, false);
-  if (getGame()->getPlayerCreatures().size() == 1 && getView()->yesOrNoPrompt("Display message history?", false,
+  if (getGame()->getPlayerCreatures().size() == 1 && getView()->yesOrNoPrompt("Display message history?",
+      ViewIdList{ViewId("grave")}, false,
       "yes_or_no_below"))
     showHistory();
   if (adventurer)

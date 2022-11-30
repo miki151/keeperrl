@@ -154,7 +154,8 @@ class View {
       const string& message, optional<Keybinding> cycleKey) = 0;
 
   /** Asks the player a yer-or-no question.*/
-  bool yesOrNoPrompt(const string& message, bool defaultNo = false, ScriptedUIId = "yes_or_no");
+  bool yesOrNoPrompt(const string& message, optional<ViewIdList> = none, bool defaultNo = false,
+      ScriptedUIId = "yes_or_no");
   optional<int> multiChoice(const string& message, const vector<string>&);
 
   void windowedMessage(ViewIdList, const string& message);
@@ -164,6 +165,7 @@ class View {
   void presentTextBelow(const string& title, const string& text);
 
   virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&, ScriptedUIState&) = 0;
+  void scriptedUI(ScriptedUIId, const ScriptedUIData&);
 
   /** Lets the player choose a number. Returns none if the player cancelled the choice.*/
   virtual optional<int> getNumber(const string& title, Range range, int initial) = 0;

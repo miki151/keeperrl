@@ -212,7 +212,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<Item*> getPillagedItems(Collective*) const;
   bool canPillage(const Collective*) const;
   void handlePillage(Collective* enemy);
-  void handleRansom(bool pay);
   ViewObject getTrapObject(FurnitureType, bool built) const;
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
   void onSquareClick(Position);
@@ -252,7 +251,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<PlayerMessage> SERIAL(messageHistory);
   vector<CollectiveAttack> SERIAL(newAttacks);
   vector<CollectiveAttack> SERIAL(notifiedAttacks);
-  vector<CollectiveAttack> SERIAL(ransomAttacks);
   vector<string> SERIAL(hints);
   optional<PlayerMessage&> findMessage(PlayerMessage::Id);
   SVisibilityMap SERIAL(visibilityMap);

@@ -270,10 +270,8 @@ class GuiBuilder {
   SGuiElem workshopsOverlayCache;
   int workshopsOverlayHash = 0;
   SGuiElem drawTasksOverlay(const CollectiveInfo&);
-  SGuiElem drawRansomOverlay(const CollectiveInfo::Ransom&);
   SGuiElem drawNextWaveOverlay(const CollectiveInfo::NextWave&);
-  SGuiElem drawBuildingsOverlay(const vector<CollectiveInfo::Button>&, bool ransom,
-      const optional<TutorialInfo>&);
+  SGuiElem drawBuildingsOverlay(const vector<CollectiveInfo::Button>&, const optional<TutorialInfo>&);
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;
   SGuiElem getItemLine(const ItemInfo&, function<void(Rectangle)> onClick,

@@ -169,7 +169,10 @@ Def YesOrNo() {
   FocusKeysHorizontal()
   Window(
     Vertical {
-      Using "message" Position(MIDDLE, MarginLeft(40, MarginRight(40, Label())))
+      Position(MIDDLE, MarginLeft(25, MarginRight(25, Horizontal {
+        Using "view_id" Width 50 ViewId(2)
+        Position(MIDDLE, Using "message" Label())
+      } )))
       Height 35 {}
       Position(MIDDLE, Horizontal {
         Using "callback" StandardButton(Label("Confirm"))

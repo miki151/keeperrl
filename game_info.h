@@ -397,13 +397,6 @@ class CollectiveInfo {
   };
   vector<Task> HASH(taskMap);
 
-  struct Ransom {
-    pair<ViewId, int> HASH(amount);
-    string HASH(attacker);
-    bool HASH(canAfford);
-    HASH_ALL(amount, attacker, canAfford)
-  };
-  optional<Ransom> HASH(ransom);
   struct NextWave {
     ViewIdList HASH(viewId);
     string HASH(attacker);
@@ -418,7 +411,7 @@ class CollectiveInfo {
   };
   optional<RebellionChance> HASH(rebellionChance);
   vector<ViewId> HASH(allQuarters);
-  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, ransom, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, minionPromotions, availablePromotions, allQuarters, rebellionChance, avatarLevelInfo, populationString)
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, minionPromotions, availablePromotions, allQuarters, rebellionChance, avatarLevelInfo, populationString)
 };
 
 class VillageInfo {

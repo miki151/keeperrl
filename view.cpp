@@ -89,15 +89,22 @@ optional<int> View::multiChoice(const string& message, const vector<string>& ele
   return ret;
 }
 
-bool View::yesOrNoPrompt(const string& message, bool defaultNo, ScriptedUIId id) {
+bool View::yesOrNoPrompt(const string& message, optional<ViewIdList> viewId, bool defaultNo, ScriptedUIId id) {
   bool ret = false;
   auto data = ScriptedUIDataElems::Record {{
     {"callback"_s, ScriptedUIDataElems::Callback{[&ret] { ret = true; return true; }}},
     {"message"_s, message},
   }};
+  if (viewId)
+    data.elems["view_id"] = *viewId;
   ScriptedUIState state;
   scriptedUI(id, data, state);
   return ret;
+}
+
+void View::scriptedUI(ScriptedUIId id, const ScriptedUIData& data) {
+  ScriptedUIState state;
+  scriptedUI(id, data, state);
 }
 
 void View::windowedMessage(ViewIdList id, const string& message) {
