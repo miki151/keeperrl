@@ -429,15 +429,16 @@ TilePaths MainLoop::getTilePathsForAllMods() const {
   auto currentMod = getCurrentMods();
   GameConfig currentConfig = getGameConfig(currentMod);
   auto ret = readTiles(&currentConfig, currentMod);
-  for (auto modName : modsDir.getSubDirs()) {
-    GameConfig config({modsDir.subdirectory(modName)});
-    if (auto paths = readTiles(&config, {modName})) {
-      if (ret)
-        ret->merge(*paths);
-      else
-        ret = paths;
+  for (auto modName : modsDir.getSubDirs())
+    if (!!getLocalModVersionInfo(modName)) {
+      GameConfig config({modsDir.subdirectory(modName)});
+      if (auto paths = readTiles(&config, {modName})) {
+        if (ret)
+          ret->merge(*paths);
+        else
+          ret = paths;
+      }
     }
-  }
   USER_CHECK(ret) << "No available tile paths found";
   return *ret;
 }
