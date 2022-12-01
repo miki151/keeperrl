@@ -414,6 +414,11 @@ struct ModelTable {
   int numRetiredVillains;
 };
 
+vector<string> MainLoop::getCurrentMods() const {
+  return options->getVectorStringValue(OptionId::CURRENT_MOD2)
+      .filter([&](const string& name) { return !!getLocalModVersionInfo(name); });
+}
+
 TilePaths MainLoop::getTilePathsForAllMods() const {
   auto readTiles = [&] (const GameConfig* config, vector<string> modNames) {
     vector<TileInfo> tileDefs;
@@ -421,7 +426,7 @@ TilePaths MainLoop::getTilePathsForAllMods() const {
       return optional<TilePaths>();
     return optional<TilePaths>(TilePaths(std::move(tileDefs), std::move(modNames)));
   };
-  auto currentMod = options->getVectorStringValue(OptionId::CURRENT_MOD2);
+  auto currentMod = getCurrentMods();
   GameConfig currentConfig = getGameConfig(currentMod);
   auto ret = readTiles(&currentConfig, currentMod);
   for (auto modName : modsDir.getSubDirs()) {
@@ -839,7 +844,6 @@ void MainLoop::playSimpleGame() {
 
 GameConfig MainLoop::getGameConfig(const vector<string>& modNames) const {
   return GameConfig(concat({getVanillaDir()}, modNames
-      .filter([&](const string& name) { return !!getLocalModVersionInfo(name); })
       .transform([&](const string& name) { return modsDir.subdirectory(name); })));
 }
 
@@ -862,7 +866,7 @@ ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
     }
 #endif
   } else {
-    auto chosenMod = options->getVectorStringValue(OptionId::CURRENT_MOD2);
+    auto chosenMod = getCurrentMods();
     if (auto err = tryConfig(chosenMod)) {
       USER_INFO << "Error loading mod \"" << chosenMod << "\": " << *err << "\n\nUsing vanilla game data";
       if (auto err = tryConfig({}))
