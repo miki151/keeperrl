@@ -34,6 +34,8 @@ End
           Using "local" ModList("Downloaded:")
           Using "subscribed" ModList("Subscribed:")
           Using "online" ModList("Online:")
+          Height 10 {}
+          MarginLeft(18, MarginRight(18, Using "create_new" StandardButtonNotFocusable(Label("Create new mod"))))
       })
       Width 30 {}
       Using "selected_mod" Vertical {

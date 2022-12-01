@@ -764,7 +764,7 @@ void MainLoop::showMods() {
       modLists[getState(mod)].push_back(std::move(modButton));
     }
     auto data = ScriptedUIDataElems::Record{{
-      {"upload", ScriptedUIDataElems::Callback{ [this, &clicked] { createNewMod(); clicked = true; return true;} }},
+      {"create_new", ScriptedUIDataElems::Callback{ [this, &clicked] { createNewMod(); clicked = true; return true;} }},
       {"local", modLists[0]},
       {"subscribed", modLists[1]},
       {"online", modLists[2]},
