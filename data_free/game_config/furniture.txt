@@ -789,6 +789,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
       Area 1 Not CreatureId "CHICKEN"
     }
     Summon "CHICKEN" 1 none
+  canBuildOutsideOfTerritory = true
   populationIncrease = { 0.25 4 true }
 }
 "PIGSTY"
@@ -802,6 +803,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
       Area 1 Not CreatureId "PIG"
     }
     Summon "PIG" 1 none
+  canBuildOutsideOfTerritory = true
   populationIncrease = { 0.5 8 true }
 }
 "COW_PEN"
@@ -815,6 +817,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
       Area 1 Not CreatureId "COW"
     }
     Summon "COW" 1 none
+  canBuildOutsideOfTerritory = true
   populationIncrease = { 1 16 true }
 }
 "GROUND_TORCH"
