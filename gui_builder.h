@@ -87,8 +87,6 @@ class GuiBuilder {
   typedef function<void(Rectangle, optional<int>)> ItemMenuCallback;
   vector<SGuiElem> drawItemMenu(const vector<ItemInfo>&, ItemMenuCallback, bool doneBut = false);
   typedef function<void(optional<UniqueEntity<Creature>::Id>)> CreatureMenuCallback;
-  SGuiElem drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>&, const string& title,
-      pair<ViewId, int> budget, const vector<ItemInfo>&, ScrollPosition* scrollPos);
   SGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, View::CampaignOptions, View::CampaignMenuState&);
   SGuiElem drawRetiredDungeonMenu(SyncQueue<variant<string, bool, none_t> >&, RetiredGames&, string searchString, int maxGames);
   SGuiElem drawWarlordMinionsMenu(SyncQueue<variant<int, bool>>& queue, const vector<PlayerInfo>&,

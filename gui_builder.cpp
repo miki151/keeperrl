@@ -4153,22 +4153,6 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const vector<ViewI
       topMargin, GuiFactory::TOP);
 }
 
-SGuiElem GuiBuilder::drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>& queue, const string& title,
-    pair<ViewId, int> budget, const vector<ItemInfo>& items, ScrollPosition* scrollPos) {
-  int titleExtraSpace = 10;
-  auto lines = WL(getListBuilder, getStandardLineHeight());
-  lines.addElem(WL(getListBuilder)
-      .addElemAuto(WL(label, title))
-      .addBackElemAuto(drawCost(budget)).buildHorizontalList(),
-     getStandardLineHeight() + titleExtraSpace);
-  for (SGuiElem& elem : drawItemMenu(items,
-        [&queue, items] (Rectangle, optional<int> index) { if (index) queue.push(*items[*index].ids.begin());}))
-    lines.addElem(std::move(elem));
-  return WL(setWidth, 380,
-      WL(miniWindow, WL(margins, WL(scrollable, lines.buildVerticalList(), scrollPos), 15),
-          [&queue] { queue.push(none); }));
-}
-
 SGuiElem GuiBuilder::drawTickBox(shared_ptr<bool> value, const string& title) {
   return WL(stack,
       WL(button, [value]{ *value = !*value; }),

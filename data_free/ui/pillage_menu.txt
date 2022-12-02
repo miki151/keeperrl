@@ -9,6 +9,10 @@
       Horizontal {
         Position(MIDDLE, Using "title" Label())
         Stretch {}
+        Using "budget" Horizontal {
+          ViewId(1, {"gold"})
+          Label()
+        }
         Using "choose_all" StandardButton(Label("Choose all"))
       }
       Height 10 {}
@@ -23,6 +27,11 @@
             {
               Using "name" Label(none, 19, ColorId GRAY)
               If "callback" Using "name" Label()
+            }
+            Stretch {}
+            Using "price" Horizontal {
+              ViewId(1, {"gold"})
+              Label()
             }
           })
         }

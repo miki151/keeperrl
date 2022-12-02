@@ -525,19 +525,6 @@ static ItemInfo getEmptySlotItem(EquipmentSlot slot, bool locked) {
     c.pending = false;);
 }
 
-static ItemInfo getTradeItemInfo(const ContentFactory* factory, const vector<Item*>& stack, int budget) {
-  return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName(factory, nullptr, stack.size() > 1);
-    c.price = make_pair(ViewId("gold"), stack[0]->getPrice());
-    c.fullName = stack[0]->getNameAndModifiers(factory, false);
-    c.description = stack[0]->getDescription(factory);
-    c.number = stack.size();
-    c.viewId = stack[0]->getViewObject().getViewIdList();
-    for (auto it : stack)
-      c.ids.insert(it->getUniqueId());
-    c.unavailable = c.price->second > budget;);
-}
-
 static CollectiveInfo::PromotionOption getPromotionOption(const ContentFactory* factory, const PromotionInfo& info) {
   return {info.viewId, info.name, info.applied.getDescription(factory)};
 }
@@ -926,32 +913,62 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   return info;
 }
 
+static ScriptedUIDataElems::Record getItemRecord(const ContentFactory* factory, const vector<Item*> itemStack) {
+  auto elem = ScriptedUIDataElems::Record{};
+  elem.elems["view_id"] = itemStack[0]->getViewObject().getViewIdList();
+  string label;
+  if (itemStack.size() > 1)
+    label = toString(itemStack.size()) + " ";
+  label += itemStack[0]->getShortName(factory, nullptr, itemStack.size() > 1);
+  elem.elems["name"] = capitalFirst(std::move(label));
+  auto tooltipElems = ScriptedUIDataElems::List {
+    capitalFirst(itemStack[0]->getNameAndModifiers(factory))
+  };
+  for (auto& elem : itemStack[0]->getDescription(factory))
+    tooltipElems.push_back(elem);
+  elem.elems["tooltip"] = std::move(tooltipElems);
+  return elem;
+}
+
 void PlayerControl::handleTrading(Collective* ally) {
   ScrollPosition scrollPos;
-  auto& storage = collective->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT);
-  if (storage.empty()) {
-    getView()->presentText("Information", "You need a storage room for equipment in order to trade.");
-    return;
-  }
   auto factory = getGame()->getContentFactory();
+  ScriptedUIState state;
   while (1) {
-    vector<Item*> available = ally->getTradeItems();
-    vector<vector<Item*>> items = Item::stackItems(factory, available);
-    if (items.empty())
-      break;
     int budget = collective->numResource(ResourceId("GOLD"));
-    vector<ItemInfo> itemInfo = items.transform(
-        [&] (const vector<Item*>& it) { return getTradeItemInfo(factory, it, budget); });
-    auto index = getView()->chooseTradeItem("Trade with " + ally->getName()->full,
-        {ViewId("gold"), collective->numResource(ResourceId("GOLD"))}, itemInfo, &scrollPos);
-    if (!index)
+    struct TradeOption {
+      vector<Item*> items;
+      StoragePositions storage;
+    };
+    vector<TradeOption> options;
+    for (auto& elem : Item::stackItems(factory, ally->getTradeItems()))
+      options.push_back({elem, collective->getStoragePositions(elem.front()->getStorageIds())});
+    if (options.empty())
+      return;
+    bool chosen = false;
+    auto data = ScriptedUIDataElems::Record{};
+    data.elems["title"] = "Trade with " + ally->getName()->full;
+    data.elems["budget"] = toString(budget);
+    auto elems = ScriptedUIDataElems::List{};
+    for (int i : All(options)) {
+      auto& option = options[i];
+      auto elem = getItemRecord(factory, option.items);
+      elem.elems["price"] = toString(option.items[0]->getPrice());
+      if (!option.storage.empty() && option.items[0]->getPrice() <= budget)
+        elem.elems["callback"] = ScriptedUIDataElems::Callback { [option, ally, &budget, &chosen, this] {
+          CHECK(!option.storage.empty());
+          Random.choose(option.storage.asVector()).dropItem(ally->buyItem(option.items[0]));
+          budget -= option.items[0]->getPrice();
+          collective->takeResource({ResourceId("GOLD"), option.items[0]->getPrice()});
+          chosen = true;
+          return true;
+        }};
+      elems.push_back(elem);
+    }
+    data.elems["elems"] = std::move(elems);
+    getView()->scriptedUI("pillage_menu", data, state);
+    if (!chosen)
       break;
-    for (Item* it : available)
-      if (it->getUniqueId() == *index && it->getPrice() <= budget) {
-        collective->takeResource({ResourceId("GOLD"), it->getPrice()});
-        Random.choose(storage).dropItem(ally->buyItem(it));
-      }
-    getView()->updateView(this, true);
   }
 }
 
@@ -1022,19 +1039,7 @@ void PlayerControl::handlePillage(Collective* col) {
     auto elems = ScriptedUIDataElems::List{};
     for (int i : All(options)) {
       auto& option = options[i];
-      auto elem = ScriptedUIDataElems::Record{};
-      elem.elems["view_id"] = option.items[0]->getViewObject().getViewIdList();
-      string label;
-      if (option.items.size() > 1)
-        label = toString(option.items.size()) + " ";
-      label += option.items[0]->getShortName(factory, nullptr, option.items.size() > 1);
-      elem.elems["name"] = capitalFirst(std::move(label));
-      auto tooltipElems = ScriptedUIDataElems::List {
-        capitalFirst(option.items[0]->getNameAndModifiers(getGame()->getContentFactory()))
-      };
-      for (auto& elem : option.items[0]->getDescription(factory))
-        tooltipElems.push_back(elem);
-      elem.elems["tooltip"] = std::move(tooltipElems);
+      auto elem = getItemRecord(factory, option.items);
       if (!option.storage.empty())
         elem.elems["callback"] = ScriptedUIDataElems::Callback { [option, col, this, &chosen] {
           CHECK(!option.storage.empty());

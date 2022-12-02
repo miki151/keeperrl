@@ -38,10 +38,6 @@ class DummyView : public View {
     return none;
   }
   virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&, ScriptedUIState&) override {}
-  virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
-      const vector<ItemInfo>&, ScrollPosition* scrollPos) override {
-    return none;
-  }
   virtual optional<int> chooseItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollpos) override {
     return none;
   }
