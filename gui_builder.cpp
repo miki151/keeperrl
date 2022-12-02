@@ -2539,7 +2539,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
             if (upgradesTip)
               lines.addElem(WL(label, *upgradesTip));
             if (warning)
-              lines.addElem(WL(label, *warning));
+              lines.addElem(WL(label, *warning, Color::RED));
             return WL(miniWindow, WL(margins, lines.buildVerticalList(), 15));
           },
           index, *creatureInfo, warning, upgradesTip);
@@ -2552,6 +2552,8 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
         lines.addElem(WL(label, elem));
       if (upgradesTip)
         lines.addElem(WL(label, *upgradesTip));
+      if (warning)
+        lines.addElem(WL(label, *warning, Color::RED));
       if (lines.isEmpty())
         return SGuiElem(nullptr);
       return WL(miniWindow, WL(margins, lines.buildVerticalList(), 15));
