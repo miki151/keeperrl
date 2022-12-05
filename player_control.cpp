@@ -633,6 +633,34 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
   return chooseEquipmentItem(creature, std::move(currentItems), collective->getAllItems().filter(predicate), scrollPos);
 }
 
+static ScriptedUIDataElems::Record getItemRecord(const ContentFactory* factory, const vector<Item*> itemStack) {
+  auto elem = ScriptedUIDataElems::Record{};
+  elem.elems["view_id"] = itemStack[0]->getViewObject().getViewIdList();
+  string label;
+  if (itemStack.size() > 1)
+    label = toString(itemStack.size()) + " ";
+  label += itemStack[0]->getShortName(factory, nullptr, itemStack.size() > 1);
+  elem.elems["name"] = capitalFirst(std::move(label));
+  auto tooltipElems = ScriptedUIDataElems::List {
+    capitalFirst(itemStack[0]->getNameAndModifiers(factory))
+  };
+  for (auto& elem : itemStack[0]->getDescription(factory))
+    tooltipElems.push_back(elem);
+  elem.elems["tooltip"] = std::move(tooltipElems);
+  return elem;
+}
+
+static ScriptedUIDataElems::Record getItemOwnerRecord(const ContentFactory* factory, const Creature* creature,
+    int count) {
+  auto bestAttack = creature->getBestAttack(factory);
+  return ScriptedUIDataElems::Record {{
+      {"view_id", creature->getViewObject().getViewIdList()},
+      {"count", toString(count)},
+      {"attack_view_id", ViewIdList{bestAttack.viewId}},
+      {"attack_value", toString(bestAttack.value)}
+  }};
+}
+
 Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, vector<Item*> allItems,
     ScrollPosition* scrollPos) {
   vector<Item*> availableItems;
@@ -653,28 +681,47 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
       [&](const Item* it) {
         const Creature* c = getCreature(*collective->getMinionEquipment().getOwner(it));
         return c->getName().bare() + toString<int>(c->getBestAttack(factory).value);});
-  vector<Item*> allStacked;
-  vector<ItemInfo> options;
-  for (Item* it : currentItems)
-    options.push_back(getItemInfo(factory, {it}, true, false, false));
+  auto data = ScriptedUIDataElems::Record{};
+  data.elems["title"] = "Available items:"_s;
+  data.elems["is_equipment_choice"] = "blabla"_s;
+  auto itemsList = ScriptedUIDataElems::List{};
+  Item* ret = nullptr;
+  for (Item* it : currentItems) {
+    auto r = getItemRecord(factory, {it});
+    r.elems["equiped"] = "blabla"_s;
+    r.elems["callback"] = ScriptedUIDataElems::Callback {
+        [it, &ret] { ret = it; return true; }
+    };
+    itemsList.push_back(std::move(r));
+  }
   for (auto& stack : concat(Item::stackItems(factory, availableItems), usedStacks)) {
-    options.emplace_back(getItemInfo(factory, stack, false, false, false));
-    EntitySet<Creature> allOwners;
-    optional<CreatureInfo> firstOwner;
+    auto r = getItemRecord(factory, stack);
+    r.elems["callback"] = ScriptedUIDataElems::Callback {
+        [item = stack[0], &ret] { ret = item; return true; }
+    };
+    unordered_set<const Creature*> allOwners;
     for (auto item : stack)
       if (auto creatureId = collective->getMinionEquipment().getOwner(item))
-        if (const Creature* c = getCreature(*creatureId)) {
+        if (const Creature* c = getCreature(*creatureId))
           allOwners.insert(c);
-          firstOwner = CreatureInfo(c);
-        }
-    if (firstOwner)
-      options.back().owner = make_pair(std::move(*firstOwner), allOwners.getSize());
-    allStacked.push_back(stack.front());
+    if (!allOwners.empty())
+      r.elems["owner"] = getItemOwnerRecord(factory, *allOwners.begin(), allOwners.size());
+    itemsList.push_back(std::move(r));
   }
-  auto index = getView()->chooseItem("Available items:", options, scrollPos);
-  if (!index)
-    return nullptr;
-  return concat(currentItems, allStacked)[*index];
+  data.elems["elems"] = std::move(itemsList);
+  getView()->scriptedUI("pillage_menu", data);
+  return ret;
+}
+
+static ScriptedUIDataElems::Record getSteedItemRecord(const ContentFactory* factory, const Creature* steed) {
+  auto elem = ScriptedUIDataElems::Record{};
+  elem.elems["view_id"] = steed->getViewObject().getViewIdList();
+  elem.elems["name"] = capitalFirst(steed->getName().bare());
+  elem.elems["tooltip"] = ScriptedUIDataElems::List {
+    capitalFirst(steed->getName().aOrTitle()),
+    capitalFirst(steed->getAttributes().getDescription(factory))
+  };
+  return elem;
 }
 
 Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSteeds, ScrollPosition* scrollPos) {
@@ -694,18 +741,23 @@ Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSt
         const Creature* c = collective->getSteedOrRider(it);
         return c->getName().bare() + toString<int>(c->getBestAttack(factory).value);
       });
-  vector<Creature*> allStacked;
-  vector<ItemInfo> options;
+  auto data = ScriptedUIDataElems::Record{};
+  data.elems["title"] = "Available steeds (" + combine(creature->getSteedSizes()) + "):"_s;
+  data.elems["is_equipment_choice"] = "blabla"_s;
+  auto itemsList = ScriptedUIDataElems::List{};
+  Creature* ret = nullptr;
   for (auto& stack : concat(Creature::stack(availableItems), usedStacks)) {
-    options.emplace_back(getSteedItemInfo(getGame()->getContentFactory(), stack[0], false));
+    auto r = getSteedItemRecord(getGame()->getContentFactory(), stack[0]);
     if (auto c = collective->getSteedOrRider(stack[0]))
-      options.back().owner = make_pair(CreatureInfo(c), stack.size());
-    allStacked.push_back(stack.front());
+      r.elems["owner"] = getItemOwnerRecord(factory, c, stack.size());
+    r.elems["callback"] = ScriptedUIDataElems::Callback {
+        [creature = stack[0], &ret] { ret = creature; return true; }
+    };
+    itemsList.push_back(std::move(r));
   }
-  auto index = getView()->chooseItem("Available steeds (" + combine(creature->getSteedSizes()) + "):", options, scrollPos);
-  if (!index)
-    return nullptr;
-  return allStacked[*index];
+  data.elems["elems"] = std::move(itemsList);
+  getView()->scriptedUI("pillage_menu", data);
+  return ret;
 }
 int PlayerControl::getNumMinions() const {
   return (int) collective->getCreatures(MinionTrait::FIGHTER).size();
@@ -913,23 +965,6 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   return info;
 }
 
-static ScriptedUIDataElems::Record getItemRecord(const ContentFactory* factory, const vector<Item*> itemStack) {
-  auto elem = ScriptedUIDataElems::Record{};
-  elem.elems["view_id"] = itemStack[0]->getViewObject().getViewIdList();
-  string label;
-  if (itemStack.size() > 1)
-    label = toString(itemStack.size()) + " ";
-  label += itemStack[0]->getShortName(factory, nullptr, itemStack.size() > 1);
-  elem.elems["name"] = capitalFirst(std::move(label));
-  auto tooltipElems = ScriptedUIDataElems::List {
-    capitalFirst(itemStack[0]->getNameAndModifiers(factory))
-  };
-  for (auto& elem : itemStack[0]->getDescription(factory))
-    tooltipElems.push_back(elem);
-  elem.elems["tooltip"] = std::move(tooltipElems);
-  return elem;
-}
-
 void PlayerControl::handleTrading(Collective* ally) {
   ScrollPosition scrollPos;
   auto factory = getGame()->getContentFactory();
@@ -949,6 +984,7 @@ void PlayerControl::handleTrading(Collective* ally) {
     auto data = ScriptedUIDataElems::Record{};
     data.elems["title"] = "Trade with " + ally->getName()->full;
     data.elems["budget"] = toString(budget);
+    data.elems["is_trade_or_pillage"] = "blabla"_s;
     auto elems = ScriptedUIDataElems::List{};
     for (int i : All(options)) {
       auto& option = options[i];
@@ -1029,6 +1065,7 @@ void PlayerControl::handlePillage(Collective* col) {
     auto data = ScriptedUIDataElems::Record{};
     bool chosen = false;
     data.elems["title"] = "Pillage " + col->getName()->full;
+    data.elems["is_trade_or_pillage"] = "blabla"_s;
     data.elems["choose_all"] = ScriptedUIDataElems::Callback { [&] {
       for (auto& elem : options)
         if (!elem.storage.empty())

@@ -796,55 +796,6 @@ optional<string> WindowView::getText(const string& title, const string& value, i
   return returnQueue.pop();
 }
 
-Rectangle WindowView::getEquipmentMenuPosition(int height) {
-  int width = 440;
-  Vec2 origin = Vec2(rightBarWidthCollective, 200);
-  origin.x = min(origin.x, renderer.getSize().x - width);
-  return Rectangle(origin, origin + Vec2(width, height)).intersection(Rectangle(Vec2(0, 0), renderer.getSize()));
-}
-
-optional<int> WindowView::chooseItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollPos1) {
-  uiLock = true;
-  TempClockPause pause(clock);
-  SyncQueue<optional<int>> returnQueue;
-  addReturnDialog<optional<int>>(returnQueue, [=] ()-> optional<int> {
-    ScrollPosition* scrollPos = scrollPos1;
-    ScrollPosition localScrollPos;
-    if (!scrollPos)
-      scrollPos = &localScrollPos;
-    optional<optional<int>> retVal;
-    vector<SGuiElem> lines;
-    lines.push_back(gui.getListBuilder()
-        .addElemAuto(gui.label(title))
-        .addBackElem(gui.label("Owners:"), guiBuilder.getItemLineOwnerMargin()).buildHorizontalList());
-    lines.append(guiBuilder.drawItemMenu(items,
-      [&retVal] (Rectangle butBounds, optional<int> a) { retVal = a;}, true));
-    int menuHeight = lines.size() * guiBuilder.getStandardLineHeight() + 30;
-    SGuiElem menu = gui.miniWindow(gui.margins(
-            gui.scrollable(gui.verticalList(std::move(lines), guiBuilder.getStandardLineHeight()), scrollPos),
-        15), [&retVal] { retVal = optional<int>(none); });
-    SGuiElem bg2 = gui.darken();
-    bg2->setBounds(Rectangle(renderer.getSize()));
-    while (1) {
-      refreshScreen(false);
-      menu->setBounds(getEquipmentMenuPosition(menuHeight));
-      bg2->render(renderer);
-      menu->render(renderer);
-      renderer.drawAndClearBuffer();
-      Event event;
-      while (renderer.pollEvent(event)) {
-        considerResizeEvent(event);
-        propagateEvent(event, {menu});
-        if (retVal)
-          return *retVal;
-        if (considerResizeEvent(event))
-          continue;
-      }
-    }
-  });
-  return returnQueue.pop();
-}
-
 void WindowView::scriptedUI(ScriptedUIId id, const ScriptedUIData& data, ScriptedUIState& state) {
   Semaphore sem;
   return getBlockingGui(sem, gui.stack(gui.stopMouseMovement(), gui.scripted([&sem]{sem.v();}, id, data, state)));

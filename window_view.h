@@ -76,7 +76,6 @@ class WindowView: public View {
   virtual optional<int> getNumber(const string& title, Range range, int initial) override;
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint) override;
-  virtual optional<int> chooseItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollpos) override;
   virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&, ScriptedUIState&) override;
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
@@ -239,7 +238,6 @@ class WindowView: public View {
   SoundLibrary* soundLibrary;
   deque<string> messageLog;
   void propagateMousePosition(const vector<SGuiElem>&);
-  Rectangle getEquipmentMenuPosition(int height);
   Vec2 getOverlayPosition(GuiBuilder::OverlayInfo::Alignment, int height, int width, int rightBarWidth, int bottomBarHeight);
   bool considerBugReportEvent(Event&);
   BugReportSaveCallback bugReportSaveCallback;
