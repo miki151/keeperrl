@@ -4793,24 +4793,28 @@ SGuiElem GuiBuilder::drawMenuWarning(View::CampaignOptions::WarningType type) {
 
 SGuiElem GuiBuilder::drawBiomeMenu(SyncQueue<CampaignAction>& queue,
     const vector<View::CampaignOptions::BiomeInfo>& biomes, View::CampaignMenuState& state, int chosen) {
-  auto lines = WL(getListBuilder, legendLineHeight);
-  lines.addElem(WL(getListBuilder)
-    .addElemAuto(WL(label, "base biome: "))
+  auto label = WL(getListBuilder)
     .addElemAuto(WL(viewObject, biomes[chosen].viewId))
     .addSpace(5)
     .addElemAuto(WL(label, biomes[chosen].name))
-    .buildHorizontalList()
-  );
-  lines.addSpace(5);
-  auto choices = WL(getListBuilder);
-  for (int i : All(biomes)) {
-    choices.addElem(WL(setHeight, 32, WL(setWidth, 24, WL(buttonLabelFocusable,
-        WL(viewObject, biomes[i].viewId),
-        [&queue, i] { queue.push({CampaignActionId::BIOME, i}); },
-        [&state, i] { return state.index == CampaignMenuElems::Biome{i};}, false))), 36);
-  }
-  lines.addElemAuto(choices.buildHorizontalList());
-  return lines.buildVerticalList();
+    .buildHorizontalList();
+  return WL(getListBuilder)
+      .addElemAuto(WL(label, "base biome: "))
+      .addElemAuto(WL(buttonLabelFocusable, std::move(label), [this, chosen, &biomes, &queue] (Rectangle rect) {
+        vector<SGuiElem> elems;
+        vector<function<void()>> callbacks;
+        for (int i : All(biomes)) {
+          elems.push_back(WL(getListBuilder)
+              .addElemAuto(WL(viewObject, biomes[i].viewId))
+              .addSpace(5)
+              .addElemAuto(WL(label, biomes[i].name))
+              .buildHorizontalList());
+          callbacks.push_back([&queue, i] { queue.push({CampaignActionId::BIOME, i}); });
+        }
+        int index = hasController() ? chosen : -1;
+        drawMiniMenu(std::move(elems), std::move(callbacks), {}, rect.bottomLeft(), 220, true, true, &index);
+      }, [&state] { return state.index == CampaignMenuElems::Biome{};}))
+      .buildHorizontalList();
 }
 
 SGuiElem GuiBuilder::drawRetiredDungeonsButton(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
@@ -5002,7 +5006,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   if (campaignOptions.warning)
     rightLines.addElem(WL(leftMargin, -20, drawMenuWarning(*campaignOptions.warning)));
   if (!campaignOptions.biomes.empty())
-    rightLines.addElemAuto(drawBiomeMenu(queue, campaignOptions.biomes, menuState, campaignOptions.chosenBiome));
+    rightLines.addElem(drawBiomeMenu(queue, campaignOptions.biomes, menuState, campaignOptions.chosenBiome));
   int retiredPosX = 640;
   vector<SGuiElem> interior {
       WL(stopKeyEvents),

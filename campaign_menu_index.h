@@ -7,10 +7,7 @@ namespace CampaignMenuElems {
   EMPTY_STRUCT(Settings);
   EMPTY_STRUCT(ChangeMode);
   EMPTY_STRUCT(Help);
-  struct Biome {
-    int value;
-    COMPARE_ALL(value);
-  };
+  EMPTY_STRUCT(Biome);
   EMPTY_STRUCT(Confirm);
   EMPTY_STRUCT(RollMap);
   EMPTY_STRUCT(Back);

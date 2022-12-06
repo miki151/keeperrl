@@ -173,6 +173,8 @@ class GuiFactory {
 
   SGuiElem buttonLabelFocusable(SGuiElem content, function<void()> button, function<bool()> focused,
       bool matchTextWidth = true, bool centerHorizontally = false);
+  SGuiElem buttonLabelFocusable(SGuiElem content, function<void(Rectangle)> button, function<bool()> focused,
+      bool matchTextWidth = true, bool centerHorizontally = false);
   SGuiElem buttonLabelFocusable(const string&, function<void()> button, function<bool()> focused,
       bool matchTextWidth = true, bool centerHorizontally = false, bool unicode = false);
   SGuiElem buttonLabelFocusable(const string&, function<void(Rectangle)> button, function<bool()> focused,

@@ -14,11 +14,7 @@ void CampaignMenuIndex::left() {
         assign(Help{});
       },
       [&](Biome b) {
-        if (b.value > 0) {
-          --b.value;
-          assign(b);
-        } else
-          assign(Help{});
+        assign(Help{});
       },
       [&](RollMap b) {
         assign(Confirm{});
@@ -36,19 +32,13 @@ void CampaignMenuIndex::right(int numBiomes) {
         assign(Help{});
       },
       [&](Help) {
-        assign(Biome{0});
+        assign(Biome{});
       },
       [&](RetiredDungeons) {
         assign(Help{});
       },
       [&](Settings) {
         assign(Help{});
-      },
-      [&](Biome b) {
-        if (b.value < numBiomes - 1) {
-          ++b.value;
-          assign(b);
-        }
       },
       [&](Confirm b) {
         assign(RollMap{});
@@ -74,7 +64,7 @@ void CampaignMenuIndex::up() {
       [&](RetiredDungeons) {
         assign(ChangeMode{});
       },
-      [&](Biome b) {
+      [&](Biome) {
         assign(ChangeMode{});
       },
       [&](Confirm b) {
@@ -101,7 +91,7 @@ void CampaignMenuIndex::down() {
       [&](ChangeMode) {
         assign(Help{});
       },
-      [&](Biome b) {
+      [&](Biome) {
         assign(Confirm{});
       },
       [&](RetiredDungeons) {

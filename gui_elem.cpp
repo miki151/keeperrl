@@ -754,6 +754,14 @@ SGuiElem GuiFactory::buttonLabelFocusable(SGuiElem content, function<void()> cal
   );
 }
 
+SGuiElem GuiFactory::buttonLabelFocusable(SGuiElem content, function<void(Rectangle)> callback, function<bool()> focused,
+    bool matchTextWidth, bool centerHorizontally) {
+  return stack(
+      buttonLabelFocusableImpl(std::move(content), buttonRect(callback), focused, matchTextWidth, centerHorizontally),
+      conditionalStopKeys(keyHandlerRect(callback, getConfirmationKeys(), true), focused)
+  );
+}
+
 SGuiElem GuiFactory::buttonLabelFocusable(const string& text, function<void()> callback, function<bool()> focused,
     bool matchTextWidth, bool centerHorizontally, bool unicode) {
   return buttonLabelFocusable(unicode ? labelUnicode(text) : label(text), callback, focused,
