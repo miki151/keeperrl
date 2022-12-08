@@ -249,8 +249,8 @@ static int keeperMain(po::parser& commandLineFlags) {
   CHECK(!!trigger.getReferenceMaybe<StolenItems>());
 #ifndef RELEASE
   ogzstream compressedLog("log.gz");
-  if (!commandLineFlags["nolog"].was_set())
-    InfoLog.addOutput(DebugOutput::toStream(compressedLog));
+  /*if (!commandLineFlags["nolog"].was_set())
+    InfoLog.addOutput(DebugOutput::toStream(compressedLog));*/
 #endif
   FatalLog.addOutput(DebugOutput::toString(
       [](const string& s) { ofstream("stacktrace.out") << s << "\n" << std::flush; } ));

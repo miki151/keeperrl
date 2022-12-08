@@ -69,7 +69,7 @@ class GuiBuilder {
   SGuiElem drawRightPlayerInfo(const PlayerInfo&);
   SGuiElem drawPlayerInventory(const PlayerInfo&, bool withKeys);
   SGuiElem drawRightBandInfo(GameInfo&);
-  SGuiElem drawMinions(const CollectiveInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawMinions(const CollectiveInfo&, optional<int> minionIndexDummy, const optional<TutorialInfo>&);
   SGuiElem drawBottomBandInfo(GameInfo&, int width);
   SGuiElem drawKeeperHelp(const GameInfo&);
   optional<string> getTextInput(const string& title, const string& value, int maxLength, const string& hint);
@@ -195,12 +195,11 @@ class GuiBuilder {
 
   SGuiElem drawImmigrantInfo(const ImmigrantDataInfo&);
   SGuiElem drawSpecialTrait(const ImmigrantDataInfo::SpecialTraitInfo&);
-  SGuiElem minionsCache;
-  int minionsHash = 0;
   SGuiElem technologyCache;
   int technologyHash = 0;
   int bestiaryIndex = 0;
   int spellSchoolIndex = 0;
+  optional<int> minionsIndex;
   optional<Vec2> workshopIndex;
   optional<int> helpIndex;
   optional<int> villainsIndex;

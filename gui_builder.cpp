@@ -477,7 +477,7 @@ SGuiElem GuiBuilder::drawResources(const vector<CollectiveInfo::Resource>& numRe
     const optional<TutorialInfo>& tutorial, int width) {
   auto line = WL(getListBuilder, resourceSpace);
   auto moreResources = WL(getListBuilder, legendLineHeight);
-  int numResourcesShown = min(numResource.size(), (width - 250) / resourceSpace);
+  int numResourcesShown = min(numResource.size(), (width - 100) / resourceSpace);
   if (numResourcesShown < 1)
     return gui.empty();
   if (numResourcesShown < numResource.size())
@@ -609,7 +609,7 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
                 [this] { return collectiveTab != CollectiveTab::KEY_MAPPING;}),
             buttons[3]);
     vector<pair<CollectiveTab, SGuiElem>> elems = makeVec(
-        make_pair(CollectiveTab::MINIONS, drawMinions(collectiveInfo, info.tutorial)),
+        make_pair(CollectiveTab::MINIONS, drawMinions(collectiveInfo, minionsIndex, info.tutorial)),
         make_pair(CollectiveTab::BUILDINGS, cache->get(bindMethod(
             &GuiBuilder::drawBuildings, this), THIS_LINE, collectiveInfo.buildings, info.tutorial)),
         make_pair(CollectiveTab::KEY_MAPPING, drawKeeperHelp(info)),
@@ -2207,54 +2207,78 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
   return lines.buildVerticalList();
 }
 
-SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
-  int newHash = info.getHash();
-  if (newHash != minionsHash) {
-    minionsHash = newHash;
-    auto list = WL(getListBuilder, legendLineHeight);
-    list.addElem(WL(label, info.monsterHeader, Color::WHITE));
-    auto selectButton = [this](const string& group) {
+SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minionIndexDummy,
+    const optional<TutorialInfo>& tutorial) {
+  auto list = WL(getListBuilder, legendLineHeight);
+  list.addElem(WL(label, info.monsterHeader, Color::WHITE));
+  int buttonCnt = 0;
+  auto isGroupChosen = false;
+  for (auto& elem : info.minionGroups)
+    if (elem.highlight)
+      isGroupChosen = true;
+  for (auto& elem : info.automatonGroups)
+    if (elem.highlight)
+      isGroupChosen = true;
+  auto addGroup = [&] (const CollectiveInfo::CreatureGroup& elem) {
+    auto line = WL(getListBuilder);
+    line.addElem(WL(viewObject, elem.viewId), 40);
+    SGuiElem tmp = WL(label, toString(elem.count) + "   " + elem.name, Color::WHITE);
+    line.addElem(WL(renderInBounds, std::move(tmp)), 200);
+    auto callback = getButtonCallback({UserInputId::CREATURE_GROUP_BUTTON, elem.name});
+    auto selectButton = cache->get([this](const string& group) {
       return WL(releaseLeftButton, getButtonCallback({UserInputId::CREATURE_GROUP_BUTTON, group}));
-    };
-    auto addGroup = [&] (const CollectiveInfo::CreatureGroup& elem) {
-      auto line = WL(getListBuilder);
-      line.addElem(WL(viewObject, elem.viewId), 40);
-      SGuiElem tmp = WL(label, toString(elem.count) + "   " + elem.name, Color::WHITE);
-      line.addElem(WL(renderInBounds, std::move(tmp)), 200);
-      list.addElem(WL(stack, makeVec(
-          cache->get(selectButton, THIS_LINE, elem.name),
-          WL(dragSource, elem.name,
-              [=]{ return WL(getListBuilder, 10)
-                  .addElemAuto(WL(label, toString(elem.count) + " "))
-                  .addElem(WL(viewObject, elem.viewId)).buildHorizontalList();}),
-          WL(button, [this, group = elem.name, viewId = elem.viewId, id = elem.creatureId] {
-              callbacks.input(UserInput(UserInputId::CREATURE_DRAG, id));
-              gui.getDragContainer().put(group, WL(viewObject, viewId), Vec2(-100, -100));
-          }),
-          WL(uiHighlightLineConditional, [highlight = elem.highlight]{return highlight;}),
-          line.buildHorizontalList()
-       )));
-    };
-    for (auto& group : info.minionGroups)
+    }, THIS_LINE, elem.name);
+    list.addElem(WL(stack, makeVec(
+        std::move(selectButton)  ,
+        WL(dragSource, elem.name,
+            [=]{ return WL(getListBuilder, 10)
+                .addElemAuto(WL(label, toString(elem.count) + " "))
+                .addElem(WL(viewObject, elem.viewId)).buildHorizontalList();}),
+        WL(button, [this, group = elem.name, viewId = elem.viewId, id = elem.creatureId] {
+            callbacks.input(UserInput(UserInputId::CREATURE_DRAG, id));
+            gui.getDragContainer().put(group, WL(viewObject, viewId), Vec2(-100, -100));
+        }),
+        elem.highlight ? WL(uiHighlightLine) : WL(empty),
+        WL(conditionalStopKeys, WL(stack,
+            WL(uiHighlightLine),
+            WL(keyHandler, callback, {gui.getKey(C_BUILDINGS_CONFIRM), gui.getKey(C_BUILDINGS_RIGHT)}, true)
+        ), [buttonCnt, isGroupChosen, this] { return !isGroupChosen && minionsIndex == buttonCnt; }),
+        line.buildHorizontalList()
+    )));
+    ++buttonCnt;
+  };
+  for (auto& group : info.minionGroups)
+    addGroup(group);
+  if (!info.automatonGroups.empty()) {
+    list.addElem(WL(label, "Minions by ability: ", Color::WHITE));
+    for (auto& group : info.automatonGroups)
       addGroup(group);
-    if (!info.automatonGroups.empty()) {
-      list.addElem(WL(label, "Minions by ability: ", Color::WHITE));
-      for (auto& group : info.automatonGroups)
-        addGroup(group);
-    }
-    list.addElem(WL(label, "Teams: ", Color::WHITE));
-    list.addElemAuto(drawTeams(info, tutorial));
-    list.addSpace();
-    list.addElem(WL(stack,
-              WL(label, "Show tasks", [=]{ return bottomWindow == TASKS ? Color::GREEN : Color::WHITE;}),
-              WL(button, [this] { toggleBottomWindow(TASKS); })));
-    list.addElem(WL(stack,
-              WL(label, "Show message history"),
-              WL(button, getButtonCallback(UserInputId::SHOW_HISTORY))));
-    list.addSpace();
-    minionsCache = WL(scrollable, list.buildVerticalList(), &minionsScroll, &scrollbarsHeld);
   }
-  return minionsCache;
+  list.addElem(WL(label, "Teams: ", Color::WHITE));
+  list.addElemAuto(drawTeams(info, tutorial));
+  list.addSpace();
+  list.addElem(WL(stack,
+            WL(label, "Show tasks", [=]{ return bottomWindow == TASKS ? Color::GREEN : Color::WHITE;}),
+            WL(button, [this] { toggleBottomWindow(TASKS); })));
+  list.addElem(WL(stack,
+            WL(label, "Show message history"),
+            WL(button, getButtonCallback(UserInputId::SHOW_HISTORY))));
+  list.addSpace();
+  return WL(stack, makeVec(
+      WL(keyHandler, [this] {
+        minionsIndex = 0;
+        setCollectiveTab(CollectiveTab::MINIONS);
+      }, {gui.getKey(C_MINIONS_MENU)}, true),
+      WL(scrollable, list.buildVerticalList(), &minionsScroll, &scrollbarsHeld),
+      WL(conditionalStopKeys, WL(stack,
+          WL(keyHandler, [this] {
+            minionsIndex = none;
+          }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true),
+          WL(keyHandler, [this, buttonCnt] { minionsIndex = (minionsIndex.value_or(-1) + 1) % buttonCnt; },
+              {gui.getKey(C_BUILDINGS_DOWN)}, true),
+          WL(keyHandler, [this, buttonCnt] { minionsIndex = (minionsIndex.value_or(1) - 1 + buttonCnt) % buttonCnt; },
+              {gui.getKey(C_BUILDINGS_UP)}, true)
+      ), [this] { return collectiveTab == CollectiveTab::MINIONS && !!minionsIndex; })));
 }
 
 const int taskMapWindowWidth = 400;
@@ -3604,51 +3628,67 @@ static optional<GuiFactory::IconId> getMoraleIcon(double morale) {
     return none;
 }
 
-using MinionGroupMap = unordered_map<ViewIdList, vector<PlayerInfo>, CustomHash<ViewIdList>>;
-static MinionGroupMap groupByViewId(const vector<PlayerInfo>& minions) {
-  MinionGroupMap ret;
-  for (auto& elem : minions)
-    ret[elem.viewId].push_back(elem);
+static vector<PlayerInfo> groupByViewId(const vector<PlayerInfo>& minions) {
+  vector<vector<PlayerInfo>> groups;
+  for (auto& elem : minions) [&] {
+    for (auto& g : groups)
+      if (g[0].viewId == elem.viewId) {
+        g.push_back(elem);
+        return;
+      }
+    groups.push_back({elem});
+  }();
+  vector<PlayerInfo> ret;
+  for (auto& elem : groups)
+    ret.append(elem);
   return ret;
 }
 
-SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, UniqueEntity<Creature>::Id current,
+SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions1, UniqueEntity<Creature>::Id current,
     optional<TeamId> teamId) {
-  CHECK(!minions.empty());
-  auto minionMap = groupByViewId(minions);
-  auto selectButton = [this](UniqueEntity<Creature>::Id creatureId) {
-    return WL(releaseLeftButton, getButtonCallback({UserInputId::CREATURE_BUTTON, creatureId}));
-  };
+  CHECK(!minions1.empty());
   auto list = WL(getListBuilder, legendLineHeight);
-  for (auto& elem : minionMap) {
-    list.addElem(WL(topMargin, 5, WL(viewObject, elem.first)), legendLineHeight + 5);
-    for (auto& minion : elem.second) {
-      auto minionId = minion.creatureId;
-      auto line = WL(getListBuilder);
-      if (teamId)
-        line.addElem(WL(leftMargin, -16, WL(stack,
-            WL(button, getButtonCallback({UserInputId::REMOVE_FROM_TEAM, TeamCreatureInfo{*teamId, minionId}})),
-            WL(labelUnicodeHighlight, u8"✘", Color::RED))), 1);
-      line.addMiddleElem(WL(rightMargin, 5, WL(renderInBounds, WL(label, minion.getFirstName()))));
-      if (minion.morale)
-        if (auto icon = getMoraleIcon(*minion.morale))
-          line.addBackElem(WL(topMargin, -2, WL(icon, *icon)), 20);
-      line.addBackElem(drawBestAttack(minion.bestAttack), 52);
-      list.addElem(WL(stack, makeVec(
-            cache->get(selectButton, THIS_LINE, minionId),
-            WL(leftMargin, teamId ? -10 : 0, WL(stack,
-                 WL(uiHighlightLineConditional, [=] { return !teamId && mapGui->isCreatureHighlighted(minionId);}, Color::YELLOW),
-                 WL(uiHighlightLineConditional, [=] { return current == minionId;}))),
-            WL(dragSource, minionId, [=]{ return WL(viewObject, minion.viewId);}),
-            // not sure if this did anything...
-            /*WL(button, [this, minionId, viewId = minion.viewId] {
-                callbacks.input(UserInput(UserInputId::CREATURE_DRAG, minionId));
-                gui.getDragContainer().put()
-                mapGui->setDraggedCreature(minionId, viewId, Vec2(-100, -100), DragContentId::CREATURE_GROUP); }, false),*/
-            line.buildHorizontalList())));
-    }
+  auto buttonCnt = 0;
+  auto minions = groupByViewId(minions1);
+  for (int i : All(minions)) {
+    auto& minion = minions[i];
+    if (i == 0 || minions[i - 1].viewId != minion.viewId)
+      list.addElem(WL(topMargin, 5, WL(viewObject, minion.viewId)), legendLineHeight + 5);
+    auto minionId = minion.creatureId;
+    auto line = WL(getListBuilder);
+    if (teamId)
+      line.addElem(WL(leftMargin, -16, WL(stack,
+          WL(button, getButtonCallback({UserInputId::REMOVE_FROM_TEAM, TeamCreatureInfo{*teamId, minionId}})),
+          WL(labelUnicodeHighlight, u8"✘", Color::RED))), 1);
+    line.addMiddleElem(WL(rightMargin, 5, WL(renderInBounds, WL(label, minion.getFirstName()))));
+    if (minion.morale)
+      if (auto icon = getMoraleIcon(*minion.morale))
+        line.addBackElem(WL(topMargin, -2, WL(icon, *icon)), 20);
+    line.addBackElem(drawBestAttack(minion.bestAttack), 52);
+    auto selectButton = [this, minionId](UniqueEntity<Creature>::Id creatureId) {
+      return WL(releaseLeftButton, getButtonCallback({UserInputId::CREATURE_BUTTON, minionId}));
+    };
+    list.addElem(WL(stack, makeVec(
+          cache->get(selectButton, THIS_LINE, minionId),
+          WL(leftMargin, teamId ? -10 : 0, WL(stack,
+               WL(uiHighlightLineConditional, [=] { return !teamId && mapGui->isCreatureHighlighted(minionId);}, Color::YELLOW),
+               WL(uiHighlightLineConditional, [=] { return current == minionId;}))),
+          WL(dragSource, minionId, [=]{ return WL(viewObject, minion.viewId);}),
+          line.buildHorizontalList())));
   }
-  return WL(scrollable, list.buildVerticalList(), &minionButtonsScroll, &scrollbarsHeld);
+  return WL(stack,
+      WL(keyHandler, [this, minions, current] {
+        for (int i : All(minions))
+          if (minions[i].creatureId == current)
+            callbacks.input({UserInputId::CREATURE_BUTTON, minions[(i + 1) % minions.size()].creatureId});
+      }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
+      WL(keyHandler, [this, minions, current] {
+        for (int i : All(minions))
+          if (minions[i].creatureId == current)
+            callbacks.input({UserInputId::CREATURE_BUTTON, minions[(i - 1 + minions.size()) % minions.size()].creatureId});
+      }, {gui.getKey(C_BUILDINGS_UP)}, true),
+      WL(scrollable, list.buildVerticalList(), &minionButtonsScroll, &scrollbarsHeld)
+  );
 }
 
 static string getTaskText(MinionActivity option) {

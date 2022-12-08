@@ -8,9 +8,9 @@ double DungeonLevel::getProgress(VillainType type) {
     case VillainType::NONE:
       return 1.5;
     case VillainType::LESSER:
-      return 11;
+      return 6;
     case VillainType::MAIN:
-      return 25;
+      return 12;
     default:
       FATAL << "Villain type not handled: " + ENUM_STRING(type);
       return 0;
