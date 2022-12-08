@@ -176,7 +176,7 @@ class GuiBuilder {
   SGuiElem drawSpellsList(const vector<SpellInfo>&, GenericId creatureId, bool active);
   SGuiElem getSpellIcon(const SpellInfo&, int index, bool active, GenericId creatureId);
   vector<SGuiElem> drawEffectsList(const PlayerInfo&, bool withTooltip = true);
-  SGuiElem drawMinionActions(const PlayerInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawMinionActions(const PlayerInfo&, const optional<TutorialInfo>&, const vector<ViewId>& allQuarters);
   function<void()> getButtonCallback(UserInput);
   void drawMiniMenu(SGuiElem, function<bool()> done, Vec2 menuPos, int width, bool darkBg);
   void drawMiniMenu(SGuiElem, bool& exit, Vec2 menuPos, int width, bool darkBg, bool resetScrolling = true);
