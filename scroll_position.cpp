@@ -12,7 +12,7 @@ ScrollPosition::ScrollPosition(double pos) : start(pos), target(pos) {
 
 void ScrollPosition::setRelative(double val, milliseconds currentTime) {
   if (knownBounds)
-    set(target + val- knownBounds->first, currentTime);
+    set(target + val - knownBounds->first, currentTime);
   else
     set(val, currentTime);
 }

@@ -51,6 +51,7 @@
 #include "keybinding_map.h"
 #include "steam_input.h"
 #include "tutorial_state.h"
+#include "campaign_menu_index.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -1537,7 +1538,13 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
     vector<SGuiElem> tooltips, Vec2 menuPos, int width, bool darkBg, bool exitOnCallback, int* selected) {
   auto lines = WL(getListBuilder, legendLineHeight);
   auto allElems = vector<SGuiElem>();
-  auto selectedDefault = hasController() ? 0 : -1;
+  auto selectedDefault = -1;
+  if (hasController())
+    for (int i : All(callbacks))
+      if (!!callbacks[i]) {
+        selectedDefault = i;
+        break;
+      }
   if (!selected)
     selected = &selectedDefault;
   bool exit = false;
@@ -2229,7 +2236,7 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
       return WL(releaseLeftButton, getButtonCallback({UserInputId::CREATURE_GROUP_BUTTON, group}));
     }, THIS_LINE, elem.name);
     list.addElem(WL(stack, makeVec(
-        std::move(selectButton)  ,
+        std::move(selectButton),
         WL(dragSource, elem.name,
             [=]{ return WL(getListBuilder, 10)
                 .addElemAuto(WL(label, toString(elem.count) + " "))
@@ -2241,8 +2248,9 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
         elem.highlight ? WL(uiHighlightLine) : WL(empty),
         WL(conditionalStopKeys, WL(stack,
             WL(uiHighlightLine),
+            info.chosenCreature ? WL(empty) : WL(margins, WL(rectangle, Color::TRANSPARENT, Color(143, 137, 129)), -8, -3, -8, 3),
             WL(keyHandler, callback, {gui.getKey(C_BUILDINGS_CONFIRM), gui.getKey(C_BUILDINGS_RIGHT)}, true)
-        ), [buttonCnt, isGroupChosen, this] { return !isGroupChosen && minionsIndex == buttonCnt; }),
+        ), [buttonCnt, isGroupChosen, this] { return !isGroupChosen && minionsIndex == buttonCnt && collectiveTab == CollectiveTab::MINIONS; }),
         line.buildHorizontalList()
     )));
     ++buttonCnt;
@@ -2269,16 +2277,23 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
         minionsIndex = 0;
         setCollectiveTab(CollectiveTab::MINIONS);
       }, {gui.getKey(C_MINIONS_MENU)}, true),
-      WL(scrollable, list.buildVerticalList(), &minionsScroll, &scrollbarsHeld),
+      WL(scrollable, WL(rightMargin, 10, list.buildVerticalList()), &minionsScroll, &scrollbarsHeld),
       WL(conditionalStopKeys, WL(stack,
-          WL(keyHandler, [this] {
-            minionsIndex = none;
-          }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true),
+          WL(keyHandlerBool, [this] {
+            if (minionsIndex) {
+              minionsIndex = none;
+              return true;
+            }
+            return false;
+          }, {gui.getKey(C_CHANGE_Z_LEVEL)}),
           WL(keyHandler, [this, buttonCnt] { minionsIndex = (minionsIndex.value_or(-1) + 1) % buttonCnt; },
               {gui.getKey(C_BUILDINGS_DOWN)}, true),
           WL(keyHandler, [this, buttonCnt] { minionsIndex = (minionsIndex.value_or(1) - 1 + buttonCnt) % buttonCnt; },
-              {gui.getKey(C_BUILDINGS_UP)}, true)
-      ), [this] { return collectiveTab == CollectiveTab::MINIONS && !!minionsIndex; })));
+              {gui.getKey(C_BUILDINGS_UP)}, true),
+          WL(keyHandler, [this] { callbacks.input({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()}); },
+              {gui.getKey(C_BUILDINGS_LEFT)}, true)
+      ), [this] { return collectiveTab == CollectiveTab::MINIONS; })
+  ));
 }
 
 const int taskMapWindowWidth = 400;
@@ -2998,9 +3013,9 @@ SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo::ChosenCreatureInfo
           WL(margins, WL(sprite, GuiFactory::TexId::VERT_BAR_MINI, GuiFactory::Alignment::LEFT),
             0, -15, 0, -15)), minionListWidth),
       WL(leftMargin, minionListWidth + 20, std::move(minionPage)));
-  return WL(preferredSize, 640 + minionListWidth, 600,
+  return WL(preferredSize, 720 + minionListWidth, 600,
       WL(miniWindow, WL(stack,
-      WL(keyHandler, getButtonCallback({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()}),
+      WL(keyHandler, [this] { callbacks.input({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()}); minionsIndex = none; },
         getOverlayCloseKeys(), true),
       WL(margins, std::move(menu), margin))));
 }
@@ -3401,6 +3416,14 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, const GameInfo& info) {
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), THIS_LINE,
           collectiveInfo.immigration, info.tutorial, !collectiveInfo.allImmigration.empty()),
           OverlayInfo::IMMIGRATION});
+      if (!collectiveInfo.chosenCreature)
+        minionPageIndex = {};
+      else
+        for (auto g : Iter(collectiveInfo.minionGroups))
+          if (g->highlight) {
+            minionsIndex = g.index();
+            break;
+          }
       if (collectiveInfo.chosenCreature)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
             *collectiveInfo.chosenCreature, collectiveInfo.allQuarters, info.tutorial), OverlayInfo::TOP_LEFT});
@@ -3650,8 +3673,12 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions1, Uniqu
   auto list = WL(getListBuilder, legendLineHeight);
   auto buttonCnt = 0;
   auto minions = groupByViewId(minions1);
+  vector<SGuiElem> allLines;
+  optional<int> currentIndex;
   for (int i : All(minions)) {
     auto& minion = minions[i];
+    if (minion.creatureId == current)
+      currentIndex = i;
     if (i == 0 || minions[i - 1].viewId != minion.viewId)
       list.addElem(WL(topMargin, 5, WL(viewObject, minion.viewId)), legendLineHeight + 5);
     auto minionId = minion.creatureId;
@@ -3665,29 +3692,34 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions1, Uniqu
       if (auto icon = getMoraleIcon(*minion.morale))
         line.addBackElem(WL(topMargin, -2, WL(icon, *icon)), 20);
     line.addBackElem(drawBestAttack(minion.bestAttack), 52);
+    line.addBackSpace(5);
     auto selectButton = [this, minionId](UniqueEntity<Creature>::Id creatureId) {
       return WL(releaseLeftButton, getButtonCallback({UserInputId::CREATURE_BUTTON, minionId}));
     };
+    auto lineTmp = line.buildHorizontalList();
+    allLines.push_back(lineTmp);
     list.addElem(WL(stack, makeVec(
           cache->get(selectButton, THIS_LINE, minionId),
           WL(leftMargin, teamId ? -10 : 0, WL(stack,
                WL(uiHighlightLineConditional, [=] { return !teamId && mapGui->isCreatureHighlighted(minionId);}, Color::YELLOW),
-               WL(uiHighlightLineConditional, [=] { return current == minionId;}))),
+               WL(uiHighlightLineConditional, [=] { return current == minionId;}),
+               (current == minionId && hasController()) ? WL(conditional, WL(margins, WL(rectangle, Color::TRANSPARENT, Color(143, 137, 129)), -8, -3, -8, 3),
+                   [this] { return minionPageIndex == MinionPageElems::None{};})
+                   : WL(empty)
+          )),
           WL(dragSource, minionId, [=]{ return WL(viewObject, minion.viewId);}),
-          line.buildHorizontalList())));
+          std::move(lineTmp))));
   }
+  auto focusOn = [this, cnt = minions.size(), currentMinion = minions[*currentIndex], currentIndex, allLines] (int inc) {
+    int nextInd = (*currentIndex + inc + cnt) % cnt;
+    callbacks.input({UserInputId::CREATURE_BUTTON, currentMinion.creatureId});
+    std::cout << "Scrolling to " << nextInd << " " << allLines[nextInd]->getBounds().top() << std::endl;
+    minionButtonsScroll.setRelative(allLines[nextInd]->getBounds().top(), Clock::getRealMillis());
+  };
   return WL(stack,
-      WL(keyHandler, [this, minions, current] {
-        for (int i : All(minions))
-          if (minions[i].creatureId == current)
-            callbacks.input({UserInputId::CREATURE_BUTTON, minions[(i + 1) % minions.size()].creatureId});
-      }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
-      WL(keyHandler, [this, minions, current] {
-        for (int i : All(minions))
-          if (minions[i].creatureId == current)
-            callbacks.input({UserInputId::CREATURE_BUTTON, minions[(i - 1 + minions.size()) % minions.size()].creatureId});
-      }, {gui.getKey(C_BUILDINGS_UP)}, true),
-      WL(scrollable, list.buildVerticalList(), &minionButtonsScroll, &scrollbarsHeld)
+      WL(keyHandler, [focusOn] { focusOn(1); }, {gui.getKey(C_BUILDINGS_DOWN), gui.getKey(SDL::SDLK_DOWN)}, true),
+      WL(keyHandler, [focusOn] { focusOn(-1); }, {gui.getKey(C_BUILDINGS_UP), gui.getKey(SDL::SDLK_UP)}, true),
+      WL(scrollable, WL(rightMargin, 10, list.buildVerticalList()), &minionButtonsScroll, &scrollbarsHeld)
   );
 }
 
@@ -3779,32 +3811,26 @@ vector<SGuiElem> GuiBuilder::drawItemMenu(const vector<ItemInfo>& items, ItemMen
   return lines;
 }
 
-SGuiElem GuiBuilder::drawQuartersButton(const PlayerInfo& minion, const vector<ViewId>& allQuarters) {
-  auto current = minion.quarters ? WL(viewObject, *minion.quarters) : WL(empty);
-  return WL(standardButton,
-      WL(centerHoriz, WL(getListBuilder)
-            .addElemAuto(WL(label, "Quarters: "  ))
-            .addElemAuto(std::move(current))
-            .buildHorizontalList()),
-      WL(buttonRect, [this, minionId = minion.creatureId, allQuarters] (Rectangle bounds) {
-          vector<SGuiElem> lines {
-            WL(label, "Assign quarters to minion:")
-          };
-          vector<function<void()>> callbacks { nullptr };
-          auto retAction = [&] (optional<int> index) {
-            this->callbacks.input({UserInputId::ASSIGN_QUARTERS, AssignQuartersInfo{index, minionId}});
-          };
-          lines.push_back(WL(label, "none"));
-          callbacks.push_back([&retAction] { retAction(none); });
-          for (int i : All(allQuarters)) {
-            lines.push_back(WL(getListBuilder, 32)
-                .addElem(WL(viewObject, allQuarters[i]))
-                .addElem(WL(label, toString(i + 1)))
-                .buildHorizontalList());
-            callbacks.push_back([i, &retAction] { retAction(i); });
-          }
-          drawMiniMenu(std::move(lines), std::move(callbacks), {}, bounds.bottomLeft(), 300, true);
-        }), false);
+function<void(Rectangle)> GuiBuilder::getQuartersButtonFun(const PlayerInfo& minion, const vector<ViewId>& allQuarters) {
+  return [this, minionId = minion.creatureId, allQuarters] (Rectangle bounds) {
+    vector<SGuiElem> lines {
+      WL(label, "Assign quarters to minion:")
+    };
+    vector<function<void()>> callbacks { nullptr };
+    auto retAction = [&] (optional<int> index) {
+      this->callbacks.input({UserInputId::ASSIGN_QUARTERS, AssignQuartersInfo{index, minionId}});
+    };
+    lines.push_back(WL(label, "none"));
+    callbacks.push_back([&retAction] { retAction(none); });
+    for (int i : All(allQuarters)) {
+      lines.push_back(WL(getListBuilder, 32)
+          .addElem(WL(viewObject, allQuarters[i]))
+          .addElem(WL(label, toString(i + 1)))
+          .buildHorizontalList());
+      callbacks.push_back([i, &retAction] { retAction(i); });
+    }
+    drawMiniMenu(std::move(lines), std::move(callbacks), {}, bounds.bottomLeft(), 300, true);
+  };
 }
 
 function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& minion) {
@@ -3875,19 +3901,6 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
   };
 }
 
-SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
-  ViewId curTask = ViewId("unknown_monster");
-  for (auto task : minion.minionTasks)
-    if (task.current)
-      curTask = getViewId(task.task);
-  return WL(standardButton,
-      WL(centerHoriz, WL(getListBuilder)
-          .addElemAuto(WL(label, "Activity: "))
-          .addElemAuto(WL(viewObject, curTask))
-          .buildHorizontalList()),
-      WL(buttonRect, getActivityButtonFun(minion)), false);
-}
-
 static const char* getName(AIType t) {
   switch (t) {
     case AIType::MELEE: return "Melee";
@@ -3938,15 +3951,6 @@ function<void(Rectangle)> GuiBuilder::getAIButtonFun(const PlayerInfo& minion) {
   };
 }
 
-SGuiElem GuiBuilder::drawAIButton(const PlayerInfo& minion) {
-  return WL(standardButton,
-      WL(centerHoriz, WL(getListBuilder)
-          .addElemAuto(WL(label, "AI type: "))
-          .addElemAuto(WL(viewObject, getViewId(minion.aiType)))
-          .buildHorizontalList()),
-      WL(buttonRect, getAIButtonFun(minion)), false);
-}
-
 SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem> attrs) {
   if (attrs.empty())
     return WL(empty);
@@ -3962,60 +3966,55 @@ SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem> attrs) {
   return list.buildVerticalList();
 }
 
-SGuiElem GuiBuilder::drawEquipmentGroups(const PlayerInfo& minion) {
-  return WL(standardButton, WL(centerHoriz, WL(getListBuilder)
-      .addElemAuto(WL(label, "Restrict gear"))
-      //.addElemAuto(WL(viewObject, ViewId("chain_armor")))
-      .buildHorizontalList())  ,
-      WL(buttonRect, [=] (Rectangle bounds) {
-        EquipmentGroupAction ret { minion.groupName, {}};
-        vector<SGuiElem> lines;
-        vector<function<void()>> callbacks;
-        lines.push_back(WL(label, "Setting will apply to all " + makePlural(minion.groupName),
-            Renderer::smallTextSize(), Color::LIGHT_GRAY));
-        callbacks.push_back(nullptr);
-        for (auto& group : minion.equipmentGroups) {
-          callbacks.push_back([&ret, name = group.name] {
-            if (ret.flip.count(name))
-              ret.flip.erase(name);
-            else
-            ret.flip.insert(name);
-          });
-          lines.push_back(WL(getListBuilder)
-              .addElemAuto(WL(viewObject, group.viewId))
-              .addElemAuto(WL(label, group.name))
-              .addBackElem(WL(conditional, WL(labelUnicodeHighlight, u8"✘", Color::RED),
-                  WL(labelUnicodeHighlight, u8"✓", Color::GREEN),
-                  [&ret, group] { return group.locked ^ ret.flip.count(group.name); }), 30)
-              .buildHorizontalList()
-          );
-        }
-        auto chooseButton = [&]{
-          for (auto& group : minion.equipmentGroups)
-            if (!(group.locked ^ ret.flip.count(group.name)))
-              return true;
-          return false;
-        };
-        auto restrictButton = WL(getListBuilder)
-            .addElemAuto(WL(labelUnicodeHighlight, u8"✘", Color::RED))
-            .addElemAuto(WL(label, "Restrict all"))
-            .buildHorizontalList();
-        auto unrestrictButton = WL(getListBuilder)
-            .addElemAuto(WL(labelUnicodeHighlight, u8"✓", Color::GREEN))
-            .addElemAuto(WL(label, "Unrestrict all"))
-            .buildHorizontalList();
-        lines.push_back(WL(conditional, restrictButton, unrestrictButton, chooseButton));
-        callbacks.push_back([&] {
-          ret.flip.clear();
-          auto type = chooseButton();
-          for (auto& group : minion.equipmentGroups)
-            if (!group.locked == type)
-              ret.flip.insert(group.name);
-        });
-        drawMiniMenu(std::move(lines), std::move(callbacks), {}, bounds.bottomLeft(), 350, true, false);
-        this->callbacks.input({UserInputId::EQUIPMENT_GROUP_ACTION, ret});
-      }),
-      false);
+function<void(Rectangle)> GuiBuilder::getEquipmentGroupsFun(const PlayerInfo& minion) {
+  return [=] (Rectangle bounds) {
+    EquipmentGroupAction ret { minion.groupName, {}};
+    vector<SGuiElem> lines;
+    vector<function<void()>> callbacks;
+    lines.push_back(WL(label, "Setting will apply to all " + makePlural(minion.groupName),
+        Renderer::smallTextSize(), Color::LIGHT_GRAY));
+    callbacks.push_back(nullptr);
+    for (auto& group : minion.equipmentGroups) {
+      callbacks.push_back([&ret, name = group.name] {
+        if (ret.flip.count(name))
+          ret.flip.erase(name);
+        else
+        ret.flip.insert(name);
+      });
+      lines.push_back(WL(getListBuilder)
+          .addElemAuto(WL(viewObject, group.viewId))
+          .addElemAuto(WL(label, group.name))
+          .addBackElem(WL(conditional, WL(labelUnicodeHighlight, u8"✘", Color::RED),
+              WL(labelUnicodeHighlight, u8"✓", Color::GREEN),
+              [&ret, group] { return group.locked ^ ret.flip.count(group.name); }), 30)
+          .buildHorizontalList()
+      );
+    }
+    auto chooseButton = [&]{
+      for (auto& group : minion.equipmentGroups)
+        if (!(group.locked ^ ret.flip.count(group.name)))
+          return true;
+      return false;
+    };
+    auto restrictButton = WL(getListBuilder)
+        .addElemAuto(WL(labelUnicodeHighlight, u8"✘", Color::RED))
+        .addElemAuto(WL(label, "Restrict all"))
+        .buildHorizontalList();
+    auto unrestrictButton = WL(getListBuilder)
+        .addElemAuto(WL(labelUnicodeHighlight, u8"✓", Color::GREEN))
+        .addElemAuto(WL(label, "Unrestrict all"))
+        .buildHorizontalList();
+    lines.push_back(WL(conditional, restrictButton, unrestrictButton, chooseButton));
+    callbacks.push_back([&] {
+      ret.flip.clear();
+      auto type = chooseButton();
+      for (auto& group : minion.equipmentGroups)
+        if (!group.locked == type)
+          ret.flip.insert(group.name);
+    });
+    drawMiniMenu(std::move(lines), std::move(callbacks), {}, bounds.bottomLeft(), 350, true, false);
+    this->callbacks.input({UserInputId::EQUIPMENT_GROUP_ACTION, ret});
+  };
 }
 
 SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool infoOnly) {
@@ -4030,11 +4029,18 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool 
     if (!infoOnly)
       for (int i : All(items)) {
         SGuiElem keyElem = WL(empty);
-        auto labelElem = getItemLine(items[i], [this, creatureId = minion.creatureId, item = items[i]] (Rectangle bounds) {
-            if (auto choice = getItemChoice(item, bounds.bottomLeft() + Vec2(50, 0), true))
-              callbacks.input({UserInputId::CREATURE_EQUIPMENT_ACTION,
-                  EquipmentActionInfo{creatureId, item.ids, item.slot, *choice}});
-        }, nullptr, false, false);
+        auto callback = [this, creatureId = minion.creatureId, item = items[i]] (Rectangle bounds) {
+          if (auto choice = getItemChoice(item, bounds.bottomLeft() + Vec2(50, 0), true))
+            callbacks.input({UserInputId::CREATURE_EQUIPMENT_ACTION,
+                EquipmentActionInfo{creatureId, item.ids, item.slot, *choice}});
+        };
+        auto labelElem = WL(stack,
+            WL(conditionalStopKeys, WL(stack,
+                WL(keyHandlerRect, callback, {gui.getKey(C_BUILDINGS_CONFIRM)}, true),
+                WL(uiHighlightLine)
+            ), [this, i] { return minionPageIndex == MinionPageElems::Equipment{i}; }),
+            getItemLine(items[i], callback, nullptr, false, false)
+        );
         if (!items[i].ids.empty()) {
           int offset = *labelElem->getPreferredWidth();
           auto highlight = WL(leftMargin, offset, WL(labelUnicode, u8"✘", Color::RED));
@@ -4043,45 +4049,30 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool 
           labelElem = WL(stack, std::move(labelElem),
                       WL(mouseHighlight2, std::move(highlight), nullptr, false));
           keyElem = WL(stack,
-              WL(button,
-              getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
+              WL(button, getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
                   EquipmentActionInfo{minion.creatureId, items[i].ids, items[i].slot, ItemAction::LOCK}})),
               items[i].locked ? WL(viewObject, ViewId("key")) : WL(mouseHighlight2, WL(viewObject, ViewId("key_highlight"))),
               getTooltip({"Locked items won't be automatically swapped by minion."}, THIS_LINE + i)
           );
         }
-        itemElems.push_back(
+        if (items[i].type == items[i].CONSUMABLE && (i == 0 || items[i].type != items[i - 1].type))
+          lines.addElem(WL(label, "Consumables", Color::YELLOW));
+        if (items[i].type == items[i].OTHER && (i == 0 || items[i].type != items[i - 1].type))
+          lines.addElem(WL(label, "Other", Color::YELLOW));
+        lines.addElem(WL(leftMargin, 3,
             WL(getListBuilder)
                 .addElem(std::move(keyElem), 20)
                 .addMiddleElem(std::move(labelElem))
-                .buildHorizontalList());
+                .buildHorizontalList()));
+        if (i == items.size() - 1 || (items[i + 1].type == items[i].OTHER && (items[i].type != items[i + 1].type)))
+          lines.addElem(WL(buttonLabelFocusable, "Add consumable",
+              getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
+                  EquipmentActionInfo{minion.creatureId, {}, none, ItemAction::REPLACE}}),
+              [this, ind = items.size()] { return minionPageIndex == MinionPageElems::Equipment{ind}; }));
       }
     else
       for (int i : All(items))
-        itemElems.push_back(getItemLine(items[i], [](Rectangle) {}, nullptr, false, false));
-    for (int i : All(itemElems))
-      if (items[i].type == items[i].EQUIPMENT)
-        lines.addElem(WL(leftMargin, 3, std::move(itemElems[i])));
-    for (int i : All(itemElems))
-      if (!infoOnly || items[i].type == items[i].CONSUMABLE) {
-        lines.addElem(WL(label, "Consumables", Color::YELLOW));
-        break;
-      }
-    for (int i : All(itemElems))
-      if (items[i].type == items[i].CONSUMABLE)
-        lines.addElem(WL(leftMargin, 3, std::move(itemElems[i])));
-    if (!infoOnly)
-      lines.addElem(WL(buttonLabel, "Add consumable",
-          getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
-              EquipmentActionInfo{minion.creatureId, {}, none, ItemAction::REPLACE}})));
-    for (int i : All(itemElems))
-      if (items[i].type == items[i].OTHER) {
-        lines.addElem(WL(label, "Other", Color::YELLOW));
-        break;
-      }
-    for (int i : All(itemElems))
-      if (items[i].type == items[i].OTHER)
-        lines.addElem(WL(leftMargin, 3, std::move(itemElems[i])));
+        lines.addElem(getItemLine(items[i], [](Rectangle) {}, nullptr, false, false));
   }
   if (!minion.intrinsicAttacks.empty()) {
     lines.addElem(WL(label, "Intrinsic attacks", Color::YELLOW));
@@ -4092,53 +4083,81 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool 
 }
 
 SGuiElem GuiBuilder::drawMinionActions(const PlayerInfo& minion, const optional<TutorialInfo>& tutorial, const vector<ViewId>& allQuarters) {
-  const int buttonWidth = 125;
+  const int buttonWidth = 110;
   const int buttonSpacing = 15;
   auto line = WL(getListBuilder, buttonWidth);
   const bool tutorialHighlight = tutorial && tutorial->highlights.contains(TutorialHighlight::CONTROL_TEAM);
-  for (auto action : minion.actions) {
-    switch (action) {
+  for (auto action : Iter(minion.actions)) {
+    auto focusCallback = [this, action]{ return minionPageIndex == MinionPageElems::MinionAction{action.index()};};
+    switch (*action) {
       case PlayerInfo::CONTROL: {
         auto callback = getButtonCallback({UserInputId::CREATURE_CONTROL, minion.creatureId});
         line.addElem(tutorialHighlight
-            ? WL(buttonLabelBlink, "Control", callback    )
-            : WL(buttonLabel, "Control", callback, false, true));
+            ? WL(buttonLabelBlink, "Control", callback)
+            : WL(buttonLabelFocusable, "Control", callback, focusCallback, false, true  ));
         break;
       }
       case PlayerInfo::RENAME:
-        continue;
+        line.addElem(WL(buttonLabelFocusable, "Rename", [=] {
+            if (auto name = getTextInput("Rename minion", minion.firstName, maxFirstNameLength, "Press escape to cancel."))
+              callbacks.input({UserInputId::CREATURE_RENAME, RenameActionInfo{minion.creatureId, *name}}); }, focusCallback, false, true  ));
+        break;
       case PlayerInfo::BANISH:
-        line.addElem(WL(buttonLabel, "Banish",
-            getButtonCallback({UserInputId::CREATURE_BANISH, minion.creatureId}), false, true));
+        line.addElem(WL(buttonLabelFocusable, "Banish",
+            getButtonCallback({UserInputId::CREATURE_BANISH, minion.creatureId}), focusCallback, false, true));
         break;
       case PlayerInfo::DISASSEMBLE:
-        line.addElem(WL(buttonLabel, "Disassemble",
-            getButtonCallback({UserInputId::CREATURE_BANISH, minion.creatureId}), false, true));
+        line.addElem(WL(buttonLabelFocusable, "Disassemble",
+            getButtonCallback({UserInputId::CREATURE_BANISH, minion.creatureId}), focusCallback, false, true));
         break;
       case PlayerInfo::CONSUME:
-        line.addElem(WL(buttonLabel, "Absorb",
-            getButtonCallback({UserInputId::CREATURE_CONSUME, minion.creatureId}), false, true));
+        line.addElem(WL(buttonLabelFocusable, "Absorb",
+            getButtonCallback({UserInputId::CREATURE_CONSUME, minion.creatureId}), focusCallback, false, true));
         break;
       case PlayerInfo::LOCATE:
-        line.addElem(WL(buttonLabel, "Locate",
-            getButtonCallback({UserInputId::CREATURE_LOCATE, minion.creatureId}), false, true));
-        break;
-      default:
-        break;
+        line.addElem(WL(buttonLabelFocusable, "Locate",
+            getButtonCallback({UserInputId::CREATURE_LOCATE, minion.creatureId}), focusCallback, false, true));
+            break;
     }
     line.addSpace(buttonSpacing);
   }
   auto line2 = WL(getListBuilder, buttonWidth);
-  line2.addElem(drawAIButton(minion));
+  int numSettingButtons = 0;
+  auto getNextFocusPredicate = [&]() -> function<bool()> {
+    ++numSettingButtons;
+    return [this, numSettingButtons] { return minionPageIndex == MinionPageElems::Setting{numSettingButtons - 1}; };
+  };
+  line2.addElem(WL(buttonLabelFocusable,
+      WL(centerHoriz, WL(getListBuilder)
+          .addElemAuto(WL(label, "AI type: "))
+          .addElemAuto(WL(viewObject, getViewId(minion.aiType)))
+          .buildHorizontalList()),
+      getAIButtonFun(minion), getNextFocusPredicate(), false, true));
   line2.addSpace(buttonSpacing);
-  line2.addElem(drawActivityButton(minion));
+  ViewId curTask = ViewId("unknown_monster");
+  for (auto task : minion.minionTasks)
+    if (task.current)
+      curTask = getViewId(task.task);
+  line2.addElem(WL(buttonLabelFocusable,
+      WL(centerHoriz, WL(getListBuilder)
+          .addElemAuto(WL(label, "Activity: "))
+          .addElemAuto(WL(viewObject, curTask))
+          .buildHorizontalList()),
+      getActivityButtonFun(minion), getNextFocusPredicate(), false, true));
   line2.addSpace(buttonSpacing);
   if (minion.canAssignQuarters) {
-    line2.addElem(drawQuartersButton(minion, allQuarters));
+    auto current = minion.quarters ? WL(viewObject, *minion.quarters) : WL(empty);
+    line2.addElem(WL(buttonLabelFocusable,
+        WL(centerHoriz, WL(getListBuilder)
+              .addElemAuto(WL(label, "Quarters: "  ))
+              .addElemAuto(std::move(current))
+              .buildHorizontalList()),
+        getQuartersButtonFun(minion, allQuarters), getNextFocusPredicate(), false, true));
     line2.addSpace(buttonSpacing);
   }
   if (!minion.equipmentGroups.empty())
-    line2.addElem(drawEquipmentGroups(minion));
+    line2.addElem(WL(buttonLabelFocusable, "Restrict gear",
+        getEquipmentGroupsFun(minion), getNextFocusPredicate(), false, true));
   return WL(getListBuilder, legendLineHeight)
       .addElem(line.buildHorizontalList())
       .addSpace(5)
@@ -4170,14 +4189,7 @@ SGuiElem GuiBuilder::drawKillsLabel(const PlayerInfo& minion) {
 
 SGuiElem GuiBuilder::drawTitleButton(const PlayerInfo& minion) {
   auto titleLine = WL(getListBuilder);
-  titleLine.addElemAuto(WL(label, minion.title));
-  if (minion.actions.contains(PlayerInfo::Action::RENAME)) {
-    titleLine.addSpace(15);
-    titleLine.addElemAuto(WL(standardButton, WL(labelUnicode, "🖉"), WL(button, [=] {
-        if (auto name = getTextInput("Rename minion", minion.firstName, maxFirstNameLength, "Press escape to cancel."))
-          callbacks.input({UserInputId::CREATURE_RENAME, RenameActionInfo{minion.creatureId, *name}}); }), false));
-  }
-  auto lines = WL(getListBuilder, legendLineHeight);
+  titleLine.addElemAuto(WL(label, minion.title));  auto lines = WL(getListBuilder, legendLineHeight);
   for (auto& title : minion.killTitles)
     lines.addElem(WL(label, title));
   auto addLegend = [&] (const char* text) {
@@ -4247,11 +4259,46 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const vector<ViewI
   if (auto spells = drawSpellsList(minion.spells, minion.creatureId.getGenericId(), false))
     leftLines.addElemAuto(std::move(spells));
   int topMargin = list.getSize() + 20;
-  return WL(margin, list.buildVerticalList(),
-      WL(scrollable, WL(horizontalListFit, makeVec(
-          WL(rightMargin, 15, leftLines.buildVerticalList()),
-          drawEquipmentAndConsumables(minion))), &minionPageScroll, &scrollbarsHeld2),
-      topMargin, GuiFactory::TOP);
+  int numActions = minion.actions.size();
+  int numSettings = 2 + (minion.canAssignQuarters ? 1 : 0) + (minion.equipmentGroups.empty() ? 0 : 1);
+  int numEquipment = minion.inventory.size() + 1;
+  return WL(stack, makeVec(
+        WL(keyHandlerBool, [this] {
+        if (minionPageIndex == MinionPageElems::None{}) {
+          minionPageIndex = MinionPageElems::MinionAction{0};
+          return true;
+        }
+        return false;
+      }, {gui.getKey(C_BUILDINGS_CONFIRM)}),
+      WL(keyHandlerBool, [this] {
+        OnExit e([this] { updateMinionPageScroll(); });
+        return minionPageIndex.left();
+      }, {gui.getKey(C_BUILDINGS_LEFT)}),
+      WL(keyHandlerBool, [this, numActions, numSettings] {
+        OnExit e([this] { updateMinionPageScroll(); });
+        return minionPageIndex.up(numActions, numSettings);
+      }, {gui.getKey(C_BUILDINGS_UP)}),
+      WL(keyHandlerBool, [this, numSettings, numEquipment] {
+        OnExit e([this] { updateMinionPageScroll(); });
+        return minionPageIndex.down(numSettings, numEquipment);
+      }, {gui.getKey(C_BUILDINGS_DOWN)}),
+      WL(keyHandlerBool, [this, numActions, numSettings] {
+        OnExit e([this] { updateMinionPageScroll(); });
+        return minionPageIndex.right(numActions, numSettings);
+      }, {gui.getKey(C_BUILDINGS_RIGHT)}),
+      WL(margin,
+          list.buildVerticalList(),
+          WL(scrollable, WL(horizontalListFit, makeVec(
+              WL(rightMargin, 15, leftLines.buildVerticalList()),
+              drawEquipmentAndConsumables(minion))), &minionPageScroll, &scrollbarsHeld2),
+          topMargin, GuiFactory::TOP)));
+}
+
+void GuiBuilder::updateMinionPageScroll() {
+  if (auto e = minionPageIndex.getValueMaybe<MinionPageElems::Equipment>())
+    minionPageScroll.set(00 + e->index * legendLineHeight, Clock::getRealMillis());
+  else
+    minionPageScroll.set(0, Clock::getRealMillis());
 }
 
 SGuiElem GuiBuilder::drawTickBox(shared_ptr<bool> value, const string& title) {

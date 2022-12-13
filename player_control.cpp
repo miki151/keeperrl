@@ -2704,6 +2704,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       if (!creatures.empty() &&
           (!chosenCreature || getChosenTeam() || !getCreature(chosenCreature->id) || chosenCreature->group != group)) {
         setChosenTeam(none);
+        sortMinionsForUI(creatures);
         setChosenCreature(creatures[0]->getUniqueId(), group);
       } else {
         setChosenTeam(none);

@@ -28,7 +28,7 @@
 #include "item_counts.h"
 #include "scripted_ui_data.h"
 #include "avatar_index.h"
-#include "campaign_menu_index.h"
+#include "minion_page_index.h"
 
 class Clock;
 class MinionAction;
@@ -168,11 +168,10 @@ class GuiBuilder {
   SGuiElem minionButtonsCache;
   int minionButtonsHash = 0;
   SGuiElem drawMinionPage(const PlayerInfo&, const vector<ViewId>& allQuarters, const optional<TutorialInfo>&);
-  SGuiElem drawActivityButton(const PlayerInfo&);
-  SGuiElem drawAIButton(const PlayerInfo&);
+  void updateMinionPageScroll();
   SGuiElem drawAttributesOnPage(vector<SGuiElem>);
   SGuiElem drawEquipmentAndConsumables(const PlayerInfo&, bool infoOnly = false);
-  SGuiElem drawEquipmentGroups(const PlayerInfo&);
+  function<void(Rectangle)> getEquipmentGroupsFun(const PlayerInfo&);
   SGuiElem drawSpellsList(const vector<SpellInfo>&, GenericId creatureId, bool active);
   SGuiElem getSpellIcon(const SpellInfo&, int index, bool active, GenericId creatureId);
   vector<SGuiElem> drawEffectsList(const PlayerInfo&, bool withTooltip = true);
@@ -199,6 +198,7 @@ class GuiBuilder {
   int technologyHash = 0;
   int bestiaryIndex = 0;
   int spellSchoolIndex = 0;
+  MinionPageIndex minionPageIndex;
   optional<int> minionsIndex;
   optional<Vec2> workshopIndex;
   optional<int> helpIndex;
@@ -292,7 +292,7 @@ class GuiBuilder {
   vector<string> hint;
   SGuiElem getExpIncreaseLine(const CreatureExperienceInfo&, ExperienceType, bool infoOnly = false);
   optional<int> highlightedTeamMember;
-  SGuiElem drawQuartersButton(const PlayerInfo&, const vector<ViewId>& allQuarters);
+  function<void(Rectangle)> getQuartersButtonFun(const PlayerInfo&, const vector<ViewId>& allQuarters);
   SGuiElem drawRebellionOverlay(const CollectiveInfo::RebellionChance&);
   SGuiElem drawVillainsOverlay(const VillageInfo&, const optional<CollectiveInfo::NextWave>&,
       const optional<CollectiveInfo::RebellionChance>&, optional<int> villainsIndexDummy);
