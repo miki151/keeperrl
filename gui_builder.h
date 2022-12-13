@@ -180,7 +180,7 @@ class GuiBuilder {
   void drawMiniMenu(SGuiElem, function<bool()> done, Vec2 menuPos, int width, bool darkBg);
   void drawMiniMenu(SGuiElem, bool& exit, Vec2 menuPos, int width, bool darkBg, bool resetScrolling = true);
   void drawMiniMenu(vector<SGuiElem>, vector<function<void()>>, vector<SGuiElem> tooltips, Vec2 menuPos,
-      int width, bool darkBg, bool exitOnCallback = true, int* selected = nullptr);
+      int width, bool darkBg, bool exitOnCallback = true, int* selected = nullptr, bool* exit = nullptr);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
   SGuiElem drawTeams(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease, bool leftRight);
