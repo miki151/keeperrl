@@ -2252,7 +2252,9 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
             WL(uiHighlightLine),
             info.chosenCreature ? WL(empty) : WL(margins, WL(rectangle, Color::TRANSPARENT, Color(143, 137, 129)), -8, -3, -8, 3),
             WL(keyHandler, callback, {gui.getKey(C_BUILDINGS_CONFIRM), gui.getKey(C_BUILDINGS_RIGHT)}, true)
-        ), [buttonCnt, isGroupChosen, this] { return !isGroupChosen && minionsIndex == buttonCnt && collectiveTab == CollectiveTab::MINIONS; }),
+        ), [buttonCnt, isGroupChosen, this] {
+          return hasController() && !isGroupChosen && minionsIndex == buttonCnt && collectiveTab == CollectiveTab::MINIONS;
+        }),
         line.buildHorizontalList()
     )));
     ++buttonCnt;
