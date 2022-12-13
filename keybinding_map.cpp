@@ -145,7 +145,7 @@ SGuiElem KeybindingMap::getGlyph(SGuiElem label, GuiFactory* f, optional<Control
   auto steamInput = f->getSteamInput();
   if (steamInput && !steamInput->controllers.empty()) {
     if (key)
-      add = f->steamInputGlyph(*key  );
+      add = f->steamInputGlyph(*key);
   } else if (alternative)
     add = f->label("[" + *alternative + "]");
   if (add)

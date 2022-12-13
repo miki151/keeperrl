@@ -2045,7 +2045,6 @@ class Switchable : public GuiLayout {
 
 namespace {
 
-
 class PreferredSize : public GuiLayout {
   public:
 
@@ -2055,7 +2054,7 @@ class PreferredSize : public GuiLayout {
   virtual optional<int> getPreferredWidth() override {
     return width ? width : elems[0]->getPreferredWidth();
   }
-  
+
   virtual optional<int> getPreferredHeight() override {
     return height ? height : elems[0]->getPreferredHeight();
   }

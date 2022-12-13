@@ -1621,7 +1621,7 @@ void GuiBuilder::drawMiniMenu(SGuiElem elem, bool& exit, Vec2 menuPos, int width
 void GuiBuilder::drawMiniMenu(SGuiElem elem, function<bool()> done, Vec2 menuPos, int width, bool darkBg) {
   disableTooltip = true;
   renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
-  auto o = OnExit([this] { renderer.getSteamInput()->popActionSet(); });
+  auto o = OnExit([this] { renderer.getSteamInput()->popActionSet(); disableTooltip = false; });
   int contentHeight = *elem->getPreferredHeight();
   Vec2 size(width, min(renderer.getSize().y, contentHeight));
   menuPos.y -= max(0, menuPos.y + size.y - renderer.getSize().y);
@@ -2332,13 +2332,10 @@ SGuiElem GuiBuilder::drawTasksOverlay(const CollectiveInfo& info) {
 function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInfo::QueuedItemInfo& elem) {
   return [=] (Rectangle bounds) {
       auto lines = WL(getListBuilder, legendLineHeight);
-      lines.addElem(WL(label, "Use left/right mouse buttons to add/remove upgrades.",
-          Color::YELLOW));
+      lines.addElem(WL(label, "Use left/right mouse buttons to add/remove upgrades.", Color::YELLOW));
       vector<int> increases(elem.upgrades.size(), 0);
       int totalUsed = 0;
       int totalAvailable = 0;
-      disableTooltip = true;
-      DestructorFunction dFun([this] { disableTooltip = false; });
       bool exit = false;
       int selected = -1;
       vector<SGuiElem> activeElems;
@@ -2435,18 +2432,24 @@ function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInf
             Renderer::smallTextSize(), Color::LIGHT_GRAY));
       auto content = WL(stack,
           lines.buildVerticalList(),
-          WL(keyHandler, [&] {
-            selected = (selected + 1) % activeElems.size();
-            miniMenuScroll.setRelative(activeElems[selected]->getBounds().top(), Clock::getRealMillis());
-          }, Keybinding("MENU_DOWN"), true),
-          WL(keyHandler, [&] {
-            selected = (selected + activeElems.size() - 1) % activeElems.size();
-            miniMenuScroll.setRelative(activeElems[selected]->getBounds().top(), Clock::getRealMillis());
-          }, Keybinding("MENU_UP"), true)
+          getMiniMenuScrolling(activeElems, selected)
       );
       drawMiniMenu(std::move(content), exit, bounds.bottomLeft(), 500, false);
       callbacks.input({UserInputId::WORKSHOP_UPGRADE, WorkshopUpgradeInfo{elem.itemIndex, increases, cnt}});
   };
+}
+
+SGuiElem GuiBuilder::getMiniMenuScrolling(const vector<SGuiElem>& activeElems, int& selected) {
+  return WL(stack,
+      WL(keyHandler, [&] {
+        selected = (selected + 1) % activeElems.size();
+        miniMenuScroll.setRelative(activeElems[selected]->getBounds().top(), Clock::getRealMillis());
+      }, Keybinding("MENU_DOWN"), true),
+       WL(keyHandler, [&] {
+         selected = (selected + activeElems.size() - 1) % activeElems.size();
+         miniMenuScroll.setRelative(activeElems[selected]->getBounds().top(), Clock::getRealMillis());
+       }, Keybinding("MENU_UP"), true)
+  );
 }
 
 SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo& elem) {
@@ -3841,15 +3844,31 @@ function<void(Rectangle)> GuiBuilder::getQuartersButtonFun(const PlayerInfo& min
 function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& minion) {
   return [=] (Rectangle bounds) {
     auto tasks = WL(getListBuilder, legendLineHeight);
+    auto glyph1 = WL(getListBuilder);
+    if (hasController())
+      glyph1.addElemAuto(WL(label, "Set current activity ", Renderer::smallTextSize()))
+          .addElemAuto(WL(steamInputGlyph, C_MENU_SELECT));
+    auto glyph2 = WL(steamInputGlyph, C_MENU_LEFT);
+    auto glyph3 = WL(steamInputGlyph, C_MENU_RIGHT);
     tasks.addElem(WL(getListBuilder)
+        .addElemAuto(glyph1.buildHorizontalList())
         .addBackElemAuto(WL(label, "Enable", Renderer::smallTextSize()))
-        .addBackSpace(40)
-        .addBackElem(WL(renderInBounds, WL(label, "Disable for all " + makePlural(minion.groupName), Renderer::smallTextSize())), 134)
+        .addBackSpace(5)
+        .addBackElem(glyph2, 35)
+        .addBackSpace(10)
+        .addBackElem(WL(getListBuilder)
+            .addMiddleElem(WL(renderInBounds,
+                WL(label, "Disable for all " + makePlural(minion.groupName), Renderer::smallTextSize())))
+            .addBackElem(glyph3, hasController() ? 35 : 1)
+            .buildHorizontalList(),
+            164)
         .buildHorizontalList());
     bool exit = false;
+    int selected = hasController() ? 0 : -1;
     TaskActionInfo retAction;
     retAction.creature = minion.creatureId;
     retAction.groupName = minion.groupName;
+    vector<SGuiElem> activeElems;
     for (int i : All(minion.minionTasks)) {
       auto& task = minion.minionTasks[i];
       function<void()> buttonFun = [] {};
@@ -3877,31 +3896,49 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
                  WL(labelUnicodeHighlight, u8"✘", Color::LIGHT_GRAY), [&retAction, task] {
                       return retAction.lockGroup.contains(task.task) ^ task.lockedForGroup;}))
             : WL(empty);
-      tasks.addElem(WL(getListBuilder)
-          .addMiddleElem(WL(stack,
-              WL(button, buttonFun),
-              WL(getListBuilder)
-                  .addElem(WL(viewObject, getViewId(task.task)), 30)
-                  .addElemAuto(WL(label, getTaskText(task.task), getTaskColor(task)))
-                  .buildHorizontalList()
-          ))
-          .addBackElem(WL(stack,
-              getTooltip({"Click to turn this activity on/off for this minion."}, THIS_LINE + i),
-              WL(button, [&retAction, task] {
-                retAction.lock.toggle(task.task);
-              }),
-              lockButton), 37)
-          .addBackSpace(43)
-          .addBackElemAuto(WL(stack,
-              getTooltip({"Click to turn this activity off for all " + makePlural(minion.groupName)}, THIS_LINE + i + 54321),
-              WL(button, [&retAction, task] {
-                retAction.lockGroup.toggle(task.task);
-              }),
-              lockButton2))
-          .addBackSpace(99)
-          .buildHorizontalList());
+      auto lockCallback1 = [&retAction, task] {
+        retAction.lock.toggle(task.task);
+      };
+      auto lockCallback2 = [&retAction, task] {
+        retAction.lockGroup.toggle(task.task);
+      };
+      auto allName = makePlural(minion.groupName);
+      activeElems.push_back(WL(stack,
+          WL(conditionalStopKeys, WL(stack,
+              WL(uiHighlightLine),
+              WL(keyHandler, buttonFun, Keybinding("MENU_SELECT"), true),
+              WL(keyHandler, lockCallback1, Keybinding("MENU_LEFT"), true),
+              WL(keyHandler, lockCallback2, Keybinding("MENU_RIGHT"), true)
+          ), [&selected, i] { return selected == i;}),
+          WL(getListBuilder)
+              .addMiddleElem(WL(stack,
+                  WL(button, buttonFun),
+                  WL(getListBuilder)
+                      .addElem(WL(viewObject, getViewId(task.task)), 30)
+                      .addElemAuto(WL(label, getTaskText(task.task), getTaskColor(task)))
+                      .buildHorizontalList()
+              ))
+              .addBackElem(WL(stack,
+                  getTooltip({"Click to turn this activity on/off for this minion."}, THIS_LINE + i,
+                      milliseconds{700}, true),
+                  WL(button, lockCallback1),
+                  lockButton), 37)
+              .addBackSpace(51)
+              .addBackElemAuto(WL(stack,
+                  getTooltip({"Click to turn this activity off for all " + allName}, THIS_LINE + i + 54321,
+                      milliseconds{700}, true),
+                  WL(button, lockCallback2),
+                  lockButton2))
+              .addBackSpace(130)
+              .buildHorizontalList()
+      ));
+      tasks.addElem(activeElems.back());
     }
-    drawMiniMenu(tasks.buildVerticalList(), exit, bounds.bottomLeft(), 430, true);
+    auto content = WL(stack,
+        getMiniMenuScrolling(activeElems, selected),
+        tasks.buildVerticalList()
+    );
+    drawMiniMenu(std::move(content), exit, bounds.bottomLeft(), 500, true);
     callbacks.input({UserInputId::CREATURE_TASK_ACTION, retAction});
   };
 }
