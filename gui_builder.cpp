@@ -3710,15 +3710,18 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions1, Uniqu
           WL(dragSource, minionId, [=]{ return WL(viewObject, minion.viewId);}),
           std::move(lineTmp))));
   }
-  auto focusOn = [this, cnt = minions.size(), currentMinion = minions[*currentIndex], currentIndex, allLines] (int inc) {
-    int nextInd = (*currentIndex + inc + cnt) % cnt;
-    callbacks.input({UserInputId::CREATURE_BUTTON, currentMinion.creatureId});
-    std::cout << "Scrolling to " << nextInd << " " << allLines[nextInd]->getBounds().top() << std::endl;
-    minionButtonsScroll.setRelative(allLines[nextInd]->getBounds().top(), Clock::getRealMillis());
+  auto getFocusFunc = [&](int inc) -> function<void()> {
+    auto nextInd = (*currentIndex + inc + minions.size()) % minions.size();
+    auto nextElem = allLines[nextInd];
+    auto nextId = minions[nextInd].creatureId;
+    return [this, nextElem, nextId] {
+      callbacks.input({UserInputId::CREATURE_BUTTON, nextId});
+      minionButtonsScroll.setRelative(nextElem->getBounds().top(), Clock::getRealMillis());
+    };
   };
   return WL(stack,
-      WL(keyHandler, [focusOn] { focusOn(1); }, {gui.getKey(C_BUILDINGS_DOWN), gui.getKey(SDL::SDLK_DOWN)}, true),
-      WL(keyHandler, [focusOn] { focusOn(-1); }, {gui.getKey(C_BUILDINGS_UP), gui.getKey(SDL::SDLK_UP)}, true),
+      WL(keyHandler, getFocusFunc(1), {gui.getKey(C_BUILDINGS_DOWN), gui.getKey(SDL::SDLK_DOWN)}, true),
+      WL(keyHandler, getFocusFunc(-1), {gui.getKey(C_BUILDINGS_UP), gui.getKey(SDL::SDLK_UP)}, true),
       WL(scrollable, WL(rightMargin, 10, list.buildVerticalList()), &minionButtonsScroll, &scrollbarsHeld)
   );
 }
