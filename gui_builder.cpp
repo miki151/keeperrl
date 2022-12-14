@@ -2334,12 +2334,20 @@ SGuiElem GuiBuilder::drawTasksOverlay(const CollectiveInfo& info) {
 function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInfo::QueuedItemInfo& elem) {
   return [=] (Rectangle bounds) {
       auto lines = WL(getListBuilder, legendLineHeight);
-      lines.addElem(WL(label, "Use left/right mouse buttons to add/remove upgrades.", Color::YELLOW));
+      lines.addElem(hasController()
+          ? WL(getListBuilder)
+              .addElemAuto(WL(label, "Use ", Color::YELLOW))
+              .addElemAuto(WL(steamInputGlyph, C_MENU_LEFT))
+              .addElemAuto(WL(label, " and ", Color::YELLOW))
+              .addElemAuto(WL(steamInputGlyph, C_MENU_RIGHT))
+              .addElemAuto(WL(label, " to add/remove upgrades.", Color::YELLOW))
+              .buildHorizontalList()
+          : WL(label, "Use left/right mouse buttons to add/remove upgrades.", Color::YELLOW));
       vector<int> increases(elem.upgrades.size(), 0);
       int totalUsed = 0;
       int totalAvailable = 0;
       bool exit = false;
-      int selected = -1;
+      int selected = hasController() ? 0 : -1;
       vector<SGuiElem> activeElems;
       auto cnt = elem.itemInfo.number;
       for (auto& upgrade : elem.upgrades) {
