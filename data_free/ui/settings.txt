@@ -10,6 +10,8 @@ End
 
 Def TopButtonWidth() 160 End
 
+Def LineHighlight() MarginLeft(-7, MarginRight(-10, NewHighlight())) End
+
 {
   BlockEvents
   ExitButtons()
@@ -33,8 +35,10 @@ Def TopButtonWidth() 160 End
       Stretch Scrolling(Margins(15, MarginRight(10, {
         Using "options"
           List(VERTICAL, {
-              Using "callbackBool" { Focusable MarginLeft(-7, MarginRight(-10, NewHighlight())) Button() }
+              Using "callbackBool" { Focusable LineHighlight() Button() }
               Using "tooltip" GetTooltip(Label())
+              Using "sliderKeys"
+                FocusableKeys LineHighlight()
               Height 35 Horizontal {
                 Stretch Position(MIDDLE_STRETCHED_X, Using "name" Label())
                 {

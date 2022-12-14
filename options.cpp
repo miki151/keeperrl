@@ -412,7 +412,7 @@ void Options::handleIntInterval(OptionId option, ScriptedUIDataElems::Record& da
 void Options::handleSliding(OptionId option, ScriptedUIDataElems::Record& data, bool& wasSet) {
   auto range = *getIntRange(option);
   auto value = getIntValue(option);
-  auto res  = ScriptedUIDataElems::SliderData {
+  auto res = ScriptedUIDataElems::SliderData {
     [option, range, this](double value) {
       this->setValue(option, int(range.first * (1 - value) + range.second * value));
       return false;
@@ -421,6 +421,19 @@ void Options::handleSliding(OptionId option, ScriptedUIDataElems::Record& data, 
     continuousChange(option),
   };
   data.elems.insert({"sliderData", std::move(res)});
+  auto keys = ScriptedUIDataElems::FocusKeysCallbacks {{
+      {Keybinding("MENU_LEFT"), [&wasSet, option, range, this, value] {
+        this->setValue(option, max(range.first, value - 10));
+        wasSet = true;
+        return true;
+      }},
+      {Keybinding("MENU_RIGHT"), [&wasSet, option, range, this, value] {
+        this->setValue(option, min(range.second, value + 10));
+        wasSet = true;
+        return true;
+      }}
+  }};
+  data.elems.insert({"sliderKeys", std::move(keys)});
 }
 
 static optional<SDL::SDL_Keysym> captureKey(View* view, const string& text) {
@@ -445,6 +458,7 @@ void Options::handle(View* view, const ContentFactory* factory, OptionSet set, i
     optionSet.removeElementMaybe(OptionId::ZOOM_UI);
   ScriptedUIState state;
   while (1) {
+    state.sliderState.clear();
     ScriptedUIDataElems::List options;
     bool wasSet = false;
     for (OptionId option : optionSet) {

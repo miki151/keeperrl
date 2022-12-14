@@ -21,6 +21,12 @@ struct Callback {
     FATAL << "Can't deserialize Callback";
   }
 };
+struct FocusKeysCallbacks {
+  vector<pair<Keybinding, function<bool()>>> callbacks;
+  template <class Archive> void serialize(Archive& ar1, const unsigned int) {
+    FATAL << "Can't deserialize KeyCallbacks";
+  }
+};
 struct KeyCatcherCallback {
   function<void(SDL::SDL_Keysym)> fun;
   template <class Archive> void serialize(Archive& ar1, const unsigned int) {
@@ -60,7 +66,8 @@ using ::ViewIdList;
   X(Record, 4)\
   X(List, 5)\
   X(KeyCatcherCallback, 6)\
-  X(DynamicWidthCallback, 7)
+  X(DynamicWidthCallback, 7)\
+  X(FocusKeysCallbacks, 8)
 
 #define VARIANT_NAME ScriptedUIDataImpl
 #include "gen_variant.h"

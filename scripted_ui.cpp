@@ -782,6 +782,62 @@ struct Focusable : ScriptedUIInterface {
 
 REGISTER_SCRIPTED_UI(Focusable);
 
+struct FocusableKeys : ScriptedUIInterface {
+  Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
+    return elem->getSize(data, context);
+  }
+
+  void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle bounds) const override {
+    if (context.state.highlightedElem == context.elemCounter)
+      elem->render(data, context, bounds);
+    ++context.elemCounter;
+  }
+
+  void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
+    Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
+    if (id == MouseButtonId::MOVED) {
+      if (pos.inRectangle(bounds))
+        callback = [counter = context.elemCounter, &context, old = std::move(callback)] {
+          context.state.highlightedElem = counter;
+          return old ? old() : false;
+        };
+      else
+      if (context.state.highlightedElem == context.elemCounter)
+        callback = [&context, old = std::move(callback)] {
+          context.state.highlightedElem = none;
+          return old ? old() : false;
+        };
+    }
+    ++context.elemCounter;
+  }
+
+  void onKeypressed(const ScriptedUIData& data, ScriptedContext& context,
+      SDL::SDL_Keysym sym, Rectangle bounds, EventCallback& callback) const override {
+    if (context.elemCounter == context.state.highlightedElem) {
+      if (auto c = data.getReferenceMaybe<ScriptedUIDataElems::FocusKeysCallbacks>()) {
+        for (auto elem : c->callbacks)
+          if (context.factory->getKeybindingMap()->matches(elem.first, sym))
+            callback = elem.second;
+      } else {
+        USER_FATAL << "Expected callback";
+        fail();
+      }
+    }
+    callback = [&, y = bounds.middle().y, callback, myCounter = context.elemCounter] {
+      auto ret = callback ? callback() : false;
+      if (context.state.highlightedElem == myCounter)
+        context.highlightedElemHeight = y;
+      return ret;
+    };
+    ++context.elemCounter;
+  }
+
+  ScriptedUI SERIAL(elem);
+  SERIALIZE_ALL(elem)
+};
+
+REGISTER_SCRIPTED_UI(FocusableKeys);
+
 struct UrlButton : Focusable {
   void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
       Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
