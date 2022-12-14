@@ -1012,7 +1012,10 @@ struct Scroller : ScriptedUIInterface {
       };
     }
     else if (id == MouseButtonId::RELEASED)
-      callback = [&] { context.state.scrollButtonHeld = none; return false; };
+      callback = [&, old = std::move(callback)] {
+        context.state.scrollButtonHeld = none;
+        return old ? old() : false;
+      };
   }
 
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {

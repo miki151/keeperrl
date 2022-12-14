@@ -413,9 +413,8 @@ void Options::handleSliding(OptionId option, ScriptedUIDataElems::Record& data, 
   auto range = *getIntRange(option);
   auto value = getIntValue(option);
   auto res  = ScriptedUIDataElems::SliderData {
-    [&wasSet, option, range, this](double value) {
+    [option, range, this](double value) {
       this->setValue(option, int(range.first * (1 - value) + range.second * value));
-      wasSet = true;
       return false;
     },
     double(value - range.first) / (range.second - range.first),
