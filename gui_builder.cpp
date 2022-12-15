@@ -2143,7 +2143,20 @@ SGuiElem GuiBuilder::drawMinionAndLevel(ViewIdList viewId, int level, int iconMu
         WL(label, toString(level), 12 * iconMult)));
 }
 
-SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
+static bool isGroupChosen(const CollectiveInfo& info) {
+  for (auto& elem : info.minionGroups)
+    if (elem.highlight)
+      return true;
+  for (auto& elem : info.automatonGroups)
+    if (elem.highlight)
+      return true;
+  for (auto& elem : info.teams)
+    if (elem.highlight)
+      return true;
+  return false;
+}
+
+SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<TutorialInfo>& tutorial, int& buttonCnt) {
   const int elemWidth = 30;
   auto lines = WL(getListBuilder, legendLineHeight);
   const char* hint = "Drag and drop minions onto the [new team] button to create a new team. "
@@ -2168,6 +2181,7 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
           WL(button, [this, hint] { callbacks.info(hint); }),
           WL(label, "[new team]", Color::WHITE))));
   }
+  bool groupChosen = isGroupChosen(info);
   for (int i : All(info.teams)) {
     auto& team = info.teams[i];
     const int numPerLine = 7;
@@ -2182,11 +2196,12 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
     if (!currentLine.empty())
       teamLine.addElem(WL(horizontalList, std::move(currentLine), elemWidth));
     auto leaderViewId = info.getMinion(team.members[0])->viewId;
-    auto selectButton = [this](int teamId) {
-      return WL(releaseLeftButton, [=]() {
-          onTutorialClicked(0, TutorialHighlight::CONTROL_TEAM);
-          callbacks.input({UserInputId::SELECT_TEAM, teamId});
-      });
+    auto callback = [=]() {
+      onTutorialClicked(0, TutorialHighlight::CONTROL_TEAM);
+      callbacks.input({UserInputId::SELECT_TEAM, team.id});
+    };
+    auto selectButton = [this, callback] (int teamIdDummy) {
+      return WL(releaseLeftButton, callback);
     };
     const bool isTutorialHighlight = tutorial && tutorial->highlights.contains(TutorialHighlight::CONTROL_TEAM);
     lines.addElemAuto(WL(stack, makeVec(
@@ -2194,6 +2209,13 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
                 [=]{ return !wasTutorialClicked(0, TutorialHighlight::CONTROL_TEAM) && isTutorialHighlight; }),
             WL(uiHighlightLineConditional, [team] () { return team.highlight; }),
             WL(uiHighlightMouseOver),
+            WL(conditionalStopKeys, WL(stack,
+                WL(uiHighlightLine),
+                info.chosenCreature ? WL(empty) : WL(margins, WL(rectangle, Color::TRANSPARENT, Color(143, 137, 129)), -8, -3, -8, 3),
+                WL(keyHandler, callback, {gui.getKey(C_BUILDINGS_CONFIRM), gui.getKey(C_BUILDINGS_RIGHT)}, true)
+            ), [buttonCnt, groupChosen, this] {
+              return hasController() && !groupChosen && minionsIndex == buttonCnt && collectiveTab == CollectiveTab::MINIONS;
+            }),
             WL(mouseOverAction, [team, this] { mapGui->highlightTeam(team.members); },
                 [team, this] { mapGui->unhighlightTeam(team.members); }),
             cache->get(selectButton, THIS_LINE, team.id),
@@ -2212,6 +2234,7 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
             WL(getListBuilder, 22)
               .addElem(WL(topMargin, 8, WL(icon, GuiFactory::TEAM_BUTTON, GuiFactory::Alignment::TOP_CENTER)))
               .addElemAuto(teamLine.buildVerticalList()).buildHorizontalList())));
+    ++buttonCnt;
   }
   return lines.buildVerticalList();
 }
@@ -2221,13 +2244,7 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
   auto list = WL(getListBuilder, legendLineHeight);
   list.addElem(WL(label, info.monsterHeader, Color::WHITE));
   int buttonCnt = 0;
-  auto isGroupChosen = false;
-  for (auto& elem : info.minionGroups)
-    if (elem.highlight)
-      isGroupChosen = true;
-  for (auto& elem : info.automatonGroups)
-    if (elem.highlight)
-      isGroupChosen = true;
+  auto groupChosen = isGroupChosen(info);
   auto addGroup = [&] (const CollectiveInfo::CreatureGroup& elem) {
     auto line = WL(getListBuilder);
     line.addElem(WL(viewObject, elem.viewId), 40);
@@ -2252,8 +2269,8 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
             WL(uiHighlightLine),
             info.chosenCreature ? WL(empty) : WL(margins, WL(rectangle, Color::TRANSPARENT, Color(143, 137, 129)), -8, -3, -8, 3),
             WL(keyHandler, callback, {gui.getKey(C_BUILDINGS_CONFIRM), gui.getKey(C_BUILDINGS_RIGHT)}, true)
-        ), [buttonCnt, isGroupChosen, this] {
-          return hasController() && !isGroupChosen && minionsIndex == buttonCnt && collectiveTab == CollectiveTab::MINIONS;
+        ), [buttonCnt, groupChosen, this] {
+          return hasController() && !groupChosen && minionsIndex == buttonCnt && collectiveTab == CollectiveTab::MINIONS;
         }),
         line.buildHorizontalList()
     )));
@@ -2267,7 +2284,7 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
       addGroup(group);
   }
   list.addElem(WL(label, "Teams: ", Color::WHITE));
-  list.addElemAuto(drawTeams(info, tutorial));
+  list.addElemAuto(drawTeams(info, tutorial, buttonCnt));
   list.addSpace();
   list.addElem(WL(stack,
             WL(label, "Show tasks", [=]{ return bottomWindow == TASKS ? Color::GREEN : Color::WHITE;}),

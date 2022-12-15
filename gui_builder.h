@@ -183,7 +183,7 @@ class GuiBuilder {
       int width, bool darkBg, bool exitOnCallback = true, int* selected = nullptr, bool* exit = nullptr);
   SGuiElem getMiniMenuScrolling(const vector<SGuiElem>& activeElems, int& selected);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
-  SGuiElem drawTeams(const CollectiveInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawTeams(const CollectiveInfo&, const optional<TutorialInfo>&, int& buttonCnt);
   SGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease, bool leftRight);
   SGuiElem drawOptionElem(OptionId, function<void()> onChanged, function<bool()> focused);
   pair<GuiFactory::ListBuilder, vector<SGuiElem>> drawRetiredGames(RetiredGames&,
