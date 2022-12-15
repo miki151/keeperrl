@@ -397,56 +397,61 @@ struct Position : Container {
   vector<SubElemInfo> getElemBounds(const ScriptedUIData& data, ScriptedContext& context,
       Rectangle area) const override {
     auto size = elem->getSize(data, context);
-    switch (position) {
-      case PlacementPos::MIDDLE_FIT_Y: {
-        double scale = double(area.height()) / size.y;
-        return {SubElemInfo{elem, data, Rectangle(area.middle().x - scale * size.x / 2, area.top(),
-            area.middle().x - scale * size.x / 2 + scale * size.x, area.bottom())}};
+    auto res = [&] () -> Rectangle {
+      switch (position) {
+        case PlacementPos::MIDDLE_FIT_Y: {
+          double scale = double(area.height()) / size.y;
+          return Rectangle(area.middle().x - scale * size.x / 2, area.top(),
+              area.middle().x - scale * size.x / 2 + scale * size.x, area.bottom());
+        }
+        case PlacementPos::ENCAPSULATE: {
+          double scale = max(double(area.height()) / size.y, double(area.width()) / size.x);
+          return Rectangle(area.middle() - size * scale / 2,
+              area.middle() - size * scale / 2 + size * scale);
+        }
+        case PlacementPos::MIDDLE_STRETCHED_X:
+          return Rectangle(area.left(), area.middle().y - size.y / 2,
+              area.right(), area.middle().y - size.y / 2 + size.y);
+        case PlacementPos::MIDDLE_STRETCHED_Y:
+          return Rectangle(area.middle().x - size.x / 2, area.top(),
+              area.middle().x - size.x / 2 + size.x, area.bottom());
+        case PlacementPos::MIDDLE:
+          return Rectangle(area.middle() - size / 2, area.middle() + size / 2);
+        case PlacementPos::TOP_STRETCHED:
+          return Rectangle(area.topLeft(), area.topRight() + Vec2(0, size.y));
+        case PlacementPos::BOTTOM_STRETCHED:
+          return Rectangle(area.bottomLeft() - Vec2(0, size.y), area.bottomRight());
+        case PlacementPos::LEFT_STRETCHED:
+          return Rectangle(area.topLeft(), area.bottomLeft() + Vec2(size.x, 0));
+        case PlacementPos::RIGHT_STRETCHED:
+          return Rectangle(area.topRight() - Vec2(size.x, 0), area.bottomRight());
+        case PlacementPos::TOP_LEFT:
+          return Rectangle(area.topLeft(), area.topLeft() + size);
+        case PlacementPos::TOP_RIGHT:
+          return Rectangle(area.topRight() - Vec2(size.x, 0), area.topRight() + Vec2(0, size.y));
+        case PlacementPos::BOTTOM_RIGHT:
+          return Rectangle(area.bottomRight() - size, area.bottomRight());
+        case PlacementPos::BOTTOM_LEFT:
+          return Rectangle(area.bottomLeft() - Vec2(0, size.y), area.bottomLeft() + Vec2(size.x, 0));
+        case PlacementPos::TOP_CENTERED:
+          return Rectangle(area.middle().x - size.x / 2, area.top(),
+              area.middle().x - size.x / 2 + size.x, area.top() + size.y);
+        case PlacementPos::BOTTOM_CENTERED:
+          return Rectangle(area.middle().x - size.x / 2, area.bottom() - size.y,
+              area.middle().x - size.x / 2 + size.x, area.bottom());
+        case PlacementPos::LEFT_CENTERED:
+          return Rectangle(area.left(), area.middle().y - size.y / 2,
+              area.left() + size.x, area.middle().y - size.y / 2 + size.y);
+        case PlacementPos::RIGHT_CENTERED:
+          return Rectangle(area.right() - size.x, area.middle().y - size.y / 2,
+              area.right(), area.middle().y - size.y / 2 + size.y);
+        case PlacementPos::SCREEN:
+          return Rectangle(Vec2(0, 0), context.renderer->getSize());
       }
-      case PlacementPos::ENCAPSULATE: {
-        double scale = max(double(area.height()) / size.y, double(area.width()) / size.x);
-        return {SubElemInfo{elem, data, Rectangle(area.middle() - size * scale / 2,
-            area.middle() - size * scale / 2 + size * scale)}};
-      }
-      case PlacementPos::MIDDLE_STRETCHED_X:
-        return {SubElemInfo{elem, data, Rectangle(area.left(), area.middle().y - size.y / 2,
-            area.right(), area.middle().y - size.y / 2 + size.y)}};
-      case PlacementPos::MIDDLE_STRETCHED_Y:
-        return {SubElemInfo{elem, data, Rectangle(area.middle().x - size.x / 2, area.top(),
-            area.middle().x - size.x / 2 + size.x, area.bottom())}};
-      case PlacementPos::MIDDLE:
-        return {SubElemInfo{elem, data, Rectangle(area.middle() - size / 2, area.middle() + size / 2)}};
-      case PlacementPos::TOP_STRETCHED:
-        return {SubElemInfo{elem, data, Rectangle(area.topLeft(), area.topRight() + Vec2(0, size.y))}};
-      case PlacementPos::BOTTOM_STRETCHED:
-        return {SubElemInfo{elem, data, Rectangle(area.bottomLeft() - Vec2(0, size.y), area.bottomRight())}};
-      case PlacementPos::LEFT_STRETCHED:
-        return {SubElemInfo{elem, data, Rectangle(area.topLeft(), area.bottomLeft() + Vec2(size.x, 0))}};
-      case PlacementPos::RIGHT_STRETCHED:
-        return {SubElemInfo{elem, data, Rectangle(area.topRight() - Vec2(size.x, 0), area.bottomRight())}};
-      case PlacementPos::TOP_LEFT:
-        return {SubElemInfo{elem, data, Rectangle(area.topLeft(), area.topLeft() + size)}};
-      case PlacementPos::TOP_RIGHT:
-        return {SubElemInfo{elem, data, Rectangle(area.topRight() - Vec2(size.x, 0), area.topRight() + Vec2(0, size.y))}};
-      case PlacementPos::BOTTOM_RIGHT:
-        return {SubElemInfo{elem, data, Rectangle(area.bottomRight() - size, area.bottomRight())}};
-      case PlacementPos::BOTTOM_LEFT:
-        return {SubElemInfo{elem, data, Rectangle(area.bottomLeft() - Vec2(0, size.y), area.bottomLeft() + Vec2(size.x, 0))}};
-      case PlacementPos::TOP_CENTERED:
-        return {SubElemInfo{elem, data, Rectangle(area.middle().x - size.x / 2, area.top(),
-            area.middle().x - size.x / 2 + size.x, area.top() + size.y)}};
-      case PlacementPos::BOTTOM_CENTERED:
-        return {SubElemInfo{elem, data, Rectangle(area.middle().x - size.x / 2, area.bottom() - size.y,
-            area.middle().x - size.x / 2 + size.x, area.bottom())}};
-      case PlacementPos::LEFT_CENTERED:
-        return {SubElemInfo{elem, data, Rectangle(area.left(), area.middle().y - size.y / 2,
-            area.left() + size.x, area.middle().y - size.y / 2 + size.y)}};
-      case PlacementPos::RIGHT_CENTERED:
-        return {SubElemInfo{elem, data, Rectangle(area.right() - size.x, area.middle().y - size.y / 2,
-            area.right(), area.middle().y - size.y / 2 + size.y)}};
-      case PlacementPos::SCREEN:
-        return {SubElemInfo{elem, data, Rectangle(Vec2(0, 0), context.renderer->getSize())}};
-    }
+    }();
+    if (limitToBounds)
+      res = res.intersection(area);
+    return {SubElemInfo{elem, data, res}};
   }
 
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
@@ -455,7 +460,8 @@ struct Position : Container {
 
   ScriptedUI SERIAL(elem);
   PlacementPos SERIAL(position);
-  SERIALIZE_ALL(roundBracket(), NAMED(position), NAMED(elem))
+  bool SERIAL(limitToBounds) = false;
+  SERIALIZE_ALL(roundBracket(), NAMED(position), NAMED(elem), OPTION(limitToBounds))
 };
 
 REGISTER_SCRIPTED_UI(Position);

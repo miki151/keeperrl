@@ -2,7 +2,7 @@
 Def ItemsWindow()
   Width 380 MiniWindow({
     Using "EXIT" Button(true)
-    Vertical {
+    Scrolling(Vertical {
       Horizontal {
         Position(MIDDLE, Using "title" Label())
         Stretch {}
@@ -42,7 +42,7 @@ Def ItemsWindow()
           })
         }
       )
-    }
+    })
   })
 End
 
@@ -51,7 +51,7 @@ End
   FocusKeysVertical()
   Position(SCREEN, Fill(Rgb 0 0 0 150))
   If "is_trade_or_pillage"
-    Position(SCREEN, Position(BOTTOM_LEFT, MarginLeft(370, MarginBottom(93, ItemsWindow()))))
+    Position(SCREEN, Position(BOTTOM_LEFT, MarginLeft(370, MarginBottom(93, ItemsWindow())), true))
   If "is_equipment_choice"
-    Position(SCREEN, Position(TOP_LEFT, MarginLeft(330, MarginTop(210, ItemsWindow()))))
+    Position(SCREEN, Position(TOP_LEFT, MarginLeft(330, MarginTop(210, ItemsWindow())), true))
 }
