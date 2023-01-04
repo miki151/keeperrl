@@ -1,6 +1,7 @@
 {
   BlockEvents
   ExitButtons()
+  FocusKeysHorizontal()
   Window(Width 700 Height 700 {
     Vertical {
       Position(MIDDLE,
