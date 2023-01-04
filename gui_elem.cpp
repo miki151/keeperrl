@@ -642,6 +642,8 @@ SGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
 }
 
 static vector<string> breakWord(Renderer& renderer, string word, int maxWidth, int size) {
+  if (renderer.getTextLength(word, size) <= maxWidth)
+    return {std::move(word)};
   vector<string> ret;
   while (!word.empty()) {
     int maxSubstr = 0;
@@ -657,8 +659,8 @@ static vector<string> breakWord(Renderer& renderer, string word, int maxWidth, i
 
 static vector<string> breakText(Renderer& renderer, const string& text, int maxWidth, int size = Renderer::textSize(),
     char delim = ' ') {
-  if (text.empty())
-    return {""};
+  if (renderer.getTextLength(text, size) <= maxWidth)
+    return {std::move(text)};
   vector<string> rows;
   for (string line : split(text, {'\n'})) {
     rows.push_back("");
