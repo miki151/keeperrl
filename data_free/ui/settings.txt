@@ -23,11 +23,11 @@ Def LineHighlight() MarginLeft(-7, MarginRight(-10, NewHighlight())) End
         Position(MIDDLE, Horizontal {
           Width TopButtonWidth() StandardButtonActivated(Label("General"))
           Width 15 {}
-          Using "set_keys" Width TopButtonWidth() StandardButton(Label("Keybindings"))
+          Using "set_keys" Width TopButtonWidth() StandardButtonNotFocusable(Label("Keybindings"))
         })
       If "keybindings"
         Position(MIDDLE, Horizontal {
-          Using "set_options" Width TopButtonWidth() StandardButton(Label("General"))
+          Using "set_options" Width TopButtonWidth() StandardButtonNotFocusable(Label("General"))
           Width 15 {}
           Width TopButtonWidth() StandardButtonActivated(Label("Keybindings"))
         })
