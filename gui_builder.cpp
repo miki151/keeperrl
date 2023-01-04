@@ -3311,103 +3311,104 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
         lines.addElem(WL(label, line));
   } else {
     auto& highlighted = mapGui->getLastHighlighted();
-    auto& index = highlighted.viewIndex;
-    auto tryHighlight = [&] (HighlightType type, const char* text, Color color) {
-      if (index.isHighlight(type)) {
+    if (auto& index = highlighted.viewIndex) {
+      auto tryHighlight = [&] (HighlightType type, const char* text, Color color) {
+        if (index->isHighlight(type)) {
+          lines.addElem(WL(getListBuilder)
+                .addElem(WL(viewObject, ViewId("magic_field", color)), 30)
+                .addElemAuto(WL(label, text))
+                .buildHorizontalList());
+          lines.addElem(WL(margins, WL(rectangle, Color::DARK_GRAY), -9, 2, -9, 8), 12);
+        }
+      };
+      tryHighlight(HighlightType::ALLIED_TOTEM, "Allied magical field", Color::GREEN);
+      tryHighlight(HighlightType::HOSTILE_TOTEM, "Hostile magical field", Color::RED);
+      for (auto& gas : index->getGasAmounts()) {
         lines.addElem(WL(getListBuilder)
-              .addElem(WL(viewObject, ViewId("magic_field", color)), 30)
-              .addElemAuto(WL(label, text))
+              .addElem(WL(viewObject, ViewId("tile_gas", gas.color.transparency(254))), 30)
+              .addElemAuto(WL(label, capitalFirst(gas.name)))
               .buildHorizontalList());
         lines.addElem(WL(margins, WL(rectangle, Color::DARK_GRAY), -9, 2, -9, 8), 12);
       }
-    };
-    tryHighlight(HighlightType::ALLIED_TOTEM, "Allied magical field", Color::GREEN);
-    tryHighlight(HighlightType::HOSTILE_TOTEM, "Hostile magical field", Color::RED);
-    for (auto& gas : index.getGasAmounts()) {
-      lines.addElem(WL(getListBuilder)
-            .addElem(WL(viewObject, ViewId("tile_gas", gas.color.transparency(254))), 30)
-            .addElemAuto(WL(label, capitalFirst(gas.name)))
-            .buildHorizontalList());
-      lines.addElem(WL(margins, WL(rectangle, Color::DARK_GRAY), -9, 2, -9, 8), 12);
+      for (auto layer : ENUM_ALL_REVERSE(ViewLayer))
+        if (index->hasObject(layer)) {
+          auto& viewObject = index->getObject(layer);
+          lines.addElemAuto(WL(getListBuilder)
+                .addElem(WL(viewObject, viewObject.getViewIdList()), 30)
+                .addElemAuto(WL(labelMultiLineWidth, viewObject.getDescription(), legendLineHeight * 2 / 3, 300))
+                .buildHorizontalList());
+          lines.addSpace(legendLineHeight / 3);
+          if (layer == ViewLayer::CREATURE)
+            lines.addElemAuto(drawLyingItemsList("Inventory: ", index->getEquipmentCounts(), 250));
+          if (viewObject.hasModifier(ViewObject::Modifier::HOSTILE))
+            lines.addElem(WL(label, "Hostile", Color::ORANGE));
+          for (auto status : viewObject.getCreatureStatus()) {
+            lines.addElem(WL(label, getName(status), getColor(status)));
+            if (auto desc = getDescription(status))
+              lines.addElem(WL(label, *desc, getColor(status)));
+            break;
+          }
+          if (!disableClickActions)
+            if (auto actions = getClickActions(viewObject))
+              if (highlighted.tileScreenPos)
+                allElems.push_back(WL(absolutePosition, WL(translucentBackgroundWithBorderPassMouse, WL(margins,
+                    WL(setHeight, *actions->getPreferredHeight(), actions), 5, 1, 5, -2)),
+                    highlighted.creaturePos.value_or(*highlighted.tileScreenPos) + Vec2(60, 60)));
+          if (!viewObject.getBadAdjectives().empty()) {
+            lines.addElemAuto(WL(labelMultiLineWidth, viewObject.getBadAdjectives(), legendLineHeight * 2 / 3, 300,
+                Renderer::textSize(), Color::RED, ','));
+            lines.addSpace(legendLineHeight / 3);
+          }
+          if (!viewObject.getGoodAdjectives().empty()) {
+            lines.addElemAuto(WL(labelMultiLineWidth, viewObject.getGoodAdjectives(), legendLineHeight * 2 / 3, 300,
+                Renderer::textSize(), Color::GREEN, ','));
+            lines.addSpace(legendLineHeight / 3);
+          }
+          if (viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE))
+            lines.addElem(WL(label, "Can only be healed using rituals."));
+          if (auto value = viewObject.getAttribute(ViewObjectAttribute::FLANKED_MOD)) {
+            lines.addElem(WL(label, "Flanked: defense reduced by " + toString<int>(100 * (1 - *value)) + "%.", Color::RED));
+            if (viewObject.hasModifier(ViewObject::Modifier::PLAYER))
+              lines.addElem(WL(label, "Use a shield!", Color::RED));
+          }
+          if (auto& attributes = viewObject.getCreatureAttributes())
+            lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(*attributes)));
+          if (auto health = viewObject.getAttribute(ViewObjectAttribute::HEALTH))
+            lines.addElem(WL(stack,
+                  WL(margins, WL(progressBar, MapGui::getHealthBarColor(*health,
+                      viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE)).transparency(70), *health), -2, 0, 0, 3),
+                  WL(label, getHealthName(viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE))
+                      + toString((int) (100.0f * *health)) + "%")));
+          if (auto morale = viewObject.getAttribute(ViewObjectAttribute::MORALE))
+            lines.addElem(WL(stack,
+                  WL(margins, WL(progressBar, (*morale >= 0 ? Color::GREEN : Color::RED).transparency(70), fabs(*morale)), -2, 0, 0, 3),
+                  WL(label, "Morale: " + getMoraleNumber(*morale))));
+          if (auto luxury = viewObject.getAttribute(ViewObjectAttribute::LUXURY))
+            lines.addElem(WL(stack,
+                  WL(margins, WL(progressBar, Color::GREEN.transparency(70), fabs(*luxury)), -2, 0, 0, 3),
+                  WL(label, "Luxury: " + getMoraleNumber(*luxury))));
+          if (viewObject.hasModifier(ViewObjectModifier::UNPAID))
+            lines.addElem(WL(label, "Cannot afford item", Color::RED));
+          if (viewObject.hasModifier(ViewObjectModifier::PLANNED))
+            lines.addElem(WL(label, "Planned"));
+          lines.addElem(WL(margins, WL(rectangle, Color::DARK_GRAY), -9, 2, -9, 8), 12);
+        }
+      if (index->isHighlight(HighlightType::INSUFFICIENT_LIGHT))
+        lines.addElem(WL(label, "Insufficient light", Color::RED));
+      if (index->isHighlight(HighlightType::TORTURE_UNAVAILABLE))
+        lines.addElem(WL(label, "Torture unavailable due to population limit", Color::RED));
+      if (index->isHighlight(HighlightType::PRISON_NOT_CLOSED))
+        lines.addElem(WL(label, "Prison must be separated from the outdoors and from all staircases using prison bars or prison door", Color::RED));
+      if (index->isHighlight(HighlightType::PIGSTY_NOT_CLOSED))
+        lines.addElem(WL(label, "Animal pen must be separated from the outdoors and from all staircases using animal fence", Color::RED));
+      if (index->isHighlight(HighlightType::INDOORS))
+        lines.addElem(WL(label, "Indoors"));
+      else
+        lines.addElem(WL(label, "Outdoors"));
+      lines.addElemAuto(drawLyingItemsList("Lying here: ", index->getItemCounts(), 250));
     }
-    for (auto layer : ENUM_ALL_REVERSE(ViewLayer))
-      if (index.hasObject(layer)) {
-        auto& viewObject = index.getObject(layer);
-        lines.addElemAuto(WL(getListBuilder)
-              .addElem(WL(viewObject, viewObject.getViewIdList()), 30)
-              .addElemAuto(WL(labelMultiLineWidth, viewObject.getDescription(), legendLineHeight * 2 / 3, 300))
-              .buildHorizontalList());
-        lines.addSpace(legendLineHeight / 3);
-        if (layer == ViewLayer::CREATURE)
-          lines.addElemAuto(drawLyingItemsList("Inventory: ", highlighted.viewIndex.getEquipmentCounts(), 250));
-        if (viewObject.hasModifier(ViewObject::Modifier::HOSTILE))
-          lines.addElem(WL(label, "Hostile", Color::ORANGE));
-        for (auto status : viewObject.getCreatureStatus()) {
-          lines.addElem(WL(label, getName(status), getColor(status)));
-          if (auto desc = getDescription(status))
-            lines.addElem(WL(label, *desc, getColor(status)));
-          break;
-        }
-        if (!disableClickActions)
-          if (auto actions = getClickActions(viewObject))
-            if (highlighted.tileScreenPos)
-              allElems.push_back(WL(absolutePosition, WL(translucentBackgroundWithBorderPassMouse, WL(margins,
-                  WL(setHeight, *actions->getPreferredHeight(), actions), 5, 1, 5, -2)),
-                  highlighted.creaturePos.value_or(*highlighted.tileScreenPos) + Vec2(60, 60)));
-        if (!viewObject.getBadAdjectives().empty()) {
-          lines.addElemAuto(WL(labelMultiLineWidth, viewObject.getBadAdjectives(), legendLineHeight * 2 / 3, 300,
-              Renderer::textSize(), Color::RED, ','));
-          lines.addSpace(legendLineHeight / 3);
-        }
-        if (!viewObject.getGoodAdjectives().empty()) {
-          lines.addElemAuto(WL(labelMultiLineWidth, viewObject.getGoodAdjectives(), legendLineHeight * 2 / 3, 300,
-              Renderer::textSize(), Color::GREEN, ','));
-          lines.addSpace(legendLineHeight / 3);
-        }
-        if (viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE))
-          lines.addElem(WL(label, "Can only be healed using rituals."));
-        if (auto value = viewObject.getAttribute(ViewObjectAttribute::FLANKED_MOD)) {
-          lines.addElem(WL(label, "Flanked: defense reduced by " + toString<int>(100 * (1 - *value)) + "%.", Color::RED));
-          if (viewObject.hasModifier(ViewObject::Modifier::PLAYER))
-            lines.addElem(WL(label, "Use a shield!", Color::RED));
-        }
-        if (auto& attributes = viewObject.getCreatureAttributes())
-          lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(*attributes)));
-        if (auto health = viewObject.getAttribute(ViewObjectAttribute::HEALTH))
-          lines.addElem(WL(stack,
-                WL(margins, WL(progressBar, MapGui::getHealthBarColor(*health,
-                    viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE)).transparency(70), *health), -2, 0, 0, 3),
-                WL(label, getHealthName(viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE))
-                    + toString((int) (100.0f * *health)) + "%")));
-        if (auto morale = viewObject.getAttribute(ViewObjectAttribute::MORALE))
-          lines.addElem(WL(stack,
-                WL(margins, WL(progressBar, (*morale >= 0 ? Color::GREEN : Color::RED).transparency(70), fabs(*morale)), -2, 0, 0, 3),
-                WL(label, "Morale: " + getMoraleNumber(*morale))));
-        if (auto luxury = viewObject.getAttribute(ViewObjectAttribute::LUXURY))
-          lines.addElem(WL(stack,
-                WL(margins, WL(progressBar, Color::GREEN.transparency(70), fabs(*luxury)), -2, 0, 0, 3),
-                WL(label, "Luxury: " + getMoraleNumber(*luxury))));
-        if (viewObject.hasModifier(ViewObjectModifier::UNPAID))
-          lines.addElem(WL(label, "Cannot afford item", Color::RED));
-        if (viewObject.hasModifier(ViewObjectModifier::PLANNED))
-          lines.addElem(WL(label, "Planned"));
-        lines.addElem(WL(margins, WL(rectangle, Color::DARK_GRAY), -9, 2, -9, 8), 12);
-      }
-    if (highlighted.viewIndex.isHighlight(HighlightType::INSUFFICIENT_LIGHT))
-      lines.addElem(WL(label, "Insufficient light", Color::RED));
-    if (highlighted.viewIndex.isHighlight(HighlightType::TORTURE_UNAVAILABLE))
-      lines.addElem(WL(label, "Torture unavailable due to population limit", Color::RED));
-    if (highlighted.viewIndex.isHighlight(HighlightType::PRISON_NOT_CLOSED))
-      lines.addElem(WL(label, "Prison must be separated from the outdoors and from all staircases using prison bars or prison door", Color::RED));
-    if (highlighted.viewIndex.isHighlight(HighlightType::PIGSTY_NOT_CLOSED))
-      lines.addElem(WL(label, "Animal pen must be separated from the outdoors and from all staircases using animal fence", Color::RED));
-    if (highlighted.viewIndex.isHighlight(HighlightType::INDOORS))
-      lines.addElem(WL(label, "Indoors"));
-    else
-      lines.addElem(WL(label, "Outdoors"));
     if (highlighted.tilePos)
       lines.addElem(WL(label, "Position: " + toString(*highlighted.tilePos)));
-    lines.addElemAuto(drawLyingItemsList("Lying here: ", highlighted.viewIndex.getItemCounts(), 250));
   }
   if (!lines.isEmpty())
     allElems.push_back(WL(margins, WL(translucentBackgroundWithBorderPassMouse,
