@@ -58,6 +58,7 @@ class MapGui : public GuiElem {
   virtual void render(Renderer&) override;
   virtual bool onClick(MouseButtonId, Vec2) override;
   virtual bool onMouseMove(Vec2, Vec2) override;
+  virtual bool onScrollEvent(Vec2 mousePos, double x, double y, milliseconds timeDiff) override;
   virtual void onMouseGone() override;
   virtual bool onKeyPressed2(SDL::SDL_Keysym) override;
 
@@ -137,7 +138,6 @@ class MapGui : public GuiElem {
   Callbacks callbacks;
   SyncQueue<UserInput>& inputQueue;
   optional<milliseconds> lastScrollUpdate;
-  optional<milliseconds> lastJoyScrollUpdate;
   Clock* clock;
   optional<Vec2> mouseHeldPos;
   optional<CreatureInfo> draggedCandidate;

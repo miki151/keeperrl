@@ -1049,6 +1049,8 @@ bool WindowView::considerBugReportEvent(Event& event) {
 
 void WindowView::processEvents() {
   guiBuilder.disableTooltip = !blockingElems.empty();
+  auto clickableGuiElems = getClickableGuiElems();
+  gui.propagateScrollEvent(clickableGuiElems);
   Event event;
   while (renderer.pollEvent(event)) {
     considerResizeEvent(event);
@@ -1067,7 +1069,7 @@ void WindowView::processEvents() {
           return;
         lockKeyboard = true;
       }
-      propagateEvent(event, getClickableGuiElems());
+      propagateEvent(event, clickableGuiElems);
     }
     switch (event.type) {
       case SDL::SDL_KEYDOWN:

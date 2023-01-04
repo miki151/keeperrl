@@ -41,6 +41,7 @@ class GuiElem {
   virtual void render(Renderer&) {}
   virtual bool onClick(MouseButtonId, Vec2) { return false; }
   virtual bool onMouseMove(Vec2, Vec2) { return false;}
+  virtual bool onScrollEvent(Vec2 mousePos, double x, double y, milliseconds timeDiff) { return false;}
   virtual void onMouseGone() {}
   virtual void onRefreshBounds() {}
   virtual void renderPart(Renderer& r, Rectangle) { render(r); }
@@ -73,7 +74,8 @@ class GuiFactory {
   vector<string> breakText(const string& text, int maxWidth, int fontSize);
 
   DragContainer& getDragContainer();
-  void propagateEvent(const Event&, vector<SGuiElem>);
+  void propagateEvent(const Event&, const vector<SGuiElem>&);
+  void propagateScrollEvent(const vector<SGuiElem>&);
 
   static bool isShift(const SDL::SDL_Keysym&);
   static bool isAlt(const SDL::SDL_Keysym&);
@@ -249,6 +251,7 @@ class GuiFactory {
   SGuiElem tooltip2(SGuiElem, PositionFun);
   SGuiElem darken();
   SGuiElem stopMouseMovement();
+  SGuiElem stopScrollEvent(SGuiElem content, function<bool()>);
   SGuiElem stopKeyEvents();
   SGuiElem fullScreen(SGuiElem);
   SGuiElem absolutePosition(SGuiElem content, Vec2 pos);
@@ -353,4 +356,5 @@ class GuiFactory {
   Options* options;
   DragContainer dragContainer;
   DirectoryPath imagesPath;
+  optional<milliseconds> lastJoyScrollUpdate;
 };

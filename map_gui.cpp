@@ -1290,15 +1290,16 @@ void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, milliseconds c
   }
 }
 
-void MapGui::handleJoyScrolling(pair<double, double> dir, milliseconds time) {
-  if (!!lastJoyScrollUpdate && dir != make_pair(0.0, 0.0)) {
-    double diff = double((time - *lastJoyScrollUpdate).count()) / 40;
-    center.x += diff * dir.first;
-    center.y -= diff * dir.second;
+bool MapGui::onScrollEvent(Vec2 pos, double x, double y, milliseconds timeDiff) {
+  auto time = Clock::getRealMillis();
+  if (x != 0.0 || y != 0.0) {
+    double diff = double(timeDiff.count()) / 40;
+    center.x += diff * x;
+    center.y -= diff * y;
     softCenter = none;
     scrollingState = ScrollingState::AFTER;
   }
-  lastJoyScrollUpdate = time;
+  return true;
 }
 
 void MapGui::processScrolling(milliseconds time) {
@@ -1509,7 +1510,6 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
   mouseUI = ui;
   layout = mapLayout;
   auto currentTimeReal = clock->getRealMillis();
-  handleJoyScrolling(renderer.getSteamInput()->getJoyPos(ControllerJoy::SCROLLING), currentTimeReal);
   updateShortestPaths(view, renderer, layout->getSquareSize(), currentTimeReal);
   // hacky way to detect that we're switching between real-time and turn-based and not between
   // team members in turn-based mode.

@@ -397,7 +397,9 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
       keypressOnly.push_back(WL(invisible, getButtonLine(buttons[i], i, tutorial)));
   }
   keypressOnly.push_back(elems.buildVerticalList());
-  return WL(scrollable, WL(stack, std::move(keypressOnly)), &buildingsScroll, &scrollbarsHeld);
+  return WL(stopScrollEvent,
+      WL(scrollable, WL(stack, std::move(keypressOnly)), &buildingsScroll, &scrollbarsHeld),
+      [this] { return collectiveTab != CollectiveTab::BUILDINGS || (!activeGroup && !activeButton); });
 }
 
 SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo& info) {
@@ -2128,7 +2130,9 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
           [this, i]{ return !highlightedTeamMember || highlightedTeamMember == i;}));
   }
   vList.addElemAuto(WL(stack, std::move(others)));
-  return WL(margins, WL(scrollable, vList.buildVerticalList(), &inventoryScroll, &scrollbarsHeld), 6, 0, 15, 5);
+  return WL(stopScrollEvent,
+      WL(margins, WL(scrollable, vList.buildVerticalList(), &inventoryScroll, &scrollbarsHeld), 6, 0, 15, 5),
+      [this] { return !!inventoryIndex || !!abilityIndex; });
 }
 
 struct CreatureMapElem {
@@ -3006,7 +3010,9 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
       ), [this] { return collectiveTab == CollectiveTab::TECHNOLOGY && !!techIndex; })
   );
   const int margin = 0;
-  return WL(margins, WL(scrollable, std::move(content), &libraryScroll, &scrollbarsHeld), margin);
+  return WL(stopScrollEvent,
+      WL(margins, WL(scrollable, std::move(content), &libraryScroll, &scrollbarsHeld), margin),
+      [this] { return collectiveTab != CollectiveTab::TECHNOLOGY || !!techIndex; });
 }
 
 vector<SDL::SDL_Keysym> GuiBuilder::getOverlayCloseKeys() {

@@ -55,7 +55,8 @@ enum ControllerKey {
 
 enum class ControllerJoy {
   WALKING,
-  SCROLLING,
+  MAP_SCROLLING,
+  MENU_SCROLLING,
   DIRECTION
 };
 

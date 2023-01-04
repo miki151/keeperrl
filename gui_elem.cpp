@@ -508,6 +508,18 @@ class DrawScripted : public GuiElem {
     return ret;
   }
 
+  virtual bool onScrollEvent(Vec2 pos, double x, double y, milliseconds timeDiff) override {
+    context.elemCounter = 0;
+    context.sliderCounter = 0;
+    context.tooltipCounter = 0;
+    bool ret = true;
+    EventCallback callback = [&ret] { ret = false; return false; };
+    get()->onScroll(data, context, getBounds(), pos, x, y, timeDiff, callback);
+    if (callback())
+      context.endCallback();
+    return ret;
+  }
+
   virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     context.elemCounter = 0;
     context.sliderCounter = 0;
@@ -1093,6 +1105,13 @@ class GuiLayout : public GuiElem {
     return gone;
   }
 
+  virtual bool onScrollEvent(Vec2 pos, double x, double y, milliseconds timeDiff) override {
+    for (int i : AllReverse(elems))
+      if (isVisible(i) && elems[i]->onScrollEvent(pos, x, y, timeDiff))
+        return true;
+    return false;
+  }
+
   virtual void onMouseGone() override {
     for (int i : AllReverse(elems))
       elems[i]->onMouseGone();
@@ -1252,12 +1271,29 @@ class StopMouseMovement : public GuiElem {
   }
 };
 
-SGuiElem GuiFactory::stopKeyEvents() {
-  return SGuiElem(new KeyHandler([](SDL_Keysym) {}, true));
-}
-
 SGuiElem GuiFactory::stopMouseMovement() {
   return SGuiElem(new StopMouseMovement());
+}
+
+class StopScrollEvent : public GuiStack {
+  public:
+  StopScrollEvent(SGuiElem content, function<bool()> cond) : GuiStack(makeVec(std::move(content))),
+      cond(std::move(cond)) {}
+
+  virtual bool onScrollEvent(Vec2 pos, double x, double y, milliseconds timeDiff) override {
+    return cond() && elems[0]->onScrollEvent(pos, x, y, timeDiff);
+  }
+
+  private:
+  function<bool()> cond;
+};
+
+SGuiElem GuiFactory::stopScrollEvent(SGuiElem content, function<bool()> cond) {
+  return SGuiElem(new StopScrollEvent(std::move(content), std::move(cond)));
+}
+
+SGuiElem GuiFactory::stopKeyEvents() {
+  return SGuiElem(new KeyHandler([](SDL_Keysym) {}, true));
 }
 
 class RenderInBounds : public GuiStack {
@@ -2527,7 +2563,7 @@ class Tooltip : public GuiElem {
           r.drawText(Color::WHITE, pos + Vec2(tooltipHMargin, tooltipVMargin + i * tooltipLineHeight), text[i]);
         r.popLayer();
       }
-    } else 
+    } else
       lastTimeOut = clock->getRealMillis();
   }
 
@@ -2675,6 +2711,11 @@ class ScrollBar : public GuiLayout {
     scrollPos->setBounds(getBounds().height() / 2, scrollLength() + getBounds().height() / 2);
   }
 
+  virtual bool onScrollEvent(Vec2 pos, double x, double y, milliseconds timeDiff) override {
+    addScrollPos(-y * timeDiff.count() * wheelScrollUnit * 0.02);
+    return true;
+  }
+
   virtual bool onClick(MouseButtonId b, Vec2 v) override {
     if (b == MouseButtonId::RELEASED)
       *held = notHeld;
@@ -2695,7 +2736,7 @@ class ScrollBar : public GuiLayout {
     } else
     if (v.inRectangle(Rectangle(Vec2(content->getBounds().left(), getBounds().top()), getBounds().bottomRight()))) {
       if (b == MouseButtonId::WHEEL_UP)
-        addScrollPos(- wheelScrollUnit);
+        addScrollPos(-wheelScrollUnit);
       else if (b == MouseButtonId::WHEEL_DOWN)
         addScrollPos(wheelScrollUnit);
       return true;
@@ -3258,7 +3299,25 @@ SGuiElem GuiFactory::darken() {
       rectangle(Color{0, 0, 0, 150}));
 }
 
-void GuiFactory::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
+void GuiFactory::propagateScrollEvent(const vector<SGuiElem>& guiElems) {
+  if (auto steamInput = getSteamInput()) {
+    auto pos = steamInput->actionLayer
+        ? steamInput->getJoyPos(ControllerJoy::MAP_SCROLLING)
+        : steamInput->getJoyPos(ControllerJoy::MENU_SCROLLING);
+    auto time = Clock::getRealMillis();
+    if (!lastJoyScrollUpdate)
+      lastJoyScrollUpdate = time;
+    else if (time - *lastJoyScrollUpdate > milliseconds{10}) {
+      for (auto elem : guiElems)
+        if (elem->onScrollEvent(renderer.getMousePos(), pos.first, pos.second, time - *lastJoyScrollUpdate))
+          break;
+      lastJoyScrollUpdate = time;
+    }
+  }
+}
+
+void GuiFactory::propagateEvent(const Event& event, const vector<SGuiElem>& guiElems) {
+  propagateScrollEvent(guiElems);
   switch (event.type) {
     case SDL::SDL_MOUSEBUTTONUP:
       for (auto elem : guiElems)

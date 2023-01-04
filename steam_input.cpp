@@ -72,7 +72,8 @@ void MySteamInput::detectControllers() {
     actionHandles[C_SHIFT] = getActionInfo("shift", ActionSet::GAME);
     actionHandles[C_DIRECTION_CONFIRM] = getActionInfo("direction_confirm", ActionSet::DIRECTION);
     actionHandles[C_DIRECTION_CANCEL] = getActionInfo("direction_cancel", ActionSet::DIRECTION);
-    joyHandles[ControllerJoy::SCROLLING] = steamInput->GetAnalogActionHandle("map_scrolling_joy");
+    joyHandles[ControllerJoy::MAP_SCROLLING] = steamInput->GetAnalogActionHandle("map_scrolling_joy");
+    joyHandles[ControllerJoy::MENU_SCROLLING] = steamInput->GetAnalogActionHandle("menu_scrolling_joy");
     joyHandles[ControllerJoy::WALKING] = steamInput->GetAnalogActionHandle("walking_joy");
     joyHandles[ControllerJoy::DIRECTION] = steamInput->GetAnalogActionHandle("direction_joy");
     gameActionLayers[GameActionLayer::TURNED_BASED] = steamInput->GetActionSetHandle("TurnBased");

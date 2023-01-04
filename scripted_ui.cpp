@@ -332,6 +332,12 @@ struct Container : ScriptedUIInterface {
       subElem.elem->render(subElem.data, context, subElem.bounds);
   }
 
+  void onScroll(const ScriptedUIData& data, ScriptedContext& context, Rectangle bounds,
+      Vec2 pos, double x, double y, milliseconds timeDiff, EventCallback& callback) const override {
+    for (auto& subElem : getElemBounds(data, context, bounds))
+      subElem.elem->onScroll(subElem.data, context, subElem.bounds, pos, x, y, timeDiff, callback);
+  }
+
   void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id, Rectangle area,
       Vec2 pos, EventCallback& callback) const override {
     for (auto& subElem : getElemBounds(data, context, area))
@@ -940,8 +946,8 @@ struct List : Container {
 
 REGISTER_SCRIPTED_UI(List);
 
-static void scroll(const ScriptedContext& context, int scrollIndex, int dir) {
-  context.state.scrollPos[scrollIndex].add(100 * dir, Clock::getRealMillis());
+static void scroll(const ScriptedContext& context, int scrollIndex, double dir) {
+  context.state.scrollPos[scrollIndex].add(100.0 * dir, Clock::getRealMillis());
 }
 
 struct Scrollable : ScriptedUIInterface {
@@ -980,6 +986,14 @@ struct Scrollable : ScriptedUIInterface {
         [&] (Rectangle contentBounds) { elem->render(data, context, contentBounds); },
         [&] (Rectangle bounds) { scrollbar->render(data, context, bounds); }
     );
+  }
+
+  void onScroll(const ScriptedUIData& data, ScriptedContext& context, Rectangle bounds,
+      Vec2 pos, double x, double y, milliseconds timeDiff, EventCallback& callback) const override {
+    callback = [&context, this, y, timeDiff] {
+      scroll(context, index, -y * 0.02 * timeDiff.count());
+      return false;
+    };
   }
 
   void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
@@ -1234,6 +1248,10 @@ Vec2 ScriptedUIInterface::getSize(const ScriptedUIData& data, ScriptedContext& c
 
 void ScriptedUIInterface::onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id, Rectangle bounds,
     Vec2 pos, EventCallback& callback) const {
+}
+
+void ScriptedUIInterface::onScroll(const ScriptedUIData& data, ScriptedContext& context, Rectangle bounds,
+    Vec2 pos, double x, double y, milliseconds timeDiff, EventCallback& callback) const {
 }
 
 void ScriptedUIInterface::onKeypressed(const ScriptedUIData& data, ScriptedContext& context, SDL::SDL_Keysym sym,
