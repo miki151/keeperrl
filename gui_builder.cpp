@@ -291,6 +291,14 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
         setCollectiveTab(CollectiveTab::BUILDINGS);
         setActiveGroup(newGroup, none);
       }, {gui.getKey(C_BUILDINGS_MENU)}, true));
+  keypressOnly.push_back(
+      WL(keyHandlerBool, [this, newGroup = buttons[0].groupName] {
+        if (collectiveTab == CollectiveTab::BUILDINGS && !activeButton && !activeGroup) {
+          setActiveGroup(newGroup, none);
+          return true;
+        }
+        return false;
+      }, {gui.getKey(C_BUILDINGS_DOWN), gui.getKey(C_BUILDINGS_UP)}));
   for (int i : All(buttons)) {
     if (!buttons[i].groupName.empty() && buttons[i].groupName != lastGroup) {
       optional<TutorialHighlight> tutorialHighlight;
@@ -2999,15 +3007,19 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
       }, {gui.getKey(C_TECH_MENU)}, true),
       WL(conditionalStopKeys, WL(stack,
           WL(keyHandler, [activeElems, this] {
+            if (!techIndex)
+              techIndex = -1;
             techIndex = (*techIndex + 1) % activeElems.size();
             libraryScroll.setRelative(activeElems[*techIndex]->getBounds().top(), Clock::getRealMillis());
           }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
           WL(keyHandler, [activeElems, this] {
+            if (!techIndex)
+              techIndex = 1;
             techIndex = (*techIndex + activeElems.size() - 1) % activeElems.size();
             libraryScroll.setRelative(activeElems[*techIndex]->getBounds().top(), Clock::getRealMillis());
           }, {gui.getKey(C_BUILDINGS_UP)}, true),
           WL(keyHandler, [this] { libraryScroll.reset(); techIndex = none; }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true)
-      ), [this] { return collectiveTab == CollectiveTab::TECHNOLOGY && !!techIndex; })
+      ), [this] { return collectiveTab == CollectiveTab::TECHNOLOGY; })
   );
   const int margin = 0;
   return WL(stopScrollEvent,
