@@ -2088,8 +2088,8 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
         auto switchFun = getButtonCallback({UserInputId::TOGGLE_TEAM_ORDER, order});
         orderList.addElemAuto(WL(stack,
             info.teamOrders->contains(order)
-                ? WL(buttonLabelSelected, getName(order), switchFun)
-                : WL(buttonLabel, getName(order), switchFun),
+                ? WL(buttonLabelSelected, "     "_s + getName(order) + "     "_s, switchFun)
+                : WL(buttonLabel, "     "_s + getName(order) + "     "_s, switchFun),
             getTooltip({getDescription(order)}, THIS_LINE),
             WL(keyHandler, switchFun, getKeybinding(order))
         ));
