@@ -3218,12 +3218,6 @@ SGuiElem GuiBuilder::drawItemsHelpOverlay(const vector<ItemInfo>& items) {
   return WL(preferredSize, itemsListWidth, 600,
       WL(miniWindow, WL(stack,
           WL(keyHandler, [=] { toggleBottomWindow(BottomWindowId::ITEMS_HELP); }, getOverlayCloseKeys(), true),
-          WL(keyHandler, [this] {
-            minionButtonsScroll.add(100, Clock::getRealMillis());
-          }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
-          WL(keyHandler, [this] {
-            minionButtonsScroll.add(-100, Clock::getRealMillis());
-          }, {gui.getKey(C_BUILDINGS_UP)}, true),
           WL(margins, std::move(leftSide), margin))));
 }
 
