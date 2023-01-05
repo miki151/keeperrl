@@ -31,17 +31,14 @@ class CollectiveTeams {
   void activate(TeamId);
   void deactivate(TeamId);
   TeamId create(vector<Creature*>);
-  TeamId createPersistent(vector<Creature*>);
   Creature* getLeader(TeamId) const;
   const vector<Creature*>& getMembers(TeamId) const;
   vector<TeamId> getContaining(const Creature*) const;
   vector<TeamId> getAll() const;
   vector<TeamId> getActive(const Creature*) const;
-  vector<TeamId> getActiveNonPersistent(const Creature*) const;
   vector<TeamId> getAllActive() const;
   void cancel(TeamId);
   bool exists(TeamId) const;
-  bool isPersistent(TeamId) const;
   bool hasTeamOrder(TeamId, const Creature*, TeamOrder) const;
   void setTeamOrder(TeamId, const Creature*, TeamOrder, bool);
 
@@ -53,8 +50,7 @@ class CollectiveTeams {
     vector<Creature*> SERIAL(creatures);
     set<TeamOrder> SERIAL(teamOrders);
     bool SERIAL(active);
-    bool SERIAL(persistent);
-    SERIALIZE_ALL(creatures, teamOrders, active, persistent);
+    SERIALIZE_ALL(creatures, teamOrders, active);
   };
   map<TeamId, TeamInfo> SERIAL(teamInfo);
   TeamId SERIAL(nextId) = 1;

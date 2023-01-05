@@ -215,10 +215,6 @@ const vector<Creature*>& PlayerControl::getControlled() const {
 }
 
 optional<TeamId> PlayerControl::getCurrentTeam() const {
-  // try returning a non-persistent team first
-  for (TeamId team : getTeams().getAllActive())
-    if (!getTeams().isPersistent(team) && getTeams().getLeader(team)->isPlayer())
-      return team;
   for (TeamId team : getTeams().getAllActive())
     if (getTeams().getLeader(team)->isPlayer())
       return team;
@@ -340,13 +336,11 @@ void PlayerControl::leaveControl() {
           if (auto steed = collective->getSteedOrRider(c))
             c->forceMount(steed);
       }
-    if (!getTeams().isPersistent(team)) {
-      if (getTeams().getMembers(team).size() == 1)
-        getTeams().cancel(team);
-      else
-        getTeams().deactivate(team);
-      break;
-    }
+    if (getTeams().getMembers(team).size() == 1)
+      getTeams().cancel(team);
+    else
+      getTeams().deactivate(team);
+    break;
   }
   getView()->stopClock();
 }

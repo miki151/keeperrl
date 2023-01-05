@@ -174,7 +174,7 @@ void VillageControl::launchAttack(vector<Creature*> attackers) {
     if (behaviour->ransom && hisGold >= behaviour->ransom->second)
       ransom = max<int>(behaviour->ransom->second,
           (Random.getDouble(behaviour->ransom->first * 0.6, behaviour->ransom->first)) * hisGold);
-    TeamId team = collective->getTeams().createPersistent(attackers);
+    TeamId team = collective->getTeams().create(attackers);
     collective->getTeams().activate(team);
     collective->freeTeamMembers(attackers);
     vector<WConstTask> attackTasks;
@@ -266,7 +266,7 @@ void VillageControl::launchAllianceAttack(vector<Collective*> allies) {
           c->forceMount(steed);
         collective->getGame()->transferCreature(c, enemy->getModel());
     }
-    TeamId team = collective->getTeams().createPersistent(attackers);
+    TeamId team = collective->getTeams().create(attackers);
     collective->getTeams().activate(team);
     collective->freeTeamMembers(attackers);
     vector<WConstTask> attackTasks;
