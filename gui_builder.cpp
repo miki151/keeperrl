@@ -2188,10 +2188,16 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
               );
           ;}),
           WL(conditional, WL(uiHighlightMouseOver), [&]{return gui.getDragContainer().hasElement();} ),
+          WL(conditionalStopKeys, WL(stack,
+              WL(uiHighlightLine),
+              WL(uiHighlightFrame),
+              WL(keyHandler, [this, hint] { callbacks.info(hint); }, {gui.getKey(C_BUILDINGS_CONFIRM) }, true)
+          ), [this, buttonCnt]{ return minionsIndex == buttonCnt;} ),
           WL(conditional, WL(tutorialHighlight), [yes = isTutorialHighlight && info.teams.empty()]{ return yes; }),
           getHintCallback({hint}),
           WL(button, [this, hint] { callbacks.info(hint); }),
           WL(label, "[new team]", Color::WHITE))));
+    ++buttonCnt;
   }
   bool groupChosen = isGroupChosen(info);
   for (int i : All(info.teams)) {
@@ -2299,11 +2305,23 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
   list.addElemAuto(drawTeams(info, tutorial, buttonCnt));
   list.addSpace();
   list.addElem(WL(stack,
+            WL(conditionalStopKeys, WL(stack,
+                WL(uiHighlightLine),
+                WL(uiHighlightFrame),
+                WL(keyHandler, [this] { toggleBottomWindow(TASKS); }, {gui.getKey(C_BUILDINGS_CONFIRM) }, true)
+            ), [this, buttonCnt]{ return minionsIndex == buttonCnt;} ),
             WL(label, "Show tasks", [=]{ return bottomWindow == TASKS ? Color::GREEN : Color::WHITE;}),
             WL(button, [this] { toggleBottomWindow(TASKS); })));
+  ++buttonCnt;
   list.addElem(WL(stack,
+            WL(conditionalStopKeys, WL(stack,
+                WL(uiHighlightLine),
+                WL(uiHighlightFrame),
+                WL(keyHandler, getButtonCallback(UserInputId::SHOW_HISTORY), {gui.getKey(C_BUILDINGS_CONFIRM) }, true)
+            ), [this, buttonCnt]{ return minionsIndex == buttonCnt;} ),
             WL(label, "Show message history"),
             WL(button, getButtonCallback(UserInputId::SHOW_HISTORY))));
+  ++buttonCnt;
   list.addSpace();
   return WL(stack, makeVec(
       WL(keyHandler, [this] {
