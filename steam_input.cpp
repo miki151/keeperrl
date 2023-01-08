@@ -141,18 +141,23 @@ void MySteamInput::runFrame() {
         }
       return false;
     }();
+    auto curTime = Clock::getRealMillis();
+    auto repeatDelay = rapidFire ? milliseconds{100} : milliseconds{500};
     if (!nowPressed) {
-      if (pressed)
-      pressed = false;
-    } else if (!pressed)
+      lastPressed = none;
+      rapidFire = false;
+    } else if (!lastPressed || *lastPressed < curTime - repeatDelay) {
+      if (!!lastPressed)
+        rapidFire = true;
       for (auto input : controllers)
         for (auto action : actionHandles) {
           auto res = steamInput->GetDigitalActionData(input, action.second.handle);
           if (res.bState) {
             actionQueue.push(action.first);
-            pressed = true;
+            lastPressed = curTime;
           }
         }
+    }
   }
 }
 

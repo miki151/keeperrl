@@ -88,7 +88,8 @@ class MySteamInput {
   void showFloatingKeyboard(Rectangle field);
   void dismissFloatingKeyboard();
   optional<ControllerKey> getEvent();
-  bool pressed = false;
+  optional<milliseconds> lastPressed;
+  bool rapidFire = false;
   vector<ActionSet> actionSetStack;
   void pushActionSet(ActionSet);
   void popActionSet();
