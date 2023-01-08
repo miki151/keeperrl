@@ -226,7 +226,8 @@ SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, const
         !button.hotkeyOpensGroup && !!button.key
             ? WL(keyHandler, buttonFun, *button.key, true)
             : WL(empty),
-        WL(uiHighlightLineConditional, [=] { return getActiveButton() == num; }),
+        WL(conditional, WL(stack, WL(uiHighlightLine), WL(uiHighlightFrame)),
+            [=] { return getActiveButton() == num; }),
         tutorialElem,
         line.buildHorizontalList())));
   };
@@ -397,12 +398,11 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
           WL(button, labelFun),
           tutorialElem,
           WL(uiHighlightLineConditional, [=] { return activeGroup == lastGroup;}),
+          WL(uiHighlightFrame, [=] { return activeGroup == lastGroup && !activeButton;}),
           line.buildHorizontalList())));
     }
-    if (buttons[i].groupName.empty())
-      elems.addElem(getButtonLine(buttons[i], i, tutorial));
-    else
-      keypressOnly.push_back(WL(invisible, getButtonLine(buttons[i], i, tutorial)));
+    CHECK(!buttons[i].groupName.empty());
+    keypressOnly.push_back(WL(invisible, getButtonLine(buttons[i], i, tutorial)));
   }
   keypressOnly.push_back(elems.buildVerticalList());
   return WL(stopScrollEvent,
@@ -2223,7 +2223,7 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
             WL(uiHighlightMouseOver),
             WL(conditionalStopKeys, WL(stack,
                 WL(uiHighlightLine),
-                info.chosenCreature ? WL(empty) : WL(margins, WL(rectangle, Color::TRANSPARENT, Color(143, 137, 129)), -8, -3, -8, 3),
+                info.chosenCreature ? WL(empty) : WL(uiHighlightFrame),
                 WL(keyHandler, callback, {gui.getKey(C_BUILDINGS_CONFIRM), gui.getKey(C_BUILDINGS_RIGHT)}, true)
             ), [buttonCnt, groupChosen, this] {
               return hasController() && !groupChosen && minionsIndex == buttonCnt && collectiveTab == CollectiveTab::MINIONS;
@@ -2279,7 +2279,7 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
         elem.highlight ? WL(uiHighlightLine) : WL(empty),
         WL(conditionalStopKeys, WL(stack,
             WL(uiHighlightLine),
-            info.chosenCreature ? WL(empty) : WL(margins, WL(rectangle, Color::TRANSPARENT, Color(143, 137, 129)), -8, -3, -8, 3),
+            info.chosenCreature ? WL(empty) : WL(uiHighlightFrame),
             WL(keyHandler, callback, {gui.getKey(C_BUILDINGS_CONFIRM), gui.getKey(C_BUILDINGS_RIGHT)}, true)
         ), [buttonCnt, groupChosen, this] {
           return hasController() && !groupChosen && minionsIndex == buttonCnt && collectiveTab == CollectiveTab::MINIONS;
@@ -3748,8 +3748,8 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions1, Uniqu
           WL(leftMargin, teamId ? -10 : 0, WL(stack,
                WL(uiHighlightLineConditional, [=] { return !teamId && mapGui->isCreatureHighlighted(minionId);}, Color::YELLOW),
                WL(uiHighlightLineConditional, [=] { return current == minionId;}),
-               (current == minionId && hasController()) ? WL(conditional, WL(margins, WL(rectangle, Color::TRANSPARENT, Color(143, 137, 129)), -8, -3, -8, 3),
-                   [this] { return minionPageIndex == MinionPageElems::None{};})
+               (current == minionId && hasController())
+                   ? WL(uiHighlightFrame, [this] { return minionPageIndex == MinionPageElems::None{};})
                    : WL(empty)
           )),
           WL(dragSource, minionId, [=]{ return WL(viewObject, minion.viewId);}),

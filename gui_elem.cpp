@@ -3257,6 +3257,14 @@ SGuiElem GuiFactory::uiHighlightConditional(function<bool()> cond, Color c) {
   return conditional(uiHighlight(c), cond);
 }
 
+SGuiElem GuiFactory::uiHighlightFrame(function<bool()> cond) {
+  return conditional(uiHighlightFrame(), cond);
+}
+
+SGuiElem GuiFactory::uiHighlightFrame() {
+  return margins(rectangle(Color::TRANSPARENT, Color(143, 137, 129)), -8, -3, -8, 3);
+}
+
 SGuiElem GuiFactory::rectangleBorder(Color col) {
   return rectangle(Color::TRANSPARENT, col);
 }
