@@ -835,12 +835,56 @@ GameConfig MainLoop::getVanillaConfig() const {
   return GameConfig({getVanillaDir()});
 }
 
-void MainLoop::playSimpleGame() {
+void MainLoop::genZLevels(const string& keeperType) {
   auto factory = createContentFactory(false);
-  SimpleGame game(&factory, this);
-  while (1) {
-    game.update();
+  vector<ZLevelInfo> allZLevels;
+  for (auto& keeper : factory.keeperCreatures)
+    if (keeper.first == keeperType)
+      for (auto& g : keeper.second.zLevelGroups)
+        allZLevels.append(factory.zLevels.at(g));
+  for (int i : Range(1, 30)) {
+    auto level = *chooseZLevel(Random, allZLevels, i);
+    std::cout << i << " ";
+    level.visit(
+      [&](const FullZLevel& l) {
+        std::cout << "Full z-level ";
+        if (l.enemy)
+          std::cout << " " << l.enemy->data() << " (" << l.attackChance << " attack chance)";
+      },
+      [](const WaterZLevel& l) {
+        std::cout << "Water z-level (" << l.waterType.data() << ")"  ;
+      },
+      [&](const EnemyZLevel& l) {
+        std::cout << "Enemy z-level " << l.enemy.data() << " (" << l.attackChance << " attack chance)";
+      }
+    );
+    std::cout << "\n";
   }
+  double totalAttacks = 0;
+  double totalAttacks10 = 0;
+  const int numTries = 5000;
+  for (int _ : Range(numTries)) {
+    double numAttacks = 0;
+    for (int i : Range(1, 30)) {
+      auto level = *chooseZLevel(Random, allZLevels, i);
+      level.visit(
+        [&](const FullZLevel& l) {
+          if (l.enemy)
+            numAttacks += l.attackChance;
+        },
+        [](const WaterZLevel& l) {
+        },
+        [&](const EnemyZLevel& l) {
+          numAttacks += l.attackChance;
+        }
+      );
+      if (i == 10)
+        totalAttacks10 += numAttacks / numTries;
+    }
+    totalAttacks += numAttacks / numTries;
+  }
+  std::cout << "\n" << totalAttacks10 << " attacks in first 10 levels\n";
+  std::cout << totalAttacks << " attacks in first 30 levels\n";
 }
 
 GameConfig MainLoop::getGameConfig(const vector<string>& modNames) const {

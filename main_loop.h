@@ -48,7 +48,7 @@ class MainLoop {
   void campaignBattleText(int numTries, const FilePath& levelPath, EnemyId keeperId, VillainGroup);
   int campaignBattleText(int numTries, const FilePath& levelPath, EnemyId keeperId, EnemyId);
   void launchQuickGame(optional<int> maxTurns, bool tryToLoad);
-  void playSimpleGame();
+  void genZLevels(const string& keeperType);
   ContentFactory createContentFactory(bool vanillaOnly) const;
 
   private:

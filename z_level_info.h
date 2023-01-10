@@ -32,14 +32,8 @@ struct ZLevelInfo {
   optional<int> SERIAL(minDepth);
   optional<int> SERIAL(maxDepth);
   bool SERIAL(guarantee) = false;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar(NAMED(type), NAMED(minDepth), NAMED(maxDepth));
-    if (version >= 1)
-      ar(OPTION(guarantee));
-  }
+  double SERIAL(weight) = 1;
+  SERIALIZE_ALL(NAMED(type), NAMED(minDepth), NAMED(maxDepth), OPTION(guarantee), OPTION(weight))
 };
 
-CEREAL_CLASS_VERSION(ZLevelInfo, 1)
-
-optional<ZLevelInfo> chooseZLevel(RandomGen&, const vector<ZLevelInfo>&, int depth);
+optional<ZLevelType> chooseZLevel(RandomGen&, const vector<ZLevelInfo>&, int depth);

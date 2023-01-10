@@ -140,7 +140,7 @@ static po::parser getCommandLineFlags() {
   flags["stderr"].description("Log to stderr");
   flags["nolog"].description("No logging");
   flags["free_mode"].description("Run in free ascii mode");
-  flags["simple_game"].description("Start \"simple game\"");
+  flags["gen_z_levels"].type(po::string).description("Generate and print z-level types for a given keeper");
 #ifndef RELEASE
   flags["quick_game"].description("Skip main menu and load the last save file or start a single map game");
   flags["new_game"].description("Skip main menu and start a single map game");
@@ -310,10 +310,11 @@ static int keeperMain(po::parser& commandLineFlags) {
   optional<string> audioError = audioDevice.initialize();
   auto modsDir = userPath.subdirectory(gameConfigSubdir);
   auto allUnlocked = Unlocks::allUnlocked();
-  if (commandLineFlags["simple_game"].was_set()) {
+  if (commandLineFlags["gen_z_levels"].was_set()) {
     MainLoop loop(nullptr, nullptr, nullptr, paidDataPath, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr,
         &allUnlocked, 0, "");
-    loop.playSimpleGame();
+    loop.genZLevels(commandLineFlags["gen_z_levels"].get().string);
+    exit(0);
   }
   if (commandLineFlags["layout_name"].was_set()) {
     USER_CHECK(commandLineFlags["layout_size"].was_set()) << "Need to specify layout_size option";

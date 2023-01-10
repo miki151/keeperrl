@@ -18,9 +18,9 @@ static EnemyInfo getEnemy(EnemyId id, ContentFactory* contentFactory) {
   return enemy;
 }
 
-static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCounts resources, TribeId tribe,
+static LevelMakerResult getLevelMaker(const ZLevelType& levelInfo, ResourceCounts resources, TribeId tribe,
     ContentFactory* contentFactory, Vec2 size) {
-  return levelInfo.type.visit(
+  return levelInfo.visit(
       [&](const WaterZLevel& level) {
         return LevelMakerResult{
             LevelMaker::getWaterZLevel(Random, level.waterType, size.x, level.creatures),
