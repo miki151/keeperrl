@@ -66,6 +66,7 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c, ContentFacto
       contentFactory(std::move(f)) {
   gameIdentifier = c.gameIdentifier;
   gameDisplayName = c.gameDisplayName;
+  enemyAggressionLevel = c.enemyAggressionLevel;
   for (Vec2 v : models.getBounds())
     if (WModel m = models[v].get()) {
       for (Collective* col : m->getCollectives()) {
@@ -80,6 +81,10 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c, ContentFacto
   turnEvents = {0, 10, 50, 100, 300, 500};
   for (int i : Range(200))
     turnEvents.insert(1000 * (i + 1));
+}
+
+EnemyAggressionLevel Game::getEnemyAggressionLevel() const {
+  return enemyAggressionLevel;
 }
 
 void Game::addCollective(Collective* col) {

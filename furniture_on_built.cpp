@@ -115,7 +115,8 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
             [&](bool withEnemies) {
               auto contentFactory = pos.getGame()->getContentFactory();
               auto maker = getLevelMaker(Random, contentFactory, pos.getGame()->zLevelGroups,
-                  levelIndex + 1, pos.getGame()->getPlayerCollective()->getTribeId(), levelSize);
+                  levelIndex + 1, pos.getGame()->getPlayerCollective()->getTribeId(), levelSize,
+                  pos.getGame()->getEnemyAggressionLevel());
               auto level = pos.getModel()->buildMainLevel(contentFactory,
                   LevelBuilder(Random, contentFactory, levelSize.x, levelSize.y, true),
                       std::move(maker.maker));

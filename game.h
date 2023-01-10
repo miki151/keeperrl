@@ -44,6 +44,7 @@ class Game : public OwnedObject<Game> {
   Options* getOptions();
   Encyclopedia* getEncyclopedia();
   Unlocks* getUnlocks() const;
+  EnemyAggressionLevel getEnemyAggressionLevel() const;
   void initialize(Options*, Highscores*, View*, FileSharing*, Encyclopedia*, Unlocks*);
   void initializeModels();
   View* getView() const;
@@ -167,4 +168,5 @@ class Game : public OwnedObject<Game> {
   Unlocks* unlocks = nullptr;
   void considerAllianceAttack();
   bool SERIAL(allianceAttackPossible) = true;
+  EnemyAggressionLevel enemyAggressionLevel;
 };
