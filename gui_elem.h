@@ -330,6 +330,8 @@ class GuiFactory {
   SGuiElem uiHighlightConditional(function<bool()>, Color = highlightColor());
   SGuiElem uiHighlightFrame(function<bool()>);
   SGuiElem uiHighlightFrame();
+  SGuiElem uiHighlightFrameFilled(function<bool()>);
+  SGuiElem uiHighlightFrameFilled();
   SGuiElem blink(SGuiElem);
   SGuiElem blink(SGuiElem, SGuiElem);
   SGuiElem tutorialHighlight();

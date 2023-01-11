@@ -226,8 +226,7 @@ SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, const
         !button.hotkeyOpensGroup && !!button.key
             ? WL(keyHandler, buttonFun, *button.key, true)
             : WL(empty),
-        WL(conditional, WL(stack, WL(uiHighlightLine), WL(uiHighlightFrame)),
-            [=] { return getActiveButton() == num; }),
+        WL(uiHighlightFrameFilled, [=] { return getActiveButton() == num; }),
         tutorialElem,
         line.buildHorizontalList())));
   };
@@ -1572,7 +1571,7 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
             *exit = true;
         }));
       stack.push_back(WL(uiHighlightMouseOver));
-      stack.push_back(WL(uiHighlightLineConditional, [selected, i] { return i == *selected; }));
+      stack.push_back(WL(uiHighlightFrameFilled, [selected, i] { return i == *selected; }));
       if (i < tooltips.size() && !!tooltips[i]) {
         stack.push_back(WL(conditional,
             WL(translate, WL(renderTopLayer, tooltips[i]), Vec2(0, 0), *tooltips[i]->getPreferredSize(),
@@ -2191,8 +2190,7 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
           ;}),
           WL(conditional, WL(uiHighlightMouseOver), [&]{return gui.getDragContainer().hasElement();} ),
           WL(conditionalStopKeys, WL(stack,
-              WL(uiHighlightLine),
-              WL(uiHighlightFrame),
+              WL(uiHighlightFrameFilled),
               WL(keyHandler, [this, hint] { callbacks.info(hint); }, {gui.getKey(C_BUILDINGS_CONFIRM) }, true)
           ), [this, buttonCnt]{ return minionsIndex == buttonCnt;} ),
           WL(conditional, WL(tutorialHighlight), [yes = isTutorialHighlight && info.teams.empty()]{ return yes; }),
@@ -2308,8 +2306,7 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
   list.addSpace();
   list.addElem(WL(stack,
             WL(conditionalStopKeys, WL(stack,
-                WL(uiHighlightLine),
-                WL(uiHighlightFrame),
+                WL(uiHighlightFrameFilled),
                 WL(keyHandler, [this] { toggleBottomWindow(TASKS); }, {gui.getKey(C_BUILDINGS_CONFIRM) }, true)
             ), [this, buttonCnt]{ return minionsIndex == buttonCnt;} ),
             WL(label, "Show tasks", [=]{ return bottomWindow == TASKS ? Color::GREEN : Color::WHITE;}),
@@ -2317,8 +2314,7 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
   ++buttonCnt;
   list.addElem(WL(stack,
             WL(conditionalStopKeys, WL(stack,
-                WL(uiHighlightLine),
-                WL(uiHighlightFrame),
+                WL(uiHighlightFrameFilled),
                 WL(keyHandler, getButtonCallback(UserInputId::SHOW_HISTORY), {gui.getKey(C_BUILDINGS_CONFIRM) }, true)
             ), [this, buttonCnt]{ return minionsIndex == buttonCnt;} ),
             WL(label, "Show message history"),
@@ -2613,7 +2609,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
   auto lines = WL(getListBuilder, legendLineHeight);
   if (info.resourceTabs.size() >= 2) {
     lines.addElem(WL(topMargin, 3, WL(getListBuilder)
-        .addElemAuto(WL(label, "material: "))
+        .addElemAuto(WL(label, "Material: "))
         .addElemAuto(WL(viewObject, info.resourceTabs[info.chosenTab]))
         .addElemAuto(WL(label, info.tabName))
         .buildHorizontalList()));
@@ -2710,7 +2706,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
       );
     guiElem = WL(stack,
         WL(conditionalStopKeys, WL(stack,
-            WL(uiHighlightLine),
+            WL(uiHighlightFrameFilled),
             WL(keyHandler, [this, itemIndex, unavailable = elem.unavailable] {
               if (!unavailable)
               callbacks.input({UserInputId::WORKSHOP_ADD, itemIndex});
@@ -2758,7 +2754,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
     auto guiElem = WL(stack, makeVec(
         WL(bottomMargin, 5, WL(progressBar, Color::DARK_GREEN.transparency(128), elem.productionState)),
         WL(conditionalStopKeys, WL(stack,
-            WL(uiHighlightLine),
+            WL(uiHighlightFrameFilled),
             WL(keyHandlerRect, [this, changeCountCallback, removeCallback, itemUpgradeCallback] (Rectangle r) {
               vector<SGuiElem> lines {
                 WL(label, "Change count"),
@@ -2818,11 +2814,11 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
               .setRelative(elems[workshopIndex->x]->getBounds().top(), Clock::getRealMillis());
         }
       }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
-      WL(keyHandler, [this, optionElems, queuedElems, resourceCnt = info.resourceTabs.size()] {
+      WL(keyHandler, [this, tab = info.chosenTab, optionElems, queuedElems, resourceCnt = info.resourceTabs.size()] {
         if (resourceCnt >= 2 && workshopIndex == Vec2(0, 0))
-          workshopIndex = Vec2(0, 2);
+          workshopIndex = Vec2(tab, 2);
         else if (!workshopIndex)
-          workshopIndex = Vec2(0, 2);
+          workshopIndex = Vec2(tab, 2);
         else if (workshopIndex->y < 2) {
           auto& elems = (workshopIndex->y == 0 ? optionElems : queuedElems);
           workshopIndex->x = (workshopIndex->x + elems.size() - 1) % elems.size();
