@@ -636,7 +636,7 @@ vector<Player::CommandInfo> Player::getCommands() const {
       [] (Player* player) { auto c = player->creature; player->tryToPerform(c->drop(c->getEquipment().getItems())); }, false},
     {PlayerInfo::CommandInfo{"Message history", Keybinding("MESSAGE_HISTORY"), "Show message history.", true},
       [] (Player* player) { player->showHistory(); }, false},
-    {PlayerInfo::CommandInfo{"Level up", Keybinding("LEVEL_UP"), "Level up your character.", true},
+    {PlayerInfo::CommandInfo{"Level up", Keybinding("LEVEL_UP"), "Level up your character.", adventurer},
       [] (Player* player) { player->playerLevelDialog(); }, false},
 #ifndef RELEASE
     {PlayerInfo::CommandInfo{"Wait multiple turns", none, "", true},
