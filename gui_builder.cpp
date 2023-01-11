@@ -488,7 +488,7 @@ SGuiElem GuiBuilder::drawResources(const vector<CollectiveInfo::Resource>& numRe
     const optional<TutorialInfo>& tutorial, int width) {
   auto line = WL(getListBuilder, resourceSpace);
   auto moreResources = WL(getListBuilder, legendLineHeight);
-  int numResourcesShown = min(numResource.size(), (width - 100) / resourceSpace);
+  int numResourcesShown = min(numResource.size(), width / resourceSpace);
   if (numResourcesShown < 1)
     return gui.empty();
   if (numResourcesShown < numResource.size())
@@ -511,8 +511,10 @@ SGuiElem GuiBuilder::drawResources(const vector<CollectiveInfo::Resource>& numRe
           tutorialElem,
           getHintCallback({numResource[i].name}),
           res.buildHorizontalList());
-    if (i < numResourcesShown)
+    if (i < numResourcesShown - 1)
       line.addElem(std::move(elem));
+    else if (i == numResourcesShown - 1)
+      line.addElemAuto(std::move(elem));
     else
       moreResources.addElem(std::move(elem));
   }
