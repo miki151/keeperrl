@@ -340,6 +340,7 @@ class GuiBuilder {
   SGuiElem drawZLevelButton(const CurrentLevelInfo&, Color textColor);
   SGuiElem drawBoolOptionElem(OptionId, string name);
   SGuiElem drawCreatureTooltip(const PlayerInfo&);
+  function<void(Rectangle)> getCommandsCallback(const vector<PlayerInfo::CommandInfo>&);
   vector<SDL::SDL_Keysym> getOverlayCloseKeys();
   ScriptedUIState scriptedUIState;
   ScriptedUIData scriptedUIData;

@@ -1872,6 +1872,41 @@ SGuiElem GuiBuilder::drawTrainingInfo(const CreatureExperienceInfo& info, bool i
     return nullptr;
 }
 
+function<void(Rectangle)> GuiBuilder::getCommandsCallback(const vector<PlayerInfo::CommandInfo>& commands) {
+  return [this, commands] (Rectangle bounds) {
+    vector<SGuiElem> lines;
+    vector<function<void()>> callbacks;
+    vector<SGuiElem> tooltips;
+    optional<UserInput> result;
+    for (int i : All(commands)) {
+      auto& command = commands[i];
+      if (command.active)
+        callbacks.push_back([i, this] {
+          this->callbacks.input({UserInputId::PLAYER_COMMAND, i});
+        });
+      else
+        callbacks.emplace_back();
+      auto labelColor = command.active ? Color::WHITE : Color::GRAY;
+      vector<SGuiElem> stack;
+      //if (command.keybinding)
+        //stack.push_back(WL(stack, std::move(button), WL(keyHandler, buttonFun, *command.keybinding)));
+      if (command.tutorialHighlight)
+        stack.push_back(WL(tutorialHighlight));
+      auto label = WL(label, command.name, labelColor);
+      if (command.keybinding)
+        label = gui.getKeybindingMap()->getGlyph(std::move(label), &gui, *command.keybinding);
+      stack.push_back(std::move(label));
+      if (!command.description.empty())
+        tooltips.push_back(WL(miniWindow, WL(margins, WL(label, command.description), 15)));
+      else
+        tooltips.push_back(WL(empty));
+      lines.push_back(WL(stack, std::move(stack)));
+    }
+    drawMiniMenu(std::move(lines), std::move(callbacks), std::move(tooltips), bounds.bottomLeft(),
+        290, false, true, &commandsIndex);
+  };
+}
+
 SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) {
   auto list = WL(getListBuilder, legendLineHeight);
   list.addSpace();
@@ -1889,38 +1924,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) 
         keyElems.push_back(WL(keyHandler, getButtonCallback({UserInputId::PLAYER_COMMAND, i}), *key));
   }
   if (!info.commands.empty()) {
-    auto callback = [this, commands = info.commands] (Rectangle bounds) {
-        vector<SGuiElem> lines;
-        vector<function<void()>> callbacks;
-        vector<SGuiElem> tooltips;
-        optional<UserInput> result;
-        for (int i : All(commands)) {
-          auto& command = commands[i];
-          if (command.active)
-            callbacks.push_back([i, this] {
-              this->callbacks.input({UserInputId::PLAYER_COMMAND, i});
-            });
-          else
-            callbacks.emplace_back();
-          auto labelColor = command.active ? Color::WHITE : Color::GRAY;
-          vector<SGuiElem> stack;
-          //if (command.keybinding)
-            //stack.push_back(WL(stack, std::move(button), WL(keyHandler, buttonFun, *command.keybinding)));
-          if (command.tutorialHighlight)
-            stack.push_back(WL(tutorialHighlight));
-          auto label = WL(label, command.name, labelColor);
-          if (command.keybinding)
-            label = gui.getKeybindingMap()->getGlyph(std::move(label), &gui, *command.keybinding);
-          stack.push_back(std::move(label));
-          if (!command.description.empty())
-            tooltips.push_back(WL(miniWindow, WL(margins, WL(label, command.description), 15)));
-          else
-            tooltips.push_back(WL(empty));
-          lines.push_back(WL(stack, std::move(stack)));
-        }
-        drawMiniMenu(std::move(lines), std::move(callbacks), std::move(tooltips), bounds.bottomLeft(),
-            290, false, true, &commandsIndex);
-    };
+    auto callback = getCommandsCallback(info.commands);
     list.addElem(WL(stack,
         WL(stack, std::move(keyElems)),
         WL(conditional, WL(tutorialHighlight), [=]{ return isTutorial;}),
@@ -1956,7 +1960,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) 
       };
       auto elem = WL(stack,
           WL(conditionalStopKeys, WL(stack,
-              WL(uiHighlightLine),
+              WL(uiHighlightFrameFilled),
               WL(keyHandlerRect, [=](Rectangle bounds) {
                 if (inventoryIndex == i) {
                   callback(bounds);
@@ -2015,7 +2019,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) 
             inventoryIndex = none;
             inventoryScroll.reset();
           }, Keybinding("EXIT_MENU"), true), [this] { return !!inventoryIndex;} ),
-      list.buildVerticalList()
+      WL(rightMargin, 5, list.buildVerticalList())
   ));
 }
 
