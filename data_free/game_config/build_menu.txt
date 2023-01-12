@@ -330,8 +330,13 @@
     { Dispatch                                                 "Prioritize task"   "Orders"
         "Click on an existing task to give it a high priority." "PRIORITIZE_TASK" }
 
-    { DestroyLayers {CEILING MIDDLE}                           "Remove construction" "Orders"
+    { DestroyLayers {MIDDLE}                           "Remove construction" "Orders"
         "" "REMOVE_CONSTRUCTION" {} false REMOVE_CONSTRUCTION }
+
+    { DestroyLayers {FLOOR}                           "Remove floor" "Orders"}
+
+    { DestroyLayers {CEILING}                           "Remove wall installation" "Orders"
+        "Remove torches, candelabra, paintings, etc."}
 
     { ForbidZone                                               "Forbid zone"      "Orders"
         "Mark tiles to keep minions from entering."}
