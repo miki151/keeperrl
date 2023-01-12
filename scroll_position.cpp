@@ -12,7 +12,7 @@ ScrollPosition::ScrollPosition(double pos) : start(pos), target(pos) {
 
 void ScrollPosition::setRelative(double val, milliseconds currentTime) {
   if (knownBounds)
-    set(target + val - knownBounds->first, currentTime);
+    set(target + val - knownBounds->min  - knownBounds->yBegin, currentTime);
   else
     set(val, currentTime);
 }
@@ -28,13 +28,13 @@ void ScrollPosition::setRatio(double val, milliseconds currentTime) {
     val = max(0.0, min(1.0, val));
     start = get(currentTime);
     targetTime = milliseconds(0);//currentTime + scrollTime;
-    target = knownBounds->first * (val - 1) + knownBounds->second * val;
+    target = knownBounds->min * (val - 1) + knownBounds->max * val;
   }
 }
 
 double ScrollPosition::getRatio(milliseconds currentTime) {
   if (knownBounds)
-    return (get(currentTime) - knownBounds->first) / (knownBounds->second - knownBounds->first);
+    return (get(currentTime) - knownBounds->min) / (knownBounds->max - knownBounds->min);
   return 0;
 }
 
@@ -47,10 +47,10 @@ void ScrollPosition::reset(double val) {
   targetTime = milliseconds{0};
 }
 
-void ScrollPosition::setBounds(double minV, double maxV) {
+void ScrollPosition::setBounds(double minV, double maxV, int yBegin) {
   start = max(minV, min(maxV, start));
   target = max(minV, min(maxV, target));
-  knownBounds = make_pair(minV, maxV);
+  knownBounds = KnownBounds {minV, maxV, yBegin};
 }
 
 void ScrollPosition::add(double val, milliseconds currentTime) {
@@ -64,8 +64,8 @@ double ScrollPosition::get(milliseconds currentTime) {
     return target - (targetTime - currentTime).count() * (target - start) / scrollTime.count();
 }
 
-double ScrollPosition::get(milliseconds currentTime, double min, double max) {
-  setBounds(min, max);
+double ScrollPosition::get(milliseconds currentTime, double min, double max, int yBegin) {
+  setBounds(min, max, yBegin);
   return get(currentTime);
 }
 

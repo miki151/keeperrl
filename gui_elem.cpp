@@ -2703,12 +2703,12 @@ class ScrollBar : public GuiLayout {
 
   double getScrollPos() {
     int size = getBounds().height() / 2;
-    return scrollPos->get(clock->getRealMillis(), size, scrollLength() + size) - size;
+    return scrollPos->get(clock->getRealMillis(), size, scrollLength() + size, getBounds().top()) - size;
   }
 
   void addScrollPos(double v) {
     scrollPos->add(v, clock->getRealMillis());
-    scrollPos->setBounds(getBounds().height() / 2, scrollLength() + getBounds().height() / 2);
+    scrollPos->setBounds(getBounds().height() / 2, scrollLength() + getBounds().height() / 2, getBounds().top());
   }
 
   virtual bool onScrollEvent(Vec2 pos, double x, double y, milliseconds timeDiff) override {
@@ -2783,7 +2783,7 @@ class Scrollable : public GuiElem {
 
   double getScrollPos() {
     int size = getBounds().height() / 2;
-    return scrollPos->get(clock->getRealMillis(), size, *content->getPreferredHeight() - size);
+    return scrollPos->get(clock->getRealMillis(), size, *content->getPreferredHeight() - size, getBounds().top());
   }
 
   virtual void onRefreshBounds() override {

@@ -971,7 +971,8 @@ struct Scrollable : ScriptedUIInterface {
     if (height <= bounds.height())
       contentFun(bounds);
     else {
-      int offset = context.state.scrollPos[index].get(Clock::getRealMillis(), 0, height - bounds.height());
+      int offset = context.state.scrollPos[index].get(Clock::getRealMillis(), 0, height - bounds.height(),
+          bounds.top());
       int scrollBarWidth = scrollbar->getSize(data, context).x;
       auto contentBounds = getContentBounds(bounds, offset, scrollBarWidth, height);
       context.renderer->setScissor(bounds);
