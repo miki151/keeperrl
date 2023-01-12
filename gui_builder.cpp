@@ -1707,6 +1707,7 @@ SGuiElem GuiBuilder::getSpellIcon(const SpellInfo& spell, int index, bool active
           WL(standardButtonHighlight),
           WL(keyHandler, [=] {
             abilityIndex = none;
+            inventoryScroll.reset();
             renderer.getSteamInput()->popActionSet();
             callback();
           }, Keybinding("MENU_SELECT"), true)
