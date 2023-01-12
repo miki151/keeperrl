@@ -25,6 +25,7 @@ struct ScriptedContext {
   int elemCounter;
   int tooltipCounter;
   optional<int> highlightedElemHeight;
+  bool isHighlighted(int elemCounter) const;
 };
 
 using EventCallback = function<bool()>;

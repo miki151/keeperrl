@@ -27,6 +27,10 @@ RICH_ENUM(EnumsDetail::PlacementPos, MIDDLE, TOP_STRETCHED, BOTTOM_STRETCHED, LE
 RICH_ENUM(EnumsDetail::Direction, HORIZONTAL, VERTICAL);
 RICH_ENUM(EnumsDetail::TextureType, REPEAT, FIT);
 
+bool ScriptedContext::isHighlighted(int elemIndex) const {
+  return state.highlightedElem && (*state.highlightedElem + elemCounter) % elemCounter == elemIndex;
+}
+
 namespace ScriptedUIElems {
 
 using namespace EnumsDetail;
@@ -757,7 +761,7 @@ struct Focusable : ScriptedUIInterface {
     if (id == MouseButtonId::MOVED) {
       if (pos.inRectangle(bounds))
         callback = [counter = context.elemCounter, &context, old = std::move(callback)] {
-          context.state.highlightedElem = counter;
+          context.isHighlighted(counter);
           return old ? old() : false;
         };
       else
@@ -781,7 +785,7 @@ struct Focusable : ScriptedUIInterface {
       onClicked(data, context, callback);
     callback = [&, y = bounds.middle().y, callback, myCounter = context.elemCounter] {
       auto ret = callback ? callback() : false;
-      if (context.state.highlightedElem == myCounter)
+      if (context.isHighlighted(myCounter))
         context.highlightedElemHeight = y;
       return ret;
     };
@@ -837,7 +841,7 @@ struct FocusableKeys : ScriptedUIInterface {
     }
     callback = [&, y = bounds.middle().y, callback, myCounter = context.elemCounter] {
       auto ret = callback ? callback() : false;
-      if (context.state.highlightedElem == myCounter)
+      if (context.isHighlighted(myCounter))
         context.highlightedElemHeight = y;
       return ret;
     };
@@ -1031,8 +1035,8 @@ struct Scrollable : ScriptedUIInterface {
             context.highlightedElemHeight = none;
             auto ret = callback ? callback() : false;
             if (auto height = context.highlightedElemHeight)
-              if (needsScrolling(bounds.getYRange(), *height) &&
-                  !context.state.scrollPos[index].isScrolling(Clock::getRealMillis()))
+              if (needsScrolling(bounds.getYRange(), *height)/* && this broke scrolling for some reason
+                  !context.state.scrollPos[index].isScrolling(Clock::getRealMillis())*/)
                 context.state.scrollPos[index].add(*height - bounds.middle().y, Clock::getRealMillis());
             context.highlightedElemHeight = none;
             return ret;
