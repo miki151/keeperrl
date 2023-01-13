@@ -364,12 +364,12 @@ void PlayerControl::render(View* view) {
 }
 
 void PlayerControl::addConsumableItem(Creature* creature) {
-  ScrollPosition scrollPos;
+  ScriptedUIState state;
   while (1) {
     Item* chosenItem = chooseEquipmentItem(creature, {}, [&](const Item* it) {
         return !collective->getMinionEquipment().isOwner(it, creature)
             && !it->canEquip()
-            && collective->getMinionEquipment().needsItem(creature, it, true); }, &scrollPos);
+            && collective->getMinionEquipment().needsItem(creature, it, true); }, &state);
     if (chosenItem) {
       creature->removeEffect(LastingEffect::SLEEP);
       CHECK(collective->getMinionEquipment().tryToOwn(creature, chosenItem));
@@ -622,11 +622,6 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
   }
 }
 
-Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
-    ScrollPosition* scrollPos) {
-  return chooseEquipmentItem(creature, std::move(currentItems), collective->getAllItems().filter(predicate), scrollPos);
-}
-
 static ScriptedUIDataElems::Record getItemRecord(const ContentFactory* factory, const vector<Item*> itemStack) {
   auto elem = ScriptedUIDataElems::Record{};
   elem.elems["view_id"] = itemStack[0]->getViewObject().getViewIdList();
@@ -655,8 +650,9 @@ static ScriptedUIDataElems::Record getItemOwnerRecord(const ContentFactory* fact
   }};
 }
 
-Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, vector<Item*> allItems,
-    ScrollPosition* scrollPos) {
+Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
+    ScriptedUIState* uiState) {
+  auto allItems = collective->getAllItems().filter(predicate);
   vector<Item*> availableItems;
   vector<Item*> usedItems;
   collective->getMinionEquipment().sortByEquipmentValue(creature, allItems);
@@ -703,7 +699,8 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
     itemsList.push_back(std::move(r));
   }
   data.elems["elems"] = std::move(itemsList);
-  getView()->scriptedUI("pillage_menu", data);
+  ScriptedUIState state;
+  getView()->scriptedUI("pillage_menu", data, uiState ? *uiState : state);
   return ret;
 }
 
@@ -718,7 +715,7 @@ static ScriptedUIDataElems::Record getSteedItemRecord(const ContentFactory* fact
   return elem;
 }
 
-Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSteeds, ScrollPosition* scrollPos) {
+Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSteeds) {
   vector<Creature*> availableItems;
   vector<Creature*> usedItems;
   for (auto item : allSteeds) {

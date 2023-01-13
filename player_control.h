@@ -53,9 +53,11 @@ class AttackTrigger;
 class ImmigrantInfo;
 struct WorkshopOptionInfo;
 struct FurnaceOptionInfo;
+class ScriptedUIState;
 namespace BuildInfoTypes {
   struct BuildType;
 }
+
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
   static PPlayerControl create(Collective* col, vector<string> introText, TribeAlignment);
@@ -181,10 +183,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void getEquipmentItem(View* view, ItemPredicate predicate);
   ItemInfo getWorkshopItem(const WorkshopItem&, int queuedCount) const;
   Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate,
-      ScrollPosition* scrollPos = nullptr);
-  Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, vector<Item*> allItems,
-      ScrollPosition* scrollPos = nullptr);
-  Creature* chooseSteed(Creature* creature, vector<Creature*> allSteeds, ScrollPosition* scrollPos = nullptr);
+      ScriptedUIState* uiState = nullptr);
+  Creature* chooseSteed(Creature* creature, vector<Creature*> allSteeds);
 
   int getNumMinions() const;
   void minionTaskAction(const TaskActionInfo&);
