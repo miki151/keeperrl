@@ -761,7 +761,7 @@ struct Focusable : ScriptedUIInterface {
     if (id == MouseButtonId::MOVED) {
       if (pos.inRectangle(bounds))
         callback = [counter = context.elemCounter, &context, old = std::move(callback)] {
-          context.isHighlighted(counter);
+          context.state.highlightedElem = counter;
           return old ? old() : false;
         };
       else
