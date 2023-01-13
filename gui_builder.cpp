@@ -718,7 +718,6 @@ SGuiElem GuiBuilder::getGameSpeedHotkeys() {
   };
   vector<SGuiElem> hotkeys;
   hotkeys.push_back(WL(keyHandler, pauseFun, Keybinding("PAUSE")));
-  hotkeys.push_back(WL(keyHandler, pauseFun, {gui.getKey(C_BUILDINGS_CONFIRM)}, true));
   hotkeys.push_back(WL(keyHandler, [this] {
     if (int(gameSpeed) < EnumInfo<GameSpeed>::size - 1)
       gameSpeed = GameSpeed(int(gameSpeed) + 1);

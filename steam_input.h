@@ -43,6 +43,7 @@ enum ControllerKey {
   C_TECH_MENU,
   C_HELP_MENU,
   C_VILLAINS_MENU,
+  C_PAUSE,
   C_SPEED_UP,
   C_SPEED_DOWN,
   C_BUILDINGS_UP,

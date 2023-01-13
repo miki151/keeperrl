@@ -40,6 +40,7 @@ optional<ControllerKey> KeybindingMap::getControllerMapping(Keybinding key) {
       {Keybinding("EXIT_CONTROL_MODE"), C_EXIT_CONTROL_MODE},
       {Keybinding("TOGGLE_CONTROL_MODE"), C_TOGGLE_CONTROL_MODE},
       {Keybinding("EXIT_MENU"), C_MENU_CANCEL},
+      {Keybinding("PAUSE"), C_PAUSE},
       {Keybinding("SPEED_UP"), C_SPEED_UP},
       {Keybinding("SPEED_DOWN"), C_SPEED_DOWN},
       {Keybinding("MENU_DOWN"), C_MENU_DOWN},
