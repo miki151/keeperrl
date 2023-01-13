@@ -892,13 +892,13 @@ SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info, bo
 SGuiElem GuiBuilder::getVillainDismissHint(optional<VillageAction> action) {
   auto lines = WL(getListBuilder, legendLineHeight);
   if (!hasController())
-    lines.addElem(WL(label, "Right click to dismiss", Renderer::smallTextSize()), legendLineHeight * 2 / 3);
+    lines.addElem(WL(label, "Right click to clear", Renderer::smallTextSize()), legendLineHeight * 2 / 3);
   else if (!villainsIndex)
-    lines.addElem(WL(label, "Left trigger to dismiss", Renderer::smallTextSize()), legendLineHeight * 2 / 3);
+    lines.addElem(WL(label, "Left trigger to clear", Renderer::smallTextSize()), legendLineHeight * 2 / 3);
   else {
     auto line = WL(getListBuilder)
-        .addElemAuto(gui.steamInputGlyph(C_WORLD_MAP, 16))
-        .addElemAuto(WL(label, " to dismiss", Renderer::smallTextSize()));
+        .addElemAuto(gui.steamInputGlyph(C_ZOOM, 16))
+        .addElemAuto(WL(label, " to clear", Renderer::smallTextSize()));
     if (!!action)
       line.addSpace(30)
           .addElemAuto(gui.steamInputGlyph(C_BUILDINGS_CONFIRM, 16))
@@ -995,7 +995,7 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info, const optional
         WL(button, actionCallback),
         WL(releaseRightButton, dismissCallback),
         WL(conditionalStopKeys, WL(stack,
-                WL(keyHandler, dismissCallback, {gui.getKey(C_WORLD_MAP)}, true),
+                WL(keyHandler, dismissCallback, {gui.getKey(C_ZOOM)}, true),
                 WL(keyHandler, actionCallback, {gui.getKey(C_BUILDINGS_CONFIRM)}, true)
             ), [this, buttonsCnt] { return villainsIndex == buttonsCnt; }),
         WL(onMouseRightButtonHeld, WL(margins, WL(rectangle, Color(255, 0, 0, 100)), 0, 2, 2, 2)),
@@ -1634,6 +1634,8 @@ void GuiBuilder::drawMiniMenu(SGuiElem elem, function<bool()> done, Vec2 menuPos
   auto o = OnExit([this] { renderer.getSteamInput()->popActionSet(); disableTooltip = false; });
   int contentHeight = *elem->getPreferredHeight();
   Vec2 size(width, min(renderer.getSize().y, contentHeight));
+  menuPos.y = max(0, menuPos.y);
+  menuPos.x = max(0, menuPos.x);
   menuPos.y -= max(0, menuPos.y + size.y - renderer.getSize().y);
   menuPos.x -= max(0, menuPos.x + size.x - renderer.getSize().x);
   elem->setBounds(Rectangle(menuPos, menuPos + size));
@@ -5575,8 +5577,7 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
              WL(icon, GuiFactory::IconId::MINIMAP_WORLD1)),
           WL(conditional, WL(blink, WL(icon, GuiFactory::IconId::MINIMAP_WORLD2)), tutorialPredicate),
           WL(button, getButtonCallback(UserInputId::DRAW_WORLD_MAP)),
-          WL(keyHandler, getButtonCallback(UserInputId::DRAW_WORLD_MAP), Keybinding("OPEN_WORLD_MAP")),
-          WL(keyHandler, getButtonCallback(UserInputId::DRAW_WORLD_MAP), {gui.getKey(C_WORLD_MAP)})
+          WL(keyHandler, getButtonCallback(UserInputId::DRAW_WORLD_MAP), Keybinding("OPEN_WORLD_MAP"))
       ));
     else
       return WL(icon, GuiFactory::IconId::MINIMAP_WORLD1);
