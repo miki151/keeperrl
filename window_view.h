@@ -125,7 +125,7 @@ class WindowView: public View {
   Rectangle getMapGuiBounds() const;
   void switchTiles();
 
-  bool considerResizeEvent(Event&, bool withBugReportEvent = true);
+  bool considerResizeEvent(const Event&, bool withBugReportEvent = true);
 
   int messageInd = 0;
   std::deque<string> currentMessage = std::deque<string>(3, "");
@@ -239,7 +239,7 @@ class WindowView: public View {
   deque<string> messageLog;
   void propagateMousePosition(const vector<SGuiElem>&);
   Vec2 getOverlayPosition(GuiBuilder::OverlayInfo::Alignment, int height, int width, int rightBarWidth, int bottomBarHeight);
-  bool considerBugReportEvent(Event&);
+  bool considerBugReportEvent(const Event&);
   BugReportSaveCallback bugReportSaveCallback;
   FileSharing* bugreportSharing;
   DirectoryPath bugreportDir;

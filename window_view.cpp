@@ -701,20 +701,40 @@ View::TargetResult WindowView::chooseTarget(Vec2 playerPos, TargetType targetTyp
   addReturnDialog<TargetResult>(returnQueue, [=] ()-> TargetResult {
   rebuildGui();
   refreshScreen();
+  renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
+  auto o = OnExit([this] { renderer.getSteamInput()->popActionSet(); });
   guiBuilder.disableClickActions = true;
+  optional<Vec2> controllerPos;
+  if (!gui.getSteamInput()->controllers.empty())
+    controllerPos = playerPos;
   do {
-    auto pos = mapGui->projectOnMap(renderer.getMousePos());
+    auto pos = controllerPos ? controllerPos : mapGui->projectOnMap(renderer.getMousePos());
     Event event;
-    if (renderer.pollEvent(event)) {
+    while (renderer.pollEvent(event)) {
       considerResizeEvent(event);
       if (event.type == SDL::SDL_KEYDOWN) {
         if (gui.getKeybindingMap()->matches(Keybinding("EXIT_MENU"), event.key.keysym)) {
           refreshScreen();
           return none;
         }
-        if (cycleKey && gui.getKeybindingMap()->matches(*cycleKey, event.key.keysym))
+        else if (cycleKey && gui.getKeybindingMap()->matches(*cycleKey, event.key.keysym))
           return *cycleKey;
+        else if (gui.getKeybindingMap()->matches(Keybinding("MENU_SELECT"), event.key.keysym)) {
+          if (!!pos && (targetType != TargetType::POSITION ||
+              (pos->inRectangle(passable.getBounds()) && passable[*pos] == PassableInfo::PASSABLE)))
+            return *pos;
+        }
+        else if (gui.getKeybindingMap()->matches(Keybinding("MENU_UP"), event.key.keysym))
+          controllerPos = controllerPos.value_or(playerPos) + Vec2(0, -1);
+        else if (gui.getKeybindingMap()->matches(Keybinding("MENU_DOWN"), event.key.keysym))
+          controllerPos = controllerPos.value_or(playerPos) + Vec2(0, 1);
+        else if (gui.getKeybindingMap()->matches(Keybinding("MENU_LEFT"), event.key.keysym))
+          controllerPos = controllerPos.value_or(playerPos) + Vec2(-1, 0);
+        else if (gui.getKeybindingMap()->matches(Keybinding("MENU_RIGHT"), event.key.keysym))
+          controllerPos = controllerPos.value_or(playerPos) + Vec2(1, 0);
       }
+      if (event.type == SDL::SDL_MOUSEMOTION)
+        controllerPos = none;
       if (pos && event.type == SDL::SDL_MOUSEBUTTONDOWN) {
         if (event.button.button == SDL_BUTTON_LEFT && (targetType != TargetType::POSITION ||
             (pos->inRectangle(passable.getBounds()) && passable[*pos] == PassableInfo::PASSABLE)))
@@ -776,7 +796,8 @@ View::TargetResult WindowView::chooseTarget(Vec2 playerPos, TargetType targetTyp
       }
     }
     renderer.drawAndClearBuffer();
-    renderer.flushEvents(SDL::SDL_MOUSEMOTION);
+    // Not sure what this was for but it interfered with switching the mode from keyboard to mouse.
+    //renderer.flushEvents(SDL::SDL_MOUSEMOTION);
   } while (1);
   });
   guiBuilder.disableClickActions = false;
@@ -962,7 +983,7 @@ bool WindowView::isClockStopped() {
   return clock->isPaused();
 }
 
-bool WindowView::considerResizeEvent(Event& event, bool withBugReportEvent) {
+bool WindowView::considerResizeEvent(const Event& event, bool withBugReportEvent) {
   if (withBugReportEvent && considerBugReportEvent(event))
     return true;
   if (event.type == SDL::SDL_QUIT)
@@ -990,7 +1011,7 @@ bool WindowView::zoomUIAvailable() const {
       && renderer.getWindowSize().y >= 2 * renderer.getMinResolution().y;
 }
 
-bool WindowView::considerBugReportEvent(Event& event) {
+bool WindowView::considerBugReportEvent(const Event& event) {
   if (event.type == SDL::SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT &&
       Vec2(event.button.x, event.button.y).inRectangle(getBugReportPos(renderer))) {
     bool exit = false;
