@@ -121,6 +121,9 @@ void GuiBuilder::closeOverlayWindows() {
   callbacks.input({UserInputId::WORKSHOP, -1});
   bottomWindow = none;
   villainsIndex = none;
+  techIndex = none;
+  helpIndex = none;
+  minionsIndex = none;
 }
 
 bool GuiBuilder::isEnlargedMinimap() const {
@@ -288,12 +291,14 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
   ));
   keypressOnly.push_back(
       WL(keyHandler, [this, newGroup = buttons[0].groupName] {
+        closeOverlayWindowsAndClearButton();
         setCollectiveTab(CollectiveTab::BUILDINGS);
         setActiveGroup(newGroup, none);
       }, {gui.getKey(C_BUILDINGS_MENU)}, true));
   keypressOnly.push_back(
       WL(keyHandlerBool, [this, newGroup = buttons[0].groupName] {
         if (collectiveTab == CollectiveTab::BUILDINGS && !activeButton && !activeGroup) {
+          closeOverlayWindows();
           setActiveGroup(newGroup, none);
           return true;
         }
@@ -457,6 +462,7 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo& info) {
       addScriptedButton(*elem);
   return WL(stack, makeVec(
       WL(keyHandler, [this] {
+        closeOverlayWindowsAndClearButton();
         helpIndex = 0;
         setCollectiveTab(CollectiveTab::KEY_MAPPING);
       }, {gui.getKey(C_HELP_MENU)}, true),
@@ -465,10 +471,20 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo& info) {
           WL(keyHandler, [this] {
             helpIndex = none;
           }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true),
-          WL(keyHandler, [this, buttonCnt] { helpIndex = (helpIndex.value_or(-1) + 1) % buttonCnt; },
-              {gui.getKey(C_BUILDINGS_DOWN)}, true),
-          WL(keyHandler, [this, buttonCnt] { helpIndex = (helpIndex.value_or(1) - 1 + buttonCnt) % buttonCnt; },
-              {gui.getKey(C_BUILDINGS_UP)}, true)
+          WL(keyHandler, [this, buttonCnt] {
+            if (!helpIndex) {
+              closeOverlayWindowsAndClearButton();
+              helpIndex = 0;
+            } else
+              helpIndex = (*helpIndex + 1) % buttonCnt;
+          }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
+          WL(keyHandler, [this, buttonCnt] {
+            if (!helpIndex) {
+              closeOverlayWindowsAndClearButton();
+              helpIndex = 0;
+            } else
+              helpIndex = (*helpIndex - 1 + buttonCnt) % buttonCnt;
+          }, {gui.getKey(C_BUILDINGS_UP)}, true)
       ), [this] { return collectiveTab == CollectiveTab::KEY_MAPPING; })
   ));
 }
@@ -1061,7 +1077,8 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info, const optional
     villainsIndex = min(buttonsCnt - 1, *villainsIndex);
   return WL(setHeight, 29, WL(stack,
         WL(stopMouseMovement),
-        WL(keyHandler, [this] { villainsIndex = 0; }, {gui.getKey(C_VILLAINS_MENU)}, true),
+        WL(keyHandler, [this] { closeOverlayWindowsAndClearButton(); villainsIndex = 0; },
+            {gui.getKey(C_VILLAINS_MENU)}, true),
         WL(conditionalStopKeys, WL(stack,
             WL(keyHandler, [this] { villainsIndex = none; }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true),
             WL(keyHandler, [this, buttonsCnt] { villainsIndex = (*villainsIndex + 1) % buttonsCnt; },
@@ -2329,6 +2346,7 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
   list.addSpace();
   return WL(stack, makeVec(
       WL(keyHandler, [this] {
+        closeOverlayWindowsAndClearButton();
         minionsIndex = 0;
         setCollectiveTab(CollectiveTab::MINIONS);
       }, {gui.getKey(C_MINIONS_MENU)}, true),
@@ -2341,10 +2359,20 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
             }
             return false;
           }, {gui.getKey(C_CHANGE_Z_LEVEL)}),
-          WL(keyHandler, [this, buttonCnt] { minionsIndex = (minionsIndex.value_or(-1) + 1) % buttonCnt; },
-              {gui.getKey(C_BUILDINGS_DOWN)}, true),
-          WL(keyHandler, [this, buttonCnt] { minionsIndex = (minionsIndex.value_or(1) - 1 + buttonCnt) % buttonCnt; },
-              {gui.getKey(C_BUILDINGS_UP)}, true),
+          WL(keyHandler, [this, buttonCnt] {
+            if (!minionsIndex) {
+              closeOverlayWindowsAndClearButton();
+              minionsIndex = 0;
+            } else
+              minionsIndex = (*minionsIndex + 1) % buttonCnt;
+          }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
+          WL(keyHandler, [this, buttonCnt] {
+            if (!minionsIndex) {
+              closeOverlayWindowsAndClearButton();
+              minionsIndex = 0;
+            } else
+              minionsIndex = (*minionsIndex - 1 + buttonCnt) % buttonCnt;
+          }, {gui.getKey(C_BUILDINGS_UP)}, true),
           WL(keyHandler, [this] { callbacks.input({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()}); },
               {gui.getKey(C_BUILDINGS_LEFT)}, true)
       ), [this] { return collectiveTab == CollectiveTab::MINIONS; })
@@ -3023,21 +3051,26 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
   auto content = WL(stack,
       lines.buildVerticalList(),
       WL(keyHandler, [activeElems, this] {
+        closeOverlayWindows();
         techIndex = 0;
         libraryScroll.setRelative(activeElems[*techIndex]->getBounds().top(), Clock::getRealMillis());
         setCollectiveTab(CollectiveTab::TECHNOLOGY);
       }, {gui.getKey(C_TECH_MENU)}, true),
       WL(conditionalStopKeys, WL(stack,
           WL(keyHandler, [activeElems, this] {
-            if (!techIndex)
-              techIndex = -1;
-            techIndex = (*techIndex + 1) % activeElems.size();
+            if (!techIndex) {
+              closeOverlayWindowsAndClearButton();
+              techIndex = 0;
+            } else
+              techIndex = (*techIndex + 1) % activeElems.size();
             libraryScroll.setRelative(activeElems[*techIndex]->getBounds().top(), Clock::getRealMillis());
           }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
           WL(keyHandler, [activeElems, this] {
-            if (!techIndex)
-              techIndex = 1;
-            techIndex = (*techIndex + activeElems.size() - 1) % activeElems.size();
+            if (!techIndex) {
+              closeOverlayWindowsAndClearButton();
+              techIndex = 0;
+            } else
+              techIndex = (*techIndex + activeElems.size() - 1) % activeElems.size();
             libraryScroll.setRelative(activeElems[*techIndex]->getBounds().top(), Clock::getRealMillis());
           }, {gui.getKey(C_BUILDINGS_UP)}, true),
           WL(keyHandler, [this] { libraryScroll.reset(); techIndex = none; }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true)
