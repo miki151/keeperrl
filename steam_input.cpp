@@ -25,7 +25,6 @@ void MySteamInput::detectControllers() {
     };
     actionSets[ActionSet::MENU] = steamInput->GetActionSetHandle("MenuControls");
     actionSets[ActionSet::GAME] = steamInput->GetActionSetHandle("GameControls");
-    actionSets[ActionSet::DIRECTION] = steamInput->GetActionSetHandle("DirectionChoiceControls");
     actionHandles[C_MENU_UP] = getActionInfo("menu_up", ActionSet::MENU);
     actionHandles[C_MENU_DOWN] = getActionInfo("menu_down", ActionSet::MENU);
     actionHandles[C_MENU_SCROLL_UP] = getActionInfo("menu_scroll_up", ActionSet::MENU);
@@ -71,12 +70,9 @@ void MySteamInput::detectControllers() {
     actionHandles[C_BUILDINGS_RIGHT] = getActionInfo("buildings_right", ActionSet::GAME);
     actionHandles[C_BUILDINGS_CONFIRM] = getActionInfo("buildings_confirm", ActionSet::GAME);
     actionHandles[C_SHIFT] = getActionInfo("shift", ActionSet::GAME);
-    actionHandles[C_DIRECTION_CONFIRM] = getActionInfo("direction_confirm", ActionSet::DIRECTION);
-    actionHandles[C_DIRECTION_CANCEL] = getActionInfo("direction_cancel", ActionSet::DIRECTION);
     joyHandles[ControllerJoy::MAP_SCROLLING] = steamInput->GetAnalogActionHandle("map_scrolling_joy");
     joyHandles[ControllerJoy::MENU_SCROLLING] = steamInput->GetAnalogActionHandle("menu_scrolling_joy");
     joyHandles[ControllerJoy::WALKING] = steamInput->GetAnalogActionHandle("walking_joy");
-    joyHandles[ControllerJoy::DIRECTION] = steamInput->GetAnalogActionHandle("direction_joy");
     gameActionLayers[GameActionLayer::TURNED_BASED] = steamInput->GetActionSetHandle("TurnBased");
     gameActionLayers[GameActionLayer::REAL_TIME] = steamInput->GetActionSetHandle("RealTime");
     if (actionSetStack.empty())

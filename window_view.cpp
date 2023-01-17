@@ -612,30 +612,30 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
   addReturnDialog<optional<Vec2>>(returnQueue, [=] ()-> optional<Vec2> {
   rebuildGui();
   refreshScreen();
-  renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::DIRECTION);
+  renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::GAME);
+  renderer.getSteamInput()->setGameActionLayer(MySteamInput::GameActionLayer::TURNED_BASED);
   auto o = OnExit([this] { renderer.getSteamInput()->popActionSet(); });
+  bool useController = !gui.getSteamInput()->controllers.empty();
   do {
-    optional<Vec2> mousePos;
     Event event;
-    auto controllerDir = renderer.getDiscreteJoyPos(ControllerJoy::DIRECTION);
-    if (renderer.pollEvent(event)) {
+    if (renderer.getDiscreteJoyPos(ControllerJoy::WALKING) != Vec2(0, 0))
+      useController = true;
+    auto chosenDir = useController ? renderer.getDiscreteJoyPos(ControllerJoy::WALKING)
+        : (mapGui->projectOnMap(renderer.getMousePos()).value_or(playerPos) - playerPos).getBearing();
+    while (renderer.pollEvent(event)) {
       considerResizeEvent(event);
       if (event.type == SDL::SDL_MOUSEMOTION)
-        mousePos = Vec2(event.motion.x, event.motion.y);
+        useController = false;
       if (event.type == SDL::SDL_KEYDOWN) {
         refreshScreen();
         switch (event.key.keysym.sym) {
           case SDL::SDLK_ESCAPE:
-          case C_DIRECTION_CANCEL:
+          case C_CHANGE_Z_LEVEL:
             return none;
-          case C_DIRECTION_CONFIRM:
-            if (controllerDir != Vec2(0, 0))
-              return controllerDir;
+          case C_WALK:
+            if (chosenDir != Vec2(0, 0))
+              return chosenDir;
             break;
-          case C_MENU_UP:
-            return Vec2(0, -1);
-          case C_MENU_DOWN:
-            return Vec2(0, 1);
           default:
             break;
         }
@@ -660,25 +660,22 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
         if (gui.getKeybindingMap()->matches(Keybinding("WALK_SOUTH_EAST"), event.key.keysym))
           return Vec2(1, 1);
       }
-      if (mousePos && event.type == SDL::SDL_MOUSEBUTTONDOWN) {
+      if (chosenDir != Vec2(0, 0) && event.type == SDL::SDL_MOUSEBUTTONDOWN) {
         if (event.button.button == SDL_BUTTON_LEFT)
-          return (*mousePos - playerPos).getBearing();
+          return chosenDir;
         else
           return none;
       }
     }
     refreshScreen(false);
-    Vec2 dir = controllerDir;
-    if (mousePos && mousePos != playerPos)
-      Vec2 dir = (*mousePos - playerPos).getBearing();
-    if (dir != Vec2(0, 0)) {
+    if (chosenDir != Vec2(0, 0)) {
       Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(),
-          playerPos.x + dir.x, playerPos.y + dir.y);
+          playerPos.x + chosenDir.x, playerPos.y + chosenDir.y);
       if (currentTileLayout.sprites) {
-        auto coord = renderer.getTileSet().getTileCoord("arrow" + toString(int(dir.getCardinalDir()))).getOnlyElement();
+        auto coord = renderer.getTileSet().getTileCoord("arrow" + toString(int(chosenDir.getCardinalDir()))).getOnlyElement();
         renderer.drawTile(wpos, {coord}, mapLayout->getSquareSize());
       } else {
-        int numArrow = int(dir.getCardinalDir());
+        int numArrow = int(chosenDir.getCardinalDir());
         static string arrows[] = { u8"⇑", u8"⇓", u8"⇒", u8"⇐", u8"⇗", u8"⇖", u8"⇘", u8"⇙"};
         renderer.drawText(FontId::SYMBOL_FONT, mapLayout->getSquareSize().y, Color::WHITE,
             wpos + Vec2(mapLayout->getSquareSize().x / 2, 0), arrows[numArrow], Renderer::HOR);
@@ -687,7 +684,7 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
     /*if (auto *inst = fx::FXManager::getInstance())
       inst->simulateStableTime(double(clock->getRealMillis().count()) * 0.001);*/
     renderer.drawAndClearBuffer();
-    renderer.flushEvents(SDL::SDL_MOUSEMOTION);
+    //renderer.flushEvents(SDL::SDL_MOUSEMOTION);
   } while (1);
   });
   return returnQueue.pop();

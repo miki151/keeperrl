@@ -36,8 +36,6 @@ enum ControllerKey {
   C_WORLD_MAP,
   C_MINI_MAP,
   C_ZOOM,
-  C_DIRECTION_CONFIRM,
-  C_DIRECTION_CANCEL,
   C_BUILDINGS_MENU,
   C_MINIONS_MENU,
   C_TECH_MENU,
@@ -57,8 +55,7 @@ enum ControllerKey {
 enum class ControllerJoy {
   WALKING,
   MAP_SCROLLING,
-  MENU_SCROLLING,
-  DIRECTION
+  MENU_SCROLLING
 };
 
 class MySteamInput {
@@ -66,8 +63,7 @@ class MySteamInput {
   using Handle = unsigned long long;
   enum class ActionSet {
     MENU,
-    GAME,
-    DIRECTION
+    GAME
   };
   enum class GameActionLayer {
     TURNED_BASED,
@@ -84,8 +80,6 @@ class MySteamInput {
   vector<Handle> controllers;
   map<ControllerJoy, Handle> joyHandles;
   void init();
-  void setMenuActionSet();
-  void setGameActionSet();
   void showFloatingKeyboard(Rectangle field);
   void dismissFloatingKeyboard();
   optional<ControllerKey> getEvent();
