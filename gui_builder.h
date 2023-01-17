@@ -143,6 +143,8 @@ class GuiBuilder {
   bool disableClickActions = false;
   bool disableTooltip = false;
 
+  bool playerInventoryFocused() const;
+
   private:
   SGuiElem withLine(int, SGuiElem);
   GuiFactory::ListBuilder withLine(int, GuiFactory::ListBuilder);

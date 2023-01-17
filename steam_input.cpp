@@ -36,10 +36,6 @@ void MySteamInput::detectControllers() {
     actionHandles[C_ZLEVEL_UP] = getActionInfo("z_level_up", ActionSet::GAME);
     actionHandles[C_ZLEVEL_DOWN] = getActionInfo("z_level_down", ActionSet::GAME);
     actionHandles[C_OPEN_MENU] = getActionInfo("open_menu", ActionSet::GAME);
-    actionHandles[C_SCROLL_NORTH] = getActionInfo("scroll_north", ActionSet::GAME);
-    actionHandles[C_SCROLL_SOUTH] = getActionInfo("scroll_south", ActionSet::GAME);
-    actionHandles[C_SCROLL_WEST] = getActionInfo("scroll_west", ActionSet::GAME);
-    actionHandles[C_SCROLL_EAST] = getActionInfo("scroll_east", ActionSet::GAME);
     actionHandles[C_EXIT_CONTROL_MODE] = getActionInfo("exit_control", ActionSet::GAME);
     actionHandles[C_TOGGLE_CONTROL_MODE] = getActionInfo("toggle_control", ActionSet::GAME);
     actionHandles[C_CHAT] = getActionInfo("chat", ActionSet::GAME);
@@ -48,11 +44,9 @@ void MySteamInput::detectControllers() {
     actionHandles[C_SKIP_TURN] = getActionInfo("skip_turn", ActionSet::GAME);
     actionHandles[C_STAND_GROUND] = getActionInfo("stand_ground", ActionSet::GAME);
     actionHandles[C_IGNORE_ENEMIES] = getActionInfo("ignore_enemies", ActionSet::GAME);
-    actionHandles[C_WALK] = getActionInfo("walk", ActionSet::GAME);
     actionHandles[C_COMMANDS] = getActionInfo("commands", ActionSet::GAME);
     actionHandles[C_INVENTORY] = getActionInfo("inventory", ActionSet::GAME);
     actionHandles[C_ABILITIES] = getActionInfo("abilities", ActionSet::GAME);
-    actionHandles[C_CHANGE_Z_LEVEL] = getActionInfo("change_z_level", ActionSet::GAME);
     actionHandles[C_WORLD_MAP] = getActionInfo("world_map", ActionSet::GAME);
     actionHandles[C_MINI_MAP] = getActionInfo("mini_map", ActionSet::GAME);
     actionHandles[C_ZOOM] = getActionInfo("zoom", ActionSet::GAME);
@@ -69,6 +63,7 @@ void MySteamInput::detectControllers() {
     actionHandles[C_BUILDINGS_LEFT] = getActionInfo("buildings_left", ActionSet::GAME);
     actionHandles[C_BUILDINGS_RIGHT] = getActionInfo("buildings_right", ActionSet::GAME);
     actionHandles[C_BUILDINGS_CONFIRM] = getActionInfo("buildings_confirm", ActionSet::GAME);
+    actionHandles[C_BUILDINGS_CANCEL] = getActionInfo("buildings_cancel", ActionSet::GAME);
     actionHandles[C_SHIFT] = getActionInfo("shift", ActionSet::GAME);
     joyHandles[ControllerJoy::MAP_SCROLLING] = steamInput->GetAnalogActionHandle("map_scrolling_joy");
     joyHandles[ControllerJoy::MENU_SCROLLING] = steamInput->GetAnalogActionHandle("menu_scrolling_joy");

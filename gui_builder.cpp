@@ -274,7 +274,7 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
   keypressOnly.push_back(WL(conditionalStopKeys, WL(stack,
           WL(keyHandler, [this, buttons] {
             clearActiveButton();
-          }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true),
+          }, {gui.getKey(C_BUILDINGS_CANCEL)}, true),
           WL(keyHandler, [this, buttons] {
             if (!!activeButton && !!activeGroup)
               setActiveGroup(buttons[*activeButton].groupName, none);
@@ -470,7 +470,7 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo& info) {
           lines.buildVerticalList(),
           WL(keyHandler, [this] {
             helpIndex = none;
-          }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true),
+          }, {gui.getKey(C_BUILDINGS_CANCEL)}, true),
           WL(keyHandler, [this, buttonCnt] {
             if (!helpIndex) {
               closeOverlayWindowsAndClearButton();
@@ -1080,7 +1080,7 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info, const optional
         WL(keyHandler, [this] { closeOverlayWindowsAndClearButton(); villainsIndex = 0; },
             {gui.getKey(C_VILLAINS_MENU)}, true),
         WL(conditionalStopKeys, WL(stack,
-            WL(keyHandler, [this] { villainsIndex = none; }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true),
+            WL(keyHandler, [this] { villainsIndex = none; }, {gui.getKey(C_BUILDINGS_CANCEL)}, true),
             WL(keyHandler, [this, buttonsCnt] { villainsIndex = (*villainsIndex + 1) % buttonsCnt; },
                 {gui.getKey(C_BUILDINGS_RIGHT)}, true),
             WL(keyHandler, [this, buttonsCnt] { villainsIndex = (*villainsIndex - 1 + buttonsCnt) % buttonsCnt; },
@@ -1413,7 +1413,7 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
 SGuiElem GuiBuilder::getTooltip(const vector<string>& text, int id, milliseconds delay, bool forceEnableTooltip) {
   return cache->get(
       [this, delay, forceEnableTooltip](const vector<string>& text) {
-        return forceEnableTooltip 
+        return forceEnableTooltip
             ? WL(tooltip, text, delay)
             : WL(conditional, WL(tooltip, text, delay), [this] { return !disableTooltip;}); },
       id, text);
@@ -1476,7 +1476,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
   lastPlayerPositionHash = info.positionHash;
   vector<SGuiElem> lines;
   const int maxElems = 6;
-  auto title = gui.getKeybindingMap()->getGlyph(WL(label, "Lying here: ", Color::YELLOW), &gui, C_WALK,
+  auto title = gui.getKeybindingMap()->getGlyph(WL(label, "Lying here: ", Color::YELLOW), &gui, C_BUILDINGS_CONFIRM,
       "[Enter]"_s);
   title = WL(leftMargin, 3, std::move(title));
   int numElems = min<int>(maxElems, info.lyingItems.size());
@@ -1495,7 +1495,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
   if (itemIndex.value_or(-1) >= totalElems)
     itemIndex = totalElems - 1;
   SGuiElem content;
-  auto pickupKeys = {gui.getKey(C_WALK), gui.getKey(SDL::SDLK_RETURN), gui.getKey(SDL::SDLK_KP_ENTER)};
+  auto pickupKeys = {gui.getKey(C_BUILDINGS_CONFIRM), gui.getKey(SDL::SDLK_RETURN), gui.getKey(SDL::SDLK_KP_ENTER)};
   if (totalElems == 1 && !playerOverlayFocused)
     content = WL(stack,
         WL(margin,
@@ -1505,8 +1505,13 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
         WL(conditionalStopKeys,
             WL(keyHandler, [=] { callbacks.input({UserInputId::PICK_UP_ITEM, 0});}, gui.getConfirmationKeys(), true),
             [this] { return playerOverlayFocused; }),
-        WL(keyHandler, [=] { if (renderer.getDiscreteJoyPos(ControllerJoy::WALKING) == Vec2(0, 0))
-            callbacks.input({UserInputId::PICK_UP_ITEM, 0}); }, pickupKeys, true));
+        WL(keyHandlerBool, [=] {
+          if (!playerInventoryFocused() && renderer.getDiscreteJoyPos(ControllerJoy::WALKING) == Vec2(0, 0)) {
+            callbacks.input({UserInputId::PICK_UP_ITEM, 0});
+            return true;
+          }
+          return false;
+        }, pickupKeys));
   else {
     auto updateScrolling = [this, totalElems] (int dir) {
         if (itemIndex)
@@ -1515,22 +1520,25 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
           itemIndex = 0;
         lyingItemsScroll.set(*itemIndex * legendLineHeight + legendLineHeight / 2.0, clock->getRealMillis());
     };
-    content = WL(stack, makeVec(
-          WL(focusable,
-              WL(stack,
-                  WL(keyHandler, [=] { if (itemIndex) { callbacks.input({UserInputId::PICK_UP_ITEM, *itemIndex});}},
-                    gui.getConfirmationKeys(), true),
-                  WL(keyHandler, [=] { updateScrolling(1); }, Keybinding("MENU_DOWN"), true),
-                  WL(keyHandler, [=] { updateScrolling(-1); }, Keybinding("MENU_UP"), true)),
-              pickupKeys,
-              Keybinding("EXIT_MENU"),
-              playerOverlayFocused),
-          WL(keyHandler, [this] { itemIndex = 0; }, pickupKeys),
-          WL(keyHandler, [=] { itemIndex = none; }, Keybinding("EXIT_MENU")),
-          WL(margin,
-            title,
-            WL(scrollable, WL(verticalList, std::move(lines), legendLineHeight), &lyingItemsScroll),
-            legendLineHeight, GuiFactory::TOP)));
+    content = WL(stack,
+        WL(conditionalStopKeys, WL(stack,
+            WL(focusable,
+                WL(stack,
+                    WL(keyHandler, [=] { if (itemIndex) { callbacks.input({UserInputId::PICK_UP_ITEM, *itemIndex});}},
+                      gui.getConfirmationKeys(), true),
+                    WL(keyHandler, [=] { updateScrolling(1); }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
+                    WL(keyHandler, [=] { updateScrolling(-1); }, {gui.getKey(C_BUILDINGS_UP)}, true)),
+                pickupKeys,
+                {gui.getKey(C_BUILDINGS_CANCEL)},
+                playerOverlayFocused),
+            WL(keyHandler, [this] { itemIndex = 0; }, pickupKeys),
+            WL(keyHandler, [=] { itemIndex = none; }, {gui.getKey(C_BUILDINGS_CANCEL)})
+            ), [this] { return !playerInventoryFocused(); }),
+        WL(margin,
+          title,
+          WL(scrollable, WL(verticalList, std::move(lines), legendLineHeight), &lyingItemsScroll),
+          legendLineHeight, GuiFactory::TOP)
+    );
   }
   int margin = 14;
   return WL(stack,
@@ -1926,6 +1934,10 @@ function<void(Rectangle)> GuiBuilder::getCommandsCallback(const vector<PlayerInf
   };
 }
 
+bool GuiBuilder::playerInventoryFocused() const {
+  return !!inventoryIndex || !!abilityIndex;
+}
+
 SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) {
   auto list = WL(getListBuilder, legendLineHeight);
   list.addSpace();
@@ -1990,13 +2002,13 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) 
               WL(keyHandlerRect, [i, this, size = list.getSize()](Rectangle bounds) {
                 *inventoryIndex = i;
                 inventoryScroll.setRelative(bounds.top(), clock->getRealMillis());
-              }, Keybinding("MENU_DOWN"), true),
+              }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
               [this, i, cnt = info.inventory.size()] { return inventoryIndex == (i - 1 + cnt) % cnt; }),
           WL(conditionalStopKeys,
               WL(keyHandlerRect, [i, this, size = list.getSize()](Rectangle bounds) {
                 *inventoryIndex = i;
                 inventoryScroll.setRelative(bounds.top(), clock->getRealMillis());
-              }, Keybinding("MENU_UP"), true),
+              }, {gui.getKey(C_BUILDINGS_UP)}, true),
               [this, i, cnt = info.inventory.size()] { return inventoryIndex == (i + 1) % cnt; }),
           getItemLine(item, callback));
       if (!firstInventoryItem)
@@ -2028,16 +2040,14 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) 
       WL(keyHandler, [this, firstInventoryItem] {
         if (!!firstInventoryItem) {
           inventoryIndex = 0;
-          renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
           inventoryScroll.setRelative(firstInventoryItem->getBounds().top(), clock->getRealMillis());
         }
       }, {gui.getKey(C_INVENTORY)}, true),
       WL(conditionalStopKeys,
           WL(keyHandler, [this] {
-            renderer.getSteamInput()->popActionSet();
             inventoryIndex = none;
             inventoryScroll.reset();
-          }, Keybinding("EXIT_MENU"), true), [this] { return !!inventoryIndex;} ),
+          }, {gui.getKey(C_BUILDINGS_CANCEL)}, true), [this] { return !!inventoryIndex;} ),
       WL(rightMargin, 5, list.buildVerticalList())
   ));
 }
@@ -2358,7 +2368,7 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
               return true;
             }
             return false;
-          }, {gui.getKey(C_CHANGE_Z_LEVEL)}),
+          }, {gui.getKey(C_BUILDINGS_CANCEL)}),
           WL(keyHandler, [this, buttonCnt] {
             if (!minionsIndex) {
               closeOverlayWindowsAndClearButton();
@@ -3073,7 +3083,7 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
               techIndex = (*techIndex + activeElems.size() - 1) % activeElems.size();
             libraryScroll.setRelative(activeElems[*techIndex]->getBounds().top(), Clock::getRealMillis());
           }, {gui.getKey(C_BUILDINGS_UP)}, true),
-          WL(keyHandler, [this] { libraryScroll.reset(); techIndex = none; }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true)
+          WL(keyHandler, [this] { libraryScroll.reset(); techIndex = none; }, {gui.getKey(C_BUILDINGS_CANCEL)}, true)
       ), [this] { return collectiveTab == CollectiveTab::TECHNOLOGY; })
   );
   const int margin = 0;
@@ -3083,7 +3093,7 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
 }
 
 vector<SDL::SDL_Keysym> GuiBuilder::getOverlayCloseKeys() {
-  return {gui.getKey(SDL::SDLK_ESCAPE), gui.getKey(C_CHANGE_Z_LEVEL)};
+  return {gui.getKey(SDL::SDLK_ESCAPE), gui.getKey(C_BUILDINGS_CANCEL)};
 }
 
 SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo::ChosenCreatureInfo& chosenCreature,
@@ -3564,7 +3574,7 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, const GameInfo& info) {
         WL(stack,
             gui.scripted([this]{ bottomWindow = none; }, scriptedHelpId, scriptedUIData, scriptedUIState),
             WL(keyHandler, [this]{ bottomWindow = none; },
-                {gui.getKey(SDL::SDLK_ESCAPE), gui.getKey(C_MENU_CANCEL), gui.getKey(C_CHANGE_Z_LEVEL)}, true)
+                {gui.getKey(SDL::SDLK_ESCAPE), gui.getKey(C_MENU_CANCEL), gui.getKey(C_BUILDINGS_CANCEL)}, true)
         ),
         OverlayInfo::TOP_LEFT
     });
@@ -5559,7 +5569,7 @@ SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textCo
           callback(bounds);
         else
           closeOverlayWindows();
-      }, {gui.getKey(C_CHANGE_Z_LEVEL)}, true));
+      }, {gui.getKey(C_BUILDINGS_CANCEL)}, true));
 }
 
 SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {

@@ -404,12 +404,12 @@ void WindowView::rebuildGui() {
   }
   tempGuiElems.push_back(gui.keyHandlerBool([getMovement, this]{
     auto res = renderer.getDiscreteJoyPos(ControllerJoy::WALKING);
-    if (res != Vec2(0, 0)) {
+    if (!guiBuilder.playerInventoryFocused() && res != Vec2(0, 0)) {
       getMovement(res.x, res.y);
       return true;
     }
     return false;
-  }, {gui.getKey(C_WALK)}));
+  }, {gui.getKey(C_BUILDINGS_CONFIRM)}));
   tempGuiElems.back()->setBounds(getMapGuiBounds());
   propagateMousePosition(getClickableGuiElems());
 }
@@ -630,9 +630,9 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
         refreshScreen();
         switch (event.key.keysym.sym) {
           case SDL::SDLK_ESCAPE:
-          case C_CHANGE_Z_LEVEL:
+          case C_BUILDINGS_CANCEL:
             return none;
-          case C_WALK:
+          case C_BUILDINGS_CONFIRM:
             if (chosenDir != Vec2(0, 0))
               return chosenDir;
             break;

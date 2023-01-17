@@ -756,7 +756,6 @@ vector<SDL_Keysym> GuiFactory::getConfirmationKeys() {
       getKey(SDL::SDLK_KP_5),
       getKey(C_MENU_SELECT),
       getKey(C_BUILDINGS_CONFIRM),
-      getKey(C_WALK)
   };
 }
 
@@ -1196,7 +1195,7 @@ SGuiElem GuiFactory::stack(SGuiElem g1, SGuiElem g2, SGuiElem g3, SGuiElem g4) {
 class Focusable : public GuiStack {
   public:
   Focusable(SGuiElem content, Renderer& renderer, KeybindingMap* keybindingMap, vector<SDL_Keysym> focus,
-      Keybinding defocus, bool& foc)
+      vector<SDL_Keysym> defocus, bool& foc)
     : GuiStack(makeVec(std::move(content))), focusEvent(focus), defocusEvent(defocus), focused(foc),
       renderer(renderer), keybindingMap(keybindingMap) {}
 
@@ -1221,11 +1220,12 @@ class Focusable : public GuiStack {
           return true;
         }
     if (focused)
-      if (keybindingMap->matches(defocusEvent, key)) {
-        focused = false;
-        renderer.getSteamInput()->popActionSet();
-        return true;
-      }
+      for (auto& elem : defocusEvent)
+        if (GuiFactory::keyEventEqual(elem, key)) {
+          focused = false;
+          renderer.getSteamInput()->popActionSet();
+          return true;
+        }
     if (focused) {
       GuiLayout::onKeyPressed2(key);
       return true;
@@ -1235,14 +1235,14 @@ class Focusable : public GuiStack {
 
   private:
   vector<SDL_Keysym> focusEvent;
-  Keybinding defocusEvent;
+  vector<SDL_Keysym> defocusEvent;
   bool& focused;
   Renderer& renderer;
   KeybindingMap* keybindingMap;
 };
 
 SGuiElem GuiFactory::focusable(SGuiElem content, vector<SDL_Keysym> focusEvent,
-    Keybinding defocusEvent, bool& focused) {
+    vector<SDL_Keysym> defocusEvent, bool& focused) {
   return SGuiElem(new Focusable(std::move(content), renderer, getKeybindingMap(), focusEvent, defocusEvent, focused));
 }
 
@@ -3043,7 +3043,7 @@ SGuiElem GuiFactory::miniWindow(SGuiElem content, function<void()> onExitButton,
         background(background1));
   if (onExitButton)
     ret.push_back(reverseButton(onExitButton,
-        {getKey(SDL::SDLK_ESCAPE), getKey(C_MENU_CANCEL), getKey(C_CHANGE_Z_LEVEL)}, captureExitClick));
+        {getKey(SDL::SDLK_ESCAPE), getKey(C_MENU_CANCEL), getKey(C_BUILDINGS_CANCEL)}, captureExitClick));
   append(ret, {
         margins(std::move(content), 1),
         miniBorder()

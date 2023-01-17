@@ -221,13 +221,13 @@ bool MapGui::onKeyPressed2(SDL_Keysym key) {
   if (!keyScrolling)
     return false;
   auto keybindings = guiFactory->getKeybindingMap();
-  if (key.sym == C_SCROLL_NORTH || keybindings->matches(Keybinding("SCROLL_MAP_UP"), key))
+  if (keybindings->matches(Keybinding("SCROLL_MAP_UP"), key))
     softScroll(0, -scrollDist);
-  if (key.sym == C_SCROLL_SOUTH || keybindings->matches(Keybinding("SCROLL_MAP_DOWN"), key))
+  if (keybindings->matches(Keybinding("SCROLL_MAP_DOWN"), key))
     softScroll(0, scrollDist);
-  if (key.sym == C_SCROLL_WEST || keybindings->matches(Keybinding("SCROLL_MAP_LEFT"), key))
+  if (keybindings->matches(Keybinding("SCROLL_MAP_LEFT"), key))
     softScroll(-scrollDist, 0);
-  if (key.sym == C_SCROLL_EAST || keybindings->matches(Keybinding("SCROLL_MAP_RIGHT"), key))
+  if (keybindings->matches(Keybinding("SCROLL_MAP_RIGHT"), key))
     softScroll(scrollDist, 0);
   return false;
 }
