@@ -1734,9 +1734,8 @@ SGuiElem GuiBuilder::getSpellIcon(const SpellInfo& spell, int index, bool active
           WL(keyHandler, [=] {
             abilityIndex = none;
             inventoryScroll.reset();
-            renderer.getSteamInput()->popActionSet();
             callback();
-          }, Keybinding("MENU_SELECT"), true)
+          }, {gui.getKey(C_BUILDINGS_CONFIRM)}, true)
       ), [this, index] { return abilityIndex == index; }));
     } else
       ret.push_back(WL(rectangleBorder, Color::WHITE));
@@ -1789,37 +1788,26 @@ SGuiElem GuiBuilder::drawSpellsList(const vector<SpellInfo>& spells, GenericId c
       ret = WL(stack,
           WL(keyHandler, [this, getNextSpell, firstSpell] {
             abilityIndex = getNextSpell(-1, 1);
-            if (abilityIndex) {
-              renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
+            if (abilityIndex)
               inventoryScroll.setRelative(firstSpell->getBounds().top(), clock->getRealMillis());
-            }
           }, {gui.getKey(C_ABILITIES)}, true),
           WL(conditionalStopKeys, WL(stack, makeVec(
               WL(keyHandler, [=, cnt = spells.size()] {
                 abilityIndex = getNextSpell(*abilityIndex, 1);
-                if (!abilityIndex)
-                  renderer.getSteamInput()->popActionSet();
-              }, Keybinding("MENU_RIGHT"), true),
+              }, {gui.getKey(C_BUILDINGS_RIGHT)}, true),
               WL(keyHandler, [=, cnt = spells.size()] {
                 abilityIndex = getNextSpell(*abilityIndex, -1);
-                if (!abilityIndex)
-                  renderer.getSteamInput()->popActionSet();
-              }, Keybinding("MENU_LEFT"), true),
+              }, {gui.getKey(C_BUILDINGS_LEFT)}, true),
               WL(keyHandler, [=, cnt = spells.size()] {
                 abilityIndex = getNextSpell(*abilityIndex, 5);
-                if (!abilityIndex)
-                  renderer.getSteamInput()->popActionSet();
-              }, Keybinding("MENU_DOWN"), true),
+              }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
               WL(keyHandler, [=, cnt = spells.size()] {
                 abilityIndex = getNextSpell(*abilityIndex, -5);
-                if (!abilityIndex)
-                  renderer.getSteamInput()->popActionSet();
-              }, Keybinding("MENU_UP"), true),
+              }, {gui.getKey(C_BUILDINGS_UP)}, true),
               WL(keyHandler, [this] {
                 abilityIndex = none;
-                renderer.getSteamInput()->popActionSet();
                 inventoryScroll.reset();
-              }, Keybinding("EXIT_MENU"), true)
+              }, {gui.getKey(C_BUILDINGS_CANCEL)}, true)
           )), [this] { return !!abilityIndex; }),
           std::move(ret)
       );
