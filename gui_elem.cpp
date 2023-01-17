@@ -1216,14 +1216,12 @@ class Focusable : public GuiStack {
       for (auto& elem : focusEvent)
         if (GuiFactory::keyEventEqual(elem, key)) {
           focused = true;
-          renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
           return true;
         }
     if (focused)
       for (auto& elem : defocusEvent)
         if (GuiFactory::keyEventEqual(elem, key)) {
           focused = false;
-          renderer.getSteamInput()->popActionSet();
           return true;
         }
     if (focused) {

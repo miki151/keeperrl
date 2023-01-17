@@ -1620,7 +1620,7 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
             break;
           }
         }
-      }, Keybinding("MENU_UP"), true),
+      }, {gui.getKey(C_BUILDINGS_UP)}, true),
       WL(keyHandler, [&] {
         for (int i : Range(elems.size())) {
           auto ind = (*selected + i + 1) % elems.size();
@@ -1630,7 +1630,7 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
             break;
           }
         }
-      }, Keybinding("MENU_DOWN"), true),
+      }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
       WL(keyHandler, [&, exit] {
         if (*selected >= 0 && *selected < callbacks.size() && !!callbacks[*selected]) {
           callbacks[*selected]();
@@ -1655,8 +1655,6 @@ void GuiBuilder::drawMiniMenu(SGuiElem elem, bool& exit, Vec2 menuPos, int width
 
 void GuiBuilder::drawMiniMenu(SGuiElem elem, function<bool()> done, Vec2 menuPos, int width, bool darkBg) {
   disableTooltip = true;
-  renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
-  auto o = OnExit([this] { renderer.getSteamInput()->popActionSet(); disableTooltip = false; });
   int contentHeight = *elem->getPreferredHeight();
   Vec2 size(width, min(renderer.getSize().y, contentHeight));
   menuPos.y = max(0, menuPos.y);
@@ -2010,7 +2008,6 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) 
     list.addElem(WL(label, "Capacity: " +  (info.carryLimit ? getWeightString(*info.carryLimit) : "infinite"_s)));
     list.addSpace();
   } else if (withKeys && !!inventoryIndex) {
-    renderer.getSteamInput()->popActionSet();
     inventoryIndex = none;
     inventoryScroll.reset();
   }
