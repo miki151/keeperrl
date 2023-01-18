@@ -168,7 +168,8 @@ void playfile(const char *fname, SDL_Window* screen, Renderer& renderer, bool wi
       if (event.type == SDL::SDL_WINDOWEVENT && event.window.event == SDL::SDL_WINDOWEVENT_RESIZED)
         renderer.resize(event.window.data1, event.window.data2);
       switch (event.type) {
-        case C_MENU_CANCEL:
+        case C_BUILDINGS_CONFIRM:
+        case C_BUILDINGS_CANCEL:
         case SDL_QUIT:
         case SDL_KEYDOWN:
         case SDL_MOUSEBUTTONDOWN:

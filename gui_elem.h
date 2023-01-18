@@ -83,7 +83,6 @@ class GuiFactory {
   static bool keyEventEqual(const SDL::SDL_Keysym&, const SDL::SDL_Keysym&);
 
   SDL::SDL_Keysym getKey(SDL::SDL_Keycode);
-  vector<SDL::SDL_Keysym> getConfirmationKeys();
   SGuiElem button(function<void()>, SDL::SDL_Keysym, bool capture = false);
   SGuiElem button(function<void()>, bool capture = false);
   SGuiElem textField(int maxLength, function<string()> text, function<void(string)> callback,
@@ -91,16 +90,16 @@ class GuiFactory {
   SGuiElem textFieldFocused(int maxLength, function<string()> text, function<void(string)> callback);
   SGuiElem buttonPos(function<void(Rectangle, Vec2)>);
   SGuiElem buttonRightClick(function<void()>);
-  SGuiElem reverseButton(function<void()>, vector<SDL::SDL_Keysym> = {}, bool capture = false);
+  SGuiElem reverseButton(function<void()>, Keybinding, bool capture = false);
   SGuiElem buttonRect(function<void(Rectangle buttonBounds)>);
   SGuiElem releaseLeftButton(function<void()>, optional<Keybinding> = none);
   SGuiElem releaseRightButton(function<void()>);
-  SGuiElem focusable(SGuiElem content, vector<SDL::SDL_Keysym> focusEvent, vector<SDL::SDL_Keysym> defocusEvent,
-      bool& focused);
+  SGuiElem focusable(SGuiElem content, Keybinding focusKey, Keybinding defocusKey, bool& focused);
   SGuiElem mouseWheel(function<void(bool)>);
   SGuiElem keyHandler(function<void(SDL::SDL_Keysym)>, bool capture = false);
   SGuiElem keyHandler(function<void()>, Keybinding, bool capture = false);
   SGuiElem keyHandlerBool(function<bool()>, vector<SDL::SDL_Keysym>);
+  SGuiElem keyHandlerBool(function<bool()>, Keybinding);
   SGuiElem keyHandler(function<void()>, vector<SDL::SDL_Keysym>, bool capture = false);
   SGuiElem keyHandlerRect(function<void(Rectangle)>, vector<SDL::SDL_Keysym>, bool capture = false);
   SGuiElem keyHandlerRect(function<void(Rectangle)>, Keybinding, bool capture = false);

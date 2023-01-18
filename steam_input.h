@@ -5,15 +5,7 @@
 #include "file_path.h"
 
 enum ControllerKey {
-  C_MENU_CANCEL = (1 << 20),
-  C_MENU_UP,
-  C_MENU_DOWN,
-  C_MENU_LEFT,
-  C_MENU_RIGHT,
-  C_MENU_SELECT,
-  C_MENU_SCROLL_UP,
-  C_MENU_SCROLL_DOWN,
-  C_ZLEVEL_UP,
+  C_ZLEVEL_UP = (1 << 20),
   C_ZLEVEL_DOWN,
   C_OPEN_MENU,
   C_EXIT_CONTROL_MODE,
@@ -56,10 +48,6 @@ enum class ControllerJoy {
 class MySteamInput {
   public:
   using Handle = unsigned long long;
-  enum class ActionSet {
-    MENU,
-    GAME
-  };
   enum class GameActionLayer {
     TURNED_BASED,
     REAL_TIME
@@ -67,9 +55,8 @@ class MySteamInput {
   struct ActionInfo {
     Handle handle;
     string name;
-    ActionSet actionSet;
   };
-  map<ActionSet, Handle> actionSets;
+  Handle actionSet;
   map<GameActionLayer, Handle> gameActionLayers;
   map<ControllerKey, ActionInfo> actionHandles;
   vector<Handle> controllers;
@@ -80,9 +67,6 @@ class MySteamInput {
   optional<ControllerKey> getEvent();
   optional<milliseconds> lastPressed;
   bool rapidFire = false;
-  vector<ActionSet> actionSetStack;
-  void pushActionSet(ActionSet);
-  void popActionSet();
   void setGameActionLayer(GameActionLayer);
   pair<double, double> getJoyPos(ControllerJoy);
   void runFrame();

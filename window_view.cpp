@@ -170,12 +170,6 @@ void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FX
   guiBuilder.setMapGui(mapGui);
 }
 
-bool WindowView::isKeyPressed(SDL::SDL_Scancode code) {
-  auto steamInput = renderer.getSteamInput();
-  return SDL::SDL_GetKeyboardState(nullptr)[code] ||
-      (code == SDL::SDL_SCANCODE_LSHIFT && steamInput && steamInput->isPressed(C_SHIFT));
-}
-
 void WindowView::mapContinuousLeftClickFun(Vec2 pos) {
   guiBuilder.closeOverlayWindows();
   optional<int> activeBuilding = guiBuilder.getActiveButton();
@@ -215,8 +209,6 @@ void WindowView::reset() {
 }
 
 void WindowView::getSmallSplash(const ProgressMeter* meter, const string& text, function<void()> cancelFun) {
-  renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
-  auto o = OnExit([this] { renderer.getSteamInput()->popActionSet(); });
   auto elems = ScriptedUIDataElems::Record {{
     {"text", text},
     {"barCallback", ScriptedUIDataElems::DynamicWidthCallback { [meter] {
@@ -612,9 +604,7 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
   addReturnDialog<optional<Vec2>>(returnQueue, [=] ()-> optional<Vec2> {
   rebuildGui();
   refreshScreen();
-  renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::GAME);
   renderer.getSteamInput()->setGameActionLayer(MySteamInput::GameActionLayer::TURNED_BASED);
-  auto o = OnExit([this] { renderer.getSteamInput()->popActionSet(); });
   bool useController = !gui.getSteamInput()->controllers.empty();
   do {
     Event event;
@@ -698,8 +688,6 @@ View::TargetResult WindowView::chooseTarget(Vec2 playerPos, TargetType targetTyp
   addReturnDialog<TargetResult>(returnQueue, [=] ()-> TargetResult {
   rebuildGui();
   refreshScreen();
-  renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
-  auto o = OnExit([this] { renderer.getSteamInput()->popActionSet(); });
   guiBuilder.disableClickActions = true;
   optional<Vec2> controllerPos;
   if (!gui.getSteamInput()->controllers.empty())
@@ -903,8 +891,6 @@ void WindowView::logMessage(const std::string& message) {
 
 void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> origin) {
   TempClockPause pause(clock);
-  renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
-  auto o = OnExit([this] { renderer.getSteamInput()->popActionSet(); });
   bool origOrigin = !!origin;
   if (!origin)
     origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;

@@ -124,6 +124,8 @@ void GuiBuilder::closeOverlayWindows() {
   techIndex = none;
   helpIndex = none;
   minionsIndex = none;
+  inventoryIndex = none;
+  abilityIndex = none;
 }
 
 bool GuiBuilder::isEnlargedMinimap() const {
@@ -1461,15 +1463,11 @@ int GuiBuilder::getScrollPos(int index, int count) {
 
 SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
   if (info.lyingItems.empty()) {
-    if (playerOverlayFocused)
-      renderer.getSteamInput()->popActionSet();
     playerOverlayFocused = false;
     itemIndex = none;
     return WL(empty);
   }
   if (lastPlayerPositionHash && lastPlayerPositionHash != info.positionHash) {
-    if (playerOverlayFocused)
-      renderer.getSteamInput()->popActionSet();
     playerOverlayFocused = false;
     itemIndex = none;
   }
@@ -1495,7 +1493,6 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
   if (itemIndex.value_or(-1) >= totalElems)
     itemIndex = totalElems - 1;
   SGuiElem content;
-  auto pickupKeys = {gui.getKey(C_BUILDINGS_CONFIRM), gui.getKey(SDL::SDLK_RETURN), gui.getKey(SDL::SDLK_KP_ENTER)};
   if (totalElems == 1 && !playerOverlayFocused)
     content = WL(stack,
         WL(margin,
@@ -1503,7 +1500,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
           WL(scrollable, WL(verticalList, std::move(lines), legendLineHeight), &lyingItemsScroll),
           legendLineHeight, GuiFactory::TOP),
         WL(conditionalStopKeys,
-            WL(keyHandler, [=] { callbacks.input({UserInputId::PICK_UP_ITEM, 0});}, gui.getConfirmationKeys(), true),
+            WL(keyHandler, [=] { callbacks.input({UserInputId::PICK_UP_ITEM, 0});}, Keybinding("MENU_SELECT"), true),
             [this] { return playerOverlayFocused; }),
         WL(keyHandlerBool, [=] {
           if (!playerInventoryFocused() && renderer.getDiscreteJoyPos(ControllerJoy::WALKING) == Vec2(0, 0)) {
@@ -1511,7 +1508,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
             return true;
           }
           return false;
-        }, pickupKeys));
+        }, Keybinding("MENU_SELECT")));
   else {
     auto updateScrolling = [this, totalElems] (int dir) {
         if (itemIndex)
@@ -1525,14 +1522,14 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
             WL(focusable,
                 WL(stack,
                     WL(keyHandler, [=] { if (itemIndex) { callbacks.input({UserInputId::PICK_UP_ITEM, *itemIndex});}},
-                      gui.getConfirmationKeys(), true),
-                    WL(keyHandler, [=] { updateScrolling(1); }, {gui.getKey(C_BUILDINGS_DOWN)}, true),
-                    WL(keyHandler, [=] { updateScrolling(-1); }, {gui.getKey(C_BUILDINGS_UP)}, true)),
-                pickupKeys,
-                {gui.getKey(C_BUILDINGS_CANCEL)},
+                      Keybinding("MENU_SELECT"), true),
+                    WL(keyHandler, [=] { updateScrolling(1); }, Keybinding("MENU_DOWN"), true),
+                    WL(keyHandler, [=] { updateScrolling(-1); }, Keybinding("MENU_UP"), true)),
+                Keybinding("MENU_SELECT"),
+                Keybinding("EXIT_MENU"),
                 playerOverlayFocused),
-            WL(keyHandler, [this] { itemIndex = 0; }, pickupKeys),
-            WL(keyHandler, [=] { itemIndex = none; }, {gui.getKey(C_BUILDINGS_CANCEL)})
+            WL(keyHandler, [this] { if (!itemIndex ) itemIndex = 0; }, Keybinding("MENU_SELECT")),
+            WL(keyHandler, [=] { itemIndex = none; }, Keybinding("EXIT_MENU"))
             ), [this] { return !playerInventoryFocused(); }),
         WL(margin,
           title,
@@ -1637,7 +1634,7 @@ void GuiBuilder::drawMiniMenu(vector<SGuiElem> elems, vector<function<void()>> c
           if (exitOnCallback)
             *exit = true;
         }
-      }, gui.getConfirmationKeys(), true)
+      }, Keybinding("MENU_SELECT"), true)
   );
   drawMiniMenu(std::move(content), *exit, menuPos, width, darkBg);
 }
@@ -1648,8 +1645,7 @@ void GuiBuilder::drawMiniMenu(SGuiElem elem, bool& exit, Vec2 menuPos, int width
     miniMenuScroll.reset();
   elem = WL(scrollable, WL(margins, std::move(elem), 5 + margin, margin, 5 + margin, margin),
       &miniMenuScroll, &scrollbarsHeld);
-  elem = WL(miniWindow, std::move(elem),
-          [&] { exit = true; });
+  elem = WL(miniWindow, std::move(elem), [&exit] { exit = true; });
   drawMiniMenu(std::move(elem), [&]{ return exit; }, menuPos, width, darkBg);
 }
 
@@ -1785,6 +1781,7 @@ SGuiElem GuiBuilder::drawSpellsList(const vector<SpellInfo>& spells, GenericId c
       };
       ret = WL(stack,
           WL(keyHandler, [this, getNextSpell, firstSpell] {
+            closeOverlayWindows();
             abilityIndex = getNextSpell(-1, 1);
             if (abilityIndex)
               inventoryScroll.setRelative(firstSpell->getBounds().top(), clock->getRealMillis());
@@ -1982,7 +1979,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) 
                 if (inventoryIndex == i) {
                   callback(bounds);
                 }
-              }, gui.getConfirmationKeys(), true)
+              }, Keybinding("MENU_SELECT"), true)
           ), [this, i] { return inventoryIndex == i; }),
           WL(conditionalStopKeys,
               WL(keyHandlerRect, [i, this, size = list.getSize()](Rectangle bounds) {
@@ -2024,6 +2021,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) 
   return WL(stack, makeVec(
       WL(keyHandler, [this, firstInventoryItem] {
         if (!!firstInventoryItem) {
+          closeOverlayWindows();
           inventoryIndex = 0;
           inventoryScroll.setRelative(firstInventoryItem->getBounds().top(), clock->getRealMillis());
         }
@@ -2411,9 +2409,9 @@ function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInf
       lines.addElem(hasController()
           ? WL(getListBuilder)
               .addElemAuto(WL(label, "Use ", Color::YELLOW))
-              .addElemAuto(WL(steamInputGlyph, C_MENU_LEFT))
+              .addElemAuto(WL(steamInputGlyph, C_BUILDINGS_LEFT))
               .addElemAuto(WL(label, " and ", Color::YELLOW))
-              .addElemAuto(WL(steamInputGlyph, C_MENU_RIGHT))
+              .addElemAuto(WL(steamInputGlyph, C_BUILDINGS_RIGHT))
               .addElemAuto(WL(label, " to add/remove upgrades.", Color::YELLOW))
               .buildHorizontalList()
           : WL(label, "Use left/right mouse buttons to add/remove upgrades.", Color::YELLOW));
@@ -2465,8 +2463,8 @@ function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInf
             WL(conditional, WL(uiHighlightMouseOver), [&selected] { return selected == -1; }),
             WL(conditionalStopKeys, WL(stack,
                 WL(uiHighlightLine),
-                WL(keyHandler, callbackIncrease, {gui.getKey(C_MENU_RIGHT)}, true),
-                WL(keyHandler, callbackDecrease, {gui.getKey(C_MENU_LEFT)}, true),
+                WL(keyHandler, callbackIncrease, Keybinding("MENU_RIGHT"), true),
+                WL(keyHandler, callbackDecrease, Keybinding("MENU_LEFT"), true),
                 tooltip ? WL(translate, WL(renderTopLayer, tooltip), Vec2(0, 0), *tooltip->getPreferredSize(),
                     GuiFactory::TranslateCorner::TOP_LEFT_SHIFTED)
                     : WL(empty)
@@ -3558,8 +3556,7 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, const GameInfo& info) {
     ret.push_back({
         WL(stack,
             gui.scripted([this]{ bottomWindow = none; }, scriptedHelpId, scriptedUIData, scriptedUIState),
-            WL(keyHandler, [this]{ bottomWindow = none; },
-                {gui.getKey(SDL::SDLK_ESCAPE), gui.getKey(C_MENU_CANCEL), gui.getKey(C_BUILDINGS_CANCEL)}, true)
+            WL(keyHandler, [this]{ bottomWindow = none; }, Keybinding("EXIT_MENU"), true)
         ),
         OverlayInfo::TOP_LEFT
     });
@@ -3696,41 +3693,6 @@ Rectangle GuiBuilder::getMenuPosition(int numElems) {
   int yOffset = 0;
   int xSpacing = (renderer.getSize().x - windowWidth) / 2;
   return Rectangle(xSpacing, ySpacing + yOffset, xSpacing + windowWidth, renderer.getSize().y - ySpacing + yOffset);
-}
-
-SGuiElem GuiBuilder::getHighlight(SGuiElem line, const string& label, int numActive, optional<int>* highlight) {
-  return WL(stack, WL(mouseHighlight,
-      WL(leftMargin, 0, WL(translate, WL(uiHighlightLine), Vec2(0, 0))),
-      numActive, highlight), std::move(line));
-}
-
-SGuiElem GuiBuilder::drawListGui(const string& title, const vector<string>& options,
-    optional<int>* highlight, int* choice, vector<int>* positions) {
-  auto lines = WL(getListBuilder, listLineHeight);
-  if (!title.empty()) {
-    lines.addElem(WL(label, capitalFirst(title), Color::WHITE));
-    lines.addSpace();
-  }
-  int numActive = 0;
-  int secColumnWidth = 0;
-  int columnWidth = 300;
-  for (auto& elem : options) {
-    columnWidth = max(columnWidth, renderer.getTextLength(elem) + 50);
-  }
-  columnWidth = min(columnWidth, getMenuPosition(options.size()).width() - secColumnWidth - 140);
-  for (int i : All(options)) {
-    SGuiElem line = WL(label, options[i]);
-    if (highlight) {
-      line = WL(stack,
-          WL(button, [=]() { *choice = numActive; }),
-          getHighlight(std::move(line), options[i], numActive, highlight));
-      ++numActive;
-    }
-    if (positions)
-      positions->push_back(lines.getSize() + *line->getPreferredHeight() / 2);
-    lines.addElem(std::move(line), legendLineHeight);
-  }
-  return lines.buildVerticalList();
 }
 
 static optional<GuiFactory::IconId> getMoraleIcon(double morale) {
@@ -3937,9 +3899,9 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
     auto glyph1 = WL(getListBuilder);
     if (hasController())
       glyph1.addElemAuto(WL(label, "Set current activity ", Renderer::smallTextSize()))
-          .addElemAuto(WL(steamInputGlyph, C_MENU_SELECT));
-    auto glyph2 = WL(steamInputGlyph, C_MENU_LEFT);
-    auto glyph3 = WL(steamInputGlyph, C_MENU_RIGHT);
+          .addElemAuto(WL(steamInputGlyph, C_BUILDINGS_CONFIRM));
+    auto glyph2 = WL(steamInputGlyph, C_BUILDINGS_LEFT);
+    auto glyph3 = WL(steamInputGlyph, C_BUILDINGS_RIGHT);
     tasks.addElem(WL(getListBuilder)
         .addElemAuto(glyph1.buildHorizontalList())
         .addBackElemAuto(WL(label, "Enable", Renderer::smallTextSize()))
@@ -4756,7 +4718,7 @@ SGuiElem GuiBuilder::drawChosenCreatureButtons(View::AvatarRole role, shared_ptr
           auto icon = WL(stack,
               WL(conditionalStopKeys, WL(stack,
                   WL(uiHighlight),
-                  WL(keyHandler, selectFun, gui.getConfirmationKeys(), true)
+                  WL(keyHandler, selectFun, Keybinding("MENU_SELECT"), true)
               ), [this, coord] { return avatarIndex == AvatarIndexElems::CreatureIndex{coord};}),
               WL(viewObject, viewIdFun, 2)
           );
@@ -4918,7 +4880,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
     othersLine.addElemAuto(WL(stack,
         WL(button, confirmFun),
         WL(buttonLabelWithMargin, getText(option), bottomButtonFocusedFun),
-        WL(conditionalStopKeys, WL(keyHandler, confirmFun, gui.getConfirmationKeys(), true),
+        WL(conditionalStopKeys, WL(keyHandler, confirmFun, Keybinding("MENU_SELECT"), true),
             bottomButtonFocusedFun)
     ));
   }
@@ -4984,8 +4946,8 @@ SGuiElem GuiBuilder::drawOptionElem(OptionId id, function<void()> onChanged, fun
       WL(tooltip, {options->getHint(id).value_or("")}),
       WL(conditionalStopKeys, WL(stack,
           WL(margins, WL(uiHighlight), -4, -4, -15, 4),
-          WL(keyHandler, [=] { if (value < limits->getEnd() - 1) changeFun(1); }, {gui.getKey(C_MENU_RIGHT)}, true),
-          WL(keyHandler, [=] { if (value > limits->getStart()) changeFun(-1); }, {gui.getKey(C_MENU_LEFT)}, true)
+          WL(keyHandler, [=] { if (value < limits->getEnd() - 1) changeFun(1); }, Keybinding("MENU_RIGHT"), true),
+          WL(keyHandler, [=] { if (value > limits->getStart()) changeFun(-1); }, Keybinding("MENU_LEFT"), true)
       ), focused),
       std::move(ret)
   );
@@ -5496,12 +5458,12 @@ SGuiElem GuiBuilder::drawCreatureInfo(SyncQueue<bool>& queue, const string& titl
   lines.addSpace(15);
   auto bottomLine = WL(getListBuilder)
       .addElemAuto(WL(standardButton,
-          gui.getKeybindingMap()->getGlyph(WL(label, "Confirm"), &gui, C_MENU_SELECT, none),
+          gui.getKeybindingMap()->getGlyph(WL(label, "Confirm"), &gui, C_BUILDINGS_CONFIRM, none),
           WL(button, [&queue] { queue.push(true);})));
   if (prompt) {
     bottomLine.addSpace(20);
     bottomLine.addElemAuto(WL(standardButton,
-          gui.getKeybindingMap()->getGlyph(WL(label, "Cancel"), &gui, C_MENU_CANCEL, none),
+          gui.getKeybindingMap()->getGlyph(WL(label, "Cancel"), &gui, C_BUILDINGS_CANCEL, none),
           WL(button, [&queue] { queue.push(false);})));
   }
   lines.addBackElem(WL(centerHoriz, bottomLine.buildHorizontalList()));
@@ -5522,7 +5484,7 @@ SGuiElem GuiBuilder::drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Crea
   lines.addSpace(15);
   if (!cancelText.empty()) {
     lines.addBackElem(WL(centerHoriz, WL(standardButton,
-        gui.getKeybindingMap()->getGlyph(WL(label, cancelText), &gui, C_MENU_CANCEL, none),
+        gui.getKeybindingMap()->getGlyph(WL(label, cancelText), &gui, C_BUILDINGS_CANCEL, none),
         WL(button, [&queue] { queue.push(none);}))), legendLineHeight);
   } int margin = 15;
   return WL(setWidth, 2 * margin + windowWidth,
@@ -5581,15 +5543,13 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
     if (!info->zLevels.empty())
       line.addElemAuto(WL(stack,
           getButton(info->levelDepth > 0, "<", UserInput{UserInputId::SCROLL_STAIRS, -1 }),
-          WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, -1}), Keybinding("SCROLL_Z_UP")),
-          WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, -1}), {gui.getKey(C_ZLEVEL_UP)})
+          WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, -1}), Keybinding("SCROLL_Z_UP"))
       ));
     line.addMiddleElem(WL(topMargin, 3, drawZLevelButton(*info, textColor)));
     if (!info->zLevels.empty())
       line.addBackElemAuto(WL(stack,
           getButton(info->levelDepth < info->zLevels.size() - 1, ">", UserInput{UserInputId::SCROLL_STAIRS, 1}),
-          WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, 1}), Keybinding("SCROLL_Z_DOWN")),
-          WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, 1}), {gui.getKey(C_ZLEVEL_DOWN)})
+          WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, 1}), Keybinding("SCROLL_Z_DOWN"))
       ));
     lines.addElem(WL(stack,
         WL(stopMouseMovement),
@@ -5680,7 +5640,7 @@ optional<string> GuiBuilder::getTextInput(const string& title, const string& val
               break;
           case SDL::SDLK_KP_ENTER:
           case SDL::SDLK_RETURN: return text;
-          case C_MENU_CANCEL:
+          case C_BUILDINGS_CANCEL:
           case SDL::SDLK_ESCAPE: return none;
           default: break;
         }

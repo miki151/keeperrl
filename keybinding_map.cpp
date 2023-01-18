@@ -34,21 +34,25 @@ static SDL::Uint16 getMod(SDL::Uint16 m) {
 optional<ControllerKey> KeybindingMap::getControllerMapping(Keybinding key) {
   static unordered_map<Keybinding, ControllerKey, CustomHash<Keybinding>> controllerBindings {
       {Keybinding("WAIT"), C_WAIT},
+      {Keybinding("CHAT"), C_CHAT},
+      {Keybinding("FIRE_PROJECTILE"), C_FIRE_PROJECTILE},
       {Keybinding("SKIP_TURN"), C_SKIP_TURN},
       {Keybinding("STAND_GROUND"), C_STAND_GROUND},
       {Keybinding("IGNORE_ENEMIES"), C_IGNORE_ENEMIES},
       {Keybinding("EXIT_CONTROL_MODE"), C_EXIT_CONTROL_MODE},
       {Keybinding("TOGGLE_CONTROL_MODE"), C_TOGGLE_CONTROL_MODE},
-      {Keybinding("EXIT_MENU"), C_MENU_CANCEL},
       {Keybinding("OPEN_WORLD_MAP"), C_WORLD_MAP},
       {Keybinding("PAUSE"), C_PAUSE},
       {Keybinding("SPEED_UP"), C_SPEED_UP},
       {Keybinding("SPEED_DOWN"), C_SPEED_DOWN},
-      {Keybinding("MENU_DOWN"), C_MENU_DOWN},
-      {Keybinding("MENU_UP"), C_MENU_UP},
-      {Keybinding("MENU_LEFT"), C_MENU_LEFT},
-      {Keybinding("MENU_RIGHT"), C_MENU_RIGHT},
-      {Keybinding("MENU_SELECT"), C_MENU_SELECT},
+      {Keybinding("MENU_DOWN"), C_BUILDINGS_DOWN},
+      {Keybinding("MENU_UP"), C_BUILDINGS_UP},
+      {Keybinding("MENU_LEFT"), C_BUILDINGS_LEFT},
+      {Keybinding("MENU_RIGHT"), C_BUILDINGS_RIGHT},
+      {Keybinding("MENU_SELECT"), C_BUILDINGS_CONFIRM},
+      {Keybinding("EXIT_MENU"), C_BUILDINGS_CANCEL},
+      {Keybinding("SCROLL_Z_UP"), C_ZLEVEL_UP},
+      {Keybinding("SCROLL_Z_DOWN"), C_ZLEVEL_DOWN},
   };
   return getValueMaybe(controllerBindings, key);
 }

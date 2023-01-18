@@ -195,13 +195,10 @@ class WindowView: public View {
   };
 
   void getBlockingGui(Semaphore&, SGuiElem, optional<Vec2> origin = none);
-  bool isKeyPressed(SDL::SDL_Scancode);
 
   template<typename T>
   T getBlockingGui(SyncQueue<T>& queue, SGuiElem elem, optional<Vec2> origin = none, bool darkenBackground = true) {
     TempClockPause pause(clock);
-    renderer.getSteamInput()->pushActionSet(MySteamInput::ActionSet::MENU);
-    auto o = OnExit([this] { renderer.getSteamInput()->popActionSet(); });
     int origElemCount = blockingElems.size();
     if (darkenBackground && blockingElems.empty()) {
       blockingElems.push_back(gui.darken());

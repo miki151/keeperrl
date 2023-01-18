@@ -269,7 +269,7 @@ class TextFieldElem : public GuiElem {
           callback(current);
           break;
         }
-        case C_MENU_CANCEL:
+        case C_BUILDINGS_CANCEL:
         case SDL::SDLK_ESCAPE:
         case SDL::SDLK_KP_ENTER:
         case SDL::SDLK_RETURN:
@@ -382,7 +382,7 @@ class ReverseButton : public GuiElem {
   bool capture;
 };
 
-SGuiElem GuiFactory::reverseButton(function<void()> fun, vector<SDL_Keysym> hotkey, bool capture) {
+SGuiElem GuiFactory::reverseButton(function<void()> fun, Keybinding hotkey, bool capture) {
   return stack(
       keyHandler(fun, hotkey, true),
       SGuiElem(new ReverseButton(fun, capture)));
@@ -749,21 +749,11 @@ SGuiElem GuiFactory::buttonLabel(const string& s, function<void()> f, bool match
   return buttonLabel(s, button(std::move(f)), matchTextWidth, centerHorizontally, unicode);
 }
 
-vector<SDL_Keysym> GuiFactory::getConfirmationKeys() {
-  return {
-      getKey(SDL::SDLK_RETURN),
-      getKey(SDL::SDLK_KP_ENTER),
-      getKey(SDL::SDLK_KP_5),
-      getKey(C_MENU_SELECT),
-      getKey(C_BUILDINGS_CONFIRM),
-  };
-}
-
 SGuiElem GuiFactory::buttonLabelFocusable(SGuiElem content, function<void()> callback, function<bool()> focused,
     bool matchTextWidth, bool centerHorizontally) {
   return stack(
       buttonLabelFocusableImpl(std::move(content), button(callback), focused, matchTextWidth, centerHorizontally),
-      conditionalStopKeys(keyHandler(callback, getConfirmationKeys(), true), focused)
+      conditionalStopKeys(keyHandler(callback, Keybinding("MENU_SELECT"), true), focused)
   );
 }
 
@@ -771,7 +761,7 @@ SGuiElem GuiFactory::buttonLabelFocusable(SGuiElem content, function<void(Rectan
     bool matchTextWidth, bool centerHorizontally) {
   return stack(
       buttonLabelFocusableImpl(std::move(content), buttonRect(callback), focused, matchTextWidth, centerHorizontally),
-      conditionalStopKeys(keyHandlerRect(callback, getConfirmationKeys(), true), focused)
+      conditionalStopKeys(keyHandlerRect(callback, Keybinding("MENU_SELECT"), true), focused)
   );
 }
 
@@ -786,7 +776,7 @@ SGuiElem GuiFactory::buttonLabelFocusable(const string& text, function<void(Rect
   return stack(
       buttonLabelFocusableImpl(unicode ? labelUnicode(text) : label(text), buttonRect(callback), focused,
           matchTextWidth, centerHorizontally),
-      conditionalStopKeys(keyHandlerRect(callback, getConfirmationKeys(), true), focused)
+      conditionalStopKeys(keyHandlerRect(callback, Keybinding("MENU_SELECT"), true), focused)
   );
 }
 
@@ -1194,16 +1184,14 @@ SGuiElem GuiFactory::stack(SGuiElem g1, SGuiElem g2, SGuiElem g3, SGuiElem g4) {
 
 class Focusable : public GuiStack {
   public:
-  Focusable(SGuiElem content, Renderer& renderer, KeybindingMap* keybindingMap, vector<SDL_Keysym> focus,
-      vector<SDL_Keysym> defocus, bool& foc)
+  Focusable(SGuiElem content, KeybindingMap* keybindingMap, Keybinding focus, Keybinding defocus, bool& foc)
     : GuiStack(makeVec(std::move(content))), focusEvent(focus), defocusEvent(defocus), focused(foc),
-      renderer(renderer), keybindingMap(keybindingMap) {}
+      keybindingMap(keybindingMap) {}
 
   virtual bool onClick(MouseButtonId b, Vec2 pos) override {
     if (b == MouseButtonId::LEFT) {
       if (focused && !pos.inRectangle(getBounds())) {
         focused = false;
-        renderer.getSteamInput()->popActionSet();
         return true;
       }
       return GuiLayout::onClick(b, pos);
@@ -1212,18 +1200,14 @@ class Focusable : public GuiStack {
   }
 
   virtual bool onKeyPressed2(SDL_Keysym key) override {
-    if (!focused)
-      for (auto& elem : focusEvent)
-        if (GuiFactory::keyEventEqual(elem, key)) {
-          focused = true;
-          return true;
-        }
-    if (focused)
-      for (auto& elem : defocusEvent)
-        if (GuiFactory::keyEventEqual(elem, key)) {
-          focused = false;
-          return true;
-        }
+    if (!focused && keybindingMap->matches(focusEvent, key)) {
+      focused = true;
+      return true;
+    }
+    if (focused && keybindingMap->matches(defocusEvent, key)) {
+      focused = false;
+      return true;
+    }
     if (focused) {
       GuiLayout::onKeyPressed2(key);
       return true;
@@ -1232,16 +1216,14 @@ class Focusable : public GuiStack {
   }
 
   private:
-  vector<SDL_Keysym> focusEvent;
-  vector<SDL_Keysym> defocusEvent;
+  Keybinding focusEvent;
+  Keybinding defocusEvent;
   bool& focused;
-  Renderer& renderer;
   KeybindingMap* keybindingMap;
 };
 
-SGuiElem GuiFactory::focusable(SGuiElem content, vector<SDL_Keysym> focusEvent,
-    vector<SDL_Keysym> defocusEvent, bool& focused) {
-  return SGuiElem(new Focusable(std::move(content), renderer, getKeybindingMap(), focusEvent, defocusEvent, focused));
+SGuiElem GuiFactory::focusable(SGuiElem content, Keybinding focusEvent, Keybinding defocusEvent, bool& focused) {
+  return SGuiElem(new Focusable(std::move(content), getKeybindingMap(), focusEvent, defocusEvent, focused));
 }
 
 class KeyHandler : public GuiElem {
@@ -1368,22 +1350,22 @@ SGuiElem GuiFactory::keyHandler(function<void(SDL_Keysym)> fun, bool capture) {
 
 class KeybindingHandler : public GuiElem {
   public:
-  KeybindingHandler(KeybindingMap* m, Keybinding key, function<void(Rectangle)> fun, bool cap)
-      : fun(std::move(fun)), keybindingMap(m), key(key), capture(cap) {}
+  KeybindingHandler(KeybindingMap* m, Keybinding key, function<void(Rectangle)> f, bool cap)
+      : fun([f, cap] (Rectangle r) { f(r); return cap; }), keybindingMap(m), key(key) {}
+
+  KeybindingHandler(KeybindingMap* m, Keybinding key, function<bool(Rectangle)> f)
+      : fun(std::move(f)), keybindingMap(m), key(key) {}
 
   virtual bool onKeyPressed2(SDL_Keysym sym) override {
-    if (keybindingMap->matches(key, sym)) {
-      fun(getBounds());
-      return capture;
-    }
+    if (keybindingMap->matches(key, sym))
+      return fun(getBounds());
     return false;
   }
 
   private:
-  function<void(Rectangle)> fun;
+  function<bool(Rectangle)> fun;
   KeybindingMap* keybindingMap;
   Keybinding key;
-  bool capture;
 };
 
 SGuiElem GuiFactory::keyHandler(function<void()> fun, Keybinding keybinding, bool capture) {
@@ -1428,6 +1410,11 @@ SGuiElem GuiFactory::keyHandler(function<void()> fun, vector<SDL_Keysym> key, bo
 
 SGuiElem GuiFactory::keyHandlerBool(function<bool()> fun, vector<SDL_Keysym> key) {
   return SGuiElem(new KeyHandler2([fun = std::move(fun)](Rectangle) { return fun();}, key));
+}
+
+SGuiElem GuiFactory::keyHandlerBool(function<bool()> fun, Keybinding key) {
+  return SGuiElem(new KeybindingHandler(options->getKeybindingMap(), key,
+      [fun = std::move(fun)](Rectangle) { return fun();}));
 }
 
 SGuiElem GuiFactory::keyHandlerRect(function<void(Rectangle)> fun, vector<SDL::SDL_Keysym> key, bool capture) {
@@ -2742,18 +2729,6 @@ class ScrollBar : public GuiLayout {
     return false;
   }
 
-  virtual bool onKeyPressed2(SDL::SDL_Keysym key) override {
-    if (key.sym == C_MENU_SCROLL_UP) {
-      addScrollPos(- wheelScrollUnit);
-      return true;
-    }
-    if (key.sym == C_MENU_SCROLL_DOWN) {
-      addScrollPos(wheelScrollUnit);
-      return true;
-    }
-    return false;
-  }
-
   virtual bool onMouseMove(Vec2 v, Vec2 rel) override {
     if (*held != notHeld)
       scrollPos->reset(getBounds().height() / 2 + scrollLength() * calcPos(v.y - *held));
@@ -3040,8 +3015,7 @@ SGuiElem GuiFactory::miniWindow(SGuiElem content, function<void()> onExitButton,
         rectangle(Color::BLACK),
         background(background1));
   if (onExitButton)
-    ret.push_back(reverseButton(onExitButton,
-        {getKey(SDL::SDLK_ESCAPE), getKey(C_MENU_CANCEL), getKey(C_BUILDINGS_CANCEL)}, captureExitClick));
+    ret.push_back(reverseButton(onExitButton, Keybinding("EXIT_MENU"), captureExitClick));
   append(ret, {
         margins(std::move(content), 1),
         miniBorder()
@@ -3315,9 +3289,7 @@ SGuiElem GuiFactory::darken() {
 
 void GuiFactory::propagateScrollEvent(const vector<SGuiElem>& guiElems) {
   if (auto steamInput = getSteamInput()) {
-    auto pos = steamInput->actionLayer
-        ? steamInput->getJoyPos(ControllerJoy::MAP_SCROLLING)
-        : steamInput->getJoyPos(ControllerJoy::MENU_SCROLLING);
+    auto pos = steamInput->getJoyPos(ControllerJoy::MAP_SCROLLING);
     auto time = Clock::getRealMillis();
     if (!lastJoyScrollUpdate)
       lastJoyScrollUpdate = time;

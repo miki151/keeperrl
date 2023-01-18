@@ -780,7 +780,5 @@ void Renderer::makeScreenshot(const FilePath& path, Rectangle bounds) {
 void playfile(const char *fname, SDL::SDL_Window* screen, Renderer&, bool withAudio);
 
 void Renderer::playVideo(const string& path, bool withAudio) {
-  steamInput->pushActionSet(MySteamInput::ActionSet::MENU);
   playfile(path.data(), window, *this, withAudio);
-  steamInput->popActionSet();
 }

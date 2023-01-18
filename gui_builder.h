@@ -132,8 +132,6 @@ class GuiBuilder {
   void setGameSpeed(GameSpeed);
   Rectangle getMenuPosition(int numElems);
   Rectangle getTextInputPosition();
-  SGuiElem drawListGui(const string& title, const vector<string>& options,
-      optional<int>* highlight, int* choice, vector<int>* positions);
   int getScrollPos(int index, int count);
   void setMapGui(shared_ptr<MapGui>);
   void clearHint();
@@ -279,7 +277,6 @@ class GuiBuilder {
   SGuiElem drawMinionAndLevel(ViewIdList, int level, int iconMult);
   optional<ItemAction> getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos, bool autoDefault);
   vector<SGuiElem> getMultiLine(const string& text, Color, int maxWidth, int fontSize);
-  SGuiElem getHighlight(SGuiElem line, const string& label, int numActive, optional<int>* highlight);
   string getPlayerTitle(PlayerInfo&);
   shared_ptr<MapGui> mapGui;
   int getImmigrantAnimationOffset(milliseconds initTime);
