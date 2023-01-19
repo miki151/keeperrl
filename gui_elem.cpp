@@ -1770,7 +1770,7 @@ class CenterHoriz : public GuiLayout {
   virtual Rectangle getElemBounds(int num) override {
     int center = (getBounds().left() + getBounds().right()) / 2;
     int myWidth = width ? *width : max(2, *elems[0]->getPreferredWidth());
-    return Rectangle(center - myWidth / 2, getBounds().top(), center + myWidth / 2, getBounds().bottom());
+    return getBounds().intersection(Rectangle(center - myWidth / 2, getBounds().top(), center + myWidth / 2, getBounds().bottom()));
   }
 
   private:

@@ -5509,7 +5509,7 @@ SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textCo
         Vec2(bounds.middle().x - maxWidth / 2 - 30, bounds.bottom()), maxWidth + 60, true, true, &selected);
   };
   return WL(stack,
-      WL(centerHoriz, WL(labelHighlight, info.name, textColor)),
+      WL(renderInBounds, WL(centerHoriz, WL(labelHighlight, info.name, textColor))),
       info.zLevels.empty() ? WL(empty) : WL(buttonRect, callback),
       WL(keyHandlerRect, [this, callback](Rectangle bounds) {
         if (!bottomWindow)
