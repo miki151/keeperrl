@@ -1849,7 +1849,7 @@ static optional<CollectiveInfo::RebellionChance> getRebellionChance(double prob)
 
 void PlayerControl::fillCurrentLevelInfo(GameInfo& gameInfo) const {
   auto level = getCurrentLevel();
-  auto levels = getModel()->getAllMainLevels();
+  auto levels = getModel()->getDungeonBranch(level, getMemory());
   gameInfo.currentLevel = CurrentLevelInfo {
     level->name,
     *levels.findElement(level),

@@ -33,8 +33,9 @@ class MapMemory {
   void clearSquare(Position pos);
   static const MapMemory& empty();
   optional<const ViewIndex&> getViewIndex(Position) const;
+  bool containsLevel(Level*) const;
 
-  template <class Archive> 
+  template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:

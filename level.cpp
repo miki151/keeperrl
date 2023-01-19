@@ -53,7 +53,7 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
   ar(sunlight, bucketMap, lightAmount, unavailable, swarmMaps, territory);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates, above, below, mountainLevel);
-  ar(furniture, tickingFurniture, covered, name, depth, wildlife, addedWildlife);
+  ar(furniture, tickingFurniture, covered, name, depth, wildlife, addedWildlife, mainDungeon);
   vector<pair<TribeId, unique_ptr<EffectsTable>>> SERIAL(tmp);
   for (auto t : ENUM_ALL(TribeId::KeyType))
     if (!!furnitureEffects[t])

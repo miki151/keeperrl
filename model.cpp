@@ -61,7 +61,7 @@
 #include "territory.h"
 #include "portals.h"
 
-template <class Archive> 
+template <class Archive>
 void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
   ar & SUBCLASS(OwnedObject<Model>);
@@ -192,6 +192,7 @@ Level* Model::buildUpLevel(const ContentFactory* factory, LevelBuilder b, PLevel
   auto ret = buildLevel(factory, std::move(b), std::move(maker), depth, "Z-level " + toString(depth));
   ret->below = upLevels.empty() ? mainLevels[0] : upLevels.back();
   ret->below->above = ret;
+  ret->mainDungeon = true;
   upLevels.push_back(ret);
   return ret;
 }
@@ -199,6 +200,7 @@ Level* Model::buildUpLevel(const ContentFactory* factory, LevelBuilder b, PLevel
 Level* Model::buildMainLevel(const ContentFactory* factory, LevelBuilder b, PLevelMaker maker) {
   int depth = mainLevels.size();
   auto ret = buildLevel(factory, std::move(b), std::move(maker), depth, depth == 0 ? "Ground"_s : "Z-level " + toString(depth));
+  ret->mainDungeon = true;
   mainLevels.push_back(ret);
   return ret;
 }
@@ -276,7 +278,7 @@ Model::StairConnections Model::createStairConnections(const MovementType& moveme
       if (!connections.count(key))
         connections[key] = ++cnt;
   for (auto level : getLevels())
-    for (auto key1 : level->getAllStairKeys())  
+    for (auto key1 : level->getAllStairKeys())
       for (auto key2 : level->getAllStairKeys())
         if (key1 != key2) {
           auto pos1 = level->getLandingSquares(key1)[0];
@@ -305,8 +307,28 @@ vector<Level*> Model::getLevels() const {
   return getWeakPointers(levels);
 }
 
-vector<Level*> Model::getAllMainLevels() const {
-  return concat(upLevels.reverse(), mainLevels);
+vector<Level*> Model::getDungeonBranch(Level* current, const MapMemory& memory) const {
+  if (mainLevels.contains(current) || upLevels.contains(current))
+    return concat(upLevels.reverse(), mainLevels).filter([&](Level* l) { return memory.containsLevel(l); });
+  auto getSubsequent = [this, &memory](Level* start, int direction) {
+    vector<Level*> ret;
+    while (1) {
+      vector<Level*> next;
+      for (auto key : start->getAllStairKeys())
+        if (auto l = getLinkedLevel(start, key))
+          if (l->mainDungeon && memory.containsLevel(l) && l->depth == start->depth + direction)
+            next.push_back(l);
+      if (next.size() == 1) {
+        start = next[0];
+        ret.push_back(start);
+      } else
+        break;
+    }
+    return ret;
+  };
+  vector<Level*> above = getSubsequent(current, -1);
+  vector<Level*> below = getSubsequent(current, 1);
+  return concat(above.reverse(), {current}, below);
 }
 
 optional<int> Model::getMainLevelDepth(const Level* l) const {

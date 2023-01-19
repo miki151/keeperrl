@@ -1324,7 +1324,7 @@ void Player::playerLevelDialog() {
 
 void Player::fillCurrentLevelInfo(GameInfo& gameInfo) const {
   auto level = getLevel();
-  auto levels = getModel()->getAllMainLevels();
+  auto levels = getModel()->getDungeonBranch(level, getMemory());
   gameInfo.currentLevel = CurrentLevelInfo {
     level->name,
     levels.findElement(level).value_or(0),
@@ -1490,26 +1490,23 @@ void Player::considerAdventurerMusic() {
 void Player::scrollStairs(int diff) {
   auto model = creature->getPosition().getModel();
   auto curLevel = creature->getPosition().getLevel();
-  if (auto curIndex = model->getMainLevelDepth(curLevel)) {
-    auto dest = model->getMainLevelsDepth().clamp(*curIndex + diff);
-    if (dest == *curIndex)
-      return;
-    auto targetLevel = model->getMainLevel(dest);
-    auto curPos = creature->getPosition();
-    auto movement = creature->getMovementType();
-    optional<Position> bestStairs;
-    int bestDist = 10000000;
-    for (auto key : targetLevel->getAllStairKeys()) {
-      auto stairPos = targetLevel->getLandingSquares(key)[0];
-      if (auto res = stairPos.getStairsTo(curPos, movement))
-        if (res->second < bestDist) {
-          bestStairs = stairPos;
-          bestDist = res->second;
-        }
+  for (auto targetLevel : model->getDungeonBranch(curLevel, getMemory()))
+    if (targetLevel->depth == curLevel->depth + diff) {
+      auto curPos = creature->getPosition();
+      auto movement = creature->getMovementType();
+      optional<Position> bestStairs;
+      int bestDist = 10000000;
+      for (auto key : targetLevel->getAllStairKeys()) {
+        auto stairPos = targetLevel->getLandingSquares(key)[0];
+        if (auto res = stairPos.getStairsTo(curPos, movement))
+          if (res->second < bestDist) {
+            bestStairs = stairPos;
+            bestDist = res->second;
+          }
+      }
+      if (bestStairs)
+        target = *bestStairs;
     }
-    if (bestStairs)
-      target = *bestStairs;
-  }
 }
 
 REGISTER_TYPE(ListenerTemplate<Player>)

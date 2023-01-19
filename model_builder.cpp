@@ -362,12 +362,12 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
 }
 
 void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, SettlementInfo& mainSettlement,
-    StairKey upLink, vector<EnemyInfo>& extraEnemies, int depth) {
+    StairKey upLink, vector<EnemyInfo>& extraEnemies, int depth, bool mainDungeon) {
   StairKey downLink = StairKey::getNew();
   int direction = connection.direction == LevelConnectionDir::DOWN ? 1 : -1;
   for (int index : All(connection.levels)) {
     auto& level = connection.levels[index];
-    auto addLevel = [&] (SettlementInfo& settlement, bool bottomLevel, int depth) {
+    auto addLevel = [&] (SettlementInfo& settlement, bool bottomLevel) {
       settlement.upStairs.push_back(upLink);
       if (!bottomLevel)
         settlement.downStairs.push_back(downLink);
@@ -375,30 +375,34 @@ void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, Set
         swap(settlement.upStairs, settlement.downStairs);
       auto res = model->buildLevel(
           contentFactory,
-          LevelBuilder(meter, random, contentFactory, level.levelSize.x, level.levelSize.y, true, level.isLit ? 1.0 : 0.0),
-          getMaker(level.levelType)(random, settlement, level.levelSize), depth, level.name.value_or("Z-level" + toString(depth)));
+          LevelBuilder(meter, random, contentFactory, level.levelSize.x, level.levelSize.y, true,
+              level.isLit ? 1.0 : 0.0),
+          getMaker(level.levelType)(random, settlement, level.levelSize),
+          depth,
+          level.name.value_or("Z-level " + toString(depth)));
       res->canTranfer = level.canTransfer;
       res->aiFollows = level.aiFollows;
+      res->mainDungeon = mainDungeon;
       upLink = downLink;
       downLink = StairKey::getNew();
+      depth += direction;
     };
     level.enemy.match(
         [&](LevelConnection::ExtraEnemy& e) {
           for (int i : All(e.enemyInfo)) {
-            auto& set = processLevelConnection(model, e.enemyInfo[i], extraEnemies, depth + direction * (index + i));
-            addLevel(set, index == connection.levels.size() - 1 && i == e.enemyInfo.size() - 1,
-                depth + direction * (index + i));
+            auto& set = processLevelConnection(model, e.enemyInfo[i], extraEnemies, depth, false);
+            addLevel(set, index == connection.levels.size() - 1 && i == e.enemyInfo.size() - 1);
           }
         },
         [&](LevelConnection::MainEnemy&) {
-          addLevel(mainSettlement, index == connection.levels.size() - 1, depth + direction * index);
+          addLevel(mainSettlement, index == connection.levels.size() - 1);
         }
     );
   }
 }
 
 SettlementInfo& ModelBuilder::processLevelConnection(Model* model, EnemyInfo& enemyInfo,
-    vector<EnemyInfo>& extraEnemies, int depth) {
+    vector<EnemyInfo>& extraEnemies, int depth, bool mainDungeon) {
   if (!enemyInfo.levelConnection)
     return enemyInfo.settlement;
   auto processExtraEnemy = [&] (LevelConnection::EnemyLevelInfo& enemyInfo) {
@@ -415,7 +419,8 @@ SettlementInfo& ModelBuilder::processLevelConnection(Model* model, EnemyInfo& en
   processExtraEnemy(enemyInfo.levelConnection->topLevel);
   StairKey downLink = StairKey::getNew();
   bool goingDown = enemyInfo.levelConnection->direction == LevelConnectionDir::DOWN;
-  makeExtraLevel(model, *enemyInfo.levelConnection, enemyInfo.settlement, downLink, extraEnemies, depth + (goingDown ? 1 : -1));
+  makeExtraLevel(model, *enemyInfo.levelConnection, enemyInfo.settlement, downLink, extraEnemies,
+      depth + (goingDown ? 1 : -1), mainDungeon);
   SettlementInfo* ret = nullptr;
   if (auto extra = enemyInfo.levelConnection->topLevel.getReferenceMaybe<LevelConnection::ExtraEnemy>()) {
     for (auto& enemy : extra->enemyInfo) {
@@ -436,7 +441,7 @@ PModel ModelBuilder::tryModel(int width, vector<EnemyInfo> enemyInfo, optional<T
   vector<EnemyInfo> extraEnemies;
   for (auto& elem : enemyInfo) {
     elem.settlement.collective = new CollectiveBuilder(elem.config, elem.settlement.tribe);
-    topLevelSettlements.push_back(processLevelConnection(model.get(), elem, extraEnemies, 0));
+    topLevelSettlements.push_back(processLevelConnection(model.get(), elem, extraEnemies, 0, true));
   }
   append(enemyInfo, extraEnemies);
   model->buildMainLevel(
