@@ -5514,8 +5514,6 @@ SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textCo
       WL(keyHandlerRect, [this, callback](Rectangle bounds) {
         if (!bottomWindow)
           callback(bounds);
-        else
-          closeOverlayWindows();
       }, {gui.getKey(C_BUILDINGS_CANCEL)}, true));
 }
 
