@@ -4185,9 +4185,8 @@ SGuiElem GuiBuilder::drawMinionActions(const PlayerInfo& minion, const optional<
         break;
       }
       case PlayerInfo::RENAME:
-        line.addElem(WL(buttonLabelFocusable, "Rename", [=] {
-            if (auto name = getTextInput("Rename minion", minion.firstName, maxFirstNameLength, "Press escape to cancel."))
-              callbacks.input({UserInputId::CREATURE_RENAME, RenameActionInfo{minion.creatureId, *name}}); }, focusCallback, false, true  ));
+        line.addElem(WL(buttonLabelFocusable, "Rename",
+            getButtonCallback({UserInputId::CREATURE_RENAME, minion.creatureId}), focusCallback, false, true));
         break;
       case PlayerInfo::BANISH:
         line.addElem(WL(buttonLabelFocusable, "Banish",
@@ -5578,66 +5577,28 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
   ))).buildVerticalList();
 }
 
-Rectangle GuiBuilder::getTextInputPosition() {
-  Vec2 center = renderer.getSize() / 2;
-  return Rectangle(center - Vec2(300, 129), center + Vec2(300, 129));
-}
-
-SGuiElem GuiBuilder::getTextContent(const string& title, const string& value, const string& hint) {
+SGuiElem GuiBuilder::drawTextInput(SyncQueue<optional<string>>& queue, const string& title, const string& value,
+    int maxLength) {
+  auto text = make_shared<string>(value);
   auto lines = WL(getListBuilder, legendLineHeight);
-  lines.addElem(WL(label, capitalFirst(title)));
-  lines.addElem(
-      WL(variableLabel, [&] { return value + "_"; }, legendLineHeight), 2 * legendLineHeight);
-  if (!hint.empty())
-    lines.addElem(WL(label, hint, gui.inactiveText));
-  return lines.buildVerticalList();
-}
-
-optional<string> GuiBuilder::getTextInput(const string& title, const string& value, int maxLength,
-    const string& hint) {
-  bool dismiss = false;
-  string text = value;
-  SGuiElem dismissBut = WL(margins, WL(stack, makeVec(
-        WL(button, [&](){ dismiss = true; }),
-        WL(mouseHighlight2, WL(mainMenuHighlight)),
-        WL(centerHoriz,
-            WL(label, "Dismiss", Color::WHITE), renderer.getTextLength("Dismiss")))), 0, 5, 0, 0);
-  SGuiElem stuff = WL(margins, getTextContent(title, text, hint), 30, 50, 0, 0);
-  stuff = WL(margin, WL(centerHoriz, std::move(dismissBut), renderer.getTextLength("Dismiss") + 100),
-    std::move(stuff), 30, gui.BOTTOM);
-  stuff = WL(window, std::move(stuff), [&dismiss] { dismiss = true; });
-  SGuiElem bg = WL(darken);
-  bg->setBounds(Rectangle(renderer.getSize()));
-  SDL::SDL_StartTextInput();
-  OnExit tmp([]{ SDL::SDL_StopTextInput();});
-  while (1) {
-    callbacks.refreshScreen();
-    bg->render(renderer);
-    stuff->setBounds(getTextInputPosition());
-    stuff->render(renderer);
-    renderer.drawAndClearBuffer();
-    Event event;
-    while (renderer.pollEvent(event)) {
-      gui.propagateEvent(event, {stuff});
-      if (dismiss)
-        return none;
-      if (event.type == SDL::SDL_TEXTINPUT)
-        if (text.size() < maxLength)
-          text += event.text.text;
-/*        if ((isalnum(event.text.unicode) || event.text.unicode == ' ') && text.size() < maxLength)
-          text += event.text.unicode;*/
-      if (event.type == SDL::SDL_KEYDOWN)
-        switch (event.key.keysym.sym) {
-          case SDL::SDLK_BACKSPACE:
-              if (!text.empty())
-                text.pop_back();
-              break;
-          case SDL::SDLK_KP_ENTER:
-          case SDL::SDLK_RETURN: return text;
-          case C_BUILDINGS_CANCEL:
-          case SDL::SDLK_ESCAPE: return none;
-          default: break;
-        }
-    }
-  }
+  lines.addSpace(20);
+  lines.addElem(WL(label, title));
+  lines.addElem(WL(textFieldFocused, maxLength, [text] { return *text;},
+      [text](string s) { *text = std::move(s); }), 30);
+  lines.addSpace(legendLineHeight);
+  lines.addElem(WL(centerHoriz, WL(getListBuilder)
+      .addElemAuto(WL(standardButton,
+          gui.getKeybindingMap()->getGlyph(WL(label, "Confirm"), &gui, Keybinding("MENU_SELECT")),
+          WL(button, [&queue, text] { queue.push(*text); })))
+      .addSpace(15)
+      .addElemAuto(WL(standardButton,
+          gui.getKeybindingMap()->getGlyph(WL(label, "Cancel"), &gui, Keybinding("EXIT_MENU")),
+          WL(button, [&queue] { queue.push(none); })))
+      .buildHorizontalList()));
+  return WL(stack,
+      WL(window, WL(setWidth, 600, WL(margins, lines.buildVerticalList(), 50, 0, 50, 0)),
+          [&queue] { queue.push(none); }),
+      WL(keyHandler, [&queue] { queue.push(none); }, Keybinding("EXIT_MENU"), true),
+      WL(keyHandler, [&queue, text] { queue.push(*text); }, Keybinding("MENU_SELECT"), true)
+  );
 }

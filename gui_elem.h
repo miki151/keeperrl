@@ -200,8 +200,6 @@ class GuiFactory {
       Color = Color::WHITE, char delim = ' ');
   SGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = Color::WHITE);
   SGuiElem centeredLabel(Renderer::CenterType, const string&, Color = Color::WHITE);
-  SGuiElem variableLabel(function<string()>, int lineHeight, int size = Renderer::textSize(),
-      Color = Color::WHITE);
   SGuiElem mainMenuLabel(const string&, double vPadding, Color = Color::MAIN_MENU_ON);
   SGuiElem mainMenuLabelBg(const string&, double vPadding, Color = Color::MAIN_MENU_OFF);
   SGuiElem labelUnicode(const string&, Color = Color::WHITE, int size = Renderer::textSize(),

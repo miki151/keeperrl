@@ -800,13 +800,10 @@ optional<int> WindowView::getNumber(const string& title, Range range, int initia
   return guiBuilder.getNumber(title, renderer.getSize() / 2 - Vec2(225, 0), range, initial);
 }
 
-optional<string> WindowView::getText(const string& title, const string& value, int maxLength, const string& hint) {
+optional<string> WindowView::getText(const string& title, const string& value, int maxLength) {
   TempClockPause pause(clock);
   SyncQueue<optional<string>> returnQueue;
-  addReturnDialog<optional<string>>(returnQueue, [=] ()-> optional<string> {
-    return guiBuilder.getTextInput(title, value, maxLength, hint);
-  });
-  return returnQueue.pop();
+  return getBlockingGui(returnQueue, guiBuilder.drawTextInput(returnQueue, title, value, maxLength));
 }
 
 void WindowView::scriptedUI(ScriptedUIId id, const ScriptedUIData& data, ScriptedUIState& state) {
@@ -1147,15 +1144,15 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
   switch (key.sym) {
 #ifndef RELEASE
     case SDL::SDLK_F10:
-      if (auto input = getText("Enter effect", "", 100, ""))
+      if (auto input = getText("Enter effect", "", 100))
         inputQueue.push({UserInputId::APPLY_EFFECT, *input});
       break;
     case SDL::SDLK_F11:
-      if (auto input = getText("Enter item type", "", 100, ""))
+      if (auto input = getText("Enter item type", "", 100))
         inputQueue.push({UserInputId::CREATE_ITEM, *input});
       break;
     case SDL::SDLK_F12:
-      if (auto input = getText("Enter creature id", "", 100, ""))
+      if (auto input = getText("Enter creature id", "", 100))
         inputQueue.push({UserInputId::SUMMON_ENEMY, *input});
       break;
     case SDL::SDLK_F9:

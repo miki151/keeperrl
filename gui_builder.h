@@ -72,7 +72,7 @@ class GuiBuilder {
   SGuiElem drawMinions(const CollectiveInfo&, optional<int> minionIndexDummy, const optional<TutorialInfo>&);
   SGuiElem drawBottomBandInfo(GameInfo&, int width);
   SGuiElem drawKeeperHelp(const GameInfo&);
-  optional<string> getTextInput(const string& title, const string& value, int maxLength, const string& hint);
+  SGuiElem drawTextInput(SyncQueue<optional<string>>&, const string& title, const string& value, int maxLength);
 
   struct OverlayInfo {
     SGuiElem elem;
@@ -131,7 +131,6 @@ class GuiBuilder {
   GameSpeed getGameSpeed() const;
   void setGameSpeed(GameSpeed);
   Rectangle getMenuPosition(int numElems);
-  Rectangle getTextInputPosition();
   int getScrollPos(int index, int count);
   void setMapGui(shared_ptr<MapGui>);
   void clearHint();
@@ -182,7 +181,6 @@ class GuiBuilder {
   void drawMiniMenu(vector<SGuiElem>, vector<function<void()>>, vector<SGuiElem> tooltips, Vec2 menuPos,
       int width, bool darkBg, bool exitOnCallback = true, int* selected = nullptr, bool* exit = nullptr);
   SGuiElem getMiniMenuScrolling(const vector<SGuiElem>& activeElems, int& selected);
-  SGuiElem getTextContent(const string& title, const string& value, const string& hint);
   SGuiElem drawTeams(const CollectiveInfo&, const optional<TutorialInfo>&, int& buttonCnt);
   SGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease, bool leftRight);
   SGuiElem drawOptionElem(OptionId, function<void()> onChanged, function<bool()> focused);

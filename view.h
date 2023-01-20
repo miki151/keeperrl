@@ -171,8 +171,7 @@ class View {
   virtual optional<int> getNumber(const string& title, Range range, int initial) = 0;
 
   /** Lets the player input a string. Returns none if the player cancelled the choice.*/
-  virtual optional<string> getText(const string& title, const string& value, int maxLength,
-      const string& hint = "") = 0;
+  virtual optional<string> getText(const string& title, const string& value, int maxLength) = 0;
 
   virtual optional<int> chooseAtMouse(const vector<string>& elems) = 0;
 

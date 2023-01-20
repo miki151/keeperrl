@@ -2758,8 +2758,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
       }
       break;
     case UserInputId::CREATURE_RENAME:
-      if (Creature* c = getCreature(input.get<RenameActionInfo>().creature))
-        c->getName().setFirst(input.get<RenameActionInfo>().name);
+      if (Creature* c = getCreature(input.get<Creature::Id>()))
+        if (auto name = getView()->getText("Rename minion", c->getName().first().value_or(""), maxFirstNameLength))
+           c->getName().setFirst(*name);
       break;
     case UserInputId::CREATURE_CONSUME:
       if (Creature* c = getCreature(input.get<Creature::Id>())) {
@@ -3026,7 +3027,7 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
     [&](const BuildInfoTypes::PlaceItem&) {
       ItemType item;
       if (auto num = getView()->getNumber("Enter amount", Range(1, 10000), 1))
-        if (auto input = getView()->getText("Enter item type", "", 100, "")) {
+        if (auto input = getView()->getText("Enter item type", "", 100)) {
           if (auto error = PrettyPrinting::parseObject(item, *input))
             getView()->presentText("Sorry", "Couldn't parse \"" + *input + "\": " + *error);
           else {

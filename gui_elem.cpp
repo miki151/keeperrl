@@ -219,10 +219,18 @@ namespace  {
 class TextFieldElem : public GuiElem {
   public:
   TextFieldElem(function<string()> text, function<void(string)> callback, function<bool()> controllerFocus,
-      int maxLength, Clock* clock, bool alwaysFocused, MySteamInput* steamInput, KeybindingMap* keybindingMap)
+      int maxLength, bool alwaysFocused, MySteamInput* steamInput, KeybindingMap* keybindingMap)
       : callback(std::move(callback)), getText(std::move(text)), controllerFocus(std::move(controllerFocus)),
-        clock(clock), maxLength(maxLength), alwaysFocused(alwaysFocused), steamInput(steamInput),
-        keybindingMap(keybindingMap) {}
+        maxLength(maxLength), alwaysFocused(alwaysFocused), steamInput(steamInput),
+        keybindingMap(keybindingMap) {
+    if (alwaysFocused && steamInput)
+      steamInput->showFloatingKeyboard(Rectangle(100, 30, 800, 60));
+  }
+
+  virtual ~TextFieldElem() {
+    if (alwaysFocused && steamInput)
+      steamInput->dismissFloatingKeyboard();
+  }
 
   virtual bool onClick(MouseButtonId b, Vec2 pos) override {
     if (b == MouseButtonId::LEFT) {
@@ -243,12 +251,12 @@ class TextFieldElem : public GuiElem {
     if (isFocused())
       rectBounds = Rectangle(rectBounds.topLeft(),
           Vec2(max(rectBounds.right(), rectBounds.left() + r.getTextLength(toDraw) + 10), rectBounds.bottom()));
-    if (isFocused() && (clock->getRealMillis().count() / 400) % 2 == 0)
+    if (isFocused() && (Clock::getRealMillis().count() / 400) % 2 == 0)
       toDraw += "|";
     if (isFocused() && !alwaysFocused)
       r.setTopLayer();
     r.drawFilledRectangle(rectBounds, Color::BLACK,
-        (isFocused() || controllerFocus()) ? Color::WHITE : Color::GRAY);
+        (focused || controllerFocus()) ? Color::WHITE : Color::GRAY);
     if (!isFocused())
       r.setScissor(bounds.minusMargin(1));
     r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(6, 6), toDraw);
@@ -275,14 +283,14 @@ class TextFieldElem : public GuiElem {
         case SDL::SDLK_RETURN:
           callback(current);
           focused = false;
-          if (steamInput)
+          if (!alwaysFocused && steamInput)
             steamInput->dismissFloatingKeyboard();
           return true;
         default:
           break;
       }
       return true;
-    } else if (keybindingMap->matches(Keybinding("MENU_SELECT"), sym) && controllerFocus()) {
+    } else if (!alwaysFocused && keybindingMap->matches(Keybinding("MENU_SELECT"), sym) && controllerFocus()) {
       focused = true;
       if (steamInput)
         steamInput->showFloatingKeyboard(getBounds());
@@ -306,7 +314,6 @@ class TextFieldElem : public GuiElem {
   function<void(string)> callback;
   function<string()> getText;
   function<bool()> controllerFocus;
-  Clock* clock;
   int maxLength;
   bool focused = false;
   bool alwaysFocused = false;
@@ -319,13 +326,13 @@ SGuiElem GuiFactory::textField(int maxLength, function<string()> text, function<
     function<bool()> controllerFocus) {
   return topMargin(-4, bottomMargin(4,
       make_shared<TextFieldElem>(std::move(text), std::move(callback), std::move(controllerFocus),
-          maxLength, clock, false, getSteamInput(), getKeybindingMap())));
+          maxLength, false, getSteamInput(), getKeybindingMap())));
 }
 
 SGuiElem GuiFactory::textFieldFocused(int maxLength, function<string()> text, function<void(string)> callback) {
   return topMargin(-4, bottomMargin(4,
       make_shared<TextFieldElem>(std::move(text), std::move(callback), []{return false;},
-          maxLength, clock, true, nullptr, getKeybindingMap())));
+          maxLength, true, getSteamInput(), getKeybindingMap())));
 }
 
 SGuiElem GuiFactory::buttonPos(function<void (Rectangle, Vec2)> fun) {
@@ -692,13 +699,13 @@ vector<string> GuiFactory::breakText(const string& text, int maxWidth, int fontS
   return ::breakText(renderer, text, maxWidth, fontSize);
 }
 
-class VariableLabel : public GuiElem {
+class LabelMultiLine : public GuiElem {
   public:
-  VariableLabel(function<string()> t, int line, int sz, Color c) : text(t), size(sz), color(c), lineHeight(line) {
+    LabelMultiLine(string t, int line, int sz, Color c) : text(t), size(sz), color(c), lineHeight(line) {
   }
 
   virtual void render(Renderer& renderer) override {
-    vector<string> lines = breakText(renderer, text(), getBounds().width(), size);
+    vector<string> lines = breakText(renderer, text, getBounds().width(), size);
     int height = getBounds().top();
     for (int i : All(lines)) {
       renderer.drawText(color, Vec2(getBounds().left(), height), lines[i],
@@ -711,14 +718,14 @@ class VariableLabel : public GuiElem {
   }
 
   private:
-  function<string()> text;
+  string text;
   int size;
   Color color;
   int lineHeight;
 };
 
 SGuiElem GuiFactory::labelMultiLine(const string& s, int lineHeight, int size, Color c) {
-  return SGuiElem(new VariableLabel([=]{ return s;}, lineHeight, size, c));
+  return SGuiElem(new LabelMultiLine(s, lineHeight, size, c));
 }
 
 SGuiElem GuiFactory::labelMultiLineWidth(const string& s, int lineHeight, int width, int size, Color c, char delim) {
@@ -999,10 +1006,6 @@ SGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const string& s,
 
 SGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const string& s, Color c) {
   return centeredLabel(center, s, Renderer::textSize(), c);
-}
-
-SGuiElem GuiFactory::variableLabel(function<string()> fun, int lineHeight, int size, Color color) {
-  return SGuiElem(new VariableLabel(fun, lineHeight, size, color));
 }
 
 SGuiElem GuiFactory::labelUnicode(const string& s, Color color, int size, FontId fontId) {

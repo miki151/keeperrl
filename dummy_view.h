@@ -33,8 +33,7 @@ class DummyView : public View {
   virtual optional<int> getNumber(const string& title, Range range, int initial) override {
     return none;
   }
-  virtual optional<string> getText(const string& title, const string& value, int maxLength,
-      const string& hint = "") override {
+  virtual optional<string> getText(const string& title, const string& value, int maxLength) override {
     return none;
   }
   virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&, ScriptedUIState&) override {}
