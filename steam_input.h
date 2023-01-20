@@ -62,6 +62,7 @@ class MySteamInput {
   vector<Handle> controllers;
   map<ControllerJoy, Handle> joyHandles;
   void init();
+  void showBindingScreen();
   void showFloatingKeyboard(Rectangle field);
   void dismissFloatingKeyboard();
   optional<ControllerKey> getEvent();

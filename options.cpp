@@ -20,6 +20,7 @@
 #include "scripted_ui_data.h"
 #include "keybinding_map.h"
 #include "content_factory.h"
+#include "steam_input.h"
 
 const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::HINTS, 1},
@@ -162,7 +163,8 @@ vector<OptionId> Options::getOptions(OptionSet set) {
   return optionSets.at(set);
 }
 
-Options::Options(const FilePath& path, KeybindingMap* k) : filename(path), keybindingMap(k) {
+Options::Options(const FilePath& path, KeybindingMap* k, MySteamInput* i) : filename(path), keybindingMap(k),
+    steamInput(i) {
   readValues();
 }
 
@@ -494,9 +496,16 @@ void Options::handle(View* view, const ContentFactory* factory, OptionSet set, i
     main.elems["set_options"] = ScriptedUIDataElems::Callback{
         [&] { keybindingsTab = false; wasSet = true; return true; }
     };
-    main.elems["set_keys"] = ScriptedUIDataElems::Callback{
-        [&] { keybindingsTab = true; wasSet = true; return true; }
-    };
+    main.elems["set_keys"] = ScriptedUIDataElems::Callback{ [&] {
+      if (steamInput && !steamInput->controllers.empty()) {
+        steamInput->showBindingScreen();
+        return false;
+      } else {
+        keybindingsTab = true;
+        wasSet = true;
+        return true;
+      }
+    }};
     if (keybindingsTab) {
       main.elems["keybindings"] = std::move(keybindings);
       main.elems["reset_keys"] = ScriptedUIDataElems::Callback {[this, &wasSet, view] {

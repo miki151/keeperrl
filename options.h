@@ -67,12 +67,13 @@ namespace ScriptedUIDataElems {
 
 class View;
 class KeybindingMap;
+class MySteamInput;
 class ContentFactory;
 
 class Options {
   public:
   typedef variant<int, string, vector<string>> Value;
-  Options(const FilePath& path, KeybindingMap*);
+  Options(const FilePath& path, KeybindingMap*, MySteamInput*);
   bool getBoolValue(OptionId);
   string getStringValue(OptionId);
   vector<string> getVectorStringValue(OptionId);
@@ -109,6 +110,7 @@ class Options {
   EnumMap<OptionId, vector<string>> choices;
   EnumMap<OptionId, optional<Range>> limits;
   KeybindingMap* keybindingMap;
+  MySteamInput* steamInput;
 };
 
 

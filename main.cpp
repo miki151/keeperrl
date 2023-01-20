@@ -301,8 +301,29 @@ static int keeperMain(po::parser& commandLineFlags) {
     settingsPath.erase();
     userKeysPath.erase();
   }
+  unique_ptr<MySteamInput> steamInput;
+  #ifdef RELEASE
+    AppConfig appConfig(dataPath.file("appconfig.txt"));
+  #else
+    AppConfig appConfig(dataPath.file("appconfig-dev.txt"));
+  #endif
+  #ifdef USE_STEAMWORKS
+    steamInput = make_unique<MySteamInput>();
+    optional<steam::Client> steamClient;
+    if (appConfig.get<int>("steamworks") > 0) {
+      if (steam::initAPI()) {
+        steamClient.emplace();
+        steamInput->init();
+        INFO << "\n" << steamClient->info();
+      }
+  #ifdef RELEASE
+      else
+        USER_INFO << "Unable to connect with the Steam client.";
+  #endif
+    }
+  #endif
   KeybindingMap keybindingMap(freeDataPath.file("default_keybindings.txt"), userKeysPath);
-  Options options(settingsPath, &keybindingMap);
+  Options options(settingsPath, &keybindingMap, steamInput.get());
   Random.init(int(time(nullptr)));
   auto installId = getInstallId(userPath.file("installId.txt"), Random);
   SoundLibrary* soundLibrary = nullptr;
@@ -328,11 +349,6 @@ static int keeperMain(po::parser& commandLineFlags) {
     exit(0);
   }
   SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
-#ifdef RELEASE
-  AppConfig appConfig(dataPath.file("appconfig.txt"));
-#else
-  AppConfig appConfig(dataPath.file("appconfig-dev.txt"));
-#endif
   string uploadUrl = appConfig.get<string>("upload_url");
   const auto modVersion = appConfig.get<string>("mod_version");
   const auto saveVersion = appConfig.get<int>("save_version");
@@ -376,22 +392,6 @@ static int keeperMain(po::parser& commandLineFlags) {
     battleTest(new DummyView(&clock), nullptr);
     return 0;
   }
-  unique_ptr<MySteamInput> steamInput;
-#ifdef USE_STEAMWORKS
-  steamInput = make_unique<MySteamInput>();
-  optional<steam::Client> steamClient;
-  if (appConfig.get<int>("steamworks") > 0) {
-    if (steam::initAPI()) {
-      steamClient.emplace();
-      steamInput->init();
-      INFO << "\n" << steamClient->info();
-    }
-#ifdef RELEASE
-    else
-      USER_INFO << "Unable to connect with the Steam client.";
-#endif
-  }
-#endif
   Renderer renderer(
       &clock,
       steamInput.get(),

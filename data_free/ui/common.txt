@@ -126,7 +126,7 @@ End
 
 Def StandardButtonActivated(Content) {
   ButtonLayout(BUTTON_BOTTOM, BUTTON_SIDE, BUTTON_CORNER)
-  Focusable ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
+  FocusableNoCallback ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
   Position(MIDDLE, Margins(10, 5, 10, 8, Content))
   Position(LEFT_CENTERED, MarginLeft(8, Texture(UI_HIGHLIGHT)))
   Position(RIGHT_CENTERED, MarginRight(8, Texture(UI_HIGHLIGHT)))

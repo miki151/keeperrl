@@ -159,6 +159,14 @@ optional<ControllerKey> MySteamInput::getEvent() {
   return none;
 }
 
+void MySteamInput::showBindingScreen() {
+  if (auto steamInput = SteamInput())
+    for (auto input : controllers) {
+      steamInput->ShowBindingPanel(input);
+      break;
+    }
+}
+
 void MySteamInput::showFloatingKeyboard(Rectangle field) {
   if (auto utils = SteamUtils())
     utils->ShowFloatingGamepadTextInput(k_EFloatingGamepadTextInputModeModeSingleLine,

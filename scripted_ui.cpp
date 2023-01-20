@@ -798,6 +798,13 @@ struct Focusable : ScriptedUIInterface {
 
 REGISTER_SCRIPTED_UI(Focusable);
 
+struct FocusableNoCallback : Focusable {
+  virtual void onClicked(const ScriptedUIData& data, ScriptedContext& context, EventCallback& callback) const override {
+  }
+};
+
+REGISTER_SCRIPTED_UI(FocusableNoCallback);
+
 struct FocusableKeys : ScriptedUIInterface {
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
     return elem->getSize(data, context);
