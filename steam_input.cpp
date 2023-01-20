@@ -160,10 +160,12 @@ optional<ControllerKey> MySteamInput::getEvent() {
 }
 
 void MySteamInput::showFloatingKeyboard(Rectangle field) {
-  SteamUtils()->ShowFloatingGamepadTextInput(k_EFloatingGamepadTextInputModeModeSingleLine,
+  if (auto utils = SteamUtils())
+    utils->ShowFloatingGamepadTextInput(k_EFloatingGamepadTextInputModeModeSingleLine,
       field.left(), field.top(), field.width(), field.height());
 }
 
 void MySteamInput::dismissFloatingKeyboard() {
-  SteamUtils()->DismissFloatingGamepadTextInput();
+  if (auto utils = SteamUtils())
+    utils->DismissFloatingGamepadTextInput();
 }
