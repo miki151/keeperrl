@@ -31,6 +31,12 @@ static SDL::Uint16 getMod(SDL::Uint16 m) {
   return m & (SDL::KMOD_LCTRL | SDL::KMOD_LSHIFT | SDL::KMOD_LALT);
 }
 
+static SDL::SDL_Keycode getEquivalent(SDL::SDL_Keycode key){
+  if (key == SDL::SDLK_KP_ENTER)
+    return SDL::SDLK_RETURN;
+  return key;
+}
+
 optional<ControllerKey> KeybindingMap::getControllerMapping(Keybinding key) {
   static unordered_map<Keybinding, ControllerKey, CustomHash<Keybinding>> controllerBindings {
       {Keybinding("WAIT"), C_WAIT},
@@ -61,7 +67,7 @@ bool KeybindingMap::matches(Keybinding key, SDL::SDL_Keysym sym) {
   if (getControllerMapping(key) == (ControllerKey)sym.sym)
     return true;
   if (auto k = getReferenceMaybe(bindings, key))
-    return k->sym == sym.sym && getMod(k->mod) == getMod(sym.mod);
+    return getEquivalent(k->sym) == getEquivalent(sym.sym) && getMod(k->mod) == getMod(sym.mod);
   return false;
 }
 
