@@ -2397,7 +2397,7 @@ SGuiElem GuiBuilder::drawTasksOverlay(const CollectiveInfo& info) {
   int numLines = lines.size();
   return WL(preferredSize, taskMapWindowWidth, numLines * lineHeight + 2 * margin + 10,
       WL(stack,
-          WL(keyHandler, [this]{bottomWindow = none;}, getOverlayCloseKeys(), true),
+          WL(keyHandler, [this]{bottomWindow = none;}, Keybinding("EXIT_MENU"), true),
           WL(miniWindow,
         WL(margins, WL(scrollable, WL(verticalList, std::move(lines), lineHeight), &tasksScroll, &scrollbarsHeld),
           margin))));
@@ -2812,7 +2812,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
       WL(keyHandler, [this, ind = info.index] {
         callbacks.input({UserInputId::WORKSHOP, ind});
         workshopIndex = none;
-      }, getOverlayCloseKeys(), true),
+      }, Keybinding("EXIT_MENU"), true),
       WL(keyHandler, [this, cnt = queued.size(), resourceCnt = info.resourceTabs.size()] {
         if (workshopIndex && workshopIndex->y == 2) {
           workshopIndex->x = (workshopIndex->x + 1) % resourceCnt;
@@ -3075,10 +3075,6 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
       [this] { return collectiveTab != CollectiveTab::TECHNOLOGY || !!techIndex; });
 }
 
-vector<SDL::SDL_Keysym> GuiBuilder::getOverlayCloseKeys() {
-  return {gui.getKey(SDL::SDLK_ESCAPE), gui.getKey(C_BUILDINGS_CANCEL)};
-}
-
 SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo::ChosenCreatureInfo& chosenCreature,
     const vector<ViewId>& allQuarters, const optional<TutorialInfo>& tutorial) {
   int margin = 20;
@@ -3114,7 +3110,7 @@ SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo::ChosenCreatureInfo
   return WL(preferredSize, 720 + minionListWidth, 600,
       WL(miniWindow, WL(stack,
       WL(keyHandler, [this] { callbacks.input({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()}); minionsIndex = none; },
-        getOverlayCloseKeys(), true),
+          Keybinding("EXIT_MENU"), true),
       WL(margins, std::move(menu), margin))));
 }
 
@@ -3185,7 +3181,7 @@ SGuiElem GuiBuilder::drawBestiaryOverlay(const vector<PlayerInfo>& creatures, in
       WL(leftMargin, minionListWidth + 20, WL(margins, drawBestiaryPage(creatures[index]), 10, 15, 10, 10)));
   return WL(preferredSize, 640 + minionListWidth, 600,
       WL(miniWindow, WL(stack,
-          WL(keyHandler, [=] { toggleBottomWindow(BottomWindowId::BESTIARY); }, getOverlayCloseKeys(), true),
+          WL(keyHandler, [=] { toggleBottomWindow(BottomWindowId::BESTIARY); }, Keybinding("EXIT_MENU"), true),
           WL(keyHandler, [this, cnt = creatures.size()] {
             bestiaryIndex = (bestiaryIndex + 1) % cnt;
             minionButtonsScroll.set(bestiaryIndex * legendLineHeight, Clock::getRealMillis());
@@ -3234,7 +3230,7 @@ SGuiElem GuiBuilder::drawSpellSchoolsOverlay(const vector<SpellSchoolInfo>& scho
       WL(leftMargin, minionListWidth + 20, WL(margins, drawSpellSchoolPage(schools[index]), 10, 15, 10, 10)));
   return WL(preferredSize, 440 + minionListWidth, 600,
       WL(miniWindow, WL(stack,
-          WL(keyHandler, [=] { toggleBottomWindow(BottomWindowId::SPELL_SCHOOLS); }, getOverlayCloseKeys(), true),
+          WL(keyHandler, [=] { toggleBottomWindow(BottomWindowId::SPELL_SCHOOLS); }, Keybinding("EXIT_MENU"), true),
           WL(keyHandler, [this, cnt = schools.size()] {
             spellSchoolIndex = (spellSchoolIndex + 1) % cnt;
             minionButtonsScroll.set(spellSchoolIndex * legendLineHeight, Clock::getRealMillis());
@@ -3265,7 +3261,7 @@ SGuiElem GuiBuilder::drawItemsHelpOverlay(const vector<ItemInfo>& items) {
   SGuiElem leftSide = drawItemsHelpButtons(items);
   return WL(preferredSize, itemsListWidth, 600,
       WL(miniWindow, WL(stack,
-          WL(keyHandler, [=] { toggleBottomWindow(BottomWindowId::ITEMS_HELP); }, getOverlayCloseKeys(), true),
+          WL(keyHandler, [=] { toggleBottomWindow(BottomWindowId::ITEMS_HELP); }, Keybinding("EXIT_MENU"), true),
           WL(margins, std::move(leftSide), margin))));
 }
 
@@ -3290,7 +3286,7 @@ SGuiElem GuiBuilder::drawBuildingsOverlay(const vector<CollectiveInfo::Button>& 
     string groupName = elem.first;
     elems.push_back(WL(setWidth, 350, WL(conditionalStopKeys,
           WL(miniWindow, WL(stack,
-              WL(keyHandler, [=] { clearActiveButton(); }, getOverlayCloseKeys(), true),
+              WL(keyHandler, [=] { clearActiveButton(); }, Keybinding("EXIT_MENU"), true),
               WL(margins, lines.buildVerticalList(), margin))),
           [this, groupName] {
               return collectiveTab == CollectiveTab::BUILDINGS && activeGroup == groupName;
@@ -3475,7 +3471,7 @@ SGuiElem GuiBuilder::drawScreenshotOverlay() {
   const int height = 360;
   const int margin = 20;
   return WL(preferredSize, width, height, WL(stack,
-      WL(keyHandler, getButtonCallback(UserInputId::CANCEL_SCREENSHOT), getOverlayCloseKeys(), true),
+      WL(keyHandler, getButtonCallback(UserInputId::CANCEL_SCREENSHOT), Keybinding("EXIT_MENU"), true),
       WL(rectangle, Color::TRANSPARENT, Color::LIGHT_GRAY),
       WL(translate, WL(centerHoriz, WL(miniWindow, WL(margins, WL(getListBuilder, legendLineHeight)
               .addElem(WL(labelMultiLineWidth, "Your dungeon will be shared in Steam Workshop with an attached screenshot. "
