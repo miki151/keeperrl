@@ -647,7 +647,11 @@ void MainLoop::uploadMod(ModInfo& mod) {
 }
 
 void MainLoop::createNewMod() {
-  if (auto name = view->getText("Enter name of new mod", "", 15)) {
+  if (auto name = view->getText("Enter a name for your new mod:", "", 15)) {
+    if (name->empty()) {
+      view->presentText("Error", "Mod name can't be empty");
+      return;
+    }
     if (modsDir.getSubDirs().contains(*name)) {
       view->presentText("Error", "Mod \"" + *name + "\" is alread installed");
       return;
