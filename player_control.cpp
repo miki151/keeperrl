@@ -347,13 +347,17 @@ void PlayerControl::leaveControl() {
 
 void PlayerControl::render(View* view) {
   //collective->getConstructions().checkDebtConsistency();
+  if (getControlled().empty()) {
+    view->updateView(this, false);
+  }
   if (firstRender) {
     firstRender = false;
     for (Creature* c : getCreatures())
       updateMinionVisibility(c);
-  }
-  if (getControlled().empty()) {
-    view->updateView(this, false);
+    if (getGame()->getOptions()->getBoolValue(OptionId::CONTROLLER_HINT_REAL_TIME)) {
+      getView()->scriptedUI("controller_hint_real_time", ScriptedUIData{});
+      getGame()->getOptions()->setValue(OptionId::CONTROLLER_HINT_REAL_TIME, 0);
+    }
   }
   if (!introText.empty() && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     view->updateView(this, false);

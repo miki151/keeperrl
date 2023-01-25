@@ -1,0 +1,36 @@
+
+{
+BlockEvents
+ExitButtonsWithEnter()
+Position(BOTTOM_CENTERED, Width 800 Height 500 MiniWindow({
+  Fill(Rgb 0 0 0 200)
+  Vertical {
+    Label("When playing in the real time mode, use:")
+    Height 5 {}
+    Label("* The right touchpad to move the mouse cursor, and the right trigger to place items on the map.")
+    Height 5 {}
+    Label("* The left touchpad to access various submenus.")
+    Height 5 {}
+    Label("* [Y] to pause or unpause the game.")
+    Height 5 {}
+    Label("* [B] to open the Z-levels list.")
+    Height 5 {}
+    Horizontal {
+      Label("* [")
+      Label(text = "☰" font = SYMBOL_FONT)
+      Label("] to access the menu.")
+    }
+    Height 5 {}
+    Horizontal {
+      Label("* [")
+      {
+        Label(text = "◻" font = SYMBOL_FONT)
+        MarginLeft(-4, Label(text = "▗" font = SYMBOL_FONT))
+      }
+      Label("] to open the world map.")
+    }
+    Height 5 {}
+    Position(MIDDLE, Texture("deck_real_time"))
+  }
+}))
+}
