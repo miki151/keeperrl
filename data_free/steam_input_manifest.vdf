@@ -1,0 +1,139 @@
+"Action Manifest"
+{
+	"configurations"
+	{
+		"controller_neptune"
+		{
+			"0"
+			{
+				"path" "controller_neptune.vdf"
+			}
+		}
+		"controller_ps4"
+		{
+			"0"
+			{
+				"path" "controller_ps4.vdf"
+			}
+		}
+	}
+	"actions"
+	{
+		"GameControls"
+		{
+			"title"		"#Set_Game"
+			"Button"
+			{
+				"z_level_up"		"#Z_Level_Up"
+				"z_level_down"		"#Z_Level_Down"
+				"open_menu"		"#Open_Menu"
+				"world_map"		"#Show_Worldmap"
+				"mini_map"		"#Show_Minimap"
+				"zoom"			"#Zoom_Map"
+				"buildings_up"		"#Buildings_Up"
+				"buildings_down"	"#Buildings_Down"
+				"buildings_left"	"#Buildings_Left"
+				"buildings_right"	"#Buildings_Right"
+				"buildings_confirm"	"#Buildings_Confirm"
+				"buildings_cancel"	"#Buildings_Cancel"
+			}
+			"StickPadGyro"
+			{
+				"map_scrolling_joy"
+				{
+					"title"		"#Map_Scrolling_Joy"
+					"input_mode"	"joystick_move"
+				}
+			}
+		}
+	}
+	"action_layers"
+	{
+		"TurnBased"
+		{
+			"title"		"#Set_Turned_Based_Mode"
+			"parent_set_name"		"GameControls"
+			"Button"
+			{
+				"exit_control"		"#Exit_Control_Mode"
+				"toggle_control"	"#Toggle_Control_Mode"
+				"chat"			"#Chat"
+				"fire_projectile"	"#FireProjectile"
+				"wait"			"#Wait"
+				"skip_turn"		"#SkipTurn"
+				"stand_ground"		"#StandGround"
+				"ignore_enemies"	"#IgnoreEnemies"
+				"commands"		"#Commands"
+				"inventory"		"#Inventory"
+				"abilities"		"#Abilities"
+			}
+			"StickPadGyro"
+			{
+				"walking_joy"
+				{
+					"title"		"#Walking_Joy"
+					"input_mode"	"joystick_move"
+				}
+			}
+			
+		}
+		"RealTime"
+		{
+			"title"		"#Set_Real_Time_Mode"
+			"parent_set_name"		"GameControls"
+			"Button"
+			{
+				"buildings_menu"	"#Buildings_Menu"
+				"minions_menu"		"#Minions_Menu"
+				"tech_menu"		"#Tech_Menu"
+				"help_menu"		"#Help_Menu"
+				"villains_menu"		"#Villains_Menu"
+				"pause"			"#Pause"
+				"speed_up"		"#Speed_Up"
+				"speed_down"		"#Speed_Down"
+			}
+		}
+	}
+	"localization"
+	{
+		"english"
+		{
+			"Set_Game"	"In-game actions"
+			"Z_Level_Up"	"Move one Z-level up"
+			"Z_Level_Down"	"Move one Z-level down"
+			"Open_Menu"	"Open menu"
+			"Show_Worldmap"	"Show world map"
+			"Show_Minimap"		"Show minimap"
+			"Zoom_Map"		"Zoom the map in or out"
+			"Map_Scrolling_Joy"	"Pan the map"
+			"Set_Turned_Based_Mode"	"Turn-based mode"
+			"Exit_Control_Mode"	"Exit control mode"
+			"Toggle_Control_Mode"	"Toggle between full and single control"
+			"Chat"			"Chat"
+			"FireProjectile"	"Fire projectile"
+			"Wait"			"Next team member"
+			"SkipTurn"		"Skip this turn"
+			"StandGround"		"Toggle stop"
+			"IgnoreEnemies"		"Toggle don't chase"
+			"Commands"		"Commands menu"
+			"Inventory"		"Inventory"
+			"Abilities"		"Abilities"
+			"Walking_Joy"		"Choose walking direction"
+			"Set_Real_Time_Mode"	"Real-time mode"
+			"Buildings_Menu"	"Buildings tab"
+			"Minions_Menu"		"Minions tab"
+			"Tech_Menu"		"Technologies tab"
+			"Help_Menu"		"Help tab"
+			"Villains_Menu"		"Villains menu"
+			"Pause"			"Toggle pause"
+			"Speed_Up"		"Increase game speed"
+			"Speed_Down"		"Decrease game speed"
+			"Buildings_Up"		"Move up in submenu"
+			"Buildings_Down"	"Move down in submenu"
+			"Buildings_Left"	"Move left in submenu"
+			"Buildings_Right"	"Move right in submenu"
+			"Buildings_Confirm"	"Confirm submenu choice"
+			"Buildings_Cancel"	"Cancel or back"
+		}
+	}
+}
