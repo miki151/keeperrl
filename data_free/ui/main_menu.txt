@@ -81,4 +81,24 @@ Position(SCREEN, {
       Height 15 {}
     })
   })))))
+  Using "controller_hint" {
+    Position(BOTTOM_CENTERED, Width 750 Height 450 MiniWindow({
+      Fill(Rgb 0 0 0 200)
+      Vertical {
+        Label("When navigating various menus, use:")
+        Height 5 {}
+        Label("* The D-pad to move the focus in a chosen direction.")
+        Height 5 {}
+        Label("* The [A] button to confirm the current selection.")
+        Height 5 {}
+        Label("* The [B] button to go back or close the current dialog.")
+        Height 5 {}
+        Label("* The right joystick to scroll pages that don't fit the screen.")
+        Height 5 {}
+        Position(MIDDLE, Texture("deck_menu"))
+      }
+    }))
+    BlockKeyEvents
+    KeybindingHandler(EXIT_MENU)
+  }
 })

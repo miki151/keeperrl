@@ -37,6 +37,9 @@ RICH_ENUM(OptionId,
   KEEPER_WARNING_TIMEOUT,
 
   SUGGEST_TUTORIAL,
+  CONTROLLER_HINT_MAIN_MENU,
+  CONTROLLER_HINT_REAL_TIME,
+  CONTROLLER_HINT_TURN_BASED,
 
   PLAYER_NAME,
   SETTLEMENT_NAME,
@@ -106,7 +109,6 @@ class Options {
   optional<EnumMap<OptionId, Value>> values;
   void writeValues();
   FilePath filename;
-  EnumMap<OptionId, optional<Value>> overrides;
   EnumMap<OptionId, vector<string>> choices;
   EnumMap<OptionId, optional<Range>> limits;
   KeybindingMap* keybindingMap;

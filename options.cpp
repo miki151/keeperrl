@@ -39,8 +39,10 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::GAME_EVENTS, 1},
   {OptionId::AUTOSAVE2, 1500},
   {OptionId::SUGGEST_TUTORIAL, 1},
+  {OptionId::CONTROLLER_HINT_MAIN_MENU, 1},
+  {OptionId::CONTROLLER_HINT_REAL_TIME, 1},
+  {OptionId::CONTROLLER_HINT_TURN_BASED, 1},
   {OptionId::STARTING_RESOURCE, 0},
-  {OptionId::START_WITH_NIGHT, 0},
   {OptionId::PLAYER_NAME, string("")},
   {OptionId::SETTLEMENT_NAME, string("")},
   {OptionId::MAIN_VILLAINS, 4},
@@ -73,6 +75,9 @@ const map<OptionId, string> names {
   {OptionId::GAME_EVENTS, "Anonymous statistics"},
   {OptionId::AUTOSAVE2, "Number of turns between autosaves"},
   {OptionId::SUGGEST_TUTORIAL, ""},
+  {OptionId::CONTROLLER_HINT_MAIN_MENU, ""},
+  {OptionId::CONTROLLER_HINT_REAL_TIME, ""},
+  {OptionId::CONTROLLER_HINT_TURN_BASED, ""},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
   {OptionId::PLAYER_NAME, "Name"},
@@ -169,8 +174,16 @@ Options::Options(const FilePath& path, KeybindingMap* k, MySteamInput* i) : file
 }
 
 Options::Value Options::getValue(OptionId id) {
-  if (overrides[id])
-    return *overrides[id];
+  switch (id) {
+    case OptionId::CONTROLLER_HINT_MAIN_MENU:
+    case OptionId::CONTROLLER_HINT_TURN_BASED:
+    case OptionId::CONTROLLER_HINT_REAL_TIME:
+      if (!steamInput || steamInput->controllers.empty())
+        return 0;
+      break;
+    default:
+      break;
+  }
   readValues();
   return (*values)[id];
 }
@@ -284,6 +297,9 @@ static bool isBoolean(OptionId id) {
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:
     case OptionId::SUGGEST_TUTORIAL:
+    case OptionId::CONTROLLER_HINT_MAIN_MENU:
+    case OptionId::CONTROLLER_HINT_REAL_TIME:
+    case OptionId::CONTROLLER_HINT_TURN_BASED:
     case OptionId::STARTING_RESOURCE:
     case OptionId::ONLINE:
     case OptionId::GAME_EVENTS:
@@ -311,6 +327,9 @@ string Options::getValueString(OptionId id) {
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:
     case OptionId::SUGGEST_TUTORIAL:
+    case OptionId::CONTROLLER_HINT_MAIN_MENU:
+    case OptionId::CONTROLLER_HINT_REAL_TIME:
+    case OptionId::CONTROLLER_HINT_TURN_BASED:
     case OptionId::STARTING_RESOURCE:
     case OptionId::ONLINE:
     case OptionId::GAME_EVENTS:

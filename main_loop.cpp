@@ -967,6 +967,11 @@ void MainLoop::start(bool tilesPresent) {
   view->reset();
   considerFreeVersionText(tilesPresent);
   considerGameEventsPrompt();
+  bool controllerHint = false;
+  if (options->getBoolValue(OptionId::CONTROLLER_HINT_MAIN_MENU)) {
+    controllerHint = true;
+    options->setValue(OptionId::CONTROLLER_HINT_MAIN_MENU, 0);
+  }
   const auto vanillaContent = createContentFactory(true);
   while (1) {
     playMenuMusic();
@@ -991,6 +996,11 @@ void MainLoop::start(bool tilesPresent) {
     data.elems["quit"] = ScriptedUIDataElems::Callback{[&choice] { choice = 4; return true;}};
     data.elems["version"] = string(BUILD_DATE) + " " + BUILD_VERSION;
     data.elems["install_id"] = fileSharing->getInstallId();
+    if (controllerHint)
+      data.elems["controller_hint"] = ScriptedUIDataElems::Callback{[&controllerHint] {
+        controllerHint = false;
+        return true;
+      }};
     ScriptedUIState uiState{};
     view->scriptedUI("main_menu", data, uiState);
     if (game)
