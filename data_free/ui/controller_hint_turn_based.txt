@@ -1,0 +1,20 @@
+{
+BlockEvents
+ExitButtonsWithEnter()
+Position(BOTTOM_CENTERED, Width 800 MiniWindow({
+  Fill(Rgb 0 0 0 200)
+  Vertical {
+    Label("When playing in the turn-based mode, use:")
+    Height 5 {}
+    Label("* The left joystick to choose walking direction, and [A] to move by one tile.")
+    Height 5 {}
+    Label("* The left touchpad to access various submenus and commands, such as skip turn, inventory, etc.")
+    Height 5 {}
+    Label("* The right joystick to pan the map.")
+    Height 5 {}
+    Position(MIDDLE, Texture("deck_turn_based"))
+    Height 5 {}
+    Label(size = 14 text = "For an exhaustive list of controls or to apply changes, see controller settings after pressing the [Steam] button.")
+  }
+}))
+}
