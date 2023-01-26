@@ -82,7 +82,7 @@ Position(SCREEN, {
     })
   })))))
   Using "controller_hint" {
-    Position(BOTTOM_CENTERED, Width 750 Height 450 MiniWindow({
+    Position(BOTTOM_CENTERED, Width 750 MiniWindow({
       Fill(Rgb 0 0 0 200)
       Vertical {
         Label("When navigating various menus, use:")

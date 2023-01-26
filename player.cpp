@@ -719,6 +719,10 @@ void Player::makeMove() {
     getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
     displayTravelInfo = false;
   }*/
+  if (getGame()->getOptions()->getBoolValue(OptionId::CONTROLLER_HINT_TURN_BASED)) {
+    getView()->scriptedUI("controller_hint_turn_based", ScriptedUIData{});
+    getGame()->getOptions()->setValue(OptionId::CONTROLLER_HINT_TURN_BASED, 0);
+  }
   if (displayGreeting && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     getView()->updateView(this, true);
     displayGreeting = false;
