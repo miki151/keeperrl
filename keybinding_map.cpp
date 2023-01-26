@@ -37,6 +37,16 @@ static SDL::SDL_Keycode getEquivalent(SDL::SDL_Keycode key){
   return key;
 }
 
+optional<SDL::SDL_Keycode> KeybindingMap::getBuiltinMapping(Keybinding key) {
+  static unordered_map<Keybinding, SDL::SDL_Keycode, CustomHash<Keybinding>> bindings {
+    {Keybinding("MENU_UP"), SDL::SDLK_KP_8},
+    {Keybinding("MENU_DOWN"), SDL::SDLK_KP_2},
+    {Keybinding("MENU_LEFT"), SDL::SDLK_KP_4},
+    {Keybinding("MENU_RIGHT"), SDL::SDLK_KP_6},
+  };
+  return getValueMaybe(bindings, key);
+}
+
 optional<ControllerKey> KeybindingMap::getControllerMapping(Keybinding key) {
   static unordered_map<Keybinding, ControllerKey, CustomHash<Keybinding>> controllerBindings {
       {Keybinding("WAIT"), C_WAIT},
@@ -65,6 +75,8 @@ optional<ControllerKey> KeybindingMap::getControllerMapping(Keybinding key) {
 
 bool KeybindingMap::matches(Keybinding key, SDL::SDL_Keysym sym) {
   if (getControllerMapping(key) == (ControllerKey)sym.sym)
+    return true;
+  if (getBuiltinMapping(key) == sym.sym)
     return true;
   if (auto k = getReferenceMaybe(bindings, key))
     return getEquivalent(k->sym) == getEquivalent(sym.sym) && getMod(k->mod) == getMod(sym.mod);

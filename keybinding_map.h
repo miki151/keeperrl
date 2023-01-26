@@ -15,6 +15,7 @@ class KeybindingMap {
   bool matches(Keybinding, SDL::SDL_Keysym);
   static string getText(SDL::SDL_Keysym, string delimiter = " + ");
   static optional<ControllerKey> getControllerMapping(Keybinding);
+  static optional<SDL::SDL_Keycode> getBuiltinMapping(Keybinding);
   SGuiElem getGlyph(SGuiElem label, GuiFactory*, Keybinding);
   SGuiElem getGlyph(SGuiElem label, GuiFactory*, optional<ControllerKey>, optional<string> alternative);
   optional<string> getText(Keybinding);
