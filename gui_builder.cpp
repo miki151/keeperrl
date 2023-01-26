@@ -4554,17 +4554,21 @@ SGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
   lines.addElem(WL(centerHoriz, WL(label, message)));
   lines.addElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, initialPos)));
   lines.addSpace(legendLineHeight / 2);
+  auto confirmCallback = [&] {
+    if (campaign.canTravelTo(*campaignGridPointer))
+      queue.push(*campaignGridPointer);
+  };
   lines.addElem(WL(centerHoriz, WL(getListBuilder)
       .addElemAuto(WL(conditional, WL(stack,
-              WL(buttonLabel, "Confirm", [&] { queue.push(*campaignGridPointer); }),
-              WL(keyHandler, [&] { queue.push(*campaignGridPointer); }, Keybinding("MENU_SELECT"), true)
+              WL(buttonLabel, "Confirm", confirmCallback),
+              WL(keyHandler, confirmCallback, Keybinding("MENU_SELECT"), true)
           ),
           WL(buttonLabelInactive, "Confirm"),
           [&] { return !!campaignGridPointer && campaign.isInInfluence(*campaignGridPointer); }))
       .addSpace(15)
       .addElemAuto(WL(buttonLabel, "Cancel", WL(stack,
           WL(button, [&queue] { queue.push(none); }, true),
-          WL(keyHandler, [&] { queue.push(*campaignGridPointer); }, Keybinding("EXIT_MENU"), true)
+          WL(keyHandler, [&] { queue.push(none); }, Keybinding("EXIT_MENU"), true)
       )))
       .buildHorizontalList()));
   return WL(preferredSize, 1000, 600,
