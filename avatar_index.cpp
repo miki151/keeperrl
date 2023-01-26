@@ -1,7 +1,5 @@
 #include "avatar_index.h"
 
-using namespace AvatarIndexElems;
-
 static int getNumAvatars(const vector<View::AvatarData>& avatars, View::AvatarRole chosenRole,
     int avatarPage) {
   int numAvatars = 0;
@@ -21,6 +19,7 @@ static int getNumPages(const vector<View::AvatarData>& avatars, View::AvatarRole
 
 void AvatarIndex::left(const vector<View::AvatarData>& avatars, int chosenAvatar, View::AvatarRole chosenRole,
     int avatarPage) {
+  using namespace AvatarIndexElems;
   int numAvatars = getNumAvatars(avatars, chosenRole, avatarPage);
   visit(
     [&](None) {
@@ -72,6 +71,7 @@ void AvatarIndex::left(const vector<View::AvatarData>& avatars, int chosenAvatar
 
 void AvatarIndex::right(const vector<View::AvatarData>& avatars, int chosenAvatar, View::AvatarRole chosenRole,
     int avatarPage) {
+  using namespace AvatarIndexElems;
   int numAvatars = getNumAvatars(avatars, chosenRole, avatarPage);
   auto genderRight = [&] {
     if (numAvatars > avatarsPerPage / 2)
@@ -126,6 +126,7 @@ void AvatarIndex::right(const vector<View::AvatarData>& avatars, int chosenAvata
 
 void AvatarIndex::up(const vector<View::AvatarData>& avatars, int chosenAvatar, View::AvatarRole chosenRole,
     int avatarPage) {
+  using namespace AvatarIndexElems;
   int numAvatars = getNumAvatars(avatars, chosenRole, avatarPage);
   auto nameUp = [&] (int row) {
     if (!avatars[chosenAvatar].settlementNames)
@@ -164,6 +165,7 @@ void AvatarIndex::up(const vector<View::AvatarData>& avatars, int chosenAvatar, 
 
 void AvatarIndex::down(const vector<View::AvatarData>& avatars, int chosenAvatar, View::AvatarRole chosenRole,
     int avatarPage) {
+  using namespace AvatarIndexElems;
   int numAvatars = getNumAvatars(avatars, chosenRole, avatarPage);
   visit(
     [&](None) {

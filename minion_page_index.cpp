@@ -1,9 +1,7 @@
 #include "minion_page_index.h"
 
-namespace E = MinionPageElems;
-using namespace E;
-
 bool MinionPageIndex::left() {
+  using namespace MinionPageElems;
   return visit(
       [&](MinionAction a) {
         if (a.index == 0)
@@ -29,6 +27,7 @@ bool MinionPageIndex::left() {
 }
 
 bool MinionPageIndex::right(int numActions, int numSettings) {
+  using namespace MinionPageElems;
   visit(
     [&](MinionAction a) {
       if (a.index < numActions - 1)
@@ -45,6 +44,7 @@ bool MinionPageIndex::right(int numActions, int numSettings) {
 }
 
 bool MinionPageIndex::up(int numActions, int numSettings) {
+  using namespace MinionPageElems;
   return visit(
     [&](Setting a) {
       assign(MinionAction{min(numActions - 1, a.index)});
@@ -63,6 +63,7 @@ bool MinionPageIndex::up(int numActions, int numSettings) {
 }
 
 bool MinionPageIndex::down(int numSettings, int numEquipment) {
+  using namespace MinionPageElems;
   return visit(
     [&](MinionAction a) {
       assign(Setting{min(numSettings - 1, a.index)});

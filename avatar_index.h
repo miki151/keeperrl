@@ -19,7 +19,7 @@ namespace AvatarIndexElems {
     COMPARE_ALL(value)
   };
   struct CreatureIndex {
-    int SERIAL(value);
+    Vec2 SERIAL(value);
     COMPARE_ALL(value)
   };
   EMPTY_STRUCT(EnterNameIndex);

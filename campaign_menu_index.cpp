@@ -1,8 +1,7 @@
 #include "campaign_menu_index.h"
 
-using namespace CampaignMenuElems;
-
 void CampaignMenuIndex::left() {
+  using namespace CampaignMenuElems;
   visit(
       [&](None) {
         assign(Help{});
@@ -27,6 +26,7 @@ void CampaignMenuIndex::left() {
 }
 
 void CampaignMenuIndex::right(int numBiomes) {
+  using namespace CampaignMenuElems;
   visit(
       [&](None) {
         assign(Help{});
@@ -51,6 +51,7 @@ void CampaignMenuIndex::right(int numBiomes) {
 }
 
 void CampaignMenuIndex::up() {
+  using namespace CampaignMenuElems;
   visit(
       [&](None) {
         assign(Help{});
@@ -81,6 +82,7 @@ void CampaignMenuIndex::up() {
 }
 
 void CampaignMenuIndex::down() {
+  using namespace CampaignMenuElems;
   visit(
       [&](None) {
         assign(Help{});
