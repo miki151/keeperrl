@@ -71,10 +71,7 @@ class OwnerPointer {
     return weak_ptr<T>(elem);
   }*/
 
-  template <class Archive>
-  void serialize(Archive& ar) {
-    ar(elem);
-  }
+  SERIALIZE_ALL(elem)
 
 #ifdef MEM_USAGE_TEST
   void serialize(MemUsageArchive& ar1, const unsigned int) {

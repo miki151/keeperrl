@@ -7,30 +7,30 @@ constexpr int avatarsPerPage = 10;
 
 namespace AvatarIndexElems {
   struct RoleIndex {
-    int value;
+    int SERIAL(value);
     COMPARE_ALL(value)
   };
   struct GenderIndex {
-    int value;
+    int SERIAL(value);
     COMPARE_ALL(value)
   };
   struct NameIndex {
-    int value;
+    int SERIAL(value);
     COMPARE_ALL(value)
   };
   struct CreatureIndex {
-    Vec2 value;
+    int SERIAL(value);
     COMPARE_ALL(value)
   };
   EMPTY_STRUCT(EnterNameIndex);
   EMPTY_STRUCT(RollNameIndex);
   EMPTY_STRUCT(StartNewGameIndex);
   struct BottomButtonsIndex {
-    int value;
+    int SERIAL(value);
     COMPARE_ALL(value)
   };
   struct PageButtonsIndex {
-    int value;
+    int SERIAL(value);
     COMPARE_ALL(value)
   };
   EMPTY_STRUCT(None);

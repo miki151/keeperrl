@@ -4,15 +4,15 @@
 
 namespace MinionPageElems {
   struct MinionAction {
-    int index;
+    int SERIAL(index);
     COMPARE_ALL(index)
   };
   struct Setting {
-    int index;
+    int SERIAL(index);
     COMPARE_ALL(index)
   };
   struct Equipment {
-    int index;
+    int SERIAL(index);
     COMPARE_ALL(index);
   };
   EMPTY_STRUCT(None);

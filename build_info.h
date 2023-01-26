@@ -80,8 +80,8 @@ struct BuildInfo {
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
   bool SERIAL(isBuilding) = false;
   template <class Archive>
-  void serializeImpl(Archive& ar1, const unsigned int) {
-    ar1(NAMED(type), NAMED(name), NAMED(groupName), OPTION(help), NAMED(key), OPTION(requirements), OPTION(hotkeyOpensGroup), NAMED(tutorialHighlight), OPTION(isBuilding));
+  void serializeImpl(Archive& ar, const unsigned int) {
+    ar(NAMED(type), NAMED(name), NAMED(groupName), OPTION(help), NAMED(key), OPTION(requirements), OPTION(hotkeyOpensGroup), NAMED(tutorialHighlight), OPTION(isBuilding));
   }
   template <class Archive>
   void serialize(Archive& ar1, const unsigned int v) {

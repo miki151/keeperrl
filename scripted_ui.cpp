@@ -77,7 +77,7 @@ struct TextureImpl : ScriptedUIInterface {
       ar(NAMED(scriptedId));
     else
       ar(NAMED(id));
-    ar(  NAMED(type), OPTION(flip));
+    ar(NAMED(type), OPTION(flip));
   }
 };
 
@@ -881,6 +881,7 @@ struct UrlButton : Focusable {
 
   string SERIAL(url);
   SERIALIZE_ALL(roundBracket(), NAMED(elem), NAMED(url))
+  // SERIAL(elem) to remove false check_serial warning
 };
 
 REGISTER_SCRIPTED_UI(UrlButton);
