@@ -167,6 +167,12 @@ void MySteamInput::showBindingScreen() {
     }
 }
 
+bool MySteamInput::isRunningOnDeck() {
+  if (auto utils = SteamUtils())
+    return utils->IsSteamRunningOnSteamDeck();
+  return false;
+}
+
 void MySteamInput::showFloatingKeyboard(Rectangle field) {
   if (auto utils = SteamUtils())
     utils->ShowFloatingGamepadTextInput(k_EFloatingGamepadTextInputModeModeSingleLine,

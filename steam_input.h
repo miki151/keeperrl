@@ -72,6 +72,7 @@ class MySteamInput {
   pair<double, double> getJoyPos(ControllerJoy);
   void runFrame();
   bool isPressed(ControllerKey);
+  bool isRunningOnDeck();
   optional<FilePath> getGlyph(ControllerKey);
   queue<ControllerKey> actionQueue;
   optional<GameActionLayer> actionLayer;

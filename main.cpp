@@ -326,6 +326,8 @@ static int keeperMain(po::parser& commandLineFlags) {
   Options options(settingsPath, &keybindingMap, steamInput.get());
   Random.init(int(time(nullptr)));
   auto installId = getInstallId(userPath.file("installId.txt"), Random);
+  if (steamInput->isRunningOnDeck())
+    installId += "_deck";
   SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
