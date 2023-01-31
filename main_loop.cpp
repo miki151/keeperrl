@@ -778,8 +778,9 @@ void MainLoop::showMods() {
       {"local", modLists[0]},
       {"subscribed", modLists[1]},
       {"online", modLists[2]},
-      {"selected_mod", getModInfo(allMods[modIndex])},
     }};
+    if (!allMods.empty())
+      data.elems["selected_mod"] = getModInfo(allMods[modIndex]);
     auto oldFunNext = *uiState.highlightNext.getValueMaybe<ScriptedUIDataElems::Callback>();
     auto oldFunPrev = *uiState.highlightPrevious.getValueMaybe<ScriptedUIDataElems::Callback>();
     uiState.highlightNext = ScriptedUIDataElems::Callback{
