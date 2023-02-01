@@ -1447,7 +1447,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
     }
     if (auto usage = furniture->getUsageType()) {
       auto increaseLevel = [&] (ExperienceType exp) {
-        double increase = 0.007 * efficiency * LastingEffects::getTrainingSpeed(c);
+        double increase = 0.012 * efficiency * LastingEffects::getTrainingSpeed(c);
         if (auto maxLevel = contentFactory->furniture.getData(furniture->getType()).getMaxTraining(exp))
           increase = min(increase, maxLevel - c->getAttributes().getExpLevel(exp));
         if (increase > 0)
