@@ -12,7 +12,7 @@ void MySteamInput::init() {
 
 void MySteamInput::detectControllers() {
   auto currentTime = Clock::getRealMillis();
-  if (!!lastControllersCheck && currentTime - *lastControllersCheck < milliseconds{1000})
+  if (!isRunningOnDeck() || (!!lastControllersCheck && currentTime - *lastControllersCheck < milliseconds{1000}))
     return;
   lastControllersCheck = currentTime;
   if (auto steamInput = SteamInput()) {
