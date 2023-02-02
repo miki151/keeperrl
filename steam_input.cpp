@@ -142,12 +142,13 @@ pair<double, double> MySteamInput::getJoyPos(ControllerJoy j) {
 }
 
 void MySteamInput::setGameActionLayer(GameActionLayer layer) {
-  if (SteamInput() && actionLayer != layer)
-    if (auto steamInput = SteamInput()) {
-      steamInput->DeactivateAllActionSetLayers(STEAM_INPUT_HANDLE_ALL_CONTROLLERS);
-      steamInput->ActivateActionSetLayer(STEAM_INPUT_HANDLE_ALL_CONTROLLERS, gameActionLayers.at(layer));
-      actionLayer = layer;
-    }
+  if (actionLayer != layer)
+    if (auto steamInput = SteamInput())
+      for (auto input : controllers) {
+        steamInput->DeactivateAllActionSetLayers(input);
+        steamInput->ActivateActionSetLayer(input, gameActionLayers.at(layer));
+        actionLayer = layer;
+      }
 }
 
 optional<ControllerKey> MySteamInput::getEvent() {
