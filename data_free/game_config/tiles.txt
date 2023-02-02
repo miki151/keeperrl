@@ -734,6 +734,10 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
   sprite = "mountain" wallShadow = true mountainSides = "dungeonwall" }
 { viewId = "dungeon_wall2" symbol = "#" color = ColorId DARK_BLUE
   sprite = "mountain2" wallShadow = true mountainSides = "dungeonwall" }
+{ viewId = "necro_wall" symbol = "#" color = ColorId LIGHT_GRAY
+  sprite = "mountain" wallShadow = true mountainSides = "necrowall" }
+{ viewId = "necro_wall2" symbol = "#" color = ColorId DARK_BLUE
+  sprite = "mountain2" wallShadow = true mountainSides = "necrowall" }
 { viewId = "sandstone_wall" symbol = "#" color = ColorId YELLOW
   sprite = "mountain_sand" wallShadow = true mountainSides = "dungeonwall" }
 { viewId = "gold_ore" symbol = "⁂" color = ColorId YELLOW

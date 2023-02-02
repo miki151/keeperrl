@@ -2,7 +2,7 @@
 # (they do not necessarily correspond to how menu items are grouped into submenus, you can join several
 # groups into a submenu, like beds, cages, pigsty and coffins are in the "living" submenu)
 
-  "structure"
+  "structure_without_reinforce"
   {
     { { Dig CutTree }                                        "Dig or cut tree"   "Structure"  
       "" "DIG" {} true DIG_OR_CUT_TREES}
@@ -11,9 +11,6 @@
 #    { CutTree                                                      "Cut tree"   "Structure" }
     { Furniture {{ "MOUNTAIN" }             "STONE" 5 }      "Soft rock"         "Structure" }
     { Furniture {{ "MOUNTAIN2" }            "STONE" 10 }     "Hard rock"         "Structure" }
-
-    { Furniture {{ "DUNGEON_WALL" "DUNGEON_WALL2" } "STONE" 3}       "Reinforce wall"    "Structure"
-      "Reinforced walls are better at stopping enemies from digging into your dungeon."}
 
     { Furniture {{ "PIT" }                        "STONE" 0 }      "Dig a pit"         "Structure"
       "Dig a pit in the ground. Building next to water or lava will cause it to fill up." }
@@ -47,6 +44,18 @@
 
     { Furniture {{ "DOWN_STAIRS" }                }              "Down stairs"       "Structure"
       "Build to reach deeper z-levels." }
+  }
+
+  "structure" inherit "structure_without_reinforce" append
+  {
+    { Furniture {{ "DUNGEON_WALL" "DUNGEON_WALL2" } "STONE" 3}       "Reinforce wall"    "Structure"
+      "Reinforced walls are better at stopping enemies from digging into your dungeon."}
+  }
+
+  "structure_necro" inherit "structure_without_reinforce" append
+  {
+    { Furniture {{ "NECRO_WALL" "NECRO_WALL2" } "STONE" 3}       "Reinforce wall"    "Structure"
+      "Reinforced walls are better at stopping enemies from digging into your dungeon."}
   }
 
   "arrowslits"

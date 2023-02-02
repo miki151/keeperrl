@@ -1574,6 +1574,14 @@ Def BedHeal() Heal { FLESH 0.005 } End
   destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
   tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
 }
+"NECRO_WALL" inherit "DUNGEON_WALL"
+{
+  viewId = { "necro_wall" }
+}
+"NECRO_WALL2" inherit "DUNGEON_WALL2"
+{
+  viewId = { "necro_wall2" }
+}
 "SANDSTONE_WALL" inherit "DUNGEON_WALL"
 {
   viewId = { "sandstone_wall" }
