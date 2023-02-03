@@ -611,6 +611,12 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
   isSymbolFont = true roundShadow = true }
 { viewId = "training_ada" symbol = "‡" color = ColorId LIGHT_BLUE
   isSymbolFont = true roundShadow = true }
+{ viewId = "training_wood_necro" symbol = "‡" color = ColorId BROWN
+  isSymbolFont = true roundShadow = true }
+{ viewId = "training_iron_necro" symbol = "‡" color = ColorId LIGHT_GRAY
+  isSymbolFont = true roundShadow = true }
+{ viewId = "training_ada_necro" symbol = "‡" color = ColorId LIGHT_BLUE
+  isSymbolFont = true roundShadow = true }
 { viewId = "archery_range" symbol = "⌾" color = ColorId LIGHT_BLUE
   isSymbolFont = true roundShadow = true }
 { viewId = "demon_shrine" symbol = "Ω" color = ColorId PURPLE

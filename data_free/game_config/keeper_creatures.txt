@@ -65,7 +65,7 @@
   initialTech = { "necromancy" }
   buildingGroups = {
       "structure_necro" "doors" "floors" "storage" "zones" "library_necro" "beds" "coffins"
-      "training" "morgue" "crafting" "embalming" "poetry" "distillery" "furnace" "orders"
+      "training_necro" "morgue" "crafting" "embalming" "poetry" "distillery" "furnace" "orders"
       "phylactery" "installations_no_heads" "magical_installations"
   }
   workshopGroups = { "morgue" "basic_without_lab" "bows" }

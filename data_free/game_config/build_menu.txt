@@ -234,7 +234,7 @@
 
   "training_zombies"
   {
-    { Furniture {{ "TRAINING_WOOD" } "WOOD" 12 }                   "Wooden dummy"      "Training room"
+    { Furniture {{ "TRAINING_WOOD_NECRO" } "WOOD" 12 }                   "Wooden dummy"      "Training room"
         "Train your minions' melee skills here." "TRAINING_DUMMIES" {} true  TRAINING_ROOM}
   }
 
@@ -252,6 +252,18 @@
 
   "training" inherit "training_dummies" append
   {
+    { Furniture {{ "ARCHERY_RANGE" } "WOOD" 12 }                   "Archery target"    "Training room"
+        "Train your minions' archery skills here." none { TechId "archery" }}
+  }
+
+  "training_necro"
+  {
+    { Furniture {{ "TRAINING_WOOD_NECRO" } "WOOD" 12 }                   "Wooden dummy"      "Training room"
+        "Train your minions' melee skills here." "TRAINING_DUMMIES" {} true  TRAINING_ROOM}
+    { Furniture {{ "TRAINING_IRON_NECRO" } "IRON" 12 }                   "Iron dummy"        "Training room"
+        "Train your minions' melee skills here."   none { TechId "iron working" } }
+    { Furniture {{ "TRAINING_ADA_NECRO" }  "ADA"  12 }                   "Adamantine dummy"  "Training room"
+        "Train your minions' melee skills here."   none { TechId "iron working" }}
     { Furniture {{ "ARCHERY_RANGE" } "WOOD" 12 }                   "Archery target"    "Training room"
         "Train your minions' archery skills here." none { TechId "archery" }}
   }

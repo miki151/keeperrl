@@ -43,6 +43,18 @@
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
+"TRAINING_WOOD_NECRO" inherit "TRAINING_WOOD"
+{
+  viewId = { "training_wood_necro" }
+}
+"TRAINING_IRON_NECRO" inherit "TRAINING_IRON"
+{
+  viewId = { "training_iron_necro" }
+}
+"TRAINING_ADA_NECRO" inherit "TRAINING_ADA"
+{
+  viewId = { "training_ada_necro" }
+}
 "ARCHERY_RANGE"
 {
   name = "archery target"
