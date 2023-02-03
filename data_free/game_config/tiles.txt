@@ -618,6 +618,7 @@ End
 TRAINING("")
 TRAINING("_necro")
 TRAINING("_human")
+TRAINING("_dwarf")
 { viewId = "archery_range" symbol = "⌾" color = ColorId LIGHT_BLUE
   isSymbolFont = true roundShadow = true }
 Def BOOKCASES(SUF)

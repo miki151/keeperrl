@@ -266,6 +266,7 @@ End
 
 TRAINING("_NECRO", "_necro")
 TRAINING("_HUMAN", "_human")
+TRAINING("_DWARF", "_dwarf")
 
   "crafting"
   {

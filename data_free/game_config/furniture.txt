@@ -50,7 +50,8 @@ Def TRAINING(SUF1, SUF2)
 End
 TRAINING("_HUMAN", "_human")
 TRAINING("_NECRO", "_necro")
-"ARCHERY_RANGE"  
+TRAINING("_DWARF", "_dwarf")
+"ARCHERY_RANGE"
 {
   name = "archery target"
   viewId = { "archery_range" }
