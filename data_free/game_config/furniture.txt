@@ -267,6 +267,10 @@
   populationIncrease = { 10 none }
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
 }
+"THRONE_HUMAN" inherit "THRONE"
+{
+  viewId = { "throne_human" }
+}
 "IMPALED_HEAD"
 {
   name = "impaled head"

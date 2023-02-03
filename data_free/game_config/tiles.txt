@@ -587,6 +587,8 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
   roundShadow = true }
 { viewId = "throne" symbol = "Ω" color = ColorId YELLOW
   isSymbolFont = true roundShadow = true fx = GoldGlitter() }
+{ viewId = "throne_human" symbol = "Ω" color = ColorId YELLOW
+  isSymbolFont = true roundShadow = true fx = GoldGlitter() }
 { viewId = "altar_des" symbol = "Ω" color = ColorId RED
   isSymbolFont = true roundShadow = true }
 { viewId = "torture_table" symbol = "=" color = ColorId GRAY

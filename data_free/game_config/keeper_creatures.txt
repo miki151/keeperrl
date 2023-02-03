@@ -47,7 +47,7 @@
   buildingGroups = {
       "structure" "arrowslits" "doors" "floors" "storage" "zones" "library" "beds"
       "dining table" "pigsty" "training" "crafting" "laboratory" "jeweller" "poetry" "distillery"
-      "furnace" "prison" "orders" "throne" "angel_shrine" "installations"
+      "furnace" "prison" "orders" "throne_human" "angel_shrine" "installations"
   }
   workshopGroups = { "basic" "bows" }
   description = "Play as a not-so-evil human race. Recruit knights, priests and angelic beings!"

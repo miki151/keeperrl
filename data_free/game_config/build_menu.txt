@@ -380,6 +380,11 @@
     { Furniture { types = { "THRONE" } cost = "GOLD" 500 limit = 1} "Throne" "Installations" ""  none   {DungeonLevel 10} }
   }
 
+  "throne_human"
+    {
+      { Furniture { types = { "THRONE_HUMAN" } cost = "GOLD" 500 limit = 1} "Throne" "Installations" ""  none   {DungeonLevel 10} }
+    }
+
   "phylactery"
   {
     { Furniture { types = { "PHYLACTERY" } cost = "GOLD" 500} "Phylactery" "Installations"
