@@ -232,6 +232,18 @@
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
 }
+"BOOKCASE_WOOD_NECRO" inherit "BOOKCASE_WOOD"
+{
+  viewId = { "bookcase_wood_necro" }
+}
+"BOOKCASE_IRON_NECRO" inherit "BOOKCASE_IRON"
+{
+  viewId = { "bookcase_iron_necro" }
+}
+"BOOKCASE_GOLD_NECRO" inherit "BOOKCASE_GOLD"
+{
+  viewId = { "bookcase_gold_necro" }
+}
 "THRONE"
 {
   name = "throne"

@@ -64,7 +64,7 @@
   zLevelGroups = { "basic" "evil" }
   initialTech = { "necromancy" }
   buildingGroups = {
-      "structure_necro" "doors" "floors" "storage" "zones" "library" "beds" "coffins"
+      "structure_necro" "doors" "floors" "storage" "zones" "library_necro" "beds" "coffins"
       "training" "morgue" "crafting" "embalming" "poetry" "distillery" "furnace" "orders"
       "phylactery" "installations_no_heads" "magical_installations"
   }

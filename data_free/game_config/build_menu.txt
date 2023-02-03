@@ -175,6 +175,18 @@
         "Train your minions' magical powers here." none           {TechId "master sorcery"}}
   }
 
+  "library_necro"
+  {
+    { Furniture {{ "BOOKCASE_WOOD_NECRO" }   "WOOD" 15 }                 "Wooden bookcase"   "Library"
+        "Train your minions' magical powers here." "BOOKCASES"     {TechId "sorcery"} true BUILD_LIBRARY }
+
+    { Furniture {{ "BOOKCASE_IRON_NECRO" }   "IRON" 15 }                 "Iron bookcase"     "Library"
+        "Train your minions' magical powers here." none          {TechId "advanced sorcery"} }
+
+    { Furniture {{ "BOOKCASE_GOLD_NECRO" }   "GOLD" 15 }                 "Golden bookcase"   "Library"
+        "Train your minions' magical powers here." none           {TechId "master sorcery"}}
+  }
+
   "beds"
   {
     { Furniture {{ "BED1" }       "WOOD" 12 }                      "Basic bed"         "Living"

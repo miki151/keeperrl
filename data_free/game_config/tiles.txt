@@ -623,6 +623,12 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
   roundShadow = true isSymbolFont = true }
 { viewId = "bookcase_gold" symbol = "▤" color = ColorId YELLOW
   roundShadow = true isSymbolFont = true }
+{ viewId = "bookcase_wood_necro" symbol = "▤" color = ColorId BROWN
+  roundShadow = true isSymbolFont = true }
+{ viewId = "bookcase_iron_necro" symbol = "▤" color = ColorId LIGHT_GRAY
+  roundShadow = true isSymbolFont = true }
+{ viewId = "bookcase_gold_necro" symbol = "▤" color = ColorId YELLOW
+  roundShadow = true isSymbolFont = true }
 { viewId = "beast_cage" symbol = "▥" color = ColorId LIGHT_GRAY
   isSymbolFont = true roundShadow = true }
 { viewId = "forge" symbol = "&" color = ColorId LIGHT_BLUE
