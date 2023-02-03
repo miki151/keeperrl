@@ -1744,6 +1744,14 @@ Def BedHeal() Heal { FLESH 0.005 } End
 }
 "FLOOR_STONE2" inherit "FLOOR_STONE1"
 {
+  viewId = { "stone_floor2" }
+}
+"FLOOR_STONE3" inherit "FLOOR_STONE1"
+{
+  viewId = { "stone_floor3" }
+}
+"FLOOR_STONE5" inherit "FLOOR_STONE1"
+{
   viewId = { "stone_floor5" }
 }
 "FLOOR_CARPET1"
@@ -1755,9 +1763,17 @@ Def BedHeal() Heal { FLESH 0.005 } End
 }
 "FLOOR_CARPET2" inherit "FLOOR_CARPET1"
 {
+  viewId = { "carpet_floor2" }
+}
+"FLOOR_CARPET3" inherit "FLOOR_CARPET1"
+{
+  viewId = { "carpet_floor3" }
+}
+"FLOOR_CARPET4" inherit "FLOOR_CARPET1"
+{
   viewId = { "carpet_floor4" }
 }
-"CARPET2_GROUND" inherit "FLOOR_CARPET2"
+"CARPET4_GROUND" inherit "FLOOR_CARPET4"
 {
   layer = GROUND
 }

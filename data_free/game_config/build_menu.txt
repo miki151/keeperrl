@@ -89,14 +89,22 @@
     { Furniture {{ "FLOOR_WOOD2" }                "WOOD" 2 }       "Wooden"            "Floors"
         "" none {} true BUILD_FLOOR}
     { Furniture {{ "FLOOR_STONE1" }               "STONE" 2 }      "Stone"             "Floors" }
-    { Furniture {{ "FLOOR_STONE2" }               "STONE" 2 }      "Stone"             "Floors" }
+    { Furniture {{ "FLOOR_STONE5" }               "STONE" 2 }      "Stone"             "Floors" }
     { Furniture {{ "FLOOR_CARPET1" }              "GOLD" 2 }       "Carpet"            "Floors" }
-    { Furniture {{ "FLOOR_CARPET2" }              "GOLD" 2 }       "Carpet"            "Floors" }
-#    { Furniture {{ "FLOOR_SPEED" }                "GOLD" 2 }       "Floor of speed"    "Floors" }
-#    { Furniture {{ "FLOOR_BLIND" }                "GOLD" 2 }       "Floor of blindness""Floors" }
-#    { Furniture {{ "FLOOR_INVI" }                "GOLD" 2 }       "Floor of invisibility""Floors" }
-#    { Furniture {{ "FLOOR_REGENER" }                "GOLD" 2 }       "Floor of regeneration""Floors" }
-#    { Furniture {{ "FLOOR_PEACE" }                "GOLD" 2 }       "Floor of peace""Floors" }
+    { Furniture {{ "FLOOR_CARPET4" }              "GOLD" 2 }       "Carpet"            "Floors" }
+    { DestroyLayers {FLOOR}                                    "Remove floor"      "Floors" }
+  }
+
+  "floors_dwarf"
+  {
+    { Furniture {{ "FLOOR_WOOD1" }                "WOOD" 2 }       "Wooden"            "Floors"
+        "" "FLOORS" {} true BUILD_FLOOR}
+    { Furniture {{ "FLOOR_WOOD2" }                "WOOD" 2 }       "Wooden"            "Floors"
+        "" none {} true BUILD_FLOOR}
+    { Furniture {{ "FLOOR_STONE2" }               "STONE" 2 }      "Stone"             "Floors" }
+    { Furniture {{ "FLOOR_STONE3" }               "STONE" 2 }      "Stone"             "Floors" }
+    { Furniture {{ "FLOOR_CARPET1" }              "GOLD" 2 }       "Carpet"            "Floors" }
+    { Furniture {{ "FLOOR_CARPET4" }              "GOLD" 2 }       "Carpet"            "Floors" }
     { DestroyLayers {FLOOR}                                    "Remove floor"      "Floors" }
   }
 

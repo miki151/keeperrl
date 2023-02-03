@@ -114,7 +114,7 @@
   initialTech = { "iron working" }
   baseNameGen = "TOWN"
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "library_human" "beds" "dining table"
+      "structure" "doors" "floors_dwarf" "storage" "zones" "library_human" "beds" "dining table"
       "training_dwarf" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "orders"
       "installations"
   }
