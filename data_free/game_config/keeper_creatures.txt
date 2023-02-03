@@ -45,8 +45,8 @@
   zLevelGroups = { "basic" "lawful" }
   initialTech = { "archery" }
   buildingGroups = {
-      "structure" "arrowslits" "doors" "floors" "storage" "zones" "library" "beds"
-      "dining table" "pigsty" "training" "crafting" "laboratory" "jeweller" "poetry" "distillery"
+      "structure" "arrowslits" "doors" "floors" "storage" "zones" "library_human" "beds"
+      "dining table" "pigsty" "training_human" "crafting" "laboratory" "jeweller" "poetry" "distillery"
       "furnace" "prison" "orders" "throne_human" "angel_shrine" "installations"
   }
   workshopGroups = { "basic" "bows" }

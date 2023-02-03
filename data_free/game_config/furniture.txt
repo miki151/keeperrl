@@ -43,19 +43,14 @@
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
-"TRAINING_WOOD_NECRO" inherit "TRAINING_WOOD"
-{
-  viewId = { "training_wood_necro" }
-}
-"TRAINING_IRON_NECRO" inherit "TRAINING_IRON"
-{
-  viewId = { "training_iron_necro" }
-}
-"TRAINING_ADA_NECRO" inherit "TRAINING_ADA"
-{
-  viewId = { "training_ada_necro" }
-}
-"ARCHERY_RANGE"
+Def TRAINING(SUF1, SUF2)
+"TRAINING_WOOD" + SUF1 inherit "TRAINING_WOOD" { viewId = { "training_wood" + SUF2 } }
+"TRAINING_IRON" + SUF1 inherit "TRAINING_IRON" { viewId = { "training_iron" + SUF2 } }
+"TRAINING_ADA" + SUF1 inherit "TRAINING_ADA" { viewId = { "training_ada" + SUF2 } }
+End
+TRAINING("_HUMAN", "_human")
+TRAINING("_NECRO", "_necro")
+"ARCHERY_RANGE"  
 {
   name = "archery target"
   viewId = { "archery_range" }
@@ -244,18 +239,13 @@
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
 }
-"BOOKCASE_WOOD_NECRO" inherit "BOOKCASE_WOOD"
-{
-  viewId = { "bookcase_wood_necro" }
-}
-"BOOKCASE_IRON_NECRO" inherit "BOOKCASE_IRON"
-{
-  viewId = { "bookcase_iron_necro" }
-}
-"BOOKCASE_GOLD_NECRO" inherit "BOOKCASE_GOLD"
-{
-  viewId = { "bookcase_gold_necro" }
-}
+Def BOOKCASES(SUF1, SUF2)
+"BOOKCASE_WOOD" + SUF1 inherit "BOOKCASE_WOOD" { viewId = { "bookcase_wood" + SUF2 } }
+"BOOKCASE_IRON" + SUF1 inherit "BOOKCASE_IRON" { viewId = { "bookcase_iron" + SUF2 } }
+"BOOKCASE_GOLD" + SUF1 inherit "BOOKCASE_GOLD" { viewId = { "bookcase_gold" + SUF2 } }
+End
+BOOKCASES("_NECRO", "_necro")
+BOOKCASES("_HUMAN", "_human")
 "THRONE"
 {
   name = "throne"

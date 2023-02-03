@@ -163,29 +163,23 @@
         "Designate an area that minions will actively guard."}
    }
 
-  "library"
+Def LIBRARY(SUF1, SUF2)
+  "library" + SUF2
   {
-    { Furniture {{ "BOOKCASE_WOOD" }   "WOOD" 15 }                 "Wooden bookcase"   "Library"
+    { Furniture {{ "BOOKCASE_WOOD" + SUF1 }   "WOOD" 15 }                 "Wooden bookcase"   "Library"
         "Train your minions' magical powers here." "BOOKCASES"     {TechId "sorcery"} true BUILD_LIBRARY }
 
-    { Furniture {{ "BOOKCASE_IRON" }   "IRON" 15 }                 "Iron bookcase"     "Library"
+    { Furniture {{ "BOOKCASE_IRON" + SUF1 }   "IRON" 15 }                 "Iron bookcase"     "Library"
         "Train your minions' magical powers here." none          {TechId "advanced sorcery"} }
 
-    { Furniture {{ "BOOKCASE_GOLD" }   "GOLD" 15 }                 "Golden bookcase"   "Library"
+    { Furniture {{ "BOOKCASE_GOLD" + SUF1 }   "GOLD" 15 }                 "Golden bookcase"   "Library"
         "Train your minions' magical powers here." none           {TechId "master sorcery"}}
   }
+End
 
-  "library_necro"
-  {
-    { Furniture {{ "BOOKCASE_WOOD_NECRO" }   "WOOD" 15 }                 "Wooden bookcase"   "Library"
-        "Train your minions' magical powers here." "BOOKCASES"     {TechId "sorcery"} true BUILD_LIBRARY }
-
-    { Furniture {{ "BOOKCASE_IRON_NECRO" }   "IRON" 15 }                 "Iron bookcase"     "Library"
-        "Train your minions' magical powers here." none          {TechId "advanced sorcery"} }
-
-    { Furniture {{ "BOOKCASE_GOLD_NECRO" }   "GOLD" 15 }                 "Golden bookcase"   "Library"
-        "Train your minions' magical powers here." none           {TechId "master sorcery"}}
-  }
+  LIBRARY("", "")
+  LIBRARY("_HUMAN", "_human")
+  LIBRARY("_NECRO", "_necro")
 
   "beds"
   {
@@ -256,17 +250,22 @@
         "Train your minions' archery skills here." none { TechId "archery" }}
   }
 
-  "training_necro"
+Def TRAINING(SUF1, SUF2)
+  "training" + SUF2
   {
-    { Furniture {{ "TRAINING_WOOD_NECRO" } "WOOD" 12 }                   "Wooden dummy"      "Training room"
+    { Furniture {{ "TRAINING_WOOD" + SUF1 } "WOOD" 12 }                   "Wooden dummy"      "Training room"
         "Train your minions' melee skills here." "TRAINING_DUMMIES" {} true  TRAINING_ROOM}
-    { Furniture {{ "TRAINING_IRON_NECRO" } "IRON" 12 }                   "Iron dummy"        "Training room"
+    { Furniture {{ "TRAINING_IRON" + SUF1 } "IRON" 12 }                   "Iron dummy"        "Training room"
         "Train your minions' melee skills here."   none { TechId "iron working" } }
-    { Furniture {{ "TRAINING_ADA_NECRO" }  "ADA"  12 }                   "Adamantine dummy"  "Training room"
+    { Furniture {{ "TRAINING_ADA" + SUF1 }  "ADA"  12 }                   "Adamantine dummy"  "Training room"
         "Train your minions' melee skills here."   none { TechId "iron working" }}
     { Furniture {{ "ARCHERY_RANGE" } "WOOD" 12 }                   "Archery target"    "Training room"
         "Train your minions' archery skills here." none { TechId "archery" }}
   }
+End
+
+TRAINING("_NECRO", "_necro")
+TRAINING("_HUMAN", "_human")
 
   "crafting"
   {
