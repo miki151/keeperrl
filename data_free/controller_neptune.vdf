@@ -1,18 +1,18 @@
 "controller_mappings"
 {
 	"version"		"3"
-	"revision"		"171"
-	"title"			"Official Steam Deck layout for KeeperRL"
+	"revision"		"173"
+	"title"		"Official Steam Deck layout for KeeperRL"
 	"description"		"Layout created by Electric Succubi for use with the Steam Deck controller."
 	"creator"		"76561198148388213"
-	"progenitor"		"workshop://2922939695"
-	"url"		"workshop://2922939695"
+	"progenitor"		"game://controller_neptune.vdf"
+	"url"		"game://controller_neptune.vdf"
 	"export_type"		"personal_cloud"
 	"controller_type"		"controller_neptune"
 	"controller_caps"		"23117823"
 	"major_revision"		"0"
 	"minor_revision"		"0"
-	"Timestamp"		"1674636497"
+	"Timestamp"		"1675684756"
 	"actions"
 	{
 		"GameControls"
@@ -1432,6 +1432,22 @@
 		"description"		""
 		"inputs"
 		{
+			"click"
+			{
+				"activators"
+				{
+					"Soft_Press"
+					{
+						"bindings"
+						{
+							"binding"		"mouse_button LEFT, , "
+						}
+					}
+				}
+				"disabled_activators"
+				{
+				}
+			}
 		}
 	}
 	"group"
@@ -1601,6 +1617,22 @@
 		"description"		""
 		"inputs"
 		{
+			"click"
+			{
+				"activators"
+				{
+					"Full_Press"
+					{
+						"bindings"
+						{
+							"binding"		"mouse_button LEFT, , "
+						}
+					}
+				}
+				"disabled_activators"
+				{
+				}
+			}
 		}
 		"settings"
 		{
