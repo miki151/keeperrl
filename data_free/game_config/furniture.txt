@@ -43,6 +43,14 @@
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
+Def TRAINING(SUF1, SUF2)
+"TRAINING_WOOD" + SUF1 inherit "TRAINING_WOOD" { viewId = { "training_wood" + SUF2 } }
+"TRAINING_IRON" + SUF1 inherit "TRAINING_IRON" { viewId = { "training_iron" + SUF2 } }
+"TRAINING_ADA" + SUF1 inherit "TRAINING_ADA" { viewId = { "training_ada" + SUF2 } }
+End
+TRAINING("_HUMAN", "_human")
+TRAINING("_NECRO", "_necro")
+TRAINING("_DWARF", "_dwarf")
 "ARCHERY_RANGE"
 {
   name = "archery target"
@@ -232,6 +240,13 @@
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
 }
+Def BOOKCASES(SUF1, SUF2)
+"BOOKCASE_WOOD" + SUF1 inherit "BOOKCASE_WOOD" { viewId = { "bookcase_wood" + SUF2 } }
+"BOOKCASE_IRON" + SUF1 inherit "BOOKCASE_IRON" { viewId = { "bookcase_iron" + SUF2 } }
+"BOOKCASE_GOLD" + SUF1 inherit "BOOKCASE_GOLD" { viewId = { "bookcase_gold" + SUF2 } }
+End
+BOOKCASES("_NECRO", "_necro")
+BOOKCASES("_HUMAN", "_human")
 "THRONE"
 {
   name = "throne"
@@ -242,6 +257,10 @@
   strength = 80
   populationIncrease = { 10 none }
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+}
+"THRONE_HUMAN" inherit "THRONE"
+{
+  viewId = { "throne_human" }
 }
 "IMPALED_HEAD"
 {
@@ -1574,6 +1593,14 @@ Def BedHeal() Heal { FLESH 0.005 } End
   destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
   tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
 }
+"NECRO_WALL" inherit "DUNGEON_WALL"
+{
+  viewId = { "necro_wall" }
+}
+"NECRO_WALL2" inherit "DUNGEON_WALL2"
+{
+  viewId = { "necro_wall2" }
+}
 "SANDSTONE_WALL" inherit "DUNGEON_WALL"
 {
   viewId = { "sandstone_wall" }
@@ -1717,6 +1744,14 @@ Def BedHeal() Heal { FLESH 0.005 } End
 }
 "FLOOR_STONE2" inherit "FLOOR_STONE1"
 {
+  viewId = { "stone_floor2" }
+}
+"FLOOR_STONE3" inherit "FLOOR_STONE1"
+{
+  viewId = { "stone_floor3" }
+}
+"FLOOR_STONE5" inherit "FLOOR_STONE1"
+{
   viewId = { "stone_floor5" }
 }
 "FLOOR_CARPET1"
@@ -1728,9 +1763,17 @@ Def BedHeal() Heal { FLESH 0.005 } End
 }
 "FLOOR_CARPET2" inherit "FLOOR_CARPET1"
 {
+  viewId = { "carpet_floor2" }
+}
+"FLOOR_CARPET3" inherit "FLOOR_CARPET1"
+{
+  viewId = { "carpet_floor3" }
+}
+"FLOOR_CARPET4" inherit "FLOOR_CARPET1"
+{
   viewId = { "carpet_floor4" }
 }
-"CARPET2_GROUND" inherit "FLOOR_CARPET2"
+"CARPET4_GROUND" inherit "FLOOR_CARPET4"
 {
   layer = GROUND
 }

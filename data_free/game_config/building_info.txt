@@ -155,6 +155,6 @@
     door = { "IRON_DOOR" 1.0 }
     gate = { "IRON_GATE" 1.0 }
     wall = "WALL_SKULLS"
-    floorInside = "CARPET2_GROUND"
-    floorOutside = "CARPET2_GROUND"
+    floorInside = "CARPET4_GROUND"
+    floorOutside = "CARPET4_GROUND"
   }

@@ -587,6 +587,8 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
   roundShadow = true }
 { viewId = "throne" symbol = "Ω" color = ColorId YELLOW
   isSymbolFont = true roundShadow = true fx = GoldGlitter() }
+{ viewId = "throne_human" symbol = "Ω" color = ColorId YELLOW
+  isSymbolFont = true roundShadow = true fx = GoldGlitter() }
 { viewId = "altar_des" symbol = "Ω" color = ColorId RED
   isSymbolFont = true roundShadow = true }
 { viewId = "torture_table" symbol = "=" color = ColorId GRAY
@@ -605,24 +607,35 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
   isSymbolFont = true roundShadow = true }
 { viewId = "notice_board" symbol = "|" color = ColorId BROWN
   roundShadow = true }
-{ viewId = "training_wood" symbol = "‡" color = ColorId BROWN
+Def TRAINING(SUF)
+{ viewId = "training_wood" + SUF symbol = "‡" color = ColorId BROWN
   isSymbolFont = true roundShadow = true }
-{ viewId = "training_iron" symbol = "‡" color = ColorId LIGHT_GRAY
+{ viewId = "training_iron" + SUF symbol = "‡" color = ColorId LIGHT_GRAY
   isSymbolFont = true roundShadow = true }
-{ viewId = "training_ada" symbol = "‡" color = ColorId LIGHT_BLUE
+{ viewId = "training_ada" + SUF symbol = "‡" color = ColorId LIGHT_BLUE
   isSymbolFont = true roundShadow = true }
+End
+TRAINING("")
+TRAINING("_necro")
+TRAINING("_human")
+TRAINING("_dwarf")
 { viewId = "archery_range" symbol = "⌾" color = ColorId LIGHT_BLUE
   isSymbolFont = true roundShadow = true }
+Def BOOKCASES(SUF)
+{ viewId = "bookcase_wood" + SUF symbol = "▤" color = ColorId BROWN
+  roundShadow = true isSymbolFont = true }
+{ viewId = "bookcase_iron" + SUF symbol = "▤" color = ColorId LIGHT_GRAY
+  roundShadow = true isSymbolFont = true }
+{ viewId = "bookcase_gold" + SUF symbol = "▤" color = ColorId YELLOW
+  roundShadow = true isSymbolFont = true }
+End
+BOOKCASES("")
+BOOKCASES("_necro")
+BOOKCASES("_human")
 { viewId = "demon_shrine" symbol = "Ω" color = ColorId PURPLE
   isSymbolFont = true roundShadow = true }
 { viewId = "angel_shrine" symbol = "Ω" color = ColorId WHITE
   isSymbolFont = true roundShadow = true }
-{ viewId = "bookcase_wood" symbol = "▤" color = ColorId BROWN
-  roundShadow = true isSymbolFont = true }
-{ viewId = "bookcase_iron" symbol = "▤" color = ColorId LIGHT_GRAY
-  roundShadow = true isSymbolFont = true }
-{ viewId = "bookcase_gold" symbol = "▤" color = ColorId YELLOW
-  roundShadow = true isSymbolFont = true }
 { viewId = "beast_cage" symbol = "▥" color = ColorId LIGHT_GRAY
   isSymbolFont = true roundShadow = true }
 { viewId = "forge" symbol = "&" color = ColorId LIGHT_BLUE
@@ -734,6 +747,10 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
   sprite = "mountain" wallShadow = true mountainSides = "dungeonwall" }
 { viewId = "dungeon_wall2" symbol = "#" color = ColorId DARK_BLUE
   sprite = "mountain2" wallShadow = true mountainSides = "dungeonwall" }
+{ viewId = "necro_wall" symbol = "#" color = ColorId LIGHT_GRAY
+  sprite = "mountain" wallShadow = true mountainSides = "necrowall" }
+{ viewId = "necro_wall2" symbol = "#" color = ColorId DARK_BLUE
+  sprite = "mountain2" wallShadow = true mountainSides = "necrowall" }
 { viewId = "sandstone_wall" symbol = "#" color = ColorId YELLOW
   sprite = "mountain_sand" wallShadow = true mountainSides = "dungeonwall" }
 { viewId = "gold_ore" symbol = "⁂" color = ColorId YELLOW

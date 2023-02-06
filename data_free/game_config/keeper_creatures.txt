@@ -45,9 +45,9 @@
   zLevelGroups = { "basic" "lawful" }
   initialTech = { "archery" }
   buildingGroups = {
-      "structure" "arrowslits" "doors" "floors" "storage" "zones" "library" "beds"
-      "dining table" "pigsty" "training" "crafting" "laboratory" "jeweller" "poetry" "distillery"
-      "furnace" "prison" "orders" "throne" "angel_shrine" "installations"
+      "structure" "arrowslits" "doors" "floors" "storage" "zones" "library_human" "beds"
+      "dining table" "pigsty" "training_human" "crafting" "laboratory" "jeweller" "poetry" "distillery"
+      "furnace" "prison" "orders" "throne_human" "angel_shrine" "installations"
   }
   workshopGroups = { "basic" "bows" }
   description = "Play as a not-so-evil human race. Recruit knights, priests and angelic beings!"
@@ -64,8 +64,8 @@
   zLevelGroups = { "basic" "evil" }
   initialTech = { "necromancy" }
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "library" "beds" "coffins"
-      "training" "morgue" "crafting" "embalming" "poetry" "distillery" "furnace" "orders"
+      "structure_necro" "doors" "floors" "storage" "zones" "library_necro" "beds" "coffins"
+      "training_necro" "morgue" "crafting" "embalming" "poetry" "distillery" "furnace" "orders"
       "phylactery" "installations_no_heads" "magical_installations"
   }
   workshopGroups = { "morgue" "basic_without_lab" "bows" }
@@ -114,8 +114,8 @@
   initialTech = { "iron working" }
   baseNameGen = "TOWN"
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "library" "beds" "dining table"
-      "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "orders" 
+      "structure" "doors" "floors_dwarf" "storage" "zones" "library_human" "beds" "dining table"
+      "training_dwarf" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "orders"
       "installations"
   }
   workshopGroups = { "basic" "crossbows" }
