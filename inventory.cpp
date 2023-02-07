@@ -26,13 +26,9 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Inventory);
 
 void Inventory::addViewId(ViewId id, int count) {
   auto& cur = counts[id];
-  if (count > 0 && cur < UINT16_MAX)
-    ++cur;
-  else if (count < 0) {
-    CHECK(cur > 0);
-    if (--cur == 0)
-      counts.erase(id);
-  }
+  cur += count;
+  if (cur == 0)
+    counts.erase(id);
 }
 
 void Inventory::addItem(PItem item) {
