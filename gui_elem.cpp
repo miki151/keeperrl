@@ -807,8 +807,23 @@ SGuiElem GuiFactory::buttonLabelFocusableImpl(SGuiElem content, SGuiElem button,
   return stack(ret, std::move(content));
 }
 
-SGuiElem GuiFactory::buttonLabelBlink(const string& s, function<void()> f) {
-  return standardButtonBlink(label(s), button(std::move(f)), true);
+SGuiElem GuiFactory::buttonLabelBlink(const string& s, function<void()> f, function<bool()> focused,
+    bool matchTextWidth, bool centerHorizontally) {
+  auto ret = margins(stack(
+        mouseHighlight2(standardButtonHighlight(),
+            conditional(standardButtonHighlight(),
+                blink(standardButtonHighlight(), standardButton()),
+                focused)),
+        button(f)),
+      -7, -5, -7, 3);
+  auto content = label(s);
+  if (matchTextWidth)
+    ret = setWidth(*content->getPreferredWidth() + 1, std::move(ret));
+  if (centerHorizontally)
+    content = centerHoriz(std::move(content));
+  return stack(ret,
+      std::move(content),
+      conditionalStopKeys(keyHandler(f, Keybinding("MENU_SELECT"), true), focused));
 }
 
 SGuiElem GuiFactory::buttonLabel(const string& s, SGuiElem button, bool matchTextWidth, bool centerHorizontally, bool unicode) {
@@ -821,16 +836,6 @@ SGuiElem GuiFactory::buttonLabel(const string& s, SGuiElem button, bool matchTex
 SGuiElem GuiFactory::standardButton(SGuiElem content, SGuiElem button, bool matchTextWidth) {
   auto ret = margins(stack(
         mouseHighlight2(standardButtonHighlight(), standardButton()),
-        std::move(button)),
-      -7, -5, -7, 3);
-  if (matchTextWidth)
-    ret = setWidth(*content->getPreferredWidth() + 1, std::move(ret));
-  return stack(ret, std::move(content));
-}
-
-SGuiElem GuiFactory::standardButtonBlink(SGuiElem content, SGuiElem button, bool matchTextWidth) {
-  auto ret = margins(stack(
-        mouseHighlight2(standardButtonHighlight(), blink(standardButtonHighlight(), standardButton())),
         std::move(button)),
       -7, -5, -7, 3);
   if (matchTextWidth)

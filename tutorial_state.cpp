@@ -25,7 +25,7 @@ string getMessage(TutorialState state, bool controller) {
           (controller ? "Open the buildings menu using the left trackpad. " : "") +
           "Select the \"Dig or cut tree\" order and click on "
           "a few trees to order your imps to cut them down.\n \nWhen you're done, " +
-          (controller ? "pull the left trigger or press B to clear the order."
+          (controller ? "pull the left trigger or press [B] to clear the order."
               : "click the right mouse button or press escape to clear the order.");
     case TutorialState::BUILD_STORAGE:
       return "You need to store the wood somewhere before you can use it. Select resource storage and designate it "
@@ -35,10 +35,10 @@ string getMessage(TutorialState state, bool controller) {
       return "Time to learn a few controls! Try scrolling the map using "_s +
           (controller ? "the right joystick.\n \n" : "the arrow keys or by right clicking on the map "
           "and dragging it.\n \n") +
-          "Press "_s + (controller ? "A" : "SPACE") + " to pause and continue the game. "
+          "Press ["_s + (controller ? "Y" : "SPACE") + "] to pause and continue the game. "
           "You can still give orders and use all controls while the game is paused.";
     case TutorialState::CONTROLS2:
-      return "Try zooming in and out of the map "_s + (controller ? "pressing the left joystick"
+      return "Try zooming in and out of the map "_s + (controller ? "by pressing [X]."
           : "using the 'z' key or mouse wheel.");
     case TutorialState::GET_200_WOOD:
       return "Cut some more trees until you have gathered at least 200 wood.";

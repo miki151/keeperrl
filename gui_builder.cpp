@@ -816,17 +816,19 @@ bool GuiBuilder::hasController() const {
 }
 
 SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
-  auto continueButton = WL(setHeight, legendLineHeight, WL(buttonLabelBlink, "Continue", [this] {
-          callbacks.input(UserInputId::TUTORIAL_CONTINUE);
-          tutorialClicks.clear();
-          closeOverlayWindowsAndClearButton();
-      }));
-  auto backButton = WL(setHeight, legendLineHeight, WL(buttonLabel, "Go back", getButtonCallback(UserInputId::TUTORIAL_GO_BACK)));
+  auto continueCallback = [this] {
+    callbacks.input(UserInputId::TUTORIAL_CONTINUE);
+    tutorialClicks.clear();
+    closeOverlayWindowsAndClearButton();
+  };
+  auto continueButton = WL(setHeight, legendLineHeight, WL(buttonLabelBlink, "Continue", continueCallback));
+  auto backButton = WL(setHeight, legendLineHeight, WL(buttonLabel, "Go back",
+      getButtonCallback(UserInputId::TUTORIAL_GO_BACK)));
   SGuiElem warning;
   if (info.warning)
     warning = WL(label, *info.warning, Color::RED);
   else
-    warning = WL(label, "Press "_s + (hasController() ? "[A]" : "[Space]") + " to unpause.",
+    warning = WL(label, "Press "_s + (hasController() ? "[Y]" : "[Space]") + " to unpause.",
         [this]{ return clock->isPaused() ? Color::RED : Color::TRANSPARENT;});
   return WL(preferredSize, 520, 290, WL(stack, WL(darken), WL(rectangleBorder, Color::GRAY),
       WL(margins, WL(stack,
@@ -4180,8 +4182,8 @@ SGuiElem GuiBuilder::drawMinionActions(const PlayerInfo& minion, const optional<
       case PlayerInfo::CONTROL: {
         auto callback = getButtonCallback({UserInputId::CREATURE_CONTROL, minion.creatureId});
         line.addElem(tutorialHighlight
-            ? WL(buttonLabelBlink, "Control", callback)
-            : WL(buttonLabelFocusable, "Control", callback, focusCallback, false, true  ));
+            ? WL(buttonLabelBlink, "Control", callback, focusCallback, false, true)
+            : WL(buttonLabelFocusable, "Control", callback, focusCallback, false, true));
         break;
       }
       case PlayerInfo::RENAME:

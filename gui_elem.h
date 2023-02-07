@@ -166,7 +166,6 @@ class GuiFactory {
   SGuiElem label(const string&, Color = Color::WHITE, char hotkey = 0);
   SGuiElem standardButton();
   SGuiElem standardButton(SGuiElem content, SGuiElem button, bool matchTextWidth = true);
-  SGuiElem standardButtonBlink(SGuiElem content, SGuiElem button, bool matchTextWidth);
   SGuiElem standardButtonHighlight();
   SGuiElem buttonLabel(const string&, SGuiElem button, bool matchTextWidth = true,
       bool centerHorizontally = false, bool unicode = false);
@@ -181,7 +180,8 @@ class GuiFactory {
       bool matchTextWidth = true, bool centerHorizontally = false, bool unicode = false);
   SGuiElem buttonLabelFocusable(const string&, function<void(Rectangle)> button, function<bool()> focused,
       bool matchTextWidth = true, bool centerHorizontally = false, bool unicode = false);
-  SGuiElem buttonLabelBlink(const string&, function<void()> button);
+  SGuiElem buttonLabelBlink(const string&, function<void()> button, function<bool()> focused = []{return false;},
+      bool matchTextWidth = true, bool centerHorizontally = false);
   SGuiElem buttonLabelWithMargin(const string&, function<bool()> focused);
   SGuiElem buttonLabelSelected(const string&, function<void()> button, bool matchTextWidth = true,
       bool centerHorizontally = false);
