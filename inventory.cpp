@@ -158,7 +158,10 @@ double Inventory::getTotalWeight() const {
 vector<PItem> Inventory::tick(Position pos, bool carried) {
   PROFILE_BLOCK("Inventory::tick");
   vector<PItem> removed;
-  const vector<WeakPointer<Item>> itemsCopy = getItems().transform([](const auto& it){ return it->getThis(); });
+  vector<WeakPointer<Item>> itemsCopy;
+  for (auto it : getItems())
+    if (it->canEverTick(carried))
+      itemsCopy.push_back(it->getThis());
   for (auto& item : itemsCopy) {
     auto itemRef = item.get();
     if (itemRef && hasItem(itemRef)) {

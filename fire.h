@@ -26,6 +26,7 @@ class Fire {
   bool isBurning() const;
   bool isBurntOut() const;
   int getBurnState() const;
+  bool canBurn() const;
 
   SERIALIZATION_DECL(Fire)
 

@@ -28,6 +28,10 @@ void Fire::tick() {
     ++*burnState;
 }
 
+bool Fire::canBurn() const {
+  return burnTime > 0;
+}
+
 void Fire::set() {
   if (!burnState && burnTime > 0)
     burnState = 0;

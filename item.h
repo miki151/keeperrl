@@ -96,6 +96,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   const map<AttrType, int>& getModifierValues() const;
   const map<AttrType, pair<int, CreaturePredicate>>& getSpecialModifiers() const;
   void tick(Position, bool carried);
+  virtual bool canEverTick(bool carried) const;
   void applyPrefix(const ItemPrefix&, const ContentFactory*);
   void setTimeout(GlobalTime);
 

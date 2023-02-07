@@ -156,6 +156,10 @@ const Fire& Item::getFire() const {
   return *fire;
 }
 
+bool Item::canEverTick(bool carried) const {
+  return discarded || fire->canBurn() || !!timeout || (carried && attributes->carriedTickEffect);
+}
+
 void Item::tick(Position position, bool carried) {
   PROFILE_BLOCK("Item::tick");
   if (fire->isBurning()) {
