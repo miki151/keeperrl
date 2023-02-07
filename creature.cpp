@@ -699,6 +699,7 @@ CreatureAction Creature::pickUp(const vector<Item*>& itemsAll) const {
 }
 
 vector<vector<Item*>> Creature::stackItems(vector<Item*> items) const {
+  PROFILE;
   auto factory = getGame()->getContentFactory();
   map<string, vector<Item*> > stacks = groupBy<Item*, string>(items,
       [this, factory] (Item* const& item) { return item->getNameAndModifiers(factory, false, this); });

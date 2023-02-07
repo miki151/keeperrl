@@ -1388,7 +1388,7 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   auto mainLine = WL(stack,
       WL(buttonRect, onClick),
       std::move(lineElem),
-      getTooltip(getItemHint(item), (int) item.ids.getHash(), milliseconds{700}, forceEnableTooltip));
+      getTooltip(getItemHint(item), (int) item.ids.front().getHash(), milliseconds{700}, forceEnableTooltip));
   line.clear();
   line.addMiddleElem(std::move(mainLine));
   line.addBackSpace(5);
@@ -1406,7 +1406,7 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
     line.addBackElem(WL(stack,
         WL(label, "[#]"),
         WL(button, onMultiClick),
-        getTooltip({"Click to choose how many to pick up."}, int(item.ids.begin()->getGenericId()))), 25);
+        getTooltip({"Click to choose how many to pick up."}, int(item.ids.front().getGenericId()))), 25);
   }
   auto elem = line.buildHorizontalList();
   if (item.tutorialHighlight)

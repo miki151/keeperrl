@@ -140,7 +140,7 @@ struct TeamGroupInfo {
 };
 
 struct InventoryItemInfo {
-  EntitySet<Item> items;
+  vector<UniqueEntity<Item>::Id> items;
   ItemAction action;
 };
 
@@ -166,7 +166,7 @@ struct AIActionInfo {
 
 struct EquipmentActionInfo {
   UniqueEntity<Creature>::Id creature;
-  EntitySet<Item> ids;
+  vector<UniqueEntity<Item>::Id> ids;
   optional<EquipmentSlot> slot;
   ItemAction action;
 };

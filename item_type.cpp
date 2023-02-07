@@ -222,7 +222,7 @@ class PotionItem : public Item {
 
   virtual void fireDamage(Position position) override {
     heat += 0.3;
-    INFO << getName() << " heat " << heat;
+//    INFO << getName() << " heat " << heat;
     if (heat >= 1.0) {
       position.globalMessage(getAName() + " boils and explodes!");
       discarded = true;

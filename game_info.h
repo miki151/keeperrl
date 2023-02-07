@@ -50,7 +50,7 @@ struct ItemInfo {
   int HASH(number);
   ViewIdList HASH(viewId);
   EnumSet<ViewObjectModifier> HASH(viewIdModifiers);
-  EntitySet<Item> HASH(ids);
+  vector<UniqueEntity<Item>::Id> HASH(ids);
   vector<ItemAction> HASH(actions);
   bool HASH(equiped);
   bool HASH(locked);

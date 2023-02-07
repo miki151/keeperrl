@@ -477,6 +477,7 @@ void PlayerControl::equipmentGroupAction(const EquipmentGroupAction& action) {
 
 static ItemInfo getItemInfo(const ContentFactory* factory, const vector<Item*>& stack, bool equiped, bool pending, bool locked,
     optional<ItemInfo::Type> type = none) {
+  PROFILE;
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(factory, nullptr, stack.size() > 1);
     c.fullName = stack[0]->getNameAndModifiers(factory, false);
@@ -485,8 +486,9 @@ static ItemInfo getItemInfo(const ContentFactory* factory, const vector<Item*>& 
     if (stack[0]->canEquip())
       c.slot = stack[0]->getEquipmentSlot();
     c.viewId = stack[0]->getViewObject().getViewIdList();
+    c.ids.reserve(stack.size());
     for (auto it : stack)
-      c.ids.insert(it->getUniqueId());
+      c.ids.push_back(it->getUniqueId());
     c.actions = {ItemAction::DROP};
     c.equiped = equiped;
     c.locked = locked;
@@ -561,7 +563,7 @@ static ItemInfo getSteedItemInfo(const ContentFactory* factory, const Creature* 
     c.equiped = currentlyRiding;
     c.pending = !currentlyRiding;
     c.actions = {ItemAction::DROP_STEED};
-    c.ids.insert(Item::Id(123));
+    c.ids.push_back(Item::Id(123));
   );
 }
 

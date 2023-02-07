@@ -87,11 +87,13 @@ ItemPredicate Item::classPredicate(vector<ItemClass> cl) {
 }
 
 ItemPredicate Item::namePredicate(const string& name) {
+  PROFILE;
   return [name](const Item* item) { return item->getName() == name; };
 }
 
 vector<vector<Item*>> Item::stackItems(const ContentFactory* f, vector<Item*> items,
     function<string(const Item*)> suffix) {
+  PROFILE;
   map<string, vector<Item*>> stacks = groupBy<Item*, string>(items, [suffix, f](const Item* item) {
         return item->getNameAndModifiers(f) + suffix(item) + toString(item->getViewObject().id().getColor());
       });
@@ -163,7 +165,7 @@ bool Item::canEverTick(bool carried) const {
 void Item::tick(Position position, bool carried) {
   PROFILE_BLOCK("Item::tick");
   if (fire->isBurning()) {
-    INFO << getName() << " burning ";
+//    INFO << getName() << " burning ";
     position.fireDamage(5);
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, min(1.0, double(fire->getBurnState()) / 50));
     fire->tick();
@@ -435,6 +437,7 @@ string Item::getName(bool plural, const Creature* owner) const {
 }
 
 string Item::getAName(bool getPlural, const Creature* owner) const {
+  PROFILE;
   if (attributes->noArticle || getPlural)
     return getName(getPlural, owner);
   else
@@ -442,11 +445,13 @@ string Item::getAName(bool getPlural, const Creature* owner) const {
 }
 
 string Item::getTheName(bool getPlural, const Creature* owner) const {
+  PROFILE;
   string the = (attributes->noArticle || getPlural) ? "" : "the ";
   return the + getName(getPlural, owner);
 }
 
 string Item::getPluralName(int count) const {
+  PROFILE;
   if (count > 1)
     return toString(count) + " " + getName(true);
   else
@@ -572,12 +577,14 @@ string Item::getShortName(const ContentFactory* factory, const Creature* owner, 
 }
 
 string Item::getNameAndModifiers(const ContentFactory* factory, bool getPlural, const Creature* owner) const {
+  PROFILE;
   auto ret = getName(getPlural, owner);
   appendWithSpace(ret, getModifiers(factory));
   return ret;
 }
 
 string Item::getBlindName(bool plural) const {
+  PROFILE;
   if (attributes->blindName)
     return *attributes->blindName + (plural ? "s" : "");
   else
@@ -618,7 +625,7 @@ const map<AttrType, int>& Item::getModifierValues() const {
 
 int Item::getModifier(AttrType type) const {
   int ret = getValueMaybe(attributes->modifiers, type).value_or(0);
-  CHECK(abs(ret) < 10000) << type.data() << " " << ret << " " << getName();
+//  CHECK(abs(ret) < 10000) << type.data() << " " << ret << " " << getName();
   return ret;
 }
 

@@ -164,6 +164,7 @@ void Player::onEvent(const GameEvent& event) {
 }
 
 void Player::pickUpItemAction(int numStack, bool multi) {
+  PROFILE;
   CHECK(numStack >= 0);
   auto stacks = creature->stackItems(creature->getPickUpOptions());
   if (getUsableUsageType()) {
@@ -245,11 +246,11 @@ void Player::throwItem(Item* item, optional<Position> target) {
   tryToPerform(creature->throwItem(item, *target, false));
 }
 
-void Player::handleIntrinsicAttacks(const EntitySet<Item>& itemIds, ItemAction action) {
+void Player::handleIntrinsicAttacks(const vector<UniqueEntity<Item>::Id>& itemIds, ItemAction action) {
   auto& attacks = creature->getBody().getIntrinsicAttacks();
   for (auto part : ENUM_ALL(BodyPart))
     for (auto& attack : attacks[part])
-      if (itemIds.contains(attack.item.get()))
+      if (itemIds.contains(attack.item->getUniqueId()))
         switch (action) {
           case ItemAction::INTRINSIC_ACTIVATE:
             attack.active = true;
@@ -263,9 +264,11 @@ void Player::handleIntrinsicAttacks(const EntitySet<Item>& itemIds, ItemAction a
         }
 }
 
-void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
+void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds1, ItemAction action) {
+  PROFILE;
+  unordered_set<Item::Id, CustomHash<Item::Id>> itemIds(itemIds1.begin(), itemIds1.end());
   vector<Item*> items = creature->getEquipment().getItems().filter(
-      [&](const Item* it) { return itemIds.contains(it);});
+      [&](const Item* it) { return itemIds.count(it->getUniqueId());});
   //CHECK(items.size() == itemIds.size()) << int(items.size()) << " " << int(itemIds.size());
   // the above assertion fails for unknown reason, so just fail this softly.
   if (items.empty() || (items.size() == 1 && action == ItemAction::DROP_MULTI))

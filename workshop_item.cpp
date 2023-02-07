@@ -12,6 +12,7 @@ static string getItemName(const ContentFactory* factory, Item* item, bool plural
 }
 
 WorkshopItem WorkshopItemCfg::get(const ContentFactory* factory) const {
+  PROFILE;
   // for some reason removing this line causes a linker error, probably a compiler bug
   auto t = tech;
   PItem elem = item.get(factory);

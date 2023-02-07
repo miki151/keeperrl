@@ -131,8 +131,8 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void takeOffAction();
   void hideAction();
   void displayInventory();
-  void handleItems(const EntitySet<Item>&, ItemAction);
-  void handleIntrinsicAttacks(const EntitySet<Item>&, ItemAction);
+  void handleItems(const vector<UniqueEntity<Item>::Id>&, ItemAction);
+  void handleIntrinsicAttacks(const vector<UniqueEntity<Item>::Id>&, ItemAction);
   bool interruptedByEnemy();
   void targetAction();
   void payForAllItemsAction();

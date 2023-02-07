@@ -99,8 +99,9 @@ ItemInfo ItemInfo::get(const Creature* creature, const vector<Item*>& stack, con
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().getViewIdList();
     c.viewIdModifiers = stack[0]->getViewObject().getAllModifiers();
+    c.ids.reserve(stack.size());
     for (auto it : stack)
-      c.ids.insert(it->getUniqueId());
+      c.ids.push_back(it->getUniqueId());
     if (creature)
       c.actions = getItemActions(creature, stack);
     c.equiped = creature && creature->getEquipment().isEquipped(stack[0]);
@@ -134,6 +135,7 @@ static vector<ItemInfo> fillIntrinsicAttacks(const Creature* c, const ContentFac
 }
 
 static vector<ItemInfo> getItemInfos(const Creature* c, const vector<Item*>& items, const ContentFactory* factory) {
+  PROFILE;
   map<string, vector<Item*> > stacks = groupBy<Item*, string>(items,
       [&] (Item* const& item) {
           return item->getNameAndModifiers(factory, false, c) + (c->getEquipment().isEquipped(item) ? "(e)" : ""); });
