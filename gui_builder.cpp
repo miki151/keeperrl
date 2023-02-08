@@ -1388,7 +1388,7 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   auto mainLine = WL(stack,
       WL(buttonRect, onClick),
       std::move(lineElem),
-      getTooltip(getItemHint(item), (int) item.ids.front().getHash(), milliseconds{700}, forceEnableTooltip));
+      getTooltip(getItemHint(item), item.ids.empty() ? 0 : (int) item.ids.front().getHash(), milliseconds{700}, forceEnableTooltip));
   line.clear();
   line.addMiddleElem(std::move(mainLine));
   line.addBackSpace(5);
