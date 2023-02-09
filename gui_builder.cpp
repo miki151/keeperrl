@@ -2345,7 +2345,9 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
         minionsIndex = 0;
         setCollectiveTab(CollectiveTab::MINIONS);
       }, {gui.getKey(C_MINIONS_MENU)}, true),
-      WL(scrollable, WL(rightMargin, 10, list.buildVerticalList()), &minionsScroll, &scrollbarsHeld),
+      WL(stopScrollEvent,
+          WL(scrollable, WL(rightMargin, 10, list.buildVerticalList()), &minionsScroll, &scrollbarsHeld),
+          [this] { return !!minionsIndex; }),
       WL(conditionalStopKeys, WL(stack,
           WL(keyHandlerBool, [this] {
             if (minionsIndex) {
