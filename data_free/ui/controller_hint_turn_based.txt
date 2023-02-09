@@ -6,11 +6,13 @@ Position(BOTTOM_CENTERED, Width 800 MiniWindow({
   Vertical {
     Label("When playing in the turn-based mode, use:")
     Height 5 {}
-    Label("* The left joystick to choose walking direction, and [A] to move by one tile.")
+    Label("1. The left joystick to choose walking direction, and [A] to move by one tile.")
     Height 5 {}
-    Label("* The left touchpad to access various submenus and commands, such as skip turn, inventory, etc.")
+    Label("2. The left touchpad to access various submenus and commands, such as skip turn, inventory, etc.")
     Height 5 {}
-    Label("* The right joystick to pan the map.")
+    Label("3. The right joystick to pan the map.")
+    Height 5 {}
+    Label("4. [L1] and [R1] to travel up and down Z-levels.")
     Height 5 {}
     Position(MIDDLE, Texture("deck_turn_based"))
     Height 5 {}

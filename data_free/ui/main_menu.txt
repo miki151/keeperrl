@@ -87,13 +87,13 @@ Position(SCREEN, {
       Vertical {
         Label("When navigating various menus, use:")
         Height 5 {}
-        Label("* The D-pad to move the focus in a chosen direction.")
+        Label("1. The D-pad to move the focus in a chosen direction.")
         Height 5 {}
-        Label("* The [A] button to confirm the current selection.")
+        Label("2. The [A] button to confirm the current selection.")
         Height 5 {}
-        Label("* The [B] button to go back or close the current dialog.")
+        Label("3. The [B] button to go back or close the current dialog.")
         Height 5 {}
-        Label("* The right joystick to scroll pages that don't fit the screen.")
+        Label("4. The right joystick to scroll pages that don't fit the screen.")
         Height 5 {}
         Position(MIDDLE, Texture("deck_menu"))
       }

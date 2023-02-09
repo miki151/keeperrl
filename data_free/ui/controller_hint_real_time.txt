@@ -7,22 +7,24 @@ Position(BOTTOM_CENTERED, Width 800 MiniWindow({
   Vertical {
     Label("When playing in the real-time mode, use:")
     Height 5 {}
-    Label("* The right touchpad to move the mouse cursor, and the right trigger to place items on the map.")
+    Label("1. The right touchpad to move the mouse cursor.")
     Height 5 {}
-    Label("* The left touchpad to access various submenus, such as buildings or technology.")
+    Label("2. The right trigger to place items on the map.")
     Height 5 {}
-    Label("* [Y] to pause or unpause the game.")
+    Label("3. The left touchpad to access various submenus, such as buildings or technology.")
     Height 5 {}
-    Label("* [B] to open the Z-levels list.")
+    Label("4. [Y] to pause or unpause the game.")
+    Height 5 {}
+    Label("5. [B] to open the Z-levels list.")
     Height 5 {}
     Horizontal {
-      Label("* [")
+      Label("6. [")
       Label(text = "☰" font = SYMBOL_FONT)
       Label("] to access the menu.")
     }
     Height 5 {}
     Horizontal {
-      Label("* [")
+      Label("7. [")
       {
         Label(text = "◻" font = SYMBOL_FONT)
         MarginLeft(-4, Label(text = "▗" font = SYMBOL_FONT))
