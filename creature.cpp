@@ -326,6 +326,8 @@ void Creature::clearInfoForRetiring() {
   unsubscribe();
   lastAttacker = nullptr;
   lastCombatIntent = none;
+  if (steed)
+    steed->clearInfoForRetiring();
 }
 
 optional<string> Creature::getDeathReason() const {
