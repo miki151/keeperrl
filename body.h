@@ -84,7 +84,6 @@ class Body {
   vector<PItem> getCorpseItems(const string& name, UniqueEntity<Creature>::Id, bool instantlyRotten,
       const ContentFactory* factory, Game*) const;
   vector<AttackLevel> getAttackLevels() const;
-  int getAttrBonus(AttrType) const;
   BodySize getSize() const;
   int numGood(BodyPart) const;
   int numLost(BodyPart) const;

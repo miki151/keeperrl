@@ -1127,9 +1127,9 @@ int simulAttackPen(int attackers) {
   return max(0, (attackers - 1) * 2);
 }
 
-int Creature::getAttrBonus(AttrType type, bool includeWeapon) const {
-  int def = getBody().getAttrBonus(type);
-  def += min(killTitles.size(), getRawAttr(type));
+int Creature::getAttrBonus(AttrType type, int rawAttr, bool includeWeapon) const {
+  PROFILE
+  int def = min(killTitles.size(), rawAttr);
   for (auto& item : equipment->getAllEquipped())
     if (item->getClass() != ItemClass::WEAPON || type != item->getWeaponInfo().meleeAttackAttr)
       def += item->getModifier(type);
@@ -1142,7 +1142,9 @@ int Creature::getAttrBonus(AttrType type, bool includeWeapon) const {
 }
 
 int Creature::getAttr(AttrType type, bool includeWeapon) const {
-  return max(0, getRawAttr(type) + getAttrBonus(type, includeWeapon));
+  PROFILE
+  auto raw = getRawAttr(type);
+  return max(0, raw + getAttrBonus(type, raw, includeWeapon));
 }
 
 int Creature::getSpecialAttr(AttrType type, const Creature* against) const {
@@ -1163,6 +1165,7 @@ int Creature::getPoints() const {
 }
 
 int Creature::getRawAttr(AttrType type) const {
+  PROFILE
   int ret = attributes->getRawAttr(type);
   if (auto expType = getExperienceType(type))
     ret += (int) min(combatExperience, attributes->getExpLevel(expType->first) * expType->second);
@@ -1346,7 +1349,7 @@ void Creature::tick() {
   captureHealth = min(1.0, captureHealth + 0.02);
   auto time = *getGlobalTime();
   vision->update(this, time);
-  if (Random.roll(5))
+  if (Random.roll(30))
     getDifficultyPoints();
   equipment->tick(position, this);
   if (isDead())
@@ -1373,31 +1376,41 @@ void Creature::tick() {
 }
 
 bool Creature::processBuffs() {
+  PROFILE
   auto factory = getGame()->getContentFactory();
-  for (auto effect : ENUM_ALL(LastingEffect))
-    if (!attributes->isAffectedPermanently(effect) && getBody().isIntrinsicallyAffected(effect, factory))
-      addPermanentEffect(effect, 1, false);
-  for (auto effect : factory->buffs)
-    if (!isAffectedPermanently(effect.first) && getBody().isIntrinsicallyAffected(effect.first, factory))
-      addPermanentEffect(effect.first, 1, false);
+  {
+    PROFILE_BLOCK("intrinsic effects")
+    for (auto effect : ENUM_ALL(LastingEffect))
+      if (!attributes->isAffectedPermanently(effect) && getBody().isIntrinsicallyAffected(effect, factory))
+        addPermanentEffect(effect, 1, false);
+    for (auto effect : factory->buffs)
+      if (!isAffectedPermanently(effect.first) && getBody().isIntrinsicallyAffected(effect.first, factory))
+        addPermanentEffect(effect.first, 1, false);
+  }
   auto buffsCopy = buffs;
   auto time = *getGlobalTime();
-  for (int index : All(buffsCopy).reverse()) {
-    auto buff = buffsCopy[index];
-    auto& info = factory->buffs.at(buff.first);
-    if (info.tickEffect)
-      info.tickEffect->applyToCreature(this);
-    if (buff.second < time)
-      removeBuff(index, true);
-    if (isDead())
-      return true;
+  {
+    PROFILE_BLOCK("ticks and timeouts")
+    for (int index : All(buffsCopy).reverse()) {
+      auto buff = buffsCopy[index];
+      auto& info = factory->buffs.at(buff.first);
+      if (info.tickEffect)
+        info.tickEffect->applyToCreature(this);
+      if (buff.second < time)
+        removeBuff(index, true);
+      if (isDead())
+        return true;
+    }
   }
-  for (auto& buff : buffPermanentCount) {
-    auto& info = factory->buffs.at(buff.first);
-    if (info.tickEffect)
-      info.tickEffect->applyToCreature(this);
-    if (isDead())
-      return true;
+  {
+    PROFILE_BLOCK("permanent ticks")
+    for (auto& buff : buffPermanentCount) {
+      auto& info = factory->buffs.at(buff.first);
+      if (info.tickEffect)
+        info.tickEffect->applyToCreature(this);
+      if (isDead())
+        return true;
+    }
   }
   return false;
 }
@@ -1728,6 +1741,7 @@ static vector<string> extractNames(const vector<AdjectiveInfo>& adjectives) {
 }
 
 void Creature::updateViewObjectFlanking() {
+  PROFILE;
   auto& object = modViewObject();
   auto flankedMod = getFlankedMod();
   if (flankedMod < 1.0)
@@ -1740,6 +1754,7 @@ void Creature::updateViewObject(const ContentFactory* factory) {
   PROFILE;
   auto& object = modViewObject();
   auto attrs = ViewObject::CreatureAttributes();
+  attrs.reserve(factory->attrInfo.size());
   for (auto& attr : factory->attrInfo)
     attrs.push_back(make_pair(attr.second.viewId, getAttr(attr.first)));
   object.setCreatureAttributes(std::move(attrs));
@@ -2551,6 +2566,7 @@ MovementType Creature::getMovementType(Game* game) const {
 }
 
 int Creature::getDifficultyPoints() const {
+  PROFILE;
   int value = getAttr(AttrType("DEFENSE"));
   for (auto& attr : getGame()->getContentFactory()->attrInfo)
     if (attr.second.isAttackAttr)

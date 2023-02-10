@@ -225,15 +225,16 @@ vector<AttributeInfo> AttributeInfo::fromCreature(const ContentFactory* contentF
   vector<AttributeInfo> ret;
   for (auto& attr : contentFactory->attrOrder) {
     auto& info = contentFactory->attrInfo.at(attr);
+    auto rawAttr = c->getRawAttr(attr);
     ret.push_back(AttributeInfo {
         capitalFirst(info.name),
         info.viewId,
-        c->getRawAttr(attr),
-        c->getAttrBonus(attr, true),
+        rawAttr,
+        c->getAttrBonus(attr, rawAttr, true),
         info.help
     });
   }
-  return ret;  
+  return ret;
 }
 
 STRUCT_IMPL(ImmigrantDataInfo)
