@@ -499,7 +499,7 @@ void WindowView::updateMinimap(const CreatureView* creature) {
 }
 
 void WindowView::updateView(CreatureView* view, bool noRefresh) {
-  ScopeTimer timer("UpdateView timer");
+  PROFILE;
   if (!wasRendered && currentThreadId() != renderThreadId)
     return;
   gameInfo = {};
@@ -563,6 +563,7 @@ void WindowView::animation(const FXSpawnInfo& spawnInfo) {
 void WindowView::refreshView() {
 /*    if (!wasRendered && gameReady)
       rebuildGui();*/
+  PROFILE;
   wasRendered = true;
   CHECK(currentThreadId() == renderThreadId);
   if (gameReady || !blockingElems.empty())
@@ -576,6 +577,7 @@ void WindowView::refreshView() {
 }
 
 void WindowView::drawMap() {
+  PROFILE;
   for (auto gui : getAllGuiElems())
     gui->render(renderer);
   Vec2 mousePos = renderer.getMousePos();

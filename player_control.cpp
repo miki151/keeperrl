@@ -346,6 +346,7 @@ void PlayerControl::leaveControl() {
 }
 
 void PlayerControl::render(View* view) {
+  PROFILE;
   //collective->getConstructions().checkDebtConsistency();
   if (getControlled().empty()) {
     view->updateView(this, false);

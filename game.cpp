@@ -359,7 +359,7 @@ void Game::increaseTime(double diff) {
 }
 
 optional<ExitInfo> Game::update(double timeDiff) {
-  ScopeTimer timer("Game::update timer");
+  PROFILE_BLOCK("Game::update");
   if (auto exitInfo = updateInput())
     return exitInfo;
   considerRealTimeRender();
