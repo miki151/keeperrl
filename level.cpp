@@ -552,12 +552,13 @@ void Level::tick() {
   }
   if (above) {
     PROFILE_BLOCK("Z level tick");
-    for (auto pos : getAllPositions())
-      if (!pos.isUnavailable()) {
-        Position abovePos(pos.getCoord(), above);
-        if (pos.isCovered() && above->unavailable[pos.getCoord()]) {
+    for (auto v : getBounds()) {
+      if (!unavailable[v] && above->unavailable[v]) {
+        Position pos(v, this);
+        if (pos.isCovered()) {
+          Position abovePos(v, above);
           auto col = getGame()->getPlayerCollective();
-          above->unavailable[pos.getCoord()] = false;
+          above->unavailable[v] = false;
           abovePos.addFurniture(getGame()->getContentFactory()->furniture.getFurniture(FurnitureType("ROOF"),
               TribeId::getMonster()));
           if (!!col && col->getKnownTiles().isKnown(pos)) {
@@ -568,6 +569,7 @@ void Level::tick() {
             col->claimSquare(abovePos);
         }
       }
+    }
   }
 }
 
