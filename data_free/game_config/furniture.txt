@@ -1601,6 +1601,14 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   viewId = { "necro_wall2" }
 }
+"DWARF_WALL" inherit "DUNGEON_WALL"
+{
+  viewId = { "dwarf_wall" }
+}
+"DWARF_WALL2" inherit "DUNGEON_WALL2"
+{
+  viewId = { "dwarf_wall2" }
+}
 "SANDSTONE_WALL" inherit "DUNGEON_WALL"
 {
   viewId = { "sandstone_wall" }
