@@ -547,17 +547,22 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
 static const int attrBonus = 3;
 
 int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
+  PROFILE_BLOCK("LastingEffects::getAttrBonus")
   int value = 0;
   auto time = c->getGlobalTime();
   auto modifyWithSpying = [c, time](int& value) {
     if (c->hasAlternativeViewId() && c->isAffected(LastingEffect::SPYING, time))
       value -= 99;
-    else 
+    else
       if (auto rider = c->getRider())
         if (rider->hasAlternativeViewId() && rider->isAffected(LastingEffect::SPYING, time))
           value -= 99;
   };
-  if (type == AttrType("DAMAGE")) {
+  static auto damageType = AttrType("DAMAGE");
+  static auto rangedDamageType = AttrType("RANGED_DAMAGE");
+  static auto spellDamageType = AttrType("SPELL_DAMAGE");
+  static auto defenseType = AttrType("DEFENSE");
+  if (type == damageType) {
     if (c->isAffected(LastingEffect::DRUNK, time))
       value -= attrBonus;
     if (c->isAffected(LastingEffect::PANIC, time))
@@ -568,12 +573,12 @@ int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
       value += c->getPosition().countSwarmers() - 1;
     modifyWithSpying(value);
   } else
-  if (type == AttrType("RANGED_DAMAGE") || type == AttrType("SPELL_DAMAGE")) {
+  if (type == rangedDamageType || type == spellDamageType) {
     if (c->isAffected(LastingEffect::DRUNK, time))
       value -= attrBonus;
     modifyWithSpying(value);
   } else
-  if (type == AttrType("DEFENSE")) {
+  if (type == defenseType) {
     if (c->isAffected(LastingEffect::DRUNK, time))
       value -= attrBonus;
     if (c->isAffected(LastingEffect::PANIC, time))
