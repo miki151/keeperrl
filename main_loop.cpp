@@ -140,7 +140,7 @@ void MainLoop::saveGame(PGame& game, const FilePath& path) {
 }
 
 struct RetiredModelInfo {
-  PModel SERIAL(model);
+  shared_ptr<Model> SERIAL(model);
   ContentFactory SERIAL(factory);
   SERIALIZE_ALL_NO_VERSION(model, factory)
 };
@@ -1292,7 +1292,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment 
                   if (auto& retiredInfo = saved->retiredEnemyInfo)
                     if (retiredInfo->enemyId == villain->enemyId)
                       if (auto model = loadRetiredModelFromFile(userPath.file(info.filename))) {
-                        models[v] = std::move(model->model);
+                        models[v] = PModel(std::move(model->model));
                         ++numRetiredVillains;
                         remove(userPath.file(info.filename).getPath());
                         break;
@@ -1301,7 +1301,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment 
               models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, tribeAlignment);
           } else if (auto retired = sites[v].getRetired()) {
             if (auto info = loadRetiredModelFromFile(userPath.file(retired->fileInfo.filename))) {
-              models[v] = std::move(info->model);
+              models[v] = PModel(std::move(info->model));
               factories.push_back(std::move(info->factory));
             } else {
               failedToLoad = retired->fileInfo.filename;
