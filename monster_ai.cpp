@@ -173,40 +173,43 @@ class EffectsAI : public Behaviour {
       return;
     for (auto item : creature->getEquipment().getItems())
       if (canUseItem(item) && item->effectAppliedWhenThrown())
-        if (auto effect = item->getEffect()) {
-          auto value = effect->shouldAIApply(creature, target);
-          if (value > 0 && !creature->getEquipment().isEquipped(item) &&
-               creature->getThrowDistance(item).value_or(-1) >=
-                   trajectory.back().dist8(creature->getPosition()).value_or(10000))
-              if (auto action = creature->throwItem(item, target, !isEnemy))
-                tryMove(ret, value, action.append([=](Creature*) {
-                  if (isEnemy)
-                    addCombatIntent(other, Creature::CombatIntentInfo::Type::ATTACK);
-                }));
-        }
+        if (auto effect = item->getEffect())
+          if (!effect->isOffensive() || !creature->getVisibleEnemies().empty()) {
+            auto value = effect->shouldAIApply(creature, target);
+            if (value > 0 && !creature->getEquipment().isEquipped(item) &&
+                 creature->getThrowDistance(item).value_or(-1) >=
+                     trajectory.back().dist8(creature->getPosition()).value_or(10000))
+                if (auto action = creature->throwItem(item, target, !isEnemy))
+                  tryMove(ret, value, action.append([=](Creature*) {
+                    if (isEnemy)
+                      addCombatIntent(other, Creature::CombatIntentInfo::Type::ATTACK);
+                  }));
+          }
   }
 
   virtual MoveInfo getMove() {
     PROFILE_BLOCK("EffectsAI::getMove");
     MoveInfo ret = NoMove;
     for (auto spell : creature->getSpellMap().getAvailable(creature))
-      spell->getAIMove(creature, ret);
+      if (!spell->getEffect().isOffensive() || !creature->getVisibleEnemies().empty())
+        spell->getAIMove(creature, ret);
     // prevent workers from using up items that they're hauling
     if (!creature->getStatus().contains(CreatureStatus::CIVILIAN))
       for (auto item : creature->getEquipment().getItems())
         if (canUseItem(item))
-          if (auto effect = item->getEffect()) {
-            auto value = effect->shouldAIApply(creature, creature->getPosition());
-            if (value > 0)
-              if (auto move = creature->applyItem(item))
-                tryMove(ret, value, std::move(move));
-            for (Position pos : creature->getPosition().neighbors8())
-              if (Creature* c = pos.getCreature())
-                if (creature->isFriend(c) && effect->shouldAIApply(c, c->getPosition()) > 0 &&
-                    c->getEquipment().getItems().filter(Item::namePredicate(item->getName())).empty())
-                  if (auto action = creature->give(c, {item}))
-                    tryMove(ret, 1, action);
-          }
+          if (auto effect = item->getEffect())
+            if (!effect->isOffensive() || !creature->getVisibleEnemies().empty()) {
+              auto value = effect->shouldAIApply(creature, creature->getPosition());
+              if (value > 0)
+                if (auto move = creature->applyItem(item))
+                  tryMove(ret, value, std::move(move));
+              for (Position pos : creature->getPosition().neighbors8())
+                if (Creature* c = pos.getCreature())
+                  if (creature->isFriend(c) && effect->shouldAIApply(c, c->getPosition()) > 0 &&
+                      c->getEquipment().getItems().filter(Item::namePredicate(item->getName())).empty())
+                    if (auto action = creature->give(c, {item}))
+                      tryMove(ret, 1, action);
+            }
     for (auto c : creature->getVisibleCreatures())
       getThrowMove(c, ret);
     return ret.withValue(1.0);
