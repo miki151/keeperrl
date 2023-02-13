@@ -445,7 +445,7 @@ void Level::unplaceCreature(Creature* creature, Vec2 pos) {
       [&] (LastingOrBuff effect) {removePermanentEffect(effect, creature, false);});
   for (auto v : Position(pos, this).neighbors8())
     if (auto c = v.getCreature())
-      if (c->isEnemy(creature))
+      if (getGame() && c->isEnemy(creature))
         c->updateViewObjectFlanking();
 }
 
@@ -471,7 +471,7 @@ void Level::placeCreature(Creature* creature, Vec2 pos) {
   creature->updateViewObjectFlanking();
   for (auto v : position.neighbors8())
     if (auto c = v.getCreature())
-      if (c->isEnemy(creature))
+      if (getGame() && c->isEnemy(creature))
         c->updateViewObjectFlanking();
 }
 
