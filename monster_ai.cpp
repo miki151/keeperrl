@@ -162,29 +162,22 @@ class EffectsAI : public Behaviour {
     return !collective || collective->getMinionEquipment().isOwner(item, creature);
   }
 
-  void getThrowMove(Creature* other, MoveInfo& ret) {
-    bool isEnemy = creature->isEnemy(other);
-    if (isEnemy && !creature->shouldAIChase(other))
+  void getThrowMove(Creature* other, MoveInfo& ret, Item* item) {
+    if (!creature->shouldAIChase(other))
       return;
     auto target = other->getPosition();
     auto trajectory = drawLine(creature->getPosition().getCoord(), target.getCoord())
         .transform([&](Vec2 v) { return Position(v, target.getLevel()); });
     if (isObstructed(creature, trajectory))
       return;
-    for (auto item : creature->getEquipment().getItems())
-      if (canUseItem(item) && item->effectAppliedWhenThrown())
-        if (auto effect = item->getEffect())
-          if (!effect->isOffensive() || !creature->getVisibleEnemies().empty()) {
-            auto value = effect->shouldAIApply(creature, target);
-            if (value > 0 && !creature->getEquipment().isEquipped(item) &&
-                 creature->getThrowDistance(item).value_or(-1) >=
-                     trajectory.back().dist8(creature->getPosition()).value_or(10000))
-                if (auto action = creature->throwItem(item, target, !isEnemy))
-                  tryMove(ret, value, action.append([=](Creature*) {
-                    if (isEnemy)
-                      addCombatIntent(other, Creature::CombatIntentInfo::Type::ATTACK);
-                  }));
-          }
+    auto value = item->getEffect()->shouldAIApply(creature, target);
+    if (value > 0 && !creature->getEquipment().isEquipped(item) &&
+         creature->getThrowDistance(item).value_or(-1) >=
+             trajectory.back().dist8(creature->getPosition()).value_or(10000))
+      if (auto action = creature->throwItem(item, target, false))
+        tryMove(ret, value, action.append([=](Creature*) {
+          addCombatIntent(other, Creature::CombatIntentInfo::Type::ATTACK);
+        }));
   }
 
   virtual MoveInfo getMove() {
@@ -199,19 +192,34 @@ class EffectsAI : public Behaviour {
         if (canUseItem(item))
           if (auto effect = item->getEffect())
             if (!effect->isOffensive() || !creature->getVisibleEnemies().empty()) {
+              {
+                auto name = "Apply item " + item->getName();
+                PROFILE_BLOCK(name.data());
               auto value = effect->shouldAIApply(creature, creature->getPosition());
               if (value > 0)
                 if (auto move = creature->applyItem(item))
                   tryMove(ret, value, std::move(move));
+              }
+              {
+              auto name = "Give item " + item->getName();
+              PROFILE_BLOCK(name.data());
               for (Position pos : creature->getPosition().neighbors8())
                 if (Creature* c = pos.getCreature())
                   if (creature->isFriend(c) && effect->shouldAIApply(c, c->getPosition()) > 0 &&
                       c->getEquipment().getItems().filter(Item::namePredicate(item->getName())).empty())
                     if (auto action = creature->give(c, {item}))
                       tryMove(ret, 1, action);
+              }
             }
-    for (auto c : creature->getVisibleCreatures())
-      getThrowMove(c, ret);
+    {
+      PROFILE_BLOCK("Throw item");
+      for (auto item : creature->getEquipment().getItems())
+        if (canUseItem(item) && item->effectAppliedWhenThrown())
+          if (auto effect = item->getEffect())
+            if (effect->isOffensive())
+              for (auto c : creature->getVisibleEnemies())
+                getThrowMove(c, ret, item);
+    }
     return ret.withValue(1.0);
   }
   Collective* SERIAL(collective);
@@ -593,6 +601,7 @@ class Fighter : public Behaviour {
   }
 
   FighterPosition getFighterPosition() {
+    PROFILE;
     auto ret = FighterPosition::MELEE;
     for (auto spell : creature->getSpellMap().getAvailable(creature))
       if (spell->getRange() > 0 && spell->getEffect().effect->contains<Effects::Heal>())
