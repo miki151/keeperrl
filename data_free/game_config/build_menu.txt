@@ -58,6 +58,12 @@
       "Reinforced walls are better at stopping enemies from digging into your dungeon."}
   }
 
+  "structure_dwarf" inherit "structure_without_reinforce" append
+  {
+    { Furniture {{ "DWARF_WALL" "DWARF_WALL2" } "STONE" 3}       "Reinforce wall"    "Structure"
+      "Reinforced walls are better at stopping enemies from digging into your dungeon."}
+  }
+
   "arrowslits"
   {
     { Furniture {{ "ARCHER_WALL" }                "STONE" 20 }     "Wall with arrowslits"  "Structure"
