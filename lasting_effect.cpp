@@ -98,6 +98,21 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
   if (auto e = getCancelledOneWay(effect))
     c->removeEffect(*e);
   switch (effect) {
+    case LastingEffect::RESTED:
+    case LastingEffect::SATIATED:
+      c->getAttributes().increaseBaseAttr(AttrType("DEFENSE"), 2);
+      break;
+    case LastingEffect::SLEEP:
+      c->getAttributes().increaseBaseAttr(AttrType("DEFENSE"), -10);
+      break;
+    case LastingEffect::PANIC:
+      c->getAttributes().increaseBaseAttr(AttrType("DAMAGE"), -5);
+      c->getAttributes().increaseBaseAttr(AttrType("DEFENSE"), 5);
+      break;
+    case LastingEffect::RAGE:
+      c->getAttributes().increaseBaseAttr(AttrType("DAMAGE"), 5);
+      c->getAttributes().increaseBaseAttr(AttrType("DEFENSE"), -5);
+      break;
     case LastingEffect::LIGHT_SOURCE:
       c->getPosition().addCreatureLight(false);
       break;
@@ -352,7 +367,20 @@ void LastingEffects::onRemoved(Creature* c, LastingEffect effect, bool msg) {
 void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
   auto factory = !!c->getGame() ? c->getGame()->getContentFactory() : nullptr;
   switch (effect) {
+    case LastingEffect::RESTED:
+    case LastingEffect::SATIATED:
+      c->getAttributes().increaseBaseAttr(AttrType("DEFENSE"), -2);
+      break;
+    case LastingEffect::PANIC:
+      c->getAttributes().increaseBaseAttr(AttrType("DAMAGE"), 5);
+      c->getAttributes().increaseBaseAttr(AttrType("DEFENSE"), -5);
+      break;
+    case LastingEffect::RAGE:
+      c->getAttributes().increaseBaseAttr(AttrType("DAMAGE"), -5);
+      c->getAttributes().increaseBaseAttr(AttrType("DEFENSE"), 5);
+      break;
     case LastingEffect::SLEEP:
+      c->getAttributes().increaseBaseAttr(AttrType("DEFENSE"), 10);
       c->addEffect(LastingEffect::RESTED, 1000_visible);
       break;
     case LastingEffect::PLAGUE:
@@ -563,34 +591,14 @@ int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
   static auto spellDamageType = AttrType("SPELL_DAMAGE");
   static auto defenseType = AttrType("DEFENSE");
   if (type == damageType) {
-    if (c->isAffected(LastingEffect::DRUNK, time))
-      value -= attrBonus;
-    if (c->isAffected(LastingEffect::PANIC, time))
-      value -= attrBonus;
-    if (c->isAffected(LastingEffect::RAGE, time))
-      value += attrBonus;
     if (c->isAffected(LastingEffect::SWARMER, time))
       value += c->getPosition().countSwarmers() - 1;
     modifyWithSpying(value);
   } else
   if (type == rangedDamageType || type == spellDamageType) {
-    if (c->isAffected(LastingEffect::DRUNK, time))
-      value -= attrBonus;
     modifyWithSpying(value);
   } else
   if (type == defenseType) {
-    if (c->isAffected(LastingEffect::DRUNK, time))
-      value -= attrBonus;
-    if (c->isAffected(LastingEffect::PANIC, time))
-      value += attrBonus;
-    if (c->isAffected(LastingEffect::RAGE, time))
-      value -= attrBonus;
-    if (c->isAffected(LastingEffect::SLEEP, time))
-      value -= attrBonus;
-    if (c->isAffected(LastingEffect::SATIATED, time))
-      value += 1;
-    if (c->isAffected(LastingEffect::RESTED, time))
-      value += 1;
     if (c->isAffected(LastingEffect::SWARMER, time))
       value += c->getPosition().countSwarmers() - 1;
   }
@@ -1353,6 +1361,7 @@ static TimeInterval entangledTime(int strength) {
 }
 
 TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
+  PROFILE;
   switch (e) {
     case LastingEffect::PLAGUE:
       return 1500_visible;
