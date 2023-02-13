@@ -314,6 +314,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
       case MinionActivity::BE_EXECUTED: return {FurnitureType("GALLOWS")};
       case MinionActivity::CRAFT:
         return {[](const ContentFactory* f, const Collective* col, const Creature* c, FurnitureType t) {
+            PROFILE_BLOCK("Crafting predicate");
             if (t == FurnitureType("FURNACE")) {
               if (!c || !col)
                 return true;

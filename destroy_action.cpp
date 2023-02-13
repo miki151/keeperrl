@@ -95,6 +95,7 @@ MinionActivity DestroyAction::getMinionActivity() const {
 }
 
 double DestroyAction::getDamage(Creature* c) const {
+  PROFILE;
   switch (type) {
     case Type::BASH:
     case Type::BOULDER:

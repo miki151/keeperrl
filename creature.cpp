@@ -238,6 +238,7 @@ CreatureAction Creature::castSpell(const Spell* spell) const {
 }
 
 TimeInterval Creature::calculateSpellCooldown(Range cooldown) const {
+  PROFILE;
   return TimeInterval(cooldown.getStart() +
       (cooldown.getLength() - 1) * (100 - min(100, getAttr(AttrType("SPELL_SPEED")))) / 100);
 }
@@ -726,6 +727,7 @@ void Creature::drop(vector<PItem> items) {
 }
 
 bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
+  PROFILE;
   auto setReason = [reason] (string s) {
     if (reason)
       *reason = std::move(s);
@@ -1457,6 +1459,7 @@ void Creature::removeCompanions(int index) {
 }
 
 void Creature::tickCompanions() {
+  PROFILE;
   for (auto& summonsType : companions)
     for (auto elem : copyOf(summonsType.creatures)) {
       if (elem->isDead())
@@ -1540,6 +1543,7 @@ CreatureAction Creature::execute(Creature* c, const char* verbSecond, const char
 }
 
 int Creature::getDefaultWeaponDamage() const {
+  PROFILE;
   if (auto weapon = getFirstWeapon())
     return getAttr(weapon->getWeaponInfo().meleeAttackAttr);
   else
@@ -1665,6 +1669,7 @@ bool Creature::captureDamage(double damage, Creature* attacker) {
 }
 
 double Creature::getFlankedMod() const {
+  PROFILE;
   if (!getGame())
     return 1.0;
   int cnt = 1 + getAttr(AttrType("PARRY"));
@@ -1799,6 +1804,7 @@ void Creature::updateViewObject(const ContentFactory* factory) {
 }
 
 optional<double> Creature::getMorale(const ContentFactory* factory) const {
+  PROFILE;
   if (getBody().hasBrain(factory ? factory : getGame()->getContentFactory()))
     return min(1.0, max(-1.0, morale + LastingEffects::getMoraleIncrease(this, getGlobalTime())));
   return none;
@@ -2103,6 +2109,7 @@ void Creature::increaseExpLevel(ExperienceType type, double increase) {
 }
 
 BestAttack Creature::getBestAttack(const ContentFactory* factory) const {
+  PROFILE;
   auto viewId = factory->attrInfo.at(AttrType("DAMAGE")).viewId;
   auto value = 0;
   for (auto& a : factory->attrInfo)
@@ -2385,6 +2392,7 @@ CreatureAction Creature::consume(Creature* other) const {
 
 template <typename Visitor>
 static void visitMaxSimultaneousWeapons(const Creature* c, Visitor visitor) {
+  PROFILE;
   constexpr double minMultiplier = 0.5;
   const double skillValue = min(1.0, double(c->getAttr(AttrType("MULTI_WEAPON"))) * 0.02);
   visitor(1);
@@ -2455,6 +2463,7 @@ optional<int> Creature::getThrowDistance(const Item* item) const {
 }
 
 CreatureAction Creature::throwItem(Item* item, Position target, bool isFriendlyAI) const {
+  PROFILE;
   if (target == position)
     return CreatureAction();
   if (!getBody().numGood(BodyPart::ARM) || !getBody().isHumanoid())

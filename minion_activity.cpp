@@ -155,20 +155,27 @@ static vector<Position> tryInQuarters(vector<Position> pos, const Collective* co
 
 vector<pair<Position, FurnitureLayer>> MinionActivities::getAllPositions(const Collective* collective,
     const Creature* c, MinionActivity activity) const {
-  PROFILE;
+  auto profileName = "MinionActivities::getAllPositions " + EnumInfo<MinionActivity>::getString(activity);
+  PROFILE_BLOCK(profileName.data());
   vector<pair<Position, FurnitureLayer>> ret;
   auto& info = CollectiveConfig::getActivityInfo(activity);
-  for (auto furnitureType : getAllFurniture(activity))
-    if (info.furniturePredicate(collective->getGame()->getContentFactory(), collective, c, furnitureType)) {
-      auto toPair = [layer = collective->getGame()->getContentFactory()->furniture.getData(furnitureType).getLayer()]
-          (Position p) { return make_pair(p, layer); };
-      append(ret, collective->getConstructions().getBuiltPositions(furnitureType).transform(toPair));
-    }
-  if (info.secondaryPredicate)
+  {
+    PROFILE_BLOCK("get all positions");
+    for (auto furnitureType : getAllFurniture(activity))
+      if (info.furniturePredicate(collective->getGame()->getContentFactory(), collective, c, furnitureType)) {
+        auto toPair = [layer = collective->getGame()->getContentFactory()->furniture.getData(furnitureType).getLayer()]
+            (Position p) { return make_pair(p, layer); };
+        append(ret, collective->getConstructions().getBuiltPositions(furnitureType).transform(toPair));
+      }
+  }
+  if (info.secondaryPredicate) {
+    PROFILE_BLOCK("secondary predicate");
     ret = ret.filter([&](const auto& elem) {
       return info.secondaryPredicate(elem.first.getFurniture(elem.second), collective);
     });
+  }
   if (c) {
+    PROFILE_BLOCK("can navigate to");
     auto movement = c->getMovementType();
     ret = ret.filter([&](auto& pos) { return pos.first.canNavigateToOrNeighbor(c->getPosition(), movement); });
     ret = tryInQuarters(ret, collective, c, [](const pair<Position, FurnitureLayer>& p) -> const Position& { return p.first; });

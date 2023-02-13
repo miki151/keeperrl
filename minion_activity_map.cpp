@@ -70,6 +70,7 @@ bool MinionActivityMap::canLock(MinionActivity t) {
 }
 
 bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, MinionActivity t, bool ignoreTaskLock) const {
+  PROFILE;
   if ((isLocked(col, c, t) || col->isActivityGroupLocked(c, t)) && !ignoreTaskLock)
     return false;
   auto factory = col->getGame()->getContentFactory();
