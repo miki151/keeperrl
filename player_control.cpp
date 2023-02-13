@@ -2009,9 +2009,10 @@ void PlayerControl::addMessage(const PlayerMessage& msg) {
 }
 
 void PlayerControl::updateMinionVisibility(const Creature* c) {
+  PROFILE;
   auto visibleTiles = c->getVisibleTiles();
   visibilityMap->update(c, visibleTiles);
-  for (Position pos : visibleTiles) {
+  for (auto& pos : visibleTiles) {
     if (collective->addKnownTile(pos))
       updateKnownLocations(pos);
     addToMemory(pos);
@@ -2133,6 +2134,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
 }
 
 void PlayerControl::updateKnownLocations(const Position& pos) {
+  PROFILE;
   /*if (pos.getModel() == getModel())
     if (const Location* loc = pos.getLocation())
       if (!knownLocations.count(loc)) {
@@ -3326,10 +3328,11 @@ CreatureView::PlacementInfo PlayerControl::canPlaceItem(Vec2 pos, int index) con
 }
 
 void PlayerControl::addToMemory(Position pos) {
-  if (auto ground = pos.getGroundBelow())
-    addToMemory(*ground);
+  PROFILE;
   if (!pos.needsMemoryUpdate())
     return;
+  if (auto ground = pos.getGroundBelow())
+    addToMemory(*ground);
   pos.setNeedsMemoryUpdate(false);
   ViewIndex index;
   getSquareViewIndex(pos, true, index);
