@@ -1113,15 +1113,21 @@ vector<Creature*> PlayerControl::getMinionGroup(const string& groupName) const {
 }
 
 void PlayerControl::sortMinionsForUI(vector<Creature*>& minions) const {
-  std::sort(minions.begin(), minions.end(),
-      [f = getGame()->getContentFactory()] (const Creature* c1, const Creature* c2) {
-        int l1 = 0, l2 = 0;
-        for (auto& attr : f->attrInfo)
-          if (attr.second.isAttackAttr) {
-            l1 = max(l1, c1->getAttr(attr.first));
-            l2 = max(l2, c2->getAttr(attr.first));
-          }
-        return l1 > l2 || (l1 == l2 && c1->getUniqueId() > c2->getUniqueId());
+  PROFILE;
+  struct Elem {
+    Creature* c;
+    int value;
+  };
+  auto values = minions.transform([f = getGame()->getContentFactory()](Creature* c) {
+    int value = 0;
+    for (auto& attr : f->attrInfo)
+      if (attr.second.isAttackAttr)
+        value = max(value, c->getAttr(attr.first));
+    return Elem{c, value};
+  });
+  std::sort(values.begin(), values.end(),
+      [] (const Elem& v1, const Elem& v2) {
+        return v1.value > v2.value || (v1.value == v2.value && v1.c->getUniqueId() > v2.c->getUniqueId());
       });
 }
 
@@ -1455,6 +1461,7 @@ static bool runesEqual(const vector<PItem>& v1, const vector<PItem>& v2) {
 }
 
 vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getQueuedWorkshopItems() const {
+  PROFILE;
   vector<CollectiveInfo::QueuedItemInfo> ret;
   bool hasLegendarySkill = [&] {
     for (auto c : getCreatures())
