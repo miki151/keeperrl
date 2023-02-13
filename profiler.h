@@ -10,9 +10,10 @@
 #define PROFILE_BLOCK(...) EASY_BLOCK(__VA_ARGS__)
 
 #define ENABLE_PROFILER\
-  EASY_PROFILER_ENABLE\
+  profiler::startListen()
+/*  EASY_PROFILER_ENABLE\
   DestructorFunction dumpProfileData([]{profiler::dumpBlocksToFile("test_profile.prof");})
-
+*/
 #else
 
 #define PROFILE
