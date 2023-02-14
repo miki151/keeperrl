@@ -316,7 +316,7 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
         pausingMeter.clear();
     }
     INFO << "Time step " << step;
-    if (auto exitInfo = game->update(step)) {
+    if (auto exitInfo = game->update(step, Clock::getRealMillis() + milliseconds{20})) {
       exitInfo->visit(
           [&](ExitAndQuit) {
             eraseAllSavesExcept(game, none);

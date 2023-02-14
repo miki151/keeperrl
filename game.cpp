@@ -344,7 +344,7 @@ void Game::initializeModels() {
       if (!localTime.count(id))
         localTime[id] = (model->getLocalTime() + initialModelUpdate).getDouble();
       if (getCurrentModel() != model)
-        updateModel(model, localTime[id]);
+        updateModel(model, localTime[id], none);
     }
 }
 
@@ -358,7 +358,7 @@ void Game::increaseTime(double diff) {
         c->setGlobalTime(after);
 }
 
-optional<ExitInfo> Game::update(double timeDiff) {
+optional<ExitInfo> Game::update(double timeDiff, milliseconds endTime) {
   PROFILE_BLOCK("Game::update");
   if (auto exitInfo = updateInput())
     return exitInfo;
@@ -373,7 +373,7 @@ optional<ExitInfo> Game::update(double timeDiff) {
     tick(GlobalTime(*lastTick));
   }
   considerRetiredLoadedEvent(getModelCoords(currentModel));
-  if (!updateModel(currentModel, localTime[currentId] + timeDiff)) {
+  if (!updateModel(currentModel, localTime[currentId] + timeDiff, endTime)) {
     localTime[currentId] += timeDiff;
     increaseTime(timeDiff);
   }
@@ -396,7 +396,7 @@ void Game::setWasTransfered() {
 }
 
 // Return true when the player has just left turn-based mode so we don't increase time in that case.
-bool Game::updateModel(WModel model, double totalTime) {
+bool Game::updateModel(WModel model, double totalTime, optional<milliseconds> endTime) {
   do {
     bool wasPlayer = !getPlayerCreatures().empty();
     if (!model->update(totalTime))
@@ -408,6 +408,8 @@ bool Game::updateModel(WModel model, double totalTime) {
       return false;
     }
     if (exitInfo)
+      return true;
+    if (endTime && Clock::getRealMillis() > *endTime)
       return true;
   } while (1);
 }
