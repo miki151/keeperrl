@@ -2260,7 +2260,7 @@ void Creature::forceMount(Creature* whom) {
   CHECK(whom->isAffected(LastingEffect::STEED)) << whom->identify() << " is not a steed";
   if (!steed && !whom->getRider()) {
     whom->removeEffect(LastingEffect::SLEEP);
-    steed = whom->position.getModel()->extractCreature(whom);  
+    steed = whom->position.getModel()->extractCreature(whom);
     steed->position = position;
   }
 }
@@ -2598,7 +2598,8 @@ vector<Position> Creature::getCurrentPath() const {
 }
 
 CreatureAction Creature::moveTowards(Position pos, NavigationFlags flags) {
-  if (!pos.isValid() || !!getRider())
+  PROFILE;
+  if (!position.isSameModel(pos) || !pos.isValid() || !!getRider())
     return CreatureAction();
   auto movement = getMovementType();
   if (pos.isSameLevel(position)) {
@@ -2612,6 +2613,9 @@ CreatureAction Creature::moveTowards(Position pos, NavigationFlags flags) {
     if (connected)
       return moveTowards(pos, false, flags);
   }
+  if ((flags.stepOnTile && !position.canNavigateTo(pos, movement)) ||
+      (!flags.stepOnTile && !position.canNavigateToOrNeighbor(pos, movement)))
+    return CreatureAction();
   auto getStairs = [&pos, this, &flags, &movement] () -> optional<Position> {
     if (lastStairsNavigation && lastStairsNavigation->from == position.getLevel() &&
         lastStairsNavigation->target == pos)
