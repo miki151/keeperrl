@@ -360,7 +360,7 @@ void PlayerControl::render(View* view) {
       getGame()->getOptions()->setValue(OptionId::CONTROLLER_HINT_REAL_TIME, 0);
     }
   }
-  if (!introText.empty() && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
+  if (!tutorial && !introText.empty() && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     view->updateView(this, false);
     for (auto& msg : introText)
       view->presentText("", msg);
