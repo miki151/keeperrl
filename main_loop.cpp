@@ -1004,8 +1004,10 @@ void MainLoop::start(bool tilesPresent) {
       }};
     ScriptedUIState uiState{};
     view->scriptedUI("main_menu", data, uiState);
-    if (game)
+    if (game) {
       playGame(std::move(game), true, false);
+      view->reset();
+    }
     if (!choice)
       continue;
     switch (*choice) {
