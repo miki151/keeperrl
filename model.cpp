@@ -309,7 +309,7 @@ vector<Level*> Model::getLevels() const {
 
 vector<Level*> Model::getDungeonBranch(Level* current, const MapMemory& memory) const {
   if (mainLevels.contains(current) || upLevels.contains(current))
-    return concat(upLevels.reverse(), mainLevels).filter([&](Level* l) { return memory.containsLevel(l); });
+    return concat(upLevels.reverse(), mainLevels)/*.filter([&](Level* l) { return memory.containsLevel(l); })*/;
   auto getSubsequent = [this, &memory](Level* start, int direction) {
     vector<Level*> ret;
     while (1) {
