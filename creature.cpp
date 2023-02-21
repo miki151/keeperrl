@@ -2613,8 +2613,8 @@ CreatureAction Creature::moveTowards(Position pos, NavigationFlags flags) {
     if (connected)
       return moveTowards(pos, false, flags);
   }
-  if ((flags.stepOnTile && !position.canNavigateTo(pos, movement)) ||
-      (!flags.stepOnTile && !position.canNavigateToOrNeighbor(pos, movement)))
+  if ((flags.stepOnTile && !pos.canNavigateTo(position, movement)) ||
+      (!flags.stepOnTile && !pos.canNavigateToOrNeighbor(position, movement)))
     return CreatureAction();
   auto getStairs = [&pos, this, &flags, &movement] () -> optional<Position> {
     if (lastStairsNavigation && lastStairsNavigation->from == position.getLevel() &&
