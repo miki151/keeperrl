@@ -57,6 +57,7 @@
 #include "tribe_alignment.h"
 #include "unlocks.h"
 #include "scripted_ui_data.h"
+#include "version.h"
 
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
@@ -139,7 +140,7 @@ void MainLoop::saveGame(PGame& game, const FilePath& path) {
 }
 
 struct RetiredModelInfo {
-  PModel SERIAL(model);
+  shared_ptr<Model> SERIAL(model);
   ContentFactory SERIAL(factory);
   SERIALIZE_ALL_NO_VERSION(model, factory)
 };
@@ -183,22 +184,21 @@ int MainLoop::getSaveVersion(const SaveFileInfo& save) {
 }
 
 void MainLoop::uploadFile(const FilePath& path, const string& title, const SavedGameInfo& info) {
-  atomic<bool> cancelled(false);
+  FileSharing::CancelFlag cancel;
   optional<string> error;
   optional<string> url;
   doWithSplash("Uploading "_s + path.getPath() + "...", 1,
       [&] (ProgressMeter& meter) {
-        error = fileSharing->uploadSite(path, title, getOldInfo(info), meter, url);
+        error = fileSharing->uploadSite(cancel, path, title, getOldInfo(info), meter, url);
       },
       [&] {
-        cancelled = true;
-        fileSharing->cancel();
+        cancel.cancel();
       });
   if (url)
     if (view->yesOrNoPrompt("Your retired dungeon has been uploaded to Steam Workshop. "
         "Would you like to open its page in your browser now?"))
       openUrl("https://steamcommunity.com/sharedfiles/filedetails/?id=" + *url);
-  if (error && !cancelled)
+  if (error && !cancel.flag)
     view->presentText("Error uploading file", *error);
 }
 
@@ -239,35 +239,6 @@ void MainLoop::saveUI(PGame& game, GameSaveType type) {
 
 void MainLoop::eraseSaveFile(const PGame& game, GameSaveType type) {
   getSavePath(game, type).erase();
-}
-
-void MainLoop::getSaveOptions(const vector<pair<GameSaveType, string>>& games, vector<ListElem>& options,
-    vector<SaveFileInfo>& allFiles) {
-  for (auto elem : games) {
-    vector<SaveFileInfo> files = getSaveFiles(userPath, getSaveSuffix(elem.first));
-    files = files.filter([this] (const SaveFileInfo& info) { return isCompatible(getSaveVersion(info));});
-    append(allFiles, files);
-    if (!files.empty()) {
-      options.emplace_back(elem.second, ListElem::TITLE);
-      append(options, files.transform(
-          [this] (const SaveFileInfo& info) {
-              auto nameAndVersion = getNameAndVersion(userPath.file(info.filename));
-              return ListElem(nameAndVersion->first, getDateString(info.date));}));
-    }
-  }
-}
-
-optional<SaveFileInfo> MainLoop::chooseSaveFile(const vector<ListElem>& options,
-    const vector<SaveFileInfo>& allFiles, string noSaveMsg, View* view) {
-  if (options.empty()) {
-    view->presentText("", noSaveMsg);
-    return none;
-  }
-  auto ind = view->chooseFromList("Choose game", options, 0);
-  if (ind)
-    return allFiles[*ind];
-  else
-    return none;
 }
 
 enum class MainLoop::ExitCondition {
@@ -345,7 +316,7 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
         pausingMeter.clear();
     }
     INFO << "Time step " << step;
-    if (auto exitInfo = game->update(step)) {
+    if (auto exitInfo = game->update(step, Clock::getRealMillis() + milliseconds{20})) {
       exitInfo->visit(
           [&](ExitAndQuit) {
             eraseAllSavesExcept(game, none);
@@ -402,14 +373,17 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
               ret.addLocal(*saved, info, false);
       vector<FileSharing::SiteInfo> onlineSites;
       optional<string> error;
-      doWithSplash("Fetching list of retired dungeons from the server...",
-          [&] {
-            if (auto sites = fileSharing->listSites())
+      FileSharing::CancelFlag cancel;
+      doWithSplash("Fetching list of retired dungeons from the server...", 1,
+          [&] (ProgressMeter& progress) {
+            if (auto sites = fileSharing->listSites(cancel, progress))
               onlineSites = *sites;
             else
               error = sites.error();
           },
-          [&] { fileSharing->cancel(); });
+          [&] {
+            cancel.cancel();
+          });
       if (error)
         view->presentText("", *error);
       for (auto& elem : onlineSites)
@@ -440,6 +414,11 @@ struct ModelTable {
   int numRetiredVillains;
 };
 
+vector<string> MainLoop::getCurrentMods() const {
+  return options->getVectorStringValue(OptionId::CURRENT_MOD2)
+      .filter([&](const string& name) { return !!getLocalModVersionInfo(name); });
+}
+
 TilePaths MainLoop::getTilePathsForAllMods() const {
   auto readTiles = [&] (const GameConfig* config, vector<string> modNames) {
     vector<TileInfo> tileDefs;
@@ -447,18 +426,19 @@ TilePaths MainLoop::getTilePathsForAllMods() const {
       return optional<TilePaths>();
     return optional<TilePaths>(TilePaths(std::move(tileDefs), std::move(modNames)));
   };
-  auto currentMod = options->getVectorStringValue(OptionId::CURRENT_MOD2);
+  auto currentMod = getCurrentMods();
   GameConfig currentConfig = getGameConfig(currentMod);
   auto ret = readTiles(&currentConfig, currentMod);
-  for (auto modName : modsDir.getSubDirs()) {
-    GameConfig config({modsDir.subdirectory(modName)});
-    if (auto paths = readTiles(&config, {modName})) {
-      if (ret)
-        ret->merge(*paths);
-      else
-        ret = paths;
+  for (auto modName : modsDir.getSubDirs())
+    if (!!getLocalModVersionInfo(modName)) {
+      GameConfig config({modsDir.subdirectory(modName)});
+      if (auto paths = readTiles(&config, {modName})) {
+        if (ret)
+          ret->merge(*paths);
+        else
+          ret = paths;
+      }
     }
-  }
   USER_CHECK(ret) << "No available tile paths found";
   return *ret;
 }
@@ -467,15 +447,19 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
   while (1) {
     ContentFactory contentFactory;
     tileSet->clear();
-    doWithSplash("Loading gameplay data", [&] {
+    // Using a splash screen causes a segfault due to reloading the tileset while scriptedUI is running
+    //doWithSplash("Loading gameplay data", [&] {
       contentFactory = createContentFactory(false);
       if (tileSet)
         tileSet->setTilePaths(contentFactory.tilePaths);
-    });
+    //});
     tileSet->loadTextures();
     if (options->getIntValue(OptionId::SUGGEST_TUTORIAL) == 1) {
-      auto tutorialIndex = view->chooseFromList("", {ListElem("Would you like to start with the tutorial?", ListElem::TITLE),
-          ListElem("Yes"), ListElem("No"), ListElem("No, and don't ask me again")}, 0, MenuType::YES_NO);
+      auto tutorialIndex = view->multiChoice("Would you like to start with the tutorial?", {
+        "Yes",
+        "No",
+        "No, and don't ask me again"
+      });
       if (tutorialIndex == 0) {
         auto contentFactory2 = createContentFactory(true);
         if (auto ret = prepareTutorial(&contentFactory2))
@@ -524,22 +508,10 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
   }
 }
 
-void MainLoop::showCredits(const FilePath& path) {
-  ifstream in(path.getPath());
-  CHECK(!!in);
-  vector<ListElem> lines;
-  while (1) {
-    char buf[100];
-    in.getline(buf, 100);
-    if (!in)
-      break;
-    string s(buf);
-    if (s.back() == ':')
-      lines.emplace_back(s, ListElem::TITLE);
-    else
-      lines.emplace_back(s, ListElem::NORMAL);
-  }
-  view->presentList("Credits", lines, false);
+void MainLoop::showCredits() {
+  ScriptedUIState uiState{};
+  auto data = ScriptedUIDataElems::Record{};
+  view->scriptedUI("credits", data, uiState);
 }
 
 const auto modVersionFilename = "version_info";
@@ -634,12 +606,12 @@ vector<ModInfo> MainLoop::getAllMods(const vector<ModInfo>& onlineMods) {
 }
 
 void MainLoop::downloadMod(ModInfo& mod) {
-  atomic<bool> cancelled(false);
   optional<string> error;
+  FileSharing::CancelFlag cancel;
   doWithSplash("Downloading mod \"" + mod.name + "\"...", 1,
       [&] (ProgressMeter& meter) {
         modsDir.createIfDoesntExist();
-        error = fileSharing->downloadMod(mod.name, mod.versionInfo.steamId, modsDir, meter);
+        error = fileSharing->downloadMod(cancel, mod.name, mod.versionInfo.steamId, modsDir, meter);
         if (!error) {
           updateLocalModVersion(mod.name, mod.versionInfo);
           updateLocalModDetails(mod.name, mod.details);
@@ -647,10 +619,9 @@ void MainLoop::downloadMod(ModInfo& mod) {
         }
       },
       [&] {
-        cancelled = true;
-        fileSharing->cancel();
+        cancel.cancel();
       });
-  if (error && !cancelled)
+  if (error && !cancel.flag)
     view->presentText("Error downloading file", *error);
 }
 
@@ -661,23 +632,26 @@ void MainLoop::uploadMod(ModInfo& mod) {
     view->presentText("Mod \"" + mod.name + "\" has errors: ", *err);
     return;
   }
-  atomic<bool> cancelled(false);
+  FileSharing::CancelFlag cancel;
   optional<string> error;
   doWithSplash("Uploading mod \"" + mod.name + "\"...", 1,
       [&] (ProgressMeter& meter) {
-        error = fileSharing->uploadMod(mod, modsDir, meter);
+        error = fileSharing->uploadMod(cancel, mod, modsDir, meter);
         updateLocalModVersion(mod.name, mod.versionInfo);
       },
       [&] {
-        cancelled = true;
-        fileSharing->cancel();
+        cancel.cancel();
       });
-  if (error && !cancelled)
+  if (error && !cancel.flag)
     view->presentText("Error uploading mod:", *error);
 }
 
 void MainLoop::createNewMod() {
-  if (auto name = view->getText("Enter name of new mod", "", 15)) {
+  if (auto name = view->getText("Enter a name for your new mod:", "", 15)) {
+    if (name->empty()) {
+      view->presentText("Error", "Mod name can't be empty");
+      return;
+    }
     if (modsDir.getSubDirs().contains(*name)) {
       view->presentText("Error", "Mod \"" + *name + "\" is alread installed");
       return;
@@ -693,44 +667,145 @@ void MainLoop::createNewMod() {
 vector<ModInfo> MainLoop::getOnlineMods() {
   vector<ModInfo> ret;
   optional<string> error;
+  FileSharing::CancelFlag cancel;
   doWithSplash( "Downloading list of online mods...", 1,
       [&] (ProgressMeter& meter) {
-        if (auto mods = fileSharing->getOnlineMods())
+        if (auto mods = fileSharing->getOnlineMods(cancel, meter))
           ret = *mods;
         else
           error = mods.error();
         sort(ret.begin(), ret.end(), [](const ModInfo& m1, const ModInfo& m2) { return m1.upvotes > m2.upvotes; });
-      }, [&]{fileSharing->cancel();  });
-  if (error)
+      },
+      [&]{
+        cancel.cancel();
+      });
+  if (error && !cancel.flag)
     view->presentText("", *error);
   return ret;
 }
 
 void MainLoop::showMods() {
   int highlighted = 0;
+  int modIndex = 0;
+  ScriptedUIState uiState{};
+  uiState.highlightedElem = modIndex;
   vector<ModInfo> onlineMods = getOnlineMods();
   while (1) {
+    bool clicked = false;
+    auto getModInfo = [&] (ModInfo& mod) {
+      auto modInfo = ScriptedUIDataElems::Record{{
+        {"name"_s, mod.name},
+        {"author"_s, mod.details.author},
+        {"description"_s, mod.details.description},
+      }};
+      if (mod.upvotes + mod.downvotes > 0) {
+        const int maxStars = 5;
+        int rating = maxStars * mod.upvotes / (mod.downvotes + mod.upvotes);
+        auto stars = ScriptedUIDataElems::List{};
+        for (int j = 0; j < maxStars; ++j)
+          stars.push_back(j < rating ? "★"_s : "☆"_s);
+        modInfo.elems["stars"] = std::move(stars);
+      }
+      auto getCallback = [&mod, &onlineMods, &clicked, this](const string& action) -> ScriptedUIDataElems::Callback {
+        if (action == "Activate")
+          return {[this, &clicked, name = mod.name] {
+            options->addVectorStringValue(OptionId::CURRENT_MOD2, name);
+            clicked = true;
+            return true;
+          }};
+        else if (action == "Deactivate")
+          return {[this, &clicked, name = mod.name] {
+            options->removeVectorStringValue(OptionId::CURRENT_MOD2, name);
+            clicked = true;
+            return true;
+          }};
+        else if (action == "Download" || action == "Update")
+          return {[this, &clicked, &mod] {
+            downloadMod(mod);
+            clicked = true;
+            return true;
+          }};
+        else if (action == "Upload")
+          return {[this, &clicked, &mod, &onlineMods] {
+            uploadMod(mod);
+            onlineMods = getOnlineMods();
+            clicked = true;
+            return true;
+          }};
+        fail();
+      };
+      for (auto& action : mod.actions)
+        modInfo.elems[action] = getCallback(action);
+      if (mod.versionInfo.steamId != 0)
+        modInfo.elems["show_workshop"] = ScriptedUIDataElems::Callback {
+            [id = mod.versionInfo.steamId] {
+              openUrl("https://steamcommunity.com/sharedfiles/filedetails/?id=" + toString(id));
+              return false;
+            }
+        };
+      return modInfo;
+    };
     vector<ModInfo> allMods = getAllMods(onlineMods);
-    auto choice = view->getModAction(highlighted, allMods);
-    if (!choice)
+    auto getState = [](const ModInfo& mod) {
+      if (mod.isLocal)
+        return 0;
+      if (mod.isSubscribed)
+        return 1;
+      else
+        return 2;
+    };
+    sort(allMods.begin(), allMods.end(), [getState](const ModInfo& m1, const ModInfo& m2) {
+      return std::forward_as_tuple(getState(m1), m1.name)
+           < std::forward_as_tuple(getState(m2), m2.name);
+    });
+    auto modLists = vector<ScriptedUIDataElems::List>(4);
+    for (int i : All(allMods)) {
+      auto& mod = allMods[i];
+      auto modButton = ScriptedUIDataElems::Record{{
+        {"name"_s, mod.name},
+        {"choose"_s, ScriptedUIDataElems::Callback{[&modIndex, &clicked, i, &uiState] {
+          modIndex = i; uiState.highlightedElem = i; clicked = true; return true;
+        }}}
+      }};
+      if (i == modIndex)
+        modButton.elems["selected"] = "xyz"_s;
+      if (mod.isActive)
+        modButton.elems["active"] = "xyz"_s;
+      modLists[getState(mod)].push_back(std::move(modButton));
+    }
+    auto data = ScriptedUIDataElems::Record{{
+      {"create_new", ScriptedUIDataElems::Callback{ [this, &clicked] { createNewMod(); clicked = true; return true;} }},
+      {"local", modLists[0]},
+      {"subscribed", modLists[1]},
+      {"online", modLists[2]},
+    }};
+    if (!allMods.empty())
+      data.elems["selected_mod"] = getModInfo(allMods[modIndex]);
+    auto oldFunNext = *uiState.highlightNext.getValueMaybe<ScriptedUIDataElems::Callback>();
+    auto oldFunPrev = *uiState.highlightPrevious.getValueMaybe<ScriptedUIDataElems::Callback>();
+    uiState.highlightNext = ScriptedUIDataElems::Callback{
+      [&oldFunNext, &modIndex, &uiState, &allMods, &clicked] {
+        oldFunNext.fun();
+        uiState.highlightedElem = max(0, min(allMods.size() - 1, *uiState.highlightedElem));
+        modIndex = *uiState.highlightedElem;
+        clicked = true;
+        return true;
+      }
+    };
+    uiState.highlightPrevious = ScriptedUIDataElems::Callback{
+      [&oldFunPrev, &modIndex, &uiState, &allMods, &clicked] {
+        oldFunPrev.fun();
+        uiState.highlightedElem = max(0, min(allMods.size() - 1, *uiState.highlightedElem));
+        modIndex = *uiState.highlightedElem;
+        clicked = true;
+        return true;
+      }
+    };
+    view->scriptedUI("mods", data, uiState);
+    uiState.highlightNext = oldFunNext;
+    uiState.highlightPrevious = oldFunPrev;
+    if (!clicked)
       break;
-    highlighted = choice->index;
-    if (highlighted == -1) {
-      createNewMod();
-      return showMods();
-    }
-    auto& chosenMod = allMods[highlighted];
-    auto action = chosenMod.actions[choice->actionId];
-    if (action == "Activate")
-      options->addVectorStringValue(OptionId::CURRENT_MOD2, allMods[highlighted].name);
-    else if (action == "Deactivate")
-      options->removeVectorStringValue(OptionId::CURRENT_MOD2, allMods[highlighted].name);
-    else if (action == "Download" || action == "Update")
-      downloadMod(chosenMod);
-    else if (action == "Upload") {
-      uploadMod(chosenMod);
-      onlineMods = getOnlineMods();
-    }
   }
 }
 
@@ -765,17 +840,60 @@ GameConfig MainLoop::getVanillaConfig() const {
   return GameConfig({getVanillaDir()});
 }
 
-void MainLoop::playSimpleGame() {
+void MainLoop::genZLevels(const string& keeperType) {
   auto factory = createContentFactory(false);
-  SimpleGame game(&factory, this);
-  while (1) {
-    game.update();
+  vector<ZLevelInfo> allZLevels;
+  for (auto& keeper : factory.keeperCreatures)
+    if (keeper.first == keeperType)
+      for (auto& g : keeper.second.zLevelGroups)
+        allZLevels.append(factory.zLevels.at(g));
+  for (int i : Range(1, 30)) {
+    auto level = *chooseZLevel(Random, allZLevels, i);
+    std::cout << i << " ";
+    level.visit(
+      [&](const FullZLevel& l) {
+        std::cout << "Full z-level ";
+        if (l.enemy)
+          std::cout << " " << l.enemy->data() << " (" << l.attackChance << " attack chance)";
+      },
+      [](const WaterZLevel& l) {
+        std::cout << "Water z-level (" << l.waterType.data() << ")"  ;
+      },
+      [&](const EnemyZLevel& l) {
+        std::cout << "Enemy z-level " << l.enemy.data() << " (" << l.attackChance << " attack chance)";
+      }
+    );
+    std::cout << "\n";
   }
+  double totalAttacks = 0;
+  double totalAttacks10 = 0;
+  const int numTries = 5000;
+  for (int _ : Range(numTries)) {
+    double numAttacks = 0;
+    for (int i : Range(1, 30)) {
+      auto level = *chooseZLevel(Random, allZLevels, i);
+      level.visit(
+        [&](const FullZLevel& l) {
+          if (l.enemy)
+            numAttacks += l.attackChance;
+        },
+        [](const WaterZLevel& l) {
+        },
+        [&](const EnemyZLevel& l) {
+          numAttacks += l.attackChance;
+        }
+      );
+      if (i == 10)
+        totalAttacks10 += numAttacks / numTries;
+    }
+    totalAttacks += numAttacks / numTries;
+  }
+  std::cout << "\n" << totalAttacks10 << " attacks in first 10 levels\n";
+  std::cout << totalAttacks << " attacks in first 30 levels\n";
 }
 
 GameConfig MainLoop::getGameConfig(const vector<string>& modNames) const {
   return GameConfig(concat({getVanillaDir()}, modNames
-      .filter([&](const string& name) { return !!getLocalModVersionInfo(name); })
       .transform([&](const string& name) { return modsDir.subdirectory(name); })));
 }
 
@@ -798,7 +916,7 @@ ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
     }
 #endif
   } else {
-    auto chosenMod = options->getVectorStringValue(OptionId::CURRENT_MOD2);
+    auto chosenMod = getCurrentMods();
     if (auto err = tryConfig(chosenMod)) {
       USER_INFO << "Error loading mod \"" << chosenMod << "\": " << *err << "\n\nUsing vanilla game data";
       if (auto err = tryConfig({}))
@@ -808,20 +926,30 @@ ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
   return ret;
 }
 
+vector<SaveFileInfo> MainLoop::getSaveOptions(const vector<GameSaveType>& games) {
+  vector<SaveFileInfo> ret;
+  for (auto elem : games) {
+    vector<SaveFileInfo> files = getSaveFiles(userPath, getSaveSuffix(elem));
+    files = files.filter([this] (const SaveFileInfo& info) { return isCompatible(getSaveVersion(info));});
+    append(ret, files);
+  }
+  return ret;
+}
+
 void MainLoop::launchQuickGame(optional<int> maxTurns, bool tryToLoad) {
   PGame game;
+  tileSet->clear();
+  auto contentFactory = createContentFactory(true);
+  if (tileSet)
+    tileSet->setTilePaths(contentFactory.tilePaths);
+  tileSet->loadTextures();
   if (tryToLoad) {
-    vector<ListElem> optionsUnused;
-    vector<SaveFileInfo> files;
-    getSaveOptions({
-        {GameSaveType::AUTOSAVE, "Recovered games:"},
-        {GameSaveType::KEEPER, "Keeper games:"}, {GameSaveType::ADVENTURER, "Adventurer games:"}}, optionsUnused, files);
+    auto files = getSaveOptions({GameSaveType::AUTOSAVE, GameSaveType::KEEPER, GameSaveType::ADVENTURER});
     auto toLoad = std::min_element(files.begin(), files.end(),
         [](const auto& f1, const auto& f2) { return f1.date > f2.date; });
     if (toLoad != files.end())
       game = loadGame(userPath.file((*toLoad).filename));
   }
-  auto contentFactory = createContentFactory(true);
   if (!game) {
     AvatarInfo avatar = getQuickGameAvatar(view, contentFactory.keeperCreatures, &contentFactory.getCreatures());
     CampaignBuilder builder(view, Random, options, contentFactory.villains, contentFactory.gameIntros, avatar);
@@ -840,26 +968,50 @@ void MainLoop::start(bool tilesPresent) {
   view->reset();
   considerFreeVersionText(tilesPresent);
   considerGameEventsPrompt();
-  int lastIndex = 0;
+  bool controllerHint = false;
+  if (options->getBoolValue(OptionId::CONTROLLER_HINT_MAIN_MENU)) {
+    controllerHint = true;
+    options->setValue(OptionId::CONTROLLER_HINT_MAIN_MENU, 0);
+  }
   const auto vanillaContent = createContentFactory(true);
   while (1) {
     playMenuMusic();
+    auto data = ScriptedUIDataElems::Record{};
     optional<int> choice;
-    choice = view->chooseFromList("", {
-        "Play", "Settings", "High scores", "Credits", "Quit"}, lastIndex, MenuType::MAIN);
+    PGame game;
+    data.elems["play"] = ScriptedUIDataElems::Callback{[&game, this] {
+      return !!(game = loadOrNewGame());
+    }};
+    data.elems["settings"] = ScriptedUIDataElems::Callback{[&vanillaContent, this] {
+      options->handle(view, &vanillaContent, OptionSet::GENERAL);
+      return false;
+    }};
+    data.elems["highscores"] = ScriptedUIDataElems::Callback{[this] {
+      highscores->present(view);
+      return false;
+    }};
+    data.elems["credits"] = ScriptedUIDataElems::Callback{[this] {
+      showCredits();
+      return false;
+    }};
+    data.elems["quit"] = ScriptedUIDataElems::Callback{[&choice] { choice = 4; return true;}};
+    data.elems["version"] = string(BUILD_DATE) + " " + BUILD_VERSION;
+    data.elems["install_id"] = fileSharing->getInstallId();
+    if (controllerHint)
+      data.elems["controller_hint"] = ScriptedUIDataElems::Callback{[&controllerHint] {
+        controllerHint = false;
+        return true;
+      }};
+    ScriptedUIState uiState{};
+    view->scriptedUI("main_menu", data, uiState);
+    if (game) {
+      playGame(std::move(game), true, false);
+      view->reset();
+    }
     if (!choice)
       continue;
-    lastIndex = *choice;
     switch (*choice) {
-      case 0: {
-        if (PGame game = loadOrNewGame())
-          playGame(std::move(game), true, false);
-        view->reset();
-        break;
-      }
-      case 1: options->handle(view, &vanillaContent, OptionSet::GENERAL); break;
-      case 2: highscores->present(view); break;
-      case 3: showCredits(dataFreePath.file("credits.txt")); break;
+      case 2: ; break;
       case 4: return;
     }
   }
@@ -1142,7 +1294,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment 
                   if (auto& retiredInfo = saved->retiredEnemyInfo)
                     if (retiredInfo->enemyId == villain->enemyId)
                       if (auto model = loadRetiredModelFromFile(userPath.file(info.filename))) {
-                        models[v] = std::move(model->model);
+                        models[v] = PModel(std::move(model->model));
                         ++numRetiredVillains;
                         remove(userPath.file(info.filename).getPath());
                         break;
@@ -1151,7 +1303,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment 
               models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, tribeAlignment);
           } else if (auto retired = sites[v].getRetired()) {
             if (auto info = loadRetiredModelFromFile(userPath.file(retired->fileInfo.filename))) {
-              models[v] = std::move(info->model);
+              models[v] = PModel(std::move(info->model));
               factories.push_back(std::move(info->factory));
             } else {
               failedToLoad = retired->fileInfo.filename;
@@ -1179,17 +1331,16 @@ PGame MainLoop::loadGame(const FilePath& file) {
 }
 
 bool MainLoop::downloadGame(const SaveFileInfo& file) {
-  atomic<bool> cancelled(false);
+  FileSharing::CancelFlag cancel;
   optional<string> error;
   doWithSplash("Downloading " + file.filename + "...", 1,
       [&] (ProgressMeter& meter) {
-        error = fileSharing->downloadSite(file, userPath, meter);
+        error = fileSharing->downloadSite(cancel, file, userPath, meter);
       },
       [&] {
-        cancelled = true;
-        fileSharing->cancel();
+        cancel.cancel();
       });
-  if (error && !cancelled)
+  if (error && !cancel.flag)
     view->presentText("Error downloading file", *error);
   return !error;
 }
@@ -1255,13 +1406,15 @@ PGame MainLoop::loadOrNewGame() {
     return prepareCampaign(Random);
   data.elems["games"] = std::move(games);
   bool newGame = false;
-  data.elems["new"] = ScriptedUIData{ScriptedUIDataElems::Callback{[&newGame]{ newGame = true; return true; }}};
+  data.elems["new"] = ScriptedUIData{ScriptedUIDataElems::Callback{[&newGame]{
+    newGame = true;
+    return true;
+  }}};
   ScriptedUIState uiState{};
   view->scriptedUI("load_menu", data, uiState);
   if (newGame) {
     if (auto res = prepareCampaign(Random))
-      return res;
-    return loadOrNewGame();
+      return std::move(res);
   } else if (savedGame) {
     if (PGame ret = loadGame(userPath.file(savedGame->filename))) {
       if (eraseSave())
@@ -1278,8 +1431,8 @@ PGame MainLoop::loadOrNewGame() {
     if (view->yesOrNoPrompt("Are you sure you want to erase " + eraseGame->filename + "?"))
       userPath.file(eraseGame->filename).erase();
     return loadOrNewGame();
-  } else
-    return nullptr;
+  }
+  return nullptr;
 }
 
 struct WarlordInfo {
@@ -1293,11 +1446,12 @@ PGame MainLoop::prepareWarlord(const SaveFileInfo& fileInfo) {
   if (auto warlordInfo = loadFromFile<WarlordInfo>(userPath.file(fileInfo.filename))) {
     ContentFactory contentFactory;
     tileSet->clear();
-    doWithSplash("Loading gameplay data", [&] {
+    // Using a splash screen causes a segfault due to reloading the tileset while scriptedUI is running
+    //doWithSplash("Loading gameplay data", [&] {
       contentFactory = createContentFactory(false);
       if (tileSet)
         tileSet->setTilePaths(contentFactory.tilePaths);
-    });
+    //});
     tileSet->loadTextures();
     auto retiredGames = *getRetiredGames(CampaignType::FREE_PLAY);
     for (int i : All(retiredGames.getAllGames()))

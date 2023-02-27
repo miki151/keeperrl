@@ -10,6 +10,7 @@
 #include "external_enemies.h"
 #include "model.h"
 #include "level.h"
+#include "enemy_aggression_level.h"
 
 static EnemyInfo getEnemy(EnemyId id, ContentFactory* contentFactory) {
   auto enemy = EnemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,
@@ -18,9 +19,17 @@ static EnemyInfo getEnemy(EnemyId id, ContentFactory* contentFactory) {
   return enemy;
 }
 
-static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCounts resources, TribeId tribe,
-    ContentFactory* contentFactory, Vec2 size) {
-  return levelInfo.type.visit(
+static double modifyAggression(double value, EnemyAggressionLevel aggressionLevel) {
+  switch (aggressionLevel) {
+    case EnemyAggressionLevel::NONE: return 0;
+    case EnemyAggressionLevel::MODERATE: return 0.5 * value;
+    case EnemyAggressionLevel::EXTREME: return value;
+  }
+}
+
+static LevelMakerResult getLevelMaker(const ZLevelType& levelInfo, ResourceCounts resources, TribeId tribe,
+    ContentFactory* contentFactory, Vec2 size, EnemyAggressionLevel aggressionLevel) {
+  return levelInfo.visit(
       [&](const WaterZLevel& level) {
         return LevelMakerResult{
             LevelMaker::getWaterZLevel(Random, level.waterType, size.x, level.creatures),
@@ -31,7 +40,7 @@ static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCount
         auto enemy = getEnemy(level.enemy, contentFactory);
         CHECK(level.attackChance < 0.0001 || !!enemy.behaviour)
             << "Z-level enemy " << level.enemy.data() << " has positive attack chance, but no attack behaviour defined";
-        if (Random.chance(level.attackChance)) {
+        if (Random.chance(modifyAggression(level.attackChance, aggressionLevel))) {
           enemy.behaviour->triggers.push_back(Immediate{});
         }
         return LevelMakerResult{
@@ -48,7 +57,7 @@ static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCount
           settlement = enemy[0].settlement;
           CHECK(level.attackChance < 0.0001 || !!enemy[0].behaviour)
               << "Z-level enemy " << level.enemy->data() << " has positive attack chance, but no attack behaviour defined";
-          if (Random.chance(level.attackChance)) {
+          if (Random.chance(modifyAggression(level.attackChance, aggressionLevel))) {
             enemy[0].behaviour->triggers.push_back(Immediate{});
           }
         }
@@ -60,13 +69,13 @@ static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCount
 }
 
 LevelMakerResult getLevelMaker(RandomGen& random, ContentFactory* contentFactory, const vector<string>& zLevelGroups,
-    int depth, TribeId tribe, Vec2 size) {
+    int depth, TribeId tribe, Vec2 size, EnemyAggressionLevel aggressionLevel) {
   vector<ZLevelInfo> levels;
   for (auto& group : zLevelGroups)
     levels.append(contentFactory->zLevels.at(group));
   auto zLevel = *chooseZLevel(random, levels, depth);
   auto res = *chooseResourceCounts(random, contentFactory->resources, depth);
-  return getLevelMaker(zLevel, res, tribe, contentFactory, size);
+  return getLevelMaker(zLevel, res, tribe, contentFactory, size, aggressionLevel);
 }
 
 

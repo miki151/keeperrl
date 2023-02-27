@@ -122,7 +122,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const char* identify() const;
   int getAttr(AttrType, bool includeWeapon = true) const;
   int getSpecialAttr(AttrType, const Creature* against) const;
-  int getAttrBonus(AttrType, bool includeWeapon) const;
+  int getAttrBonus(AttrType, int rawAttr, bool includeWeapon) const;
 
   double getFlankedMod() const;
   int getPoints() const;

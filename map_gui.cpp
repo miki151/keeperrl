@@ -62,8 +62,8 @@ static Color getFireColor() {
   return Color(200 + Random.get(-fireVar, fireVar), Random.get(fireVar), Random.get(fireVar), 150);
 }
 
-void MapGui::setActiveButton(ViewId id, CollectiveTab tab, int index, bool isBuilding) {
-  activeButton = ActiveButtonInfo{id, index, tab, isBuilding};
+void MapGui::setActiveButton(ViewId id, int index, bool isBuilding) {
+  activeButton = ActiveButtonInfo{id, index, isBuilding};
 }
 
 void MapGui::clearActiveButton() {
@@ -279,8 +279,9 @@ void MapGui::considerContinuousLeftClick(Vec2 mousePos) {
   }
 }
 
-bool MapGui::onMouseMove(Vec2 v) {
-  lastMouseMove = v;
+bool MapGui::onMouseMove(Vec2 v, Vec2 rel) {
+  if (rel != Vec2(0, 0))
+    lastMouseMove = v;
   auto draggedCreature = isDraggedCreature();
   if (v.inRectangle(getBounds()) && mouseHeldPos && !draggedCreature)
     considerContinuousLeftClick(v);
@@ -339,7 +340,7 @@ void MapGui::onMouseRelease(Vec2 v) {
     if (mouseHeldPos->distD(v) > 10) {
       if (!isDraggedCreature())
         considerContinuousLeftClick(v);
-    } else {
+    } else if (!!lastMouseMove) {
       if (auto c = getCreature(*mouseHeldPos))
         inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK, c->position));
       else {
@@ -1199,6 +1200,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
     renderHighObjects(renderer, size, currentTimeReal);
   else
     renderAsciiObjects(renderer, size, currentTimeReal);
+  renderWalkingJoy(renderer, size);
   renderHighlights(renderer, size, currentTimeReal, false);
   if (fxViewManager) {
     fxViewManager->finishFrame();
@@ -1288,6 +1290,18 @@ void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, milliseconds c
   }
 }
 
+bool MapGui::onScrollEvent(Vec2 pos, double x, double y, milliseconds timeDiff) {
+  auto time = Clock::getRealMillis();
+  if (x != 0.0 || y != 0.0) {
+    double diff = double(timeDiff.count()) / 40;
+    center.x += diff * x;
+    center.y -= diff * y;
+    softCenter = none;
+    scrollingState = ScrollingState::AFTER;
+  }
+  return true;
+}
+
 void MapGui::processScrolling(milliseconds time) {
   PROFILE;
   if (!!softCenter && !!lastScrollUpdate) {
@@ -1367,6 +1381,25 @@ void MapGui::render(Renderer& renderer) {
   processScrolling(currentTimeReal);
 }
 
+void MapGui::renderWalkingJoy(Renderer& renderer, Vec2 size) {
+  if (playerPosition) {
+    auto pos = renderer.getDiscreteJoyPos(ControllerJoy::WALKING);
+    Vec2 offset;
+    if (auto index = objects[*playerPosition])
+      if (index->hasObject(ViewLayer::CREATURE) && !!screenMovement)
+        offset = getMovementOffset(index->getObject(ViewLayer::CREATURE), size, 0, clock->getRealMillis(), false, *playerPosition);
+    if (pos != Vec2(0, 0)) {
+      Vec2 wpos = projectOnScreen(*playerPosition + pos);
+      auto dir = pos.getBearing();
+      auto coord = renderer.getTileSet().getTileCoord("arrow" + toString(int(dir.getCardinalDir()))).getOnlyElement();
+      auto color = Color::WHITE;
+      if (auto index = objects[*playerPosition])
+        color = blendNightColor(Color::WHITE, *index);
+      renderer.drawTile(wpos + offset, {coord}, size, color);
+    }
+  }
+}
+
 bool MapGui::onClick(MouseButtonId b, Vec2 v) {
   switch (b) {
     case MouseButtonId::RELEASED:
@@ -1432,7 +1465,7 @@ void MapGui::updateShortestPaths(CreatureView* view, Renderer& renderer, Vec2 ti
   phylacteries = view->getCreatureViewLevel()->getPhylacteries();
   if (auto pos = projectOnMap(renderer.getMousePos())) {
     auto highlightedInfo = getHighlightedInfo(tileSize, curTimeReal);
-    if (highlightedInfo.tilePos) {
+    if (!!lastMouseMove && highlightedInfo.tilePos) {
       auto highlightedPath = view->getHighlightedPathTo(*highlightedInfo.tilePos);
         if (!highlightedPath.empty())
           shortestPath.push_back(highlightedPath);
@@ -1449,6 +1482,10 @@ void MapGui::updateShortestPaths(CreatureView* view, Renderer& renderer, Vec2 ti
 void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* mapLayout, bool smoothMovement, bool ui,
     const optional<TutorialInfo>& tutorial) {
   selectionSize = view->getSelectionSize();
+  playerPosition = view->getPlayerPosition();
+  renderer.getSteamInput()->setGameActionLayer(!!playerPosition
+      ? MySteamInput::GameActionLayer::TURNED_BASED
+      : MySteamInput::GameActionLayer::REAL_TIME);
   if (tutorial) {
     tutorialHighlightLow = tutorial->highlightedSquaresLow;
     tutorialHighlightHigh = tutorial->highlightedSquaresHigh;

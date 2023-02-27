@@ -50,12 +50,8 @@ class MinionController : public Player {
 
   virtual void refreshGameInfo(GameInfo& gameInfo) const override {
     Player::refreshGameInfo(gameInfo);
-    if (getGame()->getOptions()->getBoolValue(OptionId::KEEPER_WARNING))
-      if (auto info = control->checkKeeperDanger())
-        gameInfo.keeperInDanger = info->warning;
     auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
     info.canExitControlMode = true;
-    info.avatarLevelInfo = none;
     if (auto team = control->getCurrentTeam()) {
       info.teamOrders.emplace();
       for (auto order : ENUM_ALL(TeamOrder))
@@ -109,13 +105,6 @@ class MinionController : public Player {
         }
         return true;
       }
-      case UserInputId::CONTROL_KEEPER:
-        if (auto info = control->checkKeeperDanger())
-          control->controlSingle(info->c);
-        return true;
-      case UserInputId::DISMISS_KEEPER_DANGER:
-        control->dismissKeeperWarning();
-        return true;
       default:
         return false;
     }

@@ -62,7 +62,11 @@ void MapMemory::clearSquare(Position pos) {
 const MapMemory& MapMemory::empty() {
   static MapMemory mem;
   return mem;
-} 
+}
+
+bool MapMemory::containsLevel(Level* l) const {
+  return table->containsLevel(l);
+}
 
 const unordered_set<Position, CustomHash<Position>>& MapMemory::getUpdated(const Level* level) const {
   return updated[level->getUniqueId()];

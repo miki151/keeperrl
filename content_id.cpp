@@ -44,13 +44,11 @@ template <typename T>
 int ContentId<T>::getId(const char* text) {
   static unordered_map<string, int> ids;
   static int generatedId = 0;
-  if (!ids.count(text)) {
-    ids[text] = generatedId;
-    getAllIds().push_back(text);
-    ++generatedId;
-  }
-  auto ret = getReferenceMaybe(ids, text);
-  return *ret;
+  if (auto ret = getReferenceMaybe(ids, text))
+    return *ret;
+  ids[text] = generatedId;
+  getAllIds().push_back(text);
+  return generatedId++;
 }
 
 template <typename T>

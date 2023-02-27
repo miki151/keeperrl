@@ -20,6 +20,7 @@
 #include "scripted_ui_data.h"
 #include "keybinding_map.h"
 #include "content_factory.h"
+#include "steam_input.h"
 
 const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::HINTS, 1},
@@ -30,6 +31,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::SHOW_MAP, 0},
   {OptionId::FULLSCREEN, 0},
   {OptionId::VSYNC, 1},
+  {OptionId::FPS_LIMIT, 0},
   {OptionId::ZOOM_UI, 0},
   {OptionId::DISABLE_MOUSE_WHEEL, 0},
   {OptionId::DISABLE_CURSOR, 0},
@@ -37,8 +39,10 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::GAME_EVENTS, 1},
   {OptionId::AUTOSAVE2, 1500},
   {OptionId::SUGGEST_TUTORIAL, 1},
+  {OptionId::CONTROLLER_HINT_MAIN_MENU, 1},
+  {OptionId::CONTROLLER_HINT_REAL_TIME, 1},
+  {OptionId::CONTROLLER_HINT_TURN_BASED, 1},
   {OptionId::STARTING_RESOURCE, 0},
-  {OptionId::START_WITH_NIGHT, 0},
   {OptionId::PLAYER_NAME, string("")},
   {OptionId::SETTLEMENT_NAME, string("")},
   {OptionId::MAIN_VILLAINS, 4},
@@ -49,7 +53,6 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::ENDLESS_ENEMIES, 2},
   {OptionId::ENEMY_AGGRESSION, 1},
   {OptionId::KEEPER_WARNING, 1},
-  {OptionId::KEEPER_WARNING_PAUSE, 1},
   {OptionId::KEEPER_WARNING_TIMEOUT, 200},
   {OptionId::SINGLE_THREAD, 0},
   {OptionId::UNLOCK_ALL, 0},
@@ -64,6 +67,7 @@ const map<OptionId, string> names {
   {OptionId::SHOW_MAP, "Show map"},
   {OptionId::FULLSCREEN, "Fullscreen"},
   {OptionId::VSYNC, "Vertical Sync"},
+  {OptionId::FPS_LIMIT, "Framerate limit"},
   {OptionId::ZOOM_UI, "Zoom in UI"},
   {OptionId::DISABLE_MOUSE_WHEEL, "Disable mouse wheel scrolling"},
   {OptionId::DISABLE_CURSOR, "Disable pretty mouse cursor"},
@@ -71,6 +75,9 @@ const map<OptionId, string> names {
   {OptionId::GAME_EVENTS, "Anonymous statistics"},
   {OptionId::AUTOSAVE2, "Number of turns between autosaves"},
   {OptionId::SUGGEST_TUTORIAL, ""},
+  {OptionId::CONTROLLER_HINT_MAIN_MENU, ""},
+  {OptionId::CONTROLLER_HINT_REAL_TIME, ""},
+  {OptionId::CONTROLLER_HINT_TURN_BASED, ""},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
   {OptionId::PLAYER_NAME, "Name"},
@@ -83,7 +90,6 @@ const map<OptionId, string> names {
   {OptionId::ENDLESS_ENEMIES, "Start endless enemy waves"},
   {OptionId::ENEMY_AGGRESSION, "Enemy aggression"},
   {OptionId::KEEPER_WARNING, "Keeper danger warning"},
-  {OptionId::KEEPER_WARNING_PAUSE, "Keeper danger auto-pause"},
   {OptionId::KEEPER_WARNING_TIMEOUT, "Keeper danger timeout"},
   {OptionId::SINGLE_THREAD, "Use a single thread for loading operations"},
   {OptionId::UNLOCK_ALL, "Unlock all hidden gameplay features"},
@@ -95,6 +101,7 @@ const map<OptionId, string> hints {
   {OptionId::KEEP_SAVEFILES, "Don't remove the save file when a game is loaded."},
   {OptionId::FULLSCREEN, "Switch between fullscreen and windowed mode."},
   {OptionId::VSYNC, "Limits frame rate to your monitor's refresh rate. Turning off may fix frame rate issues."},
+  {OptionId::FPS_LIMIT, "Limits frame rate. Lower framerate keeps GPU cooler."},
   {OptionId::ZOOM_UI, "All UI and graphics are zoomed in 2x. "
       "Use you have a large resolution screen and things appear too small."},
   {OptionId::ONLINE, "Enable online features, like dungeon sharing and highscores."},
@@ -104,7 +111,6 @@ const map<OptionId, string> hints {
   {OptionId::ENDLESS_ENEMIES, "Turn on recurrent enemy waves that attack your dungeon."},
   {OptionId::ENEMY_AGGRESSION, "The chance of your dungeon being attacked by enemies"},
   {OptionId::KEEPER_WARNING, "Display a pop up window whenever your Keeper is in danger"},
-  {OptionId::KEEPER_WARNING_PAUSE, "Pause the game whenever your Keeper is in danger"},
   {OptionId::KEEPER_WARNING_TIMEOUT, "Number of turns before a new \"Keeper in danger\" warning is shown"},
   {OptionId::SINGLE_THREAD, "Please try this option if you're experiencing slow saving, loading, or map generation. "
         "Note: this will make the game unresponsive during the operation."},
@@ -121,6 +127,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
 #endif
       OptionId::FULLSCREEN,
       OptionId::VSYNC,
+      OptionId::FPS_LIMIT,
       OptionId::ZOOM_UI,
       OptionId::DISABLE_MOUSE_WHEEL,
       OptionId::DISABLE_CURSOR,
@@ -128,7 +135,6 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::GAME_EVENTS,
       OptionId::AUTOSAVE2,
       OptionId::KEEPER_WARNING,
-      OptionId::KEEPER_WARNING_PAUSE,
       OptionId::KEEPER_WARNING_TIMEOUT,
       OptionId::SINGLE_THREAD,
       OptionId::UNLOCK_ALL,
@@ -162,13 +168,22 @@ vector<OptionId> Options::getOptions(OptionSet set) {
   return optionSets.at(set);
 }
 
-Options::Options(const FilePath& path, KeybindingMap* k) : filename(path), keybindingMap(k) {
+Options::Options(const FilePath& path, KeybindingMap* k, MySteamInput* i) : filename(path), keybindingMap(k),
+    steamInput(i) {
   readValues();
 }
 
 Options::Value Options::getValue(OptionId id) {
-  if (overrides[id])
-    return *overrides[id];
+  switch (id) {
+    case OptionId::CONTROLLER_HINT_MAIN_MENU:
+    case OptionId::CONTROLLER_HINT_TURN_BASED:
+    case OptionId::CONTROLLER_HINT_REAL_TIME:
+      if (!steamInput || steamInput->controllers.empty())
+        return 0;
+      break;
+    default:
+      break;
+  }
   readValues();
   return (*values)[id];
 }
@@ -243,6 +258,8 @@ static optional<pair<int, int>> getIntRange(OptionId id) {
       return make_pair(0, 100);
     case OptionId::AUTOSAVE2:
       return make_pair(0, 5000);
+    case OptionId::FPS_LIMIT:
+      return make_pair(0, 30);
     case OptionId::KEEPER_WARNING_TIMEOUT:
       return make_pair(50, 500);
     default:
@@ -261,11 +278,13 @@ static optional<int> getIntInterval(OptionId id) {
   switch (id) {
     case OptionId::AUTOSAVE2:
       return 500;
+    case OptionId::FPS_LIMIT:
+      return 5;
     case OptionId::KEEPER_WARNING_TIMEOUT:
       return 50;
     default:
       return none;
-  }  
+  }
 }
 
 static bool isBoolean(OptionId id) {
@@ -275,10 +294,12 @@ static bool isBoolean(OptionId id) {
     case OptionId::FULLSCREEN:
     case OptionId::VSYNC:
     case OptionId::KEEPER_WARNING:
-    case OptionId::KEEPER_WARNING_PAUSE:
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:
     case OptionId::SUGGEST_TUTORIAL:
+    case OptionId::CONTROLLER_HINT_MAIN_MENU:
+    case OptionId::CONTROLLER_HINT_REAL_TIME:
+    case OptionId::CONTROLLER_HINT_TURN_BASED:
     case OptionId::STARTING_RESOURCE:
     case OptionId::ONLINE:
     case OptionId::GAME_EVENTS:
@@ -302,11 +323,13 @@ string Options::getValueString(OptionId id) {
     case OptionId::FULLSCREEN:
     case OptionId::VSYNC:
     case OptionId::KEEPER_WARNING:
-    case OptionId::KEEPER_WARNING_PAUSE:
       return getOnOff(value);
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:
     case OptionId::SUGGEST_TUTORIAL:
+    case OptionId::CONTROLLER_HINT_MAIN_MENU:
+    case OptionId::CONTROLLER_HINT_REAL_TIME:
+    case OptionId::CONTROLLER_HINT_TURN_BASED:
     case OptionId::STARTING_RESOURCE:
     case OptionId::ONLINE:
     case OptionId::GAME_EVENTS:
@@ -325,6 +348,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::ENDLESS_ENEMIES:
     case OptionId::ENEMY_AGGRESSION:
       return choices[id][(*value.getValueMaybe<int>() + choices[id].size()) % choices[id].size()];
+    case OptionId::FPS_LIMIT:
     case OptionId::MAIN_VILLAINS:
     case OptionId::LESSER_VILLAINS:
     case OptionId::RETIRED_VILLAINS:
@@ -409,16 +433,28 @@ void Options::handleIntInterval(OptionId option, ScriptedUIDataElems::Record& da
 void Options::handleSliding(OptionId option, ScriptedUIDataElems::Record& data, bool& wasSet) {
   auto range = *getIntRange(option);
   auto value = getIntValue(option);
-  auto res  = ScriptedUIDataElems::SliderData {
-    [&wasSet, option, range, this](double value) {
+  auto res = ScriptedUIDataElems::SliderData {
+    [option, range, this](double value) {
       this->setValue(option, int(range.first * (1 - value) + range.second * value));
-      wasSet = true;
       return false;
     },
     double(value - range.first) / (range.second - range.first),
     continuousChange(option),
   };
   data.elems.insert({"sliderData", std::move(res)});
+  auto keys = ScriptedUIDataElems::FocusKeysCallbacks {{
+      {Keybinding("MENU_LEFT"), [&wasSet, option, range, this, value] {
+        this->setValue(option, max(range.first, value - 10));
+        wasSet = true;
+        return true;
+      }},
+      {Keybinding("MENU_RIGHT"), [&wasSet, option, range, this, value] {
+        this->setValue(option, min(range.second, value + 10));
+        wasSet = true;
+        return true;
+      }}
+  }};
+  data.elems.insert({"sliderKeys", std::move(keys)});
 }
 
 static optional<SDL::SDL_Keysym> captureKey(View* view, const string& text) {
@@ -443,6 +479,7 @@ void Options::handle(View* view, const ContentFactory* factory, OptionSet set, i
     optionSet.removeElementMaybe(OptionId::ZOOM_UI);
   ScriptedUIState state;
   while (1) {
+    state.sliderState.clear();
     ScriptedUIDataElems::List options;
     bool wasSet = false;
     for (OptionId option : optionSet) {
@@ -478,9 +515,16 @@ void Options::handle(View* view, const ContentFactory* factory, OptionSet set, i
     main.elems["set_options"] = ScriptedUIDataElems::Callback{
         [&] { keybindingsTab = false; wasSet = true; return true; }
     };
-    main.elems["set_keys"] = ScriptedUIDataElems::Callback{
-        [&] { keybindingsTab = true; wasSet = true; return true; }
-    };
+    main.elems["set_keys"] = ScriptedUIDataElems::Callback{ [&] {
+      if (steamInput && !steamInput->controllers.empty()) {
+        steamInput->showBindingScreen();
+        return false;
+      } else {
+        keybindingsTab = true;
+        wasSet = true;
+        return true;
+      }
+    }};
     if (keybindingsTab) {
       main.elems["keybindings"] = std::move(keybindings);
       main.elems["reset_keys"] = ScriptedUIDataElems::Callback {[this, &wasSet, view] {

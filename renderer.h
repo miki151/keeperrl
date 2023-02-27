@@ -27,6 +27,7 @@
 class ViewObject;
 class Clock;
 class TileSet;
+class MySteamInput;
 struct TileCoord;
 
 struct sth_stash;
@@ -35,11 +36,12 @@ class Renderer {
   public:
   static constexpr int nominalSize = 24;
 
-  Renderer(Clock*, const string& windowTile, const DirectoryPath& fontPath, const FilePath& cursorPath,
-      const FilePath& clickedCursorPath, const FilePath& iconPath);
+  Renderer(Clock*, MySteamInput*, const string& windowTile, const DirectoryPath& fontPath,
+      const FilePath& cursorPath, const FilePath& clickedCursorPath, const FilePath& iconPath);
   void setFullscreen(bool);
   void setFullscreenMode(int);
   void setVsync(bool);
+  void setFpsLimit(int);
   void setZoom(int);
   int getZoom();
   void enableCustomCursor(bool);
@@ -115,6 +117,8 @@ class Renderer {
   void loadAnimations();
   void makeScreenshot(const FilePath&, Rectangle bounds);
   void renderDeferredSprites();
+  MySteamInput* getSteamInput();
+  Vec2 getDiscreteJoyPos(ControllerJoy);
 
   private:
   friend class Texture;
@@ -149,6 +153,8 @@ class Renderer {
   optional<thread::id> renderThreadId;
   bool fullscreen;
   int fullscreenMode;
+  int fpsLimit = 0;
+  uint64_t frameStart = 0;
   int zoom = 1;
   bool cursorEnabled = true;
   void reloadCursors();
@@ -177,7 +183,7 @@ class Renderer {
   optional<DirectoryPath> animationDirectory;
   Clock* clock;
   TileSet* tileSet = nullptr;
+  MySteamInput* steamInput = nullptr;
   bool keypressed[SDL::SDL_NUM_SCANCODES] = {0};
   void updateKeypressed(const Event&);
 };
-

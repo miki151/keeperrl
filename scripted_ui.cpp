@@ -9,26 +9,36 @@
 #include "clock.h"
 #include "container_range.h"
 #include "tileset.h"
+#include "steam_input.h"
+#include "keybinding.h"
+#include "keybinding_map.h"
 
 namespace EnumsDetail {
 enum class TextureFlip;
 enum class PlacementPos;
 enum class Direction;
+enum class TextureType;
 }
 
 RICH_ENUM(EnumsDetail::TextureFlip, NONE, FLIP_X, FLIP_Y, FLIP_XY);
 RICH_ENUM(EnumsDetail::PlacementPos, MIDDLE, TOP_STRETCHED, BOTTOM_STRETCHED, LEFT_STRETCHED, RIGHT_STRETCHED,
     TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, LEFT_CENTERED, RIGHT_CENTERED, TOP_CENTERED, BOTTOM_CENTERED,
-    MIDDLE_STRETCHED_X, MIDDLE_STRETCHED_Y, SCREEN);
+    MIDDLE_STRETCHED_X, MIDDLE_STRETCHED_Y, MIDDLE_FIT_Y, ENCAPSULATE, SCREEN);
 RICH_ENUM(EnumsDetail::Direction, HORIZONTAL, VERTICAL);
+RICH_ENUM(EnumsDetail::TextureType, REPEAT, FIT);
+
+bool ScriptedContext::isHighlighted(int elemIndex) const {
+  return state.highlightedElem && (*state.highlightedElem + elemCounter) % elemCounter == elemIndex;
+}
 
 namespace ScriptedUIElems {
 
 using namespace EnumsDetail;
 
-struct Texture : ScriptedUIInterface {
 
-  const ::Texture* getTexture(ScriptedContext& context) const {
+struct TextureImpl : ScriptedUIInterface {
+
+  const Texture* getTexture(ScriptedContext& context) const {
     if (id)
       return &context.factory->get(*id);
     if (auto ret = getReferenceMaybe(context.renderer->getTileSet().scriptedUITextures, scriptedId))
@@ -36,11 +46,17 @@ struct Texture : ScriptedUIInterface {
     return nullptr;
   }
   void render(const ScriptedUIData&, ScriptedContext& context, Rectangle area) const override {
-    if (auto texture = getTexture(context))
-      context.renderer->drawSprite(area.topLeft(), Vec2(0, 0), area.getSize(), *texture, none, none,
+    if (auto texture = getTexture(context)) {
+      optional<Vec2> targetSize;
+      Vec2 sourceSize = area.getSize();
+      if (type == TextureType::FIT) {
+        targetSize = area.getSize();
+        sourceSize = texture->getSize();
+      }
+      context.renderer->drawSprite(area.topLeft(), Vec2(0, 0), sourceSize, *texture, targetSize, none,
           Renderer::SpriteOrientation(flip == TextureFlip::FLIP_Y || flip == TextureFlip::FLIP_XY,
               flip == TextureFlip::FLIP_X || flip == TextureFlip::FLIP_XY));
-    else
+    } else
       context.renderer->drawText(Color::RED, area.topLeft(), "Texture not found \"" + scriptedId + "\"");
   }
 
@@ -51,19 +67,21 @@ struct Texture : ScriptedUIInterface {
       return Vec2(80, 20);
   }
 
+  TextureType SERIAL(type);
   optional<TextureId> SERIAL(id);
   string SERIAL(scriptedId);
   TextureFlip SERIAL(flip) = TextureFlip::NONE;
   template <class Archive> void serialize(Archive& ar, const unsigned int) {
+    ar(roundBracket());
     if (ar.peek(2)[0] == '\"')
-      ar(roundBracket(), NAMED(scriptedId));
+      ar(NAMED(scriptedId));
     else
-      ar(roundBracket(), NAMED(id));
-    ar(OPTION(flip));
+      ar(NAMED(id));
+    ar(NAMED(type), OPTION(flip));
   }
 };
 
-REGISTER_SCRIPTED_UI(Texture);
+REGISTER_SCRIPTED_UI(TextureImpl);
 
 struct ViewId : ScriptedUIInterface {
   void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
@@ -99,12 +117,13 @@ void performAction(const ScriptedUIData& data, ScriptedContext& context, EventCa
 struct Button : ScriptedUIInterface {
   void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
       Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
-    if (id == MouseButtonId::LEFT && (pos.inRectangle(bounds) == !reverse))
+    if (id == buttonId && (pos.inRectangle(bounds) == !reverse))
       performAction(data, context, callback);
   }
 
   bool SERIAL(reverse);
-  SERIALIZE_ALL(roundBracket(), OPTION(reverse))
+  MouseButtonId SERIAL(buttonId) = MouseButtonId::LEFT;
+  SERIALIZE_ALL(roundBracket(), OPTION(reverse), OPTION(buttonId))
 };
 
 REGISTER_SCRIPTED_UI(Button);
@@ -161,22 +180,87 @@ struct KeyCatcher : ScriptedUIInterface {
 
 REGISTER_SCRIPTED_UI(KeyCatcher);
 
-struct BlockEvents : ScriptedUIInterface {
+struct KeybindingHandler : ScriptedUIInterface {
+  void onKeypressed(const ScriptedUIData& data, ScriptedContext& context,
+      SDL::SDL_Keysym sym, Rectangle, EventCallback& callback) const override {
+    if (context.factory->getKeybindingMap()->matches(key, sym))
+      performAction(data, context, callback);
+  }
+
+  Keybinding SERIAL(key);
+  SERIALIZE_ALL(roundBracket(), NAMED(key));
+};
+
+REGISTER_SCRIPTED_UI(KeybindingHandler);
+
+struct RenderKeybinding : ScriptedUIInterface {
+  variant<Texture*, string> getKeybindingGlyph(GuiFactory* f, Keybinding binding) const {
+    auto steamInput = f->getSteamInput();
+    if (steamInput && !steamInput->controllers.empty()) {
+      if (auto key = KeybindingMap::getControllerMapping(binding))
+        if (auto path = steamInput->getGlyph(*key))
+          return &f->steamInputTexture(*path);
+    }
+    if (!controllerOnly)
+      if (auto k = f->getKeybindingMap()->getText(binding))
+        return "[" + *k + "]";
+    return ""_s;
+  }
+
+  void render(const ScriptedUIData&, ScriptedContext& context, Rectangle area) const override {
+    getKeybindingGlyph(context.factory, key).visit(
+        [&](const string& text) {
+          context.renderer->drawText(Color::WHITE, area.topLeft(), text);
+        },
+        [&](Texture* texture) {
+          context.renderer->drawSprite(area.topLeft(), Vec2(0, 0), texture->getSize(), *texture, Vec2(24, 24));
+        }
+    );
+  }
+
+  Vec2 getSize(const ScriptedUIData&, ScriptedContext& context) const override {
+    return getKeybindingGlyph(context.factory, key).visit(
+        [&](const string& text) {
+          return Vec2(context.renderer->getTextLength(text), 20);
+        },
+        [&](Texture* texture) {
+          return Vec2(24, 24);
+        }
+    );
+  }
+
+  Keybinding SERIAL(key);
+  bool SERIAL(controllerOnly) = false;
+  SERIALIZE_ALL(roundBracket(), NAMED(key), OPTION(controllerOnly));
+};
+
+REGISTER_SCRIPTED_UI(RenderKeybinding);
+
+struct BlockMouseEvents : ScriptedUIInterface {
+  void onClick(const ScriptedUIData&, ScriptedContext&, MouseButtonId id, Rectangle,
+      Vec2, EventCallback& callback) const override {
+    if (!eventTypes || eventTypes->contains(id))
+      callback = [] { return false; };
+  }
+
+  optional<EnumSet<MouseButtonId>> SERIAL(eventTypes);
+  SERIALIZE_ALL(roundBracket(), NAMED(eventTypes))
+};
+
+REGISTER_SCRIPTED_UI(BlockMouseEvents);
+
+struct BlockKeyEvents : ScriptedUIInterface {
   void serialize(PrettyInputArchive& ar, const unsigned int v) {
   }
 
   void onKeypressed(const ScriptedUIData&, ScriptedContext&,
-      SDL::SDL_Keysym, Rectangle, EventCallback& callback) const override {
-    callback = [] { return false; };
-  }
-  
-  void onClick(const ScriptedUIData&, ScriptedContext&, MouseButtonId, Rectangle,
-      Vec2, EventCallback& callback) const override {
-    callback = [] { return false; };
+      SDL::SDL_Keysym sym, Rectangle, EventCallback& callback) const override {
+    if (sym.sym != SDL::SDLK_F8)
+      callback = [] { return false; };
   }
 };
 
-REGISTER_SCRIPTED_UI(BlockEvents);
+REGISTER_SCRIPTED_UI(BlockKeyEvents);
 
 struct Label : ScriptedUIInterface {
   Label(optional<string> text = none, int size = Renderer::textSize(), Color color = Color::WHITE)
@@ -210,21 +294,30 @@ REGISTER_SCRIPTED_UI(Label);
 struct Paragraph : ScriptedUIInterface {
   Paragraph() {}
 
+  string getText(const ScriptedUIData& data) const {
+    if (text)
+      return *text;
+    if (auto label = data.getReferenceMaybe<ScriptedUIDataElems::Label>())
+      return label->data();
+    else
+      return "not a label";
+  }
+
   void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
-    for (auto line : Iter(context.factory->breakText(text, width, size)))
+    for (auto line : Iter(context.factory->breakText(getText(data), width, size)))
       context.renderer->drawText(font, size, color, area.topLeft() + Vec2(0, line.index() * size), *line);
   }
 
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
-    return Vec2(width, size * context.factory->breakText(text, width, size).size());
+    return Vec2(width, size * context.factory->breakText(getText(data), width, size).size());
   }
 
-  string SERIAL(text);
+  optional<string> SERIAL(text);
   int SERIAL(width);
   int SERIAL(size) = Renderer::textSize();
   Color SERIAL(color) = Color::WHITE;
   FontId SERIAL(font) = FontId::TEXT_FONT;
-  SERIALIZE_ALL(roundBracket(), NAMED(width), NAMED(text), OPTION(size), OPTION(color), OPTION(font))
+  SERIALIZE_ALL(roundBracket(), NAMED(width), OPTION(text), OPTION(size), OPTION(color), OPTION(font))
 };
 
 REGISTER_SCRIPTED_UI(Paragraph);
@@ -241,6 +334,12 @@ struct Container : ScriptedUIInterface {
   void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
     for (auto& subElem : getElemBounds(data, context, area))
       subElem.elem->render(subElem.data, context, subElem.bounds);
+  }
+
+  void onScroll(const ScriptedUIData& data, ScriptedContext& context, Rectangle bounds,
+      Vec2 pos, double x, double y, milliseconds timeDiff, EventCallback& callback) const override {
+    for (auto& subElem : getElemBounds(data, context, bounds))
+      subElem.elem->onScroll(subElem.data, context, subElem.bounds, pos, x, y, timeDiff, callback);
   }
 
   void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id, Rectangle area,
@@ -308,46 +407,61 @@ struct Position : Container {
   vector<SubElemInfo> getElemBounds(const ScriptedUIData& data, ScriptedContext& context,
       Rectangle area) const override {
     auto size = elem->getSize(data, context);
-    switch (position) {
-      case PlacementPos::MIDDLE_STRETCHED_X:
-        return {SubElemInfo{elem, data, Rectangle(area.left(), area.middle().y - size.y / 2,
-            area.right(), area.middle().y - size.y / 2 + size.y)}};
-      case PlacementPos::MIDDLE_STRETCHED_Y:
-        return {SubElemInfo{elem, data, Rectangle(area.middle().x - size.x / 2, area.top(),
-            area.middle().x - size.x / 2 + size.x, area.bottom())}};
-      case PlacementPos::MIDDLE:
-        return {SubElemInfo{elem, data, Rectangle(area.middle() - size / 2, area.middle() + size / 2)}};
-      case PlacementPos::TOP_STRETCHED:
-        return {SubElemInfo{elem, data, Rectangle(area.topLeft(), area.topRight() + Vec2(0, size.y))}};
-      case PlacementPos::BOTTOM_STRETCHED:
-        return {SubElemInfo{elem, data, Rectangle(area.bottomLeft() - Vec2(0, size.y), area.bottomRight())}};
-      case PlacementPos::LEFT_STRETCHED:
-        return {SubElemInfo{elem, data, Rectangle(area.topLeft(), area.bottomLeft() + Vec2(size.x, 0))}};
-      case PlacementPos::RIGHT_STRETCHED:
-        return {SubElemInfo{elem, data, Rectangle(area.topRight() - Vec2(size.x, 0), area.bottomRight())}};
-      case PlacementPos::TOP_LEFT:
-        return {SubElemInfo{elem, data, Rectangle(area.topLeft(), area.topLeft() + size)}};
-      case PlacementPos::TOP_RIGHT:
-        return {SubElemInfo{elem, data, Rectangle(area.topRight() - Vec2(size.x, 0), area.topRight() + Vec2(0, size.y))}};
-      case PlacementPos::BOTTOM_RIGHT:
-        return {SubElemInfo{elem, data, Rectangle(area.bottomRight() - size, area.bottomRight())}};
-      case PlacementPos::BOTTOM_LEFT:
-        return {SubElemInfo{elem, data, Rectangle(area.bottomLeft() - Vec2(0, size.y), area.bottomLeft() + Vec2(size.x, 0))}};
-      case PlacementPos::TOP_CENTERED:
-        return {SubElemInfo{elem, data, Rectangle(area.middle().x - size.x / 2, area.top(),
-            area.middle().x - size.x / 2 + size.x, area.top() + size.y)}};
-      case PlacementPos::BOTTOM_CENTERED:
-        return {SubElemInfo{elem, data, Rectangle(area.middle().x - size.x / 2, area.bottom() - size.y,
-            area.middle().x - size.x / 2 + size.x, area.bottom())}};
-      case PlacementPos::LEFT_CENTERED:
-        return {SubElemInfo{elem, data, Rectangle(area.left(), area.middle().y - size.y / 2,
-            area.left() + size.x, area.middle().y - size.y / 2 + size.y)}};
-      case PlacementPos::RIGHT_CENTERED:
-        return {SubElemInfo{elem, data, Rectangle(area.right() - size.x, area.middle().y - size.y / 2,
-            area.right(), area.middle().y - size.y / 2 + size.y)}};
-      case PlacementPos::SCREEN:
-        return {SubElemInfo{elem, data, Rectangle(Vec2(0, 0), context.renderer->getSize())}};
-    }
+    auto res = [&] () -> Rectangle {
+      switch (position) {
+        case PlacementPos::MIDDLE_FIT_Y: {
+          double scale = double(area.height()) / size.y;
+          return Rectangle(area.middle().x - scale * size.x / 2, area.top(),
+              area.middle().x - scale * size.x / 2 + scale * size.x, area.bottom());
+        }
+        case PlacementPos::ENCAPSULATE: {
+          double scale = max(double(area.height()) / size.y, double(area.width()) / size.x);
+          return Rectangle(area.middle() - size * scale / 2,
+              area.middle() - size * scale / 2 + size * scale);
+        }
+        case PlacementPos::MIDDLE_STRETCHED_X:
+          return Rectangle(area.left(), area.middle().y - size.y / 2,
+              area.right(), area.middle().y - size.y / 2 + size.y);
+        case PlacementPos::MIDDLE_STRETCHED_Y:
+          return Rectangle(area.middle().x - size.x / 2, area.top(),
+              area.middle().x - size.x / 2 + size.x, area.bottom());
+        case PlacementPos::MIDDLE:
+          return Rectangle(area.middle() - size / 2, area.middle() + size / 2);
+        case PlacementPos::TOP_STRETCHED:
+          return Rectangle(area.topLeft(), area.topRight() + Vec2(0, size.y));
+        case PlacementPos::BOTTOM_STRETCHED:
+          return Rectangle(area.bottomLeft() - Vec2(0, size.y), area.bottomRight());
+        case PlacementPos::LEFT_STRETCHED:
+          return Rectangle(area.topLeft(), area.bottomLeft() + Vec2(size.x, 0));
+        case PlacementPos::RIGHT_STRETCHED:
+          return Rectangle(area.topRight() - Vec2(size.x, 0), area.bottomRight());
+        case PlacementPos::TOP_LEFT:
+          return Rectangle(area.topLeft(), area.topLeft() + size);
+        case PlacementPos::TOP_RIGHT:
+          return Rectangle(area.topRight() - Vec2(size.x, 0), area.topRight() + Vec2(0, size.y));
+        case PlacementPos::BOTTOM_RIGHT:
+          return Rectangle(area.bottomRight() - size, area.bottomRight());
+        case PlacementPos::BOTTOM_LEFT:
+          return Rectangle(area.bottomLeft() - Vec2(0, size.y), area.bottomLeft() + Vec2(size.x, 0));
+        case PlacementPos::TOP_CENTERED:
+          return Rectangle(area.middle().x - size.x / 2, area.top(),
+              area.middle().x - size.x / 2 + size.x, area.top() + size.y);
+        case PlacementPos::BOTTOM_CENTERED:
+          return Rectangle(area.middle().x - size.x / 2, area.bottom() - size.y,
+              area.middle().x - size.x / 2 + size.x, area.bottom());
+        case PlacementPos::LEFT_CENTERED:
+          return Rectangle(area.left(), area.middle().y - size.y / 2,
+              area.left() + size.x, area.middle().y - size.y / 2 + size.y);
+        case PlacementPos::RIGHT_CENTERED:
+          return Rectangle(area.right() - size.x, area.middle().y - size.y / 2,
+              area.right(), area.middle().y - size.y / 2 + size.y);
+        case PlacementPos::SCREEN:
+          return Rectangle(Vec2(0, 0), context.renderer->getSize());
+      }
+    }();
+    if (limitToBounds)
+      res = res.intersection(area);
+    return {SubElemInfo{elem, data, res}};
   }
 
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
@@ -356,7 +470,8 @@ struct Position : Container {
 
   ScriptedUI SERIAL(elem);
   PlacementPos SERIAL(position);
-  SERIALIZE_ALL(roundBracket(), NAMED(position), NAMED(elem))
+  bool SERIAL(limitToBounds) = false;
+  SERIALIZE_ALL(roundBracket(), NAMED(position), NAMED(elem), OPTION(limitToBounds))
 };
 
 REGISTER_SCRIPTED_UI(Position);
@@ -424,6 +539,45 @@ struct MaxHeight : Width {
 };
 
 REGISTER_SCRIPTED_UI(MaxHeight);
+
+struct MinWidth : Width {
+  Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
+    auto size = elem->getSize(data, context);
+    return Vec2(max(size.x, value), size.y);
+  }
+};
+
+REGISTER_SCRIPTED_UI(MinWidth);
+
+struct MinHeight : Width {
+  Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
+    auto size = elem->getSize(data, context);
+    return Vec2(size.x, max(size.y, value));
+  }
+};
+
+REGISTER_SCRIPTED_UI(MinHeight);
+
+struct DynamicWidth : Container {
+  vector<SubElemInfo> getElemBounds(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
+    if (auto c = data.getReferenceMaybe<ScriptedUIDataElems::DynamicWidthCallback>())
+      return {SubElemInfo{elem, data, Rectangle(
+          area.left(),
+          area.top(),
+          area.left() + c->fun() * area.width(),
+          area.bottom())}};
+    return {SubElemInfo{elem, data, area}};
+  }
+
+  Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
+    return elem->getSize(data, context);
+  }
+
+  ScriptedUI SERIAL(elem);
+  SERIALIZE_ALL(elem)
+};
+
+REGISTER_SCRIPTED_UI(DynamicWidth);
 
 static vector<Range> getStaticListBounds(Range total, vector<int> widths, int stretched) {
   vector<Range> ret;
@@ -498,14 +652,14 @@ REGISTER_SCRIPTED_UI(Horizontal);
 
 struct Vertical : Container {
   vector<SubElemInfo> getElemBounds(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
-  auto ranges = getStaticListBounds(area.getYRange(),
-      elems.transform([&](auto& elem) { return elem->getSize(data, context).y; }), stretchedElem);
-  vector<SubElemInfo> ret;
-  ret.reserve(ranges.size());
-  for (int i : All(ranges)) {
-    ret.push_back(SubElemInfo{elems[i], data, Rectangle(area.left(), ranges[i].getStart(), area.right(), ranges[i].getEnd())});
-  }
-  return ret;
+    auto ranges = getStaticListBounds(area.getYRange(),
+        elems.transform([&](auto& elem) { return elem->getSize(data, context).y; }), stretchedElem);
+    vector<SubElemInfo> ret;
+    ret.reserve(ranges.size());
+    for (int i : All(ranges)) {
+      ret.push_back(SubElemInfo{elems[i], data, Rectangle(area.left(), ranges[i].getStart(), area.right(), ranges[i].getEnd())});
+    }
+    return ret;
   }
 
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
@@ -529,6 +683,9 @@ REGISTER_SCRIPTED_UI(Vertical);
 
 struct Using : Container {
   vector<SubElemInfo> getElemBounds(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
+    if (auto record = data.getReferenceMaybe<ScriptedUIDataElems::Record>())
+      if (auto value = getReferenceMaybe(record->elems, key))
+        return {SubElemInfo{elem, *value, area}};
     if (key == "EXIT")
       return {SubElemInfo{elem, context.state.exit, area}};
     else
@@ -538,13 +695,7 @@ struct Using : Container {
     if (key == "HIGHLIGHT_PREVIOUS")
       return {SubElemInfo{elem, context.state.highlightPrevious, area}};
     else
-    if (auto record = data.getReferenceMaybe<ScriptedUIDataElems::Record>()) {
-      if (auto value = getReferenceMaybe(record->elems, key))
-        return {SubElemInfo{elem, *value, area}};
-      else
-        return {};
-    } else
-      return getError("not a record");
+      return {};
   }
 
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
@@ -609,32 +760,132 @@ struct Focusable : ScriptedUIInterface {
     Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
     if (id == MouseButtonId::MOVED) {
       if (pos.inRectangle(bounds))
-        callback = [counter = context.elemCounter, &context] { context.state.highlightedElem = counter; return false; };
+        callback = [counter = context.elemCounter, &context, old = std::move(callback)] {
+          context.state.highlightedElem = counter;
+          return old ? old() : false;
+        };
       else
       if (context.state.highlightedElem == context.elemCounter)
-        callback = [&] { context.state.highlightedElem = none; return false;};
+        callback = [&context, old = std::move(callback)] {
+          context.state.highlightedElem = none;
+          return old ? old() : false;
+        };
+    }
+    ++context.elemCounter;
+  }
+
+  virtual void onClicked(const ScriptedUIData& data, ScriptedContext& context, EventCallback& callback) const {
+    performAction(data, context, callback);
+  }
+
+  void onKeypressed(const ScriptedUIData& data, ScriptedContext& context,
+      SDL::SDL_Keysym sym, Rectangle bounds, EventCallback& callback) const override {
+    if (context.factory->getKeybindingMap()->matches(Keybinding("MENU_SELECT"), sym) &&
+        context.elemCounter == context.state.highlightedElem)
+      onClicked(data, context, callback);
+    callback = [&, y = bounds.middle().y, callback, myCounter = context.elemCounter] {
+      auto ret = callback ? callback() : false;
+      if (context.isHighlighted(myCounter))
+        context.highlightedElemHeight = y;
+      return ret;
+    };
+    ++context.elemCounter;
+  }
+
+  ScriptedUI SERIAL(elem);
+  SERIALIZE_ALL(elem)
+};
+
+REGISTER_SCRIPTED_UI(Focusable);
+
+struct FocusableNoCallback : Focusable {
+  virtual void onClicked(const ScriptedUIData& data, ScriptedContext& context, EventCallback& callback) const override {
+  }
+};
+
+REGISTER_SCRIPTED_UI(FocusableNoCallback);
+
+struct FocusableKeys : ScriptedUIInterface {
+  Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
+    return elem->getSize(data, context);
+  }
+
+  void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle bounds) const override {
+    if (context.state.highlightedElem == context.elemCounter)
+      elem->render(data, context, bounds);
+    ++context.elemCounter;
+  }
+
+  void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
+    Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
+    if (id == MouseButtonId::MOVED) {
+      if (pos.inRectangle(bounds))
+        callback = [counter = context.elemCounter, &context, old = std::move(callback)] {
+          context.state.highlightedElem = counter;
+          return old ? old() : false;
+        };
+      else
+      if (context.state.highlightedElem == context.elemCounter)
+        callback = [&context, old = std::move(callback)] {
+          context.state.highlightedElem = none;
+          return old ? old() : false;
+        };
     }
     ++context.elemCounter;
   }
 
   void onKeypressed(const ScriptedUIData& data, ScriptedContext& context,
       SDL::SDL_Keysym sym, Rectangle bounds, EventCallback& callback) const override {
-    if (isOneOf(sym.sym, SDL::SDLK_KP_ENTER, SDL::SDLK_RETURN) && context.elemCounter == context.state.highlightedElem)
-      performAction(data, context, callback);
+    if (context.elemCounter == context.state.highlightedElem) {
+      if (auto c = data.getReferenceMaybe<ScriptedUIDataElems::FocusKeysCallbacks>()) {
+        for (auto elem : c->callbacks)
+          if (context.factory->getKeybindingMap()->matches(elem.first, sym))
+            callback = elem.second;
+      } else {
+        USER_FATAL << "Expected callback";
+        fail();
+      }
+    }
     callback = [&, y = bounds.middle().y, callback, myCounter = context.elemCounter] {
       auto ret = callback ? callback() : false;
-      if (context.state.highlightedElem == myCounter)
+      if (context.isHighlighted(myCounter))
         context.highlightedElemHeight = y;
       return ret;
     };
     ++context.elemCounter;
   }
-  
+
   ScriptedUI SERIAL(elem);
   SERIALIZE_ALL(elem)
 };
 
-REGISTER_SCRIPTED_UI(Focusable);
+REGISTER_SCRIPTED_UI(FocusableKeys);
+
+struct UrlButton : Focusable {
+  void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
+      Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
+    if (id == MouseButtonId::LEFT && pos.inRectangle(bounds))
+      callback = [url=this->url] {
+        openUrl(url);
+        return false;
+      };
+    Focusable::onClick(data, context, id, bounds, pos, callback);
+  }
+
+  virtual void onClicked(const ScriptedUIData& data, ScriptedContext& context, EventCallback& callback) const override {
+    callback = [url=this->url] {
+      openUrl(url);
+      return false;
+    };
+  }
+
+  string SERIAL(url);
+  SERIALIZE_ALL(roundBracket(), NAMED(elem), NAMED(url))
+  // SERIAL(elem) to remove false check_serial warning
+};
+
+REGISTER_SCRIPTED_UI(UrlButton);
+
 
 struct MouseOver : Container {
   vector<SubElemInfo> getElemBounds(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
@@ -649,7 +900,7 @@ struct MouseOver : Container {
     if (context.renderer->getMousePos().inRectangle(bounds))
       elem->render(data, context, bounds);
   }
-  
+
   ScriptedUI SERIAL(elem);
   SERIALIZE_ALL(elem)
 };
@@ -707,8 +958,8 @@ struct List : Container {
 
 REGISTER_SCRIPTED_UI(List);
 
-static void scroll(const ScriptedContext& context, int dir) {
-  context.state.scrollPos.add(100 * dir, Clock::getRealMillis());
+static void scroll(const ScriptedContext& context, int scrollIndex, double dir) {
+  context.state.scrollPos[scrollIndex].add(100.0 * dir, Clock::getRealMillis());
 }
 
 struct Scrollable : ScriptedUIInterface {
@@ -732,7 +983,8 @@ struct Scrollable : ScriptedUIInterface {
     if (height <= bounds.height())
       contentFun(bounds);
     else {
-      int offset = context.state.scrollPos.get(Clock::getRealMillis(), 0, height - bounds.height());
+      int offset = context.state.scrollPos[index].get(Clock::getRealMillis(), 0, height - bounds.height(),
+          bounds.top());
       int scrollBarWidth = scrollbar->getSize(data, context).x;
       auto contentBounds = getContentBounds(bounds, offset, scrollBarWidth, height);
       context.renderer->setScissor(bounds);
@@ -745,18 +997,26 @@ struct Scrollable : ScriptedUIInterface {
   void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle bounds) const override {
     processScroller(data, context, bounds,
         [&] (Rectangle contentBounds) { elem->render(data, context, contentBounds); },
-        [&] (Rectangle bounds) { scrollbar->render(data, context, bounds); }      
+        [&] (Rectangle bounds) { scrollbar->render(data, context, bounds); }
     );
+  }
+
+  void onScroll(const ScriptedUIData& data, ScriptedContext& context, Rectangle bounds,
+      Vec2 pos, double x, double y, milliseconds timeDiff, EventCallback& callback) const override {
+    callback = [&context, this, y, timeDiff] {
+      scroll(context, index, -y * 0.02 * timeDiff.count());
+      return false;
+    };
   }
 
   void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
       Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
     if (pos.inRectangle(bounds)) {
       if (id == MouseButtonId::WHEEL_DOWN)
-        callback = [&] { scroll(context, 1); return false; };
+        callback = [&] { scroll(context, index, 1); return false; };
       else
       if (id == MouseButtonId::WHEEL_UP)
-        callback = [&] { scroll(context, -1); return false; };
+        callback = [&] { scroll(context, index, -1); return false; };
     }
     else if (!isOneOf(id, MouseButtonId::RELEASED, MouseButtonId::MOVED))
       return;
@@ -773,15 +1033,15 @@ struct Scrollable : ScriptedUIInterface {
   void onKeypressed(const ScriptedUIData& data, ScriptedContext& context,
       SDL::SDL_Keysym sym, Rectangle bounds, EventCallback& callback) const override {
     processScroller(data, context, bounds,
-        [&] (Rectangle contentBounds) {
+        [&, index = this->index] (Rectangle contentBounds) {
           elem->onKeypressed(data, context, sym, contentBounds, callback);
-          callback = [&context, callback, bounds] {
+          callback = [&context, callback, bounds, index] {
             context.highlightedElemHeight = none;
             auto ret = callback ? callback() : false;
             if (auto height = context.highlightedElemHeight)
-              if (needsScrolling(bounds.getYRange(), *height) &&
-                  !context.state.scrollPos.isScrolling(Clock::getRealMillis()))
-                context.state.scrollPos.add(*height - bounds.middle().y, Clock::getRealMillis());
+              if (needsScrolling(bounds.getYRange(), *height)/* && this broke scrolling for some reason
+                  !context.state.scrollPos[index].isScrolling(Clock::getRealMillis())*/)
+                context.state.scrollPos[index].add(*height - bounds.middle().y, Clock::getRealMillis());
             context.highlightedElemHeight = none;
             return ret;
           };
@@ -792,7 +1052,8 @@ struct Scrollable : ScriptedUIInterface {
 
   ScriptedUI SERIAL(scrollbar);
   ScriptedUI SERIAL(elem);
-  SERIALIZE_ALL(roundBracket(), NAMED(scrollbar), NAMED(elem))
+  int SERIAL(index) = 0;
+  SERIALIZE_ALL(roundBracket(), NAMED(scrollbar), NAMED(elem), NAMED(index))
 };
 
 REGISTER_SCRIPTED_UI(Scrollable);
@@ -801,10 +1062,11 @@ struct ScrollButton : ScriptedUIInterface {
   void onClick(const ScriptedUIData&, ScriptedContext& context, MouseButtonId id,
       Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
     if (id == MouseButtonId::LEFT && pos.inRectangle(bounds))
-      callback = [&] { scroll(context, direction); return false; };
+      callback = [&] { scroll(context, index, direction); return false; };
   }
   int SERIAL(direction);
-  SERIALIZE_ALL(roundBracket(), NAMED(direction))
+  int SERIAL(index) = 0;
+  SERIALIZE_ALL(roundBracket(), NAMED(direction), NAMED(index))
 };
 
 REGISTER_SCRIPTED_UI(ScrollButton);
@@ -813,10 +1075,10 @@ struct Scroller : ScriptedUIInterface {
   Rectangle getSliderPos(const ScriptedUIData& data, ScriptedContext& context, Rectangle bounds) const {
     auto height = slider->getSize(data, context).y;
     if (auto& held = context.state.scrollButtonHeld)
-      context.state.scrollPos.setRatio(
+      context.state.scrollPos[index].setRatio(
           double(context.renderer->getMousePos().y - *held - bounds.top()) / (bounds.height() - height),
           Clock::getRealMillis());
-    auto pos = bounds.top() + context.state.scrollPos.getRatio(
+    auto pos = bounds.top() + context.state.scrollPos[index].getRatio(
         Clock::getRealMillis()) * (bounds.height() - height);
     return Rectangle(bounds.left(), pos, bounds.right(), pos + height);
   }
@@ -826,8 +1088,8 @@ struct Scroller : ScriptedUIInterface {
     if (id == MouseButtonId::LEFT && pos.inRectangle(bounds)) {
       double sliderHeight = slider->getSize(data, context).y;
       auto sliderPos = getSliderPos(data, context, bounds);
-      callback = [pos, &context, bounds, sliderHeight, sliderPos] {
-        context.state.scrollPos.setRatio(double(pos.y - sliderHeight / 2 - bounds.top()) / (bounds.height() - sliderHeight),
+      callback = [pos, &context, bounds, sliderHeight, sliderPos, index = this->index] {
+        context.state.scrollPos[index].setRatio(double(pos.y - sliderHeight / 2 - bounds.top()) / (bounds.height() - sliderHeight),
             Clock::getRealMillis());
         if (pos.inRectangle(sliderPos))
           context.state.scrollButtonHeld = pos.y - sliderPos.top();
@@ -835,7 +1097,10 @@ struct Scroller : ScriptedUIInterface {
       };
     }
     else if (id == MouseButtonId::RELEASED)
-      callback = [&] { context.state.scrollButtonHeld = none; return false; };
+      callback = [&, old = std::move(callback)] {
+        context.state.scrollButtonHeld = none;
+        return old ? old() : false;
+      };
   }
 
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
@@ -847,7 +1112,8 @@ struct Scroller : ScriptedUIInterface {
   }
 
   ScriptedUI SERIAL(slider);
-  SERIALIZE_ALL(slider)
+  int SERIAL(index) = 0;
+  SERIALIZE_ALL(roundBracket(), NAMED(slider), NAMED(index))
 };
 
 REGISTER_SCRIPTED_UI(Scroller);
@@ -940,14 +1206,14 @@ struct Tooltip : Container {
     auto time = getValueMaybe(context.state.tooltipTimeouts, context.tooltipCounter);
     if (id == MouseButtonId::MOVED) {
       if (pos.inRectangle(bounds) && !time)
-        callback = [&, counter = context.tooltipCounter] {
+        callback = [&, counter = context.tooltipCounter, old = std::move(callback)] {
           context.state.tooltipTimeouts.insert({counter, Clock::getRealMillis() + milliseconds{500}});
-          return false;
+          return old ? old() : false;
         };
       if (!pos.inRectangle(bounds) && context.state.tooltipTimeouts.count(context.tooltipCounter))
-        callback = [&, counter = context.tooltipCounter] {
+        callback = [&, counter = context.tooltipCounter, old = std::move(callback)] {
           context.state.tooltipTimeouts.erase(counter);
-          return false;
+          return old ? old() : false;
         };
     }
   }
@@ -991,6 +1257,10 @@ Vec2 ScriptedUIInterface::getSize(const ScriptedUIData& data, ScriptedContext& c
 
 void ScriptedUIInterface::onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id, Rectangle bounds,
     Vec2 pos, EventCallback& callback) const {
+}
+
+void ScriptedUIInterface::onScroll(const ScriptedUIData& data, ScriptedContext& context, Rectangle bounds,
+    Vec2 pos, double x, double y, milliseconds timeDiff, EventCallback& callback) const {
 }
 
 void ScriptedUIInterface::onKeypressed(const ScriptedUIData& data, ScriptedContext& context, SDL::SDL_Keysym sym,

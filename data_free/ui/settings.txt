@@ -8,34 +8,37 @@ Def CheckedBox() {
 }
 End
 
-Def Sliding() {
-  Position(MIDDLE_STRETCHED_X, Height 5 Fill(ColorId GRAY))
-  Slider Width 6 Position(MIDDLE_STRETCHED_X, Height 20 Fill(ColorId WHITE))
-}
-End
+Def TopButtonWidth() 160 End
+
+Def LineHighlight() MarginLeft(-7, MarginRight(-10, NewHighlight())) End
 
 {
-  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
-  Window(Width 700 Height 700 {
+  BlockEvents
+  ExitButtons()
+  FocusKeysVertical()
+  WindowNoMargin(Width 700 Height 700 {
     Vertical {
+      Height 10 {}
       If "options"
         Position(MIDDLE, Horizontal {
-          Width 120 StandardButtonActivated(Label("General"))
+          Width TopButtonWidth() StandardButtonActivated(Label("General"))
           Width 15 {}
-          Using "set_keys" Width 120 StandardButton(Label("Keybindings"))
+          Using "set_keys" Width TopButtonWidth() StandardButton(Label("Keybindings"))
         })
       If "keybindings"
         Position(MIDDLE, Horizontal {
-          Using "set_options" Width 120 StandardButton(Label("General"))
+          Using "set_options" Width TopButtonWidth() StandardButton(Label("General"))
           Width 15 {}
-          Width 120 StandardButtonActivated(Label("Keybindings"))
+          Width TopButtonWidth() StandardButtonActivated(Label("Keybindings"))
         })
       Height 10 {}
-      Stretch Scrolling({
+      Stretch Scrolling(Margins(15, MarginRight(10, {
         Using "options"
           List(VERTICAL, {
-              Using "callbackBool" Button()
+              Using "callbackBool" { Focusable LineHighlight() Button() }
               Using "tooltip" GetTooltip(Label())
+              Using "sliderKeys"
+                FocusableKeys LineHighlight()
               Height 35 Horizontal {
                 Stretch Position(MIDDLE_STRETCHED_X, Using "name" Label())
                 {
@@ -53,16 +56,17 @@ End
                 }
               }
           })
-          
+
         Using "keybindings"
           List(VERTICAL, Height 35 {
               Using "label" Position(LEFT_CENTERED,Label())
               Using "key" Position(RIGHT_CENTERED, Width 150 Label())
               Using "clicked" Button(false)
           })
-      })
+      })))
       Height 10 {}
       Using "reset_keys" Position(MIDDLE, StandardButton(Label("Restore defaults")))
+      Height 10 {}
     }
   })
 }

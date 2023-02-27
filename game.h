@@ -39,11 +39,12 @@ class Game : public OwnedObject<Game> {
   static PGame splashScreen(PModel&&, const CampaignSetup&, ContentFactory, View*);
   static PGame warlordGame(Table<PModel>, CampaignSetup, vector<PCreature>, ContentFactory, string avatarId);
 
-  optional<ExitInfo> update(double timeDiff);
+  optional<ExitInfo> update(double timeDiff, milliseconds endTime);
   void setExitInfo(ExitInfo);
   Options* getOptions();
   Encyclopedia* getEncyclopedia();
   Unlocks* getUnlocks() const;
+  EnemyAggressionLevel getEnemyAggressionLevel() const;
   void initialize(Options*, Highscores*, View*, FileSharing*, Encyclopedia*, Unlocks*);
   void initializeModels();
   View* getView() const;
@@ -119,10 +120,9 @@ class Game : public OwnedObject<Game> {
   vector<string> SERIAL(zLevelGroups);
 
   private:
-  optional<ExitInfo> update();
   void tick(GlobalTime);
   Vec2 getModelCoords(const WModel) const;
-  bool updateModel(WModel, double timeDiff);
+  bool updateModel(WModel, double timeDiff, optional<milliseconds> endTime);
   void uploadEvent(const string& name, const map<string, string>&);
 
   SunlightInfo sunlightInfo;
@@ -167,4 +167,5 @@ class Game : public OwnedObject<Game> {
   Unlocks* unlocks = nullptr;
   void considerAllianceAttack();
   bool SERIAL(allianceAttackPossible) = true;
+  EnemyAggressionLevel enemyAggressionLevel;
 };

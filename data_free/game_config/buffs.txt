@@ -197,7 +197,7 @@ End
 Def VULNERABILITY(Name, Attr)
 {
   name = Name + " vulnerability"
-  adjective = "vulnarable to " + Name
+  adjective = "vulnerable to " + Name
   description = "Creature's defense against " + Name + " attacks is reduced by 23%."
   addedMessage = ARE "vulnerable to " + Name
   removedMessage = ARE "no longer vulnerable to " + Name

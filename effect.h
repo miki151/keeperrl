@@ -48,6 +48,7 @@ class Effect {
   string getDescription(const ContentFactory*) const;
   optional<MinionEquipmentType> getMinionEquipmentType() const;
   bool canAutoAssignMinionEquipment() const;
+  bool isOffensive() const;
   optional<FXInfo> getProjectileFX() const;
   optional<ViewId> getProjectile() const;
   Color getColor(const ContentFactory*) const;

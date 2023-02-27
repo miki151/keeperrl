@@ -1,0 +1,48 @@
+
+Def Title(Text)
+  Height 25 Position(MIDDLE, Label(Text, 19, ColorId YELLOW))
+End
+
+Def Content(Text)
+  Height 25 Position(MIDDLE, Label(Text))
+End
+
+Window(Width 700 Height 700 {
+  BlockEvents
+  ExitButtons()
+  Vertical {
+    Title("Design and programming:")
+    Content("Michał Brzozowski")
+    Height 10 {}
+    Title("Music:")
+    Content("Marcin Brzozowski and Krzysztof Łoza")
+    Content("https://soundcloud.com/martindemarco")
+    Content("https://soundcloud.com/christopher-loza")
+    Height 10 {}
+    Title("Graphics:")
+    Content("16-bit fantasy set by oryxdesignlab.com")
+    Content("ShroomArts, shroomarts.blogspot.com")
+    Content("Artur Reterski, http://artperski.com")
+    Height 10 {}
+    Title("Intro film:")
+    Content("Kamil Kucharski, https://www.behance.net/Kucharsky")
+    Height 10 {}
+    Title("Testing and ideas:")
+    Content("Jakub Jurkowski")
+    Height 10 {}
+    Title("Consultations:")
+    Content("Ted Martens, @ted_martens")
+    Content("DarkGod, @darkgodone")
+    Height 10 {}
+    Title("Extra content:")
+    Content("SoftMonster")
+    Content("RighteousSinner")
+    Content("Archdiggle")
+    Height 10 {}
+    Title("Font:")
+    Content("Lato by Łukasz Dziedzic")
+    Content("latofonts.com")
+    Height 10 {}
+    Content("LodePNG library by Lode Vandevenne")
+  }
+})

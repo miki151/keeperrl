@@ -21,10 +21,22 @@ struct Callback {
     FATAL << "Can't deserialize Callback";
   }
 };
+struct FocusKeysCallbacks {
+  vector<pair<Keybinding, function<bool()>>> callbacks;
+  template <class Archive> void serialize(Archive& ar1, const unsigned int) {
+    FATAL << "Can't deserialize KeyCallbacks";
+  }
+};
 struct KeyCatcherCallback {
   function<void(SDL::SDL_Keysym)> fun;
   template <class Archive> void serialize(Archive& ar1, const unsigned int) {
     FATAL << "Can't deserialize KeyCatcherCallback";
+  }
+};
+struct DynamicWidthCallback {
+  function<double()> fun;
+  template <class Archive> void serialize(Archive& ar1, const unsigned int) {
+    FATAL << "Can't deserialize DynamicWidthCallback";
   }
 };
 struct SliderData {
@@ -53,7 +65,9 @@ using ::ViewIdList;
   X(SliderData, 3)\
   X(Record, 4)\
   X(List, 5)\
-  X(KeyCatcherCallback, 6)
+  X(KeyCatcherCallback, 6)\
+  X(DynamicWidthCallback, 7)\
+  X(FocusKeysCallbacks, 8)
 
 #define VARIANT_NAME ScriptedUIDataImpl
 #include "gen_variant.h"
@@ -73,7 +87,7 @@ struct ScriptedUIData : ScriptedUIDataElems::ScriptedUIDataImpl {
 
 
 struct ScriptedUIState {
-  ScrollPosition scrollPos;
+  map<int, ScrollPosition> scrollPos;
   optional<int> scrollButtonHeld;
   optional<int> highlightedElem;
   unordered_map<int, ScriptedUIDataElems::SliderState> sliderState;

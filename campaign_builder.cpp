@@ -349,8 +349,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
   int numBlocked = 0.6 * size.x * size.y;
   Table<Campaign::SiteInfo> terrain = getTerrain(random, size, numBlocked);
   auto retired = genRetired(type);
-  View::CampaignMenuState menuState { true, false, false};
-  string searchString;
+  View::CampaignMenuState menuState { true, CampaignMenuIndex{CampaignMenuElems::None{}} };
   int chosenBiome = 0;
   struct BiomeData {
     BiomeId id;
@@ -379,25 +378,26 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
       bool updateMap = false;
       campaign.influenceSize = campaignInfo.influenceSize;
       campaign.refreshInfluencePos();
+      vector<View::CampaignOptions::BiomeInfo> biomeInfos;
+      if (type == CampaignType::FREE_PLAY) {
+        biomeInfos.push_back(View::CampaignOptions::BiomeInfo{"random", ViewId("unknown_monster")});
+        for (auto& b : biomes)
+          biomeInfos.push_back(b.info);
+      }
       CampaignAction action = autoConfirm(type) ? CampaignActionId::CONFIRM
           : view->prepareCampaign({
               campaign,
               (retired && type == CampaignType::FREE_PLAY) ? optional<RetiredGames&>(*retired) : none,
               getCampaignOptions(type),
-              type == CampaignType::FREE_PLAY ? biomes.transform([](auto& e) { return e.info; })
-                  : vector<View::CampaignOptions::BiomeInfo>(),
+              biomeInfos,
               chosenBiome,
               getIntroText(),
               getAvailableTypes().transform([](CampaignType t) -> View::CampaignOptions::CampaignTypeInfo {
                   return {t, getCampaignTypeDescription(t)};}),
-              getMenuWarning(type),
-              searchString}, menuState);
+              getMenuWarning(type)}, menuState);
       switch (action.getId()) {
         case CampaignActionId::BIOME:
           chosenBiome = action.get<int>();
-          break;
-        case CampaignActionId::SEARCH_RETIRED:
-          searchString = action.get<string>();
           break;
         case CampaignActionId::REROLL_MAP:
           terrain = getTerrain(random, size, numBlocked);
@@ -440,8 +440,9 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
               gameDisplayName = name + " of " + campaign.worldName;
             }
             gameIdentifier = stripFilename(std::move(gameIdentifier));
+            BiomeId biomeId = chosenBiome == 0 ? Random.choose(biomes).id : biomes[chosenBiome - 1].id;
             return CampaignSetup{campaign, gameIdentifier, gameDisplayName,
-                getIntroMessages(type), getExternalEnemies(options), getAggressionLevel(options), biomes[chosenBiome].id};
+                getIntroMessages(type), getExternalEnemies(options), getAggressionLevel(options), biomeId};
           }
       }
       if (updateMap)

@@ -9,13 +9,37 @@ Def Margins(Left, Top, Right, Bottom, Content)
   MarginLeft(Left, MarginTop(Top, MarginRight(Right, MarginBottom(Bottom, Content))))
 End
 
-Def FocusKeys() {
-  Using "HIGHLIGHT_PREVIOUS" { KeyHandler(SDLK_LEFT) KeyHandler(SDLK_KP_4) }
-  Using "HIGHLIGHT_NEXT" { KeyHandler(SDLK_RIGHT) KeyHandler(SDLK_KP_6) }
-  Using "HIGHLIGHT_PREVIOUS" { KeyHandler(SDLK_UP) KeyHandler(SDLK_KP_8) }
-  Using "HIGHLIGHT_NEXT" { KeyHandler(SDLK_DOWN) KeyHandler(SDLK_KP_2) }
+Def BlockEvents() { BlockMouseEvents() BlockKeyEvents } End
+
+Def FocusKeysVertical() {
+  Using "HIGHLIGHT_PREVIOUS" { KeybindingHandler(MENU_UP) KeyHandler(SDLK_KP_8) }
+  Using "HIGHLIGHT_NEXT" { KeybindingHandler(MENU_DOWN) KeyHandler(SDLK_KP_2) }
 }
 End
+
+Def FocusKeysHorizontal() {
+  Using "HIGHLIGHT_PREVIOUS" { KeybindingHandler(MENU_LEFT) KeyHandler(SDLK_KP_4) }
+  Using "HIGHLIGHT_NEXT" { KeybindingHandler(MENU_RIGHT) KeyHandler(SDLK_KP_6) }
+}
+End
+
+Def ExitButtons()
+  Using "EXIT" { Button(true) KeybindingHandler(EXIT_MENU) }
+End
+
+Def ExitButtonsWithEnter()
+  Using "EXIT" {
+    Button(true)
+    KeybindingHandler(EXIT_MENU)
+    KeyHandler(SDLK_RETURN)
+    KeyHandler(SDLK_KP_ENTER)
+  }
+End
+
+Def Texture(NAME) TextureImpl(NAME, REPEAT) End
+Def Texture(NAME, FLIP) TextureImpl(NAME, REPEAT, FLIP) End
+Def TextureFit(NAME) TextureImpl(NAME, FIT) End
+Def TextureFit(NAME, FLIP) TextureImpl(NAME, FIT, FLIP) End
 
 Def MiniWindow(Content) {
   Margins(6, Fill(Rgb 13 9 1 255))
@@ -45,10 +69,10 @@ Def MiniWindow2(Content) {
 }
 End
 
-Def Window(Content) {
+Def WindowImpl(Content, Margin) {
   Height 200 {}
-  Margins(6, Fill(Rgb 15 11 9 255))
-  Margins(45, Content)
+  Margins(6, Width 0 Height 0 Texture(BACKGROUND_PATTERN))
+  Margins(Margin, Content)
   Position(TOP_STRETCHED, Margins(6, 2, 6, 0, Texture(HORI_BAR)))
   Position(BOTTOM_STRETCHED, Margins(6, 0, 6, 2, Texture(HORI_BAR, FLIP_Y)))
   Position(RIGHT_STRETCHED, MarginRight(6, Texture(WINDOW_VERT_BAR)))
@@ -64,6 +88,9 @@ Def Window(Content) {
 }
 End
 
+Def Window(Content) WindowImpl(Content, 45) End
+Def WindowNoMargin(Content) WindowImpl(Content, 30) End
+
 Def ButtonLayout(BOTTOM1, SIDE, CORNER) {
   Texture(BUTTON_BG)
   Position(BOTTOM_STRETCHED, Texture(BOTTOM1))
@@ -77,6 +104,14 @@ Def ButtonLayout(BOTTOM1, SIDE, CORNER) {
 }
 End
 
+Def StandardButtonNotFocusable(Content) {
+  ButtonLayout(BUTTON_BOTTOM, BUTTON_SIDE, BUTTON_CORNER)
+  MouseOver ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
+  Position(MIDDLE, Margins(10, 5, 10, 8, Content))
+  Button()
+}
+End
+
 Def StandardButton(Content) {
   ButtonLayout(BUTTON_BOTTOM, BUTTON_SIDE, BUTTON_CORNER)
   Focusable ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
@@ -85,9 +120,16 @@ Def StandardButton(Content) {
 }
 End
 
+Def NewHighlight()
+  MarginTop(2, MarginBottom(2, MarginLeft(-5, Fill(Rgb 96 86 78 120))))
+End
+
 Def StandardButtonActivated(Content) {
-  ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
+  ButtonLayout(BUTTON_BOTTOM, BUTTON_SIDE, BUTTON_CORNER)
+  FocusableNoCallback ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
   Position(MIDDLE, Margins(10, 5, 10, 8, Content))
+  Position(LEFT_CENTERED, MarginLeft(8, Texture(UI_HIGHLIGHT)))
+  Position(RIGHT_CENTERED, MarginRight(8, Texture(UI_HIGHLIGHT)))
 }
 End
 
@@ -97,23 +139,25 @@ Def StandardButtonInactive(Content) {
 }
 End
 
-Def Scrolling(Content)
+Def Scrolling(Content) Scrolling(0, Content) End
+
+Def Scrolling(ScrollIndex, Content)
   Scrollable(Width 20
       Vertical {
         Position(MIDDLE, {
           Texture(SCROLL_UP)
-          ScrollButton(-1)
+          ScrollButton(-1, ScrollIndex)
         })
         Stretch {
           MarginLeft(-9, MarginRight(-9, Texture(SCROLLBAR)))
-          Scroller Position(MIDDLE, Texture(SCROLL_BUTTON))
+          Scroller(Position(MIDDLE, Texture(SCROLL_BUTTON)), ScrollIndex)
         }
         Position(MIDDLE, {
-          ScrollButton(1)
+          ScrollButton(1, ScrollIndex)
           Texture(SCROLL_DOWN)
         })
       },
-      Content)
+      Content, ScrollIndex)
 End
 
 Def GetTooltip(Content)
@@ -121,11 +165,14 @@ Def GetTooltip(Content)
 End
 
 Def YesOrNo() {
-  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
-  FocusKeys()
+  ExitButtons()
+  FocusKeysHorizontal()
   Window(
     Vertical {
-      Using "message" Position(MIDDLE, MarginLeft(40, MarginRight(40, Label())))
+      Position(MIDDLE, MarginLeft(25, MarginRight(25, Horizontal {
+        Using "view_id" Width 50 ViewId(2)
+        Position(MIDDLE, Using "message" Label())
+      } )))
       Height 35 {}
       Position(MIDDLE, Horizontal {
         Using "callback" StandardButton(Label("Confirm"))
@@ -137,4 +184,8 @@ Def YesOrNo() {
 }
 End
 
-
+Def Sliding() {
+  Position(MIDDLE_STRETCHED_X, Height 5 Fill(ColorId GRAY))
+  Slider Width 6 Position(MIDDLE_STRETCHED_X, Height 20 Fill(ColorId WHITE))
+}
+End

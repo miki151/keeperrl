@@ -43,6 +43,14 @@
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
+Def TRAINING(SUF1, SUF2)
+"TRAINING_WOOD" + SUF1 inherit "TRAINING_WOOD" { viewId = { "training_wood" + SUF2 } }
+"TRAINING_IRON" + SUF1 inherit "TRAINING_IRON" { viewId = { "training_iron" + SUF2 } }
+"TRAINING_ADA" + SUF1 inherit "TRAINING_ADA" { viewId = { "training_ada" + SUF2 } }
+End
+TRAINING("_HUMAN", "_human")
+TRAINING("_NECRO", "_necro")
+TRAINING("_DWARF", "_dwarf")
 "ARCHERY_RANGE"
 {
   name = "archery target"
@@ -232,6 +240,13 @@
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
 }
+Def BOOKCASES(SUF1, SUF2)
+"BOOKCASE_WOOD" + SUF1 inherit "BOOKCASE_WOOD" { viewId = { "bookcase_wood" + SUF2 } }
+"BOOKCASE_IRON" + SUF1 inherit "BOOKCASE_IRON" { viewId = { "bookcase_iron" + SUF2 } }
+"BOOKCASE_GOLD" + SUF1 inherit "BOOKCASE_GOLD" { viewId = { "bookcase_gold" + SUF2 } }
+End
+BOOKCASES("_NECRO", "_necro")
+BOOKCASES("_HUMAN", "_human")
 "THRONE"
 {
   name = "throne"
@@ -242,6 +257,10 @@
   strength = 80
   populationIncrease = { 10 none }
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+}
+"THRONE_HUMAN" inherit "THRONE"
+{
+  viewId = { "throne_human" }
 }
 "IMPALED_HEAD"
 {
@@ -789,6 +808,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
       Area 1 Not CreatureId "CHICKEN"
     }
     Summon "CHICKEN" 1 none
+  canBuildOutsideOfTerritory = true
   populationIncrease = { 0.25 4 true }
 }
 "PIGSTY"
@@ -802,6 +822,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
       Area 1 Not CreatureId "PIG"
     }
     Summon "PIG" 1 none
+  canBuildOutsideOfTerritory = true
   populationIncrease = { 0.5 8 true }
 }
 "COW_PEN"
@@ -815,6 +836,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
       Area 1 Not CreatureId "COW"
     }
     Summon "COW" 1 none
+  canBuildOutsideOfTerritory = true
   populationIncrease = { 1 16 true }
 }
 "GROUND_TORCH"
@@ -1238,6 +1260,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   fire = 50
   strength = 160
   clickType = LOCK
+  canBuildOutsideOfTerritory = true
   requiredSupport = { { { E W } } { { N S } {"wood_door_ns"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
 }
@@ -1251,6 +1274,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   fire = 50
   strength = 240
   clickType = LOCK
+  canBuildOutsideOfTerritory = true
   requiredSupport = { { { W } } { { N } {"wood_gate_n"} } { { E } {"wood_gate_e"} } { { S } {"wood_gate_s"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
 }
@@ -1263,6 +1287,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockAllVision = true
   strength = 240
   clickType = LOCK
+  canBuildOutsideOfTerritory = true
   requiredSupport = { { { E W } } { { N S } {"iron_door_ns"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
@@ -1279,6 +1304,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockAllVision = true
   strength = 320
   clickType = LOCK
+  canBuildOutsideOfTerritory = true
   requiredSupport = { { { W } } { { N } {"iron_gate_n"} } { { E } {"iron_gate_e"} } { { S } {"iron_gate_s"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
@@ -1295,6 +1321,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockAllVision = true
   strength = 480
   clickType = LOCK
+  canBuildOutsideOfTerritory = true
   requiredSupport = { { { E W } } { { N S } {"ada_door_ns"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
@@ -1307,6 +1334,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockAllVision = true
   strength = 540
   clickType = LOCK
+  canBuildOutsideOfTerritory = true
   requiredSupport = { { { W } } { { N } {"ada_gate_n"} } { { E } {"ada_gate_e"} } { { S } {"ada_gate_s"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
@@ -1571,6 +1599,22 @@ Def BedHeal() Heal { FLESH 0.005 } End
   destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
   tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
 }
+"NECRO_WALL" inherit "DUNGEON_WALL"
+{
+  viewId = { "necro_wall" }
+}
+"NECRO_WALL2" inherit "DUNGEON_WALL2"
+{
+  viewId = { "necro_wall2" }
+}
+"DWARF_WALL" inherit "DUNGEON_WALL"
+{
+  viewId = { "dwarf_wall" }
+}
+"DWARF_WALL2" inherit "DUNGEON_WALL2"
+{
+  viewId = { "dwarf_wall2" }
+}
 "SANDSTONE_WALL" inherit "DUNGEON_WALL"
 {
   viewId = { "sandstone_wall" }
@@ -1714,6 +1758,14 @@ Def BedHeal() Heal { FLESH 0.005 } End
 }
 "FLOOR_STONE2" inherit "FLOOR_STONE1"
 {
+  viewId = { "stone_floor2" }
+}
+"FLOOR_STONE3" inherit "FLOOR_STONE1"
+{
+  viewId = { "stone_floor3" }
+}
+"FLOOR_STONE5" inherit "FLOOR_STONE1"
+{
   viewId = { "stone_floor5" }
 }
 "FLOOR_CARPET1"
@@ -1725,9 +1777,17 @@ Def BedHeal() Heal { FLESH 0.005 } End
 }
 "FLOOR_CARPET2" inherit "FLOOR_CARPET1"
 {
+  viewId = { "carpet_floor2" }
+}
+"FLOOR_CARPET3" inherit "FLOOR_CARPET1"
+{
+  viewId = { "carpet_floor3" }
+}
+"FLOOR_CARPET4" inherit "FLOOR_CARPET1"
+{
   viewId = { "carpet_floor4" }
 }
-"CARPET2_GROUND" inherit "FLOOR_CARPET2"
+"CARPET4_GROUND" inherit "FLOOR_CARPET4"
 {
   layer = GROUND
 }

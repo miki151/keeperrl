@@ -308,7 +308,7 @@ static int getNumFrames(const vector<FilePath>& files, int tileWidth) {
     if (SDL::SDL_Surface* im = SDL::IMG_Load(files[i].getPath())) {
       auto dest = OnExit([&] { SDL::SDL_FreeSurface(im); });
       ret += im->w / tileWidth;
-    } else 
+    } else
     if (firstError) {
       USER_INFO << "Error loading image " << files[i].getPath() << ": " << SDL::IMG_GetError();
       firstError = true;

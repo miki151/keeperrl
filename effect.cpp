@@ -313,6 +313,10 @@ static bool applyToCreature(const Effects::Lasting& e, Creature* c, Creature*) {
   return addEffect(e.lastingEffect, c, e.duration);
 }
 
+/*static bool isOffensive(const Effects::Lasting& e) {
+  return LastingEffects::isConsideredBad(e.lastingEffect);
+}*/
+
 static int getPrice(const Effects::Lasting& e, const ContentFactory* factory) {
   return getPrice(e.lastingEffect, factory);
 }
@@ -502,6 +506,10 @@ static string getName(const Effects::Acid&, const ContentFactory*) {
   return "acid";
 }
 
+static bool isOffensive(const Effects::Acid&) {
+  return true;
+}
+
 static int getPrice(const Effects::Acid&, const ContentFactory*) {
   return 8;
 }
@@ -538,6 +546,10 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::Summon&, const Crea
 
 static string getName(const Effects::Summon& e, const ContentFactory* f) {
   return "summon " + f->getCreatures().getName(e.creature);
+}
+
+static bool isOffensive(const Effects::Summon&) {
+  return true;
 }
 
 static string getDescription(const Effects::Summon& e, const ContentFactory* f) {
@@ -639,6 +651,10 @@ static string getName(const Effects::SummonElement&, const ContentFactory*) {
   return "summon element";
 }
 
+static bool isOffensive(const Effects::SummonElement&) {
+  return true;
+}
+
 static string getDescription(const Effects::SummonElement&, const ContentFactory*) {
   return "Summons an element or spirit from the surroundings.";
 }
@@ -656,6 +672,10 @@ static bool applyToCreature(const Effects::Deception&, Creature* c, Creature*) {
 
 static string getName(const Effects::Deception&, const ContentFactory*) {
   return "deception";
+}
+
+static bool isOffensive(const Effects::Deception&) {
+  return true;
 }
 
 static string getDescription(const Effects::Deception&, const ContentFactory*) {
@@ -717,6 +737,10 @@ static string getName(const Effects::CircularBlast&, const ContentFactory*) {
   return "air blast";
 }
 
+static bool isOffensive(const Effects::CircularBlast&) {
+  return true;
+}
+
 static string getDescription(const Effects::CircularBlast&, const ContentFactory*) {
   return "Creates a circular blast of air that throws back creatures and items.";
 }
@@ -772,6 +796,10 @@ static bool isConsideredHostile(const Effects::DestroyEquipment&, const Creature
 
 static string getName(const Effects::DestroyEquipment&, const ContentFactory*) {
   return "equipment destruction";
+}
+
+static bool isOffensive(const Effects::DestroyEquipment&) {
+  return true;
 }
 
 static string getDescription(const Effects::DestroyEquipment&, const ContentFactory*) {
@@ -841,6 +869,10 @@ static string getName(const Effects::Bleed& e, const ContentFactory*) {
   return "bleeding";
 }
 
+static bool isOffensive(const Effects::Bleed&) {
+  return true;
+}
+
 static string getDescription(const Effects::Bleed& e, const ContentFactory*) {
   return "Causes bleeding.";
 }
@@ -887,6 +919,10 @@ static string getName(const Effects::Fire&, const ContentFactory*) {
   return "fire";
 }
 
+static bool isOffensive(const Effects::Fire&) {
+  return true;
+}
+
 static int getPrice(const Effects::Fire&, const ContentFactory*) {
   return 12;
 }
@@ -918,6 +954,10 @@ static string getName(const Effects::Ice&, const ContentFactory*) {
   return "ice";
 }
 
+static bool isOffensive(const Effects::Ice&) {
+  return true;
+}
+
 static string getDescription(const Effects::Ice&, const ContentFactory*) {
   return "Freezes water and causes cold damage";
 }
@@ -938,6 +978,10 @@ static bool isConsideredHostile(const Effects::Ice&, const Creature* victim) {
 
 static string getName(const Effects::ReviveCorpse&, const ContentFactory*) {
   return "revive corpse";
+}
+
+static bool isOffensive(const Effects::ReviveCorpse&) {
+  return true;
 }
 
 static string getDescription(const Effects::ReviveCorpse&, const ContentFactory*) {
@@ -969,6 +1013,10 @@ static bool apply(const Effects::ReviveCorpse& effect, Position pos, Creature* a
 
 static string getName(const Effects::EmitGas& m, const ContentFactory* f) {
   return f->tileGasTypes.at(m.type).name;
+}
+
+static bool isOffensive(const Effects::EmitGas&) {
+  return true;
 }
 
 static Color getColor(const Effects::EmitGas& e, const ContentFactory* f) {
@@ -1078,6 +1126,10 @@ static string getName(const Effects::Damage& e, const ContentFactory* f) {
   return f->attrInfo.at(e.attr).name;
 }
 
+static bool isOffensive(const Effects::Damage&) {
+  return true;
+}
+
 static string getDescription(const Effects::Damage& e, const ContentFactory* f) {
   return "Causes " + f->attrInfo.at(e.attr).name;
 }
@@ -1098,6 +1150,10 @@ static string getName(const Effects::FixedDamage& e, const ContentFactory* f) {
   return toString(e.value) + " " + f->attrInfo.at(e.attr).name;
 }
 
+static bool isOffensive(const Effects::FixedDamage&) {
+  return true;
+}
+
 static string getDescription(const Effects::FixedDamage& e, const ContentFactory* f) {
   return "Causes " + toString(e.value) + " " + f->attrInfo.at(e.attr).name;
 }
@@ -1114,6 +1170,10 @@ static string getName(const Effects::InjureBodyPart& e, const ContentFactory*) {
   return "injure "_s + ::getName(e.part);
 }
 
+static bool isOffensive(const Effects::InjureBodyPart&) {
+  return true;
+}
+
 static string getDescription(const Effects::InjureBodyPart& e, const ContentFactory*) {
   return "Injures "_s + ::getName(e.part);
 }
@@ -1128,6 +1188,10 @@ static bool applyToCreature(const Effects::LoseBodyPart& e, Creature* c, Creatur
 
 static string getName(const Effects::LoseBodyPart& e, const ContentFactory*) {
   return "lose "_s + ::getName(e.part);
+}
+
+static bool isOffensive(const Effects::LoseBodyPart&) {
+  return true;
 }
 
 static string getDescription(const Effects::LoseBodyPart& e, const ContentFactory*) {
@@ -1352,6 +1416,13 @@ static bool canAutoAssignMinionEquipment(const Effects::Chain& c) {
     if (!e.canAutoAssignMinionEquipment())
       return false;
   return true;
+}
+
+static bool isOffensive(const Effects::Chain& c) {
+  for (auto& e : c.effects)
+    if (e.isOffensive())
+      return true;
+  return false;
 }
 
 static EffectAIIntent shouldAIApply(const Effects::Chain& chain, const Creature* caster, Position pos) {
@@ -1606,6 +1677,10 @@ static string getName(const Effects::IncreaseMorale& e, const ContentFactory*) {
   return e.amount > 0 ? "morale increase" : "morale decrease";
 }
 
+static bool isOffensive(const Effects::IncreaseMorale& e) {
+  return e.amount < 0;
+}
+
 static string getDescription(const Effects::IncreaseMorale& e, const ContentFactory*) {
   return e.amount > 0 ? "Increases morale" : "Decreases morale";
 }
@@ -1665,6 +1740,10 @@ static bool canAutoAssignMinionEquipment(const Effects::GenericModifierEffect& e
   return e.effect->canAutoAssignMinionEquipment();
 }
 
+static bool isOffensive(const Effects::GenericModifierEffect& e) {
+  return e.effect->isOffensive();
+}
+
 static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::GenericModifierEffect& e) {
   return e.effect->getMinionEquipmentType();
 }
@@ -1708,6 +1787,10 @@ static string getName(const Effects::DoubleTrouble&, const ContentFactory*) {
   return "double trouble";
 }
 
+static bool isOffensive(const Effects::DoubleTrouble&) {
+  return true;
+}
+
 static string getDescription(const Effects::DoubleTrouble&, const ContentFactory*) {
   return "Creates a twin copy ally.";
 }
@@ -1718,6 +1801,10 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::DoubleTrouble&, con
 
 static string getName(const Effects::Blast&, const ContentFactory*) {
   return "air blast";
+}
+
+static bool isOffensive(const Effects::Blast&) {
+  return true;
 }
 
 static string getDescription(const Effects::Blast&, const ContentFactory*) {
@@ -1750,6 +1837,10 @@ static bool apply(const Effects::Blast&, Position pos, Creature* attacker) {
 
 static string getName(const Effects::DirectedBlast&, const ContentFactory*) {
   return "air blast";
+}
+
+static bool isOffensive(const Effects::DirectedBlast&) {
+  return true;
 }
 
 static string getDescription(const Effects::DirectedBlast&, const ContentFactory*) {
@@ -1794,6 +1885,10 @@ static string getName(const Effects::Pull&, const ContentFactory*) {
   return "pull";
 }
 
+static bool isOffensive(const Effects::Pull&) {
+  return true;
+}
+
 static string getDescription(const Effects::Pull&, const ContentFactory*) {
   return "Pulls a creature towards the spellcaster.";
 }
@@ -1826,6 +1921,10 @@ static bool applyToCreature(const Effects::Shove&, Creature* c, Creature* attack
 
 static string getName(const Effects::Shove&, const ContentFactory*) {
   return "shove";
+}
+
+static bool isOffensive(const Effects::Shove&) {
+  return true;
 }
 
 static string getDescription(const Effects::Shove&, const ContentFactory*) {
@@ -1891,6 +1990,10 @@ static string getName(const Effects::AnimateItems& m, const ContentFactory*) {
   return "animate "_s + getAnimatedItemsName(m) + "s";
 }
 
+static bool isOffensive(const Effects::AnimateItems&) {
+  return true;
+}
+
 static string getDescription(const Effects::AnimateItems& e, const ContentFactory*) {
   return "Animates up to " + getPlural(getAnimatedItemsName(e), e.maxCount) + " from the surroundings";
 }
@@ -1938,6 +2041,10 @@ static EffectAIIntent shouldAIApply(const Effects::AnimateItems& m, const Creatu
 
 static string getName(const Effects::Audience&, const ContentFactory*) {
   return "audience";
+}
+
+static bool isOffensive(const Effects::Audience&) {
+  return true;
 }
 
 static string getDescription(const Effects::Audience&, const ContentFactory*) {
@@ -2259,6 +2366,11 @@ static string getName(const Effects::Name& e, const ContentFactory*) {
   return e.text;
 }
 
+static EffectAIIntent shouldAIApply(const Effects::Name& e, const Creature* caster, Position pos) {
+  PROFILE_BLOCK(e.text.c_str());
+  return e.effect->shouldAIApply(caster, pos);
+}
+
 static bool sameAIIntent(EffectAIIntent a, EffectAIIntent b) {
   return (a > 0 && b > 0) || (a < 0 && b < 0) || (a == 0 && b == 0);
 }
@@ -2365,8 +2477,11 @@ static EffectAIIntent shouldAIApply(const T& elem, const Creature* caster, Posit
 }
 
 EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const {
-  PROFILE_BLOCK("Effect::shouldAIApply");
-  return effect->visit<EffectAIIntent>([&](const auto& e) { return ::shouldAIApply(e, caster, pos); });
+  PROFILE;
+  return effect->visit<EffectAIIntent>([&](const auto& e) {
+    PROFILE_BLOCK(typeid(e).name());
+    return ::shouldAIApply(e, caster, pos);
+  });
 }
 
 static optional<FXInfo> getProjectileFX(const DefaultType&) {
@@ -2433,6 +2548,12 @@ static bool canAutoAssignMinionEquipment(const DefaultType&) { return true; }
 
 bool Effect::canAutoAssignMinionEquipment() const {
   return effect->visit<bool>([](const auto& elem) { return ::canAutoAssignMinionEquipment(elem); });
+}
+
+static bool isOffensive(const DefaultType&) { return false; }
+
+bool Effect::isOffensive() const {
+  return effect->visit<bool>([](const auto& elem) { return ::isOffensive(elem); });
 }
 
 template <typename T, REQUIRE(getColor(TVALUE(const T&), TVALUE(const ContentFactory*)))>

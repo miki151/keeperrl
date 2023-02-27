@@ -85,6 +85,10 @@ class FireScrollItem : public Item {
     set = true;
   }
 
+  virtual bool canEverTick(bool carried) const override {
+    return true;
+  }
+
   virtual void specialTick(Position position) override {
     if (set) {
       fireDamage(position);
@@ -117,6 +121,10 @@ class Corpse : public Item {
     setViewObject(object2);
     corpseInfo.isSkeleton = true;
     rotten = true;
+  }
+
+  virtual bool canEverTick(bool carried) const override {
+    return true;
   }
 
   virtual void specialTick(Position position) override {
@@ -214,7 +222,7 @@ class PotionItem : public Item {
 
   virtual void fireDamage(Position position) override {
     heat += 0.3;
-    INFO << getName() << " heat " << heat;
+//    INFO << getName() << " heat " << heat;
     if (heat >= 1.0) {
       position.globalMessage(getAName() + " boils and explodes!");
       discarded = true;
@@ -224,6 +232,10 @@ class PotionItem : public Item {
   virtual void iceDamage(Position position) override {
     position.globalMessage(getAName() + " freezes and explodes!");
     discarded = true;
+  }
+
+  virtual bool canEverTick(bool carried) const override {
+    return true;
   }
 
   virtual void specialTick(Position position) override {

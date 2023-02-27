@@ -23,10 +23,6 @@ class DummyView : public View {
   virtual void resetCenter() override {}
   virtual UserInput getAction() override { return UserInputId::IDLE; }
   virtual bool travelInterrupt() override { return false; }
-  virtual optional<int> chooseFromList(const string&, const vector<ListElem>&, int = 0,
-      MenuType = MenuType::NORMAL, ScrollPosition* = nullptr, optional<UserInputId> = none) override {
-    return none;
-  }
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override {
     return none;
   }
@@ -34,29 +30,13 @@ class DummyView : public View {
       const string& message, optional<Keybinding> cycleKey) override {
     return none;
   }
-  virtual void presentText(const string&, const string&) override {}
-  virtual void presentTextBelow(const string&, const string&) override {}
-  virtual void presentList(const string&, const vector<ListElem>&, bool = false,
-      MenuType = MenuType::NORMAL) override {}
-  virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) override {
+  virtual optional<int> getNumber(const string& title, Range range, int initial) override {
     return none;
   }
-  virtual optional<string> getText(const string& title, const string& value, int maxLength,
-      const string& hint = "") override {
+  virtual optional<string> getText(const string& title, const string& value, int maxLength) override {
     return none;
   }
   virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&, ScriptedUIState&) override {}
-  virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
-      const vector<ItemInfo>&, ScrollPosition* scrollPos) override {
-    return none;
-  }
-  virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) override {
-    return none;
-  }
-  virtual optional<int> chooseItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollpos) override {
-    return none;
-  }
-  virtual void presentHighscores(const vector<HighscoreList>&) override {}
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) override {
     return CampaignActionId::CANCEL;
   }
@@ -70,16 +50,10 @@ class DummyView : public View {
   virtual bool creatureInfo(const string& title, bool prompt, const vector<PlayerInfo>&) override {
     return false;
   }
-  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current = none) override {
+  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, Vec2 current) override {
     return none;
   }
   virtual optional<int> chooseAtMouse(const vector<string>& elems) override {
-    return none;
-  }
-  virtual optional<ExperienceType> getCreatureUpgrade(const CreatureExperienceInfo&) override {
-    return none;
-  }
-  virtual optional<ModAction> getModAction(int highlighted, const vector<ModInfo>&) override {
     return none;
   }
   virtual void presentWorldmap(const Campaign&) override {}

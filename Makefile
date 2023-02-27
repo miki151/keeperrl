@@ -166,7 +166,7 @@ ifdef RELEASE
 endif
 
 parse_game:
-	clang++ -DPARSE_GAME $(IPATH) -std=c++1y -g gzstream.cpp parse_game.cpp util.cpp debug.cpp saved_game_info.cpp file_path.cpp directory_path.cpp progress.cpp content_id.cpp view_id.cpp color.cpp -o parse_game -lpthread -lz
+	clang++ -DPARSE_GAME $(IPATH) -std=c++1y -g gzstream.cpp parse_game.cpp util.cpp debug.cpp saved_game_info.cpp file_path.cpp directory_path.cpp progress.cpp content_id.cpp view_id.cpp color.cpp pretty_archive.cpp -o parse_game -lpthread -lz
 
 clean:
 	$(RM) $(OBJDIR)/*.o

@@ -29,6 +29,7 @@
 #include "scripted_ui_data.h"
 #include "mouse_button_id.h"
 #include "tileset.h"
+#include "steam_input.h"
 
 #include "sdl.h"
 
@@ -50,6 +51,13 @@ void GuiElem::setBounds(Rectangle b) {
 
 void GuiElem::setPreferredBounds(Vec2 origin) {
   setBounds(Rectangle(origin, origin + Vec2(*getPreferredWidth(), *getPreferredHeight())));
+}
+
+optional<Vec2> GuiElem::getPreferredSize() {
+  if (auto w = getPreferredWidth())
+    if (auto h = getPreferredHeight())
+      return Vec2(*w, *h);
+  return none;
 }
 
 static map<int, int> lineNumbers;
@@ -129,7 +137,7 @@ class ReleaseButton : public GuiElem {
     }
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     if (!pos.inRectangle(getBounds()))
       clicked = false;
     return false;
@@ -185,9 +193,8 @@ class ButtonKey : public ButtonElem {
   bool capture;
 };
 
-GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o,
-    const DirectoryPath& freeImages, const optional<DirectoryPath>& nonFreeImages)
-    : clock(c), renderer(r), options(o), freeImagesPath(freeImages), nonFreeImagesPath(nonFreeImages) {
+GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o, const DirectoryPath& freeImages)
+    : clock(c), renderer(r), options(o), imagesPath(freeImages) {
 }
 
 GuiFactory::~GuiFactory() {}
@@ -211,9 +218,19 @@ SGuiElem GuiFactory::button(function<void()> fun, bool capture) {
 namespace  {
 class TextFieldElem : public GuiElem {
   public:
-  TextFieldElem(function<string()> text, function<void(string)> callback, int maxLength, Clock* clock, bool alwaysFocused)
-      : callback(std::move(callback)), getText(std::move(text)), clock(clock), maxLength(maxLength),
-        alwaysFocused(alwaysFocused) {}
+  TextFieldElem(function<string()> text, function<void(string)> callback, function<bool()> controllerFocus,
+      int maxLength, bool alwaysFocused, MySteamInput* steamInput, KeybindingMap* keybindingMap)
+      : callback(std::move(callback)), getText(std::move(text)), controllerFocus(std::move(controllerFocus)),
+        maxLength(maxLength), alwaysFocused(alwaysFocused), steamInput(steamInput),
+        keybindingMap(keybindingMap) {
+    if (alwaysFocused && steamInput)
+      steamInput->showFloatingKeyboard(Rectangle(100, 30, 800, 60));
+  }
+
+  virtual ~TextFieldElem() {
+    if (alwaysFocused && steamInput)
+      steamInput->dismissFloatingKeyboard();
+  }
 
   virtual bool onClick(MouseButtonId b, Vec2 pos) override {
     if (b == MouseButtonId::LEFT) {
@@ -234,11 +251,12 @@ class TextFieldElem : public GuiElem {
     if (isFocused())
       rectBounds = Rectangle(rectBounds.topLeft(),
           Vec2(max(rectBounds.right(), rectBounds.left() + r.getTextLength(toDraw) + 10), rectBounds.bottom()));
-    if (isFocused() && (clock->getRealMillis().count() / 400) % 2 == 0)
+    if (isFocused() && (Clock::getRealMillis().count() / 400) % 2 == 0)
       toDraw += "|";
     if (isFocused() && !alwaysFocused)
       r.setTopLayer();
-    r.drawFilledRectangle(rectBounds, Color::BLACK, isFocused() ? Color::WHITE : Color::GRAY);
+    r.drawFilledRectangle(rectBounds, Color::BLACK,
+        (focused || controllerFocus()) ? Color::WHITE : Color::GRAY);
     if (!isFocused())
       r.setScissor(bounds.minusMargin(1));
     r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(6, 6), toDraw);
@@ -259,15 +277,23 @@ class TextFieldElem : public GuiElem {
           callback(current);
           break;
         }
+        case C_BUILDINGS_CANCEL:
         case SDL::SDLK_ESCAPE:
         case SDL::SDLK_KP_ENTER:
         case SDL::SDLK_RETURN:
           callback(current);
           focused = false;
+          if (!alwaysFocused && steamInput)
+            steamInput->dismissFloatingKeyboard();
           return true;
         default:
           break;
       }
+      return true;
+    } else if (!alwaysFocused && keybindingMap->matches(Keybinding("MENU_SELECT"), sym) && controllerFocus()) {
+      focused = true;
+      if (steamInput)
+        steamInput->showFloatingKeyboard(getBounds());
       return true;
     }
     return false;
@@ -287,21 +313,26 @@ class TextFieldElem : public GuiElem {
   private:
   function<void(string)> callback;
   function<string()> getText;
-  Clock* clock;
+  function<bool()> controllerFocus;
   int maxLength;
   bool focused = false;
   bool alwaysFocused = false;
+  MySteamInput* steamInput;
+  KeybindingMap* keybindingMap;
 };
 }
 
-SGuiElem GuiFactory::textField(int maxLength, function<string()> text, function<void(string)> callback) {
+SGuiElem GuiFactory::textField(int maxLength, function<string()> text, function<void(string)> callback,
+    function<bool()> controllerFocus) {
   return topMargin(-4, bottomMargin(4,
-      make_shared<TextFieldElem>(std::move(text), std::move(callback), maxLength, clock, false)));
+      make_shared<TextFieldElem>(std::move(text), std::move(callback), std::move(controllerFocus),
+          maxLength, false, getSteamInput(), getKeybindingMap())));
 }
 
 SGuiElem GuiFactory::textFieldFocused(int maxLength, function<string()> text, function<void(string)> callback) {
   return topMargin(-4, bottomMargin(4,
-      make_shared<TextFieldElem>(std::move(text), std::move(callback), maxLength, clock, true)));
+      make_shared<TextFieldElem>(std::move(text), std::move(callback), []{return false;},
+          maxLength, true, getSteamInput(), getKeybindingMap())));
 }
 
 SGuiElem GuiFactory::buttonPos(function<void (Rectangle, Vec2)> fun) {
@@ -358,7 +389,7 @@ class ReverseButton : public GuiElem {
   bool capture;
 };
 
-SGuiElem GuiFactory::reverseButton(function<void()> fun, vector<SDL_Keysym> hotkey, bool capture) {
+SGuiElem GuiFactory::reverseButton(function<void()> fun, Keybinding hotkey, bool capture) {
   return stack(
       keyHandler(fun, hotkey, true),
       SGuiElem(new ReverseButton(fun, capture)));
@@ -383,21 +414,6 @@ class MouseWheel : public GuiElem {
 
 SGuiElem GuiFactory::mouseWheel(function<void(bool)> fun) {
   return SGuiElem(new MouseWheel(fun));
-}
-
-class StopMouseMovement : public GuiElem {
-  public:
-  virtual bool onMouseMove(Vec2 pos) override {
-    return pos.inRectangle(getBounds());
-  }
-
-  virtual bool onClick(MouseButtonId, Vec2 pos) override {
-    return pos.inRectangle(getBounds());
-  }
-};
-
-SGuiElem GuiFactory::stopMouseMovement() {
-  return SGuiElem(new StopMouseMovement());
 }
 
 class DrawCustom : public GuiElem {
@@ -470,8 +486,12 @@ class DrawScripted : public GuiElem {
     context.tooltipCounter = 0;
     context.sliderCounter = 0;
     get()->render(data, context, getBounds());
-    if (auto& elem = context.state.highlightedElem)
-      *elem = (*elem % context.elemCounter + context.elemCounter) % context.elemCounter;
+    if (auto& elem = context.state.highlightedElem) {
+      if (context.elemCounter == 0)
+        elem = none;
+      else
+        *elem = (*elem % context.elemCounter + context.elemCounter) % context.elemCounter;
+    }
   }
 
   bool handleCallback(const EventCallback& callback) {
@@ -495,7 +515,19 @@ class DrawScripted : public GuiElem {
     return ret;
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onScrollEvent(Vec2 pos, double x, double y, milliseconds timeDiff) override {
+    context.elemCounter = 0;
+    context.sliderCounter = 0;
+    context.tooltipCounter = 0;
+    bool ret = true;
+    EventCallback callback = [&ret] { ret = false; return false; };
+    get()->onScroll(data, context, getBounds(), pos, x, y, timeDiff, callback);
+    if (callback())
+      context.endCallback();
+    return ret;
+  }
+
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     context.elemCounter = 0;
     context.sliderCounter = 0;
     context.tooltipCounter = 0;
@@ -534,7 +566,10 @@ class DrawScripted : public GuiElem {
   ScriptedContext context;
 };
 
-SGuiElem GuiFactory::scripted(function<void()> endCallback, ScriptedUIId id, const ScriptedUIData& data, ScriptedUIState& state) {
+SGuiElem GuiFactory::scripted(function<void()> endCallback, ScriptedUIId id, const ScriptedUIData& data,
+    ScriptedUIState& state) {
+  if (!state.highlightedElem && !getSteamInput()->controllers.empty())
+    state.highlightedElem = 0;
   return SGuiElem(new DrawScripted(ScriptedContext{&renderer, this, endCallback, state, 0, 0}, id, std::move(data)));
 }
 
@@ -626,6 +661,8 @@ SGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
 }
 
 static vector<string> breakWord(Renderer& renderer, string word, int maxWidth, int size) {
+  if (renderer.getTextLength(word, size) <= maxWidth)
+    return {std::move(word)};
   vector<string> ret;
   while (!word.empty()) {
     int maxSubstr = 0;
@@ -641,8 +678,8 @@ static vector<string> breakWord(Renderer& renderer, string word, int maxWidth, i
 
 static vector<string> breakText(Renderer& renderer, const string& text, int maxWidth, int size = Renderer::textSize(),
     char delim = ' ') {
-  if (text.empty())
-    return {""};
+  if (renderer.getTextLength(text, size) <= maxWidth)
+    return {std::move(text)};
   vector<string> rows;
   for (string line : split(text, {'\n'})) {
     rows.push_back("");
@@ -662,13 +699,13 @@ vector<string> GuiFactory::breakText(const string& text, int maxWidth, int fontS
   return ::breakText(renderer, text, maxWidth, fontSize);
 }
 
-class VariableLabel : public GuiElem {
+class LabelMultiLine : public GuiElem {
   public:
-  VariableLabel(function<string()> t, int line, int sz, Color c) : text(t), size(sz), color(c), lineHeight(line) {
+    LabelMultiLine(string t, int line, int sz, Color c) : text(t), size(sz), color(c), lineHeight(line) {
   }
 
   virtual void render(Renderer& renderer) override {
-    vector<string> lines = breakText(renderer, text(), getBounds().width(), size);
+    vector<string> lines = breakText(renderer, text, getBounds().width(), size);
     int height = getBounds().top();
     for (int i : All(lines)) {
       renderer.drawText(color, Vec2(getBounds().left(), height), lines[i],
@@ -681,14 +718,14 @@ class VariableLabel : public GuiElem {
   }
 
   private:
-  function<string()> text;
+  string text;
   int size;
   Color color;
   int lineHeight;
 };
 
 SGuiElem GuiFactory::labelMultiLine(const string& s, int lineHeight, int size, Color c) {
-  return SGuiElem(new VariableLabel([=]{ return s;}, lineHeight, size, c));
+  return SGuiElem(new LabelMultiLine(s, lineHeight, size, c));
 }
 
 SGuiElem GuiFactory::labelMultiLineWidth(const string& s, int lineHeight, int width, int size, Color c, char delim) {
@@ -719,8 +756,74 @@ SGuiElem GuiFactory::buttonLabel(const string& s, function<void()> f, bool match
   return buttonLabel(s, button(std::move(f)), matchTextWidth, centerHorizontally, unicode);
 }
 
-SGuiElem GuiFactory::buttonLabelBlink(const string& s, function<void()> f) {
-  return standardButtonBlink(label(s), button(std::move(f)), true);
+SGuiElem GuiFactory::buttonLabelFocusable(SGuiElem content, function<void()> callback, function<bool()> focused,
+    bool matchTextWidth, bool centerHorizontally) {
+  return stack(
+      buttonLabelFocusableImpl(std::move(content), button(callback), focused, matchTextWidth, centerHorizontally),
+      conditionalStopKeys(keyHandler(callback, Keybinding("MENU_SELECT"), true), focused)
+  );
+}
+
+SGuiElem GuiFactory::buttonLabelFocusable(SGuiElem content, function<void(Rectangle)> callback, function<bool()> focused,
+    bool matchTextWidth, bool centerHorizontally) {
+  return stack(
+      buttonLabelFocusableImpl(std::move(content), buttonRect(callback), focused, matchTextWidth, centerHorizontally),
+      conditionalStopKeys(keyHandlerRect(callback, Keybinding("MENU_SELECT"), true), focused)
+  );
+}
+
+SGuiElem GuiFactory::buttonLabelFocusable(const string& text, function<void()> callback, function<bool()> focused,
+    bool matchTextWidth, bool centerHorizontally, bool unicode) {
+  return buttonLabelFocusable(unicode ? labelUnicode(text) : label(text), callback, focused,
+          matchTextWidth, centerHorizontally);
+}
+
+SGuiElem GuiFactory::buttonLabelFocusable(const string& text, function<void(Rectangle)> callback, function<bool()> focused,
+    bool matchTextWidth, bool centerHorizontally, bool unicode) {
+  return stack(
+      buttonLabelFocusableImpl(unicode ? labelUnicode(text) : label(text), buttonRect(callback), focused,
+          matchTextWidth, centerHorizontally),
+      conditionalStopKeys(keyHandlerRect(callback, Keybinding("MENU_SELECT"), true), focused)
+  );
+}
+
+/*SGuiElem GuiFactory::buttonLabelFocusable(const string& text, function<void()> callback, function<bool()> focused,
+    bool matchTextWidth, bool centerHorizontally, bool unicode) {
+  return buttonLabelFocusable(text, button(std::move(callback)), std::move(focused), 
+      matchTextWidth, centerHorizontally, unicode);
+}*/
+
+SGuiElem GuiFactory::buttonLabelFocusableImpl(SGuiElem content, SGuiElem button, function<bool()> focused,
+    bool matchTextWidth, bool centerHorizontally) {
+  auto ret = margins(stack(
+        mouseHighlight2(standardButtonHighlight(),
+            conditional(standardButtonHighlight(), standardButton(), std::move(focused))),
+        std::move(button)),
+      -7, -5, -7, 3);
+  if (matchTextWidth)
+    ret = setWidth(*content->getPreferredWidth() + 1, std::move(ret));
+  if (centerHorizontally)
+    content = centerHoriz(std::move(content));
+  return stack(ret, std::move(content));
+}
+
+SGuiElem GuiFactory::buttonLabelBlink(const string& s, function<void()> f, function<bool()> focused,
+    bool matchTextWidth, bool centerHorizontally) {
+  auto ret = margins(stack(
+        mouseHighlight2(standardButtonHighlight(),
+            conditional(standardButtonHighlight(),
+                blink(standardButtonHighlight(), standardButton()),
+                focused)),
+        button(f)),
+      -7, -5, -7, 3);
+  auto content = label(s);
+  if (matchTextWidth)
+    ret = setWidth(*content->getPreferredWidth() + 1, std::move(ret));
+  if (centerHorizontally)
+    content = centerHoriz(std::move(content));
+  return stack(ret,
+      std::move(content),
+      conditionalStopKeys(keyHandler(f, Keybinding("MENU_SELECT"), true), focused));
 }
 
 SGuiElem GuiFactory::buttonLabel(const string& s, SGuiElem button, bool matchTextWidth, bool centerHorizontally, bool unicode) {
@@ -740,27 +843,15 @@ SGuiElem GuiFactory::standardButton(SGuiElem content, SGuiElem button, bool matc
   return stack(ret, std::move(content));
 }
 
-SGuiElem GuiFactory::standardButtonBlink(SGuiElem content, SGuiElem button, bool matchTextWidth) {
-  auto ret = margins(stack(
-        mouseHighlight2(standardButtonHighlight(), blink(standardButtonHighlight(), standardButton())),
-        std::move(button)),
-      -7, -5, -7, 3);
-  if (matchTextWidth)
-    ret = setWidth(*content->getPreferredWidth() + 1, std::move(ret));
-  return stack(ret, std::move(content));
-}
-
-SGuiElem GuiFactory::buttonLabelWithMargin(const string& s, bool matchTextWidth) {
+SGuiElem GuiFactory::buttonLabelWithMargin(const string& s, function<bool()> focused) {
   auto ret = mouseHighlight2(
       stack(
           standardButtonHighlight(),
           centerVert(centerHoriz(margins(label(s, Color::WHITE), 0, 0, 0, 5)))),
       stack(
-          standardButton(),
+          conditional(standardButtonHighlight(), standardButton(), std::move(focused)),
           centerVert(centerHoriz(margins(label(s, Color::WHITE), 0, 0, 0, 5))))
   );
-  if (matchTextWidth)
-    ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
   return ret;
 }
 
@@ -768,17 +859,44 @@ SGuiElem GuiFactory::buttonLabelSelected(const string& s, function<void()> f, bo
   auto text = label(s, Color::WHITE);
   if (centerHorizontally)
     text = centerHoriz(text);
-  auto ret = stack(margins(stack(standardButtonHighlight(), button(std::move(f))), -7, -5, -7, 3),
+  auto ret = stack(margins(stack(
+          standardButton(),
+          button(std::move(f)),
+          leftMargin(8, sprite(TexId::UI_HIGHLIGHT, Alignment::LEFT_CENTER)),
+          rightMargin(8, sprite(TexId::UI_HIGHLIGHT, Alignment::RIGHT_CENTER))
+      ),
+      -7, -5, -7, 3),
       std::move(text));
   if (matchTextWidth)
     ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
   return ret;
 }
 
-SGuiElem GuiFactory::buttonLabelInactive(const string& s, bool matchTextWidth) {
+SGuiElem GuiFactory::buttonLabelSelectedFocusable(const string& s, function<void()> f, function<bool()> focused,
+    bool matchTextWidth, bool centerHorizontally) {
+  auto text = label(s, Color::WHITE);
+  if (centerHorizontally)
+    text = centerHoriz(std::move(text));
+  auto ret = stack(margins(stack(
+          conditional(standardButtonHighlight(), standardButton(), std::move(focused)),
+          button(std::move(f)),
+          leftMargin(8, sprite(TexId::UI_HIGHLIGHT, Alignment::LEFT_CENTER)),
+          rightMargin(8, sprite(TexId::UI_HIGHLIGHT, Alignment::RIGHT_CENTER))
+      ),
+      -7, -5, -7, 3),
+      std::move(text));
+  if (matchTextWidth)
+    ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
+  return ret;
+}
+
+SGuiElem GuiFactory::buttonLabelInactive(const string& s, bool matchTextWidth, bool centerHorizontally) {
+  auto text = label(s, Color::GRAY);
+  if (centerHorizontally)
+    text = centerHoriz(text);
   auto ret = stack(
       margins(standardButton(), -7, -5, -7, 3),
-      label(s, Color::GRAY));
+      std::move(text));
   if (matchTextWidth)
     ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
   return ret;
@@ -895,10 +1013,6 @@ SGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const string& s,
   return centeredLabel(center, s, Renderer::textSize(), c);
 }
 
-SGuiElem GuiFactory::variableLabel(function<string()> fun, int lineHeight, int size, Color color) {
-  return SGuiElem(new VariableLabel(fun, lineHeight, size, color));
-}
-
 SGuiElem GuiFactory::labelUnicode(const string& s, Color color, int size, FontId fontId) {
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
@@ -977,15 +1091,22 @@ class GuiLayout : public GuiElem {
     return false;
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     bool gone = false;
     for (int i : AllReverse(elems)) {
       if (!gone && isVisible(i)) {
-        gone = elems[i]->onMouseMove(pos);
+        gone = elems[i]->onMouseMove(pos, rel);
       } else
         elems[i]->onMouseGone();
     }
     return gone;
+  }
+
+  virtual bool onScrollEvent(Vec2 pos, double x, double y, milliseconds timeDiff) override {
+    for (int i : AllReverse(elems))
+      if (isVisible(i) && elems[i]->onScrollEvent(pos, x, y, timeDiff))
+        return true;
+    return false;
   }
 
   virtual void onMouseGone() override {
@@ -1069,54 +1190,11 @@ SGuiElem GuiFactory::stack(SGuiElem g1, SGuiElem g2, SGuiElem g3, SGuiElem g4) {
   return stack(makeVec(std::move(g1), std::move(g2), std::move(g3), std::move(g4)));
 }
 
-class External : public GuiElem {
-  public:
-  External(GuiElem* e) : elem(e) {}
-
-  virtual void render(Renderer& r) override {
-    elem->render(r);
-  }
-
-  virtual bool onClick(MouseButtonId b, Vec2 v) override {
-    return elem->onClick(b, v);
-  }
-
-  virtual bool onMouseMove(Vec2 v) override {
-    return elem->onMouseMove(v);
-  }
-
-  virtual void onMouseGone() override {
-    elem->onMouseGone();
-  }
-
-  virtual void onRefreshBounds() override {
-    elem->setBounds(getBounds());
-  }
-
-  virtual bool onKeyPressed2(SDL_Keysym ev) override {
-    return elem->onKeyPressed2(ev);
-  }
-
-  virtual optional<int> getPreferredWidth() override {
-    return elem->getPreferredWidth();
-  }
-
-  virtual optional<int> getPreferredHeight() override {
-    return elem->getPreferredHeight();
-  }
-
-  private:
-  GuiElem* elem;
-};
-
-SGuiElem GuiFactory::external(GuiElem* elem) {
-  return SGuiElem(new External(elem)); 
-}
-
 class Focusable : public GuiStack {
   public:
-  Focusable(SGuiElem content, vector<SDL_Keysym> focus, vector<SDL_Keysym> defocus, bool& foc) :
-      GuiStack(makeVec(std::move(content))), focusEvent(focus), defocusEvent(defocus), focused(foc) {}
+  Focusable(SGuiElem content, KeybindingMap* keybindingMap, Keybinding focus, Keybinding defocus, bool& foc)
+    : GuiStack(makeVec(std::move(content))), focusEvent(focus), defocusEvent(defocus), focused(foc),
+      keybindingMap(keybindingMap) {}
 
   virtual bool onClick(MouseButtonId b, Vec2 pos) override {
     if (b == MouseButtonId::LEFT) {
@@ -1130,18 +1208,14 @@ class Focusable : public GuiStack {
   }
 
   virtual bool onKeyPressed2(SDL_Keysym key) override {
-    if (!focused)
-      for (auto& elem : focusEvent)
-        if (GuiFactory::keyEventEqual(elem, key)) {
-          focused = true;
-          return true;
-        }
-    if (focused)
-      for (auto& elem : defocusEvent)
-        if (GuiFactory::keyEventEqual(elem, key)) {
-          focused = false;
-          return true;
-        }
+    if (!focused && keybindingMap->matches(focusEvent, key)) {
+      focused = true;
+      return true;
+    }
+    if (focused && keybindingMap->matches(defocusEvent, key)) {
+      focused = false;
+      return true;
+    }
     if (focused) {
       GuiLayout::onKeyPressed2(key);
       return true;
@@ -1150,14 +1224,14 @@ class Focusable : public GuiStack {
   }
 
   private:
-  vector<SDL_Keysym> focusEvent;
-  vector<SDL_Keysym> defocusEvent;
+  Keybinding focusEvent;
+  Keybinding defocusEvent;
   bool& focused;
+  KeybindingMap* keybindingMap;
 };
 
-SGuiElem GuiFactory::focusable(SGuiElem content, vector<SDL_Keysym> focusEvent,
-    vector<SDL_Keysym> defocusEvent, bool& focused) {
-  return SGuiElem(new Focusable(std::move(content), focusEvent, defocusEvent, focused));
+SGuiElem GuiFactory::focusable(SGuiElem content, Keybinding focusEvent, Keybinding defocusEvent, bool& focused) {
+  return SGuiElem(new Focusable(std::move(content), getKeybindingMap(), focusEvent, defocusEvent, focused));
 }
 
 class KeyHandler : public GuiElem {
@@ -1173,6 +1247,42 @@ class KeyHandler : public GuiElem {
   function<void(SDL_Keysym)> fun;
   bool capture;
 };
+
+class StopMouseMovement : public GuiElem {
+  public:
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
+    return pos.inRectangle(getBounds());
+  }
+
+  virtual bool onClick(MouseButtonId, Vec2 pos) override {
+    return pos.inRectangle(getBounds());
+  }
+};
+
+SGuiElem GuiFactory::stopMouseMovement() {
+  return SGuiElem(new StopMouseMovement());
+}
+
+class StopScrollEvent : public GuiStack {
+  public:
+  StopScrollEvent(SGuiElem content, function<bool()> cond) : GuiStack(makeVec(std::move(content))),
+      cond(std::move(cond)) {}
+
+  virtual bool onScrollEvent(Vec2 pos, double x, double y, milliseconds timeDiff) override {
+    return cond() && elems[0]->onScrollEvent(pos, x, y, timeDiff);
+  }
+
+  private:
+  function<bool()> cond;
+};
+
+SGuiElem GuiFactory::stopScrollEvent(SGuiElem content, function<bool()> cond) {
+  return SGuiElem(new StopScrollEvent(std::move(content), std::move(cond)));
+}
+
+SGuiElem GuiFactory::stopKeyEvents() {
+  return SGuiElem(new KeyHandler([](SDL_Keysym) {}, true));
+}
 
 class RenderInBounds : public GuiStack {
   public:
@@ -1241,32 +1351,37 @@ class AlignmentGui : public GuiLayout {
 SGuiElem GuiFactory::alignment(GuiFactory::Alignment alignment, SGuiElem content, optional<Vec2> size) {
   return SGuiElem(new AlignmentGui(std::move(content), alignment, size));
 }
- 
+
 SGuiElem GuiFactory::keyHandler(function<void(SDL_Keysym)> fun, bool capture) {
   return SGuiElem(new KeyHandler(fun, capture));
 }
 
 class KeybindingHandler : public GuiElem {
   public:
-  KeybindingHandler(KeybindingMap* m, Keybinding key, function<void()> fun, bool cap)
-      : fun(std::move(fun)), keybindingMap(m), key(key), capture(cap) {}
+  KeybindingHandler(KeybindingMap* m, Keybinding key, function<void(Rectangle)> f, bool cap)
+      : fun([f, cap] (Rectangle r) { f(r); return cap; }), keybindingMap(m), key(key) {}
+
+  KeybindingHandler(KeybindingMap* m, Keybinding key, function<bool(Rectangle)> f)
+      : fun(std::move(f)), keybindingMap(m), key(key) {}
 
   virtual bool onKeyPressed2(SDL_Keysym sym) override {
-    if (keybindingMap->matches(key, sym)) {
-      fun();
-      return capture;
-    }
+    if (keybindingMap->matches(key, sym))
+      return fun(getBounds());
     return false;
   }
 
   private:
-  function<void()> fun;
+  function<bool(Rectangle)> fun;
   KeybindingMap* keybindingMap;
   Keybinding key;
-  bool capture;
 };
 
 SGuiElem GuiFactory::keyHandler(function<void()> fun, Keybinding keybinding, bool capture) {
+  return SGuiElem(new KeybindingHandler(options->getKeybindingMap(), keybinding,
+      [fun = std::move(fun)](Rectangle) { fun(); }, capture));
+}
+
+SGuiElem GuiFactory::keyHandlerRect(function<void(Rectangle)> fun, Keybinding keybinding, bool capture) {
   return SGuiElem(new KeybindingHandler(options->getKeybindingMap(), keybinding, std::move(fun), capture));
 }
 
@@ -1274,26 +1389,43 @@ KeybindingMap* GuiFactory::getKeybindingMap() {
   return options->getKeybindingMap();
 }
 
+MySteamInput* GuiFactory::getSteamInput() {
+  return renderer.getSteamInput();
+}
+
 class KeyHandler2 : public GuiElem {
   public:
-  KeyHandler2(function<void()> f, vector<SDL_Keysym> k, bool cap) : fun(f), key(k), capture(cap) {}
+  KeyHandler2(function<void(Rectangle)> f, vector<SDL_Keysym> k, bool cap)
+      : fun([f, cap] (Rectangle r) { f(r); return cap; }), key(k) {}
+  KeyHandler2(function<bool(Rectangle)> f, vector<SDL_Keysym> k) : fun(f), key(k) {}
 
   virtual bool onKeyPressed2(SDL_Keysym k) override {
     for (auto& elem : key)
       if (GuiFactory::keyEventEqual(k, elem)) {
-        fun();
-        return capture;
+        return fun(getBounds());
       }
     return false;
   }
 
   private:
-  function<void()> fun;
+  function<bool(Rectangle)> fun;
   vector<SDL_Keysym> key;
-  bool capture;
 };
 
 SGuiElem GuiFactory::keyHandler(function<void()> fun, vector<SDL_Keysym> key, bool capture) {
+  return SGuiElem(new KeyHandler2([fun = std::move(fun)](Rectangle) { fun();}, key, capture));
+}
+
+SGuiElem GuiFactory::keyHandlerBool(function<bool()> fun, vector<SDL_Keysym> key) {
+  return SGuiElem(new KeyHandler2([fun = std::move(fun)](Rectangle) { return fun();}, key));
+}
+
+SGuiElem GuiFactory::keyHandlerBool(function<bool()> fun, Keybinding key) {
+  return SGuiElem(new KeybindingHandler(options->getKeybindingMap(), key,
+      [fun = std::move(fun)](Rectangle) { return fun();}));
+}
+
+SGuiElem GuiFactory::keyHandlerRect(function<void(Rectangle)> fun, vector<SDL::SDL_Keysym> key, bool capture) {
   return SGuiElem(new KeyHandler2(fun, key, capture));
 }
 
@@ -1646,7 +1778,7 @@ class CenterHoriz : public GuiLayout {
   virtual Rectangle getElemBounds(int num) override {
     int center = (getBounds().left() + getBounds().right()) / 2;
     int myWidth = width ? *width : max(2, *elems[0]->getPreferredWidth());
-    return Rectangle(center - myWidth / 2, getBounds().top(), center + myWidth / 2, getBounds().bottom());
+    return getBounds().intersection(Rectangle(center - myWidth / 2, getBounds().top(), center + myWidth / 2, getBounds().bottom()));
   }
 
   private:
@@ -1944,7 +2076,6 @@ class Switchable : public GuiLayout {
 
 namespace {
 
-
 class PreferredSize : public GuiLayout {
   public:
 
@@ -1954,7 +2085,7 @@ class PreferredSize : public GuiLayout {
   virtual optional<int> getPreferredWidth() override {
     return width ? width : elems[0]->getPreferredWidth();
   }
-  
+
   virtual optional<int> getPreferredHeight() override {
     return height ? height : elems[0]->getPreferredHeight();
   }
@@ -2110,8 +2241,10 @@ class TranslateGui : public GuiLayout {
       : GuiLayout(makeVec(std::move(e))), pos(p), size(s), corner(corner) {
   }
 
-  Vec2 getCorner() {
+  Vec2 getCorner(Vec2 size) {
     switch (corner) {
+      case Corner::TOP_LEFT_SHIFTED:
+        return getBounds().topLeft() - Vec2(size.x, 0);
       case Corner::TOP_LEFT:
         return getBounds().topLeft();
       case Corner::TOP_RIGHT:
@@ -2125,7 +2258,7 @@ class TranslateGui : public GuiLayout {
 
   virtual Rectangle getElemBounds(int num) override {
     Vec2 sz = size ? *size : getBounds().getSize();
-    auto corner = getCorner();
+    auto corner = getCorner(sz);
     return Rectangle(corner + pos, corner + pos + sz);
   }
 
@@ -2164,6 +2297,24 @@ SGuiElem GuiFactory::translate(function<Vec2()> f, SGuiElem e) {
   return SGuiElem(new TranslateGui2(std::move(e), f));
 }
 
+class TranslateAbsolute : public GuiLayout {
+  public:
+  TranslateAbsolute(SGuiElem e, function<Vec2()> v) : GuiLayout(makeVec(std::move(e))), vec(v) {
+  }
+
+  virtual Rectangle getElemBounds(int num) override {
+    auto pos = vec();
+    return Rectangle(pos, pos + Vec2(*elems[0]->getPreferredWidth(), *elems[0]->getPreferredHeight()));
+  }
+
+  private:
+  function<Vec2()> vec;
+};
+
+SGuiElem GuiFactory::translateAbsolute(function<Vec2()> f, SGuiElem elem) {
+  return SGuiElem(new TranslateAbsolute(std::move(elem), std::move(f)));
+}
+
 SGuiElem GuiFactory::onRenderedAction(function<void()> fun) {
   return SGuiElem(new DrawCustom([=] (Renderer& r, Rectangle bounds) { fun(); }));
 }
@@ -2180,7 +2331,7 @@ class MouseOverAction : public GuiElem {
     }
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     if ((!in || !outCallback) && pos.inRectangle(getBounds())) {
       callback();
       in = true;
@@ -2219,7 +2370,7 @@ class MouseButtonHeld : public GuiStack {
     on = false;
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     if (!pos.inRectangle(getBounds()))
       on = false;
     return false;
@@ -2269,7 +2420,7 @@ class MouseHighlight : public MouseHighlightBase {
     }
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     if (pos.inRectangle(getBounds())) {
       *highlighted = myIndex;
       canTurnOff = true;
@@ -2287,18 +2438,19 @@ class MouseHighlight2 : public GuiStack {
   MouseHighlight2(SGuiElem h, SGuiElem h2, bool capture)
       : GuiStack(h2 ? makeVec(std::move(h), std::move(h2)) : makeVec(std::move(h))), capture(capture) {}
 
-  virtual void render(Renderer& r) override {
-    if (over)
-      elems[0]->render(r);
-    else if (elems.size() > 1)
-      elems[1]->render(r);
+  virtual bool isVisible(int index) override {
+    switch (index) {
+      case 0: return over;
+      case 1: return !over;
+    }
+    fail();
   }
 
   virtual void onMouseGone() override {
     over = false;
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     over = pos.inRectangle(getBounds());
     return over && capture;
   }
@@ -2336,7 +2488,7 @@ class Tooltip2 : public GuiElem {
       : elem(std::move(e)), size(*elem->getPreferredWidth(), *elem->getPreferredHeight()), positionFun(pos) {
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     canRender = pos.inRectangle(getBounds());
     return false;
   }
@@ -2379,7 +2531,7 @@ class Tooltip : public GuiElem {
       lastTimeOut(c->getRealMillis()), clock(c), delay(d) {
   }
 
-  virtual bool onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos, Vec2 rel) override {
     canRender = pos.inRectangle(getBounds());
     return false;
   }
@@ -2404,7 +2556,7 @@ class Tooltip : public GuiElem {
           r.drawText(Color::WHITE, pos + Vec2(tooltipHMargin, tooltipVMargin + i * tooltipLineHeight), text[i]);
         r.popLayer();
       }
-    } else 
+    } else
       lastTimeOut = clock->getRealMillis();
   }
 
@@ -2459,7 +2611,7 @@ class ScrollArea : public GuiElem {
     content->onMouseGone();
   }
 
-  virtual bool onMouseMove(Vec2 v) override {
+  virtual bool onMouseMove(Vec2 v, Vec2 rel) override {
     if (clickPos) {
       scrollPos = *clickPos - v;
       scrollPos->x = max(0, min(*content->getPreferredWidth() - getBounds().width(), scrollPos->x));
@@ -2467,7 +2619,7 @@ class ScrollArea : public GuiElem {
       return true;
     } else {
       if (v.inRectangle(getBounds()))
-        return content->onMouseMove(v);
+        return content->onMouseMove(v, rel);
       else
         content->onMouseGone();
       return false;
@@ -2544,12 +2696,17 @@ class ScrollBar : public GuiLayout {
 
   double getScrollPos() {
     int size = getBounds().height() / 2;
-    return scrollPos->get(clock->getRealMillis(), size, scrollLength() + size) - size;
+    return scrollPos->get(clock->getRealMillis(), size, scrollLength() + size, getBounds().top()) - size;
   }
 
   void addScrollPos(double v) {
     scrollPos->add(v, clock->getRealMillis());
-    scrollPos->setBounds(getBounds().height() / 2, scrollLength() + getBounds().height() / 2);
+    scrollPos->setBounds(getBounds().height() / 2, scrollLength() + getBounds().height() / 2, getBounds().top());
+  }
+
+  virtual bool onScrollEvent(Vec2 pos, double x, double y, milliseconds timeDiff) override {
+    addScrollPos(-y * timeDiff.count() * wheelScrollUnit * 0.02);
+    return true;
   }
 
   virtual bool onClick(MouseButtonId b, Vec2 v) override {
@@ -2572,7 +2729,7 @@ class ScrollBar : public GuiLayout {
     } else
     if (v.inRectangle(Rectangle(Vec2(content->getBounds().left(), getBounds().top()), getBounds().bottomRight()))) {
       if (b == MouseButtonId::WHEEL_UP)
-        addScrollPos(- wheelScrollUnit);
+        addScrollPos(-wheelScrollUnit);
       else if (b == MouseButtonId::WHEEL_DOWN)
         addScrollPos(wheelScrollUnit);
       return true;
@@ -2580,7 +2737,7 @@ class ScrollBar : public GuiLayout {
     return false;
   }
 
-  virtual bool onMouseMove(Vec2 v) override {
+  virtual bool onMouseMove(Vec2 v, Vec2 rel) override {
     if (*held != notHeld)
       scrollPos->reset(getBounds().height() / 2 + scrollLength() * calcPos(v.y - *held));
     return false;
@@ -2607,7 +2764,7 @@ class Scrollable : public GuiElem {
 
   double getScrollPos() {
     int size = getBounds().height() / 2;
-    return scrollPos->get(clock->getRealMillis(), size, *content->getPreferredHeight() - size);
+    return scrollPos->get(clock->getRealMillis(), size, *content->getPreferredHeight() - size, getBounds().top());
   }
 
   virtual void onRefreshBounds() override {
@@ -2632,9 +2789,9 @@ class Scrollable : public GuiElem {
     content->onMouseGone();
   }
 
-  virtual bool onMouseMove(Vec2 v) override {
+  virtual bool onMouseMove(Vec2 v, Vec2 rel) override {
     if (v.inRectangle(getBounds()))
-      return content->onMouseMove(v);
+      return content->onMouseMove(v, rel);
     else
       content->onMouseGone();
     return false;
@@ -2654,181 +2811,68 @@ class Scrollable : public GuiElem {
   Clock* clock;
 };
 
-class Slider : public GuiLayout {
-  public:
-
-  Slider(SGuiElem button, shared_ptr<int> position, int maxValue)
-      : GuiLayout(std::move(button)), position(std::move(position)), maxValue(maxValue),
-        buttonSize(*elems[0]->getPreferredWidth(), *elems[0]->getPreferredHeight()) {}
-
-  virtual Rectangle getElemBounds(int num) override {
-    Vec2 center(calcButHeight(), getBounds().middle().y);
-    return Rectangle(center - buttonSize / 2, center + buttonSize / 2);
-  }
-
-  virtual void render(Renderer& r) override {
-    onRefreshBounds();
-    GuiLayout::render(r);
-  }
-
-  double calcPos(int mouseHeight) {
-    return max(0.0, min(1.0,
-          double(mouseHeight - getBounds().left()) / (getBounds().height())));
-  }
-
-  int scrollLength() {
-    return getBounds().width();
-  }
-
-  int calcButHeight() {
-    auto bounds = getBounds();
-    return (int)(bounds.left() + getScrollPos() * bounds.width());
-  }
-
-  double getScrollPos() {
-    return double(*position) / double(maxValue);
-  }
-
-  void setPosition(int pos) {
-    *position = min(maxValue, max(0, pos));
-  }
-
-  void addScrollPos(int amount) {
-    setPosition(*position + amount);
-  }
-
-  void setPositionFromClick(Vec2 v) {
-    setPosition((int) round((double)(v.x - getBounds().left()) * maxValue / scrollLength()));
-  }
-
-  virtual bool onClick(MouseButtonId id, Vec2 v) override {
-    if (id == MouseButtonId::RELEASED)
-      held = false;
-    else if (v.inRectangle(getBounds())) {
-      if (id == MouseButtonId::WHEEL_UP)
-        addScrollPos(-1);
-      else if (id == MouseButtonId::WHEEL_DOWN)
-        addScrollPos(1);
-      else if (id == MouseButtonId::LEFT) {
-        held = true;
-        setPositionFromClick(v);
-      }
-      return true;
-    }
-    return false;
-  }
-
-  virtual bool onMouseMove(Vec2 v) override {
-    if (held)
-      setPositionFromClick(v);
-    return false;
-  }
-
-  virtual bool isVisible(int) override {
-    return true;
-  }
-
-  private:
-  SGuiElem button;
-  shared_ptr<int> position;
-  int maxValue;
-  Vec2 buttonSize;
-  bool held = false;
-};
-
-SGuiElem GuiFactory::slider(SGuiElem button, shared_ptr<int> position, int max) {
-  return make_shared<Slider>(std::move(button), std::move(position), max);
-}
-
 Texture& GuiFactory::get(TexId id) {
   return *textures[id];
 }
 
 void GuiFactory::loadImages() {
   iconTextures.clear();
-  loadFreeImages(freeImagesPath);
-  if (nonFreeImagesPath)
-    loadNonFreeImages(*nonFreeImagesPath);
-}
-
-void GuiFactory::loadFreeImages(const DirectoryPath& path) {
-  textures[TexId::SCROLLBAR] = Texture(path.file("ui/scrollbar.png"));
-  textures[TexId::SCROLL_BUTTON] = Texture(path.file("ui/scrollmark.png"));
-  textures[TexId::BACKGROUND_PATTERN] = Texture(path.file("window_bg.png"));
+  textures[TexId::SCROLLBAR] = Texture(imagesPath.file("ui/scrollbar.png"));
+  textures[TexId::SCROLL_BUTTON] = Texture(imagesPath.file("ui/scrollmark.png"));
+  textures[TexId::BACKGROUND_PATTERN] = Texture(imagesPath.file("window_bg.png"));
   text = Color::WHITE;
   titleText = Color::YELLOW;
   inactiveText = Color::LIGHT_GRAY;
-  textures[TexId::HORI_CORNER1] = Texture(path.file("ui/horicorner1.png"));
-  textures[TexId::HORI_CORNER2] = Texture(path.file("ui/horicorner2.png"));
-  textures[TexId::HORI_LINE] = Texture(path.file("ui/horiline.png"));
-  textures[TexId::HORI_MIDDLE] = Texture(path.file("ui/horimiddle.png"));
-  textures[TexId::VERT_BAR] = Texture(path.file("ui/vertbar.png"));
-  textures[TexId::HORI_BAR] = Texture(path.file("ui/horibar.png"));
-  textures[TexId::CORNER_TOP_LEFT] = Texture(path.file("ui/cornerTOPL.png"));
-  textures[TexId::CORNER_TOP_RIGHT] = Texture(path.file("ui/cornerTOPR.png"));
-  textures[TexId::CORNER_BOTTOM_RIGHT] = Texture(path.file("ui/cornerBOTTOMR.png"));
+  textures[TexId::HORI_LINE] = Texture(imagesPath.file("ui/horiline.png"));
+  textures[TexId::VERT_BAR] = Texture(imagesPath.file("ui/vertbar.png"));
+  textures[TexId::HORI_BAR] = Texture(imagesPath.file("ui/horibar.png"));
+  textures[TexId::CORNER_3] = Texture(imagesPath.file("ui/corner3.png"));
 
-  textures[TexId::HORI_BAR_MINI] = Texture(path.file("ui/horibarmini.png"));
-  textures[TexId::VERT_BAR_MINI] = Texture(path.file("ui/vertbarmini.png"));
-  textures[TexId::CORNER_MINI] = Texture(path.file("ui/cornermini.png"));
+  textures[TexId::HORI_BAR_MINI] = Texture(imagesPath.file("ui/horibarmini.png"));
+  textures[TexId::VERT_BAR_MINI] = Texture(imagesPath.file("ui/vertbarmini.png"));
+  textures[TexId::CORNER_MINI] = Texture(imagesPath.file("ui/cornermini.png"));
 
-  textures[TexId::BUTTON_BG] = Texture(path.file("ui/button_bg.png"));
-  textures[TexId::BUTTON_CORNER] = Texture(path.file("ui/button_corner.png"));
-  textures[TexId::BUTTON_BOTTOM] = Texture(path.file("ui/button_corner.png"), 7, 4, 1, 4);
-  textures[TexId::BUTTON_SIDE] = Texture(path.file("ui/button_corner.png"), 0, 0, 4, 1);
-  textures[TexId::BUTTON_CORNER_HIGHLIGHT] = Texture(path.file("ui/button_corner_highlight.png"));
-  textures[TexId::BUTTON_BOTTOM_HIGHLIGHT] = Texture(path.file("ui/button_corner_highlight.png"), 7, 4, 1, 4);
-  textures[TexId::BUTTON_SIDE_HIGHLIGHT] = Texture(path.file("ui/button_corner_highlight.png"), 0, 0, 4, 1);
+  textures[TexId::BUTTON_BG] = Texture(imagesPath.file("ui/button_bg.png"));
+  textures[TexId::BUTTON_CORNER] = Texture(imagesPath.file("ui/button_corner.png"));
+  textures[TexId::BUTTON_BOTTOM] = Texture(imagesPath.file("ui/button_corner.png"), 7, 4, 1, 4);
+  textures[TexId::BUTTON_SIDE] = Texture(imagesPath.file("ui/button_corner.png"), 0, 0, 4, 1);
+  textures[TexId::BUTTON_CORNER_HIGHLIGHT] = Texture(imagesPath.file("ui/button_corner_highlight.png"));
+  textures[TexId::BUTTON_BOTTOM_HIGHLIGHT] = Texture(imagesPath.file("ui/button_corner_highlight.png"), 7, 4, 1, 4);
+  textures[TexId::BUTTON_SIDE_HIGHLIGHT] = Texture(imagesPath.file("ui/button_corner_highlight.png"), 0, 0, 4, 1);
 
-  textures[TexId::HORI_BAR_MINI2] = Texture(path.file("ui/horibarmini2.png"));
-  textures[TexId::VERT_BAR_MINI2] = Texture(path.file("ui/vertbarmini2.png"));
-  textures[TexId::CORNER_MINI2] = Texture(path.file("ui/cornermini2.png"));
-  textures[TexId::CORNER_MINI2_LARGE] = Texture(path.file("ui/cornermini2_large.png"));
-  textures[TexId::IMMIGRANT_BG] = Texture(path.file("ui/immigrantbg.png"));
-  textures[TexId::IMMIGRANT2_BG] = Texture(path.file("ui/immigrant2bg.png"));
-  textures[TexId::SCROLL_UP] = Texture(path.file("ui/up.png"));
-  textures[TexId::SCROLL_DOWN] = Texture(path.file("ui/down.png"));
-  textures[TexId::WINDOW_CORNER] = Texture(path.file("ui/corner1.png"));
-  textures[TexId::WINDOW_CORNER_EXIT] = Texture(path.file("ui/corner2X.png"));
-  textures[TexId::WINDOW_CORNER_EXIT_HIGHLIGHT] = Texture(path.file("ui/corner2X_highlight.png"));
-  textures[TexId::WINDOW_VERT_BAR] = Texture(path.file("ui/vertibarmsg1.png"));
-  textures[TexId::MAIN_MENU_HIGHLIGHT] = Texture(path.file("ui/menu_highlight.png"));
-  textures[TexId::SPLASH1] = Texture(path.file("splash2f.png"));
-  textures[TexId::SPLASH2] = Texture(path.file("splash2e.png"));
-  textures[TexId::LOADING_SPLASH] = Texture(path.file(Random.choose(
-            "splash2a.png"_s,
-            "splash2b.png"_s,
-            "splash2c.png"_s,
-            "splash2d.png"_s)));
-  textures[TexId::UI_HIGHLIGHT] = Texture(path.file("ui/ui_highlight.png"));
-  textures[TexId::MINIMAP_BAR] = Texture(path.file("minimap_bar.png"));
+  textures[TexId::HORI_BAR_MINI2] = Texture(imagesPath.file("ui/horibarmini2.png"));
+  textures[TexId::VERT_BAR_MINI2] = Texture(imagesPath.file("ui/vertbarmini2.png"));
+  textures[TexId::CORNER_MINI2] = Texture(imagesPath.file("ui/cornermini2.png"));
+  textures[TexId::CORNER_MINI2_LARGE] = Texture(imagesPath.file("ui/cornermini2_large.png"));
+  textures[TexId::IMMIGRANT_BG] = Texture(imagesPath.file("ui/immigrantbg.png"));
+  textures[TexId::IMMIGRANT2_BG] = Texture(imagesPath.file("ui/immigrant2bg.png"));
+  textures[TexId::SCROLL_UP] = Texture(imagesPath.file("ui/up.png"));
+  textures[TexId::SCROLL_DOWN] = Texture(imagesPath.file("ui/down.png"));
+  textures[TexId::WINDOW_CORNER] = Texture(imagesPath.file("ui/corner1.png"));
+  textures[TexId::WINDOW_CORNER_EXIT] = Texture(imagesPath.file("ui/corner2X.png"));
+  textures[TexId::WINDOW_CORNER_EXIT_HIGHLIGHT] = Texture(imagesPath.file("ui/corner2X_highlight.png"));
+  textures[TexId::WINDOW_VERT_BAR] = Texture(imagesPath.file("ui/vertibarmsg1.png"));
+  textures[TexId::MAIN_MENU_HIGHLIGHT] = Texture(imagesPath.file("ui/menu_highlight.png"));
+  textures[TexId::UI_HIGHLIGHT] = Texture(imagesPath.file("ui/ui_highlight.png"));
+  textures[TexId::MINIMAP_BAR] = Texture(imagesPath.file("minimap_bar.png"));
   const int tabIconWidth = 42;
   for (int i = 0; i < 8; ++i)
-    iconTextures.push_back(Texture(path.file("icons.png"), 0, i * tabIconWidth, tabIconWidth, tabIconWidth));
+    iconTextures.push_back(Texture(imagesPath.file("icons.png"), 0, i * tabIconWidth, tabIconWidth, tabIconWidth));
   auto loadIcons = [&] (int width, int count, const char* file) {
     for (int i = 0; i < count; ++i)
-      iconTextures.push_back(Texture(path.file(file), 0, i * width, width, width));
+      iconTextures.push_back(Texture(imagesPath.file(file), 0, i * width, width, width));
   };
   loadIcons(16, 4, "morale_icons.png");
   loadIcons(16, 2, "team_icons.png");
   loadIcons(48, 6, "minimap_icons.png");
   loadIcons(32, 1, "expand_up.png");
   loadIcons(32, 1, "special_immigrant.png");
-}
-
-void GuiFactory::loadNonFreeImages(const DirectoryPath& path) {
-  textures[TexId::KEEPER_CHOICE] = Texture(path.file("keeper_choice.png"));
-  textures[TexId::ADVENTURER_CHOICE] = Texture(path.file("adventurer_choice.png"));
-  textures[TexId::KEEPER_HIGHLIGHT] = Texture(path.file("keeper_highlight.png"));
-  textures[TexId::ADVENTURER_HIGHLIGHT] = Texture(path.file("adventurer_highlight.png"));
-  textures[TexId::MENU_ITEM] = Texture(path.file("barmid.png"));
+  textures[TexId::MENU_ITEM] = Texture(imagesPath.file("barmid.png"));
   // If menu_core fails to load, try the lower resolution versions
-  if (auto tex = Texture::loadMaybe(path.file("menu_core.png"))) {
+  if (auto tex = Texture::loadMaybe(imagesPath.file("menu_core.png"))) {
     textures[TexId::MENU_CORE] = std::move(*tex);
-    textures[TexId::MENU_MOUTH] = Texture(path.file("menu_mouth.png"));
   } else {
-    textures[TexId::MENU_CORE] = Texture(path.file("menu_core_sm.png"));
-    textures[TexId::MENU_MOUTH] = Texture(path.file("menu_mouth_sm.png"));
+    textures[TexId::MENU_CORE] = Texture(imagesPath.file("menu_core_sm.png"));
   }
 }
 
@@ -2979,7 +3023,7 @@ SGuiElem GuiFactory::miniWindow(SGuiElem content, function<void()> onExitButton,
         rectangle(Color::BLACK),
         background(background1));
   if (onExitButton)
-    ret.push_back(reverseButton(onExitButton, {getKey(SDL::SDLK_ESCAPE)}, captureExitClick));
+    ret.push_back(reverseButton(onExitButton, Keybinding("EXIT_MENU"), captureExitClick));
   append(ret, {
         margins(std::move(content), 1),
         miniBorder()
@@ -2997,8 +3041,9 @@ SGuiElem GuiFactory::miniWindow() {
 
 SGuiElem GuiFactory::window(SGuiElem content, function<void()> onExitButton) {
   return stack(makeVec(
-        stopMouseMovement(),
-        alignment(Alignment::TOP_RIGHT, button(onExitButton, getKey(SDL::SDLK_ESCAPE), true), Vec2(38, 38)),
+        fullScreen(stopMouseMovement()),
+        keyHandler(onExitButton, Keybinding("EXIT_MENU"), true),
+        alignment(Alignment::TOP_RIGHT, button(onExitButton, true), Vec2(38, 38)),
         rectangle(Color::BLACK),
         background(background1),
         margins(std::move(content), 20, 35, 20, 30),
@@ -3024,16 +3069,14 @@ SGuiElem GuiFactory::mainDecoration(int rightBarWidth, int bottomBarHeight, opti
                        : empty(),
           sprite(get(TexId::VERT_BAR), Alignment::RIGHT, false, true),
           sprite(get(TexId::VERT_BAR), Alignment::LEFT),
-          sprite(get(TexId::CORNER_TOP_LEFT), Alignment::TOP_RIGHT, false, true, Vec2(8, 0)),
-          sprite(get(TexId::CORNER_TOP_RIGHT), Alignment::TOP_LEFT, false, true),
-          sprite(get(TexId::CORNER_BOTTOM_RIGHT), Alignment::BOTTOM_LEFT, false, true)
+          sprite(get(TexId::CORNER_3), Alignment::TOP_RIGHT, false, false),
+          sprite(get(TexId::CORNER_3), Alignment::TOP_LEFT, false, true),
+          sprite(get(TexId::CORNER_3), Alignment::BOTTOM_LEFT, true, true),
+          sprite(get(TexId::CORNER_3), Alignment::BOTTOM_RIGHT, true, false)
       )),
-      stack(makeVec(
+      stack(
           margin(background(background1), empty(), bottomBarHeight, BOTTOM),
-          sprite(get(TexId::HORI_LINE), Alignment::BOTTOM),
- //         sprite(get(TexId::HORI_MIDDLE), Alignment::BOTTOM_CENTER),
-          sprite(get(TexId::HORI_CORNER1), Alignment::BOTTOM_RIGHT, false, true),
-          sprite(get(TexId::HORI_CORNER2), Alignment::BOTTOM_LEFT, false, true, Vec2(-93, 0)))),
+          sprite(get(TexId::HORI_LINE), Alignment::BOTTOM)),
       rightBarWidth,
       LEFT);
 }
@@ -3116,7 +3159,7 @@ class TextInputElem : public GuiElem {
   virtual bool onKeyPressed2(SDL::SDL_Keysym key) override {
     if (key.sym == SDL::SDLK_BACKSPACE) {
       if (!text->empty())
-      text->pop_back();
+        text->pop_back();
       return true;
     } else
       return false;
@@ -3152,19 +3195,24 @@ SGuiElem GuiFactory::icon(IconId id, Alignment alignment, Color color) {
   return sprite(iconTextures[(int) id], alignment, color);
 }
 
-static int trans1 = 1094;
-static int trans2 = 1693;
+Color GuiFactory::highlightColor(int transparency) {
+  return Color(96, 86, 78, transparency);
+}
+
+Color GuiFactory::highlightColor() {
+  return Color(96, 86, 78, 120);
+}
 
 SGuiElem GuiFactory::uiHighlightMouseOver(Color c) {
-  return mouseHighlight2(margins(uiHighlight(c), -8, -3, -3, 3));
+  return mouseHighlight2(uiHighlightLine(c));
 }
 
 SGuiElem GuiFactory::uiHighlight(Color c) {
-  return rectangle(c.transparency(trans1), c.transparency(trans2));
+  return rectangle(c);
 }
 
 SGuiElem GuiFactory::uiHighlightLine(Color c) {
-  return margins(uiHighlight(c), -8, -3, -3, 3);
+  return margins(uiHighlight(c), -8, -3, -8, 3);
   //return leftMargin(-8, topMargin(-4, sprite(TexId::UI_HIGHLIGHT, Alignment::LEFT_STRETCHED, c)));
 }
 
@@ -3178,11 +3226,31 @@ SGuiElem GuiFactory::blink(SGuiElem elem, SGuiElem elem2) {
 }
 
 SGuiElem GuiFactory::tutorialHighlight() {
-  return blink(uiHighlightLine(Color::YELLOW));
+  return blink(uiHighlightLine(Color::YELLOW.transparency(120)));
+}
+
+SGuiElem GuiFactory::uiHighlightLineConditional(function<bool()> cond, Color c) {
+  return conditional(uiHighlightLine(c), cond);
 }
 
 SGuiElem GuiFactory::uiHighlightConditional(function<bool()> cond, Color c) {
-  return conditional(uiHighlightLine(c), cond);
+  return conditional(uiHighlight(c), cond);
+}
+
+SGuiElem GuiFactory::uiHighlightFrame(function<bool()> cond) {
+  return conditional(uiHighlightFrame(), cond);
+}
+
+SGuiElem GuiFactory::uiHighlightFrame() {
+  return margins(rectangle(Color::TRANSPARENT, Color(143, 137, 129)), -8, -3, -8, 3);
+}
+
+SGuiElem GuiFactory::uiHighlightFrameFilled(function<bool()> cond) {
+  return conditional(uiHighlightFrameFilled(), cond);
+}
+
+SGuiElem GuiFactory::uiHighlightFrameFilled() {
+  return margins(rectangle(highlightColor(), Color(143, 137, 129)), -8, -3, -8, 3);
 }
 
 SGuiElem GuiFactory::rectangleBorder(Color col) {
@@ -3191,6 +3259,23 @@ SGuiElem GuiFactory::rectangleBorder(Color col) {
 
 SGuiElem GuiFactory::sprite(TexId id, Alignment a, optional<Color> c) {
   return sprite(get(id), a, false, false, Vec2(0, 0), c);
+}
+
+SGuiElem GuiFactory::steamInputGlyph(ControllerKey key, int size) {
+  return preferredSize(Vec2(size, size), drawCustom(
+      [this, key, size] (Renderer& r, Rectangle bounds) {
+        if (auto path = getSteamInput()->getGlyph(key)) {
+          auto& tex = steamInputTexture(*path);
+          Vec2 texSize = tex.getSize();
+          r.drawSprite(bounds.topLeft(), Vec2(0, 0), texSize, tex, Vec2(size, size));
+        }
+      }));
+}
+
+Texture& GuiFactory::steamInputTexture(FilePath path) {
+  if (!steamInputTextures.count(path.getPath()))
+    steamInputTextures.insert(make_pair(path.getPath(), Texture(path)));
+  return steamInputTextures.at(path.getPath());
 }
 
 SGuiElem GuiFactory::sprite(Texture& t, Alignment a, Color c) {
@@ -3210,7 +3295,23 @@ SGuiElem GuiFactory::darken() {
       rectangle(Color{0, 0, 0, 150}));
 }
 
-void GuiFactory::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
+void GuiFactory::propagateScrollEvent(const vector<SGuiElem>& guiElems) {
+  if (auto steamInput = getSteamInput()) {
+    auto pos = steamInput->getJoyPos(ControllerJoy::MAP_SCROLLING);
+    auto time = Clock::getRealMillis();
+    if (!lastJoyScrollUpdate)
+      lastJoyScrollUpdate = time;
+    else if (time - *lastJoyScrollUpdate > milliseconds{10}) {
+      for (auto elem : guiElems)
+        if (elem->onScrollEvent(renderer.getMousePos(), pos.first, pos.second, time - *lastJoyScrollUpdate))
+          break;
+      lastJoyScrollUpdate = time;
+    }
+  }
+}
+
+void GuiFactory::propagateEvent(const Event& event, const vector<SGuiElem>& guiElems) {
+  propagateScrollEvent(guiElems);
   switch (event.type) {
     case SDL::SDL_MOUSEBUTTONUP:
       for (auto elem : guiElems)
@@ -3222,7 +3323,8 @@ void GuiFactory::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
       bool captured = false;
       for (auto elem : guiElems)
         if (!captured)
-          captured |= elem->onMouseMove(Vec2(event.motion.x, event.motion.y));
+          captured |= elem->onMouseMove(Vec2(event.motion.x, event.motion.y),
+              Vec2(event.motion.xrel, event.motion.yrel));
         else
           elem->onMouseGone();
       break;}

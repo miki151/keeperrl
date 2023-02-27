@@ -93,6 +93,7 @@ void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer, F
       if (!storageIds.empty())
         allStoragePositions.remove(pos);
       info->reset();
+      ++unbuiltCounts[type];
     }
 }
 

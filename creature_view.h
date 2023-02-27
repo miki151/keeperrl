@@ -51,6 +51,7 @@ class CreatureView {
   virtual vector<vector<Vec2>> getTeamPathTo(TeamId, Vec2) const { return {}; }
   virtual vector<Vec2> getHighlightedPathTo(Vec2) const { return {}; }
   virtual vector<vector<Vec2>> getPermanentPaths() const { return {}; }
+  virtual optional<Vec2> getPlayerPosition() const { return none; }
   struct PlacementInfo {
     bool isValid;
     vector<Vec2> inGreen;

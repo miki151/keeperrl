@@ -9,4 +9,5 @@ RICH_ENUM(TeamOrder,
 
 extern const char* getName(TeamOrder);
 extern const char* getDescription(TeamOrder);
+extern Keybinding getKeybinding(TeamOrder);
 extern bool conflict(TeamOrder, TeamOrder);

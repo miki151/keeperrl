@@ -361,6 +361,7 @@ static string getNameNegated(CreaturePredicates::Indoors m, const ContentFactory
 }
 
 static bool applyToCreature(const CreaturePredicates::AttributeAtLeast& a, const Creature* victim, const Creature*) {
+  PROFILE;
   return victim->getAttr(a.attr) >= a.value;
 }
 

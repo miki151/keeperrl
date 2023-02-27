@@ -1370,6 +1370,7 @@ const CollectiveConfig& Collective::getConfig() const {
 }
 
 bool Collective::addKnownTile(Position pos) {
+  PROFILE;
   if (!knownTiles->isKnown(pos)) {
     pos.setNeedsRenderAndMemoryUpdate(true);
     knownTiles->addTile(pos, getModel());
@@ -1391,6 +1392,7 @@ void Collective::summonDemon(Creature* c) {
 }
 
 void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos) {
+  PROFILE;
   auto contentFactory = getGame()->getContentFactory();
   if (auto furniture = pos.first.getFurniture(pos.second)) {
     // Furniture have variable usage time, so just multiply by it to be independent of changes.
@@ -1447,7 +1449,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
     }
     if (auto usage = furniture->getUsageType()) {
       auto increaseLevel = [&] (ExperienceType exp) {
-        double increase = 0.007 * efficiency * LastingEffects::getTrainingSpeed(c);
+        double increase = 0.012 * efficiency * LastingEffects::getTrainingSpeed(c);
         if (auto maxLevel = contentFactory->furniture.getData(furniture->getType()).getMaxTraining(exp))
           increase = min(increase, maxLevel - c->getAttributes().getExpLevel(exp));
         if (increase > 0)

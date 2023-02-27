@@ -25,6 +25,7 @@ struct ScriptedContext {
   int elemCounter;
   int tooltipCounter;
   optional<int> highlightedElemHeight;
+  bool isHighlighted(int elemCounter) const;
 };
 
 using EventCallback = function<bool()>;
@@ -33,6 +34,8 @@ struct ScriptedUIInterface {
   virtual void render(const ScriptedUIData&, ScriptedContext&, Rectangle) const;
   virtual Vec2 getSize(const ScriptedUIData&, ScriptedContext&) const;
   virtual void onClick(const ScriptedUIData&, ScriptedContext&, MouseButtonId, Rectangle, Vec2, EventCallback&) const;
+  virtual void onScroll(const ScriptedUIData&, ScriptedContext&, Rectangle, Vec2 pos, double x, double y,
+      milliseconds timeDiff, EventCallback&) const;
   virtual void onKeypressed(const ScriptedUIData&, ScriptedContext&, SDL::SDL_Keysym, Rectangle, EventCallback&) const;
   virtual ~ScriptedUIInterface(){}
 };

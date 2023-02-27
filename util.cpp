@@ -130,6 +130,9 @@ template optional<double> fromStringSafe<double>(const string&);
 template optional<SteamId> fromStringSafe<SteamId>(const string&);
 template optional<string> fromStringSafe<string>(const string&);
 
+string toStringRounded(double value, double precision) {
+  return toString(precision * round(value / precision));
+}
 
 template <class T>
 optional<T> fromStringSafe(const string& s){
@@ -516,6 +519,8 @@ pair<Vec2, Vec2> Vec2::approxL1() const {
 }
 
 Vec2 Vec2::getBearing() const {
+  if (x == 0 && y == 0)
+    return Vec2(0, 0);
   double ang = atan2(y, x) / 3.14159265359 * 180 / 45;
   if (ang < 0)
     ang += 8;

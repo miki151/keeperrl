@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
+/* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
 
    This file is part of KeeperRL.
 
@@ -43,6 +43,7 @@
 #include "target_type.h"
 #include "keybinding_map.h"
 #include "mouse_button_id.h"
+#include "steam_input.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -108,12 +109,16 @@ void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FX
   renderer.enableCustomCursor(!options->getBoolValue(OptionId::DISABLE_CURSOR));
   renderer.initialize();
   renderer.setZoom(options->getBoolValue(OptionId::ZOOM_UI) ? 2 : 1);
+  renderer.setFpsLimit(options->getIntValue(OptionId::FPS_LIMIT));
   options->addTrigger(OptionId::FULLSCREEN, [this] (int on) {
     renderer.setFullscreen(on);
     renderer.initialize();
   });
   options->addTrigger(OptionId::VSYNC, [this] (int on) {
     renderer.setVsync(on);
+  });
+  options->addTrigger(OptionId::FPS_LIMIT, [this] (int fps) {
+    renderer.setFpsLimit(fps);
   });
   options->addTrigger(OptionId::DISABLE_CURSOR, [this] (int on) { renderer.enableCustomCursor(!on); });
   options->addTrigger(OptionId::ZOOM_UI, [this] (int on) { zoomUI = on; });
@@ -137,7 +142,7 @@ void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FX
   mapGui.reset(new MapGui({
       bindMethod(&WindowView::mapContinuousLeftClickFun, this),
       [this] (Vec2 pos) {
-        if (!guiBuilder.getActiveButton(CollectiveTab::BUILDINGS)) {
+        if (!guiBuilder.getActiveButton()) {
           guiBuilder.closeOverlayWindowsAndClearButton();
           inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));
         }
@@ -165,28 +170,14 @@ void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FX
   guiBuilder.setMapGui(mapGui);
 }
 
-bool WindowView::isKeyPressed(SDL::SDL_Scancode code) {
-  return SDL::SDL_GetKeyboardState(nullptr)[code];
-}
-
 void WindowView::mapContinuousLeftClickFun(Vec2 pos) {
   guiBuilder.closeOverlayWindows();
-  optional<int> activeLibrary = guiBuilder.getActiveButton(CollectiveTab::TECHNOLOGY);
-  optional<int> activeBuilding = guiBuilder.getActiveButton(CollectiveTab::BUILDINGS);
+  optional<int> activeBuilding = guiBuilder.getActiveButton();
   auto collectiveTab = guiBuilder.getCollectiveTab();
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::BAND:
-/*      if (collectiveTab == CollectiveTab::MINIONS)
-        inputQueue.push(UserInput(UserInputId::MOVE_TO, pos));
-      else*/
-      if (collectiveTab == CollectiveTab::BUILDINGS) {
-        if (activeBuilding && (isKeyPressed(SDL::SDL_SCANCODE_LSHIFT) || isKeyPressed(SDL::SDL_SCANCODE_RSHIFT)))
+      if (collectiveTab == CollectiveTab::BUILDINGS && activeBuilding)
           inputQueue.push(UserInput(UserInputId::RECT_SELECTION, BuildingClickInfo{pos, *activeBuilding}));
-        else if (activeBuilding && (isKeyPressed(SDL::SDL_SCANCODE_LCTRL) || isKeyPressed(SDL::SDL_SCANCODE_RCTRL)))
-          inputQueue.push(UserInput(UserInputId::RECT_DESELECTION, pos));
-        else if (activeBuilding)
-          inputQueue.push(UserInput(UserInputId::BUILD, BuildingClickInfo{pos, *activeBuilding}));
-      }
       break;
     default:
       break;
@@ -217,69 +208,30 @@ void WindowView::reset() {
   soundQueue.clear();
 }
 
-void WindowView::displayOldSplash() {
-  Rectangle menuPosition = guiBuilder.getMenuPosition(MenuType::MAIN_NO_TILES, 0);
-  int margin = 10;
-  renderer.drawImage(renderer.getSize().x / 2 - 415, menuPosition.bottom() + margin,
-      gui.get(GuiFactory::TexId::SPLASH1));
-  Texture& splash2 = gui.get(GuiFactory::TexId::SPLASH2);
-  renderer.drawImage((renderer.getSize().x - splash2.getSize().x) / 2,
-      menuPosition.top() - splash2.getSize().y - margin, splash2);
-}
-
-void WindowView::displayMenuSplash2() {
-  drawMenuBackground(0, 0);
-}
-
-void WindowView::drawMenuBackground(double barState, double mouthState) {
-  Texture& menuCore = gui.get(GuiFactory::TexId::MENU_CORE);
-  Texture& menuMouth = gui.get(GuiFactory::TexId::MENU_MOUTH);
-  double scale = double(renderer.getSize().y) / menuCore.getSize().y;
-  int width = menuCore.getSize().x * scale;
-  double mouthPos1 = 184.0 * menuCore.getSize().x / 1920;
-  double mouthPos2 = 214.0 * menuCore.getSize().x / 1920;
-  double mouthX = (renderer.getSize().x - (menuMouth.getSize().x + 5) * scale) / 2;
-  renderer.drawFilledRectangle(mouthX, mouthPos1 * scale, 1 + mouthX + barState * menuMouth.getSize().x * scale,
-      (mouthPos2 + menuMouth.getSize().y) * scale, Color(60, 76, 48));
-  renderer.drawImage((renderer.getSize().x - width) / 2, 0, menuCore, scale);
-  renderer.drawImage(mouthX, scale * (mouthPos1 * (1 - mouthState) + mouthPos2 * mouthState), menuMouth, scale);
-  renderer.drawText(Color::WHITE, Vec2(30, renderer.getSize().y - 40), "Version " BUILD_DATE " " BUILD_VERSION,
-      Renderer::NONE, 16);
-  renderer.drawText(Color::WHITE, Vec2(30, renderer.getSize().y - 21), "Install id: " + installId,
-      Renderer::NONE, 16);
-}
-
 void WindowView::getSmallSplash(const ProgressMeter* meter, const string& text, function<void()> cancelFun) {
-  SGuiElem window = gui.miniWindow(gui.empty(), []{});
-  Vec2 windowSize(500, cancelFun ? 90 : 70);
-  string cancelText = "[cancel]";
+  auto elems = ScriptedUIDataElems::Record {{
+    {"text", text},
+    {"barCallback", ScriptedUIDataElems::DynamicWidthCallback { [meter] {
+      return meter ? meter->getProgress() : 0.0;}}}
+  }};
+  if (cancelFun)
+    elems.elems["cancelCallback"] = ScriptedUIDataElems::Callback { [cancelFun] { cancelFun(); return true; }};
+  ScriptedUIData data = std::move(elems);
+  ScriptedUIState state;
+  auto elem = gui.scripted([]{}, ScriptedUIId("loading_screen"), data, state);
+  auto windowSize = *elem->getPreferredSize();
   Rectangle bounds((renderer.getSize() - windowSize) / 2, (renderer.getSize() + windowSize) / 2);
   Rectangle progressBar(bounds.minusMargin(15));
-  window->setBounds(bounds);
+  elem->setBounds(bounds);
   while (!splashDone) {
     refreshScreen(false);
-    window->render(renderer);
-    double progress = meter ? meter->getProgress() : 0;
-    if (progress > 0) {
-      Rectangle bar(progressBar.topLeft(), Vec2(1 + progressBar.left() * (1.0 - progress) +
-            progressBar.right() * progress, progressBar.bottom()));
-      renderer.drawFilledRectangle(bar, Color::DARK_GREEN.transparency(50));
-    }
-    renderer.drawText(Color::WHITE, Vec2(bounds.middle().x, bounds.top() + 20), text, Renderer::HOR);
-    Rectangle cancelBut(bounds.middle().x - renderer.getTextLength(cancelText) / 2, bounds.top() + 50,
-        bounds.middle().x + renderer.getTextLength(cancelText) / 2, bounds.top() + 80);
-    if (cancelFun)
-      renderer.drawText(Color::LIGHT_BLUE, cancelBut.topLeft(), cancelText);
+    elem->render(renderer);
     renderer.drawAndClearBuffer();
     sleep_for(milliseconds(30));
     Event event;
     while (renderer.pollEvent(event)) {
-      propagateEvent(event, {});
+      propagateEvent(event, {elem});
       considerResizeEvent(event);
-      if (event.type == SDL::SDL_MOUSEBUTTONDOWN && cancelFun) {
-        if (Vec2(event.button.x, event.button.y).inRectangle(cancelBut))
-          cancelFun();
-      }
     }
   }
 }
@@ -360,6 +312,15 @@ void WindowView::rebuildGui() {
   tempGuiElems.push_back(gui.stack(makeVec(
       gui.keyHandler(bindMethod(&WindowView::keyboardAction, this)),
       gui.keyHandler([this]{ zoom(0); }, Keybinding("ZOOM_MAP"), true),
+      gui.keyHandler([this]{ zoom(0); }, {gui.getKey(C_ZOOM)}, true),
+      gui.keyHandler([this]{ guiBuilder.toggleEnlargedMinimap(); }, {gui.getKey(C_MINI_MAP)}, true),
+      gui.keyHandlerBool([this] {
+        if (guiBuilder.isEnlargedMinimap()) {
+          guiBuilder.toggleEnlargedMinimap();
+          return true;
+        }
+        return false;
+      }, Keybinding("EXIT_MENU")),
       gui.keyHandler([getMovement]{ getMovement(0, -1); }, Keybinding("WALK_NORTH"), false),
       gui.keyHandler([getMovement]{ getMovement(0, 1); }, Keybinding("WALK_SOUTH"), false),
       gui.keyHandler([getMovement]{ getMovement(1, 0); }, Keybinding("WALK_EAST"), false),
@@ -373,7 +334,6 @@ void WindowView::rebuildGui() {
       gui.keyHandler([getMovement]{ getMovement(1, 0); }, Keybinding("WALK_EAST2"), false),
       gui.keyHandler([getMovement]{ getMovement(-1, 0); }, Keybinding("WALK_WEST2"), false)
   )));
-  tempGuiElems.back()->setBounds(getMapGuiBounds());
   tempGuiElems.back()->setBounds(getMapGuiBounds());
   if (gameInfo.takingScreenshot) {
     right = gui.empty();
@@ -417,21 +377,7 @@ void WindowView::rebuildGui() {
           bottom = guiBuilder.drawBottomBandInfo(gameInfo, bottomBarBounds->width());
           break;
     }
-  guiBuilder.drawOverlays(overlays, gameInfo);
   if (gameInfo.infoType != GameInfo::InfoType::SPECTATOR) {
-    overlays.push_back({guiBuilder.drawMessages(gameInfo.messageBuffer, renderer.getSize().x - rightBarWidth),
-                       GuiBuilder::OverlayInfo::MESSAGES});
-    for (auto& overlay : overlays)
-      if (overlay.alignment != GuiBuilder::OverlayInfo::GAME_SPEED) {
-        Vec2 pos;
-        if (auto width = overlay.elem->getPreferredWidth())
-          if (auto height = overlay.elem->getPreferredHeight()) {
-            pos = getOverlayPosition(overlay.alignment, *height, *width, rightBarWidth, bottomBarHeight);
-            tempGuiElems.push_back(std::move(overlay.elem));
-            *height = min(*height, renderer.getSize().y - pos.y - bottomBarHeight);
-            tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(*width, *height)));
-          }
-      }
     if (!gameInfo.takingScreenshot) {
       tempGuiElems.push_back(gui.mainDecoration(rightBarWidth, bottomBarHeight, topBarHeight));
       tempGuiElems.back()->setBounds(Rectangle(renderer.getSize()));
@@ -441,17 +387,29 @@ void WindowView::rebuildGui() {
           Vec2(rightBarWidth, renderer.getSize().y - rightBottomMargin)));
     tempGuiElems.push_back(gui.margins(std::move(bottom), 105, 10, 105, 0));
     tempGuiElems.back()->setBounds(*bottomBarBounds);
-    for (auto& overlay : overlays)
-      if (overlay.alignment == GuiBuilder::OverlayInfo::GAME_SPEED) {
-        Vec2 pos;
-        if (auto width = overlay.elem->getPreferredWidth())
-          if (auto height = overlay.elem->getPreferredHeight()) {
-            pos = getOverlayPosition(overlay.alignment, *height, *width, rightBarWidth, bottomBarHeight);
-            tempGuiElems.push_back(std::move(overlay.elem));
-            tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(*width, *height)));
-          }
-      }
+    guiBuilder.drawOverlays(overlays, gameInfo);
+    overlays.push_back({guiBuilder.drawMessages(gameInfo.messageBuffer, renderer.getSize().x - rightBarWidth),
+                       GuiBuilder::OverlayInfo::MESSAGES});
+    for (auto& overlay : overlays) {
+      Vec2 pos;
+      if (auto width = overlay.elem->getPreferredWidth())
+        if (auto height = overlay.elem->getPreferredHeight()) {
+          pos = getOverlayPosition(overlay.alignment, *height, *width, rightBarWidth, bottomBarHeight);
+          tempGuiElems.push_back(std::move(overlay.elem));
+          *height = min(*height, renderer.getSize().y - pos.y - bottomBarHeight);
+          tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(*width, *height)));
+        }
+    }
   }
+  tempGuiElems.push_back(gui.keyHandlerBool([getMovement, this]{
+    auto res = renderer.getDiscreteJoyPos(ControllerJoy::WALKING);
+    if (!guiBuilder.playerInventoryFocused() && res != Vec2(0, 0)) {
+      getMovement(res.x, res.y);
+      return true;
+    }
+    return false;
+  }, {gui.getKey(C_BUILDINGS_CONFIRM)}));
+  tempGuiElems.back()->setBounds(getMapGuiBounds());
   propagateMousePosition(getClickableGuiElems());
 }
 
@@ -466,7 +424,7 @@ Vec2 WindowView::getOverlayPosition(GuiBuilder::OverlayInfo::Alignment alignment
     case GuiBuilder::OverlayInfo::TOP_LEFT:
       return Vec2(rightBarWidth + sideOffset, rightWindowHeight);
     case GuiBuilder::OverlayInfo::IMMIGRATION:
-      return Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight - 21 - height);
+      return Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight - height);
     case GuiBuilder::OverlayInfo::VILLAINS:
       return Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight - height);
     case GuiBuilder::OverlayInfo::BOTTOM_LEFT:
@@ -477,8 +435,6 @@ Vec2 WindowView::getOverlayPosition(GuiBuilder::OverlayInfo::Alignment alignment
           renderer.getSize().y - bottomBarHeight - bottomOffset - height);
     case GuiBuilder::OverlayInfo::MESSAGES:
       return Vec2(rightBarWidth, 0);
-    case GuiBuilder::OverlayInfo::GAME_SPEED:
-      return Vec2(26, renderer.getSize().y - height - 50);
     case GuiBuilder::OverlayInfo::TUTORIAL:
       return Vec2(rightBarWidth + guiBuilder.getImmigrationBarWidth(),
           renderer.getSize().y - bottomBarHeight - height);
@@ -494,6 +450,8 @@ void WindowView::propagateMousePosition(const vector<SGuiElem>& elems) {
   ev.type = SDL::SDL_MOUSEMOTION;
   ev.motion.x = renderer.getMousePos().x;
   ev.motion.y = renderer.getMousePos().y;
+  ev.motion.xrel = 0;
+  ev.motion.yrel = 0;
   gui.propagateEvent(ev, elems);
 }
 
@@ -541,7 +499,7 @@ void WindowView::updateMinimap(const CreatureView* creature) {
 }
 
 void WindowView::updateView(CreatureView* view, bool noRefresh) {
-  ScopeTimer timer("UpdateView timer");
+  PROFILE;
   if (!wasRendered && currentThreadId() != renderThreadId)
     return;
   gameInfo = {};
@@ -605,6 +563,7 @@ void WindowView::animation(const FXSpawnInfo& spawnInfo) {
 void WindowView::refreshView() {
 /*    if (!wasRendered && gameReady)
       rebuildGui();*/
+  PROFILE;
   wasRendered = true;
   CHECK(currentThreadId() == renderThreadId);
   if (gameReady || !blockingElems.empty())
@@ -618,6 +577,7 @@ void WindowView::refreshView() {
 }
 
 void WindowView::drawMap() {
+  PROFILE;
   for (auto gui : getAllGuiElems())
     gui->render(renderer);
   Vec2 mousePos = renderer.getMousePos();
@@ -634,44 +594,16 @@ static Rectangle getBugReportPos(Renderer& renderer) {
 }
 
 void WindowView::refreshScreen(bool flipBuffer) {
-  {
-    if (zoomUI > -1) {
-      renderer.setZoom(zoomUI ? 2 : 1);
-      zoomUI = -1;
-    }
-    if (!gameReady) {
-      if (useTiles)
-        displayMenuSplash2();
-      else
-        displayOldSplash();
-    }
-    drawMap();
+  if (zoomUI > -1) {
+    renderer.setZoom(zoomUI ? 2 : 1);
+    zoomUI = -1;
   }
+  drawMap();
   auto bugReportPos = getBugReportPos(renderer);
   renderer.drawFilledRectangle(bugReportPos, Color::TRANSPARENT, Color::RED);
   renderer.drawText(Color::RED, bugReportPos.middle() - Vec2(0, 2), "report bug", Renderer::CenterType::HOR_VER);
   if (flipBuffer)
     renderer.drawAndClearBuffer();
-}
-
-int indexHeight(const vector<ListElem>& options, int index) {
-  CHECK(index < options.size() && index >= 0);
-  int tmp = 0;
-  for (int i : All(options))
-    if (options[i].getMod() == ListElem::NORMAL && tmp++ == index)
-      return i;
-  FATAL << "Bad index " << int(options.size()) << " " << index;
-  return -1;
-}
-
-optional<int> reverseIndexHeight(const vector<ListElem>& options, int height) {
-  if (height < 0 || height >= options.size() || options[height].getMod() != ListElem::NORMAL)
-    return none;
-  int sub = 0;
-  for (int i : Range(height))
-    if (options[i].getMod() != ListElem::NORMAL)
-      ++sub;
-  return height - sub;
 }
 
 optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message) {
@@ -681,13 +613,31 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
   addReturnDialog<optional<Vec2>>(returnQueue, [=] ()-> optional<Vec2> {
   rebuildGui();
   refreshScreen();
+  renderer.getSteamInput()->setGameActionLayer(MySteamInput::GameActionLayer::TURNED_BASED);
+  bool useController = !gui.getSteamInput()->controllers.empty();
   do {
-    auto pos = mapGui->projectOnMap(renderer.getMousePos());
     Event event;
-    if (renderer.pollEvent(event)) {
+    if (renderer.getDiscreteJoyPos(ControllerJoy::WALKING) != Vec2(0, 0))
+      useController = true;
+    auto chosenDir = useController ? renderer.getDiscreteJoyPos(ControllerJoy::WALKING)
+        : (mapGui->projectOnMap(renderer.getMousePos()).value_or(playerPos) - playerPos).getBearing();
+    while (renderer.pollEvent(event)) {
       considerResizeEvent(event);
+      if (event.type == SDL::SDL_MOUSEMOTION)
+        useController = false;
       if (event.type == SDL::SDL_KEYDOWN) {
         refreshScreen();
+        switch (event.key.keysym.sym) {
+          case SDL::SDLK_ESCAPE:
+          case C_BUILDINGS_CANCEL:
+            return none;
+          case C_BUILDINGS_CONFIRM:
+            if (chosenDir != Vec2(0, 0))
+              return chosenDir;
+            break;
+          default:
+            break;
+        }
         if (gui.getKeybindingMap()->matches(Keybinding("WALK_NORTH"), event.key.keysym) ||
             gui.getKeybindingMap()->matches(Keybinding("WALK_NORTH2"), event.key.keysym))
           return Vec2(0, -1);
@@ -709,23 +659,22 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
         if (gui.getKeybindingMap()->matches(Keybinding("WALK_SOUTH_EAST"), event.key.keysym))
           return Vec2(1, 1);
       }
-      if (pos && event.type == SDL::SDL_MOUSEBUTTONDOWN) {
+      if (chosenDir != Vec2(0, 0) && event.type == SDL::SDL_MOUSEBUTTONDOWN) {
         if (event.button.button == SDL_BUTTON_LEFT)
-          return (*pos - playerPos).getBearing();
+          return chosenDir;
         else
           return none;
       }
     }
     refreshScreen(false);
-    if (pos && pos != playerPos) {
-      Vec2 dir = (*pos - playerPos).getBearing();
+    if (chosenDir != Vec2(0, 0)) {
       Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(),
-          playerPos.x + dir.x, playerPos.y + dir.y);
+          playerPos.x + chosenDir.x, playerPos.y + chosenDir.y);
       if (currentTileLayout.sprites) {
-        auto coord = renderer.getTileSet().getTileCoord("arrow" + toString(int(dir.getCardinalDir()))).getOnlyElement();
+        auto coord = renderer.getTileSet().getTileCoord("arrow" + toString(int(chosenDir.getCardinalDir()))).getOnlyElement();
         renderer.drawTile(wpos, {coord}, mapLayout->getSquareSize());
       } else {
-        int numArrow = int(dir.getCardinalDir());
+        int numArrow = int(chosenDir.getCardinalDir());
         static string arrows[] = { u8"⇑", u8"⇓", u8"⇒", u8"⇐", u8"⇗", u8"⇖", u8"⇘", u8"⇙"};
         renderer.drawText(FontId::SYMBOL_FONT, mapLayout->getSquareSize().y, Color::WHITE,
             wpos + Vec2(mapLayout->getSquareSize().x / 2, 0), arrows[numArrow], Renderer::HOR);
@@ -734,7 +683,7 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
     /*if (auto *inst = fx::FXManager::getInstance())
       inst->simulateStableTime(double(clock->getRealMillis().count()) * 0.001);*/
     renderer.drawAndClearBuffer();
-    renderer.flushEvents(SDL::SDL_MOUSEMOTION);
+    //renderer.flushEvents(SDL::SDL_MOUSEMOTION);
   } while (1);
   });
   return returnQueue.pop();
@@ -749,19 +698,37 @@ View::TargetResult WindowView::chooseTarget(Vec2 playerPos, TargetType targetTyp
   rebuildGui();
   refreshScreen();
   guiBuilder.disableClickActions = true;
+  optional<Vec2> controllerPos;
+  if (!gui.getSteamInput()->controllers.empty())
+    controllerPos = playerPos;
   do {
-    auto pos = mapGui->projectOnMap(renderer.getMousePos());
+    auto pos = controllerPos ? controllerPos : mapGui->projectOnMap(renderer.getMousePos());
     Event event;
-    if (renderer.pollEvent(event)) {
+    while (renderer.pollEvent(event)) {
       considerResizeEvent(event);
       if (event.type == SDL::SDL_KEYDOWN) {
-        if (event.key.keysym.sym == SDL::SDLK_ESCAPE) {
+        if (gui.getKeybindingMap()->matches(Keybinding("EXIT_MENU"), event.key.keysym)) {
           refreshScreen();
           return none;
         }
-        if (cycleKey && gui.getKeybindingMap()->matches(*cycleKey, event.key.keysym))
+        else if (cycleKey && gui.getKeybindingMap()->matches(*cycleKey, event.key.keysym))
           return *cycleKey;
+        else if (gui.getKeybindingMap()->matches(Keybinding("MENU_SELECT"), event.key.keysym)) {
+          if (!!pos && (targetType != TargetType::POSITION ||
+              (pos->inRectangle(passable.getBounds()) && passable[*pos] == PassableInfo::PASSABLE)))
+            return *pos;
+        }
+        else if (gui.getKeybindingMap()->matches(Keybinding("MENU_UP"), event.key.keysym))
+          controllerPos = controllerPos.value_or(playerPos) + Vec2(0, -1);
+        else if (gui.getKeybindingMap()->matches(Keybinding("MENU_DOWN"), event.key.keysym))
+          controllerPos = controllerPos.value_or(playerPos) + Vec2(0, 1);
+        else if (gui.getKeybindingMap()->matches(Keybinding("MENU_LEFT"), event.key.keysym))
+          controllerPos = controllerPos.value_or(playerPos) + Vec2(-1, 0);
+        else if (gui.getKeybindingMap()->matches(Keybinding("MENU_RIGHT"), event.key.keysym))
+          controllerPos = controllerPos.value_or(playerPos) + Vec2(1, 0);
       }
+      if (event.type == SDL::SDL_MOUSEMOTION)
+        controllerPos = none;
       if (pos && event.type == SDL::SDL_MOUSEBUTTONDOWN) {
         if (event.button.button == SDL_BUTTON_LEFT && (targetType != TargetType::POSITION ||
             (pos->inRectangle(passable.getBounds()) && passable[*pos] == PassableInfo::PASSABLE)))
@@ -823,106 +790,22 @@ View::TargetResult WindowView::chooseTarget(Vec2 playerPos, TargetType targetTyp
       }
     }
     renderer.drawAndClearBuffer();
-    renderer.flushEvents(SDL::SDL_MOUSEMOTION);
+    // Not sure what this was for but it interfered with switching the mode from keyboard to mouse.
+    //renderer.flushEvents(SDL::SDL_MOUSEMOTION);
   } while (1);
   });
   guiBuilder.disableClickActions = false;
   return returnQueue.pop();
 }
 
-optional<int> WindowView::getNumber(const string& title, Range range, int initial, int increments) {
-  SyncQueue<optional<int>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawChooseNumberMenu(returnQueue, title, range, initial, increments));
+optional<int> WindowView::getNumber(const string& title, Range range, int initial) {
+  return guiBuilder.getNumber(title, renderer.getSize() / 2 - Vec2(225, 0), range, initial);
 }
 
-optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
-    MenuType type, ScrollPosition* scrollPos, optional<UserInputId> exitAction) {
-  return chooseFromListInternal(title, options, index, type, scrollPos);
-}
-
-optional<string> WindowView::getText(const string& title, const string& value, int maxLength, const string& hint) {
+optional<string> WindowView::getText(const string& title, const string& value, int maxLength) {
   TempClockPause pause(clock);
   SyncQueue<optional<string>> returnQueue;
-  addReturnDialog<optional<string>>(returnQueue, [=] ()-> optional<string> {
-    return guiBuilder.getTextInput(title, value, maxLength, hint);
-  });
-  return returnQueue.pop();
-}
-
-Rectangle WindowView::getEquipmentMenuPosition(int height) {
-  int width = 440;
-  Vec2 origin = Vec2(rightBarWidthCollective, 200);
-  origin.x = min(origin.x, renderer.getSize().x - width);
-  return Rectangle(origin, origin + Vec2(width, height)).intersection(Rectangle(Vec2(0, 0), renderer.getSize()));
-}
-
-optional<int> WindowView::chooseItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollPos1) {
-  uiLock = true;
-  TempClockPause pause(clock);
-  SyncQueue<optional<int>> returnQueue;
-  addReturnDialog<optional<int>>(returnQueue, [=] ()-> optional<int> {
-    ScrollPosition* scrollPos = scrollPos1;
-    ScrollPosition localScrollPos;
-    if (!scrollPos)
-      scrollPos = &localScrollPos;
-    optional<optional<int>> retVal;
-    vector<SGuiElem> lines;
-    lines.push_back(gui.getListBuilder()
-        .addElemAuto(gui.label(title))
-        .addBackElem(gui.label("Owners:"), guiBuilder.getItemLineOwnerMargin()).buildHorizontalList());
-    lines.append(guiBuilder.drawItemMenu(items,
-      [&retVal] (Rectangle butBounds, optional<int> a) { retVal = a;}, true));
-    int menuHeight = lines.size() * guiBuilder.getStandardLineHeight() + 30;
-    SGuiElem menu = gui.miniWindow(gui.margins(
-            gui.scrollable(gui.verticalList(std::move(lines), guiBuilder.getStandardLineHeight()), scrollPos),
-        15), [&retVal] { retVal = optional<int>(none); });
-    SGuiElem bg2 = gui.darken();
-    bg2->setBounds(Rectangle(renderer.getSize()));
-    while (1) {
-      refreshScreen(false);
-      menu->setBounds(getEquipmentMenuPosition(menuHeight));
-      bg2->render(renderer);
-      menu->render(renderer);
-      renderer.drawAndClearBuffer();
-      Event event;
-      while (renderer.pollEvent(event)) {
-        considerResizeEvent(event);
-        propagateEvent(event, {menu});
-        if (retVal)
-          return *retVal;
-        if (considerResizeEvent(event))
-          continue;
-      }
-    }
-  });
-  return returnQueue.pop();
-}
-
-optional<UniqueEntity<Item>::Id> WindowView::chooseTradeItem(const string& title, pair<ViewId, int> budget,
-    const vector<ItemInfo>& items, ScrollPosition* scrollPos) {
-  SyncQueue<optional<UniqueEntity<Item>::Id>> returnQueue;
-  auto menu = guiBuilder.drawTradeItemMenu(returnQueue, title, budget, items, scrollPos);
-  int width = *menu->getPreferredWidth();
-  int height = *menu->getPreferredHeight();
-  return getBlockingGui(returnQueue, std::move(menu),
-      getOverlayPosition(GuiBuilder::OverlayInfo::BOTTOM_LEFT, height, width, rightBarWidthCollective, bottomBarHeightCollective));
-}
-
-optional<int> WindowView::choosePillageItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollPos) {
-  SyncQueue<optional<int>> returnQueue;
-  auto menu = guiBuilder.drawPillageItemMenu(returnQueue, title, items, scrollPos);
-  int width = *menu->getPreferredWidth();
-  int height = *menu->getPreferredHeight();
-  return getBlockingGui(returnQueue, std::move(menu),
-      getOverlayPosition(GuiBuilder::OverlayInfo::BOTTOM_LEFT, height, width, rightBarWidthCollective, bottomBarHeightCollective));
-}
-
-optional<ExperienceType> WindowView::getCreatureUpgrade(const CreatureExperienceInfo& info) {
-  SyncQueue<optional<ExperienceType>> returnQueue;
-  if (auto menu = guiBuilder.drawCreatureUpgradeMenu(returnQueue, info))
-    return getBlockingGui(returnQueue, std::move(menu));
-  else
-    return none;
+  return getBlockingGui(returnQueue, guiBuilder.drawTextInput(returnQueue, title, value, maxLength));
 }
 
 void WindowView::scriptedUI(ScriptedUIId id, const ScriptedUIData& data, ScriptedUIState& state) {
@@ -930,7 +813,7 @@ void WindowView::scriptedUI(ScriptedUIId id, const ScriptedUIData& data, Scripte
   return getBlockingGui(sem, gui.stack(gui.stopMouseMovement(), gui.scripted([&sem]{sem.v();}, id, data, state)));
 }
 
-optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& campaign, optional<Vec2> current) {
+optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& campaign, Vec2 current) {
   SyncQueue<optional<Vec2>> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawChooseSiteMenu(returnQueue, message, campaign, current));
 }
@@ -942,8 +825,7 @@ void WindowView::presentWorldmap(const Campaign& campaign) {
 
 variant<View::AvatarChoice, AvatarMenuOption> WindowView::chooseAvatar(const vector<AvatarData>& avatars) {
   SyncQueue<variant<AvatarChoice, AvatarMenuOption>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.getMainMenuLinks(bugreportSharing->getPersonalMessage(),
-      guiBuilder.drawAvatarMenu(returnQueue, avatars)), none, false);
+  return getBlockingGui(returnQueue, guiBuilder.drawAvatarMenu(returnQueue, avatars), none, false);
 }
 
 CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, CampaignMenuState& state) {
@@ -1006,11 +888,6 @@ bool WindowView::creatureInfo(const string& title, bool prompt, const vector<Pla
   return getBlockingGui(returnQueue, guiBuilder.drawCreatureInfo(returnQueue, title, prompt, creatures));
 }
 
-optional<ModAction> WindowView::getModAction(int highlighted, const vector<ModInfo>& mods) {
-  SyncQueue<optional<ModAction>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawModMenu(returnQueue, highlighted, mods));
-}
-
 void WindowView::logMessage(const std::string& message) {
   RecursiveLock lock(logMutex);
   messageLog.push_back(message);
@@ -1030,7 +907,7 @@ void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> or
     blockingElems.back()->setBounds(Rectangle(renderer.getSize()));*/
     blockingElems.push_back(gui.keyHandler(bindMethod(&WindowView::keyboardActionAlways, this)));
   }
-  propagateMousePosition({elem});
+  //propagateMousePosition({elem});
   blockingElems.push_back(elem);
   if (currentThreadId() == renderThreadId)
     while (!sem.get()) {
@@ -1044,161 +921,6 @@ void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> or
     sem.p();
   while (blockingElems.size() > origElemCount)
     blockingElems.pop_back();
-}
-
-void WindowView::presentHighscores(const vector<HighscoreList>& list) {
-  Semaphore sem;
-  int tabNum = 0;
-  bool online = false;
-  vector<ScrollPosition> scrollPos(list.size());
-  getBlockingGui(sem, guiBuilder.drawHighscores(list, sem, tabNum, scrollPos, online),
-      guiBuilder.getMenuPosition(MenuType::NORMAL, 0).topLeft());
-}
-
-optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options,
-    optional<int> index1, MenuType menuType, ScrollPosition* scrollPos1) {
-  CHECK(!index1 || *index1 >= 0);
-  if (!useTiles && menuType == MenuType::MAIN)
-    menuType = MenuType::MAIN_NO_TILES;
-  if (options.size() == 0)
-    return none;
-  uiLock = true;
-  inputQueue.push(UserInputId::REFRESH);
-  TempClockPause pause(clock);
-  SyncQueue<optional<int>> returnQueue;
-  addReturnDialog<optional<int>>(returnQueue, [=] ()-> optional<int> {
-  renderer.flushEvents(SDL::SDL_KEYDOWN);
-  int choice = -1;
-  int count = 0;
-  ScrollPosition* scrollPos = scrollPos1;
-  optional<int> index = index1;
-  vector<int> indexes(options.size());
-  vector<int> optionIndexes;
-  int elemCount = 0;
-  for (int i : All(options)) {
-    if (options[i].getMod() == ListElem::NORMAL) {
-      indexes[count] = elemCount;
-      optionIndexes.push_back(i);
-      ++count;
-    }
-    if (options[i].getMod() != ListElem::TITLE && options[i].getMod() != ListElem::TEXT && options[i].getMod() != ListElem::HELP_TEXT)
-      ++elemCount;
-  }
-  if (optionIndexes.empty())
-    optionIndexes.push_back(0);
-  vector<int> positions;
-  SGuiElem stuff = gui.leftMargin(25, guiBuilder.drawListGui(capitalFirst(title), options, menuType, &index, &choice, &positions));
-  if (title.empty())
-    stuff = gui.topMargin(guiBuilder.getStandardLineHeight() / 2, std::move(stuff));
-  auto getScrollPos = [&](int index) {
-    if (index >= 0 && index < positions.size())
-      return positions[index];
-    else
-      return 0;
-  };
-  ScrollPosition localScrollPos(index ? getScrollPos(optionIndexes[*index]) : 0);
-  if (scrollPos == nullptr)
-    scrollPos = &localScrollPos;
-  SGuiElem dismissBut = gui.margins(gui.stack(makeVec(
-        gui.button([&](){ choice = -100; }),
-        gui.mouseHighlight2(gui.mainMenuHighlight()),
-        gui.centeredLabel(Renderer::HOR, "Dismiss"))), 0, 5, 0, 0);
-  switch (menuType) {
-    case MenuType::MAIN: break;
-    case MenuType::YES_NO_BELOW:
-    case MenuType::YES_NO:
-      stuff = gui.window(std::move(stuff), [&choice] { choice = -100;}); break;
-    default:
-      stuff = gui.scrollable(std::move(stuff), scrollPos);
-      stuff = gui.margins(std::move(stuff), 0, 15, 0, 0);
-      stuff = gui.margin(gui.centerHoriz(std::move(dismissBut), renderer.getTextLength("Dismiss") + 100),
-          std::move(stuff), 30, gui.BOTTOM);
-      stuff = gui.window(std::move(stuff), [&choice] { choice = -100;});
-      break;
-  }
-  optional<optional<int>> callbackRet;
-  auto scrollIndex = [&](int dir) {
-    if (count > 0) {
-      if (index)
-        index = (*index + dir + count) % count;
-      else
-        index = 0;
-      scrollPos->set(getScrollPos(optionIndexes[*index]), clock->getRealMillis());
-    } else
-      scrollPos->add(dir * 100, clock->getRealMillis());
-  };
-  stuff = gui.stack(
-      std::move(stuff),
-      gui.keyHandler([&] (SDL_Keysym key) {
-        switch (key.sym) {
-          case SDL::SDLK_KP_8:
-          case SDL::SDLK_UP:
-            scrollIndex(-1);
-            break;
-          case SDL::SDLK_KP_2:
-          case SDL::SDLK_DOWN:
-            scrollIndex(1);
-            break;
-          case SDL::SDLK_KP_5:
-          case SDL::SDLK_KP_ENTER:
-          case SDL::SDLK_RETURN:
-            if (count > 0 && index) {
-              CHECK(*index < indexes.size()) <<
-                  *index << " " << indexes.size() << " " << count << " " << options.size();
-              callbackRet = optional<int>(indexes[*index]);
-              break;
-            }
-            FALLTHROUGH;
-          case SDL::SDLK_ESCAPE:
-            callbackRet = optional<int>(none);
-            break;
-          default:
-            break;
-        }
-      }, true));
-  if (menuType == MenuType::MAIN || menuType == MenuType::MAIN_NO_TILES)
-    stuff = guiBuilder.getMainMenuLinks(bugreportSharing->getPersonalMessage(), std::move(stuff));
-  while (1) {
-    refreshScreen(false);
-    stuff->setBounds(guiBuilder.getMenuPosition(menuType, options.size()));
-    stuff->render(renderer);
-    renderer.drawAndClearBuffer();
-    Event event;
-    while (renderer.pollEvent(event)) {
-      propagateEvent(event, {stuff});
-      if (choice > -1) {
-        CHECK(choice < indexes.size()) << choice;
-        return indexes[choice];
-      }
-      if (choice == -100)
-        return none;
-      if (callbackRet)
-        return *callbackRet;
-      if (considerResizeEvent(event))
-        continue;
-    }
-  }
-  });
-  return returnQueue.pop();
-}
-
-void WindowView::presentText(const string& title, const string& text) {
-  TempClockPause pause(clock);
-  presentList(title, ListElem::convert({text}), false);
-}
-
-void WindowView::presentTextBelow(const string& title, const string& text) {
-  TempClockPause pause(clock);
-  presentList(title, ListElem::convert({text}), false, MenuType::NORMAL_BELOW);
-}
-
-void WindowView::presentList(const string& title, const vector<ListElem>& options, bool scrollDown, MenuType menu) {
-  vector<ListElem> conv(options);
-  for (ListElem& e : conv)
-    if (e.getMod() == ListElem::NORMAL)
-      e.setMod(ListElem::TEXT);
-  ScrollPosition scrollPos(scrollDown ? 10000000 : 0);
-  chooseFromListInternal(title, conv, none, menu, &scrollPos);
 }
 
 void WindowView::zoom(int dir) {
@@ -1250,7 +972,7 @@ bool WindowView::isClockStopped() {
   return clock->isPaused();
 }
 
-bool WindowView::considerResizeEvent(Event& event, bool withBugReportEvent) {
+bool WindowView::considerResizeEvent(const Event& event, bool withBugReportEvent) {
   if (withBugReportEvent && considerBugReportEvent(event))
     return true;
   if (event.type == SDL::SDL_QUIT)
@@ -1278,7 +1000,7 @@ bool WindowView::zoomUIAvailable() const {
       && renderer.getWindowSize().y >= 2 * renderer.getMinResolution().y;
 }
 
-bool WindowView::considerBugReportEvent(Event& event) {
+bool WindowView::considerBugReportEvent(const Event& event) {
   if (event.type == SDL::SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT &&
       Vec2(event.button.x, event.button.y).inRectangle(getBugReportPos(renderer))) {
     bool exit = false;
@@ -1315,9 +1037,10 @@ bool WindowView::considerBugReportEvent(Event& event) {
         return true;
       ProgressMeter meter(1.0);
       optional<string> result;
-      displaySplash(&meter, "Uploading bug report", [this]{bugreportSharing->cancel();});
+      FileSharing::CancelFlag cancel;
+      displaySplash(&meter, "Uploading bug report", [&cancel]{ cancel.cancel(); });
       thread t([&] {
-        result = bugreportSharing->uploadBugReport(bugreportInfo->text, savefile, screenshot, meter);
+        result = bugreportSharing->uploadBugReport(cancel, bugreportInfo->text, savefile, screenshot, meter);
         clearSplash();
       });
       refreshView();
@@ -1336,6 +1059,8 @@ bool WindowView::considerBugReportEvent(Event& event) {
 
 void WindowView::processEvents() {
   guiBuilder.disableTooltip = !blockingElems.empty();
+  auto clickableGuiElems = getClickableGuiElems();
+  gui.propagateScrollEvent(clickableGuiElems);
   Event event;
   while (renderer.pollEvent(event)) {
     considerResizeEvent(event);
@@ -1354,7 +1079,7 @@ void WindowView::processEvents() {
           return;
         lockKeyboard = true;
       }
-      propagateEvent(event, getClickableGuiElems());
+      propagateEvent(event, clickableGuiElems);
     }
     switch (event.type) {
       case SDL::SDL_KEYDOWN:
@@ -1367,9 +1092,7 @@ void WindowView::processEvents() {
         break;
       case SDL::SDL_MOUSEBUTTONUP:
         if (event.button.button == SDL_BUTTON_LEFT) {
-          if (auto building = guiBuilder.getActiveButton(CollectiveTab::BUILDINGS))
-            inputQueue.push(UserInput(UserInputId::RECT_CONFIRM, BuildingClickInfo{Vec2(0, 0), *building}));
-          else if (auto building = guiBuilder.getActiveButton(CollectiveTab::TECHNOLOGY))
+          if (auto building = guiBuilder.getActiveButton())
             inputQueue.push(UserInput(UserInputId::RECT_CONFIRM, BuildingClickInfo{Vec2(0, 0), *building}));
           else if (gameInfo.infoType == GameInfo::InfoType::BAND)
             inputQueue.push(UserInputId::RECT_CANCEL);
@@ -1423,30 +1146,31 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
   switch (key.sym) {
 #ifndef RELEASE
     case SDL::SDLK_F10:
-      if (auto input = getText("Enter effect", "", 100, ""))
+      if (auto input = getText("Enter effect", "", 100))
         inputQueue.push({UserInputId::APPLY_EFFECT, *input});
       break;
     case SDL::SDLK_F11:
-      if (auto input = getText("Enter item type", "", 100, ""))
+      if (auto input = getText("Enter item type", "", 100))
         inputQueue.push({UserInputId::CREATE_ITEM, *input});
       break;
     case SDL::SDLK_F12:
-      if (auto input = getText("Enter creature id", "", 100, ""))
+      if (auto input = getText("Enter creature id", "", 100))
         inputQueue.push({UserInputId::SUMMON_ENEMY, *input});
       break;
     case SDL::SDLK_F9:
       inputQueue.push(UserInputId::CHEAT_ATTRIBUTES);
       break;
 #endif
-    case SDL::SDLK_F7:
-      presentList("", ListElem::convert(vector<string>(messageLog.begin(), messageLog.end())), true);
+    /*case SDL::SDLK_F7:
+      presentList("", vector<string>(messageLog.begin(), messageLog.end()), true);
       break;
-    /*case SDL::SDLK_F2:
+    case SDL::SDLK_F2:
       if (!renderer.isMonkey()) {
         options->handle(this, OptionSet::GENERAL);
         refreshScreen();
       }
       break;*/
+    case C_OPEN_MENU:
     case SDL::SDLK_ESCAPE:
       if (!guiBuilder.clearActiveButton() && !renderer.isMonkey())
         inputQueue.push(UserInput(UserInputId::EXIT));

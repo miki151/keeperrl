@@ -33,7 +33,6 @@ class Collective;
 class CollectiveTeams;
 class MapMemory;
 class VisibilityMap;
-class ListElem;
 class UserInput;
 class MinionAction;
 struct TaskActionInfo;
@@ -54,9 +53,11 @@ class AttackTrigger;
 class ImmigrantInfo;
 struct WorkshopOptionInfo;
 struct FurnaceOptionInfo;
+class ScriptedUIState;
 namespace BuildInfoTypes {
   struct BuildType;
 }
+
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
   static PPlayerControl create(Collective* col, vector<string> introText, TribeAlignment);
@@ -92,11 +93,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void onEvent(const GameEvent&);
   const vector<Creature*>& getControlled() const;
   void controlSingle(Creature*);
-  struct KeeperDangerInfo {
-    Creature* c;
-    string warning;
-  };
-  optional<KeeperDangerInfo> checkKeeperDanger() const;
+  void checkKeeperDanger();
   void dismissKeeperWarning();
 
   optional<TeamId> getCurrentTeam() const;
@@ -167,8 +164,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void commandTeam(TeamId);
   void setScrollPos(Position);
 
-  void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
-  void handleSelection(Position, const BuildInfoTypes::BuildType&);
+  void handleSelection(Vec2 pos, const BuildInfo&, bool dryRun);
+  void handleSelection(Position, const BuildInfoTypes::BuildType&, bool dryRun);
   vector<CollectiveInfo::Button> fillButtons() const;
   VillageInfo::Village getVillageInfo(const Collective* enemy) const;
   string getTriggerLabel(const AttackTrigger&) const;
@@ -186,10 +183,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void getEquipmentItem(View* view, ItemPredicate predicate);
   ItemInfo getWorkshopItem(const WorkshopItem&, int queuedCount) const;
   Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate,
-      ScrollPosition* scrollPos = nullptr);
-  Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, vector<Item*> allItems,
-      ScrollPosition* scrollPos = nullptr);
-  Creature* chooseSteed(Creature* creature, vector<Creature*> allSteeds, ScrollPosition* scrollPos = nullptr);
+      ScriptedUIState* uiState = nullptr);
+  Creature* chooseSteed(Creature* creature, vector<Creature*> allSteeds);
 
   int getNumMinions() const;
   void minionTaskAction(const TaskActionInfo&);
@@ -213,7 +208,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<Item*> getPillagedItems(Collective*) const;
   bool canPillage(const Collective*) const;
   void handlePillage(Collective* enemy);
-  void handleRansom(bool pay);
   ViewObject getTrapObject(FurnitureType, bool built) const;
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
   void onSquareClick(Position);
@@ -231,7 +225,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<SelectionInfo> rectSelection;
   void updateSelectionSquares();
   GlobalTime SERIAL(nextKeeperWarning) = GlobalTime(-1000);
-  bool wasPausedForWarning = false;
   struct ChosenCreatureInfo {
     UniqueEntity<Creature>::Id id;
     string group;
@@ -253,7 +246,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<PlayerMessage> SERIAL(messageHistory);
   vector<CollectiveAttack> SERIAL(newAttacks);
   vector<CollectiveAttack> SERIAL(notifiedAttacks);
-  vector<CollectiveAttack> SERIAL(ransomAttacks);
   vector<string> SERIAL(hints);
   optional<PlayerMessage&> findMessage(PlayerMessage::Id);
   SVisibilityMap SERIAL(visibilityMap);
@@ -297,8 +289,9 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<pair<ViewId,int>> getCostObj(const optional<CostInfo>&) const;
   ViewId getViewId(const BuildInfoTypes::BuildType&) const;
   EntityMap<Creature, LocalTime> leaderWoundedTime;
-  void handleDestructionOrder(Position position, HighlightType, DestroyAction);
+  void handleDestructionOrder(Position position, HighlightType, DestroyAction, bool dryRun);
   unordered_set<CollectiveResourceId, CustomHash<CollectiveResourceId>> SERIAL(usedResources);
   optional<vector<Collective*>> SERIAL(allianceAttack);
+  enum class Selection { SELECT, DESELECT, NONE } selection = Selection::NONE;
 };
 

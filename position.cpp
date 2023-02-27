@@ -853,7 +853,7 @@ bool Position::acidDamage(int amount) const {
       res |= furniture->acidDamage(*this);
   if (Creature* creature = getCreature())
     creature->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), AttackType::HIT, amount,
-        AttrType("ACID_DAMAGE"), {}, "The acid is harmless"));    
+        AttrType("ACID_DAMAGE"), {}, "The acid is harmless"));
   /*for (Item* it : getItems())
     if (Random.chance(amount))
       it->acidDamage(*this);*/
@@ -862,31 +862,31 @@ bool Position::acidDamage(int amount) const {
 
 bool Position::needsMemoryUpdate() const {
   PROFILE;
-  return isValid() && level->needsMemoryUpdate(getCoord());
+  return isValid() && level->needsMemoryUpdate(coord);
 }
 
 void Position::setNeedsMemoryUpdate(bool s) const {
   PROFILE;
   if (isValid())
-    level->setNeedsMemoryUpdate(getCoord(), s);
+    level->setNeedsMemoryUpdate(coord, s);
 }
 
 bool Position::needsRenderUpdate() const {
   PROFILE;
-  return isValid() && level->needsRenderUpdate(getCoord());
+  return isValid() && level->needsRenderUpdate(coord);
 }
 
 void Position::setNeedsRenderUpdate(bool s) const {
   PROFILE;
   if (isValid())
-    level->setNeedsRenderUpdate(getCoord(), s);
+    level->setNeedsRenderUpdate(coord, s);
 }
 
 void Position::setNeedsRenderAndMemoryUpdate(bool s) const {
   PROFILE;
   if (isValid()) {
-    level->setNeedsRenderUpdate(getCoord(), s);
-    level->setNeedsMemoryUpdate(getCoord(), s);
+    level->setNeedsRenderUpdate(coord, s);
+    level->setNeedsMemoryUpdate(coord, s);
   }
 }
 
@@ -1052,30 +1052,34 @@ const vector<Position>& Position::getLandingAtNextLevel(StairKey stairKey) {
   return NOTNULL(getModel()->getLinkedLevel(level, stairKey))->getLandingSquares(stairKey);
 }
 
+static bool checkStairConnection(const Position& from, const Position& to, const MovementType& type) {
+  PROFILE;
+  for (auto key1 : to.getLevel()->getAllStairKeys()) {
+    auto pos1 = to.getLevel()->getLandingSquares(key1)[0];
+    if (to.isConnectedTo(pos1, type))
+      for (auto key2 : from.getLevel()->getAllStairKeys()) {
+        auto pos2 = from.getLevel()->getLandingSquares(key2)[0];
+        if (from.isConnectedTo(pos2, type) && to.getModel()->areConnected(key1, key2, type))
+          return true;
+      }
+  }
+  return false;
+}
+
 bool Position::canNavigateToOrNeighbor(Position from, const MovementType& type) const {
-  if (canNavigateTo(from, type))
+  PROFILE;
+  if (!isSameModel(from))
+    return false;
+  if (isConnectedTo(from, type) || checkStairConnection(from, *this, type))
     return true;
   for (Position v : neighbors8())
-    if (v.canNavigateTo(from, type))
+    if (v.isConnectedTo(from, type) || checkStairConnection(from, v, type))
       return true;
   return false;
 }
 
 bool Position::canNavigateTo(Position from, const MovementType& type) const {
-  if (!isSameModel(from))
-    return false;
-  if (isConnectedTo(from, type))
-    return true;
-  for (auto key1 : level->getAllStairKeys()) {
-    auto pos1 = level->getLandingSquares(key1)[0];
-    if (isConnectedTo(pos1, type))
-      for (auto key2 : from.level->getAllStairKeys()) {
-        auto pos2 = from.level->getLandingSquares(key2)[0];
-        if (from.isConnectedTo(pos2, type) && level->getModel()->areConnected(key1, key2, type))
-          return true;
-      }
-  }
-  return false;
+  return isSameModel(from) && (isConnectedTo(from, type) || checkStairConnection(from, *this, type));
 }
 
 optional<DestroyAction> Position::getBestDestroyAction(const MovementType& movement) const {
@@ -1248,6 +1252,7 @@ double Position::getLight() const {
 optional<pair<Position, int>> Position::getStairsTo(Position targetPos, const MovementType& movement,
     bool includeNeighbors) const {
   PROFILE;
+  CHECK(isSameModel(targetPos));
   unordered_map<StairKey, int, CustomHash<StairKey>> distance;
   using QueueElem = tuple<StairKey, Level*, Level*, int>;
   auto queueCmp = [](auto& elem1, auto& elem2) { return std::get<3>(elem1) > std::get<3>(elem2); };

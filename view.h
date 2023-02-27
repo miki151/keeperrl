@@ -25,6 +25,8 @@
 #include "enum_variant.h"
 #include "unique_entity.h"
 #include "view_id.h"
+#include "campaign_menu_index.h"
+#include "keybinding.h"
 
 class CreatureView;
 class Level;
@@ -49,54 +51,6 @@ namespace fx {
 }
 class FXViewManager;
 
-class ListElem {
-  public:
-  enum ElemMod {
-    NORMAL,
-    TEXT,
-    HELP_TEXT,
-    TITLE,
-    INACTIVE,
-  };
-
-  ListElem(const char*, ElemMod mod = NORMAL,
-      optional<UserInputId> triggerAction = none);
-  ListElem(const string& text = "", ElemMod mod = NORMAL,
-      optional<UserInputId> triggerAction = none);
-  ListElem(const string& text, const string& secColumn, ElemMod mod = NORMAL);
-
-  ListElem& setTip(const string&);
-  ListElem& setMessagePriority(MessagePriority);
-  optional<MessagePriority> getMessagePriority() const;
-
-  const string& getText() const;
-  const string& getSecondColumn() const;
-  const string& getTip() const;
-  ElemMod getMod() const;
-  optional<UserInputId> getAction() const;
-  void setMod(ElemMod);
-
-  static vector<ListElem> convert(const vector<string>&);
-
-  private:
-  string text;
-  string secondColumn;
-  string tooltip;
-  ElemMod mod;
-  optional<UserInputId> action;
-  optional<MessagePriority> messagePriority;
-};
-
-enum class MenuType {
-  NORMAL,
-  NORMAL_BELOW,
-  MAIN,
-  MAIN_NO_TILES,
-  GAME_CHOICE,
-  YES_NO,
-  YES_NO_BELOW
-};
-
 struct HighscoreList {
   string name;
   struct Elem {
@@ -114,7 +68,6 @@ enum class CampaignActionId {
   CONFIRM,
   UPDATE_OPTION,
   CHANGE_TYPE,
-  SEARCH_RETIRED,
   BIOME
 };
 
@@ -127,7 +80,6 @@ enum class PassableInfo {
 
 class CampaignAction : public EnumVariant<CampaignActionId, TYPES(OptionId, CampaignType, string, int),
   ASSIGN(CampaignType, CampaignActionId::CHANGE_TYPE),
-  ASSIGN(string, CampaignActionId::SEARCH_RETIRED),
   ASSIGN(int, CampaignActionId::BIOME),
   ASSIGN(OptionId, CampaignActionId::UPDATE_OPTION)> {
     using EnumVariant::EnumVariant;
@@ -193,11 +145,6 @@ class View {
   /** Returns whether a travel interrupt key is pressed at a given moment.*/
   virtual bool travelInterrupt() = 0;
 
-  /** Draws a window with some options for the player to choose. \paramname{index} indicates the highlighted item. 
-      Returns none if the player cancelled the choice.*/
-  virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
-
   /** Lets the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) = 0;
 
@@ -207,43 +154,29 @@ class View {
       const string& message, optional<Keybinding> cycleKey) = 0;
 
   /** Asks the player a yer-or-no question.*/
-  bool yesOrNoPrompt(const string& message, bool defaultNo = false, ScriptedUIId = "yes_or_no");
+  bool yesOrNoPrompt(const string& message, optional<ViewIdList> = none, bool defaultNo = false,
+      ScriptedUIId = "yes_or_no");
+  optional<int> multiChoice(const string& message, const vector<string>&);
 
   void windowedMessage(ViewIdList, const string& message);
 
   /** Draws a window with some text. The text is formatted to fit the window.*/
-  virtual void presentText(const string& title, const string& text) = 0;
-  virtual void presentTextBelow(const string& title, const string& text) = 0;
+  void presentText(const string& title, const string& text);
+  void presentTextBelow(const string& title, const string& text);
 
   virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&, ScriptedUIState&) = 0;
-
-  /** Draws a window with a list of items.*/
-  virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      MenuType = MenuType::NORMAL) = 0;
+  void scriptedUI(ScriptedUIId, const ScriptedUIData&);
 
   /** Lets the player choose a number. Returns none if the player cancelled the choice.*/
-  virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) = 0;
+  virtual optional<int> getNumber(const string& title, Range range, int initial) = 0;
 
   /** Lets the player input a string. Returns none if the player cancelled the choice.*/
-  virtual optional<string> getText(const string& title, const string& value, int maxLength,
-      const string& hint = "") = 0;
-
-  virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
-      const vector<ItemInfo>&, ScrollPosition* scrollPos) = 0;
-
-  virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) = 0;
-
-  virtual optional<int> chooseItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollpos) = 0;
-
-  virtual optional<ExperienceType> getCreatureUpgrade(const CreatureExperienceInfo&) = 0;
+  virtual optional<string> getText(const string& title, const string& value, int maxLength) = 0;
 
   virtual optional<int> chooseAtMouse(const vector<string>& elems) = 0;
 
-  virtual optional<ModAction> getModAction(int highlighted, const vector<ModInfo>&) = 0;
-
   virtual void dungeonScreenshot(Vec2 size) = 0;
 
-  virtual void presentHighscores(const vector<HighscoreList>&) = 0;
   using BugReportSaveCallback = function<void(FilePath)>;
 
   bool confirmConflictingItems(const ContentFactory*, const vector<Item*>&);
@@ -272,8 +205,7 @@ class View {
 
   struct CampaignMenuState {
     bool helpText;
-    bool retiredWindow;
-    bool options;
+    CampaignMenuIndex index;
   };
   struct CampaignOptions {
     const Campaign& campaign;
@@ -293,7 +225,6 @@ class View {
     vector<CampaignTypeInfo> availableTypes;
     enum WarningType { NO_RETIRE };
     optional<WarningType> warning;
-    string searchString;
   };
 
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) = 0;
@@ -306,7 +237,7 @@ class View {
 
   virtual bool creatureInfo(const string& title, bool prompt, const vector<PlayerInfo>&) = 0;
 
-  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current = none) = 0;
+  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, Vec2 current) = 0;
 
   virtual void presentWorldmap(const Campaign&) = 0;
 

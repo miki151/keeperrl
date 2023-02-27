@@ -9,11 +9,12 @@ class ScrollPosition {
   ScrollPosition();
   explicit ScrollPosition(double pos);
   void set(double, milliseconds);
+  void setRelative(double, milliseconds);
   void setRatio(double, milliseconds);
   void reset(double);
-  void setBounds(double min, double max);
+  void setBounds(double min, double max, int yBegin);
   void add(double, milliseconds);
-  double get(milliseconds, double min, double max);
+  double get(milliseconds, double min, double max, int yBegin);
   double get(milliseconds);
   double getRatio(milliseconds);
   bool isScrolling(milliseconds);
@@ -23,5 +24,10 @@ class ScrollPosition {
   double start = 0;
   double target = 0;
   milliseconds targetTime = milliseconds{0};
-  optional<pair<double, double>> knownBounds;
+  struct KnownBounds {
+    double min;
+    double max;
+    int yBegin;
+  };
+  optional<KnownBounds> knownBounds;
 };

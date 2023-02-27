@@ -11,7 +11,6 @@ class Highscores;
 class FileSharing;
 class Options;
 class Jukebox;
-class ListElem;
 class Campaign;
 class Model;
 class RetiredGames;
@@ -49,7 +48,7 @@ class MainLoop {
   void campaignBattleText(int numTries, const FilePath& levelPath, EnemyId keeperId, VillainGroup);
   int campaignBattleText(int numTries, const FilePath& levelPath, EnemyId keeperId, EnemyId);
   void launchQuickGame(optional<int> maxTurns, bool tryToLoad);
-  void playSimpleGame();
+  void genZLevels(const string& keeperType);
   ContentFactory createContentFactory(bool vanillaOnly) const;
 
   private:
@@ -58,11 +57,7 @@ class MainLoop {
   int getSaveVersion(const SaveFileInfo& save);
   void uploadFile(const FilePath& path, const string& title, const SavedGameInfo&);
   void saveUI(PGame&, GameSaveType type);
-  void getSaveOptions(const vector<pair<GameSaveType, string>>&,
-      vector<ListElem>& options, vector<SaveFileInfo>& allFiles);
-
-  optional<SaveFileInfo> chooseSaveFile(const vector<ListElem>& options, const vector<SaveFileInfo>& allFiles,
-      string noSaveMsg, View*);
+  vector<SaveFileInfo> getSaveOptions(const vector<GameSaveType>&);
 
   void doWithSplash(const string& text, int totalProgress, function<void(ProgressMeter&)> fun,
     function<void()> cancelFun = nullptr);
@@ -74,7 +69,7 @@ class MainLoop {
   enum class ExitCondition;
   ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (WGame)> = nullptr,
       milliseconds stepTimeMilli = milliseconds{3}, optional<int> maxTurns = none);
-  void showCredits(const FilePath& path);
+  void showCredits();
   void showMods();
   void playMenuMusic();
   ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen&, ContentFactory*);
@@ -111,6 +106,7 @@ class MainLoop {
   void saveGame(PGame&, const FilePath&);
   void saveMainModel(PGame&, const FilePath& modelPath, const FilePath& warlordPath);
   TilePaths getTilePathsForAllMods() const;
+  vector<string> getCurrentMods() const;
 
   optional<ModVersionInfo> getLocalModVersionInfo(const string& mod) const;
   void updateLocalModVersion(const string& mod, const ModVersionInfo&);

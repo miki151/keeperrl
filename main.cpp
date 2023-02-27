@@ -57,6 +57,7 @@
 #include "fx_view_manager.h"
 #include "layout_renderer.h"
 #include "unlocks.h"
+#include "steam_input.h"
 
 #include "stack_printer.h"
 
@@ -139,7 +140,7 @@ static po::parser getCommandLineFlags() {
   flags["stderr"].description("Log to stderr");
   flags["nolog"].description("No logging");
   flags["free_mode"].description("Run in free ascii mode");
-  flags["simple_game"].description("Start \"simple game\"");
+  flags["gen_z_levels"].type(po::string).description("Generate and print z-level types for a given keeper");
 #ifndef RELEASE
   flags["quick_game"].description("Skip main menu and load the last save file or start a single map game");
   flags["new_game"].description("Skip main menu and start a single map game");
@@ -248,8 +249,8 @@ static int keeperMain(po::parser& commandLineFlags) {
   CHECK(!!trigger.getReferenceMaybe<StolenItems>());
 #ifndef RELEASE
   ogzstream compressedLog("log.gz");
-  if (!commandLineFlags["nolog"].was_set())
-    InfoLog.addOutput(DebugOutput::toStream(compressedLog));
+  /*if (!commandLineFlags["nolog"].was_set())
+    InfoLog.addOutput(DebugOutput::toStream(compressedLog));*/
 #endif
   FatalLog.addOutput(DebugOutput::toString(
       [](const string& s) { ofstream("stacktrace.out") << s << "\n" << std::flush; } ));
@@ -300,19 +301,43 @@ static int keeperMain(po::parser& commandLineFlags) {
     settingsPath.erase();
     userKeysPath.erase();
   }
+  unique_ptr<MySteamInput> steamInput;
+  #ifdef RELEASE
+    AppConfig appConfig(dataPath.file("appconfig.txt"));
+  #else
+    AppConfig appConfig(dataPath.file("appconfig-dev.txt"));
+  #endif
+  #ifdef USE_STEAMWORKS
+    steamInput = make_unique<MySteamInput>();
+    optional<steam::Client> steamClient;
+    if (appConfig.get<int>("steamworks") > 0) {
+      if (steam::initAPI()) {
+        steamClient.emplace();
+        steamInput->init();
+        INFO << "\n" << steamClient->info();
+      }
+  #ifdef RELEASE
+      else
+        USER_INFO << "Unable to connect with the Steam client.";
+  #endif
+    }
+  #endif
   KeybindingMap keybindingMap(freeDataPath.file("default_keybindings.txt"), userKeysPath);
-  Options options(settingsPath, &keybindingMap);
+  Options options(settingsPath, &keybindingMap, steamInput.get());
   Random.init(int(time(nullptr)));
   auto installId = getInstallId(userPath.file("installId.txt"), Random);
+  if (steamInput->isRunningOnDeck())
+    installId += "_deck";
   SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
   auto modsDir = userPath.subdirectory(gameConfigSubdir);
   auto allUnlocked = Unlocks::allUnlocked();
-  if (commandLineFlags["simple_game"].was_set()) {
+  if (commandLineFlags["gen_z_levels"].was_set()) {
     MainLoop loop(nullptr, nullptr, nullptr, paidDataPath, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr,
         &allUnlocked, 0, "");
-    loop.playSimpleGame();
+    loop.genZLevels(commandLineFlags["gen_z_levels"].get().string);
+    exit(0);
   }
   if (commandLineFlags["layout_name"].was_set()) {
     USER_CHECK(commandLineFlags["layout_size"].was_set()) << "Need to specify layout_size option";
@@ -326,11 +351,6 @@ static int keeperMain(po::parser& commandLineFlags) {
     exit(0);
   }
   SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
-#ifdef RELEASE
-  AppConfig appConfig(dataPath.file("appconfig.txt"));
-#else
-  AppConfig appConfig(dataPath.file("appconfig-dev.txt"));
-#endif
   string uploadUrl = appConfig.get<string>("upload_url");
   const auto modVersion = appConfig.get<string>("mod_version");
   const auto saveVersion = appConfig.get<int>("save_version");
@@ -374,21 +394,9 @@ static int keeperMain(po::parser& commandLineFlags) {
     battleTest(new DummyView(&clock), nullptr);
     return 0;
   }
-#ifdef USE_STEAMWORKS
-  optional<steam::Client> steamClient;
-  if (appConfig.get<int>("steamworks") > 0) {
-    if (steam::initAPI()) {
-      steamClient.emplace();
-      INFO << "\n" << steamClient->info();
-    }
-#ifdef RELEASE
-    else
-      USER_INFO << "Unable to connect with the Steam client.";
-#endif
-  }
-#endif
   Renderer renderer(
       &clock,
+      steamInput.get(),
       "KeeperRL",
       contribDataPath,
       freeDataPath.file("images/mouse_cursor.png"),
@@ -403,8 +411,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserInfoLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   atomic<bool> splashDone { false };
-  GuiFactory guiFactory(renderer, &clock, &options, freeDataPath.subdirectory("images"),
-      tilesPresent ? optional<DirectoryPath>(paidDataPath.subdirectory("images")) : none);
+  GuiFactory guiFactory(renderer, &clock, &options, freeDataPath.subdirectory("images"));
   TileSet tileSet(paidDataPath.subdirectory("images"), modsDir, freeDataPath.subdirectory("ui"));
   renderer.setTileSet(&tileSet);
   unique_ptr<fx::FXManager> fxManager;
@@ -461,7 +468,7 @@ static int keeperMain(po::parser& commandLineFlags) {
       &sokobanInput, &tileSet, &unlocks, saveVersion, modVersion);
   try {
     if (audioError)
-      view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);
+      USER_INFO << "Failed to initialize audio. The game will be started without sound. " << *audioError;
     if (commandLineFlags["quick_game"].was_set())
       loop.launchQuickGame(maxTurns, true);
     if (commandLineFlags["new_game"].was_set())

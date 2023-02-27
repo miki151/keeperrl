@@ -21,7 +21,7 @@ class SimpleGame {
   vector<PCreature> minions;
   unordered_map<CollectiveResourceId, int, CustomHash<CollectiveResourceId>> resources;
   vector<ImmigrantInfo> immigrants;
-  vector<ZLevelInfo> zLevels;
+  vector<ZLevelType> zLevels;
   DungeonLevel dungeonLevel;
   int maxPopulation = 10;
   ContentFactory* factory;

@@ -1,11 +1,10 @@
-"Welcome to KeeperRL Alpha 35! This patch was released on July 4th, 2022.
+"Welcome to KeeperRL Alpha 36! This patch was released on Feb 17th, 2023.
 
 Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
 
-* Rebalanced combat favoring large numbers of units.
-* Equiped weapons rendered on units.
-* Configurable keybindings.
-* Moddable attributes, buffs, and body materials.
+* Full support for the Steam Deck console.
+* Massive optimizations in gameplay code.
+* Reworked big parts of the UI and added keyboard support to menus.
 
 If this is your first time playing KeeperRL, remember to start with the tutorial!
 "

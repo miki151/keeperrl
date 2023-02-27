@@ -1,0 +1,40 @@
+
+{
+BlockEvents
+ExitButtonsWithEnter()
+Position(BOTTOM_CENTERED, Width 800 MiniWindow({
+  Fill(Rgb 0 0 0 200)
+  Vertical {
+    Label("When playing in the real-time mode, use:")
+    Height 5 {}
+    Label("1. The right touchpad to move the mouse cursor.")
+    Height 5 {}
+    Label("2. The right trigger to place items on the map.")
+    Height 5 {}
+    Label("3. The left touchpad to access various submenus, such as buildings or technology.")
+    Height 5 {}
+    Label("4. [Y] to pause or unpause the game.")
+    Height 5 {}
+    Label("5. [B] to open the Z-levels list.")
+    Height 5 {}
+    Horizontal {
+      Label("6. [")
+      Label(text = "☰" font = SYMBOL_FONT)
+      Label("] to access the menu.")
+    }
+    Height 5 {}
+    Horizontal {
+      Label("7. [")
+      {
+        Label(text = "◻" font = SYMBOL_FONT)
+        MarginLeft(-4, Label(text = "▗" font = SYMBOL_FONT))
+      }
+      Label("] to open the world map.")
+    }
+    Height 5 {}
+    Position(MIDDLE, Texture("deck_real_time"))
+    Height 5 {}
+    Label(size = 14 text = "For an exhaustive list of controls or to apply changes, see controller settings after pressing the [Steam] button.")
+  }
+}))
+}

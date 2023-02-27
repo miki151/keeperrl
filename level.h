@@ -158,6 +158,7 @@ class Level : public OwnedObject<Level> {
 
   string SERIAL(name);
   int SERIAL(depth) = 0;
+  bool SERIAL(mainDungeon) = false;
   bool canTranfer = true;
   bool aiFollows = true;
   Table<Collective*> SERIAL(territory);

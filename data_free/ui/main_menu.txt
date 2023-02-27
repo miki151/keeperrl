@@ -1,0 +1,104 @@
+Def LoadButtonSpacing() Height 10 {} End
+
+Def Spacing 15 End
+
+Def NonClosableWindow(Content) {
+  Fill(Rgb 0 0 0 255)
+  Content
+  Position(LEFT_STRETCHED, Texture(VERT_BAR_MINI2, FLIP_X))
+  Position(RIGHT_STRETCHED, Texture(VERT_BAR_MINI2))
+}
+End
+
+Def TextColor() Rgb 150 150 150 255 End
+
+Def MenuButton(Name) Height 45  {
+  TextureFit(MENU_ITEM)
+  Position(MIDDLE, MarginBottom(4, Label(Name, 22, TextColor())))
+  Focusable Position(MIDDLE, MarginBottom(4, Label(Name, 22, Rgb 255 255 255 255)))
+  Button()
+}
+End
+
+Def LinkButton(id, label, url) {
+  Horizontal { ViewId(1, {id}) Width 8 {} Label(label, 19, TextColor()) }
+  UrlButton(
+      Horizontal { ViewId(1, {id}) Width 8 {} Label(label, 19, Rgb 255 255 255 255) }
+      url)
+}
+End
+
+Def MenuWidth 300 End
+
+Def BottomLinks()
+  Margins(0, Position(BOTTOM_STRETCHED,{
+    Frame(Rgb 255 255 255 255)
+    Fill(Rgb 0 0 0 200)
+    Margins(10, {
+      Vertical {
+        LinkButton("keeper4", "News", "https://keeperrl.com/category/News")
+        Height 10 {}
+        LinkButton("elementalist", "Wiki", "http://keeperrl.com/wiki")
+        Height 10 {}
+        LinkButton("jester", "Discord", "https://discordapp.com/invite/XZfCCs5")
+        Height 10 {}
+        LinkButton("gnome", "Github", "https://github.com/miki151/keeperrl")
+        Height 10 {}
+        Horizontal {
+          Label("Install id: ", 14, TextColor())
+          Using "install_id" Label(none, 14, TextColor())
+        }
+        Horizontal {
+          Label("Build: ", 14, TextColor())
+          Using "version" Label(none, 14, TextColor())
+        }
+      }
+    })
+  }))
+End
+
+Position(SCREEN, {
+  Position(ENCAPSULATE, TextureFit(MENU_CORE, FLIP_X))
+  Margins(0, Position(LEFT_STRETCHED, MarginBottom(0, MarginLeft(50, NonClosableWindow({
+    FocusKeysVertical()
+    Width MenuWidth
+    Position(MIDDLE_STRETCHED_Y, Width (-50 + MenuWidth)
+    Vertical {
+      Height 25 {}
+      Height 55 TextureFit("logo4small")
+      Height 25 {}
+      Using "play" MenuButton("Play")
+      Height Spacing {}
+      Using "settings" MenuButton("Settings")
+      Height Spacing {}
+      Using "highscores" MenuButton("Highscores")
+      Height Spacing {}
+      Using "credits" MenuButton("Credits")
+      Height Spacing {}
+      Using "quit" MenuButton("Quit")
+      Stretch {}
+      BottomLinks()
+      Height 15 {}
+    })
+  })))))
+  Using "controller_hint" {
+    Position(BOTTOM_CENTERED, Width 750 MiniWindow({
+      Fill(Rgb 0 0 0 200)
+      Vertical {
+        Label("When navigating various menus, use:")
+        Height 5 {}
+        Label("1. The D-pad to move the focus in a chosen direction.")
+        Height 5 {}
+        Label("2. The [A] button to confirm the current selection.")
+        Height 5 {}
+        Label("3. The [B] button to go back or close the current dialog.")
+        Height 5 {}
+        Label("4. The right joystick to scroll pages that don't fit the screen.")
+        Height 5 {}
+        Position(MIDDLE, Texture("deck_menu"))
+      }
+    }))
+    BlockKeyEvents
+    KeybindingHandler(EXIT_MENU)
+  }
+})

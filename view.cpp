@@ -21,56 +21,6 @@
 #include "item.h"
 #include "view_object.h"
 
-ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
-}
-
-ListElem::ListElem(const string& t, const string& sec, ElemMod m) : text(t), secondColumn(sec), mod(m) {
-}
-
-ListElem::ListElem(const char* s, ElemMod m, optional<UserInputId> a) : text(s), mod(m), action(a) {
-}
-
-ListElem& ListElem::setTip(const string& s) {
-  tooltip = s;
-  return *this;
-}
-
-ListElem& ListElem::setMessagePriority(MessagePriority p) {
-  messagePriority = p;
-  return *this;
-}
-
-optional<MessagePriority> ListElem::getMessagePriority() const {
-  return messagePriority;
-}
-
-const string& ListElem::getText() const {
-  return text;
-}
-
-const string& ListElem::getSecondColumn() const {
-  return secondColumn;
-}
-
-const string& ListElem::getTip() const {
-  return tooltip;
-}
-
-ListElem::ElemMod ListElem::getMod() const {
-  return mod;
-}
-
-void ListElem::setMod(ElemMod m) {
-  mod = m;
-}
-
-optional<UserInputId> ListElem::getAction() const {
-  return action;
-}
-
-vector<ListElem> ListElem::convert(const vector<string>& v) {
-  return v.transform([](const string& s) { return ListElem(s); });
-}
 
 View::View() {
 
@@ -99,15 +49,62 @@ void View::doWithSplash(const string& text, int totalProgress,
   }
 }
 
-bool View::yesOrNoPrompt(const string& message, bool defaultNo, ScriptedUIId id) {
+void View::presentText(const string& title, const string& text) {
+  auto data = ScriptedUIDataElems::Record {{
+    {"text", std::move(text)}
+  }};
+  if (!title.empty())
+    data.elems["title"] = title;
+  ScriptedUIState state;
+  scriptedUI("present_text", data, state);
+}
+
+void View::presentTextBelow(const string& title, const string& text) {
+  auto data = ScriptedUIDataElems::Record {{
+    {"text", std::move(text)}
+  }};
+  if (!title.empty())
+    data.elems["title"] = title;
+  ScriptedUIState state;
+  scriptedUI("present_text_below", data, state);
+}
+
+optional<int> View::multiChoice(const string& message, const vector<string>& elems) {
+  optional<int> ret;
+  auto list = ScriptedUIDataElems::List {};
+  for (int i : All(elems))
+    list.push_back(ScriptedUIDataElems::Record{{
+        {"text", elems[i]},
+        {"callback", ScriptedUIDataElems::Callback { [i, &ret] {
+          ret = i;
+          return true;
+        }}}
+    }});
+  auto data = ScriptedUIDataElems::Record {{
+    {"title", message},
+    {"options", std::move(list)}
+  }};
+  ScriptedUIState state;
+  scriptedUI("multi_choice", data, state);
+  return ret;
+}
+
+bool View::yesOrNoPrompt(const string& message, optional<ViewIdList> viewId, bool defaultNo, ScriptedUIId id) {
   bool ret = false;
   auto data = ScriptedUIDataElems::Record {{
     {"callback"_s, ScriptedUIDataElems::Callback{[&ret] { ret = true; return true; }}},
     {"message"_s, message},
   }};
+  if (viewId)
+    data.elems["view_id"] = *viewId;
   ScriptedUIState state;
   scriptedUI(id, data, state);
   return ret;
+}
+
+void View::scriptedUI(ScriptedUIId id, const ScriptedUIData& data) {
+  ScriptedUIState state;
+  scriptedUI(id, data, state);
 }
 
 void View::windowedMessage(ViewIdList id, const string& message) {

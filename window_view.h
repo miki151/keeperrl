@@ -23,6 +23,7 @@
 #include "gui_builder.h"
 #include "clock.h"
 #include "sound.h"
+#include "steam_input.h"
 
 class SoundLibrary;
 class ViewIndex;
@@ -50,7 +51,7 @@ class WindowView: public View {
   static View* createLoggingView(OutputArchive& of, ViewParams);
   static View* createReplayView(InputArchive& ifs, ViewParams);
 
-  WindowView(ViewParams); 
+  WindowView(ViewParams);
   virtual void initialize(unique_ptr<fx::FXRenderer>, unique_ptr<FXViewManager>) override;
   virtual void reset() override;
   virtual void displaySplash(const ProgressMeter*, const string&, function<void()> cancelFun) override;
@@ -63,9 +64,6 @@ class WindowView: public View {
   virtual void updateView(CreatureView*, bool noRefresh) override;
   virtual void setScrollPos(Position) override;
   virtual void resetCenter() override;
-  virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr,
-      optional<UserInputId> exitAction = none) override;
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override;
   virtual TargetResult chooseTarget(Vec2 playerPos, TargetType, Table<PassableInfo> passable,
       const string& message, optional<Keybinding> cycleKey) override;
@@ -75,20 +73,9 @@ class WindowView: public View {
   virtual double getGameSpeed() override;
   virtual optional<int> chooseAtMouse(const vector<string>& elems) override;
 
-  virtual void presentText(const string& title, const string& text) override;
-  virtual void presentTextBelow(const string& title, const string& text) override;
-  virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      MenuType = MenuType::NORMAL) override;
-  virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) override;
-  virtual optional<string> getText(const string& title, const string& value, int maxLength,
-      const string& hint) override;
-  virtual optional<int> chooseItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollpos) override;
-  virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
-      const vector<ItemInfo>&, ScrollPosition* scrollPos) override;
-  virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) override;
-  virtual optional<ExperienceType> getCreatureUpgrade(const CreatureExperienceInfo&) override;
+  virtual optional<int> getNumber(const string& title, Range range, int initial) override;
+  virtual optional<string> getText(const string& title, const string& value, int maxLength) override;
   virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&, ScriptedUIState&) override;
-  virtual void presentHighscores(const vector<HighscoreList>&) override;
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
   virtual milliseconds getTimeMilli() override;
@@ -97,7 +84,7 @@ class WindowView: public View {
   virtual bool isClockStopped() override;
   virtual void continueClock() override;
   virtual void addSound(const Sound&) override;
-  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current) override;
+  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, Vec2 current) override;
   virtual void presentWorldmap(const Campaign&) override;
   virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&) override;
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) override;
@@ -105,7 +92,6 @@ class WindowView: public View {
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<PlayerInfo>&,
       const string& cancelText) override;
   virtual bool creatureInfo(const string& title, bool prompt, const vector<PlayerInfo>&) override;
-  virtual optional<ModAction> getModAction(int highlighted, const vector<ModInfo>&) override;
   virtual void logMessage(const string&) override;
   virtual void setBugReportSaveCallback(BugReportSaveCallback) override;
   virtual void dungeonScreenshot(Vec2 size) override;
@@ -116,14 +102,10 @@ class WindowView: public View {
   Renderer& renderer;
   GuiFactory& gui;
   void processEvents();
-  void displayMenuSplash2();
-  void displayOldSplash();
   void updateMinimap(const CreatureView*);
   void mapContinuousLeftClickFun(Vec2);
   void mapRightClickFun(Vec2);
   Rectangle getTextInputPosition();
-  optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, optional<int> index,
-      MenuType, ScrollPosition*);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
   void rebuildGui();
@@ -133,7 +115,6 @@ class WindowView: public View {
   void keyboardAction(const SDL::SDL_Keysym&);
   void keyboardActionAlways(const SDL::SDL_Keysym&);
 
-  void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
   void drawAndClearBuffer();
   void getSmallSplash(const ProgressMeter*, const string& text, function<void()> cancelFun);
@@ -143,7 +124,7 @@ class WindowView: public View {
   Rectangle getMapGuiBounds() const;
   void switchTiles();
 
-  bool considerResizeEvent(Event&, bool withBugReportEvent = true);
+  bool considerResizeEvent(const Event&, bool withBugReportEvent = true);
 
   int messageInd = 0;
   std::deque<string> currentMessage = std::deque<string>(3, "");
@@ -213,11 +194,11 @@ class WindowView: public View {
   };
 
   void getBlockingGui(Semaphore&, SGuiElem, optional<Vec2> origin = none);
-  bool isKeyPressed(SDL::SDL_Scancode);
 
   template<typename T>
   T getBlockingGui(SyncQueue<T>& queue, SGuiElem elem, optional<Vec2> origin = none, bool darkenBackground = true) {
     TempClockPause pause(clock);
+    int origElemCount = blockingElems.size();
     if (darkenBackground && blockingElems.empty()) {
       blockingElems.push_back(gui.darken());
       blockingElems.back()->setBounds(Rectangle(renderer.getSize()));
@@ -227,16 +208,18 @@ class WindowView: public View {
     origin->y = max(0, origin->y);
     Vec2 size(*elem->getPreferredWidth(), min(renderer.getSize().y - origin->y, *elem->getPreferredHeight()));
     elem->setBounds(Rectangle(*origin, *origin + size));
-    propagateMousePosition({elem});
+    //propagateMousePosition({elem});
     blockingElems.push_back(std::move(elem));
     if (currentThreadId() == renderThreadId) {
       while (queue.isEmpty())
         refreshView();
-      blockingElems.clear();
+      while (blockingElems.size() > origElemCount)
+        blockingElems.pop_back();
       return *queue.popAsync();
     }
     T ret = queue.pop();
-    blockingElems.clear();
+    while (blockingElems.size() > origElemCount)
+      blockingElems.pop_back();
     return ret;
   }
   atomic<bool> splashDone;
@@ -244,7 +227,6 @@ class WindowView: public View {
   Options* options;
   Clock* clock;
   GuiBuilder guiBuilder;
-  void drawMenuBackground(double barState, double mouthState);
   atomic<int> zoomUI;
   void playSounds(const CreatureView*);
   vector<Sound> soundQueue;
@@ -252,9 +234,8 @@ class WindowView: public View {
   SoundLibrary* soundLibrary;
   deque<string> messageLog;
   void propagateMousePosition(const vector<SGuiElem>&);
-  Rectangle getEquipmentMenuPosition(int height);
   Vec2 getOverlayPosition(GuiBuilder::OverlayInfo::Alignment, int height, int width, int rightBarWidth, int bottomBarHeight);
-  bool considerBugReportEvent(Event&);
+  bool considerBugReportEvent(const Event&);
   BugReportSaveCallback bugReportSaveCallback;
   FileSharing* bugreportSharing;
   DirectoryPath bugreportDir;

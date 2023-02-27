@@ -107,7 +107,7 @@ template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
   ar(memory, introText, nextKeeperWarning, tribeAlignment);
-  ar(newAttacks, ransomAttacks, notifiedAttacks, messages, hints);
+  ar(newAttacks, notifiedAttacks, messages, hints);
   ar(visibilityMap, unknownLocations, dismissedVillageInfos, buildInfo);
   ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures, usedResources, allianceAttack);
 }
@@ -215,10 +215,6 @@ const vector<Creature*>& PlayerControl::getControlled() const {
 }
 
 optional<TeamId> PlayerControl::getCurrentTeam() const {
-  // try returning a non-persistent team first
-  for (TeamId team : getTeams().getAllActive())
-    if (!getTeams().isPersistent(team) && getTeams().getLeader(team)->isPlayer())
-      return team;
   for (TeamId team : getTeams().getAllActive())
     if (getTeams().getLeader(team)->isPlayer())
       return team;
@@ -340,28 +336,31 @@ void PlayerControl::leaveControl() {
           if (auto steed = collective->getSteedOrRider(c))
             c->forceMount(steed);
       }
-    if (!getTeams().isPersistent(team)) {
-      if (getTeams().getMembers(team).size() == 1)
-        getTeams().cancel(team);
-      else
-        getTeams().deactivate(team);
-      break;
-    }
+    if (getTeams().getMembers(team).size() == 1)
+      getTeams().cancel(team);
+    else
+      getTeams().deactivate(team);
+    break;
   }
   getView()->stopClock();
 }
 
 void PlayerControl::render(View* view) {
+  PROFILE;
   //collective->getConstructions().checkDebtConsistency();
+  if (getControlled().empty()) {
+    view->updateView(this, false);
+  }
   if (firstRender) {
     firstRender = false;
     for (Creature* c : getCreatures())
       updateMinionVisibility(c);
+    if (getGame()->getOptions()->getBoolValue(OptionId::CONTROLLER_HINT_REAL_TIME)) {
+      getView()->scriptedUI("controller_hint_real_time", ScriptedUIData{});
+      getGame()->getOptions()->setValue(OptionId::CONTROLLER_HINT_REAL_TIME, 0);
+    }
   }
-  if (getControlled().empty()) {
-    view->updateView(this, false);
-  }
-  if (!introText.empty() && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
+  if (!tutorial && !introText.empty() && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     view->updateView(this, false);
     for (auto& msg : introText)
       view->presentText("", msg);
@@ -370,12 +369,12 @@ void PlayerControl::render(View* view) {
 }
 
 void PlayerControl::addConsumableItem(Creature* creature) {
-  ScrollPosition scrollPos;
+  ScriptedUIState state;
   while (1) {
     Item* chosenItem = chooseEquipmentItem(creature, {}, [&](const Item* it) {
         return !collective->getMinionEquipment().isOwner(it, creature)
             && !it->canEquip()
-            && collective->getMinionEquipment().needsItem(creature, it, true); }, &scrollPos);
+            && collective->getMinionEquipment().needsItem(creature, it, true); }, &state);
     if (chosenItem) {
       creature->removeEffect(LastingEffect::SLEEP);
       CHECK(collective->getMinionEquipment().tryToOwn(creature, chosenItem));
@@ -479,6 +478,7 @@ void PlayerControl::equipmentGroupAction(const EquipmentGroupAction& action) {
 
 static ItemInfo getItemInfo(const ContentFactory* factory, const vector<Item*>& stack, bool equiped, bool pending, bool locked,
     optional<ItemInfo::Type> type = none) {
+  PROFILE;
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(factory, nullptr, stack.size() > 1);
     c.fullName = stack[0]->getNameAndModifiers(factory, false);
@@ -487,8 +487,9 @@ static ItemInfo getItemInfo(const ContentFactory* factory, const vector<Item*>& 
     if (stack[0]->canEquip())
       c.slot = stack[0]->getEquipmentSlot();
     c.viewId = stack[0]->getViewObject().getViewIdList();
+    c.ids.reserve(stack.size());
     for (auto it : stack)
-      c.ids.insert(it->getUniqueId());
+      c.ids.push_back(it->getUniqueId());
     c.actions = {ItemAction::DROP};
     c.equiped = equiped;
     c.locked = locked;
@@ -523,19 +524,6 @@ static ItemInfo getEmptySlotItem(EquipmentSlot slot, bool locked) {
     c.locked = locked;
     c.equiped = false;
     c.pending = false;);
-}
-
-static ItemInfo getTradeItemInfo(const ContentFactory* factory, const vector<Item*>& stack, int budget) {
-  return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName(factory, nullptr, stack.size() > 1);
-    c.price = make_pair(ViewId("gold"), stack[0]->getPrice());
-    c.fullName = stack[0]->getNameAndModifiers(factory, false);
-    c.description = stack[0]->getDescription(factory);
-    c.number = stack.size();
-    c.viewId = stack[0]->getViewObject().getViewIdList();
-    for (auto it : stack)
-      c.ids.insert(it->getUniqueId());
-    c.unavailable = c.price->second > budget;);
 }
 
 static CollectiveInfo::PromotionOption getPromotionOption(const ContentFactory* factory, const PromotionInfo& info) {
@@ -576,7 +564,7 @@ static ItemInfo getSteedItemInfo(const ContentFactory* factory, const Creature* 
     c.equiped = currentlyRiding;
     c.pending = !currentlyRiding;
     c.actions = {ItemAction::DROP_STEED};
-    c.ids.insert(Item::Id(123));
+    c.ids.push_back(Item::Id(123));
   );
 }
 
@@ -641,13 +629,37 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
   }
 }
 
-Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
-    ScrollPosition* scrollPos) {
-  return chooseEquipmentItem(creature, std::move(currentItems), collective->getAllItems().filter(predicate), scrollPos);
+static ScriptedUIDataElems::Record getItemRecord(const ContentFactory* factory, const vector<Item*> itemStack) {
+  auto elem = ScriptedUIDataElems::Record{};
+  elem.elems["view_id"] = itemStack[0]->getViewObject().getViewIdList();
+  string label;
+  if (itemStack.size() > 1)
+    label = toString(itemStack.size()) + " ";
+  label += itemStack[0]->getShortName(factory, nullptr, itemStack.size() > 1);
+  elem.elems["name"] = capitalFirst(std::move(label));
+  auto tooltipElems = ScriptedUIDataElems::List {
+    capitalFirst(itemStack[0]->getNameAndModifiers(factory))
+  };
+  for (auto& elem : itemStack[0]->getDescription(factory))
+    tooltipElems.push_back(elem);
+  elem.elems["tooltip"] = std::move(tooltipElems);
+  return elem;
 }
 
-Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, vector<Item*> allItems,
-    ScrollPosition* scrollPos) {
+static ScriptedUIDataElems::Record getItemOwnerRecord(const ContentFactory* factory, const Creature* creature,
+    int count) {
+  auto bestAttack = creature->getBestAttack(factory);
+  return ScriptedUIDataElems::Record {{
+      {"view_id", creature->getViewObject().getViewIdList()},
+      {"count", toString(count)},
+      {"attack_view_id", ViewIdList{bestAttack.viewId}},
+      {"attack_value", toString(bestAttack.value)}
+  }};
+}
+
+Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
+    ScriptedUIState* uiState) {
+  auto allItems = collective->getAllItems().filter(predicate);
   vector<Item*> availableItems;
   vector<Item*> usedItems;
   collective->getMinionEquipment().sortByEquipmentValue(creature, allItems);
@@ -666,31 +678,51 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
       [&](const Item* it) {
         const Creature* c = getCreature(*collective->getMinionEquipment().getOwner(it));
         return c->getName().bare() + toString<int>(c->getBestAttack(factory).value);});
-  vector<Item*> allStacked;
-  vector<ItemInfo> options;
-  for (Item* it : currentItems)
-    options.push_back(getItemInfo(factory, {it}, true, false, false));
+  auto data = ScriptedUIDataElems::Record{};
+  data.elems["title"] = "Available items:"_s;
+  data.elems["is_equipment_choice"] = "blabla"_s;
+  auto itemsList = ScriptedUIDataElems::List{};
+  Item* ret = nullptr;
+  for (Item* it : currentItems) {
+    auto r = getItemRecord(factory, {it});
+    r.elems["equiped"] = "blabla"_s;
+    r.elems["callback"] = ScriptedUIDataElems::Callback {
+        [it, &ret] { ret = it; return true; }
+    };
+    itemsList.push_back(std::move(r));
+  }
   for (auto& stack : concat(Item::stackItems(factory, availableItems), usedStacks)) {
-    options.emplace_back(getItemInfo(factory, stack, false, false, false));
-    EntitySet<Creature> allOwners;
-    optional<CreatureInfo> firstOwner;
+    auto r = getItemRecord(factory, stack);
+    r.elems["callback"] = ScriptedUIDataElems::Callback {
+        [item = stack[0], &ret] { ret = item; return true; }
+    };
+    unordered_set<const Creature*> allOwners;
     for (auto item : stack)
       if (auto creatureId = collective->getMinionEquipment().getOwner(item))
-        if (const Creature* c = getCreature(*creatureId)) {
+        if (const Creature* c = getCreature(*creatureId))
           allOwners.insert(c);
-          firstOwner = CreatureInfo(c);
-        }
-    if (firstOwner)
-      options.back().owner = make_pair(std::move(*firstOwner), allOwners.getSize());
-    allStacked.push_back(stack.front());
+    if (!allOwners.empty())
+      r.elems["owner"] = getItemOwnerRecord(factory, *allOwners.begin(), allOwners.size());
+    itemsList.push_back(std::move(r));
   }
-  auto index = getView()->chooseItem("Available items:", options, scrollPos);
-  if (!index)
-    return nullptr;
-  return concat(currentItems, allStacked)[*index];
+  data.elems["elems"] = std::move(itemsList);
+  ScriptedUIState state;
+  getView()->scriptedUI("pillage_menu", data, uiState ? *uiState : state);
+  return ret;
 }
 
-Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSteeds, ScrollPosition* scrollPos) {
+static ScriptedUIDataElems::Record getSteedItemRecord(const ContentFactory* factory, const Creature* steed) {
+  auto elem = ScriptedUIDataElems::Record{};
+  elem.elems["view_id"] = steed->getViewObject().getViewIdList();
+  elem.elems["name"] = capitalFirst(steed->getName().bare());
+  elem.elems["tooltip"] = ScriptedUIDataElems::List {
+    capitalFirst(steed->getName().aOrTitle()),
+    capitalFirst(steed->getAttributes().getDescription(factory))
+  };
+  return elem;
+}
+
+Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSteeds) {
   vector<Creature*> availableItems;
   vector<Creature*> usedItems;
   for (auto item : allSteeds) {
@@ -707,18 +739,23 @@ Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSt
         const Creature* c = collective->getSteedOrRider(it);
         return c->getName().bare() + toString<int>(c->getBestAttack(factory).value);
       });
-  vector<Creature*> allStacked;
-  vector<ItemInfo> options;
+  auto data = ScriptedUIDataElems::Record{};
+  data.elems["title"] = "Available steeds (" + combine(creature->getSteedSizes()) + "):"_s;
+  data.elems["is_equipment_choice"] = "blabla"_s;
+  auto itemsList = ScriptedUIDataElems::List{};
+  Creature* ret = nullptr;
   for (auto& stack : concat(Creature::stack(availableItems), usedStacks)) {
-    options.emplace_back(getSteedItemInfo(getGame()->getContentFactory(), stack[0], false));
+    auto r = getSteedItemRecord(getGame()->getContentFactory(), stack[0]);
     if (auto c = collective->getSteedOrRider(stack[0]))
-      options.back().owner = make_pair(CreatureInfo(c), stack.size());
-    allStacked.push_back(stack.front());
+      r.elems["owner"] = getItemOwnerRecord(factory, c, stack.size());
+    r.elems["callback"] = ScriptedUIDataElems::Callback {
+        [creature = stack[0], &ret] { ret = creature; return true; }
+    };
+    itemsList.push_back(std::move(r));
   }
-  auto index = getView()->chooseItem("Available steeds (" + combine(creature->getSteedSizes()) + "):", options, scrollPos);
-  if (!index)
-    return nullptr;
-  return allStacked[*index];
+  data.elems["elems"] = std::move(itemsList);
+  getView()->scriptedUI("pillage_menu", data);
+  return ret;
 }
 int PlayerControl::getNumMinions() const {
   return (int) collective->getCreatures(MinionTrait::FIGHTER).size();
@@ -893,7 +930,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   info.attacking = false;
   for (auto& attack : notifiedAttacks)
     if (attack.getAttacker() == col && attack.isOngoing())
-        info.attacking = true;
+      info.attacking = true;
   auto addTriggers = [&] {
     for (auto& trigger : col->getTriggers(collective))
 //#ifdef RELEASE
@@ -916,14 +953,11 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   if ((info.isConquered = col->isConquered())) {
     info.triggers.clear();
     if (canPillage(col))
-      info.actions.push_back({VillageAction::PILLAGE, none});
+      info.action = VillageAction::PILLAGE;
   } else if (!col->getTribe()->isEnemy(collective->getTribe())) {
     if (collective->isKnownVillainLocation(col)) {
       if (col->hasTradeItems())
-        info.actions.push_back({VillageAction::TRADE, none});
-    } else if (getGame()->isVillainActive(col)) {
-      if (col->hasTradeItems())
-        info.actions.push_back({VillageAction::TRADE, string("You must discover the location of the ally in order to trade.")});
+        info.action = VillageAction::TRADE;
     }
   }
   return info;
@@ -931,45 +965,45 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
 
 void PlayerControl::handleTrading(Collective* ally) {
   ScrollPosition scrollPos;
-  auto& storage = collective->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT);
-  if (storage.empty()) {
-    getView()->presentText("Information", "You need a storage room for equipment in order to trade.");
-    return;
-  }
   auto factory = getGame()->getContentFactory();
+  ScriptedUIState state;
   while (1) {
-    vector<Item*> available = ally->getTradeItems();
-    vector<vector<Item*>> items = Item::stackItems(factory, available);
-    if (items.empty())
-      break;
     int budget = collective->numResource(ResourceId("GOLD"));
-    vector<ItemInfo> itemInfo = items.transform(
-        [&] (const vector<Item*>& it) { return getTradeItemInfo(factory, it, budget); });
-    auto index = getView()->chooseTradeItem("Trade with " + ally->getName()->full,
-        {ViewId("gold"), collective->numResource(ResourceId("GOLD"))}, itemInfo, &scrollPos);
-    if (!index)
+    struct TradeOption {
+      vector<Item*> items;
+      StoragePositions storage;
+    };
+    vector<TradeOption> options;
+    for (auto& elem : Item::stackItems(factory, ally->getTradeItems()))
+      options.push_back({elem, collective->getStoragePositions(elem.front()->getStorageIds())});
+    if (options.empty())
+      return;
+    bool chosen = false;
+    auto data = ScriptedUIDataElems::Record{};
+    data.elems["title"] = "Trade with " + ally->getName()->full;
+    data.elems["budget"] = toString(budget);
+    data.elems["is_trade_or_pillage"] = "blabla"_s;
+    auto elems = ScriptedUIDataElems::List{};
+    for (int i : All(options)) {
+      auto& option = options[i];
+      auto elem = getItemRecord(factory, option.items);
+      elem.elems["price"] = toString(option.items[0]->getPrice());
+      if (!option.storage.empty() && option.items[0]->getPrice() <= budget)
+        elem.elems["callback"] = ScriptedUIDataElems::Callback { [option, ally, &budget, &chosen, this] {
+          CHECK(!option.storage.empty());
+          Random.choose(option.storage.asVector()).dropItem(ally->buyItem(option.items[0]));
+          budget -= option.items[0]->getPrice();
+          collective->takeResource({ResourceId("GOLD"), option.items[0]->getPrice()});
+          chosen = true;
+          return true;
+        }};
+      elems.push_back(elem);
+    }
+    data.elems["elems"] = std::move(elems);
+    getView()->scriptedUI("pillage_menu", data, state);
+    if (!chosen)
       break;
-    for (Item* it : available)
-      if (it->getUniqueId() == *index && it->getPrice() <= budget) {
-        collective->takeResource({ResourceId("GOLD"), it->getPrice()});
-        Random.choose(storage).dropItem(ally->buyItem(it));
-      }
-    getView()->updateView(this, true);
   }
-}
-
-static ItemInfo getPillageItemInfo(const ContentFactory* factory, const vector<Item*>& stack, bool noStorage) {
-  return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName(factory, nullptr, stack.size() > 1);
-    c.fullName = stack[0]->getNameAndModifiers(factory, false);
-    c.description = stack[0]->getDescription(factory);
-    c.number = stack.size();
-    c.viewId = stack[0]->getViewObject().getViewIdList();
-    for (auto it : stack)
-      c.ids.insert(it->getUniqueId());
-    c.unavailable = noStorage;
-    c.unavailableReason = noStorage ? "No storage is available for this item." : "";
-  );
 }
 
 auto getPillagePositions(const Collective* col) {
@@ -1015,6 +1049,7 @@ bool PlayerControl::canPillage(const Collective* col) const {
 void PlayerControl::handlePillage(Collective* col) {
   ScrollPosition scrollPos;
   auto factory = getGame()->getContentFactory();
+  ScriptedUIState state;
   while (1) {
     struct PillageOption {
       vector<Item*> items;
@@ -1025,37 +1060,37 @@ void PlayerControl::handlePillage(Collective* col) {
       options.push_back({elem, collective->getStoragePositions(elem.front()->getStorageIds())});
     if (options.empty())
       return;
-    vector<ItemInfo> itemInfo = options.transform([&] (const PillageOption& it) {
-            return getPillageItemInfo(factory, it.items, it.storage.empty());});
-    auto index = getView()->choosePillageItem("Pillage " + col->getName()->full, itemInfo, &scrollPos);
-    if (!index)
-      break;
-    if (index == -1) {
+    auto data = ScriptedUIDataElems::Record{};
+    bool chosen = false;
+    data.elems["title"] = "Pillage " + col->getName()->full;
+    data.elems["is_trade_or_pillage"] = "blabla"_s;
+    data.elems["choose_all"] = ScriptedUIDataElems::Callback { [&] {
       for (auto& elem : options)
         if (!elem.storage.empty())
           Random.choose(elem.storage.asVector()).dropItems(retrievePillageItems(col, elem.items));
-    } else {
-      CHECK(!options[*index].storage.empty());
-      Random.choose(options[*index].storage.asVector()).dropItems(retrievePillageItems(col, options[*index].items));
+      chosen = true;
+      return true;
+    }};
+    auto elems = ScriptedUIDataElems::List{};
+    for (int i : All(options)) {
+      auto& option = options[i];
+      auto elem = getItemRecord(factory, option.items);
+      if (!option.storage.empty())
+        elem.elems["callback"] = ScriptedUIDataElems::Callback { [option, col, this, &chosen] {
+          CHECK(!option.storage.empty());
+          Random.choose(option.storage.asVector()).dropItems(retrievePillageItems(col, option.items));
+          chosen = true;
+          return true;
+        }};
+      elems.push_back(elem);
     }
+    data.elems["elems"] = std::move(elems);
+    getView()->scriptedUI("pillage_menu", data, state);
+    if (!chosen)
+      break;
     if (auto& name = col->getName())
       collective->addRecordedEvent("the pillaging of " + name->full);
-    getView()->updateView(this, true);
   }
-}
-
-void PlayerControl::handleRansom(bool pay) {
-  if (ransomAttacks.empty())
-    return;
-  auto& ransom = ransomAttacks.front();
-  int amount = *ransom.getRansom();
-  if (pay && collective->hasResource({ResourceId("GOLD"), amount})) {
-    collective->takeResource({ResourceId("GOLD"), amount});
-    ransom.getAttacker()->onRansomPaid();
-    auto name = ransom.getAttacker()->getName();
-    getGame()->addAnalytics("ransom_paid", name ? name->full : "unknown");
-  }
-  ransomAttacks.removeIndex(0);
 }
 
 vector<Collective*> PlayerControl::getKnownVillains() const {
@@ -1078,15 +1113,21 @@ vector<Creature*> PlayerControl::getMinionGroup(const string& groupName) const {
 }
 
 void PlayerControl::sortMinionsForUI(vector<Creature*>& minions) const {
-  std::sort(minions.begin(), minions.end(),
-      [f = getGame()->getContentFactory()] (const Creature* c1, const Creature* c2) {
-        int l1 = 0, l2 = 0;
-        for (auto& attr : f->attrInfo)
-          if (attr.second.isAttackAttr) {
-            l1 = max(l1, c1->getAttr(attr.first));
-            l2 = max(l2, c2->getAttr(attr.first));
-          }
-        return l1 > l2 || (l1 == l2 && c1->getUniqueId() > c2->getUniqueId());
+  PROFILE;
+  struct Elem {
+    Creature* c;
+    int value;
+  };
+  auto values = minions.transform([f = getGame()->getContentFactory()](Creature* c) {
+    int value = 0;
+    for (auto& attr : f->attrInfo)
+      if (attr.second.isAttackAttr)
+        value = max(value, c->getAttr(attr.first));
+    return Elem{c, value};
+  });
+  std::sort(values.begin(), values.end(),
+      [] (const Elem& v1, const Elem& v2) {
+        return v1.value > v2.value || (v1.value == v2.value && v1.c->getUniqueId() > v2.c->getUniqueId());
       });
 }
 
@@ -1420,6 +1461,7 @@ static bool runesEqual(const vector<PItem>& v1, const vector<PItem>& v2) {
 }
 
 vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getQueuedWorkshopItems() const {
+  PROFILE;
   vector<CollectiveInfo::QueuedItemInfo> ret;
   bool hasLegendarySkill = [&] {
     for (auto c : getCreatures())
@@ -1821,7 +1863,7 @@ static optional<CollectiveInfo::RebellionChance> getRebellionChance(double prob)
 
 void PlayerControl::fillCurrentLevelInfo(GameInfo& gameInfo) const {
   auto level = getCurrentLevel();
-  auto levels = getModel()->getAllMainLevels();
+  auto levels = getModel()->getDungeonBranch(level, getMemory());
   gameInfo.currentLevel = CurrentLevelInfo {
     level->name,
     *levels.findElement(level),
@@ -1852,9 +1894,6 @@ void PlayerControl::fillResources(CollectiveInfo& info) const {
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
-  if (getGame()->getOptions()->getBoolValue(OptionId::KEEPER_WARNING))
-    if (auto info = checkKeeperDanger())
-      gameInfo.keeperInDanger = info->warning;
   auto contentFactory = getGame()->getContentFactory();
   gameInfo.scriptedHelp = contentFactory->scriptedHelp;
   gameInfo.isSingleMap = getGame()->isSingleModel();
@@ -1930,15 +1969,6 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
       creature = c->getUniqueId();
     info.taskMap.push_back(CollectiveInfo::Task{task->getDescription(), creature, collective->getTaskMap().isPriorityTask(task)});
   }
-  for (auto& elem : ransomAttacks) {
-    info.ransom = CollectiveInfo::Ransom {make_pair(ViewId("gold"), *elem.getRansom()), elem.getAttackerName(),
-        collective->hasResource({ResourceId("GOLD"), *elem.getRansom()})};
-    break;
-  }
-  for (auto& elem : notifiedAttacks)
-    if (elem.isOngoing())
-      info.onGoingAttacks.push_back(CollectiveInfo::OnGoingAttack{elem.getAttackerViewId(), elem.getAttackerName(),
-          elem.getCreatures()[0]->getUniqueId()});
   const auto maxEnemyCountdown = 500_visible;
   if (auto& enemies = getModel()->getExternalEnemies())
     if (auto nextWave = enemies->getNextWave()) {
@@ -1979,9 +2009,10 @@ void PlayerControl::addMessage(const PlayerMessage& msg) {
 }
 
 void PlayerControl::updateMinionVisibility(const Creature* c) {
+  PROFILE;
   auto visibleTiles = c->getVisibleTiles();
   visibilityMap->update(c, visibleTiles);
-  for (Position pos : visibleTiles) {
+  for (auto& pos : visibleTiles) {
     if (collective->addKnownTile(pos))
       updateKnownLocations(pos);
     addToMemory(pos);
@@ -2103,6 +2134,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
 }
 
 void PlayerControl::updateKnownLocations(const Position& pos) {
+  PROFILE;
   /*if (pos.getModel() == getModel())
     if (const Location* loc = pos.getLocation())
       if (!knownLocations.count(loc)) {
@@ -2292,8 +2324,6 @@ Level* PlayerControl::getCreatureViewLevel() const {
   return getCurrentLevel();
 }
 
-static enum Selection { SELECT, DESELECT, NONE } selection = NONE;
-
 void PlayerControl::controlSingle(Creature* c) {
   CHECK(getCreatures().contains(c));
   CHECK(!c->isDead());
@@ -2410,8 +2440,10 @@ void PlayerControl::setChosenWorkshop(optional<ChosenWorkshopInfo> info) {
     }
   };
   refreshHighlights();
-  if (info)
-    clearChosenInfo();
+  if (info) {
+    chosenCreature = none;
+    chosenTeam = none;
+  }
   chosenWorkshop = info;
   refreshHighlights();
 }
@@ -2679,6 +2711,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       if (!creatures.empty() &&
           (!chosenCreature || getChosenTeam() || !getCreature(chosenCreature->id) || chosenCreature->group != group)) {
         setChosenTeam(none);
+        sortMinionsForUI(creatures);
         setChosenCreature(creatures[0]->getUniqueId(), group);
       } else {
         setChosenTeam(none);
@@ -2741,14 +2774,15 @@ void PlayerControl::processInput(View* view, UserInput input) {
       }
       break;
     case UserInputId::CREATURE_RENAME:
-      if (Creature* c = getCreature(input.get<RenameActionInfo>().creature))
-        c->getName().setFirst(input.get<RenameActionInfo>().name);
+      if (Creature* c = getCreature(input.get<Creature::Id>()))
+        if (auto name = getView()->getText("Rename minion", c->getName().first().value_or(""), maxFirstNameLength))
+           c->getName().setFirst(*name);
       break;
     case UserInputId::CREATURE_CONSUME:
       if (Creature* c = getCreature(input.get<Creature::Id>())) {
         if (auto creatureId = getView()->chooseCreature("Choose minion to absorb",
             getConsumptionTargets(c).transform(
-                [&] (const Creature* c) { return PlayerInfo(c, getGame()->getContentFactory());}), "cancel"))
+                [&] (const Creature* c) { return PlayerInfo(c, getGame()->getContentFactory());}), "Cancel"))
           if (Creature* consumed = getCreature(*creatureId))
             collective->setTask(c, Task::consume(consumed));
       }
@@ -2849,26 +2883,37 @@ void PlayerControl::processInput(View* view, UserInput input) {
         updateSelectionSquares();
         if (rectSelection) {
           rectSelection->corner2 = info.pos;
-        } else
+        } else {
           rectSelection = CONSTRUCT(SelectionInfo, c.corner1 = c.corner2 = info.pos;);
+          selection = Selection::NONE;
+          handleSelection(info.pos, buildInfo[info.building], true);
+          rectSelection->deselect = (selection == Selection::DESELECT);
+          selection = Selection::NONE;
+        }
         updateSelectionSquares();
       } else
         handleSelection(info.pos, buildInfo[info.building], false);
       break;
     }
-    case UserInputId::RECT_DESELECTION:
-      updateSelectionSquares();
+    case UserInputId::RECT_CONFIRM:
       if (rectSelection) {
-        rectSelection->corner2 = input.get<Vec2>();
-      } else
-        rectSelection = CONSTRUCT(SelectionInfo, c.corner1 = c.corner2 = input.get<Vec2>(); c.deselect = true;);
+        auto box = Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2});
+        for (Vec2 v : box) {
+          auto w = v;
+          if (rectSelection->corner1.x != box.left())
+            w.x = box.left() + box.right() - 1 - w.x;
+          if (rectSelection->corner1.y != box.top())
+            w.y = box.top() + box.bottom() - 1 - w.y;
+          std::cout << w << endl;
+          handleSelection(w, buildInfo[input.get<BuildingClickInfo>().building], false);
+        }
+      }
+      FALLTHROUGH;
+    case UserInputId::RECT_CANCEL:
       updateSelectionSquares();
+      rectSelection = none;
+      selection = Selection::NONE;
       break;
-    case UserInputId::BUILD: {
-      auto& info = input.get<BuildingClickInfo>();
-      handleSelection(info.pos, buildInfo[info.building], false);
-      break;
-    }
     case UserInputId::VILLAGE_ACTION: {
       auto& info = input.get<VillageActionInfo>();
       if (Collective* village = getVillain(info.id))
@@ -2882,12 +2927,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
         }
       break;
     }
-    case UserInputId::PAY_RANSOM:
-      handleRansom(true);
-      break;
-    case UserInputId::IGNORE_RANSOM:
-      handleRansom(false);
-      break;
     case UserInputId::SHOW_HISTORY:
       PlayerMessage::presentMessages(getView(), messageHistory);
       break;
@@ -2904,18 +2943,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
       if (tutorial)
         tutorial->goBack();
       break;
-    case UserInputId::RECT_CONFIRM:
-      if (rectSelection) {
-        selection = rectSelection->deselect ? DESELECT : SELECT;
-        for (Vec2 v : Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2}))
-          handleSelection(v, buildInfo[input.get<BuildingClickInfo>().building], true, rectSelection->deselect);
-      }
-      FALLTHROUGH;
-    case UserInputId::RECT_CANCEL:
-      updateSelectionSquares();
-      rectSelection = none;
-      selection = NONE;
-      break;
     case UserInputId::EXIT: getGame()->exitAction(); return;
     case UserInputId::IDLE: break;
     case UserInputId::DISMISS_NEXT_WAVE:
@@ -2931,13 +2958,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::SCROLL_STAIRS:
       scrollStairs(input.get<int>());
-      break;
-    case UserInputId::CONTROL_KEEPER:
-      if (auto info = checkKeeperDanger())
-        controlSingle(info->c);
-      break;
-    case UserInputId::DISMISS_KEEPER_DANGER:
-      dismissKeeperWarning();
       break;
     case UserInputId::TAKE_SCREENSHOT:
       getView()->dungeonScreenshot(input.get<Vec2>());
@@ -2977,24 +2997,28 @@ void PlayerControl::updateSelectionSquares() {
 }
 
 void PlayerControl::handleDestructionOrder(Position position, HighlightType highlightType,
-    DestroyAction destructionType) {
+    DestroyAction destructionType, bool dryRun) {
   bool markedToDig = collective->getTaskMap().getHighlightType(position) == highlightType;
-  if (markedToDig && selection != SELECT) {
-    collective->cancelMarkedTask(position);
-    getView()->addSound(SoundId::DIG_UNMARK);
-    selection = DESELECT;
+  if (markedToDig && selection != Selection::SELECT) {
+    if (!dryRun) {
+      collective->cancelMarkedTask(position);
+      getView()->addSound(SoundId::DIG_UNMARK);
+    }
+    selection = Selection::DESELECT;
   } else
-  if (!markedToDig && selection != DESELECT) {
+  if (!markedToDig && selection != Selection::DESELECT) {
     if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE))
       if (furniture->canDestroy(destructionType)) {
-        collective->orderDestruction(position, destructionType);
-        getView()->addSound(SoundId::DIG_MARK);
-        selection = SELECT;
+        if (!dryRun) {
+          collective->orderDestruction(position, destructionType);
+          getView()->addSound(SoundId::DIG_MARK);
+        }
+        selection = Selection::SELECT;
       }
   }
 }
 
-void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool rectangle, bool deselectOnly) {
+void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool dryRun) {
   PROFILE;
   Position position(pos, getCurrentLevel());
   for (auto& req : building.requirements)
@@ -3002,12 +3026,10 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       return;
   if (position.isUnavailable())
     return;
-  if (!deselectOnly && rectangle && !building.canSelectRectangle())
-    return;
-  handleSelection(position, building.type);
+  handleSelection(position, building.type, dryRun);
 }
 
-void PlayerControl::handleSelection(Position position, const BuildInfoTypes::BuildType& building) {
+void PlayerControl::handleSelection(Position position, const BuildInfoTypes::BuildType& building, bool dryRun) {
   building.visit<void>(
     [&](const BuildInfoTypes::ImmediateDig&) {
       auto furniture = position.modFurniture(FurnitureLayer::MIDDLE);
@@ -3021,7 +3043,7 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
     [&](const BuildInfoTypes::PlaceItem&) {
       ItemType item;
       if (auto num = getView()->getNumber("Enter amount", Range(1, 10000), 1))
-        if (auto input = getView()->getText("Enter item type", "", 100, "")) {
+        if (auto input = getView()->getText("Enter item type", "", 100)) {
           if (auto error = PrettyPrinting::parseObject(item, *input))
             getView()->presentText("Sorry", "Couldn't parse \"" + *input + "\": " + *error);
           else {
@@ -3035,10 +3057,10 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
         if (f && !f->isBuilt(position, layer)) {
           collective->removeUnbuiltFurniture(position, layer);
           getView()->addSound(SoundId::DIG_UNMARK);
-          selection = SELECT;
+          selection = Selection::SELECT;
         } else
         if (collective->getKnownTiles().isKnown(position) && !position.isBurning()) {
-          selection = SELECT;
+          selection = Selection::SELECT;
           optional<Position> otherPos;
           if (auto f = position.getFurniture(layer))
             otherPos = f->getSecondPart(position);
@@ -3057,51 +3079,58 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
       }
     },
     [&](const BuildInfoTypes::ForbidZone) {
-      if (position.isTribeForbidden(getTribeId()) && selection != SELECT) {
-        position.allowMovementForTribe(getTribeId());
-        selection = DESELECT;
+      if (position.isTribeForbidden(getTribeId()) && selection != Selection::SELECT) {
+        if (!dryRun)
+          position.allowMovementForTribe(getTribeId());
+        selection = Selection::DESELECT;
       } else
-      if (!position.isTribeForbidden(getTribeId()) && selection != DESELECT) {
-        position.forbidMovementForTribe(getTribeId());
-        selection = SELECT;
+      if (!position.isTribeForbidden(getTribeId()) && selection != Selection::DESELECT) {
+        if (!dryRun)
+          position.forbidMovementForTribe(getTribeId());
+        selection = Selection::SELECT;
       }
     },
     [&](const BuildInfoTypes::CutTree&) {
-      handleDestructionOrder(position, HighlightType::CUT_TREE, DestroyAction::Type::CUT);
+      handleDestructionOrder(position, HighlightType::CUT_TREE, DestroyAction::Type::CUT, dryRun);
     },
     [&](const BuildInfoTypes::Dig&) {
-      handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::DIG);
+      handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::DIG, dryRun);
     },
     [&](const BuildInfoTypes::Chain& c) {
       for (auto& elem : c)
-        handleSelection(position, elem);
+        handleSelection(position, elem, dryRun);
     },
     [&](ZoneId zone) {
       auto& zones = collective->getZones();
-      if (zones.isZone(position, zone) && selection != SELECT) {
-        collective->eraseZone(position, zone);
-        selection = DESELECT;
-      } else if (selection != DESELECT && !zones.isZone(position, zone) &&
+      if (zones.isZone(position, zone) && selection != Selection::SELECT) {
+        if (!dryRun)
+          collective->eraseZone(position, zone);
+        selection = Selection::DESELECT;
+      } else if (selection != Selection::DESELECT && !zones.isZone(position, zone) &&
           collective->getKnownTiles().isKnown(position) &&
           zones.canSet(position, zone, collective)) {
-        collective->setZone(position, zone);
-        selection = SELECT;
+        if (!dryRun)
+          collective->setZone(position, zone);
+        selection = Selection::SELECT;
       }
     },
     [&](BuildInfoTypes::ClaimTile) {
-      if (collective->canClaimSquare(position))
+      if (!dryRun && collective->canClaimSquare(position))
         collective->claimSquare(position);
     },
     [&](BuildInfoTypes::UnclaimTile) {
-      collective->unclaimSquare(position);
-      if (NOTNULL(position.getFurniture(FurnitureLayer::GROUND))->getViewObject()->id() == ViewId("keeper_floor")) {
-        position.modFurniture(FurnitureLayer::GROUND)->getViewObject()->setId(ViewId("floor"));
-        position.setNeedsRenderAndMemoryUpdate(true);
-        updateSquareMemory(position);
+      if (!dryRun) {
+        collective->unclaimSquare(position);
+        if (NOTNULL(position.getFurniture(FurnitureLayer::GROUND))->getViewObject()->id() == ViewId("keeper_floor")) {
+          position.modFurniture(FurnitureLayer::GROUND)->getViewObject()->setId(ViewId("floor"));
+          position.setNeedsRenderAndMemoryUpdate(true);
+          updateSquareMemory(position);
+        }
       }
     },
     [&](BuildInfoTypes::Dispatch) {
-      collective->setPriorityTasks(position);
+      if (!dryRun)
+        collective->setPriorityTasks(position);
     },
     [&](BuildInfoTypes::PlaceMinion) {
       auto& factory = getGame()->getContentFactory()->getCreatures();
@@ -3128,8 +3157,9 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
           return;
       }
       bool removed = false;
-      if (!!currentPlanned && selection != SELECT) {
-        collective->removeUnbuiltFurniture(position, layer);
+      if (!!currentPlanned && selection != Selection::SELECT) {
+        if (!dryRun)
+          collective->removeUnbuiltFurniture(position, layer);
         removed = true;
       }
       while (nextIndex < info.types.size() && !collective->canAddFurniture(position, info.types[nextIndex]))
@@ -3137,14 +3167,17 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
       int totalCount = 0;
       for (auto type : info.types)
         totalCount += collective->getConstructions().getTotalCount(type);
-      if (nextIndex < info.types.size() && selection != DESELECT &&
+      if (nextIndex < info.types.size() && selection != Selection::DESELECT &&
           (!info.limit || *info.limit > totalCount)) {
-        collective->addFurniture(position, info.types[nextIndex], info.cost, info.noCredit);
-        selection = SELECT;
-        getView()->addSound(SoundId::ADD_CONSTRUCTION);
+        if (!dryRun) {
+          collective->addFurniture(position, info.types[nextIndex], info.cost, info.noCredit);
+          getView()->addSound(SoundId::ADD_CONSTRUCTION);
+        }
+        selection = Selection::SELECT;
       } else if (removed) {
-        selection = DESELECT;
-        getView()->addSound(SoundId::DIG_UNMARK);
+        if (!dryRun)
+          getView()->addSound(SoundId::DIG_UNMARK);
+        selection = Selection::DESELECT;
       }
     }
   );
@@ -3204,7 +3237,7 @@ static optional<vector<Vec2>> getCreaturePath(Creature* c, Vec2 target, Level* l
   auto movement = c->getMovementType();
   auto from = c->getPosition();
   auto to = Position(target, level);
-  if (!to.isValid())
+  if (!to.isValid() || !from.isSameModel(to))
     return none;
   if (from.getLevel() != level) {
     if (auto stairs = to.getStairsTo(from, c->getMovementType()))
@@ -3295,27 +3328,37 @@ CreatureView::PlacementInfo PlayerControl::canPlaceItem(Vec2 pos, int index) con
 }
 
 void PlayerControl::addToMemory(Position pos) {
-  if (auto ground = pos.getGroundBelow())
-    addToMemory(*ground);
+  PROFILE;
   if (!pos.needsMemoryUpdate())
     return;
+  if (auto ground = pos.getGroundBelow())
+    addToMemory(*ground);
   pos.setNeedsMemoryUpdate(false);
   ViewIndex index;
   getSquareViewIndex(pos, true, index);
   memory->update(pos, index);
 }
 
-optional<PlayerControl::KeeperDangerInfo> PlayerControl::checkKeeperDanger() const {
-  PROFILE;
+void PlayerControl::checkKeeperDanger() {
+  if (!getGame()->getOptions()->getBoolValue(OptionId::KEEPER_WARNING))
+    return;
   auto controlled = getControlled();
   for (auto c : controlled)
     if (collective->hasTrait(c, MinionTrait::LEADER))
-      return none;
+      return;
   for (auto keeper : collective->getLeaders()) {
     auto prompt = [&] (const string& reason) {
-      return KeeperDangerInfo{keeper,
+      auto res = getView()->multiChoice(
           (collective->getLeaders().size() > 1 ? capitalFirst(keeper->getName().a()) : "The Keeper")
-              + " " + reason + "."};
+              + " " + reason + ".",
+          {"Take control", "Dismiss for 200 turns", "Dismiss and don't show this message again"});
+      if (res == 0)
+        controlSingle(keeper);
+      else if (res == 2)
+        getGame()->getOptions()->setValue(OptionId::KEEPER_WARNING, 0);
+      else
+        nextKeeperWarning = getGame()->getGlobalTime() +
+            TimeInterval(getGame()->getOptions()->getIntValue(OptionId::KEEPER_WARNING_TIMEOUT));
     };
     if (!keeper->isDead() && !controlled.contains(keeper) &&
         nextKeeperWarning < collective->getGlobalTime()) {
@@ -3331,12 +3374,9 @@ optional<PlayerControl::KeeperDangerInfo> PlayerControl::checkKeeperDanger() con
         return prompt("is wounded");
     }
   }
-  return none;
 }
 
 void PlayerControl::dismissKeeperWarning() {
-  nextKeeperWarning = getGame()->getGlobalTime() +
-      TimeInterval(getGame()->getOptions()->getIntValue(OptionId::KEEPER_WARNING_TIMEOUT));
 }
 
 void PlayerControl::considerNightfallMessage() {
@@ -3439,16 +3479,24 @@ void PlayerControl::considerNewAttacks() {
   for (auto attack : copyOf(newAttacks))
     for (const Creature* c : attack.getCreatures())
       if (isConsideredAttacking(c, attack.getAttacker())) {
+        newAttacks.removeElement(attack);
         setScrollPos(c->getPosition().plus(Vec2(0, 5)));
         getView()->refreshView();
-        addWindowMessage(attack.getAttackerViewId(), "You are under attack by " + attack.getAttackerName() + "!");
+        if (attack.getRansom() && collective->hasResource({ResourceId("GOLD"), *attack.getRansom()})) {
+          if (getView()->yesOrNoPrompt(capitalFirst(attack.getAttackerName()) + " demand " +
+              toString(attack.getRansom()) + " gold for not attacking. Agree?", attack.getAttackerViewId(), true)) {
+            collective->takeResource({ResourceId("GOLD"), *attack.getRansom()});
+            attack.getAttacker()->onRansomPaid();
+            auto name = attack.getAttacker()->getName();
+            getGame()->addAnalytics("ransom_paid", name ? name->full : "unknown");
+            break;
+          }
+        } else
+          addWindowMessage(attack.getAttackerViewId(), "You are under attack by " + attack.getAttackerName() + "!");
         getGame()->setCurrentMusic(MusicType::BATTLE);
-        newAttacks.removeElement(attack);
         if (auto attacker = attack.getAttacker())
           collective->addKnownVillain(attacker);
         notifiedAttacks.push_back(attack);
-        if (attack.getRansom())
-          ransomAttacks.push_back(attack);
         break;
       }
 }
@@ -3466,24 +3514,9 @@ void PlayerControl::tick() {
   messages = messages.filter([&] (const PlayerMessage& msg) {
       return msg.getFreshness() > 0; });
   considerNightfallMessage();
-  if (getGame()->getOptions()->getBoolValue(OptionId::KEEPER_WARNING)) {
-    if (checkKeeperDanger()) {
-      if (getGame()->getOptions()->getBoolValue(OptionId::KEEPER_WARNING_PAUSE) &&
-        !wasPausedForWarning) {
-        getView()->stopClock();
-        wasPausedForWarning = true;
-      }
-    } else
-      wasPausedForWarning = false;
-  }
+  checkKeeperDanger();
   if (auto msg = collective->getWarnings().getNextWarning(getModel()->getLocalTime()))
     addMessage(PlayerMessage(*msg, MessagePriority::HIGH));
-  for (auto attack : copyOf(ransomAttacks))
-    for (const Creature* c : attack.getCreatures())
-      if (collective->getTerritory().contains(c->getPosition())) {
-        ransomAttacks.removeElement(attack);
-        break;
-      }
   considerNewAttacks();
   considerAllianceAttack();
   if (notifiedAttacks.empty())

@@ -73,6 +73,7 @@
 #include "keybinding.h"
 #include "task.h"
 #include "collective_control.h"
+#include "scripted_ui_data.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -146,6 +147,8 @@ void Player::onEvent(const GameEvent& event) {
           else
             privateMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
           avatarLevel->onKilledVillain(info.collective->getVillainType());
+          if (avatarLevel->numResearchAvailable() > 0)
+            playerLevelDialog();
         }
       },
       [&](const FX& info) {
@@ -161,6 +164,7 @@ void Player::onEvent(const GameEvent& event) {
 }
 
 void Player::pickUpItemAction(int numStack, bool multi) {
+  PROFILE;
   CHECK(numStack >= 0);
   auto stacks = creature->stackItems(creature->getPickUpOptions());
   if (getUsableUsageType()) {
@@ -242,11 +246,11 @@ void Player::throwItem(Item* item, optional<Position> target) {
   tryToPerform(creature->throwItem(item, *target, false));
 }
 
-void Player::handleIntrinsicAttacks(const EntitySet<Item>& itemIds, ItemAction action) {
+void Player::handleIntrinsicAttacks(const vector<UniqueEntity<Item>::Id>& itemIds, ItemAction action) {
   auto& attacks = creature->getBody().getIntrinsicAttacks();
   for (auto part : ENUM_ALL(BodyPart))
     for (auto& attack : attacks[part])
-      if (itemIds.contains(attack.item.get()))
+      if (itemIds.contains(attack.item->getUniqueId()))
         switch (action) {
           case ItemAction::INTRINSIC_ACTIVATE:
             attack.active = true;
@@ -260,9 +264,11 @@ void Player::handleIntrinsicAttacks(const EntitySet<Item>& itemIds, ItemAction a
         }
 }
 
-void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
+void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds1, ItemAction action) {
+  PROFILE;
+  unordered_set<Item::Id, CustomHash<Item::Id>> itemIds(itemIds1.begin(), itemIds1.end());
   vector<Item*> items = creature->getEquipment().getItems().filter(
-      [&](const Item* it) { return itemIds.contains(it);});
+      [&](const Item* it) { return itemIds.count(it->getUniqueId());});
   //CHECK(items.size() == itemIds.size()) << int(items.size()) << " " << int(itemIds.size());
   // the above assertion fails for unknown reason, so just fail this softly.
   if (items.empty() || (items.size() == 1 && action == ItemAction::DROP_MULTI))
@@ -458,10 +464,9 @@ void Player::tryToCast(const Spell* spell, Position target) {
     }
     optional<int> res = 0;
     if (friendlyFireWarningCooldown.value_or(-10000_global) < getGame()->getGlobalTime())
-      res = getView()->chooseFromList("", {
-          ListElem("This move might harm your allies and make them hostile. Continue?", ListElem::TITLE),
-          ListElem("Yes"), ListElem("No"), ListElem("Yes, and don't ask for another 50 turns")
-      }, 0, MenuType::YES_NO);
+      res = getView()->multiChoice("This move might harm your allies and make them hostile. Continue?", {
+          "Yes", "No", "Yes, and don't ask for another 50 turns"
+      });
     if (res == 2)
       friendlyFireWarningCooldown = getGame()->getGlobalTime() + 50_visible;
     if (!res || res == 1)
@@ -634,10 +639,12 @@ vector<Player::CommandInfo> Player::getCommands() const {
       [] (Player* player) { auto c = player->creature; player->tryToPerform(c->drop(c->getEquipment().getItems())); }, false},
     {PlayerInfo::CommandInfo{"Message history", Keybinding("MESSAGE_HISTORY"), "Show message history.", true},
       [] (Player* player) { player->showHistory(); }, false},
+    {PlayerInfo::CommandInfo{"Level up", Keybinding("LEVEL_UP"), "Level up your character.", adventurer},
+      [] (Player* player) { player->playerLevelDialog(); }, false},
 #ifndef RELEASE
     {PlayerInfo::CommandInfo{"Wait multiple turns", none, "", true},
       [] (Player* player) {
-        if (auto num = player->getView()->getNumber("Wait how many turns?", Range(1, 2000), 30, 1))
+        if (auto num = player->getView()->getNumber("Wait how many turns?", Range(1, 2000), 30))
           for (int i : Range(*num))
             player->tryToPerform(player->creature->wait());
       }, false},
@@ -715,6 +722,10 @@ void Player::makeMove() {
     getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
     displayTravelInfo = false;
   }*/
+  if (getGame()->getOptions()->getBoolValue(OptionId::CONTROLLER_HINT_TURN_BASED)) {
+    getView()->scriptedUI("controller_hint_turn_based", ScriptedUIData{});
+    getGame()->getOptions()->setValue(OptionId::CONTROLLER_HINT_TURN_BASED, 0);
+  }
   if (displayGreeting && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     getView()->updateView(this, true);
     displayGreeting = false;
@@ -813,18 +824,9 @@ void Player::makeMove() {
           if (tutorial)
             tutorial->goBack();
           break;
-        case UserInputId::LEVEL_UP: {
-          while (1) {
-            auto info = getCreatureExperienceInfo(getGame()->getContentFactory(), creature);
-            info.numAvailableUpgrades = avatarLevel->numResearchAvailable();
-            if (auto exp = getView()->getCreatureUpgrade(info)) {
-              creature->increaseExpLevel(*exp, 1);
-              ++avatarLevel->consumedLevels;
-            } else
-              break;
-          }
+        case UserInputId::LEVEL_UP:
+          playerLevelDialog();
           break;
-        }
         case UserInputId::SCROLL_TO_HOME:
           getView()->resetCenter();
           break;
@@ -925,7 +927,7 @@ void Player::moveAction(Vec2 dir) {
   if (auto action = creature->forceMove(dir)) {
     string nextQuestion = getForceMovementQuestion(dirPos, creature);
     string hereQuestion = getForceMovementQuestion(creature->getPosition(), creature);
-    if (hereQuestion == nextQuestion || getView()->yesOrNoPrompt(nextQuestion, true))
+    if (hereQuestion == nextQuestion || getView()->yesOrNoPrompt(nextQuestion, none, true))
       action.perform(creature);
     return;
   }
@@ -1246,7 +1248,8 @@ void Player::generateHalluIds() {
 void Player::onKilled(Creature* attacker) {
   unsubscribe();
   getView()->updateView(this, false);
-  if (getGame()->getPlayerCreatures().size() == 1 && getView()->yesOrNoPrompt("Display message history?", false,
+  if (getGame()->getPlayerCreatures().size() == 1 && getView()->yesOrNoPrompt("Display message history?",
+      ViewIdList{ViewId("grave")}, false,
       "yes_or_no_below"))
     showHistory();
   if (adventurer)
@@ -1284,18 +1287,51 @@ vector<TeamMemberAction> Player::getTeamMemberActions(const Creature* member) co
   return {};
 }
 
-void Player::fillDungeonLevel(PlayerInfo& info) const {
-  info.avatarLevelInfo.emplace();
-  info.avatarLevelInfo->level = avatarLevel->level + 1;
-  info.avatarLevelInfo->viewId = creature->getViewObject().getViewIdList();
-  info.avatarLevelInfo->title = creature->getName().title();
-  info.avatarLevelInfo->progress = avatarLevel->progress;
-  info.avatarLevelInfo->numAvailable = avatarLevel->numResearchAvailable();
+void Player::playerLevelDialog() {
+  ScriptedUIState state;
+  auto data = ScriptedUIDataElems::Record{};
+  int available = avatarLevel->numResearchAvailable();
+  data.elems["heading"] = getPlural("point", available) + " available";
+  auto upgrades = ScriptedUIDataElems::List{};
+  auto factory = getGame()->getContentFactory();
+  bool levelledUp = false;
+  for (auto expType : ENUM_ALL(ExperienceType)) {
+    auto data = ScriptedUIDataElems::Record{};
+    auto icons = ScriptedUIDataElems::List{};
+    vector<string> attrNames;
+    for (auto attr : getAttrIncreases()[expType]) {
+      auto& info = factory->attrInfo.at(attr.first);
+      icons.push_back(ViewIdList{info.viewId});
+      attrNames.push_back(info.name);
+    }
+    data.elems["icons"] = std::move(icons);
+    data.elems["value"] = toString<int>(creature->getAttributes().getExpLevel(expType));
+    auto limit = toString(creature->getAttributes().getMaxExpLevel()[expType]);
+    data.elems["limit"] = limit;
+    data.elems["tooltip"] = ScriptedUIDataElems::List{
+      getName(expType) + " training."_s,
+      "Increases " + combine(attrNames) + ".",
+      "The creature's limit for this type of training is " + limit + "."
+    };
+    if (available > 0)
+      data.elems["callback"] = ScriptedUIDataElems::Callback{ [expType, this, &levelledUp] {
+        creature->increaseExpLevel(expType, 1);
+        ++avatarLevel->consumedLevels;
+        levelledUp = true;
+        return true;
+      }};
+    upgrades.push_back(std::move(data));
+  }
+  data.elems["upgrades"] = std::move(upgrades);
+  data.elems["combat_exp"] = toStringRounded(creature->getCombatExperience(), 0.01);
+  getView()->scriptedUI("adventurer_level", data, state);
+  if (levelledUp)
+    playerLevelDialog();
 }
 
 void Player::fillCurrentLevelInfo(GameInfo& gameInfo) const {
   auto level = getLevel();
-  auto levels = getModel()->getAllMainLevels();
+  auto levels = getModel()->getDungeonBranch(level, getMemory());
   gameInfo.currentLevel = CurrentLevelInfo {
     level->name,
     levels.findElement(level).value_or(0),
@@ -1316,7 +1352,6 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.scriptedHelp = contentFactory->scriptedHelp;
   gameInfo.playerInfo = PlayerInfo(creature, contentFactory);
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
-  fillDungeonLevel(info);
   if (getGame()->getPlayerCollective())
     info.controlMode = getGame()->getPlayerCreatures().size() == 1 ? PlayerInfo::LEADER : PlayerInfo::FULL;
   auto team = getTeam();
@@ -1384,6 +1419,10 @@ Player::CenterType Player::getCenterType() const {
 
 const vector<Vec2>& Player::getUnknownLocations(const Level* level) const {
   return unknownLocations->getOnLevel(level);
+}
+
+optional<Vec2> Player::getPlayerPosition() const  {
+  return creature->getPosition().getCoord();
 }
 
 vector<vector<Vec2>> Player::getPermanentPaths() const {
@@ -1458,26 +1497,23 @@ void Player::considerAdventurerMusic() {
 void Player::scrollStairs(int diff) {
   auto model = creature->getPosition().getModel();
   auto curLevel = creature->getPosition().getLevel();
-  if (auto curIndex = model->getMainLevelDepth(curLevel)) {
-    auto dest = model->getMainLevelsDepth().clamp(*curIndex + diff);
-    if (dest == *curIndex)
-      return;
-    auto targetLevel = model->getMainLevel(dest);
-    auto curPos = creature->getPosition();
-    auto movement = creature->getMovementType();
-    optional<Position> bestStairs;
-    int bestDist = 10000000;
-    for (auto key : targetLevel->getAllStairKeys()) {
-      auto stairPos = targetLevel->getLandingSquares(key)[0];
-      if (auto res = stairPos.getStairsTo(curPos, movement))
-        if (res->second < bestDist) {
-          bestStairs = stairPos;
-          bestDist = res->second;
-        }
+  for (auto targetLevel : model->getDungeonBranch(curLevel, getMemory()))
+    if (targetLevel->depth == curLevel->depth + diff) {
+      auto curPos = creature->getPosition();
+      auto movement = creature->getMovementType();
+      optional<Position> bestStairs;
+      int bestDist = 10000000;
+      for (auto key : targetLevel->getAllStairKeys()) {
+        auto stairPos = targetLevel->getLandingSquares(key)[0];
+        if (auto res = stairPos.getStairsTo(curPos, movement))
+          if (res->second < bestDist) {
+            bestStairs = stairPos;
+            bestDist = res->second;
+          }
+      }
+      if (bestStairs)
+        target = *bestStairs;
     }
-    if (bestStairs)
-      target = *bestStairs;
-  }
 }
 
 REGISTER_TYPE(ListenerTemplate<Player>)

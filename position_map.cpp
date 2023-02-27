@@ -156,6 +156,11 @@ void PositionMap<T>::serialize(Archive& ar, const unsigned int version) {
 }
 
 template <class T>
+bool PositionMap<T>::containsLevel(const Level* l) const {
+  return tables.count(l->getUniqueId()) || outliers.count(l->getUniqueId());
+}
+
+template <class T>
 SERIALIZATION_CONSTRUCTOR_IMPL2(PositionMap<T>, PositionMap)
 
 SERIALIZABLE_TMPL(PositionMap, int)

@@ -18,6 +18,7 @@
     # Possible depths for this level, inclusive. The first level when you dig down is 1.
     minDepth = 2
     maxDepth = 4
+    weight = 0.2
   }
   {
     type = FullZLevel {
@@ -31,6 +32,14 @@
     # Possible depths for this level, inclusive. The first level when you dig down is 1.
     minDepth = 3
     maxDepth = 100
+    weight = 0.2
+  }
+  {
+    type = FullZLevel {
+      enemy = "BAT_ZLEVEL"
+    }
+    minDepth = 1
+    maxDepth = 2
   }
   {
     type = FullZLevel {
@@ -38,6 +47,7 @@
     }
     minDepth = 2
     maxDepth = 100
+    weight = 0.2
   }
   {
     type = FullZLevel {
@@ -48,7 +58,7 @@
     # Possible depths for this level, inclusive. The first level when you dig down is 1.
     minDepth = 5
     maxDepth = 5
-    guarantee = true
+    weight = 0.5
   }
   {
     type = EnemyZLevel {
@@ -99,40 +109,45 @@
     }
     minDepth = 7
     maxDepth = 10
+    weight = 0.3
   }
   {
     type = EnemyZLevel {
       enemy = "Z_LEVEL_LAVA"
     }
     minDepth = 10
+    weight = 0.3
   }
 }
 
-Def LEVEL(NAME, D1, D2)
+Def LEVEL(NAME, D1, D2, W)
   {
     type = FullZLevel {
       enemy = NAME
-      attackChance = 0.6
+      attackChance = 1.0
     }
     minDepth = D1
     maxDepth = D2
+    weight = W
   }
 End
+
+Def LEVEL(NAME, D1, D2) LEVEL(NAME, D1, D2, 1.0) End
 
 # Here come levels specific to white keepers
 "lawful"
 {
   LEVEL("RAT_PEOPLE_CAVE", 2, 3)
-  LEVEL("GOBLINS_Z_LEVEL1", 4, 6)
-  LEVEL("DARK_ELVES_Z_LEVEL1", 4, 6)
-  LEVEL("GOBLINS_Z_LEVEL2", 7, 11)
-  LEVEL("DARK_ELVES_Z_LEVEL2", 7, 11)
-  LEVEL("GOBLINS_Z_LEVEL3", 12, 16)
-  LEVEL("DARK_ELVES_Z_LEVEL3", 12, 16)
-  LEVEL("GOBLINS_Z_LEVEL4", 17, 21)
-  LEVEL("DARK_ELVES_Z_LEVEL4", 17, 21)
-  LEVEL("GOBLINS_Z_LEVEL5", 22, 26)
-  LEVEL("DARK_ELVES_Z_LEVEL5", 22, 26)
+  LEVEL("GOBLINS_Z_LEVEL1", 4, 6, 0.5)
+  LEVEL("DARK_ELVES_Z_LEVEL1", 4, 6, 0.5)
+  LEVEL("GOBLINS_Z_LEVEL2", 7, 11, 0.5)
+  LEVEL("DARK_ELVES_Z_LEVEL2", 7, 11, 0.5)
+  LEVEL("GOBLINS_Z_LEVEL3", 12, 16, 0.5)
+  LEVEL("DARK_ELVES_Z_LEVEL3", 12, 16, 0.5)
+  LEVEL("GOBLINS_Z_LEVEL4", 17, 21, 0.5)
+  LEVEL("DARK_ELVES_Z_LEVEL4", 17, 21, 0.5)
+  LEVEL("GOBLINS_Z_LEVEL5", 22, 26, 0.5)
+  LEVEL("DARK_ELVES_Z_LEVEL5", 22, 26, 0.5)
   LEVEL("GOBLINS_Z_LEVEL6", 27, 1000)
   {
     type = EnemyZLevel {

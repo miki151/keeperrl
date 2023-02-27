@@ -22,8 +22,8 @@ Def IconButtonInactive(Id, Text)
 End
 
 {
-  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
-  FocusKeys()
+  ExitButtons()
+  FocusKeysHorizontal()
   Window(
     Horizontal {
       Using "save" IconButton("portal", "Save and exit")

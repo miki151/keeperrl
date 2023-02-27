@@ -27,6 +27,7 @@
 #include "gzstream.h"
 #include "opengl.h"
 #include "tileset.h"
+#include "steam_input.h"
 
 void Renderer::renderDeferredSprites() {
   static vector<SDL::GLfloat> vertices;
@@ -440,9 +441,13 @@ void Renderer::setVsync(bool on) {
   SDL::SDL_GL_SetSwapInterval(on ? 1 : 0);
 }
 
-Renderer::Renderer(Clock* clock, const string& title, const DirectoryPath& fontPath,
+void Renderer::setFpsLimit(int fps) {
+  fpsLimit = fps;
+}
+
+Renderer::Renderer(Clock* clock, MySteamInput* i, const string& title, const DirectoryPath& fontPath,
     const FilePath& cursorP, const FilePath& clickedCursorP, const FilePath& iconPath)
-    : cursorPath(cursorP), clickedCursorPath(clickedCursorP), clock(clock) {
+    : cursorPath(cursorP), clickedCursorPath(clickedCursorP), clock(clock), steamInput(i) {
   CHECK(SDL::SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0) << SDL::SDL_GetError();
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MINOR_VERSION, 1 );
@@ -577,10 +582,20 @@ void Renderer::setAnimationsDirectory(const DirectoryPath& path) {
 }
 
 void Renderer::drawAndClearBuffer() {
+  if (steamInput)
+    steamInput->runFrame();
   renderDeferredSprites();
   CHECK_OPENGL_ERROR();
+  if (fpsLimit) {
+    uint64_t end = SDL::SDL_GetPerformanceCounter();
+    float elapsedMs = (end - frameStart) / (float)SDL::SDL_GetPerformanceFrequency() * 1000.0f;
+    float sleepMs = 1000.0f / fpsLimit - elapsedMs;
+    if (sleepMs > 0.0)
+      SDL::SDL_Delay(sleepMs);
+  }
   SDL::SDL_GL_SwapWindow(window);
   CHECK_OPENGL_ERROR();
+  frameStart = SDL::SDL_GetPerformanceCounter();
   SDL::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   SDL::glClearColor(0.0, 0.0, 0.0, 0.0);
   CHECK_OPENGL_ERROR();
@@ -636,6 +651,18 @@ void Renderer::considerMouseMoveEvent(Event& ev) {
 
 bool Renderer::pollEvent(Event& ev) {
   CHECK(currentThreadId() == *renderThreadId);
+  if (steamInput)
+    if (auto e = steamInput->getEvent()) {
+      ev.type = SDL::SDL_KEYDOWN;
+      ev.key = SDL::SDL_KeyboardEvent {
+          ev.type,
+          0, 0,
+          SDL_PRESSED,
+          0, 0, 0,
+          SDL::SDL_Keysym { SDL::SDL_Scancode{} , (SDL::SDL_Keycode) *e }
+      };
+      return true;
+    }
   if (monkey) {
     if (Random.roll(2))
       return pollEventOrFromQueue(ev);
@@ -643,6 +670,26 @@ bool Renderer::pollEvent(Event& ev) {
     return true;
   } else
     return pollEventOrFromQueue(ev);
+}
+
+Vec2 Renderer::getDiscreteJoyPos(ControllerJoy joy) {
+  Vec2 ret;
+  if (steamInput) {
+    auto pos = steamInput->getJoyPos(joy);
+    if (pos.first <= -0.5)
+      ret.x = -1;
+    else if (pos.first >= 0.5)
+      ret.x = 1;
+    if (pos.second <= -0.5)
+      ret.y = 1;
+    else if (pos.second >= 0.5)
+      ret.y = -1;
+  }
+  return ret;
+}
+
+MySteamInput* Renderer::getSteamInput() {
+  return steamInput;
 }
 
 void Renderer::flushEvents(EventType type) {

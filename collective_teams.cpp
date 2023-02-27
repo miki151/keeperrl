@@ -69,14 +69,6 @@ vector<TeamId> CollectiveTeams::getActive(const Creature* c) const {
   return ret;
 }
 
-vector<TeamId> CollectiveTeams::getActiveNonPersistent(const Creature* c) const {
-  vector<TeamId> ret;
-  for (TeamId t : getContaining(c))
-    if (isActive(t) && !isPersistent(t))
-      ret.push_back(t);
-  return ret;
-}
-
 vector<TeamId> CollectiveTeams::getAllActive() const {
   vector<TeamId> ret;
   for (TeamId t : getKeys(teamInfo))
@@ -89,17 +81,6 @@ TeamId CollectiveTeams::create(vector<Creature*> c) {
   CHECK(!c.empty());
   teamInfo[nextId].creatures = c;
   return nextId++;
-}
-
-TeamId CollectiveTeams::createPersistent(vector<Creature*> c) {
-  TeamId id = create(c);
-  teamInfo[id].persistent = true;
-  return id;
-}
-
-bool CollectiveTeams::isPersistent(TeamId id) const {
-  CHECK(exists(id));
-  return teamInfo.at(id).persistent;
 }
 
 bool CollectiveTeams::hasTeamOrder(TeamId id, const Creature* c, TeamOrder order) const {

@@ -1,0 +1,12 @@
+{
+  BlockEvents
+  FocusKeysVertical()
+  ExitButtonsWithEnter()
+  Window(Width 700 MaxHeight 700 {
+    Scrolling(Vertical {
+      Using "title" Label()
+      Height 25 {}
+      Using "text" Paragraph(600)
+    })
+  })
+}

@@ -6,6 +6,8 @@
 #include "campaign_type.h"
 #include "player_role.h"
 #include "parse_game.h"
+#include "scripted_ui.h"
+#include "scripted_ui_data.h"
 
 const static int highscoreVersion = 2;
 
@@ -16,13 +18,14 @@ Highscores::Highscores(const FilePath& local, FileSharing& sharing, Options* o)
 
 vector<Highscores::Score> Highscores::downloadHighscores(View* view) const {
   vector<Score> ret;
+  FileSharing::CancelFlag cancel;
   view->doWithSplash("Downloading online highscores...", 1,
       [&] (ProgressMeter&) {
-        ret = fromString(fileSharing.downloadHighscores(highscoreVersion));
-        fileSharing.uploadHighscores(localPath);
+        ret = fromString(fileSharing.downloadHighscores(cancel, highscoreVersion));
+        fileSharing.uploadHighscores(cancel, localPath);
       },
       [&] {
-        fileSharing.cancel();
+        cancel.cancel();
       }
   );
   return ret;
@@ -32,7 +35,8 @@ void Highscores::add(Score s) {
   s.version = highscoreVersion;
   localScores.push_back(s);
   saveToFile(localScores, localPath);
-  fileSharing.uploadHighscores(localPath);
+  FileSharing::CancelFlag cancel;
+  fileSharing.uploadHighscores(cancel, localPath);
 }
 
 vector<Highscores::Score> Highscores::fromStream(istream& in) {
@@ -200,13 +204,40 @@ void Highscores::present(View* view, optional<Score> lastAdded) const {
   if (lastAdded && !lastAdded->isPublic())
     return;
   vector<HighscoreList> lists;
-  auto remoteScores = concat(downloadHighscores(view), localScores);
-  for (auto& elem : getPublicScores())
-    lists.push_back(fillScores(elem.name, lastAdded, localScores.filter(
-        [&] (const Score& s) { return s.campaignType == elem.type && s.playerRole == elem.role;}), elem.sorting));
-  for (auto& elem : getPublicScores())
-    lists.push_back(fillScores(elem.name, lastAdded, remoteScores.filter(
-        [&] (const Score& s) { return s.campaignType == elem.type && s.playerRole == elem.role;}), elem.sorting));
-  view->presentHighscores(lists);
+  int tab = 0;
+  ScriptedUIState uiState{};
+  while (1) {
+    ScriptedUIDataElems::Record main;
+    int index = 0;
+    for (auto& scoreType : getPublicScores()) {
+      if (index == tab)
+        main.elems[scoreType.name + "_active"_s] = "abcd"_s;
+      else
+        main.elems[scoreType.name + "_set"_s] = ScriptedUIDataElems::Callback{
+            [&tab, index] { tab = index; return true; }
+        };
+      ++index;
+    }
+    ScriptedUIDataElems::List list;
+    auto scoreType = getPublicScores()[tab];
+    auto scores = fillScores(scoreType.name, lastAdded, localScores.filter(
+        [&] (const Score& s) { return s.campaignType == scoreType.type && s.playerRole == scoreType.role;}), scoreType.sorting).scores;
+    for (auto& score : scores) {
+      ScriptedUIDataElems::Record elemData;
+      elemData.elems["score"] = score.score;
+      elemData.elems["text"] = score.text;
+      if (score.highlight)
+        elemData.elems["highlight"] = "xyz"_s;
+      list.push_back(std::move(elemData));
+    }
+    main.elems["list"] = std::move(list);
+    bool exit = false;
+    main.elems["EXIT"] = ScriptedUIDataElems::Callback {
+        [&exit] { exit = true; return true; }
+    };
+    view->scriptedUI("highscores", main, uiState);
+    if (exit)
+      break;
+  }
 }
 

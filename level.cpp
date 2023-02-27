@@ -53,7 +53,7 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
   ar(sunlight, bucketMap, lightAmount, unavailable, swarmMaps, territory);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates, above, below, mountainLevel);
-  ar(furniture, tickingFurniture, covered, name, depth, wildlife, addedWildlife);
+  ar(furniture, tickingFurniture, covered, name, depth, wildlife, addedWildlife, mainDungeon);
   vector<pair<TribeId, unique_ptr<EffectsTable>>> SERIAL(tmp);
   for (auto t : ENUM_ALL(TribeId::KeyType))
     if (!!furnitureEffects[t])
@@ -445,7 +445,8 @@ void Level::unplaceCreature(Creature* creature, Vec2 pos) {
       [&] (LastingOrBuff effect) {removePermanentEffect(effect, creature, false);});
   for (auto v : Position(pos, this).neighbors8())
     if (auto c = v.getCreature())
-      c->updateViewObjectFlanking();
+      if (getGame() && c->isEnemy(creature))
+        c->updateViewObjectFlanking();
 }
 
 void Level::placeCreature(Creature* creature, Vec2 pos) {
@@ -470,7 +471,8 @@ void Level::placeCreature(Creature* creature, Vec2 pos) {
   creature->updateViewObjectFlanking();
   for (auto v : position.neighbors8())
     if (auto c = v.getCreature())
-      c->updateViewObjectFlanking();
+      if (getGame() && c->isEnemy(creature))
+        c->updateViewObjectFlanking();
 }
 
 void Level::swapCreatures(Creature* c1, Creature* c2) {
@@ -552,12 +554,13 @@ void Level::tick() {
   }
   if (above) {
     PROFILE_BLOCK("Z level tick");
-    for (auto pos : getAllPositions())
-      if (!pos.isUnavailable()) {
-        Position abovePos(pos.getCoord(), above);
-        if (pos.isCovered() && above->unavailable[pos.getCoord()]) {
+    for (auto v : getBounds()) {
+      if (!unavailable[v] && above->unavailable[v]) {
+        Position pos(v, this);
+        if (pos.isCovered()) {
+          Position abovePos(v, above);
           auto col = getGame()->getPlayerCollective();
-          above->unavailable[pos.getCoord()] = false;
+          above->unavailable[v] = false;
           abovePos.addFurniture(getGame()->getContentFactory()->furniture.getFurniture(FurnitureType("ROOF"),
               TribeId::getMonster()));
           if (!!col && col->getKnownTiles().isKnown(pos)) {
@@ -568,6 +571,7 @@ void Level::tick() {
             col->claimSquare(abovePos);
         }
       }
+    }
   }
 }
 
@@ -624,8 +628,10 @@ int Level::getNumTotalSquares() const {
 }
 
 void Level::setNeedsMemoryUpdate(Vec2 pos, bool s) {
-  if (pos.inRectangle(getBounds()))
-    memoryUpdates[pos] = s;
+  memoryUpdates[pos] = s;
+  if (s)
+    for (auto l = above; !!l && l->unavailable[pos]; l = l->above)
+      l->memoryUpdates[pos] = s;
 }
 
 bool Level::needsRenderUpdate(Vec2 pos) const {

@@ -91,8 +91,9 @@ optional<CollectiveName> CollectiveBuilder::generateName() const {
 }
 
 PCollective CollectiveBuilder::build(const ContentFactory* contentFactory) const {
-  CHECK(model || level);
-  auto c = Collective::create(!!model ? model : level->getModel(), *tribe, generateName(), discoverable, contentFactory);
+  auto name = generateName();
+  CHECK(model || level) << EnumInfo<TribeId::KeyType>::getString(tribe->getKey()) << " " << (name ? name->full : "no name");
+  auto c = Collective::create(!!model ? model : level->getModel(), *tribe, std::move(name), discoverable, contentFactory);
   c->init(std::move(*config));
   c->setControl(CollectiveControl::idle(c.get()));
   for (auto& elem : creatures)

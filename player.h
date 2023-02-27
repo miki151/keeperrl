@@ -29,7 +29,6 @@ class View;
 class Model;
 class Creature;
 class Item;
-class ListElem;
 struct ItemInfo;
 class Game;
 class VisibilityMap;
@@ -71,6 +70,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual vector<Vec2> getHighlightedPathTo(Vec2) const override;
   virtual vector<vector<Vec2>> getPathTo(UniqueEntity<Creature>::Id, Vec2) const override;
   virtual vector<vector<Vec2>> getPermanentPaths() const override;
+  virtual optional<Vec2> getPlayerPosition() const override;
 
   // from Controller
   virtual void onKilled(Creature* attacker) override;
@@ -131,8 +131,8 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void takeOffAction();
   void hideAction();
   void displayInventory();
-  void handleItems(const EntitySet<Item>&, ItemAction);
-  void handleIntrinsicAttacks(const EntitySet<Item>&, ItemAction);
+  void handleItems(const vector<UniqueEntity<Item>::Id>&, ItemAction);
+  void handleIntrinsicAttacks(const vector<UniqueEntity<Item>::Id>&, ItemAction);
   bool interruptedByEnemy();
   void targetAction();
   void payForAllItemsAction();
@@ -144,8 +144,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void fireAction();
   void scrollStairs(int);
   void tryToCast(const Spell*, Position target);
-  void getItemNames(vector<Item*> it, vector<ListElem>& names, vector<vector<Item*> >& groups,
-      ItemPredicate = alwaysTrue<const Item*>());
   string getInventoryItemName(const Item*, bool plural) const;
   string getPluralName(Item* item, int num);
   Vec2 SERIAL(travelDir);
@@ -161,7 +159,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   optional<GlobalTime> lastEnemyInterruption;
   void updateSquareMemory(Position);
   HeapAllocated<DungeonLevel> SERIAL(avatarLevel);
-  void fillDungeonLevel(PlayerInfo&) const;
+  void playerLevelDialog();
   vector<unordered_set<ViewIdList, CustomHash<ViewIdList>>> halluIds;
   void generateHalluIds();
   ViewIdList shuffleViewId(const ViewIdList&) const;

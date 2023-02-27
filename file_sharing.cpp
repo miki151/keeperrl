@@ -20,7 +20,7 @@
 
 FileSharing::FileSharing(const string& url, const string& modVer, int saveVersion, Options& o, string id)
     : uploadUrl(url), modVersion(modVer), saveVersion(saveVersion), options(o),
-      uploadLoop(bindMethod(&FileSharing::uploadingLoop, this)), installId(id), wasCancelled(false) {
+      uploadLoop(bindMethod(&FileSharing::uploadingLoop, this)), installId(id) {
   curl_global_init(CURL_GLOBAL_ALL);
 }
 
@@ -29,18 +29,22 @@ FileSharing::~FileSharing() {
   uploadQueue.push(nullptr);
 }
 
-struct CallbackData {
+const string& FileSharing::getInstallId() const {
+  return installId;
+}
+
+struct FileSharing::CallbackData {
   function<void(double)> progressCallback;
-  FileSharing* fileSharing;
+  CancelFlag& cancel;
 };
 
 static int progressFunction(void* ptr, double totalDown, double nowDown, double totalUp, double nowUp) {
-  auto callbackData = static_cast<CallbackData*>(ptr);
+  auto callbackData = static_cast<FileSharing::CallbackData*>(ptr);
   if (totalUp > 0)
     callbackData->progressCallback(nowUp / totalUp);
   if (totalDown > 0)
     callbackData->progressCallback(nowDown / totalDown);
-  if (callbackData->fileSharing->consumeCancelled())
+  if (callbackData->cancel.flag)
     return 1;
   else
     return 0;
@@ -76,14 +80,12 @@ static string unescapeEverything(const string& s) {
   return ret;
 }
 
-namespace {
-struct UploadedFile {
+struct FileSharing::UploadedFile {
   const char* path;
   const char* paramName;
 };
-}
 
-static optional<string> curlUpload(vector<UploadedFile> files, const char* url, const CallbackData& callback, int timeout) {
+optional<string> FileSharing::uploadContent(vector<UploadedFile> files, const char* url, const CallbackData& callback, int timeout) {
   curl_httppost* formpost = nullptr;
   curl_httppost* lastptr = nullptr;
 
@@ -125,38 +127,39 @@ static optional<string> curlUpload(vector<UploadedFile> files, const char* url, 
     return string("Failed to initialize libcurl");
 }
 
-static CallbackData getCallbackData(FileSharing* f) {
-  return { [] (double) {}, f };
+static FileSharing::CallbackData getCallbackData(FileSharing::CancelFlag& cancel) {
+  return { [] (double) {}, cancel };
 }
 
-static CallbackData getCallbackData(FileSharing* f, ProgressMeter& meter) {
-  return { [&meter] (double p) { meter.setProgress((float) p); }, f };
+static FileSharing::CallbackData getCallbackData(FileSharing::CancelFlag& cancel, ProgressMeter& meter) {
+  return { [&meter] (double p) { meter.setProgress((float) p); }, cancel };
 }
 
-optional<string> FileSharing::uploadSite(const FilePath& path, const string& title, const OldSavedGameInfo& info,
-    ProgressMeter& meter, optional<string>& url) {
+optional<string> FileSharing::uploadSite(CancelFlag& cancel, const FilePath& path, const string& title,
+    const OldSavedGameInfo& info, ProgressMeter& meter, optional<string>& url) {
   if (!options.getBoolValue(OptionId::ONLINE))
     return "Online features not enabled!"_s;
-  if (!!uploadSiteToSteam(path, title, info, meter, url))
-    return curlUpload({UploadedFile{path.getPath(), "fileToUpload"},UploadedFile{retiredScreenshotFilename, "screenshot"}},
-          (uploadUrl + "/upload_site.php").c_str(), getCallbackData(this, meter), 0);
+  if (!!uploadSiteToSteam(cancel, path, title, info, meter, url))
+    return uploadContent({UploadedFile{path.getPath(), "fileToUpload"},UploadedFile{retiredScreenshotFilename, "screenshot"}},
+          (uploadUrl + "/upload_site.php").c_str(), getCallbackData(cancel, meter), 0);
   return none;
 }
 
-optional<string> FileSharing::downloadSite(const SaveFileInfo& file, const DirectoryPath& targetDir, ProgressMeter& meter) {
-  if (!file.steamId || !!downloadSteamSite(file, targetDir, meter))
-    return download(file.filename, "dungeons", targetDir, meter);
+optional<string> FileSharing::downloadSite(CancelFlag& cancel, const SaveFileInfo& file, const DirectoryPath& targetDir, ProgressMeter& meter) {
+  if (!file.steamId || !!downloadSteamSite(cancel, file, targetDir, meter))
+    return download(cancel, file.filename, "dungeons", targetDir, meter);
   return none;
 }
 
-void FileSharing::uploadHighscores(const FilePath& path) {
+void FileSharing::uploadHighscores(CancelFlag& cancel, const FilePath& path) {
   if (options.getBoolValue(OptionId::ONLINE))
-    uploadQueue.push([this, path] {
-      curlUpload({UploadedFile{path.getPath(), "fileToUpload"}}, (uploadUrl + "/upload_scores.php").c_str(), getCallbackData(this), 5);
+    uploadQueue.push([this, path, &cancel] {
+      uploadContent({UploadedFile{path.getPath(), "fileToUpload"}}, (uploadUrl + "/upload_scores.php").c_str(),
+          getCallbackData(cancel), 5);
     });
 }
 
-optional<string> FileSharing::uploadBugReport(const string& text, optional<FilePath> savefile,
+optional<string> FileSharing::uploadBugReport(CancelFlag& cancel, const string& text, optional<FilePath> savefile,
     optional<FilePath> screenshot, ProgressMeter& meter) {
   string params = "description=" + escapeEverything(text);
   curl_httppost* formpost = nullptr;
@@ -189,7 +192,7 @@ optional<string> FileSharing::uploadBugReport(const string& text, optional<FileP
     string url = uploadUrl + "/upload.php";
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
-    auto callback = getCallbackData(this, meter);
+    auto callback = getCallbackData(cancel, meter);
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
     curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &callback);
     curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
@@ -243,7 +246,7 @@ void FileSharing::uploadGameEventImpl(const GameEvent& data, int tries) {
     });
 }
 
-string FileSharing::downloadHighscores(int version) {
+string FileSharing::downloadHighscores(CancelFlag& cancel, int version) {
   string ret;
   if (options.getBoolValue(OptionId::ONLINE))
     if(CURL* curl = curl_easy_init()) {
@@ -253,7 +256,7 @@ string FileSharing::downloadHighscores(int version) {
       curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15);
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
       curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
-      auto callback = getCallbackData(this);
+      auto callback = getCallbackData(cancel);
       curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &callback);
       curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
       curl_easy_perform(curl);
@@ -265,7 +268,8 @@ string FileSharing::downloadHighscores(int version) {
 void FileSharing::downloadPersonalMessage() {
   uploadQueue.push([this] {
     RecursiveLock lock(personalMessageMutex);
-    personalMessage = downloadContent(uploadUrl + "/get_personal.php?installId=" + escapeEverything(installId)).value_or(""_s);
+    CancelFlag c;
+    personalMessage = downloadContent(c, uploadUrl + "/get_personal.php?installId=" + escapeEverything(installId)).value_or(""_s);
     auto prefix = "personal123"_s;
     if (startsWith(personalMessage, prefix))
       personalMessage = personalMessage.substr(prefix.size());
@@ -296,13 +300,13 @@ static vector<Elem> parseLines(const string& s, function<optional<Elem>(const ve
 
 }
 
-optional<string> FileSharing::downloadContent(const string& url) {
+optional<string> FileSharing::downloadContent(CancelFlag& cancel, const string& url) {
   if (CURL* curl = curl_easy_init()) {
     curl_easy_setopt(curl, CURLOPT_URL, escapeSpaces(url).c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30);
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
-    auto callback = getCallbackData(this);
+    auto callback = getCallbackData(cancel);
     curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &callback);
     curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
     string ret;
@@ -359,17 +363,17 @@ static optional<SiteConquestInfo> parseSiteConquest(const vector<string>& fields
   return elem;
 }
 
-expected<vector<FileSharing::SiteInfo>, string> FileSharing::listSites() {
+expected<vector<FileSharing::SiteInfo>, string> FileSharing::listSites(CancelFlag& cancel, ProgressMeter& progress) {
   if (!options.getBoolValue(OptionId::ONLINE))
     return make_unexpected("Please enable online features in the settings in order to download retired dungeons!"_s);
   vector<SiteConquestInfo> conquestInfo;
-  thread downloadConquest([&conquestInfo, this] {
-    if (auto content = downloadContent(uploadUrl + "/get_sites.php"))
+  thread downloadConquest([&conquestInfo, &cancel, this] {
+    if (auto content = downloadContent(cancel, uploadUrl + "/get_sites.php"))
       conquestInfo = parseLines<SiteConquestInfo>(*content, parseSiteConquest);
   });
-  optional<vector<FileSharing::SiteInfo>> ret = getSteamSites();
+  optional<vector<FileSharing::SiteInfo>> ret = getSteamSites(cancel, progress);
   if (!ret)
-    if (auto content = downloadContent(uploadUrl + "/dungeons.txt"))
+    if (auto content = downloadContent(cancel, uploadUrl + "/dungeons.txt"))
       ret = parseLines<FileSharing::SiteInfo>(*content, parseSite);
   downloadConquest.join();
   if (!ret)
@@ -390,9 +394,9 @@ static optional<FileSharing::BoardMessage> parseBoardMessage(const vector<string
     return none;
 }
 
-expected<vector<FileSharing::BoardMessage>, string> FileSharing::getBoardMessages(int boardId) {
+expected<vector<FileSharing::BoardMessage>, string> FileSharing::getBoardMessages(CancelFlag& cancel, int boardId) {
   if (options.getBoolValue(OptionId::ONLINE))
-    if (auto content = downloadContent(uploadUrl + "/get_messages.php?boardId=" + toString(boardId)))
+    if (auto content = downloadContent(cancel, uploadUrl + "/get_messages.php?boardId=" + toString(boardId)))
       return parseLines<FileSharing::BoardMessage>(*content, parseBoardMessage);
   return make_unexpected("Please enable online features in the settings in order to download messages!"_s);
 }
@@ -454,7 +458,8 @@ static vector<T> removeDuplicates(vector<T> input) {
   return ret;
 }
 
-static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel, vector<string> tags) {
+static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel, vector<string> tags,
+    ProgressMeter& progress) {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable())
     return none;
@@ -476,11 +481,10 @@ static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel,
       qinfo.tags = tags;
       auto qid = ugc.createFindQuery(qinfo, page);
       ugc.waitForQueries({qid}, milliseconds(2000), cancel);
-
-      if (ugc.queryStatus(qid) == QueryStatus::completed) {
+      if (!cancel && ugc.queryStatus(qid) == QueryStatus::completed) {
         ret = ugc.finishFindQuery(qid);
       } else {
-        INFO << "STEAM: FindQuery failed: " << ugc.queryError(qid, "timeout (2 sec)");
+        std::cout  << "STEAM: FindQuery failed: " << ugc.queryError(qid, "timeout (2 sec)") << std::endl;
         ugc.finishQuery(qid);
       }
       return ret;
@@ -488,6 +492,8 @@ static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel,
     int page = 1;
     while (1) {
       auto v = getForPage(page);
+      if (cancel)
+        return none;
       if (v.empty())
         break;
       else
@@ -495,7 +501,6 @@ static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel,
       ++page;
     }
   }
-
   for (auto id : subscribedItems)
     if (!items.contains(id))
       items.emplace_back(id);
@@ -514,7 +519,7 @@ static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel,
     auto qid = ugc.createDetailsQuery(detailsInfo, items);
     ugc.waitForQueries({qid}, milliseconds(3000), cancel);
 
-    if (ugc.queryStatus(qid) != QueryStatus::completed) {
+    if (cancel || ugc.queryStatus(qid) != QueryStatus::completed) {
       INFO << "STEAM: DetailsQuery failed: " << ugc.queryError(qid, "timeout (3 sec)");
       ugc.finishQuery(qid);
       return vector<steam::ItemInfo>();
@@ -522,8 +527,15 @@ static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel,
     return ugc.finishDetailsQuery(qid);
   };
   vector<steam::ItemInfo> infos;
-  for (int i = 0; i < items.size(); i += steam::UGC::maxItemsPerPage)
-    infos.append(getForPage(items.getSubsequence(i, steam::UGC::maxItemsPerPage)));
+  for (int i = 0; i < items.size(); i += steam::UGC::maxItemsPerPage) {
+    progress.setProgress(float(i) / items.size());
+    auto results = getForPage(items.getSubsequence(i, steam::UGC::maxItemsPerPage));
+    if (cancel)
+      return none;
+    if (results.empty())
+      break;
+    infos.append(std::move(results));
+  }
   for (auto& info : infos)
     friends.requestUserInfo(info.ownerId, true);
   vector<optional<string>> ownerNames(infos.size());
@@ -555,10 +567,10 @@ static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel,
 #endif
 }
 
-optional<vector<ModInfo>> FileSharing::getSteamMods() {
+optional<vector<ModInfo>> FileSharing::getSteamMods(CancelFlag& cancel, ProgressMeter& progress) {
   vector<ModInfo> out;
-  auto infos1 = getSteamItems(wasCancelled, {"Mod"_s, modVersion});
-  if (!infos1 || consumeCancelled())
+  auto infos1 = getSteamItems(cancel.flag, {"Mod"_s, modVersion}, progress);
+  if (!infos1 || cancel.flag)
     return none;
   auto& infos = *infos1;
   for (int n = 0; n < infos.size(); n++) {
@@ -581,10 +593,10 @@ optional<vector<ModInfo>> FileSharing::getSteamMods() {
   return out;
 }
 
-optional<vector<FileSharing::SiteInfo>> FileSharing::getSteamSites() {
+optional<vector<FileSharing::SiteInfo>> FileSharing::getSteamSites(CancelFlag& cancel, ProgressMeter& progress) {
   vector<SiteInfo> out;
-  auto infos1 = getSteamItems(wasCancelled, {"Dungeon"_s, toString(saveVersion)});
-  if (!infos1 || consumeCancelled())
+  auto infos1 = getSteamItems(cancel.flag, {"Dungeon"_s, toString(saveVersion)}, progress);
+  if (!infos1 || cancel.flag)
     return none;
   auto& infos = *infos1;
   for (int n = 0; n < infos.size(); n++) {
@@ -604,18 +616,18 @@ optional<vector<FileSharing::SiteInfo>> FileSharing::getSteamSites() {
   return out;
 }
 
-expected<vector<ModInfo>, string> FileSharing::getOnlineMods() {
+expected<vector<ModInfo>, string> FileSharing::getOnlineMods(CancelFlag& cancel, ProgressMeter& progress) {
   if (!options.getBoolValue(OptionId::ONLINE))
     return make_unexpected("Please enable online features in the settings in order to download mods."_s);
-  if (auto steamMods = getSteamMods())
+  if (auto steamMods = getSteamMods(cancel, progress))
     return *steamMods;
-  if (auto content = downloadContent(uploadUrl + "/get_mods.txt"))
+  if (auto content = downloadContent(cancel, uploadUrl + "/get_mods.txt"))
     return parseLines<ModInfo>(*content, [this](auto& e) { return parseModInfo(e, modVersion);});
   return make_unexpected("Error fetching online mods."_s);
 }
 
-optional<string> FileSharing::downloadSteamMod(SteamId id_, const string& name, const DirectoryPath& modsDir,
-    ProgressMeter& meter) {
+optional<string> FileSharing::downloadSteamMod(CancelFlag& cancel, SteamId id_, const string& name,
+    const DirectoryPath& modsDir, ProgressMeter& meter) {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable())
     return "Steam client not available"_s;
@@ -628,7 +640,7 @@ optional<string> FileSharing::downloadSteamMod(SteamId id_, const string& name, 
     if (!ugc.downloadItem(id, true))
       return string("Error while downloading mod.");
 
-    while (!consumeCancelled()) {
+    while (!cancel.flag) {
       steam::runCallbacks();
       if (!ugc.isDownloading(id))
         break;
@@ -636,7 +648,6 @@ optional<string> FileSharing::downloadSteamMod(SteamId id_, const string& name, 
         meter.setProgress(float(info->bytesDownloaded) / info->bytesTotal);
       sleep_for(milliseconds(50));
     }
-
     if (!ugc.isInstalled(id))
       return string("Error while downloading mod.");
   }
@@ -650,17 +661,18 @@ optional<string> FileSharing::downloadSteamMod(SteamId id_, const string& name, 
 #endif
 }
 
-optional<string> FileSharing::downloadMod(const string& modName, SteamId steamId, const DirectoryPath& modsDir, ProgressMeter& meter) {
-  if (!!downloadSteamMod(steamId, modName, modsDir, meter)) {
+optional<string> FileSharing::downloadMod(CancelFlag& cancel, const string& modName, SteamId steamId,
+    const DirectoryPath& modsDir, ProgressMeter& meter) {
+  if (!!downloadSteamMod(cancel, steamId, modName, modsDir, meter)) {
     auto fileName = toString(modName) + ".zip";
-    if (auto err = download(fileName, "mods", modsDir, meter))
+    if (auto err = download(cancel, fileName, "mods", modsDir, meter))
       return err;
     return unzip(modsDir.file(fileName).getPath(), modsDir.getPath());
   } else
     return none;
 }
 
-optional<string> FileSharing::uploadMod(ModInfo& modInfo, const DirectoryPath& modsDir, ProgressMeter& meter) {
+optional<string> FileSharing::uploadMod(CancelFlag& cancel, ModInfo& modInfo, const DirectoryPath& modsDir, ProgressMeter& meter) {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable())
     return "Steam client not available"_s;
@@ -684,8 +696,7 @@ optional<string> FileSharing::uploadMod(ModInfo& modInfo, const DirectoryPath& m
   optional<steam::UpdateItemResult> result;
   steam::sleepUntil([&]() {
     return (bool)(result = ugc.tryUpdateItem(meter)); },
-    milliseconds(600 * 1000), wasCancelled);
-  consumeCancelled();
+    milliseconds(600 * 1000), cancel.flag);
   if (!result) {
     ugc.cancelUpdateItem();
     return "Uploading mod has timed out"_s;
@@ -714,8 +725,8 @@ static string serializeInfo(const string& fileName, const OldSavedGameInfo& save
 }
 #endif
 
-optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const string& title, const OldSavedGameInfo& savedInfo,
-    ProgressMeter& meter, optional<string>& url) {
+optional<string> FileSharing::uploadSiteToSteam(CancelFlag& cancel, const FilePath& path, const string& title,
+    const OldSavedGameInfo& savedInfo, ProgressMeter& meter, optional<string>& url) {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable())
     return "Steam client not available"_s;
@@ -735,8 +746,9 @@ optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const stri
 
   // Item update may take some time; Should we loop indefinitely?
   optional<steam::UpdateItemResult> result;
-  steam::sleepUntil([&]() { return (bool)(result = ugc.tryUpdateItem(meter)); }, milliseconds(600 * 1000), wasCancelled);
-  consumeCancelled();
+  steam::sleepUntil([&]() { return (bool)(result = ugc.tryUpdateItem(meter)); }, milliseconds(600 * 1000), cancel.flag);
+  if (cancel.flag)
+    return none;
   if (!result) {
     ugc.cancelUpdateItem();
     return "Uploading mod has timed out"_s;
@@ -757,7 +769,8 @@ optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const stri
 #endif
 }
 
-optional<string> FileSharing::downloadSteamSite(const SaveFileInfo& file, const DirectoryPath& targetDir, ProgressMeter& meter) {
+optional<string> FileSharing::downloadSteamSite(CancelFlag& cancel, const SaveFileInfo& file,
+    const DirectoryPath& targetDir, ProgressMeter& meter) {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable())
     return "Steam client not available"_s;
@@ -770,7 +783,7 @@ optional<string> FileSharing::downloadSteamSite(const SaveFileInfo& file, const 
     if (!ugc.downloadItem(id, true))
       return string("Error while downloading dungeon.");
 
-    while (!consumeCancelled()) {
+    while (!cancel.flag) {
       steam::runCallbacks();
       if (!ugc.isDownloading(id))
         break;
@@ -778,7 +791,6 @@ optional<string> FileSharing::downloadSteamSite(const SaveFileInfo& file, const 
         meter.setProgress(float(info->bytesDownloaded) / info->bytesTotal);
       sleep_for(milliseconds(50));
     }
-
     if (!ugc.isInstalled(id))
       return string("Error while downloading dungeon.");
   }
@@ -794,19 +806,12 @@ optional<string> FileSharing::downloadSteamSite(const SaveFileInfo& file, const 
 #endif
 }
 
-void FileSharing::cancel() {
-  wasCancelled = true;
-}
-
-bool FileSharing::consumeCancelled() {
-  return wasCancelled.exchange(false);
-}
-
 static size_t writeToFile(void *ptr, size_t size, size_t nmemb, FILE *stream) {
   return fwrite(ptr, size, nmemb, stream);
 }
 
-optional<string> FileSharing::download(const string& filename, const string& remoteDir, const DirectoryPath& dir, ProgressMeter& meter) {
+optional<string> FileSharing::download(CancelFlag& cancel, const string& filename, const string& remoteDir,
+    const DirectoryPath& dir, ProgressMeter& meter) {
   if (!options.getBoolValue(OptionId::ONLINE))
     return string("Downloading not enabled!");
   //progressFun = [&] (double p) { meter.setProgress(p);};
@@ -820,7 +825,7 @@ optional<string> FileSharing::download(const string& filename, const string& rem
       // Internal CURL progressmeter must be disabled if we provide our own callback
       curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
       // Install the callback function
-      auto callback = getCallbackData(this, meter);
+      auto callback = getCallbackData(cancel, meter);
       curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &callback);
       curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
       curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);

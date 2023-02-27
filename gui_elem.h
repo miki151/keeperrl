@@ -23,6 +23,7 @@
 #include "attr_type.h"
 #include "view_id.h"
 #include "keybinding.h"
+#include "steam_input.h"
 
 class ViewObject;
 class Clock;
@@ -39,7 +40,8 @@ class GuiElem {
   public:
   virtual void render(Renderer&) {}
   virtual bool onClick(MouseButtonId, Vec2) { return false; }
-  virtual bool onMouseMove(Vec2) { return false;}
+  virtual bool onMouseMove(Vec2, Vec2) { return false;}
+  virtual bool onScrollEvent(Vec2 mousePos, double x, double y, milliseconds timeDiff) { return false;}
   virtual void onMouseGone() {}
   virtual void onRefreshBounds() {}
   virtual void renderPart(Renderer& r, Rectangle) { render(r); }
@@ -47,6 +49,7 @@ class GuiElem {
   virtual bool onTextInput(const char*) { return false; }
   virtual optional<int> getPreferredWidth() { return none; }
   virtual optional<int> getPreferredHeight() { return none; }
+  optional<Vec2> getPreferredSize();
 
   void setPreferredBounds(Vec2 origin);
   void setBounds(Rectangle);
@@ -64,15 +67,15 @@ class GuiElem {
 
 class GuiFactory {
   public:
-  GuiFactory(Renderer&, Clock*, Options*, const DirectoryPath& freeImages,
-      const optional<DirectoryPath>& nonFreeImages);
+  GuiFactory(Renderer&, Clock*, Options*, const DirectoryPath& freeImages);
   void loadImages();
   ~GuiFactory();
 
   vector<string> breakText(const string& text, int maxWidth, int fontSize);
 
   DragContainer& getDragContainer();
-  void propagateEvent(const Event&, vector<SGuiElem>);
+  void propagateEvent(const Event&, const vector<SGuiElem>&);
+  void propagateScrollEvent(const vector<SGuiElem>&);
 
   static bool isShift(const SDL::SDL_Keysym&);
   static bool isAlt(const SDL::SDL_Keysym&);
@@ -82,25 +85,28 @@ class GuiFactory {
   SDL::SDL_Keysym getKey(SDL::SDL_Keycode);
   SGuiElem button(function<void()>, SDL::SDL_Keysym, bool capture = false);
   SGuiElem button(function<void()>, bool capture = false);
-  SGuiElem textField(int maxLength, function<string()> text, function<void(string)> callback);
+  SGuiElem textField(int maxLength, function<string()> text, function<void(string)> callback,
+      function<bool()> controllerFocus);
   SGuiElem textFieldFocused(int maxLength, function<string()> text, function<void(string)> callback);
   SGuiElem buttonPos(function<void(Rectangle, Vec2)>);
   SGuiElem buttonRightClick(function<void()>);
-  SGuiElem reverseButton(function<void()>, vector<SDL::SDL_Keysym> = {}, bool capture = false);
+  SGuiElem reverseButton(function<void()>, Keybinding, bool capture = false);
   SGuiElem buttonRect(function<void(Rectangle buttonBounds)>);
   SGuiElem releaseLeftButton(function<void()>, optional<Keybinding> = none);
   SGuiElem releaseRightButton(function<void()>);
-  SGuiElem focusable(SGuiElem content, vector<SDL::SDL_Keysym> focusEvent,
-      vector<SDL::SDL_Keysym> defocusEvent, bool& focused);
+  SGuiElem focusable(SGuiElem content, Keybinding focusKey, Keybinding defocusKey, bool& focused);
   SGuiElem mouseWheel(function<void(bool)>);
   SGuiElem keyHandler(function<void(SDL::SDL_Keysym)>, bool capture = false);
   SGuiElem keyHandler(function<void()>, Keybinding, bool capture = false);
+  SGuiElem keyHandlerBool(function<bool()>, vector<SDL::SDL_Keysym>);
+  SGuiElem keyHandlerBool(function<bool()>, Keybinding);
   SGuiElem keyHandler(function<void()>, vector<SDL::SDL_Keysym>, bool capture = false);
+  SGuiElem keyHandlerRect(function<void(Rectangle)>, vector<SDL::SDL_Keysym>, bool capture = false);
+  SGuiElem keyHandlerRect(function<void(Rectangle)>, Keybinding, bool capture = false);
   SGuiElem stack(vector<SGuiElem>);
   SGuiElem stack(SGuiElem, SGuiElem);
   SGuiElem stack(SGuiElem, SGuiElem, SGuiElem);
   SGuiElem stack(SGuiElem, SGuiElem, SGuiElem, SGuiElem);
-  SGuiElem external(GuiElem*);
   SGuiElem rectangle(Color color, optional<Color> borderColor = none);
   SGuiElem scripted(function<void()> endCallback, ScriptedUIId, const ScriptedUIData&, ScriptedUIState&);
   class ListBuilder {
@@ -160,17 +166,28 @@ class GuiFactory {
   SGuiElem label(const string&, Color = Color::WHITE, char hotkey = 0);
   SGuiElem standardButton();
   SGuiElem standardButton(SGuiElem content, SGuiElem button, bool matchTextWidth = true);
-  SGuiElem standardButtonBlink(SGuiElem content, SGuiElem button, bool matchTextWidth);
   SGuiElem standardButtonHighlight();
   SGuiElem buttonLabel(const string&, SGuiElem button, bool matchTextWidth = true,
       bool centerHorizontally = false, bool unicode = false);
   SGuiElem buttonLabel(const string&, function<void()> button, bool matchTextWidth = true,
       bool centerHorizontally = false, bool unicode = false);
-  SGuiElem buttonLabelBlink(const string&, function<void()> button);
-  SGuiElem buttonLabelWithMargin(const string&, bool matchTextWidth = true);
+
+  SGuiElem buttonLabelFocusable(SGuiElem content, function<void()> button, function<bool()> focused,
+      bool matchTextWidth = true, bool centerHorizontally = false);
+  SGuiElem buttonLabelFocusable(SGuiElem content, function<void(Rectangle)> button, function<bool()> focused,
+      bool matchTextWidth = true, bool centerHorizontally = false);
+  SGuiElem buttonLabelFocusable(const string&, function<void()> button, function<bool()> focused,
+      bool matchTextWidth = true, bool centerHorizontally = false, bool unicode = false);
+  SGuiElem buttonLabelFocusable(const string&, function<void(Rectangle)> button, function<bool()> focused,
+      bool matchTextWidth = true, bool centerHorizontally = false, bool unicode = false);
+  SGuiElem buttonLabelBlink(const string&, function<void()> button, function<bool()> focused = []{return false;},
+      bool matchTextWidth = true, bool centerHorizontally = false);
+  SGuiElem buttonLabelWithMargin(const string&, function<bool()> focused);
   SGuiElem buttonLabelSelected(const string&, function<void()> button, bool matchTextWidth = true,
       bool centerHorizontally = false);
-  SGuiElem buttonLabelInactive(const string&, bool matchTextWidth = true);
+  SGuiElem buttonLabelSelectedFocusable(const string&, function<void()> button, function<bool()> focused,
+      bool matchTextWidth = true, bool centerHorizontally = false);
+  SGuiElem buttonLabelInactive(const string&, bool matchTextWidth = true, bool centerText = false);
   SGuiElem labelHighlight(const string&, Color = Color::WHITE, char hotkey = 0);
   SGuiElem labelHighlightBlink(const string& s, Color, Color, char hotkey = 0);
   SGuiElem label(const string&, int size, Color = Color::WHITE);
@@ -183,8 +200,6 @@ class GuiFactory {
       Color = Color::WHITE, char delim = ' ');
   SGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = Color::WHITE);
   SGuiElem centeredLabel(Renderer::CenterType, const string&, Color = Color::WHITE);
-  SGuiElem variableLabel(function<string()>, int lineHeight, int size = Renderer::textSize(),
-      Color = Color::WHITE);
   SGuiElem mainMenuLabel(const string&, double vPadding, Color = Color::MAIN_MENU_ON);
   SGuiElem mainMenuLabelBg(const string&, double vPadding, Color = Color::MAIN_MENU_OFF);
   SGuiElem labelUnicode(const string&, Color = Color::WHITE, int size = Renderer::textSize(),
@@ -199,6 +214,7 @@ class GuiFactory {
   SGuiElem viewObject(function<ViewId()>, double scale = 1, Color = Color::WHITE);
   SGuiElem asciiBackground(ViewId);
   enum class TranslateCorner {
+    TOP_LEFT_SHIFTED,
     TOP_LEFT,
     TOP_RIGHT,
     BOTTOM_LEFT,
@@ -206,6 +222,7 @@ class GuiFactory {
   };
   SGuiElem translate(SGuiElem, Vec2 pos, optional<Vec2> size = none, TranslateCorner = TranslateCorner::TOP_LEFT);
   SGuiElem translate(function<Vec2()>, SGuiElem);
+  SGuiElem translateAbsolute(function<Vec2()>, SGuiElem);
   SGuiElem centerHoriz(SGuiElem, optional<int> width = none);
   SGuiElem centerVert(SGuiElem, optional<int> height = none);
   SGuiElem onRenderedAction(function<void()>);
@@ -232,6 +249,8 @@ class GuiFactory {
   SGuiElem tooltip2(SGuiElem, PositionFun);
   SGuiElem darken();
   SGuiElem stopMouseMovement();
+  SGuiElem stopScrollEvent(SGuiElem content, function<bool()>);
+  SGuiElem stopKeyEvents();
   SGuiElem fullScreen(SGuiElem);
   SGuiElem absolutePosition(SGuiElem content, Vec2 pos);
   SGuiElem alignment(GuiFactory::Alignment, SGuiElem, optional<Vec2> size = none);
@@ -240,10 +259,11 @@ class GuiFactory {
   SGuiElem renderInBounds(SGuiElem);
   using CustomDrawFun = function<void(Renderer&, Rectangle)>;
   SGuiElem drawCustom(CustomDrawFun);
-  SGuiElem slider(SGuiElem button, shared_ptr<int> position, int max);
 
   using TexId = TextureId;
   SGuiElem sprite(TexId, Alignment, optional<Color> = none);
+  SGuiElem steamInputGlyph(ControllerKey, int size = 24);
+  Texture& steamInputTexture(FilePath);
   SGuiElem repeatedPattern(Texture& tex);
   SGuiElem background(Color);
   SGuiElem highlight(double height);
@@ -299,10 +319,17 @@ class GuiFactory {
   SGuiElem minimapBar(SGuiElem icon1, SGuiElem icon2);
   SGuiElem icon(IconId, Alignment = Alignment::CENTER, Color = Color::WHITE);
   Texture& get(TexId);
-  SGuiElem uiHighlightMouseOver(Color = Color::GREEN);
-  SGuiElem uiHighlightConditional(function<bool()>, Color = Color::GREEN);
-  SGuiElem uiHighlightLine(Color = Color::GREEN);
-  SGuiElem uiHighlight(Color = Color::GREEN);
+  static Color highlightColor();
+  static Color highlightColor(int transparency);
+  SGuiElem uiHighlightMouseOver(Color = highlightColor());
+  SGuiElem uiHighlightLineConditional(function<bool()>, Color = highlightColor());
+  SGuiElem uiHighlightLine(Color = highlightColor());
+  SGuiElem uiHighlight(Color = highlightColor());
+  SGuiElem uiHighlightConditional(function<bool()>, Color = highlightColor());
+  SGuiElem uiHighlightFrame(function<bool()>);
+  SGuiElem uiHighlightFrame();
+  SGuiElem uiHighlightFrameFilled(function<bool()>);
+  SGuiElem uiHighlightFrameFilled();
   SGuiElem blink(SGuiElem);
   SGuiElem blink(SGuiElem, SGuiElem);
   SGuiElem tutorialHighlight();
@@ -310,6 +337,7 @@ class GuiFactory {
   SGuiElem renderTopLayer(SGuiElem content);
 
   KeybindingMap* getKeybindingMap();
+  MySteamInput* getSteamInput();
   Clock* clock;
 
   private:
@@ -320,14 +348,15 @@ class GuiFactory {
   SGuiElem sprite(Texture&, double scale);
   SGuiElem getScrollbar();
   Vec2 getScrollButtonSize();
+  SGuiElem buttonLabelFocusableImpl(SGuiElem content, SGuiElem button, function<bool()> focused,
+      bool matchTextWidth = true, bool centerHorizontally = false);
 
   EnumMap<TexId, optional<Texture>> textures;
+  unordered_map<string, Texture> steamInputTextures;
   vector<Texture> iconTextures;
   Renderer& renderer;
   Options* options;
   DragContainer dragContainer;
-  DirectoryPath freeImagesPath;
-  optional<DirectoryPath> nonFreeImagesPath;
-  void loadNonFreeImages(const DirectoryPath&);
-  void loadFreeImages(const DirectoryPath&);
+  DirectoryPath imagesPath;
+  optional<milliseconds> lastJoyScrollUpdate;
 };

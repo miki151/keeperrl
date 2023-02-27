@@ -66,6 +66,7 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c, ContentFacto
       contentFactory(std::move(f)) {
   gameIdentifier = c.gameIdentifier;
   gameDisplayName = c.gameDisplayName;
+  enemyAggressionLevel = c.enemyAggressionLevel;
   for (Vec2 v : models.getBounds())
     if (WModel m = models[v].get()) {
       for (Collective* col : m->getCollectives()) {
@@ -80,6 +81,10 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c, ContentFacto
   turnEvents = {0, 10, 50, 100, 300, 500};
   for (int i : Range(200))
     turnEvents.insert(1000 * (i + 1));
+}
+
+EnemyAggressionLevel Game::getEnemyAggressionLevel() const {
+  return enemyAggressionLevel;
 }
 
 void Game::addCollective(Collective* col) {
@@ -339,7 +344,7 @@ void Game::initializeModels() {
       if (!localTime.count(id))
         localTime[id] = (model->getLocalTime() + initialModelUpdate).getDouble();
       if (getCurrentModel() != model)
-        updateModel(model, localTime[id]);
+        updateModel(model, localTime[id], none);
     }
 }
 
@@ -353,8 +358,8 @@ void Game::increaseTime(double diff) {
         c->setGlobalTime(after);
 }
 
-optional<ExitInfo> Game::update(double timeDiff) {
-  ScopeTimer timer("Game::update timer");
+optional<ExitInfo> Game::update(double timeDiff, milliseconds endTime) {
+  PROFILE_BLOCK("Game::update");
   if (auto exitInfo = updateInput())
     return exitInfo;
   considerRealTimeRender();
@@ -368,7 +373,7 @@ optional<ExitInfo> Game::update(double timeDiff) {
     tick(GlobalTime(*lastTick));
   }
   considerRetiredLoadedEvent(getModelCoords(currentModel));
-  if (!updateModel(currentModel, localTime[currentId] + timeDiff)) {
+  if (!updateModel(currentModel, localTime[currentId] + timeDiff, endTime)) {
     localTime[currentId] += timeDiff;
     increaseTime(timeDiff);
   }
@@ -391,7 +396,7 @@ void Game::setWasTransfered() {
 }
 
 // Return true when the player has just left turn-based mode so we don't increase time in that case.
-bool Game::updateModel(WModel model, double totalTime) {
+bool Game::updateModel(WModel model, double totalTime, optional<milliseconds> endTime) {
   do {
     bool wasPlayer = !getPlayerCreatures().empty();
     if (!model->update(totalTime))
@@ -403,6 +408,8 @@ bool Game::updateModel(WModel model, double totalTime) {
       return false;
     }
     if (exitInfo)
+      return true;
+    if (endTime && Clock::getRealMillis() > *endTime)
       return true;
   } while (1);
 }
@@ -819,16 +826,14 @@ void Game::addAnalytics(const string& name, const string& value) {
 void Game::handleMessageBoard(Position pos, Creature* c) {
   auto gameId = getGameOrRetiredIdentifier(pos);
   auto boardId = int(combineHash(pos, gameId));
-  vector<ListElem> options;
-  atomic<bool> cancelled(false);
+  FileSharing::CancelFlag cancel;
   view->displaySplash(nullptr, "Fetching board contents...", [&] {
-      cancelled = true;
-      fileSharing->cancel();
-      });
+    cancel.cancel();
+  });
   vector<FileSharing::BoardMessage> messages;
   optional<string> error;
   thread t([&] {
-    if (auto m = fileSharing->getBoardMessages(boardId))
+    if (auto m = fileSharing->getBoardMessages(cancel, boardId))
       messages = *m;
     else
       error = m.error();
@@ -840,22 +845,32 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
     view->presentText("", *error);
     return;
   }
+  auto data = ScriptedUIDataElems::Record{};
+  auto list = ScriptedUIDataElems::List{};
+  ScriptedUIState uiState{};
   for (auto message : messages) {
-    options.emplace_back(message.author + " wrote:", ListElem::TITLE);
-    options.emplace_back("\"" + message.text + "\"", ListElem::TEXT);
+    list.push_back(ScriptedUIDataElems::Record{
+      {
+        {"author", message.author},
+        {"text", "\"" + message.text + "\""}
+      }
+    });
   }
-  if (messages.empty())
-    options.emplace_back("The board is empty.", ListElem::TITLE);
-  options.emplace_back("", ListElem::TEXT);
-  options.emplace_back("[Write something]");
-  if (auto index = view->chooseFromList("", options))
-    if (auto text = view->getText("Enter message", "", 80)) {
-      if (text->size() >= 2) {
-        if (!fileSharing->uploadBoardMessage(gameId, boardId, c->getName().title(), *text))
-          view->presentText("", "Please enable online features in the settings.");
-      } else
-        view->presentText("", "The message was too short.");
-    }
+  data.elems["messages"] = std::move(list);
+  bool wrote = false;
+  data.elems["write_something"] = ScriptedUIDataElems::Callback{
+      [this, c, boardId, gameId] {
+        if (auto text = view->getText("Enter message", "", 80)) {
+          if (text->size() >= 2) {
+            if (!fileSharing->uploadBoardMessage(gameId, boardId, c->getName().title(), *text))
+              view->presentText("", "Please enable online features in the settings.");
+          } else
+            view->presentText("", "The message was too short.");
+        }
+        return true;
+      }
+  };
+  view->scriptedUI("message_board", data, uiState);
 }
 
 void Game::considerAllianceAttack() {

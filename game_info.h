@@ -50,7 +50,7 @@ struct ItemInfo {
   int HASH(number);
   ViewIdList HASH(viewId);
   EnumSet<ViewObjectModifier> HASH(viewIdModifiers);
-  EntitySet<Item> HASH(ids);
+  vector<UniqueEntity<Item>::Id> HASH(ids);
   vector<ItemAction> HASH(actions);
   bool HASH(equiped);
   bool HASH(locked);
@@ -66,9 +66,8 @@ struct ItemInfo {
   optional<pair<ViewId, int>> HASH(price);
   optional<double> HASH(weight);
   bool HASH(tutorialHighlight);
-  bool HASH(hidden);
   heap_optional<ItemInfo> HASH(ingredient);
-  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, unavailableReason, weight, tutorialHighlight, intrinsicAttackState, intrinsicExtraAttack, viewIdModifiers, hidden, ingredient)
+  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, unavailableReason, weight, tutorialHighlight, intrinsicAttackState, intrinsicExtraAttack, viewIdModifiers, ingredient)
 };
 
 static_assert(std::is_nothrow_move_constructible<ItemInfo>::value, "T should be noexcept MoveConstructible");
@@ -115,7 +114,6 @@ class PlayerInfo {
   PlayerInfo(const Creature*, const ContentFactory*);
   string getFirstName() const;
   vector<AttributeInfo> HASH(attributes);
-  optional<AvatarLevelInfo> HASH(avatarLevelInfo);
   BestAttack HASH(bestAttack);
   string HASH(firstName);
   string HASH(name);
@@ -192,7 +190,7 @@ class PlayerInfo {
     HASH_ALL(viewId, name, locked);
   };
   vector<EquipmentGroupInfo> HASH(equipmentGroups);
-  HASH_ALL(attributes, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo, spellSchools, kills, killTitles, canExitControlMode, equipmentGroups)
+  HASH_ALL(attributes, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, spellSchools, kills, killTitles, canExitControlMode, equipmentGroups)
 };
 
 struct ImmigrantCreatureInfo {
@@ -399,20 +397,6 @@ class CollectiveInfo {
   };
   vector<Task> HASH(taskMap);
 
-  struct Ransom {
-    pair<ViewId, int> HASH(amount);
-    string HASH(attacker);
-    bool HASH(canAfford);
-    HASH_ALL(amount, attacker, canAfford)
-  };
-  optional<Ransom> HASH(ransom);
-  struct OnGoingAttack {
-    ViewIdList HASH(viewId);
-    string HASH(attacker);
-    UniqueEntity<Creature>::Id HASH(creatureId);
-    HASH_ALL(viewId, attacker, creatureId)
-  };
-  vector<OnGoingAttack> HASH(onGoingAttacks);
   struct NextWave {
     ViewIdList HASH(viewId);
     string HASH(attacker);
@@ -427,7 +411,7 @@ class CollectiveInfo {
   };
   optional<RebellionChance> HASH(rebellionChance);
   vector<ViewId> HASH(allQuarters);
-  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, ransom, onGoingAttacks, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, minionPromotions, availablePromotions, allQuarters, rebellionChance, avatarLevelInfo, populationString)
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, minionPromotions, availablePromotions, allQuarters, rebellionChance, avatarLevelInfo, populationString)
 };
 
 class VillageInfo {
@@ -440,21 +424,16 @@ class VillageInfo {
     enum Access { ACTIVE, INACTIVE, LOCATION, NO_LOCATION };
     Access HASH(access);
     bool HASH(isConquered);
-    struct ActionInfo {
-      VillageAction HASH(action);
-      optional<string> HASH(disabledReason);
-      HASH_ALL(action, disabledReason)
-    };
     struct TriggerInfo {
       string HASH(name);
       double HASH(value);
       HASH_ALL(name, value)
     };
-    vector<ActionInfo> HASH(actions);
+    optional<VillageAction> HASH(action);
     vector<TriggerInfo> HASH(triggers);
     UniqueEntity<Collective>::Id HASH(id);
     bool HASH(attacking);
-    HASH_ALL(name, tribeName, access, isConquered, actions, triggers, id, viewId, type, attacking)
+    HASH_ALL(name, tribeName, access, isConquered, action, triggers, id, viewId, type, attacking)
   };
   int HASH(numMainVillains);
   int HASH(numConqueredMainVillains);
@@ -472,14 +451,14 @@ class GameSunlightInfo {
 
 class TutorialInfo {
   public:
-  string HASH(message);
+  TutorialState HASH(state);
   optional<string> HASH(warning);
   bool HASH(canContinue);
   bool HASH(canGoBack);
   EnumSet<TutorialHighlight> HASH(highlights);
   vector<Vec2> HASH(highlightedSquaresHigh);
   vector<Vec2> HASH(highlightedSquaresLow);
-  HASH_ALL(message, warning, canContinue, canGoBack, highlights, highlightedSquaresHigh, highlightedSquaresLow)
+  HASH_ALL(state, warning, canContinue, canGoBack, highlights, highlightedSquaresHigh, highlightedSquaresLow)
 };
 
 struct CurrentLevelInfo {
@@ -510,11 +489,10 @@ class GameInfo {
   optional<CurrentLevelInfo> HASH(currentLevel);
   const Encyclopedia* encyclopedia;
   bool HASH(isSingleMap) = false;
-  optional<string> HASH(keeperInDanger);
   vector<ScriptedHelpInfo> scriptedHelp; // this won't change during the game so don't hash
   vector<PlayerMessage> HASH(messageBuffer);
   bool HASH(takingScreenshot) = false;
-  HASH_ALL(infoType, time, playerInfo, villageInfo, sunlightInfo, messageBuffer, modifiedSquares, totalSquares, tutorial, currentLevel, takingScreenshot, isSingleMap, keeperInDanger)
+  HASH_ALL(infoType, time, playerInfo, villageInfo, sunlightInfo, messageBuffer, modifiedSquares, totalSquares, tutorial, currentLevel, takingScreenshot, isSingleMap)
 };
 
 struct AutomatonPart;

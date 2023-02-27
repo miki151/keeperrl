@@ -12,6 +12,10 @@ struct VARIANT_NAME {
     return none;
   }
   template <typename T>
+  optional<T&> getReferenceMaybe() {
+    return none;
+  }
+  template <typename T>
   bool contains() const {
     return !!getReferenceMaybe<T>();
   }
@@ -113,6 +117,12 @@ struct VARIANT_NAME {
   }\
   template<>\
   inline optional<const Type&> VARIANT_NAME::getReferenceMaybe() const {\
+    if (index == Index)\
+      return elem##Index;\
+    return none;\
+  }\
+  template<>\
+  inline optional<Type&> VARIANT_NAME::getReferenceMaybe() {\
     if (index == Index)\
       return elem##Index;\
     return none;\

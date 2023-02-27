@@ -727,36 +727,6 @@ void Body::getBadAdjectives(vector<AdjectiveInfo>& ret) const {
       ret.push_back({getPlural(string("Lost ") + getName(part), num), ""});
 }
 
-/* From gameplay perspective these penalties are not that useful so leaving out for now.
-
-const static map<BodyPart, int> defensePenalty {
-  {BodyPart::ARM, 2},
-  {BodyPart::LEG, 10},
-  {BodyPart::WING, 3},
-  {BodyPart::HEAD, 3}};
-
-const static map<BodyPart, int> damagePenalty {
-  {BodyPart::ARM, 2},
-  {BodyPart::LEG, 5},
-  {BodyPart::WING, 2},
-  {BodyPart::HEAD, 3}};*/
-
-int Body::getAttrBonus(AttrType type) const {
-  int ret = 0;
-  /*switch (type) {
-    case AttrType("DAMAGE"):
-      for (auto elem : damagePenalty)
-        ret -= elem.second * (numInjured(elem.first) + numLost(elem.first));
-      break;
-    case AttrType("DEFENSE"):
-      for (auto elem : defensePenalty)
-        ret -= elem.second * (numInjured(elem.first) + numLost(elem.first));
-      break;
-    default: break;
-  }*/
-  return ret;
-}
-
 BodySize Body::getSize() const {
   return size;
 }

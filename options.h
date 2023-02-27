@@ -26,6 +26,7 @@ RICH_ENUM(OptionId,
   KEEP_SAVEFILES,
   FULLSCREEN,
   VSYNC,
+  FPS_LIMIT,
   ONLINE,
   GAME_EVENTS,
   AUTOSAVE2,
@@ -33,10 +34,12 @@ RICH_ENUM(OptionId,
   DISABLE_MOUSE_WHEEL,
   DISABLE_CURSOR,
   KEEPER_WARNING,
-  KEEPER_WARNING_PAUSE,
   KEEPER_WARNING_TIMEOUT,
 
   SUGGEST_TUTORIAL,
+  CONTROLLER_HINT_MAIN_MENU,
+  CONTROLLER_HINT_REAL_TIME,
+  CONTROLLER_HINT_TURN_BASED,
 
   PLAYER_NAME,
   SETTLEMENT_NAME,
@@ -67,12 +70,13 @@ namespace ScriptedUIDataElems {
 
 class View;
 class KeybindingMap;
+class MySteamInput;
 class ContentFactory;
 
 class Options {
   public:
   typedef variant<int, string, vector<string>> Value;
-  Options(const FilePath& path, KeybindingMap*);
+  Options(const FilePath& path, KeybindingMap*, MySteamInput*);
   bool getBoolValue(OptionId);
   string getStringValue(OptionId);
   vector<string> getVectorStringValue(OptionId);
@@ -105,10 +109,10 @@ class Options {
   optional<EnumMap<OptionId, Value>> values;
   void writeValues();
   FilePath filename;
-  EnumMap<OptionId, optional<Value>> overrides;
   EnumMap<OptionId, vector<string>> choices;
   EnumMap<OptionId, optional<Range>> limits;
   KeybindingMap* keybindingMap;
+  MySteamInput* steamInput;
 };
 
 

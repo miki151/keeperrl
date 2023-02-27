@@ -45,7 +45,7 @@ class Portals;
 class Model : public OwnedObject<Model> {
   public:
   static PModel create(ContentFactory*, optional<MusicType>, BiomeId);
-  
+
   /** Makes an update to the game. This method is repeatedly called to make the game run.
     Returns the total logical time elapsed.*/
   bool update(double totalTime);
@@ -79,7 +79,7 @@ class Model : public OwnedObject<Model> {
   Level* getMainLevel(int depth) const;
   optional<int> getMainLevelDepth(const Level*) const;
   Range getMainLevelsDepth() const;
-  vector<Level*> getAllMainLevels() const;
+  vector<Level*> getDungeonBranch(Level* current, const MapMemory&) const;
   Level* getGroundLevel() const;
   LevelId getUniqueId() const;
 

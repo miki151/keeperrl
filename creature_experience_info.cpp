@@ -2,7 +2,7 @@
 #include "creature_experience_info.h"
 #include "creature.h"
 #include "creature_attributes.h"
-#include "content_factory.h"  
+#include "content_factory.h"
 
 CreatureExperienceInfo getCreatureExperienceInfo(const ContentFactory* f, const Creature* c) {
   return CreatureExperienceInfo {

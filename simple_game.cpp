@@ -64,7 +64,7 @@ bool SimpleGame::fightEnemy(EnemyId id) {
 
 void SimpleGame::increaseZLevel() {
   auto level = zLevels[zLevel + 1];
-  auto result = level.type.visit(
+  auto result = level.visit(
         [&](const FullZLevel& l) {
           if (l.enemy)
             return fightEnemy(*l.enemy);

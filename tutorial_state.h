@@ -40,3 +40,4 @@ RICH_ENUM(TutorialState,
   FINISHED
 );
 
+string getMessage(TutorialState, bool controller);

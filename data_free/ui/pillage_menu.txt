@@ -1,0 +1,57 @@
+
+Def ItemsWindow()
+  Width 380 MiniWindow({
+    Using "EXIT" Button(true)
+    Scrolling(Vertical {
+      Horizontal {
+        Position(MIDDLE, Using "title" Label())
+        Stretch {}
+        Using "budget" Horizontal {
+          ViewId(1, {"gold"})
+          Label()
+        }
+        Using "is_equipment_choice" Label("Owners:")
+        Using "choose_all" StandardButton(Label("Choose all"))
+      }
+      Height 10 {}
+      Using "elems" List(VERTICAL,
+        Height 30 {
+          Using "callback" Focusable NewHighlight()
+          Using "callback" Button()
+          Using "tooltip" GetTooltip(List(VERTICAL, Height 30 Label()))
+          If "equiped" Using "tooltip" GetTooltip(Vertical { List(VERTICAL, Height 30 Label()) Label("Equiped.")})
+          Position(MIDDLE_STRETCHED_X, Horizontal {
+            Using "view_id" ViewId()
+            Width 5 {}
+            {
+              Using "name" Label(color = ColorId GRAY)
+              If "callback" Using "name" Label()
+              If "equiped" Using "name" Label(color = ColorId GREEN)
+            }
+            Stretch {}
+            Using "price" Horizontal {
+              ViewId(1, {"gold"})
+              Label()
+            }
+            Using "owner" Horizontal {
+              Using "count" Label()
+              Using "view_id" ViewId()
+              Using "attack_view_id" ViewId()
+              Using "attack_value" Label()
+            }
+          })
+        }
+      )
+    })
+  })
+End
+
+{
+  ExitButtons()
+  FocusKeysVertical()
+  Position(SCREEN, Fill(Rgb 0 0 0 150))
+  If "is_trade_or_pillage"
+    Position(SCREEN, Position(BOTTOM_LEFT, MarginLeft(370, MarginBottom(93, ItemsWindow())), true))
+  If "is_equipment_choice"
+    Position(SCREEN, Position(TOP_LEFT, MarginLeft(330, MarginTop(210, ItemsWindow())), true))
+}

@@ -3,6 +3,7 @@
 #include "gui_elem.h"
 #include "pretty_archive.h"
 #include "pretty_printing.h"
+#include "steam_input.h"
 
 KeybindingMap::KeybindingMap(const FilePath& defaults, const FilePath& user)
     : defaultsPath(defaults), userPath(user) {
@@ -30,9 +31,55 @@ static SDL::Uint16 getMod(SDL::Uint16 m) {
   return m & (SDL::KMOD_LCTRL | SDL::KMOD_LSHIFT | SDL::KMOD_LALT);
 }
 
+static SDL::SDL_Keycode getEquivalent(SDL::SDL_Keycode key){
+  if (key == SDL::SDLK_KP_ENTER)
+    return SDL::SDLK_RETURN;
+  return key;
+}
+
+optional<SDL::SDL_Keycode> KeybindingMap::getBuiltinMapping(Keybinding key) {
+  static unordered_map<Keybinding, SDL::SDL_Keycode, CustomHash<Keybinding>> bindings {
+    {Keybinding("MENU_UP"), SDL::SDLK_KP_8},
+    {Keybinding("MENU_DOWN"), SDL::SDLK_KP_2},
+    {Keybinding("MENU_LEFT"), SDL::SDLK_KP_4},
+    {Keybinding("MENU_RIGHT"), SDL::SDLK_KP_6},
+  };
+  return getValueMaybe(bindings, key);
+}
+
+optional<ControllerKey> KeybindingMap::getControllerMapping(Keybinding key) {
+  static unordered_map<Keybinding, ControllerKey, CustomHash<Keybinding>> controllerBindings {
+      {Keybinding("WAIT"), C_WAIT},
+      {Keybinding("CHAT"), C_CHAT},
+      {Keybinding("FIRE_PROJECTILE"), C_FIRE_PROJECTILE},
+      {Keybinding("SKIP_TURN"), C_SKIP_TURN},
+      {Keybinding("STAND_GROUND"), C_STAND_GROUND},
+      {Keybinding("IGNORE_ENEMIES"), C_IGNORE_ENEMIES},
+      {Keybinding("EXIT_CONTROL_MODE"), C_EXIT_CONTROL_MODE},
+      {Keybinding("TOGGLE_CONTROL_MODE"), C_TOGGLE_CONTROL_MODE},
+      {Keybinding("OPEN_WORLD_MAP"), C_WORLD_MAP},
+      {Keybinding("PAUSE"), C_PAUSE},
+      {Keybinding("SPEED_UP"), C_SPEED_UP},
+      {Keybinding("SPEED_DOWN"), C_SPEED_DOWN},
+      {Keybinding("MENU_DOWN"), C_BUILDINGS_DOWN},
+      {Keybinding("MENU_UP"), C_BUILDINGS_UP},
+      {Keybinding("MENU_LEFT"), C_BUILDINGS_LEFT},
+      {Keybinding("MENU_RIGHT"), C_BUILDINGS_RIGHT},
+      {Keybinding("MENU_SELECT"), C_BUILDINGS_CONFIRM},
+      {Keybinding("EXIT_MENU"), C_BUILDINGS_CANCEL},
+      {Keybinding("SCROLL_Z_UP"), C_ZLEVEL_UP},
+      {Keybinding("SCROLL_Z_DOWN"), C_ZLEVEL_DOWN},
+  };
+  return getValueMaybe(controllerBindings, key);
+}
+
 bool KeybindingMap::matches(Keybinding key, SDL::SDL_Keysym sym) {
+  if (getControllerMapping(key) == (ControllerKey)sym.sym)
+    return true;
+  if (getBuiltinMapping(key) == sym.sym)
+    return true;
   if (auto k = getReferenceMaybe(bindings, key))
-    return k->sym == sym.sym && getMod(k->mod) == getMod(sym.mod);
+    return getEquivalent(k->sym) == getEquivalent(sym.sym) && getMod(k->mod) == getMod(sym.mod);
   return false;
 }
 
@@ -90,6 +137,8 @@ static const map<string, SDL::SDL_Keycode> keycodes {
   {"DOWN", SDL::SDLK_DOWN},
   {"LEFT", SDL::SDLK_LEFT},
   {"RIGHT", SDL::SDLK_RIGHT},
+  {"ESCAPE", SDL::SDLK_ESCAPE},
+  {"ENTER", SDL::SDLK_RETURN},
 };
 
 string KeybindingMap::getText(SDL::SDL_Keysym sym, string delimiter) {
@@ -101,11 +150,11 @@ string KeybindingMap::getText(SDL::SDL_Keysym sym, string delimiter) {
   }();
   string ret = keys.at(sym.sym);
   if (sym.mod & SDL::KMOD_LCTRL)
-    ret = "ctrl" + delimiter + ret;
+    ret = "Ctrl" + delimiter + ret;
   if (sym.mod & SDL::KMOD_LSHIFT)
-    ret = "shift" + delimiter + ret;
+    ret = "Shift" + delimiter + ret;
   if (sym.mod & SDL::KMOD_LALT)
-    ret = "alt" + delimiter + ret;
+    ret = "Alt" + delimiter + ret;
   return ret;
 }
 
@@ -113,6 +162,30 @@ optional<string> KeybindingMap::getText(Keybinding key) {
   if (auto ks = getReferenceMaybe(bindings, key))
     return getText(*ks);
   return none;
+}
+
+SGuiElem KeybindingMap::getGlyph(SGuiElem label, GuiFactory* f, optional<ControllerKey> key, optional<string> alternative) {
+  SGuiElem add;
+  auto steamInput = f->getSteamInput();
+  if (steamInput && !steamInput->controllers.empty()) {
+    if (key)
+      add = f->steamInputGlyph(*key);
+  } else if (alternative)
+    add = f->label("[" + *alternative + "]");
+  if (add)
+    label = f->getListBuilder()
+        .addElemAuto(std::move(label))
+        .addSpace(10)
+        .addElemAuto(std::move(add))
+        .buildHorizontalList();
+  return label;
+}
+
+SGuiElem KeybindingMap::getGlyph(SGuiElem label, GuiFactory* f, Keybinding key) {
+  optional<string> alternative;
+  if (auto k = getReferenceMaybe(bindings, key))
+    alternative = getText(*k);
+  return getGlyph(std::move(label), f, getControllerMapping(key), std::move(alternative));
 }
 
 void KeybindingMap::save() {
@@ -142,17 +215,17 @@ bool KeybindingMap::set(Keybinding k, SDL::SDL_Keysym s) {
     }
   return false;
 }
-  
+
 void serialize(PrettyInputArchive& ar, SDL::SDL_Keysym& sym) {
   sym.mod = 0;
   while (true) {
     string s;
     ar.readText(s);
-    if (s == "ctrl")
+    if (lowercase(s) == "ctrl")
       sym.mod = sym.mod | SDL::KMOD_LCTRL;
-    else if (s == "shift")
+    else if (lowercase(s) == "shift")
       sym.mod = sym.mod | SDL::KMOD_LSHIFT;
-    else if (s == "alt")
+    else if (lowercase(s) == "alt")
       sym.mod = sym.mod | SDL::KMOD_LALT;
     else if (auto code = getValueMaybe(keycodes, s)) {
       sym.sym = *code;

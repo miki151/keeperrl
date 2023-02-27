@@ -18,6 +18,7 @@ void VisibilityMap::removePositions(const vector<Position>& positions) {
 }
 
 void VisibilityMap::update(const Creature* c, const vector<Position>& visibleTiles) {
+  PROFILE;
   remove(c);
   lastUpdates.set(c, visibleTiles);
   addPositions(visibleTiles);

@@ -44,10 +44,8 @@ enum class UserInputId {
   AI_TYPE,
   SCROLL_STAIRS,
 // real-time actions
-  BUILD,
   TILE_CLICK,
   RECT_SELECTION,
-  RECT_DESELECTION,
   RECT_CONFIRM,
   RECT_CANCEL,
   ADD_TO_TEAM,
@@ -89,10 +87,6 @@ enum class UserInputId {
   LIBRARY_ADD,
   VILLAGE_ACTION,
   DISMISS_VILLAGE_INFO,
-  PAY_RANSOM,
-  IGNORE_RANSOM,
-  CONTROL_KEEPER,
-  DISMISS_KEEPER_DANGER,
   SHOW_HISTORY,
   DISMISS_NEXT_WAVE,
   DISMISS_WARNING_WINDOW,
@@ -146,7 +140,7 @@ struct TeamGroupInfo {
 };
 
 struct InventoryItemInfo {
-  EntitySet<Item> items;
+  vector<UniqueEntity<Item>::Id> items;
   ItemAction action;
 };
 
@@ -172,14 +166,9 @@ struct AIActionInfo {
 
 struct EquipmentActionInfo {
   UniqueEntity<Creature>::Id creature;
-  EntitySet<Item> ids;
+  vector<UniqueEntity<Item>::Id> ids;
   optional<EquipmentSlot> slot;
   ItemAction action;
-};
-
-struct RenameActionInfo {
-  UniqueEntity<Creature>::Id creature;
-  string name;
 };
 
 struct TeamMemberActionInfo {
@@ -221,11 +210,10 @@ struct EquipmentGroupAction {
 
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, TeamGroupInfo, VillageActionInfo,
-    TaskActionInfo, EquipmentActionInfo, RenameActionInfo, CreatureDropInfo, CreatureGroupDropInfo, TeamDropInfo,
+    TaskActionInfo, EquipmentActionInfo, CreatureDropInfo, CreatureGroupDropInfo, TeamDropInfo,
     string, TechId, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo,
     WorkshopCountInfo, AIActionInfo, PromotionActionInfo, EquipmentGroupAction),
         ASSIGN(BuildingClickInfo,
-            UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
             UserInputId::RECT_CONFIRM),
         ASSIGN(UniqueEntity<Creature>::Id,
@@ -236,7 +224,8 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, 
             UserInputId::CREATURE_CONSUME,
             UserInputId::CREATURE_LOCATE,
             UserInputId::CREATURE_DRAG,
-            UserInputId::GO_TO_ENEMY
+            UserInputId::GO_TO_ENEMY,
+            UserInputId::CREATURE_RENAME
         ),
         ASSIGN(PromotionActionInfo,
             UserInputId::CREATURE_PROMOTE
@@ -273,8 +262,7 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, 
             UserInputId::CREATURE_MAP_CLICK,
             UserInputId::CREATURE_MAP_CLICK_EXTENDED,
             UserInputId::MOVE,
-            UserInputId::TAKE_SCREENSHOT,
-            UserInputId::RECT_DESELECTION),
+            UserInputId::TAKE_SCREENSHOT),
         ASSIGN(TeamCreatureInfo,
             UserInputId::ADD_TO_TEAM,
             UserInputId::REMOVE_FROM_TEAM),
@@ -286,8 +274,6 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, 
             UserInputId::CREATURE_TASK_ACTION),
         ASSIGN(EquipmentActionInfo,
             UserInputId::CREATURE_EQUIPMENT_ACTION),
-        ASSIGN(RenameActionInfo,
-            UserInputId::CREATURE_RENAME),
         ASSIGN(CreatureGroupDropInfo,
             UserInputId::CREATURE_GROUP_DRAG_ON_MAP),
         ASSIGN(CreatureDropInfo,
