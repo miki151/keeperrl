@@ -45,8 +45,8 @@
 }
 Def TRAINING(SUF1, SUF2)
 "TRAINING_WOOD" + SUF1 inherit "TRAINING_WOOD" { viewId = { "training_wood" + SUF2 } }
-"TRAINING_IRON" + SUF1 inherit "TRAINING_IRON" { viewId = { "training_iron" + SUF2 } }
-"TRAINING_ADA" + SUF1 inherit "TRAINING_ADA" { viewId = { "training_ada" + SUF2 } }
+"TRAINING_IRON" + SUF1 inherit "TRAINING_IRON" { viewId = { "training_iron" + SUF2 } upgrade = "TRAINING_WOOD" + SUF1 }
+"TRAINING_ADA" + SUF1 inherit "TRAINING_ADA" { viewId = { "training_ada" + SUF2 } upgrade = "TRAINING_IRON" + SUF1 }
 End
 TRAINING("_HUMAN", "_human")
 TRAINING("_NECRO", "_necro")
@@ -242,8 +242,8 @@ TRAINING("_DWARF", "_dwarf")
 }
 Def BOOKCASES(SUF1, SUF2)
 "BOOKCASE_WOOD" + SUF1 inherit "BOOKCASE_WOOD" { viewId = { "bookcase_wood" + SUF2 } }
-"BOOKCASE_IRON" + SUF1 inherit "BOOKCASE_IRON" { viewId = { "bookcase_iron" + SUF2 } }
-"BOOKCASE_GOLD" + SUF1 inherit "BOOKCASE_GOLD" { viewId = { "bookcase_gold" + SUF2 } }
+"BOOKCASE_IRON" + SUF1 inherit "BOOKCASE_IRON" { viewId = { "bookcase_iron" + SUF2 } upgrade = "BOOKCASE_WOOD" + SUF1 }
+"BOOKCASE_GOLD" + SUF1 inherit "BOOKCASE_GOLD" { viewId = { "bookcase_gold" + SUF2 } upgrade = "BOOKCASE_IRON" + SUF1 }
 End
 BOOKCASES("_NECRO", "_necro")
 BOOKCASES("_HUMAN", "_human")
