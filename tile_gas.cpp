@@ -32,7 +32,8 @@ void TileGas::addAmount(Position pos, TileGasType t, double a) {
   auto prevValue = amount[t].total;
   amount[t].total = min(1., a + amount[t].total);
   if (prevValue < getFogVisionCutoff() && amount[t].total >= getFogVisionCutoff()) {
-    pos.updateVisibility();
+    if (pos.getGame()->getContentFactory()->tileGasTypes.at(t).blocksVision)
+      pos.updateVisibility();
     pos.updateConnectivity();
   }
 }
@@ -76,7 +77,8 @@ void TileGas::tick(Position pos) {
       value.total = max(value.permanent, value.permanent + (value.total - value.permanent) * info.decrease);
     }
     if (prevValue >= getFogVisionCutoff() && value.total < getFogVisionCutoff()) {
-      pos.updateVisibility();
+      if (info.blocksVision)
+        pos.updateVisibility();
       pos.updateConnectivity();
     }
   }
