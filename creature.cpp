@@ -1117,7 +1117,8 @@ bool Creature::removePermanentEffect(BuffId id, int count, bool msg, const Conte
 }
 
 bool Creature::isAffected(BuffId id) const {
-  return buffCount.count(id) || buffPermanentCount.count(id);
+  // Check attributes->permanentBuffs in case this is before they were copied over in tick()
+  return buffCount.count(id) || buffPermanentCount.count(id) || attributes->permanentBuffs.contains(id);
 }
 
 bool Creature::isAffectedPermanently(BuffId id) const {
