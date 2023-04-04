@@ -363,9 +363,10 @@ bool Furniture::isStairs() const {
 optional<Position> Furniture::getSecondPart(Position pos) const {
   if (onBuilt)
     if (auto dir = getStairDirection(*onBuilt)) {
-      int index = *pos.getModel()->getMainLevelDepth(pos.getLevel());
-      index = pos.getModel()->getMainLevelsDepth().clamp(index + *dir);
-      return Position(pos.getCoord(), pos.getModel()->getMainLevel(index));
+      int myIndex = *pos.getModel()->getMainLevelDepth(pos.getLevel());
+      int nextIndex = pos.getModel()->getMainLevelsDepth().clamp(myIndex + *dir);
+      if (nextIndex != myIndex)
+        return Position(pos.getCoord(), pos.getModel()->getMainLevel(nextIndex));
     }
   return none;
 }
