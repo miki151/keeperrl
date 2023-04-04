@@ -221,11 +221,11 @@ void serialize(PrettyInputArchive& ar, SDL::SDL_Keysym& sym) {
   while (true) {
     string s;
     ar.readText(s);
-    if (s == "ctrl")
+    if (lowercase(s) == "ctrl")
       sym.mod = sym.mod | SDL::KMOD_LCTRL;
-    else if (s == "shift")
+    else if (lowercase(s) == "shift")
       sym.mod = sym.mod | SDL::KMOD_LSHIFT;
-    else if (s == "alt")
+    else if (lowercase(s) == "alt")
       sym.mod = sym.mod | SDL::KMOD_LALT;
     else if (auto code = getValueMaybe(keycodes, s)) {
       sym.sym = *code;

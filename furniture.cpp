@@ -398,7 +398,10 @@ bool Furniture::canRemoveNonFriendly() const {
 }
 
 Creature* Furniture::getCreator() const {
-  return creator.get();
+  if (auto c = creator.get())
+    if (!c->isDead())
+      return c;
+  return nullptr;
 }
 
 optional<LocalTime> Furniture::getCreatedTime() const {

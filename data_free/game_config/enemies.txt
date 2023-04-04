@@ -382,6 +382,7 @@ End
     minTeamSize = 5
     triggers = {
       RoomTrigger "THRONE" 0.0003
+      RoomTrigger "THRONE_HUMAN" 0.0003
       RoomTrigger "IMPALED_HEAD" 0.0001
       SelfVictims
       NumConquered 2
@@ -452,6 +453,7 @@ End
     ambushChance = 0.05
     triggers = {
       RoomTrigger "THRONE" 0.0003
+      RoomTrigger "THRONE_HUMAN" 0.0003
       RoomTrigger "IMPALED_HEAD" 0.0001
       SelfVictims
       NumConquered 3
@@ -520,6 +522,7 @@ End
     minTeamSize = 5
     triggers = {
       RoomTrigger "THRONE" 0.0003
+      RoomTrigger "THRONE_HUMAN" 0.0003
       RoomTrigger "IMPALED_HEAD" 0.0001
       SelfVictims
       NumConquered 3
@@ -762,6 +765,7 @@ End
     minTeamSize = 4
     triggers = {
       RoomTrigger "THRONE" 0.0003
+      RoomTrigger "THRONE_HUMAN" 0.0003
       RoomTrigger "IMPALED_HEAD" 0.0001
       SelfVictims
       NumConquered 3
@@ -883,6 +887,7 @@ End
     minTeamSize = 1
     triggers = {
       RoomTrigger "THRONE" 0.0003
+      RoomTrigger "THRONE_HUMAN" 0.0003
       RoomTrigger "IMPALED_HEAD" 0.0001
       NumConquered 3
       FinishOff
@@ -2387,6 +2392,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
     minTeamSize = 5
     triggers = {
       RoomTrigger "THRONE" 0.0003
+      RoomTrigger "THRONE_HUMAN" 0.0003
       RoomTrigger "IMPALED_HEAD" 0.0001
       SelfVictims
       NumConquered 2
@@ -2626,6 +2632,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
     minTeamSize = 4
     triggers = {
       RoomTrigger "THRONE" 0.0003
+      RoomTrigger "THRONE_HUMAN" 0.0003
       RoomTrigger "IMPALED_HEAD" 0.0001
       SelfVictims
       NumConquered 3

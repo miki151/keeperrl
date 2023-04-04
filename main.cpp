@@ -468,7 +468,7 @@ static int keeperMain(po::parser& commandLineFlags) {
       &sokobanInput, &tileSet, &unlocks, saveVersion, modVersion);
   try {
     if (audioError)
-      view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);
+      USER_INFO << "Failed to initialize audio. The game will be started without sound. " << *audioError;
     if (commandLineFlags["quick_game"].was_set())
       loop.launchQuickGame(maxTurns, true);
     if (commandLineFlags["new_game"].was_set())

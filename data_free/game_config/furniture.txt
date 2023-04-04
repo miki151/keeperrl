@@ -45,8 +45,8 @@
 }
 Def TRAINING(SUF1, SUF2)
 "TRAINING_WOOD" + SUF1 inherit "TRAINING_WOOD" { viewId = { "training_wood" + SUF2 } }
-"TRAINING_IRON" + SUF1 inherit "TRAINING_IRON" { viewId = { "training_iron" + SUF2 } }
-"TRAINING_ADA" + SUF1 inherit "TRAINING_ADA" { viewId = { "training_ada" + SUF2 } }
+"TRAINING_IRON" + SUF1 inherit "TRAINING_IRON" { viewId = { "training_iron" + SUF2 } upgrade = "TRAINING_WOOD" + SUF1 }
+"TRAINING_ADA" + SUF1 inherit "TRAINING_ADA" { viewId = { "training_ada" + SUF2 } upgrade = "TRAINING_IRON" + SUF1 }
 End
 TRAINING("_HUMAN", "_human")
 TRAINING("_NECRO", "_necro")
@@ -242,8 +242,8 @@ TRAINING("_DWARF", "_dwarf")
 }
 Def BOOKCASES(SUF1, SUF2)
 "BOOKCASE_WOOD" + SUF1 inherit "BOOKCASE_WOOD" { viewId = { "bookcase_wood" + SUF2 } }
-"BOOKCASE_IRON" + SUF1 inherit "BOOKCASE_IRON" { viewId = { "bookcase_iron" + SUF2 } }
-"BOOKCASE_GOLD" + SUF1 inherit "BOOKCASE_GOLD" { viewId = { "bookcase_gold" + SUF2 } }
+"BOOKCASE_IRON" + SUF1 inherit "BOOKCASE_IRON" { viewId = { "bookcase_iron" + SUF2 } upgrade = "BOOKCASE_WOOD" + SUF1 }
+"BOOKCASE_GOLD" + SUF1 inherit "BOOKCASE_GOLD" { viewId = { "bookcase_gold" + SUF2 } upgrade = "BOOKCASE_IRON" + SUF1 }
 End
 BOOKCASES("_NECRO", "_necro")
 BOOKCASES("_HUMAN", "_human")
@@ -1260,6 +1260,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   fire = 50
   strength = 160
   clickType = LOCK
+  canBuildOutsideOfTerritory = true
   requiredSupport = { { { E W } } { { N S } {"wood_door_ns"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
 }
@@ -1273,6 +1274,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   fire = 50
   strength = 240
   clickType = LOCK
+  canBuildOutsideOfTerritory = true
   requiredSupport = { { { W } } { { N } {"wood_gate_n"} } { { E } {"wood_gate_e"} } { { S } {"wood_gate_s"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
 }
@@ -1285,6 +1287,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockAllVision = true
   strength = 240
   clickType = LOCK
+  canBuildOutsideOfTerritory = true
   requiredSupport = { { { E W } } { { N S } {"iron_door_ns"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
@@ -1301,6 +1304,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockAllVision = true
   strength = 320
   clickType = LOCK
+  canBuildOutsideOfTerritory = true
   requiredSupport = { { { W } } { { N } {"iron_gate_n"} } { { E } {"iron_gate_e"} } { { S } {"iron_gate_s"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
@@ -1317,6 +1321,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockAllVision = true
   strength = 480
   clickType = LOCK
+  canBuildOutsideOfTerritory = true
   requiredSupport = { { { E W } } { { N S } {"ada_door_ns"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
@@ -1329,6 +1334,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockAllVision = true
   strength = 540
   clickType = LOCK
+  canBuildOutsideOfTerritory = true
   requiredSupport = { { { W } } { { N } {"ada_gate_n"} } { { E } {"ada_gate_e"} } { { S } {"ada_gate_s"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }

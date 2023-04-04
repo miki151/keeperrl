@@ -80,6 +80,7 @@ static auto visitAttraction(const Immigration& immigration, const AttractionInfo
 }
 
 vector<string> Immigration::getMissingRequirements(const Available& available) const {
+  PROFILE
   vector<string> ret = getMissingRequirements(Group {available.immigrantIndex, (int)available.getCreatures().size()});
   int groupSize = available.getCreatures().size();
   if (!available.getInfo().getTraits().contains(MinionTrait::NO_LIMIT) &&
@@ -463,6 +464,7 @@ void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositi
 }
 
 void Immigration::accept(int id, bool withMessage) {
+  PROFILE
   CHECK(!collective->isConquered());
   if (!getAvailable().count(id))
     return;
@@ -592,6 +594,7 @@ void Immigration::resetImmigrantTime() {
 }
 
 void Immigration::update() {
+  PROFILE
   if (!initialized) {
     initialized = true;
     initializePersistent();
@@ -611,7 +614,8 @@ void Immigration::update() {
         [&](const Group& group) { return getImmigrantChance(group);});
     if (std::accumulate(weights.begin(), weights.end(), 0.0) > 0) {
       ++idCnt;
-      available.emplace(idCnt, Available::generate(this, Random.choose(immigrantInfo, weights)));
+      if (available.size() < 10 || collective->getConfig().getImmigrantInterval() > 10_visible)
+        available.emplace(idCnt, Available::generate(this, Random.choose(immigrantInfo, weights)));
       available[idCnt].createdTime = Clock::getRealMillis();
       resetImmigrantTime();
     }

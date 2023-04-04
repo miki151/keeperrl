@@ -360,7 +360,7 @@ void PlayerControl::render(View* view) {
       getGame()->getOptions()->setValue(OptionId::CONTROLLER_HINT_REAL_TIME, 0);
     }
   }
-  if (!introText.empty() && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
+  if (!tutorial && !introText.empty() && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     view->updateView(this, false);
     for (auto& msg : introText)
       view->presentText("", msg);
@@ -3237,7 +3237,7 @@ static optional<vector<Vec2>> getCreaturePath(Creature* c, Vec2 target, Level* l
   auto movement = c->getMovementType();
   auto from = c->getPosition();
   auto to = Position(target, level);
-  if (!to.isValid())
+  if (!to.isValid() || !from.isSameModel(to))
     return none;
   if (from.getLevel() != level) {
     if (auto stairs = to.getStairsTo(from, c->getMovementType()))
