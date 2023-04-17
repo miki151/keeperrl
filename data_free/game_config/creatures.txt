@@ -503,7 +503,7 @@
     viewId = { "ghost" }
     attr = {
       DEFENSE 25
-      SPELL_DAMAGE 5 
+      SPELL_DAMAGE 5
     }
     permanentEffects = {
       FLYING 1
@@ -518,7 +518,7 @@
   {
     attr = {
       DEFENSE 25
-      SPELL_DAMAGE 5 
+      SPELL_DAMAGE 5
     }
     viewId = { "succubus" }
     body = {

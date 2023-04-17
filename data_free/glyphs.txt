@@ -1,6 +1,7 @@
 "floor" . white
 "wood_floor" . brown
 "stone_floor" . gray
+"set_territory" . yellow
 "rock" # brown
 "hard_rock" # gray
 "water" ~ blue
@@ -58,3 +59,8 @@
 "wizard_corpse" % white
 "bookcase_wood" B brown
 "coffin1" C brown
+"prison_bars" | blue
+"ant_worker" a brown
+"bat" b gray
+"fog" = white
+"gargoyle" G gray

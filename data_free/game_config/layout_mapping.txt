@@ -55,6 +55,11 @@
   "fog" AddGas "FOG"
   "spider_web" Place "SPIDER_WEB"
   "connect" { RemoveFlag NO_DIG Flag CONNECT_CORRIDOR }
+  "prison_bars" Place "PRISON_BARS"
+  "ant_worker" HostileCreature "ANT_WORKER"
+  "bat" HostileCreature "BAT"
+  "ghost_spawn" Place "GHOST_SPAWN"
+  "gargoyle" Place "GARGOYLE_TRAP"
 }
 
 "z_level_vampire_vault" inherit "default" append {

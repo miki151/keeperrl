@@ -2147,6 +2147,10 @@ Def Boulder(Id) {
   canBuildOutsideOfTerritory = true
   builtOver = {"HILL" "GRASS" "SAND" "SNOW" "FILL_UP_WATER_FLOOR" "ROOF"}
 }
+"GHOST_SPAWN" inherit "FLOOR"
+{
+  tickType = Effect Chance 0.002 Filter Area 10 Not CreatureId "LOST_SOUL" SummonEnemy "LOST_SOUL" 1 none
+}
 "ROOF"
 {
   name = "roof"
