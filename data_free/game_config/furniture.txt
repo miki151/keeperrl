@@ -393,7 +393,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 }
 "PRISON_BARS"
 {
-  name = "prison_bars"
+  name = "prison bars"
   viewId = { "prison_bars" }
   blockMovement = true
   strength = 160
