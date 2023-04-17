@@ -351,7 +351,8 @@ void Level::changeLevel(StairKey key, Creature* c) {
   else {
     Position otherPos = Random.choose(otherLevel->landingSquares.at(key));
     if (Creature* other = otherPos.getCreature()) {
-      if (!other->isPlayer() && c->getPosition().canEnterEmpty(other) && otherPos.canEnterEmpty(c)) {
+      if (!other->isPlayer() && c->getPosition().canEnterEmpty(other) && otherPos.canEnterEmpty(c) &&
+          c->canSwapPositionInMovement(other)) {
         otherLevel->eraseCreature(other, otherPos.getCoord());
         eraseCreature(c, oldPos);
         putCreature(oldPos, other);
