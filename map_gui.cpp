@@ -897,12 +897,14 @@ void MapGui::renderTexturedHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Co
     renderer.addQuad(Rectangle(pos, pos + size), color);
 }
 
-void MapGui::fxHighlight(Renderer& renderer, const FXInfo& info, Vec2 tilePos, const ViewIndex& index) {
+void MapGui::fxHighlight(Renderer& renderer, const FXInfo& info1, Vec2 tilePos, const ViewIndex& index) {
   if (fxViewManager) {
     GenericId posId = tilePos.x * 1000 + tilePos.y;
     fxViewManager->addEntity(posId, tilePos.x, tilePos.y);
+    auto info = info1;
+    info.color = blendNightColor(info.color, index);
     fxViewManager->addFX(posId, info);
-    fxViewManager->drawFX(renderer, posId, blendNightColor(Color::WHITE, index));
+    fxViewManager->drawFX(renderer, posId, Color::WHITE);
   }
 };
 
