@@ -4497,7 +4497,7 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
     }
     rows.addElem(WL(stack, columns.buildHorizontalList(), columns2.buildHorizontalList()));
   }
-  Vec2 maxSize(min(sites.getBounds().width() * iconSize, 17 * 48), min(sites.getBounds().height() * iconSize, 9 * 48));
+  Vec2 maxSize(min(sites.getBounds().width() * iconSize, 30 * 48), min(sites.getBounds().height() * iconSize, 20 * 48));
   auto mapContent = rows.buildVerticalList();
   if (*mapContent->getPreferredWidth() > maxSize.x || *mapContent->getPreferredHeight() > maxSize.y)
     mapContent = WL(scrollArea, std::move(mapContent));
@@ -5277,9 +5277,9 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
             closeHelp), 100, 50, 100, 280),
             [&menuState] { return menuState.helpText;}));
   return
-      WL(preferredSize, 1000, 705,
+      //WL(preferredSize, 1000, 705,
          WL(window, WL(margins, WL(stack, std::move(interior)), 5),
-            [&queue] { queue.push(CampaignActionId::CANCEL); }));
+            [&queue] { queue.push(CampaignActionId::CANCEL); });
 }
 
 const Vec2 warlordMenuSize(550, 550);

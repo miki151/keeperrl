@@ -2589,7 +2589,7 @@ class ScrollArea : public GuiElem {
   virtual void render(Renderer& r) override {
     r.setScissor(getBounds());
     onRefreshBounds();
-    content->renderPart(r, getBounds());
+    content->render(r);
     r.setScissor(none);
   }
 

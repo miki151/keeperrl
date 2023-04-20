@@ -132,12 +132,6 @@ bool Campaign::SiteInfo::isEnemy() const {
   return getRetired() || (getVillain() && getVillain()->isEnemy());
 }
 
-void Campaign::SiteInfo::setBlocked() {
-  blocked = true;
-  viewId.push_back(Random.choose(ViewId("map_mountain1"), ViewId("map_mountain2"), ViewId("map_mountain3"),
-        ViewId("canif_tree"), ViewId("decid_tree")));
-}
-
 bool Campaign::isInInfluence(Vec2 pos) const {
   return influencePos.count(pos);
 }

@@ -19,6 +19,8 @@
 #include "campaign_info.h"
 #include "content_factory.h"
 #include "avatar_info.h"
+#include "layout_canvas.h"
+#include "layout_generator.h"
 
 optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign) {
   if (campaign.getPlayerRole() == PlayerRole::ADVENTURER && options->getIntValue(OptionId::ALLIES) == 0)
@@ -154,16 +156,37 @@ void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewIdList play
   }
 }
 
-static Table<Campaign::SiteInfo> getTerrain(RandomGen& random, Vec2 size, int numBlocked) {
+/*  blocked = true;
+  viewId.push_back(Random.choose(ViewId("map_mountain1"), ViewId("map_mountain2"), ViewId("map_mountain3"),
+        ViewId("canif_tree"), ViewId("decid_tree")));*/
+
+static bool tileExists(const ContentFactory* factory, const string& s) {
+  for (auto& def : factory->tilePaths.definitions)
+    if (s == def.viewId.data())
+      return true;
+  return false;
+}
+
+static Table<Campaign::SiteInfo> getTerrain(RandomGen& random, const ContentFactory* factory, Vec2 size) {
+  LayoutCanvas::Map map{Table<vector<Token>>(Rectangle(Vec2(0, 0), size))};
+  LayoutCanvas canvas{map.elems.getBounds(), &map};
+  bool generated = false;
+  for (int i : Range(20))
+    if (factory->randomLayouts.at(RandomLayoutId("world_map")).make(canvas, random)) {
+      generated = true;
+      break;
+    }
+  CHECK(generated) << "Failed to generate world map";
   Table<Campaign::SiteInfo> ret(size, {});
   for (Vec2 v : ret.getBounds())
-    ret[v].viewId.push_back(ViewId("grass"));
-  vector<Vec2> freePos = ret.getBounds().getAllSquares();
-  for (int i : Range(numBlocked)) {
-    Vec2 pos = random.choose(freePos);
-    freePos.removeElement(pos);
-    ret[pos].setBlocked();
-  }
+    for (auto& token : map.elems[v]) {
+      if (token == "blocked")
+        ret[v].blocked = true;
+      else if (tileExists(factory, token))
+        ret[v].viewId.push_back(ViewId(token.data()));
+      else
+        std::cout << "Skipping " << token << std::endl;
+    }
   return ret;
 }
 
@@ -347,7 +370,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
   auto& campaignInfo = contentFactory->campaignInfo;
   Vec2 size = campaignInfo.size;
   int numBlocked = 0.6 * size.x * size.y;
-  Table<Campaign::SiteInfo> terrain = getTerrain(random, size, numBlocked);
+  Table<Campaign::SiteInfo> terrain = getTerrain(random, contentFactory, size);
   auto retired = genRetired(type);
   View::CampaignMenuState menuState { true, CampaignMenuIndex{CampaignMenuElems::None{}} };
   int chosenBiome = 0;
@@ -400,7 +423,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
           chosenBiome = action.get<int>();
           break;
         case CampaignActionId::REROLL_MAP:
-          terrain = getTerrain(random, size, numBlocked);
+          terrain = getTerrain(random, contentFactory, size);
           updateMap = true;
           break;
         case CampaignActionId::UPDATE_MAP:

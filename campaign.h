@@ -51,7 +51,6 @@ class Campaign {
     bool isEnemy() const;
     bool isEmpty() const;
     bool SERIAL(blocked) = false;
-    void setBlocked();
     optional<ViewIdList> getDwellerViewId() const;
     optional<string> getDwellerDescription() const;
     optional<VillainType> getVillainType() const;
