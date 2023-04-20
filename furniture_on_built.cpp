@@ -32,6 +32,7 @@ static ZLevelResult tryBuilding(int numTries, BuildFun buildFun, const string& n
       INFO << "Retrying level gen";
     }
   }
+  USER_INFO << "The game had trouble generating " << name << " and will replace it with a generic level";
   for (int i : Range(numTries)) {
     try {
       return buildFun(false);
@@ -115,7 +116,7 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
             [&](bool withEnemies) {
               auto contentFactory = pos.getGame()->getContentFactory();
               auto maker = getLevelMaker(Random, contentFactory, pos.getGame()->zLevelGroups,
-                  levelIndex + 1, pos.getGame()->getPlayerCollective()->getTribeId(), levelSize,
+                  withEnemies ? levelIndex + 1 : 1, pos.getGame()->getPlayerCollective()->getTribeId(), levelSize,
                   pos.getGame()->getEnemyAggressionLevel());
               auto level = pos.getModel()->buildMainLevel(contentFactory,
                   LevelBuilder(Random, contentFactory, levelSize.x, levelSize.y, true),
