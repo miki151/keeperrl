@@ -73,9 +73,9 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(deathTime, hidden, lastMoveCounter, captureHealth, effectFlags);
   ar(deathReason, nextPosIntent, globalTime, drops, promotions);
   ar(unknownAttackers, privateEnemies, holding, attributesStack);
-  ar(controllerStack, kills, statuses, automatonParts, phylactery);
+  ar(controllerStack, kills, statuses, automatonParts, phylactery, highestAttackValueEver);
   ar(difficultyPoints, points, capture, spellMap, killTitles, companions, combatExperience);
-  ar(vision, debt, uniqueKills, lastCombatIntent, primaryViewId, steed, buffs, buffCount, buffPermanentCount);
+  ar(vision, debt, lastCombatIntent, primaryViewId, steed, buffs, buffCount, buffPermanentCount);
 }
 
 SERIALIZABLE(Creature)
@@ -1179,16 +1179,17 @@ double Creature::getCombatExperience() const {
 }
 
 void Creature::updateCombatExperience(Creature* victim) {
-  auto id = [&] () -> string {
-    if (auto id = victim->getAttributes().getCreatureId())
-      return id->data();
-    return victim->getName().bare();
-  }();
-  if (uniqueKills.insert(id).second) {
-    int curLevel = (int)combatExperience;
-    constexpr double expIncrease = 0.2;
+  if (!victim->getAttributes().getIllusionViewObject()) {
+    double attackDiff = victim->highestAttackValueEver - highestAttackValueEver;
+    constexpr double maxLevelGain = 3.0;
+    constexpr double minLevelGain = 0.02;
+    constexpr double equalLevelGain = 0.5;
+    constexpr double maxLevelDiff = 10;
+    double expIncrease = max(minLevelGain, min(maxLevelGain,
+        (maxLevelGain - equalLevelGain) * attackDiff / maxLevelDiff + equalLevelGain));
+    int curLevel = combatExperience;
     combatExperience += expIncrease;
-    int newLevel = (int)combatExperience;
+    int newLevel = combatExperience;
     if (curLevel != newLevel) {
       you(MsgType::ARE, "more experienced");
       addPersonalEvent(getName().a() + " reaches combat experience level " + toString(newLevel));
@@ -1311,12 +1312,14 @@ void Creature::considerMovingFromInaccessibleSquare() {
 }
 
 void Creature::tick() {
+  PROFILE_BLOCK("Creature::tick");
   for (auto& b : attributes->permanentBuffs)
     addPermanentEffect(b, 1, false);
   attributes->permanentBuffs.clear();
   if (!!phylactery && !isSubscribed())
     subscribeTo(position.getModel());
-  PROFILE_BLOCK("Creature::tick");
+  auto factory = getGame()->getContentFactory();
+  highestAttackValueEver = max(highestAttackValueEver, getBestAttack(factory).value);
   if (phylactery && phylactery->killedBy) {
     auto attacker = phylactery->killedBy;
     phylactery = none;
@@ -1367,7 +1370,6 @@ void Creature::tick() {
   }
   if (processBuffs())
     return;
-  auto factory = getGame()->getContentFactory();
   updateViewObject(factory);
   if (getBody().tick(this)) {
     dieWithAttacker(lastAttacker);

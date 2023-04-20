@@ -81,7 +81,6 @@ class CreatureAttributes {
   const EnumMap<ExperienceType, int>& getMaxExpLevel() const;
   void increaseMaxExpLevel(ExperienceType, int increase);
   void increaseExpLevel(ExperienceType, double increase);
-  double getCombatExperience() const;
   bool isTrainingMaxedOut(ExperienceType) const;
   void increaseBaseExpLevel(ExperienceType type, int increase);
   vector<SpellSchoolId> getSpellSchools() const;
