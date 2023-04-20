@@ -8,31 +8,31 @@
 #include "content_factory.h"
 
 string getColorCode(const string& color, const string& c) {
-  auto number = [&] {
+  auto number = [&] () -> string {
     if (color == "black")
-      return 30;
+      return "30";
     if (color == "red")
-      return 31;
+      return "31";
     if (color == "green")
-      return 32;
+      return "32";
     if (color == "brown")
-      return 33;
+      return "33";
     if (color == "yellow")
-      return 93;
+      return "93";
     if (color == "blue")
-      return 34;
+      return "34";
     if (color == "magenta")
-      return 35;
+      return "35";
     if (color == "cyan")
-      return 36;
+      return "36";
     if (color == "white")
-      return 37;
+      return "37;1";
     if (color == "gray")
-      return 90;
+      return "90";
     std::cerr << "Unknown color: " << color << "\n";
-    return 37;
+    return "37";
   }();
-  return "\e[" + toString(number) + "m" + c + "\e[0m";
+  return "\e[" + number + "m" + c + "\e[0m";
 }
 
 template <typename Container, typename Fun>

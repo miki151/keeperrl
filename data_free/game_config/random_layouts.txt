@@ -943,3 +943,24 @@ End
   Filter(Not On("inside"), Set("no_territory"))
 }
 
+"world_map" {
+  NoiseMap(0.65, {
+    (0.8, 1.0, Set("water"))
+    (0.74, 0.8, Set("sand"))
+    (0.2, 0.74, Set("grass"))
+    (0.0, 0.2, Set("mountain"))
+    #(0.0, 0.02, Set("lava"))
+  })
+  #Position(MIDDLE, {1 1}, FloodFill(Or(On("sand"), On("grass"), On("water")), Set("save")))
+  #Filter(Not On("save"), Reset("mountain"))
+  #Border(1, Filter(Not On("mountain"), Fail))
+  NoiseMap(0.85, {
+    (0.0, 0.15, Filter(On("grass"), Set("tree")))
+  })
+  CellularAutomaton(Filter(Not On("mountain"), Reset("water")), 0.35)
+  SplitV(0.7, {}, Filter(On("water"), Reset("sand")))
+  SplitV(0.3, Filter(Or(On("water"), On("sand")), Reset("snow")), {})
+  Filter(On("mountain"), {Set("blocked") Choose(Set("map_mountain1"), Set("map_mountain2"), Set("map_mountain2"))})
+  Filter(On("tree"), {Set("blocked") Choose(Set("canif_tree"))})
+  Filter(On("water"), {Reset("blocked") Set("waternesw")})
+}

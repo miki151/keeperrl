@@ -7,6 +7,10 @@ bool make(const LayoutGenerators::None&, LayoutCanvas c, RandomGen&) {
   return true;
 }
 
+bool make(const LayoutGenerators::Fail&, LayoutCanvas c, RandomGen&) {
+  return false;
+}
+
 bool make(const LayoutGenerators::Set& g, LayoutCanvas c, RandomGen&) {
   for (auto v : c.area)
     for (auto& token : g.tokens)
@@ -234,7 +238,7 @@ bool make(const LayoutGenerators::Place& g, LayoutCanvas c, RandomGen& r) {
 bool make(const LayoutGenerators::NoiseMap& g, LayoutCanvas c, RandomGen& r) {
   if (c.area.empty())
     return true;
-  auto map = genNoiseMap(r, c.area, NoiseInit { 1, 1, 1, 1, 0 }, 0.45);
+  auto map = genNoiseMap(r, c.area, NoiseInit { 1, 1, 1, 1, 1 }, g.exponent);
   vector<double> all;
   auto getValue = [&all](double r) {
     int index = max(0, int(r * all.size()));
