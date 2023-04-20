@@ -1323,7 +1323,34 @@ NAME inherit ORIGINAL
 }
 End
 
-"GOBLINS_Z_LEVEL1" inherit "GOBLIN_CAVE"
+"GOBLINS_Z_LEVEL"
+{
+  settlement = {
+    type = RandomLayout { "z_level_cave" { 80 80 } "default" }
+    inhabitants = {
+      leader = {{ "TROLL" }}
+      fighters = {
+        count = {4 9}
+        all = { 1 "GOBLIN_WARRIOR" }
+        expLevelIncrease = {
+          MELEE 5
+          SPELL 5
+          ARCHERY 5
+        }
+      }
+    }
+    tribe = BANDIT
+    race = "goblins"
+  }
+  discoverable = false
+  behaviour = {
+    minPopulation = 0
+    minTeamSize = 1
+    attackBehaviour = KillLeader
+  }
+}
+
+"GOBLINS_Z_LEVEL1" inherit "GOBLINS_Z_LEVEL"
 {
   settlement = append {
     inhabitants = append {
@@ -1335,10 +1362,10 @@ End
   }
 }
 
-STRONGER("GOBLINS_Z_LEVEL2", "GOBLIN_CAVE", MELEE 7)
-STRONGER("GOBLINS_Z_LEVEL3", "GOBLIN_CAVE", MELEE 15)
-STRONGER("GOBLINS_Z_LEVEL4", "GOBLIN_CAVE", MELEE 22)
-STRONGER("GOBLINS_Z_LEVEL5", "GOBLIN_CAVE", MELEE 30)
+STRONGER("GOBLINS_Z_LEVEL2", "GOBLINS_Z_LEVEL", MELEE 7)
+STRONGER("GOBLINS_Z_LEVEL3", "GOBLINS_Z_LEVEL", MELEE 15)
+STRONGER("GOBLINS_Z_LEVEL4", "GOBLINS_Z_LEVEL", MELEE 22)
+STRONGER("GOBLINS_Z_LEVEL5", "GOBLINS_Z_LEVEL", MELEE 30)
 
 "GOBLINS_Z_LEVEL6" inherit "GOBLIN_VILLAGE"
 {
@@ -1377,7 +1404,7 @@ STRONGER("GOBLINS_Z_LEVEL5", "GOBLIN_CAVE", MELEE 30)
     stockpiles = {{ "minerals" 60 }}
     outsideFeatures = "dungeonOutside"
     furniture = "roomFurniture"
-    surroundWithResources = 6    
+    surroundWithResources = 6
   }
   behaviour = {
     minPopulation = 0
@@ -1388,11 +1415,41 @@ STRONGER("GOBLINS_Z_LEVEL5", "GOBLIN_CAVE", MELEE 30)
   }
 }
 
-STRONGER("DARK_ELVES_Z_LEVEL1", "DARK_ELF_CAVE", MELEE 0)
-STRONGER("DARK_ELVES_Z_LEVEL2", "DARK_ELF_CAVE", MELEE 7)
-STRONGER("DARK_ELVES_Z_LEVEL3", "DARK_ELF_CAVE", MELEE 15)
-STRONGER("DARK_ELVES_Z_LEVEL4", "DARK_ELF_CAVE", MELEE 22)
-STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELF_CAVE", MELEE 30)
+"DARK_ELVES_Z_LEVEL"
+{
+  settlement = {
+    type = RandomLayout { "z_level_dungeon" { 80 80 } "default" }
+    tribe = DARK_ELF
+    inhabitants = {
+      leader = {
+        id = { "DARK_ELF_WARRIOR" }
+        baseLevelIncrease = { MELEE 7 }
+      }
+      fighters = {
+        count = {2 5}
+        all = { 1 "DARK_ELF_WARRIOR" }
+        baseLevelIncrease = { MELEE 7 }
+      }
+      civilians = {
+        count = {2 5}
+        all = { 1 "DARK_ELF" }
+      }
+    }
+    race = "dark elves"
+  }
+  discoverable = false
+  behaviour = {
+    minPopulation = 0
+    minTeamSize = 1
+    attackBehaviour = KillLeader
+  }
+}
+
+STRONGER("DARK_ELVES_Z_LEVEL1", "DARK_ELVES_Z_LEVEL", MELEE 0)
+STRONGER("DARK_ELVES_Z_LEVEL2", "DARK_ELVES_Z_LEVEL", MELEE 7)
+STRONGER("DARK_ELVES_Z_LEVEL3", "DARK_ELVES_Z_LEVEL", MELEE 15)
+STRONGER("DARK_ELVES_Z_LEVEL4", "DARK_ELVES_Z_LEVEL", MELEE 22)
+STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELVES_Z_LEVEL", MELEE 30)
 
 "DWARF_CAVE"
 {
@@ -1414,7 +1471,7 @@ STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELF_CAVE", MELEE 30)
     stockpiles = {{ "minerals" 60}}
     outsideFeatures = "dungeonOutside"
     furniture = "roomFurniture"
-    surroundWithResources = 6     
+    surroundWithResources = 6
   }
   behaviour = {
     minPopulation = 0
@@ -1425,11 +1482,37 @@ STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELF_CAVE", MELEE 30)
   }
 }
 
-STRONGER("DWARVES_Z_LEVEL1", "DWARF_CAVE", MELEE 0)
-STRONGER("DWARVES_Z_LEVEL2", "DWARF_CAVE", MELEE 7)
-STRONGER("DWARVES_Z_LEVEL3", "DWARF_CAVE", MELEE 15)
-STRONGER("DWARVES_Z_LEVEL4", "DWARF_CAVE", MELEE 22)
-STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
+"DWARVES_Z_LEVEL"
+{
+  settlement = {
+    type = RandomLayout { "z_level_dungeon" { 80 80 } "default" }
+    tribe = DWARF
+    inhabitants = {
+      leader = {{ "DWARF" }}
+      fighters = {
+        count = {2 5}
+        all = { 1 "DWARF" }
+      }
+      civilians = {
+        count = {2 5}
+        all = { 1 "DWARF_FEMALE" }
+      }
+    }
+    race = "dwarves"
+  }
+  discoverable = false
+  behaviour = {
+    minPopulation = 0
+    minTeamSize = 1
+    attackBehaviour = KillLeader
+  }
+}
+
+STRONGER("DWARVES_Z_LEVEL1", "DWARVES_Z_LEVEL", MELEE 0)
+STRONGER("DWARVES_Z_LEVEL2", "DWARVES_Z_LEVEL", MELEE 7)
+STRONGER("DWARVES_Z_LEVEL3", "DWARVES_Z_LEVEL", MELEE 15)
+STRONGER("DWARVES_Z_LEVEL4", "DWARVES_Z_LEVEL", MELEE 22)
+STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 
 "COTTAGE_GOBLINS" inherit "GOBLIN_CAVE"
 {
@@ -2496,35 +2579,10 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
   }
   discoverable = false
 }
-"CAVE_BEAR_ZLEVEL"
+"RAT_PEOPLE_Z_LEVEL"
 {
   settlement = {
-    type = Builtin VAULT "DUNGEON"
-    tribe = MONSTER
-    inhabitants = {
-      leader = { { "CAVE_BEAR" } }
-    }
-  }
-}
-"BAT_ZLEVEL"
-{
-  settlement = {
-    type = Builtin VAULT "DUNGEON"
-    tribe = MONSTER
-    inhabitants = {
-      fighters = {
-        count = {5 8} 
-        all = {
-          1 "BAT"
-        }
-      }
-    }
-  }
-}
-"RAT_PEOPLE_CAVE"
-{
-  settlement = {
-    type = Builtin VAULT "DUNGEON"
+    type = RandomLayout { "z_level_cave" { 80 80 } "default" }
     tribe = MONSTER
     inhabitants = {
       leader = { { "RAT_KING" } }
@@ -2540,8 +2598,6 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
         }
       }
     }
-    closeToPlayer = true
-      dontConnectCave = true
   }
   discoverable = false
   behaviour = {

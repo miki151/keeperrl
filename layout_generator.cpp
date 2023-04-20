@@ -167,7 +167,18 @@ bool make(const LayoutGenerators::Position& g, LayoutCanvas c, RandomGen& r) {
 
 
 void LayoutGenerators::Place::serialize(PrettyInputArchive& ar1, const unsigned int version) {
-  if (ar1.peek(2) == "(")
+  if (isdigit(ar1.peek(2)[0])) {
+    ar1.openBracket(BracketType::ROUND);
+    ar1(placedCount);
+    ar1.eat(",");
+    while (!ar1.eatMaybe(")")) {
+      Elem elem;
+      ar1(elem);
+      generators.push_back(elem);
+      ar1.eatMaybe(",");
+    }
+  }
+  else if (ar1.peek(2) == "(")
     ar1(withRoundBrackets(generators));
   else {
     Elem elem;
@@ -186,23 +197,34 @@ bool make(const LayoutGenerators::Place& g, LayoutCanvas c, RandomGen& r) {
       occupied[(v.x - c.area.left()) + (v.y - c.area.top()) * c.area.width()] = 1;
     return true;
   };
-  for (int i : All(g.generators)) {
-    auto& generator = g.generators[i].generator;
+  auto getGenerators = [&] {
+    if (g.placedCount) {
+      vector<LayoutGenerators::Place::Elem> ret;
+      for (auto& gen : r.permutation(g.generators)) {
+        if (ret.size() >= *g.placedCount)
+          return ret;
+        ret.push_back(gen);
+      }
+      return ret;
+    }
+    return g.generators;
+  };
+  for (auto& generator : getGenerators()) {
     auto generate = [&] {
-      USER_CHECK(g.generators[i].size || (g.generators[i].minSize && g.generators[i].maxSize));
+      USER_CHECK(generator.size || (generator.minSize && generator.maxSize));
       const int numTries = 100000;
       for (int iter : Range(numTries)) {
-        auto size = chooseSize(g.generators[i].size, g.generators[i].minSize, g.generators[i].maxSize, r);
+        auto size = chooseSize(generator.size, generator.minSize, generator.maxSize, r);
         auto origin = Rectangle(c.area.topLeft(), c.area.bottomRight() - size + Vec2(1, 1)).random(r);
         Rectangle genArea(origin, origin + size);
         USER_CHECK(c.area.contains(genArea)) << "Generator does not fit in area ";
-        if (!check(genArea, g.generators[i].minSpacing, g.generators[i].predicate))
+        if (!check(genArea, generator.minSpacing, generator.predicate))
           continue;
-        return generator->make(c.with(genArea), r);
+        return generator.generator->make(c.with(genArea), r);
       }
       return false;
     };
-    for (int j : Range(r.get(g.generators[i].count)))
+    for (int j : Range(r.get(generator.count)))
       if (!generate())
         return false;
   }

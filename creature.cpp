@@ -450,7 +450,7 @@ CreatureAction Creature::move(Position pos, optional<Position> nextPos) const {
     return CreatureAction();
   if (!position.canMoveCreature(direction)) {
     if (pos.getCreature()) {
-      if (!canSwapPositionInMovement(pos.getCreature(), nextPos))
+      if (!canSwapPositionInMovement(pos.getCreature()))
         return CreatureAction(/*"You can't swap position with " + pos.getCreature()->getName().the()*/);
     } else
       return CreatureAction();
@@ -484,8 +484,10 @@ static bool posIntentsConflict(Position myPos, Position hisPos, optional<Positio
   return hisIntent && *myPos.dist8(*hisIntent) > *hisPos.dist8(*hisIntent) && *hisPos.dist8(*hisIntent) <= 1;
 }
 
-bool Creature::canSwapPositionInMovement(Creature* other, optional<Position> nextPos) const {
+bool Creature::canSwapPositionInMovement(Creature* other) const {
   PROFILE;
+  if (!other->getPosition().isSameLevel(position))
+    return !other->nextPosIntent;
   return canSwapPositionWithEnemy(other)
       && (!posIntentsConflict(position, other->position, other->nextPosIntent) ||
           isPlayer() || other->isAffected(LastingEffect::STUNNED) ||
@@ -1117,7 +1119,8 @@ bool Creature::removePermanentEffect(BuffId id, int count, bool msg, const Conte
 }
 
 bool Creature::isAffected(BuffId id) const {
-  return buffCount.count(id) || buffPermanentCount.count(id);
+  // Check attributes->permanentBuffs in case this is before they were copied over in tick()
+  return buffCount.count(id) || buffPermanentCount.count(id) || attributes->permanentBuffs.contains(id);
 }
 
 bool Creature::isAffectedPermanently(BuffId id) const {
@@ -2586,13 +2589,6 @@ int Creature::getDifficultyPoints() const {
   return difficultyPoints;
 }
 
-CreatureAction Creature::continueMoving() {
-  if (shortestPath && shortestPath->isReachable(getPosition()))
-    return move(shortestPath->getNextMove(getPosition()), shortestPath->getNextNextMove(getPosition()));
-  else
-    return CreatureAction();
-}
-
 vector<Position> Creature::getCurrentPath() const {
   if (shortestPath)
     return shortestPath->getPath();
@@ -2630,7 +2626,8 @@ CreatureAction Creature::moveTowards(Position pos, NavigationFlags flags) {
   };
   if (auto stairs = getStairs()) {
     if (stairs == position)
-      return applySquare(position, FurnitureLayer::MIDDLE);
+      return applySquare(position, FurnitureLayer::MIDDLE)
+          .append([](Creature* self) { self->nextPosIntent = self->position;});
     else
       return moveTowards(*stairs, false, flags);
   } else

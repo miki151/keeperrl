@@ -1490,7 +1490,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
     if (auto workshopType = contentFactory->getWorkshopType(furniture->getType()))
       if (auto workshop = getReferenceMaybe(workshops->types, *workshopType)) {
         auto craftingSkill = c->getAttr(contentFactory->workshopInfo.at(*workshopType).attr);
-        auto result = workshop->addWork(this, efficiency * double(craftingSkill) * 0.02 
+        auto result = workshop->addWork(this, efficiency * double(craftingSkill) * 0.02
             * LastingEffects::getCraftingSpeed(c),
             craftingSkill, c->getMorale().value_or(0));
         if (result.item) {
@@ -1500,7 +1500,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
             getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
           if (auto stat = result.item->getProducedStat())
             getGame()->getStatistics().add(*stat);
-          control->addMessage(c->getName().a() + " " + contentFactory->workshopInfo.at(*workshopType).verb + " " + 
+          control->addMessage(c->getName().a() + " " + contentFactory->workshopInfo.at(*workshopType).verb + " " +
               result.item->getAName());
           if (result.wasUpgraded) {
             control->addMessage(PlayerMessage(c->getName().the() + " is depressed after crafting his masterpiece.", MessagePriority::HIGH));

@@ -13,46 +13,6 @@
     type = FullZLevel {
       # You can optionally add an EnemyId. The player will dig down right into their base.
       # Warning: some enemies might not work
-      enemy = "RAT_CAVE"
-    }
-    # Possible depths for this level, inclusive. The first level when you dig down is 1.
-    minDepth = 2
-    maxDepth = 4
-    weight = 0.2
-  }
-  {
-    type = FullZLevel {
-      # You can optionally add an EnemyId. The player will dig down right into their base.
-      # Warning: some enemies might not work
-      enemy = "CAVE_BEAR_ZLEVEL"
-      # The probability that the enemy will immediately attack when uncovered. 
-      # Make sure the enemy has behaviour defined in enemies.txt.
-      # attackChance = 0.3
-    }
-    # Possible depths for this level, inclusive. The first level when you dig down is 1.
-    minDepth = 3
-    maxDepth = 100
-    weight = 0.2
-  }
-  {
-    type = FullZLevel {
-      enemy = "BAT_ZLEVEL"
-    }
-    minDepth = 1
-    maxDepth = 2
-  }
-  {
-    type = FullZLevel {
-      enemy = "BAT_ZLEVEL"
-    }
-    minDepth = 2
-    maxDepth = 100
-    weight = 0.2
-  }
-  {
-    type = FullZLevel {
-      # You can optionally add an EnemyId. The player will dig down right into their base.
-      # Warning: some enemies might not work
       enemy = "BLACK_RATS"
     }
     # Possible depths for this level, inclusive. The first level when you dig down is 1.
@@ -122,7 +82,7 @@
 
 Def LEVEL(NAME, D1, D2, W)
   {
-    type = FullZLevel {
+    type = EnemyZLevel {
       enemy = NAME
       attackChance = 1.0
     }
@@ -137,7 +97,7 @@ Def LEVEL(NAME, D1, D2) LEVEL(NAME, D1, D2, 1.0) End
 # Here come levels specific to white keepers
 "lawful"
 {
-  LEVEL("RAT_PEOPLE_CAVE", 2, 3)
+  LEVEL("RAT_PEOPLE_Z_LEVEL", 2, 3)
   LEVEL("GOBLINS_Z_LEVEL1", 4, 6, 0.5)
   LEVEL("DARK_ELVES_Z_LEVEL1", 4, 6, 0.5)
   LEVEL("GOBLINS_Z_LEVEL2", 7, 11, 0.5)
@@ -162,7 +122,7 @@ Def LEVEL(NAME, D1, D2) LEVEL(NAME, D1, D2, 1.0) End
 # Here come levels specific to dark keepers
 "evil"
 {
-  LEVEL("RAT_PEOPLE_CAVE", 2, 3)
+  LEVEL("RAT_PEOPLE_Z_LEVEL", 2, 3)
   LEVEL("DWARVES_Z_LEVEL1", 4, 6)
   LEVEL("DWARVES_Z_LEVEL2", 7, 11)
   LEVEL("DWARVES_Z_LEVEL3", 12, 16)
