@@ -943,24 +943,54 @@ End
   Filter(Not On("inside"), Set("no_territory"))
 }
 
+Def Connections(Name, Pred)
+{
+  Inside(TOP, 1, Filter(And(Pred, Not On("set_" + Name), Translate({0 -1}, On("set_" + Name))), Set("map_" + Name + "_n")))
+  Inside(BOTTOM, 1, Filter(And(Pred, Not On("set_" + Name), Translate({0 1}, On("set_" + Name))), Set("map_" + Name + "_s")))
+  Inside(LEFT, 1, Filter(And(Pred, Not On("set_" + Name), Translate({-1 0}, On("set_" + Name))), Set("map_" + Name + "_w")))
+  Inside(RIGHT, 1, Filter(And(Pred, Not On("set_" + Name), Translate({1 0}, On("set_" + Name))), Set("map_" + Name + "_e")))
+  Inside(TOP, 1, Inside(LEFT, 1, Filter(And(Pred, Not On("set_" + Name), Translate({0 -1}, On("set_" + Name)), Translate({-1 0}, On("set_" + Name))),
+      Set("map_" + Name + "_nw"))))
+  Inside(TOP, 1, Inside(RIGHT, 1, Filter(And(Pred, Not On("set_" + Name), Translate({0 -1}, On("set_" + Name)), Translate({1 0}, On("set_" + Name))),
+      Set("map_" + Name + "_ne"))))
+  Inside(BOTTOM, 1, Inside(LEFT, 1, Filter(And(Pred, Not On("set_" + Name), Translate({0 1}, On("set_" + Name)), Translate({-1 0}, On("set_" + Name))),
+      Set("map_" + Name + "_sw"))))
+  Inside(BOTTOM, 1, Inside(RIGHT, 1, Filter(And(Pred, Not On("set_" + Name), Translate({0 1}, On("set_" + Name)), Translate({1 0}, On("set_" + Name))),
+      Set("map_" + Name + "_se"))))
+}
+End
+
 "world_map" {
   NoiseMap(0.65, {
-    (0.8, 1.0, Set("water"))
-    (0.74, 0.8, Set("sand"))
-    (0.2, 0.74, Set("grass"))
-    (0.0, 0.2, Set("mountain"))
-    #(0.0, 0.02, Set("lava"))
+    (0.8, 1.0, Reset("set_water"))
+    (0.74, 0.8, Reset("set_sand"))
+    (0.2, 0.74, Reset("set_grass"))
+    (0.0, 0.2, Reset("set_mountain"))
+    #(0.0, 0.02, Set("set_lava"))
   })
   #Position(MIDDLE, {1 1}, FloodFill(Or(On("sand"), On("grass"), On("water")), Set("save")))
   #Filter(Not On("save"), Reset("mountain"))
   #Border(1, Filter(Not On("mountain"), Fail))
-  NoiseMap(0.85, {
-    (0.0, 0.15, Filter(On("grass"), Set("tree")))
+  CellularAutomaton(Filter(Not On("set_mountain"), Reset("set_water")), 0.35)
+  SplitV(0.7, Filter(On("set_sand"), Reset("set_swamp")), Filter(On("set_water"), Reset("set_sand")))
+  SplitV(0.3, Filter(Or(On("set_water"), On("set_sand")), Reset("set_snow")), {})
+  NoiseMap(0.65, {
+    (0.0, 0.2, Filter(On("set_snow"), Set("set_mountain_snow")))
   })
-  CellularAutomaton(Filter(Not On("mountain"), Reset("water")), 0.35)
-  SplitV(0.7, {}, Filter(On("water"), Reset("sand")))
-  SplitV(0.3, Filter(Or(On("water"), On("sand")), Reset("snow")), {})
-  Filter(On("mountain"), {Set("blocked") Choose(Set("map_mountain1"), Set("map_mountain2"), Set("map_mountain2"))})
-  Filter(On("tree"), {Set("blocked") Choose(Set("canif_tree"))})
-  Filter(On("water"), {Reset("blocked") Set("waternesw")})
+  Filter(On("set_water"), {Choose(0.7 Set("map_water1"), Set("map_water2"))})
+  Filter(On("set_sand"), {Set("DESERT") Choose(0.7 Set("map_sand1"), Set("map_sand2"))})
+  Filter(On("set_grass"), {Set("GRASSLAND") Choose(0.7Set("map_grass1"), Set("map_grass2"))})
+  Filter(On("set_snow"), {Set("SNOW") Choose(0.7 Set("map_snow1"), Set("map_snow2"))})
+  Filter(On("set_swamp"), {Set("SWAMP") Choose(0.7 Set("map_swamp1"), Set("map_swamp2"))})
+  Connections("mountain", True)
+  Connections("snow", Not On("set_mountain"))
+  Connections("grass", Not Or(On("set_snow"), On("set_mountain")))
+  Connections("swamp", Not Or(On("set_snow"), On("set_mountain"), On("set_grass")))
+  Connections("sand", Not Or(On("set_grass"), On("set_snow"), On("set_mountain"), On("set_swamp")))
+  Filter(On("set_mountain"), {Set("MOUNTAIN") {Set("map_mountain_bg1") Choose(Set("map_mountain1"))}})
+  Filter(On("set_mountain_snow"), {Set("MOUNTAIN") Choose(Set("map_mountain_snow1"))})
+  NoiseMap(0.85, {
+    (0.0, 0.15, Filter(On("set_grass"), Set("set_tree")))
+  })
+  Filter(On("set_tree"), {Set("FOREST") Choose(Set("map_tree1"))})
 }

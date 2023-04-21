@@ -475,8 +475,8 @@ void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, Vec2 size, Co
   if (coords.empty())
     return;
   auto drawCoord = [&size, scale, this, pos, orientation] (const TileCoord& coord, Color color) {
-    Vec2 off = scale ? getOffset(Vec2(nominalSize, nominalSize) - coord.size, *scale)
-          : (Vec2(nominalSize, nominalSize) - coord.size).mult(size) / (nominalSize * 2);
+    auto sizeDiff = coord.size.x == 8 ? Vec2(0, 0) : Vec2(nominalSize, nominalSize) - coord.size;
+    Vec2 off = scale ? getOffset(sizeDiff, *scale) : sizeDiff.mult(size) / (nominalSize * 2);
     Vec2 tileSize = scale ? coord.size * *scale : coord.size.mult(size) / nominalSize;
     if (coord.size.y > nominalSize)
       off.y -= 3 * size.y / nominalSize;

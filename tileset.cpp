@@ -272,6 +272,7 @@ void TileSet::reload() {
   spriteMods.clear();
   auto reloadDir = [&] (const DirectoryPath& path, bool overwrite) {
     bool hadTiles = false;
+    hadTiles |= loadTilesFromDir(path.subdirectory("orig8"), Vec2(8, 8), overwrite);
     hadTiles |= loadTilesFromDir(path.subdirectory("orig16"), Vec2(16, 16), overwrite);
     hadTiles |= loadTilesFromDir(path.subdirectory("orig24"), Vec2(24, 24), overwrite);
     hadTiles |= loadTilesFromDir(path.subdirectory("orig30"), Vec2(30, 30), overwrite);

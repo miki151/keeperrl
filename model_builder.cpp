@@ -211,43 +211,11 @@ PModel ModelBuilder::tryTutorialModel() {
   return tryModel(114, enemyInfo, TribeId::getDarkKeeper(), biome, {});
 }
 
-static optional<BiomeId> getBiome(const EnemyInfo& enemy, RandomGen& random) {
-  if (!enemy.biomes.empty())
-    return random.choose(enemy.biomes);
-  return enemy.settlement.type.visit(
-      [&](const MapLayoutTypes::Builtin& type) -> optional<BiomeId> {
-        switch (type.id) {
-          case BuiltinLayoutId::CASTLE2:
-          case BuiltinLayoutId::TOWER:
-          case BuiltinLayoutId::VILLAGE:
-            return BiomeId("GRASSLAND");
-          case BuiltinLayoutId::CAVE:
-          case BuiltinLayoutId::MINETOWN:
-          case BuiltinLayoutId::SMALL_MINETOWN:
-          case BuiltinLayoutId::ANT_NEST:
-          case BuiltinLayoutId::VAULT:
-            return BiomeId("MOUNTAIN");
-          case BuiltinLayoutId::FORREST_COTTAGE:
-          case BuiltinLayoutId::FORREST_VILLAGE:
-          case BuiltinLayoutId::ISLAND_VAULT_DOOR:
-          case BuiltinLayoutId::FOREST:
-            return BiomeId("FOREST");
-          case BuiltinLayoutId::CEMETERY:
-            return random.choose(BiomeId("GRASSLAND"), BiomeId("FOREST"));
-          default: return none;
-        }
-      },
-      [&](const auto&) -> optional<BiomeId> {
-        return BiomeId("GRASSLAND");
-      }
-    );
-}
-
 PModel ModelBuilder::tryCampaignSiteModel(EnemyId enemyId, VillainType type, TribeAlignment alignment) {
   vector<EnemyInfo> enemyInfo { enemyFactory->get(enemyId).setVillainType(type)};
   if (auto id = enemyInfo[0].otherEnemy)
     enemyInfo.push_back(enemyFactory->get(*id));
-  auto biomeId = getBiome(enemyInfo[0], random);
+  auto biomeId = enemyInfo[0].getBiome();
   CHECK(biomeId) << "Unimplemented enemy in campaign " << enemyId.data();
   auto& biomeInfo = contentFactory->biomeInfo.at(*biomeId);
   addMapVillains(enemyInfo, alignment == TribeAlignment::EVIL ? biomeInfo.darkKeeperEnemies : biomeInfo.whiteKeeperEnemies);
@@ -286,7 +254,7 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types, vector<Bio
     types = {"single_map", "campaign_base", "tutorial", "zlevels"};
     for (auto id : enemyFactory->getAllIds()) {
       auto enemy = enemyFactory->get(id);
-      if (!!getBiome(enemy, random))
+      if (!!enemy.getBiome())
         types.push_back(id.data());
     }
   }

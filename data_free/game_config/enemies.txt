@@ -787,6 +787,7 @@ End
 }
 "ELVES"
 {
+  biome = "FOREST"
   settlement = {
     type = Builtin FORREST_VILLAGE "WOOD"
     inhabitants = {
@@ -863,6 +864,7 @@ End
 }
 "ELEMENTALIST"
 {
+  biome = "GRASSLAND"
   settlement = {
     type = Builtin TOWER "BRICK"
     inhabitants = {
@@ -1010,6 +1012,7 @@ End
 }
 "MAIN_DUNGEON"
 {
+  biome = "MOUNTAIN"
   settlement = {
     type = RandomLayout { "adoxie_temple" { 30 20 } "adoxie_temple"}
     tribe = MONSTER
@@ -1536,7 +1539,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 }
 "LIZARDMEN"
 {
-  biomes = { "DESERT" }
+  biome = "DESERT"
   settlement = {
     type = Builtin VILLAGE "MUD"
     tribe = LIZARD
@@ -1586,6 +1589,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 }
 "DARK_ELVES_ALLY"
 {
+  biome = "MOUNTAIN"
   settlement = {
     type = Builtin MINETOWN "DUNGEON"
     tribe = DARK_ELF
@@ -1621,7 +1625,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
       { MainEnemy {60 40} MINETOWN }
     }
   }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "DARK_ELF_WARRIOR" }
       traits = { FIGHTER }
@@ -1885,7 +1889,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 }
 "WHITE_DRAGON" inherit "RED_DRAGON"
 {
-  biomes = { "SNOW" }
+  biome = "SNOW"
   settlement = append {
     type = Builtin CAVE "GLACIER"
     inhabitants = {
@@ -1961,6 +1965,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 }
 "SHELOB"
 {
+  biome = "MOUNTAIN"
   settlement = {
     type = RandomLayout { "shelob" { 12 12 } "default" CAVE}
     tribe = SHELOB
@@ -2017,7 +2022,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 }
 "HYDRA"
 {
-  biomes = { "SWAMP" }
+  biome = "SWAMP"
   settlement = {
     type = RandomLayout { "hydra" { 20 20 } "default"}
     inhabitants = {
@@ -2049,6 +2054,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 }
 "CEMETERY"
 {
+  biome = "GRASSLAND"
   settlement = {
     type = RandomLayout { "zombie_crypt" { 25 25 } "default"}
     inhabitants = {
@@ -2443,7 +2449,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 }
 "THIEVES"
 {
-  biomes = { "DESERT" }
+  biome = "DESERT"
   settlement = {
     type = Builtin CASTLE2 "SANDSTONE_WALL"
     tribe = HUMAN

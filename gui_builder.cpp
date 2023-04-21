@@ -4446,24 +4446,17 @@ static Color getHighlightColor(VillainType type) {
 
 SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialPos){
   int iconScale = c.getMapZoom();
-  int iconSize = 24 * iconScale;
+  int iconSize = 8 * iconScale;
   campaignGridPointer = initialPos;
-  auto rows = WL(getListBuilder, iconSize);
   auto& sites = c.getSites();
+  auto rows = WL(getListBuilder, iconSize);
   for (int y : sites.getBounds().getYRange()) {
     auto columns = WL(getListBuilder, iconSize);
     for (int x : sites.getBounds().getXRange()) {
       vector<SGuiElem> v;
       for (int i : All(sites[x][y].viewId)) {
         v.push_back(WL(asciiBackground, sites[x][y].viewId[i]));
-        if (i == 0)
-          v.push_back(WL(viewObject, sites[x][y].viewId[i], iconScale));
-        else {
-          if (sites[x][y].viewId[i] == ViewId("canif_tree") || sites[x][y].viewId[i] == ViewId("decid_tree"))
-            v.push_back(WL(topMargin, 1 * iconScale,
-                  WL(viewObject, ViewId("round_shadow"), iconScale, Color(255, 255, 255, 160))));
-          v.push_back(WL(topMargin, -2 * iconScale, WL(viewObject, sites[x][y].viewId[i], iconScale)));
-        }
+        v.push_back(WL(viewObject, sites[x][y].viewId[i], iconScale));
       }
       columns.addElem(WL(stack, std::move(v)));
     }
@@ -4471,37 +4464,47 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
     for (int x : sites.getBounds().getXRange()) {
       Vec2 pos(x, y);
       vector<SGuiElem> elem;
-      if (auto id = sites[x][y].getDwellerViewId()) {
+      if (auto id = sites[x][y].getDwellerViewId())
         elem.push_back(WL(asciiBackground, id->front()));
-        if (c.getPlayerPos() && c.isInInfluence(pos))
-          elem.push_back(WL(viewObject, ViewId("square_highlight"), iconScale,
-              getHighlightColor(*sites[pos].getVillainType())));
-      }
-      if (campaignGridPointer)
-        elem.push_back(WL(conditional, WL(viewObject, ViewId("square_highlight"), iconScale),
-              [this, pos] { return campaignGridPointer == pos;}));
-      if (auto id = sites[x][y].getDwellerViewId()) {
-        if (campaignGridPointer && c.isInInfluence(pos))
-          elem.push_back(WL(stack,
-                WL(button, [this, pos] { campaignGridPointer = pos; }),
-                WL(mouseHighlight2, WL(viewObject, ViewId("square_highlight"), iconScale))));
-        elem.push_back(WL(topMargin, 1 * iconScale,
-              WL(viewObject, ViewId("round_shadow"), iconScale, Color(255, 255, 255, 160))));
-        elem.push_back(WL(topMargin, -2 * iconScale, WL(viewObject, *id, iconScale)));
-        if (c.isDefeated(pos))
-          elem.push_back(WL(viewObject, ViewId("campaign_defeated"), iconScale));
-      }
+      if (auto id = sites[x][y].getDwellerViewId())
+        elem.push_back(WL(viewObject, *id, iconScale));
       if (auto desc = sites[x][y].getDwellerDescription())
         elem.push_back(WL(tooltip, {*desc}, milliseconds{0}));
       columns2.addElem(WL(stack, std::move(elem)));
     }
     rows.addElem(WL(stack, columns.buildHorizontalList(), columns2.buildHorizontalList()));
   }
+  auto upperRows = WL(getListBuilder, iconSize);
+  for (int y : sites.getBounds().getYRange()) {
+    auto columns = WL(getListBuilder, iconSize);
+    for (int x : sites.getBounds().getXRange()) {
+      Vec2 pos(x, y);
+      vector<SGuiElem> elem;
+      if (auto id = sites[x][y].getDwellerViewId())
+        if (c.getPlayerPos() && c.isInInfluence(pos))
+          elem.push_back(WL(viewObject, ViewId("map_highlight"), iconScale,
+              getHighlightColor(*sites[pos].getVillainType())));
+      if (campaignGridPointer)
+        elem.push_back(WL(conditional, WL(viewObject, ViewId("map_highlight"), iconScale),
+              [this, pos] { return campaignGridPointer == pos;}));
+      if (auto id = sites[x][y].getDwellerViewId()) {
+        if (campaignGridPointer && c.isInInfluence(pos))
+          elem.push_back(WL(stack,
+                WL(button, [this, pos] { campaignGridPointer = pos; }),
+                WL(mouseHighlight2, WL(viewObject, ViewId("map_highlight"), iconScale))));
+        if (c.isDefeated(pos))
+          elem.push_back(WL(viewObject, ViewId("campaign_defeated"), iconScale));
+      }
+      columns.addElem(WL(stack, std::move(elem)));
+    }
+    upperRows.addElem(columns.buildHorizontalList());
+  }
   Vec2 maxSize(min(sites.getBounds().width() * iconSize, 30 * 48), min(sites.getBounds().height() * iconSize, 20 * 48));
-  auto mapContent = rows.buildVerticalList();
-  if (*mapContent->getPreferredWidth() > maxSize.x || *mapContent->getPreferredHeight() > maxSize.y)
+  auto mapContent = WL(stack, rows.buildVerticalList(),
+      WL(translate, [] { return Vec2(-16, -16); }, upperRows.buildVerticalList()));
+/*  if (*mapContent->getPreferredWidth() > maxSize.x || *mapContent->getPreferredHeight() > maxSize.y)
     mapContent = WL(scrollArea, std::move(mapContent));
-  int margin = 8;
+*/  int margin = 8;
   if (campaignGridPointer)
     mapContent = WL(stack, makeVec(
         std::move(mapContent),

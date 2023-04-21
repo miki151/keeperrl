@@ -22,6 +22,7 @@ struct VillainViewId {
 class Campaign {
   public:
   struct VillainInfo {
+    ViewId SERIAL(dwellingId);
     VillainViewId SERIAL(viewId);
     EnemyId SERIAL(enemyId);
     string SERIAL(name);
@@ -29,7 +30,7 @@ class Campaign {
     string getDescription() const;
     bool isEnemy() const;
     VillainType SERIAL(type);
-    SERIALIZE_ALL(NAMED(viewId), NAMED(enemyId), NAMED(name), NAMED(type), OPTION(alwaysPresent))
+    SERIALIZE_ALL(NAMED(dwellingId), NAMED(viewId), NAMED(enemyId), NAMED(name), NAMED(type), OPTION(alwaysPresent))
   };
   struct KeeperInfo {
     ViewIdList SERIAL(viewId);
@@ -43,6 +44,7 @@ class Campaign {
   };
   struct SiteInfo {
     vector<ViewId> SERIAL(viewId);
+    vector<string> SERIAL(tags);
     typedef variant<VillainInfo, RetiredInfo, KeeperInfo> Dweller;
     optional<Dweller> SERIAL(dweller);
     optional<VillainInfo> getVillain() const;
@@ -54,7 +56,7 @@ class Campaign {
     optional<ViewIdList> getDwellerViewId() const;
     optional<string> getDwellerDescription() const;
     optional<VillainType> getVillainType() const;
-    SERIALIZE_ALL(viewId, dweller, blocked)
+    SERIALIZE_ALL(viewId, tags, dweller, blocked)
   };
 
   const Table<SiteInfo>& getSites() const;

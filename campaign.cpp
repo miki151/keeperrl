@@ -48,7 +48,7 @@ const string& Campaign::getWorldName() const {
 
 void Campaign::clearSite(Vec2 v) {
   sites[v] = SiteInfo{};
-  sites[v].viewId = {ViewId("grass")};
+  sites[v].viewId = {ViewId("map_grass1")};
 }
 
 bool Campaign::isDefeated(Vec2 pos) const {
@@ -93,7 +93,7 @@ optional<Campaign::RetiredInfo> Campaign::SiteInfo::getRetired() const {
     return dweller->getValueMaybe<RetiredInfo>();
   return none;
 }
- 
+
 bool Campaign::SiteInfo::isEmpty() const {
   return !dweller;
 }
@@ -121,9 +121,9 @@ optional<VillainType> Campaign::SiteInfo::getVillainType() const {
 optional<ViewIdList> Campaign::SiteInfo::getDwellerViewId() const {
   if (dweller)
     return dweller->match(
-        [](const VillainInfo& info) { return ViewIdList{{info.viewId.ids}}; },
-        [](const RetiredInfo& info) { return info.gameInfo.getViewId(); },
-        [](const KeeperInfo& info) { return info.viewId; });
+        [](const VillainInfo& info) { return ViewIdList{{info.dwellingId}}; },
+        [](const RetiredInfo& info) { return ViewIdList{{ViewId("map_dungeon1")}}; },
+        [](const KeeperInfo& info) { return ViewIdList{{ViewId("map_base1")}}; });
   else
     return none;
 }
