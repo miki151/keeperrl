@@ -4469,7 +4469,7 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
       if (auto id = sites[x][y].getDwellerViewId())
         elem.push_back(WL(viewObject, *id, iconScale));
       if (auto desc = sites[x][y].getDwellerDescription())
-        elem.push_back(WL(tooltip, {*desc}, milliseconds{0}));
+        elem.push_back(WL(margins, WL(tooltip, {*desc}, milliseconds{0}), -4));
       columns2.addElem(WL(stack, std::move(elem)));
     }
     rows.addElem(WL(stack, columns.buildHorizontalList(), columns2.buildHorizontalList()));
@@ -4480,18 +4480,21 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
     for (int x : sites.getBounds().getXRange()) {
       Vec2 pos(x, y);
       vector<SGuiElem> elem;
+      auto translateHighlight = [this](SGuiElem elem) {
+        return WL(translate, [] { return Vec2(-16, -16); }, std::move(elem));
+      };
       if (auto id = sites[x][y].getDwellerViewId())
         if (c.getPlayerPos() && c.isInInfluence(pos))
-          elem.push_back(WL(viewObject, ViewId("map_highlight"), iconScale,
-              getHighlightColor(*sites[pos].getVillainType())));
+          elem.push_back(translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale,
+              getHighlightColor(*sites[pos].getVillainType()))));
       if (campaignGridPointer)
-        elem.push_back(WL(conditional, WL(viewObject, ViewId("map_highlight"), iconScale),
+        elem.push_back(WL(conditional, translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale)),
               [this, pos] { return campaignGridPointer == pos;}));
       if (auto id = sites[x][y].getDwellerViewId()) {
         if (campaignGridPointer && c.isInInfluence(pos))
           elem.push_back(WL(stack,
-                WL(button, [this, pos] { campaignGridPointer = pos; }),
-                WL(mouseHighlight2, WL(viewObject, ViewId("map_highlight"), iconScale))));
+                WL(margins, WL(button, [this, pos] { campaignGridPointer = pos; }), -4),
+                WL(mouseHighlight2, translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale)))));
         if (c.isDefeated(pos))
           elem.push_back(WL(viewObject, ViewId("campaign_defeated"), iconScale));
       }
@@ -4500,8 +4503,7 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
     upperRows.addElem(columns.buildHorizontalList());
   }
   Vec2 maxSize(min(sites.getBounds().width() * iconSize, 30 * 48), min(sites.getBounds().height() * iconSize, 20 * 48));
-  auto mapContent = WL(stack, rows.buildVerticalList(),
-      WL(translate, [] { return Vec2(-16, -16); }, upperRows.buildVerticalList()));
+  auto mapContent = WL(stack, rows.buildVerticalList(), upperRows.buildVerticalList());
 /*  if (*mapContent->getPreferredWidth() > maxSize.x || *mapContent->getPreferredHeight() > maxSize.y)
     mapContent = WL(scrollArea, std::move(mapContent));
 */  int margin = 8;
