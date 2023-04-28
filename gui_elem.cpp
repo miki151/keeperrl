@@ -2253,6 +2253,8 @@ class TranslateGui : public GuiLayout {
         return getBounds().bottomLeft();
       case Corner::BOTTOM_RIGHT:
         return getBounds().bottomRight();
+      case Corner::CENTER:
+        return getBounds().middle();
     }
   }
 

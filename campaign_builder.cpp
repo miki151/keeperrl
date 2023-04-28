@@ -23,12 +23,6 @@
 #include "layout_generator.h"
 #include "enemy_info.h"
 
-optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign) {
-  if (campaign.getPlayerRole() == PlayerRole::ADVENTURER && options->getIntValue(OptionId::ALLIES) == 0)
-    return none;
-  return campaign.sites.getBounds().middle();
-}
-
 void CampaignBuilder::setCountLimits(const CampaignInfo& info) {
   int minMainVillains =
 #ifdef RELEASE
@@ -144,22 +138,17 @@ const char* CampaignBuilder::getIntroText() const {
 void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewIdList playerViewId) {
   switch (getPlayerRole()) {
     case PlayerRole::KEEPER:
-      if (campaign.playerPos)
-        campaign.clearSite(*campaign.playerPos);
+      campaign.sites[campaign.playerPos].dweller.reset();
       campaign.playerPos = pos;
-      campaign.sites[*campaign.playerPos].dweller =
+      campaign.sites[campaign.playerPos].dweller =
           Campaign::SiteInfo::Dweller(Campaign::KeeperInfo{playerViewId,
               avatarInfo.playerCreature->getTribeId()});
       break;
-    case PlayerRole:: ADVENTURER:
+    case PlayerRole::ADVENTURER:
       campaign.playerPos = pos;
       break;
   }
 }
-
-/*  blocked = true;
-  viewId.push_back(Random.choose(ViewId("map_mountain1"), ViewId("map_mountain2"), ViewId("map_mountain3"),
-        ViewId("canif_tree"), ViewId("decid_tree")));*/
 
 static bool tileExists(const ContentFactory* factory, const string& s) {
   for (auto& def : factory->tilePaths.definitions)
@@ -186,7 +175,9 @@ static Table<Campaign::SiteInfo> getTerrain(RandomGen& random, const ContentFact
       else if (tileExists(factory, token))
         ret[v].viewId.push_back(ViewId(token.data()));
       else
-        ret[v].tags.push_back(token);
+        for (auto& biome : factory->biomeInfo)
+          if (token == biome.first.data())
+            ret[v].biome = biome.first;
     }
   return ret;
 }
@@ -257,7 +248,7 @@ bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campai
     }();
     auto placed = [&] {
       for (Vec2 v : random.permutation(campaign.sites.getBounds().getAllSquares())) {
-        if (isFreeSpot(v) && (!biome || campaign.sites[v].tags.contains(biome->data()))) {
+        if (isFreeSpot(v) && (!biome || campaign.sites[v].biome == biome)) {
           campaign.sites[v].dweller = villains[i];
           return true;
         }
@@ -393,63 +384,50 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
   int numBlocked = 0.6 * size.x * size.y;
   auto retired = genRetired(type);
   View::CampaignMenuState menuState { true, CampaignMenuIndex{CampaignMenuElems::None{}} };
-  int chosenBiome = 0;
-  struct BiomeData {
-    BiomeId id;
-    int priority;
-    View::CampaignOptions::BiomeInfo info;
-  };
-  vector<BiomeData> biomes;
-  for (auto& elem : contentFactory->biomeInfo)
-    if (auto& info = elem.second.keeperBiome) {
-      biomes.push_back({elem.first, info->priority, {info->name, info->viewId}});
-    }
-  sort(biomes.begin(), biomes.end(), [](auto& b1, auto& b2) { return b1.priority < b2.priority; });
   const auto playerRole = getPlayerRole();
   options->setChoices(OptionId::ENDLESS_ENEMIES, {"none", "from the start", "after winning"});
   options->setChoices(OptionId::ENEMY_AGGRESSION, {"none", "moderate", "extreme"});
+  int failedPlaceVillains = 0;
   while (1) {
     setCountLimits(campaignInfo);
     Table<Campaign::SiteInfo> terrain = getTerrain(random, contentFactory, size);
     Campaign campaign(terrain, type, playerRole, worldName);
     campaign.mapZoom = campaignInfo.mapZoom;
-    if (auto pos = considerStaticPlayerPos(campaign)) {
-      campaign.clearSite(*pos);
-      setPlayerPos(campaign, *pos, avatarInfo.playerCreature->getMaxViewIdUpgrade());
-    }
-    if (!placeVillains(contentFactory, campaign, getVillainCounts(type, options), retired, avatarInfo.tribeAlignment))
+    if (!placeVillains(contentFactory, campaign, getVillainCounts(type, options), retired, avatarInfo.tribeAlignment)) {
+      if (++failedPlaceVillains > 300)
+        USER_FATAL << "Failed to place all villains on the world map";
       continue;
+    }
+    for (auto pos : Random.permutation(campaign.getSites().getBounds().getAllSquares()))
+      if (campaign.isGoodStartPos(pos)) {
+        setPlayerPos(campaign, pos, avatarInfo.playerCreature->getMaxViewIdUpgrade());
+        break;
+      }
     while (1) {
       bool updateMap = false;
       campaign.influenceSize = campaignInfo.influenceSize;
       campaign.refreshInfluencePos();
-      vector<View::CampaignOptions::BiomeInfo> biomeInfos;
-      if (type == CampaignType::FREE_PLAY) {
-        biomeInfos.push_back(View::CampaignOptions::BiomeInfo{"random", ViewId("unknown_monster")});
-        for (auto& b : biomes)
-          biomeInfos.push_back(b.info);
-      }
       CampaignAction action = autoConfirm(type) ? CampaignActionId::CONFIRM
           : view->prepareCampaign({
               campaign,
               (retired && type == CampaignType::FREE_PLAY) ? optional<RetiredGames&>(*retired) : none,
               getCampaignOptions(type),
-              biomeInfos,
-              chosenBiome,
               getIntroText(),
               getAvailableTypes().transform([](CampaignType t) -> View::CampaignOptions::CampaignTypeInfo {
                   return {t, getCampaignTypeDescription(t)};}),
-              getMenuWarning(type)}, menuState);
+              getMenuWarning(type),
+              contentFactory->biomeInfo.at(*campaign.getSites()[campaign.getPlayerPos()].biome).keeperBiome->name},
+              menuState);
       switch (action.getId()) {
-        case CampaignActionId::BIOME:
-          chosenBiome = action.get<int>();
-          break;
         case CampaignActionId::REROLL_MAP:
           terrain = getTerrain(random, contentFactory, size);
           updateMap = true;
           break;
         case CampaignActionId::UPDATE_MAP:
           updateMap = true;
+          break;
+        case CampaignActionId::SET_POSITION:
+          setPlayerPos(campaign, action.get<Vec2>(), avatarInfo.playerCreature->getMaxViewIdUpgrade());
           break;
         case CampaignActionId::CHANGE_TYPE:
           type = action.get<CampaignType>();
@@ -485,9 +463,8 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
               gameDisplayName = name + " of " + campaign.worldName;
             }
             gameIdentifier = stripFilename(std::move(gameIdentifier));
-            BiomeId biomeId = chosenBiome == 0 ? Random.choose(biomes).id : biomes[chosenBiome - 1].id;
             return CampaignSetup{campaign, gameIdentifier, gameDisplayName,
-                getIntroMessages(type), getExternalEnemies(options), getAggressionLevel(options), biomeId};
+                getIntroMessages(type), getExternalEnemies(options), getAggressionLevel(options)};
           }
       }
       if (updateMap)

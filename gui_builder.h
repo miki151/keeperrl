@@ -146,7 +146,8 @@ class GuiBuilder {
   SGuiElem withLine(int, SGuiElem);
   GuiFactory::ListBuilder withLine(int, GuiFactory::ListBuilder);
   SGuiElem getImmigrationHelpText();
-  SGuiElem drawCampaignGrid(const Campaign&, optional<Vec2> initialPos);
+  SGuiElem drawCampaignGrid(const Campaign&, optional<Vec2> initialPos, function<bool(Vec2)> selectable,
+      function<void(Vec2)> selectCallback);
   void moveCampaignGridPointer(const Campaign&, Dir);
   Renderer& renderer;
   GuiFactory& gui;
@@ -322,8 +323,6 @@ class GuiBuilder {
   function<void(Rectangle)> getAIButtonFun(const PlayerInfo&);
   SGuiElem drawSpellSchoolLabel(const SpellSchoolInfo&);
   SGuiElem drawResources(const vector<CollectiveInfo::Resource>&, const optional<TutorialInfo>&, int width);
-  SGuiElem drawBiomeMenu(SyncQueue<CampaignAction>&, const vector<View::CampaignOptions::BiomeInfo>&,
-      View::CampaignMenuState& state, int chosen);
   SGuiElem drawBestiaryOverlay(const vector<PlayerInfo>&, int index);
   SGuiElem drawBestiaryButtons(const vector<PlayerInfo>&, int index);
   SGuiElem drawBestiaryPage(const PlayerInfo&);

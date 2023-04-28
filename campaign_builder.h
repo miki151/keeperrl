@@ -33,7 +33,6 @@ class CampaignBuilder {
       const string& gameName);
 
   private:
-  optional<Vec2> considerStaticPlayerPos(const Campaign&);
   View* view;
   RandomGen& random;
   Options* options;
@@ -63,5 +62,4 @@ struct CampaignSetup {
   vector<string> introMessages;
   optional<ExternalEnemiesType> externalEnemies;
   EnemyAggressionLevel enemyAggressionLevel;
-  BiomeId startingBiome;
 };

@@ -4444,12 +4444,51 @@ static Color getHighlightColor(VillainType type) {
   }
 }
 
-SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialPos){
+namespace {
+struct LabelPlacer {
+  LabelPlacer(Rectangle rect, int iconSize) : occupied(rect, false), iconSize(iconSize) {}
+
+  void setOccupied(Vec2 pos) {
+    occupied[pos] = true;
+  }
+
+  auto getLabelPosition(Vec2 pos, int textWidth) {
+    int numTiles = (textWidth + iconSize) / iconSize;
+    int bestOccupied = 100000;
+    auto allRect = Rectangle(pos, pos + Vec2(numTiles + 1, 2));
+    Vec2 bestPos;
+    Vec2 bestOffset;
+    for (auto startPos : {Vec2(1, -1), Vec2(1, 0), Vec2(-numTiles, 0), Vec2(-numTiles, -1)}) {
+      int numOccupied = 0;
+      for (auto v : allRect.translate(startPos))
+        if (v != pos && (!v.inRectangle(occupied.getBounds()) || occupied[v]))
+          ++numOccupied;
+      if (numOccupied < bestOccupied) {
+        bestPos = startPos;
+        bestOffset = startPos.x > 0 ? bestPos * iconSize - Vec2(iconSize / 3, 0)
+            : Vec2(-textWidth - iconSize + iconSize / 3, bestPos.y * iconSize);
+        bestOccupied = numOccupied;
+      }
+    }
+    for (auto v : allRect.translate(bestPos))
+      if (v.inRectangle(occupied.getBounds()))
+        occupied[v] = true;
+    return bestOffset;
+  }
+
+  Table<bool> occupied;
+  int iconSize;
+};
+}
+
+SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialPos, function<bool(Vec2)> selectable,
+    function<void(Vec2)> selectCallback){
   int iconScale = c.getMapZoom();
   int iconSize = 8 * iconScale;
   campaignGridPointer = initialPos;
   auto& sites = c.getSites();
   auto rows = WL(getListBuilder, iconSize);
+  LabelPlacer labelPlacer(sites.getBounds(), iconSize);
   for (int y : sites.getBounds().getYRange()) {
     auto columns = WL(getListBuilder, iconSize);
     for (int x : sites.getBounds().getXRange()) {
@@ -4464,10 +4503,11 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
     for (int x : sites.getBounds().getXRange()) {
       Vec2 pos(x, y);
       vector<SGuiElem> elem;
-      if (auto id = sites[x][y].getDwellerViewId())
+      if (auto id = sites[x][y].getDwellingViewId()) {
         elem.push_back(WL(asciiBackground, id->front()));
-      if (auto id = sites[x][y].getDwellerViewId())
         elem.push_back(WL(viewObject, *id, iconScale));
+        labelPlacer.setOccupied(pos);
+      }
       if (auto desc = sites[x][y].getDwellerDescription())
         elem.push_back(WL(margins, WL(tooltip, {*desc}, milliseconds{0}), -4));
       columns2.addElem(WL(stack, std::move(elem)));
@@ -4480,23 +4520,34 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
     for (int x : sites.getBounds().getXRange()) {
       Vec2 pos(x, y);
       vector<SGuiElem> elem;
-      auto translateHighlight = [this](SGuiElem elem) {
-        return WL(translate, [] { return Vec2(-16, -16); }, std::move(elem));
+      auto translateHighlight = [&](SGuiElem elem) {
+        return WL(translate, [iconSize] { return Vec2(-iconSize, -iconSize); }, std::move(elem));
       };
-      if (auto id = sites[x][y].getDwellerViewId())
-        if (c.getPlayerPos() && c.isInInfluence(pos))
+      if (auto id = sites[x][y].getDwellerViewId()) {
+        if (c.isInInfluence(pos))
           elem.push_back(translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale,
               getHighlightColor(*sites[pos].getVillainType()))));
+      }
       if (campaignGridPointer)
         elem.push_back(WL(conditional, translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale)),
               [this, pos] { return campaignGridPointer == pos;}));
-      if (auto id = sites[x][y].getDwellerViewId()) {
-        if (campaignGridPointer && c.isInInfluence(pos))
-          elem.push_back(WL(stack,
-                WL(margins, WL(button, [this, pos] { campaignGridPointer = pos; }), -4),
-                WL(mouseHighlight2, translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale)))));
+      if (campaignGridPointer && !!selectable && selectable(pos))
+        elem.push_back(WL(stack,
+            WL(button, [this, pos, selectCallback] {
+              if (selectCallback)
+                selectCallback(pos);
+              campaignGridPointer = pos;
+            }),
+            WL(mouseHighlight2, translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale)))
+        ));
+      if (auto id = sites[x][y].getDwellerViewId())
         if (c.isDefeated(pos))
           elem.push_back(WL(viewObject, ViewId("campaign_defeated"), iconScale));
+      if (auto desc = sites[x][y].getDwellerName()) {
+        auto width = renderer.getTextLength(*desc, 12, FontId::MAP_FONT);
+        elem.push_back(WL(translate,
+            WL(labelUnicode, *desc, Color::WHITE, 12, FontId::MAP_FONT),
+        labelPlacer.getLabelPosition(Vec2(x, y), width), Vec2(width + 6, 18), GuiFactory::TranslateCorner::CENTER));
       }
       columns.addElem(WL(stack, std::move(elem)));
     }
@@ -4550,7 +4601,7 @@ SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign) {
   lines.addElem(WL(centerHoriz, WL(label, "Map of " + campaign.getWorldName())));
   lines.addElem(WL(centerHoriz, WL(label, "Use the travel command while controlling a minion or team "
           "to travel to another site.", Renderer::smallTextSize(), Color::LIGHT_GRAY)));
-  lines.addElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, none)));
+  lines.addElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, none, nullptr, nullptr)));
   lines.addSpace(legendLineHeight / 2);
   lines.addElem(WL(centerHoriz, WL(buttonLabel, "Close", [&] { sem.v(); })));
   return WL(preferredSize, 1000, 630,
@@ -4561,7 +4612,8 @@ SGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
     const Campaign& campaign, Vec2 initialPos) {
   auto lines = WL(getListBuilder, getStandardLineHeight());
   lines.addElem(WL(centerHoriz, WL(label, message)));
-  lines.addElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, initialPos)));
+  lines.addElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, initialPos,
+      [&campaign](Vec2 pos){ return campaign.isInInfluence(pos); }, nullptr)));
   lines.addSpace(legendLineHeight / 2);
   auto confirmCallback = [&] {
     if (campaign.canTravelTo(*campaignGridPointer))
@@ -5038,32 +5090,6 @@ SGuiElem GuiBuilder::drawMenuWarning(View::CampaignOptions::WarningType type) {
   }
 }
 
-SGuiElem GuiBuilder::drawBiomeMenu(SyncQueue<CampaignAction>& queue,
-    const vector<View::CampaignOptions::BiomeInfo>& biomes, View::CampaignMenuState& state, int chosen) {
-  auto label = WL(getListBuilder)
-    .addElemAuto(WL(viewObject, biomes[chosen].viewId))
-    .addSpace(5)
-    .addElemAuto(WL(label, biomes[chosen].name))
-    .buildHorizontalList();
-  return WL(getListBuilder)
-      .addElemAuto(WL(label, "base biome: "))
-      .addElemAuto(WL(buttonLabelFocusable, std::move(label), [this, chosen, &biomes, &queue] (Rectangle rect) {
-        vector<SGuiElem> elems;
-        vector<function<void()>> callbacks;
-        for (int i : All(biomes)) {
-          elems.push_back(WL(getListBuilder)
-              .addElemAuto(WL(viewObject, biomes[i].viewId))
-              .addSpace(5)
-              .addElemAuto(WL(label, biomes[i].name))
-              .buildHorizontalList());
-          callbacks.push_back([&queue, i] { queue.push({CampaignActionId::BIOME, i}); });
-        }
-        int index = hasController() ? chosen : -1;
-        drawMiniMenu(std::move(elems), std::move(callbacks), {}, rect.bottomLeft(), 220, true, true, &index);
-      }, [&state] { return state.index == CampaignMenuElems::Biome{};}))
-      .buildHorizontalList();
-}
-
 SGuiElem GuiBuilder::drawRetiredDungeonsButton(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
     View::CampaignMenuState& state) {
   if (campaignOptions.retired) {
@@ -5238,7 +5264,9 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
     lines.addSpace(10);
     lines.addElem(WL(leftMargin, optionMargin, drawCampaignSettingsButton(queue, campaignOptions, menuState)));
   }
-  lines.addBackElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, none)));
+  lines.addBackElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, campaign.getPlayerPos(),
+      [&campaign](Vec2 pos) { return campaign.isGoodStartPos(pos); },
+      [&queue](Vec2 pos) { queue.push({CampaignActionId::SET_POSITION, pos}); })));
   lines.addSpace(10);
   lines.addBackElem(WL(centerHoriz, WL(getListBuilder)
         .addElemAuto(WL(buttonLabelFocusable, "Confirm", [&] { queue.push(CampaignActionId::CONFIRM); },
@@ -5252,16 +5280,15 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
         .buildHorizontalList()));
   if (campaignOptions.warning)
     rightLines.addElem(WL(leftMargin, -20, drawMenuWarning(*campaignOptions.warning)));
-  if (!campaignOptions.biomes.empty())
-    rightLines.addElem(drawBiomeMenu(queue, campaignOptions.biomes, menuState, campaignOptions.chosenBiome));
+  rightLines.addElem(WL(setWidth, 220, WL(label, "Home map biome: " + campaignOptions.currentBiome)));
   int retiredPosX = 640;
   vector<SGuiElem> interior {
       WL(stopKeyEvents),
       WL(keyHandler, [&menuState] {
         menuState.index.left();
       }, Keybinding("MENU_LEFT"), true),
-      WL(keyHandler, [&menuState, numBiomes = campaignOptions.biomes.size()]{
-        menuState.index.right(numBiomes);
+      WL(keyHandler, [&menuState]{
+        menuState.index.right();
       }, Keybinding("MENU_RIGHT"), true),
       WL(keyHandler, [&menuState] {
         menuState.index.up();

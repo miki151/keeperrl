@@ -401,7 +401,8 @@ static int keeperMain(po::parser& commandLineFlags) {
       contribDataPath,
       freeDataPath.file("images/mouse_cursor.png"),
       freeDataPath.file("images/mouse_cursor2.png"),
-      freeDataPath.file("images/icon.png"));
+      freeDataPath.file("images/icon.png"),
+      freeDataPath.file("images/map_font2.png"));
   initializeGLExtensions();
 
 #ifndef RELEASE

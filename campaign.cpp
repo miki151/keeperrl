@@ -34,25 +34,44 @@ bool Campaign::canTravelTo(Vec2 pos) const {
   return isInInfluence(pos) && !sites[pos].isEmpty();
 }
 
-optional<Vec2> Campaign::getPlayerPos() const {
+Vec2 Campaign::getPlayerPos() const {
   return playerPos;
+}
+
+BiomeId Campaign::getBaseBiome() const {
+  return *sites[playerPos].biome;
 }
 
 Campaign::Campaign(Table<SiteInfo> s, CampaignType t, PlayerRole r, const string& w)
     : sites(s), worldName(w), defeated(sites.getBounds(), false), playerRole(r), type(t) {
 }
 
+bool Campaign::isGoodStartPos(Vec2 pos) const {
+  switch (getPlayerRole()) {
+    case PlayerRole::ADVENTURER:
+      if (auto& dweller = sites[pos].dweller)
+        if (auto villain = dweller->getReferenceMaybe<Campaign::VillainInfo>())
+          return villain->type == VillainType::ALLY;
+      return false;
+    case PlayerRole::KEEPER:
+      for (auto v : Rectangle::centered(pos, 1))
+        if (v.inRectangle(sites.getBounds()) && !!sites[v].dweller &&
+            !sites[v].dweller->contains<Campaign::KeeperInfo>())
+          return false;
+      return !!sites[pos].biome;
+  }
+}
+
 const string& Campaign::getWorldName() const {
   return worldName;
 }
 
-void Campaign::clearSite(Vec2 v) {
-  sites[v] = SiteInfo{};
-  sites[v].viewId = {ViewId("map_grass1")};
-}
-
 bool Campaign::isDefeated(Vec2 pos) const {
   return defeated[pos];
+}
+
+void Campaign::removeDweller(Vec2 pos) {
+  sites[pos].dweller = none;
 }
 
 void Campaign::setDefeated(Vec2 pos) {
@@ -108,6 +127,16 @@ optional<string> Campaign::SiteInfo::getDwellerDescription() const {
     return none;
 }
 
+optional<string> Campaign::SiteInfo::getDwellerName() const {
+  if (dweller)
+    return dweller->match(
+        [](const VillainInfo& info) { return info.name; },
+        [](const RetiredInfo& info) { return info.gameInfo.name;},
+        [](const KeeperInfo&)->string { return "Home site"; });
+  else
+    return none;
+}
+
 optional<VillainType> Campaign::SiteInfo::getVillainType() const {
   if (dweller)
     return dweller->match(
@@ -119,6 +148,16 @@ optional<VillainType> Campaign::SiteInfo::getVillainType() const {
 }
 
 optional<ViewIdList> Campaign::SiteInfo::getDwellerViewId() const {
+  if (dweller)
+    return dweller->match(
+        [](const VillainInfo& info) { return info.viewId.ids; },
+        [](const RetiredInfo& info) { return info.gameInfo.getViewId(); },
+        [](const KeeperInfo& info) { return info.viewId; });
+  else
+    return none;
+}
+
+optional<ViewIdList> Campaign::SiteInfo::getDwellingViewId() const {
   if (dweller)
     return dweller->match(
         [](const VillainInfo& info) { return ViewIdList{{info.dwellingId}}; },
@@ -138,12 +177,10 @@ bool Campaign::isInInfluence(Vec2 pos) const {
 
 void Campaign::refreshInfluencePos() {
   influencePos.clear();
-  if (!playerPos)
-    return;
-  influencePos.insert(*playerPos);
+  influencePos.insert(playerPos);
   for (double r = 1; r <= sites.getWidth() + sites.getHeight(); r += 0.1) {
     for (Vec2 v : sites.getBounds())
-      if ((sites[v].getVillain() || sites[v].getRetired()) && v.distD(*playerPos) <= r)
+      if ((sites[v].getVillain() || sites[v].getRetired()) && v.distD(playerPos) <= r)
         influencePos.insert(v);
     int numEnemies = 0;
     for (Vec2 v : influencePos)

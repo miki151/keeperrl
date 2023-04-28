@@ -5,6 +5,7 @@
 #include "save_file_info.h"
 #include "enemy_id.h"
 #include "tribe.h"
+#include "biome_id.h"
 
 class View;
 class ProgressMeter;
@@ -44,7 +45,7 @@ class Campaign {
   };
   struct SiteInfo {
     vector<ViewId> SERIAL(viewId);
-    vector<string> SERIAL(tags);
+    optional<BiomeId> SERIAL(biome);
     typedef variant<VillainInfo, RetiredInfo, KeeperInfo> Dweller;
     optional<Dweller> SERIAL(dweller);
     optional<VillainInfo> getVillain() const;
@@ -54,17 +55,21 @@ class Campaign {
     bool isEmpty() const;
     bool SERIAL(blocked) = false;
     optional<ViewIdList> getDwellerViewId() const;
+    optional<ViewIdList> getDwellingViewId() const;
     optional<string> getDwellerDescription() const;
+    optional<string> getDwellerName() const;
     optional<VillainType> getVillainType() const;
-    SERIALIZE_ALL(viewId, tags, dweller, blocked)
+    SERIALIZE_ALL(viewId, biome, dweller, blocked)
   };
 
   const Table<SiteInfo>& getSites() const;
-  void clearSite(Vec2);
-  optional<Vec2> getPlayerPos() const;
+  Vec2 getPlayerPos() const;
+  bool isGoodStartPos(Vec2) const;
+  BiomeId getBaseBiome() const;
   const string& getWorldName() const;
   bool isDefeated(Vec2) const;
   void setDefeated(Vec2);
+  void removeDweller(Vec2);
   bool canTravelTo(Vec2) const;
   bool isInInfluence(Vec2) const;
   int getNumNonEmpty() const;
@@ -81,7 +86,7 @@ class Campaign {
   void refreshInfluencePos();
   Campaign(Table<SiteInfo>, CampaignType, PlayerRole, const string& worldName);
   Table<SiteInfo> SERIAL(sites);
-  optional<Vec2> SERIAL(playerPos);
+  Vec2 SERIAL(playerPos);
   string SERIAL(worldName);
   Table<bool> SERIAL(defeated);
   set<Vec2> SERIAL(influencePos);
