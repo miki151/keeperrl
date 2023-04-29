@@ -1253,10 +1253,12 @@
     }
     hatedByEffect = HATE_DRAGONS
   }
-"WHITE_DRAGON" inherit "BLACK_DRAGON"
+"WHITE_DRAGON"
   {
     viewId = { "red_dragon" Rgb 240 240 240 255 }
-    attr = append {
+    attr = {
+      DAMAGE 45
+      DEFENSE 47
       COLD_DAMAGE 40
     }
     body = {
@@ -1295,7 +1297,7 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
-  }
+}
 "YELLOW_NAGA"
   {
     viewId = { "naga" Rgb 220 220 20 255 }
@@ -1325,7 +1327,7 @@
     }
     hatedByEffect = HATE_DRAGONS
   }
-"YELLOW_DRAGON" inherit "BLACK_DRAGON"
+"YELLOW_DRAGON" inherit "WHITE_DRAGON"
   {
     viewId = { "red_dragon" Rgb 240 200 0 255 }
     attr = append {
