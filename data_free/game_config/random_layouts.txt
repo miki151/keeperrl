@@ -136,7 +136,7 @@ End
 "village1" Village1()
 "village2" Village2()
 
-Def CastleGate1() 
+Def CastleGate1()
   Border(TOP, 1, Position(MIDDLE, {2 1}, Reset("floor", "iron_gate")))
 End
 
@@ -295,8 +295,8 @@ End
 "castle_empty" Choose(CastleEmpty(2), CastleEmpty(3))
 
 Def ZLevelCastle2(Type) {
-  ZLevelBase(Type)
-  Place({1 1} Inside(-10, CellularAutomaton({Remove("hard_rock") Set("floor")}, 0.65)) 1 On("up_stairs0"))
+  ZLevelMiniFeatures(Type)
+#Place({1 1} Inside(-10, CellularAutomaton({Remove("hard_rock") Set("floor")}, 0.65)) 1 True)
   Inside(6, SplitH(0.6, {}, Place({25 15} {
     Choose(Castle(2), Castle(3))
     Remove("up_stairs0")
@@ -376,7 +376,7 @@ Def CastleUpStairs() {
       Inside(1, Set("no_territory"))
       Inside(TOP, 4, Border(LEFT, 3, Border(RIGHT, 1, Filter(YMod(2, 0), Set("castle_wall")))))
       Inside(TOP, 4, Border(RIGHT, 3, Border(LEFT, 1, Filter(YMod(2, 0), Set("castle_wall")))))
-    } 
+    }
   )
   Border(BOTTOM, 2, Inside(BOTTOM, 1,
      Position(MIDDLE, {1 1}, Set("clear_middle", "down_stairs0"))))
@@ -656,35 +656,120 @@ End
 "z_level_lava" ZLevelLakes("lava")
 "z_level_water" ZLevelLakes("water")
 
-Def ZLevelBase(Type) {
-  Set("hard_rock")
-  Position(MIDDLE, {1, 1}, {
-    Border(-35, Set("resources"))
-    Reset("floor", "up_stairs0")
-  })
-  Place(
-     (none, CellularAutomaton(Reset(Type), 0.55), {0 10}, Not On("up_stairs0"), {5 5}, {20 20}),
-     (none, CellularAutomaton(Reset("floor"), 0.55), {2 5}, Not On("up_stairs0"), {5 5}, {20 20})
+Def ZLevelMostlyFull(WaterType) {
+  Set("hard_rock", "resources")
+  Inside(5,
+    Place(
+      (none, CellularAutomaton(Reset(WaterType), 0.55), {0 10}, True, {5 5}, {20 20}),
+      (none, CellularAutomaton(Reset("floor"), 0.55), {2 5}, True, {5 5}, {20 20})
+    )
   )
 }
 End
-Def ZLevelFull(Type) {
-  ZLevelBase(Type)
-  Maybe(0.25, Place({6 6},
-    Margin(1, Set(Type), { Reset("hard_rock") Inside(1, Set("ada_chest"))}), 1, On(Type)))
-  Maybe(0.15, Place({20 15}, {
-    Place(none, Reset("floor"), {2 5}, True, {2 2}, {5 5}, 1)
-    Place({1 1}, Set("corpse"), {1 4}, On("floor"))
-    Connector()
-  }, 1, On("hard_rock")))
+
+Def ZLevelCaverns(WaterType) {
+  Set("hard_rock", "resources")
+  Inside(5, CellularAutomaton(Reset("floor"), 0.45))
 }
 End
 
-"z_level_full" Choose(ZLevelFull("water"), ZLevelFull("lava"))
+#"z_level_caverns" ZLevelCaverns()
+
+Def ZLevelMiniFeatures(WaterType) {
+  ZLevelMostlyFull(WaterType)
+  Inside(5, {
+    Place(2,
+      ({12 12}, MiniGhostSpawner(), 1, On("hard_rock")),
+      ({7 7}, ColumnRoom(), 1, On("hard_rock")),
+      ({5 5}, MiniGargoyleRoom(), 1, On("hard_rock")),
+      ({7 7}, MiniPrison(), 1, On("hard_rock")),
+      ({15 15}, MiniDungeon(), 1, On("hard_rock")),
+      ({15 15}, MiniAntNest(), 1, On("hard_rock")),
+      ({4 4}, { Border(-1, Reset(WaterType)) Reset("hard_rock") Inside(1, Set("ada_chest"))}, 1, On(WaterType)),
+      ({10 10}, {
+        CellularAutomaton(Reset(WaterType), 0.85)
+        Inside(3, FourCorners(Reset("hard_rock")))
+      }, 1, On("hard_rock"))
+    )
+  })
+}
+End
+
+"z_level_minifeatures" ZLevelMiniFeatures("water")
+
+Def ZLevelBase(WaterType)
+  Choose(ZLevelMiniFeatures(WaterType), ZLevelCaverns(WaterType))
+End
+
+Def MiniGargoyleRoom() {
+  Reset("floor")
+  FourCorners(Set("no_dig", "gargoyle"))
+}
+End
+
+Def MiniGhostSpawner() {
+  CellularAutomaton(Reset("floor"), 0.85)
+  Inside(2, CellularAutomaton(Set("fog"), 0.85))
+  Position(MIDDLE, {1 1}, Reset("ghost_spawn", "fog"))
+}
+End
+
+Def MiniAntNest() {
+  Place(none, {
+    Reset("floor")
+    Place({1, 1}, Set("ant_worker"), 1, True)
+  }, 7, True, {1 1}, {3 3})
+  Connector()
+}
+End
+
+Def MiniDungeon() {
+  Place(none, Reset("floor"), {2 5}, True, {2 2}, {5 5}, 1)
+  Place({1 1}, Set("corpse"), {1 4}, On("floor"))
+}
+End
+
+Def MiniPrison() {
+  Reset("floor")
+  Border(-1, Set("no_dig"))
+  Border(TOP, 3, {
+    Border(BOTTOM, 1, Filter(Chance(0.8), Set("prison_bars")))
+    Border(TOP, -1, Remove("no_dig"))
+  })
+  Inside(TOP, 4, Place({1 1}, Set("corpse"), {1 4}, On("floor")))
+}
+End
+
+Def YColumns() Filter(YMod(2, 0), Set("hard_rock")) End
+Def XColumns() Filter(XMod(2, 0), Set("hard_rock")) End
+
+Def ColumnRoom() {
+  Reset("floor")
+  Inside(1, {
+    Margin(RIGHT, 1, YColumns(), {})
+    Margin(LEFT, 1, YColumns(), {})
+    Margin(TOP, 1, XColumns(), {})
+    Margin(BOTTOM, 1, XColumns(), {})
+  })
+  Place({1, 1}, Set("bat"), {3 6}, On("floor"))
+}
+End
+
+Def FourCorners(Corner) {
+  Position(TOP_LEFT, {1 1}, Corner)
+  Position(BOTTOM_LEFT, {1 1}, Corner)
+  Position(TOP_RIGHT, {1 1}, Corner)
+  Position(BOTTOM_RIGHT, {1 1}, Corner)
+}
+End
+
+"z_level_full" {
+  Set("set_territory") # Even though its an empty level, some code will crash if territory is empty
+  Choose(ZLevelMostlyFull("water"), ZLevelMostlyFull("lava"))
+}
 
 "z_level_vault" {
-  Choose(ZLevelFull("water"), ZLevelFull("lava"))
-  Set("no_territory")
+  Choose(ZLevelBase("water"), ZLevelBase("lava"))
   Inside(5, Place({4 7}, {
     Reset("floor", "set_territory")
     Margin(TOP, 1, Set("workshop"),
@@ -693,6 +778,34 @@ End
         ({1 1}, Set("torch"), 1, And())
     ))
   }, 1, On("hard_rock")))
+  Connector()
+  Filter(Not On("set_territory"), Set("no_territory"))
+}
+
+"z_level_cave" {
+  Choose(ZLevelBase("water"), ZLevelBase("lava"))
+  Inside(5, Place({10 10}, CellularAutomaton(Reset("floor", "set_territory"), 0.85), 1, On("hard_rock")))
+  Connector()
+  Filter(Not On("set_territory"), Set("no_territory"))
+}
+
+"z_level_dungeon" {
+  Choose(ZLevelBase("water"), ZLevelBase("lava"))
+  Inside(5, Place({15 12}, {
+    Place(none, Reset("floor", "set_territory"), {3 6}, True, {2 2}, {5 5}, 1)
+  }, 1, On("hard_rock")))
+  Connector()
+  Place({1 1}, Choose(Set("bed"), Set("chest")), {4 7}, On("set_territory"))
+  Filter(And(
+    On("floor"),
+    NextTo(On("set_territory")),
+    Not NextTo(On("wood_door")),
+    Or(
+      And(Translate({0 1}, On("hard_rock")), Translate({0 -1}, On("hard_rock"))),
+      And(Translate({1 0}, On("hard_rock")), Translate({-1 0}, On("hard_rock")))
+    )
+  ), Set("wood_door"))
+  Filter(Not On("set_territory"), Set("no_territory"))
 }
 
 Def MoveDown(Cnt, Generator)
@@ -718,7 +831,8 @@ Def ZLevelCastleLeft(Type) {
 End
 
 Def ZLevelCastle(Type) {
-  ZLevelBase(Type)
+  ZLevelMiniFeatures(Type)
+  Connector()
   SplitH(0.6, {}, ZLevelCastleLeft(Type))
   Filter(Not On("castle_inside"), Set("no_territory"))
 }
@@ -730,7 +844,7 @@ Def LavaCave() {
   Set("hard_rock")
   CellularAutomaton(Reset("lava"), 0.55)
   CellularAutomaton(Reset("floor"), 0.45)
-  Inside(2, SplitH(0.3, SplitV(0.3, 
+  Inside(2, SplitH(0.3, SplitV(0.3,
       Place({4 4}, {Reset("stone_floor") Inside(1, Set("chest"))}, 1),
       {}), {}))
   Inside(2, SplitH(0.7, {}, SplitV(0.7, {},
@@ -815,8 +929,8 @@ End
 }
 
 "balrog_z_level" {
-  ZLevelBase("lava")
-  Place({1 1} Inside(-10, CellularAutomaton({Remove("hard_rock") Set("floor")}, 0.65)) 1 On("up_stairs0"))
+  ZLevelMiniFeatures("lava")
+#Place({1 1} Inside(-10, CellularAutomaton({Remove("hard_rock") Set("floor")}, 0.65)) 1 On("up_stairs0"))
   Inside(6, SplitH(0.6, {}, Place({9 18} {
     Border(-1, Reset("hard_rock"))
     Inside(-1, Inside(TOP, 2, Set("no_dig")))

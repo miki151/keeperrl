@@ -36,6 +36,10 @@ static bool apply(const TilePredicates::Area& p, LayoutCanvas::Map* map, Vec2 v,
   return count >= p.minCount;
 }
 
+static bool apply(const TilePredicates::Translate& p, LayoutCanvas::Map* map, Vec2 v, RandomGen& r) {
+  return p.predicate->apply(map, v + p.offset, r);
+}
+
 static bool apply(const TilePredicates::Chance& p, LayoutCanvas::Map* map, Vec2 v, RandomGen& r) {
   return r.chance(p.value);
 }

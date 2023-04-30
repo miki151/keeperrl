@@ -363,9 +363,10 @@ bool Furniture::isStairs() const {
 optional<Position> Furniture::getSecondPart(Position pos) const {
   if (onBuilt)
     if (auto dir = getStairDirection(*onBuilt)) {
-      int index = *pos.getModel()->getMainLevelDepth(pos.getLevel());
-      index = pos.getModel()->getMainLevelsDepth().clamp(index + *dir);
-      return Position(pos.getCoord(), pos.getModel()->getMainLevel(index));
+      int myIndex = *pos.getModel()->getMainLevelDepth(pos.getLevel());
+      int nextIndex = pos.getModel()->getMainLevelsDepth().clamp(myIndex + *dir);
+      if (nextIndex != myIndex)
+        return Position(pos.getCoord(), pos.getModel()->getMainLevel(nextIndex));
     }
   return none;
 }
@@ -398,7 +399,10 @@ bool Furniture::canRemoveNonFriendly() const {
 }
 
 Creature* Furniture::getCreator() const {
-  return creator.get();
+  if (auto c = creator.get())
+    if (!c->isDead())
+      return c;
+  return nullptr;
 }
 
 optional<LocalTime> Furniture::getCreatedTime() const {

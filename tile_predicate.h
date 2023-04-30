@@ -59,6 +59,12 @@ struct YMod {
   SERIALIZE_ALL(roundBracket(), NAMED(div), NAMED(mod))
 };
 
+struct Translate {
+  Vec2 SERIAL(offset);
+  HeapAllocated<TilePredicate> SERIAL(predicate);
+  SERIALIZE_ALL(roundBracket(), NAMED(offset), NAMED(predicate))
+};
+
 #define VARIANT_TYPES_LIST\
   X(On, 0)\
   X(Not, 1)\
@@ -68,7 +74,8 @@ struct YMod {
   X(Chance, 5)\
   X(Area, 6)\
   X(XMod, 7)\
-  X(YMod, 8)
+  X(YMod, 8)\
+  X(Translate, 9)\
 
 #define VARIANT_NAME PredicateImpl
 

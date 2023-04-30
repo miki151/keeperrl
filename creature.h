@@ -222,7 +222,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void displace(Vec2);
   void retire();
   void removeGameReferences();
-  
+
   void increaseExpLevel(ExperienceType, double increase);
 
   BestAttack getBestAttack(const ContentFactory*) const;
@@ -236,7 +236,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction moveTowards(Position, NavigationFlags);
   CreatureAction moveTowards(Position);
   CreatureAction moveAway(Position, bool pathfinding = true);
-  CreatureAction continueMoving();
   vector<Position> getCurrentPath() const;
   bool canNavigateToOrNeighbor(Position) const;
   bool canNavigateTo(Position pos) const;
@@ -323,6 +322,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void updateViewObjectFlanking();
   void swapPosition(Vec2 direction, bool withExcuseMe = true);
   bool canSwapPositionWithEnemy(Creature* other) const;
+  bool canSwapPositionInMovement(Creature* other) const;
   vector<PItem> generateCorpse(const ContentFactory*, Game*, bool instantlyRotten = false);
   int getLastMoveCounter() const;
 
@@ -334,7 +334,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void setCaptureOrder(bool);
   bool isCaptureOrdered() const;
   bool canBeCaptured() const;
-  void removePrivateEnemy(const Creature*); 
+  void removePrivateEnemy(const Creature*);
   const vector<AutomatonPart>& getAutomatonParts() const;
   bool isAutomaton() const;
   void addAutomatonPart(AutomatonPart);
@@ -368,7 +368,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   int canCarry(const vector<Item*>&) const;
   TribeSet getFriendlyTribes() const;
   void addMovementInfo(MovementInfo);
-  bool canSwapPositionInMovement(Creature* other, optional<Position> nextPos) const;
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);

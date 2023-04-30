@@ -322,7 +322,7 @@ static int getPrice(const Effects::Lasting& e, const ContentFactory* factory) {
 }
 
 static bool isConsideredHostile(const Effects::Lasting& e, const Creature* victim) {
-  return isConsideredBad(e.lastingEffect, victim->getGame()->getContentFactory()  );
+  return isConsideredBad(e.lastingEffect, victim->getGame()->getContentFactory());
 }
 
 static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Lasting& e) {
@@ -860,12 +860,16 @@ static bool applyToCreature(const Effects::Bleed& e, Creature* c, Creature*) {
   c->getBody().bleed(c, e.amount);
   if (c->getBody().getHealth() <= 0) {
     c->you(MsgType::DIE_OF, e.deathReason);
-    c->dieNoReason();
+    c->dieWithLastAttacker();
   }
   return true;
 }
 
-static string getName(const Effects::Bleed& e, const ContentFactory*) {
+static bool isConsideredHostile(const Effects::Bleed&, const Creature* victim) {
+  return true;
+}
+
+static string getName(const Effects::Bleed&, const ContentFactory*) {
   return "bleeding";
 }
 
@@ -873,7 +877,7 @@ static bool isOffensive(const Effects::Bleed&) {
   return true;
 }
 
-static string getDescription(const Effects::Bleed& e, const ContentFactory*) {
+static string getDescription(const Effects::Bleed&, const ContentFactory*) {
   return "Causes bleeding.";
 }
 

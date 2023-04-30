@@ -102,7 +102,14 @@ struct Place {
     SERIALIZE_ALL(roundBracket(), NAMED(size), NAMED(generator), OPTION(count), OPTION(predicate), NAMED(minSize), NAMED(maxSize), OPTION(minSpacing))
   };
   vector<Elem> SERIAL(generators);
-  SERIALIZE_ALL(withRoundBrackets(generators))
+  optional<int> placedCount;
+  template <class Archive>
+  void serialize(Archive& ar1, const unsigned int version) {
+    if (version == 0)
+      ar1(withRoundBrackets(generators));
+    else
+      ar1(withRoundBrackets(generators), placedCount);
+  }
   void serialize(PrettyInputArchive&, const unsigned int version);
 };
 
@@ -129,7 +136,6 @@ struct Choose {
     SERIALIZE_ALL(chance, generator)
     void serialize(PrettyInputArchive&, const unsigned int version);
   };
-
   vector<Elem> SERIAL(generators);
   SERIALIZE_ALL(withRoundBrackets(generators))
 };
@@ -191,6 +197,8 @@ inline
 #undef VARIANT_NAME
 
 }
+
+CEREAL_CLASS_VERSION(LayoutGenerators::Place, 1)
 
 struct LayoutGenerator : LayoutGenerators::GeneratorImpl {
   using GeneratorImpl::GeneratorImpl;

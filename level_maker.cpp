@@ -2672,7 +2672,12 @@ namespace {
               keys[s.index] = none;
             }
           },
-          [&](LayoutActions::AddGas t) { builder->addPermanentGas(t, pos); }
+          [&](LayoutActions::AddGas t) { builder->addPermanentGas(t, pos); },
+          [&](LayoutActions::HostileCreature c) {
+            builder->putCreature(pos, builder->getContentFactory()->getCreatures().fromId(c, TribeId::getHostile(),
+                MonsterAIFactory::stayInLocation(
+                    builder->toGlobalCoordinates(Rectangle::centered(pos, 4)).getAllSquares())));
+          }
       );
     }
 
