@@ -813,6 +813,7 @@ class ByCollective : public Behaviour {
       fighter(std::move(fighter)) {}
 
   MoveInfo priorityTask() {
+    PROFILE_BLOCK("ByCollective::priorityTask");
     auto& taskMap = collective->getTaskMap();
     if (auto task = taskMap.getTask(creature))
       if (taskMap.isPriorityTask(task))

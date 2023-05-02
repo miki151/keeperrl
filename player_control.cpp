@@ -1028,6 +1028,7 @@ vector<PItem> PlayerControl::retrievePillageItems(Collective* col, vector<Item*>
 }
 
 vector<Item*> PlayerControl::getPillagedItems(Collective* col) const {
+  PROFILE;
   vector<Item*> ret;
   for (Position v : getPillagePositions(col))
     if (v.getCollective() == col || !v.getCollective()) {
@@ -1039,6 +1040,7 @@ vector<Item*> PlayerControl::getPillagedItems(Collective* col) const {
 }
 
 bool PlayerControl::canPillage(const Collective* col) const {
+  PROFILE;
   for (Position v : getPillagePositions(col))
     if ((v.getCollective() == col || !v.getCollective()) &&
         !collective->getTerritory().contains(v) && !v.getItems().empty())
@@ -1354,6 +1356,7 @@ struct FurnaceOptionInfo {
 };
 
 vector<FurnaceOptionInfo> PlayerControl::getFurnaceOptions() const {
+  PROFILE;
   vector<FurnaceOptionInfo> ret;
   int i = 0;
   for (auto pos : collective->getConstructions().getAllStoragePositions())
@@ -1894,6 +1897,7 @@ void PlayerControl::fillResources(CollectiveInfo& info) const {
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
+  PROFILE;
   auto contentFactory = getGame()->getContentFactory();
   gameInfo.scriptedHelp = contentFactory->scriptedHelp;
   gameInfo.isSingleMap = getGame()->isSingleModel();
@@ -1968,6 +1972,8 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     if (auto c = collective->getTaskMap().getOwner(task))
       creature = c->getUniqueId();
     info.taskMap.push_back(CollectiveInfo::Task{task->getDescription(), creature, collective->getTaskMap().isPriorityTask(task)});
+    if (info.taskMap.size() > 200)
+      break;
   }
   const auto maxEnemyCountdown = 500_visible;
   if (auto& enemies = getModel()->getExternalEnemies())

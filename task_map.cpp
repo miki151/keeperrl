@@ -185,6 +185,7 @@ bool TaskMap::isPriorityTask(WConstTask t) const {
 
 
 bool TaskMap::hasPriorityTasks(Position pos) const {
+  PROFILE;
   for (auto task : getTasks(pos))
     if (isPriorityTask(task))
       return true;
