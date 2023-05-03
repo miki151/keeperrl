@@ -393,6 +393,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
     Table<Campaign::SiteInfo> terrain = getTerrain(random, contentFactory, size);
     Campaign campaign(terrain, type, playerRole, worldName);
     campaign.mapZoom = campaignInfo.mapZoom;
+    campaign.minimapZoom = campaignInfo.minimapZoom;
     if (!placeVillains(contentFactory, campaign, getVillainCounts(type, options), retired, avatarInfo.tribeAlignment)) {
       if (++failedPlaceVillains > 300)
         USER_FATAL << "Failed to place all villains on the world map";

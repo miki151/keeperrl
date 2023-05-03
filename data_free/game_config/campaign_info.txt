@@ -1,9 +1,10 @@
 "default" {
 # if you want to have a "huge" map, I recommend setting size to 34 18 and mapZoom to 1, this way there is no scrolling needed
-  size = {48 28}
+  size = {80 45}
   mapZoom = 2
-  maxMainVillains = 4
-  maxLesserVillains = 6
-  maxAllies = 4
+  minimapZoom = 2
+  maxMainVillains = 12
+  maxLesserVillains = 12
+  maxAllies = 8
   influenceSize = 3
 }

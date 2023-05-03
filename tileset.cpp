@@ -15,14 +15,18 @@ void TileSet::addSymbol(string id, Tile tile) {
   symbols.insert(make_pair(ViewId(id.data()).getInternalId(), std::move(tile)));
 }
 
+Color TileSet::getColor(ViewId id) const {
+  auto symbol = getReferenceMaybe(symbols, id.getInternalId());
+  CHECK(!!symbol) << "No symbol found for : " << id.data();
+  return symbol->color;
+}
+
 Color TileSet::getColor(const ViewObject& object) const {
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE))
     return Color::DARK_GRAY;
   if (object.hasModifier(ViewObject::Modifier::HIDDEN))
     return Color::LIGHT_GRAY;
-  auto symbol = getReferenceMaybe(symbols, object.id().getInternalId());
-  CHECK(!!symbol) << "No symbol found for : " << object.id().data();
-  Color color = symbol->color;
+  auto color = getColor(object.id());
   if (object.hasModifier(ViewObject::Modifier::PLANNED))
     return Color(color.r / 2, color.g / 2, color.b / 2);
   return color;

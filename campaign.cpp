@@ -203,6 +203,10 @@ int Campaign::getMapZoom() const {
   return mapZoom;
 }
 
+int Campaign::getMinimapZoom() const {
+  return minimapZoom;
+}
+
 map<string, string> Campaign::getParameters() const {
   int numMain = 0;
   int numLesser = 0;

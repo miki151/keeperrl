@@ -222,6 +222,7 @@ class GuiBuilder {
   ScrollPosition workshopsScroll2;
   ScrollPosition libraryScroll;
   ScrollPosition minionPageScroll;
+  optional<Vec2> scrollAreaScrollPos;
   optional<int> itemIndex;
   optional<Vec2> campaignGridPointer;
   bool playerOverlayFocused = false;

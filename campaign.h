@@ -74,6 +74,7 @@ class Campaign {
   bool isInInfluence(Vec2) const;
   int getNumNonEmpty() const;
   int getMapZoom() const;
+  int getMinimapZoom() const;
   CampaignType getType() const;
   PlayerRole getPlayerRole() const;
 
@@ -94,4 +95,5 @@ class Campaign {
   PlayerRole SERIAL(playerRole);
   CampaignType SERIAL(type);
   int SERIAL(mapZoom);
+  int SERIAL(minimapZoom);
 };

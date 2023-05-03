@@ -52,6 +52,7 @@
 #include "steam_input.h"
 #include "tutorial_state.h"
 #include "campaign_menu_index.h"
+#include "tileset.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -4437,7 +4438,7 @@ static Color getHighlightColor(VillainType type) {
     case VillainType::ALLY:
       return Color::GREEN;
     case VillainType::PLAYER:
-      return Color::TRANSPARENT;
+      return Color::WHITE;
     case VillainType::NONE:
       FATAL << "Tried to render villain of type NONE";
       return Color::WHITE;
@@ -4485,12 +4486,16 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
     function<void(Vec2)> selectCallback){
   int iconScale = c.getMapZoom();
   int iconSize = 8 * iconScale;
+  int minimapScale = c.getMinimapZoom();
   campaignGridPointer = initialPos;
   auto& sites = c.getSites();
   auto rows = WL(getListBuilder, iconSize);
+  auto minimapRows = WL(getListBuilder, minimapScale);
   LabelPlacer labelPlacer(sites.getBounds(), iconSize);
+  Vec2 maxSize(min(sites.getBounds().width() * iconSize, 800), min(sites.getBounds().height() * iconSize, 600));
   for (int y : sites.getBounds().getYRange()) {
     auto columns = WL(getListBuilder, iconSize);
+    auto minimapColumns = WL(getListBuilder, minimapScale);
     for (int x : sites.getBounds().getXRange()) {
       vector<SGuiElem> v;
       for (int i : All(sites[x][y].viewId)) {
@@ -4498,7 +4503,14 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
         v.push_back(WL(viewObject, sites[x][y].viewId[i], iconScale));
       }
       columns.addElem(WL(stack, std::move(v)));
+      auto color = renderer.getTileSet().getColor(sites[x][y].viewId.back()).transparency(150);
+      if (auto type = sites[x][y].getVillainType())
+        color = getHighlightColor(*type);
+      minimapColumns.addElem(WL(stack,
+          WL(button, [=] { scrollAreaScrollPos = Vec2(x, y) * iconSize - maxSize / 2; }, true),
+          WL(rectangle, color)));
     }
+    minimapRows.addElem(minimapColumns.buildHorizontalList());
     auto columns2 = WL(getListBuilder, iconSize);
     for (int x : sites.getBounds().getXRange()) {
       Vec2 pos(x, y);
@@ -4553,11 +4565,20 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
     }
     upperRows.addElem(columns.buildHorizontalList());
   }
-  Vec2 maxSize(min(sites.getBounds().width() * iconSize, 30 * 48), min(sites.getBounds().height() * iconSize, 20 * 48));
   auto mapContent = WL(stack, rows.buildVerticalList(), upperRows.buildVerticalList());
-/*  if (*mapContent->getPreferredWidth() > maxSize.x || *mapContent->getPreferredHeight() > maxSize.y)
-    mapContent = WL(scrollArea, std::move(mapContent));
-*/  int margin = 8;
+  int minimapMargin = 2;
+  if (*mapContent->getPreferredWidth() > maxSize.x || *mapContent->getPreferredHeight() > maxSize.y)
+    mapContent = WL(stack, WL(scrollArea, std::move(mapContent), scrollAreaScrollPos),
+        WL(alignment, GuiFactory::Alignment::TOP_RIGHT, WL(stack, WL(rectangle, Color::BLACK),
+            WL(margins, WL(renderInBounds, WL(stack,
+                minimapRows.buildVerticalList(),
+                WL(translate,
+                    [this, iconSize, minimapScale] {
+                      return scrollAreaScrollPos.value_or(Vec2(0, 0)) * minimapScale / iconSize;
+                    },
+                    WL(alignment, GuiFactory::Alignment::TOP_LEFT, WL(rectangle, Color::TRANSPARENT, Color::WHITE),
+                        maxSize * minimapScale / iconSize)))), minimapMargin))));
+  int margin = 8;
   if (campaignGridPointer)
     mapContent = WL(stack, makeVec(
         std::move(mapContent),
