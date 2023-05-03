@@ -180,12 +180,22 @@ Connections("map_swamp")
 { "map_house1" "o" ColorId BLUE }
 { "map_castle1" "o" ColorId BLUE }
 { "map_castle_snow1" "o" ColorId LIGHT_BLUE }
+{ "map_thieves" "o" ColorId LIGHT_BROWN }
+{ "map_warriors" "o" ColorId DARK_BROWN }
 { "map_house_snow1" "o" ColorId SKY_BLUE }
 { "map_dungeon1" ">" ColorId GRAY }
+{ "map_dwarves" ">" ColorId LIGHT_BLUE }
+{ "map_ants" ">" ColorId WHITE }
+{ "map_ents" "@" ColorId LIGHT_BROWN }
+{ "map_hydra" "H" ColorId PURPLE }
+{ "map_dragon" "D" ColorId RED }
+{ "map_adoxie" ">" ColorId PURPLE }
+{ "map_white_dragon" ">" ColorId GRAY }
 { "map_tower1" "|" ColorId GRAY }
 { "map_grave1" "+" ColorId GRAY }
 { "map_base1" "X" ColorId PINK }
 { "map_highlight" "_" ColorId WHITE }
+{ "map_cloud" "O" ColorId WHITE }
 { "waternesw" "~" ColorId LIGHT_BLUE }
 { "dungeon_entrance" "➘" ColorId GRAY }
 { "unknown_monster" "?" ColorId LIGHT_GREEN false "unknown" }
