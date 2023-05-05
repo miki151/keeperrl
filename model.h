@@ -110,7 +110,7 @@ class Model : public OwnedObject<Model> {
   Level* buildMainLevel(const ContentFactory*, LevelBuilder, PLevelMaker);
   Level* buildUpLevel(const ContentFactory*, LevelBuilder, PLevelMaker);
   void calculateStairNavigation();
-  
+
   BiomeId getBiomeId() const;
 
   HeapAllocated<Portals> SERIAL(portals);

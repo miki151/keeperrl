@@ -220,18 +220,14 @@ static string getNewIdSuffix() {
   return ret;
 }
 
-struct VillainPlacement {
-  function<bool(int)> xPredicate;
-};
-
 bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campaign& campaign,
-    vector<Campaign::SiteInfo::Dweller> villains, const VillainPlacement& placement, int count) {
+    vector<Campaign::SiteInfo::Dweller> villains, int count) {
   for (int i = 0; villains.size() < count; ++i)
     villains.push_back(villains[i]);
   if (villains.size() > count)
     villains.resize(count);
   auto isFreeSpot = [&](Vec2 v) {
-    if (campaign.sites[v].blocked || !placement.xPredicate(v.x))
+    if (campaign.sites[v].blocked)
       return false;
     for (auto v2 : Rectangle::centered(v, 1))
       if (v2.inRectangle(campaign.sites.getBounds()) && !campaign.sites[v2].isEmpty())
@@ -266,30 +262,6 @@ bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campai
   return true;
 }
 
-VillainPlacement CampaignBuilder::getVillainPlacement(const Campaign& campaign, VillainType type) {
-  auto size = campaign.getSites().getBounds().getSize();
-  int middle = (size.x - 1) / 2;
-  int mainMargin = 3;
-  VillainPlacement ret { [&campaign](int x) { return campaign.sites.getBounds().getXRange().contains(x);} };
-  switch (campaign.getType()) {
-    case CampaignType::FREE_PLAY:
-      switch (type) {
-        case VillainType::LESSER:
-          ret.xPredicate = [=](int x) { return abs(x - middle) <= mainMargin; };
-          break;
-        case VillainType::MAIN:
-          ret.xPredicate = [=](int x) { return x > 0 && x < size.x - 1 && abs(x - middle) > mainMargin; };
-          break;
-        default:
-          break;
-      }
-      break;
-    default:
-      break;
-  }
-  return ret;
-}
-
 using Dweller = Campaign::SiteInfo::Dweller;
 
 vector<Dweller> shuffle(RandomGen& random, vector<Campaign::VillainInfo> v) {
@@ -311,17 +283,16 @@ bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campai
     if (v.alwaysPresent && retiredLimit > 0)
       --retiredLimit;
   int numRetired = retired ? min(retired->getNumActive(), min(retiredLimit, counts.maxRetired)) : 0;
-  if (!placeVillains(contentFactory, campaign, shuffle(random, mainVillains),
-          getVillainPlacement(campaign, VillainType::MAIN), counts.numMain - numRetired) ||
+  if (!placeVillains(contentFactory, campaign, shuffle(random, mainVillains), counts.numMain - numRetired) ||
       !placeVillains(contentFactory, campaign, shuffle(random, getVillains(tribeAlignment, VillainType::LESSER)),
-          getVillainPlacement(campaign, VillainType::LESSER), counts.numLesser) ||
+          counts.numLesser) ||
       !placeVillains(contentFactory, campaign, shuffle(random, getVillains(tribeAlignment, VillainType::ALLY)),
-          getVillainPlacement(campaign, VillainType::ALLY), counts.numAllies))
+          counts.numAllies))
     return false;
   if (retired && !placeVillains(contentFactory, campaign, retired->getActiveGames().transform(
       [](const RetiredGames::RetiredGame& game) -> Dweller {
         return Campaign::RetiredInfo{game.gameInfo, game.fileInfo};
-      }), getVillainPlacement(campaign, VillainType::MAIN), numRetired))
+      }), numRetired))
     return false;
   return true;
 }

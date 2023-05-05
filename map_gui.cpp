@@ -1293,7 +1293,6 @@ void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, milliseconds c
 }
 
 bool MapGui::onScrollEvent(Vec2 pos, double x, double y, milliseconds timeDiff) {
-  auto time = Clock::getRealMillis();
   if (x != 0.0 || y != 0.0) {
     double diff = double(timeDiff.count()) / 40;
     center.x += diff * x;

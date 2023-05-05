@@ -5,7 +5,6 @@
 #include "retired_games.h"
 
 struct CampaignSetup;
-struct VillainPlacement;
 struct VillainCounts;
 struct CampaignInfo;
 class GameConfig;
@@ -45,9 +44,7 @@ class CampaignBuilder {
   const char* getIntroText() const;
   void setPlayerPos(Campaign&, Vec2, ViewIdList);
   vector<CampaignType> getAvailableTypes() const;
-  VillainPlacement getVillainPlacement(const Campaign&, VillainType);
-  bool placeVillains(const ContentFactory*, Campaign&, vector<Campaign::SiteInfo::Dweller>, const VillainPlacement&,
-      int count);
+  bool placeVillains(const ContentFactory*, Campaign&, vector<Campaign::SiteInfo::Dweller>, int count);
   bool placeVillains(const ContentFactory*, Campaign&, const VillainCounts&, const optional<RetiredGames>&,
       TribeAlignment);
   PlayerRole getPlayerRole() const;
