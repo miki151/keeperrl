@@ -1202,32 +1202,26 @@ void Creature::updateCombatExperience(Creature* victim) {
 }
 
 void Creature::onKilledOrCaptured(Creature* victim) {
+  for (auto pos : position.getRectangle(Rectangle::centered(10)))
+    if (auto c = pos.getCreature())
+      if (c->getCompanions().contains(this)) {
+        c->onKilledOrCaptured(victim);
+        return;
+      }
   if (!victim->getBody().isFarmAnimal() && !victim->getAttributes().getIllusionViewObject()) {
     updateCombatExperience(victim);
     int difficulty = victim->getDifficultyPoints();
     CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
     points += difficulty;
     kills.push_back(KillInfo{victim->getUniqueId(), victim->getViewObject().getViewIdList()});
-    if (victim->getStatus().contains(CreatureStatus::LEADER)) {
-      auto registerSlaying = [] (Creature* me, Creature* victim) {
-        if (me->getBody().hasBrain(me->getGame()->getContentFactory())) {
-          auto victimName = victim->getName();
-          victimName.setKillTitle(none);
-          auto title = capitalFirst(victimName.bare()) + " Slayer";
-          if (!me->killTitles.contains(title)) {
-            me->attributes->getName().setKillTitle(title);
-            me->killTitles.push_back(title);
-          }
-        }
-      };
-      auto getSlayer = [&] {
-        for (auto pos : position.getRectangle(Rectangle::centered(10)))
-          if (auto c = pos.getCreature())
-            if (c->getCompanions().contains(this))
-              return c;
-        return this;
-      };
-      registerSlaying(getSlayer(), victim);
+    if (victim->getStatus().contains(CreatureStatus::LEADER) && getBody().hasBrain(getGame()->getContentFactory())) {
+      auto victimName = victim->getName();
+      victimName.setKillTitle(none);
+      auto title = capitalFirst(victimName.bare()) + " Slayer";
+      if (!killTitles.contains(title)) {
+        attributes->getName().setKillTitle(title);
+        killTitles.push_back(title);
+      }
     }
     if (attributes->afterKilledSomeone)
       attributes->afterKilledSomeone->apply(position);
