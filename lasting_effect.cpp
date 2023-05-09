@@ -346,6 +346,7 @@ void LastingEffects::onRemoved(Creature* c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "cured from poisoning");
       break;
     case LastingEffect::SLEEP:
+      c->getAttributes().increaseBaseAttr(AttrType("DEFENSE"), 10);
       if (msg)
         c->you(MsgType::WAKE_UP, "");
       break;
