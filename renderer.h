@@ -37,7 +37,8 @@ class Renderer {
   static constexpr int nominalSize = 24;
 
   Renderer(Clock*, MySteamInput*, const string& windowTile, const DirectoryPath& fontPath,
-      const FilePath& cursorPath, const FilePath& clickedCursorPath, const FilePath& iconPath);
+      const FilePath& cursorPath, const FilePath& clickedCursorPath, const FilePath& iconPath,
+      const FilePath& mapFontPath);
   void setFullscreen(bool);
   void setFullscreenMode(int);
   void setVsync(bool);
@@ -122,8 +123,7 @@ class Renderer {
 
   private:
   friend class Texture;
-  optional<Texture> textTexture;
-  optional<Texture> logoTexture;
+  optional<Texture> mapFontTexture;
   Renderer(const Renderer&);
   struct AnimationInfo {
     Texture tex;

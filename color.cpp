@@ -24,7 +24,7 @@ Color Color::YELLOW(250, 255, 0);
 Color Color::LIGHT_BROWN(210, 150, 0);
 Color Color::ORANGE_BROWN(250, 150, 0);
 Color Color::BROWN(240, 130, 0);
-Color Color::DARK_BROWN(100, 60, 0);
+Color Color::DARK_BROWN(29, 16, 8);
 Color Color::MAIN_MENU_ON(255, 255, 255, 190);
 Color Color::MAIN_MENU_OFF(255, 255, 255, 70);
 Color Color::LIGHT_GRAY(150, 150, 150);

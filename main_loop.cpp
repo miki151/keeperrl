@@ -482,7 +482,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
           contentFactory.merge(std::move(f));
         map<string, string> analytics {
           {"retired_villains", toString(models.numRetiredVillains)},
-          {"biome", setup->startingBiome.data()}
+          {"biome", setup->campaign.getBaseBiome().data()}
         };
         return Game::campaignGame(std::move(models.models), *setup, std::move(*avatar), std::move(contentFactory),
             std::move(analytics));
@@ -1240,7 +1240,7 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup, 
       case CampaignType::QUICK_MAP:
         return modelBuilder.tutorialModel();
       default:
-        return modelBuilder.campaignBaseModel(tribe, alignment, setup.startingBiome, setup.externalEnemies);
+        return modelBuilder.campaignBaseModel(tribe, alignment, setup.campaign.getBaseBiome(), setup.externalEnemies);
     }
   }();
   return ret;
@@ -1307,7 +1307,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment 
               factories.push_back(std::move(info->factory));
             } else {
               failedToLoad = retired->fileInfo.filename;
-              setup.campaign.clearSite(v);
+              setup.campaign.removeDweller(v);
             }
           }
         }

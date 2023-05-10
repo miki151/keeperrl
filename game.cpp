@@ -138,7 +138,7 @@ Game::~Game() {}
 
 PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup setup, AvatarInfo avatar,
     ContentFactory contentFactory, map<string, string> analytics) {
-  auto ret = makeOwner<Game>(std::move(models), *setup.campaign.getPlayerPos(), setup, std::move(contentFactory));
+  auto ret = makeOwner<Game>(std::move(models), setup.campaign.getPlayerPos(), setup, std::move(contentFactory));
   ret->avatarId = avatar.avatarId;
   ret->analytics = analytics;
   for (auto model : ret->getAllModels())
@@ -161,7 +161,7 @@ PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup setup, AvatarInfo
 
 PGame Game::warlordGame(Table<PModel> models, CampaignSetup setup, vector<PCreature> creatures,
     ContentFactory contentFactory, string avatarId) {
-  auto ret = makeOwner<Game>(std::move(models), *setup.campaign.getPlayerPos(), setup, std::move(contentFactory));
+  auto ret = makeOwner<Game>(std::move(models), setup.campaign.getPlayerPos(), setup, std::move(contentFactory));
   ret->avatarId = std::move(avatarId);
   for (auto model : ret->getAllModels())
     model->setGame(ret.get());

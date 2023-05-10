@@ -29,6 +29,7 @@ class TileSet {
   void loadTextures();
   const Tile& getTile(ViewId id, bool sprite = true) const;
   Color getColor(const ViewObject&) const;
+  Color getColor(ViewId) const;
   const vector<TileCoord>& getTileCoord(const string&) const;
   const vector<string> getSpriteMods() const;
 

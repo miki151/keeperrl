@@ -393,7 +393,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<PController> SERIAL(controllerStack);
   vector<string> SERIAL(killTitles);
   vector<KillInfo> SERIAL(kills);
-  unordered_set<string> SERIAL(uniqueKills);
   mutable int SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;
   using MoveId = pair<int, LevelId>;
@@ -439,6 +438,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool removeBuff(int index, bool msg);
   bool processBuffs();
   double SERIAL(combatExperience) = 0;
+  int SERIAL(highestAttackValueEver) = 0;
   AttrType modifyDamageAttr(AttrType, const ContentFactory*) const;
 };
 

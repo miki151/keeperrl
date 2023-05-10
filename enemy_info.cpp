@@ -1,7 +1,7 @@
 #include "enemy_info.h"
 #include "immigrant_info.h"
 
-SERIALIZE_DEF(EnemyInfo, NAMED(settlement), OPTION(config), NAMED(behaviour), NAMED(levelConnection), OPTION(immigrants), OPTION(discoverable), NAMED(createOnBones), OPTION(biomes), NAMED(otherEnemy))
+SERIALIZE_DEF(EnemyInfo, NAMED(settlement), OPTION(config), NAMED(behaviour), NAMED(levelConnection), OPTION(immigrants), OPTION(discoverable), NAMED(createOnBones), OPTION(biome), NAMED(otherEnemy))
 
 SERIALIZATION_CONSTRUCTOR_IMPL(EnemyInfo)
 
@@ -17,6 +17,38 @@ void EnemyInfo::updateBuildingInfo(const map<BuildingId, BuildingInfo>& info) {
         [&](const Predefined& elem) { const_cast<Predefined&>(elem).buildingInfo = info.at(elem.buildingId); },
         [&](const RandomLayout&) {}
   );
+}
+
+optional<BiomeId> EnemyInfo::getBiome() const {
+  if (!!biome)
+    return biome;
+  return settlement.type.visit(
+      [&](const MapLayoutTypes::Builtin& type) -> optional<BiomeId> {
+        switch (type.id) {
+          case BuiltinLayoutId::CASTLE2:
+          case BuiltinLayoutId::TOWER:
+          case BuiltinLayoutId::VILLAGE:
+            return BiomeId("GRASSLAND");
+          case BuiltinLayoutId::CAVE:
+          case BuiltinLayoutId::MINETOWN:
+          case BuiltinLayoutId::SMALL_MINETOWN:
+          case BuiltinLayoutId::ANT_NEST:
+          case BuiltinLayoutId::VAULT:
+            return BiomeId("MOUNTAIN");
+          case BuiltinLayoutId::FORREST_COTTAGE:
+          case BuiltinLayoutId::FORREST_VILLAGE:
+          case BuiltinLayoutId::ISLAND_VAULT_DOOR:
+          case BuiltinLayoutId::FOREST:
+            return BiomeId("FOREST");
+          case BuiltinLayoutId::CEMETERY:
+            return BiomeId("GRASSLAND");
+          default: return none;
+        }
+      },
+      [&](const auto&) -> optional<BiomeId> {
+        return BiomeId("GRASSLAND");
+      }
+    );
 }
 
 STRUCT_IMPL(EnemyInfo)

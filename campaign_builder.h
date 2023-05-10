@@ -33,7 +33,6 @@ class CampaignBuilder {
       const string& gameName);
 
   private:
-  optional<Vec2> considerStaticPlayerPos(const Campaign&);
   View* view;
   RandomGen& random;
   Options* options;
@@ -47,8 +46,10 @@ class CampaignBuilder {
   void setPlayerPos(Campaign&, Vec2, ViewIdList);
   vector<CampaignType> getAvailableTypes() const;
   VillainPlacement getVillainPlacement(const Campaign&, VillainType);
-  void placeVillains(Campaign&, vector<Campaign::SiteInfo::Dweller>, const VillainPlacement&, int count);
-  void placeVillains(Campaign&, const VillainCounts&, const optional<RetiredGames>&, TribeAlignment);
+  bool placeVillains(const ContentFactory*, Campaign&, vector<Campaign::SiteInfo::Dweller>, const VillainPlacement&,
+      int count);
+  bool placeVillains(const ContentFactory*, Campaign&, const VillainCounts&, const optional<RetiredGames>&,
+      TribeAlignment);
   PlayerRole getPlayerRole() const;
   const vector<string>& getIntroMessages(CampaignType) const;
   void setCountLimits(const CampaignInfo&);
@@ -61,5 +62,4 @@ struct CampaignSetup {
   vector<string> introMessages;
   optional<ExternalEnemiesType> externalEnemies;
   EnemyAggressionLevel enemyAggressionLevel;
-  BiomeId startingBiome;
 };

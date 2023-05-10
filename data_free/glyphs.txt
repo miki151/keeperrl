@@ -64,3 +64,6 @@
 "bat" b gray
 "fog" = white
 "gargoyle" G gray
+"mountain" ^ gray
+"tree" T green
+"snow" = white

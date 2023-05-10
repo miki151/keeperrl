@@ -7,13 +7,11 @@ namespace CampaignMenuElems {
   EMPTY_STRUCT(Settings);
   EMPTY_STRUCT(ChangeMode);
   EMPTY_STRUCT(Help);
-  EMPTY_STRUCT(Biome);
   EMPTY_STRUCT(Confirm);
   EMPTY_STRUCT(RollMap);
   EMPTY_STRUCT(Back);
   EMPTY_STRUCT(None);
-  using CampaignMenuIndexVariant = variant<RetiredDungeons, Settings, ChangeMode, Help, Biome, Confirm,
-      RollMap, Back, None>;
+  using CampaignMenuIndexVariant = variant<RetiredDungeons, Settings, ChangeMode, Help, Confirm, RollMap, Back, None>;
 }
 
 struct CampaignMenuIndex : public CampaignMenuElems::CampaignMenuIndexVariant {
@@ -23,7 +21,7 @@ struct CampaignMenuIndex : public CampaignMenuElems::CampaignMenuIndexVariant {
     *((CampaignMenuElems::CampaignMenuIndexVariant*)this) = std::move(elem);
   }
   void left();
-  void right(int numBiomes);
+  void right();
   void up();
   void down();
 };

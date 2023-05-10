@@ -136,9 +136,67 @@
 { viewId = "up_staircase" symbol = "➚" color = ColorId ALMOST_WHITE isSymbolFont = true highlightAbove = true }
 { viewId = "down_staircase_rock" symbol = "➘" color = ColorId YELLOW isSymbolFont = true highlightAbove = true }
 { viewId = "up_staircase_rock" symbol = "➚" color = ColorId YELLOW isSymbolFont = true highlightAbove = true }
-{ "map_mountain1" "^" ColorId DARK_GRAY }
-{ "map_mountain2" "^" ColorId GRAY }
-{ "map_mountain3" "^" ColorId LIGHT_GRAY }
+{ "map_grass1" "." ColorId LIGHT_GREEN }
+{ "map_grass2" "." ColorId GREEN }
+{ "map_grass3" "." ColorId GREEN }
+{ "map_grass4" "." ColorId LIGHT_GREEN }
+Def Connections(Name)
+  { Name + "_nw" " " ColorId LIGHT_GREEN }
+  { Name + "_w" " " ColorId LIGHT_GREEN }
+  { Name + "_sw" " " ColorId LIGHT_GREEN }
+  { Name + "_s" " " ColorId LIGHT_GREEN }
+  { Name + "_se" " " ColorId LIGHT_GREEN }
+  { Name + "_e" " " ColorId LIGHT_GREEN }
+  { Name + "_ne" " " ColorId LIGHT_GREEN }
+  { Name + "_n" " " ColorId LIGHT_GREEN }
+End
+Connections("map_grass")
+Connections("map_sand")
+Connections("map_snow")
+Connections("map_mountain")
+Connections("map_swamp")
+{ "map_snow1" "." ColorId WHITE }
+{ "map_snow2" "." ColorId LIGHT_BLUE }
+{ "map_snow3" "." ColorId WHITE }
+{ "map_snow4" "." ColorId LIGHT_BLUE }
+{ "map_water1" "~" ColorId LIGHT_BLUE }
+{ "map_water2" "~" ColorId BLUE }
+{ "map_water3" "~" ColorId LIGHT_BLUE }
+{ "map_water4" "~" ColorId BLUE }
+{ "map_sand1" "." ColorId YELLOW }
+{ "map_sand2" "." ColorId LIGHT_BROWN }
+{ "map_sand3" "." ColorId YELLOW }
+{ "map_sand4" "." ColorId LIGHT_BROWN }
+{ "map_swamp1" "~" ColorId GREEN }
+{ "map_swamp2" "~" ColorId LIGHT_GREEN }
+{ "map_swamp3" "~" ColorId GREEN }
+{ "map_swamp4" "~" ColorId LIGHT_GREEN }
+{ "map_pond1" "o" ColorId BLUE }
+{ "map_tree1" "T" ColorId GREEN }
+{ "map_special_tree1" "T" ColorId DARK_GREEN }
+{ "map_mountain1" "^" ColorId LIGHT_GRAY }
+{ "map_mountain_snow1" "^" ColorId WHITE }
+{ "map_mountain_bg1" "^" ColorId LIGHT_GRAY }
+{ "map_house1" "o" ColorId BLUE }
+{ "map_castle1" "o" ColorId BLUE }
+{ "map_castle_snow1" "o" ColorId LIGHT_BLUE }
+{ "map_thieves" "o" ColorId LIGHT_BROWN }
+{ "map_warriors" "o" ColorId DARK_BROWN }
+{ "map_house_snow1" "o" ColorId SKY_BLUE }
+{ "map_dungeon1" ">" ColorId GRAY }
+{ "map_dwarves" ">" ColorId LIGHT_BLUE }
+{ "map_ants" ">" ColorId WHITE }
+{ "map_ents" "@" ColorId LIGHT_BROWN }
+{ "map_hydra" "H" ColorId PURPLE }
+{ "map_dragon" "D" ColorId RED }
+{ "map_adoxie" ">" ColorId PURPLE }
+{ "map_white_dragon" ">" ColorId GRAY }
+{ "map_tower1" "|" ColorId GRAY }
+{ "map_grave1" "+" ColorId GRAY }
+{ "map_base1" "X" ColorId PINK }
+{ "map_highlight" "_" ColorId WHITE }
+{ "map_cloud" "O" ColorId WHITE }
+{ "waternesw" "~" ColorId LIGHT_BLUE }
 { "dungeon_entrance" "➘" ColorId GRAY }
 { "unknown_monster" "?" ColorId LIGHT_GREEN false "unknown" }
 { "destroy_button" "X" ColorId RED false "remove" }

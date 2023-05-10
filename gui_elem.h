@@ -218,7 +218,8 @@ class GuiFactory {
     TOP_LEFT,
     TOP_RIGHT,
     BOTTOM_LEFT,
-    BOTTOM_RIGHT
+    BOTTOM_RIGHT,
+    CENTER
   };
   SGuiElem translate(SGuiElem, Vec2 pos, optional<Vec2> size = none, TranslateCorner = TranslateCorner::TOP_LEFT);
   SGuiElem translate(function<Vec2()>, SGuiElem);
@@ -232,7 +233,7 @@ class GuiFactory {
   SGuiElem mouseHighlight(SGuiElem highlight, int myIndex, optional<int>* highlighted);
   SGuiElem mouseHighlight2(SGuiElem highlight, SGuiElem noHighlight = nullptr, bool capture = true);
   static int getHeldInitValue();
-  SGuiElem scrollArea(SGuiElem);
+  SGuiElem scrollArea(SGuiElem, optional<Vec2>& scrollPos);
   SGuiElem scrollable(SGuiElem content, ScrollPosition* scrollPos = nullptr, int* held = nullptr);
   SGuiElem getScrollButton();
   SGuiElem conditional2(SGuiElem elem, function<bool(GuiElem*)> cond);
