@@ -359,6 +359,7 @@ void Game::increaseTime(double diff) {
 }
 
 optional<ExitInfo> Game::update(double timeDiff, milliseconds endTime) {
+  //CHECK(timeDiff >= 0); this will probably fail - check
   PROFILE_BLOCK("Game::update");
   if (auto exitInfo = updateInput())
     return exitInfo;
@@ -376,7 +377,7 @@ optional<ExitInfo> Game::update(double timeDiff, milliseconds endTime) {
   if (!updateModel(currentModel, localTime[currentId] + timeDiff, endTime)) {
     localTime[currentId] += timeDiff;
     increaseTime(timeDiff);
-  }
+  } // Consider setting back the model's local time as now it's desynced from the localTime table.
   return exitInfo;
 }
 
