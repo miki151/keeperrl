@@ -764,12 +764,12 @@ bool Body::heal(Creature* c, double amount) {
   if (health < 1) {
     health = min(1., health + amount);
     auto factory = c->getGame()->getContentFactory();
+    updateViewObject(c->modViewObject(), factory);
     if (health >= 1) {
       c->you(MsgType::ARE, hasHealth(HealthType::FLESH, factory) ? "fully healed" : "fully materialized");
       health = 1;
       return true;
     }
-    updateViewObject(c->modViewObject(), factory);
   }
   return false;
 }

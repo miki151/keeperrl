@@ -100,7 +100,8 @@ optional<Position> Dancing::getTarget(Creature* creature) {
   auto& curPos = positions[danceIndex];
   lastSeen.set(creature->getUniqueId(), time);
   int numIterations = curPos.type == Positions::Type::FULL ? curPos.coord.size() : curPos.coord[0].size() * curPos.coord.size();
-  int iteration = (time - currentDanceInfo->startTime).getVisibleInt() % numIterations;
+  // due to the possibility of the model's local time being set back make it at least 0
+  int iteration = max(0, (time - currentDanceInfo->startTime).getVisibleInt() % numIterations);
   auto creatureIndex = assignCreatureIndex(creature, time);
   if (!creatureIndex)
     return none;
