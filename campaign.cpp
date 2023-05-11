@@ -10,7 +10,7 @@
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Campaign);
 
-SERIALIZE_DEF(Campaign, sites, playerPos, worldName, defeated, influencePos, influenceSize, playerRole, type, mapZoom)
+SERIALIZE_DEF(Campaign, sites, playerPos, worldName, defeated, influencePos, influenceSize, playerRole, type, mapZoom, minimapZoom)
 
 void VillainViewId::serialize(PrettyInputArchive& ar1, unsigned int) {
   if (ar1.peek() == "{" && ar1.peek(2) == "{")
@@ -180,7 +180,7 @@ void Campaign::refreshInfluencePos() {
   influencePos.insert(playerPos);
   for (double r = 1; r <= sites.getWidth() + sites.getHeight(); r += 0.1) {
     for (Vec2 v : sites.getBounds())
-      if ((sites[v].getVillain() || sites[v].getRetired()) && v.distD(playerPos) <= r)
+      if (v.distD(playerPos) <= r)
         influencePos.insert(v);
     int numEnemies = 0;
     for (Vec2 v : influencePos)

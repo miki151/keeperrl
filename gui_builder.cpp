@@ -4429,20 +4429,23 @@ SGuiElem GuiBuilder::drawBugreportMenu(bool saveFile, function<void(optional<Bug
       WL(miniWindow, WL(margins, lines.buildVerticalList(), windowMargin), [callback]{ callback(none); }));
 }
 
-static Color getHighlightColor(VillainType type) {
-  switch (type) {
-    case VillainType::MAIN:
-      return Color::RED;
-    case VillainType::LESSER:
-      return Color::YELLOW;
-    case VillainType::ALLY:
-      return Color::GREEN;
-    case VillainType::PLAYER:
-      return Color::WHITE;
-    case VillainType::NONE:
-      FATAL << "Tried to render villain of type NONE";
-      return Color::WHITE;
-  }
+static Color getHighlightColor(VillainType type, bool inInfluence) {
+  auto col = [&] {
+    switch (type) {
+      case VillainType::MAIN:
+        return Color::RED;
+      case VillainType::LESSER:
+        return Color::YELLOW;
+      case VillainType::ALLY:
+        return Color::GREEN;
+      case VillainType::PLAYER:
+        return Color::WHITE;
+      case VillainType::NONE:
+        FATAL << "Tried to render villain of type NONE";
+        return Color::WHITE;
+    }
+  }();
+  return inInfluence ? col : Color(col.r / 2, col.g / 2, col.b / 2);
 }
 
 namespace {
@@ -4482,6 +4485,12 @@ struct LabelPlacer {
 };
 }
 
+static Vec2 maxWorldMapSize(800, 550);
+
+void GuiBuilder::scrollWorldMap(int iconSize, Vec2 pos) {
+  scrollAreaScrollPos = {pos.x * iconSize - maxWorldMapSize.x / 2, pos.y * iconSize - maxWorldMapSize.y / 2};
+}
+
 SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialPos, function<bool(Vec2)> selectable,
     function<void(Vec2)> selectCallback){
   int iconScale = c.getMapZoom();
@@ -4492,7 +4501,8 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
   auto rows = WL(getListBuilder, iconSize);
   auto minimapRows = WL(getListBuilder, minimapScale);
   LabelPlacer labelPlacer(sites.getBounds(), iconSize);
-  Vec2 maxSize(min(sites.getBounds().width() * iconSize, 800), min(sites.getBounds().height() * iconSize, 600));
+  if (initialPos)
+    scrollWorldMap(iconSize, *initialPos);
   for (int y : sites.getBounds().getYRange()) {
     auto columns = WL(getListBuilder, iconSize);
     auto minimapColumns = WL(getListBuilder, minimapScale);
@@ -4502,12 +4512,14 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
         v.push_back(WL(asciiBackground, sites[x][y].viewId[i]));
         v.push_back(WL(viewObject, sites[x][y].viewId[i], iconScale));
       }
+      if (!c.isInInfluence(Vec2(x, y)))
+        v.push_back(WL(rectangle, Color::BLACK.transparency(50)));
       columns.addElem(WL(stack, std::move(v)));
       auto color = renderer.getTileSet().getColor(sites[x][y].viewId.back()).transparency(150);
       if (auto type = sites[x][y].getVillainType())
-        color = getHighlightColor(*type);
+        color = getHighlightColor(*type, true);
       minimapColumns.addElem(WL(stack,
-          WL(button, [=] { scrollAreaScrollPos = Vec2(x, y) * iconSize - maxSize / 2; }, true),
+          WL(button, [=] { scrollWorldMap(iconSize, (Vec2(x, y))); }, true),
           WL(rectangle, color)));
     }
     minimapRows.addElem(minimapColumns.buildHorizontalList());
@@ -4535,11 +4547,9 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
       auto translateHighlight = [&](SGuiElem elem) {
         return WL(translate, [iconSize] { return Vec2(-iconSize, -iconSize); }, std::move(elem));
       };
-      if (auto id = sites[x][y].getDwellerViewId()) {
-        if (c.isInInfluence(pos))
-          elem.push_back(translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale,
-              getHighlightColor(*sites[pos].getVillainType()))));
-      }
+      if (auto id = sites[x][y].getDwellerViewId())
+        elem.push_back(translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale,
+            getHighlightColor(*sites[pos].getVillainType(), c.isInInfluence(Vec2(x, y))))));
       if (campaignGridPointer)
         elem.push_back(WL(conditional, translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale)),
               [this, pos] { return campaignGridPointer == pos;}));
@@ -4557,8 +4567,9 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
           elem.push_back(WL(viewObject, ViewId("campaign_defeated"), iconScale));
       if (auto desc = sites[x][y].getDwellerName()) {
         auto width = renderer.getTextLength(*desc, 12, FontId::MAP_FONT);
+        auto color = c.isInInfluence(pos) ? Color::WHITE : Color::GRAY;
         elem.push_back(WL(translate,
-            WL(labelUnicode, *desc, Color::WHITE, 12, FontId::MAP_FONT),
+            WL(labelUnicode, *desc, color, 12, FontId::MAP_FONT),
         labelPlacer.getLabelPosition(Vec2(x, y), width), Vec2(width + 6, 18), GuiFactory::TranslateCorner::CENTER));
       }
       columns.addElem(WL(stack, std::move(elem)));
@@ -4567,32 +4578,36 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
   }
   auto mapContent = WL(stack, rows.buildVerticalList(), upperRows.buildVerticalList());
   int minimapMargin = 2;
-  if (*mapContent->getPreferredWidth() > maxSize.x || *mapContent->getPreferredHeight() > maxSize.y)
+  if (*mapContent->getPreferredWidth() > maxWorldMapSize.x || *mapContent->getPreferredHeight() > maxWorldMapSize.y)
     mapContent = WL(stack, WL(scrollArea, std::move(mapContent), scrollAreaScrollPos),
         WL(alignment, GuiFactory::Alignment::TOP_RIGHT, WL(stack, WL(rectangle, Color::BLACK),
             WL(margins, WL(renderInBounds, WL(stack,
                 minimapRows.buildVerticalList(),
                 WL(translate,
                     [this, iconSize, minimapScale] {
-                      return scrollAreaScrollPos.value_or(Vec2(0, 0)) * minimapScale / iconSize;
+                      return Vec2(scrollAreaScrollPos.first, scrollAreaScrollPos.second) * minimapScale / iconSize;
                     },
                     WL(alignment, GuiFactory::Alignment::TOP_LEFT, WL(rectangle, Color::TRANSPARENT, Color::WHITE),
-                        maxSize * minimapScale / iconSize)))), minimapMargin))));
+                        maxWorldMapSize * minimapScale / iconSize)))), minimapMargin))));
   int margin = 8;
   if (campaignGridPointer)
     mapContent = WL(stack, makeVec(
         std::move(mapContent),
-        WL(keyHandler, [&c, this] { moveCampaignGridPointer(c, Dir::N); }, Keybinding("MENU_UP"), true),
-        WL(keyHandler, [&c, this] { moveCampaignGridPointer(c, Dir::S); }, Keybinding("MENU_DOWN"), true),
-        WL(keyHandler, [&c, this] { moveCampaignGridPointer(c, Dir::W); }, Keybinding("MENU_LEFT"), true),
-        WL(keyHandler, [&c, this] { moveCampaignGridPointer(c, Dir::E); }, Keybinding("MENU_RIGHT"), true)
+        WL(keyHandler, [&c, iconSize, this] {
+            moveCampaignGridPointer(c, iconSize, Dir::N); }, Keybinding("MENU_UP"), true),
+        WL(keyHandler, [&c, iconSize, this] {
+            moveCampaignGridPointer(c, iconSize, Dir::S); }, Keybinding("MENU_DOWN"), true),
+        WL(keyHandler, [&c, iconSize, this] {
+            moveCampaignGridPointer(c, iconSize, Dir::W); }, Keybinding("MENU_LEFT"), true),
+        WL(keyHandler, [&c, iconSize, this] {
+            moveCampaignGridPointer(c, iconSize, Dir::E); }, Keybinding("MENU_RIGHT"), true)
     ));
-  return WL(preferredSize, maxSize + Vec2(margin, margin) * 2, WL(stack,
+  return WL(preferredSize, maxWorldMapSize + Vec2(margin, margin) * 2, WL(stack,
     WL(miniBorder2),
     WL(margins, std::move(mapContent), margin)));
 }
 
-void GuiBuilder::moveCampaignGridPointer(const Campaign& c, Dir dir) {
+void GuiBuilder::moveCampaignGridPointer(const Campaign& c, int iconSize, Dir dir) {
   Vec2& cur = *campaignGridPointer;
   auto bounds = c.getSites().getBounds();
   switch (dir) {
@@ -4615,6 +4630,9 @@ void GuiBuilder::moveCampaignGridPointer(const Campaign& c, Dir dir) {
     default:
       break;
   }
+  auto visibleRect = Rectangle(maxWorldMapSize).translate(Vec2(scrollAreaScrollPos.first, scrollAreaScrollPos.second));
+  if (!(cur * iconSize).inRectangle(visibleRect.minusMargin(3)))
+    scrollWorldMap(iconSize, cur);
 }
 
 SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign) {
@@ -4625,7 +4643,7 @@ SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign) {
   lines.addElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, none, nullptr, nullptr)));
   lines.addSpace(legendLineHeight / 2);
   lines.addElem(WL(centerHoriz, WL(buttonLabel, "Close", [&] { sem.v(); })));
-  return WL(preferredSize, 1000, 630,
+  return WL(preferredSize, 1000, 750,
       WL(window, WL(margins, lines.buildVerticalList(), 15), [&sem] { sem.v(); }));
 }
 
@@ -4653,7 +4671,7 @@ SGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
           WL(keyHandler, [&] { queue.push(none); }, Keybinding("EXIT_MENU"), true)
       )))
       .buildHorizontalList()));
-  return WL(preferredSize, 1000, 600,
+  return WL(preferredSize, 1000, 750,
       WL(window, WL(margins, lines.buildVerticalList(), 15), [&queue] { queue.push(none); }));
 }
 

@@ -148,7 +148,7 @@ class GuiBuilder {
   SGuiElem getImmigrationHelpText();
   SGuiElem drawCampaignGrid(const Campaign&, optional<Vec2> initialPos, function<bool(Vec2)> selectable,
       function<void(Vec2)> selectCallback);
-  void moveCampaignGridPointer(const Campaign&, Dir);
+  void moveCampaignGridPointer(const Campaign&, int iconSize, Dir);
   Renderer& renderer;
   GuiFactory& gui;
   Clock* clock;
@@ -222,7 +222,8 @@ class GuiBuilder {
   ScrollPosition workshopsScroll2;
   ScrollPosition libraryScroll;
   ScrollPosition minionPageScroll;
-  optional<Vec2> scrollAreaScrollPos;
+  pair<double, double> scrollAreaScrollPos;
+  void scrollWorldMap(int iconSize, Vec2);
   optional<int> itemIndex;
   optional<Vec2> campaignGridPointer;
   bool playerOverlayFocused = false;

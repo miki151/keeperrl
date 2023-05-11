@@ -2582,13 +2582,20 @@ SGuiElem GuiFactory::tooltip(const vector<string>& v, milliseconds delayMilli) {
 namespace {
 class ScrollArea : public GuiElem {
   public:
-  ScrollArea(SGuiElem c, optional<Vec2>& scrollPos) : content(c), scrollPos(scrollPos) {
+  ScrollArea(SGuiElem c, pair<double, double>& scrollPos) : content(c), scrollPos(scrollPos) {
   }
 
   virtual void onRefreshBounds() override {
-    if (!scrollPos)
-      scrollPos = (Vec2(*content->getPreferredWidth(), *content->getPreferredHeight()) - getBounds().getSize()) / 2;
-    content->setBounds(getBounds().translate(-*scrollPos));
+    content->setBounds(getBounds().translate(Vec2(-scrollPos.first, -scrollPos.second)));
+  }
+
+  virtual bool onScrollEvent(Vec2 pos, double x, double y, milliseconds timeDiff) override {
+    if (x != 0.0 || y != 0.0) {
+      double diff = double(timeDiff.count());
+      scrollPos.first += diff * x;
+      scrollPos.second -= diff * y;
+    }
+    return true;
   }
 
   virtual void render(Renderer& r) override {
@@ -2602,7 +2609,7 @@ class ScrollArea : public GuiElem {
     if (b == MouseButtonId::RELEASED)
       clickPos = none;
     else if (v.inRectangle(getBounds()) && b == MouseButtonId::RIGHT) {
-      clickPos = *scrollPos + v;
+      clickPos = Vec2(scrollPos.first, scrollPos.second) + v;
       return true;
     } else {
       if (v.y >= getBounds().top() && v.y < getBounds().bottom())
@@ -2618,11 +2625,13 @@ class ScrollArea : public GuiElem {
 
   virtual bool onMouseMove(Vec2 v, Vec2 rel) override {
     if (clickPos) {
-      scrollPos = *clickPos - v;
+      scrollPos = {clickPos->x - v.x, clickPos->y - v.y};
       int areaWidth = getBounds().width();
       int areaHeight = getBounds().height();
-      scrollPos->x = max(-areaWidth / 3, min(*content->getPreferredWidth() - areaWidth * 2 / 3, scrollPos->x));
-      scrollPos->y = max(-areaHeight / 3, min(*content->getPreferredHeight() - areaHeight * 2 / 3, scrollPos->y));
+      scrollPos.first = max(-areaWidth / 3, min<int>(
+          *content->getPreferredWidth() - areaWidth * 2 / 3, scrollPos.first));
+      scrollPos.second = max(-areaHeight / 3, min<int>(
+          *content->getPreferredHeight() - areaHeight * 2 / 3, scrollPos.second));
       return true;
     } else {
       if (v.inRectangle(getBounds()))
@@ -2643,12 +2652,12 @@ class ScrollArea : public GuiElem {
 
   private:
   SGuiElem content;
-  optional<Vec2>& scrollPos;
+  pair<double, double>& scrollPos;
   optional<Vec2> clickPos;
 };
 }
 
-SGuiElem GuiFactory::scrollArea(SGuiElem elem, optional<Vec2>& scrollPos) {
+SGuiElem GuiFactory::scrollArea(SGuiElem elem, pair<double, double>& scrollPos) {
   return make_shared<ScrollArea>(std::move(elem), scrollPos);
 }
 
@@ -2681,7 +2690,7 @@ class ScrollBar : public GuiLayout {
   }
 
   double calcPos(int mouseHeight) {
-    return max(0.0, min(1.0, 
+    return max(0.0, min(1.0,
           double(mouseHeight - getBounds().top() - vMargin - buttonSize.y / 2)
               / (getBounds().height() - 2 * vMargin - buttonSize.y)));
   }
