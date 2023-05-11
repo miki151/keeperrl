@@ -1174,12 +1174,18 @@ int Creature::getRawAttr(AttrType type) const {
   PROFILE
   int ret = attributes->getRawAttr(type);
   if (auto expType = getExperienceType(type))
-    ret += (int) min(combatExperience, attributes->getExpLevel(expType->first) * expType->second);
+    if (attributes->getMaxExpLevel()[expType->first] > 0 ||
+        (expType->first == ExperienceType::MELEE && !attributes->canIncreaseAnyExp()))
+      ret += int(combatExperience) * expType->second;
   return ret;
 }
 
 double Creature::getCombatExperience() const {
   return combatExperience;
+}
+
+void Creature::setCombatExperience(double value) {
+  combatExperience = value;
 }
 
 void Creature::updateCombatExperience(Creature* victim) {

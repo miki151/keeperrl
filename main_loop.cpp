@@ -1053,26 +1053,9 @@ static CreatureList readAlly(ifstream& input) {
   string ally;
   input >> ally;
   CreatureList ret(100, CreatureId(ally.data()));
-  string levelIncreaseText;
-  input >> levelIncreaseText;
-  EnumMap<ExperienceType, int> levelIncrease;
+  int levelIncrease = 0;
+  input >> levelIncrease;
   vector<ItemType> equipment;
-  for (auto increase : split(levelIncreaseText, {','})) {
-    int amount = fromString<int>(increase.substr(1));
-    switch (increase[0]) {
-      case 'M':
-        levelIncrease[ExperienceType::MELEE] = amount;
-        break;
-      case 'S':
-        levelIncrease[ExperienceType::SPELL] = amount;
-        break;
-      case 'A':
-        levelIncrease[ExperienceType::ARCHERY] = amount;
-        break;
-      default:
-        FATAL << "Can't parse level increase " << increase;
-    }
-  }
   string equipmentText;
   input >> equipmentText;
   for (auto id : split(equipmentText, {','})) {
@@ -1083,7 +1066,7 @@ static CreatureList readAlly(ifstream& input) {
       equipment.push_back(type);
   }
   ret.addInventory(equipment);
-  ret.increaseBaseLevel(levelIncrease);
+  ret.setCombatExperience(levelIncrease);
   return ret;
 }
 
@@ -1309,6 +1292,11 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment 
               failedToLoad = retired->fileInfo.filename;
               setup.campaign.removeDweller(v);
             }
+          }
+          if (models[v]) {
+            int difficulty = setup.campaign.getBaseLevelIncrease(v);
+            for (auto c : models[v]->getAllCreatures())
+              c->setCombatExperience(difficulty);
           }
         }
       });

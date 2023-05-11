@@ -460,6 +460,10 @@ class EnumMap {
     return elems == other.elems;
   }
 
+  bool operator != (const EnumMap<T, U>& other) const {
+    return elems != other.elems;
+  }
+
   void clear(U value) {
     for (int i = 0; i < EnumInfo<T>::size; ++i)
       elems[i] = value;

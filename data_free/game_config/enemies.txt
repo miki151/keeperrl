@@ -582,7 +582,7 @@ End
     tribe = HUMAN
     inhabitants = {
       fighters = {
-        baseLevelIncrease = { MELEE -12 ARCHERY -12 }
+        combatExperience = -12
         count = {2 5}
         all = {
           1 "KNIGHT"
@@ -1302,7 +1302,7 @@ End
     ransom = 0.5 80
   }
   createOnBones = 0.1 { "KOBOLD_CAVE" }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "GOBLIN_WARRIOR" }
       traits = { FIGHTER }
@@ -1316,10 +1316,10 @@ NAME inherit ORIGINAL
   settlement = append {
     inhabitants = append {
       fighters = append {
-        baseLevelIncrease = { INCREASE }
+        combatExperience = INCREASE
       }
       leader = append {
-        baseLevelIncrease = { INCREASE }
+        combatExperience = INCREASE
       }
     }
   }
@@ -1359,16 +1359,16 @@ End
     inhabitants = append {
       leader = none
       fighters = append {
-        baseLevelIncrease = { MELEE -5 }
+        combatExperience = -5
       }
     }
   }
 }
 
-STRONGER("GOBLINS_Z_LEVEL2", "GOBLINS_Z_LEVEL", MELEE 7)
-STRONGER("GOBLINS_Z_LEVEL3", "GOBLINS_Z_LEVEL", MELEE 15)
-STRONGER("GOBLINS_Z_LEVEL4", "GOBLINS_Z_LEVEL", MELEE 22)
-STRONGER("GOBLINS_Z_LEVEL5", "GOBLINS_Z_LEVEL", MELEE 30)
+STRONGER("GOBLINS_Z_LEVEL2", "GOBLINS_Z_LEVEL", 7)
+STRONGER("GOBLINS_Z_LEVEL3", "GOBLINS_Z_LEVEL", 15)
+STRONGER("GOBLINS_Z_LEVEL4", "GOBLINS_Z_LEVEL", 22)
+STRONGER("GOBLINS_Z_LEVEL5", "GOBLINS_Z_LEVEL", 30)
 
 "GOBLINS_Z_LEVEL6" inherit "GOBLIN_VILLAGE"
 {
@@ -1377,7 +1377,7 @@ STRONGER("GOBLINS_Z_LEVEL5", "GOBLINS_Z_LEVEL", MELEE 30)
     inhabitants = append {
       leader = none
       fighters = append {
-        baseLevelIncrease = { MELEE 10 SPELL 10 ARCHERY 10 }
+        combatExperience = 10
       }
     }
   }
@@ -1391,12 +1391,12 @@ STRONGER("GOBLINS_Z_LEVEL5", "GOBLINS_Z_LEVEL", MELEE 30)
     inhabitants = {
       leader = {
         id = { "DARK_ELF_WARRIOR" }
-        baseLevelIncrease = { MELEE 7 }
+        combatExperience = 7
       }
       fighters = {
         count = {2 5}
         all = { 1 "DARK_ELF_WARRIOR" }
-        baseLevelIncrease = { MELEE 7 }
+        combatExperience = 7
       }
       civilians = {
         count = {2 5}
@@ -1426,12 +1426,12 @@ STRONGER("GOBLINS_Z_LEVEL5", "GOBLINS_Z_LEVEL", MELEE 30)
     inhabitants = {
       leader = {
         id = { "DARK_ELF_WARRIOR" }
-        baseLevelIncrease = { MELEE 7 }
+        combatExperience = 7
       }
       fighters = {
         count = {2 5}
         all = { 1 "DARK_ELF_WARRIOR" }
-        baseLevelIncrease = { MELEE 7 }
+        combatExperience = 7
       }
       civilians = {
         count = {2 5}
@@ -1448,11 +1448,11 @@ STRONGER("GOBLINS_Z_LEVEL5", "GOBLINS_Z_LEVEL", MELEE 30)
   }
 }
 
-STRONGER("DARK_ELVES_Z_LEVEL1", "DARK_ELVES_Z_LEVEL", MELEE 0)
-STRONGER("DARK_ELVES_Z_LEVEL2", "DARK_ELVES_Z_LEVEL", MELEE 7)
-STRONGER("DARK_ELVES_Z_LEVEL3", "DARK_ELVES_Z_LEVEL", MELEE 15)
-STRONGER("DARK_ELVES_Z_LEVEL4", "DARK_ELVES_Z_LEVEL", MELEE 22)
-STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELVES_Z_LEVEL", MELEE 30)
+STRONGER("DARK_ELVES_Z_LEVEL1", "DARK_ELVES_Z_LEVEL", 0)
+STRONGER("DARK_ELVES_Z_LEVEL2", "DARK_ELVES_Z_LEVEL", 7)
+STRONGER("DARK_ELVES_Z_LEVEL3", "DARK_ELVES_Z_LEVEL", 15)
+STRONGER("DARK_ELVES_Z_LEVEL4", "DARK_ELVES_Z_LEVEL", 22)
+STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELVES_Z_LEVEL", 30)
 
 "DWARF_CAVE"
 {
@@ -1511,11 +1511,11 @@ STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELVES_Z_LEVEL", MELEE 30)
   }
 }
 
-STRONGER("DWARVES_Z_LEVEL1", "DWARVES_Z_LEVEL", MELEE 0)
-STRONGER("DWARVES_Z_LEVEL2", "DWARVES_Z_LEVEL", MELEE 7)
-STRONGER("DWARVES_Z_LEVEL3", "DWARVES_Z_LEVEL", MELEE 15)
-STRONGER("DWARVES_Z_LEVEL4", "DWARVES_Z_LEVEL", MELEE 22)
-STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
+STRONGER("DWARVES_Z_LEVEL1", "DWARVES_Z_LEVEL", 0)
+STRONGER("DWARVES_Z_LEVEL2", "DWARVES_Z_LEVEL", 7)
+STRONGER("DWARVES_Z_LEVEL3", "DWARVES_Z_LEVEL", 15)
+STRONGER("DWARVES_Z_LEVEL4", "DWARVES_Z_LEVEL", 22)
+STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
 
 "COTTAGE_GOBLINS" inherit "GOBLIN_CAVE"
 {
@@ -1641,17 +1641,12 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     inhabitants = {
       leader = {
         id = { "DARK_ELF_LORD" }
-        baseLevelIncrease = {
-          MELEE 30
-          SPELL 30
-        }
+        combatExperience = 30
       }
       fighters = {
         count = {6 9}
         all = { 1 "DARK_ELF_WARRIOR" }
-        baseLevelIncrease = {
-          MELEE 30
-        }
+        combatExperience = 30
       }
       civilians = {
         count = {6 9},
@@ -2648,10 +2643,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     inhabitants = {
       leader = {
         id = { "KEEPER_MAGE" }
-        baseLevelIncrease = {
-          MELEE 12
-          SPELL 12
-        }
+        combatExperience = 12
       }
       fighters = {
         count = {12 18}

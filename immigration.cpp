@@ -483,7 +483,7 @@ void Immigration::accept(int id, bool withMessage) {
   for (int i : All(creatures)) {
     Creature* c = creatures[i];
     if (i == 0 && groupSize > 1) // group leader
-      c->getAttributes().increaseBaseExpLevel(ExperienceType::MELEE, 2);
+      c->setCombatExperience(2);
     occupyRequirements(c, candidate.immigrantIndex);
     generated[candidate.immigrantIndex].insert(c);
   }

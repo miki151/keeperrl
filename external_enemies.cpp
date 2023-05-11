@@ -46,7 +46,7 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, CreatureFactory* factory, ve
             LocalTime(attackTime),
             enemy.creatures.getViewId(factory)
         });
-        waves.back().enemy.creatures.increaseBaseLevel({{ExperienceType::MELEE, max(0, attackTime / 1000 - 10)}});
+        waves.back().enemy.creatures.setCombatExperience(max(0, attackTime / 1000 - 10));
         break;
       }
     }

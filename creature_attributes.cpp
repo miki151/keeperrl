@@ -147,6 +147,10 @@ const EnumMap<ExperienceType, double>& CreatureAttributes::getExpLevel() const {
   return expLevel;
 }
 
+bool CreatureAttributes::canIncreaseAnyExp() const {
+  return maxLevelIncrease != EnumMap<ExperienceType, int>();
+}
+
 const EnumMap<ExperienceType, int>& CreatureAttributes::getMaxExpLevel() const {
   return maxLevelIncrease;
 }
@@ -163,13 +167,6 @@ void CreatureAttributes::increaseExpLevel(ExperienceType type, double increase) 
 
 bool CreatureAttributes::isTrainingMaxedOut(ExperienceType type) const {
   return getExpLevel(type) >= maxLevelIncrease[type];
-}
-
-void CreatureAttributes::increaseBaseExpLevel(ExperienceType type, int increase) {
-  for (auto attrType : getAttrIncreases()[type]) {
-    attr[attrType.first] += increase * attrType.second;
-    attr[attrType.first] = max(0, attr[attrType.first]);
-  }
 }
 
 vector<SpellSchoolId> CreatureAttributes::getSpellSchools() const {

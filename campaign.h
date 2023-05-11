@@ -75,6 +75,7 @@ class Campaign {
   int getNumNonEmpty() const;
   int getMapZoom() const;
   int getMinimapZoom() const;
+  int getBaseLevelIncrease(Vec2) const;
   CampaignType getType() const;
   PlayerRole getPlayerRole() const;
 
@@ -95,5 +96,5 @@ class Campaign {
   PlayerRole SERIAL(playerRole);
   CampaignType SERIAL(type);
   int SERIAL(mapZoom);
-  int SERIAL(minimapZoom);
+  int SERIAL(minimapZoom) = 2;
 };

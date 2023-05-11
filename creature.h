@@ -315,6 +315,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void onKilledOrCaptured(Creature* victim);
   void updateCombatExperience(Creature* victim);
   double getCombatExperience() const;
+  void setCombatExperience(double);
   int getRawAttr(AttrType) const;
 
   void addSound(const Sound&) const;

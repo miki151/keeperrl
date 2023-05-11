@@ -175,6 +175,15 @@ bool Campaign::isInInfluence(Vec2 pos) const {
   return influencePos.count(pos);
 }
 
+int Campaign::getBaseLevelIncrease(Vec2 pos) const {
+  double dist = pos.distD(playerPos);
+  int res = 0;
+  for (Vec2 v : sites.getBounds())
+    if (!!sites[v].dweller && v != playerPos && v.distD(playerPos) < dist)
+      ++res;
+  return res * 3;
+}
+
 void Campaign::refreshInfluencePos() {
   influencePos.clear();
   influencePos.insert(playerPos);

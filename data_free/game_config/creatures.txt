@@ -723,7 +723,7 @@
     viewId = { "cyclops" }
     attr = {
       DAMAGE 32
-      DEFENSE 31 
+      DEFENSE 31
     }
     body = {
       type = Humanoid LARGE
@@ -968,7 +968,7 @@
     viewId = { "shelob" }
     attr = {
       DAMAGE 40
-      DEFENSE 38 
+      DEFENSE 38
     }
     body = {
       type = NonHumanoid LARGE
@@ -2068,7 +2068,7 @@
     viewId = { "clay_golem" }
     attr = {
       DAMAGE 17
-      DEFENSE 19 
+      DEFENSE 19
     }
     body = {
       type = HumanoidLike LARGE
@@ -2087,7 +2087,7 @@
     viewId = { "stone_golem" }
     attr = {
       DAMAGE 19
-      DEFENSE 23 
+      DEFENSE 23
     }
     body = {
       type = HumanoidLike LARGE
@@ -2952,7 +2952,7 @@
     aiType = RANGED
     attr = append {
       FORGE 50
-      FURNACE 40    
+      FURNACE 40
     }
     inventory = {}
   }

@@ -4533,7 +4533,10 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
         labelPlacer.setOccupied(pos);
       }
       if (auto desc = sites[x][y].getDwellerDescription())
-        elem.push_back(WL(margins, WL(tooltip, {*desc}, milliseconds{0}), -4));
+        elem.push_back(WL(margins, WL(tooltip, {
+            *desc,
+            "+" + toString(c.getBaseLevelIncrease(Vec2(x, y))) + " difficulty"
+        }, milliseconds{0}), -4));
       columns2.addElem(WL(stack, std::move(elem)));
     }
     rows.addElem(WL(stack, columns.buildHorizontalList(), columns2.buildHorizontalList()));
