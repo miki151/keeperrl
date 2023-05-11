@@ -48,7 +48,6 @@ Color Color::LIGHT_BLUE(100, 100, 255);
 Color Color::SKY_BLUE(0, 191, 255);
 Color Color::PURPLE(160, 32, 240);
 Color Color::VIOLET(120, 0, 255);
-Color Color::TRANSLUCENT_BLACK(0, 0, 0);
 Color Color::TRANSPARENT(0, 0, 0, 0);
 
 Color::Color(unsigned char r, unsigned char g, unsigned char b, unsigned char a) : r(r), g(g), b(b), a(a) {}
@@ -124,7 +123,6 @@ RICH_ENUM(
     SKY_BLUE,
     PURPLE,
     VIOLET,
-    TRANSLUCENT_BLACK,
     TRANSPARENT
 );
 
@@ -179,7 +177,6 @@ void Color::serialize(PrettyInputArchive& ar, unsigned int) {
           MAP_COLOR(SKY_BLUE);
           MAP_COLOR(PURPLE);
           MAP_COLOR(VIOLET);
-          MAP_COLOR(TRANSLUCENT_BLACK);
           MAP_COLOR(TRANSPARENT);
         }
       }
