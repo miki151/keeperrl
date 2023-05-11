@@ -1294,7 +1294,7 @@ void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, milliseconds c
 
 bool MapGui::onScrollEvent(Vec2 pos, double x, double y, milliseconds timeDiff) {
   if (x != 0.0 || y != 0.0) {
-    double diff = double(timeDiff.count()) / 40;
+    double diff = double(timeDiff.count()) / layout->getSquareSize().x;
     center.x += diff * x;
     center.y -= diff * y;
     softCenter = none;
