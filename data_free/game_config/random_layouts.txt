@@ -667,13 +667,14 @@ Def ZLevelMostlyFull(WaterType) {
 }
 End
 
-Def ZLevelCaverns(WaterType) {
+Def ZLevelCaverns(FloorType, Amount) {
   Set("hard_rock", "resources")
-  Inside(5, CellularAutomaton(Reset("floor"), 0.45))
+  Inside(5, CellularAutomaton(Reset(FloorType), Amount))
 }
 End
 
-#"z_level_caverns" ZLevelCaverns()
+"z_level_caverns" ZLevelCaverns("floor", 0.45)
+"z_level_flooded_caverns" ZLevelCaverns("water", 0.55)
 
 Def MiniWorkshop() {
   Reset("floor")
@@ -685,32 +686,42 @@ Def MiniWorkshop() {
 }
 End
 
+Def MiniThrone()
+{
+  Reset("floor")
+  Position(TOP_CENTER, {1 1}, Set("broken_throne"))
+  Border(LEFT, 2, Border(RIGHT, 1, Filter(YMod(2, 0), Reset("hard_rock"))))
+  Border(RIGHT, 2, Border(LEFT, 1, Filter(YMod(2, 0), Reset("hard_rock"))))
+  Border(-1, Set("no_dig"))
+  Position(BOTTOM_CENTER, {1 1}, Border(BOTTOM, -1, Remove("no_dig")))
+}
+End
+
 Def ZLevelMiniFeatures(WaterType) {
   ZLevelMostlyFull(WaterType)
-  Inside(5, {
-    Place(2,
-      ({6 6}, MiniWorkshop(), 1, On("hard_rock")),
-      ({12 12}, MiniGhostSpawner(), 1, On("hard_rock")),
-      ({7 7}, MiniBrokenPrison(), 1, On("hard_rock")),
-      ({7 7}, MiniPrison(), 1, On("hard_rock")),
-      ({7 7}, ColumnRoom(), 1, On("hard_rock")),
-      ({5 5}, MiniGargoyleRoom(), 1, On("hard_rock")),
-      ({15 15}, MiniDungeon(), 1, On("hard_rock")),
-      ({15 15}, MiniAntNest(), 1, On("hard_rock")),
-      ({4 4}, { Border(-1, Reset(WaterType)) Reset("hard_rock") Inside(1, Set("ada_chest"))}, 1, On(WaterType)),
-      ({10 10}, {
-        CellularAutomaton(Reset(WaterType), 0.85)
-        Inside(3, FourCorners(Reset("hard_rock")))
-      }, 1, On("hard_rock"))
-    )
-  })
+  Inside(5, Place(2,
+    ({6 6}, MiniWorkshop(), 1, On("hard_rock")),
+    ({7 10}, MiniThrone(), 1, On("hard_rock"))
+    ({12 12}, MiniGhostSpawner(), 1, On("hard_rock")),
+    ({7 7}, MiniBrokenPrison(), 1, On("hard_rock")),
+    ({7 7}, MiniPrison(), 1, On("hard_rock")),
+    ({7 7}, ColumnRoom(), 1, On("hard_rock")),
+    ({5 5}, MiniGargoyleRoom(), 1, On("hard_rock")),
+    ({15 15}, MiniDungeon(), 1, On("hard_rock")),
+    ({15 15}, MiniAntNest(), 1, On("hard_rock")),
+    ({4 4}, { Border(-1, Reset(WaterType)) Reset("hard_rock") Inside(1, Set("ada_chest"))}, 1, On(WaterType)),
+    ({10 10}, {
+      CellularAutomaton(Reset(WaterType), 0.85)
+      Inside(3, FourCorners(Reset("hard_rock")))
+    }, 1, On("hard_rock"))
+  ))
 }
 End
 
 "z_level_minifeatures" ZLevelMiniFeatures("water")
 
 Def ZLevelBase(WaterType)
-  Choose(ZLevelMiniFeatures(WaterType), ZLevelCaverns(WaterType))
+  Choose(ZLevelMiniFeatures(WaterType), ZLevelCaverns("floor", 0.45), ZLevelCaverns("water", 0.55))
 End
 
 Def MiniGargoyleRoom() {

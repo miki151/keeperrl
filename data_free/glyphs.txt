@@ -21,6 +21,7 @@
 "dining_table" = brown
 "stockpile" $ yellow
 "throne" Ω yellow
+"broken_throne" Ω yellow
 "mushroom" * magenta
 "lava" ~ red
 "bridge" _ brown

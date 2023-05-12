@@ -262,6 +262,11 @@ BOOKCASES("_HUMAN", "_human")
 {
   viewId = { "throne_human" }
 }
+"BROKEN_THRONE" inherit "THRONE"
+{
+  name = "broken throne"
+  usageType = UsageEffect "sit on" { CreatureMessage { "sit on the throne" "sits on the throne" } SummonEnemy "GOBLIN_WARRIOR" {3 5} none }
+}
 "IMPALED_HEAD"
 {
   name = "impaled head"

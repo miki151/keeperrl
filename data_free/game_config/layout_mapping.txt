@@ -46,6 +46,7 @@
   "zombie_chest" Place "ZOMBIE_CHEST"
   "torch" Place "GROUND_TORCH"
   "throne" Place "THRONE"
+  "broken_throne" Place "BROKEN_THRONE"
   "forge" Place "FORGE"
   "crops" Place "CROPS"
   "scarecrow" Place "SCARECROW"
