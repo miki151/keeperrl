@@ -142,6 +142,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   private:
 
+  bool canAllyJoin(Creature* ally) const;
   Level* getCurrentLevel() const;
   void considerNightfallMessage();
   void considerWarning();

@@ -675,14 +675,26 @@ End
 
 #"z_level_caverns" ZLevelCaverns()
 
+Def MiniWorkshop() {
+  Reset("floor")
+  Position(MIDDLE, {2 2}, Set("workshop"))
+  Place(
+    ({1 1}, Set("gnome_corpse"), {2 5}, Not On("workshop")),
+    ({1 1}, Set("automaton_parts"), {2 5}, Not On("workshop"))
+  )
+}
+End
+
 Def ZLevelMiniFeatures(WaterType) {
   ZLevelMostlyFull(WaterType)
   Inside(5, {
     Place(2,
+      ({6 6}, MiniWorkshop(), 1, On("hard_rock")),
       ({12 12}, MiniGhostSpawner(), 1, On("hard_rock")),
+      ({7 7}, MiniBrokenPrison(), 1, On("hard_rock")),
+      ({7 7}, MiniPrison(), 1, On("hard_rock")),
       ({7 7}, ColumnRoom(), 1, On("hard_rock")),
       ({5 5}, MiniGargoyleRoom(), 1, On("hard_rock")),
-      ({7 7}, MiniPrison(), 1, On("hard_rock")),
       ({15 15}, MiniDungeon(), 1, On("hard_rock")),
       ({15 15}, MiniAntNest(), 1, On("hard_rock")),
       ({4 4}, { Border(-1, Reset(WaterType)) Reset("hard_rock") Inside(1, Set("ada_chest"))}, 1, On(WaterType)),
@@ -729,7 +741,7 @@ Def MiniDungeon() {
 }
 End
 
-Def MiniPrison() {
+Def MiniBrokenPrison() {
   Reset("floor")
   Border(-1, Set("no_dig"))
   Border(TOP, 3, {
@@ -737,6 +749,18 @@ Def MiniPrison() {
     Border(TOP, -1, Remove("no_dig"))
   })
   Inside(TOP, 4, Place({1 1}, Set("corpse"), {1 4}, On("floor")))
+}
+End
+
+Def MiniPrison() {
+  Reset("floor")
+  Border(-1, Set("no_dig"))
+  Border(TOP, 3, {
+    Border(BOTTOM, 1, Set("prison_bars"))
+    Border(TOP, -1, Remove("no_dig"))
+  })
+  Place({1 1}, Reset("floor", "prison_door"), 1, On("prison_bars"))
+  Inside(TOP, 4, Place({1 1}, Set("elf_archer"), {1 4}, On("floor")))
 }
 End
 

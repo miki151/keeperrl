@@ -415,6 +415,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
   requiredSupport = { { { E W } } { { N S } {"prison_door_ns"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
+"PRISON_DOOR_LOCKED" inherit "PRISON_DOOR"
+{
+  movementSet = {}
+}
 "ANIMAL_FENCE"
 {
   name = "animal fence"

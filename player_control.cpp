@@ -3396,6 +3396,13 @@ void PlayerControl::considerNightfallMessage() {
     isNight = false;*/
 }
 
+bool PlayerControl::canAllyJoin(Creature* ally) const {
+  for (auto c : ally->getVisibleCreatures())
+    if (getCreatures().contains(c) && ally->getPosition().isConnectedTo(c->getPosition(), {MovementTrait::WALK}))
+      return true;
+  return false;
+}
+
 void PlayerControl::update(bool currentlyActive) {
   vector<Creature*> addedCreatures;
   vector<Level*> currentLevels {getCurrentLevel()};
@@ -3404,7 +3411,7 @@ void PlayerControl::update(bool currentlyActive) {
       currentLevels.push_back(c->getLevel());
   for (Level* l : currentLevels)
     for (Creature* c : l->getAllCreatures())
-      if (!getCreatures().contains(c) && c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c)) {
+      if (!getCreatures().contains(c) && c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c) && canAllyJoin(c)) {
         if (!collective->wasBanished(c) && !c->getBody().isFarmAnimal() && c->getAttributes().getCanJoinCollective()) {
           addedCreatures.push_back(c);
           collective->addCreature(c, {MinionTrait::FIGHTER, MinionTrait::NO_LIMIT});

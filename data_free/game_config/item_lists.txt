@@ -182,10 +182,31 @@ End
 {
   multiItems = {
     {10000} {
-      {"WizardCorpse"} 1.0
       {"WoodenStaff"} 1.0
       {"Robe"} 1.0
+      {"WizardCorpse"} 1.0
     }
+  }
+}
+
+"gnome_corpse"
+{
+  multiItems = {
+    {10000} {
+      {"LeatherArmor"} 1.0
+      {Potion Fire{25}} 0.3
+      {"GnomeCorpse"} 1.0
+    }
+  }
+}
+
+"automaton_parts"
+{
+  items = {
+    {{"AutomatonLegsWood"} 1}
+    {{"AutomatonArmsWood"} 1}
+    {{"AutomatonDrillWood"} 1}
+    {{"HumanoidHeadWood"} 1}
   }
 }
 

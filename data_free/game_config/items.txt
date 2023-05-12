@@ -1708,6 +1708,10 @@ End
     resourceId = "CORPSE"
     storageIds = {"corpses"}
   }
+"GnomeCorpse" inherit "WizardCorpse"
+  {
+    name = "gnome corpse"
+  }
 "FrozenRemains" inherit "Skeleton"
   {
     viewId = { "frozen_remains" }

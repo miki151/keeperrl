@@ -2674,9 +2674,16 @@ namespace {
           },
           [&](LayoutActions::AddGas t) { builder->addPermanentGas(t, pos); },
           [&](LayoutActions::HostileCreature c) {
-            builder->putCreature(pos, builder->getContentFactory()->getCreatures().fromId(c, TribeId::getHostile(),
+            builder->putCreature(pos, builder->getContentFactory()->getCreatures().fromId(c.id, TribeId::getHostile(),
                 MonsterAIFactory::stayInLocation(
                     builder->toGlobalCoordinates(Rectangle::centered(pos, 4)).getAllSquares())));
+          },
+          [&](LayoutActions::AlliedPrisoner info) {
+            auto c = builder->getContentFactory()->getCreatures().fromIdNoInventory(info.id, TribeId::getDarkKeeper(),
+                MonsterAIFactory::stayInLocation(
+                    builder->toGlobalCoordinates(Rectangle::centered(pos, 4)).getAllSquares()));
+            c->getStatus().insert(CreatureStatus::PRISONER);
+            builder->putCreature(pos, std::move(c));
           }
       );
     }

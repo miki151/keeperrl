@@ -60,10 +60,15 @@
 "bookcase_wood" B brown
 "coffin1" C brown
 "prison_bars" | blue
+"prison_door" + blue
 "ant_worker" a brown
+"elf_archer" @ green
 "bat" b gray
 "fog" = white
 "gargoyle" G gray
 "mountain" ^ gray
 "tree" T green
 "snow" = white
+"workshop" W brown
+"gnome_corpse" % white
+"automaton_parts" ( brown
