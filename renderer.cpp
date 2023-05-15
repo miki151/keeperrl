@@ -553,7 +553,7 @@ Renderer::Renderer(Clock* clock, MySteamInput* i, const string& title, const Dir
   loadFonts(fontPath, fonts);
   auto icon = SDL::IMG_Load(iconPath.getPath());
   SDL_SetWindowIcon(window, icon);
-  mapFontTexture = *Texture::loadMaybe(mapFontPath);
+  mapFontTexture.emplace(std::move(*Texture::loadMaybe(mapFontPath))); // work around compiler bug?
 }
 
 Vec2 getOffset(Vec2 sizeDiff, double scale) {
