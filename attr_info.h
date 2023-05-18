@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "util.h"
 #include "view_id.h"
+#include "fx_info.h"
 
 struct AttrInfo {
   string SERIAL(name);
