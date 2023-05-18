@@ -173,8 +173,11 @@ Connections("map_swamp")
 { "map_swamp4" "~" ColorId LIGHT_GREEN }
 { "map_pond1" "o" ColorId BLUE }
 { "map_tree1" "T" ColorId GREEN }
+{ "map_tree2" "T" ColorId LIGHT_GREEN }
+{ "map_tree3" "T" ColorId GREEN }
 { "map_special_tree1" "T" ColorId DARK_GREEN }
 { "map_mountain1" "^" ColorId LIGHT_GRAY }
+{ "map_mountain2" "^" ColorId GRAY }
 { "map_mountain_snow1" "^" ColorId WHITE }
 { "map_mountain_bg1" "^" ColorId LIGHT_GRAY }
 { "map_house1" "o" ColorId BLUE }
