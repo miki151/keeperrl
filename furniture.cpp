@@ -54,6 +54,7 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltInfo), NAMED(dissolveTo));
   ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), NAMED(freezeTo), NAMED(fillPit), NAMED(itemsRemovedEffect));
   ar(OPTION(eyeball), OPTION(storageIds), OPTION(hidesItems), NAMED(emptyViewId), OPTION(diningFurniture));
+  ar(OPTION(usagePredicate));
 }
 
 template <class Archive>
@@ -185,6 +186,10 @@ bool Furniture::doesHideItems() const {
 
 bool Furniture::isDiningFurniture() const {
   return diningFurniture;
+}
+
+const optional<CreaturePredicate>& Furniture::getUsagePredicate() const {
+  return usagePredicate;
 }
 
 const optional<ViewId>& Furniture::getEmptyViewId() const {

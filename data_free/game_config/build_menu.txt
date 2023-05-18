@@ -289,6 +289,9 @@ TRAINING("_DWARF", "_dwarf")
 
     { Furniture {{ "FORGE" }      "IRON" 20 }                      "Forge"             "Crafting"
         "Produces metal weapons and armor."    none { TechId "iron working" }}
+
+    { Furniture {{ "LAVA_FORGE" } "IRON" 20 }                      "Lava forge"        "Crafting"
+        "Quality of crafted items increases with the crafter's forge skill."    none { TechId "iron working" }}
   }
 
   "laboratory"

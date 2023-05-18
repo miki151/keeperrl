@@ -11,6 +11,14 @@
   attr = "FORGE"
 }
 
+"LAVA_FORGE" {
+  furniture = "LAVA_FORGE"
+  name = "lava forge"
+  verb = "forges"
+  attr = "FORGE"
+  attrScaling = true
+}
+
 "LABORATORY" {
   furniture = "LABORATORY"
   name = "laboratory"

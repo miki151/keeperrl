@@ -19,6 +19,7 @@
 #include "furniture_tick.h"
 #include "storage_id.h"
 #include "lasting_or_buff.h"
+#include "creature_predicate.h"
 
 class TribeId;
 class Creature;
@@ -128,6 +129,7 @@ class Furniture {
   int getMaxTraining(ExperienceType) const;
   bool hasRequiredSupport(Position) const;
   bool isDiningFurniture() const;
+  const optional<CreaturePredicate>& getUsagePredicate() const;
   optional<ViewId> getSupportViewId(Position) const;
   optional<FurnitureType> getUpgrade() const;
   optional<FXVariantName> getUsageFX() const;
@@ -255,6 +257,7 @@ class Furniture {
   bool SERIAL(hidesItems) = false;
   optional<ViewId> SERIAL(emptyViewId);
   bool SERIAL(diningFurniture) = false;
+  optional<CreaturePredicate> SERIAL(usagePredicate);
 };
 
 static_assert(std::is_nothrow_move_constructible<Furniture>::value, "T should be noexcept MoveConstructible");

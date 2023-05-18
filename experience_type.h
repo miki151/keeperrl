@@ -5,7 +5,8 @@
 RICH_ENUM(ExperienceType,
   MELEE,
   SPELL,
-  ARCHERY
+  ARCHERY,
+  FORGE
 );
 
 extern const char* getName(ExperienceType);

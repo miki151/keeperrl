@@ -6,6 +6,7 @@
 #include "workshop_item.h"
 #include "game.h"
 #include "view_object.h"
+#include "content_factory.h"
 
 Workshops::Workshops(WorkshopArray options, const ContentFactory* factory) {
   for (auto& elem : options)
@@ -104,7 +105,12 @@ PItem Workshops::Type::removeUpgrade(int itemIndex, int runeIndex) {
   return ret;
 }
 
-auto Workshops::Type::addWork(Collective* collective, double amount, int skillAmount, double morale) -> WorkshopResult {
+static double getAttrIncrease(double skillAmount) {
+  return max(0.0, (skillAmount * 0.1 - 2) / 2.0);
+}
+
+auto Workshops::Type::addWork(Collective* collective, double amount, int skillAmount, bool attrIncrease, double morale)
+    -> WorkshopResult {
   for (int productIndex : All(queued)) {
     auto& product = queued[productIndex];
     if ((product.paid || collective->hasResource(product.item.cost)) && allowUpgrades(product, skillAmount, morale)) {
@@ -113,13 +119,22 @@ auto Workshops::Type::addWork(Collective* collective, double amount, int skillAm
         addDebt(-product.item.cost);
         product.paid = true;
       }
-      product.state += amount * prodMult / product.item.workNeeded;
+      auto workDone = amount * prodMult / product.item.workNeeded;
+      product.state += workDone;
+      if (product.state > 1)
+        workDone -= product.state - 1;
+      product.quality += workDone * skillAmount;
       if (product.state >= 1) {
-        auto ret = product.item.type.get(collective->getGame()->getContentFactory());
+        auto factory = collective->getGame()->getContentFactory();
+        auto ret = product.item.type.get(factory);
+        if (attrIncrease)
+          for (auto& attr : factory->attrOrder)
+            if (ret->getModifierValues().count(attr))
+              ret->addModifier(attr, ret->getModifier(attr) * getAttrIncrease(skillAmount));
         bool wasUpgraded = false;
         for (auto& rune : product.runes) {
           if (auto& upgradeInfo = rune->getUpgradeInfo())
-            ret->applyPrefix(*upgradeInfo->prefix, collective->getGame()->getContentFactory());
+            ret->applyPrefix(*upgradeInfo->prefix, factory);
           wasUpgraded = !product.item.notArtifact;
         }
         bool applyImmediately = product.item.applyImmediately;
