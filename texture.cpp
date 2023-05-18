@@ -82,7 +82,7 @@ Texture::~Texture() {
     SDL::glDeleteTextures(1, &*texId);
 }
 
-Texture& Texture::operator=(Texture&& tex) {
+Texture& Texture::operator=(Texture&& tex) noexcept {
   size = tex.size;
   realSize = tex.realSize;
   texId = std::move(tex.texId);
