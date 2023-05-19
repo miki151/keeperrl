@@ -2244,6 +2244,21 @@ static Collective* getCollective(Creature* c) {
   return nullptr;
 }
 
+static string getName(const Effects::AllCreatures& e, const ContentFactory* f) {
+  return e.effect->getName(f) + " (all creatures)";
+}
+
+static string getDescription(const Effects::AllCreatures& e, const ContentFactory* f) {
+  return e.effect->getDescription(f) + " (applied to all creatures on the map)";
+}
+
+static bool applyToCreature(const Effects::AllCreatures& e, Creature* c, Creature* attacker) {
+  bool res = false;
+  for (auto other : c->getPosition().getModel()->getAllCreatures())
+    res |= e.effect->applyToCreature(other, attacker);
+  return res;
+}
+
 static string getName(const Effects::AddMinionTrait& trait, const ContentFactory*) {
   return "make " + toLower(EnumInfo<MinionTrait>::getString(trait));
 }

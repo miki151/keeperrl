@@ -28,7 +28,7 @@ class Workshops {
       bool wasUpgraded;
       bool applyImmediately;
     };
-    WorkshopResult addWork(Collective*, double workAmount, int skillAmount, double morale);
+    WorkshopResult addWork(Collective*, double workAmount, int skillAmount, bool attrIncrease, double morale);
     void queue(Collective*, int index, optional<int> queueIndex = none);
     vector<PItem> unqueue(Collective*, int index);
     void changeNumber(int index, int number);

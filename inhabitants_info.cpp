@@ -38,7 +38,7 @@ auto InhabitantsInfo::generateCreatures(RandomGen& random, CreatureFactory* fact
 namespace {
 struct LeaderInfo {
   vector<CreatureId> SERIAL(id);
-  int SERIAL(combatExperience);
+  int SERIAL(combatExperience) = 0;
   EnumMap<ExperienceType, int> SERIAL(expLevelIncrease);
   vector<ItemType> SERIAL(inventory);
   SERIALIZE_ALL(NAMED(id), OPTION(combatExperience), OPTION(expLevelIncrease), OPTION(inventory))

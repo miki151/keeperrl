@@ -1063,10 +1063,14 @@ void Collective::markItem(const Item* it, WConstTask task) {
 }
 
 bool Collective::canAddFurniture(Position position, FurnitureType type) const {
-  auto layer = getGame()->getContentFactory()->furniture.getData(type).getLayer();
+  auto& furniture = getGame()->getContentFactory()->furniture.getData(type);
+  if (auto& pred = furniture.getUsagePredicate())
+    if (!pred->apply(position, nullptr))
+      return false;
+  auto layer = furniture.getLayer();
   return knownTiles->isKnown(position)
       && ((position.isCovered() && (territory->contains(position) || canClaimSquare(position))) ||
-          getGame()->getContentFactory()->furniture.getData(type).buildOutsideOfTerritory())
+          furniture.buildOutsideOfTerritory())
       && !getConstructions().containsFurniture(position, layer)
       && position.canConstruct(type);
 }
@@ -1396,6 +1400,9 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
   PROFILE;
   auto contentFactory = getGame()->getContentFactory();
   if (auto furniture = pos.first.getFurniture(pos.second)) {
+    if (auto& pred = furniture->getUsagePredicate())
+      if (!pred->apply(pos.first, c))
+        return;
     // Furniture have variable usage time, so just multiply by it to be independent of changes.
     double efficiency = furniture->getUsageTime().getVisibleDouble() * getEfficiency(c);
     if (furniture->isRequiresLight())
@@ -1490,10 +1497,11 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
     }
     if (auto workshopType = contentFactory->getWorkshopType(furniture->getType()))
       if (auto workshop = getReferenceMaybe(workshops->types, *workshopType)) {
-        auto craftingSkill = c->getAttr(contentFactory->workshopInfo.at(*workshopType).attr);
+        auto& workshopInfo = contentFactory->workshopInfo.at(*workshopType);
+        auto craftingSkill = c->getAttr(workshopInfo.attr);
         auto result = workshop->addWork(this, efficiency * double(craftingSkill) * 0.02
             * LastingEffects::getCraftingSpeed(c),
-            craftingSkill, c->getMorale().value_or(0));
+            craftingSkill, workshopInfo.attrScaling, c->getMorale().value_or(0));
         if (result.item) {
           if (result.item->getClass() == ItemClass::WEAPON)
             getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
@@ -1501,8 +1509,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
             getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
           if (auto stat = result.item->getProducedStat())
             getGame()->getStatistics().add(*stat);
-          control->addMessage(c->getName().a() + " " + contentFactory->workshopInfo.at(*workshopType).verb + " " +
-              result.item->getAName());
+          control->addMessage(c->getName().a() + " " + workshopInfo.verb + " " + result.item->getAName());
           if (result.wasUpgraded) {
             control->addMessage(PlayerMessage(c->getName().the() + " is depressed after crafting his masterpiece.", MessagePriority::HIGH));
             c->addMorale(-2);

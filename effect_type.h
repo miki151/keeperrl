@@ -24,6 +24,7 @@
 #include "automaton_part.h"
 #include "lasting_or_buff.h"
 #include "player_message.h"
+#include "tribe.h"
 
 #define SIMPLE_EFFECT(Name) \
   struct Name { \
@@ -404,6 +405,8 @@ struct IncreaseMaxLevel {
 };
 struct ApplyToSteed : GenericModifierEffect {
 };
+struct AllCreatures : GenericModifierEffect {
+};
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
   X(Teleport, 1)\
@@ -499,7 +502,8 @@ struct ApplyToSteed : GenericModifierEffect {
   X(Price, 91)\
   X(IncreaseMaxLevel, 92)\
   X(EquipmentType, 93)\
-  X(AddSpellSchool, 94)
+  X(AddSpellSchool, 94)\
+  X(AllCreatures, 95)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

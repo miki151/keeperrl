@@ -282,14 +282,6 @@ class CollectiveInfo {
   optional<ChosenCreatureInfo> HASH(chosenCreature);
   vector<ImmigrantDataInfo> HASH(immigration);
   vector<ImmigrantDataInfo> HASH(allImmigration);
-  struct WorkshopButton {
-    string HASH(name);
-    ViewId HASH(viewId);
-    bool HASH(active);
-    bool HASH(unavailable);
-    HASH_ALL(name, viewId, active, unavailable)
-  };
-  vector<WorkshopButton> HASH(workshopButtons);
   struct QueuedItemInfo {
     double HASH(productionState);
     bool HASH(paid);
@@ -411,7 +403,7 @@ class CollectiveInfo {
   };
   optional<RebellionChance> HASH(rebellionChance);
   vector<ViewId> HASH(allQuarters);
-  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, minionPromotions, availablePromotions, allQuarters, rebellionChance, avatarLevelInfo, populationString)
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, nextWave, chosenWorkshop, immigration, allImmigration, libraryInfo, minionPromotions, availablePromotions, allQuarters, rebellionChance, avatarLevelInfo, populationString)
 };
 
 class VillageInfo {

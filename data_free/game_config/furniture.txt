@@ -88,6 +88,12 @@ TRAINING("_DWARF", "_dwarf")
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   usageFX = FORGE
 }
+"LAVA_FORGE" inherit "FORGE"
+{
+  name = "lava forge"
+  viewId = { "lava_forge" }
+  usagePredicate = Not Area 1 Not FurnitureType "MAGMA"
+}
 "LABORATORY"
 {
   name = "laboratory"

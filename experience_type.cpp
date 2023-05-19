@@ -10,6 +10,8 @@ const char* getName(ExperienceType type) {
       return "Melee";
     case ExperienceType::ARCHERY:
       return "Archery";
+    case ExperienceType::FORGE:
+      return "Forge";
   }
 }
 
@@ -31,6 +33,9 @@ const EnumMap<ExperienceType, unordered_map<AttrType, int, CustomHash<AttrType>>
     }},
     {ExperienceType::ARCHERY, {
         {AttrType("RANGED_DAMAGE"), 1}
+    }},
+    {ExperienceType::FORGE, {
+        {AttrType("FORGE"), 1}
     }},
   };
   return attrIncreases;

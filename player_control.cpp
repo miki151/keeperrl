@@ -1486,25 +1486,16 @@ vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getQueuedWorkshopItems() c
 }
 
 void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
-  info.workshopButtons.clear();
   int index = 0;
   int i = 0;
   for (auto workshopType : collective->getWorkshops().getWorkshopsTypes()) {
     auto& workshopInfo = getGame()->getContentFactory()->workshopInfo.at(workshopType);
-    bool unavailable = collective->getConstructions().getBuiltPositions(workshopInfo.furniture).empty();
-    info.workshopButtons.push_back({capitalFirst(workshopInfo.name),
-        getGame()->getContentFactory()->furniture.getConstructionObject(workshopInfo.furniture).id(), false, unavailable});
-    if (!!chosenWorkshop && chosenWorkshop->type == workshopType) {
+    if (!!chosenWorkshop && chosenWorkshop->type == workshopType)
       index = i;
-      info.workshopButtons.back().active = true;
-    }
     ++i;
   }
-  info.workshopButtons.push_back({"Furnace", ViewId("furnace"), false,
-      collective->getConstructions().getBuiltPositions(FurnitureType("FURNACE")).empty()});
   if (!!chosenWorkshop && chosenWorkshop->type == WorkshopType("FURNACE")) {
     index = i;
-    info.workshopButtons.back().active = true;
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
         {},
         chosenWorkshop->resourceIndex,

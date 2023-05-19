@@ -1,4 +1,4 @@
- 
+
 "basic_without_lab"
 {
   "WORKSHOP"
@@ -17,7 +17,7 @@
       {{"WoodenStaff"}           13       "WOOD" 20      "magical weapons"}
       {{"Torch"}                 2        "WOOD" 4}
   }
-  
+
   "FORGE"
   {
       {item = {"Sword"}          work = 10    cost = none   materialTab = true}
@@ -30,7 +30,7 @@
       {item = {"IronHelm"}        work = 8    cost = none   materialTab = true}
       {item = {"IronBoots"}       work = 12   cost = none   materialTab = true}
       {item = {"CyclopsHelm"}
-       work = 30 
+       work = 30
        cost = none
        requireIngredient = "cyclops_testes"
       }
@@ -56,12 +56,14 @@
       {item = {"InferniteWarHammer"}    work = 20   cost = none   tech = "two-handed weapons"  materialTab = true}
       {item = {"InferniteBattleAxe"}    work = 22   cost = none   tech = "two-handed weapons"  materialTab = true}
   }
- 
+
+  "LAVA_FORGE" inherit "FORGE" append {}
+
 Def OneTimeBoost()
   NoAutoAssign EquipmentType COMBAT_ITEM AI And {} -1 1 AI And {} 0 1
 End
 
-Def GasPotion(GasType, Desc) 
+Def GasPotion(GasType, Desc)
   Potion Description Desc Area 1 EmitGas GasType 1
 End
 
