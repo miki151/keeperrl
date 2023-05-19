@@ -1202,7 +1202,7 @@ void Creature::updateCombatExperience(Creature* victim) {
     int newLevel = combatExperience;
     if (curLevel != newLevel) {
       you(MsgType::ARE, "more experienced");
-      addPersonalEvent(getName().a() + " reaches combat experience level " + toString(newLevel));
+      addPersonalEvent(getName().a() + " reaches experience level " + toString(newLevel));
     }
   }
 }

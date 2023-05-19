@@ -1870,13 +1870,13 @@ SGuiElem GuiBuilder::drawTrainingInfo(const CreatureExperienceInfo& info, bool i
   if (!infoOnly)
     lines.addElem(WL(stack,
         WL(getListBuilder)
-            .addElemAuto(WL(label, "Combat experience: ", Color::YELLOW))
+            .addElemAuto(WL(label, "Experience: ", Color::YELLOW))
             .addElemAuto(WL(label, toStringRounded(info.combatExperience, 0.01)))
             .buildHorizontalList(),
-        getTooltip({"Combat experience increases every attribute by up to that attributes current training level.",
+        getTooltip({"Experience increases every attribute that can be or has been trained. If the creature has",
+            "no trainable attributes then damage and defense will be used by default.",
             "For example, Dumbug the goblin has a +1 training in archery, and a +3 training in melee.",
-            "Translating it to attributes, this means that he has +3 damage and defense bonuses, and a +1 ranged damage bonus.",
-            "Having a +2 combat experience, his damage and defense are further increased by +2, and his ranged damage by +1."},
+            "Having a +2 experience, his damage, defense and ranged damage are further increased by +2."},
             THIS_LINE)
     ));
   if (!empty)
