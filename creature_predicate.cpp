@@ -13,6 +13,7 @@
 #include "sectors.h"
 #include "movement_type.h"
 #include "content_factory.h"
+#include "tile_gas_info.h"
 
 namespace Impl {
 static bool applyToCreature(const CreaturePredicates::Enemy&, const Creature* victim, const Creature* attacker) {
@@ -208,6 +209,14 @@ static bool apply(FurnitureType type, Position pos, const Creature* attacker) {
 
 static string getName(FurnitureType, const ContentFactory*) {
   return "furniture";
+}
+
+static bool apply(CreaturePredicates::ContainsGas type, Position pos, const Creature* attacker) {
+  return pos.getGasAmount(type) > 0;
+}
+
+static string getName(CreaturePredicates::ContainsGas type, const ContentFactory* f) {
+  return "in " + f->tileGasTypes.at(type).name;
 }
 
 static bool applyToCreature(BodyMaterialId m, const Creature* victim, const Creature* attacker) {

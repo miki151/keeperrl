@@ -8,6 +8,7 @@
 #include "lasting_or_buff.h"
 #include "body_material_id.h"
 #include "attr_type.h"
+#include "tile_gas_type.h"
 
 #define SIMPLE_PREDICATE(Name) \
   struct Name { \
@@ -137,6 +138,8 @@ struct AttributeAtLeast {
   SERIALIZE_ALL(attr, value)
 };
 
+using ContainsGas = TileGasType;
+
 #define CREATURE_PREDICATE_LIST\
   X(Enemy, 0)\
   X(Automaton, 1)\
@@ -177,6 +180,7 @@ struct AttributeAtLeast {
   X(SameTribe, 36)\
   X(Hidden, 37)\
   X(AttributeAtLeast, 38)\
+  X(ContainsGas, 39)\
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST
