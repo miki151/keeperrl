@@ -218,6 +218,10 @@ WModel Game::getCurrentModel() const {
     return models[baseModel].get();
 }
 
+int Game::getModelDifficulty(const Model* model) const {
+  return campaign->getBaseLevelIncrease(getModelCoords(model));
+}
+
 PModel& Game::getMainModel() {
   return models[baseModel];
 }
@@ -528,7 +532,7 @@ int Game::getModelDistance(const Collective* c1, const Collective* c2) const {
   return getModelCoords(c1->getModel()).dist8(getModelCoords(c2->getModel()));
 }
 
-Vec2 Game::getModelCoords(const WModel m) const {
+Vec2 Game::getModelCoords(const Model* m) const {
   for (Vec2 v : models.getBounds())
     if (models[v].get() == m)
       return v;

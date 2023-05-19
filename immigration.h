@@ -42,16 +42,16 @@ class Immigration : public OwnedObject<Immigration> {
     SERIALIZATION_DECL(Available)
 
     private:
-    static Available generate(WImmigration, const Group& group);
-    static Available generate(WImmigration, int index);
+    static Available generate(Immigration*, const Group& group);
+    static Available generate(Immigration*, int index);
     vector<Position> getSpawnPositions() const;
-    Available(WImmigration, vector<PCreature>, int immigrantIndex, optional<GlobalTime> endTime, vector<SpecialTrait>);
+    Available(Immigration*, vector<PCreature>, int immigrantIndex, optional<GlobalTime> endTime, vector<SpecialTrait>);
     void addAllCreatures(const vector<Position>& spawnPositions);
     friend class Immigration;
     vector<PCreature> SERIAL(creatures);
     int SERIAL(immigrantIndex);
     optional<GlobalTime> SERIAL(endTime);
-    WImmigration SERIAL(immigration) = nullptr;
+    Immigration* SERIAL(immigration) = nullptr;
     vector<SpecialTrait> SERIAL(specialTraits);
     optional<milliseconds> createdTime;
   };

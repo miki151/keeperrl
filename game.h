@@ -101,6 +101,7 @@ class Game : public OwnedObject<Game> {
   bool isSingleModel() const;
   int getSaveProgressCount() const;
   WModel getCurrentModel() const;
+  int getModelDifficulty(const Model*) const;
 
   void prepareSiteRetirement();
   void doneRetirement();
@@ -121,7 +122,7 @@ class Game : public OwnedObject<Game> {
 
   private:
   void tick(GlobalTime);
-  Vec2 getModelCoords(const WModel) const;
+  Vec2 getModelCoords(const Model*) const;
   bool updateModel(WModel, double timeDiff, optional<milliseconds> endTime);
   void uploadEvent(const string& name, const map<string, string>&);
 
