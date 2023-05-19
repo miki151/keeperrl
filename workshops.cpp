@@ -109,7 +109,7 @@ static double getAttrIncrease(double skillAmount) {
   return max(0.0, (skillAmount * 0.1 - 2) / 2.0);
 }
 
-auto Workshops::Type::addWork(Collective* collective, double amount, int skillAmount, bool attrIncrease, double morale)
+auto Workshops::Type::addWork(Collective* collective, double amount, int skillAmount, int attrScaling, double morale)
     -> WorkshopResult {
   for (int productIndex : All(queued)) {
     auto& product = queued[productIndex];
@@ -127,10 +127,12 @@ auto Workshops::Type::addWork(Collective* collective, double amount, int skillAm
       if (product.state >= 1) {
         auto factory = collective->getGame()->getContentFactory();
         auto ret = product.item.type.get(factory);
-        if (attrIncrease)
+        if (attrScaling > 1)
           for (auto& attr : factory->attrOrder)
             if (ret->getModifierValues().count(attr))
-              ret->addModifier(attr, ret->getModifier(attr) * getAttrIncrease(skillAmount));
+              ret->addModifier(attr, ret->getModifier(attr) * min<double>(
+                  attrScaling - 1,
+                  getAttrIncrease(skillAmount)));
         bool wasUpgraded = false;
         for (auto& rune : product.runes) {
           if (auto& upgradeInfo = rune->getUpgradeInfo())

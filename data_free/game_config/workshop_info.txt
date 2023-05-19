@@ -13,10 +13,18 @@
 
 "LAVA_FORGE" {
   furniture = "LAVA_FORGE"
-  name = "lava forge"
+  name = "magma forge"
   verb = "forges"
   attr = "FORGE"
-  attrScaling = true
+  attrScaling = 2
+}
+
+"MYST_FORGE" {
+  furniture = "MYST_FORGE"
+  name = "myst forge"
+  verb = "forges"
+  attr = "FORGE"
+  attrScaling = 5
 }
 
 "LABORATORY" {

@@ -94,6 +94,12 @@ TRAINING("_DWARF", "_dwarf")
   viewId = { "lava_forge" }
   usagePredicate = Not Area 1 Not FurnitureType "MAGMA"
 }
+"MYST_FORGE" inherit "FORGE"
+{
+  name = "myst forge"
+  viewId = { "myst_forge" }
+  usagePredicate = ContainsGas "FOG"
+}
 "LABORATORY"
 {
   name = "laboratory"

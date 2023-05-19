@@ -290,8 +290,13 @@ TRAINING("_DWARF", "_dwarf")
     { Furniture {{ "FORGE" }      "IRON" 20 }                      "Forge"             "Crafting"
         "Produces metal weapons and armor."    none { TechId "iron working" }}
 
-    { Furniture {{ "LAVA_FORGE" } "IRON" 20 }                      "Lava forge"        "Crafting"
-        "Quality of crafted items increases with the crafter's forge skill."    none { TechId "iron working" }}
+    { Furniture {{ "LAVA_FORGE" } "IRON" 20 }                      "Magma forge"        "Crafting"
+        "Quality of crafted items increases with the crafter's forge skill by a factor of up to 2. Must be placed next to magma."
+        none { TechId "iron working" }}
+
+    { Furniture {{ "MYST_FORGE" } "IRON" 20 }                      "Myst forge"        "Crafting"
+        "Quality of crafted items increases with the crafter's forge skill by a factor of up to 5. Must be placed in underground fog."
+        none { TechId "iron working" }}
   }
 
   "laboratory"

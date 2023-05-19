@@ -58,6 +58,7 @@
   }
 
   "LAVA_FORGE" inherit "FORGE" append {}
+  "MYST_FORGE" inherit "FORGE" append {}
 
 Def OneTimeBoost()
   NoAutoAssign EquipmentType COMBAT_ITEM AI And {} -1 1 AI And {} 0 1
