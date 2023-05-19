@@ -2243,19 +2243,18 @@ static Collective* getCollective(Creature* c) {
   return nullptr;
 }
 
-static string getName(const Effects::AllTribe& e, const ContentFactory* f) {
-  return e.effect->getName(f) + " (applied to whole tribe)";
+static string getName(const Effects::AllCreatures& e, const ContentFactory* f) {
+  return e.effect->getName(f) + " (all creatures)";
 }
 
-static string getDescription(const Effects::AllTribe& e, const ContentFactory* f) {
-  return e.effect->getDescription(f) + " (applied to whole tribe)";
+static string getDescription(const Effects::AllCreatures& e, const ContentFactory* f) {
+  return e.effect->getDescription(f) + " (applied to all creatures on the map)";
 }
 
-static bool applyToCreature(const Effects::AllTribe& e, Creature* c, Creature* attacker) {
+static bool applyToCreature(const Effects::AllCreatures& e, Creature* c, Creature* attacker) {
   bool res = false;
   for (auto other : c->getPosition().getModel()->getAllCreatures())
-    if (other->getTribe() == c->getTribe())
-      res |= e.effect->applyToCreature(other, attacker);
+    res |= e.effect->applyToCreature(other, attacker);
   return res;
 }
 

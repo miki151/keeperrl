@@ -405,7 +405,7 @@ struct IncreaseMaxLevel {
 };
 struct ApplyToSteed : GenericModifierEffect {
 };
-struct AllTribe : GenericModifierEffect {
+struct AllCreatures : GenericModifierEffect {
 };
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -503,7 +503,7 @@ struct AllTribe : GenericModifierEffect {
   X(IncreaseMaxLevel, 92)\
   X(EquipmentType, 93)\
   X(AddSpellSchool, 94)\
-  X(AllTribe, 95)
+  X(AllCreatures, 95)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
