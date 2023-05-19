@@ -2025,6 +2025,7 @@ static bool apply(const Effects::AnimateItems& m, Position pos, Creature* attack
             attacker->getAttr(AttrType("SPELL_DAMAGE")));
     for (auto c : Effect::summonCreatures(v, makeVec(std::move(creature)))) {
       c->addEffect(LastingEffect::SUMMONED, TimeInterval{Random.get(m.time)}, false);
+      c->effectFlags.insert("animated");
       res = true;
     }
   }
