@@ -4508,9 +4508,12 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
     auto minimapColumns = WL(getListBuilder, minimapScale);
     for (int x : sites.getBounds().getXRange()) {
       vector<SGuiElem> v;
-      for (int i : All(sites[x][y].viewId)) {
-        v.push_back(WL(asciiBackground, sites[x][y].viewId[i]));
-        v.push_back(WL(viewObject, sites[x][y].viewId[i], iconScale));
+      for (auto& id : sites[x][y].viewId) {
+        v.push_back(WL(asciiBackground, id));
+        if (startsWith(id.data(), "map_mountain_large"))
+          v.push_back(WL(translate, WL(viewObject, id, iconScale), -Vec2(24, 24)));
+        else
+          v.push_back(WL(viewObject, id, iconScale));
       }
       if (!c.isInInfluence(Vec2(x, y)))
         v.push_back(WL(rectangle, Color::BLACK.transparency(50)));

@@ -1022,6 +1022,13 @@ End
   Connections("grass", Not Or(On("set_snow"), On("set_mountain")))
   Connections("swamp", Not Or(On("set_snow"), On("set_mountain"), On("set_grass")))
   Connections("sand", Not Or(On("set_grass"), On("set_snow"), On("set_mountain"), On("set_swamp")))
+Def BigMountain()
+  And(On("set_mountain"), Not On("big_mountain"))
+End
+  Inside(1, Filter(And(Chance(0.1), BigMountain(), Translate({0 -1}, BigMountain()),
+      Translate({-1 0}, BigMountain()), Translate({-1 -1}, BigMountain())),
+      Set("big_mountain")))
+  Filter(On("big_mountain"), Choose(Set("map_mountain_large"), Set("map_mountain_large2")))
   Filter(On("set_mountain"), {Set("MOUNTAIN") {Set("map_mountain_bg1") Choose(Set("map_mountain1"), Set("map_mountain2"))}})
   Filter(On("set_mountain_snow"), {Set("MOUNTAIN") Choose(Set("map_mountain_snow1"))})
   NoiseMap(0.85, {
