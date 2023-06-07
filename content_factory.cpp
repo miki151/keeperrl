@@ -32,7 +32,7 @@ void ContentFactory::serialize(Archive& ar, const unsigned int) {
   ar(immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buffs);
   ar(buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping);
   ar(randomLayouts, tileGasTypes, promotions, dancePositions, equipmentGroups, scriptedHelp, attrInfo, attrOrder);
-  ar(bodyMaterials, keybindings);
+  ar(bodyMaterials, keybindings, worldMaps);
   creatures.setContentFactory(this);
 }
 
@@ -375,6 +375,8 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   for (auto& dir : config->dirs)
     if (auto error = readMapLayouts(mapLayouts, keyVerifier, dir.subdirectory("map_layouts")))
       return *error;
+  if (auto error = config->readObject(worldMaps, GameConfigId::WORLD_MAPS, &keyVerifier))
+    return *error;
   if (auto error = config->readObject(workshopGroups, GameConfigId::WORKSHOPS_MENU, &keyVerifier))
     return *error;
   if (auto error = config->readObject(immigrantsData, GameConfigId::IMMIGRATION, &keyVerifier))
@@ -511,6 +513,7 @@ void ContentFactory::merge(ContentFactory f) {
   for (auto t : f.attrOrder)
     if (!attrOrder.contains(t))
       attrOrder.push_back(t);
+  worldMaps.append(std::move(f.worldMaps));
 }
 
 CreatureFactory& ContentFactory::getCreatures() {

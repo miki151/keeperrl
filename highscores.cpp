@@ -189,7 +189,6 @@ static vector<PublicScorePage> getPublicScores() {
   return {
     {CampaignType::FREE_PLAY, PlayerRole::KEEPER, "Keeper", SortingType::MOST_POINTS},
     {CampaignType::FREE_PLAY, PlayerRole::ADVENTURER, "Adventurer", SortingType::SHORTEST_MOST_POINTS},
-    {CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "Single map", SortingType::SHORTEST_MOST_POINTS}
   };
 }
 

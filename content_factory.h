@@ -27,6 +27,7 @@
 #include "body_material_id.h"
 #include "body_material.h"
 #include "keybinding_info.h"
+#include "world_map_info.h"
 
 class KeyVerifier;
 class BuildInfo;
@@ -45,6 +46,7 @@ struct BodyMaterial;
 class ContentFactory {
   public:
   optional<string> readData(const GameConfig*, const vector<string>& modNames);
+  vector<WorldMapInfo> SERIAL(worldMaps);
   FurnitureFactory SERIAL(furniture);
   map<string, vector<ZLevelInfo>> SERIAL(zLevels);
   vector<ResourceDistribution> SERIAL(resources);

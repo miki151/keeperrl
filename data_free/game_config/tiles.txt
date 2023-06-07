@@ -162,7 +162,7 @@ Connections("map_swamp")
 { "map_water1" "~" ColorId LIGHT_BLUE }
 { "map_water2" "~" ColorId BLUE }
 { "map_water3" "~" ColorId LIGHT_BLUE }
-{ "map_water4" "~" ColorId BLUE }
+{ "map_water5" "~" ColorId BLUE }
 { "map_sand1" "." ColorId YELLOW }
 { "map_sand2" "." ColorId LIGHT_BROWN }
 { "map_sand3" "." ColorId YELLOW }
@@ -178,9 +178,18 @@ Connections("map_swamp")
 { "map_special_tree1" "T" ColorId DARK_GREEN }
 { "map_mountain1" "^" ColorId LIGHT_GRAY }
 { "map_mountain2" "^" ColorId GRAY }
+{ "map_mountain3" "^" ColorId LIGHT_GRAY }
+{ "map_mountain4" "^" ColorId GRAY }
+{ "map_mountain5" "^" ColorId GRAY }
 { "map_mountain_large" "^" ColorId LIGHT_GRAY }
 { "map_mountain_large2" "^" ColorId GRAY }
+{ "map_mountain_large3" "^" ColorId GRAY }
+{ "map_mountain_large4" "^" ColorId GRAY }
 { "map_mountain_snow1" "^" ColorId WHITE }
+{ "map_mountain_snow2" "^" ColorId WHITE }
+{ "map_mountain_snow3" "^" ColorId WHITE }
+{ "map_mountain_snow4" "^" ColorId WHITE }
+{ "map_mountain_snow5" "^" ColorId WHITE }
 { "map_mountain_bg1" "^" ColorId LIGHT_GRAY }
 { "map_house1" "o" ColorId BLUE }
 { "map_castle1" "o" ColorId BLUE }

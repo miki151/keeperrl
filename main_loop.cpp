@@ -1218,8 +1218,6 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup, 
     TribeAlignment alignment) {
   auto ret = [&] {
     switch (setup.campaign.getType()) {
-      case CampaignType::SINGLE_KEEPER:
-        return modelBuilder.singleMapModel(tribe, alignment);
       case CampaignType::QUICK_MAP:
         return modelBuilder.tutorialModel();
       default:

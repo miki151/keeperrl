@@ -282,7 +282,6 @@ class GuiBuilder {
   shared_ptr<MapGui> mapGui;
   int getImmigrantAnimationOffset(milliseconds initTime);
   HeapAllocated<CallCache<SGuiElem>> cache;
-  SGuiElem drawMenuWarning(View::CampaignOptions::WarningType);
   SGuiElem drawTutorialOverlay(const TutorialInfo&);
   unordered_set<pair<int, TutorialHighlight>, CustomHash<pair<int, TutorialHighlight>>> tutorialClicks;
   bool wasTutorialClicked(size_t hash, TutorialHighlight);

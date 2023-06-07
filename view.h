@@ -67,8 +67,8 @@ enum class CampaignActionId {
   UPDATE_MAP,
   CONFIRM,
   UPDATE_OPTION,
-  CHANGE_TYPE,
-  SET_POSITION
+  SET_POSITION,
+  CHANGE_WORLD_MAP
 };
 
 enum class PassableInfo {
@@ -78,10 +78,10 @@ enum class PassableInfo {
   UNKNOWN
 };
 
-class CampaignAction : public EnumVariant<CampaignActionId, TYPES(OptionId, CampaignType, string, Vec2),
-  ASSIGN(CampaignType, CampaignActionId::CHANGE_TYPE),
+class CampaignAction : public EnumVariant<CampaignActionId, TYPES(OptionId, string, Vec2, int),
   ASSIGN(Vec2, CampaignActionId::SET_POSITION),
-  ASSIGN(OptionId, CampaignActionId::UPDATE_OPTION)> {
+  ASSIGN(OptionId, CampaignActionId::UPDATE_OPTION),
+  ASSIGN(int, CampaignActionId::CHANGE_WORLD_MAP)> {
     using EnumVariant::EnumVariant;
 };
 
@@ -212,14 +212,9 @@ class View {
     optional<RetiredGames&> retired;
     vector<OptionId> options;
     string introText;
-    struct CampaignTypeInfo {
-      CampaignType type;
-      vector<string> description;
-    };
-    vector<CampaignTypeInfo> availableTypes;
-    enum WarningType { NO_RETIRE };
-    optional<WarningType> warning;
     string currentBiome;
+    vector<string> worldMapNames;
+    int currentWorldMap;
   };
 
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) = 0;

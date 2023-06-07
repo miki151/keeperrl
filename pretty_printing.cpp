@@ -58,6 +58,7 @@
 #include "body_material.h"
 #include "keybinding.h"
 #include "keybinding_map.h"
+#include "world_map_info.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const vector<string>& s, vector<string> filename, KeyVerifier* keyVerifier) {
@@ -122,3 +123,4 @@ ADD_IMP(map<PrimaryId<BuffId>, BuffInfo>)
 ADD_IMP(map<PrimaryId<BodyMaterialId>, BodyMaterial>)
 ADD_IMP(vector<pair<PrimaryId<Keybinding>, KeybindingInfo>>)
 ADD_IMP(unordered_map<Keybinding, SDL::SDL_Keysym, CustomHash<Keybinding>>)
+ADD_IMP(vector<WorldMapInfo>)

@@ -995,6 +995,44 @@ Def Connections(Name, Pred)
 }
 End
 
+Def BigMountain()
+  And(On("set_mountain"), Not On("big_mountain"))
+End
+
+Def WorldMapFeatures() {
+  Inside(1, Filter(And(Chance(0.1), BigMountain(), Translate({0 -1}, BigMountain()),
+      Translate({-1 0}, BigMountain()), Translate({-1 -1}, BigMountain())),
+      Set("big_mountain")))
+  Filter(On("big_mountain"), Choose(Set("map_mountain_large"), Set("map_mountain_large2"),
+      Set("map_mountain_large3"), Set("map_mountain_large4")))
+  Filter(On("set_mountain"), {Set("MOUNTAIN") {Set("map_mountain_bg1") Choose(Set("map_mountain1"),
+      Set("map_mountain2"), Set("map_mountain3"), Set("map_mountain4"), Set("map_mountain5"))}})
+  Filter(On("set_mountain_snow"), {Set("MOUNTAIN") Choose(Set("map_mountain_snow1"), Set("map_mountain_snow2"),
+      Set("map_mountain_snow3"), Set("map_mountain_snow4"), Set("map_mountain_snow5"))})
+  Filter(On("set_water"), {Choose(0.7 Set("map_water1"), Set("map_water2"), Set("map_water3"), Set("map_water5"))})
+  Filter(On("set_sand"), {Set("DESERT") Choose(0.7 Set("map_sand1"), Set("map_sand2"))})
+  Filter(On("set_grass"), {Set("GRASSLAND") Choose(0.7 Set("map_grass1"), Set("map_grass2"), Set("map_grass3"))})
+  Filter(On("set_snow"), {Set("SNOW") Choose(0.7 Set("map_snow1"), Set("map_snow2"))})
+  Filter(On("set_swamp"), {Set("SWAMP") Choose(0.7 Set("map_swamp1"), Set("map_swamp2"), Set("map_swamp3"), Set("map_swamp4"))})
+End
+
+Def WorldMapConnections() {
+  Connections("mountain", True)
+  Connections("snow", Not On("set_mountain"))
+  Connections("grass", Not Or(On("set_snow"), On("set_mountain")))
+  Connections("swamp", Not Or(On("set_snow"), On("set_mountain"), On("set_grass")))
+  Connections("sand", Not Or(On("set_grass"), On("set_snow"), On("set_mountain"), On("set_swamp")))
+}
+End
+
+Def WorldMapTrees() {
+  NoiseMap(0.85, {
+    (0.0, 0.15, Filter(On("set_grass"), Set("set_tree")))
+  })
+  Filter(On("set_tree"), {Set("FOREST") Choose(Set("map_tree1"), Set("map_tree2"), Set("map_tree3"))})}
+}
+End
+
 "world_map" {
   NoiseMap(0.65, {
     (0.8, 1.0, Reset("set_water"))
@@ -1012,27 +1050,31 @@ End
   NoiseMap(0.65, {
     (0.0, 0.2, Filter(On("set_snow"), Set("set_mountain_snow")))
   })
-  Filter(On("set_water"), {Choose(0.7 Set("map_water1"), Set("map_water2"), Set("map_water3"), Set("map_water4"))})
-  Filter(On("set_sand"), {Set("DESERT") Choose(0.7 Set("map_sand1"), Set("map_sand2"))})
-  Filter(On("set_grass"), {Set("GRASSLAND") Choose(0.7 Set("map_grass1"), Set("map_grass2"), Set("map_grass3"))})
-  Filter(On("set_snow"), {Set("SNOW") Choose(0.7 Set("map_snow1"), Set("map_snow2"))})
-  Filter(On("set_swamp"), {Set("SWAMP") Choose(0.7 Set("map_swamp1"), Set("map_swamp2"), Set("map_swamp3"), Set("map_swamp4"))})
-  Connections("mountain", True)
-  Connections("snow", Not On("set_mountain"))
-  Connections("grass", Not Or(On("set_snow"), On("set_mountain")))
-  Connections("swamp", Not Or(On("set_snow"), On("set_mountain"), On("set_grass")))
-  Connections("sand", Not Or(On("set_grass"), On("set_snow"), On("set_mountain"), On("set_swamp")))
-Def BigMountain()
-  And(On("set_mountain"), Not On("big_mountain"))
-End
-  Inside(1, Filter(And(Chance(0.1), BigMountain(), Translate({0 -1}, BigMountain()),
-      Translate({-1 0}, BigMountain()), Translate({-1 -1}, BigMountain())),
-      Set("big_mountain")))
-  Filter(On("big_mountain"), Choose(Set("map_mountain_large"), Set("map_mountain_large2")))
-  Filter(On("set_mountain"), {Set("MOUNTAIN") {Set("map_mountain_bg1") Choose(Set("map_mountain1"), Set("map_mountain2"))}})
-  Filter(On("set_mountain_snow"), {Set("MOUNTAIN") Choose(Set("map_mountain_snow1"))})
-  NoiseMap(0.85, {
-    (0.0, 0.15, Filter(On("set_grass"), Set("set_tree")))
+  WorldMapFeatures()
+  WorldMapConnections()
+  WorldMapTrees()
+}
+
+"world_map_test" {
+  NoiseMap(0.65, {
+    (0.8, 1.0, Reset("set_water"))
+    (0.74, 0.8, Reset("set_sand"))
+    (0.2, 0.74, Reset("set_grass"))
+    (0.0, 0.2, Reset("set_mountain"))
+    #(0.0, 0.02, Set("set_lava"))
   })
-  Filter(On("set_tree"), {Set("FOREST") Choose(Set("map_tree1"), Set("map_tree2"), Set("map_tree3"))})
+  #Position(MIDDLE, {1 1}, FloodFill(Or(On("sand"), On("grass"), On("water")), Set("save")))
+  #Filter(Not On("save"), Reset("mountain"))
+  #Border(1, Filter(Not On("mountain"), Fail))
+  CellularAutomaton(Filter(Not On("set_mountain"), Reset("set_water")), 0.35)
+  SplitV(0.7, Filter(On("set_sand"), Reset("set_swamp")), Filter(On("set_water"), Reset("set_sand")))
+  SplitV(0.3, Filter(Or(On("set_water"), On("set_sand")), Reset("set_snow")), {})
+  NoiseMap(0.65, {
+    (0.0, 0.2, Filter(On("set_snow"), Set("set_mountain_snow")))
+  })
+  CellularAutomaton(Set("continent"), 0.5)
+  Filter(Not On("continent"), Reset("set_water"))
+  WorldMapFeatures()
+  WorldMapConnections()
+  WorldMapTrees()
 }

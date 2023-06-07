@@ -233,7 +233,7 @@ map<string, string> Campaign::getParameters() const {
       }
   auto role = EnumInfo<PlayerRole>::getString(playerRole);
   auto gameType = EnumInfo<CampaignType>::getString(type);
-  if (playerRole == PlayerRole::ADVENTURER && type == CampaignType::SINGLE_KEEPER) {
+  if (playerRole == PlayerRole::ADVENTURER && type == CampaignType::QUICK_MAP) {
     role = "WARLORD";
     gameType = "WARLORD";
   }

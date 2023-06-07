@@ -4508,15 +4508,16 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
     auto minimapColumns = WL(getListBuilder, minimapScale);
     for (int x : sites.getBounds().getXRange()) {
       vector<SGuiElem> v;
+      auto groundColor = Color::WHITE;
+      if (!c.isInInfluence(Vec2(x, y)))
+        groundColor = Color(200, 200, 200);
       for (auto& id : sites[x][y].viewId) {
         v.push_back(WL(asciiBackground, id));
         if (startsWith(id.data(), "map_mountain_large"))
-          v.push_back(WL(translate, WL(viewObject, id, iconScale), -Vec2(24, 24)));
+          v.push_back(WL(translate, WL(viewObject, id, iconScale, groundColor), -Vec2(24, 24)));
         else
-          v.push_back(WL(viewObject, id, iconScale));
+          v.push_back(WL(viewObject, id, iconScale, groundColor));
       }
-      if (!c.isInInfluence(Vec2(x, y)))
-        v.push_back(WL(rectangle, Color::BLACK.transparency(50)));
       columns.addElem(WL(stack, std::move(v)));
       auto color = renderer.getTileSet().getColor(sites[x][y].viewId.back()).transparency(150);
       if (auto type = sites[x][y].getVillainType())
@@ -4573,7 +4574,7 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
           elem.push_back(WL(viewObject, ViewId("campaign_defeated"), iconScale));
       if (auto desc = sites[x][y].getDwellerName()) {
         auto width = renderer.getTextLength(*desc, 12, FontId::MAP_FONT);
-        auto color = c.isInInfluence(pos) ? Color::WHITE : Color::GRAY;
+        auto color = c.isInInfluence(pos) ? Color::WHITE : Color(200, 200, 200);
         elem.push_back(WL(translate,
             WL(labelUnicode, *desc, color, 12, FontId::MAP_FONT),
         labelPlacer.getLabelPosition(Vec2(x, y), width), Vec2(width + 6, 18), GuiFactory::TranslateCorner::CENTER));
@@ -5119,22 +5120,6 @@ pair<GuiFactory::ListBuilder, vector<SGuiElem>> GuiBuilder::drawRetiredGames(Ret
   return make_pair(std::move(lines), std::move(added));
 }
 
-static const char* getGameTypeName(CampaignType type) {
-  switch (type) {
-    case CampaignType::FREE_PLAY: return "Campaign";
-    case CampaignType::SINGLE_KEEPER: return "Single map";
-    case CampaignType::QUICK_MAP: return "Quick map";
-  }
-}
-
-SGuiElem GuiBuilder::drawMenuWarning(View::CampaignOptions::WarningType type) {
-  switch (type) {
-    case View::CampaignOptions::NO_RETIRE:
-      return WL(labelMultiLine, "Warning: you won't be able to retire your dungeon in this mode.",
-              legendLineHeight, Renderer::textSize(), Color::RED);
-  }
-}
-
 SGuiElem GuiBuilder::drawRetiredDungeonsButton(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
     View::CampaignMenuState& state) {
   if (campaignOptions.retired) {
@@ -5245,7 +5230,7 @@ SGuiElem GuiBuilder::drawCampaignSettingsButton(SyncQueue<CampaignAction>& queue
         WL(keyHandler, [&focused, cnt] { focused = (focused + cnt - 1) % cnt; },
             Keybinding("MENU_UP"), true)
       );
-      drawMiniMenu(std::move(content), exit, rect.bottomLeft(), 444, true);
+      drawMiniMenu(std::move(content), exit, rect.bottomLeft(), 150, true);
       if (!clicked)
         break;
     }
@@ -5260,17 +5245,14 @@ SGuiElem GuiBuilder::drawGameModeButton(SyncQueue<CampaignAction>& queue, View::
     auto lines = WL(getListBuilder, legendLineHeight);
     bool exit = false;
     int focused = 0;
-    for (int index : All(campaignOptions.availableTypes)) {
-      auto& info = campaignOptions.availableTypes[index];
-      lines.addElem(WL(buttonLabelFocusable, getGameTypeName(info.type),
-          [&, info] { queue.push({CampaignActionId::CHANGE_TYPE, info.type}); exit = true; },
+    for (int index : All(campaignOptions.worldMapNames)) {
+      auto& name = campaignOptions.worldMapNames[index];
+      lines.addElem(WL(buttonLabelFocusable, name,
+          [&, index] { queue.push({CampaignActionId::CHANGE_WORLD_MAP, index}); exit = true; },
           [&focused, index] { return index == focused;}));
-      for (auto& desc : info.description)
-        lines.addElem(WL(leftMargin, 0, WL(label, "- " + desc, Color::LIGHT_GRAY, Renderer::smallTextSize())),
-            legendLineHeight * 2 / 3);
       lines.addSpace(legendLineHeight / 3);
     }
-    int cnt = campaignOptions.availableTypes.size();
+    int cnt = campaignOptions.worldMapNames.size();
     auto content = WL(stack,
       lines.buildVerticalList(),
       WL(keyHandler, [&focused, cnt] { focused = (focused + 1) % cnt; },
@@ -5295,7 +5277,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   auto rightLines = WL(getListBuilder, getStandardLineHeight());
   int optionMargin = 50;
   centerLines.addElem(WL(centerHoriz,
-       WL(label, "Game mode: "_s + getGameTypeName(campaign.getType()))));
+       WL(label, "World map style: "_s + campaignOptions.worldMapNames[campaignOptions.currentWorldMap])));
   rightLines.addElem(WL(leftMargin, -55, drawGameModeButton(queue, campaignOptions, menuState)));
   centerLines.addSpace(10);
   auto helpFocusedFun = [&menuState]{return menuState.index == CampaignMenuElems::Help{};};
@@ -5323,8 +5305,6 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
         .addElemAuto(WL(buttonLabelFocusable, "Go back", [&] { queue.push(CampaignActionId::CANCEL); },
             [&menuState]{return menuState.index == CampaignMenuElems::Back{};}))
         .buildHorizontalList()));
-  if (campaignOptions.warning)
-    rightLines.addElem(WL(leftMargin, -20, drawMenuWarning(*campaignOptions.warning)));
   rightLines.addElem(WL(setWidth, 220, WL(label, "Home map biome: " + campaignOptions.currentBiome)));
   int retiredPosX = 640;
   vector<SGuiElem> interior {

@@ -50,24 +50,6 @@ vector<OptionId> CampaignBuilder::getCampaignOptions(CampaignType type) const {
           OptionId::ENDLESS_ENEMIES,
           OptionId::ENEMY_AGGRESSION,
         };
-    case CampaignType::SINGLE_KEEPER:
-      return {};
-  }
-}
-
-static vector<string> getCampaignTypeDescription(CampaignType type) {
-  switch (type) {
-    case CampaignType::FREE_PLAY:
-      return {
-        "the main game mode"
-      };
-    case CampaignType::SINGLE_KEEPER:
-      return {
-        "everyone on one big map",
-        "retiring not possible"
-      };
-    default:
-      return {};
   }
 }
 
@@ -76,7 +58,6 @@ vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
     case PlayerRole::KEEPER:
       return {
         CampaignType::FREE_PLAY,
-        CampaignType::SINGLE_KEEPER,
 #ifndef RELEASE
         CampaignType::QUICK_MAP,
 #endif
@@ -157,12 +138,13 @@ static bool tileExists(const ContentFactory* factory, const string& s) {
   return false;
 }
 
-static Table<Campaign::SiteInfo> getTerrain(RandomGen& random, const ContentFactory* factory, Vec2 size) {
+static Table<Campaign::SiteInfo> getTerrain(RandomGen& random, const ContentFactory* factory,
+    RandomLayoutId worldMapId, Vec2 size) {
   LayoutCanvas::Map map{Table<vector<Token>>(Rectangle(Vec2(0, 0), size))};
   LayoutCanvas canvas{map.elems.getBounds(), &map};
   bool generated = false;
   for (int i : Range(20))
-    if (factory->randomLayouts.at(RandomLayoutId("world_map")).make(canvas, random)) {
+    if (factory->randomLayouts.at(worldMapId).make(canvas, random)) {
       generated = true;
       break;
     }
@@ -200,7 +182,6 @@ static VillainCounts getVillainCounts(CampaignType type, Options* options) {
       };
     }
     case CampaignType::QUICK_MAP:
-    case CampaignType::SINGLE_KEEPER:
       return {0, 0, 0, 0};
   }
 }
@@ -301,15 +282,6 @@ PlayerRole CampaignBuilder::getPlayerRole() const {
   return avatarInfo.creatureInfo.contains<KeeperCreatureInfo>() ? PlayerRole::KEEPER : PlayerRole::ADVENTURER;
 }
 
-static optional<View::CampaignOptions::WarningType> getMenuWarning(CampaignType type) {
-  switch (type) {
-    case CampaignType::SINGLE_KEEPER:
-      return View::CampaignOptions::NO_RETIRE;
-    default:
-      return none;
-  }
-}
-
 static bool autoConfirm(CampaignType type) {
   switch (type) {
     case CampaignType::QUICK_MAP:
@@ -358,10 +330,14 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
   const auto playerRole = getPlayerRole();
   options->setChoices(OptionId::ENDLESS_ENEMIES, {"none", "from the start", "after winning"});
   options->setChoices(OptionId::ENEMY_AGGRESSION, {"none", "moderate", "extreme"});
+  int worldMapIndex = 0;
+  auto worldMapId = [&] {
+    return contentFactory->worldMaps[worldMapIndex].layout;
+  };
   int failedPlaceVillains = 0;
   while (1) {
     setCountLimits(campaignInfo);
-    Table<Campaign::SiteInfo> terrain = getTerrain(random, contentFactory, size);
+    Table<Campaign::SiteInfo> terrain = getTerrain(random, contentFactory, worldMapId(), size);
     Campaign campaign(terrain, type, playerRole, worldName);
     campaign.mapZoom = campaignInfo.mapZoom;
     campaign.minimapZoom = campaignInfo.minimapZoom;
@@ -380,19 +356,19 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
       campaign.influenceSize = campaignInfo.influenceSize;
       campaign.refreshInfluencePos();
       CampaignAction action = autoConfirm(type) ? CampaignActionId::CONFIRM
-          : view->prepareCampaign({
+          : view->prepareCampaign(View::CampaignOptions {
               campaign,
               (retired && type == CampaignType::FREE_PLAY) ? optional<RetiredGames&>(*retired) : none,
               getCampaignOptions(type),
               getIntroText(),
-              getAvailableTypes().transform([](CampaignType t) -> View::CampaignOptions::CampaignTypeInfo {
-                  return {t, getCampaignTypeDescription(t)};}),
-              getMenuWarning(type),
-              contentFactory->biomeInfo.at(*campaign.getSites()[campaign.getPlayerPos()].biome).keeperBiome->name},
+              contentFactory->biomeInfo.at(*campaign.getSites()[campaign.getPlayerPos()].biome).keeperBiome->name,
+              contentFactory->worldMaps.transform([](auto& elem) { return elem.name; }),
+              worldMapIndex
+            },
               menuState);
       switch (action.getId()) {
         case CampaignActionId::REROLL_MAP:
-          terrain = getTerrain(random, contentFactory, size);
+          terrain = getTerrain(random, contentFactory, worldMapId(), size);
           updateMap = true;
           break;
         case CampaignActionId::UPDATE_MAP:
@@ -401,8 +377,8 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
         case CampaignActionId::SET_POSITION:
           setPlayerPos(campaign, action.get<Vec2>(), avatarInfo.playerCreature->getMaxViewIdUpgrade());
           break;
-        case CampaignActionId::CHANGE_TYPE:
-          type = action.get<CampaignType>();
+        case CampaignActionId::CHANGE_WORLD_MAP:
+          worldMapIndex = action.get<int>();
           retired = genRetired(type);
           updateMap = true;
           break;
@@ -446,13 +422,13 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
 }
 
 CampaignSetup CampaignBuilder::getEmptyCampaign() {
-  Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "");
+  Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::QUICK_MAP, PlayerRole::KEEPER, "");
   return CampaignSetup{ret, "", "", {}, none, EnemyAggressionLevel::MODERATE};
 }
 
 CampaignSetup CampaignBuilder::getWarlordCampaign(const vector<RetiredGames::RetiredGame>& games,
     const string& gameName) {
-  Campaign ret(Table<Campaign::SiteInfo>(games.size(), 1), CampaignType::SINGLE_KEEPER, PlayerRole::ADVENTURER, "");
+  Campaign ret(Table<Campaign::SiteInfo>(games.size(), 1), CampaignType::QUICK_MAP, PlayerRole::ADVENTURER, "");
   for (int i : All(games)) {
     auto site = Campaign::SiteInfo {
       games[i].gameInfo.getViewId(),
