@@ -9,5 +9,5 @@ if exist system_info.txt (
 )
 @type stacktrace.out >> report.txt
 curl.exe --progress-bar -F "userfile=@report.txt" blkrs.com/~michal/upload_stacktrace.php
-@del report.txt
+ren report.txt crashreport%time:~0,2%%time:~3,2%-%date:~-10,2%%date:~3,2%%date:~-4,4%.txt
 @del stacktrace.out
