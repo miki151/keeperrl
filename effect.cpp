@@ -2351,6 +2351,10 @@ static bool apply(const Effects::Filter& e, Position pos, Creature* attacker) {
   return e.predicate.apply(pos, attacker) && e.effect->apply(pos, attacker);
 }
 
+static bool applyToCreaturePreference(const Effects::Filter& e, Creature* c, Creature* attacker) {
+  return e.predicate.apply(c, attacker) && e.effect->applyToCreature(c, attacker);
+}
+
 static optional<FXInfo> getProjectileFX(const Effects::Filter& e) {
   return e.effect->getProjectileFX();
 }
@@ -2449,6 +2453,10 @@ static bool applyToCreature1(const T& t, Creature* c, Creature* attacker, int) {
   return applyToCreature(t, c, attacker);
 }
 
+template <typename T, REQUIRE(applyToCreaturePreference(TVALUE(const T&), TVALUE(Creature*), TVALUE(Creature*)))>
+static bool applyToCreature1(const T& t, Creature* c, Creature* attacker, int) {
+  return applyToCreaturePreference(t, c, attacker);
+}
 template <typename T, REQUIRE(apply(TVALUE(const T&), TVALUE(Position), TVALUE(Creature*)))>
 static bool applyToCreature1(const T& t, Creature* c, Creature* attacker, double) {
   return apply(t, c->getPosition(), attacker);
