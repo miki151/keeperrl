@@ -1327,10 +1327,12 @@
     }
     hatedByEffect = HATE_DRAGONS
   }
-"YELLOW_DRAGON" inherit "WHITE_DRAGON"
+"YELLOW_DRAGON"
   {
     viewId = { "red_dragon" Rgb 240 200 0 255 }
-    attr = append {
+    attr = {
+      DAMAGE 45
+      DEFENSE 47
       ACID_DAMAGE 40
     }
     body = {
