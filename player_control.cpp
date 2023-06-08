@@ -1444,7 +1444,7 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
     }
   }
   if (!item.runes.empty() && !item.item.notArtifact)
-    ret.itemInfo.unavailableReason = "Requires a craftsman of legendary skills.";
+    ret.itemInfo.unavailableReason = "Requires a craftsman of legendary skills and positive morale.";
   if (item.runes.empty() && item.item.requiresUpgrades)
     ret.itemInfo.unavailableReason = "Item cannot be crafted without applied upgrades.";
   ret.itemInfo.actions = {ItemAction::REMOVE};
@@ -1468,8 +1468,9 @@ vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getQueuedWorkshopItems() c
   vector<CollectiveInfo::QueuedItemInfo> ret;
   bool hasLegendarySkill = [&] {
     for (auto c : getCreatures())
-      if (c->getAttr(getGame()->getContentFactory()->workshopInfo.at(chosenWorkshop->type).attr) >=
-           Workshops::getLegendarySkillThreshold())
+      if (c->getMorale().value_or(1) >= 0 &&
+          c->getAttr(getGame()->getContentFactory()->workshopInfo.at(chosenWorkshop->type).attr) >=
+              Workshops::getLegendarySkillThreshold())
         return true;
     return false;
   }();

@@ -2514,7 +2514,7 @@ function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInf
       activeElems.push_back(allButton);
       lines.addElem(std::move(allButton));
       if (!elem.notArtifact)
-        lines.addElem(WL(label, "Upgraded items can only be crafted by a craftsman of legendary skills.",
+        lines.addElem(WL(label, "Upgraded items can only be crafted by a craftsman of legendary skills and positive morale.",
             Renderer::smallTextSize(), Color::LIGHT_GRAY));
       auto content = WL(stack,
           lines.buildVerticalList(),
