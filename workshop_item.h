@@ -59,5 +59,5 @@ struct WorkshopQueuedItem {
   double SERIAL(quality) = 0;
   bool SERIAL(paid);
   vector<PItem> SERIAL(runes);
-  SERIALIZE_ALL(item, runes, state, paid, indexInWorkshop)
+  SERIALIZE_ALL(item, runes, state, paid, indexInWorkshop, quality)
 };
