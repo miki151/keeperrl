@@ -84,7 +84,7 @@ void VillageControl::onOtherKilled(const Creature* victim, const Creature* kille
       victims += 0.15; // small increase for same tribe but different village
 }
 
-void VillageControl::onMemberKilled(const Creature* victim, const Creature* killer) {
+void VillageControl::onMemberKilledOrStunned(Creature* victim, const Creature* killer) {
   if (isEnemy(killer))
     victims += 1;
 }
@@ -357,7 +357,22 @@ vector<Creature*> VillageControl::getAttackers() const {
   return {};
 }
 
+void VillageControl::considerAcceptingPrisoners() {
+  vector<Creature*> captured;
+  for (auto pos : collective->getTerritory().getPillagePositions())
+    if (auto c = pos.getCreature())
+      if (collective->getTribe()->isEnemy(c)) {
+        if (c->isAffected(LastingEffect::STUNNED))
+          captured.push_back(c);
+        else
+          return;
+      }
+  for (auto c : captured)
+    collective->takePrisoner(c);
+}
+
 void VillageControl::update(bool) {
+  considerAcceptingPrisoners();
   considerCancellingAttack();
   acceptImmigration();
   healAllCreatures();

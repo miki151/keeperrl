@@ -105,6 +105,7 @@ struct Place {
   optional<int> placedCount;
   template <class Archive>
   void serialize(Archive& ar1, const unsigned int version) {
+    // ar(generators)
     if (version == 0)
       ar1(withRoundBrackets(generators));
     else

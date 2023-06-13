@@ -12,8 +12,9 @@ struct CreatureExperienceInfo {
   EnumMap<ExperienceType, optional<string>> HASH(warning);
   EnumMap<ExperienceType, vector<pair<string, ViewId>>> HASH(attributes);
   double HASH(combatExperience);
+  double HASH(teamExperience);
   int HASH(numAvailableUpgrades);
-  HASH_ALL(level, limit, warning, combatExperience, numAvailableUpgrades, attributes)
+  HASH_ALL(level, limit, warning, combatExperience, teamExperience, numAvailableUpgrades, attributes)
 };
 
 extern CreatureExperienceInfo getCreatureExperienceInfo(const ContentFactory*, const Creature*);

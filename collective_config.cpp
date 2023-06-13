@@ -46,7 +46,7 @@ template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
   ar(OPTION(immigrantInterval), OPTION(maxPopulation), OPTION(conquerCondition), OPTION(canEnemyRetire));
   ar(SKIP(type), OPTION(leaderAsFighter), OPTION(spawnGhosts), OPTION(ghostProb), OPTION(guardianInfo));
-  ar(SKIP(populationString), SKIP(prisoners), OPTION(alwaysMount));
+  ar(SKIP(populationString), OPTION(prisoners), OPTION(alwaysMount));
 }
 
 SERIALIZABLE(CollectiveConfig);

@@ -58,6 +58,7 @@ End
   config = {
     immigrantInterval = 200
     maxPopulation = 9
+    prisoners = true
   }
   immigrants = {
     {
@@ -76,6 +77,9 @@ End
     }
     tribe = MONSTER
     race = "ki-rin"
+  }
+  config = {
+    prisoners = true
   }
 }
 "ANTS_CLOSED"
@@ -141,7 +145,7 @@ End
     surroundWithResources = 6
   }
 }
-"BLACK_RATS" 
+"BLACK_RATS"
 {
   settlement = {
     type = Builtin ANT_NEST "DUNGEON"
@@ -237,6 +241,7 @@ End
   config = {
     immigrantInterval = 300
     maxPopulation = 16
+    prisoners = true
   }
   behaviour = {
     ambushChance = 0.1
@@ -289,6 +294,7 @@ End
   config = {
     immigrantInterval = 300
     maxPopulation = 16
+    prisoners = true
   }
   behaviour = {
     minPopulation = 0
@@ -350,6 +356,7 @@ End
     spawnGhosts = 4
     ghostProb = 0.1
     alwaysMount = true
+    prisoners = true
   }
 }
 "WARRIORS"
@@ -375,6 +382,7 @@ End
     maxPopulation = 10
     ghostProb = 0.1
     spawnGhosts = 6
+    prisoners = true
   }
   behaviour = {
     ambushChance = 0.1
@@ -446,6 +454,7 @@ End
     ghostProb = 0.1
     spawnGhosts = 6
     alwaysMount = true
+    prisoners = true
   }
   behaviour = {
     minPopulation = 7
@@ -516,6 +525,7 @@ End
     ghostProb = 0.1
     spawnGhosts = 6
     leaderAsFighter = true
+    prisoners = true
   }
   behaviour = {
     minPopulation = 0
@@ -599,6 +609,9 @@ End
       }
     }
   }
+  config = {
+    prisoners = true
+  }
   levelConnection = {
     topLevel = MainEnemy
     direction = UP
@@ -660,6 +673,7 @@ End
     leaderAsFighter = true
     ghostProb = 0.03
     spawnGhosts = 1
+    prisoners = true
   }
   behaviour = {
     minPopulation = 0
@@ -709,6 +723,7 @@ End
     leaderAsFighter = true
     ghostProb = 0.03
     spawnGhosts = 1
+    prisoners = true
   }
   behaviour = {
     minPopulation = 0
@@ -759,6 +774,7 @@ End
     maxPopulation = 15
     ghostProb = 0.1
     spawnGhosts = 4
+    prisoners = true
   }
   behaviour = {
     minPopulation = 3
@@ -819,6 +835,7 @@ End
     ghostProb = 0.1
     spawnGhosts = 4
     alwaysMount = true
+    prisoners = true
   }
   behaviour = {
     ambushChance = 0.05
@@ -964,6 +981,9 @@ End
       leader = { { "BLACK_DRAGON" } }
     }
   }
+  config = {
+    prisoners = true
+  }
   createOnBones = 1.0 { "Z_LEVEL_BLACK_DRAGON_DWARVES" }
 }
 "Z_LEVEL_BALROG"
@@ -990,6 +1010,7 @@ End
   }
   config = {
    leaderAsFighter = true
+   prisoners = true
   }
   behaviour = {
     minPopulation = 0
@@ -1032,6 +1053,7 @@ End
     immigrantInterval = 500
     maxPopulation = 15
     canEnemyRetire = false
+    prisoners = true
   }
   levelConnection = {
     topLevel = ExtraEnemy {"MAIN_DUNGEON_ENTRY"}
@@ -1169,7 +1191,7 @@ End
     immigrantInterval = 1000
     maxPopulation = 10
   }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "WOLF" }
       traits = { FIGHTER }
@@ -1201,7 +1223,7 @@ End
     immigrantInterval = 1000
     maxPopulation = 10
   }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "BAT" }
       traits = { FIGHTER }
@@ -1245,9 +1267,10 @@ End
   config = {
     immigrantInterval = 1000
     maxPopulation = 10
+    prisoners = true
   }
   createOnBones = 0.1 { "KOBOLD_CAVE" }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "BANDIT" }
       traits = { FIGHTER }
@@ -1292,6 +1315,7 @@ End
   config = {
     immigrantInterval = 1000
     maxPopulation = 10
+    prisoners = true
   }
   behaviour = {
     ambushChance = 0.1
@@ -1344,6 +1368,9 @@ End
     }
     tribe = BANDIT
     race = "goblins"
+  }
+  config = {
+    prisoners = true
   }
   discoverable = false
   behaviour = {
@@ -1409,6 +1436,9 @@ STRONGER("GOBLINS_Z_LEVEL5", "GOBLINS_Z_LEVEL", 30)
     furniture = "roomFurniture"
     surroundWithResources = 6
   }
+  config = {
+    prisoners = true
+  }
   behaviour = {
     minPopulation = 0
     minTeamSize = 1
@@ -1439,6 +1469,9 @@ STRONGER("GOBLINS_Z_LEVEL5", "GOBLINS_Z_LEVEL", 30)
       }
     }
     race = "dark elves"
+  }
+  config = {
+    prisoners = true
   }
   discoverable = false
   behaviour = {
@@ -1476,6 +1509,9 @@ STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELVES_Z_LEVEL", 30)
     furniture = "roomFurniture"
     surroundWithResources = 6
   }
+  config = {
+    prisoners = true
+  }
   behaviour = {
     minPopulation = 0
     minTeamSize = 1
@@ -1502,6 +1538,9 @@ STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELVES_Z_LEVEL", 30)
       }
     }
     race = "dwarves"
+  }
+  config = {
+    prisoners = true
   }
   discoverable = false
   behaviour = {
@@ -1536,6 +1575,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
     furniture = "roomFurniture"
     outsideFeatures = "villageOutside"
   }
+  config = {
+    prisoners = true
+  }
 }
 "LIZARDMEN"
 {
@@ -1561,6 +1603,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
     maxPopulation = 11
     ghostProb = 0.1
     spawnGhosts = 4
+    prisoners = true
   }
   behaviour = {
     ambushChance = 0.1
@@ -1579,7 +1622,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
     attackBehaviour = KillLeader
   }
   createOnBones = 0.1 { "VILLAGE" "ELVES" }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "LIZARDMAN" }
       traits = { FIGHTER }
@@ -1616,6 +1659,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
   config = {
     immigrantInterval = 500
     maxPopulation = 15
+    prisoners = true
   }
   levelConnection = {
     topLevel = ExtraEnemy {"DARK_ELVES_ENTRY"}
@@ -1717,6 +1761,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
       }
     }
   }
+  config = {
+    prisoners = true
+  }
 }
 
 "DUNGEON2" inherit "DUNGEON1"
@@ -1768,6 +1815,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
         }
       }
     }
+  }
+  config = {
+    prisoners = true
   }
   behaviour = {
     minPopulation = 0
@@ -1900,6 +1950,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
       { MainEnemy {30 20} DUNGEON }
     }
   }
+  config = {
+    prisoners = true
+  }
 }
 "ENTS"
 {
@@ -1923,8 +1976,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
     immigrantInterval = 300
     maxPopulation = 10
     alwaysMount = true
+    prisoners = true
   }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "ENT" }
       traits = { FIGHTER }
@@ -1949,8 +2003,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
   config = {
     immigrantInterval = 300
     maxPopulation = 10
+    prisoners = true
   }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "DRIAD" }
       traits = { FIGHTER }
@@ -1978,6 +2033,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
   }
   config = {
    leaderAsFighter = true
+   prisoners = true
   }
   createOnBones = 0.1 { "DWARF_CAVE" "KOBOLD_CAVE" }
 }
@@ -1996,6 +2052,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
     leaderAsFighter = true
     spawnGhosts = 1
     ghostProb = 0.03
+    prisoners = true
   }
   behaviour = {
     minPopulation = 0
@@ -2014,6 +2071,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
     race = "yeti"
     tribe = HOSTILE
   }
+  config = {
+    prisoners = true
+  }
 }
 "HYDRA"
 {
@@ -2030,6 +2090,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
     leaderAsFighter = true
     spawnGhosts = 1
     ghostProb = 0.03
+    prisoners = true
   }
 }
 "KRAKEN"
@@ -2133,8 +2194,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
   config = {
     immigrantInterval = 300
     maxPopulation = 10
+    prisoners = true
   }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "HARPY" }
       traits = { FIGHTER }
@@ -2226,7 +2288,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
     race = "altar"
     inhabitants = {
       leader = {
-        id = {"GOBLIN_WIZARD"} 
+        id = {"GOBLIN_WIZARD"}
         expLevelIncrease = { SPELL 7 }
       }
     }
@@ -2331,7 +2393,6 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
       { ExtraEnemy { "COTTAGE_CELLAR" {1} } {10 10} BASIC }
     }
   }
- 
 }
 "ESKIMO_COTTAGE" inherit "HUMAN_COTTAGE"
 {
@@ -2469,6 +2530,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
     ghostProb = 0.1
     spawnGhosts = 6
     alwaysMount = true
+    prisoners = true
   }
   behaviour = {
     ambushChance = 0.1
@@ -2530,6 +2592,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
     race = "elves"
     furniture = "roomFurniture"
   }
+  config = {
+    prisoners = true
+  }
 }
 "LIZARDMEN_COTTAGE"
 {
@@ -2546,6 +2611,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
     furniture = "roomFurniture"
   }
   createOnBones = 1.0 { "ELVEN_COTTAGE" }
+  config = {
+    prisoners = true
+  }
 }
 "KOBOLD_CAVE"
 {
@@ -2560,6 +2628,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
     }
     race = "kobolds"
     stockpiles = {{ "minerals" 60 }}
+  }
+  config = {
+    prisoners = true
   }
 }
 "RAT_CAVE"
@@ -2601,6 +2672,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
     }
   }
   discoverable = false
+  config = {
+    prisoners = true
+  }
   behaviour = {
     minPopulation = 0
     minTeamSize = 1
@@ -2680,6 +2754,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
     maxPopulation = 15
     ghostProb = 0.1
     spawnGhosts = 4
+    prisoners = true
   }
   behaviour = {
     minPopulation = 3
@@ -2731,6 +2806,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
   config = {
     immigrantInterval = 300
     maxPopulation = 16
+    prisoners = true
   }
   createOnBones = 0.1 { "DWARVES" "VILLAGE" }
   immigrants = {
@@ -2763,6 +2839,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
   config = {
     immigrantInterval = 1000
     maxPopulation = 10
+    prisoners = true
   }
   behaviour = {
     minPopulation = 0
@@ -2802,8 +2879,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
   config = {
     immigrantInterval = 300
     maxPopulation = 10
+    prisoners = true
   }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "OGRE" }
       traits = { FIGHTER }

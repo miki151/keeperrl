@@ -63,16 +63,6 @@ EnemyInfo& EnemyInfo::setId(EnemyId i) {
   return *this;
 }
 
-EnemyInfo& EnemyInfo::setImmigrants(vector<ImmigrantInfo> i) {
-  immigrants = std::move(i);
-  return *this;
-}
-
-EnemyInfo& EnemyInfo::setNonDiscoverable() {
-  discoverable = false;
-  return *this;
-}
-
 template <class Archive>
 void LevelConnection::LevelInfo::serialize(Archive& ar, unsigned int v) {
   ar(NAMED(enemy), NAMED(levelSize), NAMED(levelType), NAMED(name), OPTION(isLit), OPTION(canTransfer), OPTION(aiFollows));

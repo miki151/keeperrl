@@ -1867,18 +1867,23 @@ SGuiElem GuiBuilder::drawTrainingInfo(const CreatureExperienceInfo& info, bool i
       empty = false;
     }
   }
-  if (!infoOnly)
+  if (!infoOnly) {
+    auto builder = WL(getListBuilder)
+        .addElemAuto(WL(label, "Experience: ", Color::YELLOW))
+        .addElemAuto(WL(label, toStringRounded(info.combatExperience, 0.01)));
+    if (info.teamExperience > info.combatExperience)
+      builder
+          .addElemAuto(WL(label, " + "))
+          .addElemAuto(WL(label, toStringRounded((info.teamExperience - info.combatExperience) / 2, 0.01)));
     lines.addElem(WL(stack,
-        WL(getListBuilder)
-            .addElemAuto(WL(label, "Experience: ", Color::YELLOW))
-            .addElemAuto(WL(label, toStringRounded(info.combatExperience, 0.01)))
-            .buildHorizontalList(),
+        builder.buildHorizontalList(),
         getTooltip({"Experience increases every attribute that can be or has been trained. If the creature has",
             "no trainable attributes then damage and defense will be used by default.",
             "For example, Dumbug the goblin has a +1 training in archery, and a +3 training in melee.",
             "Having a +2 experience, his damage, defense and ranged damage are further increased by +2."},
             THIS_LINE)
     ));
+  }
   if (!empty)
     return lines.buildVerticalList();
   else
