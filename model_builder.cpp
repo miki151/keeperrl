@@ -83,101 +83,6 @@ ModelBuilder::LevelMakerMethod ModelBuilder::getMaker(LevelType type) {
   }
 }
 
-PModel ModelBuilder::singleMapModel(TribeId keeperTribe, TribeAlignment alignment) {
-  return tryBuilding(10, [&] { return trySingleMapModel(keeperTribe, alignment);}, "single map");
-}
-
-vector<EnemyInfo> ModelBuilder::getSingleMapEnemiesForEvilKeeper(TribeId keeperTribe) {
-  vector<EnemyInfo> enemies;
-  for (int i : Range(random.get(3, 6)))
-    enemies.push_back(enemyFactory->get(EnemyId("HUMAN_COTTAGE")));
-  enemies.push_back(enemyFactory->get(EnemyId("KOBOLD_CAVE")));
-  for (int i : Range(random.get(2, 4)))
-    enemies.push_back(enemyFactory->get(random.choose({EnemyId("BANDITS"), EnemyId("COTTAGE_BANDITS")}, {3, 1})));
-  enemies.push_back(enemyFactory->get(random.choose(EnemyId("GNOMES"), EnemyId("DARK_ELVES_ALLY"))).setVillainType(VillainType::ALLY));
-  enemies.push_back(enemyFactory->get(EnemyId("ANTS_CLOSED")).setVillainType(VillainType::LESSER));
-  enemies.push_back(enemyFactory->get(EnemyId("DWARVES")).setVillainType(VillainType::MAIN));
-  enemies.push_back(enemyFactory->get(EnemyId("KNIGHTS")).setVillainType(VillainType::MAIN));
-  enemies.push_back(enemyFactory->get(EnemyId("ADA_GOLEMS")));
-  enemies.push_back(enemyFactory->get(random.choose(EnemyId("GOBLIN_CAVE_ALLY"), EnemyId("HARPY_CAVE")))
-      .setVillainType(VillainType::ALLY));
-  enemies.push_back(enemyFactory->get(EnemyId("TEMPLE")));
-  for (auto& enemy : random.chooseN(2, {
-        EnemyId("ELEMENTALIST"),
-        EnemyId("WARRIORS"),
-        EnemyId("ELVES"),
-        EnemyId("VILLAGE")}))
-    enemies.push_back(enemyFactory->get(enemy).setVillainType(VillainType::MAIN));
-  for (auto& enemy : random.chooseN(2, {
-        EnemyId("GREEN_DRAGON"),
-        EnemyId("SHELOB"),
-        EnemyId("HYDRA"),
-        EnemyId("RED_DRAGON"),
-        EnemyId("BLACK_DRAGON"),
-        EnemyId("CYCLOPS"),
-        EnemyId("DRIADS"),
-        EnemyId("ENTS")}))
-    enemies.push_back(enemyFactory->get(enemy).setVillainType(VillainType::LESSER));
-  for (auto& enemy : random.chooseN(1, {
-        EnemyId("KRAKEN"),
-        EnemyId("WITCH"),
-        EnemyId("CEMETERY")}))
-    enemies.push_back(enemyFactory->get(enemy));
-  return enemies;
-}
-
-vector<EnemyInfo> ModelBuilder::getSingleMapEnemiesForLawfulKeeper(TribeId keeperTribe) {
-  vector<EnemyInfo> enemies;
-  for (int i : Range(random.get(3, 6)))
-    enemies.push_back(enemyFactory->get(EnemyId("COTTAGE_BANDITS")));
-  enemies.push_back(enemyFactory->get(EnemyId("DARK_ELF_CAVE")));
-  for (int i : Range(random.get(2, 4)))
-    enemies.push_back(enemyFactory->get(random.choose({EnemyId("BANDITS"), EnemyId("COTTAGE_BANDITS")}, {3, 1})));
-  enemies.push_back(enemyFactory->get(EnemyId("GNOMES")).setVillainType(VillainType::ALLY));
-  enemies.push_back(enemyFactory->get(EnemyId("ANTS_CLOSED")).setVillainType(VillainType::LESSER));
-  enemies.push_back(enemyFactory->get(EnemyId("DARK_ELVES_ENEMY")).setVillainType(VillainType::MAIN));
-  enemies.push_back(enemyFactory->get(EnemyId("DEMON_DEN")).setVillainType(VillainType::MAIN));
-  enemies.push_back(enemyFactory->get(EnemyId("ADA_GOLEMS")));
-  enemies.push_back(enemyFactory->get(EnemyId("EVIL_TEMPLE")));
-  for (auto& enemy : random.chooseN(2, {
-        EnemyId("LIZARDMEN"),
-        EnemyId("MINOTAUR"),
-        EnemyId("ORC_VILLAGE"),
-        EnemyId("VILLAGE")}))
-    enemies.push_back(enemyFactory->get(enemy).setVillainType(VillainType::MAIN));
-  for (auto& enemy : random.chooseN(2, {
-        EnemyId("GREEN_DRAGON"),
-        EnemyId("SHELOB"),
-        EnemyId("HYDRA"),
-        EnemyId("RED_DRAGON"),
-        EnemyId("BLACK_DRAGON"),
-        EnemyId("CYCLOPS"),
-        EnemyId("DRIADS"),
-        EnemyId("ENTS")}))
-    enemies.push_back(enemyFactory->get(enemy).setVillainType(VillainType::LESSER));
-  for (auto& enemy : random.chooseN(1, {
-        EnemyId("KRAKEN"),
-        EnemyId("WITCH"),
-        EnemyId("CEMETERY")}))
-    enemies.push_back(enemyFactory->get(enemy));
-  return enemies;
-}
-
-PModel ModelBuilder::trySingleMapModel(TribeId keeperTribe, TribeAlignment alignment) {
-  vector<EnemyInfo> enemyInfo;
-  switch (alignment) {
-    case TribeAlignment::EVIL:
-      enemyInfo = getSingleMapEnemiesForEvilKeeper(keeperTribe);
-      break;
-    case TribeAlignment::LAWFUL:
-      enemyInfo = getSingleMapEnemiesForLawfulKeeper(keeperTribe);
-      break;
-  }
-  for (int i : Range(1, random.get(4)))
-    enemyInfo.push_back(enemyFactory->get(EnemyId("RUINS")));
-  return tryModel(304, enemyInfo, keeperTribe, BiomeId("GRASSLAND"), {});
-}
-
 void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, const vector<BiomeEnemyInfo>& info) {
   for (auto& enemy : info)
     if (random.chance(enemy.probability))
@@ -251,7 +156,7 @@ PModel ModelBuilder::campaignSiteModel(EnemyId enemyId, VillainType type, TribeA
 
 void ModelBuilder::measureSiteGen(int numTries, vector<string> types, vector<BiomeId> biomes) {
   if (types.empty()) {
-    types = {"single_map", "campaign_base", "tutorial", "zlevels"};
+    types = {"campaign_base", "tutorial", "zlevels"};
     for (auto id : enemyFactory->getAllIds()) {
       auto enemy = enemyFactory->get(id);
       if (!!enemy.getBiome())
@@ -261,10 +166,7 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types, vector<Bio
   vector<function<void()>> tasks;
   auto tribe = TribeId::getDarkKeeper();
   for (auto& type : types) {
-    if (type == "single_map")
-      for (auto alignment : ENUM_ALL(TribeAlignment))
-        tasks.push_back([=] { measureModelGen(type, numTries, [&] { trySingleMapModel(tribe, alignment); }); });
-    else if (type == "campaign_base")
+    if (type == "campaign_base")
       for (auto alignment : ENUM_ALL(TribeAlignment))
         for (auto biome : biomes)
           tasks.push_back([=] { measureModelGen(type + " (" + EnumInfo<TribeAlignment>::getString(alignment) + ", "
