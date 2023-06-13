@@ -1008,6 +1008,7 @@ vector<pair<Position, vector<Item*>>> Collective::getStoredItems(ItemIndex index
 }
 
 vector<Item*> Collective::getAllItemsImpl(optional<ItemIndex> index, bool includeMinions) const {
+  PROFILE;
   vector<Item*> allItems;
   for (auto& v : territory->getAll())
     append(allItems, index ? v.getItems(*index) : v.getItems());

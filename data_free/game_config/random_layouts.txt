@@ -296,7 +296,7 @@ End
 
 Def ZLevelCastle2(Type) {
   ZLevelMiniFeatures(Type)
-  Place({1 1} Inside(-10, CellularAutomaton({Remove("hard_rock") Set("floor")}, 0.65)) 1 On("up_stairs0"))
+#Place({1 1} Inside(-10, CellularAutomaton({Remove("hard_rock") Set("floor")}, 0.65)) 1 True)
   Inside(6, SplitH(0.6, {}, Place({25 15} {
     Choose(Castle(2), Castle(3))
     Remove("up_stairs0")
@@ -930,7 +930,7 @@ End
 
 "balrog_z_level" {
   ZLevelMiniFeatures("lava")
-  Place({1 1} Inside(-10, CellularAutomaton({Remove("hard_rock") Set("floor")}, 0.65)) 1 On("up_stairs0"))
+#Place({1 1} Inside(-10, CellularAutomaton({Remove("hard_rock") Set("floor")}, 0.65)) 1 On("up_stairs0"))
   Inside(6, SplitH(0.6, {}, Place({9 18} {
     Border(-1, Reset("hard_rock"))
     Inside(-1, Inside(TOP, 2, Set("no_dig")))

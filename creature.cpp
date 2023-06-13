@@ -639,6 +639,7 @@ void Creature::thirdPerson(const PlayerMessage& playerCanSee) const {
 }
 
 vector<Item*> Creature::getPickUpOptions() const {
+  PROFILE;
   if (!getBody().canPickUpItems())
     return vector<Item*>();
   else
