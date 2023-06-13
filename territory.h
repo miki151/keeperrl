@@ -18,6 +18,8 @@ class Territory {
   bool isEmpty() const;
   const optional<Position>& getCentralPoint() const;
 
+  IterateVectors<Position> getPillagePositions() const;
+
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 

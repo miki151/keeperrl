@@ -1261,7 +1261,7 @@ bool Creature::isFriend(const Creature* c) const {
 
 bool Creature::isEnemy(const Creature* c) const {
   PROFILE;
-  if (c == this)
+  if (c == this || c->statuses.contains(CreatureStatus::PRISONER) || statuses.contains(CreatureStatus::PRISONER))
     return false;
   auto result = getTribe()->isEnemy(c) || c->getTribe()->isEnemy(this) ||
     privateEnemies.hasKey(c) || c->privateEnemies.hasKey(this);

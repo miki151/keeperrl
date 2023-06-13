@@ -221,7 +221,7 @@ optional<TeamId> PlayerControl::getCurrentTeam() const {
   return none;
 }
 
-void PlayerControl::onControlledKilled(const Creature* victim) {
+void PlayerControl::onControlledKilled(Creature* victim) {
   TeamId currentTeam = *getCurrentTeam();
   if (getTeams().getLeader(currentTeam) == victim && getGame()->getPlayerCreatures().size() == 1) {
     vector<PlayerInfo> team;
@@ -240,11 +240,15 @@ void PlayerControl::onControlledKilled(const Creature* victim) {
         getTeams().setLeader(currentTeam, c);
         if (!c->isPlayer())
           c->pushController(createMinionController(c));
+        if (victim->isPlayer())
+          victim->popController();
         return;
       }
     }
     leaveControl();
   }
+  if (victim->isPlayer())
+    victim->popController();
 }
 
 void PlayerControl::onSunlightVisibilityChanged() {
@@ -1006,14 +1010,10 @@ void PlayerControl::handleTrading(Collective* ally) {
   }
 }
 
-auto getPillagePositions(const Collective* col) {
-  return iterateVectors(col->getTerritory().getAll(), col->getTerritory().getStandardExtended());
-}
-
 vector<PItem> PlayerControl::retrievePillageItems(Collective* col, vector<Item*> items) {
   vector<PItem> ret;
   EntitySet<Item> index(items);
-  for (auto pos : getPillagePositions(col))
+  for (auto pos : col->getTerritory().getPillagePositions())
     if (pos.getCollective() == col || !pos.getCollective()) {
       bool update = false;
       for (auto item : copyOf(pos.getInventory().getItems()))
@@ -1030,7 +1030,7 @@ vector<PItem> PlayerControl::retrievePillageItems(Collective* col, vector<Item*>
 vector<Item*> PlayerControl::getPillagedItems(Collective* col) const {
   PROFILE;
   vector<Item*> ret;
-  for (Position v : getPillagePositions(col))
+  for (Position v : col->getTerritory().getPillagePositions())
     if (v.getCollective() == col || !v.getCollective()) {
       if (!collective->getTerritory().contains(v))
         append(ret, v.getItems().filter([this, v](auto item) {
@@ -1041,7 +1041,7 @@ vector<Item*> PlayerControl::getPillagedItems(Collective* col) const {
 
 bool PlayerControl::canPillage(const Collective* col) const {
   PROFILE;
-  for (Position v : getPillagePositions(col))
+  for (Position v : col->getTerritory().getPillagePositions())
     if ((v.getCollective() == col || !v.getCollective()) &&
         !collective->getTerritory().contains(v) && !v.getItems().empty())
       return true;
@@ -1535,12 +1535,10 @@ void PlayerControl::acceptPrisoner(int index) {
   auto immigrants = getPrisonerImmigrantStack();
   if (index < immigrants.size() && !immigrants[index].collective) {
     auto victim = immigrants[index].creatures[0];
-    victim->removeEffect(LastingEffect::STUNNED);
-    victim->unbindPhylactery();
     if (victim->getBody().isHumanoid())
       victim->getAttributes().setBaseAttr(AttrType("DIGGING"),
           max(15, victim->getRawAttr(AttrType("DIGGING"))));
-    collective->addCreature(victim, {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
+    collective->takePrisoner(victim);
     addMessage(PlayerMessage("You enslave " + victim->getName().a()).setPosition(victim->getPosition()));
     for (auto& elem : copyOf(stunnedCreatures))
       if (elem.first == victim)
@@ -2040,6 +2038,21 @@ void PlayerControl::onEvent(const GameEvent& event) {
             addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
           collective->getDungeonLevel().onKilledVillain(col->getVillainType());
         }
+        for (auto pos : col->getTerritory().getPillagePositions())
+          if (auto c = pos.getCreature())
+            if (c->isAffected(LastingEffect::STUNNED))
+              if (auto traits = collective->stunnedMinions.getMaybe(c)) {
+                c->removeEffect(LastingEffect::STUNNED);
+                for (auto t : *traits)
+                  collective->setTrait(c, t);
+              }
+        for (auto c : copyOf(col->getCreatures()))
+          if (auto traits = collective->stunnedMinions.getMaybe(c)) {
+            c->getStatus().erase(CreatureStatus::PRISONER);
+            addMessage(PlayerMessage(c->getName().aOrTitle() + " has been freed from imprisonment!",
+                MessagePriority::HIGH));
+            collective->addCreature(c, *traits);
+          }
       },
       [&](const CreatureEvent& info) {
         if (collective->getCreatures().contains(info.creature))
@@ -2338,6 +2351,7 @@ vector<Creature*> PlayerControl::getTeam(const Creature* c) {
   vector<Creature*> ret;
   for (auto team : getTeams().getActive(c))
     append(ret, getTeams().getMembers(team).filter([](auto c) { return !c->getRider(); }));
+  CHECK(!ret.empty());
   return ret;
 }
 
@@ -3394,7 +3408,27 @@ bool PlayerControl::canAllyJoin(Creature* ally) const {
   return false;
 }
 
+void PlayerControl::considerTogglingCaptureOrderOnMinions() const {
+  for (auto c : getCreatures())
+    c->setCaptureOrder(false);
+  auto toCapture = collective->getCreatures(MinionTrait::FIGHTER).filter([&](auto c) { return !collective->hasTrait(c, MinionTrait::LEADER); });
+  sort(toCapture.begin(), toCapture.end(),
+      [](auto c1, auto c2) { return c1->getCombatExperience() > c2->getCombatExperience(); });
+  if (toCapture.size() > 10)
+    toCapture.resize(10);
+/*  for (auto c : collective->getCreatures(MinionTrait::LEADER))
+    if (!toCapture.contains(c))
+      toCapture.push_back(c);*/
+  for (auto c : toCapture)
+    for (auto col : c->getPosition().getModel()->getCollectives())
+      if (col != collective && col->getConfig().canCapturePrisoners() && !col->isConquered())
+        for (auto pos : col->getTerritory().getPillagePositions())
+          if (pos.getCreature() == c)
+            c->setCaptureOrder(true);
+}
+
 void PlayerControl::update(bool currentlyActive) {
+  considerTogglingCaptureOrderOnMinions();
   vector<Creature*> addedCreatures;
   vector<Level*> currentLevels {getCurrentLevel()};
   for (auto c : getControlled())
@@ -3570,7 +3604,7 @@ void PlayerControl::onConquered(Creature* victim, Creature* killer) {
       }
 }
 
-void PlayerControl::onMemberKilled(const Creature* victim, const Creature* killer) {
+void PlayerControl::onMemberKilledOrStunned(Creature* victim, const Creature* killer) {
   if (victim->isPlayer() &&
       (!collective->hasTrait(victim, MinionTrait::LEADER) || collective->getCreatures(MinionTrait::LEADER).size() > 1))
     onControlledKilled(victim);

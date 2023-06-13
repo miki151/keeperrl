@@ -73,7 +73,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(creatures, taskMap, tribe, control, byTrait, populationGroups, hadALeader, dancing, lockedEquipmentGroups);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment, groupLockedAcitivities);
   ar(delayedPos, knownTiles, technology, kills, points, currentActivity, recordedEvents, allRecordedEvents);
-  ar(credit, model, immigration, teams, name, minionActivities, attackedByPlayer, furnace);
+  ar(credit, model, immigration, teams, name, minionActivities, attackedByPlayer, furnace, stunnedMinions);
   ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching, steedAssignments);
   ar(villainType, enemyId, workshops, zones, discoverable, quarters, populationIncrease, dungeonLevel);
 }
@@ -164,6 +164,12 @@ void Collective::updateCreatureStatus(Creature* c) {
   c->getStatus().set(CreatureStatus::FIGHTER, hasTrait(c, MinionTrait::FIGHTER));
   c->getStatus().set(CreatureStatus::LEADER, hasTrait(c, MinionTrait::LEADER));
   c->getStatus().set(CreatureStatus::PRISONER, hasTrait(c, MinionTrait::PRISONER));
+}
+
+void Collective::takePrisoner(Creature* c) {
+  c->removeEffect(LastingEffect::STUNNED);
+  c->unbindPhylactery();
+  addCreature(c, {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
 }
 
 void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
@@ -770,6 +776,9 @@ void Collective::onEvent(const GameEvent& event) {
         auto victim = info.victim;
         addRecordedEvent("the capturing of " + victim->getName().aOrTitle());
         if (getCreatures().contains(victim)) {
+          stunnedMinions.set(victim, getAllTraits(info.victim));
+          control->addMessage(PlayerMessage(info.victim->getName().aOrTitle() + " has been captured by the enemy",
+              MessagePriority::HIGH));
           if (info.attacker && creatureConsideredPlayer(info.attacker))
             attackedByPlayer = true;
           bool fighterStunned = needsToBeKilledToConquer(victim);
@@ -777,9 +786,13 @@ void Collective::onEvent(const GameEvent& event) {
           removeTrait(victim, MinionTrait::LEADER);
           control->addMessage(PlayerMessage(victim->getName().a() + " is unconsious.")
               .setPosition(victim->getPosition()));
+          control->onMemberKilledOrStunned(info.victim, info.attacker);
+          for (auto team : teams->getContaining(victim))
+            teams->remove(team, victim);
+          setSteed(victim, nullptr);
+          freeFromTask(victim);
           if (isConquered() && fighterStunned)
             getGame()->addEvent(EventInfo::ConqueredEnemy{this, attackedByPlayer});
-          freeFromTask(victim);
         }
       },
       [&](const TrapDisarmed& info) {
@@ -811,7 +824,7 @@ void Collective::onMinionKilled(Creature* victim, Creature* killer) {
     attackedByPlayer = true;
   auto factory = getGame()->getContentFactory();
   string deathDescription = victim->getAttributes().getDeathDescription(factory);
-  control->onMemberKilled(victim, killer);
+  control->onMemberKilledOrStunned(victim, killer);
   if (hasTrait(victim, MinionTrait::PRISONER) && killer && getCreatures().contains(killer))
     returnResource({ResourceId("PRISONER_HEAD"), 1});
   if (!hasTrait(victim, MinionTrait::FARM_ANIMAL) && !hasTrait(victim, MinionTrait::SUMMONED)) {

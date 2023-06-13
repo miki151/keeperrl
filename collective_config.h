@@ -98,7 +98,7 @@ class CollectiveConfig {
 
   static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&, ContentFactory*);
   static BedType getPrisonBedType(const Creature*);
-  
+
   bool hasImmigrantion(bool currentlyActiveModel) const;
   static const MinionActivityInfo& getActivityInfo(MinionActivity);
 
@@ -123,6 +123,6 @@ class CollectiveConfig {
   bool SERIAL(canEnemyRetire) = true;
   ConquerCondition SERIAL(conquerCondition) = ConquerCondition::KILL_FIGHTERS_AND_LEADER;
   string SERIAL(populationString);
-  bool SERIAL(prisoners) = true;
+  bool SERIAL(prisoners) = false;
   bool SERIAL(alwaysMount) = false;
 };

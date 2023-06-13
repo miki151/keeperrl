@@ -40,7 +40,7 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
 
   protected:
   virtual void update(bool currentlyActive) override;
-  virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
+  virtual void onMemberKilledOrStunned(Creature* victim, const Creature* killer) override;
   virtual void onOtherKilled(const Creature* victim, const Creature* killer) override;
   virtual void onRansomPaid() override;
   virtual vector<TriggerInfo> getAllTriggers(const Collective* against) const override;
@@ -57,6 +57,7 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
   bool isEnemy(const Creature*);
   Collective* getEnemyCollective() const;
   void acceptImmigration();
+  void considerAcceptingPrisoners();
 
   heap_optional<VillageBehaviour> SERIAL(behaviour);
 

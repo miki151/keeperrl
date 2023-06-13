@@ -244,6 +244,9 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
 
   unordered_map<string, unordered_set<string>> SERIAL(lockedEquipmentGroups);
+  EntityMap<Creature, EnumSet<MinionTrait>> SERIAL(stunnedMinions);
+
+  void takePrisoner(Creature*);
 
   private:
   struct Private {};

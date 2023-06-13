@@ -72,7 +72,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void leaveControl();
   void teamMemberAction(TeamMemberAction, UniqueEntity<Creature>::Id);
   void toggleControlAllTeamMembers();
-  void onControlledKilled(const Creature* victim);
+  void onControlledKilled(Creature* victim);
   void onSunlightVisibilityChanged();
   void setTutorial(STutorial);
   STutorial getTutorial() const;
@@ -131,7 +131,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void addAttack(const CollectiveAttack&) override;
   virtual void addMessage(const PlayerMessage&) override;
   virtual void addWindowMessage(ViewIdList, const string&) override;
-  virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
+  virtual void onMemberKilledOrStunned(Creature* victim, const Creature* killer) override;
   virtual void onConquered(Creature* victim, Creature* killer) override;
   virtual void onMemberAdded(Creature*) override;
   virtual void onConstructed(Position, FurnitureType) override;
@@ -294,5 +294,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   unordered_set<CollectiveResourceId, CustomHash<CollectiveResourceId>> SERIAL(usedResources);
   optional<vector<Collective*>> SERIAL(allianceAttack);
   enum class Selection { SELECT, DESELECT, NONE } selection = Selection::NONE;
+  void considerTogglingCaptureOrderOnMinions() const;
 };
 

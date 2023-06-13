@@ -787,7 +787,8 @@ class Summoned : public GuardTarget {
   }
 
   virtual MoveInfo getMove() override {
-    if (target->isDead() || target->isAffected(LastingEffect::STUNNED)) {
+    if (target->isDead() || target->isAffected(LastingEffect::STUNNED) ||
+        target->getStatus().contains(CreatureStatus::PRISONER)) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
         creature->dieNoReason(Creature::DropType::NOTHING);
       })};
