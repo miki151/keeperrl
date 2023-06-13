@@ -46,6 +46,7 @@
 #include "scripted_ui.h"
 #include "scripted_ui_data.h"
 #include "body.h"
+#include "enemy_aggression_level.h"
 
 template <class Archive>
 void Game::serialize(Archive& ar, const unsigned int version) {
@@ -53,6 +54,10 @@ void Game::serialize(Archive& ar, const unsigned int version) {
   ar(villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime, avatarId);
   ar(musicType, statistics, tribes, gameIdentifier, players, contentFactory, sunlightTimeOffset, allianceAttackPossible);
   ar(gameDisplayName, models, visited, baseModel, campaign, localTime, turnEvents, effectFlags, zLevelGroups);
+  if (version == 1)
+    ar(enemyAggressionLevel);
+  else if (Archive::is_loading::value)
+    enemyAggressionLevel = EnemyAggressionLevel::NONE;
   if (Archive::is_loading::value)
     sunlightInfo.update(getGlobalTime() + sunlightTimeOffset);
 }

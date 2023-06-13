@@ -167,5 +167,7 @@ class Game : public OwnedObject<Game> {
   Unlocks* unlocks = nullptr;
   void considerAllianceAttack();
   bool SERIAL(allianceAttackPossible) = true;
-  EnemyAggressionLevel enemyAggressionLevel;
+  EnemyAggressionLevel SERIAL(enemyAggressionLevel);
 };
+
+CEREAL_CLASS_VERSION(Game, 1)
