@@ -65,8 +65,6 @@ struct EnemyInfo {
   SERIALIZATION_DECL(EnemyInfo)
   EnemyInfo& setVillainType(VillainType type);
   EnemyInfo& setId(EnemyId);
-  EnemyInfo& setImmigrants(vector<ImmigrantInfo>);
-  EnemyInfo& setNonDiscoverable();
   void updateCreateOnBones(const EnemyFactory&);
   PCollective buildCollective(ContentFactory*) const;
   SettlementInfo SERIAL(settlement);
