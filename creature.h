@@ -99,6 +99,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   /** Morale is in the range [-1:1] **/
   optional<double> getMorale(const ContentFactory* = nullptr) const;
   void addMorale(double);
+  void setTeamExperience(double);
   void take(PItem item, const ContentFactory* = nullptr);
   void take(vector<PItem> item);
   const Equipment& getEquipment() const;
@@ -120,7 +121,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const CreatureName& getName() const;
   CreatureName& getName();
   const char* identify() const;
-  int getAttr(AttrType, bool includeWeapon = true) const;
+  int getAttr(AttrType, bool includeWeapon = true, bool includeTeamExp = true) const;
   int getSpecialAttr(AttrType, const Creature* against) const;
   int getAttrBonus(AttrType, int rawAttr, bool includeWeapon) const;
 
@@ -225,7 +226,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   void increaseExpLevel(ExperienceType, double increase);
 
-  BestAttack getBestAttack(const ContentFactory*) const;
+  BestAttack getBestAttack(const ContentFactory*, bool includeTeamExp = true) const;
 
   vector<pair<Item*, double>> getRandomWeapons() const;
   int getMaxSimultaneousWeapons() const;
@@ -315,8 +316,9 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void onKilledOrCaptured(Creature* victim);
   void updateCombatExperience(Creature* victim);
   double getCombatExperience() const;
+  double getTeamExperience() const;
   void setCombatExperience(double);
-  int getRawAttr(AttrType) const;
+  int getRawAttr(AttrType, bool includeTeamExp = true) const;
 
   void addSound(const Sound&) const;
   void updateViewObject(const ContentFactory*);
@@ -439,6 +441,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool removeBuff(int index, bool msg);
   bool processBuffs();
   double SERIAL(combatExperience) = 0;
+  double SERIAL(teamExperience) = 0;
   int SERIAL(highestAttackValueEver) = 0;
   AttrType modifyDamageAttr(AttrType, const ContentFactory*) const;
 };

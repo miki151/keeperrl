@@ -342,4 +342,5 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool creatureConsideredPlayer(Creature*) const;
   void summonDemon(Creature* summoner);
   unique_ptr<Dancing> SERIAL(dancing);
+  void updateTeamExperience();
 };

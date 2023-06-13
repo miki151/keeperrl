@@ -74,7 +74,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(deathReason, nextPosIntent, globalTime, drops, promotions);
   ar(unknownAttackers, privateEnemies, holding, attributesStack);
   ar(controllerStack, kills, statuses, automatonParts, phylactery, highestAttackValueEver);
-  ar(difficultyPoints, points, capture, spellMap, killTitles, companions, combatExperience);
+  ar(difficultyPoints, points, capture, spellMap, killTitles, companions, combatExperience, teamExperience);
   ar(vision, debt, lastCombatIntent, primaryViewId, steed, buffs, buffCount, buffPermanentCount);
 }
 
@@ -1147,9 +1147,9 @@ int Creature::getAttrBonus(AttrType type, int rawAttr, bool includeWeapon) const
   return def;
 }
 
-int Creature::getAttr(AttrType type, bool includeWeapon) const {
+int Creature::getAttr(AttrType type, bool includeWeapon, bool includeTeamExp) const {
   PROFILE
-  auto raw = getRawAttr(type);
+  auto raw = getRawAttr(type, includeTeamExp);
   return max(0, raw + getAttrBonus(type, raw, includeWeapon));
 }
 
@@ -1170,18 +1170,23 @@ int Creature::getPoints() const {
   return points;
 }
 
-int Creature::getRawAttr(AttrType type) const {
+int Creature::getRawAttr(AttrType type, bool includeTeamExp) const {
   PROFILE
+  auto exp = includeTeamExp ? (teamExperience + combatExperience) / 2 : combatExperience;
   int ret = attributes->getRawAttr(type);
   if (auto expType = getExperienceType(type))
     if (attributes->getMaxExpLevel()[expType->first] > 0 ||
         (expType->first == ExperienceType::MELEE && !attributes->canIncreaseAnyExp()))
-      ret += int(combatExperience) * expType->second;
+      ret += int(exp) * expType->second;
   return ret;
 }
 
 double Creature::getCombatExperience() const {
   return combatExperience;
+}
+
+double Creature::getTeamExperience() const {
+  return teamExperience;
 }
 
 void Creature::setCombatExperience(double value) {
@@ -1315,6 +1320,10 @@ void Creature::considerMovingFromInaccessibleSquare() {
       }
 }
 
+void Creature::setTeamExperience(double value) {
+  teamExperience = value;
+}
+
 void Creature::tick() {
   PROFILE_BLOCK("Creature::tick");
   for (auto& b : attributes->permanentBuffs)
@@ -1323,7 +1332,7 @@ void Creature::tick() {
   if (!!phylactery && !isSubscribed())
     subscribeTo(position.getModel());
   auto factory = getGame()->getContentFactory();
-  highestAttackValueEver = max(highestAttackValueEver, getBestAttack(factory).value);
+  highestAttackValueEver = max(highestAttackValueEver, getBestAttack(factory, false).value);
   if (phylactery && phylactery->killedBy) {
     auto attacker = phylactery->killedBy;
     phylactery = none;
@@ -2114,13 +2123,13 @@ void Creature::increaseExpLevel(ExperienceType type, double increase) {
   }
 }
 
-BestAttack Creature::getBestAttack(const ContentFactory* factory) const {
+BestAttack Creature::getBestAttack(const ContentFactory* factory, bool includeTeamExp) const {
   PROFILE;
   auto viewId = factory->attrInfo.at(AttrType("DAMAGE")).viewId;
   auto value = 0;
   for (auto& a : factory->attrInfo)
     if (a.second.isAttackAttr) {
-      auto damage = getAttr(a.first);
+      auto damage = getAttr(a.first, includeTeamExp);
       if (damage > value) {
         value = damage;
         viewId = a.second.viewId;

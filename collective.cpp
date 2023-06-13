@@ -474,7 +474,20 @@ static int getKeeperUpgradeLevel(int dungeonLevel) {
   return (dungeonLevel + 1) / 5;
 }
 
+void Collective::updateTeamExperience() {
+  for (auto c : getCreatures())
+    c->setTeamExperience(0);
+  for (TeamId team : getTeams().getAllActive()) {
+    double exp = 0;
+    for (auto c : getTeams().getMembers(team))
+      exp = max(exp, c->getCombatExperience());
+    for (auto c : getTeams().getMembers(team))
+      c->setTeamExperience(exp);
+  }
+}
+
 void Collective::update(bool currentlyActive) {
+  updateTeamExperience();
   for (auto leader : getLeaders()) {
     leader->upgradeViewId(getKeeperUpgradeLevel(dungeonLevel.level));
     name->viewId = leader->getViewIdWithWeapon();

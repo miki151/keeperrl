@@ -6,6 +6,7 @@
 #include "view_id.h"
 #include "furniture_type.h"
 #include "tech_id.h"
+#include "attr_type.h"
 
 class Model;
 class Technology;
