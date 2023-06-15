@@ -178,8 +178,6 @@ class PlayerInfo {
   vector<Action> HASH(actions);
   vector<TeamMemberAction> HASH(teamMemberActions);
   optional<double> HASH(carryLimit);
-  optional<ViewId> HASH(quarters);
-  bool HASH(canAssignQuarters);
   vector<ViewIdList> HASH(kills);
   vector<string> HASH(killTitles);
   bool HASH(canExitControlMode);
@@ -190,7 +188,7 @@ class PlayerInfo {
     HASH_ALL(viewId, name, locked);
   };
   vector<EquipmentGroupInfo> HASH(equipmentGroups);
-  HASH_ALL(attributes, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, spellSchools, kills, killTitles, canExitControlMode, equipmentGroups)
+  HASH_ALL(attributes, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, teamOrders, spellSchools, kills, killTitles, canExitControlMode, equipmentGroups)
 };
 
 struct ImmigrantCreatureInfo {
@@ -402,8 +400,7 @@ class CollectiveInfo {
     HIGH,
   };
   optional<RebellionChance> HASH(rebellionChance);
-  vector<ViewId> HASH(allQuarters);
-  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, nextWave, chosenWorkshop, immigration, allImmigration, libraryInfo, minionPromotions, availablePromotions, allQuarters, rebellionChance, avatarLevelInfo, populationString)
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, nextWave, chosenWorkshop, immigration, allImmigration, libraryInfo, minionPromotions, availablePromotions, rebellionChance, avatarLevelInfo, populationString)
 };
 
 class VillageInfo {

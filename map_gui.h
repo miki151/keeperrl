@@ -23,6 +23,7 @@
 #include "entity_map.h"
 #include "view_object.h"
 #include "item_counts.h"
+#include "creature_view.h"
 
 class MapMemory;
 class MapLayout;
@@ -145,6 +146,7 @@ class MapGui : public GuiElem {
   vector<vector<Vec2>> shortestPath;
   vector<vector<Vec2>> permaShortestPath;
   vector<PhylacteryInfo> phylacteries;
+  optional<CreatureView::QuartersInfo> quarters;
   struct AnimationInfo {
     PAnimation animation;
     Vec2 position;
@@ -193,7 +195,7 @@ class MapGui : public GuiElem {
   bool isRenderedHighlight(const ViewIndex&, HighlightType);
   bool isRenderedHighlightLow(Renderer&, const ViewIndex&, HighlightType);
   optional<ViewId> getHighlightedFurniture();
-  Color getHighlightColor(const ViewIndex&, HighlightType);
+  Color getHighlightColor(Vec2, const ViewIndex&, HighlightType);
   void renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight, Vec2 tilePos);
   void renderTileGas(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, Vec2 tilePos);
   void renderTexturedHighlight(Renderer&, Vec2 pos, Vec2 size, Color, ViewId viewId);
@@ -222,8 +224,10 @@ class MapGui : public GuiElem {
   optional<Vec2> selectionSize;
   void fxHighlight(Renderer&, const FXInfo&, Vec2 tilePos, const ViewIndex&);
   void renderShortestPaths(Renderer&, Vec2 tileSize);
+  void renderQuarters(Renderer&);
   void renderPhylacteries(Renderer&, Vec2 tileSize, milliseconds currentTimeReal);
   void updateShortestPaths(CreatureView*, Renderer&, Vec2 tileSize, milliseconds curTimeReal);
+  void updateQuarters(CreatureView*, Renderer&);
   bool isDraggedCreature() const;
   void handleJoyScrolling(pair<double, double> dir, milliseconds time);
   Color squareHighlightColor;

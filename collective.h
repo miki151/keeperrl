@@ -48,7 +48,6 @@ class Workshops;
 class Zones;
 class CollectiveWarnings;
 class Immigration;
-class Quarters;
 class PositionMatching;
 class MinionActivities;
 class ResourceInfo;
@@ -161,9 +160,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void addTorch(Position);
   void setZone(Position, ZoneId);
   void eraseZone(Position, ZoneId);
+  void assignQuarters(Creature*, Position);
   const Zones& getZones() const;
-  Quarters& getQuarters();
-  const Quarters& getQuarters() const;
   void cancelMarkedTask(Position);
   void orderDestruction(Position pos, const DestroyAction&);
   void installBodyPart(Item*, Creature* target);
@@ -325,7 +323,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void considerRebellion();
   void autoAssignSteeds();
   void updateCreatureStatus(Creature*);
-  HeapAllocated<Quarters> SERIAL(quarters);
   void recalculateFurniturePopIncrease();
   int SERIAL(populationIncrease) = 0;
   DungeonLevel SERIAL(dungeonLevel);

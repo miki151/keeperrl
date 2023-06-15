@@ -48,7 +48,6 @@
 #include "creature_factory.h"
 #include "resource_info.h"
 #include "workshop_item.h"
-#include "quarters.h"
 #include "position_matching.h"
 #include "storage_id.h"
 #include "game_config.h"
@@ -75,7 +74,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(delayedPos, knownTiles, technology, kills, points, currentActivity, recordedEvents, allRecordedEvents);
   ar(credit, model, immigration, teams, name, minionActivities, attackedByPlayer, furnace, stunnedMinions);
   ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching, steedAssignments);
-  ar(villainType, enemyId, workshops, zones, discoverable, quarters, populationIncrease, dungeonLevel);
+  ar(villainType, enemyId, workshops, zones, discoverable, populationIncrease, dungeonLevel);
 }
 
 SERIALIZABLE(Collective)
@@ -1723,12 +1722,8 @@ void Collective::eraseZone(Position pos, ZoneId id) {
   }
 }
 
-Quarters& Collective::getQuarters() {
-  return *quarters;
-}
-
-const Quarters& Collective::getQuarters() const {
-  return *quarters;
+void Collective::assignQuarters(Creature* c, Position pos) {
+  zones->assignQuarters(c->getUniqueId(), pos);
 }
 
 const TaskMap& Collective::getTaskMap() const {

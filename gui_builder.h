@@ -167,7 +167,7 @@ class GuiBuilder {
   SGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id current, optional<TeamId> teamId);
   SGuiElem minionButtonsCache;
   int minionButtonsHash = 0;
-  SGuiElem drawMinionPage(const PlayerInfo&, const vector<ViewId>& allQuarters, const optional<TutorialInfo>&);
+  SGuiElem drawMinionPage(const PlayerInfo&, const optional<TutorialInfo>&);
   void updateMinionPageScroll();
   SGuiElem drawAttributesOnPage(vector<SGuiElem>);
   SGuiElem drawEquipmentAndConsumables(const PlayerInfo&, bool infoOnly = false);
@@ -175,7 +175,7 @@ class GuiBuilder {
   SGuiElem drawSpellsList(const vector<SpellInfo>&, GenericId creatureId, bool active);
   SGuiElem getSpellIcon(const SpellInfo&, int index, bool active, GenericId creatureId);
   vector<SGuiElem> drawEffectsList(const PlayerInfo&, bool withTooltip = true);
-  SGuiElem drawMinionActions(const PlayerInfo&, const optional<TutorialInfo>&, const vector<ViewId>& allQuarters);
+  SGuiElem drawMinionActions(const PlayerInfo&, const optional<TutorialInfo>&);
   function<void()> getButtonCallback(UserInput);
   void drawMiniMenu(SGuiElem, function<bool()> done, Vec2 menuPos, int width, bool darkBg);
   void drawMiniMenu(SGuiElem, bool& exit, Vec2 menuPos, int width, bool darkBg, bool resetScrolling = true);
@@ -259,8 +259,7 @@ class GuiBuilder {
   CounterMode counterMode = CounterMode::FPS;
 
   SGuiElem getButtonLine(CollectiveInfo::Button, int num, const optional<TutorialInfo>&);
-  SGuiElem drawMinionsOverlay(const CollectiveInfo::ChosenCreatureInfo&, const vector<ViewId>& allQuarters,
-      const optional<TutorialInfo>&);
+  SGuiElem drawMinionsOverlay(const CollectiveInfo::ChosenCreatureInfo&, const optional<TutorialInfo>&);
   SGuiElem minionsOverlayCache;
   int minionsOverlayHash = 0;
   SGuiElem drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopInfo&, const optional<TutorialInfo>&,
@@ -292,7 +291,6 @@ class GuiBuilder {
   vector<string> hint;
   SGuiElem getExpIncreaseLine(const CreatureExperienceInfo&, ExperienceType, bool infoOnly = false);
   optional<int> highlightedTeamMember;
-  function<void(Rectangle)> getQuartersButtonFun(const PlayerInfo&, const vector<ViewId>& allQuarters);
   SGuiElem drawRebellionOverlay(const CollectiveInfo::RebellionChance&);
   SGuiElem drawVillainsOverlay(const VillageInfo&, const optional<CollectiveInfo::NextWave>&,
       const optional<CollectiveInfo::RebellionChance>&, optional<int> villainsIndexDummy);

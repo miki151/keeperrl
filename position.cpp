@@ -652,7 +652,7 @@ optional<Position> Position::getGroundBelow() const {
 bool Position::isClosedOff(MovementType movement) const {
   auto sectors = level->getSectors(movement);
   auto topLevel = getModel()->getGroundLevel();
-  if (level == topLevel && sectors.isSector(coord, sectors.getLargest()))
+  if (level == topLevel && sectors.getSector(coord) == sectors.getLargest())
     return false;
   for (auto key : level->getAllStairKeys())
     if (sectors.same(coord, level->getLandingSquares(key)[0].getCoord()))

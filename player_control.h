@@ -126,6 +126,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual vector<vector<Vec2>> getTeamPathTo(TeamId, Vec2) const override;
   virtual vector<Vec2> getHighlightedPathTo(Vec2) const override;
   virtual CreatureView::PlacementInfo canPlaceItem(Vec2, int) const override;
+  optional<QuartersInfo> getQuarters(Vec2) const override;
 
   // from CollectiveControl
   virtual void addAttack(const CollectiveAttack&) override;

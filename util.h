@@ -1433,6 +1433,32 @@ class DirSet {
   ContentType content = 0;
 };
 
+template <typename Key, typename Map>
+optional<const typename Map::mapped_type&> getReferenceMaybe(const Map& m, const Key& key) {
+  auto it = m.find(key);
+  if (it != m.end())
+    return it->second;
+  else
+    return none;
+}
+
+template <typename Key, typename Map>
+optional<typename Map::mapped_type&> getReferenceMaybe(Map& m, const Key& key) {
+  auto it = m.find(key);
+  if (it != m.end())
+    return it->second;
+  else
+    return none;
+}
+
+template <typename Map>
+optional<typename Map::mapped_type> getValueMaybe(const Map& m, const typename Map::key_type& key) {
+  auto it = m.find(key);
+  if (it != m.end())
+    return it->second;
+  else
+    return none;
+}
 
 template <typename U, typename V>
 class BiMap {
@@ -1453,15 +1479,17 @@ class BiMap {
   }
 
   void erase(const U& u) {
-    CHECK(m1.count(u));
-    m2.erase(m1.at(u));
-    m1.erase(u);
+    if (auto other = getReferenceMaybe(m1, u)) {
+      m2.erase(*other);
+      m1.erase(u);
+    }
   }
 
   void erase(const V& v) {
-    CHECK(m2.count(v));
-    m1.erase(m2.at(v));
-    m2.erase(v);
+    if (auto other = getReferenceMaybe(m2, v)) {
+      m1.erase(*other);
+      m2.erase(v);
+    }
   }
 
   const V& get(const U& u) const {
@@ -1806,33 +1834,6 @@ class DisjointSets {
   vector<int> father;
   vector<int> size;
 };
-
-template <typename Key, typename Map>
-optional<const typename Map::mapped_type&> getReferenceMaybe(const Map& m, const Key& key) {
-  auto it = m.find(key);
-  if (it != m.end())
-    return it->second;
-  else
-    return none;
-}
-
-template <typename Key, typename Map>
-optional<typename Map::mapped_type&> getReferenceMaybe(Map& m, const Key& key) {
-  auto it = m.find(key);
-  if (it != m.end())
-    return it->second;
-  else
-    return none;
-}
-
-template <typename Map>
-optional<typename Map::mapped_type> getValueMaybe(const Map& m, const typename Map::key_type& key) {
-  auto it = m.find(key);
-  if (it != m.end())
-    return it->second;
-  else
-    return none;
-}
 
 extern int getSize(const string&);
 extern const char* getString(const string&);

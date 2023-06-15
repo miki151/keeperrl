@@ -35,7 +35,6 @@
 #include "minimap_gui.h"
 #include "creature_view.h"
 #include "level.h"
-#include "quarters.h"
 #include "team_order.h"
 #include "lasting_effect.h"
 #include "player_role.h"
@@ -53,6 +52,7 @@
 #include "tutorial_state.h"
 #include "campaign_menu_index.h"
 #include "tileset.h"
+#include "zones.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -3086,7 +3086,7 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
 }
 
 SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo::ChosenCreatureInfo& chosenCreature,
-    const vector<ViewId>& allQuarters, const optional<TutorialInfo>& tutorial) {
+    const optional<TutorialInfo>& tutorial) {
   int margin = 20;
   int minionListWidth = 220;
   setCollectiveTab(CollectiveTab::MINIONS);
@@ -3095,7 +3095,7 @@ SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo::ChosenCreatureInfo
   auto current = chosenCreature.chosenId;
   for (int i : All(minions))
     if (minions[i].creatureId == current)
-      minionPage = WL(margins, drawMinionPage(minions[i], allQuarters, tutorial), 10, 15, 10, 10);
+      minionPage = WL(margins, drawMinionPage(minions[i], tutorial), 10, 15, 10, 10);
   if (!minionPage)
     return WL(empty);
   SGuiElem menu;
@@ -3525,7 +3525,7 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, const GameInfo& info) {
           }
       if (collectiveInfo.chosenCreature)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
-            *collectiveInfo.chosenCreature, collectiveInfo.allQuarters, info.tutorial), OverlayInfo::TOP_LEFT});
+            *collectiveInfo.chosenCreature, info.tutorial), OverlayInfo::TOP_LEFT});
       else if (collectiveInfo.chosenWorkshop) {
         updateWorkshopIndex(*collectiveInfo.chosenWorkshop);
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,
@@ -3877,28 +3877,6 @@ vector<SGuiElem> GuiBuilder::drawItemMenu(const vector<ItemInfo>& items, ItemMen
   return lines;
 }
 
-function<void(Rectangle)> GuiBuilder::getQuartersButtonFun(const PlayerInfo& minion, const vector<ViewId>& allQuarters) {
-  return [this, minionId = minion.creatureId, allQuarters] (Rectangle bounds) {
-    vector<SGuiElem> lines {
-      WL(label, "Assign quarters to minion:")
-    };
-    vector<function<void()>> callbacks { nullptr };
-    auto retAction = [&] (optional<int> index) {
-      this->callbacks.input({UserInputId::ASSIGN_QUARTERS, AssignQuartersInfo{index, minionId}});
-    };
-    lines.push_back(WL(label, "none"));
-    callbacks.push_back([&retAction] { retAction(none); });
-    for (int i : All(allQuarters)) {
-      lines.push_back(WL(getListBuilder, 32)
-          .addElem(WL(viewObject, allQuarters[i]))
-          .addElem(WL(label, toString(i + 1)))
-          .buildHorizontalList());
-      callbacks.push_back([i, &retAction] { retAction(i); });
-    }
-    drawMiniMenu(std::move(lines), std::move(callbacks), {}, bounds.bottomLeft(), 300, true);
-  };
-}
-
 function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& minion) {
   return [=] (Rectangle bounds) {
     auto tasks = WL(getListBuilder, legendLineHeight);
@@ -4179,7 +4157,7 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool 
   return lines.buildVerticalList();
 }
 
-SGuiElem GuiBuilder::drawMinionActions(const PlayerInfo& minion, const optional<TutorialInfo>& tutorial, const vector<ViewId>& allQuarters) {
+SGuiElem GuiBuilder::drawMinionActions(const PlayerInfo& minion, const optional<TutorialInfo>& tutorial) {
   const int buttonWidth = 110;
   const int buttonSpacing = 15;
   auto line = WL(getListBuilder, buttonWidth);
@@ -4241,16 +4219,6 @@ SGuiElem GuiBuilder::drawMinionActions(const PlayerInfo& minion, const optional<
           .buildHorizontalList()),
       getActivityButtonFun(minion), getNextFocusPredicate(), false, true));
   line2.addSpace(buttonSpacing);
-  if (minion.canAssignQuarters) {
-    auto current = minion.quarters ? WL(viewObject, *minion.quarters) : WL(empty);
-    line2.addElem(WL(buttonLabelFocusable,
-        WL(centerHoriz, WL(getListBuilder)
-              .addElemAuto(WL(label, "Quarters: "  ))
-              .addElemAuto(std::move(current))
-              .buildHorizontalList()),
-        getQuartersButtonFun(minion, allQuarters), getNextFocusPredicate(), false, true));
-    line2.addSpace(buttonSpacing);
-  }
   if (!minion.equipmentGroups.empty())
     line2.addElem(WL(buttonLabelFocusable, "Restrict gear",
         getEquipmentGroupsFun(minion), getNextFocusPredicate(), false, true));
@@ -4322,8 +4290,7 @@ SGuiElem GuiBuilder::drawSpellSchoolLabel(const SpellSchoolInfo& school) {
           [](const Rectangle& r) { return r.bottomRight(); }));
 }
 
-SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const vector<ViewId>& allQuarters,
-    const optional<TutorialInfo>& tutorial) {
+SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const optional<TutorialInfo>& tutorial) {
   auto list = WL(getListBuilder, legendLineHeight);
   auto titleLine = WL(getListBuilder);
   titleLine.addElemAuto(drawTitleButton(minion));
@@ -4332,7 +4299,7 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const vector<ViewI
   list.addElem(titleLine.buildHorizontalList());
   if (!minion.description.empty())
     list.addElem(WL(label, minion.description, Renderer::smallTextSize(), Color::LIGHT_GRAY));
-  list.addElem(drawMinionActions(minion, tutorial, allQuarters), legendLineHeight * 2  );
+  list.addElem(drawMinionActions(minion, tutorial), legendLineHeight * 2  );
   auto leftLines = WL(getListBuilder, legendLineHeight);
   leftLines.addElem(WL(label, "Attributes", Color::YELLOW));
   leftLines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(minion.attributes)));
@@ -4356,7 +4323,7 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const vector<ViewI
     leftLines.addElemAuto(std::move(spells));
   int topMargin = list.getSize() + 20;
   int numActions = minion.actions.size();
-  int numSettings = 2 + (minion.canAssignQuarters ? 1 : 0) + (minion.equipmentGroups.empty() ? 0 : 1);
+  int numSettings = minion.equipmentGroups.empty() ? 2 : 3;
   int numEquipment = minion.inventory.size() + 1;
   return WL(stack, makeVec(
         WL(keyHandlerBool, [this] {

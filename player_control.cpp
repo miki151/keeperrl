@@ -81,7 +81,6 @@
 #include "resource_info.h"
 #include "workshop_item.h"
 #include "time_queue.h"
-#include "quarters.h"
 #include "unknown_locations.h"
 #include "furniture_click.h"
 #include "campaign.h"
@@ -1170,15 +1169,6 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
         minionInfo.actions.push_back(PlayerInfo::DISASSEMBLE);
       else if (leaders.size() > 1 || !collective->hasTrait(c, MinionTrait::LEADER))
         minionInfo.actions.push_back(PlayerInfo::BANISH);
-      if (!collective->hasTrait(c, MinionTrait::PRISONER)) {
-        minionInfo.canAssignQuarters = true;
-        auto& quarters = collective->getQuarters();
-        if (auto index = quarters.getAssigned(c->getUniqueId()))
-          minionInfo.quarters = quarters.getAllQuarters()[*index].viewId;
-        else
-          minionInfo.quarters = none;
-      } else
-        minionInfo.canAssignQuarters = false;
       if (c->isAffected(BuffId("CONSUMPTION_SKILL")))
         minionInfo.actions.push_back(PlayerInfo::CONSUME);
       minionInfo.actions.push_back(PlayerInfo::LOCATE);
@@ -1987,8 +1977,6 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   if (auto rebellionWarning = getRebellionChance(collective->getRebellionProbability()))
     if (!lastWarningDismiss || getModel()->getLocalTime() > *lastWarningDismiss + 1000_visible)
       info.rebellionChance = *rebellionWarning;
-  info.allQuarters = collective->getQuarters().getAllQuarters().transform(
-      [](const auto& info) { return info.viewId; });
 }
 
 void PlayerControl::addMessage(const PlayerMessage& msg) {
@@ -2841,11 +2829,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
         }
       break;
     }
-    case UserInputId::ASSIGN_QUARTERS: {
-      auto& info = input.get<AssignQuartersInfo>();
-      collective->getQuarters().assign(info.index, info.minionId);
-      break;
-    }
     case UserInputId::IMMIGRANT_ACCEPT: {
       int index = input.get<int>();
       if (index < 0)
@@ -3219,6 +3202,40 @@ void PlayerControl::onSquareClick(Position pos) {
           setChosenWorkshop(ChosenWorkshopInfo{0, *workshopType});
     }
   }
+  if (collective->getZones().isZone(pos, ZoneId::QUARTERS)) {
+    vector<PlayerInfo> minions;
+    for (auto c : getCreatures())
+      if (!collective->hasTrait(c, MinionTrait::PRISONER))
+        minions.push_back(PlayerInfo(c, getGame()->getContentFactory()));
+    if (auto id = getView()->chooseCreature("Reassign these quarters", minions, "Cancel"))
+      if (auto c = getCreature(*id))
+        collective->assignQuarters(c, pos);
+  }
+}
+
+optional<PlayerControl::QuartersInfo> PlayerControl::getQuarters(Vec2 pos) const {
+  optional<QuartersInfo> ret;
+  auto level = getCurrentLevel();
+  auto& zones = collective->getZones();
+  if (auto info = zones.getQuartersInfo(Position(pos, level))) {
+    unordered_set<Vec2, CustomHash<Vec2>> v;
+    for (auto& pos : info->positions)
+      if (pos.getLevel() == level)
+        v.insert(pos.getCoord());
+    optional<ViewIdList> viewId;
+    optional<string> name;
+    if (info->id)
+      if (auto c = getCreature(*info->id)) {
+        viewId = c->getViewObject().getViewIdList();
+        name = c->getName().aOrTitle();
+      }
+    ret = QuartersInfo {
+      v,
+      viewId,
+      name
+    };
+  }
+  return ret;
 }
 
 double PlayerControl::getAnimationTime() const {

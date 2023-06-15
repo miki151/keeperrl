@@ -144,8 +144,7 @@ optional<Vec2> MapGui::getHighlightedTile(Renderer&) {
     return none;
 }
 
-Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
-  bool quartersSelected = activeButton && activeButton->viewId.data() == "quarters"_s;
+Color MapGui::getHighlightColor(Vec2 pos, const ViewIndex& index, HighlightType type) {
   bool buildingSelected = activeButton && activeButton->isBuilding;
   switch (type) {
     case HighlightType::RECT_DESELECTION: return Color::RED.transparency(100);
@@ -155,10 +154,8 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
     case HighlightType::PERMANENT_FETCH_ITEMS: return Color::ORANGE.transparency(100);
     case HighlightType::STORAGE_EQUIPMENT: return Color::BLUE.transparency(100);
     case HighlightType::STORAGE_RESOURCES: return Color::GREEN.transparency(100);
-    case HighlightType::QUARTERS1: return Color::PINK.transparency(quartersSelected ? 70 : 20);
-    case HighlightType::QUARTERS2: return Color::SKY_BLUE.transparency(quartersSelected ? 70 : 20);
-    case HighlightType::QUARTERS3: return Color::ORANGE.transparency(quartersSelected ? 70 : 20);
-    case HighlightType::LEISURE: return Color::DARK_BLUE.transparency(quartersSelected ? 70 : 20);
+    case HighlightType::QUARTERS: return Color::PINK.transparency((!!quarters && quarters->positions.count(pos)) ? 70 : 30);
+    case HighlightType::LEISURE: return Color::DARK_BLUE.transparency(70);
     case HighlightType::RECT_SELECTION: return Color::YELLOW.transparency(100);
     case HighlightType::MEMORY: return Color::BLACK.transparency(80);
     case HighlightType::PRIORITY_TASK: return Color(0, 255, 0, 200);
@@ -863,9 +860,7 @@ bool MapGui::isRenderedHighlightLow(Renderer& renderer, const ViewIndex& index, 
     case HighlightType::PERMANENT_FETCH_ITEMS:
     case HighlightType::STORAGE_EQUIPMENT:
     case HighlightType::STORAGE_RESOURCES:
-    case HighlightType::QUARTERS1:
-    case HighlightType::QUARTERS2:
-    case HighlightType::QUARTERS3:
+    case HighlightType::QUARTERS:
     case HighlightType::GUARD_ZONE1:
     case HighlightType::GUARD_ZONE2:
     case HighlightType::GUARD_ZONE3:
@@ -909,7 +904,7 @@ void MapGui::fxHighlight(Renderer& renderer, const FXInfo& info1, Vec2 tilePos, 
 };
 
 void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight, Vec2 tilePos) {
-  auto color = blendNightColor(getHighlightColor(index, highlight), index);
+  auto color = blendNightColor(getHighlightColor(pos, index, highlight), index);
   switch (highlight) {
     case HighlightType::MEMORY:
       break;
@@ -922,9 +917,7 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
     case HighlightType::ALLIED_TOTEM:
       fxHighlight(renderer, FXInfo{FXName::MAGIC_FIELD, Color(100, 255, 100)}, tilePos, index);
       break;
-    case HighlightType::QUARTERS1:
-    case HighlightType::QUARTERS2:
-    case HighlightType::QUARTERS3:
+    case HighlightType::QUARTERS:
     case HighlightType::LEISURE:
     case HighlightType::UNAVAILABLE:
       renderTexturedHighlight(renderer, pos, size, color, ViewId("dig_mark2"));
@@ -1208,6 +1201,25 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
     fxViewManager->finishFrame();
     fxViewManager->drawUnorderedFrontFX(renderer);
   }
+  renderQuarters(renderer);
+}
+
+void MapGui::renderQuarters(Renderer& renderer) {
+  if (quarters) {
+    CHECK(!quarters->positions.empty());
+    auto pos = *quarters->positions.begin();
+    string name = quarters->name.value_or("Unassigned");
+    int length = renderer.getTextLength(name);
+    if (quarters->viewId)
+      length += 30;
+    renderer.drawFilledRectangle(Rectangle(pos, pos + Vec2(length, 20)).minusMargin(-7), Color(0, 0, 0, 150));
+    if (quarters->viewId) {
+      renderer.drawViewObject(pos, *quarters->viewId, true);
+      pos.x += 30;
+    }
+    renderer.drawText(Color::WHITE, pos, name);
+  }
+
 }
 
 void MapGui::renderShortestPaths(Renderer& renderer, Vec2 tileSize) {
@@ -1460,6 +1472,19 @@ double MapGui::getDistanceToEdgeRatio(Vec2 pos) {
   return ret;
 }
 
+void MapGui::updateQuarters(CreatureView* view, Renderer& renderer) {
+  quarters = none;
+  if (auto pos = projectOnMap(renderer.getMousePos())) {
+    quarters = view->getQuarters(*pos);
+    if (quarters) {
+      unordered_set<Vec2, CustomHash<Vec2>> translated;
+      for (auto& v : quarters->positions)
+        translated.insert(projectOnScreen(v));
+      quarters->positions = translated;
+    }
+  }
+}
+
 void MapGui::updateShortestPaths(CreatureView* view, Renderer& renderer, Vec2 tileSize, milliseconds curTimeReal) {
   shortestPath.clear();
   permaShortestPath = view->getPermanentPaths();
@@ -1512,6 +1537,7 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
   layout = mapLayout;
   auto currentTimeReal = clock->getRealMillis();
   updateShortestPaths(view, renderer, layout->getSquareSize(), currentTimeReal);
+  updateQuarters(view, renderer);
   // hacky way to detect that we're switching between real-time and turn-based and not between
   // team members in turn-based mode.
   const bool newView = (view->getCenterType() != previousView);

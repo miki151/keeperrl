@@ -109,9 +109,10 @@ class BfSearch {
   public:
   BfSearch(Rectangle bounds, Vec2 from, function<bool(Vec2)> entryFun, vector<Vec2> directions = Vec2::directions8());
   bool isReachable(Vec2) const;
-  const set<Vec2>& getAllReachable() const;
+  using ReachableSet = unordered_set<Vec2, CustomHash<Vec2>>;
+  const ReachableSet& getAllReachable() const;
 
   private:
-  set<Vec2> reachable;
+  ReachableSet reachable;
 };
 

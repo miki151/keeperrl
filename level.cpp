@@ -519,7 +519,7 @@ vector<Position> Level::getAllPositions() const {
 vector<Position> Level::getAllLandingPositions() const {
   auto largestSector = getSectors({MovementTrait::WALK}).getLargest();
   return getAllPositions().filter([&](Position pos) {
-    return getSectors({MovementTrait::WALK}).isSector(pos.getCoord(), largestSector);
+    return getSectors({MovementTrait::WALK}).getSector(pos.getCoord()) == largestSector;
   });
 }
 

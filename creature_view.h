@@ -58,6 +58,12 @@ class CreatureView {
     vector<Vec2> inRed;
   };
   virtual PlacementInfo canPlaceItem(Vec2, int) const { return PlacementInfo{ true, {}, {} }; }
+  struct QuartersInfo {
+    unordered_set<Vec2, CustomHash<Vec2>> positions;
+    optional<ViewIdList> viewId;
+    optional<string> name;
+  };
+  virtual optional<QuartersInfo> getQuarters(Vec2) const { return none; }
   virtual ~CreatureView() {}
 };
 

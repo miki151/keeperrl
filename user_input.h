@@ -66,7 +66,6 @@ enum class UserInputId {
   CREATURE_LOCATE,
   CREATURE_DRAG_DROP,
   CREATURE_DRAG,
-  ASSIGN_QUARTERS,
   IMMIGRANT_ACCEPT,
   IMMIGRANT_REJECT,
   IMMIGRANT_AUTO_ACCEPT,
@@ -176,11 +175,6 @@ struct TeamMemberActionInfo {
   UniqueEntity<Creature>::Id memberId;
 };
 
-struct AssignQuartersInfo {
-  optional<int> index;
-  UniqueEntity<Creature>::Id minionId;
-};
-
 struct DismissVillageInfo {
   UniqueEntity<Collective>::Id collectiveId;
   string infoText;
@@ -211,7 +205,7 @@ struct EquipmentGroupAction {
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, TeamGroupInfo, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, CreatureDropInfo, CreatureGroupDropInfo, TeamDropInfo,
-    string, TechId, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo,
+    string, TechId, TeamMemberActionInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo,
     WorkshopCountInfo, AIActionInfo, PromotionActionInfo, EquipmentGroupAction),
         ASSIGN(BuildingClickInfo,
             UserInputId::RECT_SELECTION,
@@ -282,8 +276,6 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, 
             UserInputId::TEAM_DRAG_DROP),
         ASSIGN(TeamMemberActionInfo,
             UserInputId::TEAM_MEMBER_ACTION),
-        ASSIGN(AssignQuartersInfo,
-            UserInputId::ASSIGN_QUARTERS),
         ASSIGN(DismissVillageInfo,
             UserInputId::DISMISS_VILLAGE_INFO),
         ASSIGN(string,
