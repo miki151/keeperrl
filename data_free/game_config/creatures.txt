@@ -1561,7 +1561,7 @@
     viewId = { "artisan" }
     attr = {
       DAMAGE 10
-      DEFENSE 10 
+      DEFENSE 10
       FURNACE 25
       WORKSHOP 30
       FORGE 30
@@ -1573,20 +1573,11 @@
     chatReactionFriendly = "talks about crafting"
     chatReactionHostile = "\"Die!\""
     aiType = RANGED
+    maxLevelIncrease = {
+      FORGE 10
+    }
     name = {
       name = "artisan"
-      firstNameGen = "FIRST_MALE"
-    }
-  }
-"ARTISAN_LEGEN" inherit "ARTISAN"
-  {
-    attr = append {
-      WORKSHOP 50
-      FORGE 50
-      JEWELER 50
-    }
-    name = {
-      name = "master artisan"
       firstNameGen = "FIRST_MALE"
     }
   }
@@ -2686,7 +2677,7 @@
     attr = {
       DAMAGE 12
       DEFENSE 13
-      DIGGING 10 
+      DIGGING 10
       FURNACE 10
       WORKSHOP 25
       FORGE 25
@@ -2711,7 +2702,7 @@
     viewId = { "gnome_boss" }
     attr = {
       DAMAGE 15
-      DEFENSE 16 
+      DEFENSE 16
       JEWELER 50
     }
     body = {
@@ -2732,7 +2723,7 @@
     viewId = { "goblin_artificer" }
     attr = {
       DAMAGE 12
-      DEFENSE 13 
+      DEFENSE 13
       FURNACE 25
       LABORATORY 15
       WORKSHOP 30
@@ -2746,6 +2737,9 @@
     chatReactionHostile = "\"Die!\""
     permanentEffects = {
       DISARM_TRAPS_SKILL 1
+    }
+    maxLevelIncrease = {
+      FORGE 10
     }
     aiType = RANGED
     name = {
@@ -2763,7 +2757,7 @@
     viewId = { "imp" }
     attr = {
       DAMAGE 5
-      DEFENSE 15 
+      DEFENSE 15
       DIGGING 15
     }
     body = {
@@ -2808,7 +2802,7 @@
     viewId = { "dwarf" }
     attr = {
       DAMAGE 21
-      DEFENSE 25 
+      DEFENSE 25
       DIGGING 30
       FORGE 20
       FURNACE 15
@@ -2890,9 +2884,10 @@
     viewId = { "dwarf_female" }
     attr = {
       DAMAGE 21
-      DEFENSE 25 
+      DEFENSE 25
       DIGGING 25
       WORKSHOP 25
+      FORGE 25
     }
     specialAttr = {
       DEFENSE { -7 Name "when outdoors" Not Indoors }
@@ -2922,9 +2917,11 @@
       DAMAGE 35
       DEFENSE 35
       DIGGING 35
+      FORGE 30
     }
     maxLevelIncrease = {
       MELEE 10
+      FORGE 10
     }
     name = {
       name = "dwarf baron"
@@ -2953,8 +2950,11 @@
     }
     aiType = RANGED
     attr = append {
-      FORGE 50
+      FORGE 30
       FURNACE 40
+    }
+    maxLevelIncrease = {
+      FORGE 10
     }
     inventory = {}
   }
@@ -2963,7 +2963,7 @@
     viewId = { "lizardman" }
     attr = {
       DAMAGE 20
-      DEFENSE 14 
+      DEFENSE 14
     }
     body = {
       type = Humanoid MEDIUM
@@ -5062,7 +5062,7 @@ End
     viewId = { "ogre" }
     attr = {
       DAMAGE 18
-      DEFENSE 18 
+      DEFENSE 18
       FURNACE 25
       WORKSHOP 25
       FORGE 25

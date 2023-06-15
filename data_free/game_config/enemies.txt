@@ -223,6 +223,7 @@ End
           1 "GOBLIN_WIZARD_VILLAIN"
           1 "GOBLIN_ARCHER_VILLAIN"
           1 "GOBLIN_PRIEST"
+          1 "GOBLIN_ARTIFICER"
           1 "GOBLIN_KABOOMER"
           1 "TROLL_VILLAIN"
         }
@@ -558,7 +559,7 @@ End
     type = RandomLayout { "blacksmith" { 8 12 } "blacksmith"}
     tribe = HUMAN
     inhabitants = {
-      leader = { { "ARTISAN_LEGEN" } }
+      leader = { { "ARTISAN" } }
       fighters = {
         count = {2 5}
         all = {
@@ -2168,7 +2169,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
     immigrantInterval = 300
     maxPopulation = 10
   }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "GOBLIN_WARRIOR" }
       traits = { FIGHTER }
