@@ -489,6 +489,10 @@ bool MapGui::isCreatureHighlighted(UniqueEntity<Creature>::Id creature) {
   return teamHighlight.getMaybe(creature).value_or(0) > 0;
 }
 
+const optional<CreatureView::QuartersInfo>& MapGui::getQuartersInfo() const {
+  return quarters;
+}
+
 bool MapGui::fxesAvailable() const {
   return !!fxRenderer && spriteMode;
 }
@@ -1201,25 +1205,6 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
     fxViewManager->finishFrame();
     fxViewManager->drawUnorderedFrontFX(renderer);
   }
-  renderQuarters(renderer);
-}
-
-void MapGui::renderQuarters(Renderer& renderer) {
-  if (quarters) {
-    CHECK(!quarters->positions.empty());
-    auto pos = *quarters->positions.begin();
-    string name = quarters->name.value_or("Unassigned");
-    int length = renderer.getTextLength(name);
-    if (quarters->viewId)
-      length += 30;
-    renderer.drawFilledRectangle(Rectangle(pos, pos + Vec2(length, 20)).minusMargin(-7), Color(0, 0, 0, 150));
-    if (quarters->viewId) {
-      renderer.drawViewObject(pos, *quarters->viewId, true);
-      pos.x += 30;
-    }
-    renderer.drawText(Color::WHITE, pos, name);
-  }
-
 }
 
 void MapGui::renderShortestPaths(Renderer& renderer, Vec2 tileSize) {

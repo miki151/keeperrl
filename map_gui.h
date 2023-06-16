@@ -90,6 +90,7 @@ class MapGui : public GuiElem {
     optional<ViewIndex> viewIndex;
   };
   const HighlightedInfo& getLastHighlighted();
+  const optional<CreatureView::QuartersInfo>& getQuartersInfo() const;
   bool isCreatureHighlighted(UniqueEntity<Creature>::Id);
   bool fxesAvailable() const;
 
@@ -224,7 +225,6 @@ class MapGui : public GuiElem {
   optional<Vec2> selectionSize;
   void fxHighlight(Renderer&, const FXInfo&, Vec2 tilePos, const ViewIndex&);
   void renderShortestPaths(Renderer&, Vec2 tileSize);
-  void renderQuarters(Renderer&);
   void renderPhylacteries(Renderer&, Vec2 tileSize, milliseconds currentTimeReal);
   void updateShortestPaths(CreatureView*, Renderer&, Vec2 tileSize, milliseconds curTimeReal);
   void updateQuarters(CreatureView*, Renderer&);

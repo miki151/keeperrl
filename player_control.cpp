@@ -3207,7 +3207,7 @@ void PlayerControl::onSquareClick(Position pos) {
     for (auto c : getCreatures())
       if (!collective->hasTrait(c, MinionTrait::PRISONER))
         minions.push_back(PlayerInfo(c, getGame()->getContentFactory()));
-    if (auto id = getView()->chooseCreature("Reassign these quarters", minions, "Cancel"))
+    if (auto id = getView()->chooseCreature("Assign these quarters to:", minions, "Cancel"))
       if (auto c = getCreature(*id))
         collective->assignQuarters(c, pos);
   }
@@ -3219,9 +3219,13 @@ optional<PlayerControl::QuartersInfo> PlayerControl::getQuarters(Vec2 pos) const
   auto& zones = collective->getZones();
   if (auto info = zones.getQuartersInfo(Position(pos, level))) {
     unordered_set<Vec2, CustomHash<Vec2>> v;
+    double luxury = 0;
     for (auto& pos : info->positions)
-      if (pos.getLevel() == level)
+      if (pos.getLevel() == level) {
         v.insert(pos.getCoord());
+        for (auto& f : pos.getFurniture())
+          luxury += f->getLuxuryInfo().luxury;
+      }
     optional<ViewIdList> viewId;
     optional<string> name;
     if (info->id)
@@ -3232,7 +3236,8 @@ optional<PlayerControl::QuartersInfo> PlayerControl::getQuarters(Vec2 pos) const
     ret = QuartersInfo {
       v,
       viewId,
-      name
+      name,
+      luxury
     };
   }
   return ret;

@@ -62,6 +62,7 @@ class CreatureView {
     unordered_set<Vec2, CustomHash<Vec2>> positions;
     optional<ViewIdList> viewId;
     optional<string> name;
+    double luxury;
   };
   virtual optional<QuartersInfo> getQuarters(Vec2) const { return none; }
   virtual ~CreatureView() {}

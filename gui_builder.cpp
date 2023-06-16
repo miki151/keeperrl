@@ -3453,6 +3453,19 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
             lines.addElem(WL(label, "Planned"));
           lines.addElem(WL(margins, WL(rectangle, Color::DARK_GRAY), -9, 2, -9, 8), 12);
         }
+      if (auto& quarters = mapGui->getQuartersInfo()) {
+        lines.addElem(WL(label, "Quarters:"));
+        if (quarters->viewId)
+          lines.addElem(WL(getListBuilder)
+              .addElemAuto(WL(viewObject, *quarters->viewId))
+              .addElemAuto(WL(label, *quarters->name))
+              .buildHorizontalList());
+        else
+          lines.addElem(WL(label, "Unassigned"));
+        lines.addElem(WL(label, "Total luxury: " + getMoraleNumber(quarters->luxury)));
+        lines.addElem(WL(label, "Click to assign"));
+        lines.addElem(WL(margins, WL(rectangle, Color::DARK_GRAY), -9, 2, -9, 8), 12);
+      }
       if (index->isHighlight(HighlightType::INSUFFICIENT_LIGHT))
         lines.addElem(WL(label, "Insufficient light", Color::RED));
       if (index->isHighlight(HighlightType::TORTURE_UNAVAILABLE))
