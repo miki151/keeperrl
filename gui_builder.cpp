@@ -1868,9 +1868,10 @@ SGuiElem GuiBuilder::drawTrainingInfo(const CreatureExperienceInfo& info, bool i
     }
   }
   if (!infoOnly) {
+    auto promoLevel = min(info.maxPromotion * 10.0, info.combatExperience);
     auto builder = WL(getListBuilder)
         .addElemAuto(WL(label, "Experience: ", Color::YELLOW))
-        .addElemAuto(WL(label, toStringRounded(info.combatExperience, 0.01)));
+        .addElemAuto(WL(label, toStringRounded(promoLevel, 0.01)));
     if (info.teamExperience > info.combatExperience)
       builder
           .addElemAuto(WL(label, " + "))
@@ -1883,6 +1884,11 @@ SGuiElem GuiBuilder::drawTrainingInfo(const CreatureExperienceInfo& info, bool i
             "Having a +2 experience, his damage, defense and ranged damage are further increased by +2."},
             THIS_LINE)
     ));
+    if (info.combatExperience > promoLevel)
+      lines.addElem(WL(getListBuilder)
+        .addElemAuto(WL(label, "Unrealized experience: ", Color::YELLOW))
+        .addElemAuto(WL(label, toStringRounded(info.combatExperience - promoLevel, 0.01)))
+        .buildHorizontalList());
   }
   if (!empty)
     return lines.buildVerticalList();

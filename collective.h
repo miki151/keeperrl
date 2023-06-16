@@ -338,9 +338,12 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   EntityMap<Creature, Creature*> SERIAL(steedAssignments);
   bool SERIAL(attackedByPlayer) = false;
   void updateGuardTasks();
+  void updateMinionPromotions();
   void updateAutomatonEngines();
   bool creatureConsideredPlayer(Creature*) const;
   void summonDemon(Creature* summoner);
   unique_ptr<Dancing> SERIAL(dancing);
   void updateTeamExperience();
 };
+
+int getMaxPromotionLevel(double quartersLuxury);

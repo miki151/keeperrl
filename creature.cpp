@@ -71,7 +71,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(OwnedObject<Creature>), SUBCLASS(Renderable), SUBCLASS(UniqueEntity), SUBCLASS(EventListener));
   ar(attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
   ar(deathTime, hidden, lastMoveCounter, captureHealth, effectFlags);
-  ar(deathReason, nextPosIntent, globalTime, drops, promotions);
+  ar(deathReason, nextPosIntent, globalTime, drops, promotions, maxPromotion);
   ar(unknownAttackers, privateEnemies, holding, attributesStack);
   ar(controllerStack, kills, statuses, automatonParts, phylactery, highestAttackValueEver);
   ar(difficultyPoints, points, capture, spellMap, killTitles, companions, combatExperience, teamExperience);
@@ -1171,8 +1171,9 @@ int Creature::getPoints() const {
 }
 
 int Creature::getRawAttr(AttrType type, bool includeTeamExp) const {
-  PROFILE
-  auto exp = (includeTeamExp && teamExperience > 0) ? (teamExperience + combatExperience) / 2 : combatExperience;
+  PROFILE;
+  int combatExp = getCombatExperienceRespectingMaxPromotion();
+  auto exp = (includeTeamExp && teamExperience > 0) ? (teamExperience + combatExp) / 2 : combatExp;
   int ret = attributes->getRawAttr(type);
   if (auto expType = getExperienceType(type))
     if (attributes->getMaxExpLevel()[expType->first] > 0 ||
@@ -1185,12 +1186,24 @@ double Creature::getCombatExperience() const {
   return combatExperience;
 }
 
+double Creature::getCombatExperienceRespectingMaxPromotion() const {
+  return min(10.0 * maxPromotion, combatExperience);
+}
+
 double Creature::getTeamExperience() const {
   return teamExperience;
 }
 
 void Creature::setCombatExperience(double value) {
   combatExperience = value;
+}
+
+void Creature::setMaxPromotion(int level) {
+  maxPromotion = level;
+}
+
+int Creature::getMaxPromotion() const {
+  return maxPromotion;
 }
 
 void Creature::updateCombatExperience(Creature* victim) {

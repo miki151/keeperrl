@@ -95,6 +95,7 @@ class CollectiveConfig {
   CollectiveConfig& setConquerCondition(ConquerCondition);
   bool canCapturePrisoners() const;
   bool alwaysMountSteeds() const;
+  bool minionsRequireQuarters() const;
 
   static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&, ContentFactory*);
   static BedType getPrisonBedType(const Creature*);

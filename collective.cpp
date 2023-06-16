@@ -485,7 +485,7 @@ void Collective::updateTeamExperience() {
   for (TeamId team : getTeams().getAllActive()) {
     double exp = 0;
     for (auto c : getTeams().getMembers(team))
-      exp = max(exp, c->getCombatExperience());
+      exp = max(exp, c->getCombatExperienceRespectingMaxPromotion());
     for (auto c : getTeams().getMembers(team))
       c->setTeamExperience(exp);
   }
@@ -580,11 +580,32 @@ void Collective::updateAutomatonEngines() {
   }
 }
 
+int getMaxPromotionLevel(double quartersLuxury) {
+  return int(quartersLuxury / 6) + 1;
+}
+
+void Collective::updateMinionPromotions() {
+  if (!config->minionsRequireQuarters())
+    return;
+  for (auto c : getCreatures())
+    if (!hasTrait(c, MinionTrait::PRISONER)) {
+      double luxury = 0;
+      auto& quarters = zones->getQuarters(c->getUniqueId());
+      if (quarters.empty())
+        luxury = -1;
+      for (auto pos : quarters)
+        for (auto f : pos.getFurniture())
+          luxury += f->getLuxuryInfo().luxury;
+      c->setMaxPromotion(getMaxPromotionLevel(luxury));
+    }
+}
+
 void Collective::tick() {
   PROFILE_BLOCK("Collective::tick");
   updateBorderTiles();
   considerRebellion();
   updateGuardTasks();
+  updateMinionPromotions();
   dangerLevelCache = none;
   control->tick();
   zones->tick();

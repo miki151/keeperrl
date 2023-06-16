@@ -260,6 +260,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   SMessageBuffer SERIAL(controlModeMessages);
   unordered_set<int> dismissedNextWaves;
   vector<ImmigrantDataInfo> getPrisonerImmigrantData() const;
+  vector<ImmigrantDataInfo> getUnrealizedPromotionsImmigrantData() const;
   vector<ImmigrantDataInfo> getNecromancerImmigrationHelp() const;
   void acceptPrisoner(int index);
   void rejectPrisoner(int index);

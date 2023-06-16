@@ -316,8 +316,11 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void onKilledOrCaptured(Creature* victim);
   void updateCombatExperience(Creature* victim);
   double getCombatExperience() const;
+  double getCombatExperienceRespectingMaxPromotion() const;
   double getTeamExperience() const;
   void setCombatExperience(double);
+  void setMaxPromotion(int level);
+  int getMaxPromotion() const;
   int getRawAttr(AttrType, bool includeTeamExp = true) const;
 
   void addSound(const Sound&) const;
@@ -440,7 +443,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<AdjectiveInfo> getLastingEffectAdjectives(const ContentFactory*, bool bad) const;
   bool removeBuff(int index, bool msg);
   bool processBuffs();
-  double SERIAL(combatExperience) = 0;
+  double SERIAL(combatExperience) = 30;
+  int SERIAL(maxPromotion) = 10000;
   double SERIAL(teamExperience) = 0;
   int SERIAL(highestAttackValueEver) = 0;
   AttrType modifyDamageAttr(AttrType, const ContentFactory*) const;

@@ -1567,6 +1567,27 @@ vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() co
   return ret;
 }
 
+static int getRequiredLuxury(double combatExp) {
+  for (int l = 0;; ++l)
+    if (getMaxPromotionLevel(l) >= combatExp / 10)
+      return l;
+  fail();
+}
+
+vector<ImmigrantDataInfo> PlayerControl::getUnrealizedPromotionsImmigrantData() const {
+  vector<ImmigrantDataInfo> ret;
+  auto contentFactory = getGame()->getContentFactory();
+  for (auto c : getCreatures())
+    if (c->getCombatExperienceRespectingMaxPromotion() < c->getCombatExperience()) {
+      ret.emplace_back();
+      ret.back().requirements.push_back("Creature requires more luxurious quarters to achieve full potential"_s);
+      ret.back().requirements.push_back("Required quarters luxury: " + toString(getRequiredLuxury(c->getCombatExperience())));
+      ret.back().creature = getImmigrantCreatureInfo(c, contentFactory);
+      ret.back().id = -123456;
+    }
+  return ret;
+}
+
 vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
   vector<ImmigrantDataInfo> ret;
   int index = -1;
@@ -1599,7 +1620,7 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
     }
     if (stack.collective)
       requirements.push_back("Requires conquering " + stack.collective->getName()->full);
-    ret.push_back(ImmigrantDataInfo());
+    ret.emplace_back();
     ret.back().requirements = requirements;
     ret.back().creature = getImmigrantCreatureInfo(c, contentFactory);
     ret.back().creature.name += " (prisoner)";
@@ -1674,6 +1695,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   PROFILE;
   info.immigration.clear();
   auto& immigration = collective->getImmigration();
+  info.immigration.append(getUnrealizedPromotionsImmigrantData());
   info.immigration.append(getPrisonerImmigrantData());
   auto factory = getGame()->getContentFactory();
   if (collective->getWorkshops().getWorkshopsTypes().contains(WorkshopType("MORGUE")))

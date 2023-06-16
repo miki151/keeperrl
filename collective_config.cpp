@@ -221,6 +221,10 @@ bool CollectiveConfig::alwaysMountSteeds() const {
   return alwaysMount;
 }
 
+bool CollectiveConfig::minionsRequireQuarters() const {
+  return type == KEEPER;
+}
+
 MinionActivityInfo::MinionActivityInfo(Type t) : type(t) {
   CHECK(type != FURNITURE);
 }
