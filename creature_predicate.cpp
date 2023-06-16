@@ -438,13 +438,22 @@ static bool apply(const T& t, Position pos, const Creature* attacker) {
 
 }
 
+template <typename T, REQUIRE(Impl::applyToCreature(TVALUE(const T&), TVALUE(const Creature*), TVALUE(const Creature*)))>
+static bool applyToCreature1(const T& t, const Creature* c, const Creature* attacker, int) {
+  return Impl::applyToCreature(t, c, attacker);
+}
+
+template <typename T, REQUIRE(Impl::apply(TVALUE(const T&), TVALUE(Position), TVALUE(const Creature*)))>
+static bool applyToCreature1(const T& t, const Creature* c, const Creature* attacker, double) {
+  return Impl::apply(t, c->getPosition(), attacker);
+}
 
 bool CreaturePredicate::apply(Position pos, const Creature* attacker) const {
   return visit<bool>([&](const auto& p) { return Impl::apply(p, pos, attacker); });
 }
 
 bool CreaturePredicate::apply(Creature* c, const Creature* attacker) const {
-  return apply(c->getPosition(), attacker);
+  return visit<bool>([&](const auto& p) { return applyToCreature1(p, c, attacker, 1); });
 }
 
 string CreaturePredicate::getName(const ContentFactory* f) const {
