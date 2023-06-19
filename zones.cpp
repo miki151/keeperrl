@@ -172,7 +172,7 @@ optional<Zones::QuartersInfo> Zones::getQuartersInfo(Position pos) const {
 }
 
 const PositionSet& Zones::getQuarters(UniqueEntity<Creature>::Id id) const {
-  static const PositionSet empty;
+  static const PositionSet empty = PositionSet();
   if (!quarters.contains(id))
     return empty;
   auto res = quarters.get(id);
