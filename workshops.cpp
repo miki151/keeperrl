@@ -76,18 +76,9 @@ vector<PItem> Workshops::Type::unqueue(Collective* collective, int index) {
 
 static const double prodMult = 0.15;
 
-int Workshops::getLegendarySkillThreshold() {
-  return 45;
-}
-
-static bool allowUpgrades(const WorkshopQueuedItem& item, int skillAmount, double morale) {
-  return (!item.item.requiresUpgrades || !item.runes.empty()) && (item.runes.empty() || item.item.notArtifact ||
-      (skillAmount >= Workshops::getLegendarySkillThreshold() && morale >= 0));
-}
-
 bool Workshops::Type::isIdle(const Collective* collective, int skillAmount, double morale) const {
   for (auto& product : queued)
-    if ((product.paid || collective->hasResource(product.item.cost)) && allowUpgrades(product, skillAmount, morale))
+    if (product.paid || collective->hasResource(product.item.cost))
       return false;
   return true;
 }
@@ -113,7 +104,7 @@ auto Workshops::Type::addWork(Collective* collective, double amount, int skillAm
     -> WorkshopResult {
   for (int productIndex : All(queued)) {
     auto& product = queued[productIndex];
-    if ((product.paid || collective->hasResource(product.item.cost)) && allowUpgrades(product, skillAmount, morale)) {
+    if (product.paid || collective->hasResource(product.item.cost)) {
       if (!product.paid) {
         collective->takeResource(product.item.cost);
         addDebt(-product.item.cost);
@@ -133,22 +124,16 @@ auto Workshops::Type::addWork(Collective* collective, double amount, int skillAm
               ret->addModifier(attr, ret->getModifier(attr) * min<double>(
                   attrScaling - 1,
                   getAttrIncrease(skillAmount)));
-        bool wasUpgraded = false;
-        for (auto& rune : product.runes) {
-          if (auto& upgradeInfo = rune->getUpgradeInfo())
-            ret->applyPrefix(*upgradeInfo->prefix, factory);
-          wasUpgraded = !product.item.notArtifact;
-        }
         bool applyImmediately = product.item.applyImmediately;
         queued.removeIndexPreserveOrder(productIndex);
         checkDebtConsistency();
-        return {std::move(ret), wasUpgraded, applyImmediately};
+        return {std::move(ret), applyImmediately};
       }
       break;
     }
   }
   checkDebtConsistency();
-  return WorkshopResult{{}, false, false};
+  return WorkshopResult{{}, false};
 }
 
 const vector<Workshops::QueuedItem>& Workshops::Type::getQueued() const {

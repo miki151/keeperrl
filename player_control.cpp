@@ -1366,7 +1366,7 @@ vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getFurnaceQueue() const {
   for (auto& item : collective->getFurnace().getQueued()) {
         auto itemInfo = getItemInfo(getGame()->getContentFactory(), {item.item.get()}, false, false, false);
         itemInfo.price = getCostObj(collective->getFurnace().getRecycledAmount(item.item.get()));
-    ret.push_back(CollectiveInfo::QueuedItemInfo{item.state, true, std::move(itemInfo), none, {}, {"", 0}, i, true});
+    ret.push_back(CollectiveInfo::QueuedItemInfo{item.state, true, std::move(itemInfo), none, {}, {"", 0}, i});
     ++i;
   }
   return ret;
@@ -1403,13 +1403,12 @@ vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions(int resourceIndex) 
 }
 
 CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQueuedItem& item, int cnt,
-    int itemIndex, bool hasLegendarySkill) const {
+    int itemIndex) const {
   auto contentFactory = getGame()->getContentFactory();
   CollectiveInfo::QueuedItemInfo ret {item.state,
-        item.paid && (item.runes.empty() || item.item.notArtifact || hasLegendarySkill) &&
-            (!item.item.requiresUpgrades || !item.runes.empty()),
+        item.paid && (!item.item.requiresUpgrades || !item.runes.empty()),
         getWorkshopItem(item.item, cnt), getImmigrantCreatureInfo(contentFactory, item.item.type),
-        {}, {"", 0}, itemIndex, item.item.notArtifact};
+        {}, {"", 0}, itemIndex};
   if (!item.paid)
     ret.itemInfo.description.push_back("Cannot afford item");
   auto addItem = [&ret] (CollectiveInfo::QueuedItemInfo::UpgradeInfo info, bool used) {
@@ -1433,8 +1432,6 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
       ret.itemInfo.description.push_back("Crafted from " + it->getAName());
     }
   }
-  if (!item.runes.empty() && !item.item.notArtifact)
-    ret.itemInfo.unavailableReason = "Requires a craftsman of legendary skills.";
   if (item.runes.empty() && item.item.requiresUpgrades)
     ret.itemInfo.unavailableReason = "Item cannot be crafted without applied upgrades.";
   ret.itemInfo.actions = {ItemAction::REMOVE};
@@ -1456,21 +1453,14 @@ static bool runesEqual(const vector<PItem>& v1, const vector<PItem>& v2) {
 vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getQueuedWorkshopItems() const {
   PROFILE;
   vector<CollectiveInfo::QueuedItemInfo> ret;
-  bool hasLegendarySkill = [&] {
-    for (auto c : getCreatures())
-      if (c->getAttr(getGame()->getContentFactory()->workshopInfo.at(chosenWorkshop->type).attr) >=
-           Workshops::getLegendarySkillThreshold())
-        return true;
-    return false;
-  }();
   auto& queued = collective->getWorkshops().types.at(chosenWorkshop->type).getQueued();
   for (int i : All(queued)) {
     if (i > 0 && queued[i - 1].indexInWorkshop == queued[i].indexInWorkshop && queued[i - 1].paid == queued[i].paid &&
         runesEqual(queued[i].runes, queued[i - 1].runes))
       ret.back() = getQueuedItemInfo(queued[ret.back().itemIndex],
-          ret.back().itemInfo.number + 1, ret.back().itemIndex, hasLegendarySkill);
+          ret.back().itemInfo.number + 1, ret.back().itemIndex);
     else
-      ret.push_back(getQueuedItemInfo(queued[i], 1, i, hasLegendarySkill));
+      ret.push_back(getQueuedItemInfo(queued[i], 1, i));
   }
   return ret;
 }
@@ -3237,7 +3227,7 @@ void PlayerControl::onSquareClick(Position pos) {
   if (collective->getZones().isZone(pos, ZoneId::QUARTERS)) {
     vector<PlayerInfo> minions;
     for (auto c : getCreatures())
-      if (!collective->hasTrait(c, MinionTrait::PRISONER))
+      if (collective->hasTrait(c, MinionTrait::FIGHTER) || collective->hasTrait(c, MinionTrait::LEADER))
         minions.push_back(PlayerInfo(c, getGame()->getContentFactory()));
     if (auto id = getView()->chooseCreature("Assign these quarters to:", minions, "Cancel"))
       if (auto c = getCreature(*id))

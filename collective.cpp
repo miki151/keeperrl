@@ -1549,11 +1549,6 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
           if (auto stat = result.item->getProducedStat())
             getGame()->getStatistics().add(*stat);
           control->addMessage(c->getName().a() + " " + workshopInfo.verb + " " + result.item->getAName());
-          if (result.wasUpgraded) {
-            control->addMessage(PlayerMessage(c->getName().the() + " is depressed after crafting his masterpiece.", MessagePriority::HIGH));
-            c->addMorale(-2);
-            addRecordedEvent("the crafting of " + result.item->getTheName());
-          }
           if (result.applyImmediately)
             result.item->getEffect()->apply(pos.first, c);
           else

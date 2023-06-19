@@ -50,9 +50,6 @@ void applySpecialTrait(GlobalTime globalTime, SpecialTrait trait, Creature* c, c
         attack.initializeItem(factory);
         c->getBody().addIntrinsicAttack(a.part, std::move(attack));
       },
-      [&] (WorkshopType type) {
-        c->getAttributes().setBaseAttr(factory->workshopInfo.at(type).attr, Workshops::getLegendarySkillThreshold());
-      },
       [&] (CompanionInfo type) {
         c->getAttributes().companions.push_back(type);
       },

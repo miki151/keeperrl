@@ -53,13 +53,12 @@ struct Lasting {
 #define VARIANT_TYPES_LIST\
   X(ExtraTraining, 0)\
   X(Lasting, 1)\
-  X(WorkshopType, 2)\
-  X(AttrBonus, 3)\
-  X(SpecialAttr, 4)\
-  X(OneOfTraits, 5)\
-  X(ExtraBodyPart, 6)\
-  X(ExtraIntrinsicAttack, 7)\
-  X(CompanionInfo, 8)
+  X(AttrBonus, 2)\
+  X(SpecialAttr, 3)\
+  X(OneOfTraits, 4)\
+  X(ExtraBodyPart, 5)\
+  X(ExtraIntrinsicAttack, 6)\
+  X(CompanionInfo, 7)
 
 #define VARIANT_NAME SpecialTrait
 

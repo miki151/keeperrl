@@ -281,7 +281,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void loadBuildingMenu(const ContentFactory*, const KeeperCreatureInfo&);
   Level* currentLevel = nullptr;
   void scrollStairs(int dir);
-  CollectiveInfo::QueuedItemInfo getQueuedItemInfo(const WorkshopQueuedItem&, int cnt, int itemIndex, bool hasLegendarySkill) const;
+  CollectiveInfo::QueuedItemInfo getQueuedItemInfo(const WorkshopQueuedItem&, int cnt, int itemIndex) const;
   vector<pair<Item*, Position>> getItemUpgradesFor(const WorkshopItem&) const;
   void fillDungeonLevel(AvatarLevelInfo&) const;
   void fillResources(CollectiveInfo&) const;
