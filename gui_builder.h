@@ -162,6 +162,7 @@ class GuiBuilder {
   vector<SGuiElem> drawPlayerAttributes(const ViewObject::CreatureAttributes&);
   SGuiElem drawBestAttack(const BestAttack&);
   SGuiElem drawTrainingInfo(const CreatureExperienceInfo&, bool infoOnly = false);
+  SGuiElem drawExperienceInfo(const CreatureExperienceInfo&);
   SGuiElem drawBuildings(const vector<CollectiveInfo::Button>&, const optional<TutorialInfo>&);
   SGuiElem bottomBandCache;
   SGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id current, optional<TeamId> teamId);

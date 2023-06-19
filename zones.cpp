@@ -179,6 +179,16 @@ const PositionSet& Zones::getQuarters(UniqueEntity<Creature>::Id id) const {
   return getQuartersPositions(res.first, res.second);
 }
 
+optional<double> Zones::getQuartersLuxury(UniqueEntity<Creature>::Id id) const {
+  auto& quarters = getQuarters(id);
+  if (quarters.empty())
+    return none;
+  double ret = 0;
+  for (auto& pos : quarters)
+    ret += pos.getTotalLuxury();
+  return ret;
+}
+
 optional<UniqueEntity<Creature>::Id> Zones::getAssignedToQuarters(Position pos) const {
   if (auto info = getQuartersInfo(pos))
     return info->id;

@@ -16,8 +16,6 @@ class Workshops {
   typedef WorkshopItem Item;
   typedef WorkshopQueuedItem QueuedItem;
 
-  static int getLegendarySkillThreshold();
-
   class Type {
     public:
     Type(const vector<Item>& options);
@@ -25,7 +23,6 @@ class Workshops {
     const vector<QueuedItem>& getQueued() const;
     struct WorkshopResult {
       PItem item;
-      bool wasUpgraded;
       bool applyImmediately;
     };
     WorkshopResult addWork(Collective*, double workAmount, int skillAmount, int attrScaling, double morale);

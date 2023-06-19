@@ -707,7 +707,7 @@ Def NoEffect() Unlock "nothing" End
 "berserker"
 {
   symbol = "🐻"
-  effect = Name "berskerker" Description "Change into a bear!" AI Health 0 0.4 0 1 {
+  effect = Name "berskerker" Description "Change into a bear!" AI Health 0.6 1.0 1 -2 {
     Polymorph "CAVE_BEAR" 30
     IncreaseAttr DAMAGE 20
   }

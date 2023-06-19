@@ -19,7 +19,7 @@ CreatureExperienceInfo getCreatureExperienceInfo(const ContentFactory* f, const 
     }),
     c->getCombatExperience(),
     c->getTeamExperience(),
-    c->getMaxPromotion(),
+    c->getCombatExperienceCap(),
     0
   };
 }

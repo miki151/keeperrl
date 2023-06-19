@@ -296,14 +296,13 @@ class CollectiveInfo {
     vector<UpgradeInfo> HASH(upgrades);
     pair<string, int> HASH(maxUpgrades);
     int HASH(itemIndex);
-    bool HASH(notArtifact);
-    HASH_ALL(productionState, paid, itemInfo, creatureInfo, upgrades, maxUpgrades, itemIndex, notArtifact)
+    HASH_ALL(productionState, paid, itemInfo, creatureInfo, upgrades, maxUpgrades, itemIndex)
   };
   struct OptionInfo {
     ItemInfo HASH(itemInfo);
     optional<ImmigrantCreatureInfo> HASH(creatureInfo);
     pair<string, int> HASH(maxUpgrades);
-    HASH_ALL(itemInfo, creatureInfo, maxUpgrades)  
+    HASH_ALL(itemInfo, creatureInfo, maxUpgrades)
   };
   struct ChosenWorkshopInfo {
     vector<ViewId> HASH(resourceTabs);

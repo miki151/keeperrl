@@ -581,7 +581,7 @@ void Collective::updateAutomatonEngines() {
 }
 
 int getMaxPromotionLevel(double quartersLuxury) {
-  return int(quartersLuxury / 6) + 1;
+  return int(2 + quartersLuxury / 3);
 }
 
 void Collective::updateMinionPromotions() {
@@ -589,14 +589,7 @@ void Collective::updateMinionPromotions() {
     return;
   for (auto c : getCreatures())
     if (!hasTrait(c, MinionTrait::PRISONER)) {
-      double luxury = 0;
-      auto& quarters = zones->getQuarters(c->getUniqueId());
-      if (quarters.empty())
-        luxury = -1;
-      for (auto pos : quarters)
-        for (auto f : pos.getFurniture())
-          luxury += f->getLuxuryInfo().luxury;
-      c->setMaxPromotion(getMaxPromotionLevel(luxury));
+      c->setMaxPromotion(getMaxPromotionLevel(zones->getQuartersLuxury(c->getUniqueId()).value_or(-1)));
     }
 }
 
@@ -1556,11 +1549,6 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
           if (auto stat = result.item->getProducedStat())
             getGame()->getStatistics().add(*stat);
           control->addMessage(c->getName().a() + " " + workshopInfo.verb + " " + result.item->getAName());
-          if (result.wasUpgraded) {
-            control->addMessage(PlayerMessage(c->getName().the() + " is depressed after crafting his masterpiece.", MessagePriority::HIGH));
-            c->addMorale(-2);
-            addRecordedEvent("the crafting of " + result.item->getTheName());
-          }
           if (result.applyImmediately)
             result.item->getEffect()->apply(pos.first, c);
           else

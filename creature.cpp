@@ -1187,7 +1187,7 @@ double Creature::getCombatExperience() const {
 }
 
 double Creature::getCombatExperienceRespectingMaxPromotion() const {
-  return min(10.0 * maxPromotion, combatExperience);
+  return min<double>(getCombatExperienceCap(), combatExperience);
 }
 
 double Creature::getTeamExperience() const {
@@ -1202,8 +1202,8 @@ void Creature::setMaxPromotion(int level) {
   maxPromotion = level;
 }
 
-int Creature::getMaxPromotion() const {
-  return maxPromotion;
+int Creature::getCombatExperienceCap() const {
+  return 5 * maxPromotion;
 }
 
 void Creature::updateCombatExperience(Creature* victim) {
@@ -1712,7 +1712,7 @@ double Creature::getFlankedMod() const {
 }
 
 bool Creature::takeDamage(const Attack& attack) {
-  if (steed && Random.roll(2))
+  if (steed && Random.roll(10))
     return steed->takeDamage(attack);
   PROFILE;
   const double hitPenalty = 0.95;
