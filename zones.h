@@ -35,6 +35,7 @@ class Zones {
   bool canSet(Position, ZoneId, const Collective*) const;
   void tick();
   const PositionSet& getQuarters(UniqueEntity<Creature>::Id) const;
+  optional<double> getQuartersLuxury(UniqueEntity<Creature>::Id) const;
   void assignQuarters(UniqueEntity<Creature>::Id, Position);
   struct QuartersInfo {
     optional<UniqueEntity<Creature>::Id> id;

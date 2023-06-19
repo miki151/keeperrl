@@ -1569,7 +1569,7 @@ vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() co
 
 static int getRequiredLuxury(double combatExp) {
   for (int l = 0;; ++l)
-    if (getMaxPromotionLevel(l) >= combatExp / 10)
+    if (getMaxPromotionLevel(l) >= combatExp / 5)
       return l;
   fail();
 }
@@ -1581,7 +1581,17 @@ vector<ImmigrantDataInfo> PlayerControl::getUnrealizedPromotionsImmigrantData() 
     if (c->getCombatExperienceRespectingMaxPromotion() < c->getCombatExperience()) {
       ret.emplace_back();
       ret.back().requirements.push_back("Creature requires more luxurious quarters to achieve full potential"_s);
-      ret.back().requirements.push_back("Required quarters luxury: " + toString(getRequiredLuxury(c->getCombatExperience())));
+      auto req = getRequiredLuxury(c->getCombatExperience());
+      if (req == 0)
+        ret.back().requirements.push_back("Requires personal quarters.");
+      else {
+        auto cur = collective->getZones().getQuartersLuxury(c->getUniqueId());
+        if (!cur)
+          ret.back().requirements.push_back("Requires personal quarters with total luxury: " + toString(req));
+        else
+          ret.back().requirements.push_back("Requires more luxury in quarters: " + toString(req - *cur) +
+              " (" + toString(req) + " in total)");
+      }
       ret.back().creature = getImmigrantCreatureInfo(c, contentFactory);
       ret.back().id = -123456;
     }
@@ -3245,8 +3255,7 @@ optional<PlayerControl::QuartersInfo> PlayerControl::getQuarters(Vec2 pos) const
     for (auto& pos : info->positions)
       if (pos.getLevel() == level) {
         v.insert(pos.getCoord());
-        for (auto& f : pos.getFurniture())
-          luxury += f->getLuxuryInfo().luxury;
+        luxury += pos.getTotalLuxury();
       }
     optional<ViewIdList> viewId;
     optional<string> name;

@@ -1868,7 +1868,7 @@ SGuiElem GuiBuilder::drawTrainingInfo(const CreatureExperienceInfo& info, bool i
     }
   }
   if (!infoOnly) {
-    auto promoLevel = min(info.maxPromotion * 10.0, info.combatExperience);
+    auto promoLevel = min<double>(info.combatExperienceCap, info.combatExperience);
     auto builder = WL(getListBuilder)
         .addElemAuto(WL(label, "Experience: ", Color::YELLOW))
         .addElemAuto(WL(label, toStringRounded(promoLevel, 0.01)));
