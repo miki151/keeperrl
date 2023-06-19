@@ -443,7 +443,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<AdjectiveInfo> getLastingEffectAdjectives(const ContentFactory*, bool bad) const;
   bool removeBuff(int index, bool msg);
   bool processBuffs();
-  double SERIAL(combatExperience) = 10;
+  double SERIAL(combatExperience) = 0;
   int SERIAL(maxPromotion) = 10000;
   double SERIAL(teamExperience) = 0;
   int SERIAL(highestAttackValueEver) = 0;
