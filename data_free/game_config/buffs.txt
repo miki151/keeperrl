@@ -222,7 +222,7 @@ Def IMMUNITY(Name, Attr)
   adjective = "immune to " + Name
   description = "Creature is immune to " + Name + " attacks."
   addedMessage = ARE "immune to " + Name + " attacks"
-  removedMessage = ARE "no longer vulnerable to " + Name + " attacks"
+  removedMessage = ARE "no longer immune to " + Name + " attacks"
   color = ColorId WHITE
   fx = BUFF_WHITE
   defenseMultiplier = 1000

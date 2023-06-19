@@ -1712,7 +1712,7 @@ double Creature::getFlankedMod() const {
 }
 
 bool Creature::takeDamage(const Attack& attack) {
-  if (steed && Random.roll(2))
+  if (steed && Random.roll(10))
     return steed->takeDamage(attack);
   PROFILE;
   const double hitPenalty = 0.95;

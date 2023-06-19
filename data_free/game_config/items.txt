@@ -390,7 +390,7 @@ ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage
     equipmentGroup = "adamantine equipment"
   }
 Def InferniteEffect()
-  Filter Not LastingEffect FIRE_RESISTANT {
+  Filter And { Not LastingEffect FIRE_RESISTANT Not LastingEffect FIRE_IMMUNITY } {
     CreatureMessage {"are burnt by the infernite" "is burnt by the infernite"}
     Bleed 0.01 "infernite"
   }
