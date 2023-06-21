@@ -76,7 +76,7 @@ vector<PItem> Workshops::Type::unqueue(Collective* collective, int index) {
 
 static const double prodMult = 0.15;
 
-bool Workshops::Type::isIdle(const Collective* collective, int skillAmount, double morale) const {
+bool Workshops::Type::isIdle(const Collective* collective) const {
   for (auto& product : queued)
     if (product.paid || collective->hasResource(product.item.cost))
       return false;
@@ -100,7 +100,7 @@ static double getAttrIncrease(double skillAmount) {
   return max(0.0, (skillAmount * 0.1 - 2) / 2.0);
 }
 
-auto Workshops::Type::addWork(Collective* collective, double amount, int skillAmount, int attrScaling, double morale)
+auto Workshops::Type::addWork(Collective* collective, double amount, int skillAmount, int attrScaling)
     -> WorkshopResult {
   for (int productIndex : All(queued)) {
     auto& product = queued[productIndex];
