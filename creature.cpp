@@ -1225,13 +1225,16 @@ void Creature::updateCombatExperience(Creature* victim) {
   }
 }
 
-void Creature::onKilledOrCaptured(Creature* victim) {
+Creature* Creature::getsCreditForKills() {
   for (auto pos : position.getRectangle(Rectangle::centered(10)))
     if (auto c = pos.getCreature())
       if (c->getCompanions().contains(this)) {
-        c->onKilledOrCaptured(victim);
-        return;
+        return c;
       }
+  return this;
+}
+
+void Creature::onKilledOrCaptured(Creature* victim) {
   if (!victim->getBody().isFarmAnimal() && !victim->getAttributes().getIllusionViewObject()) {
     updateCombatExperience(victim);
     int difficulty = victim->getDifficultyPoints();
@@ -1689,7 +1692,6 @@ bool Creature::captureDamage(double damage, Creature* attacker) {
         rider->tryToDismount();
       captureHealth = 1;
       updateViewObject(factory);
-      getGame()->addEvent(EventInfo::CreatureStunned{this, attacker});
     }
     return true;
   } else
@@ -1737,7 +1739,7 @@ bool Creature::takeDamage(const Attack& attack) {
   for (auto& buff : buffs)
     modifyDefense(buff.first);
   for (auto& buff : buffPermanentCount)
-    modifyDefense(buff.first);  
+    modifyDefense(buff.first);
   double damage = getDamage((double) attack.strength / defense);
   if (attack.withSound)
     if (auto sound = attributes->getAttackSound(attack.type, damage > 0))
@@ -1746,8 +1748,10 @@ bool Creature::takeDamage(const Attack& attack) {
   if (damage > 0) {
     bool canCapture = capture && attack.attacker;
     if (canCapture && captureDamage(damage, attack.attacker)) {
-      if (attack.attacker)
+      auto attacker = (attack.attacker ? attack.attacker : lastAttacker)->getsCreditForKills();
+      if (attacker)
         attack.attacker->onKilledOrCaptured(this);
+      getGame()->addEvent(EventInfo::CreatureStunned{this, attacker});
       return true;
     }
     if (!canCapture) {
@@ -2012,6 +2016,7 @@ void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
     drops = DropType::ONLY_INVENTORY;
   getController()->onKilled(attacker);
   deathTime = *getGlobalTime();
+  attacker = attacker->getsCreditForKills();
   lastAttacker = attacker;
   INFO << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
   if (drops == DropType::EVERYTHING || drops == DropType::ONLY_INVENTORY)
