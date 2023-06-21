@@ -1,0 +1,33 @@
+
+Def CreatureList(Title, Record)
+Using Record Vertical {
+  Label(Title)
+  Height 5 {}
+  List(HORIZONTAL_FIT, 400, {
+    Using "view_id" ViewId()
+    Using "attack_value" Label(size = 14)
+    Tooltip(timeout = 0, elem = MiniWindow(Horizontal {
+      Using "name" Label()
+      Horizontal {
+        Using "attack_view_id" ViewId()
+        Using "attack_value" Label()
+      }
+    }))
+  })
+  Height 5 {}
+}
+End
+
+{
+  ExitButtons()
+  FocusKeysVertical()
+  Window(MarginLeft(10, MarginBottom(10, Width 450 {
+    Vertical {
+      #Label("Battle summary")
+      CreatureList("Minions killed:", "minions_killed")
+      CreatureList("Minions captured:", "minions_captured")
+      CreatureList("Enemies killed:", "enemies_killed")
+      CreatureList("Enemies captured:", "enemies_captured")
+    }
+  })))
+}

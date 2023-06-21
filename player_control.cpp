@@ -107,7 +107,7 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
   ar(memory, introText, nextKeeperWarning, tribeAlignment);
   ar(newAttacks, notifiedAttacks, messages, hints);
-  ar(visibilityMap, unknownLocations, dismissedVillageInfos, buildInfo);
+  ar(visibilityMap, unknownLocations, dismissedVillageInfos, buildInfo, battleSummary);
   ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures, usedResources, allianceAttack);
 }
 
@@ -318,6 +318,38 @@ void PlayerControl::teamMemberAction(TeamMemberAction action, Creature::Id id) {
     }
 }
 
+static ScriptedUIDataElems::Record getCreatureRecord(const ContentFactory* factory, const Creature* creature) {
+  auto bestAttack = creature->getBestAttack(factory);
+  return ScriptedUIDataElems::Record {{
+      {"view_id", creature->getViewObject().getViewIdList()},
+      {"attack_view_id", ViewIdList{bestAttack.viewId}},
+      {"attack_value", toString(bestAttack.value)},
+      {"name", capitalFirst(creature->getName().aOrTitle())},
+  }};
+}
+
+void PlayerControl::presentAndClearBattleSummary() {
+  auto data = ScriptedUIDataElems::Record{};
+  auto factory = getGame()->getContentFactory();
+  auto getCreatureList = [factory] (const vector<Creature*>& creatures) {
+    auto ret = ScriptedUIDataElems::List{};
+    for (auto c : creatures)
+      ret.push_back(getCreatureRecord(factory, c));
+    return ret;
+  };
+  if (!battleSummary.minionsKilled.empty())
+    data.elems["minions_killed"] = getCreatureList(battleSummary.minionsKilled);
+  if (!battleSummary.minionsCaptured.empty())
+    data.elems["minions_captured"] = getCreatureList(battleSummary.minionsCaptured);
+  if (!battleSummary.enemiesKilled.empty())
+    data.elems["enemies_killed"] = getCreatureList(battleSummary.enemiesKilled);
+  if (!battleSummary.enemiesCaptured.empty())
+    data.elems["enemies_captured"] = getCreatureList(battleSummary.enemiesCaptured);
+  if (!data.elems.empty())
+    getView()->scriptedUI("battle_summary", data);
+  battleSummary = BattleSummary {};
+}
+
 void PlayerControl::leaveControl() {
   set<TeamId> allTeams;
   for (auto controlled : copyOf(getControlled())) {
@@ -346,6 +378,7 @@ void PlayerControl::leaveControl() {
     break;
   }
   getView()->stopClock();
+  presentAndClearBattleSummary();
 }
 
 void PlayerControl::render(View* view) {
@@ -651,13 +684,9 @@ static ScriptedUIDataElems::Record getItemRecord(const ContentFactory* factory, 
 
 static ScriptedUIDataElems::Record getItemOwnerRecord(const ContentFactory* factory, const Creature* creature,
     int count) {
-  auto bestAttack = creature->getBestAttack(factory);
-  return ScriptedUIDataElems::Record {{
-      {"view_id", creature->getViewObject().getViewIdList()},
-      {"count", toString(count)},
-      {"attack_view_id", ViewIdList{bestAttack.viewId}},
-      {"attack_value", toString(bestAttack.value)}
-  }};
+  auto ret = getCreatureRecord(factory, creature);
+  ret.elems["count"] = toString(count);
+  return ret;
 }
 
 Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
@@ -2053,6 +2082,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
             if (c->isAffected(LastingEffect::STUNNED))
               if (auto traits = collective->stunnedMinions.getMaybe(c)) {
                 c->removeEffect(LastingEffect::STUNNED);
+                battleSummary.minionsCaptured.removeElementMaybe(c);
                 for (auto t : *traits)
                   collective->setTrait(c, t);
               }
@@ -2062,6 +2092,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
             addMessage(PlayerMessage(c->getName().aOrTitle() + " has been freed from imprisonment!",
                 MessagePriority::HIGH));
             collective->addCreature(c, *traits);
+            battleSummary.minionsCaptured.removeElementMaybe(c);
           }
       },
       [&](const CreatureEvent& info) {
@@ -2109,6 +2140,8 @@ void PlayerControl::onEvent(const GameEvent& event) {
         }
       },
       [&](const CreatureStunned& info) {
+        if (collective->getCreatures().contains(info.attacker))
+          battleSummary.enemiesCaptured.push_back(info.victim);
         for (auto villain : getGame()->getCollectives())
           if (villain->getCreatures().contains(info.victim)) {
             if (villain != collective)
@@ -2122,6 +2155,8 @@ void PlayerControl::onEvent(const GameEvent& event) {
         if (canSee(pos))
           if (auto anim = info.victim->getBody().getDeathAnimation(getGame()->getContentFactory()))
             getView()->animation(pos.getCoord(), *anim);
+        if (collective->getCreatures().contains(info.attacker))
+          battleSummary.enemiesKilled.push_back(info.victim);
       },
       [&](const CreatureAttacked& info) {
         auto pos = info.victim->getPosition();
@@ -2373,6 +2408,7 @@ void PlayerControl::commandTeam(TeamId team) {
   getTeams().activate(team);
   collective->freeTeamMembers(getTeams().getMembers(team));
   getView()->resetCenter();
+  battleSummary = BattleSummary {};
 }
 
 void PlayerControl::toggleControlAllTeamMembers() {
@@ -3546,11 +3582,10 @@ void PlayerControl::considerAllianceAttack() {
     if (message) {
       string allianceName = combine(allianceAttack->transform([](auto col) { return col->getName()->race; }));
       collective->addRecordedEvent("the last alliance of " + allianceName);
-      ScriptedUIState state;
       auto data = ScriptedUIDataElems::Record{};
       data.elems["message"] = "The tribes of " + allianceName + " have formed an alliance against you.";
       data.elems["view_id"] = ViewIdList{allianceAttack->front()->getName()->viewId};
-      getView()->scriptedUI("alliance_message", data, state);
+      getView()->scriptedUI("alliance_message", data);
       allianceAttack = none;
     }
   }
@@ -3652,6 +3687,10 @@ void PlayerControl::onMemberKilledOrStunned(Creature* victim, const Creature* ki
       (!collective->hasTrait(victim, MinionTrait::LEADER) || collective->getCreatures(MinionTrait::LEADER).size() > 1))
     onControlledKilled(victim);
   visibilityMap->remove(victim);
+  if (victim->isDead())
+    battleSummary.minionsKilled.push_back(victim);
+  else
+    battleSummary.minionsCaptured.push_back(victim);
 }
 
 void PlayerControl::onMemberAdded(Creature* c) {

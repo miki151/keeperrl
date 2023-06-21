@@ -297,5 +297,13 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<vector<Collective*>> SERIAL(allianceAttack);
   enum class Selection { SELECT, DESELECT, NONE } selection = Selection::NONE;
   void considerTogglingCaptureOrderOnMinions() const;
+  struct BattleSummary {
+    vector<Creature*> SERIAL(minionsKilled);
+    vector<Creature*> SERIAL(minionsCaptured);
+    vector<Creature*> SERIAL(enemiesKilled);
+    vector<Creature*> SERIAL(enemiesCaptured);
+    SERIALIZE_ALL(minionsKilled, minionsCaptured, enemiesKilled, enemiesCaptured)
+  };
+  BattleSummary SERIAL(battleSummary);
+  void presentAndClearBattleSummary();
 };
-
