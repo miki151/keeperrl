@@ -314,6 +314,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void addCombatIntent(Creature* attacker, CombatIntentInfo::Type);
   optional<CombatIntentInfo> getLastCombatIntent() const;
   void onKilledOrCaptured(Creature* victim);
+  Creature* getsCreditForKills();
   void updateCombatExperience(Creature* victim);
   double getCombatExperience() const;
   double getCombatExperienceRespectingMaxPromotion() const;
