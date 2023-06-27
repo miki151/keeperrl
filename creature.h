@@ -413,7 +413,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   int SERIAL(lastMoveCounter) = 0;
   EnumSet<CreatureStatus> SERIAL(statuses);
   bool SERIAL(capture) = 0;
-  double SERIAL(captureHealth) = 1;
   bool captureDamage(double damage, Creature* attacker);
   mutable Game* gameCache = nullptr;
   optional<GlobalTime> SERIAL(globalTime);

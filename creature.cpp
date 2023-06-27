@@ -70,7 +70,7 @@ template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(OwnedObject<Creature>), SUBCLASS(Renderable), SUBCLASS(UniqueEntity), SUBCLASS(EventListener));
   ar(attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
-  ar(deathTime, hidden, lastMoveCounter, captureHealth, effectFlags);
+  ar(deathTime, hidden, lastMoveCounter, effectFlags);
   ar(deathReason, nextPosIntent, globalTime, drops, promotions, maxPromotion);
   ar(unknownAttackers, privateEnemies, holding, attributesStack);
   ar(controllerStack, kills, statuses, automatonParts, phylactery, highestAttackValueEver);
@@ -1380,7 +1380,6 @@ void Creature::tick() {
     updateMorale(position, 0.001 / moraleUpdateFreq);
   }
   considerMovingFromInaccessibleSquare();
-  captureHealth = min(1.0, captureHealth + 0.02);
   auto time = *getGlobalTime();
   vision->update(this, time);
   if (Random.roll(30))
@@ -1676,11 +1675,10 @@ constexpr double getDamage(double damageRatio) {
 }
 
 bool Creature::captureDamage(double damage, Creature* attacker) {
-  captureHealth -= damage;
+  getBody().bleed(this, damage);
   auto factory = getGame()->getContentFactory();
   updateViewObject(factory);
-  if (captureHealth <= 0) {
-    setCaptureOrder(false);
+  if (getBody().getHealth() <= 0) {
     if (attributes->isInstantPrisoner()) {
       setTribe(attacker->getTribeId());
       you(MsgType::ARE, "captured");
@@ -1690,9 +1688,10 @@ bool Creature::captureDamage(double damage, Creature* attacker) {
         tryToDismount();
       if (auto rider = getRider())
         rider->tryToDismount();
-      captureHealth = 1;
+      heal(1.0);
       updateViewObject(factory);
     }
+    setCaptureOrder(false);
     return true;
   } else
     return false;
@@ -1812,8 +1811,6 @@ void Creature::updateViewObject(const ContentFactory* factory) {
   object.setBadAdjectives(combine(extractNames(getBadAdjectives(factory)), true));
   getBody().updateViewObject(object, factory);
   object.setModifier(ViewObject::Modifier::CAPTURE_BAR, capture);
-  if (capture)
-    object.setAttribute(ViewObject::Attribute::HEALTH, captureHealth);
   object.setDescription(getName().title());
   getPosition().setNeedsRenderUpdate(true);
   updateLastingFX(object, factory);
@@ -1872,6 +1869,9 @@ string attrStr(bool strong, bool agile, bool fast) {
 bool Creature::heal(double amount) {
   PROFILE;
   if (getBody().heal(this, amount)) {
+    if (!capture)
+      you(MsgType::ARE, getBody().hasHealth(HealthType::FLESH, getGame()->getContentFactory())
+          ? "fully healed" : "fully materialized");
     lastAttacker = nullptr;
     return true;
   }
