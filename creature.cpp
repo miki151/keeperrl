@@ -2016,7 +2016,8 @@ void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
     drops = DropType::ONLY_INVENTORY;
   getController()->onKilled(attacker);
   deathTime = *getGlobalTime();
-  attacker = attacker->getsCreditForKills();
+  if (attacker)
+    attacker = attacker->getsCreditForKills();
   lastAttacker = attacker;
   INFO << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
   if (drops == DropType::EVERYTHING || drops == DropType::ONLY_INVENTORY)
