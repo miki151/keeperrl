@@ -141,7 +141,7 @@ const PositionSet& Zones::getQuartersPositions(Level* level, Sectors::SectorId i
 void Zones::assignQuarters(UniqueEntity<Creature>::Id id, Position pos) {
   auto level = pos.getLevel();
   if (!quartersSectors.count(level))
-    quartersSectors.emplace(level, Sectors(pos.getLevel()->getBounds()));
+    quartersSectors.emplace(level, Sectors(level->getBounds()));
   auto& sectors = quartersSectors.at(level);
   auto sectorId = *sectors.getSector(pos.getCoord());
   quarters.erase(id);
@@ -157,6 +157,8 @@ Sectors& Zones::getOrInitSectors(Level* level) {
 }
 
 optional<Zones::QuartersInfo> Zones::getQuartersInfo(Position pos) const {
+  if (!pos.isValid())
+    return none;
   auto level = pos.getLevel();
   if (auto sectors = getReferenceMaybe(quartersSectors, level)) {
     if (auto sectorId = sectors->getSector(pos.getCoord())) {
