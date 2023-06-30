@@ -258,10 +258,6 @@ struct RemoveAbility {
   SERIALIZE_ALL(id)
 };
 using AddSpellSchool = SpellSchoolId;
-struct IncreaseMorale {
-  double SERIAL(amount);
-  SERIALIZE_ALL(amount)
-};
 struct Chance : GenericModifierEffect {
   double SERIAL(value);
   SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
@@ -451,7 +447,7 @@ struct AllCreatures : GenericModifierEffect {
   X(Chain, 40)\
   X(ChainUntilFail, 41)\
   X(ChooseRandom, 42)\
-  X(IncreaseMorale, 43)\
+  X(AllCreatures, 43)\
   X(Message, 44)\
   X(UnseenMessage, 45)\
   X(AssembledMinion, 46)\
@@ -502,8 +498,7 @@ struct AllCreatures : GenericModifierEffect {
   X(Price, 91)\
   X(IncreaseMaxLevel, 92)\
   X(EquipmentType, 93)\
-  X(AddSpellSchool, 94)\
-  X(AllCreatures, 95)
+  X(AddSpellSchool, 94)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

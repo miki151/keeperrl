@@ -1657,38 +1657,6 @@ static string getDescription(const Effects::RemoveAbility& e, const ContentFacto
   return "Removes ability: "_s + f->getCreatures().getSpell(e.id)->getName(f);
 }
 
-static bool applyToCreature(const Effects::IncreaseMorale& e, Creature* c, Creature*) {
-  if (e.amount > 0)
-    c->you(MsgType::YOUR, "spirits are lifted");
-  else
-    c->you(MsgType::ARE, "disheartened");
-  if (auto before = c->getMorale()) {
-    c->addMorale(e.amount);
-    return c->getMorale() != *before;
-  }
-  return false;
-}
-
-static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::IncreaseMorale&) {
-  return MinionEquipmentType::COMBAT_ITEM;
-}
-
-static EffectAIIntent shouldAIApplyToCreature(const Effects::IncreaseMorale& e, const Creature* victim, bool isEnemy) {
-  return isEnemy == (e.amount < 0) ? 1 : -1;
-}
-
-static string getName(const Effects::IncreaseMorale& e, const ContentFactory*) {
-  return e.amount > 0 ? "morale increase" : "morale decrease";
-}
-
-static bool isOffensive(const Effects::IncreaseMorale& e) {
-  return e.amount < 0;
-}
-
-static string getDescription(const Effects::IncreaseMorale& e, const ContentFactory*) {
-  return e.amount > 0 ? "Increases morale" : "Decreases morale";
-}
-
 static string getName(const Effects::Caster& e, const ContentFactory* f) {
   return e.effect->getName(f);
 }

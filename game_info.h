@@ -35,8 +35,7 @@ struct CreatureInfo {
   string HASH(name);
   string HASH(stackName);
   BestAttack HASH(bestAttack);
-  optional<double> HASH(morale);
-  HASH_ALL(viewId, uniqueId, name, stackName, bestAttack, morale)
+  HASH_ALL(viewId, uniqueId, name, stackName, bestAttack)
 };
 
 static_assert(std::is_nothrow_move_constructible<CreatureInfo>::value, "T should be noexcept MoveConstructible");
@@ -158,7 +157,6 @@ class PlayerInfo {
   AIType HASH(aiType);
   UniqueEntity<Creature>::Id HASH(creatureId);
   int HASH(moveCounter);
-  optional<double> HASH(morale);
   ViewIdList HASH(viewId);
   bool HASH(isPlayerControlled);
   enum ControlMode {
@@ -188,7 +186,7 @@ class PlayerInfo {
     HASH_ALL(viewId, name, locked);
   };
   vector<EquipmentGroupInfo> HASH(equipmentGroups);
-  HASH_ALL(attributes, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, teamOrders, spellSchools, kills, killTitles, canExitControlMode, equipmentGroups)
+  HASH_ALL(attributes, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, teamOrders, spellSchools, kills, killTitles, canExitControlMode, equipmentGroups)
 };
 
 struct ImmigrantCreatureInfo {

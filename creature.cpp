@@ -69,7 +69,7 @@
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(OwnedObject<Creature>), SUBCLASS(Renderable), SUBCLASS(UniqueEntity), SUBCLASS(EventListener));
-  ar(attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
+  ar(attributes, position, equipment, shortestPath, knownHiding, tribe);
   ar(deathTime, hidden, lastMoveCounter, effectFlags);
   ar(deathReason, nextPosIntent, globalTime, drops, promotions, maxPromotion);
   ar(unknownAttackers, privateEnemies, holding, attributesStack);
@@ -577,7 +577,6 @@ void Creature::makeMove() {
     MEASURE(controllerTmp->makeMove(), "creature move time");
   }
   updateViewObject(getGame()->getContentFactory());
-  //INFO << getName().bare() << " morale " << getMorale();
   unknownAttackers.clear();
   vision->update(this, time);
 }
@@ -1361,24 +1360,6 @@ void Creature::tick() {
   for (auto c : privateEnemies.getKeys())
     if (privateEnemies.getOrFail(c) < *globalTime - privateEnemyTimeout)
       privateEnemies.erase(c);
-  addMorale(-morale * 0.0008);
-  auto updateMorale = [this](Position pos, double mult) {
-    for (auto& f : pos.getFurniture()) {
-      auto& luxury = f->getLuxuryInfo();
-      if (luxury.luxury > morale)
-        addMorale((luxury.luxury - morale) * mult);
-    }
-    for (auto& it : pos.getItems())
-      if (auto info = it->getCorpseInfo())
-        if (!info->isSkeleton && it->getClass() != ItemClass::FOOD)
-          addMorale(-2 * mult);
-  };
-  const double moraleUpdateFreq = 0.1;
-  if (Random.chance(moraleUpdateFreq)) {
-    for (auto pos : position.neighbors8())
-      updateMorale(pos, 0.0004 / moraleUpdateFreq);
-    updateMorale(position, 0.001 / moraleUpdateFreq);
-  }
   considerMovingFromInaccessibleSquare();
   auto time = *getGlobalTime();
   vision->update(this, time);
@@ -1794,8 +1775,6 @@ void Creature::updateViewObject(const ContentFactory* factory) {
   for (auto& attr : factory->attrInfo)
     attrs.push_back(make_pair(attr.second.viewId, getAttr(attr.first)));
   object.setCreatureAttributes(std::move(attrs));
-  if (auto morale = getMorale())
-    object.setAttribute(ViewObject::Attribute::MORALE, *morale);
   updateViewObjectFlanking();
   object.setModifier(ViewObject::Modifier::DRAW_MORALE);
   object.setModifier(ViewObject::Modifier::STUNNED, isAffected(LastingEffect::STUNNED));
@@ -1830,17 +1809,6 @@ void Creature::updateViewObject(const ContentFactory* factory) {
     object.weaponViewId = it->getEquipedViewId();
   else
     object.weaponViewId = none;
-}
-
-optional<double> Creature::getMorale(const ContentFactory* factory) const {
-  PROFILE;
-  if (getBody().hasBrain(factory ? factory : getGame()->getContentFactory()))
-    return min(1.0, max(-1.0, morale + LastingEffects::getMoraleIncrease(this, getGlobalTime())));
-  return none;
-}
-
-void Creature::addMorale(double val) {
-  morale = min(1.0, max(-1.0, morale + val));
 }
 
 string attrStr(bool strong, bool agile, bool fast) {
@@ -2227,10 +2195,8 @@ CreatureAction Creature::whip(const Position& pos, double animChance) const {
       whipped->thirdPerson(whipped->getName().the() + " screams!");
       whipped->getPosition().unseenMessage("You hear a horrible scream!");
     }
-    if (Random.roll(10)) {
-      whipped->addMorale(0.05);
-      whipped->you(MsgType::FEEL, "happier");
-    }
+    if (Random.roll(20))
+      whipped->addEffect(BuffId("HIGH_MORALE"), 400_visible);
   });
 }
 
@@ -2839,18 +2805,6 @@ void Creature::setGlobalTime(GlobalTime t) {
   globalTime = t;
 }
 
-const char* getMoraleText(double morale) {
-  if (morale >= 0.7)
-    return "Ecstatic";
-  if (morale >= 0.2)
-    return "Merry";
-  if (morale < -0.7)
-    return "Depressed";
-  if (morale < -0.2)
-    return "Unhappy";
-  return nullptr;
-}
-
 vector<AdjectiveInfo> Creature::getSpecialAttrAdjectives(const ContentFactory* factory, bool good) const {
   vector<AdjectiveInfo> ret;
   auto withTip = [](string s) {
@@ -2916,10 +2870,6 @@ vector<AdjectiveInfo> Creature::getGoodAdjectives(const ContentFactory* factory)
   if (getBody().isUndead(factory))
     ret.push_back({"Undead",
         "Undead creatures don't take regular damage and need to be killed by chopping up or using fire."});
-  if (auto morale = getMorale(factory))
-    if (*morale > 0)
-      if (auto text = getMoraleText(*morale))
-        ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
   append(ret, getSpecialAttrAdjectives(factory, true));
   return ret;
 }
@@ -2929,10 +2879,6 @@ vector<AdjectiveInfo> Creature::getBadAdjectives(const ContentFactory* factory) 
   vector<AdjectiveInfo> ret;
   getBody().getBadAdjectives(ret);
   ret.append(getLastingEffectAdjectives(factory, true));
-  if (auto morale = getMorale(factory))
-    if (*morale < 0)
-      if (auto text = getMoraleText(*morale))
-        ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
   append(ret, getSpecialAttrAdjectives(factory, false));
   return ret;
 }

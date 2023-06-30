@@ -96,9 +96,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool takeDamage(const Attack&);
   void onAttackedBy(Creature*);
   bool heal(double amount = 1000);
-  /** Morale is in the range [-1:1] **/
-  optional<double> getMorale(const ContentFactory* = nullptr) const;
-  void addMorale(double);
   void setTeamExperience(double);
   void take(PItem item, const ContentFactory* = nullptr);
   void take(vector<PItem> item);
@@ -388,7 +385,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<LastStairsNavigation> lastStairsNavigation;
   EntitySet<Creature> SERIAL(knownHiding);
   TribeId SERIAL(tribe);
-  double SERIAL(morale) = 0;
   optional<GlobalTime> SERIAL(deathTime);
   bool SERIAL(hidden) = false;
   Creature* lastAttacker = nullptr;

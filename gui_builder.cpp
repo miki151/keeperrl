@@ -3358,7 +3358,7 @@ SGuiElem GuiBuilder::drawLyingItemsList(const string& title, const ItemCounts& i
   return lines.buildVerticalList();
 }
 
-static string getMoraleNumber(double morale) {
+static string getLuxuryNumber(double morale) {
 #ifndef RELEASE
   return toString(morale);
 #else
@@ -3447,14 +3447,10 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
                       viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE)).transparency(70), *health), -2, 0, 0, 3),
                   WL(label, getHealthName(viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE))
                       + toString((int) (100.0f * *health)) + "%")));
-          if (auto morale = viewObject.getAttribute(ViewObjectAttribute::MORALE))
-            lines.addElem(WL(stack,
-                  WL(margins, WL(progressBar, (*morale >= 0 ? Color::GREEN : Color::RED).transparency(70), fabs(*morale)), -2, 0, 0, 3),
-                  WL(label, "Morale: " + getMoraleNumber(*morale))));
           if (auto luxury = viewObject.getAttribute(ViewObjectAttribute::LUXURY))
             lines.addElem(WL(stack,
                   WL(margins, WL(progressBar, Color::GREEN.transparency(70), fabs(*luxury)), -2, 0, 0, 3),
-                  WL(label, "Luxury: " + getMoraleNumber(*luxury))));
+                  WL(label, "Luxury: " + getLuxuryNumber(*luxury))));
           if (viewObject.hasModifier(ViewObjectModifier::UNPAID))
             lines.addElem(WL(label, "Cannot afford item", Color::RED));
           if (viewObject.hasModifier(ViewObjectModifier::PLANNED))
@@ -3470,7 +3466,7 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
               .buildHorizontalList());
         else
           lines.addElem(WL(label, "Unassigned"));
-        lines.addElem(WL(label, "Total luxury: " + getMoraleNumber(quarters->luxury)));
+        lines.addElem(WL(label, "Total luxury: " + getLuxuryNumber(quarters->luxury)));
         lines.addElem(WL(label, "Click to assign"));
         lines.addElem(WL(margins, WL(rectangle, Color::DARK_GRAY), -9, 2, -9, 8), 12);
       }
@@ -3722,19 +3718,6 @@ Rectangle GuiBuilder::getMenuPosition(int numElems) {
   return Rectangle(xSpacing, ySpacing + yOffset, xSpacing + windowWidth, renderer.getSize().y - ySpacing + yOffset);
 }
 
-static optional<GuiFactory::IconId> getMoraleIcon(double morale) {
-  if (morale >= 0.7)
-    return GuiFactory::MORALE_4;
-  if (morale >= 0.2)
-    return GuiFactory::MORALE_3;
-  if (morale < -0.7)
-    return GuiFactory::MORALE_1;
-  if (morale < -0.2)
-    return GuiFactory::MORALE_2;
-  else
-    return none;
-}
-
 static vector<PlayerInfo> groupByViewId(const vector<PlayerInfo>& minions) {
   vector<vector<PlayerInfo>> groups;
   for (auto& elem : minions) [&] {
@@ -3772,9 +3755,6 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions1, Uniqu
           WL(button, getButtonCallback({UserInputId::REMOVE_FROM_TEAM, TeamCreatureInfo{*teamId, minionId}})),
           WL(labelUnicodeHighlight, u8"✘", Color::RED))), 1);
     line.addMiddleElem(WL(rightMargin, 5, WL(renderInBounds, WL(label, minion.getFirstName()))));
-    if (minion.morale)
-      if (auto icon = getMoraleIcon(*minion.morale))
-        line.addBackElem(WL(topMargin, -2, WL(icon, *icon)), 20);
     line.addBackElem(drawBestAttack(minion.bestAttack), 52);
     line.addBackSpace(5);
     auto selectButton = [this, minionId](UniqueEntity<Creature>::Id creatureId) {

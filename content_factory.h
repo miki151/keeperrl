@@ -80,6 +80,7 @@ class ContentFactory {
   map<AttrType, AttrInfo> SERIAL(attrInfo);
   vector<AttrType> SERIAL(attrOrder);
   unordered_map<BuffId, BuffInfo, CustomHash<BuffId>> SERIAL(buffs);
+  vector<BuffId> SERIAL(buffsModifyingEfficiency);
   unordered_map<BodyMaterialId, BodyMaterial, CustomHash<BodyMaterialId>> SERIAL(bodyMaterials);
   vector<pair<Keybinding, KeybindingInfo>> SERIAL(keybindings);
   void merge(ContentFactory);

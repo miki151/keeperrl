@@ -15,7 +15,6 @@ RICH_ENUM(CollectiveWarning,
     NO_HATCHERY,
     WORKSHOP,
     NO_WEAPONS,
-    LOW_MORALE,
     GRAVES,
     CHESTS,
     NO_PRISON,
@@ -44,7 +43,6 @@ class CollectiveWarnings {
 
   private:
   void considerWeaponWarning(Collective*);
-  void considerMoraleWarning(Collective*);
   void considerTorchesWarning(Collective*);
   const char*getText(Warning w);
   EnumSet<Warning> SERIAL(warnings);

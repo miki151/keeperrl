@@ -2878,7 +2878,6 @@ void GuiFactory::loadImages() {
     for (int i = 0; i < count; ++i)
       iconTextures.push_back(Texture(imagesPath.file(file), 0, i * width, width, width));
   };
-  loadIcons(16, 4, "morale_icons.png");
   loadIcons(16, 2, "team_icons.png");
   loadIcons(48, 6, "minimap_icons.png");
   loadIcons(32, 1, "expand_up.png");

@@ -40,6 +40,7 @@ struct BuffInfo {
   bool SERIAL(canAbsorb) = true;
   bool SERIAL(canWishFor) = true;
   bool SERIAL(inheritsFromSteed) = false;
+  optional<double> SERIAL(efficiencyMultiplier);
   int SERIAL(price) = 50;
   Color SERIAL(color);
   optional<string> SERIAL(hatedGroupName);
@@ -47,5 +48,5 @@ struct BuffInfo {
   optional<AttrType> SERIAL(defenseMultiplierAttr);
   FXVariantName SERIAL(fx) = FXVariantName::BUFF_RED;
   optional<pair<AttrType, AttrType>> SERIAL(modifyDamageAttr);
-  SERIALIZE_ALL(NAMED(modifyDamageAttr), OPTION(inheritsFromSteed), OPTION(canWishFor), OPTION(canAbsorb), OPTION(combatConsumable), OPTION(fx), OPTION(defenseMultiplier), OPTION(defenseMultiplierAttr), NAMED(hatedGroupName), NAMED(name), OPTION(addedMessage), OPTION(removedMessage), NAMED(startEffect), NAMED(tickEffect), NAMED(endEffect), OPTION(stacks), OPTION(consideredBad), NAMED(description), OPTION(price), NAMED(color), NAMED(adjective))
+  SERIALIZE_ALL(NAMED(modifyDamageAttr), OPTION(inheritsFromSteed), OPTION(canWishFor), OPTION(canAbsorb), OPTION(combatConsumable), OPTION(fx), OPTION(defenseMultiplier), OPTION(defenseMultiplierAttr), NAMED(hatedGroupName), NAMED(name), OPTION(addedMessage), OPTION(removedMessage), NAMED(startEffect), NAMED(tickEffect), NAMED(endEffect), OPTION(stacks), OPTION(consideredBad), NAMED(description), OPTION(price), NAMED(color), NAMED(adjective), OPTION(efficiencyMultiplier))
 };

@@ -1738,7 +1738,7 @@ End
     applyVerb = "drink" "drinks"
     fragile = true
     weight = 0.3
-    effect = { IncreaseMorale 0.3 Lasting DRUNK}
+    effect = { Lasting 150 HIGH_MORALE Lasting DRUNK}
     price = 10
     burnTime = 1
     uses = 1

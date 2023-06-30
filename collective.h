@@ -266,9 +266,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   void fetchItems(Position);
 
-  void addMoraleForKill(const Creature* killer, const Creature* victim);
-  void decreaseMoraleForKill(const Creature* killer, const Creature* victim);
-  void decreaseMoraleForBanishing(const Creature*);
+  void addMoraleForKill(Creature* killer, Creature* victim);
+  void decreaseMoraleForKill(Creature* killer, Creature* victim);
 
   bool isItemNeeded(const Item*) const;
   int getDebt(ResourceId id) const;

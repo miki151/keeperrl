@@ -229,7 +229,6 @@ void Collective::banishCreature(Creature* c) {
   if (c->isAutomaton()) {
     taskMap->addTask(Task::disassemble(c), c->getPosition(), MinionActivity::CRAFT);
   } else {
-    decreaseMoraleForBanishing(c);
     vector<Position> exitTiles = territory->getExtended(10, 20);
     vector<PTask> tasks;
     vector<Item*> items = c->getEquipment().getItems();
@@ -359,7 +358,7 @@ bool Collective::isActivityGoodAssumingHaveTasks(Creature* c, MinionActivity act
     return false;
   switch (activity) {
     case MinionActivity::BE_WHIPPED:
-      return c->getMorale().value_or(1) < 0.95;
+      return !c->isAffected(BuffId("HIGH_MORALE"));
     case MinionActivity::CROPS:
     case MinionActivity::EXPLORE:
       return getGame()->getSunlightInfo().getState() == SunlightState::DAY;
@@ -712,23 +711,15 @@ bool Collective::removeTrait(Creature* c, MinionTrait t) {
   return false;
 }
 
-void Collective::addMoraleForKill(const Creature* killer, const Creature* victim) {
-  for (Creature* c : getCreatures(MinionTrait::FIGHTER))
-    c->addMorale(c == killer ? 0.25 : 0.015);
+
+void Collective::addMoraleForKill(Creature* killer, Creature* victim) {
+  killer->addEffect(BuffId("HIGH_MORALE"), 30_visible);
 }
 
-void Collective::decreaseMoraleForKill(const Creature* killer, const Creature* victim) {
-  for (Creature* c : getCreatures(MinionTrait::FIGHTER)) {
-    double change = -0.015;
-    if (hasTrait(victim, MinionTrait::LEADER) && getCreatures(MinionTrait::LEADER).size() == 1)
-      change = -2;
-    c->addMorale(change);
-  }
-}
-
-void Collective::decreaseMoraleForBanishing(const Creature*) {
-  for (Creature* c : getCreatures(MinionTrait::FIGHTER))
-    c->addMorale(-0.05);
+void Collective::decreaseMoraleForKill(Creature* killer, Creature* victim) {
+/*  if (hasTrait(victim, MinionTrait::LEADER))
+    for (Creature* c : getCreatures())
+      c->addPermanentEffect(BuffId("LOW_MORALE"));*/
 }
 
 const optional<Collective::AlarmInfo>& Collective::getAlarmInfo() const {
@@ -883,7 +874,12 @@ void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
 }
 
 double Collective::getEfficiency(const Creature* c) const {
-  return pow(2.0, c->getMorale().value_or(0)) *
+  double fromBuffs = 1.0;
+  auto f = getGame()->getContentFactory();
+  for (auto buff : f->buffsModifyingEfficiency)
+    if (c->isAffected(buff))
+      fromBuffs *= *f->buffs.at(buff).efficiencyMultiplier;
+  return fromBuffs *
       (c->isAffected(LastingEffect::SPEED) ? 1.4 : 1.0) *
       (c->isAffected(LastingEffect::SLOWED) ? (1 / 1.4) : 1.0);
 }
@@ -1630,13 +1626,8 @@ void Collective::addRecordedEvent(string s) {
 
 void Collective::onCopulated(Creature* who, Creature* with) {
   PROFILE;
-  if (with->getName().bare() == "vampire")
-    control->addMessage(who->getName().a() + " makes love to " + with->getName().a()
-        + " with a monkey on " + his(who->getAttributes().getGender()) + " knee");
-  else
-    control->addMessage(who->getName().a() + " makes love to " + with->getName().a());
-  if (getCreatures().contains(with))
-    with->addMorale(1);
+  control->addMessage(who->getName().a() + " makes love to " + with->getName().a());
+  with->addEffect(BuffId("HIGH_MORALE"), 200_visible);
   if (!who->isAffected(LastingEffect::PREGNANT) && Random.roll(2)) {
     who->addEffect(LastingEffect::PREGNANT, getConfig().getImmigrantTimeout());
     control->addMessage(who->getName().a() + " becomes pregnant.");

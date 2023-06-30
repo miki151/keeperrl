@@ -460,6 +460,9 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   if (auto error = config->readObject(buffsTmp, GameConfigId::BUFFS, &keyVerifier))
     return *error;
   buffs = convertKeysHash(buffsTmp);
+  for (auto& b : buffs)
+    if (!!b.second.efficiencyMultiplier)
+      buffsModifyingEfficiency.push_back(b.first);
   map<PrimaryId<BodyMaterialId>, BodyMaterial> materialsTmp;
   if (auto error = config->readObject(materialsTmp, GameConfigId::BODY_MATERIALS, &keyVerifier))
     return *error;

@@ -28,8 +28,7 @@ CreatureInfo::CreatureInfo(const Creature* c)
       uniqueId(c->getUniqueId()),
       name(c->getName().bare()),
       stackName(c->getName().stack()),
-      bestAttack(c->getBestAttack(c->getGame()->getContentFactory())),
-      morale(c->getMorale()) {
+      bestAttack(c->getBestAttack(c->getGame()->getContentFactory())) {
 }
 
 string PlayerInfo::getFirstName() const {
@@ -173,7 +172,6 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory)
   title = c->getName().title();
   description = capitalFirst(c->getAttributes().getDescription(contentFactory));
   viewId = c->getViewIdWithWeapon();
-  morale = c->getMorale(contentFactory);
   positionHash = c->getPosition().getHash();
   creatureId = c->getUniqueId();
   attributes = AttributeInfo::fromCreature(contentFactory, c);
