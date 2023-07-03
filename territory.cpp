@@ -90,3 +90,6 @@ const optional<Position>& Territory::getCentralPoint() const {
   return centralPoint;
 }
 
+IterateVectors<Position> Territory::getPillagePositions() const {
+  return iterateVectors(getAll(), getStandardExtended());
+}

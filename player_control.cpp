@@ -952,7 +952,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   }
   if ((info.isConquered = col->isConquered())) {
     info.triggers.clear();
-    if (canPillage(col))
+    if (col->getControl()->canPillage(collective))
       info.action = VillageAction::PILLAGE;
   } else if (!col->getTribe()->isEnemy(collective->getTribe())) {
     if (collective->isKnownVillainLocation(col)) {
@@ -1006,14 +1006,10 @@ void PlayerControl::handleTrading(Collective* ally) {
   }
 }
 
-auto getPillagePositions(const Collective* col) {
-  return iterateVectors(col->getTerritory().getAll(), col->getTerritory().getStandardExtended());
-}
-
 vector<PItem> PlayerControl::retrievePillageItems(Collective* col, vector<Item*> items) {
   vector<PItem> ret;
   EntitySet<Item> index(items);
-  for (auto pos : getPillagePositions(col))
+  for (auto pos : col->getTerritory().getPillagePositions())
     if (pos.getCollective() == col || !pos.getCollective()) {
       bool update = false;
       for (auto item : copyOf(pos.getInventory().getItems()))
@@ -1024,28 +1020,21 @@ vector<PItem> PlayerControl::retrievePillageItems(Collective* col, vector<Item*>
       if (update)
         addToMemory(pos);
     }
+  if (!ret.empty())
+    getGame()->addEvent(EventInfo::ItemsPillaged{});
   return ret;
 }
 
 vector<Item*> PlayerControl::getPillagedItems(Collective* col) const {
   PROFILE;
   vector<Item*> ret;
-  for (Position v : getPillagePositions(col))
+  for (Position v : col->getTerritory().getPillagePositions())
     if (v.getCollective() == col || !v.getCollective()) {
       if (!collective->getTerritory().contains(v))
         append(ret, v.getItems().filter([this, v](auto item) {
             return !collective->getStoragePositions(item->getStorageIds()).contains(v); }));
     }
   return ret;
-}
-
-bool PlayerControl::canPillage(const Collective* col) const {
-  PROFILE;
-  for (Position v : getPillagePositions(col))
-    if ((v.getCollective() == col || !v.getCollective()) &&
-        !collective->getTerritory().contains(v) && !v.getItems().empty())
-      return true;
-  return false;
 }
 
 void PlayerControl::handlePillage(Collective* col) {
