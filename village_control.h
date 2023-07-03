@@ -46,6 +46,7 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
   virtual vector<TriggerInfo> getAllTriggers(const Collective* against) const override;
   virtual void launchAllianceAttack(vector<Collective*> allies) override;
   virtual bool canPerformAttack() const override;
+  virtual bool canPillage(const Collective* by) const override;
   virtual bool considerVillainAmbush(const vector<Creature*>& travellers) override;
 
   SERIALIZATION_DECL(VillageControl)
@@ -62,6 +63,7 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
 
   double SERIAL(victims) = 0;
   EntitySet<Item> SERIAL(myItems);
+  mutable optional<bool> SERIAL(canPillageCache);
   int SERIAL(stolenItemCount) = 0;
   map<TeamId, int> SERIAL(attackSizes);
   bool SERIAL(entries) = false;

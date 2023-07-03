@@ -206,7 +206,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void fillPromotions(Creature*, CollectiveInfo&) const;
   void handleTrading(Collective* ally);
   vector<Item*> getPillagedItems(Collective*) const;
-  bool canPillage(const Collective*) const;
   void handlePillage(Collective* enemy);
   ViewObject getTrapObject(FurnitureType, bool built) const;
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;

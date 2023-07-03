@@ -26,6 +26,7 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
   virtual void onClaimedSquare(Position) {}
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) {}
   virtual void onRansomPaid() {}
+  virtual bool canPillage(const Collective* by) const { return false; }
   virtual void launchAllianceAttack(vector<Collective*> allies) { fail(); }
   virtual bool considerVillainAmbush(const vector<Creature*>& travellers) { return false; }
   virtual vector<TriggerInfo> getAllTriggers(const Collective* against) const;
