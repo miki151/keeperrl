@@ -38,6 +38,9 @@ namespace EventInfo {
     vector<Item*> items;
   };
 
+  struct ItemsPillaged {
+  };
+
   struct Projectile {
     optional<FXInfo> fx;
     optional<ViewId> viewId;
@@ -149,7 +152,8 @@ namespace EventInfo {
   X(RetiredGame, 19)\
   X(CreatureAttacked, 20)\
   X(FX, 21)\
-  X(ItemStolen, 22)
+  X(ItemStolen, 22)\
+  X(ItemsPillaged, 23)\
 
 #define VARIANT_NAME GameEvent
 

@@ -97,10 +97,25 @@ bool contains(const vector<AttackTrigger>& triggers) {
   return false;
 }
 
+bool VillageControl::canPillage(const Collective* by) const {
+  PROFILE;
+  auto getValue = [&] {
+    for (auto& v : collective->getTerritory().getPillagePositions())
+      if ((v.getCollective() == collective || !v.getCollective()) &&
+          !by->getTerritory().contains(v) && !v.getItems().empty())
+        return true;
+    return false;
+  };
+  if (!canPillageCache)
+    canPillageCache = getValue();
+  return *canPillageCache;
+}
+
 void VillageControl::onEvent(const GameEvent& event) {
   using namespace EventInfo;
   event.visit<void>(
       [&](const ItemStolen& info) {
+        canPillageCache = none;
         if (!collective->isConquered() && collective->getTerritory().contains(info.shopPosition)
             && behaviour && contains<StolenItems>(behaviour->triggers)
             && getEnemyCollective()
@@ -111,11 +126,19 @@ void VillageControl::onEvent(const GameEvent& event) {
         }
       },
       [&](const ItemsAppeared& info) {
+        canPillageCache = none;
         if (collective->getTerritory().contains(info.position))
           for (auto& it : info.items)
             myItems.insert(it);
       },
+      [&](const ItemsDropped& info) {
+        canPillageCache = none;
+      },
+      [&](const ItemsPillaged& info) {
+        canPillageCache = none;
+      },
       [&](const ItemsPickedUp& info) {
+        canPillageCache = none;
         int numStolen = 0;
         for (const Item* it : info.items)
           if (myItems.contains(it) && !it->getShopkeeper(info.creature))
