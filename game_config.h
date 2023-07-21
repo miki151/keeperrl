@@ -46,7 +46,8 @@ enum class GameConfigId {
   BUFFS,
   BODY_MATERIALS,
   KEYS,
-  WORLD_MAPS
+  WORLD_MAPS,
+  ACHIEVEMENTS
 };
 
 class GameConfig {

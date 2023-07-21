@@ -1,0 +1,1 @@
+"tutorial_done" {{"scroll"}} "Tutorial completed" "You have completed the tutorial and are ready to get your ass handed to you for real!"

@@ -24,6 +24,7 @@
 #include "buff_id.h"
 #include "body_material_id.h"
 #include "keybinding.h"
+#include "achievement_id.h"
 #include "key_verifier.h"
 
 static const char* staticsInitialized = nullptr;
@@ -230,4 +231,5 @@ INST(AttrType)
 INST(BuffId)
 INST(BodyMaterialId)
 INST(Keybinding)
+INST(AchievementId)
 #undef INST

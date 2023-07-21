@@ -126,6 +126,7 @@ class AttrType;
 class BuffId;
 class BodyMaterialId;
 class Keybinding;
+class AchievementId;
 using EffectAIIntent = int;
 
 using SteamId = unsigned long long;

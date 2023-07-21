@@ -47,6 +47,7 @@
 #include "scripted_ui_data.h"
 #include "body.h"
 #include "enemy_aggression_level.h"
+#include "unlocks.h"
 
 template <class Archive>
 void Game::serialize(Archive& ar, const unsigned int version) {
@@ -831,6 +832,14 @@ void Game::addAnalytics(const string& name, const string& value) {
     {"name", name},
     {"value", value}
   });
+}
+
+void Game::achieve(AchievementId id) {
+  if (!unlocks->isAchieved(id)) {
+    unlocks->achieve(id);
+    auto& info = contentFactory->achievements.at(id);
+    view->windowedMessage(info.viewId, "Achievement unlocked: " + info.name);
+  }
 }
 
 void Game::handleMessageBoard(Position pos, Creature* c) {

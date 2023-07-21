@@ -28,6 +28,8 @@
 #include "body_material.h"
 #include "keybinding_info.h"
 #include "world_map_info.h"
+#include "achievement_id.h"
+#include "achievement_info.h"
 
 class KeyVerifier;
 class BuildInfo;
@@ -83,6 +85,7 @@ class ContentFactory {
   vector<BuffId> SERIAL(buffsModifyingEfficiency);
   unordered_map<BodyMaterialId, BodyMaterial, CustomHash<BodyMaterialId>> SERIAL(bodyMaterials);
   vector<pair<Keybinding, KeybindingInfo>> SERIAL(keybindings);
+  map<AchievementId, AchievementInfo> SERIAL(achievements);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();

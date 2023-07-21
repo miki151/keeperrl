@@ -32,7 +32,7 @@ void ContentFactory::serialize(Archive& ar, const unsigned int) {
   ar(immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buffs);
   ar(buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping);
   ar(randomLayouts, tileGasTypes, promotions, dancePositions, equipmentGroups, scriptedHelp, attrInfo, attrOrder);
-  ar(bodyMaterials, keybindings, worldMaps);
+  ar(bodyMaterials, keybindings, worldMaps, achievements);
   creatures.setContentFactory(this);
 }
 
@@ -486,6 +486,10 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
             return "Z-level enemy " + group.first + " no. " + toString(i)
                 + " has positive attack chance, but no attack behaviour defined"_s;
     }
+  map<PrimaryId<AchievementId>, AchievementInfo> achievementsTmp;
+  if (auto error = config->readObject(achievementsTmp, GameConfigId::ACHIEVEMENTS, &keyVerifier))
+    return *error;
+  achievements = convertKeys(achievementsTmp);
   furniture.initializeInfos();
   for (auto& elem : items)
     if (auto id = elem.second.resourceId) {

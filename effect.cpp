@@ -1630,8 +1630,7 @@ static bool apply(const Effects::UI& e, Position pos, Creature*) {
   if (auto c = pos.getCreature())
     if (c->isPlayer())
       view->updateView(dynamic_cast<Player*>(c->getController()), true);
-  ScriptedUIState state;
-  view->scriptedUI(e.id, e.data, state);
+  view->scriptedUI(e.id, e.data);
   return true;
 }
 
@@ -2170,6 +2169,20 @@ static string getDescription(const Effects::Unlock& e, const ContentFactory*) {
 static bool apply(const Effects::Unlock& e, Position pos, Creature*) {
   if (auto game = pos.getGame())
     game->getUnlocks()->unlock(e.id);
+  return true;
+}
+
+static string getName(const Effects::Achievement& e, const ContentFactory* f) {
+  return f->achievements.at(e).name;
+}
+
+static string getDescription(const Effects::Achievement& e, const ContentFactory* f) {
+  return f->achievements.at(e).description;
+}
+
+static bool apply(const Effects::Achievement& e, Position pos, Creature*) {
+  if (auto game = pos.getGame())
+    game->achieve(e);
   return true;
 }
 
