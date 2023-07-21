@@ -834,7 +834,7 @@ void Game::addAnalytics(const string& name, const string& value) {
   });
 }
 
-void Game::achieve(AchievementId id) {
+void Game::achieve(AchievementId id) const {
   if (!unlocks->isAchieved(id)) {
     unlocks->achieve(id);
     auto& info = contentFactory->achievements.at(id);

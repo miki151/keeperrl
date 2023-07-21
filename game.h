@@ -109,7 +109,7 @@ class Game : public OwnedObject<Game> {
 
   void addEvent(const GameEvent&);
   void addAnalytics(const string& name, const string& value);
-  void achieve(AchievementId);
+  void achieve(AchievementId) const;
   void setWasTransfered();
 
   ~Game();

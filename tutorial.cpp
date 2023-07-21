@@ -308,6 +308,8 @@ void Tutorial::continueTutorial(WConstGame game) {
   if (canContinue(game))
     state = (State)((int) state + 1);
   onNewState(game);
+  if (state == TutorialState::FINISHED)
+    game->achieve(AchievementId("tutorial_done"));
 }
 
 void Tutorial::goBack() {
