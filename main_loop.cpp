@@ -509,9 +509,23 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
 }
 
 void MainLoop::showCredits() {
-  ScriptedUIState uiState{};
   auto data = ScriptedUIDataElems::Record{};
-  view->scriptedUI("credits", data, uiState);
+  view->scriptedUI("credits", data);
+}
+
+void MainLoop::showAchievements() {
+  auto factory = createContentFactory(false);
+  auto data = ScriptedUIDataElems::List{};
+  for (auto& info : factory.achievements) {
+    auto r = ScriptedUIDataElems::Record{};
+    r.elems["name"] = info.second.name;
+    r.elems["description"] = info.second.description;
+    r.elems["view_id"] = info.second.viewId;
+    if (unlocks->isAchieved(info.first))
+      r.elems["unlocked"] = "blabla"_s;
+    data.push_back(std::move(r));
+  }
+  view->scriptedUI("achievements", data);
 }
 
 const auto modVersionFilename = "version_info";
@@ -992,6 +1006,10 @@ void MainLoop::start(bool tilesPresent) {
     }};
     data.elems["credits"] = ScriptedUIDataElems::Callback{[this] {
       showCredits();
+      return false;
+    }};
+    data.elems["achievements"] = ScriptedUIDataElems::Callback{[this] {
+      showAchievements();
       return false;
     }};
     data.elems["quit"] = ScriptedUIDataElems::Callback{[&choice] { choice = 4; return true;}};

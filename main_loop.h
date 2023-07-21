@@ -70,6 +70,7 @@ class MainLoop {
   ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (WGame)> = nullptr,
       milliseconds stepTimeMilli = milliseconds{3}, optional<int> maxTurns = none);
   void showCredits();
+  void showAchievements();
   void showMods();
   void playMenuMusic();
   ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen&, ContentFactory*);
