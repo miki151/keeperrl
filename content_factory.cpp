@@ -475,10 +475,13 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   if (auto error = config->readObject(keysTmp, GameConfigId::KEYS, &keyVerifier))
     return *error;
   keybindings = convertKeys(keysTmp);
-  map<PrimaryId<AchievementId>, AchievementInfo> achievementsTmp;
+  vector<pair<PrimaryId<AchievementId>, AchievementInfo>> achievementsTmp;
   if (auto error = config->readObject(achievementsTmp, GameConfigId::ACHIEVEMENTS, &keyVerifier))
     return *error;
-  achievements = convertKeys(achievementsTmp);
+  for (auto& elem : achievementsTmp) {
+    achievementsOrder.push_back(elem.first);
+    achievements.insert(elem);
+  }
   auto errors = keyVerifier.verify();
   if (!errors.empty())
     return errors.front();

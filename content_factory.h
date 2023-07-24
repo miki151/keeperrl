@@ -86,6 +86,7 @@ class ContentFactory {
   unordered_map<BodyMaterialId, BodyMaterial, CustomHash<BodyMaterialId>> SERIAL(bodyMaterials);
   vector<pair<Keybinding, KeybindingInfo>> SERIAL(keybindings);
   map<AchievementId, AchievementInfo> SERIAL(achievements);
+  vector<AchievementId> SERIAL(achievementsOrder);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();

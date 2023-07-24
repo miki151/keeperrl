@@ -516,12 +516,13 @@ void MainLoop::showCredits() {
 void MainLoop::showAchievements() {
   auto factory = createContentFactory(false);
   auto data = ScriptedUIDataElems::List{};
-  for (auto& info : factory.achievements) {
+  for (auto& id : factory.achievementsOrder) {
+    auto& info = factory.achievements.at(id);
     auto r = ScriptedUIDataElems::Record{};
-    r.elems["name"] = info.second.name;
-    r.elems["description"] = info.second.description;
-    r.elems["view_id"] = info.second.viewId;
-    if (unlocks->isAchieved(info.first))
+    r.elems["name"] = info.name;
+    r.elems["description"] = info.description;
+    r.elems["view_id"] = info.viewId;
+    if (unlocks->isAchieved(id))
       r.elems["unlocked"] = "blabla"_s;
     data.push_back(std::move(r));
   }
