@@ -352,6 +352,7 @@ End
       specialTraits = {
          { 0.1 { Lasting { INSANITY }}}
       }
+      acceptedAchievement = "succubus_breading"
     }
     {
       ids = { "SPECIAL_BMBN" "SPECIAL_BMBW" "SPECIAL_BMGN" "SPECIAL_BMGW" }
@@ -363,6 +364,7 @@ End
         { 0.0 Pregnancy }
         { 1.0 CostInfo "GOLD" 100 }
       }
+      acceptedAchievement = "succubus_breading"
     }
 }
 

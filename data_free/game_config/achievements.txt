@@ -19,3 +19,4 @@
 "killed_by_pig" {{"pig"}} "Killed by a pig" ""
 "tricked_death" {{"special_hlgn"}} "Tricked Death" ""
 "saved_by_phylactery" {{"phylactery_active"}} "Saved by a phylactery" ""
+"succubus_breading" {{"succubus"}} "Successfully started a succubus breading program" ""

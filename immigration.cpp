@@ -494,6 +494,8 @@ void Immigration::accept(int id, bool withMessage) {
     rejectIfNonPersistent(id);
   else if (immigrantInfo.isAvailable(generated[candidate.immigrantIndex].getSize()))
     available[id] = Available::generate(this, candidate.immigrantIndex);
+  if (auto& a = candidate.getInfo().acceptedAchievement)
+    collective->getGame()->achieve(*a);
 }
 
 void Immigration::rejectIfNonPersistent(int id) {

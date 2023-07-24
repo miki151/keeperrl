@@ -12,6 +12,7 @@
 #include "pretty_archive.h"
 #include "sunlight_info.h"
 #include "keybinding.h"
+#include "achievement_id.h"
 
 class ContentFactory;
 struct SpecialTraitInfo;
@@ -164,6 +165,7 @@ class ImmigrantInfo {
   };
   vector<RequirementInfo> SERIAL(requirements);
   bool SERIAL(stripEquipment) = true;
+  optional<AchievementId> SERIAL(acceptedAchievement);
 
   private:
 

@@ -16,7 +16,7 @@
 #include "content_factory.h"
 #include "special_trait.h"
 
-SERIALIZE_DEF(ImmigrantInfo, NAMED(ids), NAMED(frequency), OPTION(requirements), OPTION(traits), OPTION(spawnLocation), OPTION(groupSize), OPTION(initialRecruitment), OPTION(consumeIds), NAMED(keybinding), NAMED(sound), OPTION(noAuto), NAMED(tutorialHighlight), OPTION(hiddenInHelp), OPTION(invisible), OPTION(specialTraits), OPTION(stripEquipment))
+SERIALIZE_DEF(ImmigrantInfo, NAMED(ids), NAMED(frequency), OPTION(requirements), OPTION(traits), OPTION(spawnLocation), OPTION(groupSize), OPTION(initialRecruitment), OPTION(consumeIds), NAMED(keybinding), NAMED(sound), OPTION(noAuto), NAMED(tutorialHighlight), OPTION(hiddenInHelp), OPTION(invisible), OPTION(specialTraits), OPTION(stripEquipment), OPTION(acceptedAchievement))
 SERIALIZATION_CONSTRUCTOR_IMPL(ImmigrantInfo)
 
 
