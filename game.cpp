@@ -946,6 +946,9 @@ void Game::considerAchievement(const GameEvent& event) {
         if (auto& a = info.victim->getAttributes().killedAchievement)
           achieve(*a);
       },
+      [&](const RetiredGame& info) {
+        achieve(AchievementId("retired"));
+      },
       [](auto&) {}
   );
 }

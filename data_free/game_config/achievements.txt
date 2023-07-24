@@ -5,6 +5,7 @@
 "converted_prisoner" {{"torture_table"}} "Converted a prisoner" ""
 "won_adventurer" {{"player"}} "Won the game as an adventurer" ""
 "won_keeper" {{"keeper4"}} "Won the game as a keeper" ""
+"retired" {{"dungeon_entrance"}} "Retired a dungeon" ""
 "killed_balrog" {{"balrog"}} "Killed or captured a fire demon" ""
 "killed_black_dragon" {{ "red_dragon" Rgb 80 80 80 255 }} "Killed or captured a black dragon" ""
 "killed_minotaur" {{"minotaur"}} "Killed or captured a minotaur" ""
