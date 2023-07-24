@@ -12,4 +12,4 @@
 "mined_iron" {{"iron_ore"}} "Mined iron ore" ""
 "mined_ada" {{"ada_ore"}} "Mined adamantium ore" ""
 "mined_adoxium" {{"adoxium_ore"}} "Mined adoxium ore" ""
-"mined_inferntie" {{"infernite_ore"}} "Mined infernite ore" ""
+"mined_infernite" {{"infernite_ore"}} "Mined infernite ore" ""

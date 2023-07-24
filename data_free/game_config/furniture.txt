@@ -1531,7 +1531,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
     500 DIG
     500 HOSTILE_DIG
   }
-  minedAchievement = "mined_adamantium"
+  minedAchievement = "mined_ada"
 }
 "ADOXIUM_ORE" inherit "MOUNTAIN2"
 {

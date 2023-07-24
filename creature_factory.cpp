@@ -793,6 +793,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     } else if (id == "KRAKEN") {
       auto ret = getKrakenAttributes(ViewId("kraken_head"), "kraken");
       ret.killedAchievement = AchievementId("killed_kraken");
+      return ret;
     }
     FATAL << "Unrecognized creature type: \"" << id << "\"";
     fail();
