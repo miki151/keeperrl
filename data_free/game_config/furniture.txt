@@ -1531,6 +1531,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
     500 DIG
     500 HOSTILE_DIG
   }
+  minedAchievement = "mined_adamantium"
 }
 "ADOXIUM_ORE" inherit "MOUNTAIN2"
 {
@@ -1543,6 +1544,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
     220 DIG
     200 HOSTILE_DIG
   }
+  minedAchievement = "mined_adoxium"
 }
 "INFERNITE_ORE" inherit "MOUNTAIN2"
 {
@@ -1557,6 +1559,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
     220 DIG
     200 HOSTILE_DIG
   }
+  minedAchievement = "mined_infernite"
 }
 "IRON_ORE" inherit "MOUNTAIN2"
 {
@@ -1569,6 +1572,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
     220 DIG
     200 HOSTILE_DIG
   }
+  minedAchievement = "mined_iron"
 }
 "STONE" inherit "MOUNTAIN2"
 {

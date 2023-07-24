@@ -20,6 +20,7 @@
 #include "storage_id.h"
 #include "lasting_or_buff.h"
 #include "creature_predicate.h"
+#include "achievement_id.h"
 
 class TribeId;
 class Creature;
@@ -162,6 +163,7 @@ class Furniture {
   const vector<StorageId>& getStorageId() const;
   bool doesHideItems() const;
   const optional<ViewId>& getEmptyViewId() const;
+  const optional<AchievementId>& getMinedAchievement() const;
 
   Furniture& setBlocking();
   Furniture& setBlockingEnemies();
@@ -258,6 +260,7 @@ class Furniture {
   optional<ViewId> SERIAL(emptyViewId);
   bool SERIAL(diningFurniture) = false;
   optional<CreaturePredicate> SERIAL(usagePredicate);
+  optional<AchievementId> SERIAL(minedAchievement);
 };
 
 static_assert(std::is_nothrow_move_constructible<Furniture>::value, "T should be noexcept MoveConstructible");

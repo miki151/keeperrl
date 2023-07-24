@@ -3756,6 +3756,9 @@ void PlayerControl::onDestructed(Position pos, FurnitureType type, const Destroy
     considerAddingKeeperFloor(pos);
     pos.setNeedsRenderAndMemoryUpdate(true);
   }
+  auto game = getGame();
+  if (auto& a = game->getContentFactory()->furniture.getData(type).getMinedAchievement())
+    game->achieve(*a);
 }
 
 vector<Vec2> PlayerControl::getVisibleEnemies() const {

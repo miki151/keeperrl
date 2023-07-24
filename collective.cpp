@@ -1234,7 +1234,7 @@ void Collective::recalculateFurniturePopIncrease() {
       for (auto pos : constructions->getBuiltPositions(type))
         if (pos.isClosedOff(MovementType(MovementTrait::WALK).setFarmAnimal()))
           ++count;
-      populationIncrease += factory.getPopulationIncrease(type, count);      
+      populationIncrease += factory.getPopulationIncrease(type, count);
     } else
       populationIncrease += factory.getPopulationIncrease(type, constructions->getBuiltCount(type));
   }
