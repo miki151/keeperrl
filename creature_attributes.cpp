@@ -62,7 +62,7 @@ CreatureAttributes::CreatureAttributes(CreatureAttributes&&) noexcept = default;
 CreatureAttributes& CreatureAttributes::operator =(const CreatureAttributes&) = default;
 CreatureAttributes& CreatureAttributes::operator =(CreatureAttributes&&) = default;
 
-template <class Archive> 
+template <class Archive>
 void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) {
   ar(NAMED(viewId), NAMED(illusionViewObject), NAMED(name), NAMED(attr), NAMED(chatReactionFriendly));
   ar(NAMED(chatReactionHostile), NAMED(passiveAttack), OPTION(gender), OPTION(viewIdUpgrades), OPTION(promotionCost));
@@ -73,6 +73,7 @@ void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) 
   ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction));
   ar(OPTION(automatonParts), OPTION(specialAttr), NAMED(deathEffect), NAMED(chatEffect), OPTION(companions));
   ar(OPTION(maxPromotions), OPTION(afterKilledSomeone), SKIP(permanentBuffs), OPTION(killedAchievement));
+  ar(OPTION(killedByAchievement));
   for (auto& a : attr)
     a.second = max(0, a.second);
 }

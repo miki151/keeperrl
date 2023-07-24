@@ -1250,12 +1250,16 @@ void Player::generateHalluIds() {
 void Player::onKilled(Creature* attacker) {
   unsubscribe();
   getView()->updateView(this, false);
-  if (getGame()->getPlayerCreatures().size() == 1 && getView()->yesOrNoPrompt("Display message history?",
+  auto game = getGame();
+  if (game->getPlayerCreatures().size() == 1 && getView()->yesOrNoPrompt("Display message history?",
       ViewIdList{ViewId("grave")}, false,
       "yes_or_no_below"))
     showHistory();
-  if (adventurer)
-    getGame()->gameOver(creature, creature->getKills().size(), "monsters", creature->getPoints());
+  if (adventurer) {
+    if (auto& a = attacker->getAttributes().killedByAchievement)
+      game->achieve(*a);
+    game->gameOver(creature, creature->getKills().size(), "monsters", creature->getPoints());
+  }
 }
 
 void Player::onLostControl() {

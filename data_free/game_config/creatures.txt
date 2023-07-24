@@ -3414,7 +3414,7 @@
     viewId = { "pig" }
     attr = {
       DAMAGE 5
-      DEFENSE 2 
+      DEFENSE 2
     }
     aiType = RANGED
     body = {
@@ -3430,6 +3430,7 @@
     name = {
       name = "pig"
     }
+    killedByAchievement = "killed_by_pig"
   }
 "GOAT"
   {
@@ -4223,6 +4224,7 @@
     }
     deathEffect = Analytics "creatureKilled" "death"
     gender = IT
+    killedByAchievement = "killed_by_death"
   }
 "SHOPKEEPER"
   {

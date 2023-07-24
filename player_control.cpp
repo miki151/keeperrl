@@ -3664,13 +3664,16 @@ void PlayerControl::onConquered(Creature* victim, Creature* killer) {
     setScrollPos(victim->getPosition().plus(Vec2(0, 5)));
     getView()->updateView(this, false);
   }
-  getGame()->gameOver(victim, collective->getKills().getSize(), "enemies",
+  auto game = getGame();
+  if (auto& a = killer->getAttributes().killedByAchievement)
+    game->achieve(*a);
+  game->gameOver(victim, collective->getKills().getSize(), "enemies",
       collective->getDangerLevel() + collective->getPoints());
   if (!collective->getTerritory().isEmpty())
-    for (auto col : getGame()->getCollectives())
+    for (auto col : game->getCollectives())
       if (col != collective && col->getCreatures().contains(killer) && col->getConfig().xCanEnemyRetire() &&
           isOneOf(col->getVillainType(), VillainType::MAIN, VillainType::LESSER)) {
-        getGame()->setExitInfo(GameSaveType::RETIRED_SITE);
+        game->setExitInfo(GameSaveType::RETIRED_SITE);
         leaveControl();
         collective->makeConqueredRetired(col); // this call invalidates this
         return;
