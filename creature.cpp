@@ -1958,6 +1958,7 @@ bool Creature::considerPhylactery(DropType drops, const Creature* attacker) {
     if (pos.canEnter(this))
       position.moveCreature(pos, true);
     phylactery = none;
+    getGame()->achieve(AchievementId("saved_by_phylactery"));
     return true;
   }
   return false;

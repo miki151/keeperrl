@@ -18,3 +18,4 @@
 "mined_infernite" {{"infernite_ore"}} "Mined infernite ore" ""
 "killed_by_pig" {{"pig"}} "Killed by a pig" ""
 "tricked_death" {{"special_hlgn"}} "Tricked Death" ""
+"saved_by_phylactery" {{"phylactery_active"}} "Saved by a phylactery" ""
