@@ -1929,6 +1929,7 @@ bool Creature::considerSavingLife(DropType drops, const Creature* attacker) {
     if (attacker && attacker->getName().bare() == "Death") {
       if (auto target = findInaccessiblePos(position))
         position.moveCreature(*target, true);
+      getGame()->achieve(AchievementId("tricked_death"));
     }
     tryToDestroyLastingEffect(LastingEffect::LIFE_SAVED);
     heal();

@@ -1071,6 +1071,7 @@
       name = "ki-rin"
     }
     spells = { "group healing" "magic missile" "mass defense bonus" "mass damage bonus" }
+    killedAchievement = "killed_kirin"
   }
 "RED_NAGA"
   {
@@ -4224,7 +4225,6 @@
     }
     deathEffect = Analytics "creatureKilled" "death"
     gender = IT
-    killedByAchievement = "killed_by_death"
   }
 "SHOPKEEPER"
   {
