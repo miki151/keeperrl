@@ -156,8 +156,10 @@ void Player::onEvent(const GameEvent& event) {
           getView()->animation(FXSpawnInfo(info.fx, info.position.getCoord(), info.direction.value_or(Vec2(0, 0))));
       },
       [&](const WonGame&) {
-        if (adventurer)
+        if (adventurer) {
           getGame()->conquered(creature->getName().firstOrBare(), creature->getKills().size(), creature->getPoints());
+          getGame()->achieve(AchievementId("won_adventurer"));
+        }
       },
       [&](const auto&) {}
   );

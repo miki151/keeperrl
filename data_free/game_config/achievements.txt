@@ -3,3 +3,5 @@
 "main_villain" {{"battle_axe"}} "Conquered a main villain" ""
 "captured_prisoner" {{"prisoner"}} "Captured a prisoner" ""
 "converted_prisoner" {{"torture_table"}} "Converted a prisoner" ""
+"won_adventurer" {{"player"}} "Won the game as an adventurer" ""
+"won_keeper" {{"keeper4"}} "Won the game as a keeper" ""

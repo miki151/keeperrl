@@ -2110,6 +2110,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
             (int) collective->getDangerLevel() + collective->getPoints());
         getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
           "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
+        getGame()->achieve(AchievementId("won_keeper"));
       },
       [&](const RetiredGame&) {
         if (getGame()->getVillains(VillainType::MAIN).empty())
