@@ -159,6 +159,8 @@ void Player::onEvent(const GameEvent& event) {
         if (adventurer) {
           getGame()->conquered(creature->getName().firstOrBare(), creature->getKills().size(), creature->getPoints());
           getGame()->achieve(AchievementId("won_adventurer"));
+          if (creature->getBody().getHealth() <= 0.05)
+            getGame()->achieve(AchievementId("won_game_low_health"));
         }
       },
       [&](const auto&) {}
