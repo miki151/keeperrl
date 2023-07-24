@@ -772,6 +772,7 @@ void Collective::onEvent(const GameEvent& event) {
               setTrait(victim, MinionTrait::FIGHTER);
               victim->removeEffect(LastingEffect::TIED_UP);
               setMinionActivity(victim, MinionActivity::IDLE);
+              getGame()->achieve(AchievementId("converted_prisoner"));
             }
           }
         }

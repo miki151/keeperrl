@@ -1,3 +1,5 @@
-"tutorial_done" {{"scroll"}} "Tutorial completed" "You have completed the tutorial and are ready to get your ass handed to you for real!"
+"tutorial_done" {{"scroll"}} "Completed the tutorial" "You have completed the tutorial and are ready to get your ass handed to you for real!"
 "lesser_villain" {{"sword"}} "Conquered a lesser villain" ""
 "main_villain" {{"battle_axe"}} "Conquered a main villain" ""
+"captured_prisoner" {{"prisoner"}} "Captured a prisoner" ""
+"converted_prisoner" {{"torture_table"}} "Converted a prisoner" ""

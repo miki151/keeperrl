@@ -1542,6 +1542,7 @@ void PlayerControl::acceptPrisoner(int index) {
           max(15, victim->getRawAttr(AttrType("DIGGING"))));
     collective->takePrisoner(victim);
     addMessage(PlayerMessage("You enslave " + victim->getName().a()).setPosition(victim->getPosition()));
+    getGame()->achieve(AchievementId("captured_prisoner"));
     for (auto& elem : copyOf(stunnedCreatures))
       if (elem.first == victim)
         stunnedCreatures.removeElement(elem);
