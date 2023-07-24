@@ -475,6 +475,10 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   if (auto error = config->readObject(keysTmp, GameConfigId::KEYS, &keyVerifier))
     return *error;
   keybindings = convertKeys(keysTmp);
+  map<PrimaryId<AchievementId>, AchievementInfo> achievementsTmp;
+  if (auto error = config->readObject(achievementsTmp, GameConfigId::ACHIEVEMENTS, &keyVerifier))
+    return *error;
+  achievements = convertKeys(achievementsTmp);
   auto errors = keyVerifier.verify();
   if (!errors.empty())
     return errors.front();
@@ -486,10 +490,6 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
             return "Z-level enemy " + group.first + " no. " + toString(i)
                 + " has positive attack chance, but no attack behaviour defined"_s;
     }
-  map<PrimaryId<AchievementId>, AchievementInfo> achievementsTmp;
-  if (auto error = config->readObject(achievementsTmp, GameConfigId::ACHIEVEMENTS, &keyVerifier))
-    return *error;
-  achievements = convertKeys(achievementsTmp);
   furniture.initializeInfos();
   for (auto& elem : items)
     if (auto id = elem.second.resourceId) {
