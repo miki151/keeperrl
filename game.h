@@ -126,6 +126,7 @@ class Game : public OwnedObject<Game> {
   Vec2 getModelCoords(const Model*) const;
   bool updateModel(WModel, double timeDiff, optional<milliseconds> endTime);
   void uploadEvent(const string& name, const map<string, string>&);
+  void considerAchievement(const GameEvent&);
 
   SunlightInfo sunlightInfo;
   Table<PModel> SERIAL(models);

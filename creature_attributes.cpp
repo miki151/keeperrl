@@ -72,7 +72,7 @@ void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) 
   ar(SKIP(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel), OPTION(inventory));
   ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction));
   ar(OPTION(automatonParts), OPTION(specialAttr), NAMED(deathEffect), NAMED(chatEffect), OPTION(companions));
-  ar(OPTION(maxPromotions), OPTION(afterKilledSomeone), SKIP(permanentBuffs));
+  ar(OPTION(maxPromotions), OPTION(afterKilledSomeone), SKIP(permanentBuffs), OPTION(killedAchievement));
   for (auto& a : attr)
     a.second = max(0, a.second);
 }

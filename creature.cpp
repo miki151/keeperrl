@@ -1991,9 +1991,10 @@ void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
   if (drops == DropType::EVERYTHING || drops == DropType::ONLY_INVENTORY)
     for (PItem& item : equipment->removeAllItems(this))
       position.dropItem(std::move(item));
-  auto factory = getGame()->getContentFactory();
+  auto game = getGame();
+  auto factory = game->getContentFactory();
   if (drops == DropType::EVERYTHING) {
-    position.dropItems(generateCorpse(factory, getGame()));
+    position.dropItems(generateCorpse(factory, game));
     if (auto sound = getBody().getDeathSound())
       addSound(*sound);
     if (getBody().hasHealth(HealthType::FLESH, factory)) {
@@ -2012,11 +2013,11 @@ void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
     }
   }
   if (statuses.contains(CreatureStatus::CIVILIAN))
-    getGame()->getStatistics().add(StatId::INNOCENT_KILLED);
-  getGame()->getStatistics().add(StatId::DEATH);
+    game->getStatistics().add(StatId::INNOCENT_KILLED);
+  game->getStatistics().add(StatId::DEATH);
   if (attacker)
     attacker->onKilledOrCaptured(this);
-  getGame()->addEvent(EventInfo::CreatureKilled{this, attacker});
+  game->addEvent(EventInfo::CreatureKilled{this, attacker});
   getTribe()->onMemberKilled(this, attacker);
   if (auto rider = getRider()) {
     oldPos.getModel()->killCreature(std::move(rider->steed));

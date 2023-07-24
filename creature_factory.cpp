@@ -790,8 +790,10 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     if (auto ret = getValueMaybe(attributes, id)) {
       ret->name.generateFirst(&*nameGenerator);
       return std::move(*ret);
-    } else if (id == "KRAKEN")
-      return getKrakenAttributes(ViewId("kraken_head"), "kraken");
+    } else if (id == "KRAKEN") {
+      auto ret = getKrakenAttributes(ViewId("kraken_head"), "kraken");
+      ret.killedAchievement = AchievementId("killed_kraken");
+    }
     FATAL << "Unrecognized creature type: \"" << id << "\"";
     fail();
   }();

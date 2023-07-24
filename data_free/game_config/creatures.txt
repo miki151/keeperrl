@@ -909,6 +909,7 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 5 chance = 0.3 }
       { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 5 chance = 0.3 }
     }
+    killedAchievement = "killed_minotaur"
   }
 "SOFT_MONSTER"
   {
@@ -1222,6 +1223,7 @@
       { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
       { type = Glyph WEAPON SpecialAttr DAMAGE 5 Name "at night" Night chance = 0.3 }
     }
+    killedAchievement = "killed_black_dragon"
   }
 "WHITE_NAGA"
   {
@@ -1434,10 +1436,11 @@
       { "InferniteSword" }
       { "BalrogsWhip"}
     }
-    name = { 
+    name = {
       name = "fire demon"
     }
     spells = { "heal spirit" "deception" "haste" "fire trap" }
+    killedAchievement = "killed_balrog"
   }
 "KNIGHT_PLAYER"
   {

@@ -33,6 +33,7 @@
 #include "creature_inventory.h"
 #include "creature_predicate.h"
 #include "ai_type.h"
+#include "achievement_id.h"
 
 inline bool isLarger(CreatureSize s1, CreatureSize s2) {
   return int(s1) > int(s2);
@@ -134,6 +135,7 @@ class CreatureAttributes {
   double SERIAL(promotionCost) = 1.0;
   int SERIAL(maxPromotions) = 5;
   vector<BuffId> SERIAL(permanentBuffs);
+  optional<AchievementId> SERIAL(killedAchievement);
 
   private:
   void consumeEffects(Creature* self, const EnumMap<LastingEffect, int>&);

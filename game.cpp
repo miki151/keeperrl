@@ -923,6 +923,33 @@ bool Game::gameWon() const {
   return true;
 }
 
+void Game::considerAchievement(const GameEvent& event) {
+  using namespace EventInfo;
+  event.visit<void>(
+      [&](const ConqueredEnemy& info) {
+        switch (info.collective->getVillainType()) {
+          case VillainType::LESSER:
+            achieve(AchievementId("lesser_villain"));
+            break;
+          case VillainType::MAIN:
+            achieve(AchievementId("main_villain"));
+            break;
+          default:
+            break;
+        }
+      },
+      [&](const CreatureKilled& info) {
+        if (auto& a = info.victim->getAttributes().killedAchievement)
+          achieve(*a);
+      },
+      [&](const CreatureStunned& info) {
+        if (auto& a = info.victim->getAttributes().killedAchievement)
+          achieve(*a);
+      },
+      [](auto&) {}
+  );
+}
+
 void Game::addEvent(const GameEvent& event) {
   for (Vec2 v : models.getBounds())
     if (models[v])
@@ -932,16 +959,6 @@ void Game::addEvent(const GameEvent& event) {
       [&](const ConqueredEnemy& info) {
         Collective* col = info.collective;
         if (col->getVillainType() != VillainType::NONE) {
-          switch (col->getVillainType()) {
-            case VillainType::LESSER:
-              achieve(AchievementId("lesser_villain"));
-              break;
-            case VillainType::MAIN:
-              achieve(AchievementId("main_villain"));
-              break;
-            default:
-              break;
-          }
           if (auto id = col->getEnemyId())
             uploadEvent("customEvent", {
               {"name", "villainConquered"},
@@ -961,5 +978,6 @@ void Game::addEvent(const GameEvent& event) {
       },
       [&](const auto&) {}
   );
+  considerAchievement(event);
 }
 
