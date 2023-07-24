@@ -932,6 +932,16 @@ void Game::addEvent(const GameEvent& event) {
       [&](const ConqueredEnemy& info) {
         Collective* col = info.collective;
         if (col->getVillainType() != VillainType::NONE) {
+          switch (col->getVillainType()) {
+            case VillainType::LESSER:
+              achieve(AchievementId("lesser_villain"));
+              break;
+            case VillainType::MAIN:
+              achieve(AchievementId("main_villain"));
+              break;
+            default:
+              break;
+          }
           if (auto id = col->getEnemyId())
             uploadEvent("customEvent", {
               {"name", "villainConquered"},
