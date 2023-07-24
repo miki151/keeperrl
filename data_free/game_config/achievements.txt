@@ -10,7 +10,7 @@
 "killed_black_dragon" {{ "red_dragon" Rgb 80 80 80 255 }} "Killed or captured a black dragon" ""
 "killed_minotaur" {{"minotaur"}} "Killed or captured a minotaur" ""
 "killed_kraken" {{"kraken_head"}} "Killed or captured a kraken" ""
-"killed_kirin" {{"kraken_head"}} "Killed or captured a ki-rin" ""
+"killed_kirin" {{"kirin"}} "Killed or captured a ki-rin" ""
 "mined_iron" {{"iron_ore"}} "Mined iron ore" ""
 "mined_ada" {{"ada_ore"}} "Mined adamantium ore" ""
 "mined_adoxium" {{"adoxium_ore"}} "Mined adoxium ore" ""
