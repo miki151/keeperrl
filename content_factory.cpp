@@ -32,7 +32,7 @@ void ContentFactory::serialize(Archive& ar, const unsigned int) {
   ar(immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buffs);
   ar(buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping);
   ar(randomLayouts, tileGasTypes, promotions, dancePositions, equipmentGroups, scriptedHelp, attrInfo, attrOrder);
-  ar(bodyMaterials, keybindings, worldMaps, achievements, achievementsOrder);
+  ar(bodyMaterials, keybindings, worldMaps, achievements, achievementsOrder, buffsModifyingEfficiency);
   creatures.setContentFactory(this);
 }
 

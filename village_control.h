@@ -64,7 +64,7 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
 
   double SERIAL(victims) = 0;
   EntitySet<Item> SERIAL(myItems);
-  mutable optional<bool> SERIAL(canPillageCache);
+  mutable optional<bool> canPillageCache;
   int SERIAL(stolenItemCount) = 0;
   map<TeamId, int> SERIAL(attackSizes);
   bool SERIAL(entries) = false;
