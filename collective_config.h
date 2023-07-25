@@ -24,6 +24,7 @@
 #include "furniture_type.h"
 #include "conquer_condition.h"
 #include "creature_id.h"
+#include "achievement_id.h"
 
 enum class ItemClass;
 
@@ -109,6 +110,8 @@ class CollectiveConfig {
   CollectiveConfig& operator = (CollectiveConfig&&) = default;
   CollectiveConfig& operator = (const CollectiveConfig&) = default;
   ~CollectiveConfig();
+
+  optional<AchievementId> SERIAL(discoverAchievement);
 
   private:
   enum CollectiveType { KEEPER, VILLAGE };

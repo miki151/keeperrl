@@ -1142,6 +1142,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
     CreatureMessage { "find an item inside" "finds an item inside"}
     DropItems {"AssassinsKnife"} 1
     RemoveFurniture "KNIFE_CHEST"
+    Achievement "assassin"
   }
 }
 "ADA_CHEST" inherit "ARMOR_CHEST"

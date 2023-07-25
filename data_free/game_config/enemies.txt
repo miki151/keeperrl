@@ -585,6 +585,9 @@ End
     type = RandomLayout { "blacksmith_cellar" { 4 4 } "default"}
     tribe = HUMAN
   }
+  config = {
+    discoverAchievement = "blacksmith_stash"
+  }
 }
 "GUARD_POST"
 {
@@ -634,6 +637,9 @@ End
   settlement = {
     type = RandomLayout { "guard_post_floor3" { 4 4 } "default"}
     tribe = HUMAN
+  }
+  config = {
+    discoverAchievement = "guard_post_stash"
   }
 }
 "COTTAGE_CELLAR"
@@ -1819,6 +1825,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
   }
   config = {
     prisoners = true
+    discoverAchievement = "black_market"
   }
   behaviour = {
     minPopulation = 0
@@ -2253,6 +2260,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
     levels = {
       {MainEnemy {28 16} SOKOBAN "Sokoban" false true false }
     }
+  }
+  config = {
+    discoverAchievement = "sokoban"
   }
   discoverable = false
 }

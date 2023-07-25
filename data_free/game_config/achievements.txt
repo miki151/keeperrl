@@ -20,3 +20,8 @@
 "tricked_death" {{"special_hlgn"}} "Tricked Death" ""
 "saved_by_phylactery" {{"phylactery_active"}} "Saved by a phylactery" ""
 "succubus_breading" {{"succubus"}} "Successfully started a succubus breading program" ""
+"black_market" {{"black_market_guard"}} "Discovered the Black Market" ""
+"sokoban" {{"boulder"}} "Solved the sokoban puzzle" ""
+"blacksmith_stash" {{"artisan"}} "Discovered an artisan's hidden stash" ""
+"guard_post_stash" {{"chest"}} "Discovered Adoxie's cult hidden stash" ""
+"assassin" {{"knife"}} "Discovered an assassin's secret stash" ""

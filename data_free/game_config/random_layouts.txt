@@ -492,7 +492,7 @@ Def CottageCellar() {
   Place (
     ({1 1} Set("up_stairs0") 1 FurnitureLoc()),
     ({1 1} Set("knife_chest") 1 FurnitureLoc()),
-    ({1 1} Set("pamphlet_chest") {2 4} FurnitureLoc())
+    #({1 1} Set("pamphlet_chest") {2 4} FurnitureLoc())
   )
 }
 End

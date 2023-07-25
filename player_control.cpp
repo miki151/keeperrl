@@ -2198,11 +2198,13 @@ void PlayerControl::updateKnownLocations(const Position& pos) {
         else if (loc->isMarkedAsSurprise())
           addMessage(PlayerMessage("Your minions discover a new location.").setLocation(loc));
       }*/
-  if (getGame()) // check in case this method is called before Game is constructed
-    for (const Collective* col : getGame()->getCollectives())
+  if (auto game = getGame()) // check in case this method is called before Game is constructed
+    for (const Collective* col : game->getCollectives())
       if (col != collective && col->getTerritory().contains(pos)) {
         collective->addKnownVillain(col);
         if (!collective->isKnownVillainLocation(col)) {
+          if (auto& a = col->getConfig().discoverAchievement)
+            game->achieve(*a);
           collective->addKnownVillainLocation(col);
           if (col->isDiscoverable())
             if (auto& name = col->getName())

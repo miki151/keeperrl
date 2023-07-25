@@ -3106,6 +3106,7 @@ class SokobanFromFile : public LevelMaker {
 PLevelMaker LevelMaker::sokobanFromFile(RandomGen& random, SettlementInfo info, Table<char> file) {
   auto queue = make_unique<MakerQueue>();
   queue->addMaker(make_unique<SokobanFromFile>(file, info.downStairs.getOnlyElement()));
+  queue->addMaker(make_unique<PlaceCollective>(info.collective, Predicate::attrib(SquareAttrib::SOKOBAN_PRIZE)));
   auto& building = info.type.getReferenceMaybe<MapLayoutTypes::Builtin>()->buildingInfo;
   addStairs(*queue, info, building, Predicate::attrib(SquareAttrib::SOKOBAN_ENTRY));
   //queue->addMaker(make_unique<PlaceCollective>(info.collective));
