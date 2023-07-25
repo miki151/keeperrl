@@ -1040,6 +1040,7 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
+    steedAchievement = "rode_dragon"
   }
 "KIRIN"
   {
@@ -1148,6 +1149,7 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
+    steedAchievement = "rode_dragon"
   }
 "BLACK_NAGA"
   {
@@ -1225,6 +1227,7 @@
       { type = Glyph WEAPON SpecialAttr DAMAGE 5 Name "at night" Night chance = 0.3 }
     }
     killedAchievement = "killed_black_dragon"
+    steedAchievement = "rode_dragon"
   }
 "WHITE_NAGA"
   {
@@ -1300,6 +1303,7 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
+    steedAchievement = "rode_dragon"
 }
 "YELLOW_NAGA"
   {
@@ -1374,6 +1378,7 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
+    steedAchievement = "rode_dragon"
   }
 "BONE_DRAGON"
   {
@@ -1405,6 +1410,7 @@
     }
     spells = { "black smoke breath" "animate corpses"}
     hatedByEffect = HATE_DRAGONS
+    steedAchievement = "rode_dragon"
   }
 "BALROG"
   {

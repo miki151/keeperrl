@@ -137,6 +137,7 @@ class CreatureAttributes {
   vector<BuffId> SERIAL(permanentBuffs);
   optional<AchievementId> SERIAL(killedAchievement);
   optional<AchievementId> SERIAL(killedByAchievement);
+  optional<AchievementId> SERIAL(steedAchievement);
 
   private:
   void consumeEffects(Creature* self, const EnumMap<LastingEffect, int>&);

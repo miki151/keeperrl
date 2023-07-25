@@ -926,6 +926,9 @@ static string getForceMovementQuestion(Position pos, const Creature* creature) {
 
 void Player::moveAction(Vec2 dir) {
   auto dirPos = creature->getPosition().plus(dir);
+  if (auto steed = creature->getSteed())
+    if (auto& a = steed->getAttributes().steedAchievement)
+      getGame()->achieve(*a);
   if (tryToPerform(creature->move(dir)))
     return;
   if (auto action = creature->forceMove(dir)) {

@@ -28,3 +28,4 @@
 "outback" {{"kangaroo"}} "Reached the land Down Under" ""
 "killed_by_adoxie" {{"adoxie_head"}} "Killed by the Evil God Adoxie" ""
 "solo_keeper" {{"keeper4"}} "Won the game as a solo keeper" ""
+"rode_dragon" {{"red_dragon"}} "Rode a dragon" ""
