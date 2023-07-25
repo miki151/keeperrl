@@ -1129,6 +1129,9 @@ End
     type = Builtin CAVE "NATIVE"
     tribe = BANDIT
   }
+  config = {
+    discoverAchievement = "outback"
+  }
 }
 "DEATH"
 {
