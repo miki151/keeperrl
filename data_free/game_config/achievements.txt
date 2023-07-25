@@ -4,7 +4,7 @@
 "captured_prisoner" {{"prisoner"}} "Captured a prisoner" ""
 "converted_prisoner" {{"torture_table"}} "Converted a prisoner" ""
 "won_adventurer" {{"player"}} "Won the game as an adventurer" ""
-"won_keeper" {{"keeper4"}} "Won the game as a keeper" ""
+"won_keeper" {{"throne"}} "Won the game as a keeper" ""
 "won_game_low_health" {{"first_aid"}} "Won the game with less than 5% health" ""
 "retired" {{"dungeon_entrance"}} "Retired a dungeon" ""
 "killed_balrog" {{"balrog"}} "Killed or captured a fire demon" ""
@@ -27,3 +27,4 @@
 "assassin" {{"knife"}} "Discovered an assassin's secret stash" ""
 "outback" {{"kangaroo"}} "Reached the land Down Under" ""
 "killed_by_adoxie" {{"adoxie_head"}} "Killed by the Evil God Adoxie" ""
+"solo_keeper" {{"keeper4"}} "Won the game as a solo keeper" ""

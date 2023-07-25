@@ -305,4 +305,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   };
   BattleSummary SERIAL(battleSummary);
   void presentAndClearBattleSummary();
+  void considerSoloAchievement();
+  bool SERIAL(soloKeeper) = true;
 };

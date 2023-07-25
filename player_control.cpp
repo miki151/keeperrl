@@ -106,7 +106,7 @@ template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
   ar(memory, introText, nextKeeperWarning, tribeAlignment);
-  ar(newAttacks, notifiedAttacks, messages, hints);
+  ar(newAttacks, notifiedAttacks, messages, hints, soloKeeper);
   ar(visibilityMap, unknownLocations, dismissedVillageInfos, buildInfo, battleSummary);
   ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures, usedResources, allianceAttack);
 }
@@ -2114,6 +2114,8 @@ void PlayerControl::onEvent(const GameEvent& event) {
         auto& leaders = collective->getLeaders();
         if (leaders.size() == 1 && leaders[0]->getBody().getHealth() <= 0.05)
           getGame()->achieve(AchievementId("won_game_low_health"));
+        if (soloKeeper)
+          getGame()->achieve(AchievementId("solo_keeper"));
       },
       [&](const RetiredGame&) {
         if (getGame()->getVillains(VillainType::MAIN).empty())
@@ -3617,12 +3619,18 @@ void PlayerControl::considerNewAttacks() {
       }
 }
 
+void PlayerControl::considerSoloAchievement() {
+  if (!collective->getCreatures(MinionTrait::FIGHTER).empty())
+    soloKeeper = false;
+}
+
 void PlayerControl::tick() {
   PROFILE_BLOCK("PlayerControl::tick");
   for (auto c : collective->getCreatures()) {
     if (c->isAffectedPermanently(BuffId("BRIDGE_BUILDING_SKILL")))
       c->removePermanentEffect(BuffId("BRIDGE_BUILDING_SKILL"), 1, false);
   }
+  considerSoloAchievement();
   updateUnknownLocations();
   considerTransferingLostMinions();
   for (auto& elem : messages)
