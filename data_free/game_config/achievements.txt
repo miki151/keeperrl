@@ -26,3 +26,4 @@
 "guard_post_stash" {{"chest"}} "Discovered Adoxie's cult hidden stash" ""
 "assassin" {{"knife"}} "Discovered an assassin's secret stash" ""
 "outback" {{"kangaroo"}} "Reached the land Down Under" ""
+"killed_by_adoxie" {{"adoxie_head"}} "Killed by the Evil God Adoxie" ""

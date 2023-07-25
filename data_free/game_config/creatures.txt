@@ -4293,6 +4293,7 @@
     deathDescription = "vanquished. May he never rise again"
     gender = IT
     deathEffect = Analytics "creatureKilled" "adoxie"
+    killedByAchievement = "killed_by_adoxie"
   }
 "ADOXIE_ADVENTURER" inherit "ADOXIE_HEAD"
   {
@@ -4357,6 +4358,7 @@
     chatReactionFriendly = "\"nothing, why did you think a foot could talk?\""
     chatReactionHostile = "\"nothing, why did you think a foot could talk?\""
     deathDescription = "destroyed"
+    killedByAchievement = "killed_by_adoxie"
   }
 "ADOXIE_FOOT_RIGHT" inherit "ADOXIE_FOOT_LEFT"
   {
@@ -4376,6 +4378,7 @@
     permanentEffects = append {
       IMMOBILE 1
     }
+    killedByAchievement = none
   }
 "ADOXIE_FOOT_RIGHT_TRAP" inherit "ADOXIE_FOOT_RIGHT"
   {
@@ -4386,6 +4389,7 @@
     permanentEffects = append {
       IMMOBILE 1
     }
+    killedByAchievement = none
   }
 "ADOXIE_LEFT_HAND" inherit "ADOXIE_FOOT_LEFT"
   {
