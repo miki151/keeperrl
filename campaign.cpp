@@ -7,10 +7,11 @@
 #include "player_role.h"
 #include "villain_type.h"
 #include "pretty_archive.h"
+#include "perlin_noise.h"
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Campaign);
 
-SERIALIZE_DEF(Campaign, sites, playerPos, worldName, defeated, influencePos, influenceSize, playerRole, type, mapZoom, minimapZoom)
+SERIALIZE_DEF(Campaign, sites, playerPos, worldName, defeated, influencePos, influenceSize, playerRole, type, mapZoom, minimapZoom, originalPlayerPos)
 
 void VillainViewId::serialize(PrettyInputArchive& ar1, unsigned int) {
   if (ar1.peek() == "{" && ar1.peek(2) == "{")
@@ -36,6 +37,10 @@ bool Campaign::canTravelTo(Vec2 pos) const {
 
 Vec2 Campaign::getPlayerPos() const {
   return playerPos;
+}
+
+Vec2 Campaign::getOriginalPlayerPos() const {
+  return originalPlayerPos;
 }
 
 BiomeId Campaign::getBaseBiome() const {
@@ -184,20 +189,79 @@ int Campaign::getBaseLevelIncrease(Vec2 pos) const {
   return res * 3;
 }
 
-void Campaign::refreshInfluencePos() {
-  influencePos.clear();
-  influencePos.insert(playerPos);
-  for (double r = 1; r <= sites.getWidth() + sites.getHeight(); r += 0.1) {
-    for (Vec2 v : sites.getBounds())
-      if (v.distD(playerPos) <= r)
-        influencePos.insert(v);
-    int numEnemies = 0;
-    for (Vec2 v : influencePos)
-      if (sites[v].isEnemy() && !defeated[v])
-        ++numEnemies;
-    if (numEnemies >= influenceSize)
-      break;
+static bool blocksInfluence(VillainType type) {
+  switch (type) {
+    case VillainType::MAIN:
+    case VillainType::LESSER:
+      return true;
+    default:
+      return false;
   }
+}
+
+void Campaign::refreshInfluencePos() {
+  map<Vec2, Vec2> siteOwners;
+  map<Vec2, unordered_set<Vec2, CustomHash<Vec2>>> territories;
+  influencePos.clear();
+  constexpr int initialRadius = 14;
+  for (auto v : Rectangle::centered(originalPlayerPos, initialRadius))
+    if (v.distD(originalPlayerPos) <= initialRadius + 0.5)
+      influencePos.insert(v);
+  bool hasDefeated = [&] {
+    for (auto v : sites.getBounds())
+      if (defeated[v])
+        return true;
+    return false;
+  }();
+  struct QueueElem {
+    Vec2 pos;
+    double dist;
+    Vec2 owner;
+    bool operator < (const QueueElem& e) const {
+      return dist > e.dist;
+    }
+  };
+  priority_queue<QueueElem> q;
+  for (int x : sites.getBounds().getXRange()) {
+    q.push(QueueElem{Vec2(x, 0), 0, Vec2(0, 0)});
+    q.push(QueueElem{Vec2(x, sites.getBounds().bottom() - 1), 0, Vec2(0, 0)});
+  }
+  for (int y : sites.getBounds().getYRange()) {
+    q.push(QueueElem{Vec2(0, y), 0, Vec2(0, 0)});
+    q.push(QueueElem{Vec2(sites.getBounds().right() - 1, y), 0, Vec2(0, 0)});
+  }
+  for (Vec2 v : sites.getBounds())
+    if (!!sites[v].dweller && blocksInfluence(*sites[v].getVillainType()))
+      q.push(QueueElem{v, 0, v});
+  RandomGen gen;
+  gen.init(2134);
+  auto noiseTable = genNoiseMap(gen, sites.getBounds(), NoiseInit { 1, 1, 1, 1, 1 }, 0.65);
+  while (!q.empty()) {
+    auto e = q.top();
+    q.pop();
+    if (siteOwners.count(e.pos))
+      continue;
+    siteOwners[e.pos] = e.owner;
+    for (auto v : e.pos.neighbors4())
+      if (v.inRectangle(sites.getBounds()) && !sites[v].blocked && !siteOwners.count(v))
+        q.push(QueueElem({v, e.dist + noiseTable[v], e.owner}));
+  }
+  for (auto& elem : siteOwners)
+    if (elem.second != Vec2(0, 0))
+      territories[elem.second].insert(elem.first);
+  for (auto& elem : territories) {
+    for (auto pos : elem.second)
+      for (auto v : pos.neighbors4())
+        if (v.inRectangle(sites.getBounds()))
+          if (auto owner = getValueMaybe(siteOwners, v))
+            if (defeated[*owner]) {
+              influencePos.insert(elem.second.begin(), elem.second.end());
+              goto nextTerritory;
+            }
+    nextTerritory:
+    continue;
+  }
+  CHECK(!influencePos.empty());
 }
 
 int Campaign::getNumNonEmpty() const {

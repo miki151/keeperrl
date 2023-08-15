@@ -208,7 +208,7 @@ bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campai
   if (villains.size() > count)
     villains.resize(count);
   auto isFreeSpot = [&](Vec2 v) {
-    if (campaign.sites[v].blocked)
+    if (campaign.sites[v].blocked || !v.inRectangle(campaign.sites.getBounds().minusMargin(10)))
       return false;
     for (auto v2 : Rectangle::centered(v, 1))
       if (v2.inRectangle(campaign.sites.getBounds()) && !campaign.sites[v2].isEmpty())
@@ -346,9 +346,10 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
         USER_FATAL << "Failed to place all villains on the world map";
       continue;
     }
-    for (auto pos : Random.permutation(campaign.getSites().getBounds().getAllSquares()))
+    for (auto pos : Random.permutation(campaign.getSites().getBounds().minusMargin(15).getAllSquares()))
       if (campaign.isGoodStartPos(pos)) {
         setPlayerPos(campaign, pos, avatarInfo.playerCreature->getMaxViewIdUpgrade());
+        campaign.originalPlayerPos = pos;
         break;
       }
     while (1) {

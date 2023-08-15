@@ -224,7 +224,7 @@ class GuiBuilder {
   ScrollPosition libraryScroll;
   ScrollPosition minionPageScroll;
   pair<double, double> scrollAreaScrollPos;
-  void scrollWorldMap(int iconSize, Vec2);
+  void scrollWorldMap(int iconSize, Vec2, Rectangle worldMapBounds);
   optional<int> itemIndex;
   optional<Vec2> campaignGridPointer;
   bool playerOverlayFocused = false;

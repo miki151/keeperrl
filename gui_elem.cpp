@@ -2165,7 +2165,7 @@ class ViewObjectGui : public GuiElem {
   }
 
   private:
-  variant<ViewObject, ViewIdList  , function<ViewId()>, function<ViewObject()>> object;
+  variant<ViewObject, ViewIdList, function<ViewId()>, function<ViewObject()>> object;
   Vec2 size;
   double scale;
   Color color;
@@ -2628,10 +2628,8 @@ class ScrollArea : public GuiElem {
       scrollPos = {clickPos->x - v.x, clickPos->y - v.y};
       int areaWidth = getBounds().width();
       int areaHeight = getBounds().height();
-      scrollPos.first = max(-areaWidth / 3, min<int>(
-          *content->getPreferredWidth() - areaWidth * 2 / 3, scrollPos.first));
-      scrollPos.second = max(-areaHeight / 3, min<int>(
-          *content->getPreferredHeight() - areaHeight * 2 / 3, scrollPos.second));
+      scrollPos.first = max(0, min<int>(*content->getPreferredWidth() - areaWidth, scrollPos.first));
+      scrollPos.second = max(0, min<int>(*content->getPreferredHeight() - areaHeight, scrollPos.second));
       return true;
     } else {
       if (v.inRectangle(getBounds()))

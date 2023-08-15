@@ -64,6 +64,7 @@ class Campaign {
 
   const Table<SiteInfo>& getSites() const;
   Vec2 getPlayerPos() const;
+  Vec2 getOriginalPlayerPos() const;
   bool isGoodStartPos(Vec2) const;
   BiomeId getBaseBiome() const;
   const string& getWorldName() const;
@@ -97,4 +98,5 @@ class Campaign {
   CampaignType SERIAL(type);
   int SERIAL(mapZoom);
   int SERIAL(minimapZoom) = 2;
+  Vec2 SERIAL(originalPlayerPos);
 };

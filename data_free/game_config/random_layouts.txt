@@ -1045,8 +1045,9 @@ End
   #Filter(Not On("save"), Reset("mountain"))
   #Border(1, Filter(Not On("mountain"), Fail))
   CellularAutomaton(Filter(Not On("set_mountain"), Reset("set_water")), 0.35)
-  SplitV(0.7, Filter(On("set_sand"), Reset("set_swamp")), Filter(On("set_water"), Reset("set_sand")))
-  SplitV(0.3, Filter(Or(On("set_water"), On("set_sand")), Reset("set_snow")), {})
+  Border(TOP, 23, Filter(Or(On("set_water"), On("set_sand")), Reset("set_snow")))
+  Margin(BOTTOM, 23, Filter(Or(On("set_water"), On("set_sand")), Filter(On("set_water"), Reset("set_sand"))),
+      Filter(On("set_sand"), Reset("set_swamp")))
   NoiseMap(0.65, {
     (0.0, 0.2, Filter(On("set_snow"), Set("set_mountain_snow")))
   })
