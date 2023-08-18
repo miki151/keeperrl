@@ -178,7 +178,7 @@ string FurnitureUsage::getUsageQuestion(FurnitureUsageType type, string furnitur
         }
       },
       [&](const UsageEffect& e) {
-        return e.usageVerb + " " + furnitureName;
+        return e.usageVerb;
       }
   );
 }
