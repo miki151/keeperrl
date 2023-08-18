@@ -281,10 +281,11 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
             return getBedType(c, f) == f->furniture.getData(t).getBedType();
           }};
       case MinionActivity::EAT:
-        return {[](const ContentFactory* f, const Collective* col, const Creature* c, FurnitureType t) {
+        return {[](const ContentFactory* factory, const Collective* col, const Creature* c, FurnitureType t) {
+            auto f = factory->furniture.getData(t);
             if (!c)
-              return f->furniture.getData(t).isDiningFurniture();
-            return t == c->getBody().getDiningFurniture();
+              return !!f.getDiningFurnitureType();
+            return f.getDiningFurnitureType() == c->getBody().getDiningFurniture();
           }};
       case MinionActivity::PHYLACTERY: return {FurnitureType("PHYLACTERY")};
       case MinionActivity::GUARDING1: return {MinionActivityInfo::GUARD1};

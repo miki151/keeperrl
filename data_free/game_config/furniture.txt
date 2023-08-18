@@ -159,7 +159,7 @@ TRAINING("_DWARF", "_dwarf")
   viewId = { "dining_table" }
   name = "dining table"
   usageFX = none
-  diningFurniture = true
+  diningFurniture = DINING_TABLE
   usageType = UsageEffect "eat from dining table" Filter Humanoid {
     CreatureMessage { "eat a steaming pig" "eats a steaming pig"}
     Lasting SATIATED
@@ -175,7 +175,7 @@ TRAINING("_DWARF", "_dwarf")
   fire = 100
   strength = 10
   destroyFX = { DESTROY_FURNITURE Rgb 200 200 0 255 }
-  diningFurniture = true
+  diningFurniture = HAYPILE
   usageType = UsageEffect "eat from hay pile" Filter Not Humanoid {
     CreatureMessage { "eat some hay" "eats some hay"}
     Lasting SATIATED

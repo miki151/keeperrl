@@ -184,7 +184,7 @@ bool Furniture::doesHideItems() const {
   return hidesItems;
 }
 
-bool Furniture::isDiningFurniture() const {
+optional<FurnitureType> Furniture::getDiningFurnitureType() const {
   return diningFurniture;
 }
 

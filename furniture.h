@@ -129,7 +129,7 @@ class Furniture {
   void spreadBlood(Position);
   int getMaxTraining(ExperienceType) const;
   bool hasRequiredSupport(Position) const;
-  bool isDiningFurniture() const;
+  optional<FurnitureType> getDiningFurnitureType() const;
   const optional<CreaturePredicate>& getUsagePredicate() const;
   optional<ViewId> getSupportViewId(Position) const;
   optional<FurnitureType> getUpgrade() const;
@@ -259,7 +259,7 @@ class Furniture {
   vector<StorageId> SERIAL(storageIds);
   bool SERIAL(hidesItems) = false;
   optional<ViewId> SERIAL(emptyViewId);
-  bool SERIAL(diningFurniture) = false;
+  optional<FurnitureType> SERIAL(diningFurniture);
   optional<CreaturePredicate> SERIAL(usagePredicate);
   optional<AchievementId> SERIAL(minedAchievement);
   bool SERIAL(removeInstantly) = false;
