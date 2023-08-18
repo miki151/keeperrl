@@ -362,7 +362,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
               (retired && type == CampaignType::FREE_PLAY) ? optional<RetiredGames&>(*retired) : none,
               getCampaignOptions(type),
               getIntroText(),
-              contentFactory->biomeInfo.at(*campaign.getSites()[campaign.getPlayerPos()].biome).keeperBiome->name,
+              contentFactory->biomeInfo.at(*campaign.getSites()[campaign.getPlayerPos()].biome).name,
               contentFactory->worldMaps.transform([](auto& elem) { return elem.name; }),
               worldMapIndex
             },
