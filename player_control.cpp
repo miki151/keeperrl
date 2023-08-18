@@ -3120,7 +3120,7 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
             otherPos = f->getSecondPart(position);
           collective->destroyOrder(position, layer);
           if (auto f = position.getFurniture(layer))
-            if (f->getType() == FurnitureType("TREE_TRUNK") || f->getType() == FurnitureType("STONES"))
+            if (f->canRemoveInstantly())
               position.removeFurniture(f);
           getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
           updateSquareMemory(position);
@@ -3128,7 +3128,7 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
             updateSquareMemory(*otherPos);
         } else
           if (auto f = position.getFurniture(layer))
-            if (f->getType() == FurnitureType("TREE_TRUNK") || f->getType() == FurnitureType("STONES"))
+            if (f->canRemoveInstantly())
               position.removeFurniture(f);
       }
     },

@@ -164,6 +164,7 @@ class Furniture {
   bool doesHideItems() const;
   const optional<ViewId>& getEmptyViewId() const;
   const optional<AchievementId>& getMinedAchievement() const;
+  bool canRemoveInstantly() const;
 
   Furniture& setBlocking();
   Furniture& setBlockingEnemies();
@@ -261,6 +262,7 @@ class Furniture {
   bool SERIAL(diningFurniture) = false;
   optional<CreaturePredicate> SERIAL(usagePredicate);
   optional<AchievementId> SERIAL(minedAchievement);
+  bool SERIAL(removeInstantly) = false;
 };
 
 static_assert(std::is_nothrow_move_constructible<Furniture>::value, "T should be noexcept MoveConstructible");

@@ -54,7 +54,7 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltInfo), NAMED(dissolveTo));
   ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), NAMED(freezeTo), NAMED(fillPit), NAMED(itemsRemovedEffect));
   ar(OPTION(eyeball), OPTION(storageIds), OPTION(hidesItems), NAMED(emptyViewId), OPTION(diningFurniture));
-  ar(OPTION(usagePredicate), OPTION(minedAchievement));
+  ar(OPTION(usagePredicate), OPTION(minedAchievement), OPTION(removeInstantly));
 }
 
 template <class Archive>
@@ -198,6 +198,10 @@ const optional<ViewId>& Furniture::getEmptyViewId() const {
 
 const optional<AchievementId>& Furniture::getMinedAchievement() const {
   return minedAchievement;
+}
+
+bool Furniture::canRemoveInstantly() const {
+  return removeInstantly;
 }
 
 optional<ViewId> Furniture::getSupportViewId(Position pos) const {

@@ -759,11 +759,13 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "tree trunk"
   viewId = { "tree_trunk" }
   canSilentlyReplace = true
+  removeInstantly = true
 }
 "BURNT_TREE"
 {
   name = "burnt tree"
   viewId = { "burnt_tree" }
+  removeInstantly = true
   canHideHere = true
   strength = 30
 }
@@ -790,18 +792,21 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "rocks"
   viewId = { "stones" }
   canSilentlyReplace = true
+  removeInstantly = true
 }
 "TERMITE_MOUND"
 {
   name = "termite mound"
   viewId = { "termite_mound" }
   canSilentlyReplace = true
+  removeInstantly = true
 }
 "FLOWER1"
 {
   name = "flower"
   viewId = { "flower1" }
   canSilentlyReplace = true
+  removeInstantly = true
 }
 "FLOWER2" inherit "FLOWER1"
 {
