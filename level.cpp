@@ -590,7 +590,7 @@ Sectors& Level::getSectorsDontCreate(const MovementType& movement) const {
 }
 
 static Sectors::ExtraConnections getOrCreateExtraConnections(Rectangle bounds,
-    const unordered_map<MovementType, Sectors, CustomHash<MovementType>>& sectors) {
+    const HashMap<MovementType, Sectors>& sectors) {
   if (sectors.empty())
     return Sectors::ExtraConnections(bounds);
   else

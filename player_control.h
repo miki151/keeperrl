@@ -292,7 +292,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   ViewId getViewId(const BuildInfoTypes::BuildType&) const;
   EntityMap<Creature, LocalTime> leaderWoundedTime;
   void handleDestructionOrder(Position position, HighlightType, DestroyAction, bool dryRun);
-  unordered_set<CollectiveResourceId, CustomHash<CollectiveResourceId>> SERIAL(usedResources);
+  HashSet<CollectiveResourceId> SERIAL(usedResources);
   optional<vector<Collective*>> SERIAL(allianceAttack);
   enum class Selection { SELECT, DESELECT, NONE } selection = Selection::NONE;
   void considerTogglingCaptureOrderOnMinions() const;

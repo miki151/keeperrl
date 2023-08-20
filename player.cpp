@@ -270,7 +270,7 @@ void Player::handleIntrinsicAttacks(const vector<UniqueEntity<Item>::Id>& itemId
 
 void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds1, ItemAction action) {
   PROFILE;
-  unordered_set<Item::Id, CustomHash<Item::Id>> itemIds(itemIds1.begin(), itemIds1.end());
+  HashSet<Item::Id> itemIds(itemIds1.begin(), itemIds1.end());
   vector<Item*> items = creature->getEquipment().getItems().filter(
       [&](const Item* it) { return itemIds.count(it->getUniqueId());});
   //CHECK(items.size() == itemIds.size()) << int(items.size()) << " " << int(itemIds.size());

@@ -470,7 +470,7 @@ class Fighter : public Behaviour {
 
   MoveInfo considerBreakingChokePoint(Creature* other) {
   PROFILE;
-    unordered_set<Position, CustomHash<Position>> myNeighbors;
+    HashSet<Position> myNeighbors;
     for (auto pos : creature->getPosition().neighbors8(Random))
       myNeighbors.insert(pos);
     MoveInfo destroyMove = NoMove;
@@ -765,7 +765,7 @@ class GuardArea : public Behaviour {
 
   private:
   Level* SERIAL(myLevel) = nullptr;
-  unordered_set<Vec2, CustomHash<Vec2>> SERIAL(area);
+  HashSet<Vec2> SERIAL(area);
 };
 
 class Wait : public Behaviour {

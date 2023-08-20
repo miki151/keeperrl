@@ -215,7 +215,7 @@ bool VillageControl::considerVillainAmbush(const vector<Creature*>& travellers) 
     auto attackers = getAttackers();
     if (!attackers.empty()) {
       const int maxDist = 3;
-      unordered_map<Position, int, CustomHash<Position>> distance;
+      HashMap<Position, int> distance;
       queue<Position> q;
       auto add = [&](Position p, int dist) {
         q.push(p);

@@ -21,8 +21,8 @@ const char* getNameLowerCase(ExperienceType type) {
   return lowerCaseName[type].c_str();
 }
 
-const EnumMap<ExperienceType, unordered_map<AttrType, int, CustomHash<AttrType>>>& getAttrIncreases() {
-  static const EnumMap<ExperienceType, unordered_map<AttrType, int, CustomHash<AttrType>>> attrIncreases {
+const EnumMap<ExperienceType, HashMap<AttrType, int>>& getAttrIncreases() {
+  static const EnumMap<ExperienceType, HashMap<AttrType, int>> attrIncreases {
     {ExperienceType::MELEE, {
         {AttrType("DAMAGE"), 1},
         {AttrType("DEFENSE"), 1}
@@ -43,7 +43,7 @@ const EnumMap<ExperienceType, unordered_map<AttrType, int, CustomHash<AttrType>>
 
 optional<pair<ExperienceType, int>> getExperienceType(AttrType attr) {
   static auto ret = [] {
-    unordered_map<AttrType, optional<pair<ExperienceType, int>>, CustomHash<AttrType>> ret;
+    HashMap<AttrType, optional<pair<ExperienceType, int>>> ret;
     for (auto expType : ENUM_ALL(ExperienceType))
       for (auto attr : getAttrIncreases()[expType])
         ret[attr.first] = make_pair(expType, attr.second);

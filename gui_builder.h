@@ -283,7 +283,7 @@ class GuiBuilder {
   int getImmigrantAnimationOffset(milliseconds initTime);
   HeapAllocated<CallCache<SGuiElem>> cache;
   SGuiElem drawTutorialOverlay(const TutorialInfo&);
-  unordered_set<pair<int, TutorialHighlight>, CustomHash<pair<int, TutorialHighlight>>> tutorialClicks;
+  HashSet<pair<int, TutorialHighlight>> tutorialClicks;
   bool wasTutorialClicked(size_t hash, TutorialHighlight);
   void onTutorialClicked(size_t hash, TutorialHighlight);
   SGuiElem drawLibraryContent(const CollectiveInfo&, const optional<TutorialInfo>&);

@@ -434,8 +434,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<PromotionInfo> SERIAL(promotions);
   PCreature SERIAL(steed);
   vector<pair<BuffId, GlobalTime>> SERIAL(buffs);
-  unordered_map<BuffId, int, CustomHash<BuffId>> SERIAL(buffCount);
-  unordered_map<BuffId, int, CustomHash<BuffId>> SERIAL(buffPermanentCount);
+  HashMap<BuffId, int> SERIAL(buffCount);
+  HashMap<BuffId, int> SERIAL(buffPermanentCount);
   vector<AdjectiveInfo> getLastingEffectAdjectives(const ContentFactory*, bool bad) const;
   bool removeBuff(int index, bool msg);
   bool processBuffs();

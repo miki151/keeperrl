@@ -530,7 +530,7 @@ class ArcheryRange : public Task {
       }
       return none;
     };
-    unordered_map<Position, vector<ShootInfo>, CustomHash<Position>> shootPositions;
+    HashMap<Position, vector<ShootInfo>> shootPositions;
     for (auto pos : Random.permutation(targets))
       if (auto dir = getDir(pos))
         shootPositions[dir->pos].push_back(*dir);

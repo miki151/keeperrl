@@ -71,7 +71,7 @@ class ContentFactory {
   map<BiomeId, BiomeInfo> SERIAL(biomeInfo);
   CampaignInfo SERIAL(campaignInfo);
   map<WorkshopType, WorkshopInfo> SERIAL(workshopInfo);
-  unordered_map<CollectiveResourceId, ResourceInfo, CustomHash<CollectiveResourceId>> SERIAL(resourceInfo);
+  HashMap<CollectiveResourceId, ResourceInfo> SERIAL(resourceInfo);
   vector<CollectiveResourceId> SERIAL(resourceOrder);
   map<LayoutMappingId, LayoutMapping> SERIAL(layoutMapping);
   map<RandomLayoutId, LayoutGenerator> SERIAL(randomLayouts);
@@ -81,9 +81,9 @@ class ContentFactory {
   vector<ScriptedHelpInfo> SERIAL(scriptedHelp);
   map<AttrType, AttrInfo> SERIAL(attrInfo);
   vector<AttrType> SERIAL(attrOrder);
-  unordered_map<BuffId, BuffInfo, CustomHash<BuffId>> SERIAL(buffs);
+  HashMap<BuffId, BuffInfo> SERIAL(buffs);
   vector<BuffId> SERIAL(buffsModifyingEfficiency);
-  unordered_map<BodyMaterialId, BodyMaterial, CustomHash<BodyMaterialId>> SERIAL(bodyMaterials);
+  HashMap<BodyMaterialId, BodyMaterial> SERIAL(bodyMaterials);
   vector<pair<Keybinding, KeybindingInfo>> SERIAL(keybindings);
   map<AchievementId, AchievementInfo> SERIAL(achievements);
   vector<AchievementId> SERIAL(achievementsOrder);

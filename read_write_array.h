@@ -80,6 +80,6 @@ class ReadWriteArray {
   vector<PType> SERIAL(allReadonly);
   Table<short> SERIAL(readonly);
   Table<optional<Param>> SERIAL(types);
-  unordered_map<Param, short, CustomHash<Param>> SERIAL(readonlyMap);
+  HashMap<Param, short> SERIAL(readonlyMap);
   int SERIAL(numTotal) = 0;
 };

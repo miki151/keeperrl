@@ -525,7 +525,7 @@ string Item::getSuffix() const {
 }
 
 string Item::getModifiers(const ContentFactory* factory, bool shorten) const {
-  unordered_set<AttrType, CustomHash<AttrType>> printAttr;
+  HashSet<AttrType> printAttr;
   if (!shorten) {
     for (auto attr : attributes->modifiers)
       printAttr.insert(attr.first);

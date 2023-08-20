@@ -174,7 +174,7 @@ typename EntityMap<Key, Value>::Iter EntityMap<Key, Value>::end() const {
 }
 
 template <typename Key, typename Value>
-template <class Archive> 
+template <class Archive>
 void EntityMap<Key, Value>::serialize(Archive& ar, const unsigned int version) {
   ar(elems);
 }
@@ -184,7 +184,7 @@ SERIALIZABLE_TMPL(EntityMap, Creature, TimeQueue::ExtendedTime);
 SERIALIZABLE_TMPL(EntityMap, Creature, int);
 SERIALIZABLE_TMPL(EntityMap, Creature, Task*);
 SERIALIZABLE_TMPL(EntityMap, Creature, Collective::CurrentActivity);
-SERIALIZABLE_TMPL(EntityMap, Creature, unordered_map<AttractionType, int, CustomHash<AttractionType>>);
+SERIALIZABLE_TMPL(EntityMap, Creature, HashMap<AttractionType, int>);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<Position>);
 SERIALIZABLE_TMPL(EntityMap, Creature, PositionSet);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<WeakPointer<Item>>);

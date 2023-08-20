@@ -54,5 +54,5 @@ class MinionActivities {
 
   private:
   EnumMap<MinionActivity, vector<FurnitureType>> SERIAL(allFurniture);
-  unordered_map<FurnitureType, MinionActivity, CustomHash<FurnitureType>> SERIAL(activities);
+  HashMap<FurnitureType, MinionActivity> SERIAL(activities);
 };

@@ -184,4 +184,4 @@ inline string toString(const Position& t) {
   return ss.str();
 }
 
-using PositionSet = unordered_set<Position, CustomHash<Position>>;
+using PositionSet = HashSet<Position>;

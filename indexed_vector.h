@@ -94,5 +94,5 @@ class IndexedVector {
 
   private:
   vector<T> SERIAL(elems);
-  unordered_map<Id, int, CustomHash<Id>> SERIAL(indexes);
+  HashMap<Id, int> SERIAL(indexes);
 };

@@ -1463,7 +1463,7 @@ void MapGui::updateQuarters(CreatureView* view, Renderer& renderer) {
   if (auto pos = projectOnMap(renderer.getMousePos())) {
     quarters = view->getQuarters(*pos);
     if (quarters) {
-      unordered_set<Vec2, CustomHash<Vec2>> translated;
+      HashSet<Vec2> translated;
       for (auto& v : quarters->positions)
         translated.insert(projectOnScreen(v));
       quarters->positions = translated;

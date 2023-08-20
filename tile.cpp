@@ -106,7 +106,7 @@ Tile Tile::addExtraBorderId(ViewId id) {
   return *this;
 }
 
-const unordered_set<ViewId, CustomHash<ViewId>>& Tile::getExtraBorderIds() const {
+const HashSet<ViewId>& Tile::getExtraBorderIds() const {
   return extraBorderIds;
 }
 

@@ -52,8 +52,8 @@ vector<pair<Key, Value>> convertKeys(const vector<pair<PrimaryId<Key>, Value>>& 
 }
 
 template <typename Key, typename Value>
-unordered_map<Key, Value, CustomHash<Key>> convertKeysHash(const map<PrimaryId<Key>, Value>& m) {
-  unordered_map<Key, Value, CustomHash<Key>> ret;
+HashMap<Key, Value> convertKeysHash(const map<PrimaryId<Key>, Value>& m) {
+  HashMap<Key, Value> ret;
   for (auto& elem : m)
     ret.insert(make_pair(Key(elem.first), std::move(elem.second)));
   return ret;

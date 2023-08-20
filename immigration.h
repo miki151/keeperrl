@@ -73,7 +73,7 @@ class Immigration : public OwnedObject<Immigration> {
   bool suppliesRecruits(const Collective*) const;
 
   private:
-  EntityMap<Creature, unordered_map<AttractionType, int, CustomHash<AttractionType>>> SERIAL(minionAttraction);
+  EntityMap<Creature, HashMap<AttractionType, int>> SERIAL(minionAttraction);
   map<int, Available> SERIAL(available);
   Collective* SERIAL(collective) = nullptr;
   map<int, EntitySet<Creature>> SERIAL(generated);

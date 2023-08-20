@@ -52,6 +52,6 @@ class Zones {
   BiMap<UniqueEntity<Creature>::Id, pair<Level*, Sectors::SectorId>> SERIAL(quarters);
   EnumMap<ZoneId, PositionSet> SERIAL(positions);
   PositionMap<EnumSet<ZoneId>> SERIAL(zones);
-  mutable unordered_map<pair<Level*, Sectors::SectorId>, PositionSet, CustomHash<pair<Level*, Sectors::SectorId>>> quartersPositionCache;
+  mutable HashMap<pair<Level*, Sectors::SectorId>, PositionSet> quartersPositionCache;
   Sectors& getOrInitSectors(Level*);
 };

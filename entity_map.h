@@ -57,16 +57,16 @@ class EntityMap {
   const Value& getOrElse(EntityId, const Value&) const;
   bool hasKey(EntityId) const;
 
-  template <class Archive> 
+  template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
-  typedef typename unordered_map<EntityId, Value, CustomHash<EntityId>>::const_iterator Iter;
+  using Iter = typename HashMap<EntityId, Value>::const_iterator;
   ~EntityMap();
 
   Iter begin() const;
   Iter end() const;
 
   private:
-  unordered_map<EntityId, Value, CustomHash<EntityId>> SERIAL(elems);
+  HashMap<EntityId, Value> SERIAL(elems);
 };
 

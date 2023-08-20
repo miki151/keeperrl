@@ -40,7 +40,7 @@ SERIALIZABLE(Immigration);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Immigration)
 
-static unordered_map<AttractionType, int, CustomHash<AttractionType>> empty;
+static HashMap<AttractionType, int> empty;
 
 int Immigration::getAttractionOccupation(const AttractionType& type) const {
   int res = 0;

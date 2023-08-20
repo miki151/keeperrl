@@ -1261,7 +1261,7 @@ optional<pair<Position, int>> Position::getStairsTo(Position targetPos, const Mo
     bool includeNeighbors) const {
   PROFILE;
   CHECK(isSameModel(targetPos));
-  unordered_map<StairKey, int, CustomHash<StairKey>> distance;
+  HashMap<StairKey, int> distance;
   using QueueElem = tuple<StairKey, Level*, Level*, int>;
   auto queueCmp = [](auto& elem1, auto& elem2) { return std::get<3>(elem1) > std::get<3>(elem2); };
   priority_queue<QueueElem, vector<QueueElem>, decltype(queueCmp)> q(queueCmp);

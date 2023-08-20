@@ -100,3 +100,9 @@ struct CustomHash {
     return combineHash(t);
   }
 };
+
+template <typename Key, typename Value>
+using HashMap = unordered_map<Key, Value, CustomHash<Key>>;
+
+template <typename Key>
+using HashSet = unordered_set<Key, CustomHash<Key>>;

@@ -1464,7 +1464,7 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
 static bool runesEqual(const vector<PItem>& v1, const vector<PItem>& v2) {
   if (v1.size() != v2.size())
     return false;
-  unordered_set<pair<string, ViewId>, CustomHash<pair<string, ViewId>>> elems;
+  HashSet<pair<string, ViewId>> elems;
   for (auto& elem : v1)
     elems.insert(make_pair(elem->getName(), elem->getViewObject().id()));
   for (auto& elem : v2)
@@ -1561,7 +1561,7 @@ void PlayerControl::rejectPrisoner(int index) {
 vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() const {
   vector<StunnedInfo> ret;
   vector<Creature*> outside;
-  unordered_map<Collective*, vector<Creature*>, CustomHash<Collective*>> inside;
+  HashMap<Collective*, vector<Creature*>> inside;
   for (auto stunned : stunnedCreatures)
     if (stunned.first->isAffected(LastingEffect::STUNNED) && !stunned.first->isDead()) {
       if (auto villain = stunned.second) {
@@ -3295,7 +3295,7 @@ optional<PlayerControl::QuartersInfo> PlayerControl::getQuarters(Vec2 pos) const
   auto level = getCurrentLevel();
   auto& zones = collective->getZones();
   if (auto info = zones.getQuartersInfo(Position(pos, level))) {
-    unordered_set<Vec2, CustomHash<Vec2>> v;
+    HashSet<Vec2> v;
     double luxury = 0;
     for (auto& pos : info->positions)
       if (pos.getLevel() == level) {

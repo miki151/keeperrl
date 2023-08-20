@@ -181,7 +181,7 @@ class MapGui : public GuiElem {
     int moveCounter;
   };
   optional<ScreenMovement> screenMovement;
-  Table<unordered_set<ViewId, CustomHash<ViewId>>> connectionMap;
+  Table<HashSet<ViewId>> connectionMap;
   bool keyScrolling = false;
   bool mouseUI = false;
   optional<milliseconds> lastRightClick;

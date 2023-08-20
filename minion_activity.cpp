@@ -176,7 +176,7 @@ vector<pair<Position, FurnitureLayer>> MinionActivities::getAllPositions(const C
 static PTask getDropItemsTask(Collective* collective, const Creature* creature) {
   auto& config = collective->getConfig();
   auto& items = creature->getEquipment().getItems();
-  unordered_map<StorageId, vector<Item*>, CustomHash<StorageId>> itemMap;
+  HashMap<StorageId, vector<Item*>> itemMap;
   for (auto it : items)
     if (!collective->getMinionEquipment().isOwner(it, creature))
       for (auto id : it->getStorageIds())

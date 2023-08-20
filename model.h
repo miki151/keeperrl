@@ -139,9 +139,9 @@ class Model : public OwnedObject<Model> {
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL(currentTime) = 0;
   int SERIAL(woodCount) = 0;
-  using StairConnections = unordered_map<StairKey, int, CustomHash<StairKey>>;
+  using StairConnections = HashMap<StairKey, int>;
   StairConnections createStairConnections(const MovementType&) const;
-  unordered_map<MovementType, StairConnections, CustomHash<MovementType>> SERIAL(stairNavigation);
+  HashMap<MovementType, StairConnections> SERIAL(stairNavigation);
   bool serializationLocked = false;
   template <typename>
   friend class EventListener;

@@ -274,7 +274,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   PPositionMatching SERIAL(positionMatching);
   HeapAllocated<MinionEquipment> SERIAL(minionEquipment);
-  unordered_map<ResourceId, int, CustomHash<ResourceId>> SERIAL(credit);
+  HashMap<ResourceId, int> SERIAL(credit);
   HeapAllocated<TaskMap> SERIAL(taskMap);
   HeapAllocated<Technology> SERIAL(technology);
   void markItem(const Item*, const Task*);
@@ -300,7 +300,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void updateConstructions();
   void delayDangerousTasks(const vector<Position>& enemyPos, LocalTime delayTime);
   bool isDelayed(Position);
-  unordered_map<Position, LocalTime, CustomHash<Position>> SERIAL(delayedPos);
+  HashMap<Position, LocalTime> SERIAL(delayedPos);
   vector<Position> getEnemyPositions() const;
   EntitySet<Creature> SERIAL(kills);
   int SERIAL(points) = 0;

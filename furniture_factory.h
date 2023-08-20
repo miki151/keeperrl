@@ -52,11 +52,11 @@ class FurnitureFactory {
   map<FurnitureType, unique_ptr<Furniture>> SERIAL(furniture);
   map<FurnitureListId, FurnitureList> SERIAL(furnitureLists);
   EnumMap<ExperienceType, vector<FurnitureType>> SERIAL(trainingFurniture);
-  unordered_map<FurnitureType, vector<FurnitureType>, CustomHash<FurnitureType>> SERIAL(upgrades);
+  HashMap<FurnitureType, vector<FurnitureType>> SERIAL(upgrades);
   vector<FurnitureType> SERIAL(needingLight);
   vector<FurnitureType> SERIAL(increasingPopulation);
   EnumMap<BedType, vector<FurnitureType>> SERIAL(bedFurniture);
-  unordered_map<FurnitureType, ViewObject, CustomHash<FurnitureType>> SERIAL(constructionObjects);
+  HashMap<FurnitureType, ViewObject> SERIAL(constructionObjects);
 };
 
 static_assert(std::is_nothrow_move_constructible<FurnitureFactory>::value, "T should be noexcept MoveConstructible");

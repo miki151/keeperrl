@@ -1188,7 +1188,7 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, vector<Creatur
         &contentFactory, std::move(enemyFactory)).battleModel(levelPath, std::move(allyCopy), enemies);
     auto game = Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory), view);
     auto exitCondition = [&](Game* game) -> optional<ExitCondition> {
-      unordered_set<TribeId, CustomHash<TribeId>> tribes;
+      HashSet<TribeId> tribes;
       for (auto& m : game->getAllModels())
         for (auto c : m->getAllCreatures())
           tribes.insert(c->getTribeId());

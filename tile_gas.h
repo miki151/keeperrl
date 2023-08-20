@@ -30,7 +30,7 @@ class TileGas {
   static double getFogVisionCutoff();
   bool hasSunlightBlockingAmount() const;
 
-  template <class Archive> 
+  template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:
@@ -39,5 +39,5 @@ class TileGas {
     double SERIAL(permanent);
     SERIALIZE_ALL(total, permanent)
   };
-  unordered_map<TileGasType, AmountInfo, CustomHash<TileGasType>> SERIAL(amount);
+  HashMap<TileGasType, AmountInfo> SERIAL(amount);
 };

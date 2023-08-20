@@ -201,7 +201,7 @@ static bool blocksInfluence(VillainType type) {
 
 void Campaign::refreshInfluencePos() {
   map<Vec2, Vec2> siteOwners;
-  map<Vec2, unordered_set<Vec2, CustomHash<Vec2>>> territories;
+  map<Vec2, HashSet<Vec2>> territories;
   influencePos.clear();
   constexpr int initialRadius = 14;
   for (auto v : Rectangle::centered(originalPlayerPos, initialRadius))

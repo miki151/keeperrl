@@ -194,7 +194,7 @@ class Level : public OwnedObject<Level> {
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
   EnumMap<TribeId::KeyType, unique_ptr<EffectsTable>> SERIAL(furnitureEffects);
-  mutable unordered_map<MovementType, Sectors, CustomHash<MovementType>> sectors;
+  mutable HashMap<MovementType, Sectors> sectors;
   Sectors& getSectorsDontCreate(const MovementType&) const;
 
   friend class LevelBuilder;

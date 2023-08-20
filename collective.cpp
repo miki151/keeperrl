@@ -1291,7 +1291,7 @@ void Collective::updateConstructions() {
 
 void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, LocalTime delayTime) {
   PROFILE;
-  unordered_set<Level*, CustomHash<Level*>> levels;
+  HashSet<Level*> levels;
   for (auto& pos : enemyPos1)
     levels.insert(pos.getLevel());
   for (auto& level : levels) {
@@ -1356,7 +1356,7 @@ void Collective::fetchItems(Position pos) {
     return;
   auto items = pos.getItems();
   if (!items.empty()) {
-    unordered_map<StorageId, vector<Item*>, CustomHash<StorageId>> itemMap;
+    HashMap<StorageId, vector<Item*>> itemMap;
     for (auto it : items)
       if (!getItemTask(it))
         for (auto id : it->getStorageIds()) {
