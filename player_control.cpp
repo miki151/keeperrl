@@ -2275,6 +2275,12 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (!canSeePos)
     if (auto memIndex = getMemory().getViewIndex(position))
       index.mergeFromMemory(*memIndex);
+  if (draggedCreature)
+    if (Creature* c = getCreature(*draggedCreature))
+      for (auto task : collective->getTaskMap().getTasks(position))
+        if (auto activity = collective->getTaskMap().getTaskActivity(task))
+          if (c->getAttributes().getMinionActivities().isAvailable(collective, c, *activity))
+            index.setHighlight(HighlightType::CREATURE_DROP);
   if (collective->getTerritory().contains(position)) {
     if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE)) {
       if (auto clickType = furniture->getClickType())
@@ -2521,6 +2527,14 @@ void PlayerControl::minionDragAndDrop(Vec2 v, variant<string, UniqueEntity<Creat
           return;
         }
       }
+    for (auto task : collective->getTaskMap().getTasks(pos)) {
+      if (auto activity = collective->getTaskMap().getTaskActivity(task))
+        if (c->getAttributes().getMinionActivities().isAvailable(collective, c, *activity)) {
+          collective->setMinionActivity(c, *activity);
+          collective->returnResource(collective->getTaskMap().takeTask(c, task));
+          return;
+        }
+    }
     PTask task = Task::goToAndWait(pos, 15_visible);
     task->setViewId(ViewId("guard_post"));
     collective->setTask(c, std::move(task));
@@ -2598,6 +2612,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::CREATURE_DRAG:
       draggedCreature = input.get<Creature::Id>();
+      for (auto task : collective->getTaskMap().getAllTasks())
+        if (auto pos = collective->getTaskMap().getPosition(task))
+          pos->setNeedsRenderUpdate(true);
       for (auto task : ENUM_ALL(MinionActivity))
         for (auto& pos : collective->getMinionActivities().getAllPositions(collective, nullptr, task))
           pos.first.setNeedsRenderUpdate(true);

@@ -61,7 +61,8 @@ void TaskMap::tick() {
   }
 }
 
-WTask TaskMap::getClosestTask(const Creature* c, MinionActivity activity, bool priorityOnly, const Collective* col) const {
+WTask TaskMap::getClosestTask(const Creature* creature, MinionActivity activity, bool priorityOnly,
+    const Collective* col) const {
   auto header = "getClosestTask " + EnumInfo<MinionActivity>::getString(activity);
   PROFILE_BLOCK(header.data());
   WTask closest = nullptr;
@@ -75,16 +76,16 @@ WTask TaskMap::getClosestTask(const Creature* c, MinionActivity activity, bool p
       return true;
     if (!pTask && pClosest)
       return false;
-    return dist.value_or(10000) < getPosition(closest)->dist8(c->getPosition()).value_or(10000);
+    return dist.value_or(10000) < getPosition(closest)->dist8(creature->getPosition()).value_or(10000);
   };
-  auto movementType = c->getMovementType();
+  auto movementType = creature->getMovementType();
   optional<StorageId> storageDropTask;
   {
     PROFILE_BLOCK("StorageId");
-    for (auto it : c->getEquipment().getItems())
+    for (auto it : creature->getEquipment().getItems())
       if (auto task = col->getItemTask(it))
         if (auto id = task->getStorageId(true))
-          if (task->canPerform(c, movementType)) {
+          if (task->canPerform(creature, movementType)) {
             storageDropTask = *id;
             break;
           }
@@ -94,17 +95,17 @@ WTask TaskMap::getClosestTask(const Creature* c, MinionActivity activity, bool p
     auto& taskList = priorityOnly ? priorityTaskByActivity[activity].getElems() : taskByActivity[activity];
     for (auto& task : taskList)
       if ((!storageDropTask || storageDropTask == task->getStorageId(false)) &&
-          task->canPerform(c, movementType))
+          task->canPerform(creature, movementType))
         if (auto pos = getPosition(task)) {
           PROFILE_BLOCK("Task check");
-          auto dist = pos->dist8(c->getPosition());
+          auto dist = pos->dist8(creature->getPosition());
           const Creature* owner = getOwner(task);
           auto delayed = delayedTasks.getMaybe(task);
           if (!task->isDone() &&
               (!owner || (task->canTransfer() && dist && pos->dist8(owner->getPosition()).value_or(10000) > *dist && *dist <= 6)) &&
               isBetter(task, dist) &&
-              pos->canNavigateToOrNeighbor(c->getPosition(), movementType) &&
-              (!delayed || *delayed < *c->getLocalTime())) {
+              pos->canNavigateToOrNeighbor(creature->getPosition(), movementType) &&
+              (!delayed || *delayed < *creature->getLocalTime())) {
             closest = task;
           }
         }
@@ -273,17 +274,19 @@ WTask TaskMap::addTask(PTask task, Position position, MinionActivity activity) {
   return tasks.back().get();
 }
 
-void TaskMap::takeTask(Creature* c, WTask task) {
+CostInfo TaskMap::takeTask(Creature* c, WTask task) {
   freeTask(task);
   CHECK(taskByCreature.getSize() == creatureByTask.getSize());
+  CostInfo cost = freeFromTask(c);
   CHECK(!taskByCreature.getMaybe(c));
   CHECK(!creatureByTask.getMaybe(task));
   taskByCreature.set(c, task);
   creatureByTask.set(task, c);
   CHECK(taskByCreature.getSize() == creatureByTask.getSize());
+  return cost;
 }
 
-optional<Position> TaskMap::getPosition(WTask task) const {
+optional<Position> TaskMap::getPosition(const Task* task) const {
   PROFILE;
   return positionMap.getMaybe(task);
 }
@@ -328,4 +331,8 @@ const EntityMap<Task, CostInfo>& TaskMap::getCompletionCosts() const {
 
 WTask TaskMap::getTask(UniqueEntity<Task>::Id id) const {
   return taskById.getOrFail(id);
+}
+
+optional<MinionActivity> TaskMap::getTaskActivity(Task* t) const {
+  return activityByTask.getMaybe(t);
 }

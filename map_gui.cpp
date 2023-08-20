@@ -160,10 +160,11 @@ Color MapGui::getHighlightColor(Vec2 pos, const ViewIndex& index, HighlightType 
     case HighlightType::MEMORY: return Color::BLACK.transparency(80);
     case HighlightType::PRIORITY_TASK: return Color(0, 255, 0, 200);
     case HighlightType::CREATURE_DROP:
-      if (index.hasObject(ViewLayer::FLOOR) && getHighlightedFurniture() == index.getObject(ViewLayer::FLOOR).id())
-        return Color(0, 255, 0);
-      else
-        return Color(0, 255, 0, 120);
+      if (auto mousePos = getMousePos())
+        if (layout->projectOnMap(getBounds(), getScreenPos(), *mousePos) ==
+            layout->projectOnMap(getBounds(), getScreenPos(), pos))
+          return Color(0, 255, 0);
+      return Color(0, 255, 0, 120);
     case HighlightType::CLICKABLE_FURNITURE: return Color(255, 255, 0, 120);
     case HighlightType::CLICKED_FURNITURE: return Color(255, 255, 0);
     case HighlightType::GUARD_ZONE1: return Color(255, 255, 255, 120);
