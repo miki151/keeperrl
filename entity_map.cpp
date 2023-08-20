@@ -182,7 +182,7 @@ void EntityMap<Key, Value>::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE_TMPL(EntityMap, Creature, double);
 SERIALIZABLE_TMPL(EntityMap, Creature, TimeQueue::ExtendedTime);
 SERIALIZABLE_TMPL(EntityMap, Creature, int);
-SERIALIZABLE_TMPL(EntityMap, Creature, WTask);
+SERIALIZABLE_TMPL(EntityMap, Creature, Task*);
 SERIALIZABLE_TMPL(EntityMap, Creature, Collective::CurrentActivity);
 SERIALIZABLE_TMPL(EntityMap, Creature, unordered_map<AttractionType, int, CustomHash<AttractionType>>);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<Position>);
@@ -198,7 +198,7 @@ SERIALIZABLE_TMPL(EntityMap, Creature, EnumSet<MinionTrait>);
 SERIALIZABLE_TMPL(EntityMap, Creature, GlobalTime);
 SERIALIZABLE_TMPL(EntityMap, Task, LocalTime);
 SERIALIZABLE_TMPL(EntityMap, Task, MinionActivity);
-SERIALIZABLE_TMPL(EntityMap, Task, WTask);
+SERIALIZABLE_TMPL(EntityMap, Task, Task*);
 SERIALIZABLE_TMPL(EntityMap, Task, MinionTrait);
 SERIALIZABLE_TMPL(EntityMap, Task, Position);
 SERIALIZABLE_TMPL(EntityMap, Task, CostInfo);

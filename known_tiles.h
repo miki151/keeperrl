@@ -23,7 +23,7 @@ class KnownTiles {
   bool isKnown(Position) const;
   const PositionSet& getBorderTiles() const;
   const PositionSet& getAll() const;
-  void limitToModel(WConstModel);
+  void limitToModel(const Model*);
   void limitBorderTiles(Model*);
   const PositionSet& getKnownTilesWithMargin();
 

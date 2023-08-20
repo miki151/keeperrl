@@ -15,45 +15,45 @@ class Creature;
 
 class TaskMap {
   public:
-  WTask addTaskFor(PTask, Creature*);
-  WTask addTask(PTask, Position, MinionActivity);
-  WTask getTask(const Creature*);
+  Task* addTaskFor(PTask, Creature*);
+  Task* addTask(PTask, Position, MinionActivity);
+  Task* getTask(const Creature*);
   bool hasTask(const Creature*) const;
-  const vector<WTask>& getTasks(Position) const;
+  const vector<Task*>& getTasks(Position) const;
   bool hasTask(Position, MinionActivity) const;
-  vector<WTask> getTasks(MinionActivity) const;
-  vector<WConstTask> getAllTasks() const;
-  Creature* getOwner(WConstTask) const;
+  vector<Task*> getTasks(MinionActivity) const;
+  vector<const Task*> getAllTasks() const;
+  Creature* getOwner(const Task*) const;
   optional<Position> getPosition(const Task*) const;
-  CostInfo takeTask(Creature*, WTask);
-  void freeTask(WTask);
+  CostInfo takeTask(Creature*, Task*);
+  void freeTask(Task*);
 
-  WTask addTaskCost(PTask, Position, CostInfo, MinionActivity);
+  Task* addTaskCost(PTask, Position, CostInfo, MinionActivity);
   void markSquare(Position, HighlightType, PTask, MinionActivity);
-  WTask getMarked(Position) const;
+  Task* getMarked(Position) const;
   optional<HighlightType> getHighlightType(Position) const;
-  CostInfo removeTask(WTask);
+  CostInfo removeTask(Task*);
   CostInfo removeTask(UniqueEntity<Task>::Id);
   CostInfo freeFromTask(const Creature*);
-  bool isPriorityTask(WConstTask) const;
+  bool isPriorityTask(const Task*) const;
   bool hasPriorityTasks(Position) const;
   void setPriorityTasks(Position);
-  WTask getClosestTask(const Creature*, MinionActivity, bool priorityOnly, const Collective*) const;
+  Task* getClosestTask(const Creature*, MinionActivity, bool priorityOnly, const Collective*) const;
   const EntityMap<Task, CostInfo>& getCompletionCosts() const;
-  WTask getTask(UniqueEntity<Task>::Id) const;
+  Task* getTask(UniqueEntity<Task>::Id) const;
   void tick();
   optional<MinionActivity> getTaskActivity(Task*) const;
 
   SERIALIZATION_DECL(TaskMap)
 
   private:
-  EntityMap<Creature, WTask> SERIAL(taskByCreature);
+  EntityMap<Creature, Task*> SERIAL(taskByCreature);
   EntityMap<Task, Creature*> SERIAL(creatureByTask);
   EntityMap<Task, Position> SERIAL(positionMap);
-  unordered_map<Position, vector<WTask>, CustomHash<Position>> SERIAL(reversePositions);
+  unordered_map<Position, vector<Task*>, CustomHash<Position>> SERIAL(reversePositions);
   vector<PTask> SERIAL(tasks);
-  EntityMap<Task, WTask> SERIAL(taskById);
-  unordered_map<Position, WTask, CustomHash<Position>> SERIAL(marked);
+  EntityMap<Task, Task*> SERIAL(taskById);
+  unordered_map<Position, Task*, CustomHash<Position>> SERIAL(marked);
   unordered_map<Position, HighlightType, CustomHash<Position>> SERIAL(highlight);
   EntityMap<Task, CostInfo> SERIAL(completionCost);
   EntityMap<Task, LocalTime> SERIAL(delayedTasks);
@@ -63,7 +63,7 @@ class TaskMap {
   EnumMap<MinionActivity, vector<Task*>> cantPerformByAnyone;
   EntityMap<Task, MinionActivity> SERIAL(activityByTask);
   void releaseOnHoldTask(Task*);
-  void setPosition(WTask, Position);
+  void setPosition(Task*, Position);
   void addToTaskByActivity(Task*, MinionActivity);
 };
 

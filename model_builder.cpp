@@ -231,7 +231,7 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
     minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numTries;
 }
 
-void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, SettlementInfo& mainSettlement,
+void ModelBuilder::makeExtraLevel(Model* model, LevelConnection& connection, SettlementInfo& mainSettlement,
     StairKey upLink, vector<EnemyInfo>& extraEnemies, int depth, bool mainDungeon) {
   StairKey downLink = StairKey::getNew();
   int direction = connection.direction == LevelConnectionDir::DOWN ? 1 : -1;

@@ -19,7 +19,7 @@
 
 class MinionController : public Player {
   public:
-  MinionController(Creature* c, SMapMemory memory, WPlayerControl ctrl, SMessageBuffer messages,
+  MinionController(Creature* c, SMapMemory memory, PlayerControl* ctrl, SMessageBuffer messages,
                    SVisibilityMap visibilityMap, SUnknownLocations locations, STutorial tutorial)
       : Player(c, false, memory, messages, visibilityMap, locations, tutorial), control(ctrl) {}
 
@@ -176,13 +176,13 @@ class MinionController : public Player {
   SERIALIZATION_CONSTRUCTOR(MinionController)
 
   private:
-  WPlayerControl SERIAL(control) = nullptr;
+  PlayerControl* SERIAL(control) = nullptr;
 };
 
 REGISTER_TYPE(MinionController)
 
 
-PController getMinionController(Creature* c, SMapMemory m, WPlayerControl ctrl, SMessageBuffer buf, SVisibilityMap v,
+PController getMinionController(Creature* c, SMapMemory m, PlayerControl* ctrl, SMessageBuffer buf, SVisibilityMap v,
     SUnknownLocations l, STutorial t) {
   return makeOwner<MinionController>(c, m, ctrl, buf, v, l, t);
 }

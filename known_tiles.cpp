@@ -35,7 +35,7 @@ bool KnownTiles::isKnown(Position pos) const {
   return known.count(pos);
 };
 
-static void limitToModel(PositionSet& s, WConstModel m) {
+static void limitToModel(PositionSet& s, const Model* m) {
   PositionSet copy;
   for (auto& p : s)
     if (p.getModel() == m)
@@ -43,7 +43,7 @@ static void limitToModel(PositionSet& s, WConstModel m) {
   s = copy;
 }
 
-void KnownTiles::limitToModel(WConstModel m) {
+void KnownTiles::limitToModel(const Model* m) {
   ::limitToModel(known, m);
   ::limitToModel(border, m);
 }

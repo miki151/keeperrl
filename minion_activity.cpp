@@ -214,7 +214,7 @@ MinionActivities::MinionActivities(const ContentFactory* contentFactory) {
     }
 }
 
-WTask MinionActivities::getExisting(Collective* collective, Creature* c, MinionActivity activity) {
+Task* MinionActivities::getExisting(Collective* collective, Creature* c, MinionActivity activity) {
   PROFILE;
   return collective->getTaskMap().getClosestTask(c, activity, false, collective);
 }

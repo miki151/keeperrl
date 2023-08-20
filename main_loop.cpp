@@ -268,7 +268,7 @@ static void dumpMemUsage(const T& elem) {
 }
 
 MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAutoSave,
-    function<optional<ExitCondition>(WGame)> exitCondition, milliseconds stepTimeMilli, optional<int> maxTurns) {
+    function<optional<ExitCondition>(Game*)> exitCondition, milliseconds stepTimeMilli, optional<int> maxTurns) {
   registerModPlaytime(true);
   OnExit on_exit([&]() {
     registerModPlaytime(false);
@@ -1187,7 +1187,7 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, vector<Creatur
     auto model = ModelBuilder(&meter, Random, options, sokobanInput,
         &contentFactory, std::move(enemyFactory)).battleModel(levelPath, std::move(allyCopy), enemies);
     auto game = Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory), view);
-    auto exitCondition = [&](WGame game) -> optional<ExitCondition> {
+    auto exitCondition = [&](Game* game) -> optional<ExitCondition> {
       unordered_set<TribeId, CustomHash<TribeId>> tribes;
       for (auto& m : game->getAllModels())
         for (auto c : m->getAllCreatures())

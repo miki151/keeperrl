@@ -69,8 +69,8 @@ class Model : public OwnedObject<Model> {
   int getMoveCounter() const;
   void increaseMoveCounter();
 
-  void setGame(WGame);
-  WGame getGame() const;
+  void setGame(Game*);
+  Game* getGame() const;
   void tick(LocalTime);
   vector<Collective*> getCollectives() const;
   vector<Creature*> getAllCreatures() const;
@@ -133,7 +133,7 @@ class Model : public OwnedObject<Model> {
   vector<Level*> SERIAL(upLevels);
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
-  WGame SERIAL(game) = nullptr;
+  Game* SERIAL(game) = nullptr;
   LocalTime SERIAL(lastTick);
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);

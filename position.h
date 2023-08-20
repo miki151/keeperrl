@@ -29,8 +29,8 @@ class Position {
   struct IsValid{};
   Position(Vec2, Level*, IsValid);
   static vector<Position> getAll(Level*, Rectangle);
-  WModel getModel() const;
-  WGame getGame() const;
+  Model* getModel() const;
+  Game* getGame() const;
   optional<int> dist8(const Position&) const;
   bool isSameLevel(const Position&) const;
   bool isSameLevel(const Level*) const;

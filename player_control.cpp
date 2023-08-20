@@ -1991,7 +1991,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   }
   gameInfo.messageBuffer = messages;
   info.taskMap.clear();
-  for (WConstTask task : collective->getTaskMap().getAllTasks()) {
+  for (const Task* task : collective->getTaskMap().getAllTasks()) {
     optional<UniqueEntity<Creature>::Id> creature;
     if (auto c = collective->getTaskMap().getOwner(task))
       creature = c->getUniqueId();
@@ -3729,11 +3729,11 @@ void PlayerControl::onMemberAdded(Creature* c) {
     addToCurrentTeam(c);
 }
 
-WModel PlayerControl::getModel() const {
+Model* PlayerControl::getModel() const {
   return collective->getModel();
 }
 
-WGame PlayerControl::getGame() const {
+Game* PlayerControl::getGame() const {
   return collective->getGame();
 }
 

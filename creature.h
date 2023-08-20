@@ -262,7 +262,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void privateMessage(const PlayerMessage&) const;
   void addFX(const FXInfo&) const;
 
-  WController getController() const;
+  Controller* getController() const;
   void pushController(PController);
   void setController(PController);
   void popController();

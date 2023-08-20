@@ -197,7 +197,7 @@ void VillageControl::launchAttack(vector<Creature*> attackers) {
     TeamId team = collective->getTeams().create(attackers);
     collective->getTeams().activate(team);
     collective->freeTeamMembers(attackers);
-    vector<WConstTask> attackTasks;
+    vector<const Task*> attackTasks;
     for (Creature* c : attackers) {
       auto task = Task::withTeam(collective, team, behaviour->getAttackTask(this));
       attackTasks.push_back(task.get());
@@ -289,7 +289,7 @@ void VillageControl::launchAllianceAttack(vector<Collective*> allies) {
     TeamId team = collective->getTeams().create(attackers);
     collective->getTeams().activate(team);
     collective->freeTeamMembers(attackers);
-    vector<WConstTask> attackTasks;
+    vector<const Task*> attackTasks;
     for (Creature* c : attackers) {
       auto task = Task::allianceAttack(allies, enemy, getKillLeaderTask(enemy));
       attackTasks.push_back(task.get());

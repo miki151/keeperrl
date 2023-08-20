@@ -112,7 +112,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   SUnknownLocations SERIAL(unknownLocations);
   void showHistory();
   Game* getGame() const;
-  WModel getModel() const;
+  Model* getModel() const;
   View* getView() const;
 
   bool tryToPerform(CreatureAction);

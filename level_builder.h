@@ -45,7 +45,7 @@ class LevelBuilder {
 
   /** Builds the level. The level will keep reference to the model.
       \paramname{surface} tells if this level is on the Earth surface.*/
-  PLevel build(const ContentFactory*, WModel, LevelMaker*, LevelId);
+  PLevel build(const ContentFactory*, Model*, LevelMaker*, LevelId);
 
   /** Checks if the given square has an attribute.*/
   bool hasAttrib(Vec2 pos, SquareAttrib attr);

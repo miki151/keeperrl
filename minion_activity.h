@@ -42,7 +42,7 @@ class ContentFactory;
 class MinionActivities {
   public:
   MinionActivities(const ContentFactory*);
-  static WTask getExisting(Collective*, Creature*, MinionActivity);
+  static Task* getExisting(Collective*, Creature*, MinionActivity);
   PTask generate(Collective*, Creature*, MinionActivity) const;
   static PTask generateDropTask(Collective*, Creature*, MinionActivity);
   static optional<TimeInterval> getDuration(const Creature*, MinionActivity);

@@ -956,7 +956,7 @@ class ByCollective : public Behaviour {
   EnumMap<MinionActivity, optional<LocalTime>> lastTimeGeneratedActivity;
   optional<LocalTime> lastTimeSetRandomTask;
 
-  WTask getStandardTask() {
+  Task* getStandardTask() {
     PROFILE;
     auto& taskMap = collective->getTaskMap();
     auto current = collective->getCurrentActivity(creature);
@@ -986,7 +986,7 @@ class ByCollective : public Behaviour {
       collective->setMinionActivity(creature, MinionActivity::IDLE);
     if (PTask ret = MinionActivities::generateDropTask(collective, creature, activity))
       return taskMap.addTaskFor(std::move(ret), creature);
-    if (WTask ret = MinionActivities::getExisting(collective, creature, activity)) {
+    if (Task* ret = MinionActivities::getExisting(collective, creature, activity)) {
       taskMap.takeTask(creature, ret);
       return ret;
     }
@@ -1004,7 +1004,7 @@ class ByCollective : public Behaviour {
   }
 
   MoveInfo normalTask() {
-    if (WTask task = collective->getTaskMap().getTask(creature))
+    if (Task* task = collective->getTaskMap().getTask(creature))
       return task->getMove(creature).orWait();
     return NoMove;
   }

@@ -81,13 +81,13 @@ SERIALIZABLE(Collective)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Collective)
 
-Collective::Collective(Private, WModel model, TribeId t, const optional<CollectiveName>& n,
+Collective::Collective(Private, Model* model, TribeId t, const optional<CollectiveName>& n,
     const ContentFactory* contentFactory)
     : positionMatching(makeOwner<PositionMatching>()), tribe(t), model(NOTNULL(model)), name(to_heap_optional(n)),
       villainType(VillainType::NONE), minionActivities(contentFactory) {
 }
 
-PCollective Collective::create(WModel model, TribeId tribe, const optional<CollectiveName>& name, bool discoverable,
+PCollective Collective::create(Model* model, TribeId tribe, const optional<CollectiveName>& name, bool discoverable,
     const ContentFactory* contentFactory) {
   auto ret = makeOwner<Collective>(Private {}, model, tribe, name, contentFactory);
   ret->subscribeTo(model);
@@ -295,7 +295,7 @@ const vector<Creature*>& Collective::getLeaders() const {
   return byTrait[MinionTrait::LEADER];
 }
 
-WGame Collective::getGame() const {
+Game* Collective::getGame() const {
   return model->getGame();
 }
 
@@ -311,7 +311,7 @@ Tribe* Collective::getTribe() const {
   return getGame()->getTribe(*tribe);
 }
 
-WModel Collective::getModel() const {
+Model* Collective::getModel() const {
   return model;
 }
 
@@ -1089,11 +1089,11 @@ bool Collective::isKnownVillainLocation(const Collective* col) const {
   return knownVillainLocations.contains(col);
 }
 
-WConstTask Collective::getItemTask(const Item* it) const {
+const Task* Collective::getItemTask(const Item* it) const {
   return markedItems.getOrElse(it, nullptr).get();
 }
 
-void Collective::markItem(const Item* it, WConstTask task) {
+void Collective::markItem(const Item* it, const Task* task) {
   CHECK(!getItemTask(it));
   markedItems.set(it, task);
 }
@@ -1250,7 +1250,7 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
   }
   constructions->onConstructed(pos, type);
   control->onConstructed(pos, type);
-  if (WTask task = taskMap->getMarked(pos))
+  if (Task* task = taskMap->getMarked(pos))
     taskMap->removeTask(task);
   //if (canClaimSquare(pos))
   claimSquare(pos);
@@ -1415,7 +1415,7 @@ bool Collective::addKnownTile(Position pos) {
   if (!knownTiles->isKnown(pos)) {
     pos.setNeedsRenderAndMemoryUpdate(true);
     knownTiles->addTile(pos, getModel());
-    if (WTask task = taskMap->getMarked(pos))
+    if (Task* task = taskMap->getMarked(pos))
       if (task->isBogus())
         taskMap->removeTask(task);
     return true;

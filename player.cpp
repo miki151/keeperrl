@@ -985,7 +985,7 @@ Game* Player::getGame() const {
     return nullptr;
 }
 
-WModel Player::getModel() const {
+Model* Player::getModel() const {
   return creature->getLevel()->getModel();
 }
 

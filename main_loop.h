@@ -67,7 +67,7 @@ class MainLoop {
   PGame prepareCampaign(RandomGen&);
   PGame prepareWarlord(const SaveFileInfo&);
   enum class ExitCondition;
-  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (WGame)> = nullptr,
+  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (Game*)> = nullptr,
       milliseconds stepTimeMilli = milliseconds{3}, optional<int> maxTurns = none);
   void showCredits();
   void showAchievements();

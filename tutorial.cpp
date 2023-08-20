@@ -41,7 +41,7 @@ static bool isTeam(const Collective* collective) {
   return false;
 }
 
-bool Tutorial::canContinue(WConstGame game) const {
+bool Tutorial::canContinue(const Game* game) const {
   auto collective = game->getPlayerCollective();
   Collective* villain = nullptr;
   for (auto c : game->getCollectives())
@@ -138,7 +138,7 @@ bool Tutorial::canContinue(WConstGame game) const {
   }
 }
 
-EnumSet<TutorialHighlight> Tutorial::getHighlights(WConstGame game) const {
+EnumSet<TutorialHighlight> Tutorial::getHighlights(const Game* game) const {
   /*if (canContinue(game))
     return {};*/
   switch (state) {
@@ -190,7 +190,7 @@ bool Tutorial::blockAutoEquipment() const {
   return state <= State::EQUIP_WEAPON;
 }
 
-static void clearDugOutSquares(WConstGame game, vector<Vec2>& highlights) {
+static void clearDugOutSquares(const Game* game, vector<Vec2>& highlights) {
   for (auto elem : Iter(highlights)) {
     if (auto furniture = Position(*elem, game->getPlayerCollective()->getModel()->getGroundLevel())
         .getFurniture(FurnitureLayer::MIDDLE))
@@ -203,7 +203,7 @@ static void clearDugOutSquares(WConstGame game, vector<Vec2>& highlights) {
 static const int corridorLength = 6;
 static const int roomWidth = 5;
 
-vector<Vec2> Tutorial::getHighlightedSquaresHigh(WConstGame game) const {
+vector<Vec2> Tutorial::getHighlightedSquaresHigh(const Game* game) const {
   auto collective = game->getPlayerCollective();
   const Vec2 firstRoom(entrance - Vec2(0, corridorLength + roomWidth / 2));
   switch (state) {
@@ -230,7 +230,7 @@ vector<Vec2> Tutorial::getHighlightedSquaresHigh(WConstGame game) const {
   }
 }
 
-vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
+vector<Vec2> Tutorial::getHighlightedSquaresLow(const Game* game) const {
   auto collective = game->getPlayerCollective();
   switch (state) {
     case State::BUILD_LIBRARY: {
@@ -263,7 +263,7 @@ Tutorial::Tutorial() : state(State::WELCOME) {
 
 }
 
-optional<string> Tutorial::getWarning(WConstGame game) const {
+optional<string> Tutorial::getWarning(const Game* game) const {
   switch (state) {
     case State::CONTROL_TEAM:
     case State::CONTROL_MODE_MOVEMENT:
@@ -280,7 +280,7 @@ optional<string> Tutorial::getWarning(WConstGame game) const {
   }
 }
 
-void Tutorial::refreshInfo(WConstGame game, optional<TutorialInfo>& info) const {
+void Tutorial::refreshInfo(const Game* game, optional<TutorialInfo>& info) const {
   info = TutorialInfo {
       state,
       getWarning(game),
@@ -292,7 +292,7 @@ void Tutorial::refreshInfo(WConstGame game, optional<TutorialInfo>& info) const 
   };
 }
 
-void Tutorial::onNewState(WConstGame game) {
+void Tutorial::onNewState(const Game* game) {
   auto collective = game->getPlayerCollective();
   switch (state) {
     case State::ACCEPT_MORE_IMMIGRANTS:
@@ -304,7 +304,7 @@ void Tutorial::onNewState(WConstGame game) {
   }
 }
 
-void Tutorial::continueTutorial(WConstGame game) {
+void Tutorial::continueTutorial(const Game* game) {
   if (canContinue(game))
     state = (State)((int) state + 1);
   onNewState(game);

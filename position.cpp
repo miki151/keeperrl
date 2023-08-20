@@ -54,7 +54,7 @@ Level* Position::getLevel() const {
   return level;
 }
 
-WModel Position::getModel() const {
+Model* Position::getModel() const {
   PROFILE;
   if (isValid())
     return level->getModel();
@@ -62,7 +62,7 @@ WModel Position::getModel() const {
     return nullptr;
 }
 
-WGame Position::getGame() const {
+Game* Position::getGame() const {
   PROFILE;
   if (level)
     return level->getModel()->getGame();

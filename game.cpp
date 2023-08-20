@@ -74,7 +74,7 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c, ContentFacto
   gameDisplayName = c.gameDisplayName;
   enemyAggressionLevel = c.enemyAggressionLevel;
   for (Vec2 v : models.getBounds())
-    if (WModel m = models[v].get()) {
+    if (Model* m = models[v].get()) {
       for (Collective* col : m->getCollectives()) {
         auto control = dynamic_cast<VillageControl*>(col->getControl());
         control->updateAggression(c.enemyAggressionLevel);
@@ -217,7 +217,7 @@ const vector<Collective*>& Game::getVillains(VillainType type) const {
     return empty;
 }
 
-WModel Game::getCurrentModel() const {
+Model* Game::getCurrentModel() const {
   if (!players.empty())
     return players[0]->getPosition().getModel();
   else
@@ -232,8 +232,8 @@ PModel& Game::getMainModel() {
   return models[baseModel];
 }
 
-vector<WModel> Game::getAllModels() const {
-  vector<WModel> ret;
+vector<Model*> Game::getAllModels() const {
+  vector<Model*> ret;
   for (Vec2 v : models.getBounds())
     if (models[v])
       ret.push_back(models[v].get());
@@ -287,7 +287,7 @@ void Game::prepareSiteRetirement() {
   for (auto c : copyOf(playerCollective->getCreatures()))
     c->retire();
   playerControl = nullptr;
-  WModel mainModel = models[baseModel].get();
+  Model* mainModel = models[baseModel].get();
   mainModel->setGame(nullptr);
   for (Collective* col : models[baseModel]->getCollectives())
     for (Creature* c : copyOf(col->getCreatures()))
@@ -374,7 +374,7 @@ optional<ExitInfo> Game::update(double timeDiff, milliseconds endTime) {
   if (auto exitInfo = updateInput())
     return exitInfo;
   considerRealTimeRender();
-  WModel currentModel = getCurrentModel();
+  Model* currentModel = getCurrentModel();
   auto currentId = currentModel->getGroundLevel()->getUniqueId();
   while (!lastTick || currentTime >= *lastTick + 1) {
     if (!lastTick)
@@ -407,7 +407,7 @@ void Game::setWasTransfered() {
 }
 
 // Return true when the player has just left turn-based mode so we don't increase time in that case.
-bool Game::updateModel(WModel model, double totalTime, optional<milliseconds> endTime) {
+bool Game::updateModel(Model* model, double totalTime, optional<milliseconds> endTime) {
   do {
     bool wasPlayer = !getPlayerCreatures().empty();
     if (!model->update(totalTime))
@@ -426,7 +426,7 @@ bool Game::updateModel(WModel model, double totalTime, optional<milliseconds> en
 }
 
 bool Game::isVillainActive(const Collective* col) {
-  const WModel m = col->getModel();
+  const Model* m = col->getModel();
   return m == getMainModel().get() || campaign->isInInfluence(getModelCoords(m));
 }
 
@@ -435,7 +435,7 @@ void Game::updateSunlightMovement() {
   sunlightInfo.update(getGlobalTime() + sunlightTimeOffset);
   if (previous != sunlightInfo.getState())
     for (Vec2 v : models.getBounds())
-      if (WModel m = models[v].get()) {
+      if (Model* m = models[v].get()) {
         m->updateSunlightMovement();
         if (playerControl)
           playerControl->onSunlightVisibilityChanged();
@@ -509,13 +509,13 @@ void Game::exitAction() {
   getView()->scriptedUI("exit_menu", data, state);
 }
 
-Position Game::getTransferPos(WModel from, WModel to) const {
+Position Game::getTransferPos(Model* from, Model* to) const {
   return to->getGroundLevel()->getLandingSquare(StairKey::transferLanding(),
       getModelCoords(from) - getModelCoords(to));
 }
 
-void Game::transferCreature(Creature* c, WModel to, const vector<Position>& destinations) {
-  WModel from = c->getLevel()->getModel();
+void Game::transferCreature(Creature* c, Model* to, const vector<Position>& destinations) {
+  Model* from = c->getLevel()->getModel();
   if (from != to && !c->getRider()) {
     auto transfer = [&] (Creature* c) {
       if (destinations.empty())
@@ -530,7 +530,7 @@ void Game::transferCreature(Creature* c, WModel to, const vector<Position>& dest
   }
 }
 
-bool Game::canTransferCreature(Creature* c, WModel to) {
+bool Game::canTransferCreature(Creature* c, Model* to) {
   return to->canTransferCreature(c, getModelCoords(c->getLevel()->getModel()) - getModelCoords(to));
 }
 
@@ -580,7 +580,7 @@ Collective* Game::getPlayerCollective() const {
   return playerCollective;
 }
 
-WPlayerControl Game::getPlayerControl() const {
+PlayerControl* Game::getPlayerControl() const {
   return playerControl;
 }
 
