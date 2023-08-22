@@ -5,5 +5,5 @@
   maxMainVillains = 12
   maxLesserVillains = 12
   maxAllies = 8
-  influenceSize = 3
+  initialRadius = 14
 }

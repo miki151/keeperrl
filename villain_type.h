@@ -11,3 +11,4 @@ RICH_ENUM(VillainType,
 );
 
 extern const char* getName(VillainType);
+extern bool blocksInfluence(VillainType);

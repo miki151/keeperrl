@@ -334,8 +334,8 @@ optional<string> ContentFactory::readCampaignInfo(const GameConfig* config, KeyV
   for (auto& l : {campaignInfo.maxAllies, campaignInfo.maxMainVillains, campaignInfo.maxLesserVillains})
     if (l < 1 || l > 20)
       return "Campaign villain limits must be between 1 and 20"_s;
-  if (campaignInfo.influenceSize < 1)
-    return "Campaign influence size must be 1 or higher"_s;
+  if (campaignInfo.initialRadius < 2)
+    return "Initial radius must be 2 or higher"_s;
   if (campaignInfo.mapZoom < 1 || campaignInfo.mapZoom > 3)
     return "Campaign map zoom must be between 1 and 3"_s;
   return none;

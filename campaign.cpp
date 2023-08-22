@@ -8,10 +8,11 @@
 #include "villain_type.h"
 #include "pretty_archive.h"
 #include "perlin_noise.h"
+#include "content_factory.h"
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Campaign);
 
-SERIALIZE_DEF(Campaign, sites, playerPos, worldName, defeated, influencePos, influenceSize, playerRole, type, mapZoom, minimapZoom, originalPlayerPos)
+SERIALIZE_DEF(Campaign, sites, playerPos, worldName, defeated, influencePos, playerRole, type, mapZoom, minimapZoom, originalPlayerPos)
 
 void VillainViewId::serialize(PrettyInputArchive& ar1, unsigned int) {
   if (ar1.peek() == "{" && ar1.peek(2) == "{")
@@ -79,9 +80,9 @@ void Campaign::removeDweller(Vec2 pos) {
   sites[pos].dweller = none;
 }
 
-void Campaign::setDefeated(Vec2 pos) {
+void Campaign::setDefeated(const ContentFactory* f, Vec2 pos) {
   defeated[pos] = true;
-  refreshInfluencePos();
+  refreshInfluencePos(f);
 }
 
 bool Campaign::VillainInfo::isEnemy() const {
@@ -189,21 +190,11 @@ int Campaign::getBaseLevelIncrease(Vec2 pos) const {
   return res * 3;
 }
 
-static bool blocksInfluence(VillainType type) {
-  switch (type) {
-    case VillainType::MAIN:
-    case VillainType::LESSER:
-      return true;
-    default:
-      return false;
-  }
-}
-
-void Campaign::refreshInfluencePos() {
+void Campaign::refreshInfluencePos(const ContentFactory* f) {
   map<Vec2, Vec2> siteOwners;
   map<Vec2, HashSet<Vec2>> territories;
   influencePos.clear();
-  constexpr int initialRadius = 14;
+  const int initialRadius = f->campaignInfo.initialRadius;
   for (auto v : Rectangle::centered(originalPlayerPos, initialRadius))
     if (v.distD(originalPlayerPos) <= initialRadius + 0.5)
       influencePos.insert(v);

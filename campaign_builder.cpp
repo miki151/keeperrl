@@ -346,16 +346,24 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
         USER_FATAL << "Failed to place all villains on the world map";
       continue;
     }
-    for (auto pos : Random.permutation(campaign.getSites().getBounds().minusMargin(15).getAllSquares()))
-      if (campaign.isGoodStartPos(pos)) {
+    for (auto pos : Random.permutation(campaign.getSites().getBounds()
+        .minusMargin(campaignInfo.initialRadius + 1).getAllSquares())) {
+      auto hasAnyVillain = [&] {
+        for (auto v : campaign.getSites().getBounds().intersection(Rectangle::centered(pos, campaignInfo.initialRadius)))
+          if (blocksInfluence(campaign.getSites()[v].getVillainType().value_or(VillainType::NONE)) &&
+              v.distD(pos) <= campaignInfo.initialRadius + 0.5)
+            return true;
+        return false;
+      };
+      if (campaign.isGoodStartPos(pos) && hasAnyVillain()) {
         setPlayerPos(campaign, pos, avatarInfo.playerCreature->getMaxViewIdUpgrade());
         campaign.originalPlayerPos = pos;
         break;
       }
+    }
     while (1) {
       bool updateMap = false;
-      campaign.influenceSize = campaignInfo.influenceSize;
-      campaign.refreshInfluencePos();
+      campaign.refreshInfluencePos(contentFactory);
       CampaignAction action = autoConfirm(type) ? CampaignActionId::CONFIRM
           : view->prepareCampaign(View::CampaignOptions {
               campaign,
@@ -440,7 +448,6 @@ CampaignSetup CampaignBuilder::getWarlordCampaign(const vector<RetiredGames::Ret
     ret.sites[i][0] = std::move(site);
   }
   ret.mapZoom = 2;
-  ret.influenceSize = 1;
   ret.playerPos = Vec2(0, 0);
   return CampaignSetup{std::move(ret), stripFilename(gameName + getNewIdSuffix()), gameName, {}, none,
       EnemyAggressionLevel::MODERATE};

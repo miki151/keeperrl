@@ -972,7 +972,7 @@ void Game::addEvent(const GameEvent& event) {
             if (auto retired = campaign->getSites()[coords].getRetired())
               uploadEvent("retiredConquered", {{"retiredId", retired->fileInfo.getGameId()}});
             if (coords != campaign->getPlayerPos() || campaign->getPlayerRole() == PlayerRole::ADVENTURER)
-              campaign->setDefeated(coords);
+              campaign->setDefeated(contentFactory.get(), coords);
           }
         }
         if (col->getVillainType() == VillainType::MAIN && gameWon()) {

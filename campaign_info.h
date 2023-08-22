@@ -8,8 +8,8 @@ struct CampaignInfo {
   int SERIAL(maxMainVillains);
   int SERIAL(maxLesserVillains);
   int SERIAL(maxAllies);
-  int SERIAL(influenceSize);
+  int SERIAL(initialRadius);
   int SERIAL(mapZoom) = 2;
   int SERIAL(minimapZoom) = 2;
-  SERIALIZE_ALL(NAMED(size), NAMED(maxMainVillains), NAMED(maxLesserVillains), NAMED(maxAllies), NAMED(influenceSize), OPTION(mapZoom), OPTION(minimapZoom))
+  SERIALIZE_ALL(NAMED(size), NAMED(maxMainVillains), NAMED(maxLesserVillains), NAMED(maxAllies), NAMED(initialRadius), OPTION(mapZoom), OPTION(minimapZoom))
 };

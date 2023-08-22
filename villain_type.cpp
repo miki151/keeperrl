@@ -9,3 +9,13 @@ const char* getName(VillainType type) {
     case VillainType::PLAYER: return "Player";
   }
 }
+
+bool blocksInfluence(VillainType type) {
+  switch (type) {
+    case VillainType::MAIN:
+    case VillainType::LESSER:
+      return true;
+    default:
+      return false;
+  }
+}
