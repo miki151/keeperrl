@@ -592,9 +592,10 @@ static ItemInfo getEmptySteedItemInfo(const ContentFactory* factory) {
   );
 }
 
-static ItemInfo getSteedItemInfo(const ContentFactory* factory, const Creature* steed, bool currentlyRiding) {
+static ItemInfo getSteedItemInfo(const ContentFactory* factory, const Creature* rider, const Creature* steed,
+    bool currentlyRiding) {
   return CONSTRUCT(ItemInfo,
-    c.name = steed->getName().bare();
+    c.name = steed->getName().bare() + (rider->getFirstCompanion() == steed ? " (companion)" : "");
     c.fullName = steed->getName().aOrTitle();
     c.viewId = steed->getViewObject().getViewIdList();
     c.equiped = currentlyRiding;
@@ -608,7 +609,7 @@ void PlayerControl::fillSteedInfo(Creature* creature, PlayerInfo& info) const {
   if (creature->isAffected(LastingEffect::RIDER)) {
     auto factory = getGame()->getContentFactory();
     if (auto steed = collective->getSteedOrRider(creature))
-      info.inventory.push_back(getSteedItemInfo(factory, steed, creature->getSteed() == steed));
+      info.inventory.push_back(getSteedItemInfo(factory, creature, steed, creature->getSteed() == steed));
     else
       info.inventory.push_back(getEmptySteedItemInfo(factory));
   }
@@ -743,10 +744,14 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
   return ret;
 }
 
-static ScriptedUIDataElems::Record getSteedItemRecord(const ContentFactory* factory, const Creature* steed) {
+static ScriptedUIDataElems::Record getSteedItemRecord(const ContentFactory* factory, const Creature* steed,
+    const Creature* rider) {
   auto elem = ScriptedUIDataElems::Record{};
   elem.elems["view_id"] = steed->getViewObject().getViewIdList();
-  elem.elems["name"] = capitalFirst(steed->getName().bare());
+  if (steed == rider->getFirstCompanion())
+    elem.elems["name"] = capitalFirst(steed->getName().bare()) + " (companion)"_s;
+  else
+    elem.elems["name"] = capitalFirst(steed->getName().bare());
   elem.elems["tooltip"] = ScriptedUIDataElems::List {
     capitalFirst(steed->getName().aOrTitle()),
     capitalFirst(steed->getAttributes().getDescription(factory))
@@ -757,6 +762,8 @@ static ScriptedUIDataElems::Record getSteedItemRecord(const ContentFactory* fact
 Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSteeds) {
   vector<Creature*> availableItems;
   vector<Creature*> usedItems;
+  if (auto c = creature->getFirstCompanion())
+    allSteeds.insert(0, c);
   for (auto item : allSteeds) {
     if (auto owner = collective->getSteedOrRider(item))
       usedItems.push_back(item);
@@ -777,7 +784,7 @@ Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSt
   auto itemsList = ScriptedUIDataElems::List{};
   Creature* ret = nullptr;
   for (auto& stack : concat(Creature::stack(availableItems), usedStacks)) {
-    auto r = getSteedItemRecord(getGame()->getContentFactory(), stack[0]);
+    auto r = getSteedItemRecord(getGame()->getContentFactory(), stack[0], creature);
     if (auto c = collective->getSteedOrRider(stack[0]))
       r.elems["owner"] = getItemOwnerRecord(factory, c, stack.size());
     r.elems["callback"] = ScriptedUIDataElems::Callback {

@@ -660,15 +660,17 @@ void Collective::autoAssignSteeds() {
       return (leader1 && !leader2) || (leader1 == leader2 &&
           c1->getBestAttack(factory).value > c2->getBestAttack(factory).value); });
   for (auto c : minions) {
-    if (freeSteeds.empty())
-      break;
     auto steed = getSteedOrRider(c);
-    auto bestAvailable = [&]() -> Creature*{
+    auto bestAvailable = [&]() -> Creature* {
       for (int i : All(freeSteeds).reverse())
         if (c->canMount(freeSteeds[i]))
           return freeSteeds[i];
       return nullptr;
     }();
+    auto companion = c->getFirstCompanion();
+    if (!!companion && c->canMount(companion) &&
+        (!bestAvailable || companion->getBestAttack(factory).value > bestAvailable->getBestAttack(factory).value))
+      bestAvailable = companion;
     if (bestAvailable &&
         (!steed || steed->getBestAttack(factory).value < bestAvailable->getBestAttack(factory).value)) {
       setSteed(c, bestAvailable);
@@ -1178,7 +1180,8 @@ bool Collective::hasPriorityTasks(Position pos) const {
 }
 
 void Collective::setSteed(Creature* rider, Creature* steed) {
-  CHECK(rider != steed);
+  if (!!steed && steed == rider->getFirstCompanion())
+    steed = rider;
   auto setImpl = [this] (Creature* c1, Creature* c2) {
     if (auto current = getSteedOrRider(c1))
       steedAssignments.erase(current);
@@ -1189,12 +1192,15 @@ void Collective::setSteed(Creature* rider, Creature* steed) {
   };
   if (rider)
     setImpl(rider, steed);
-  if (steed)
+  if (steed && steed != rider)
     setImpl(steed, rider);
 }
 
 Creature* Collective::getSteedOrRider(Creature* minion) {
-  return steedAssignments.getMaybe(minion).value_or(nullptr);
+  auto ret = steedAssignments.getMaybe(minion).value_or(nullptr);
+  if (ret == minion)
+    return minion->getFirstCompanion();
+  return ret;
 }
 
 static HighlightType getHighlight(const DestroyAction& action) {
@@ -1657,7 +1663,7 @@ Furnace& Collective::getFurnace() {
 }
 
 const Furnace& Collective::getFurnace() const {
-  return *furnace;  
+  return *furnace;
 }
 
 Dancing& Collective::getDancing() {

@@ -1502,6 +1502,13 @@ vector<Creature*> Creature::getCompanions() const {
   return ret;
 }
 
+Creature* Creature::getFirstCompanion() const {
+  for (auto& group : companions)
+    for (auto c : group.creatures)
+      return c.get();
+  return nullptr;
+}
+
 void Creature::upgradeViewId(int level) {
   if (!hasAlternativeViewId() && level > 0 && !attributes->viewIdUpgrades.empty()) {
     level = min(level, attributes->viewIdUpgrades.size());

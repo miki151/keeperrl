@@ -333,6 +333,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   EnumSet<CreatureStatus>& getStatus();
   const EnumSet<CreatureStatus>& getStatus() const;
   vector<Creature*> getCompanions() const;
+  Creature* getFirstCompanion() const;
   void removeCompanions(int index);
   void toggleCaptureOrder();
   void setCaptureOrder(bool);
