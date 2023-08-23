@@ -131,7 +131,8 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
     ret->getName().setFirst(result->name);
   }
   auto villains = creatureInfo.visit([](const auto& elem) { return elem.tribeAlignment;});
-  return AvatarInfo{std::move(ret), std::move(creatureInfo), avatarId, villains, chosenBaseName };
+  auto groups = creatureInfo.visit([](const auto& elem) { return elem.villainGroups;});
+  return AvatarInfo{std::move(ret), std::move(creatureInfo), avatarId, villains, groups, chosenBaseName };
 }
 
 AvatarInfo getQuickGameAvatar(View* view, const vector<pair<string, KeeperCreatureInfo>>& keeperCreatures,

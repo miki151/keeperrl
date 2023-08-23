@@ -850,8 +850,8 @@ SGuiElem GuiBuilder::drawVillainType(VillainType type) {
       case VillainType::MAIN: return Color::RED;
       case VillainType::LESSER: return Color::ORANGE;
       case VillainType::ALLY: return Color::GREEN;
-      case VillainType::NONE: return Color::GRAY;
       case VillainType::PLAYER: return Color::GREEN;
+      default: return Color::GRAY;
     }
   };
   return WL(label, getName(type), getColor(type));
@@ -4402,7 +4402,7 @@ SGuiElem GuiBuilder::drawBugreportMenu(bool saveFile, function<void(optional<Bug
       WL(miniWindow, WL(margins, lines.buildVerticalList(), windowMargin), [callback]{ callback(none); }));
 }
 
-static Color getHighlightColor(VillainType type) {
+static optional<Color> getHighlightColor(VillainType type) {
   switch (type) {
     case VillainType::MAIN:
       return Color::RED;
@@ -4412,9 +4412,8 @@ static Color getHighlightColor(VillainType type) {
       return Color::GREEN;
     case VillainType::PLAYER:
       return Color::WHITE;
-    case VillainType::NONE:
-      FATAL << "Tried to render villain of type NONE";
-      return Color::WHITE;
+    default:
+      return none;
   }
 }
 
@@ -4484,7 +4483,8 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
       auto pos = Vec2(x, y);
       auto color = renderer.getTileSet().getColor(sites[x][y].viewId.back()).transparency(150);
       if (auto type = sites[x][y].getVillainType())
-        color = getHighlightColor(*type);
+        if (auto c = getHighlightColor(*type))
+          color = *c;
       if (!c.isInInfluence(pos))
         color = Color(0, 0, 0);
       minimapColumns.addElem(WL(stack,
@@ -4545,8 +4545,8 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
       vector<SGuiElem> elem;
       if (c.isInInfluence(pos)) {
         if (auto id = sites[x][y].getDwellerViewId())
-          elem.push_back(translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale,
-              getHighlightColor(*sites[pos].getVillainType()))));
+          if (auto color = getHighlightColor(*sites[pos].getVillainType()))
+            elem.push_back(translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale, *color)));
         if (campaignGridPointer)
           elem.push_back(WL(conditional, translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale)),
                 [this, pos] { return campaignGridPointer == pos;}));
@@ -4562,13 +4562,14 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
         if (auto id = sites[x][y].getDwellerViewId())
           if (c.isDefeated(pos))
             elem.push_back(WL(viewObject, ViewId("campaign_defeated"), iconScale));
-        if (auto desc = sites[x][y].getDwellerName()) {
-          auto width = renderer.getTextLength(*desc, 12, FontId::MAP_FONT);
-          auto color = c.isInInfluence(pos) ? Color::WHITE : Color(200, 200, 200);
-          elem.push_back(WL(translate,
-              WL(labelUnicode, *desc, color, 12, FontId::MAP_FONT),
-          labelPlacer.getLabelPosition(Vec2(x, y), width), Vec2(width + 6, 18), GuiFactory::TranslateCorner::CENTER));
-        }
+        if (auto desc = sites[x][y].getDwellerName())
+          if (getHighlightColor(*sites[pos].getVillainType())) {
+            auto width = renderer.getTextLength(*desc, 12, FontId::MAP_FONT);
+            auto color = c.isInInfluence(pos) ? Color::WHITE : Color(200, 200, 200);
+            elem.push_back(WL(translate,
+                WL(labelUnicode, *desc, color, 12, FontId::MAP_FONT),
+            labelPlacer.getLabelPosition(Vec2(x, y), width), Vec2(width + 6, 18), GuiFactory::TranslateCorner::CENTER));
+          }
       }
       columns.addElem(WL(stack, std::move(elem)));
     }

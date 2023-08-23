@@ -1301,6 +1301,7 @@ End
 }
 "COTTAGE_BANDITS" inherit "NO_AGGRO_BANDITS"
 {
+  biome = "GRASSLAND"
   createOnBones = 1.0 { "HUMAN_COTTAGE" }
 }
 "GOBLIN_CAVE"
@@ -1422,6 +1423,7 @@ STRONGER("GOBLINS_Z_LEVEL5", "GOBLINS_Z_LEVEL", 30)
 
 "DARK_ELF_CAVE"
 {
+  biome = "MOUNTAIN"
   settlement = {
     type = Builtin SMALL_MINETOWN "DUNGEON"
     tribe = DARK_ELF
@@ -1499,6 +1501,7 @@ STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELVES_Z_LEVEL", 30)
 
 "DWARF_CAVE"
 {
+  biome = "MOUNTAIN"
   settlement = {
     type = Builtin SMALL_MINETOWN "DUNGEON"
     tribe = DWARF
@@ -2271,6 +2274,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
 }
 "WITCH"
 {
+  biome = "SWAMP"
   settlement = {
     type = Builtin COTTAGE "WOOD"
     tribe = MONSTER
@@ -2366,6 +2370,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
 }
 "HUMAN_COTTAGE"
 {
+  biome = "GRASSLAND"
   settlement = {
     type = Builtin COTTAGE "WOOD"
     tribe = HUMAN
@@ -2410,6 +2415,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
 }
 "ESKIMO_COTTAGE" inherit "HUMAN_COTTAGE"
 {
+  biome = "SNOW"
   settlement = append {
     type = Builtin COTTAGE "SNOW"
     crops = none
@@ -2452,6 +2458,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
 }
 "NOMAD_COTTAGE" inherit "HUMAN_COTTAGE"
 {
+  biome = "DESERT"
   settlement = append {
     type = Builtin COTTAGE "SANDSTONE_WALL"
     crops = none
@@ -2584,6 +2591,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
 }
 "ELVEN_COTTAGE"
 {
+  biome = "FOREST"
   settlement = {
     type = Builtin FORREST_COTTAGE "WOOD"
     tribe = ELF
@@ -2612,6 +2620,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
 }
 "LIZARDMEN_COTTAGE"
 {
+  biome = "DESERT"
   settlement = {
     type = Builtin FORREST_COTTAGE "WOOD"
     tribe = LIZARD

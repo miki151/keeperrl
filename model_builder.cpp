@@ -123,8 +123,9 @@ PModel ModelBuilder::tryCampaignSiteModel(EnemyId enemyId, VillainType type, Tri
   auto biomeId = enemyInfo[0].getBiome();
   CHECK(biomeId) << "Unimplemented enemy in campaign " << enemyId.data();
   auto& biomeInfo = contentFactory->biomeInfo.at(*biomeId);
-  addMapVillains(enemyInfo, alignment == TribeAlignment::EVIL ? biomeInfo.darkKeeperEnemies : biomeInfo.whiteKeeperEnemies);
-  return tryModel(114, enemyInfo, none, *biomeId, {});
+  if (type != VillainType::MINOR)
+    addMapVillains(enemyInfo, alignment == TribeAlignment::EVIL ? biomeInfo.darkKeeperEnemies : biomeInfo.whiteKeeperEnemies);
+  return tryModel(type == VillainType::MINOR ? 60 : 114, enemyInfo, none, *biomeId, {});
 }
 
 PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, const string& name) {

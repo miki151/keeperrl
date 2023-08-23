@@ -5,7 +5,7 @@
 #include "lasting_effect.h"
 #include "attr_type.h"
 
-SERIALIZE_DEF(KeeperCreatureInfo, NAMED(creatureId), NAMED(tribeAlignment), NAMED(immigrantGroups), NAMED(technology), NAMED(initialTech), NAMED(buildingGroups), NAMED(workshopGroups), NAMED(description), OPTION(specialTraits), OPTION(noLeader), NAMED(baseNameGen), OPTION(minionTraits), OPTION(maxPopulation), OPTION(immigrantInterval), OPTION(populationString), OPTION(prisoners), OPTION(endlessEnemyGroups), NAMED(unlock), OPTION(credit), OPTION(flags), NAMED(zLevelGroups));
+SERIALIZE_DEF(KeeperCreatureInfo, NAMED(creatureId), NAMED(tribeAlignment), NAMED(immigrantGroups), NAMED(technology), NAMED(initialTech), NAMED(buildingGroups), NAMED(workshopGroups), NAMED(description), OPTION(specialTraits), OPTION(noLeader), NAMED(baseNameGen), OPTION(minionTraits), OPTION(maxPopulation), OPTION(immigrantInterval), OPTION(populationString), OPTION(prisoners), OPTION(endlessEnemyGroups), NAMED(unlock), OPTION(credit), OPTION(flags), NAMED(zLevelGroups), NAMED(villainGroups));
 
 KeeperCreatureInfo::KeeperCreatureInfo() {
 }

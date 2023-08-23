@@ -176,7 +176,6 @@ Connections("map_swamp")
 { "map_tree1" "T" ColorId GREEN }
 { "map_tree2" "T" ColorId LIGHT_GREEN }
 { "map_tree3" "T" ColorId GREEN }
-{ "map_special_tree1" "T" ColorId DARK_GREEN }
 { "map_mountain1" "^" ColorId LIGHT_GRAY }
 { "map_mountain2" "^" ColorId GRAY }
 { "map_mountain3" "^" ColorId LIGHT_GRAY }
@@ -193,12 +192,15 @@ Connections("map_swamp")
 { "map_mountain_snow5" "^" ColorId WHITE }
 { "map_mountain_bg1" "^" ColorId LIGHT_GRAY }
 { "map_house1" "o" ColorId BLUE }
+{ "map_house2" "o" ColorId BROWN }
+{ "map_house_elf" "o" ColorId LIGHT_GREEN }
 { "map_castle1" "o" ColorId BLUE }
 { "map_castle_snow1" "o" ColorId LIGHT_BLUE }
 { "map_thieves" "o" ColorId LIGHT_BROWN }
 { "map_warriors" "o" ColorId DARK_BROWN }
 { "map_house_snow1" "o" ColorId SKY_BLUE }
 { "map_dungeon1" ">" ColorId GRAY }
+{ "map_dungeon2" ">" ColorId GRAY }
 { "map_dwarves" ">" ColorId LIGHT_BLUE }
 { "map_ants" ">" ColorId WHITE }
 { "map_ents" "@" ColorId LIGHT_BROWN }

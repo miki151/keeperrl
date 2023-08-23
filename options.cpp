@@ -45,10 +45,11 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::PLAYER_NAME, string("")},
   {OptionId::SETTLEMENT_NAME, string("")},
-  {OptionId::MAIN_VILLAINS, 4},
-  {OptionId::RETIRED_VILLAINS, 1},
-  {OptionId::LESSER_VILLAINS, 3},
-  {OptionId::ALLIES, 2},
+  {OptionId::MAIN_VILLAINS, 12},
+  {OptionId::RETIRED_VILLAINS, 4},
+  {OptionId::LESSER_VILLAINS, 12},
+  {OptionId::MINOR_VILLAINS, 16},
+  {OptionId::ALLIES, 5},
   {OptionId::CURRENT_MOD2, vector<string>()},
   {OptionId::ENDLESS_ENEMIES, 2},
   {OptionId::ENEMY_AGGRESSION, 1},
@@ -85,6 +86,7 @@ const map<OptionId, string> names {
   {OptionId::MAIN_VILLAINS, "Main villains"},
   {OptionId::RETIRED_VILLAINS, "Retired villains"},
   {OptionId::LESSER_VILLAINS, "Lesser villains"},
+  {OptionId::MINOR_VILLAINS, "Minor villains"},
   {OptionId::ALLIES, "Allies"},
   {OptionId::CURRENT_MOD2, "Current mod"},
   {OptionId::ENDLESS_ENEMIES, "Start endless enemy waves"},
@@ -351,6 +353,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::FPS_LIMIT:
     case OptionId::MAIN_VILLAINS:
     case OptionId::LESSER_VILLAINS:
+    case OptionId::MINOR_VILLAINS:
     case OptionId::RETIRED_VILLAINS:
     case OptionId::ALLIES:
       return toString(getIntValue(id));

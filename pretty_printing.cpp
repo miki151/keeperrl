@@ -80,7 +80,7 @@ optional<string> PrettyPrinting::parseObject<__VA_ARGS__>(__VA_ARGS__&, const ve
 ADD_IMP(Effect)
 ADD_IMP(ItemType)
 ADD_IMP(CreatureId)
-ADD_IMP(VillainsTuple)
+ADD_IMP(map<PrimaryId<VillainGroup>, vector<Campaign::VillainInfo>>)
 ADD_IMP(map<string, KeeperCreatureInfo>)
 ADD_IMP(map<string, AdventurerCreatureInfo>)
 ADD_IMP(map<string, vector<BuildInfo>>)

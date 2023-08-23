@@ -384,7 +384,7 @@ static int keeperMain(po::parser& commandLineFlags) {
         auto enemyId = commandLineFlags["battle_enemy"].get().string;
         auto enemy2Id = commandLineFlags["battle_enemy_two"].get().string;
         if (enemyId == "campaign")
-          loop.campaignBattleText(numRounds, FilePath::fromFullPath(level), EnemyId(enemy2Id.data()), VillainGroup::EVIL_KEEPER);
+          loop.campaignBattleText(numRounds, FilePath::fromFullPath(level), EnemyId(enemy2Id.data()), VillainGroup("EVIL_KEEPER"));
         else
           loop.campaignBattleText(numRounds, FilePath::fromFullPath(level), EnemyId(enemy2Id.data()), EnemyId(enemyId.data()));
       }

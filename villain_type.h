@@ -5,6 +5,7 @@
 RICH_ENUM(VillainType,
   MAIN,
   LESSER,
+  MINOR,
   ALLY,
   PLAYER,
   NONE

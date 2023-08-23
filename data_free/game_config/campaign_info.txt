@@ -4,6 +4,7 @@
   minimapZoom = 2
   maxMainVillains = 12
   maxLesserVillains = 12
+  maxMinorVillains = 16
   maxAllies = 8
   initialRadius = 14
 }

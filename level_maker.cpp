@@ -2887,13 +2887,18 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
           lowlandPred);
       locations->setMaxDistanceLast(crops.maker, crops.info.distance);
     }
-  if (auto& lakes = biomeInfo.lakes)
-    for (int i : Range(random.get(lakes->count))) {
+  if (auto& lakes = biomeInfo.lakes) {
+    auto lakeCount = mapWidth < 100 ? min(3, random.get(lakes->count)) : random.get(lakes->count);
+    for (int i : Range(lakeCount)) {
+      auto lakeSize = [&] {
+        return mapWidth < 100 ? min(5, random.get(lakes->size)) : random.get(lakes->size);
+      };
       auto treeChange = lakes->treeType.map([](auto type) {
           return SquareChange::reset(FurnitureType("GRASS")).add(type, 0.5); });
-      locations->add(make_unique<Lake>(treeChange, biomeInfo.overrideWaterType), {random.get(lakes->size), random.get(lakes->size)},
+      locations->add(make_unique<Lake>(treeChange, biomeInfo.overrideWaterType), {lakeSize(), lakeSize()},
           Predicate::attrib(lakes->where));
     }
+  }
   if (keeperTribe) {
     generateResources(random, resourceCounts, startingPos, locations.get(), surroundWithResources, mapWidth, *keeperTribe);
   }

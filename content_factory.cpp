@@ -133,36 +133,10 @@ static optional<string> checkGroupCounts(const map<string, vector<ImmigrantInfo>
 }
 
 optional<string> ContentFactory::readVillainsTuple(const GameConfig* gameConfig, KeyVerifier* keyVerifier) {
-  if (auto error = gameConfig->readObject(villains, GameConfigId::CAMPAIGN_VILLAINS, keyVerifier))
+  map<PrimaryId<VillainGroup>, vector<Campaign::VillainInfo>> villainsTmp;
+  if (auto error = gameConfig->readObject(villainsTmp, GameConfigId::CAMPAIGN_VILLAINS, keyVerifier))
     return "Error reading campaign villains definition"_s + *error;
-  auto has = [](vector<Campaign::VillainInfo> v, VillainType type) {
-    return std::any_of(v.begin(), v.end(), [type](const auto& elem){ return elem.type == type; });
-  };
-  for (auto villainType : {VillainType::ALLY, VillainType::MAIN, VillainType::LESSER})
-    for (auto role : ENUM_ALL(PlayerRole))
-      for (auto alignment : ENUM_ALL(TribeAlignment)) {
-        auto index = [&] {
-          switch (role) {
-            case PlayerRole::KEEPER:
-              switch (alignment) {
-                case TribeAlignment::EVIL:
-                  return VillainGroup::EVIL_KEEPER;
-                case TribeAlignment::LAWFUL:
-                  return VillainGroup::LAWFUL_KEEPER;
-              }
-            case PlayerRole::ADVENTURER:
-              switch (alignment) {
-                case TribeAlignment::EVIL:
-                  return VillainGroup::EVIL_ADVENTURER;
-                case TribeAlignment::LAWFUL:
-                  return VillainGroup::LAWFUL_ADVENTURER;
-              }
-          }
-        }();
-        if (!has(villains[index], villainType))
-          return "Empty " + EnumInfo<VillainType>::getString(villainType) + " villain list for alignment: "
-                    + EnumInfo<TribeAlignment>::getString(alignment);
-      }
+  villains = convertKeys(villainsTmp);
   return none;
 }
 
@@ -217,6 +191,13 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
     for (auto elem : keeperInfo.second.endlessEnemyGroups)
       if (!externalEnemies.count(elem))
         return "Undefined endless enemy group: \"" + elem + "\"";
+    HashSet<VillainType> hasVillainTypes;
+    for (auto group : keeperInfo.second.villainGroups)
+      for (auto villain : villains[group])
+        hasVillainTypes.insert(villain.type);
+    for (auto type : {VillainType::ALLY, VillainType::MINOR, VillainType::LESSER, VillainType::MAIN})
+      if (!hasVillainTypes.count(type))
+        return "Keeper " + keeperInfo.first + " has no villains of type " + EnumInfo<VillainType>::getString(type);
   }
   return none;
 }

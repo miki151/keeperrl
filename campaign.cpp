@@ -95,9 +95,8 @@ string Campaign::VillainInfo::getDescription() const {
     case VillainType::MAIN: return "main villain";
     case VillainType::LESSER: return "lesser villain";
     case VillainType::PLAYER: return "player";
-    case VillainType::NONE:
-      FATAL << "Tried to present villain of type NONE in campaign";
-      return "player";
+    case VillainType::MINOR:
+    case VillainType::NONE: return "minor villain";
   }
 }
 
@@ -185,7 +184,7 @@ int Campaign::getBaseLevelIncrease(Vec2 pos) const {
   double dist = pos.distD(playerPos);
   int res = 0;
   for (Vec2 v : sites.getBounds())
-    if (!!sites[v].dweller && v != playerPos && v.distD(playerPos) < dist)
+    if (blocksInfluence(sites[v].getVillainType().value_or(VillainType::NONE)) && v.distD(playerPos) < dist)
       ++res;
   return res * 3;
 }

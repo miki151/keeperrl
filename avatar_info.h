@@ -4,12 +4,14 @@
 #include "keeper_creature_info.h"
 #include "adventurer_creature_info.h"
 #include "content_factory.h"
+#include "villain_group.h"
 
 struct AvatarInfo {
   PCreature playerCreature;
   variant<KeeperCreatureInfo, AdventurerCreatureInfo> creatureInfo;
   string avatarId;
   TribeAlignment tribeAlignment;
+  vector<VillainGroup> villainGroups;
   optional<string> chosenBaseName;
 };
 

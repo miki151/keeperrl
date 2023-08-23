@@ -22,6 +22,7 @@
 #include "layout_canvas.h"
 #include "layout_generator.h"
 #include "enemy_info.h"
+#include "villain_group.h"
 
 void CampaignBuilder::setCountLimits(const CampaignInfo& info) {
   int minMainVillains =
@@ -32,6 +33,7 @@ void CampaignBuilder::setCountLimits(const CampaignInfo& info) {
 #endif
   options->setLimits(OptionId::MAIN_VILLAINS, Range(minMainVillains, info.maxMainVillains + 1));
   options->setLimits(OptionId::LESSER_VILLAINS, Range(0, info.maxLesserVillains + 1));
+  options->setLimits(OptionId::MINOR_VILLAINS, Range(0, info.maxMinorVillains + 1));
   options->setLimits(OptionId::ALLIES, Range(getPlayerRole() == PlayerRole::ADVENTURER ? 1 : 0, info.maxAllies + 1));
 }
 
@@ -41,11 +43,12 @@ vector<OptionId> CampaignBuilder::getCampaignOptions(CampaignType type) const {
       return {OptionId::LESSER_VILLAINS, OptionId::ALLIES};
     case CampaignType::FREE_PLAY:
       if (getPlayerRole() == PlayerRole::ADVENTURER)
-        return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES};
+        return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::MINOR_VILLAINS, OptionId::ALLIES};
       else
         return {
           OptionId::MAIN_VILLAINS,
           OptionId::LESSER_VILLAINS,
+          OptionId::MINOR_VILLAINS,
           OptionId::ALLIES,
           OptionId::ENDLESS_ENEMIES,
           OptionId::ENEMY_AGGRESSION,
@@ -66,29 +69,6 @@ vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
       return {
         CampaignType::FREE_PLAY,
       };
-  }
-}
-
-static vector<Campaign::VillainInfo> filter(vector<Campaign::VillainInfo> v, VillainType type) {
-  return v.filter([type](const auto& elem){ return elem.type == type; });
-}
-
-vector<Campaign::VillainInfo> CampaignBuilder::getVillains(TribeAlignment tribeAlignment, VillainType type) {
-  switch (getPlayerRole()) {
-    case PlayerRole::KEEPER:
-      switch (tribeAlignment) {
-        case TribeAlignment::EVIL:
-          return filter(villains[VillainGroup::EVIL_KEEPER], type);
-        case TribeAlignment::LAWFUL:
-          return filter(villains[VillainGroup::LAWFUL_KEEPER], type);
-      }
-    case PlayerRole::ADVENTURER:
-      switch (tribeAlignment) {
-        case TribeAlignment::EVIL:
-          return filter(villains[VillainGroup::EVIL_ADVENTURER], type);
-        case TribeAlignment::LAWFUL:
-          return filter(villains[VillainGroup::LAWFUL_ADVENTURER], type);
-      }
   }
 }
 
@@ -167,6 +147,7 @@ static Table<Campaign::SiteInfo> getTerrain(RandomGen& random, const ContentFact
 struct VillainCounts {
   int numMain;
   int numLesser;
+  int numMinor;
   int numAllies;
   int maxRetired;
 };
@@ -177,6 +158,7 @@ static VillainCounts getVillainCounts(CampaignType type, Options* options) {
       return {
         options->getIntValue(OptionId::MAIN_VILLAINS),
         options->getIntValue(OptionId::LESSER_VILLAINS),
+        options->getIntValue(OptionId::MINOR_VILLAINS),
         options->getIntValue(OptionId::ALLIES),
         10000
       };
@@ -256,18 +238,29 @@ vector<Dweller> shuffle(RandomGen& random, vector<Campaign::VillainInfo> v) {
   return v.transform([](auto& t) { return Dweller(t); });
 }
 
+vector<Campaign::VillainInfo> CampaignBuilder::getVillains(const vector<VillainGroup>& groups, VillainType type) {
+  vector<Campaign::VillainInfo> ret;
+  for (auto& group : groups)
+    for (auto& elem : villains[group])
+      if (elem.type == type)
+        ret.push_back(elem);
+  return ret;
+}
+
 bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campaign& campaign,
-    const VillainCounts& counts, const optional<RetiredGames>& retired, TribeAlignment tribeAlignment) {
+    const VillainCounts& counts, const optional<RetiredGames>& retired, const vector<VillainGroup>& villainGroups) {
   int retiredLimit = counts.numMain;
-  auto mainVillains = getVillains(tribeAlignment, VillainType::MAIN);
+  auto mainVillains = getVillains(villainGroups, VillainType::MAIN);
   for (auto& v : mainVillains)
     if (v.alwaysPresent && retiredLimit > 0)
       --retiredLimit;
   int numRetired = retired ? min(retired->getNumActive(), min(retiredLimit, counts.maxRetired)) : 0;
   if (!placeVillains(contentFactory, campaign, shuffle(random, mainVillains), counts.numMain - numRetired) ||
-      !placeVillains(contentFactory, campaign, shuffle(random, getVillains(tribeAlignment, VillainType::LESSER)),
+      !placeVillains(contentFactory, campaign, shuffle(random, getVillains(villainGroups, VillainType::LESSER)),
           counts.numLesser) ||
-      !placeVillains(contentFactory, campaign, shuffle(random, getVillains(tribeAlignment, VillainType::ALLY)),
+      !placeVillains(contentFactory, campaign, shuffle(random, getVillains(villainGroups, VillainType::MINOR)),
+          counts.numMinor) ||
+      !placeVillains(contentFactory, campaign, shuffle(random, getVillains(villainGroups, VillainType::ALLY)),
           counts.numAllies))
     return false;
   if (retired && !placeVillains(contentFactory, campaign, retired->getActiveGames().transform(
@@ -341,7 +334,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
     Campaign campaign(terrain, type, playerRole, worldName);
     campaign.mapZoom = campaignInfo.mapZoom;
     campaign.minimapZoom = campaignInfo.minimapZoom;
-    if (!placeVillains(contentFactory, campaign, getVillainCounts(type, options), retired, avatarInfo.tribeAlignment)) {
+    if (!placeVillains(contentFactory, campaign, getVillainCounts(type, options), retired, avatarInfo.villainGroups)) {
       if (++failedPlaceVillains > 300)
         USER_FATAL << "Failed to place all villains on the world map";
       continue;
