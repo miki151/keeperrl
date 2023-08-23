@@ -84,7 +84,8 @@
     { id = "ADOXIE_VAULT" }
     { id = "KRAKEN" probability = 0.3 }
   }
-  keeperBiome = { "grass" } "grassland" 2
+  viewId = { "grass" }
+  name = "grassland"
 }
 "FOREST" inherit "GRASSLAND"
 {
@@ -136,7 +137,8 @@
     { id = "ADOXIE_VAULT" }
     { id = "WITCH" probability = 0.2 }
   }
-  keeperBiome = { "decid_tree" } "forest" 1
+  viewId = { "decid_tree" }
+  name = "forest"
 }
 "MOUNTAIN" inherit "GRASSLAND"
 {
@@ -182,7 +184,8 @@
     { id = "CORPSES" probability = 0.2 }
     { id = "WIZARD_TOWER" probability = 0.1 }
   }
-  keeperBiome = { "map_mountain1" } "mountains" 0
+  viewId = { "map_mountain1" }
+  name = "mountains"
 }
 "SNOW"
 {
@@ -244,7 +247,8 @@
     { id = "WOLF_DEN" }
     { id = "ADOXIE_VAULT" }
   }
-  keeperBiome = { "snowman" } "winter" 3
+  viewId = { "snowman" }
+  name = "winter"
 }
 "DESERT"
 {
@@ -305,7 +309,8 @@
     { id = "ADOXIE_VAULT" }
     { id = "BANDITS" }
   }
-  keeperBiome = { "cactus1" } "desert" 4
+  viewId = { "cactus1" }
+  name = "desert"
 }
 "OUTBACK"
 {
@@ -342,6 +347,8 @@
       1 "KANGAROO"
     }
   }
+  viewId = { "termite_mound" }
+  name = "outback"
 }
 
 "SWAMP"
@@ -410,6 +417,7 @@
     { id = "KOBOLD_CAVE" probability = 0.2 }
     { id = "WITCH" }
   }
-  keeperBiome = { "grass" } "swamp" 5
+  viewId = { "grass" }
+  name = "swamp"
 }
 

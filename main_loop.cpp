@@ -1060,8 +1060,7 @@ void MainLoop::modelGenTest(int numTries, const vector<string>& types, RandomGen
   auto contentFactory = createContentFactory(false);
   vector<BiomeId> biomes;
   for (auto& elem : contentFactory.biomeInfo)
-    if (elem.second.keeperBiome)
-      biomes.push_back(elem.first);
+    biomes.push_back(elem.first);
   EnemyFactory enemyFactory(Random, contentFactory.getCreatures().getNameGenerator(), contentFactory.enemies,
       contentFactory.buildingInfo, {});
   ModelBuilder(&meter, random, options, sokobanInput, &contentFactory, std::move(enemyFactory))
