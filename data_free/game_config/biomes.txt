@@ -7,8 +7,8 @@
   items = "wildernessItems"
   itemCount = {10 20}
   mountains = {
-    lowlandRatio = 0.60
-    hillRatio = 0.06
+    lowlandRatio = 1.0
+    hillRatio = 0.0
     hill = "HILL"
     grass = "GRASS"
     mountain = "MOUNTAIN"
@@ -355,8 +355,8 @@
   items = "wildernessItems"
   itemCount = {20 40}
   mountains = {
-    lowlandRatio = 0.60
-    hillRatio = 0.01
+    lowlandRatio = 1.0
+    hillRatio = 0.0
     hill = "SWAMPGRASS"
     grass = "SWAMPGRASS"
     mountain = "MOUNTAIN"

@@ -2901,6 +2901,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
   }
   if (keeperTribe) {
     generateResources(random, resourceCounts, startingPos, locations.get(), surroundWithResources, mapWidth, *keeperTribe);
+    biomeInfo.mountains.lowlandRatio = min(0.6, biomeInfo.mountains.lowlandRatio);
+    biomeInfo.mountains.hillRatio = max(0.1, biomeInfo.mountains.hillRatio);
   }
   queue->addMaker(make_unique<Empty>(FurnitureType("WATER")));
   queue->addMaker(getMountains(biomeInfo.mountains, keeperTribe.value_or(TribeId::getHostile())));
