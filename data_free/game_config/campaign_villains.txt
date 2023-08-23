@@ -48,7 +48,7 @@ EVIL_KEEPER {
 }
 
 LAWFUL_KEEPER {
-    {{"map_dungeon1"}{ "red_dragon" } "RED_DRAGON" "Red dragon" MAIN}
+    {{"map_dragon"}{ "red_dragon" } "RED_DRAGON" "Red dragon" MAIN}
     {{"map_dungeon1"}{ "red_dragon" Rgb 10 240 10 255 } "GREEN_DRAGON" "Green dragon" MAIN}
     {{"map_white_dragon"}{ "red_dragon" Rgb 240 240 240 255 } "WHITE_DRAGON" "White dragon" MAIN}
     {{"map_dungeon1"}{ { "elven_staff_v" } {"dark_elf_lord" }} "DARK_ELVES_ENEMY" "Dark elves" MAIN}
