@@ -98,7 +98,7 @@ class Dijkstra {
       vector<Vec2> directions = Vec2::directions8());
   bool isReachable(Vec2) const;
   double getDist(Vec2) const;
-  using DistanceMap = unordered_map<Vec2, double, CustomHash<Vec2>>;
+  using DistanceMap = HashMap<Vec2, double>;
   const DistanceMap& getAllReachable() const;
 
   private:
@@ -109,7 +109,7 @@ class BfSearch {
   public:
   BfSearch(Rectangle bounds, Vec2 from, function<bool(Vec2)> entryFun, vector<Vec2> directions = Vec2::directions8());
   bool isReachable(Vec2) const;
-  using ReachableSet = unordered_set<Vec2, CustomHash<Vec2>>;
+  using ReachableSet = HashSet<Vec2>;
   const ReachableSet& getAllReachable() const;
 
   private:

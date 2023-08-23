@@ -592,9 +592,10 @@ static ItemInfo getEmptySteedItemInfo(const ContentFactory* factory) {
   );
 }
 
-static ItemInfo getSteedItemInfo(const ContentFactory* factory, const Creature* steed, bool currentlyRiding) {
+static ItemInfo getSteedItemInfo(const ContentFactory* factory, const Creature* rider, const Creature* steed,
+    bool currentlyRiding) {
   return CONSTRUCT(ItemInfo,
-    c.name = steed->getName().bare();
+    c.name = steed->getName().bare() + (rider->getFirstCompanion() == steed ? " (companion)" : "");
     c.fullName = steed->getName().aOrTitle();
     c.viewId = steed->getViewObject().getViewIdList();
     c.equiped = currentlyRiding;
@@ -608,7 +609,7 @@ void PlayerControl::fillSteedInfo(Creature* creature, PlayerInfo& info) const {
   if (creature->isAffected(LastingEffect::RIDER)) {
     auto factory = getGame()->getContentFactory();
     if (auto steed = collective->getSteedOrRider(creature))
-      info.inventory.push_back(getSteedItemInfo(factory, steed, creature->getSteed() == steed));
+      info.inventory.push_back(getSteedItemInfo(factory, creature, steed, creature->getSteed() == steed));
     else
       info.inventory.push_back(getEmptySteedItemInfo(factory));
   }
@@ -743,10 +744,14 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
   return ret;
 }
 
-static ScriptedUIDataElems::Record getSteedItemRecord(const ContentFactory* factory, const Creature* steed) {
+static ScriptedUIDataElems::Record getSteedItemRecord(const ContentFactory* factory, const Creature* steed,
+    const Creature* rider) {
   auto elem = ScriptedUIDataElems::Record{};
   elem.elems["view_id"] = steed->getViewObject().getViewIdList();
-  elem.elems["name"] = capitalFirst(steed->getName().bare());
+  if (steed == rider->getFirstCompanion())
+    elem.elems["name"] = capitalFirst(steed->getName().bare()) + " (companion)"_s;
+  else
+    elem.elems["name"] = capitalFirst(steed->getName().bare());
   elem.elems["tooltip"] = ScriptedUIDataElems::List {
     capitalFirst(steed->getName().aOrTitle()),
     capitalFirst(steed->getAttributes().getDescription(factory))
@@ -757,6 +762,8 @@ static ScriptedUIDataElems::Record getSteedItemRecord(const ContentFactory* fact
 Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSteeds) {
   vector<Creature*> availableItems;
   vector<Creature*> usedItems;
+  if (auto c = creature->getFirstCompanion())
+    allSteeds.insert(0, c);
   for (auto item : allSteeds) {
     if (auto owner = collective->getSteedOrRider(item))
       usedItems.push_back(item);
@@ -777,7 +784,7 @@ Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSt
   auto itemsList = ScriptedUIDataElems::List{};
   Creature* ret = nullptr;
   for (auto& stack : concat(Creature::stack(availableItems), usedStacks)) {
-    auto r = getSteedItemRecord(getGame()->getContentFactory(), stack[0]);
+    auto r = getSteedItemRecord(getGame()->getContentFactory(), stack[0], creature);
     if (auto c = collective->getSteedOrRider(stack[0]))
       r.elems["owner"] = getItemOwnerRecord(factory, c, stack.size());
     r.elems["callback"] = ScriptedUIDataElems::Callback {
@@ -1464,7 +1471,7 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
 static bool runesEqual(const vector<PItem>& v1, const vector<PItem>& v2) {
   if (v1.size() != v2.size())
     return false;
-  unordered_set<pair<string, ViewId>, CustomHash<pair<string, ViewId>>> elems;
+  HashSet<pair<string, ViewId>> elems;
   for (auto& elem : v1)
     elems.insert(make_pair(elem->getName(), elem->getViewObject().id()));
   for (auto& elem : v2)
@@ -1561,7 +1568,7 @@ void PlayerControl::rejectPrisoner(int index) {
 vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() const {
   vector<StunnedInfo> ret;
   vector<Creature*> outside;
-  unordered_map<Collective*, vector<Creature*>, CustomHash<Collective*>> inside;
+  HashMap<Collective*, vector<Creature*>> inside;
   for (auto stunned : stunnedCreatures)
     if (stunned.first->isAffected(LastingEffect::STUNNED) && !stunned.first->isDead()) {
       if (auto villain = stunned.second) {
@@ -1991,7 +1998,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   }
   gameInfo.messageBuffer = messages;
   info.taskMap.clear();
-  for (WConstTask task : collective->getTaskMap().getAllTasks()) {
+  for (const Task* task : collective->getTaskMap().getAllTasks()) {
     optional<UniqueEntity<Creature>::Id> creature;
     if (auto c = collective->getTaskMap().getOwner(task))
       creature = c->getUniqueId();
@@ -2275,6 +2282,12 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (!canSeePos)
     if (auto memIndex = getMemory().getViewIndex(position))
       index.mergeFromMemory(*memIndex);
+  if (draggedCreature)
+    if (Creature* c = getCreature(*draggedCreature))
+      for (auto task : collective->getTaskMap().getTasks(position))
+        if (auto activity = collective->getTaskMap().getTaskActivity(task))
+          if (c->getAttributes().getMinionActivities().isAvailable(collective, c, *activity))
+            index.setHighlight(HighlightType::CREATURE_DROP);
   if (collective->getTerritory().contains(position)) {
     if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE)) {
       if (auto clickType = furniture->getClickType())
@@ -2521,6 +2534,14 @@ void PlayerControl::minionDragAndDrop(Vec2 v, variant<string, UniqueEntity<Creat
           return;
         }
       }
+    for (auto task : collective->getTaskMap().getTasks(pos)) {
+      if (auto activity = collective->getTaskMap().getTaskActivity(task))
+        if (c->getAttributes().getMinionActivities().isAvailable(collective, c, *activity)) {
+          collective->setMinionActivity(c, *activity);
+          collective->returnResource(collective->getTaskMap().takeTask(c, task));
+          return;
+        }
+    }
     PTask task = Task::goToAndWait(pos, 15_visible);
     task->setViewId(ViewId("guard_post"));
     collective->setTask(c, std::move(task));
@@ -2598,6 +2619,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::CREATURE_DRAG:
       draggedCreature = input.get<Creature::Id>();
+      for (auto task : collective->getTaskMap().getAllTasks())
+        if (auto pos = collective->getTaskMap().getPosition(task))
+          pos->setNeedsRenderUpdate(true);
       for (auto task : ENUM_ALL(MinionActivity))
         for (auto& pos : collective->getMinionActivities().getAllPositions(collective, nullptr, task))
           pos.first.setNeedsRenderUpdate(true);
@@ -3278,7 +3302,7 @@ optional<PlayerControl::QuartersInfo> PlayerControl::getQuarters(Vec2 pos) const
   auto level = getCurrentLevel();
   auto& zones = collective->getZones();
   if (auto info = zones.getQuartersInfo(Position(pos, level))) {
-    unordered_set<Vec2, CustomHash<Vec2>> v;
+    HashSet<Vec2> v;
     double luxury = 0;
     for (auto& pos : info->positions)
       if (pos.getLevel() == level) {
@@ -3712,11 +3736,11 @@ void PlayerControl::onMemberAdded(Creature* c) {
     addToCurrentTeam(c);
 }
 
-WModel PlayerControl::getModel() const {
+Model* PlayerControl::getModel() const {
   return collective->getModel();
 }
 
-WGame PlayerControl::getGame() const {
+Game* PlayerControl::getGame() const {
   return collective->getGame();
 }
 

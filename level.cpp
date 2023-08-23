@@ -84,7 +84,7 @@ static vector<pair<int, CreatureBucketMap>> getSwarmMaps(Vec2 size) {
   );
 }
 
-Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, Table<double> sun, LevelId id)
+Level::Level(Private, SquareArray s, FurnitureArray f, Model* m, Table<double> sun, LevelId id)
     : territory(s.getBounds(), nullptr), squares(std::move(s)), furniture(std::move(f)),
       memoryUpdates(squares->getBounds(), true), model(m),
       sunlight(sun),
@@ -94,7 +94,7 @@ Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, Table<double> s
       levelId(id) {
 }
 
-PLevel Level::create(SquareArray s, FurnitureArray f, WModel m,
+PLevel Level::create(SquareArray s, FurnitureArray f, Model* m,
     Table<double> sun, LevelId id, Table<bool> covered, Table<bool> unavailable, const ContentFactory* factory) {
   auto ret = makeOwner<Level>(Private{}, std::move(s), std::move(f), m, sun, id);
   for (Vec2 pos : ret->squares->getBounds()) {
@@ -215,11 +215,11 @@ vector<Creature*> Level::getPlayers() const {
   return {};
 }
 
-WModel Level::getModel() const {
+Model* Level::getModel() const {
   return model;
 }
 
-WGame Level::getGame() const {
+Game* Level::getGame() const {
   return model->getGame();
 }
 
@@ -590,7 +590,7 @@ Sectors& Level::getSectorsDontCreate(const MovementType& movement) const {
 }
 
 static Sectors::ExtraConnections getOrCreateExtraConnections(Rectangle bounds,
-    const unordered_map<MovementType, Sectors, CustomHash<MovementType>>& sectors) {
+    const HashMap<MovementType, Sectors>& sectors) {
   if (sectors.empty())
     return Sectors::ExtraConnections(bounds);
   else

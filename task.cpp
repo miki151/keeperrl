@@ -165,7 +165,7 @@ PTask Task::construction(WTaskCallback c, Position target, FurnitureType type) {
 namespace {
 class Destruction : public Task {
   public:
-  Destruction(WTaskCallback c, Position pos, const Furniture* furniture, DestroyAction action, WPositionMatching m)
+  Destruction(WTaskCallback c, Position pos, const Furniture* furniture, DestroyAction action, PositionMatching* m)
       : Task(true), position(pos), callback(c), destroyAction(action),
         description(action.getVerbSecondPerson() + " "_s + furniture->getName() + " at " + toString(position)),
         furnitureType(furniture->getType()), matching(m) {
@@ -234,12 +234,12 @@ class Destruction : public Task {
   DestroyAction SERIAL(destroyAction);
   string SERIAL(description);
   FurnitureType SERIAL(furnitureType);
-  WPositionMatching SERIAL(matching) = nullptr;
+  PositionMatching* SERIAL(matching) = nullptr;
 };
 
 }
 
-PTask Task::destruction(WTaskCallback c, Position target, const Furniture* furniture, DestroyAction destroyAction, WPositionMatching matching) {
+PTask Task::destruction(WTaskCallback c, Position target, const Furniture* furniture, DestroyAction destroyAction, PositionMatching* matching) {
   return makeOwner<Destruction>(c, target, furniture, destroyAction, matching);
 }
 
@@ -530,7 +530,7 @@ class ArcheryRange : public Task {
       }
       return none;
     };
-    unordered_map<Position, vector<ShootInfo>, CustomHash<Position>> shootPositions;
+    HashMap<Position, vector<ShootInfo>> shootPositions;
     for (auto pos : Random.permutation(targets))
       if (auto dir = getDir(pos))
         shootPositions[dir->pos].push_back(*dir);
@@ -1382,7 +1382,7 @@ PTask Task::follow(Creature* c) {
 namespace {
 class TransferTo : public Task {
   public:
-  TransferTo(WModel m) : model(m) {}
+  TransferTo(Model* m) : model(m) {}
 
   virtual MoveInfo getMove(Creature* c) override {
     if (c->getPosition().getModel() == model) {
@@ -1411,11 +1411,11 @@ class TransferTo : public Task {
 
   protected:
   optional<Position> SERIAL(target);
-  WModel SERIAL(model) = nullptr;
+  Model* SERIAL(model) = nullptr;
 };
 }
 
-PTask Task::transferTo(WModel m) {
+PTask Task::transferTo(Model* m) {
   return makeOwner<TransferTo>(m);
 }
 

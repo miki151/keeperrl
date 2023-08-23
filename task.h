@@ -65,7 +65,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   void setViewId(ViewId);
 
   static PTask construction(WTaskCallback, Position, FurnitureType);
-  static PTask destruction(WTaskCallback, Position, const Furniture*, DestroyAction, WPositionMatching);
+  static PTask destruction(WTaskCallback, Position, const Furniture*, DestroyAction, PositionMatching*);
   enum SearchType { LAZY, RANDOM_CLOSE };
   enum ActionType { APPLY, NONE };
   static PTask applySquare(WTaskCallback, vector<pair<Position, FurnitureLayer>>, SearchType, ActionType);
@@ -100,7 +100,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask doneWhen(PTask, PTaskPredicate);
   static PTask follow(Creature*);
   static PTask goToTryForever(Position);
-  static PTask transferTo(WModel);
+  static PTask transferTo(Model*);
   static PTask goToAndWait(Position, TimeInterval waitTime);
   static PTask whipping(Position, Creature* whipped);
   static PTask dropItemsAnywhere(vector<Item*>);

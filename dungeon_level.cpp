@@ -5,13 +5,14 @@ double DungeonLevel::getProgress(VillainType type) {
   switch (type) {
     case VillainType::ALLY:
       return 3;
+    case VillainType::MINOR:
     case VillainType::NONE:
       return 1.5;
     case VillainType::LESSER:
       return 6;
     case VillainType::MAIN:
       return 12;
-    default:
+    case VillainType::PLAYER:
       FATAL << "Villain type not handled: " + ENUM_STRING(type);
       return 0;
   }

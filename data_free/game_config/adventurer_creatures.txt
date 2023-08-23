@@ -1,5 +1,15 @@
-# CreatureId                     TribeAlignment 
 "1_lawful_adventurer"
-{{ "ADVENTURER" "ADVENTURER_F" }      LAWFUL             "Roam the land in search of adventures and loot!" }
+{
+  creatureId = { "ADVENTURER" "ADVENTURER_F" }
+  tribeAlignment = LAWFUL
+  description = "Roam the land in search of adventures and loot!"
+  villainGroups = { LAWFUL_ADVENTURER LAWFUL_COTTAGES }
+}
 "2_adoxie"
-{{ "ADOXIE_ADVENTURER" }      EVIL             "Play as the Evil God Adoxie, and wipe the floor with silly mortals." "adoxie"}
+{
+  creatureId = { "ADOXIE_ADVENTURER" }
+  tribeAlignment = EVIL
+  description = "Play as the Evil God Adoxie, and wipe the floor with silly mortals."
+  villainGroups = { EVIL_ADVENTURER EVIL_COTTAGES }
+  unlock = "adoxie"
+}

@@ -33,7 +33,7 @@ class Sectors {
   void removeExtraConnection(Vec2, Vec2);
   const ExtraConnections getExtraConnections() const;
 
-  using PosSet = unordered_set<Vec2, CustomHash<Vec2>>;
+  using PosSet = HashSet<Vec2>;
   using SectorId = short;
   const PosSet& getWholeSector(SectorId) const;
 

@@ -5,6 +5,7 @@
 {
   creatureId = { "KEEPER_MAGE" "KEEPER_MAGE_F" }
   tribeAlignment = EVIL
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {"imps" "dark_keeper"}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion" "humanoid mutation" "beast mutation"
@@ -35,6 +36,7 @@
 {
   creatureId = { "KEEPER_KNIGHT_WHITE" "KEEPER_KNIGHT_WHITE_F" }
   tribeAlignment = LAWFUL
+  villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
   immigrantGroups = {"peseants" "white_keeper"}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion"
@@ -56,6 +58,7 @@
 {
   creatureId = { "NECROMANCER" "NECROMANCER_F" }
   tribeAlignment = EVIL
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {"necromancer"}
   technology = { "embalming" "advanced embalming" "master embalming" "necromancy"
       "advanced necromancy" "master necromancy" "archery" "sorcery" "advanced sorcery"
@@ -79,6 +82,7 @@
 {
   creatureId = { "GNOME" }
   tribeAlignment = LAWFUL
+  villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
   immigrantGroups = {"gnomes"}
   technology = {
       "traps" "advanced traps"
@@ -104,6 +108,7 @@
 {
   creatureId = { "DWARF_PLAYER" }
   tribeAlignment = LAWFUL
+  villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
   immigrantGroups = {"dwarves"}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion"
@@ -130,6 +135,7 @@
 {
   creatureId = { "GOBLIN_KEEPER" }
   tribeAlignment = EVIL
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {"goblins"}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion"
@@ -152,6 +158,7 @@
   creatureId = { "ZOMBIE_WORKER" }
   specialTraits = { Lasting {SWARMER} }
   tribeAlignment = EVIL
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {"zombies"}
   technology = {}
   initialTech = { }
@@ -175,6 +182,7 @@
 {
   creatureId = { "CYCLOPS_PLAYER" }
   tribeAlignment = EVIL
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion" "iron working" "jewellery"

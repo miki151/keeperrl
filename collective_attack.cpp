@@ -23,12 +23,12 @@ static ViewIdList getAttackViewId(const Collective* col, const vector<Creature*>
   return attackers[0]->getViewObject().getViewIdList();
 }
 
-CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, Collective* att, const vector<Creature*>& c, optional<int> r)
+CollectiveAttack::CollectiveAttack(vector<const Task*> attackTasks, Collective* att, const vector<Creature*>& c, optional<int> r)
     : ransom(r), creatures(c), attacker(att), attackerName(generateAttackerName(att)),
       attackerViewId(getAttackViewId(att, c)),
       attackTasks(attackTasks.transform([](auto elem) { return elem->getThis(); })) {}
 
-CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, const string& name, ViewIdList id, const vector<Creature*>& c)
+CollectiveAttack::CollectiveAttack(vector<const Task*> attackTasks, const string& name, ViewIdList id, const vector<Creature*>& c)
     : creatures(c), attackerName(name), attackerViewId(id),
       attackTasks(attackTasks.transform([](auto elem) { return elem->getThis(); })) {}
 

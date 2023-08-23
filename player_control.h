@@ -99,7 +99,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<TeamId> getCurrentTeam() const;
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
-  WModel getModel() const;
+  Model* getModel() const;
   void takeScreenshot();
   void addAllianceAttack(vector<Collective*> attackers);
 
@@ -212,7 +212,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   ViewObject getTrapObject(FurnitureType, bool built) const;
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
   void onSquareClick(Position);
-  WGame getGame() const;
+  Game* getGame() const;
   View* getView() const;
   PController createMinionController(Creature*);
 
@@ -292,7 +292,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   ViewId getViewId(const BuildInfoTypes::BuildType&) const;
   EntityMap<Creature, LocalTime> leaderWoundedTime;
   void handleDestructionOrder(Position position, HighlightType, DestroyAction, bool dryRun);
-  unordered_set<CollectiveResourceId, CustomHash<CollectiveResourceId>> SERIAL(usedResources);
+  HashSet<CollectiveResourceId> SERIAL(usedResources);
   optional<vector<Collective*>> SERIAL(allianceAttack);
   enum class Selection { SELECT, DESELECT, NONE } selection = Selection::NONE;
   void considerTogglingCaptureOrderOnMinions() const;

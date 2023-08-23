@@ -69,8 +69,8 @@ class Model : public OwnedObject<Model> {
   int getMoveCounter() const;
   void increaseMoveCounter();
 
-  void setGame(WGame);
-  WGame getGame() const;
+  void setGame(Game*);
+  Game* getGame() const;
   void tick(LocalTime);
   vector<Collective*> getCollectives() const;
   vector<Creature*> getAllCreatures() const;
@@ -133,15 +133,15 @@ class Model : public OwnedObject<Model> {
   vector<Level*> SERIAL(upLevels);
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
-  WGame SERIAL(game) = nullptr;
+  Game* SERIAL(game) = nullptr;
   LocalTime SERIAL(lastTick);
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL(currentTime) = 0;
   int SERIAL(woodCount) = 0;
-  using StairConnections = unordered_map<StairKey, int, CustomHash<StairKey>>;
+  using StairConnections = HashMap<StairKey, int>;
   StairConnections createStairConnections(const MovementType&) const;
-  unordered_map<MovementType, StairConnections, CustomHash<MovementType>> SERIAL(stairNavigation);
+  HashMap<MovementType, StairConnections> SERIAL(stairNavigation);
   bool serializationLocked = false;
   template <typename>
   friend class EventListener;

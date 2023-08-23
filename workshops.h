@@ -42,7 +42,7 @@ class Workshops {
     void checkDebtConsistency() const;
     vector<Item> SERIAL(options);
     vector<QueuedItem> SERIAL(queued);
-    unordered_map<CollectiveResourceId, int, CustomHash<CollectiveResourceId>> SERIAL(debt);
+    HashMap<CollectiveResourceId, int> SERIAL(debt);
   };
 
   SERIALIZATION_DECL(Workshops)

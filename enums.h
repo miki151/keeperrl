@@ -100,7 +100,6 @@ enum class LevelType;
 enum class EnemyAggressionLevel;
 enum class MinionEquipmentType;
 enum class UserInputId;
-enum class VillainGroup;
 enum class AIType;
 enum class StatId;
 enum class CollectiveTab;
@@ -127,6 +126,7 @@ class BuffId;
 class BodyMaterialId;
 class Keybinding;
 class AchievementId;
+class VillainGroup;
 using EffectAIIntent = int;
 
 using SteamId = unsigned long long;

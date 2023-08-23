@@ -112,7 +112,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   SUnknownLocations SERIAL(unknownLocations);
   void showHistory();
   Game* getGame() const;
-  WModel getModel() const;
+  Model* getModel() const;
   View* getView() const;
 
   bool tryToPerform(CreatureAction);
@@ -160,7 +160,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void updateSquareMemory(Position);
   HeapAllocated<DungeonLevel> SERIAL(avatarLevel);
   void playerLevelDialog();
-  vector<unordered_set<ViewIdList, CustomHash<ViewIdList>>> halluIds;
+  vector<HashSet<ViewIdList>> halluIds;
   void generateHalluIds();
   ViewIdList shuffleViewId(const ViewIdList&) const;
   void fillCurrentLevelInfo(GameInfo&) const;

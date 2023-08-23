@@ -385,7 +385,7 @@ optional<MovementInfo> Creature::spendTime(TimeInterval t, SpeedModifier speedMo
   getBody().affectPosition(position);
   if (!!getRider())
     return none;
-  if (WModel m = position.getModel()) {
+  if (Model* m = position.getModel()) {
     MovementInfo ret(Vec2(0, 0), *getLocalTime(), *getLocalTime() + t, 0, MovementInfo::MOVE);
     lastMoveCounter = ret.moveCounter = position.getModel()->getMoveCounter();
     if (!isDead()) {
@@ -540,7 +540,7 @@ void Creature::secondPerson(const PlayerMessage& message) const {
   getController()->getMessageGenerator().addSecondPerson(this, message);
 }
 
-WController Creature::getController() const {
+Controller* Creature::getController() const {
   if (!controllerStack.empty())
     return NOTNULL(controllerStack.back().get());
   else
@@ -1310,7 +1310,7 @@ void Creature::setPosition(Position pos) {
 }
 
 optional<LocalTime> Creature::getLocalTime() const {
-  if (WModel m = position.getModel())
+  if (Model* m = position.getModel())
     return m->getLocalTime();
   else
     return none;
@@ -1500,6 +1500,13 @@ vector<Creature*> Creature::getCompanions() const {
     for (auto c : group.creatures)
       ret.push_back(c.get());
   return ret;
+}
+
+Creature* Creature::getFirstCompanion() const {
+  for (auto& group : companions)
+    for (auto c : group.creatures)
+      return c.get();
+  return nullptr;
 }
 
 void Creature::upgradeViewId(int level) {
@@ -2366,7 +2373,7 @@ CreatureAction Creature::copulate(Vec2 direction) const {
 }
 
 void Creature::addPersonalEvent(const string& s) {
-  if (WModel m = position.getModel())
+  if (Model* m = position.getModel())
     m->addEvent(EventInfo::CreatureEvent{this, s});
 }
 

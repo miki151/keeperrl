@@ -59,7 +59,7 @@ class CreatureView {
   };
   virtual PlacementInfo canPlaceItem(Vec2, int) const { return PlacementInfo{ true, {}, {} }; }
   struct QuartersInfo {
-    unordered_set<Vec2, CustomHash<Vec2>> positions;
+    HashSet<Vec2> positions;
     optional<ViewIdList> viewId;
     optional<string> name;
     double luxury;

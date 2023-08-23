@@ -11,6 +11,7 @@ class View;
 class ProgressMeter;
 class Options;
 class RetiredGames;
+class ContentFactory;
 
 struct CampaignSetup;
 
@@ -69,7 +70,7 @@ class Campaign {
   BiomeId getBaseBiome() const;
   const string& getWorldName() const;
   bool isDefeated(Vec2) const;
-  void setDefeated(Vec2);
+  void setDefeated(const ContentFactory*, Vec2);
   void removeDweller(Vec2);
   bool canTravelTo(Vec2) const;
   bool isInInfluence(Vec2) const;
@@ -86,14 +87,13 @@ class Campaign {
 
   private:
   friend class CampaignBuilder;
-  void refreshInfluencePos();
+  void refreshInfluencePos(const ContentFactory*);
   Campaign(Table<SiteInfo>, CampaignType, PlayerRole, const string& worldName);
   Table<SiteInfo> SERIAL(sites);
   Vec2 SERIAL(playerPos);
   string SERIAL(worldName);
   Table<bool> SERIAL(defeated);
   set<Vec2> SERIAL(influencePos);
-  int SERIAL(influenceSize);
   PlayerRole SERIAL(playerRole);
   CampaignType SERIAL(type);
   int SERIAL(mapZoom);

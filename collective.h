@@ -57,7 +57,7 @@ class Dancing;
 
 class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener<Collective> {
   public:
-  static PCollective create(WModel model, TribeId, const optional<CollectiveName>&, bool discoverable,
+  static PCollective create(Model* model, TribeId, const optional<CollectiveName>&, bool discoverable,
       const ContentFactory*);
   void init(CollectiveConfig);
   void setWorkshops(unique_ptr<Workshops>);
@@ -71,8 +71,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void update(bool currentlyActive);
   TribeId getTribeId() const;
   Tribe* getTribe() const;
-  WModel getModel() const;
-  WGame getGame() const;
+  Model* getModel() const;
+  Game* getGame() const;
   typedef CollectiveResourceId ResourceId;
   const ResourceInfo& getResourceInfo(ResourceId) const;
   void addNewCreatureMessage(const vector<Creature*>&);
@@ -210,7 +210,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   const heap_optional<CollectiveName>& getName() const;
   const TaskMap& getTaskMap() const;
   TaskMap& getTaskMap();
-  WConstTask getItemTask(const Item*) const;
+  const Task* getItemTask(const Item*) const;
   int getNumItems(ItemIndex, bool includeMinions = true) const;
 
   void addKnownVillain(const Collective*);
@@ -250,7 +250,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   struct Private {};
 
   public:
-  Collective(Private, WModel, TribeId, const optional<CollectiveName>&, const ContentFactory*);
+  Collective(Private, Model*, TribeId, const optional<CollectiveName>&, const ContentFactory*);
 
   protected:
   // From Task::Callback
@@ -274,10 +274,10 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   PPositionMatching SERIAL(positionMatching);
   HeapAllocated<MinionEquipment> SERIAL(minionEquipment);
-  unordered_map<ResourceId, int, CustomHash<ResourceId>> SERIAL(credit);
+  HashMap<ResourceId, int> SERIAL(credit);
   HeapAllocated<TaskMap> SERIAL(taskMap);
   HeapAllocated<Technology> SERIAL(technology);
-  void markItem(const Item*, WConstTask);
+  void markItem(const Item*, const Task*);
   void unmarkItem(UniqueEntity<Item>::Id);
 
   HeapAllocated<KnownTiles> SERIAL(knownTiles);
@@ -292,7 +292,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   EnumMap<MinionTrait, vector<Creature*>> SERIAL(byTrait);
   PCollectiveControl SERIAL(control);
   HeapAllocated<TribeId> SERIAL(tribe);
-  WModel SERIAL(model) = nullptr;
+  Model* SERIAL(model) = nullptr;
   HeapAllocated<Territory> SERIAL(territory);
   optional<AlarmInfo> SERIAL(alarmInfo);
   HeapAllocated<ConstructionMap> SERIAL(constructions);
@@ -300,7 +300,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void updateConstructions();
   void delayDangerousTasks(const vector<Position>& enemyPos, LocalTime delayTime);
   bool isDelayed(Position);
-  unordered_map<Position, LocalTime, CustomHash<Position>> SERIAL(delayedPos);
+  HashMap<Position, LocalTime> SERIAL(delayedPos);
   vector<Position> getEnemyPositions() const;
   EntitySet<Creature> SERIAL(kills);
   int SERIAL(points) = 0;

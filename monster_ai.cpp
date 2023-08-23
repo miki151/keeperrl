@@ -470,7 +470,7 @@ class Fighter : public Behaviour {
 
   MoveInfo considerBreakingChokePoint(Creature* other) {
   PROFILE;
-    unordered_set<Position, CustomHash<Position>> myNeighbors;
+    HashSet<Position> myNeighbors;
     for (auto pos : creature->getPosition().neighbors8(Random))
       myNeighbors.insert(pos);
     MoveInfo destroyMove = NoMove;
@@ -765,7 +765,7 @@ class GuardArea : public Behaviour {
 
   private:
   Level* SERIAL(myLevel) = nullptr;
-  unordered_set<Vec2, CustomHash<Vec2>> SERIAL(area);
+  HashSet<Vec2> SERIAL(area);
 };
 
 class Wait : public Behaviour {
@@ -956,7 +956,7 @@ class ByCollective : public Behaviour {
   EnumMap<MinionActivity, optional<LocalTime>> lastTimeGeneratedActivity;
   optional<LocalTime> lastTimeSetRandomTask;
 
-  WTask getStandardTask() {
+  Task* getStandardTask() {
     PROFILE;
     auto& taskMap = collective->getTaskMap();
     auto current = collective->getCurrentActivity(creature);
@@ -986,7 +986,7 @@ class ByCollective : public Behaviour {
       collective->setMinionActivity(creature, MinionActivity::IDLE);
     if (PTask ret = MinionActivities::generateDropTask(collective, creature, activity))
       return taskMap.addTaskFor(std::move(ret), creature);
-    if (WTask ret = MinionActivities::getExisting(collective, creature, activity)) {
+    if (Task* ret = MinionActivities::getExisting(collective, creature, activity)) {
       taskMap.takeTask(creature, ret);
       return ret;
     }
@@ -1004,7 +1004,7 @@ class ByCollective : public Behaviour {
   }
 
   MoveInfo normalTask() {
-    if (WTask task = collective->getTaskMap().getTask(creature))
+    if (Task* task = collective->getTaskMap().getTask(creature))
       return task->getMove(creature).orWait();
     return NoMove;
   }

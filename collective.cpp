@@ -81,13 +81,13 @@ SERIALIZABLE(Collective)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Collective)
 
-Collective::Collective(Private, WModel model, TribeId t, const optional<CollectiveName>& n,
+Collective::Collective(Private, Model* model, TribeId t, const optional<CollectiveName>& n,
     const ContentFactory* contentFactory)
     : positionMatching(makeOwner<PositionMatching>()), tribe(t), model(NOTNULL(model)), name(to_heap_optional(n)),
       villainType(VillainType::NONE), minionActivities(contentFactory) {
 }
 
-PCollective Collective::create(WModel model, TribeId tribe, const optional<CollectiveName>& name, bool discoverable,
+PCollective Collective::create(Model* model, TribeId tribe, const optional<CollectiveName>& name, bool discoverable,
     const ContentFactory* contentFactory) {
   auto ret = makeOwner<Collective>(Private {}, model, tribe, name, contentFactory);
   ret->subscribeTo(model);
@@ -295,7 +295,7 @@ const vector<Creature*>& Collective::getLeaders() const {
   return byTrait[MinionTrait::LEADER];
 }
 
-WGame Collective::getGame() const {
+Game* Collective::getGame() const {
   return model->getGame();
 }
 
@@ -311,7 +311,7 @@ Tribe* Collective::getTribe() const {
   return getGame()->getTribe(*tribe);
 }
 
-WModel Collective::getModel() const {
+Model* Collective::getModel() const {
   return model;
 }
 
@@ -660,15 +660,17 @@ void Collective::autoAssignSteeds() {
       return (leader1 && !leader2) || (leader1 == leader2 &&
           c1->getBestAttack(factory).value > c2->getBestAttack(factory).value); });
   for (auto c : minions) {
-    if (freeSteeds.empty())
-      break;
     auto steed = getSteedOrRider(c);
-    auto bestAvailable = [&]() -> Creature*{
+    auto bestAvailable = [&]() -> Creature* {
       for (int i : All(freeSteeds).reverse())
         if (c->canMount(freeSteeds[i]))
           return freeSteeds[i];
       return nullptr;
     }();
+    auto companion = c->getFirstCompanion();
+    if (!!companion && c->canMount(companion) &&
+        (!bestAvailable || companion->getBestAttack(factory).value > bestAvailable->getBestAttack(factory).value))
+      bestAvailable = companion;
     if (bestAvailable &&
         (!steed || steed->getBestAttack(factory).value < bestAvailable->getBestAttack(factory).value)) {
       setSteed(c, bestAvailable);
@@ -1089,11 +1091,11 @@ bool Collective::isKnownVillainLocation(const Collective* col) const {
   return knownVillainLocations.contains(col);
 }
 
-WConstTask Collective::getItemTask(const Item* it) const {
+const Task* Collective::getItemTask(const Item* it) const {
   return markedItems.getOrElse(it, nullptr).get();
 }
 
-void Collective::markItem(const Item* it, WConstTask task) {
+void Collective::markItem(const Item* it, const Task* task) {
   CHECK(!getItemTask(it));
   markedItems.set(it, task);
 }
@@ -1178,7 +1180,8 @@ bool Collective::hasPriorityTasks(Position pos) const {
 }
 
 void Collective::setSteed(Creature* rider, Creature* steed) {
-  CHECK(rider != steed);
+  if (!!steed && steed == rider->getFirstCompanion())
+    steed = rider;
   auto setImpl = [this] (Creature* c1, Creature* c2) {
     if (auto current = getSteedOrRider(c1))
       steedAssignments.erase(current);
@@ -1189,12 +1192,15 @@ void Collective::setSteed(Creature* rider, Creature* steed) {
   };
   if (rider)
     setImpl(rider, steed);
-  if (steed)
+  if (steed && steed != rider)
     setImpl(steed, rider);
 }
 
 Creature* Collective::getSteedOrRider(Creature* minion) {
-  return steedAssignments.getMaybe(minion).value_or(nullptr);
+  auto ret = steedAssignments.getMaybe(minion).value_or(nullptr);
+  if (ret == minion)
+    return minion->getFirstCompanion();
+  return ret;
 }
 
 static HighlightType getHighlight(const DestroyAction& action) {
@@ -1250,7 +1256,7 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
   }
   constructions->onConstructed(pos, type);
   control->onConstructed(pos, type);
-  if (WTask task = taskMap->getMarked(pos))
+  if (Task* task = taskMap->getMarked(pos))
     taskMap->removeTask(task);
   //if (canClaimSquare(pos))
   claimSquare(pos);
@@ -1291,7 +1297,7 @@ void Collective::updateConstructions() {
 
 void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, LocalTime delayTime) {
   PROFILE;
-  unordered_set<Level*, CustomHash<Level*>> levels;
+  HashSet<Level*> levels;
   for (auto& pos : enemyPos1)
     levels.insert(pos.getLevel());
   for (auto& level : levels) {
@@ -1356,7 +1362,7 @@ void Collective::fetchItems(Position pos) {
     return;
   auto items = pos.getItems();
   if (!items.empty()) {
-    unordered_map<StorageId, vector<Item*>, CustomHash<StorageId>> itemMap;
+    HashMap<StorageId, vector<Item*>> itemMap;
     for (auto it : items)
       if (!getItemTask(it))
         for (auto id : it->getStorageIds()) {
@@ -1415,7 +1421,7 @@ bool Collective::addKnownTile(Position pos) {
   if (!knownTiles->isKnown(pos)) {
     pos.setNeedsRenderAndMemoryUpdate(true);
     knownTiles->addTile(pos, getModel());
-    if (WTask task = taskMap->getMarked(pos))
+    if (Task* task = taskMap->getMarked(pos))
       if (task->isBogus())
         taskMap->removeTask(task);
     return true;
@@ -1657,7 +1663,7 @@ Furnace& Collective::getFurnace() {
 }
 
 const Furnace& Collective::getFurnace() const {
-  return *furnace;  
+  return *furnace;
 }
 
 Dancing& Collective::getDancing() {

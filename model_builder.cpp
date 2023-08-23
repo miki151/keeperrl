@@ -123,8 +123,9 @@ PModel ModelBuilder::tryCampaignSiteModel(EnemyId enemyId, VillainType type, Tri
   auto biomeId = enemyInfo[0].getBiome();
   CHECK(biomeId) << "Unimplemented enemy in campaign " << enemyId.data();
   auto& biomeInfo = contentFactory->biomeInfo.at(*biomeId);
-  addMapVillains(enemyInfo, alignment == TribeAlignment::EVIL ? biomeInfo.darkKeeperEnemies : biomeInfo.whiteKeeperEnemies);
-  return tryModel(114, enemyInfo, none, *biomeId, {});
+  if (type != VillainType::MINOR)
+    addMapVillains(enemyInfo, alignment == TribeAlignment::EVIL ? biomeInfo.darkKeeperEnemies : biomeInfo.whiteKeeperEnemies);
+  return tryModel(type == VillainType::MINOR ? 60 : 114, enemyInfo, none, *biomeId, {});
 }
 
 PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, const string& name) {
@@ -231,7 +232,7 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
     minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numTries;
 }
 
-void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, SettlementInfo& mainSettlement,
+void ModelBuilder::makeExtraLevel(Model* model, LevelConnection& connection, SettlementInfo& mainSettlement,
     StairKey upLink, vector<EnemyInfo>& extraEnemies, int depth, bool mainDungeon) {
   StairKey downLink = StairKey::getNew();
   int direction = connection.direction == LevelConnectionDir::DOWN ? 1 : -1;

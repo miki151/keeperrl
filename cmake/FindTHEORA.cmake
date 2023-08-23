@@ -1,5 +1,5 @@
 include(CMakeFindDependencyMacro)
-find_dependency(OGG)
+find_dependency(Ogg)
 
 find_path(THEORA_INCLUDE_DIR
   NAMES

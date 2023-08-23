@@ -227,7 +227,7 @@ TribeId TribeId::getShelob() {
   return TribeId(KeyType::SHELOB);
 }
 
-static unordered_map<TribeId, TribeId, CustomHash<TribeId>> serialSwitch;
+static HashMap<TribeId, TribeId> serialSwitch;
 
 void TribeId::switchForSerialization(TribeId from, TribeId to) {
   serialSwitch[from] = to;
@@ -237,7 +237,7 @@ void TribeId::clearSwitch() {
   serialSwitch.clear();
 }
 
-template <class Archive> 
+template <class Archive>
 void TribeId::serialize(Archive& ar, const unsigned int version) {
   ar(key);
   if (serialSwitch.count(*this))

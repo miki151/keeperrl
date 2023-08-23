@@ -5,9 +5,9 @@
 
 class CollectiveAttack {
   public:
-  CollectiveAttack(vector<WConstTask> attackTasks, Collective* attacker, const vector<Creature*>&,
+  CollectiveAttack(vector<const Task*> attackTasks, Collective* attacker, const vector<Creature*>&,
       optional<int> ransom = none);
-  CollectiveAttack(vector<WConstTask> attackTasks, const string& name, ViewIdList, const vector<Creature*>&);
+  CollectiveAttack(vector<const Task*> attackTasks, const string& name, ViewIdList, const vector<Creature*>&);
 
   Collective* getAttacker() const;
   const string& getAttackerName() const;

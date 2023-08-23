@@ -40,7 +40,7 @@ SERIALIZABLE(Immigration);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Immigration)
 
-static unordered_map<AttractionType, int, CustomHash<AttractionType>> empty;
+static HashMap<AttractionType, int> empty;
 
 int Immigration::getAttractionOccupation(const AttractionType& type) const {
   int res = 0;
@@ -437,7 +437,7 @@ void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositi
         if (!recruits.empty()) {
           Creature* c = recruits[0];
           collective->addCreature(c, info.getTraits());
-          WModel target = collective->getModel();
+          Model* target = collective->getModel();
           if (c->getPosition().getModel() != target)
             c->getGame()->transferCreature(c, target);
           immigrants.push_back(c);

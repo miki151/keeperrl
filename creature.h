@@ -262,7 +262,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void privateMessage(const PlayerMessage&) const;
   void addFX(const FXInfo&) const;
 
-  WController getController() const;
+  Controller* getController() const;
   void pushController(PController);
   void setController(PController);
   void popController();
@@ -333,6 +333,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   EnumSet<CreatureStatus>& getStatus();
   const EnumSet<CreatureStatus>& getStatus() const;
   vector<Creature*> getCompanions() const;
+  Creature* getFirstCompanion() const;
   void removeCompanions(int index);
   void toggleCaptureOrder();
   void setCaptureOrder(bool);
@@ -434,8 +435,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<PromotionInfo> SERIAL(promotions);
   PCreature SERIAL(steed);
   vector<pair<BuffId, GlobalTime>> SERIAL(buffs);
-  unordered_map<BuffId, int, CustomHash<BuffId>> SERIAL(buffCount);
-  unordered_map<BuffId, int, CustomHash<BuffId>> SERIAL(buffPermanentCount);
+  HashMap<BuffId, int> SERIAL(buffCount);
+  HashMap<BuffId, int> SERIAL(buffPermanentCount);
   vector<AdjectiveInfo> getLastingEffectAdjectives(const ContentFactory*, bool bad) const;
   bool removeBuff(int index, bool msg);
   bool processBuffs();

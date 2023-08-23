@@ -99,7 +99,7 @@ class Tribe {
 
   SERIALIZATION_DECL(Tribe)
 
-  typedef unordered_map<TribeId, PTribe, CustomHash<TribeId>> Map;
+  typedef HashMap<TribeId, PTribe> Map;
 
   static Map generateTribes();
 

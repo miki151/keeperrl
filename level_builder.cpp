@@ -177,7 +177,7 @@ void LevelBuilder::setNoDiagonalPassing() {
   noDiagonalPassing = true;
 }
 
-PLevel LevelBuilder::build(const ContentFactory* factory, WModel m, LevelMaker* maker, LevelId levelId) {
+PLevel LevelBuilder::build(const ContentFactory* factory, Model* m, LevelMaker* maker, LevelId levelId) {
   PROFILE;
   CHECK(!!m);
   CHECK(mapStack.empty());

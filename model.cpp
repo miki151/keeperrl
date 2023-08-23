@@ -241,11 +241,11 @@ void Model::increaseMoveCounter() {
   ++moveCounter;
 }
 
-void Model::setGame(WGame g) {
+void Model::setGame(Game* g) {
   game = g;
 }
 
-WGame Model::getGame() const {
+Game* Model::getGame() const {
   return game;
 }
 

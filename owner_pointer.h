@@ -298,9 +298,7 @@ inline void CEREAL_SAVE_FUNCTION_NAME(Archive& ar1, T* m) {
   typedef shared_ptr<T> S##T
 
 #define DEF_OWNER_PTR(T) class T;\
-  typedef OwnerPointer<T> P##T; \
-  typedef T* W##T; \
-  typedef T const* WConst##T
+  typedef OwnerPointer<T> P##T;
 
 DEF_OWNER_PTR(Item);
 DEF_UNIQUE_PTR(LevelMaker);

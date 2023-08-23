@@ -4,11 +4,12 @@
 #include "util.h"
 #include "item_type.h"
 #include "health_type.h"
+#include "lasting_or_buff.h"
 
 struct BodyMaterial {
   string SERIAL(name);
-  unordered_set<LastingOrBuff, CustomHash<LastingOrBuff>> SERIAL(intrinsicallyAffected);
-  unordered_set<LastingOrBuff, CustomHash<LastingOrBuff>> SERIAL(immuneTo);
+  HashSet<LastingOrBuff> SERIAL(intrinsicallyAffected);
+  HashSet<LastingOrBuff> SERIAL(immuneTo);
   bool SERIAL(killedByBoulder) = true;
   bool SERIAL(canCopulate) = false;
   bool SERIAL(hasBrain) = false;

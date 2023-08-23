@@ -33,7 +33,7 @@ void Workshops::Type::addDebt(CostInfo cost) {
 }
 
 void Workshops::Type::checkDebtConsistency() const {
-  unordered_map<CollectiveResourceId, int, CustomHash<CollectiveResourceId>> nowDebt;
+  HashMap<CollectiveResourceId, int> nowDebt;
   for (auto& elem : queued) {
     if (!elem.paid)
       nowDebt[options[elem.indexInWorkshop].cost.id] += options[elem.indexInWorkshop].cost.value;

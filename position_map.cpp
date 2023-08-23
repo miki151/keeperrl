@@ -137,7 +137,7 @@ void PositionMap<T>::erase(Position pos) {
 }
 
 template <class T>
-void PositionMap<T>::limitToModel(const WModel m) {
+void PositionMap<T>::limitToModel(const Model* m) {
   std::set<LevelId> goodIds;
   for (Level* l : m->getLevels())
     goodIds.insert(l->getUniqueId());
@@ -172,7 +172,7 @@ class Task;
 SERIALIZABLE_TMPL(PositionMap, UniqueEntity<Creature>::Id)
 SERIALIZABLE_TMPL(PositionMap, EnumSet<ZoneId>)
 //SERIALIZABLE_TMPL(PositionMap, HighlightType)
-//SERIALIZABLE_TMPL(PositionMap, vector<WTask>)
+//SERIALIZABLE_TMPL(PositionMap, vector<Task*>)
 SERIALIZABLE_TMPL(PositionMap, ViewIndex)
 SERIALIZABLE_TMPL(PositionMap, vector<Position>)
 SERIALIZABLE_TMPL(PositionMap, ConstructionMap::FurnitureInfo);
