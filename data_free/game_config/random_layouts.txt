@@ -958,6 +958,14 @@ End
   CellularAutomaton(Set("fog"), 0.65)
 }
 
+"fog_ruins" {
+  Position(MIDDLE, {5 5}, {
+    Border(1, Filter(Chance(0.7), Set("ruin_wall")))
+    Set("set_territory")
+  })
+  CellularAutomaton(Set("fog"), 0.65)
+}
+
 "shelob" {
   CellularAutomaton(Reset("floor", "spider_web"), 0.65)
   Set("connect")

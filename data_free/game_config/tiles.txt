@@ -206,6 +206,7 @@ Connections("map_swamp")
 { "map_ents" "@" ColorId LIGHT_BROWN }
 { "map_hydra" "H" ColorId PURPLE }
 { "map_dragon" "D" ColorId RED }
+{ "map_green_dragon" "D" ColorId GREEN }
 { "map_adoxie" ">" ColorId PURPLE }
 { "map_white_dragon" ">" ColorId GRAY }
 { "map_tower1" "|" ColorId GRAY }

@@ -717,8 +717,9 @@ End
 }
 "GREEN_DRAGON"
 {
+  biome = "SWAMP"
   settlement = {
-    type = Builtin CAVE "DUNGEON"
+    type = RandomLayout { "fog_ruins" { 20 20 } "default"}
     inhabitants = {
       leader = { { "GREEN_DRAGON" } }
     }
