@@ -664,6 +664,7 @@ End
 }
 "RED_DRAGON"
 {
+  biome = "MOUNTAIN"
   settlement = {
     type = RandomLayout { "lava_cave" { 30 30 } "dragon" }
     inhabitants = {
