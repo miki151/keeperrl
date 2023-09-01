@@ -287,7 +287,7 @@ void MinionEquipment::autoAssign(const Creature* creature, vector<Item*> possibl
         }
         CHECK(tryToOwn(creature, it));
         slots[slot].push_back(it);
-        break;
+        //break;
       }
   }
 }

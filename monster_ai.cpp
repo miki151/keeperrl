@@ -897,22 +897,22 @@ class ByCollective : public Behaviour {
     return NoMove;
   }
 
+  MoveInfo equipOwnedItems() {
+    auto& minionEquipment = collective->getMinionEquipment();
+    for (Item* it : creature->getEquipment().getItems())
+      if (!creature->getEquipment().isEquipped(it) && minionEquipment.isOwner(it, creature) &&
+          creature->canEquipIfEmptySlot(it))
+        return creature->equip(it);
+    return NoMove;
+  }
+
   PTask getEquipmentTask() {
     if (!collective->usesEquipment(creature))
       return nullptr;
-    auto& minionEquipment = collective->getMinionEquipment();
-    if (!collective->hasTrait(creature, MinionTrait::NO_AUTO_EQUIPMENT) && Random.roll(40)) {
-      auto items = collective->getAllItems(ItemIndex::MINION_EQUIPMENT, false).filter([&](auto item) {
-        auto g = item->getEquipmentGroup();
-        return item->getAutoEquipPredicate().apply(creature, nullptr) && (!g || collective->canUseEquipmentGroup(creature, *g));
-      });
-      minionEquipment.autoAssign(creature, items);
-    }
+    if (!collective->hasTrait(creature, MinionTrait::NO_AUTO_EQUIPMENT) && Random.roll(40))
+      collective->autoAssignEquipment(creature);
     vector<PTask> tasks;
-    for (Item* it : creature->getEquipment().getItems())
-      if (!creature->getEquipment().isEquipped(it) && minionEquipment.isOwner(it, creature) &&
-          creature->getEquipment().canEquip(it, creature))
-        tasks.push_back(Task::equipItem(it));
+    auto& minionEquipment = collective->getMinionEquipment();
     {
       PROFILE_BLOCK("tasks assignment");
       for (Position v : collective->getConstructions().getAllStoragePositions()) {
@@ -1065,6 +1065,7 @@ class ByCollective : public Behaviour {
       return getFighterMove();
     considerHealingActivity();
     return getFirstGoodMove(
+        bindMethod(&ByCollective::equipOwnedItems, this),
         bindMethod(&ByCollective::getFighterMove, this),
         bindMethod(&ByCollective::priorityTask, this),
         bindMethod(&ByCollective::steedOrRider, this),

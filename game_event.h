@@ -102,7 +102,7 @@ namespace EventInfo {
     optional<Vec2> direction = none;
   };
 
-  struct ItemsEquipped {
+  struct ItemsOwned {
     Creature* creature = nullptr;
     vector<Item*> items;
   };
@@ -146,7 +146,7 @@ namespace EventInfo {
   X(LeaderWounded, 13)\
   X(TrapDisarmed, 14)\
   X(FurnitureRemoved, 15)\
-  X(ItemsEquipped, 16)\
+  X(ItemsOwned, 16)\
   X(CreatureEvent, 17)\
   X(VisibilityChanged, 18)\
   X(RetiredGame, 19)\

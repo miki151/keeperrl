@@ -23,6 +23,7 @@
 #include "tech_id.h"
 #include "scripted_help_info.h"
 #include "keybinding.h"
+#include "player_info_action.h"
 
 class PlayerMessage;
 class SpecialTrait;
@@ -164,14 +165,7 @@ class PlayerInfo {
     LEADER
   };
   optional<ControlMode> HASH(controlMode);
-  enum Action {
-    CONTROL,
-    RENAME,
-    BANISH,
-    DISASSEMBLE,
-    CONSUME,
-    LOCATE
-  };
+  using Action = PlayerInfoAction;
   optional<EnumSet<TeamOrder>> HASH(teamOrders);
   vector<Action> HASH(actions);
   vector<TeamMemberAction> HASH(teamMemberActions);

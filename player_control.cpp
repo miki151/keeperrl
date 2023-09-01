@@ -1188,19 +1188,21 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
       fillSteedInfo(c, minionInfo);
       fillEquipment(c, minionInfo);
       if (canControlSingle(c) && !c->getRider())
-        minionInfo.actions.push_back(PlayerInfo::CONTROL);
+        minionInfo.actions.push_back(PlayerInfo::Action::CONTROL);
       if (!collective->hasTrait(c, MinionTrait::PRISONER)) {
-        minionInfo.actions.push_back(PlayerInfo::RENAME);
+        minionInfo.actions.push_back(PlayerInfo::Action::RENAME);
       } else
         minionInfo.experienceInfo.limit.clear();
       auto& leaders = collective->getLeaders();
       if (c->isAutomaton())
-        minionInfo.actions.push_back(PlayerInfo::DISASSEMBLE);
+        minionInfo.actions.push_back(PlayerInfo::Action::DISASSEMBLE);
       else if (leaders.size() > 1 || !collective->hasTrait(c, MinionTrait::LEADER))
-        minionInfo.actions.push_back(PlayerInfo::BANISH);
+        minionInfo.actions.push_back(PlayerInfo::Action::BANISH);
       if (c->isAffected(BuffId("CONSUMPTION_SKILL")))
-        minionInfo.actions.push_back(PlayerInfo::CONSUME);
-      minionInfo.actions.push_back(PlayerInfo::LOCATE);
+        minionInfo.actions.push_back(PlayerInfo::Action::CONSUME);
+      minionInfo.actions.push_back(PlayerInfo::Action::LOCATE);
+      if (collective->usesEquipment(c))
+        minionInfo.actions.push_back(PlayerInfo::Action::ASSIGN_EQUIPMENT);
     }
   }
   return minions;
@@ -2107,10 +2109,11 @@ void PlayerControl::onEvent(const GameEvent& event) {
         if (getCreatures().contains(info.creature))
           updateMinionVisibility(info.creature);
       },
-      [&](const ItemsEquipped& info) {
-        if (info.creature->isPlayer() &&
+      [&](const ItemsOwned& info) {
+        if (getCreatures().contains(info.creature) &&
             !collective->getMinionEquipment().tryToOwn(info.creature, info.items.getOnlyElement()))
-          getView()->presentText("", "Item won't be permanently assigned to creature because the equipment slot is locked.");
+          getView()->presentText("",
+              "Item won't be permanently assigned to creature because the equipment slot is locked.");
       },
       [&](const WonGame&) {
         getGame()->conquered(*collective->getName()->shortened, collective->getKills().getSize(),
@@ -2825,7 +2828,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       }
       else
         setChosenTeam(none);
-      break;
+    break;
     }
     case UserInputId::EQUIPMENT_GROUP_ACTION:
       equipmentGroupAction(input.get<EquipmentGroupAction>());
@@ -2845,39 +2848,43 @@ void PlayerControl::processInput(View* view, UserInput input) {
       }
       break;
     }
-    case UserInputId::CREATURE_CONTROL:
-      if (Creature* c = getCreature(input.get<Creature::Id>())) {
-        if (getChosenTeam() && getTeams().exists(*getChosenTeam())) {
-          getTeams().setLeader(*getChosenTeam(), c);
-          commandTeam(*getChosenTeam());
-        } else
-          controlSingle(c);
-        chosenCreature = none;
-        setChosenTeam(none);
-      }
+    case UserInputId::MINION_ACTION: {
+      auto info = input.get<MinionActionInfo>();
+      if (Creature* c = getCreature(info.id))
+        switch (info.action) {
+          case PlayerInfo::Action::CONTROL:
+            if (getChosenTeam() && getTeams().exists(*getChosenTeam())) {
+              getTeams().setLeader(*getChosenTeam(), c);
+              commandTeam(*getChosenTeam());
+            } else
+              controlSingle(c);
+            chosenCreature = none;
+            setChosenTeam(none);
+            break;
+          case PlayerInfo::Action::RENAME:
+            if (auto name = getView()->getText("Rename minion", c->getName().first().value_or(""), maxFirstNameLength))
+             c->getName().setFirst(*name);
+            break;
+          case PlayerInfo::Action::CONSUME:
+            if (auto creatureId = getView()->chooseCreature("Choose minion to absorb",
+                getConsumptionTargets(c).transform(
+                    [&] (const Creature* c) { return PlayerInfo(c, getGame()->getContentFactory());}), "Cancel"))
+              if (Creature* consumed = getCreature(*creatureId))
+                collective->setTask(c, Task::consume(consumed));
+            break;
+          case PlayerInfo::Action::LOCATE:
+            setScrollPos(c->getPosition());
+            break;
+          case PlayerInfo::Action::BANISH:
+          case PlayerInfo::Action::DISASSEMBLE:
+            handleBanishing(c);
+            break;
+          case PlayerInfo::Action::ASSIGN_EQUIPMENT:
+            collective->autoAssignEquipment(c);
+            break;
+        }
       break;
-    case UserInputId::CREATURE_RENAME:
-      if (Creature* c = getCreature(input.get<Creature::Id>()))
-        if (auto name = getView()->getText("Rename minion", c->getName().first().value_or(""), maxFirstNameLength))
-           c->getName().setFirst(*name);
-      break;
-    case UserInputId::CREATURE_CONSUME:
-      if (Creature* c = getCreature(input.get<Creature::Id>())) {
-        if (auto creatureId = getView()->chooseCreature("Choose minion to absorb",
-            getConsumptionTargets(c).transform(
-                [&] (const Creature* c) { return PlayerInfo(c, getGame()->getContentFactory());}), "Cancel"))
-          if (Creature* consumed = getCreature(*creatureId))
-            collective->setTask(c, Task::consume(consumed));
-      }
-      break;
-    case UserInputId::CREATURE_LOCATE:
-      if (Creature* c = getCreature(input.get<Creature::Id>()))
-        setScrollPos(c->getPosition());
-      break;
-    case UserInputId::CREATURE_BANISH:
-      if (Creature* c = getCreature(input.get<Creature::Id>()))
-        handleBanishing(c);
-      break;
+    }
     case UserInputId::AI_TYPE:
       minionAIAction(input.get<AIActionInfo>());
       break;

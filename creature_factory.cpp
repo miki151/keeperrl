@@ -521,7 +521,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
     if (from->getDebt().getAmountOwed(creature) <= 0)
       debtors.erase(from);
   }
-  
+
   void onEvent(const GameEvent& event) {
     using namespace EventInfo;
     event.visit<void>(

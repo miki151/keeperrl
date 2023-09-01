@@ -1650,6 +1650,15 @@ const MinionEquipment& Collective::getMinionEquipment() const {
   return *minionEquipment;
 }
 
+void Collective::autoAssignEquipment(Creature* creature) {
+  auto items = getAllItems(ItemIndex::MINION_EQUIPMENT, false).filter([&](auto item) {
+    auto g = item->getEquipmentGroup();
+    return item->getAutoEquipPredicate().apply(creature, nullptr) && (!g || canUseEquipmentGroup(creature, *g));
+  });
+  minionEquipment->autoAssign(creature, items);
+}
+
+
 Workshops& Collective::getWorkshops() {
   return *workshops;
 }

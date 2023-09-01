@@ -23,6 +23,7 @@
 #include "entity_set.h"
 #include "team_member_action.h"
 #include "tech_id.h"
+#include "player_info_action.h"
 
 class PlayerMessage;
 
@@ -59,11 +60,7 @@ enum class UserInputId {
   CREATURE_EQUIPMENT_ACTION,
   EQUIPMENT_GROUP_ACTION,
   CREATURE_PROMOTE,
-  CREATURE_CONTROL,
-  CREATURE_RENAME,
-  CREATURE_BANISH,
-  CREATURE_CONSUME,
-  CREATURE_LOCATE,
+  MINION_ACTION,
   CREATURE_DRAG_DROP,
   CREATURE_DRAG,
   IMMIGRANT_ACCEPT,
@@ -202,24 +199,27 @@ struct EquipmentGroupAction {
   unordered_set<string> flip;
 };
 
+struct MinionActionInfo {
+  UniqueEntity<Creature>::Id id;
+  PlayerInfoAction action;
+};
+
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, TeamGroupInfo, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, CreatureDropInfo, CreatureGroupDropInfo, TeamDropInfo,
     string, TechId, TeamMemberActionInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo,
-    WorkshopCountInfo, AIActionInfo, PromotionActionInfo, EquipmentGroupAction),
+    WorkshopCountInfo, AIActionInfo, PromotionActionInfo, EquipmentGroupAction, MinionActionInfo),
         ASSIGN(BuildingClickInfo,
             UserInputId::RECT_SELECTION,
             UserInputId::RECT_CONFIRM),
+        ASSIGN(MinionActionInfo,
+          UserInputId::MINION_ACTION
+        ),
         ASSIGN(UniqueEntity<Creature>::Id,
             UserInputId::CREATURE_BUTTON,
             UserInputId::CREATE_TEAM,
-            UserInputId::CREATURE_CONTROL,
-            UserInputId::CREATURE_BANISH,
-            UserInputId::CREATURE_CONSUME,
-            UserInputId::CREATURE_LOCATE,
             UserInputId::CREATURE_DRAG,
-            UserInputId::GO_TO_ENEMY,
-            UserInputId::CREATURE_RENAME
+            UserInputId::GO_TO_ENEMY
         ),
         ASSIGN(PromotionActionInfo,
             UserInputId::CREATURE_PROMOTE

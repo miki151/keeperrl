@@ -4165,33 +4165,32 @@ SGuiElem GuiBuilder::drawMinionActions(const PlayerInfo& minion, const optional<
   const bool tutorialHighlight = tutorial && tutorial->highlights.contains(TutorialHighlight::CONTROL_TEAM);
   for (auto action : Iter(minion.actions)) {
     auto focusCallback = [this, action]{ return minionPageIndex == MinionPageElems::MinionAction{action.index()};};
+    auto input = UserInput{UserInputId::MINION_ACTION, MinionActionInfo{minion.creatureId, *action}};
     switch (*action) {
-      case PlayerInfo::CONTROL: {
-        auto callback = getButtonCallback({UserInputId::CREATURE_CONTROL, minion.creatureId});
+      case PlayerInfo::Action::CONTROL: {
+        auto callback = getButtonCallback(input);
         line.addElem(tutorialHighlight
             ? WL(buttonLabelBlink, "Control", callback, focusCallback, false, true)
             : WL(buttonLabelFocusable, "Control", callback, focusCallback, false, true));
         break;
       }
-      case PlayerInfo::RENAME:
-        line.addElem(WL(buttonLabelFocusable, "Rename",
-            getButtonCallback({UserInputId::CREATURE_RENAME, minion.creatureId}), focusCallback, false, true));
+      case PlayerInfo::Action::RENAME:
+        line.addElem(WL(buttonLabelFocusable, "Rename", getButtonCallback(input), focusCallback, false, true));
         break;
-      case PlayerInfo::BANISH:
-        line.addElem(WL(buttonLabelFocusable, "Banish",
-            getButtonCallback({UserInputId::CREATURE_BANISH, minion.creatureId}), focusCallback, false, true));
+      case PlayerInfo::Action::BANISH:
+        line.addElem(WL(buttonLabelFocusable, "Banish", getButtonCallback(input), focusCallback, false, true));
         break;
-      case PlayerInfo::DISASSEMBLE:
-        line.addElem(WL(buttonLabelFocusable, "Disassemble",
-            getButtonCallback({UserInputId::CREATURE_BANISH, minion.creatureId}), focusCallback, false, true));
+      case PlayerInfo::Action::DISASSEMBLE:
+        line.addElem(WL(buttonLabelFocusable, "Disassemble", getButtonCallback(input), focusCallback, false, true));
         break;
-      case PlayerInfo::CONSUME:
-        line.addElem(WL(buttonLabelFocusable, "Absorb",
-            getButtonCallback({UserInputId::CREATURE_CONSUME, minion.creatureId}), focusCallback, false, true));
+      case PlayerInfo::Action::CONSUME:
+        line.addElem(WL(buttonLabelFocusable, "Absorb", getButtonCallback(input), focusCallback, false, true));
         break;
-      case PlayerInfo::LOCATE:
-        line.addElem(WL(buttonLabelFocusable, "Locate",
-            getButtonCallback({UserInputId::CREATURE_LOCATE, minion.creatureId}), focusCallback, false, true));
+      case PlayerInfo::Action::LOCATE:
+        line.addElem(WL(buttonLabelFocusable, "Locate", getButtonCallback(input), focusCallback, false, true));
+            break;
+      case PlayerInfo::Action::ASSIGN_EQUIPMENT:
+        line.addElem(WL(buttonLabelFocusable, "Assign gear", getButtonCallback(input), focusCallback, false, true));
             break;
     }
     line.addSpace(buttonSpacing);

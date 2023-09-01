@@ -521,6 +521,8 @@ void Creature::takeItems(vector<PItem> items, Creature* from) {
   vector<Item*> ref = getWeakPointers(items);
   equipment->addItems(std::move(items), this);
   getController()->onItemsGiven(ref, from);
+  if (auto game = getGame())
+    game->addEvent(EventInfo::ItemsOwned{this, ref});
 }
 
 void Creature::you(MsgType type, const string& param) const {
@@ -783,7 +785,7 @@ CreatureAction Creature::equip(Item* item, const ContentFactory* factory) const 
     thirdPerson(getName().the() + " equips " + item->getAName());
     self->equipment->equip(item, slot, self, factory ? factory : getGame()->getContentFactory());
     if (auto game = getGame())
-      game->addEvent(EventInfo::ItemsEquipped{self, {item}});
+      game->addEvent(EventInfo::ItemsOwned{self, {item}});
     //self->spendTime();
   });
   vector<Item*> toUnequip;

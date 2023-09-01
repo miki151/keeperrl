@@ -181,6 +181,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   MinionEquipment& getMinionEquipment();
   const MinionEquipment& getMinionEquipment() const;
+  void autoAssignEquipment(Creature*);
   optional<FurnitureType> getMissingTrainingFurniture(const Creature*, ExperienceType) const;
 
   Workshops& getWorkshops();
