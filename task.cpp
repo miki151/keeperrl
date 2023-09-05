@@ -815,13 +815,15 @@ PTask Task::attackCreatures(vector<Creature*> c) {
   return makeOwner<AttackCreatures>(std::move(c));
 }
 
-PTask Task::stealFrom(Collective* collective) {
+PTask Task::stealFrom(Collective* collective, CollectiveResourceId id) {
   vector<PTask> tasks;
-  for (Position pos : collective->getConstructions().getBuiltPositions(FurnitureType("TREASURE_CHEST"))) {
-    vector<Item*> gold = pos.getItems().filter(Item::classPredicate(ItemClass::GOLD));
-    if (!gold.empty())
-      tasks.push_back(pickUpItem(pos, gold));
-  }
+  auto& info = collective->getResourceInfo(id);
+  for (auto storageId : info.storage)
+    for (auto& pos : collective->getStoragePositions(storageId)) {
+      vector<Item*> gold = pos.getItems(id);
+      if (!gold.empty())
+        tasks.push_back(pickUpItem(pos, gold));
+    }
   if (!tasks.empty())
     return chain(std::move(tasks));
   else

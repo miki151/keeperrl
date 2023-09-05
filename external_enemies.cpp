@@ -66,8 +66,8 @@ PTask ExternalEnemies::getAttackTask(Collective* enemy, AttackBehaviour behaviou
       [&](KillMembers t) {
         return Task::killFighters(enemy, t.count);
       },
-      [&](StealGold) {
-        return Task::stealFrom(enemy);
+      [&](StealResource r) {
+        return Task::stealFrom(enemy, r);
       },
       [&](CampAndSpawn t) {
         return Task::campAndSpawn(enemy, t, Random.get(3, 7));

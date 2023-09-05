@@ -87,7 +87,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask attackCreatures(vector<Creature*>);
   static PTask campAndSpawn(Collective* target, const CreatureList&, int numAttacks);
   static PTask killFighters(Collective*, int numFighters);
-  static PTask stealFrom(Collective*);
+  static PTask stealFrom(Collective*, CollectiveResourceId);
   static PTask consumeItem(WTaskCallback, vector<Item*> items);
   static PTask copulate(WTaskCallback, Creature* target, int numTurns);
   static PTask consume(Creature* target);

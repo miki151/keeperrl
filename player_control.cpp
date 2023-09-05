@@ -934,8 +934,8 @@ string PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
       [&](const EnemyPopulation&) {
         return "population";
       },
-      [&](const Gold&) {
-        return "gold";
+      [&](const Resource& r) {
+        return collective->getResourceInfo(r.resource).name;
       },
       [&](const StolenItems&) {
         return "item theft";

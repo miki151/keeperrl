@@ -39,8 +39,8 @@ PTask VillageBehaviour::getAttackTask(VillageControl* self) const {
       [&](KillMembers t) {
         return Task::killFighters(enemy, t.count);
       },
-      [&](StealGold) {
-        if (auto ret = Task::stealFrom(enemy))
+      [&](StealResource r) {
+        if (auto ret = Task::stealFrom(enemy, r))
           return ret;
         else if (!enemy->getLeaders().empty())
           return Task::attackCreatures(enemy->getLeaders());
@@ -176,8 +176,8 @@ double VillageBehaviour::getTriggerValue(const AttackTrigger& trigger, const Vil
           return populationMaxProb * populationFun(
               enemy->getPopulationSize(), t.value);
         },
-        [&](const Gold& t) {
-          return goldMaxProb * goldFun(enemy->numResource(CollectiveResourceId("GOLD")), t.value);
+        [&](const Resource& r) {
+          return goldMaxProb * goldFun(enemy->numResource(r.resource), r.value);
         },
         [&](const StolenItems&) {
           return stolenMaxProb * stolenItemsFun(self->stolenItemCount);

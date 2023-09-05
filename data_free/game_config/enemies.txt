@@ -248,8 +248,8 @@ End
     ambushChance = 0.1
     minPopulation = 0
     minTeamSize = 8
-    triggers = {Gold 500}
-    attackBehaviour = StealGold
+    triggers = {Resource "GOLD" 500}
+    attackBehaviour = StealResource "GOLD"
     ransom = 0.5 80
   }
   createOnBones = 0.1 { "DWARVES" "VILLAGE" }
@@ -1296,8 +1296,8 @@ End
     ambushChance = 0.05
     minPopulation = 0
     minTeamSize = 3
-    triggers = {Gold 500}
-    attackBehaviour = StealGold
+    triggers = {Resource "GOLD" 500}
+    attackBehaviour = StealResource "GOLD"
     ransom = 0.5 80
   }
 }
@@ -1334,8 +1334,8 @@ End
     ambushChance = 0.1
     minPopulation = 0
     minTeamSize = 3
-    triggers = {Gold 500}
-    attackBehaviour = StealGold
+    triggers = {Resource "GOLD" 500}
+    attackBehaviour = StealResource "GOLD"
     ransom = 0.5 80
   }
   createOnBones = 0.1 { "KOBOLD_CAVE" }
@@ -2869,12 +2869,12 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
   behaviour = {
     minPopulation = 0
     minTeamSize = 3
-    triggers = {Gold 500}
-    attackBehaviour = StealGold
+    triggers = {Resource "GOLD" 500}
+    attackBehaviour = StealResource "GOLD"
     ransom = 0.5 80
   }
   createOnBones = 0.1 { "KOBOLD_CAVE" }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "ORC" }
       traits = { FIGHTER }
