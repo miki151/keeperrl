@@ -2434,6 +2434,7 @@ void PlayerControl::toggleControlAllTeamMembers() {
     auto members = getTeams().getMembers(*teamId);
     if (members.size() > 1) {
       if (getControlled().size() == 1) {
+        getGame()->addAnalytics("fullCtrl", toString(members.size()));
         for (auto c : members)
           if (!c->isPlayer() && canControlInTeam(c))
             c->pushController(createMinionController(c));

@@ -2737,8 +2737,8 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
     SGuiElem guiElem = line.buildHorizontalList();
     if (elem.tutorialHighlight)
       guiElem = WL(stack, WL(tutorialHighlight), std::move(guiElem));
-    auto tooltip = rawTooltip(elem, none, options[itemIndex].creatureInfo, itemIndex + THIS_LINE,
-        options[itemIndex].maxUpgrades);
+    auto tooltip = rawTooltip(elem, elem.unavailable ? elem.unavailableReason : optional<string>(),
+        options[itemIndex].creatureInfo, itemIndex + THIS_LINE, options[itemIndex].maxUpgrades);
     if (elem.unavailable) {
       CHECK(!elem.unavailableReason.empty());
       guiElem = WL(stack, createTooltip(tooltip, false), std::move(guiElem));
