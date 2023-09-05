@@ -348,7 +348,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
             return true;
         return false;
       };
-      if (campaign.isGoodStartPos(pos) && hasAnyVillain()) {
+      if ((campaign.isGoodStartPos(pos) && hasAnyVillain()) || type == CampaignType::QUICK_MAP) {
         setPlayerPos(campaign, pos, avatarInfo.playerCreature->getMaxViewIdUpgrade());
         campaign.originalPlayerPos = pos;
         break;
