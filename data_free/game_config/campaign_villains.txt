@@ -6,6 +6,7 @@ EVIL_COTTAGES {
   {{"map_house1"} {"lizardman"} "LIZARDMEN_COTTAGE" "Cottage" MINOR}
   {{"map_house_elf"} {"elf"} "ELVEN_COTTAGE" "Cottage" MINOR}
   {{"map_dungeon2"} {"dwarf"} "DWARF_CAVE" "Cave" MINOR}
+  {{"map_guard_house1"} {"knight"} "GUARD_POST" "Guard post" MINOR}
 }
 
 LAWFUL_COTTAGES {
