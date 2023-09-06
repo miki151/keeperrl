@@ -39,10 +39,11 @@
 #include "enemy_aggression_level.h"
 #include "immigrant_info.h"
 #include "item.h"
+#include "team_order.h"
 
 SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl)
 
-SERIALIZE_DEF(VillageControl, SUBCLASS(CollectiveControl), SUBCLASS(EventListener), behaviour, victims, myItems, stolenItemCount, attackSizes, entries, maxEnemyPower)
+SERIALIZE_DEF(VillageControl, SUBCLASS(CollectiveControl), SUBCLASS(EventListener), behaviour, victims, myItems, stolenItemCount, attackSizes, entries, maxEnemyPower, cancelledAttacks)
 REGISTER_TYPE(ListenerTemplate<VillageControl>)
 
 VillageControl::VillageControl(Private, Collective* col, optional<VillageBehaviour> v) : CollectiveControl(col),
@@ -195,6 +196,8 @@ void VillageControl::launchAttack(vector<Creature*> attackers) {
       ransom = max<int>(behaviour->ransom->second,
           (Random.getDouble(behaviour->ransom->first * 0.6, behaviour->ransom->first)) * hisGold);
     TeamId team = collective->getTeams().create(attackers);
+    if (behaviour->isAttackBehaviourNonChasing())
+      collective->getTeams().setTeamOrder(team, TeamOrder::FLEE, true);
     collective->getTeams().activate(team);
     collective->freeTeamMembers(attackers);
     vector<const Task*> attackTasks;
@@ -301,17 +304,22 @@ void VillageControl::launchAllianceAttack(vector<Collective*> allies) {
 
 void VillageControl::considerCancellingAttack() {
   if (auto enemyCollective = getEnemyCollective())
-    for (auto team : collective->getTeams().getAll()) {
-      vector<Creature*> members = collective->getTeams().getMembers(team);
-      if (members.size() < (attackSizes[team] + 1) / 2 || (members.size() == 1 &&
-            members[0]->getBody().isSeriouslyWounded())) {
-        for (Creature* c : members)
-          collective->freeFromTask(c);
-        collective->getTeams().cancel(team);
-        if (auto& name = collective->getName())
-          enemyCollective->addRecordedEvent("resisting the attack of " + name->full);
+    for (auto team : collective->getTeams().getAll())
+      if (!cancelledAttacks.count(team)) {
+        vector<Creature*> members = collective->getTeams().getMembers(team);
+        if (members.size() < (attackSizes[team] + 1) / 2 || (members.size() == 1 &&
+              members[0]->getBody().isSeriouslyWounded())) {
+          for (Creature* c : members)
+            collective->setTask(c, Task::chain(
+                Task::transferTo(collective->getModel()),
+                Task::goTo(Random.choose(collective->getTerritory().getAll()))
+            ));
+          collective->getTeams().setTeamOrder(team, TeamOrder::FLEE, true);
+          if (auto& name = collective->getName())
+            enemyCollective->addRecordedEvent("resisting the attack of " + name->full);
+          cancelledAttacks.insert(team);
+        }
       }
-    }
 }
 
 void VillageControl::onRansomPaid() {

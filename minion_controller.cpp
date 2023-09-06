@@ -55,7 +55,7 @@ class MinionController : public Player {
     if (auto team = control->getCurrentTeam()) {
       info.teamOrders.emplace();
       for (auto order : ENUM_ALL(TeamOrder))
-        if (control->getTeams().hasTeamOrder(*team, creature, order))
+        if (control->getTeams().hasTeamOrder(*team, order))
           info.teamOrders->insert(order);
         else
           info.teamOrders->erase(order);
@@ -100,8 +100,8 @@ class MinionController : public Player {
       case UserInputId::TOGGLE_TEAM_ORDER: {
         if (auto team = control->getCurrentTeam()) {
           auto order = input.get<TeamOrder>();
-          bool was = control->getTeams().hasTeamOrder(*team, creature, order);
-          control->getTeams().setTeamOrder(*team, creature, order, !was);
+          bool was = control->getTeams().hasTeamOrder(*team, order);
+          control->getTeams().setTeamOrder(*team, order, !was);
         }
         return true;
       }

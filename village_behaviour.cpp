@@ -11,6 +11,7 @@
 #include "construction_map.h"
 #include "villain_type.h"
 #include "attack_behaviour.h"
+#include "territory.h"
 
 SERIALIZE_DEF(VillageBehaviour, NAMED(minPopulation), NAMED(minTeamSize), OPTION(triggers), NAMED(attackBehaviour), OPTION(ransom), OPTION(ambushChance))
 
@@ -30,9 +31,16 @@ PTask getKillLeaderTask(Collective* enemy) {
     return Task::killFighters(enemy, 1000);
 }
 
+bool VillageBehaviour::isAttackBehaviourNonChasing() const {
+  return attackBehaviour->visit<bool>(
+      [&](StealResource r) { return true; },
+      [&](auto&) { return false; }
+  );
+}
+
 PTask VillageBehaviour::getAttackTask(VillageControl* self) const {
   Collective* enemy = self->getEnemyCollective();
-  return attackBehaviour->visit<PTask>(
+  auto task = attackBehaviour->visit<PTask>(
       [&](KillLeader) {
         return getKillLeaderTask(enemy);
       },
@@ -54,6 +62,11 @@ PTask VillageBehaviour::getAttackTask(VillageControl* self) const {
         FATAL << "Not handled";
         return PTask();
       }
+  );
+  return Task::chain(
+      std::move(task),
+      Task::transferTo(self->collective->getModel()),
+      Task::goTo(Random.choose(self->collective->getTerritory().getAll()))
   );
 }
 
@@ -116,7 +129,7 @@ static double goldFun(int gold, int minGold) {
 static double stolenItemsFun(int numStolen) {
   if (!numStolen)
     return 0;
-  else 
+  else
     return 1.0;
 }
 

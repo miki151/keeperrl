@@ -72,5 +72,6 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
   void healAllCreatures();
   bool isEnemy() const;
   vector<Creature*> getAttackers() const;
+  unordered_set<TeamId> SERIAL(cancelledAttacks);
 };
 

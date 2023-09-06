@@ -841,8 +841,8 @@ class ByCollective : public Behaviour {
   MoveInfo getFighterMove() {
     auto& teams = collective->getTeams();
     if (auto currentTeam = getActiveTeam())
-      if (teams.hasTeamOrder(*currentTeam, creature, TeamOrder::FLEE) ||
-          teams.hasTeamOrder(*currentTeam, creature, TeamOrder::STAND_GROUND)) {
+      if (teams.hasTeamOrder(*currentTeam, TeamOrder::FLEE) ||
+          teams.hasTeamOrder(*currentTeam, TeamOrder::STAND_GROUND)) {
         return fighter->getMove(false);
       }
     return fighter->getMove(true);
@@ -882,7 +882,7 @@ class ByCollective : public Behaviour {
   MoveInfo followTeamLeader() {
     auto& teams = collective->getTeams();
     if (auto team = getActiveTeam()) {
-      if (!teams.hasTeamOrder(*team, creature, TeamOrder::STAND_GROUND)) {
+      if (!teams.hasTeamOrder(*team, TeamOrder::STAND_GROUND)) {
         const Creature* leader = teams.getLeader(*team);
         if (creature != leader) {
           if (leader->getPosition().dist8(creature->getPosition()).value_or(2) > 1 &&
