@@ -117,13 +117,10 @@ vector<const Task*> TaskMap::getAllTasks() const {
   return tasks.transform([] (const PTask& t) -> const Task* { return t.get(); });
 }
 
-void TaskMap::setPriorityTasks(Position pos) {
-  for (Task* t : getTasks(pos)) {
-    if (auto activity = activityByTask.getMaybe(t))
-      priorityTaskByActivity[*activity].insertIfDoesntContain(t);
-    priorityTasks.insert(t);
-  }
-  pos.setNeedsRenderUpdate(true);
+void TaskMap::setPriorityTask(Task* task) {
+  if (auto activity = activityByTask.getMaybe(task))
+    priorityTaskByActivity[*activity].insertIfDoesntContain(task);
+  priorityTasks.insert(task);
 }
 
 Task* TaskMap::addTaskCost(PTask task, Position position, CostInfo cost, MinionActivity activity) {

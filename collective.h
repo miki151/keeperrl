@@ -77,6 +77,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   const ResourceInfo& getResourceInfo(ResourceId) const;
   void addNewCreatureMessage(const vector<Creature*>&);
   void setTask(Creature*, PTask);
+  void setPriorityTask(Creature*, PTask);
   bool hasTask(const Creature*) const;
   void freeFromTask(const Creature*);
   void banishCreature(Creature*);

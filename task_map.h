@@ -37,7 +37,7 @@ class TaskMap {
   CostInfo freeFromTask(const Creature*);
   bool isPriorityTask(const Task*) const;
   bool hasPriorityTasks(Position) const;
-  void setPriorityTasks(Position);
+  void setPriorityTask(Task*);
   Task* getClosestTask(const Creature*, MinionActivity, bool priorityOnly, const Collective*) const;
   const EntityMap<Task, CostInfo>& getCompletionCosts() const;
   Task* getTask(UniqueEntity<Task>::Id) const;

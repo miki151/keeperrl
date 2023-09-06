@@ -409,6 +409,11 @@ bool Collective::isConquered() const {
   return config->isConquered(this);
 }
 
+void Collective::setPriorityTask(Creature* c, PTask task) {
+  returnResource(taskMap->freeFromTask(c));
+  taskMap->setPriorityTask(taskMap->addTaskFor(std::move(task), c));
+}
+
 void Collective::setTask(Creature* c, PTask task) {
   returnResource(taskMap->freeFromTask(c));
   taskMap->addTaskFor(std::move(task), c);
@@ -1172,7 +1177,9 @@ void Collective::cancelMarkedTask(Position pos) {
 }
 
 void Collective::setPriorityTasks(Position pos) {
-  taskMap->setPriorityTasks(pos);
+  for (Task* t : taskMap->getTasks(pos))
+    taskMap->setPriorityTask(t);
+  pos.setNeedsRenderUpdate(true);
 }
 
 bool Collective::hasPriorityTasks(Position pos) const {

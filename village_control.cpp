@@ -204,7 +204,7 @@ void VillageControl::launchAttack(vector<Creature*> attackers) {
     for (Creature* c : attackers) {
       auto task = Task::withTeam(collective, team, behaviour->getAttackTask(this));
       attackTasks.push_back(task.get());
-      collective->setTask(c, std::move(task));
+      collective->setPriorityTask(c, std::move(task));
     }
     enemy->getControl()->addAttack(CollectiveAttack(std::move(attackTasks), collective, attackers, ransom));
     attackSizes[team] = attackers.size();

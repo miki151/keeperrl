@@ -824,9 +824,10 @@ PTask Task::stealFrom(Collective* collective, CollectiveResourceId id) {
       if (!gold.empty())
         tasks.push_back(pickUpItem(pos, gold));
     }
-  if (!tasks.empty())
+  if (!tasks.empty()) {
+    Random.shuffle(tasks.begin(), tasks.end());
     return chain(std::move(tasks));
-  else
+  } else
     return PTask(nullptr);
 }
 
@@ -1673,18 +1674,22 @@ class PickUpItem : public Task {
 
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(!pickedUp);
-    if (c->getPosition() == position) {
-      vector<Item*> hereItems;
-      for (Item* it : c->getPickUpOptions())
-        if (items.contains(it)) {
-          hereItems.push_back(it);
-          items.erase(it);
-        }
-      if (hereItems.empty()) {
-        setDone();
-        return NoMove;
+    if (!c->getBody().canPickUpItems()) {
+      setDone();
+      return NoMove;
+    }
+    vector<Item*> hereItems;
+    for (Item* it : position.getItems())
+      if (items.contains(it)) {
+        hereItems.push_back(it);
+        items.erase(it);
       }
-      items = hereItems;
+    if (hereItems.empty()) {
+      setDone();
+      return NoMove;
+    }
+    items = hereItems;
+    if (c->getPosition() == position) {
       if (auto action = c->pickUp(hereItems))
         return {1.0, action.append([=](Creature* c) {
           pickedUp = true;
@@ -1793,18 +1798,19 @@ class WithTeam : public Task {
     }
     auto leader = collective->getTeams().getLeader(teamId);
     CHECK(!leader->isDead());
-    if (c == leader)
-      return task->getMove(c);
-    else {
+    if (c != leader) {
       Position targetPos = leader->getPosition();
-      if (targetPos.dist8(c->getPosition()).value_or(3) < 3) {
+      if (targetPos.dist8(c->getPosition()).value_or(11) < 10) {
+        if (auto move = task->getMove(c))
+          return move;
         if (Random.roll(15))
           if (auto move = c->move(c->getPosition().plus(Vec2(Random.choose<Dir>()))))
             return move;
         return NoMove;
       }
       return c->moveTowards(targetPos);
-    }
+    } else
+      return task->getMove(c);
   }
 
   virtual string getDescription() const override {
