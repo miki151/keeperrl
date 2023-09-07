@@ -34,6 +34,7 @@ struct KeeperCreatureInfo {
   vector<CostInfo> SERIAL(credit);
   vector<string> SERIAL(flags);
   vector<VillainGroup> SERIAL(villainGroups);
+  bool SERIAL(requireQuartersForExp) = true;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);
 };

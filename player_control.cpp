@@ -3297,7 +3297,7 @@ void PlayerControl::onSquareClick(Position pos) {
   if (collective->getZones().isZone(pos, ZoneId::QUARTERS)) {
     vector<PlayerInfo> minions;
     for (auto c : getCreatures())
-      if (collective->minionRequiresQuarters(c))
+      if (collective->minionCanUseQuarters(c))
         minions.push_back(PlayerInfo(c, getGame()->getContentFactory()));
     if (auto id = getView()->chooseCreature("Assign these quarters to:", minions, "Cancel"))
       if (auto c = getCreature(*id))

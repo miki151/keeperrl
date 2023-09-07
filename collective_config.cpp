@@ -47,6 +47,7 @@ void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
   ar(OPTION(immigrantInterval), OPTION(maxPopulation), OPTION(conquerCondition), OPTION(canEnemyRetire));
   ar(SKIP(type), OPTION(leaderAsFighter), OPTION(spawnGhosts), OPTION(ghostProb), OPTION(guardianInfo));
   ar(SKIP(populationString), OPTION(prisoners), OPTION(alwaysMount), OPTION(discoverAchievement));
+  ar(SKIP(requireQuartersForExp));
 }
 
 SERIALIZABLE(CollectiveConfig);
@@ -104,10 +105,11 @@ CollectiveConfig::CollectiveConfig(TimeInterval interval, CollectiveType t, int 
 }
 
 CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation,
-    string populationString, bool prisoners, ConquerCondition conquerCondition) {
+    string populationString, bool prisoners, ConquerCondition conquerCondition, bool requireQuartersForExp) {
   auto ret = CollectiveConfig(immigrantInterval, KEEPER, maxPopulation, conquerCondition);
   ret.populationString = populationString;
   ret.prisoners = prisoners;
+  ret.requireQuartersForExp = requireQuartersForExp;
   return ret;
 }
 
@@ -222,7 +224,7 @@ bool CollectiveConfig::alwaysMountSteeds() const {
 }
 
 bool CollectiveConfig::minionsRequireQuarters() const {
-  return type == KEEPER;
+  return type == KEEPER && requireQuartersForExp;
 }
 
 MinionActivityInfo::MinionActivityInfo(Type t) : type(t) {

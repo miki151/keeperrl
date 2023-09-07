@@ -71,7 +71,7 @@ struct FloorInfo {
 class CollectiveConfig {
   public:
   static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation, string populationString,
-      bool prisoners, ConquerCondition);
+      bool prisoners, ConquerCondition, bool requireQuartersForExp);
   static CollectiveConfig noImmigrants();
 
   bool isLeaderFighter() const;
@@ -129,4 +129,5 @@ class CollectiveConfig {
   string SERIAL(populationString);
   bool SERIAL(prisoners) = false;
   bool SERIAL(alwaysMount) = false;
+  bool SERIAL(requireQuartersForExp) = true;
 };
