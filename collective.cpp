@@ -1268,9 +1268,10 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
   control->onConstructed(pos, type);
   if (Task* task = taskMap->getMarked(pos))
     taskMap->removeTask(task);
-  //if (canClaimSquare(pos))
+  claimSquare(pos);
   for (auto v : pos.neighbors8())
-    claimSquare(v);
+    if (v.isCovered())
+      claimSquare(v);
   recalculateFurniturePopIncrease();
 }
 
