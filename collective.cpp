@@ -588,13 +588,16 @@ int getMaxPromotionLevel(double quartersLuxury) {
   return int(2 + quartersLuxury / 3);
 }
 
+bool Collective::minionRequiresQuarters(Creature* c) {
+  return config->minionsRequireQuarters() && (hasTrait(c, MinionTrait::FIGHTER) || hasTrait(c, MinionTrait::LEADER));
+}
+
 void Collective::updateMinionPromotions() {
   if (!config->minionsRequireQuarters())
     return;
   for (auto c : getCreatures())
-    if (!hasTrait(c, MinionTrait::PRISONER)) {
+    if (minionRequiresQuarters(c))
       c->setMaxPromotion(getMaxPromotionLevel(zones->getQuartersLuxury(c->getUniqueId()).value_or(-1)));
-    }
 }
 
 void Collective::tick() {

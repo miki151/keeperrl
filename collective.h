@@ -162,6 +162,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void setZone(Position, ZoneId);
   void eraseZone(Position, ZoneId);
   void assignQuarters(Creature*, Position);
+  bool minionRequiresQuarters(Creature*);
   const Zones& getZones() const;
   void cancelMarkedTask(Position);
   void orderDestruction(Position pos, const DestroyAction&);
