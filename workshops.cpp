@@ -124,6 +124,9 @@ auto Workshops::Type::addWork(Collective* collective, double amount, int skillAm
               ret->addModifier(attr, ret->getModifier(attr) * min<double>(
                   attrScaling - 1,
                   getAttrIncrease(skillAmount)));
+        for (auto& rune : product.runes)
+          if (auto& upgradeInfo = rune->getUpgradeInfo())
+            ret->applyPrefix(*upgradeInfo->prefix, collective->getGame()->getContentFactory());
         bool applyImmediately = product.item.applyImmediately;
         queued.removeIndexPreserveOrder(productIndex);
         checkDebtConsistency();
