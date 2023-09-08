@@ -31,7 +31,7 @@
   counts = {
       "GIANT_MUSHROOM" {5 10} 6 0
   }
-  minDepth = 4
+  minDepth = 2
 }
 {
   counts = {
