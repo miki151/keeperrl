@@ -323,7 +323,7 @@ TRAINING("_DWARF", "_dwarf")
   "morgue"
   {
     { Furniture {{ "MORGUE_TABLE" } "WOOD" 10 }                     "Morgue table"     "Crafting"
-        "Produces animated bodies."                           none { TechId "necromancy" } }
+        "Produces animated bodies."                           "WORKSHOPS" { TechId "necromancy" } true }
   }
   "furnace"
   {
