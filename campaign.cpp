@@ -12,7 +12,7 @@
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Campaign);
 
-SERIALIZE_DEF(Campaign, sites, playerPos, worldName, defeated, influencePos, playerRole, type, mapZoom, minimapZoom, originalPlayerPos)
+SERIALIZE_DEF(Campaign, sites, playerPos, worldName, defeated, influencePos, playerRole, type, mapZoom, minimapZoom, originalPlayerPos, belowMaxAgressorCutOff)
 
 void VillainViewId::serialize(PrettyInputArchive& ar1, unsigned int) {
   if (ar1.peek() == "{" && ar1.peek(2) == "{")
@@ -189,6 +189,22 @@ int Campaign::getBaseLevelIncrease(Vec2 pos) const {
   return res * 3;
 }
 
+bool Campaign::passesMaxAggressorCutOff(Vec2 pos) {
+  return belowMaxAgressorCutOff[pos];
+}
+
+constexpr int maxAggressorDiff = 10;
+
+void Campaign::refreshMaxAggressorCutOff() {
+  belowMaxAgressorCutOff = Table<bool>(sites.getBounds(), false);
+  auto maxConquered = 0;
+  for (Vec2 v : sites.getBounds())
+    if (blocksInfluence(sites[v].getVillainType().value_or(VillainType::NONE)) && defeated[v])
+      maxConquered = max(maxConquered, getBaseLevelIncrease(v));
+  for (Vec2 v : sites.getBounds())
+    belowMaxAgressorCutOff[v] = getBaseLevelIncrease(v) <= maxConquered + maxAggressorDiff;
+}
+
 void Campaign::refreshInfluencePos(const ContentFactory* f) {
   map<Vec2, Vec2> siteOwners;
   map<Vec2, HashSet<Vec2>> territories;
@@ -252,6 +268,7 @@ void Campaign::refreshInfluencePos(const ContentFactory* f) {
     continue;
   }
   CHECK(!influencePos.empty());
+  refreshMaxAggressorCutOff();
 }
 
 int Campaign::getNumNonEmpty() const {

@@ -70,6 +70,9 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c, ContentFacto
     : models(std::move(m)), visited(models.getBounds(), false), baseModel(basePos),
       tribes(Tribe::generateTribes()), musicType(MusicType::PEACEFUL), campaign(c.campaign),
       contentFactory(std::move(f)) {
+  for (auto pos : models.getBounds())
+    if (models[pos])
+      models[pos]->position = pos;
   gameIdentifier = c.gameIdentifier;
   gameDisplayName = c.gameDisplayName;
   enemyAggressionLevel = c.enemyAggressionLevel;
@@ -225,7 +228,11 @@ Model* Game::getCurrentModel() const {
 }
 
 int Game::getModelDifficulty(const Model* model) const {
-  return campaign->getBaseLevelIncrease(getModelCoords(model));
+  return campaign->getBaseLevelIncrease(model->position);
+}
+
+bool Game::passesMaxAggressorCutOff(const Model* model) {
+  return campaign->passesMaxAggressorCutOff(model->position);
 }
 
 PModel& Game::getMainModel() {
@@ -383,7 +390,7 @@ optional<ExitInfo> Game::update(double timeDiff, milliseconds endTime) {
       *lastTick += 1;
     tick(GlobalTime(*lastTick));
   }
-  considerRetiredLoadedEvent(getModelCoords(currentModel));
+  considerRetiredLoadedEvent(currentModel->position);
   if (!updateModel(currentModel, localTime[currentId] + timeDiff, endTime)) {
     localTime[currentId] += timeDiff;
     increaseTime(timeDiff);
@@ -427,7 +434,7 @@ bool Game::updateModel(Model* model, double totalTime, optional<milliseconds> en
 
 bool Game::isVillainActive(const Collective* col) {
   const Model* m = col->getModel();
-  return m == getMainModel().get() || campaign->isInInfluence(getModelCoords(m));
+  return m == getMainModel().get() || campaign->isInInfluence(m->position);
 }
 
 void Game::updateSunlightMovement() {
@@ -511,7 +518,7 @@ void Game::exitAction() {
 
 Position Game::getTransferPos(Model* from, Model* to) const {
   return to->getGroundLevel()->getLandingSquare(StairKey::transferLanding(),
-      getModelCoords(from) - getModelCoords(to));
+      from->position - to->position);
 }
 
 void Game::transferCreature(Creature* c, Model* to, const vector<Position>& destinations) {
@@ -519,7 +526,7 @@ void Game::transferCreature(Creature* c, Model* to, const vector<Position>& dest
   if (from != to && !c->getRider()) {
     auto transfer = [&] (Creature* c) {
       if (destinations.empty())
-        to->transferCreature(from->extractCreature(c), getModelCoords(from) - getModelCoords(to));
+        to->transferCreature(from->extractCreature(c), from->position - to->position);
       else
         to->transferCreature(from->extractCreature(c), destinations);
     };
@@ -531,19 +538,11 @@ void Game::transferCreature(Creature* c, Model* to, const vector<Position>& dest
 }
 
 bool Game::canTransferCreature(Creature* c, Model* to) {
-  return to->canTransferCreature(c, getModelCoords(c->getLevel()->getModel()) - getModelCoords(to));
+  return to->canTransferCreature(c, c->getLevel()->getModel()->position - to->position);
 }
 
 int Game::getModelDistance(const Collective* c1, const Collective* c2) const {
-  return getModelCoords(c1->getModel()).dist8(getModelCoords(c2->getModel()));
-}
-
-Vec2 Game::getModelCoords(const Model* m) const {
-  for (Vec2 v : models.getBounds())
-    if (models[v].get() == m)
-      return v;
-  FATAL << "Model not found";
-  return Vec2();
+  return c1->getModel()->position.dist8(c2->getModel()->position);
 }
 
 void Game::presentWorldmap() {
@@ -551,7 +550,7 @@ void Game::presentWorldmap() {
 }
 
 Model* Game::chooseSite(const string& message, Model* current) const {
-  if (auto dest = view->chooseSite("Choose destination site:", *campaign, getModelCoords(current)))
+  if (auto dest = view->chooseSite("Choose destination site:", *campaign, current->position))
     return NOTNULL(models[*dest].get());
   return nullptr;
 }
@@ -612,7 +611,7 @@ string Game::getGameIdentifier() const {
 }
 
 string Game::getGameOrRetiredIdentifier(Position pos) const {
-  Vec2 coords = getModelCoords(pos.getModel());
+  Vec2 coords = pos.getModel()->position;
   if (auto retired = campaign->getSites()[coords].getRetired())
     return retired->fileInfo.getGameId();
   return gameIdentifier;
@@ -967,7 +966,7 @@ void Game::addEvent(const GameEvent& event) {
               {"name", "villainConquered"},
               {"value", id->data()}
             });
-          Vec2 coords = getModelCoords(col->getModel());
+          Vec2 coords = col->getModel()->position;
           if (!campaign->isDefeated(coords)) {
             if (auto retired = campaign->getSites()[coords].getRetired())
               uploadEvent("retiredConquered", {{"retiredId", retired->fileInfo.getGameId()}});

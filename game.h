@@ -102,6 +102,7 @@ class Game : public OwnedObject<Game> {
   int getSaveProgressCount() const;
   Model* getCurrentModel() const;
   int getModelDifficulty(const Model*) const;
+  bool passesMaxAggressorCutOff(const Model*);
 
   void prepareSiteRetirement();
   void doneRetirement();
@@ -123,7 +124,6 @@ class Game : public OwnedObject<Game> {
 
   private:
   void tick(GlobalTime);
-  Vec2 getModelCoords(const Model*) const;
   bool updateModel(Model*, double timeDiff, optional<milliseconds> endTime);
   void uploadEvent(const string& name, const map<string, string>&);
   void considerAchievement(const GameEvent&);

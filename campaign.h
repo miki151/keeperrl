@@ -78,6 +78,7 @@ class Campaign {
   int getMapZoom() const;
   int getMinimapZoom() const;
   int getBaseLevelIncrease(Vec2) const;
+  bool passesMaxAggressorCutOff(Vec2);
   CampaignType getType() const;
   PlayerRole getPlayerRole() const;
 
@@ -88,6 +89,7 @@ class Campaign {
   private:
   friend class CampaignBuilder;
   void refreshInfluencePos(const ContentFactory*);
+  void refreshMaxAggressorCutOff();
   Campaign(Table<SiteInfo>, CampaignType, PlayerRole, const string& worldName);
   Table<SiteInfo> SERIAL(sites);
   Vec2 SERIAL(playerPos);
@@ -99,4 +101,5 @@ class Campaign {
   int SERIAL(mapZoom);
   int SERIAL(minimapZoom) = 2;
   Vec2 SERIAL(originalPlayerPos);
+  Table<bool> SERIAL(belowMaxAgressorCutOff);
 };

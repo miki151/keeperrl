@@ -65,7 +65,7 @@ template <class Archive>
 void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
   ar & SUBCLASS(OwnedObject<Model>);
-  ar(levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick, biomeId);
+  ar(levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick, biomeId, position);
   ar(stairNavigation, cemetery, mainLevels, upLevels, eventGenerator, externalEnemies, defaultMusic, portals);
 }
 

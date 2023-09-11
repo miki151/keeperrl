@@ -114,6 +114,7 @@ class Model : public OwnedObject<Model> {
   BiomeId getBiomeId() const;
 
   HeapAllocated<Portals> SERIAL(portals);
+  Vec2 SERIAL(position);
 
   private:
   struct Private {};

@@ -152,7 +152,24 @@ static double getNumConqueredProb(const Game* game, int minCount) {
     return 0;
 }
 
+static bool triggersAboveMaxAggressorCutOff(const AttackTrigger& trigger) {
+  return trigger.visit<bool>(
+    [&](const auto& t) {
+      return false;
+    },
+    [&](const SelfVictims&) {
+      return true;
+    },
+    [&](const StolenItems&) {
+      return true;
+    }
+  );
+}
+
 double VillageBehaviour::getTriggerValue(const AttackTrigger& trigger, const VillageControl* self) const {
+  if (!self->collective->getGame()->passesMaxAggressorCutOff(self->collective->getModel()) &&
+      !triggersAboveMaxAggressorCutOff(trigger))
+    return 0;
   double powerMaxProb = 1.0 / 10000; // rather small chance that they attack just because you are strong
   double victimsMaxProb = 1.0 / 500;
   double populationMaxProb = 1.0 / 500;
