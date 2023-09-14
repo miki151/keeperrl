@@ -2254,7 +2254,7 @@ void Creature::destroyImpl(Vec2 direction, const DestroyAction& action) {
 CreatureAction Creature::destroy(Vec2 direction, const DestroyAction& action) const {
   auto pos = getPosition().plus(direction);
   if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE))
-    if (direction.length8() <= 1 && furniture->canDestroy(getMovementType(), action))
+    if (direction.length8() <= 1 && furniture->canDestroy(pos, getMovementType(), action))
       return CreatureAction(this, [=](Creature* self) {
         self->destroyImpl(direction, action);
         if (auto movementInfo = self->spendTime())

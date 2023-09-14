@@ -23,6 +23,7 @@
 #include "furniture_on_built.h"
 #include "content_factory.h"
 #include "item_list.h"
+#include "collective.h"
 
 /*Furniture::Furniture(const string& n, const optional<ViewObject>& o, FurnitureType t, TribeId id)
     : viewObject(o), name(n), pluralName(makePlural(name)), type(t), movementSet(id) {
@@ -556,10 +557,14 @@ const heap_optional<Fire>& Furniture::getFire() const {
   return fire;
 }
 
-bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& action) const {
-   return canDestroy(action) &&
-       (!fire || !fire->isBurning()) &&
-       (!movement.isCompatible(getTribe()) || action.canDestroyFriendly());
+bool Furniture::canDestroy(const Position& pos, const MovementType& movement, const DestroyAction& action) const {
+  auto outsideTerritory = [&] {
+    auto col = pos.getCollective();
+    return !col || col->getTribeId() != getTribe();
+  };
+  return canDestroy(action) &&
+      (!fire || !fire->isBurning()) &&
+      (!movement.isCompatible(getTribe()) || action.canDestroyFriendly() || outsideTerritory());
 }
 
 bool Furniture::acidDamage(Position pos) {
