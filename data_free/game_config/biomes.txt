@@ -171,7 +171,7 @@
     }
   }
   darkKeeperEnemies = {
-    { id = "DWARF_CAVE" count = { 1 3 } }
+    { id = "NO_AGGRO_DWARF_CAVE" count = { 1 3 } }
     { id = "KOBOLD_CAVE" count = { 1 3 } }
     { id = "NO_AGGRO_BANDITS" count = { 0 2 } }
     { id = "CORPSES" probability = 0.2 }

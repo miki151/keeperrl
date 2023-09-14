@@ -1501,7 +1501,7 @@ STRONGER("DARK_ELVES_Z_LEVEL3", "DARK_ELVES_Z_LEVEL", 15)
 STRONGER("DARK_ELVES_Z_LEVEL4", "DARK_ELVES_Z_LEVEL", 22)
 STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELVES_Z_LEVEL", 30)
 
-"DWARF_CAVE"
+"NO_AGGRO_DWARF_CAVE"
 {
   biome = "MOUNTAIN"
   settlement = {
@@ -1527,6 +1527,10 @@ STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELVES_Z_LEVEL", 30)
   config = {
     prisoners = true
   }
+}
+
+"DWARF_CAVE" inherit "NO_AGGRO_DWARF_CAVE"
+{
   behaviour = {
     minPopulation = 0
     minTeamSize = 1

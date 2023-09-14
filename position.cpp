@@ -1097,7 +1097,7 @@ optional<DestroyAction> Position::getBestDestroyAction(const MovementType& movem
       optional<double> strength;
       optional<DestroyAction> bestAction;
       for (DestroyAction action : movement.getDestroyActions()) {
-        if (furniture->canDestroy(movement, action)) {
+        if (furniture->canDestroy(*this, movement, action)) {
           double thisStrength = *furniture->getStrength(action);
           if (!strength || thisStrength < *strength) {
             strength = thisStrength;
@@ -1136,7 +1136,7 @@ bool Position::canNavigateCalc(const MovementType& type) const {
   optional<FurnitureLayer> ignore;
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
     for (DestroyAction action : type.getDestroyActions())
-      if (furniture->canDestroy(type, action))
+      if (furniture->canDestroy(*this, type, action))
         ignore = FurnitureLayer::MIDDLE;
   if (type.canBuildBridge() && canConstruct(FurnitureType("BRIDGE")) &&
       !type.isCompatible(getFurniture(FurnitureLayer::GROUND)->getTribe()))

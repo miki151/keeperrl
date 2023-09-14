@@ -87,7 +87,7 @@ class BoulderController : public Monster {
       }
     }
     if (auto furniture = nextPos.getFurniture(FurnitureLayer::MIDDLE))
-      if (furniture->canDestroy(creature->getMovementType(), DestroyAction::Type::BOULDER) &&
+      if (furniture->canDestroy(nextPos, creature->getMovementType(), DestroyAction::Type::BOULDER) &&
           *furniture->getStrength(DestroyAction::Type::BOULDER) <
           health * creature->getAttr(AttrType("DAMAGE"))) {
         health -= *furniture->getStrength(DestroyAction::Type::BOULDER) /
