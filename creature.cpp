@@ -2128,7 +2128,7 @@ BestAttack Creature::getBestAttack(const ContentFactory* factory, bool includeTe
   auto value = 0;
   for (auto& a : factory->attrInfo)
     if (a.second.isAttackAttr) {
-      auto damage = getAttr(a.first, includeTeamExp);
+      auto damage = getAttr(a.first, true, includeTeamExp);
       if (damage > value) {
         value = damage;
         viewId = a.second.viewId;
