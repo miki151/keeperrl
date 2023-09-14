@@ -77,7 +77,7 @@ class Furniture {
   const MovementSet& getMovementSet() const;
   void onEnter(Creature*) const;
   void onItemsRemoved(Position) const;
-  bool canDestroy(const MovementType&, const DestroyAction&) const;
+  bool canDestroy(const Position&, const MovementType&, const DestroyAction&) const;
   bool canDestroy(const DestroyAction&) const;
   optional<double> getStrength(const DestroyAction&) const;
   void destroy(Position, const DestroyAction&, Creature* destroyedBy = nullptr);
