@@ -1083,6 +1083,32 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::PlaceFurniture& f, 
       isConsideredInDanger(victim) ? 1 : 0;
 }
 
+static string getName(const Effects::ModifyFurniture& e, const ContentFactory* c) {
+  return c->furniture.getData(e.furniture).getName();
+}
+
+static string getDescription(const Effects::ModifyFurniture& e, const ContentFactory* c) {
+  return "Creates a " + getName(e, c);
+}
+
+static bool apply(const Effects::ModifyFurniture& summon, Position pos, Creature*) {
+  auto data = pos.getGame()->getContentFactory()->furniture.getData(summon.furniture);
+  if (auto f = pos.modFurniture(data.getLayer())) {
+    auto keepType = f->getType();
+    auto keepTribe = f->getTribe();
+    *f = data;
+    f->setType(keepType);
+    f->setTribe(keepTribe);
+    return true;
+  }
+  return false;
+}
+
+static EffectAIIntent shouldAIApplyToCreature(const Effects::ModifyFurniture& f, const Creature* victim, bool isEnemy) {
+  return victim->getGame()->getContentFactory()->furniture.getData(f.furniture).isHostileSpell() &&
+      isConsideredInDanger(victim) ? 1 : 0;
+}
+
 static string getName(const Effects::DropItems&, const ContentFactory* c) {
   return "create items";
 }

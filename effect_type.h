@@ -136,6 +136,10 @@ struct PlaceFurniture {
   FurnitureType SERIAL(furniture);
   SERIALIZE_ALL(furniture)
 };
+struct ModifyFurniture {
+  FurnitureType SERIAL(furniture);
+  SERIALIZE_ALL(furniture)
+};
 struct Damage {
   AttrType SERIAL(attr);
   AttackType SERIAL(attackType);
@@ -501,7 +505,8 @@ using Achievement = AchievementId;
   X(IncreaseMaxLevel, 92)\
   X(EquipmentType, 93)\
   X(AddSpellSchool, 94)\
-  X(Achievement, 95)
+  X(Achievement, 95)\
+  X(ModifyFurniture, 96)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
