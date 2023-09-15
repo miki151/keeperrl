@@ -378,6 +378,14 @@ static string getName(const CreaturePredicates::AttributeAtLeast& a, const Conte
   return "at least " + toString(a.value) + " " + f->attrInfo.at(a.attr).name;
 }
 
+static bool applyToCreature(const CreaturePredicates::HasAnyHealth&, const Creature* victim, const Creature* attacker) {
+  return victim->getBody().hasAnyHealth(victim->getGame()->getContentFactory());
+}
+
+static string getName(const CreaturePredicates::HasAnyHealth&, const ContentFactory*) {
+  return "with health";
+}
+
 static bool apply(const CreaturePredicates::Translate& m, Position pos, const Creature* attacker) {
   return m.pred->apply(pos.plus(m.dir), attacker);
 }
