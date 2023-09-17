@@ -25,7 +25,7 @@
       "GOLD_ORE" {5 10} 2 0
       "ADAMANTIUM_ORE" {5 10} 2 0
   }
-  minDepth = 6
+  minDepth = 14
 }
 {
   counts = {
@@ -38,17 +38,17 @@
       "STONE" {5 10} 1 0
       "IRON_ORE" {5 10} 1 0
       "GOLD_ORE" {5 10} 1 0
-      "ADOXIUM_ORE" {2 4} 2 0
+      "ADOXIUM_ORE" {5 10} 2 0
   }
-  minDepth = 12
+  minDepth = 20
 }
 {
   counts = {
       "STONE" {5 10} 1 0
       "IRON_ORE" {5 10} 1 0
       "GOLD_ORE" {5 10} 1 0
-      "INFERNITE_ORE" {2 4} 2 0
+      "INFERNITE_ORE" {5 10} 2 0
   }
-  minDepth = 12
+  minDepth = 27
 }
 

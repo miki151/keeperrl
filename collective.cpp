@@ -1556,7 +1556,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
         auto craftingSkill = c->getAttr(workshopInfo.attr);
         auto result = workshop->addWork(this, efficiency * double(craftingSkill) * 0.02
             * LastingEffects::getCraftingSpeed(c),
-            craftingSkill, workshopInfo.attrScaling);
+            craftingSkill, workshopInfo.itemScaling);
         if (result.item) {
           if (result.item->getClass() == ItemClass::WEAPON)
             getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);

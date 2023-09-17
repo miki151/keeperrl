@@ -962,6 +962,13 @@ End
     tribe = MONSTER
   }
 }
+"Z_LEVEL_FULL_ONLY_WATER"
+{
+  settlement = {
+    type = RandomLayout { "z_level_full_only_water" { 80 80 } "default" }
+    tribe = MONSTER
+  }
+}
 "Z_LEVEL_ZOMBIE"
 {
   settlement = {
@@ -2683,7 +2690,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", 30)
 "RAT_PEOPLE_Z_LEVEL"
 {
   settlement = {
-    type = RandomLayout { "z_level_cave" { 80 80 } "default" }
+    type = RandomLayout { "z_level_cave_only_water" { 80 80 } "default" }
     tribe = MONSTER
     inhabitants = {
       leader = { { "RAT_KING" } }

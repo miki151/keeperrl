@@ -3004,7 +3004,7 @@ PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo
   auto queue = make_unique<MakerQueue>();
   queue->addMaker(make_unique<Empty>(SquareChange(FurnitureType("FLOOR"))
       .add(FurnitureParams{FurnitureType("MOUNTAIN2"), keeperTribe})));
-  queue->addMaker(underground(random, Vec2(mapWidth, mapWidth)));
+  queue->addMaker(underground(random, Vec2(mapWidth, mapWidth), FurnitureType("FLOOR"), {WaterType::WATER}));
   auto locations = make_unique<RandomLocations>();
   vector<SurroundWithResourcesInfo> surroundWithResources;
   if (settlement) {

@@ -282,14 +282,17 @@ TRAINING("_DWARF", "_dwarf")
         "Produces leather equipment, traps, first-aid kits and other." "WORKSHOPS" {} true  BUILD_WORKSHOP}
 
     { Furniture {{ "FORGE" }      "IRON" 20 }                      "Forge"             "Crafting"
-        "Produces metal weapons and armor."    none { TechId "iron working" }}
+        "Produces iron weapons and armor."    none { TechId "iron working" }}
 
     { Furniture {{ "LAVA_FORGE" } "IRON" 20 }                      "Magma forge"        "Crafting"
-        "Quality of crafted items increases with the crafter's forge skill by a factor of up to 2. Must be placed next to magma."
+        "Quality of crafted items is increased by a factor of 2. Must be placed next to magma."
         none { TechId "iron working" }}
 
+    { Furniture {{ "ADA_FORGE" }      "ADA" 20 }                      "Adamantium forge"             "Crafting"
+        "Produces adamantine weapons and armor."    none { TechId "iron working" }}
+
     { Furniture {{ "MYST_FORGE" } "IRON" 20 }                      "Myst forge"        "Crafting"
-        "Quality of crafted items increases with the crafter's forge skill by a factor of up to 5. Must be placed in underground fog."
+        "Produces adoxium and infernite equipment and other artifacts. Must be placed in underground fog."
         none { TechId "iron working" }}
   }
 

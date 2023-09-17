@@ -22,11 +22,6 @@
   {
       {item = {"Sword"}          work = 10    cost = none   materialTab = true}
       {item = {"ChainArmor"}     work = 30    cost = none   materialTab = true}
-      {item = {"RedDragonArmor"}   work = 30  cost = none   requireIngredient = "red_scales" }
-      {item = {"BlackDragonArmor"} work = 30  cost = none   requireIngredient = "black_scales" }
-      {item = {"WhiteDragonArmor"} work = 30  cost = none   requireIngredient = "white_scales" }
-      {item = {"GreenDragonArmor"} work = 30  cost = none   requireIngredient = "green_scales" }
-      {item = {"YellowDragonArmor"}work = 30  cost = none   requireIngredient = "yellow_scales" }
       {item = {"IronHelm"}        work = 8    cost = none   materialTab = true}
       {item = {"IronBoots"}       work = 12   cost = none   materialTab = true}
       {item = {"CyclopsHelm"}
@@ -38,27 +33,36 @@
       {item = {"IronShield"}      work = 12   cost = none   materialTab = true}
       {item = {"WarHammer"}       work = 16   cost = none   tech = "two-handed weapons"  materialTab = true}
       {item = {"BattleAxe"}       work = 22   cost = none   tech = "two-handed weapons"  materialTab = true}
-      {item = {"AdaSword"}        work = 20   cost = none   materialTab = true}
-      {item = {"AdaArmor"}        work = 30   cost = none   materialTab = true}
-      {item = {"AdaHelm"}         work = 15   cost = none   materialTab = true}
-      {item = {"AdaBoots"}        work = 15   cost = none   materialTab = true}
-      {item = {"AdaGloves"}       work = 6    cost = none   materialTab = true}
-      {item = {"AdaShield"}       work = 12   cost = none   materialTab = true}
-      {item = {"AdaWarHammer"}    work = 20   cost = none   tech = "two-handed weapons"  materialTab = true}
-      {item = {"AdaBattleAxe"}    work = 22   cost = none   tech = "two-handed weapons"  materialTab = true}
       {item = {"IronStaff"}       work = 20   cost = none   tech = "magical weapons"  materialTab = true}
-      {item = {"AdoxiumArmor"}    work = 30   cost = none   materialTab = true}
-      {item = {"AdoxiumHelm"}     work = 15   cost = none   materialTab = true}
-      {item = {"AdoxiumBoots"}    work = 15   cost = none   materialTab = true}
-      {item = {"AdoxiumGloves"}   work = 6    cost = none   materialTab = true}
-      {item = {"AdoxiumStaff"}    work = 20   cost = none   tech = "magical weapons"  materialTab = true}
-      {item = {"InferniteSword"}        work = 20   cost = none   materialTab = true}
-      {item = {"InferniteWarHammer"}    work = 20   cost = none   tech = "two-handed weapons"  materialTab = true}
-      {item = {"InferniteBattleAxe"}    work = 22   cost = none   tech = "two-handed weapons"  materialTab = true}
   }
-
   "LAVA_FORGE" inherit "FORGE" append {}
-  "MYST_FORGE" inherit "FORGE" append {}
+  "ADA_FORGE"
+  {
+    {item = {"AdaSword"}        work = 20   cost = none   materialTab = true}
+    {item = {"AdaArmor"}        work = 30   cost = none   materialTab = true}
+    {item = {"AdaHelm"}         work = 15   cost = none   materialTab = true}
+    {item = {"AdaBoots"}        work = 15   cost = none   materialTab = true}
+    {item = {"AdaGloves"}       work = 6    cost = none   materialTab = true}
+    {item = {"AdaShield"}       work = 12   cost = none   materialTab = true}
+    {item = {"AdaWarHammer"}    work = 20   cost = none   tech = "two-handed weapons"  materialTab = true}
+    {item = {"AdaBattleAxe"}    work = 22   cost = none   tech = "two-handed weapons"  materialTab = true}
+  }
+  "MYST_FORGE"
+  {
+    {item = {"AdoxiumArmor"}    work = 30   cost = none   materialTab = true}
+    {item = {"AdoxiumHelm"}     work = 15   cost = none   materialTab = true}
+    {item = {"AdoxiumBoots"}    work = 15   cost = none   materialTab = true}
+    {item = {"AdoxiumGloves"}   work = 6    cost = none   materialTab = true}
+    {item = {"AdoxiumStaff"}    work = 20   cost = none   tech = "magical weapons"  materialTab = true}
+    {item = {"InferniteSword"}        work = 20   cost = none   materialTab = true}
+    {item = {"InferniteWarHammer"}    work = 20   cost = none   tech = "two-handed weapons"  materialTab = true}
+    {item = {"InferniteBattleAxe"}    work = 22   cost = none   tech = "two-handed weapons"  materialTab = true}
+    {item = {"RedDragonArmor"}   work = 30  cost = none   requireIngredient = "red_scales" }
+    {item = {"BlackDragonArmor"} work = 30  cost = none   requireIngredient = "black_scales" }
+    {item = {"WhiteDragonArmor"} work = 30  cost = none   requireIngredient = "white_scales" }
+    {item = {"GreenDragonArmor"} work = 30  cost = none   requireIngredient = "green_scales" }
+    {item = {"YellowDragonArmor"}work = 30  cost = none   requireIngredient = "yellow_scales" }
+  }
 
 Def OneTimeBoost()
   NoAutoAssign EquipmentType COMBAT_ITEM AI And {} -1 1 AI And {} 0 1

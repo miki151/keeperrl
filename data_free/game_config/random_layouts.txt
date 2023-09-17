@@ -803,6 +803,11 @@ End
   Choose(ZLevelMostlyFull("water"), ZLevelMostlyFull("lava"))
 }
 
+"z_level_full_only_water" {
+  Set("set_territory") # Even though its an empty level, some code will crash if territory is empty
+  ZLevelMostlyFull("water")
+}
+
 "z_level_vault" {
   Choose(ZLevelBase("water"), ZLevelBase("lava"))
   Inside(5, Place({4 7}, {
@@ -819,6 +824,13 @@ End
 
 "z_level_cave" {
   Choose(ZLevelBase("water"), ZLevelBase("lava"))
+  Inside(5, Place({10 10}, CellularAutomaton(Reset("floor", "set_territory"), 0.85), 1, On("hard_rock")))
+  Connector()
+  Filter(Not On("set_territory"), Set("no_territory"))
+}
+
+"z_level_cave_only_water" {
+  Choose(ZLevelBase("water"))
   Inside(5, Place({10 10}, CellularAutomaton(Reset("floor", "set_territory"), 0.85), 1, On("hard_rock")))
   Connector()
   Filter(Not On("set_territory"), Set("no_territory"))

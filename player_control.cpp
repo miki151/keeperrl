@@ -1499,8 +1499,9 @@ vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getQueuedWorkshopItems() c
 void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
   int index = 0;
   int i = 0;
+  auto factory = getGame()->getContentFactory();
   for (auto workshopType : collective->getWorkshops().getWorkshopsTypes()) {
-    auto& workshopInfo = getGame()->getContentFactory()->workshopInfo.at(workshopType);
+    auto& workshopInfo = factory->workshopInfo.at(workshopType);
     if (!!chosenWorkshop && chosenWorkshop->type == workshopType)
       index = i;
     ++i;
@@ -1516,7 +1517,9 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
         getFurnaceQueue(),
         index,
         "To be smelted:",
-        false
+        false,
+        1,
+        factory->attrInfo.at(AttrType("FURNACE")).viewId
     };
   } else
   if (chosenWorkshop) {
@@ -1527,6 +1530,7 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
     string tabName;
     if (!resourceTabs.empty())
       tabName = collective->getResourceInfo(resourceTabs[chosenWorkshop->resourceIndex]).name;
+    auto& workshopInfo = factory->workshopInfo.at(chosenWorkshop->type);
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
         resourceViewIds,
         chosenWorkshop->resourceIndex,
@@ -1536,7 +1540,9 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
         getQueuedWorkshopItems(),
         index,
         "In production:",
-        true
+        true,
+        workshopInfo.minAttr,
+        factory->attrInfo.at(workshopInfo.attr).viewId
     };
   }
 }

@@ -16,7 +16,17 @@
   name = "magma forge"
   verb = "forges"
   attr = "FORGE"
-  attrScaling = 2
+  itemScaling = 2
+  minAttr = 35
+}
+
+"ADA_FORGE" {
+  furniture = "ADA_FORGE"
+  name = "adamantium forge"
+  verb = "forges"
+  attr = "FORGE"
+  itemScaling = 3
+  minAttr = 50
 }
 
 "MYST_FORGE" {
@@ -24,7 +34,8 @@
   name = "myst forge"
   verb = "forges"
   attr = "FORGE"
-  attrScaling = 5
+  itemScaling = 6
+  minAttr = 80
 }
 
 "LABORATORY" {

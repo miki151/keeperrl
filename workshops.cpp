@@ -11,7 +11,7 @@
 Workshops::Workshops(WorkshopArray options, const ContentFactory* factory) {
   for (auto& elem : options)
     types.insert(make_pair(elem.first, Type(elem.second.transform(
-        [&](const auto& elem){ return elem.get(factory); }))));
+        [&](const auto& item){ return item.get(elem.first, factory); }))));
 }
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Workshops)
@@ -96,12 +96,8 @@ PItem Workshops::Type::removeUpgrade(int itemIndex, int runeIndex) {
   return ret;
 }
 
-static double getAttrIncrease(double skillAmount) {
-  return max(0.0, (skillAmount * 0.1 - 2) / 2.0);
-}
-
-auto Workshops::Type::addWork(Collective* collective, double amount, int skillAmount, int attrScaling)
-    -> WorkshopResult {
+auto Workshops::Type::addWork(Collective* collective, double amount, int skillAmount,
+    int itemScaling) -> WorkshopResult {
   for (int productIndex : All(queued)) {
     auto& product = queued[productIndex];
     if (product.paid || collective->hasResource(product.item.cost)) {
@@ -118,12 +114,10 @@ auto Workshops::Type::addWork(Collective* collective, double amount, int skillAm
       if (product.state >= 1) {
         auto factory = collective->getGame()->getContentFactory();
         auto ret = product.item.type.get(factory);
-        if (attrScaling > 1)
+        if (itemScaling > 1)
           for (auto& attr : factory->attrOrder)
             if (ret->getModifierValues().count(attr))
-              ret->addModifier(attr, ret->getModifier(attr) * min<double>(
-                  attrScaling - 1,
-                  getAttrIncrease(skillAmount)));
+              ret->addModifier(attr, ret->getModifier(attr) * (itemScaling - 1));
         for (auto& rune : product.runes)
           if (auto& upgradeInfo = rune->getUpgradeInfo())
             ret->applyPrefix(*upgradeInfo->prefix, collective->getGame()->getContentFactory());

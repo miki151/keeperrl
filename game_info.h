@@ -305,7 +305,9 @@ class CollectiveInfo {
     int HASH(index);
     string HASH(queuedTitle);
     bool HASH(allowChangeNumber);
-    HASH_ALL(index, options, queued, resourceTabs, chosenTab, tabName, queuedTitle, allowChangeNumber)
+    int HASH(minAttrValue);
+    ViewId HASH(attr);
+    HASH_ALL(index, options, queued, resourceTabs, chosenTab, tabName, queuedTitle, allowChangeNumber, minAttrValue, attr)
   };
   optional<ChosenWorkshopInfo> HASH(chosenWorkshop);
   struct LibraryInfo {

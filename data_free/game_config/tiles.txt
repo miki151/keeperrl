@@ -719,6 +719,8 @@ BOOKCASES("_human")
   roundShadow = true }
 { viewId = "lava_forge" symbol = "&" color = ColorId LIGHT_RED
   roundShadow = true }
+{ viewId = "ada_forge" symbol = "&" color = ColorId LIGHT_BLUE
+  roundShadow = true }
 { viewId = "myst_forge" symbol = "&" color = ColorId WHITE
   roundShadow = true }
 { viewId = "workshop" symbol = "&" color = ColorId LIGHT_BROWN

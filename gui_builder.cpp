@@ -2652,6 +2652,11 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
   auto& options = info.options;
   auto& queued = info.queued;
   auto lines = WL(getListBuilder, legendLineHeight);
+  lines.addElem(WL(getListBuilder)
+      .addElemAuto(WL(label, "Requires: "))
+      .addElemAuto(WL(viewObject, info.attr))
+      .addElemAuto(WL(label, toString(info.minAttrValue)))
+      .buildHorizontalList());
   if (info.resourceTabs.size() >= 2) {
     lines.addElem(WL(topMargin, 3, WL(getListBuilder)
         .addElemAuto(WL(label, "Material: "))

@@ -95,6 +95,12 @@ TRAINING("_DWARF", "_dwarf")
   upgrade = "FORGE"
   usagePredicate = Not Area 1 Not FurnitureType "MAGMA"
 }
+"ADA_FORGE" inherit "FORGE"
+{
+  name = "adamantium forge"
+  viewId = { "ada_forge" }
+  upgrade = "FORGE"
+}
 "MYST_FORGE" inherit "FORGE"
 {
   name = "myst forge"
