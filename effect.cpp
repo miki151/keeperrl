@@ -71,6 +71,8 @@ namespace {
 struct DefaultType {
   template <typename T>
   DefaultType(const T&) {}
+  template <typename T>
+  DefaultType(T&) {}
 };
 }
 
@@ -374,6 +376,10 @@ static bool applyToCreature(const Effects::IncreaseAttr& e, Creature* c, Creatur
 
 static string getName(const Effects::IncreaseAttr& e, const ContentFactory* f) {
   return f->attrInfo.at(e.attr).name + e.get(" boost", " loss");
+}
+
+static void scale(Effects::IncreaseAttr& e, double value, const ContentFactory* f) {
+  e.amount *= value;
 }
 
 static string getDescription(const Effects::IncreaseAttr& e, const ContentFactory* f) {
@@ -1455,6 +1461,11 @@ static bool isOffensive(const Effects::Chain& c) {
   return false;
 }
 
+static void scale(Effects::Chain& e, double value, const ContentFactory* f) {
+  for (auto& e : e.effects)
+    e.scale(value, f);
+}
+
 static EffectAIIntent shouldAIApply(const Effects::Chain& chain, const Creature* caster, Position pos) {
   auto allRes = 0;
   auto badRes = 0;
@@ -1731,6 +1742,10 @@ static optional<ViewId> getProjectile(const Effects::GenericModifierEffect& e) {
 
 static int getPrice(const Effects::GenericModifierEffect& e, const ContentFactory* f) {
   return e.effect->getPrice(f);
+}
+
+static void scale(Effects::GenericModifierEffect& e, double value, const ContentFactory* f) {
+  e.effect->scale(value, f);
 }
 
 static bool canAutoAssignMinionEquipment(const Effects::GenericModifierEffect& e) {
@@ -2610,7 +2625,14 @@ static int getPrice(const DefaultType& e, const ContentFactory*) {
 }
 
 int Effect::getPrice(const ContentFactory* f) const {
-    return effect->visit<int>([f](const auto& elem) { return ::getPrice(elem, f); });
+  return effect->visit<int>([f](const auto& elem) { return ::getPrice(elem, f); });
+}
+
+static void scale(const DefaultType& e, double, const ContentFactory*) {
+}
+
+void Effect::scale(double value, const ContentFactory* f) {
+  effect->visit<void>([f, value](auto& elem) { ::scale(elem, value, f); });
 }
 
 SERIALIZE_DEF(Effect, effect)
