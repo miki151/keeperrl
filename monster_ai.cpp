@@ -849,6 +849,8 @@ class ByCollective : public Behaviour {
   }
 
   bool riderShouldDismount(Creature* c) {
+    if (!collective->getCreatures().contains(c->getSteed()))
+      return true;
     auto& territory = collective->getTerritory();
     if (!riderNeedsSteed(c)) {
       for (auto v : c->getPosition().neighbors8())
