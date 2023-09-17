@@ -115,9 +115,7 @@ auto Workshops::Type::addWork(Collective* collective, double amount, int skillAm
         auto factory = collective->getGame()->getContentFactory();
         auto ret = product.item.type.get(factory);
         if (itemScaling > 1)
-          for (auto& attr : factory->attrOrder)
-            if (ret->getModifierValues().count(attr))
-              ret->addModifier(attr, ret->getModifier(attr) * (itemScaling - 1));
+          ret->scale(itemScaling, factory);
         for (auto& rune : product.runes)
           if (auto& upgradeInfo = rune->getUpgradeInfo())
             ret->applyPrefix(*upgradeInfo->prefix, collective->getGame()->getContentFactory());

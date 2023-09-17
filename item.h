@@ -93,12 +93,13 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   bool isConflictingEquipment(const Item*) const;
   void addModifier(AttrType, int value);
   int getModifier(AttrType) const;
-  const map<AttrType, int>& getModifierValues() const;
-  const map<AttrType, pair<int, CreaturePredicate>>& getSpecialModifiers() const;
+  const HashMap<AttrType, int>& getModifierValues() const;
+  const HashMap<AttrType, pair<int, CreaturePredicate>>& getSpecialModifiers() const;
   void tick(Position, bool carried);
   virtual bool canEverTick(bool carried) const;
   void applyPrefix(const ItemPrefix&, const ContentFactory*);
   void setTimeout(GlobalTime);
+  void scale(double, const ContentFactory*);
 
   string getApplyMsgThirdPerson(const Creature* owner) const;
   string getApplyMsgFirstPerson(const Creature* owner) const;

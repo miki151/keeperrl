@@ -19,9 +19,7 @@ WorkshopItem WorkshopItemCfg::get(WorkshopType type, const ContentFactory* facto
   PItem elem = item.get(factory);
   auto itemScaling = factory->workshopInfo.at(type).itemScaling;
   if (itemScaling > 1)
-    for (auto& attr : factory->attrOrder)
-      if (elem->getModifierValues().count(attr))
-        elem->addModifier(attr, elem->getModifier(attr) * (itemScaling - 1));
+    elem->scale(itemScaling, factory);
   vector<string> description;
   if (elem->getNameAndModifiers(factory) != elem->getName())
     description.push_back(elem->getNameAndModifiers(factory));

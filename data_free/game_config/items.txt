@@ -34,7 +34,7 @@ Def HUMANOID_HEAD(Suffix, Color, Adjective, ResourceId, Defense)
   }
 End
 Def ARCHER_HEAD(Suffix, Color, Adjective, ResourceId, Defense, Damage)
-"ArcherHead" + Suffix  
+"ArcherHead" + Suffix
   {
     viewId = { "automaton_arrow" Rgb Color 255 }
     name = Adjective + " arrow shooting head"

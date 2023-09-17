@@ -54,6 +54,15 @@ void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAt
   }
 }
 
+void scale(const ContentFactory* factory, ItemPrefix& prefix, double value) {
+  prefix.visit<void>(
+      [&](ItemPrefixes::AssembledCreatureEffect& a) {
+        a.scale(value, factory);
+      },
+      [](auto&) {}
+  );
+}
+
 void applyPrefixToCreature(const ItemPrefix& prefix, Creature* c) {
   auto applyToIntrinsicAttack = [&] {
     auto& attacks = c->getBody().getIntrinsicAttacks();
