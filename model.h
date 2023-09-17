@@ -85,9 +85,6 @@ class Model : public OwnedObject<Model> {
 
   void addCollective(PCollective);
 
-  void addWoodCount(int);
-  int getWoodCount() const;
-
   int getSaveProgressCount() const;
 
   void killCreature(Creature* victim);
@@ -139,7 +136,6 @@ class Model : public OwnedObject<Model> {
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL(currentTime) = 0;
-  int SERIAL(woodCount) = 0;
   using StairConnections = HashMap<StairKey, int>;
   StairConnections createStairConnections(const MovementType&) const;
   HashMap<MovementType, StairConnections> SERIAL(stairNavigation);

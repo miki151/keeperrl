@@ -65,7 +65,7 @@ template <class Archive>
 void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
   ar & SUBCLASS(OwnedObject<Model>);
-  ar(levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick, biomeId, position);
+  ar(levels, collectives, timeQueue, deadCreatures, currentTime, game, lastTick, biomeId, position);
   ar(stairNavigation, cemetery, mainLevels, upLevels, eventGenerator, externalEnemies, defaultMusic, portals);
 }
 
@@ -84,14 +84,6 @@ void Model::prepareForRetirement() {
   for (PCreature& c : deadCreatures)
     c->clearInfoForRetiring();
   externalEnemies = none;
-}
-
-void Model::addWoodCount(int cnt) {
-  woodCount += cnt;
-}
-
-int Model::getWoodCount() const {
-  return woodCount;
 }
 
 int Model::getSaveProgressCount() const {
