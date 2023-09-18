@@ -154,8 +154,11 @@ void Model::tick(LocalTime time) { PROFILE
     for (auto v : l->territory.getBounds())
       l->territory[v] = nullptr;
   for (auto& col : collectives)
-    for (auto& pos : col->getTerritory().getAll())
-      pos.getLevel()->territory[pos.getCoord()] = col.get();
+    for (auto& pos : col->getTerritory().getAll()) {
+      auto& value = pos.getLevel()->territory[pos.getCoord()];
+      if (!value || value->getVillainType() != VillainType::PLAYER)
+        value = col.get();
+    }
   if (externalEnemies)
     externalEnemies->update(getGroundLevel(), time);
   stairNavigation.clear();
