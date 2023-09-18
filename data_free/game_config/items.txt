@@ -891,8 +891,6 @@ End
     craftingCost = "ADOXIUM" 2
     modifiers = {
       DEFENSE 5
-    }
-    modifiers = append {
       SPELL_SPEED 10
     }
   }
@@ -1158,12 +1156,10 @@ End
   {
     viewId = { "chain_armor" ColorId PINK }
     name = "adoxium armor"
-    modifiers = {
-      DEFENSE 10
-    }
     price = 1600
     craftingCost = "ADOXIUM" 40
-    modifiers = append {
+    modifiers = {
+      DEFENSE 10
       SPELL_SPEED 25
     }
     equipmentGroup = "adoxium equipment"
@@ -1371,12 +1367,10 @@ End
     name = "adoxium helm"
     modifiers = {
       DEFENSE 5
+      SPELL_SPEED 15
     }
     price = 400
     craftingCost = "ADOXIUM" 16
-    modifiers = append {
-      SPELL_SPEED 15
-    }
     equipmentGroup = "adoxium equipment"
   }
 "Cornuthaum1"
