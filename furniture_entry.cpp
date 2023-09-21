@@ -10,6 +10,7 @@
 #include "effect.h"
 #include "movement_set.h"
 #include "game_event.h"
+#include "model.h"
 
 FurnitureEntry::FurnitureEntry(FurnitureEntry::EntryData d) : entryData(d) {
 }
@@ -56,7 +57,9 @@ void FurnitureEntry::handle(Furniture* f, Creature* c) {
         c->removeEffect(LastingEffect::ON_FIRE);
         MovementType realMovement = c->getMovementType();
         realMovement.setForced(false);
-        if (!f->getMovementSet().canEnter(realMovement)) {
+        // Workaround to not kill creatures that are being landed as it causes a crash
+        if (!f->getMovementSet().canEnter(realMovement) &&
+            c->getPosition().getModel()->getAllCreatures().contains(c)) {
           if (auto holding = c->getHoldingCreature()) {
             c->you(MsgType::ARE, "drowned by " + holding->getName().the());
             c->dieWithAttacker(holding, Creature::DropType::ONLY_INVENTORY);
@@ -69,7 +72,9 @@ void FurnitureEntry::handle(Furniture* f, Creature* c) {
       [&](Magma) {
         MovementType realMovement = c->getMovementType();
         realMovement.setForced(false);
-        if (!f->getMovementSet().canEnter(realMovement)) {
+        // Workaround to not kill creatures that are being landed as it causes a crash
+        if (!f->getMovementSet().canEnter(realMovement) &&
+            c->getPosition().getModel()->getAllCreatures().contains(c)) {
           c->verb("scream!", "screams!");
           c->you(MsgType::BURN, f->getName());
           c->dieWithReason("burned to death", Creature::DropType::ONLY_INVENTORY);
