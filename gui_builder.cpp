@@ -2583,6 +2583,8 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
 optional<int> GuiBuilder::getNumber(const string& title, Vec2 position, Range range, int initial) {
   ScriptedUIState state;
   int result = initial;
+  while (initial > range.getEnd())
+    range = Range(range.getStart(), range.getStart() + range.getLength() * 10);
   bool confirmed = false;
   while (true) {
     bool changed = false;
@@ -2590,6 +2592,21 @@ optional<int> GuiBuilder::getNumber(const string& title, Vec2 position, Range ra
       {"title", title},
       {"range_begin", toString(range.getStart())},
       {"range_end", toString(range.getEnd())},
+      {"range_inc", ScriptedUIDataElems::Callback { [&range, &changed, &state] {
+        if (range.getLength() <= 1000)
+          range = Range(range.getStart(), range.getStart() + range.getLength() * 10);
+        changed = true;
+        state.sliderState.clear();
+        return true;
+      }}},
+      {"range_dec", ScriptedUIDataElems::Callback { [&range, &changed, &state, &result] {
+        if (range.getLength() >= 100)
+          range = Range(range.getStart(), range.getStart() + range.getLength() / 10);
+        result = min(range.getEnd(), result);
+        changed = true;
+        state.sliderState.clear();
+        return true;
+      }}},
       {"current", toString(result)},
       {"confirm", ScriptedUIDataElems::Callback {
           [&confirmed] { confirmed = true; return true; }
@@ -2626,7 +2643,7 @@ optional<int> GuiBuilder::getNumber(const string& title, Vec2 position, Range ra
     }};
     bool exit = false;
     auto ui = gui.scripted([&]{exit = true; }, ScriptedUIId("number_menu"), data, state);
-    drawMiniMenu(std::move(ui), exit, position, 450, false);
+    drawMiniMenu(std::move(ui), exit, position, 650, false);
     if (!changed)
       break;
   }
