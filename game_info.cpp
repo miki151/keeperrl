@@ -147,7 +147,7 @@ static vector<ItemInfo> getItemInfos(const Creature* c, const vector<Item*>& ite
 SpellSchoolInfo fillSpellSchool(const Creature* c, SpellSchoolId id, const ContentFactory* factory) {
   SpellSchoolInfo ret;
   auto& spellSchool = factory->getCreatures().getSpellSchools().at(id);
-  ret.name = id.data();
+  ret.name = spellSchool.name.value_or(id.data());
   ret.experienceType = spellSchool.expType;
   for (auto& id : spellSchool.spells) {
     auto spell = factory->getCreatures().getSpell(id.first);

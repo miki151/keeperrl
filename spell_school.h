@@ -5,6 +5,8 @@
 
 struct SpellSchool {
   ExperienceType SERIAL(expType);
+  optional<string> SERIAL(name);
   vector<pair<SpellId, int>> SERIAL(spells);
-  SERIALIZE_ALL(expType, spells)
+  SERIALIZATION_DECL(SpellSchool)
+  void serialize(PrettyInputArchive& ar1, const unsigned int);
 };
