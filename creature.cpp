@@ -2258,7 +2258,7 @@ CreatureAction Creature::destroy(Vec2 direction, const DestroyAction& action) co
       return CreatureAction(this, [=](Creature* self) {
         self->destroyImpl(direction, action);
         if (auto movementInfo = self->spendTime())
-          if (direction.length8() == 1)
+          if (direction.length8() == 1 && action.destroyAnimation())
             self->addMovementInfo(movementInfo
                 ->setDirection(getPosition().getDir(pos))
                 .setMaxLength(1_visible)

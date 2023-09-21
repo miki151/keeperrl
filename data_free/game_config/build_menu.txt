@@ -15,7 +15,9 @@
     { Furniture {{ "PIT" }                        "STONE" 0 }      "Dig a pit"         "Structure"
       "Dig a pit in the ground. Building next to water or lava will cause it to fill up." }
 
-    { Furniture {{ "FILL_UP_WATER_FLOOR" }        "STONE" 20 }     "Fill lava or water""Structure"
+    { { FillPit }                                        "Fill a pit"   "Structure"}
+
+    { Furniture {{ "FILL_UP_WATER_FLOOR" }        "STONE" 5 }     "Fill lava or water""Structure"
       "" }
 
     { Furniture {{ "FLOOR" }              }               "Building interior" "Structure"

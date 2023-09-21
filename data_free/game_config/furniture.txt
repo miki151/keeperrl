@@ -1668,6 +1668,9 @@ Def BedHeal() Heal { FLESH 0.005 } End
   xForgetAfterBuilding = true
   tickType = Pit
   canBuildOutsideOfTerritory = true
+  strength2 = {
+    70 FILL
+  }
 }
 "CASTLE_PILLAR"
 {

@@ -157,7 +157,8 @@ void Furniture::destroy(Position pos, const DestroyAction& action, Creature* des
 
 void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& action) {
   if (auto& info = destroyedInfo[action.getType()]) {
-    c->addSound(action.getSound());
+    if (auto s = action.getSound())
+      c->addSound(*s);
     double damage = action.getDamage(c);
     info->health -= damage / info->strength;
     updateViewObject();

@@ -25,6 +25,7 @@ namespace BuildInfoTypes {
   using ImmediateDig = EmptyStruct<struct ImmediateDigTag>;
   using Dig = EmptyStruct<struct DigTag>;
   using CutTree = EmptyStruct<struct CutTreeTag>;
+  using FillPit = EmptyStruct<struct FillPitTag>;
   using ClaimTile = EmptyStruct<struct ClaimTileTag>;
   using UnclaimTile = EmptyStruct<struct UnclaimTileTag>;
   using Dispatch = EmptyStruct<struct DispatchTag>;
@@ -47,7 +48,8 @@ namespace BuildInfoTypes {
     X(ImmediateDig, 9)\
     X(PlaceItem, 10)\
     X(Zone, 11)\
-    X(Chain, 12)
+    X(Chain, 12)\
+    X(FillPit, 13)
 
   #define VARIANT_NAME BuildType
 

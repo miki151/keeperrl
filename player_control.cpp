@@ -835,6 +835,9 @@ ViewId PlayerControl::getViewId(const BuildInfoTypes::BuildType& info) const {
       [&](const BuildInfoTypes::CutTree&) {
         return ViewId("dig_icon");
       },
+      [&](const BuildInfoTypes::FillPit&) {
+        return ViewId("fill_pit_icon");
+      },
       [&](const BuildInfoTypes::Chain& c) {
         return getViewId(c[0]);
       },
@@ -3187,6 +3190,12 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
     },
     [&](const BuildInfoTypes::Dig&) {
       handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::DIG, dryRun);
+    },
+    [&](const BuildInfoTypes::FillPit&) {
+      if (auto f = position.getFurniture(FurnitureLayer::MIDDLE))
+        if (auto t = f->getTickType())
+          if (t->contains<FurnitureTickTypes::Pit>())
+            handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::FILL, dryRun);
     },
     [&](const BuildInfoTypes::Chain& c) {
       for (auto& elem : c)
