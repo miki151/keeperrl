@@ -4365,7 +4365,7 @@
 "ADOXIE_FOOT_LEFT_TRAP" inherit "ADOXIE_FOOT_LEFT"
   {
     attr = {
-      DEFENSE 30 
+      DEFENSE 30
       SPELL_DAMAGE 30
     }
     permanentEffects = append {
@@ -4396,6 +4396,8 @@
       pluralName = "Hands"
       fullTitle = true
     }
+    chatReactionFriendly = "\"nothing, why did you think a foot could talk?\""
+    chatReactionHostile = "\"nothing, why did you think a foot could talk?\""
   }
 "ADOXIE_HAND_RIGHT" inherit "ADOXIE_LEFT_HAND"
   {
@@ -4405,6 +4407,8 @@
       pluralName = "Hands"
       fullTitle = true
     }
+    chatReactionFriendly = "\"nothing, why did you think a foot could talk?\""
+    chatReactionHostile = "\"nothing, why did you think a foot could talk?\""
   }
 "ADOXIE_PRIEST"
   {
@@ -4438,12 +4442,12 @@
     spells = { "summon flies" "expert magic missile" "advanced haste" "slow" "magic cancellation" "pull"
         "advanced defense bonus" "advanced damage bonus" "advanced fire elemental" }
   }
-"ABOMINATION" 
+"ABOMINATION"
   {
     viewId = { "abomination" }
     attr = {
       DAMAGE 60
-      DEFENSE 40 
+      DEFENSE 40
     }
     body = {
       type = FourLegged HUGE
@@ -4459,7 +4463,7 @@
   {
     attr = {
       DAMAGE 15
-      DEFENSE 15 
+      DEFENSE 15
     }
   }
 Def UnlockMessage(Text, ViewId)
@@ -4471,7 +4475,7 @@ End
     viewId = { "goblin_keeper4" }
     attr = {
       DAMAGE 12
-      DEFENSE 13 
+      DEFENSE 13
     }
     body = {
       type = Humanoid MEDIUM
@@ -4500,7 +4504,7 @@ End
     viewIdUpgrades = { { "goblin_keeper2" } { "goblin_keeper3" } { "goblin_keeper4" } }
     attr = {
       DAMAGE 12
-      DEFENSE 13 
+      DEFENSE 13
     }
     body = {
       type = Humanoid MEDIUM
