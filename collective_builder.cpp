@@ -70,15 +70,36 @@ optional<CollectiveName> CollectiveBuilder::generateName() const {
     auto leader = creatures[0].creature;
     ret.viewId = leader->getViewIdWithWeapon();
     if (locationName && raceName)
-      ret.full = capitalFirst(*raceName) + " of " + *locationName;
+      ret.full = " The " + capitalFirst(*raceName) + " of " + capitalFirst(*locationName);
+      // =========================================================
+      // When Localization project is on progress, perhaps consider using this format
+      // after making an identifier function for these section.
+      // The usage is for anything with connector (of, and, from, etc).
+      // Example 1:
+      // File directory: /mod/localization/Japanese/JPN_LOC.txt 
+      // (resource file name can be arbitrary, used for debugging address, 
+      // the real that matters is the previous folder's name)
+      // ==========================
+      //  #/mod/localization/Japanese/JPN_LOC.txt (Arbitrary section used for debugging)
+      // { locationName&&RaceName = locationName + "の" + raceName }
+      // Example 2:
+      // File directory: /mod/localization/Indonesian/INA_LOC.txt 
+      // (file name can be arbitrary, used for debugging address, 
+      // the real that matters is the previous folder's name)
+      // ==========================
+      //  #/mod/localization/Japanese/INA_LOC.txt (Arbitrary section used for debugging)
+      // { locationName&&RaceName = raceName locationName }
+      // =========================================================
+      // DeliveryService
+      // =========================================================
     else if (!!leader->getName().first())
       ret.full = leader->getName().title();
     else if (raceName)
-      ret.full = capitalFirst(*raceName);
+      ret.full = "The " + capitalFirst(*raceName);
     else
       ret.full = leader->getName().title();
     if (locationName)
-      ret.shortened = *locationName;
+      ret.shortened = "The " + capitalFirst(*locationName);
     else if (auto leaderName = leader->getName().first())
       ret.shortened = *leaderName;
     if (raceName)
