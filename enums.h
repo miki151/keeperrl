@@ -33,7 +33,6 @@ enum class ItemClass;
 enum class EquipmentSlot;
 enum class OptionId;
 enum class CampaignType;
-enum class PlayerRole;
 
 enum class MovementTrait;
 enum class CreatureSize;

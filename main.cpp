@@ -42,7 +42,6 @@
 #include "audio_device.h"
 #include "sokoban_input.h"
 #include "keybinding_map.h"
-#include "player_role.h"
 #include "campaign_type.h"
 #include "dummy_view.h"
 #include "sound.h"

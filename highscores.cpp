@@ -4,7 +4,6 @@
 #include "file_sharing.h"
 #include "options.h"
 #include "campaign_type.h"
-#include "player_role.h"
 #include "parse_game.h"
 #include "scripted_ui.h"
 #include "scripted_ui_data.h"
@@ -90,7 +89,6 @@ optional<Highscores::Score> Highscores::Score::parse(const string& buf) {
           c.points = ::fromString<int>(p[5]);
           c.turns = ::fromString<int>(p[6]);
           c.campaignType = EnumInfo<CampaignType>::fromStringWithException(p[7]);
-          c.playerRole = EnumInfo<PlayerRole>::fromStringWithException(p[8]);
           c.version = ::fromString<int>(p[9]);
       );
     } catch (ParsingException&) {}
@@ -180,21 +178,19 @@ static HighscoreList fillScores(const string& name, optional<Score> lastElem, ve
 
 struct PublicScorePage {
   CampaignType type;
-  PlayerRole role;
   const char* name;
   SortingType sorting;
 };
 
 static vector<PublicScorePage> getPublicScores() {
   return {
-    {CampaignType::FREE_PLAY, PlayerRole::KEEPER, "Keeper", SortingType::MOST_POINTS},
-    {CampaignType::FREE_PLAY, PlayerRole::ADVENTURER, "Adventurer", SortingType::SHORTEST_MOST_POINTS},
+    {CampaignType::FREE_PLAY, "Keeper", SortingType::MOST_POINTS},
   };
 }
 
 bool Score::isPublic() const {
   for (auto& elem : getPublicScores())
-    if (elem.type == campaignType && elem.role == playerRole)
+    if (elem.type == campaignType)
       return true;
   return false;
 }
@@ -220,7 +216,7 @@ void Highscores::present(View* view, optional<Score> lastAdded) const {
     ScriptedUIDataElems::List list;
     auto scoreType = getPublicScores()[tab];
     auto scores = fillScores(scoreType.name, lastAdded, localScores.filter(
-        [&] (const Score& s) { return s.campaignType == scoreType.type && s.playerRole == scoreType.role;}), scoreType.sorting).scores;
+        [&] (const Score& s) { return s.campaignType == scoreType.type;}), scoreType.sorting).scores;
     for (auto& score : scores) {
       ScriptedUIDataElems::Record elemData;
       elemData.elems["score"] = score.score;

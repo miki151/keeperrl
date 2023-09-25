@@ -24,7 +24,6 @@
 #include "save_file_info.h"
 #include "creature.h"
 #include "campaign_builder.h"
-#include "player_role.h"
 #include "campaign_type.h"
 #include "game_save_type.h"
 #include "exit_info.h"
@@ -469,8 +468,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
         options->setValue(OptionId::SUGGEST_TUTORIAL, 0);
       }
     }
-    auto avatarChoice = getAvatarInfo(view, contentFactory.keeperCreatures, contentFactory.adventurerCreatures,
-        &contentFactory, *unlocks);
+    auto avatarChoice = getAvatarInfo(view, contentFactory.keeperCreatures, &contentFactory, *unlocks);
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
       CampaignBuilder builder(view, random, options, contentFactory.villains, contentFactory.gameIntros, *avatar);
       tileSet->setTilePathsAndReload(getTilePathsForAllMods());
@@ -1246,16 +1244,10 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup, 
 }
 
 vector<ExternalEnemy> getExternalEnemiesFor(const AvatarInfo& info, const ContentFactory* contentFactory) {
-  return info.creatureInfo.visit(
-      [&] (const KeeperCreatureInfo& i) {
-        vector<ExternalEnemy> ret;
-        for (auto& g : i.endlessEnemyGroups)
-          ret.append(contentFactory->externalEnemies.at(g));
-        return ret;
-      },
-      [&] (const AdventurerCreatureInfo&) {
-        return vector<ExternalEnemy>();
-      });
+  vector<ExternalEnemy> ret;
+  for (auto& g : info.creatureInfo.endlessEnemyGroups)
+    ret.append(contentFactory->externalEnemies.at(g));
+  return ret;
 }
 
 ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInfo& avatarInfo, RandomGen& random,

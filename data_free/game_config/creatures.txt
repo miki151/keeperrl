@@ -9,7 +9,7 @@
     # ViewId upgrades of Keepers are applied every 5 tech level increases
     viewIdUpgrades = { { "keeper2" } { "keeper3" } { "keeper4" } }
     name = {
-      # The name gets changed appropriately to Keeper and Adventurer
+      # The name gets changed appropriately to 'Keeper'
       name = "wizard"
       # Definitions in name_generator.h
       firstNameGen = "FIRST_MALE"
@@ -181,13 +181,13 @@
     viewId = { "player" }
     attr = {
       DAMAGE 15
-      DEFENSE 20 
+      DEFENSE 20
     }
     body = {
       type = Humanoid LARGE
     }
     name = {
-      name = "squire"
+      name = "adventurer"
       firstNameGen = "FIRST_MALE"
       fullTitle = true
      }
@@ -217,7 +217,7 @@
     viewId = { "player_f" }
     gender = FEMALE
     name = {
-      name = "squire"
+      name = "adventurer"
       firstNameGen = "FIRST_FEMALE"
       fullTitle = true
      }

@@ -10,7 +10,6 @@ constexpr auto gameConfigSubdir = "mods";
 enum class GameConfigId {
   CAMPAIGN_VILLAINS,
   KEEPER_CREATURES,
-  ADVENTURER_CREATURES,
   BUILD_MENU,
   WORKSHOPS_MENU,
   IMMIGRATION,

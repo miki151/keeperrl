@@ -56,7 +56,6 @@ class Model : public OwnedObject<Model> {
 
   void addCreature(PCreature);
   void addCreature(PCreature, TimeInterval delay);
-  void landHeroPlayer(PCreature);
   void landWarlord(vector<PCreature>);
   bool landCreature(vector<Position> landing, PCreature);
   void addExternalEnemies(ExternalEnemies);

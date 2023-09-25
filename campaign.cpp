@@ -4,7 +4,6 @@
 #include "model.h"
 #include "progress_meter.h"
 #include "campaign_type.h"
-#include "player_role.h"
 #include "villain_type.h"
 #include "pretty_archive.h"
 #include "perlin_noise.h"
@@ -12,7 +11,7 @@
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Campaign);
 
-SERIALIZE_DEF(Campaign, sites, playerPos, worldName, defeated, influencePos, playerRole, type, mapZoom, minimapZoom, originalPlayerPos, belowMaxAgressorCutOff)
+SERIALIZE_DEF(Campaign, sites, playerPos, worldName, defeated, influencePos, type, mapZoom, minimapZoom, originalPlayerPos, belowMaxAgressorCutOff)
 
 void VillainViewId::serialize(PrettyInputArchive& ar1, unsigned int) {
   if (ar1.peek() == "{" && ar1.peek(2) == "{")
@@ -48,24 +47,16 @@ BiomeId Campaign::getBaseBiome() const {
   return *sites[playerPos].biome;
 }
 
-Campaign::Campaign(Table<SiteInfo> s, CampaignType t, PlayerRole r, const string& w)
-    : sites(s), worldName(w), defeated(sites.getBounds(), false), playerRole(r), type(t) {
+Campaign::Campaign(Table<SiteInfo> s, CampaignType t, const string& w)
+    : sites(s), worldName(w), defeated(sites.getBounds(), false), type(t) {
 }
 
 bool Campaign::isGoodStartPos(Vec2 pos) const {
-  switch (getPlayerRole()) {
-    case PlayerRole::ADVENTURER:
-      if (auto& dweller = sites[pos].dweller)
-        if (auto villain = dweller->getReferenceMaybe<Campaign::VillainInfo>())
-          return villain->type == VillainType::ALLY;
+  for (auto v : Rectangle::centered(pos, 1))
+    if (v.inRectangle(sites.getBounds()) && !!sites[v].dweller &&
+        !sites[v].dweller->contains<Campaign::KeeperInfo>())
       return false;
-    case PlayerRole::KEEPER:
-      for (auto v : Rectangle::centered(pos, 1))
-        if (v.inRectangle(sites.getBounds()) && !!sites[v].dweller &&
-            !sites[v].dweller->contains<Campaign::KeeperInfo>())
-          return false;
-      return !!sites[pos].biome;
-  }
+  return !!sites[pos].biome;
 }
 
 const string& Campaign::getWorldName() const {
@@ -302,22 +293,15 @@ map<string, string> Campaign::getParameters() const {
         case VillainType::LESSER: ++numLesser; break;
         default: break;
       }
-  auto role = EnumInfo<PlayerRole>::getString(playerRole);
   auto gameType = EnumInfo<CampaignType>::getString(type);
-  if (playerRole == PlayerRole::ADVENTURER && type == CampaignType::QUICK_MAP) {
-    role = "WARLORD";
+  if (type == CampaignType::QUICK_MAP)
     gameType = "WARLORD";
-  }
   return {
     {"main", toString(numMain)},
     {"lesser", toString(numLesser)},
     {"allies", toString(numAlly)},
     {"retired", toString(numRetired)},
-    {"player_role", role},
     {"game_type", gameType},
   };
 }
 
-PlayerRole Campaign::getPlayerRole() const {
-  return playerRole;
-}

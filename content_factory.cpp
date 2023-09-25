@@ -5,7 +5,6 @@
 #include "creature_inventory.h"
 #include "creature_attributes.h"
 #include "furniture.h"
-#include "player_role.h"
 #include "tribe_alignment.h"
 #include "item.h"
 #include "key_verifier.h"
@@ -29,7 +28,7 @@
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
   ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups);
-  ar(immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buffs);
+  ar(immigrantsData, buildInfo, villains, gameIntros, keeperCreatures, technology, items, buffs);
   ar(buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping);
   ar(randomLayouts, tileGasTypes, promotions, dancePositions, equipmentGroups, scriptedHelp, attrInfo, attrOrder);
   ar(bodyMaterials, keybindings, worldMaps, achievements, achievementsOrder, buffsModifyingEfficiency);
@@ -142,15 +141,11 @@ optional<string> ContentFactory::readVillainsTuple(const GameConfig* gameConfig,
 
 optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, KeyVerifier* keyVerifier) {
   map<string, KeeperCreatureInfo> keeperCreaturesTmp;
-  map<string, AdventurerCreatureInfo> adventurerCreaturesTmp;
-  if (auto error = config->readObject(adventurerCreaturesTmp, GameConfigId::ADVENTURER_CREATURES, keyVerifier))
-    return "Error reading player creature definitions: "_s + *error;
   if (auto error = config->readObject(keeperCreaturesTmp, GameConfigId::KEEPER_CREATURES, keyVerifier))
     return "Error reading player creature definitions: "_s + *error;
   keeperCreatures = vector<pair<string, KeeperCreatureInfo>>(keeperCreaturesTmp.begin(), keeperCreaturesTmp.end());
-  adventurerCreatures = vector<pair<string, AdventurerCreatureInfo>>(adventurerCreaturesTmp.begin(), adventurerCreaturesTmp.end());
-  if (keeperCreatures.empty() || adventurerCreatures.empty())
-    return "Keeper and adventurer lists must each contain at least 1 entry."_s;
+  if (keeperCreatures.empty())
+    return "Keeper list must contain at least 1 entry."_s;
   for (auto& keeperInfo : keeperCreatures) {
     vector<BuildInfo> buildInfoTmp;
     set<string> allDataGroups;

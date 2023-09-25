@@ -5,10 +5,6 @@ StairKey StairKey::getNew() {
   return Random.getLL();
 }
 
-StairKey StairKey::heroSpawn() {
-  return StairKey(0);
-}
-
 StairKey StairKey::keeperSpawn() {
   return StairKey(1);
 }

@@ -425,17 +425,6 @@ void Model::landWarlord(vector<PCreature> player) {
   ref[0]->pushController(getWarlordController(team, teamOrders));
 }
 
-void Model::landHeroPlayer(PCreature player) {
-  Creature* ref = player.get();
-  Level* target = getGroundLevel();
-  vector<Position> landing = target->getLandingSquares(StairKey::heroSpawn());
-  if (!target->landCreature(landing, ref))
-    CHECK(target->landCreature(target->getAllLandingPositions(), ref)) << "No place to spawn player";
-  addCreature(std::move(player));
-  ref->setController(makeOwner<Player>(ref, true, make_shared<MapMemory>(), make_shared<MessageBuffer>(),
-      make_shared<VisibilityMap>(), make_shared<UnknownLocations>()));
-}
-
 void Model::addExternalEnemies(ExternalEnemies e) {
   externalEnemies = std::move(e);
 }

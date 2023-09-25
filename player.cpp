@@ -78,17 +78,16 @@
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
   ar& SUBCLASS(Controller) & SUBCLASS(EventListener);
-  ar(travelDir, target, displayGreeting, levelMemory, messageBuffer);
-  ar(adventurer, visibilityMap, tutorial, unknownLocations, avatarLevel);
+  ar(travelDir, target, levelMemory, messageBuffer);
+  ar(visibilityMap, tutorial, unknownLocations, avatarLevel);
 }
 
 SERIALIZABLE(Player)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Player)
 
-Player::Player(Creature* c, bool adv, SMapMemory memory, SMessageBuffer buf, SVisibilityMap v, SUnknownLocations loc, STutorial t)
-    : Controller(c), levelMemory(memory), messageBuffer(buf), visibilityMap(v), unknownLocations(loc),
-      adventurer(adv), displayGreeting(adventurer), tutorial(t) {
+Player::Player(Creature* c, SMapMemory memory, SMessageBuffer buf, SVisibilityMap v, SUnknownLocations loc, STutorial t)
+    : Controller(c), levelMemory(memory), messageBuffer(buf), visibilityMap(v), unknownLocations(loc), tutorial(t) {
   visibilityMap->update(c, c->getVisibleTiles());
 }
 
@@ -139,29 +138,9 @@ void Player::onEvent(const GameEvent& event) {
                 getCardinalName(myPos.getDir(pos).getBearing().getCardinalDir()));
         }
       },
-      [&](const ConqueredEnemy& info) {
-        if (adventurer && info.collective->isDiscoverable() && info.byPlayer) {
-          if (auto& name = info.collective->getName())
-            privateMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
-                  MessagePriority::CRITICAL));
-          else
-            privateMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
-          avatarLevel->onKilledVillain(info.collective->getVillainType());
-          if (avatarLevel->numResearchAvailable() > 0)
-            playerLevelDialog();
-        }
-      },
       [&](const FX& info) {
         if (creature->canSee(info.position))
           getView()->animation(FXSpawnInfo(info.fx, info.position.getCoord(), info.direction.value_or(Vec2(0, 0))));
-      },
-      [&](const WonGame&) {
-        if (adventurer) {
-          getGame()->conquered(creature->getName().firstOrBare(), creature->getKills().size(), creature->getPoints());
-          getGame()->achieve(AchievementId("won_adventurer"));
-          if (creature->getBody().getHealth() <= 0.05)
-            getGame()->achieve(AchievementId("won_game_low_health"));
-        }
       },
       [&](const auto&) {}
   );
@@ -643,8 +622,6 @@ vector<Player::CommandInfo> Player::getCommands() const {
       [] (Player* player) { auto c = player->creature; player->tryToPerform(c->drop(c->getEquipment().getItems())); }, false},
     {PlayerInfo::CommandInfo{"Message history", Keybinding("MESSAGE_HISTORY"), "Show message history.", true},
       [] (Player* player) { player->showHistory(); }, false},
-    {PlayerInfo::CommandInfo{"Level up", Keybinding("LEVEL_UP"), "Level up your character.", adventurer},
-      [] (Player* player) { player->playerLevelDialog(); }, false},
 #ifndef RELEASE
     {PlayerInfo::CommandInfo{"Wait multiple turns", none, "", true},
       [] (Player* player) {
@@ -710,10 +687,7 @@ void Player::makeMove() {
   generateHalluIds();
   if (!isSubscribed())
     subscribeTo(getModel());
-  if (adventurer)
-    considerAdventurerMusic();
-  else
-    considerKeeperModeTravelMusic();
+  considerKeeperModeTravelMusic();
   for (Position pos : creature->getVisibleTiles())
     updateSquareMemory(pos);
   MEASURE(
@@ -729,11 +703,6 @@ void Player::makeMove() {
   if (getGame()->getOptions()->getBoolValue(OptionId::CONTROLLER_HINT_TURN_BASED)) {
     getView()->scriptedUI("controller_hint_turn_based", ScriptedUIData{});
     getGame()->getOptions()->setValue(OptionId::CONTROLLER_HINT_TURN_BASED, 0);
-  }
-  if (displayGreeting && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
-    getView()->updateView(this, true);
-    displayGreeting = false;
-    getView()->updateView(this, false);
   }
   UserInput action = getView()->getAction();
   if (target && action.getId() == UserInputId::IDLE)
@@ -827,9 +796,6 @@ void Player::makeMove() {
         case UserInputId::TUTORIAL_GO_BACK:
           if (tutorial)
             tutorial->goBack();
-          break;
-        case UserInputId::LEVEL_UP:
-          playerLevelDialog();
           break;
         case UserInputId::SCROLL_TO_HOME:
           getView()->resetCenter();
@@ -1260,11 +1226,6 @@ void Player::onKilled(Creature* attacker) {
       ViewIdList{ViewId("grave")}, false,
       "yes_or_no_below"))
     showHistory();
-  if (adventurer) {
-    if (auto& a = attacker->getAttributes().killedByAchievement)
-      game->achieve(*a);
-    game->gameOver(creature, creature->getKills().size(), "monsters", creature->getPoints());
-  }
 }
 
 void Player::onLostControl() {
@@ -1296,40 +1257,6 @@ optional<FurnitureUsageType> Player::getUsableUsageType() const {
 
 vector<TeamMemberAction> Player::getTeamMemberActions(const Creature* member) const {
   return {};
-}
-
-void Player::playerLevelDialog() {
-  ScriptedUIState state;
-  auto data = ScriptedUIDataElems::Record{};
-  int available = avatarLevel->numResearchAvailable();
-  data.elems["heading"] = getPlural("point", available) + " available";
-  auto upgrades = ScriptedUIDataElems::List{};
-  auto factory = getGame()->getContentFactory();
-  bool levelledUp = false;
-  for (auto& elem : creature->getAttributes().getMaxExpLevel()) {
-    auto data = ScriptedUIDataElems::Record{};
-    auto& info = factory->attrInfo.at(elem.first);
-    data.elems["icon"] = ViewIdList{info.viewId};
-    data.elems["value"] = toString<int>(creature->getAttributes().getExpLevel(elem.first));
-    data.elems["limit"] = toString<int>(elem.second);
-    data.elems["tooltip"] = ScriptedUIDataElems::List{
-      "Increases " + info.name + ".",
-      "The creature's limit for this type of training is " + toString<int>(elem.second) + "."
-    };
-    if (available > 0)
-      data.elems["callback"] = ScriptedUIDataElems::Callback{ [elem, this, &levelledUp] {
-        creature->increaseExpLevel(elem.first, 1);
-        ++avatarLevel->consumedLevels;
-        levelledUp = true;
-        return true;
-      }};
-    upgrades.push_back(std::move(data));
-  }
-  data.elems["upgrades"] = std::move(upgrades);
-  data.elems["combat_exp"] = toStringRounded(creature->getCombatExperience(), 0.01);
-  getView()->scriptedUI("adventurer_level", data, state);
-  if (levelledUp)
-    playerLevelDialog();
 }
 
 void Player::fillCurrentLevelInfo(GameInfo& gameInfo) const {
@@ -1485,16 +1412,6 @@ void Player::considerKeeperModeTravelMusic() {
       return;
     }
   getGame()->setCurrentMusic(MusicType::PEACEFUL);
-}
-
-void Player::considerAdventurerMusic() {
-  for (Collective* col : getModel()->getCollectives())
-    if (col->getVillainType() == VillainType::MAIN && !col->isConquered() &&
-        col->getTerritory().contains(creature->getPosition())) {
-      getGame()->setCurrentMusic(MusicType::ADV_BATTLE);
-      return;
-    }
-  getGame()->setCurrentMusic(MusicType::ADV_PEACEFUL);
 }
 
 void Player::scrollStairs(int diff) {

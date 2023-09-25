@@ -17,7 +17,6 @@
 #include "layout_mapping_id.h"
 #include "layout_mapping.h"
 #include "keeper_creature_info.h"
-#include "adventurer_creature_info.h"
 #include "tile_gas_type.h"
 #include "dancing.h"
 #include "scripted_help_info.h"
@@ -63,7 +62,6 @@ class ContentFactory {
   VillainsTuple SERIAL(villains);
   GameIntros SERIAL(gameIntros);
   vector<pair<string, KeeperCreatureInfo>> SERIAL(keeperCreatures);
-  vector<pair<string, AdventurerCreatureInfo>> SERIAL(adventurerCreatures);
   map<CustomItemId, ItemAttributes> SERIAL(items);
   vector<pair<string, ViewId>> SERIAL(equipmentGroups);
   map<BuildingId, BuildingInfo> SERIAL(buildingInfo);

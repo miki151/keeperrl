@@ -195,7 +195,6 @@ class View {
     vector<vector<string>> firstNames;
     optional<TribeAlignment> alignment;
     string name;
-    AvatarRole role;
     string description;
     bool settlementNames;
     OptionId nameOption;
@@ -264,6 +263,5 @@ class View {
 RICH_ENUM(
   View::AvatarRole,
   KEEPER,
-  ADVENTURER,
   WARLORD
 );

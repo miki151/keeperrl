@@ -308,14 +308,12 @@ class GuiBuilder {
   SGuiElem drawGenderButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar);
   SGuiElem drawFirstNameButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar,
       shared_ptr<int> chosenName);
-  SGuiElem drawRoleButtons(shared_ptr<View::AvatarRole> chosenRole, shared_ptr<int> chosenAvatar, shared_ptr<int> avatarPage,
-      const vector<View::AvatarData>&);
-  SGuiElem drawChosenCreatureButtons(View::AvatarRole, shared_ptr<int> chosenAvatar, shared_ptr<int> gender, int page,
+  SGuiElem drawChosenCreatureButtons(shared_ptr<int> chosenAvatar, shared_ptr<int> gender, int page,
       const vector<View::AvatarData>&);
   SGuiElem drawCreatureList(const vector<PlayerInfo>&, function<void(UniqueEntity<Creature>::Id)> button,
       int zoom = 2);
   SGuiElem drawAvatarsForRole(const vector<View::AvatarData>&, shared_ptr<int> avatarPage, shared_ptr<int> chosenAvatar,
-      shared_ptr<int> gender, shared_ptr<View::AvatarRole> chosenRole);
+      shared_ptr<int> gender);
   SGuiElem drawScreenshotOverlay();
   SGuiElem drawTitleButton(const PlayerInfo& minion);
   SGuiElem drawKillsLabel(const PlayerInfo& minion);

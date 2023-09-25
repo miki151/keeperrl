@@ -12,11 +12,6 @@
           }
           Width 25 {}
           Width 160 {
-            Using "Adventurer_set" StandardButton(Label("Adventurer"))
-            Using "Adventurer_active" StandardButtonActivated(Label("Adventurer"))
-          }
-          Width 25 {}
-          Width 160 {
             Using "Single map_set" StandardButton(Label("Single map"))
             Using "Single map_active" StandardButtonActivated(Label("Single map"))
           }

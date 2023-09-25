@@ -43,12 +43,8 @@ struct AvatarIndex : public AvatarIndexElems::AvatarIndexVariant {
   void assign(T elem) {
     *((AvatarIndexElems::AvatarIndexVariant*)this) = std::move(elem);
   }
-  void left(const vector<View::AvatarData>& avatars, int chosenAvatar, View::AvatarRole chosenRole,
-      int avatarPage);
-  void right(const vector<View::AvatarData>& avatars, int chosenAvatar, View::AvatarRole chosenRole,
-      int avatarPage);
-  void up(const vector<View::AvatarData>& avatars, int chosenAvatar, View::AvatarRole chosenRole,
-      int avatarPage);
-  void down(const vector<View::AvatarData>& avatars, int chosenAvatar, View::AvatarRole chosenRole,
-      int avatarPage);
+  void left(const vector<View::AvatarData>& avatars, int chosenAvatar, int avatarPage);
+  void right(const vector<View::AvatarData>& avatars, int chosenAvatar, int avatarPage);
+  void up(const vector<View::AvatarData>& avatars, int chosenAvatar, int avatarPage);
+  void down(const vector<View::AvatarData>& avatars, int chosenAvatar, int avatarPage);
 };

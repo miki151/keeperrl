@@ -15,7 +15,7 @@ class Highscores {
     static optional<Score> parse(const string& buf);
     bool operator == (const Score&) const;
 
-    SERIALIZE_ALL(gameId, playerName, worldName, gameResult, gameWon, points, turns, campaignType, playerRole, version)
+    SERIALIZE_ALL(gameId, playerName, worldName, gameResult, gameWon, points, turns, campaignType, version)
 
     string SERIAL(gameId);
     string SERIAL(playerName);
@@ -25,7 +25,6 @@ class Highscores {
     int SERIAL(points);
     int SERIAL(turns);
     CampaignType SERIAL(campaignType);
-    PlayerRole SERIAL(playerRole);
     int SERIAL(version);
     bool isPublic() const;
   };

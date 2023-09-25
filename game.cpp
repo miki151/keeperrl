@@ -33,7 +33,6 @@
 #include "campaign_builder.h"
 #include "campaign_type.h"
 #include "game_save_type.h"
-#include "player_role.h"
 #include "collective_config.h"
 #include "attack_behaviour.h"
 #include "village_behaviour.h"
@@ -110,7 +109,7 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
   Creature* keeperRef = avatarInfo.playerCreature.get();
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
   model->addCreature(std::move(avatarInfo.playerCreature));
-  auto keeperInfo = *avatarInfo.creatureInfo.getReferenceMaybe<KeeperCreatureInfo>();
+  auto& keeperInfo = avatarInfo.creatureInfo;
   auto builder = CollectiveBuilder(CollectiveConfig::keeper(
           TimeInterval(keeperInfo.immigrantInterval), keeperInfo.maxPopulation, keeperInfo.populationString,
           keeperInfo.prisoners, ConquerCondition::KILL_LEADER, keeperInfo.requireQuartersForExp),
@@ -159,10 +158,7 @@ PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup setup, AvatarInfo
   // Remove sunlight vulnerability temporarily otherwise placing the creature anywhere without cover will fail.
   avatarCreature->getAttributes().removePermanentEffect(LastingEffect::SUNLIGHT_VULNERABLE, 1);
   ret->sunlightInfo.update(ret->getGlobalTime() + ret->sunlightTimeOffset);
-  if (setup.campaign.getPlayerRole() == PlayerRole::ADVENTURER)
-    ret->getMainModel()->landHeroPlayer(std::move(avatar.playerCreature));
-  else
-    ret->spawnKeeper(std::move(avatar), setup.introMessages);
+  ret->spawnKeeper(std::move(avatar), setup.introMessages);
   // Restore vulnerability. If the effect wasn't present in the first place then it will zero-out.
   avatarCreature->getAttributes().addPermanentEffect(LastingEffect::SUNLIGHT_VULNERABLE, 1);
   return ret;
@@ -657,7 +653,6 @@ void Game::conquered(const string& title, int numKills, int points) {
         c.gameWon = true;
         c.turns = getGlobalTime().getVisibleInt();
         c.campaignType = campaign->getType();
-        c.playerRole = campaign->getPlayerRole();
   );
   highscores->add(score);
   highscores->present(view, score);
@@ -665,7 +660,7 @@ void Game::conquered(const string& title, int numKills, int points) {
 
 void Game::retired(const string& title, int numKills, int points) {
   int turns = getGlobalTime().getVisibleInt();
-  int dungeonTurns = campaign->getPlayerRole() == PlayerRole::ADVENTURER ? 0 :
+  int dungeonTurns =
       (getPlayerCollective()->getLocalTime() - initialModelUpdate).getVisibleInt();
   string text = "You have survived in this land for " + toString(turns) + " turns. You killed " +
       toString(numKills) + " enemies.\n";
@@ -686,7 +681,6 @@ void Game::retired(const string& title, int numKills, int points) {
         c.gameWon = false;
         c.turns = turns;
         c.campaignType = campaign->getType();
-        c.playerRole = campaign->getPlayerRole();
   );
   highscores->add(score);
   highscores->present(view, score);
@@ -698,8 +692,7 @@ bool Game::isGameOver() const {
 
 void Game::gameOver(const Creature* creature, int numKills, const string& enemiesString, int points) {
   int turns = getGlobalTime().getVisibleInt();
-  int dungeonTurns = campaign->getPlayerRole() == PlayerRole::ADVENTURER ? 0 :
-      (getPlayerCollective()->getLocalTime() - initialModelUpdate).getVisibleInt();
+  int dungeonTurns = (getPlayerCollective()->getLocalTime() - initialModelUpdate).getVisibleInt();
   string text = "And so dies " + creature->getName().title();
   if (auto reason = creature->getDeathReason()) {
     text += ", " + *reason;
@@ -721,7 +714,6 @@ void Game::gameOver(const Creature* creature, int numKills, const string& enemie
         c.gameWon = false;
         c.turns = turns;
         c.campaignType = campaign->getType();
-        c.playerRole = campaign->getPlayerRole();
   );
   highscores->add(score);
   highscores->present(view, score);
@@ -970,7 +962,7 @@ void Game::addEvent(const GameEvent& event) {
           if (!campaign->isDefeated(coords)) {
             if (auto retired = campaign->getSites()[coords].getRetired())
               uploadEvent("retiredConquered", {{"retiredId", retired->fileInfo.getGameId()}});
-            if (coords != campaign->getPlayerPos() || campaign->getPlayerRole() == PlayerRole::ADVENTURER)
+            if (coords != campaign->getPlayerPos())
               campaign->setDefeated(contentFactory.get(), coords);
           }
         }

@@ -2,7 +2,6 @@
 #include "campaign_builder.h"
 #include "options.h"
 #include "campaign_type.h"
-#include "player_role.h"
 #include "util.h"
 #include "view.h"
 #include "enemy_factory.h"
@@ -34,7 +33,7 @@ void CampaignBuilder::setCountLimits(const CampaignInfo& info) {
   options->setLimits(OptionId::MAIN_VILLAINS, Range(minMainVillains, info.maxMainVillains + 1));
   options->setLimits(OptionId::LESSER_VILLAINS, Range(0, info.maxLesserVillains + 1));
   options->setLimits(OptionId::MINOR_VILLAINS, Range(0, info.maxMinorVillains + 1));
-  options->setLimits(OptionId::ALLIES, Range(getPlayerRole() == PlayerRole::ADVENTURER ? 1 : 0, info.maxAllies + 1));
+  options->setLimits(OptionId::ALLIES, Range(0, info.maxAllies + 1));
 }
 
 vector<OptionId> CampaignBuilder::getCampaignOptions(CampaignType type) const {
@@ -42,73 +41,44 @@ vector<OptionId> CampaignBuilder::getCampaignOptions(CampaignType type) const {
     case CampaignType::QUICK_MAP:
       return {OptionId::LESSER_VILLAINS, OptionId::ALLIES};
     case CampaignType::FREE_PLAY:
-      if (getPlayerRole() == PlayerRole::ADVENTURER)
-        return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::MINOR_VILLAINS, OptionId::ALLIES};
-      else
-        return {
-          OptionId::MAIN_VILLAINS,
-          OptionId::LESSER_VILLAINS,
-          OptionId::MINOR_VILLAINS,
-          OptionId::ALLIES,
-          OptionId::ENDLESS_ENEMIES,
-          OptionId::ENEMY_AGGRESSION,
-        };
+      return {
+        OptionId::MAIN_VILLAINS,
+        OptionId::LESSER_VILLAINS,
+        OptionId::MINOR_VILLAINS,
+        OptionId::ALLIES,
+        OptionId::ENDLESS_ENEMIES,
+        OptionId::ENEMY_AGGRESSION,
+      };
   }
 }
 
 vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
-  switch (getPlayerRole()) {
-    case PlayerRole::KEEPER:
-      return {
-        CampaignType::FREE_PLAY,
+  return {
+    CampaignType::FREE_PLAY,
 #ifndef RELEASE
-        CampaignType::QUICK_MAP,
+    CampaignType::QUICK_MAP,
 #endif
-      };
-    case PlayerRole::ADVENTURER:
-      return {
-        CampaignType::FREE_PLAY,
-      };
-  }
+  };
 }
 
 const char* CampaignBuilder::getIntroText() const {
-   switch (getPlayerRole()) {
-    case PlayerRole::KEEPER:
-      return
-        "Welcome to the campaign mode! "
-        "The world, which you see below, is made up of smaller maps. You will build your base on one of them. "
-        "There are hostile and friendly tribes around you. You have to conquer all villains marked as \"main\" "
-        "to win the game."
-        "You can travel to other sites by creating a team and using the travel command.\n\n"
-        "The highlighted tribes are in your influence zone, which means that you can currently interact with them "
-        "(trade, recruit, attack or be attacked). "
-        "As you conquer more enemies, your influence zone will increase.\n\n";
-    case PlayerRole::ADVENTURER:
-      return
-        "Welcome to the campaign mode! "
-        "The world, which you see below, is made up of smaller maps. Your adventure will start on one of them. "
-        "There are hostile and friendly tribes around you. You have to conquer all villains marked as \"main\" "
-        "to win the game."
-        "You can travel to other sites by using the travel command.\n\n"
-        "The highlighted tribes are in your influence zone, which means that you can currently travel there. "
-        "As you conquer more enemies, your influence zone will increase.\n\n";
-   }
+  return
+    "Welcome to the campaign mode! "
+    "The world, which you see below, is made up of smaller maps. You will build your base on one of them. "
+    "There are hostile and friendly tribes around you. You have to conquer all villains marked as \"main\" "
+    "to win the game."
+    "You can travel to other sites by creating a team and using the travel command.\n\n"
+    "The highlighted tribes are in your influence zone, which means that you can currently interact with them "
+    "(trade, recruit, attack or be attacked). "
+    "As you conquer more enemies, your influence zone will increase.\n\n";
 }
 
 void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewIdList playerViewId) {
-  switch (getPlayerRole()) {
-    case PlayerRole::KEEPER:
-      campaign.sites[campaign.playerPos].dweller.reset();
-      campaign.playerPos = pos;
-      campaign.sites[campaign.playerPos].dweller =
-          Campaign::SiteInfo::Dweller(Campaign::KeeperInfo{playerViewId,
-              avatarInfo.playerCreature->getTribeId()});
-      break;
-    case PlayerRole::ADVENTURER:
-      campaign.playerPos = pos;
-      break;
-  }
+  campaign.sites[campaign.playerPos].dweller.reset();
+  campaign.playerPos = pos;
+  campaign.sites[campaign.playerPos].dweller =
+      Campaign::SiteInfo::Dweller(Campaign::KeeperInfo{playerViewId,
+          avatarInfo.playerCreature->getTribeId()});
 }
 
 static bool tileExists(const ContentFactory* factory, const string& s) {
@@ -271,10 +241,6 @@ bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campai
   return true;
 }
 
-PlayerRole CampaignBuilder::getPlayerRole() const {
-  return avatarInfo.creatureInfo.contains<KeeperCreatureInfo>() ? PlayerRole::KEEPER : PlayerRole::ADVENTURER;
-}
-
 static bool autoConfirm(CampaignType type) {
   switch (type) {
     case CampaignType::QUICK_MAP:
@@ -320,7 +286,6 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
   int numBlocked = 0.6 * size.x * size.y;
   auto retired = genRetired(type);
   View::CampaignMenuState menuState { true, CampaignMenuIndex{CampaignMenuElems::None{}} };
-  const auto playerRole = getPlayerRole();
   options->setChoices(OptionId::ENDLESS_ENEMIES, {"none", "from the start", "after winning"});
   options->setChoices(OptionId::ENEMY_AGGRESSION, {"none", "moderate", "extreme"});
   int worldMapIndex = 0;
@@ -331,7 +296,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
   while (1) {
     setCountLimits(campaignInfo);
     Table<Campaign::SiteInfo> terrain = getTerrain(random, contentFactory, worldMapId(), size);
-    Campaign campaign(terrain, type, playerRole, worldName);
+    Campaign campaign(terrain, type, worldName);
     campaign.mapZoom = campaignInfo.mapZoom;
     campaign.minimapZoom = campaignInfo.minimapZoom;
     if (!placeVillains(contentFactory, campaign, getVillainCounts(type, options), retired, avatarInfo.villainGroups)) {
@@ -398,8 +363,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
         case CampaignActionId::CANCEL:
           return none;
         case CampaignActionId::CONFIRM:
-          if (!retired || retired->getNumActive() > 0 || playerRole != PlayerRole::KEEPER ||
-              retired->getAllGames().empty() ||
+          if (!retired || retired->getNumActive() > 0 || retired->getAllGames().empty() ||
               view->yesOrNoPrompt("The imps are going to be sad if you don't add any retired dungeons. Continue?")) {
             string gameIdentifier;
             string gameDisplayName;
@@ -424,13 +388,13 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
 }
 
 CampaignSetup CampaignBuilder::getEmptyCampaign() {
-  Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::QUICK_MAP, PlayerRole::KEEPER, "");
+  Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::QUICK_MAP, "");
   return CampaignSetup{ret, "", "", {}, none, EnemyAggressionLevel::MODERATE};
 }
 
 CampaignSetup CampaignBuilder::getWarlordCampaign(const vector<RetiredGames::RetiredGame>& games,
     const string& gameName) {
-  Campaign ret(Table<Campaign::SiteInfo>(games.size(), 1), CampaignType::QUICK_MAP, PlayerRole::ADVENTURER, "");
+  Campaign ret(Table<Campaign::SiteInfo>(games.size(), 1), CampaignType::QUICK_MAP, "");
   for (int i : All(games)) {
     auto site = Campaign::SiteInfo {
       games[i].gameInfo.getViewId(),

@@ -13,7 +13,6 @@
 #include "campaign.h"
 #include "enemy_factory.h"
 #include "keeper_creature_info.h"
-#include "adventurer_creature_info.h"
 #include "build_info.h"
 #include "furniture_layer.h"
 #include "tutorial_highlight.h"
@@ -82,7 +81,6 @@ ADD_IMP(ItemType)
 ADD_IMP(CreatureId)
 ADD_IMP(map<PrimaryId<VillainGroup>, vector<Campaign::VillainInfo>>)
 ADD_IMP(map<string, KeeperCreatureInfo>)
-ADD_IMP(map<string, AdventurerCreatureInfo>)
 ADD_IMP(map<string, vector<BuildInfo>>)
 ADD_IMP(map<string, WorkshopArray>)
 ADD_IMP(map<string, vector<ImmigrantInfo>>)

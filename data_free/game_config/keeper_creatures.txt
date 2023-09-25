@@ -204,3 +204,19 @@
   unlock = "cyclops"
 }
 
+"99_adventurer"
+{
+  creatureId = { "ADVENTURER" "ADVENTURER_F" }
+  tribeAlignment = LAWFUL
+  description = "Roam the land in search of adventures and loot!"
+  villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
+  immigrantGroups = {}
+  technology = {}
+  zLevelGroups = { "basic" }
+  initialTech = { }
+  buildingGroups = {}
+  workshopGroups = {}
+  minionTraits = {LEADER WORKER}
+  maxPopulation = 1
+  prisoners = false
+}

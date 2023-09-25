@@ -80,7 +80,6 @@ class Campaign {
   int getBaseLevelIncrease(Vec2) const;
   bool passesMaxAggressorCutOff(Vec2);
   CampaignType getType() const;
-  PlayerRole getPlayerRole() const;
 
   map<string, string> getParameters() const;
 
@@ -90,13 +89,12 @@ class Campaign {
   friend class CampaignBuilder;
   void refreshInfluencePos(const ContentFactory*);
   void refreshMaxAggressorCutOff();
-  Campaign(Table<SiteInfo>, CampaignType, PlayerRole, const string& worldName);
+  Campaign(Table<SiteInfo>, CampaignType, const string& worldName);
   Table<SiteInfo> SERIAL(sites);
   Vec2 SERIAL(playerPos);
   string SERIAL(worldName);
   Table<bool> SERIAL(defeated);
   set<Vec2> SERIAL(influencePos);
-  PlayerRole SERIAL(playerRole);
   CampaignType SERIAL(type);
   int SERIAL(mapZoom);
   int SERIAL(minimapZoom) = 2;

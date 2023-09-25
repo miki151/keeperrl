@@ -21,7 +21,7 @@ class MinionController : public Player {
   public:
   MinionController(Creature* c, SMapMemory memory, PlayerControl* ctrl, SMessageBuffer messages,
                    SVisibilityMap visibilityMap, SUnknownLocations locations, STutorial tutorial)
-      : Player(c, false, memory, messages, visibilityMap, locations, tutorial), control(ctrl) {}
+      : Player(c, memory, messages, visibilityMap, locations, tutorial), control(ctrl) {}
 
 
 

@@ -101,8 +101,7 @@ enum class UserInputId {
   PAY_DEBT,
   APPLY_EFFECT,
   CREATE_ITEM,
-  SUMMON_ENEMY,
-  LEVEL_UP
+  SUMMON_ENEMY
 };
 
 struct CreatureDropInfo {

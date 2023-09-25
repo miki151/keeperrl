@@ -39,7 +39,6 @@ class CampaignBuilder {
   vector<Campaign::VillainInfo> getVillains(const vector<VillainGroup>&, VillainType);
   bool placeVillains(const ContentFactory*, Campaign&, const VillainCounts&, const optional<RetiredGames>&,
       const vector<VillainGroup>&);
-  PlayerRole getPlayerRole() const;
   const vector<string>& getIntroMessages(CampaignType) const;
   void setCountLimits(const CampaignInfo&);
 };

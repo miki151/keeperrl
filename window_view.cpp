@@ -32,7 +32,6 @@
 #include "player_message.h"
 #include "position.h"
 #include "sound_library.h"
-#include "player_role.h"
 #include "file_sharing.h"
 #include "fx_manager.h"
 #include "fx_renderer.h"

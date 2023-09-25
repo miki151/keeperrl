@@ -2129,7 +2129,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
         getGame()->conquered(*collective->getName()->shortened, collective->getKills().getSize(),
             (int) collective->getDangerLevel() + collective->getPoints());
         getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
-          "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
+          "Other players will be able to invade it. To do this, press Escape and choose \'retire\'.");
         getGame()->achieve(AchievementId("won_keeper"));
         auto& leaders = collective->getLeaders();
         if (leaders.size() == 1 && leaders[0]->getBody().getHealth() <= 0.05)

@@ -5,7 +5,6 @@
 #include "game_config.h"
 #include "tribe_alignment.h"
 #include "creature_factory.h"
-#include "player_role.h"
 #include "creature.h"
 #include "view_object.h"
 #include "creature_attributes.h"
@@ -40,7 +39,6 @@ static ViewObject getUpgradedViewId(const Creature* c) {
 
 variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
     const vector<pair<string, KeeperCreatureInfo>>& keeperCreatureInfos,
-    const vector<pair<string, AdventurerCreatureInfo>>& adventurerCreatureInfos,
     ContentFactory* contentFactory, const Unlocks& unlocks) {
   auto& creatureFactory = contentFactory->getCreatures();
   auto keeperCreatures = keeperCreatureInfos.transform([&](auto& elem) {
@@ -49,11 +47,6 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
       for (auto& trait : elem.second.specialTraits)
         applySpecialTrait(0_global, trait, ret.get(), contentFactory);
       return ret;
-    });
-  });
-  auto adventurerCreatures = adventurerCreatureInfos.transform([&](auto& elem) {
-    return elem.second.creatureId.transform([&](auto& id) {
-      return creatureFactory.fromId(id, getPlayerTribeId(elem.second.tribeAlignment));
     });
   });
   vector<View::AvatarData> keeperAvatarData;
@@ -84,55 +77,30 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
       getKeeperFirstNames(i),
       keeperCreatureInfos[i].second.tribeAlignment,
       getKeeperName(i),
-      View::AvatarRole::KEEPER,
       keeperCreatureInfos[i].second.description,
       !!keeperCreatureInfos[i].second.baseNameGen,
       !!keeperCreatureInfos[i].second.baseNameGen ? OptionId::SETTLEMENT_NAME : OptionId::PLAYER_NAME,
       !!keeperCreatureInfos[i].second.unlock ? unlocks.isUnlocked(*keeperCreatureInfos[i].second.unlock) : true
     });
-  vector<View::AvatarData> adventurerAvatarData;
-  for (int i : All(adventurerCreatures))
-    adventurerAvatarData.push_back(View::AvatarData {
-      adventurerCreatures[i].transform([](const auto& c) { return string(getName(c->getAttributes().getGender())); }),
-      adventurerCreatures[i].transform([](const auto& c) { return getUpgradedViewId(c.get()); }),
-      adventurerCreatures[i].transform(getAllNames),
-      adventurerCreatureInfos[i].second.tribeAlignment,
-      adventurerCreatures[i][0]->getName().identify(),
-      View::AvatarRole::ADVENTURER,
-      adventurerCreatureInfos[i].second.description,
-      false,
-      OptionId::PLAYER_NAME,
-      !!adventurerCreatureInfos[i].second.unlock ? unlocks.isUnlocked(*adventurerCreatureInfos[i].second.unlock) : true
-    });
-  auto result1 = view->chooseAvatar(concat(keeperAvatarData, adventurerAvatarData));
+  auto result1 = view->chooseAvatar(keeperAvatarData);
   if (auto option = result1.getValueMaybe<AvatarMenuOption>())
     return *option;
   auto result = result1.getReferenceMaybe<View::AvatarChoice>();
-  variant<KeeperCreatureInfo, AdventurerCreatureInfo> creatureInfo;
   string avatarId;
   PCreature ret;
   optional<string> chosenBaseName;
-  if (result->creatureIndex < keeperCreatures.size()) {
-    creatureInfo = keeperCreatureInfos[result->creatureIndex].second;
-    avatarId = keeperCreatureInfos[result->creatureIndex].first;
-    ret = std::move(keeperCreatures[result->creatureIndex][result->genderIndex]);
-    if (!keeperCreatureInfos[result->creatureIndex].second.noLeader) {
-      ret->getName().setBare("Keeper");
-      ret->getName().setFirst(result->name);
-      ret->getName().useFullTitle();
-    } else
-      chosenBaseName = result->name;
-  } else {
-    auto& elem = adventurerCreatureInfos[result->creatureIndex - keeperCreatures.size()];
-    creatureInfo = elem.second;
-    avatarId = elem.first;
-    ret = std::move(adventurerCreatures[result->creatureIndex - keeperCreatures.size()][result->genderIndex]);
-    ret->getName().setBare("Adventurer");
+  auto& creatureInfo = keeperCreatureInfos[result->creatureIndex].second;
+  avatarId = keeperCreatureInfos[result->creatureIndex].first;
+  ret = std::move(keeperCreatures[result->creatureIndex][result->genderIndex]);
+  if (!keeperCreatureInfos[result->creatureIndex].second.noLeader) {
+    ret->getName().setBare("Keeper");
     ret->getName().setFirst(result->name);
-  }
-  auto villains = creatureInfo.visit([](const auto& elem) { return elem.tribeAlignment;});
-  auto groups = creatureInfo.visit([](const auto& elem) { return elem.villainGroups;});
-  return AvatarInfo{std::move(ret), std::move(creatureInfo), avatarId, villains, groups, chosenBaseName };
+    ret->getName().useFullTitle();
+  } else
+    chosenBaseName = result->name;
+  CHECK(!creatureInfo.villainGroups.empty());
+  return AvatarInfo{std::move(ret), std::move(creatureInfo), avatarId, creatureInfo.tribeAlignment,
+      creatureInfo.villainGroups, chosenBaseName };
 }
 
 AvatarInfo getQuickGameAvatar(View* view, const vector<pair<string, KeeperCreatureInfo>>& keeperCreatures,
