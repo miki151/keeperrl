@@ -109,8 +109,8 @@ End
          { 0.05 { SpecialAttr DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
          { 0.01 { ExtraBodyPart HEAD 1}}
          { 0.01 { ExtraBodyPart WING 2}}
-         { 0.05 { ExtraTraining ARCHERY 2}}
-         { 0.05 { ExtraTraining MELEE 2}}
+         { 0.05 { ExtraTraining RANGED_DAMAGE 2}}
+         { 0.05 { ExtraTraining DAMAGE 2}}
          { 0.03 { AttrBonus DAMAGE 13 Lasting { INSANITY }}}
          { 0.03 { AttrBonus DAMAGE 10 AttrBonus DEFENSE 10 Lasting { AGGRAVATES }}}
          { 0.05 { Lasting { NIGHT_VISION } }}
@@ -136,7 +136,7 @@ End
          { 0.01 { SpecialAttr DEFENSE 10 HatedBy HATE_DRAGONS }}
          { 0.02 { SpecialAttr SPELL_DAMAGE 8 Not Humanoid }}
          { 0.03 { Lasting { RIDER } SpecialAttr SPELL_DAMAGE 6 Name "when riding steed" Attacker Rider }}
-         { 0.10 { ExtraTraining SPELL 4}}
+         { 0.10 { ExtraTraining SPELL_DAMAGE 4}}
          { 0.05 { SpecialAttr SPELL_DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
          { 0.05 { AttrBonus SPELL_SPEED 30 }}
          { 0.03 { AttrBonus SPELL_DAMAGE 10 AttrBonus DEFENSE 10 Lasting { AGGRAVATES }}}
@@ -154,7 +154,7 @@ End
         { 0.0 MinTurnRequirement 500 }
       }
       specialTraits = {
-         { 0.10 { ExtraTraining SPELL 4}}
+         { 0.10 { ExtraTraining SPELL_DAMAGE 4}}
          { 0.10 { Lasting { MAGIC_RESISTANCE } }}
          { 0.02 { Lasting { HATE_ELVES } }}
          { 0.02 { Lasting { HATE_HUMANS } }}
@@ -196,7 +196,7 @@ End
          { 0.05 { Lasting { SWIMMING_SKILL } }}
          { 0.02 { Lasting { HATE_ELVES } }}
          { 0.02 { Lasting { HATE_HUMANS } }}
-         { 0.05 { ExtraTraining ARCHERY 2}}
+         { 0.05 { ExtraTraining RANGED_DAMAGE 2}}
          { 0.05 { Lasting { BAD_BREATH } }}
       }
     }
@@ -392,8 +392,8 @@ End
       }
       specialTraits = {
         { 0.05 { SpecialAttr DAMAGE 8 HatedBy HATE_DRAGONS }}
-        { 0.05 { ExtraTraining ARCHERY 2}}
-        { 0.05 { ExtraTraining MELEE 2}}
+        { 0.05 { ExtraTraining RANGED_DAMAGE 2}}
+        { 0.05 { ExtraTraining DAMAGE 2}}
         { 0.05 { SpecialAttr DAMAGE 6 Name "when riding steed" Attacker Rider }}
         { 0.05 { OneOfTraits { Lasting { FAST_TRAINING } Lasting { SLOW_TRAINING } } }}
         { 0.05 { Lasting { HATE_ELVES } }}
@@ -415,7 +415,7 @@ End
         { 0.15 { SpecialAttr DEFENSE 8 HatedBy HATE_UNDEAD }}
         { 0.03 { AttrBonus SPELL_DAMAGE 4 AttrBonus DEFENSE -4}}
         { 0.02 { AttrBonus SPELL_SPEED 30 }}
-        { 0.05 { ExtraTraining SPELL 2}}
+        { 0.05 { ExtraTraining SPELL_DAMAGE 2}}
         { 0.02 { Lasting { HATE_UNDEAD } }}
       }
     }
@@ -429,7 +429,7 @@ End
       }
       specialTraits = {
         { 0.15 { SpecialAttr DEFENSE 8 HatedBy HATE_UNDEAD }}
-        { 0.05 { ExtraTraining SPELL 2}}
+        { 0.05 { ExtraTraining SPELL_DAMAGE 2}}
         { 0.02 { AttrBonus SPELL_SPEED 30 }}
       }
     }
@@ -451,7 +451,7 @@ End
         { 0.05 { Lasting { SWIMMING_SKILL } }}
         { 0.02 { Lasting { HATE_ELVES } }}
         { 0.02 { Lasting { HATE_HUMANS } }}
-        { 0.05 { ExtraTraining ARCHERY 2}}
+        { 0.05 { ExtraTraining RANGED_DAMAGE 2}}
         { 0.03 { Lasting { BAD_BREATH } }}
       }
     }
@@ -642,8 +642,8 @@ End
          { 0.02 { SpecialAttr DEFENSE 8 HatedBy HATE_HUMANS }}
          { 0.15 { SpecialAttr DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
          { 0.02 { SpecialAttr DEFENSE 8 Not Humanoid }}
-         { 0.05 { ExtraTraining ARCHERY 2}}
-         { 0.05 { ExtraTraining MELEE 2}}
+         { 0.05 { ExtraTraining RANGED_DAMAGE 2}}
+         { 0.05 { ExtraTraining DAMAGE 2}}
          { 0.05 { Lasting { NIGHT_VISION } }}
          { 0.05 { Lasting { DISARM_TRAPS_SKILL } }}
          { 0.05 { Lasting { SWIMMING_SKILL } }}
@@ -670,8 +670,8 @@ End
                 victimEffect = {0.1 Lasting POISON} } } } }
          { 0.01 { SpecialAttr DEFENSE 10 CreatureStatus LEADER }}
          { 0.02 { SpecialAttr DEFENSE 8 HatedBy HATE_HUMANS }}
-         { 0.05 { ExtraTraining ARCHERY 2}}
-         { 0.05 { ExtraTraining MELEE 2}}
+         { 0.05 { ExtraTraining RANGED_DAMAGE 2}}
+         { 0.05 { ExtraTraining DAMAGE 2}}
          { 0.05 { Lasting { NIGHT_VISION } }}
          { 0.05 { Lasting { SWIMMING_SKILL } }}
          { 0.05 { Lasting { MAGIC_VULNERABILITY } }}
@@ -697,7 +697,7 @@ End
          { 0.05 { Lasting { SWIMMING_SKILL } }}
          { 0.02 { Lasting { HATE_ELVES } }}
          { 0.02 { Lasting { HATE_HUMANS } }}
-         { 0.05 { ExtraTraining ARCHERY 2}}
+         { 0.05 { ExtraTraining RANGED_DAMAGE 2}}
          { 0.05 { Lasting { BAD_BREATH } }}
          { 0.03 { AttrBonus RANGED_DAMAGE 10 AttrBonus DEFENSE 10 Lasting { AGGRAVATES }}}
       }
@@ -729,7 +729,7 @@ End
          { 0.01 { CompanionInfo 1 true none 0.1 { "WOLF" }}}
          { 0.01 { SpecialAttr DEFENSE 10 HatedBy HATE_DRAGONS }}
          { 0.02 { SpecialAttr SPELL_DAMAGE 8 Not Humanoid }}
-         { 0.10 { ExtraTraining SPELL 4}}
+         { 0.10 { ExtraTraining SPELL_DAMAGE 4}}
          { 0.15 { SpecialAttr SPELL_DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
          { 0.05 { AttrBonus SPELL_SPEED 30 }}
          { 0.02 { Lasting { HATE_ELVES } }}

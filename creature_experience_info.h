@@ -1,21 +1,27 @@
 #pragma once
 
 #include "util.h"
-#include "experience_type.h"
+#include "attr_type.h"
 #include "view_id.h"
 
 class ContentFactory;
 
 struct CreatureExperienceInfo {
-  EnumMap<ExperienceType, double> HASH(level);
-  EnumMap<ExperienceType, int> HASH(limit);
-  EnumMap<ExperienceType, optional<string>> HASH(warning);
-  EnumMap<ExperienceType, vector<pair<string, ViewId>>> HASH(attributes);
+  struct TrainingInfo {
+    AttrType HASH(attr);
+    ViewId HASH(viewId);
+    string HASH(name);
+    double HASH(level);
+    int HASH(limit);
+    optional<string> HASH(warning);
+    HASH_ALL(attr, viewId, name, level, limit, warning)
+  };
+  vector<TrainingInfo> HASH(training);
   double HASH(combatExperience);
   double HASH(teamExperience);
   int HASH(combatExperienceCap);
   int HASH(numAvailableUpgrades);
-  HASH_ALL(level, limit, warning, combatExperience, teamExperience, combatExperienceCap, numAvailableUpgrades, attributes)
+  HASH_ALL(training, combatExperience, teamExperience, combatExperienceCap, numAvailableUpgrades)
 };
 
 extern CreatureExperienceInfo getCreatureExperienceInfo(const ContentFactory*, const Creature*);

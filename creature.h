@@ -221,7 +221,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void retire();
   void removeGameReferences();
 
-  void increaseExpLevel(ExperienceType, double increase);
+  void increaseExpLevel(AttrType, double increase);
 
   BestAttack getBestAttack(const ContentFactory*, bool includeTeamExp = true) const;
 

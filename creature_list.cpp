@@ -52,9 +52,9 @@ CreatureList& CreatureList::setCombatExperience(int l) {
   return *this;
 }
 
-CreatureList& CreatureList::increaseExpLevel(EnumMap<ExperienceType, int> l) {
-  for (auto exp : ENUM_ALL(ExperienceType))
-    expLevelIncrease[exp] += l[exp];
+CreatureList& CreatureList::increaseExpLevel(const HashMap<AttrType, int>& l) {
+  for (auto& elem : l)
+    expLevelIncrease[elem.first] += elem.second;
   return *this;
 }
 
@@ -87,8 +87,8 @@ vector<PCreature> CreatureList::generate(RandomGen& random, CreatureFactory* fac
       id = random.choose(all);
     auto creature = factory->fromId(*id, tribe, aiFactory, inventory);
     creature->setCombatExperience(combatExperience);
-    for (auto exp : ENUM_ALL(ExperienceType))
-      creature->increaseExpLevel(exp, expLevelIncrease[exp]);
+    for (auto& elem : expLevelIncrease)
+      creature->increaseExpLevel(elem.first, elem.second);
     ret.push_back(std::move(creature));
   }
   return ret;

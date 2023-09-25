@@ -5,18 +5,18 @@
 #include "content_factory.h"
 
 CreatureExperienceInfo getCreatureExperienceInfo(const ContentFactory* f, const Creature* c) {
+  vector<CreatureExperienceInfo::TrainingInfo> training;
+  for (auto& elem : c->getAttributes().getMaxExpLevel())
+    training.push_back(CreatureExperienceInfo::TrainingInfo{
+      elem.first,
+      f->attrInfo.at(elem.first).viewId,
+      f->attrInfo.at(elem.first).name,
+      c->getAttributes().getExpLevel(elem.first),
+      elem.second,
+      none
+    });
   return CreatureExperienceInfo {
-    c->getAttributes().getExpLevel(),
-    c->getAttributes().getMaxExpLevel(),
-    EnumMap<ExperienceType, optional<string>>(),
-    EnumMap<ExperienceType, vector<pair<string, ViewId>>>([f](ExperienceType type) {
-      vector<pair<string, ViewId>> v;
-      for (auto attr : getAttrIncreases()[type]) {
-        auto& info = f->attrInfo.at(attr.first);
-        v.push_back(make_pair(info.name, info.viewId));
-      }
-      return v;
-    }),
+    std::move(training),
     c->getCombatExperience(),
     c->getTeamExperience(),
     c->getCombatExperienceCap(),

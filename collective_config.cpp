@@ -257,7 +257,7 @@ CollectiveConfig::CollectiveConfig(CollectiveConfig&&) noexcept = default;
 CollectiveConfig::~CollectiveConfig() {
 }
 
-static auto getTrainingPredicate(ExperienceType experienceType) {
+static auto getTrainingPredicate(AttrType experienceType) {
   return [experienceType] (const ContentFactory* contentFactory, const Collective*, const Creature* c, FurnitureType t) {
       if (auto maxIncrease = contentFactory->furniture.getData(t).getMaxTraining(experienceType))
         return !c || (c->getAttributes().getExpLevel(experienceType) < maxIncrease &&
@@ -275,7 +275,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
       case MinionActivity::HAULING: return {MinionActivityInfo::WORKER};
       case MinionActivity::WORKING: return {MinionActivityInfo::WORKER};
       case MinionActivity::DIGGING: return {MinionActivityInfo::WORKER};
-      case MinionActivity::TRAIN: return {getTrainingPredicate(ExperienceType::MELEE)};
+      case MinionActivity::TRAIN: return {getTrainingPredicate(AttrType("DAMAGE"))};
       case MinionActivity::SLEEP:
         return {[](const ContentFactory* f, const Collective*, const Creature* c, FurnitureType t) {
             if (!c)
@@ -305,7 +305,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
             auto id = f->getViewObject()->id().data();
             return !startsWith(id, "painting") && (!startsWith(id, "canvas") || !NOTNULL(col)->getRecordedEvents().empty());
           }};
-      case MinionActivity::STUDY: return {getTrainingPredicate(ExperienceType::SPELL)};
+      case MinionActivity::STUDY: return {getTrainingPredicate(AttrType("SPELL_DAMAGE"))};
       case MinionActivity::DISTILLATION: return {FurnitureType("DISTILLERY")};
       case MinionActivity::CROPS: return {FurnitureType("CROPS")};
       case MinionActivity::RITUAL: return {BuiltinUsageId::DEMON_RITUAL};

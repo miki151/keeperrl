@@ -4,7 +4,6 @@
 #include "creature.h"
 #include "creature_name.h"
 #include "effect.h"
-#include "experience_type.h"
 #include "creature_attributes.h"
 #include "gender.h"
 #include "creature_factory.h"
@@ -13,7 +12,7 @@
 #include "equipment.h"
 #include "item.h"
 
-void SpellMap::add(Spell spell, ExperienceType expType, int level) {
+void SpellMap::add(Spell spell, AttrType expType, int level) {
   for (auto& elem : elems)
     if (elem.spell.getId() == spell.getId()) {
       elem.level = min(elem.level, level);
@@ -111,8 +110,8 @@ bool SpellMap::contains(const SpellId id) const {
   return !!getInfo(id);
 }
 
-void SpellMap::onExpLevelReached(Creature* c, ExperienceType type, int level) {
-  string spellType = type == ExperienceType::SPELL ? "spell"_s : "ability"_s;
+void SpellMap::onExpLevelReached(Creature* c, AttrType type, int level) {
+  string spellType = type == AttrType("SPELL_DAMAGE") ? "spell"_s : "ability"_s;
   if (auto game = c->getGame()) {
     auto factory = game->getContentFactory();
     for (auto& elem : elems) {

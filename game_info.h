@@ -5,12 +5,10 @@
 #include "village_action.h"
 #include "view_id.h"
 #include "player_message.h"
-#include "experience_type.h"
 #include "entity_set.h"
 #include "immigrant_auto_state.h"
 #include "tutorial_highlight.h"
 #include "hashing.h"
-#include "experience_type.h"
 #include "attr_type.h"
 #include "best_attack.h"
 #include "villain_type.h"
@@ -104,7 +102,7 @@ struct SpellInfo {
 
 struct SpellSchoolInfo {
   string HASH(name);
-  ExperienceType HASH(experienceType);
+  string HASH(experienceType);
   vector<SpellInfo> HASH(spells);
   HASH_ALL(name, experienceType, spells)
 };
@@ -189,10 +187,10 @@ struct ImmigrantCreatureInfo {
   vector<AttributeInfo> HASH(attributes);
   vector<string> HASH(spellSchools);
   struct TrainingInfo {
-    ExperienceType HASH(expType);
+    AttrType HASH(expType);
     int HASH(limit);
-    vector<ViewId> HASH(attributes);
-    HASH_ALL(expType, limit, attributes)
+    ViewId HASH(attribute);
+    HASH_ALL(expType, limit, attribute)
   };
   vector<TrainingInfo> HASH(trainingLimits);
   HASH_ALL(name, viewId, attributes, spellSchools, trainingLimits);

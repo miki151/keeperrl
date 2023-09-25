@@ -39,7 +39,7 @@ namespace {
 struct LeaderInfo {
   vector<CreatureId> SERIAL(id);
   int SERIAL(combatExperience) = 0;
-  EnumMap<ExperienceType, int> SERIAL(expLevelIncrease);
+  HashMap<AttrType, int> SERIAL(expLevelIncrease);
   vector<ItemType> SERIAL(inventory);
   SERIALIZE_ALL(NAMED(id), OPTION(combatExperience), OPTION(expLevelIncrease), OPTION(inventory))
 };

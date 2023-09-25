@@ -29,7 +29,6 @@ enum class MsgType;
 enum class BodyPart;
 enum class AttackType;
 enum class AttackLevel;
-enum class ExperienceType;
 enum class ItemClass;
 enum class EquipmentSlot;
 enum class OptionId;

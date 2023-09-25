@@ -1437,13 +1437,11 @@ SGuiElem GuiBuilder::drawImmigrantCreature(const ImmigrantCreatureInfo& creature
     if (!trainingHeader)
       lines.addElem(WL(label, "Training potential", Color::YELLOW));
     trainingHeader = true;
-    auto line = WL(getListBuilder);
-    for (auto& viewId : info.attributes) {
-      line.addElem(WL(topMargin, -3, WL(viewObject, viewId)), 22);
-    }
-    line.addSpace(15);
-    line.addElemAuto(WL(label, "+" + toString(info.limit)));
-    lines.addElem(line.buildHorizontalList());
+    lines.addElem(WL(getListBuilder)
+        .addElem(WL(topMargin, -3, WL(viewObject, info.attribute)), 22)
+        .addSpace(15)
+        .addElemAuto(WL(label, "+" + toString(info.limit)))
+        .buildHorizontalList());
   }
   if (!creature.spellSchools.empty())
     lines.addElem(WL(getListBuilder)
@@ -1829,29 +1827,22 @@ vector<SGuiElem> GuiBuilder::drawEffectsList(const PlayerInfo& info, bool toolti
   return lines;
 }
 
-SGuiElem GuiBuilder::getExpIncreaseLine(const CreatureExperienceInfo& info, ExperienceType type, bool infoOnly) {
-  if (info.limit[type] == 0)
-    return nullptr;
+SGuiElem GuiBuilder::getExpIncreaseLine(const CreatureExperienceInfo::TrainingInfo& info, bool infoOnly) {
   auto line = WL(getListBuilder);
   int i = 0;
-  vector<string> attrNames;
   auto attrIcons = WL(getListBuilder);
-  for (auto& elem : info.attributes[type]) {
-    attrIcons.addElem(WL(topMargin, -3, WL(viewObject, elem.second)), 22);
-    attrNames.push_back(elem.first);
-  }
+  attrIcons.addElem(WL(topMargin, -3, WL(viewObject, info.viewId)), 22);
   line.addElem(attrIcons.buildHorizontalList(), 80);
   if (!infoOnly)
-    line.addElem(WL(label, "+" + toStringRounded(info.level[type], 0.01),
-        info.warning[type] ? Color::RED : Color::WHITE), 50);
-  string limit = toString(info.limit[type]);
+    line.addElem(WL(label, "+" + toStringRounded(info.level, 0.01),
+        info.warning ? Color::RED : Color::WHITE), 50);
+  string limit = toString(info.limit);
   line.addElemAuto(WL(label, "  (limit " + limit + ")"));
   vector<string> tooltip {
-      getName(type) + " training."_s,
-      "Increases " + combine(attrNames) + ".",
+      capitalFirst(info.name) + " training."_s,
       "The creature's limit for this type of training is " + limit + "."};
-  if (info.warning[type])
-    tooltip.push_back(*info.warning[type]);
+  if (info.warning)
+    tooltip.push_back(*info.warning);
   return WL(stack,
              getTooltip(tooltip, THIS_LINE),
              line.buildHorizontalList());
@@ -1884,21 +1875,16 @@ SGuiElem GuiBuilder::drawExperienceInfo(const CreatureExperienceInfo& info) {
 }
 
 SGuiElem GuiBuilder::drawTrainingInfo(const CreatureExperienceInfo& info, bool infoOnly) {
+  if (!info.combatExperience && info.training.empty())
+    return nullptr;
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElem(WL(label, "Training", Color::YELLOW));
-  bool empty = !info.combatExperience;
-  for (auto expType : ENUM_ALL(ExperienceType)) {
-    if (auto elem = getExpIncreaseLine(info, expType, infoOnly)) {
-      lines.addElem(std::move(elem));
-      empty = false;
-    }
+  for (auto& elem : info.training) {
+    lines.addElem(getExpIncreaseLine(elem, infoOnly));
   }
   if (!infoOnly)
     lines.addElemAuto(drawExperienceInfo(info));
-  if (!empty)
-    return lines.buildVerticalList();
-  else
-    return nullptr;
+  return lines.buildVerticalList();
 }
 
 function<void(Rectangle)> GuiBuilder::getCommandsCallback(const vector<PlayerInfo::CommandInfo>& commands) {
@@ -4302,7 +4288,7 @@ SGuiElem GuiBuilder::drawSpellLabel(const SpellInfo& spell) {
 
 SGuiElem GuiBuilder::drawSpellSchoolLabel(const SpellSchoolInfo& school) {
   auto lines = WL(getListBuilder, legendLineHeight);
-  lines.addElem(WL(label, "Experience type: "_s + getName(school.experienceType)));
+  lines.addElem(WL(label, "Experience type: "_s + school.experienceType));
   for (auto& spell : school.spells) {
     lines.addElem(drawSpellLabel(spell));
   }

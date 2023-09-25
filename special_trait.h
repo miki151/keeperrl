@@ -1,7 +1,6 @@
 #pragma once
 
 #include "util.h"
-#include "experience_type.h"
 #include "body_part.h"
 #include "color.h"
 #include "item_type.h"
@@ -14,7 +13,7 @@
 #include "lasting_or_buff.h"
 
 struct ExtraTraining {
-  ExperienceType SERIAL(type);
+  AttrType SERIAL(type);
   int SERIAL(increase);
   SERIALIZE_ALL(type, increase)
 };

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "util.h"
-#include "experience_type.h"
 #include "view_id.h"
+#include "attr_type.h"
 
 class TribeId;
 class MonsterAIFactory;
@@ -21,7 +21,7 @@ struct CreatureList {
   CreatureList(int count, vector<pair<int, CreatureId>>);
   CreatureList& addUnique(CreatureId);
   CreatureList& setCombatExperience(int);
-  CreatureList& increaseExpLevel(EnumMap<ExperienceType, int>);
+  CreatureList& increaseExpLevel(const HashMap<AttrType, int>&);
   CreatureList& addInventory(vector<ItemType>);
 
   string getSummary(CreatureFactory* factory) const;
@@ -38,6 +38,6 @@ struct CreatureList {
   using Freq = pair<int, CreatureId>;
   vector<Freq> SERIAL(all);
   int SERIAL(combatExperience) = 0;
-  EnumMap<ExperienceType, int> SERIAL(expLevelIncrease);
+  HashMap<AttrType, int> SERIAL(expLevelIncrease);
   vector<ItemType> SERIAL(inventory);
 };

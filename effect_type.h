@@ -400,7 +400,7 @@ struct Price : GenericModifierEffect {
   SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
 };
 struct IncreaseMaxLevel {
-  ExperienceType SERIAL(type);
+  AttrType SERIAL(type);
   int SERIAL(value);
   SERIALIZE_ALL(type, value)
 };

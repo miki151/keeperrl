@@ -64,10 +64,9 @@ FurnitureFactory::FurnitureFactory(map<FurnitureType, unique_ptr<Furniture> > f,
 }
 
 void FurnitureFactory::initializeInfos() {
-  for (auto expType : ENUM_ALL(ExperienceType))
-    for (auto& elem : furniture)
-      if (auto limit = elem.second->getMaxTraining(expType))
-        trainingFurniture[expType].push_back(elem.first);
+  for (auto& f : furniture)
+    for (auto& elem : f.second->getMaxTraining())
+      trainingFurniture[elem.first].push_back(f.first);
   for (auto& base : furniture)
     for (auto& other : furniture)
       if (isUpgrade(base.first, other.first))
@@ -143,8 +142,11 @@ FurnitureFactory::~FurnitureFactory() {
 FurnitureFactory::FurnitureFactory(FurnitureFactory&&) noexcept = default;
 FurnitureFactory& FurnitureFactory::operator =(FurnitureFactory&&) = default;
 
-const vector<FurnitureType>& FurnitureFactory::getTrainingFurniture(ExperienceType type) const {
-  return trainingFurniture[type];
+const vector<FurnitureType>& FurnitureFactory::getTrainingFurniture(AttrType type) const {
+  static vector<FurnitureType> empty;
+  if (auto elem = getReferenceMaybe(trainingFurniture, type))
+    return *elem;
+  return empty;
 }
 
 const vector<FurnitureType>& FurnitureFactory::getFurnitureNeedingLight() const {

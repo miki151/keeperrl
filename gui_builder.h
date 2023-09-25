@@ -290,7 +290,7 @@ class GuiBuilder {
   SGuiElem drawMapHintOverlay();
   SGuiElem getClickActions(const ViewObject&);
   vector<string> hint;
-  SGuiElem getExpIncreaseLine(const CreatureExperienceInfo&, ExperienceType, bool infoOnly = false);
+  SGuiElem getExpIncreaseLine(const CreatureExperienceInfo::TrainingInfo&, bool infoOnly = false);
   optional<int> highlightedTeamMember;
   SGuiElem drawRebellionOverlay(const CollectiveInfo::RebellionChance&);
   SGuiElem drawVillainsOverlay(const VillageInfo&, const optional<CollectiveInfo::NextWave>&,

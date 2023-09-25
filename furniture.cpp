@@ -468,8 +468,12 @@ void Furniture::spreadBlood(Position pos) {
   }
 }
 
-int Furniture::getMaxTraining(ExperienceType t) const {
-  return maxTraining[t];
+int Furniture::getMaxTraining(AttrType t) const {
+  return getValueMaybe(maxTraining, t).value_or(0);
+}
+
+const HashMap<AttrType, int>& Furniture::getMaxTraining() const {
+  return maxTraining;
 }
 
 optional<FurnitureType> Furniture::getUpgrade() const {

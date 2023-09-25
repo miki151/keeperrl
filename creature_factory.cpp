@@ -44,7 +44,6 @@
 #include "item_type.h"
 #include "item.h"
 #include "furniture.h"
-#include "experience_type.h"
 #include "creature_debt.h"
 #include "effect.h"
 #include "game_event.h"
@@ -735,8 +734,8 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
         if (p.humanoid) {
           for (auto& elem : contentFactory->workshopInfo)
             c.attr[elem.second.attr] = Random.get(0, 50);
-          c.maxLevelIncrease[ExperienceType::MELEE] = 10;
-          c.maxLevelIncrease[ExperienceType::SPELL] = 10;
+          c.maxLevelIncrease[AttrType("DAMAGE")] = 10;
+          c.maxLevelIncrease[AttrType("SPELL_DAMAGE")] = 10;
           c.spellSchools = LIST(SpellSchoolId("mage"));
         }
         if (p.humanoid) {
@@ -841,7 +840,7 @@ SpellMap CreatureFactory::getSpellMap(const CreatureAttributes& attr) {
       spellMap.add(*getSpell(spell.first), school.expType, spell.second);
   }
   for (auto& spell : attr.spells)
-    spellMap.add(*getSpell(spell), ExperienceType::SPELL, 0);
+    spellMap.add(*getSpell(spell), AttrType("SPELL_DAMAGE"), 0);
   return spellMap;
 }
 
@@ -967,8 +966,8 @@ PCreature CreatureFactory::getHumanForTests() {
       c.name.setFirst("keeper"_s);
       c.name.useFullTitle();
       //c.skills.setValue(WorkshopType("LABORATORY"), 0.2);
-      c.maxLevelIncrease[ExperienceType::MELEE] = 7;
-      c.maxLevelIncrease[ExperienceType::SPELL] = 12;
+      c.maxLevelIncrease[AttrType("DAMAGE")] = 7;
+      c.maxLevelIncrease[AttrType("SPELL_DAMAGE")] = 12;
       //c.spells->add(SpellId::HEAL_SELF);
   );
   return get(std::move(attributes), TribeId::getMonster(), Monster::getFactory(MonsterAIFactory::idle()), SpellMap{});

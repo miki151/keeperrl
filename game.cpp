@@ -282,7 +282,7 @@ void Game::prepareSiteRetirement() {
   }
   playerCollective->retire();
   vector<Position> locationPos;
-  for (auto f : contentFactory->furniture.getTrainingFurniture(ExperienceType::SPELL))
+  for (auto f : contentFactory->furniture.getTrainingFurniture(AttrType("SPELL_DAMAGE")))
     for (auto pos : playerCollective->getConstructions().getBuiltPositions(f))
       locationPos.push_back(pos);
   if (locationPos.empty())

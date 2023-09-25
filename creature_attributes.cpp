@@ -134,40 +134,40 @@ const Gender& CreatureAttributes::getGender() const {
 }
 
 int CreatureAttributes::getRawAttr(AttrType type) const {
-  int ret = getValueMaybe(attr, type).value_or(0);
-  if (auto expType = getExperienceType(type))
-    ret += expType->second * (int) expLevel[expType->first];
+  int ret = getValueMaybe(attr, type).value_or(0) + getValueMaybe(expLevel, type).value_or(0);
+  if (type == AttrType("DEFENSE")) {
+    int defense = 0;
+    for (auto& elem : expLevel)
+      defense = max(defense, (int) elem.second);
+    ret += defense;
+  }
   return ret;
 }
 
-double CreatureAttributes::getExpLevel(ExperienceType type) const {
-  return expLevel[type];
+double CreatureAttributes::getExpLevel(AttrType type) const {
+  return getValueMaybe(expLevel, type).value_or(0);
 }
 
-const EnumMap<ExperienceType, double>& CreatureAttributes::getExpLevel() const {
+const HashMap<AttrType, double>& CreatureAttributes::getExpLevel() const {
   return expLevel;
 }
 
-bool CreatureAttributes::canIncreaseAnyExp() const {
-  return maxLevelIncrease != EnumMap<ExperienceType, int>();
-}
-
-const EnumMap<ExperienceType, int>& CreatureAttributes::getMaxExpLevel() const {
+const HashMap<AttrType, int>& CreatureAttributes::getMaxExpLevel() const {
   return maxLevelIncrease;
 }
 
-void CreatureAttributes::increaseMaxExpLevel(ExperienceType type, int increase) {
+void CreatureAttributes::increaseMaxExpLevel(AttrType type, int increase) {
   maxLevelIncrease[type] = max(0, maxLevelIncrease[type] + increase);
   expLevel[type] = min<double>(expLevel[type], maxLevelIncrease[type]);
 }
 
-void CreatureAttributes::increaseExpLevel(ExperienceType type, double increase) {
+void CreatureAttributes::increaseExpLevel(AttrType type, double increase) {
   increase = max(0.0, min(increase, (double) maxLevelIncrease[type] - expLevel[type]));
   expLevel[type] += increase;
 }
 
-bool CreatureAttributes::isTrainingMaxedOut(ExperienceType type) const {
-  return getExpLevel(type) >= maxLevelIncrease[type];
+bool CreatureAttributes::isTrainingMaxedOut(AttrType type) const {
+  return getExpLevel(type) >= getValueMaybe(maxLevelIncrease, type).value_or(0);
 }
 
 vector<SpellSchoolId> CreatureAttributes::getSpellSchools() const {

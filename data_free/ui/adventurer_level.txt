@@ -11,7 +11,7 @@
         {
           Using "tooltip" Tooltip(MiniWindow(List(VERTICAL, Height 30 Label())))
           Horizontal {
-            Width 100 Using "icons" List(HORIZONTAL, ViewId())
+            Width 100 Using "icon" ViewId()
             Label("+")
             Width 15 Using "value" Label()
             Width 15 {}

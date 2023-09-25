@@ -12,7 +12,6 @@
 #include "territory.h"
 #include "item.h"
 #include "minion_activity.h"
-#include "experience_type.h"
 #include "game.h"
 #include "content_factory.h"
 #include "item_types.h"

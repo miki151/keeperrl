@@ -1,6 +1,5 @@
 #include "spell_school.h"
 #include "pretty_archive.h"
-#include "experience_type.h"
 
 SERIALIZE_DEF(SpellSchool, expType, spells, name)
 SERIALIZATION_CONSTRUCTOR_IMPL(SpellSchool)

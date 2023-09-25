@@ -160,25 +160,26 @@ static string getPopulationIncreaseDescription(const Furniture::PopulationInfo& 
 void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const KeeperCreatureInfo& keeperCreatureInfo) {
   for (auto& group : keeperCreatureInfo.buildingGroups)
     buildInfo.append(contentFactory->buildInfo.at(group));
+  auto factory = getGame()->getContentFactory();
   for (auto& info : buildInfo)
     if (auto furniture = info.type.getReferenceMaybe<BuildInfoTypes::Furniture>()) {
       usedResources.insert(furniture->cost.id);
       for (auto type : furniture->types) {
-        double luxury = getGame()->getContentFactory()->furniture.getData(type).getLuxuryInfo().luxury;
+        double luxury = factory->furniture.getData(type).getLuxuryInfo().luxury;
         if (luxury > 0) {
           info.help += " Increases luxury by " + toString(luxury) + ".";
           break;
         }
       }
-      auto increase = getGame()->getContentFactory()->furniture.getData(furniture->types[0]).getPopulationIncrease();
+      auto increase = factory->furniture.getData(furniture->types[0]).getPopulationIncrease();
       if (increase.increase > 0) {
         info.help += " " + getPopulationIncreaseDescription(increase, keeperCreatureInfo.populationString);
         if (increase.limit)
           const_cast<optional<int>&>(furniture->limit) = int(*increase.limit / increase.increase);
       }
-      for (auto expType : ENUM_ALL(ExperienceType))
-        if (auto increase = getGame()->getContentFactory()->furniture.getData(furniture->types[0]).getMaxTraining(expType))
-          info.help += " Adds up to " + toString(increase) + " " + toLower(getName(expType)) + " levels.";
+      auto& maxTraining = factory->furniture.getData(furniture->types[0]).getMaxTraining();
+      for (auto& elem : maxTraining)
+        info.help += " Adds up to " + toString(elem.second) + " " + factory->attrInfo.at(elem.first).name + " levels.";
     }
 }
 
@@ -1174,10 +1175,10 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
     minionInfo.groupName = chosenCreature->group;
     // only fill equipment for the chosen minion to avoid lag
     if (c->getUniqueId() == chosenCreature->id) {
-      for (auto expType : ENUM_ALL(ExperienceType))
-        if (auto requiredDummy = collective->getMissingTrainingFurniture(c, expType))
-          minionInfo.experienceInfo.warning[expType] =
-              "Requires " + getGame()->getContentFactory()->furniture.getData(*requiredDummy).getName() + " to train further.";
+      for (auto& elem : minionInfo.experienceInfo.training)
+        if (auto requiredDummy = collective->getMissingTrainingFurniture(c, elem.attr))
+          elem.warning = "Requires " + getGame()->getContentFactory()->furniture.getData(*requiredDummy).getName() +
+              " to train further.";
       for (MinionActivity t : ENUM_ALL(MinionActivity))
         if (c->getAttributes().getMinionActivities().isAvailable(collective, c, t, true)) {
           minionInfo.minionTasks.push_back({t,
@@ -1195,7 +1196,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
       if (!collective->hasTrait(c, MinionTrait::PRISONER)) {
         minionInfo.actions.push_back(PlayerInfo::Action::RENAME);
       } else
-        minionInfo.experienceInfo.limit.clear();
+        minionInfo.experienceInfo.training.clear();
       auto& leaders = collective->getLeaders();
       if (c->isAutomaton())
         minionInfo.actions.push_back(PlayerInfo::Action::DISASSEMBLE);
@@ -1692,7 +1693,7 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
   using TraitInfo = ImmigrantDataInfo::SpecialTraitInfo;
   return trait.visit<ImmigrantDataInfo::SpecialTraitInfo>(
       [&] (const ExtraTraining& t) {
-        return TraitInfo{"Extra "_s + toLower(getName(t.type)) + " training potential", false};
+        return TraitInfo{"Extra "_s + factory->attrInfo.at(t.type).name + " training potential", false};
       },
       [&] (const CompanionInfo& t) {
         return TraitInfo{capitalFirst(factory->getCreatures().getName(t.creatures[0])) + " companion", false};

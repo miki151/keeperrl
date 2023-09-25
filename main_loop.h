@@ -3,7 +3,6 @@
 #include "util.h"
 #include "file_sharing.h"
 #include "exit_info.h"
-#include "experience_type.h"
 #include "game_time.h"
 
 class View;

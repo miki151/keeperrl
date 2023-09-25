@@ -17,7 +17,6 @@
 
 #include "view_object.h"
 #include "view_id.h"
-#include "experience_type.h"
 
 SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, genericId, goodAdjectives, badAdjectives, creatureAttributes, status, clickAction, extendedActions)
 

@@ -41,7 +41,6 @@
 #include "furniture.h"
 #include "furniture_factory.h"
 #include "zones.h"
-#include "experience_type.h"
 #include "furniture_usage.h"
 #include "collective_warning.h"
 #include "immigration.h"
@@ -1511,7 +1510,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
       }
     }
     if (auto usage = furniture->getUsageType()) {
-      auto increaseLevel = [&] (ExperienceType exp) {
+      auto increaseLevel = [&] (AttrType exp) {
         double increase = 0.012 * efficiency * LastingEffects::getTrainingSpeed(c);
         if (auto maxLevel = contentFactory->furniture.getData(furniture->getType()).getMaxTraining(exp))
           increase = min(increase, maxLevel - c->getAttributes().getExpLevel(exp));
@@ -1533,13 +1532,13 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
             break;
           }
           case BuiltinUsageId::TRAIN:
-            increaseLevel(ExperienceType::MELEE);
+            increaseLevel(AttrType("DAMAGE"));
             break;
           case BuiltinUsageId::STUDY:
-            increaseLevel(ExperienceType::SPELL);
+            increaseLevel(AttrType("SPELL_DAMAGE"));
             break;
           case BuiltinUsageId::ARCHERY_RANGE:
-            increaseLevel(ExperienceType::ARCHERY);
+            increaseLevel(AttrType("RANGED_DAMAGE"));
             break;
           default:
             break;
@@ -1574,13 +1573,13 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
   }
 }
 
-optional<FurnitureType> Collective::getMissingTrainingFurniture(const Creature* c, ExperienceType expType) const {
-  if (c->getAttributes().isTrainingMaxedOut(expType))
+optional<FurnitureType> Collective::getMissingTrainingFurniture(const Creature* c, AttrType attr) const {
+  if (c->getAttributes().isTrainingMaxedOut(attr))
     return none;
   optional<FurnitureType> requiredDummy;
-  for (auto dummyType : getGame()->getContentFactory()->furniture.getTrainingFurniture(expType)) {
-    bool canTrain = getGame()->getContentFactory()->furniture.getData(dummyType).getMaxTraining(expType) >
-        c->getAttributes().getExpLevel(expType);
+  for (auto dummyType : getGame()->getContentFactory()->furniture.getTrainingFurniture(attr)) {
+    bool canTrain = getGame()->getContentFactory()->furniture.getData(dummyType).getMaxTraining(attr) >
+        c->getAttributes().getExpLevel(attr);
     bool hasDummy = getConstructions().getBuiltCount(dummyType) > 0;
     if (canTrain && hasDummy)
       return none;

@@ -190,7 +190,6 @@ SERIALIZABLE_TMPL(EntityMap, Creature, PositionSet);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<WeakPointer<Item>>);
 SERIALIZABLE_TMPL(EntityMap, Creature, Creature*);
 SERIALIZABLE_TMPL(EntityMap, Creature, pair<GlobalTime, GlobalTime>);
-SERIALIZABLE_TMPL(EntityMap, Creature, ExperienceType);
 SERIALIZABLE_TMPL(EntityMap, Creature, ZoneId);
 SERIALIZABLE_TMPL(EntityMap, Creature, EnumSet<EquipmentSlot>);
 SERIALIZABLE_TMPL(EntityMap, Creature, LocalTime);

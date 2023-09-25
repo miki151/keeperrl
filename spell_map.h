@@ -18,19 +18,20 @@
 #include "game_time.h"
 #include "spell.h"
 #include "entity_map.h"
+#include "attr_type.h"
 
 class Spell;
 struct ItemAbility;
 
 class SpellMap {
   public:
-  void add(Spell, ExperienceType, int level);
+  void add(Spell, AttrType, int level);
   void remove(SpellId);
   GlobalTime getReadyTime(const Creature*, const Spell*) const;
   void setReadyTime(const Creature*, const Spell*, GlobalTime);
   vector<const Spell*> getAvailable(const Creature*) const;
   bool contains(const SpellId) const;
-  void onExpLevelReached(Creature*, ExperienceType, int level);
+  void onExpLevelReached(Creature*, AttrType, int level);
   void setAllReady();
 
   template <class Archive>
@@ -41,7 +42,7 @@ class SpellMap {
     Spell SERIAL(spell);
     optional<GlobalTime> SERIAL(timeout);
     int SERIAL(level);
-    ExperienceType SERIAL(expType);
+    AttrType SERIAL(expType);
     SERIALIZE_ALL(spell, timeout, level, expType)
   };
   vector<SpellInfo> SERIAL(elems);

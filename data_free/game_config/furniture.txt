@@ -8,7 +8,7 @@
   canHideHere = true
   strength = 80
   maxTraining = {
-    MELEE 3
+    DAMAGE 3
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
@@ -23,7 +23,7 @@
   strength = 80
   upgrade = "TRAINING_WOOD"
   maxTraining = {
-    MELEE 7
+    DAMAGE 7
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
@@ -38,7 +38,7 @@
   strength = 80
   upgrade = "TRAINING_IRON"
   maxTraining = {
-    MELEE 99
+    DAMAGE 99
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
@@ -221,7 +221,7 @@ TRAINING("_DWARF", "_dwarf")
   fire = 70
   strength = 50
   maxTraining = {
-    SPELL 3
+    SPELL_DAMAGE 3
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
@@ -238,7 +238,7 @@ TRAINING("_DWARF", "_dwarf")
   strength = 50
   upgrade = "BOOKCASE_WOOD"
   maxTraining = {
-    SPELL 7
+    SPELL_DAMAGE 7
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
@@ -255,7 +255,7 @@ TRAINING("_DWARF", "_dwarf")
   strength = 50
   upgrade = "BOOKCASE_IRON"
   maxTraining = {
-    SPELL 99
+    SPELL_DAMAGE 99
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }

@@ -1306,27 +1306,19 @@ void Player::playerLevelDialog() {
   auto upgrades = ScriptedUIDataElems::List{};
   auto factory = getGame()->getContentFactory();
   bool levelledUp = false;
-  for (auto expType : ENUM_ALL(ExperienceType)) {
+  for (auto& elem : creature->getAttributes().getMaxExpLevel()) {
     auto data = ScriptedUIDataElems::Record{};
-    auto icons = ScriptedUIDataElems::List{};
-    vector<string> attrNames;
-    for (auto attr : getAttrIncreases()[expType]) {
-      auto& info = factory->attrInfo.at(attr.first);
-      icons.push_back(ViewIdList{info.viewId});
-      attrNames.push_back(info.name);
-    }
-    data.elems["icons"] = std::move(icons);
-    data.elems["value"] = toString<int>(creature->getAttributes().getExpLevel(expType));
-    auto limit = toString(creature->getAttributes().getMaxExpLevel()[expType]);
-    data.elems["limit"] = limit;
+    auto& info = factory->attrInfo.at(elem.first);
+    data.elems["icon"] = ViewIdList{info.viewId};
+    data.elems["value"] = toString<int>(creature->getAttributes().getExpLevel(elem.first));
+    data.elems["limit"] = toString<int>(elem.second);
     data.elems["tooltip"] = ScriptedUIDataElems::List{
-      getName(expType) + " training."_s,
-      "Increases " + combine(attrNames) + ".",
-      "The creature's limit for this type of training is " + limit + "."
+      "Increases " + info.name + ".",
+      "The creature's limit for this type of training is " + toString<int>(elem.second) + "."
     };
     if (available > 0)
-      data.elems["callback"] = ScriptedUIDataElems::Callback{ [expType, this, &levelledUp] {
-        creature->increaseExpLevel(expType, 1);
+      data.elems["callback"] = ScriptedUIDataElems::Callback{ [elem, this, &levelledUp] {
+        creature->increaseExpLevel(elem.first, 1);
         ++avatarLevel->consumedLevels;
         levelledUp = true;
         return true;

@@ -757,7 +757,7 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
     return false;
   }
   if (item->getModifier(AttrType("RANGED_DAMAGE")) > 0 && item->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON &&
-      getAttr(AttrType("RANGED_DAMAGE"), false) == 0 && attributes->getMaxExpLevel()[ExperienceType::ARCHERY] == 0) {
+      getAttr(AttrType("RANGED_DAMAGE"), false) == 0 && attributes->getMaxExpLevel().count(AttrType("RANGED_DAMAGE"))) {
     setReason("You are not skilled in archery");
     return false;
   }
@@ -1174,12 +1174,12 @@ int Creature::getPoints() const {
 int Creature::getRawAttr(AttrType type, bool includeTeamExp) const {
   PROFILE;
   int combatExp = getCombatExperienceRespectingMaxPromotion();
-  auto exp = (includeTeamExp && teamExperience > 0) ? (teamExperience + combatExp) / 2 : combatExp;
   int ret = attributes->getRawAttr(type);
-  if (auto expType = getExperienceType(type))
-    if (attributes->getMaxExpLevel()[expType->first] > 0 ||
-        (expType->first == ExperienceType::MELEE && !attributes->canIncreaseAnyExp()))
-      ret += int(exp) * expType->second;
+  if (attributes->getMaxExpLevel().count(type) || type == AttrType("DEFENSE") ||
+      (type == AttrType("DAMAGE") && attributes->getMaxExpLevel().empty())) {
+    auto exp = (includeTeamExp && teamExperience > 0) ? (teamExperience + combatExp) / 2 : combatExp;
+    ret += int(exp);
+  }
   return ret;
 }
 
@@ -2111,13 +2111,14 @@ void Creature::removeGameReferences() {
   phylactery = none;
 }
 
-void Creature::increaseExpLevel(ExperienceType type, double increase) {
+void Creature::increaseExpLevel(AttrType type, double increase) {
   int curLevel = (int)getAttributes().getExpLevel(type);
   getAttributes().increaseExpLevel(type, increase);
   int newLevel = (int)getAttributes().getExpLevel(type);
   if (curLevel != newLevel) {
     you(MsgType::ARE, "more skilled");
-    addPersonalEvent(getName().a() + " reaches " + ::getNameLowerCase(type) + " training level " + toString(newLevel));
+    addPersonalEvent(getName().a() + " reaches " + getGame()->getContentFactory()->attrInfo.at(type).name +
+        " training level " + toString(newLevel));
     spellMap->onExpLevelReached(this, type, newLevel);
   }
 }

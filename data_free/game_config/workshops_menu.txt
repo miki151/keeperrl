@@ -271,9 +271,9 @@ End
       {{Balsam Permanent SWARMER}           4 "GOLD" 3 "embalming"}
       {{Balsam Permanent NO_CARRY_LIMIT}    4 "GOLD" 3 "embalming"}
       {{Balsam IncreaseAttr DIGGING        15}                    4 "GOLD" 3 "embalming"}
-      {{Balsam IncreaseMaxLevel MELEE       3}                    4 "GOLD" 3 "embalming"}
-      {{Balsam IncreaseMaxLevel SPELL       3}                    4 "GOLD" 3 "embalming"}
-      {{Balsam IncreaseMaxLevel ARCHERY     3}                    4 "GOLD" 3 "embalming"}
+      {{Balsam IncreaseMaxLevel DAMAGE        3}                  4 "GOLD" 3 "embalming"}
+      {{Balsam IncreaseMaxLevel SPELL_DAMAGE  3}                  4 "GOLD" 3 "embalming"}
+      {{Balsam IncreaseMaxLevel RANGED_DAMAGE 3}                  4 "GOLD" 3 "embalming"}
       {{Balsam Name "lesser damage bonus"        IncreaseAttr DAMAGE        3}   4 "GOLD" 3 "embalming"}
       {{Balsam Name "lesser defense bonus"       IncreaseAttr DEFENSE       3}   4 "GOLD" 3 "embalming"}
       {{Balsam Name "lesser ranged damage bonus" IncreaseAttr RANGED_DAMAGE 3}   4 "GOLD" 3 "embalming"}

@@ -24,7 +24,6 @@
 #include "minion_activity_map.h"
 #include "attr_type.h"
 #include "lasting_effect.h"
-#include "experience_type.h"
 #include "game_time.h"
 #include "view_id.h"
 #include "spell_id.h"
@@ -77,13 +76,12 @@ class CreatureAttributes {
   string getDeathDescription(const ContentFactory*) const;
   void setDeathDescription(string);
   const Gender& getGender() const;
-  double getExpLevel(ExperienceType type) const;
-  const EnumMap<ExperienceType, double>& getExpLevel() const;
-  const EnumMap<ExperienceType, int>& getMaxExpLevel() const;
-  bool canIncreaseAnyExp() const;
-  void increaseMaxExpLevel(ExperienceType, int increase);
-  void increaseExpLevel(ExperienceType, double increase);
-  bool isTrainingMaxedOut(ExperienceType) const;
+  double getExpLevel(AttrType) const;
+  const HashMap<AttrType, double>& getExpLevel() const;
+  const HashMap<AttrType, int>& getMaxExpLevel() const;
+  void increaseMaxExpLevel(AttrType, int increase);
+  void increaseExpLevel(AttrType, double increase);
+  bool isTrainingMaxedOut(AttrType) const;
   vector<SpellSchoolId> getSpellSchools() const;
   void addSpellSchool(SpellSchoolId);
   optional<SoundId> getAttackSound(AttackType, bool damage) const;
@@ -161,8 +159,8 @@ class CreatureAttributes {
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   EnumMap<LastingEffect, GlobalTime> SERIAL(lastingEffects);
   MinionActivityMap SERIAL(minionActivities);
-  EnumMap<ExperienceType, double> SERIAL(expLevel);
-  EnumMap<ExperienceType, int> SERIAL(maxLevelIncrease);
+  HashMap<AttrType, double> SERIAL(expLevel);
+  HashMap<AttrType, int> SERIAL(maxLevelIncrease);
   bool SERIAL(noAttackSound) = false;
   optional<CreatureId> SERIAL(creatureId);
   optional<string> SERIAL(deathDescription);

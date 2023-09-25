@@ -8,7 +8,7 @@
 #include "furniture_layer.h"
 #include "luxury_info.h"
 #include "furniture_type.h"
-#include "experience_type.h"
+#include "attr_type.h"
 #include "bed_type.h"
 #include "fx_info.h"
 #include "view_id.h"
@@ -127,7 +127,8 @@ class Furniture {
   void onCreatureWalkedInto(Position, Vec2 direction) const;
   bool onBloodNear(Position);
   void spreadBlood(Position);
-  int getMaxTraining(ExperienceType) const;
+  int getMaxTraining(AttrType) const;
+  const HashMap<AttrType, int>& getMaxTraining() const;
   bool hasRequiredSupport(Position) const;
   optional<FurnitureType> getDiningFurnitureType() const;
   const optional<CreaturePredicate>& getUsagePredicate() const;
@@ -221,7 +222,7 @@ class Furniture {
   BurnsDownMessage SERIAL(burnsDownMessage) = BurnsDownMessage::BURNS_DOWN;
   template<typename Archive>
   void serializeImpl(Archive&, const unsigned);
-  EnumMap<ExperienceType, int> SERIAL(maxTraining);
+  HashMap<AttrType, int> SERIAL(maxTraining);
   struct SupportInfo {
     vector<Dir> SERIAL(dirs);
     optional<ViewId> SERIAL(viewId);

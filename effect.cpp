@@ -428,17 +428,18 @@ static string get(const Effects::IncreaseMaxLevel& e, string inc, string dec) {
 }
 
 static bool applyToCreature(const Effects::IncreaseMaxLevel& e, Creature* c, Creature*) {
-  c->you(MsgType::YOUR, ::getNameLowerCase(e.type) + get(e, " training limit increases", " training limit decreases"));
+  auto f = c->getGame()->getContentFactory();
+  c->you(MsgType::YOUR, f->attrInfo.at(e.type).name + get(e, " training limit increases", " training limit decreases"));
   c->getAttributes().increaseMaxExpLevel(e.type, e.value);
   return true;
 }
 
-static string getName(const Effects::IncreaseMaxLevel& e, const ContentFactory*) {
-  return ::getNameLowerCase(e.type) + " training limit"_s;
+static string getName(const Effects::IncreaseMaxLevel& e, const ContentFactory* f) {
+  return f->attrInfo.at(e.type).name + " training limit"_s;
 }
 
-static string getDescription(const Effects::IncreaseMaxLevel& e, const ContentFactory*) {
-  return get(e, "Increases", "Decreases") + " "_s + ::getNameLowerCase(e.type) + " training limit by " +
+static string getDescription(const Effects::IncreaseMaxLevel& e, const ContentFactory* f) {
+  return get(e, "Increases", "Decreases") + " "_s + f->attrInfo.at(e.type).name + " training limit by " +
       toString(std::fabs(e.value));
 }
 
@@ -1571,7 +1572,7 @@ static bool applyToCreature(const Effects::PlayerMessage& e, Creature* c, Creatu
 
 static bool applyToCreature(const Effects::GrantAbility& e, Creature* c, Creature*) {
   bool ret = !c->getSpellMap().contains(e.id);
-  c->getSpellMap().add(*c->getGame()->getContentFactory()->getCreatures().getSpell(e.id), ExperienceType::MELEE, 0);
+  c->getSpellMap().add(*c->getGame()->getContentFactory()->getCreatures().getSpell(e.id), AttrType("DAMAGE"), 0);
   return ret;
 }
 

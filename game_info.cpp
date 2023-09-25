@@ -21,7 +21,6 @@
 #include "special_trait.h"
 #include "automaton_part.h"
 #include "container_range.h"
-#include "experience_type.h"
 
 CreatureInfo::CreatureInfo(const Creature* c)
     : viewId(c->getViewObject().getViewIdList()),
@@ -40,13 +39,10 @@ string PlayerInfo::getFirstName() const {
 
 ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature* c, const ContentFactory* factory) {
   vector<ImmigrantCreatureInfo::TrainingInfo> limits;
-  auto maxExp = c->getAttributes().getMaxExpLevel();
-  for (auto expType : ENUM_ALL(ExperienceType))
-    if (maxExp[expType] > 0) {
-      limits.push_back(ImmigrantCreatureInfo::TrainingInfo { expType, maxExp[expType] });
-      for (auto attr : getAttrIncreases()[expType])
-        limits.back().attributes.push_back(factory->attrInfo.at(attr.first).viewId);
-    }
+  for (auto& elem : c->getAttributes().getMaxExpLevel()) {
+    limits.push_back(ImmigrantCreatureInfo::TrainingInfo { elem.first, elem.second,
+        factory->attrInfo.at(elem.first).viewId });
+  }
   return ImmigrantCreatureInfo {
     c->getName().bare(),
     c->getViewObject().getViewIdList(),
@@ -148,7 +144,7 @@ SpellSchoolInfo fillSpellSchool(const Creature* c, SpellSchoolId id, const Conte
   SpellSchoolInfo ret;
   auto& spellSchool = factory->getCreatures().getSpellSchools().at(id);
   ret.name = spellSchool.name.value_or(id.data());
-  ret.experienceType = spellSchool.expType;
+  ret.experienceType = factory->attrInfo.at(spellSchool.expType).name;
   for (auto& id : spellSchool.spells) {
     auto spell = factory->getCreatures().getSpell(id.first);
     ret.spells.push_back(
