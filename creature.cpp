@@ -2117,8 +2117,9 @@ void Creature::increaseExpLevel(AttrType type, double increase) {
   int newLevel = (int)getAttributes().getExpLevel(type);
   if (curLevel != newLevel) {
     you(MsgType::ARE, "more skilled");
-    addPersonalEvent(getName().a() + " reaches " + getGame()->getContentFactory()->attrInfo.at(type).name +
-        " training level " + toString(newLevel));
+    if (auto game = getGame())
+      addPersonalEvent(getName().a() + " reaches " + game->getContentFactory()->attrInfo.at(type).name +
+          " training level " + toString(newLevel));
     spellMap->onExpLevelReached(this, type, newLevel);
   }
 }
