@@ -24,7 +24,7 @@ TribeId getPlayerTribeId(TribeAlignment variant) {
     case TribeAlignment::EVIL:
       return TribeId::getDarkKeeper();
     case TribeAlignment::LAWFUL:
-      return TribeId::getAdventurer();
+      return TribeId::getWhiteKeeper();
   }
 }
 

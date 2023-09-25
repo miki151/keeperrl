@@ -63,7 +63,6 @@ RICH_ENUM(OptionId,
 enum class OptionSet {
   GENERAL,
   KEEPER,
-  ADVENTURER,
 };
 
 namespace ScriptedUIDataElems {

@@ -97,7 +97,6 @@ bool MainLoop::isCompatible(int loadedVersion) {
 static string getSaveSuffix(GameSaveType t) {
   switch (t) {
     case GameSaveType::KEEPER: return ".kep";
-    case GameSaveType::ADVENTURER: return ".adv";
     case GameSaveType::RETIRED_SITE: return ".sit";
     case GameSaveType::RETIRED_CAMPAIGN: return ".cam";
     case GameSaveType::WARLORD: return ".war";
@@ -957,7 +956,7 @@ void MainLoop::launchQuickGame(optional<int> maxTurns, bool tryToLoad) {
     tileSet->setTilePaths(contentFactory.tilePaths);
   tileSet->loadTextures();
   if (tryToLoad) {
-    auto files = getSaveOptions({GameSaveType::AUTOSAVE, GameSaveType::KEEPER, GameSaveType::ADVENTURER});
+    auto files = getSaveOptions({GameSaveType::AUTOSAVE, GameSaveType::KEEPER});
     auto toLoad = std::min_element(files.begin(), files.end(),
         [](const auto& f1, const auto& f2) { return f1.date > f2.date; });
     if (toLoad != files.end())
@@ -1395,7 +1394,6 @@ PGame MainLoop::loadOrNewGame() {
   };
   addGames(GameSaveType::AUTOSAVE);
   addGames(GameSaveType::KEEPER);
-  addGames(GameSaveType::ADVENTURER);
   addGames(GameSaveType::WARLORD);
   auto data = ScriptedUIDataElems::Record{};
   if (games.empty())
