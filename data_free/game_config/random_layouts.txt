@@ -501,7 +501,7 @@ End
 
 "adventurer_house" {
   Building("wood_wall", "wood_floor")
-  Coners(Set("no_door"), 1)
+  Corners(Set("no_door"), 1)
   Place({1 1} Reset("wood_floor", "wood_door") 1 And(On("wood_wall"), Not On("no_door")))
   Place (
     ({1 1} Set("dining_table") 1 FurnitureLoc()),
