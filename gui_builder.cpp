@@ -2970,16 +2970,23 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
     }
     for (int i : All(collectiveInfo.minionPromotions)) {
       auto& elem = collectiveInfo.minionPromotions[i];
+      auto minionElem = WL(getListBuilder, legendLineHeight);
       auto line = WL(getListBuilder)
           .addElem(WL(renderInBounds, std::move(minionLabels[i])), min(105, maxWidth))
           .addSpace(10);
       for (int index : All(elem.promotions)) {
         auto& info = elem.promotions[index];
-        line.addElemAuto(WL(stack,
+        line.addElem(WL(stack,
             WL(topMargin, -2, WL(viewObject, info.viewId)),
-            getTooltip({makeSentence(info.description)}, i * 100 + index + THIS_LINE)));
+            getTooltip({makeSentence(info.description)}, i * 100 + index + THIS_LINE)), 24);
+        if (line.getSize() > 250) {
+          minionElem.addElem(line.buildHorizontalList());
+          line.clear();
+        }
       }
-      line.addSpace(14);
+      if (!line.isEmpty())
+        minionElem.addElem(line.buildHorizontalList());
+      minionElem.addSpace(14);
       auto callback = [id = elem.id, options = elem.options, this] (Rectangle bounds) {
         vector<SGuiElem> lines = {WL(label, "Promotion type:")};
         vector<function<void()>> callbacks = { nullptr };
@@ -3005,15 +3012,15 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
             WL(uiHighlightMouseOver),
             WL(conditional, WL(uiHighlightLine),
                 [this, myIndex] { return techIndex == myIndex; }),
-            line.buildHorizontalList(),
+            minionElem.buildVerticalList(),
             WL(buttonRect, callback),
             WL(conditionalStopKeys,
                 WL(keyHandlerRect, callback, {gui.getKey(C_BUILDINGS_CONFIRM), gui.getKey(C_BUILDINGS_RIGHT)}, true),
                 [this, myIndex] { return collectiveTab == CollectiveTab::TECHNOLOGY && techIndex == myIndex; })
         )));
-        lines.addElem(activeElems.back());
+        lines.addElemAuto(activeElems.back());
       } else
-        lines.addElem(line.buildHorizontalList());
+        lines.addElemAuto(minionElem.buildVerticalList());
     }
   }
   auto emptyElem = WL(empty);
