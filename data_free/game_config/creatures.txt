@@ -210,6 +210,9 @@
       { "LeatherHelm"}
       { "GoldPiece" 16 26 }
     }
+    promotionGroup = "adventurer"
+    promotionCost = 1
+    maxPromotions = 1000
   }
 "ADVENTURER_F" inherit "ADVENTURER"
   {

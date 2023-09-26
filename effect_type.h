@@ -404,6 +404,11 @@ struct IncreaseMaxLevel {
   int SERIAL(value);
   SERIALIZE_ALL(type, value)
 };
+struct IncreaseLevel {
+  AttrType SERIAL(type);
+  int SERIAL(value);
+  SERIALIZE_ALL(type, value)
+};
 struct ApplyToSteed : GenericModifierEffect {
 };
 struct AllCreatures : GenericModifierEffect {
@@ -503,10 +508,11 @@ using Achievement = AchievementId;
   X(Bleed, 90)\
   X(Price, 91)\
   X(IncreaseMaxLevel, 92)\
-  X(EquipmentType, 93)\
-  X(AddSpellSchool, 94)\
-  X(Achievement, 95)\
-  X(ModifyFurniture, 96)
+  X(IncreaseLevel, 93)\
+  X(EquipmentType, 94)\
+  X(AddSpellSchool, 95)\
+  X(Achievement, 96)\
+  X(ModifyFurniture, 97)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

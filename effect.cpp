@@ -443,6 +443,19 @@ static string getDescription(const Effects::IncreaseMaxLevel& e, const ContentFa
       toString(std::fabs(e.value));
 }
 
+static bool applyToCreature(const Effects::IncreaseLevel& e, Creature* c, Creature*) {
+  c->increaseExpLevel(e.type, e.value);
+  return true;
+}
+
+static string getName(const Effects::IncreaseLevel& e, const ContentFactory* f) {
+  return f->attrInfo.at(e.type).name + " training"_s;
+}
+
+static string getDescription(const Effects::IncreaseLevel& e, const ContentFactory* f) {
+  return "Trains " + " "_s + f->attrInfo.at(e.type).name + " by " + toString(std::fabs(e.value));
+}
+
 static bool applyToCreature(const Effects::AddCompanion& e, Creature* c, Creature*) {
   c->getAttributes().companions.push_back(e);
   return true;
