@@ -32,7 +32,6 @@
 
 class Clock;
 class MinionAction;
-struct HighscoreList;
 class Options;
 class MapGui;
 class CampaignAction;
@@ -98,8 +97,6 @@ class GuiBuilder {
       const vector<PlayerInfo>&, const string& cancelText);
   SGuiElem drawCreatureInfo(SyncQueue<bool>&, const string& title, bool prompt, const vector<PlayerInfo>& creatures);
   SGuiElem drawCost(pair<ViewId, int>, Color = Color::WHITE);
-  SGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<ScrollPosition>& scrollPos,
-      bool& online);
   SGuiElem drawMinimapIcons(const GameInfo&);
   optional<int> getNumber(const string& title, Vec2 position, Range, int initial);
 

@@ -51,16 +51,6 @@ namespace fx {
 }
 class FXViewManager;
 
-struct HighscoreList {
-  string name;
-  struct Elem {
-    string text;
-    string score;
-    bool highlight;
-  };
-  vector<Elem> scores;
-};
-
 enum class CampaignActionId {
   CANCEL,
   REROLL_MAP,

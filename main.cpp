@@ -354,7 +354,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   const auto modVersion = appConfig.get<string>("mod_version");
   const auto saveVersion = appConfig.get<int>("save_version");
   FileSharing fileSharing(uploadUrl, modVersion, saveVersion, options, installId);
-  Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
+  Highscores highscores(userPath.file("highscores.dat"));
   if (commandLineFlags["worldgen_test"].was_set()) {
     ofstream output("worldgen_out.txt");
     UserInfoLog.addOutput(DebugOutput::toStream(output));
