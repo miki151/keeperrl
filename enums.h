@@ -125,6 +125,7 @@ class BodyMaterialId;
 class Keybinding;
 class AchievementId;
 class VillainGroup;
+class RandomLayoutId;
 using EffectAIIntent = int;
 
 using SteamId = unsigned long long;

@@ -204,7 +204,6 @@
     spellSchools = { "fighter" "mage" }
     inventory = {
       { "FirstAidKit" 2 4 }
-      { "Knife"}
       { "Sword"}
       { "LeatherGloves"}
       { "LeatherArmor"}

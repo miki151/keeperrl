@@ -1229,14 +1229,13 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, vector<Creatur
   return numAllies;
 }
 
-PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup, TribeId tribe,
-    TribeAlignment alignment) {
+PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup, const AvatarInfo& avatarInfo) {
   auto ret = [&] {
     switch (setup.campaign.getType()) {
       case CampaignType::QUICK_MAP:
-        return modelBuilder.tutorialModel();
+        return modelBuilder.tutorialModel(avatarInfo.creatureInfo.startingBase);
       default:
-        return modelBuilder.campaignBaseModel(tribe, alignment, setup.campaign.getBaseBiome(), setup.externalEnemies);
+        return modelBuilder.campaignBaseModel(avatarInfo, setup.campaign.getBaseBiome(), setup.externalEnemies);
     }
   }();
   return ret;
@@ -1254,10 +1253,10 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
   EnemyFactory enemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,
       contentFactory->buildingInfo, getExternalEnemiesFor(avatarInfo, contentFactory));
   ModelBuilder modelBuilder(nullptr, random, options, sokobanInput, contentFactory, std::move(enemyFactory));
-  return prepareCampaignModels(setup, avatarInfo.tribeAlignment, std::move(modelBuilder));
+  return prepareCampaignModels(setup, avatarInfo, std::move(modelBuilder));
 }
 
-ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment tribeAlignment,
+ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInfo& avatarInfo,
     ModelBuilder modelBuilder) {
   Table<PModel> models(setup.campaign.getSites().getBounds());
   auto& sites = setup.campaign.getSites();
@@ -1276,7 +1275,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment 
           if (!sites[v].isEmpty())
             meter.addProgress();
           if (auto info = sites[v].getKeeper()) {
-            models[v] = getBaseModel(modelBuilder, setup, info->tribe, tribeAlignment);
+            models[v] = getBaseModel(modelBuilder, setup, avatarInfo);
           } else if (auto villain = sites[v].getVillain()) {
             for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE)))
               if (isCompatible(getSaveVersion(info)))
@@ -1290,7 +1289,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment 
                         break;
                       }
             if (!models[v])
-              models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, tribeAlignment);
+              models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, avatarInfo.tribeAlignment);
           } else if (auto retired = sites[v].getRetired()) {
             if (auto info = loadRetiredModelFromFile(userPath.file(retired->fileInfo.filename))) {
               models[v] = PModel(std::move(info->model));
@@ -1437,7 +1436,7 @@ struct WarlordInfo {
 };
 
 PGame MainLoop::prepareWarlord(const SaveFileInfo& fileInfo) {
-  if (auto warlordInfo = loadFromFile<WarlordInfo>(userPath.file(fileInfo.filename))) {
+/*  if (auto warlordInfo = loadFromFile<WarlordInfo>(userPath.file(fileInfo.filename))) {
     ContentFactory contentFactory;
     tileSet->clear();
     // Using a splash screen causes a segfault due to reloading the tileset while scriptedUI is running
@@ -1481,7 +1480,7 @@ PGame MainLoop::prepareWarlord(const SaveFileInfo& fileInfo) {
           std::move(warlordInfo->contentFactory), warlordInfo->gameIdentifier);
     }
   } else
-    view->presentText("Sorry", "Failed to load the warlord file :(");
+    view->presentText("Sorry", "Failed to load the warlord file :(");*/
   return nullptr;
 }
 

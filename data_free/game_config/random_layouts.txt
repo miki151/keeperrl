@@ -499,6 +499,17 @@ End
 
 "cottage_cellar" CottageCellar()
 
+"adventurer_house" {
+  Building("wood_wall", "wood_floor")
+  Place({1 1} Reset("wood_floor", "wood_door") 1 On("wood_wall"))
+  Place (
+    ({1 1} Set("dining_table") 1 FurnitureLoc()),
+    ({1 1} Set("bed") 1 FurnitureLoc()),
+    ({1 1} Set("torch") 1 FurnitureLoc()),
+    ({1 1} Set("equipment_chest") 1 FurnitureLoc()),
+  )
+}
+
 Def DungeonContent()
   Place (
     (

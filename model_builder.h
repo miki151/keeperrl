@@ -23,15 +23,16 @@ class ContentFactory;
 struct LevelConnection;
 struct BiomeInfo;
 struct BiomeEnemyInfo;
+struct KeeperBaseInfo;
 
 class ModelBuilder {
   public:
   ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*, ContentFactory*, EnemyFactory);
   ModelBuilder(ModelBuilder&&) = default;
   ModelBuilder(const ModelBuilder&) = delete;
-  PModel campaignBaseModel(TribeId keeperTribe, TribeAlignment, BiomeId, optional<ExternalEnemiesType>);
+  PModel campaignBaseModel(const AvatarInfo&, BiomeId, optional<ExternalEnemiesType>);
   PModel campaignSiteModel(EnemyId, VillainType, TribeAlignment);
-  PModel tutorialModel();
+  PModel tutorialModel(optional<KeeperBaseInfo>);
 
   void measureSiteGen(int numTries, vector<string> types, vector<BiomeId> biomes);
 
@@ -41,10 +42,11 @@ class ModelBuilder {
 
   private:
   void measureModelGen(const std::string& name, int numTries, function<void()> genFun);
-  PModel tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment, BiomeId, optional<ExternalEnemiesType>);
-  PModel tryTutorialModel();
+  PModel tryCampaignBaseModel(TribeAlignment, optional<KeeperBaseInfo>, BiomeId, optional<ExternalEnemiesType>);
+  PModel tryTutorialModel(optional<KeeperBaseInfo>);
   PModel tryCampaignSiteModel(EnemyId, VillainType, TribeAlignment);
-  PModel tryModel(int width, vector<EnemyInfo>, optional<TribeId> keeperTribe, BiomeId, optional<ExternalEnemies>);
+  PModel tryModel(int width, vector<EnemyInfo>, optional<TribeId> keeperTribe, optional<KeeperBaseInfo>, BiomeId,
+      optional<ExternalEnemies>);
   void makeExtraLevel(Model* model, LevelConnection& connection, SettlementInfo& mainSettlement, StairKey upLink,
       vector<EnemyInfo>& extraEnemies, int depth, bool mainDungeon);
   PModel tryBuilding(int numTries, function<PModel()> buildFun, const string& name);

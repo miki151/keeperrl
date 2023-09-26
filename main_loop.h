@@ -73,7 +73,7 @@ class MainLoop {
   void showMods();
   void playMenuMusic();
   ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen&, ContentFactory*);
-  ModelTable prepareCampaignModels(CampaignSetup& campaign, TribeAlignment, ModelBuilder);
+  ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, ModelBuilder);
   PGame loadGame(const FilePath&);
   PGame loadOrNewGame();
   FilePath getSavePath(const PGame&, GameSaveType);
@@ -97,7 +97,7 @@ class MainLoop {
   TileSet* tileSet;
   int saveVersion;
   string modVersion;
-  PModel getBaseModel(ModelBuilder&, CampaignSetup&, TribeId, TribeAlignment);
+  PModel getBaseModel(ModelBuilder&, CampaignSetup&, const AvatarInfo&);
   void considerGameEventsPrompt();
   void considerFreeVersionText(bool tilesPresent);
   void eraseAllSavesExcept(const PGame&, optional<GameSaveType>);

@@ -204,7 +204,7 @@
   unlock = "cyclops"
 }
 
-"99_adventurer"
+"91_adventurer"
 {
   creatureId = { "ADVENTURER" "ADVENTURER_F" }
   tribeAlignment = LAWFUL
@@ -218,5 +218,6 @@
   workshopGroups = {}
   minionTraits = {LEADER WORKER}
   maxPopulation = 1
+  startingBase = {5 5} "adventurer_house"
   prisoners = false
 }

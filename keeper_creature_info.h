@@ -6,6 +6,7 @@
 #include "minion_trait.h"
 #include "cost_info.h"
 #include "villain_group.h"
+#include "keeper_base_info.h"
 
 class SpecialTrait;
 
@@ -35,6 +36,7 @@ struct KeeperCreatureInfo {
   vector<string> SERIAL(flags);
   vector<VillainGroup> SERIAL(villainGroups);
   bool SERIAL(requireQuartersForExp) = true;
+  optional<KeeperBaseInfo> SERIAL(startingBase) = none;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);
 };

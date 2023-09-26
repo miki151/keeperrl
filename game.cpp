@@ -118,6 +118,11 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
       .addCreature(keeperRef, keeperInfo.minionTraits);
   if (avatarInfo.chosenBaseName)
     builder.setLocationName(*avatarInfo.chosenBaseName);
+  if (avatarInfo.creatureInfo.startingBase) {
+    builder.setLevel(level);
+    builder.addArea(level->getLandingSquares(StairKey::keeperSpawn())
+        .transform([](auto& pos){ return pos.getCoord(); }));
+  }
   model->addCollective(builder.build(contentFactory.get()));
   playerCollective = model->getCollectives().back();
   CHECK(!!playerCollective->getName()->shortened);

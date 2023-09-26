@@ -25,6 +25,7 @@
   "stone_bridge" Place "STONE_BRIDGE"
   "wood_bridge" Place "BRIDGE"
   "treasure_chest" Place "TREASURE_CHEST"
+  "equipment_chest" Place "EQUIPMENT_CHEST"
   "iron_door" Place "IRON_DOOR"
   "iron_gate" Place "IRON_GATE"
   "iron_gate_blocking" Place "IRON_GATE_BLOCKING"
