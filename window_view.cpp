@@ -307,6 +307,7 @@ void WindowView::rebuildGui() {
   auto getMovement = [this](int x, int y) {
     inputQueue.push(UserInput(UserInputId::MOVE, Vec2(x, y)));
     mapGui->onMouseGone();
+    guiBuilder.mouseGone = true;
   };
   tempGuiElems.push_back(gui.stack(makeVec(
       gui.keyHandler(bindMethod(&WindowView::keyboardAction, this)),
@@ -1084,6 +1085,9 @@ void WindowView::processEvents() {
       case SDL::SDL_KEYDOWN:
         if (gameInfo.infoType == GameInfo::InfoType::PLAYER)
           renderer.flushEvents(SDL::SDL_KEYDOWN);
+        break;
+      case SDL::SDL_MOUSEMOTION:
+        guiBuilder.mouseGone = false;
         break;
       case SDL::SDL_MOUSEBUTTONDOWN:
         if (event.button.button == SDL_BUTTON_RIGHT)

@@ -136,8 +136,8 @@ class GuiBuilder {
 
   bool disableClickActions = false;
   bool disableTooltip = false;
-
   bool playerInventoryFocused() const;
+  bool mouseGone = false;
 
   private:
   SGuiElem withLine(int, SGuiElem);

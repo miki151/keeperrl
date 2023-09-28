@@ -1421,7 +1421,8 @@ SGuiElem GuiBuilder::getTooltip(const vector<string>& text, int id, milliseconds
       [this, delay, forceEnableTooltip](const vector<string>& text) {
         return forceEnableTooltip
             ? WL(tooltip, text, delay)
-            : WL(conditional, WL(tooltip, text, delay), [this] { return !disableTooltip;}); },
+            : WL(conditional, WL(tooltip, text, delay),
+                [this] { return !disableTooltip && !mouseGone;}); },
       id, text);
 }
 
@@ -1453,7 +1454,8 @@ SGuiElem GuiBuilder::drawImmigrantCreature(const ImmigrantCreatureInfo& creature
 }
 
 SGuiElem GuiBuilder::getTooltip2(SGuiElem elem, GuiFactory::PositionFun fun) {
-  return WL(conditional, WL(tooltip2, std::move(elem), std::move(fun)), [this] { return !disableTooltip;});
+  return WL(conditional, WL(tooltip2, std::move(elem), std::move(fun)),
+      [this] { return !disableTooltip && !mouseGone;});
 }
 
 const int listLineHeight = 30;
