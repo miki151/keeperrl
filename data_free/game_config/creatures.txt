@@ -298,14 +298,11 @@
     chatReactionFriendly = "curses all law enforcement"
     chatReactionHostile = "\"Die!\""
     maxLevelIncrease = {
-      DAMAGE 2
+      DAMAGE 3
+      RANGED_DAMAGE 3
     }
     name = {
       name = "bandit"
-    }
-    maxLevelIncrease = {
-      DAMAGE 5
-      RANGED_DAMAGE 3
     }
     deathEffect = Filter Not Flag "key_dropped" {
       SetFlag "key_dropped" true
