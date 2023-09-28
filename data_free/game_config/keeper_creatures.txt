@@ -220,4 +220,5 @@
   maxPopulation = 1
   startingBase = {5 5} "adventurer_house"
   prisoners = false
+  requireQuartersForExp = false
 }
