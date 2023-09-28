@@ -303,6 +303,10 @@
     name = {
       name = "bandit"
     }
+    maxLevelIncrease = {
+      DAMAGE 5
+      RANGED_DAMAGE 3
+    }
     deathEffect = Filter Not Flag "key_dropped" {
       SetFlag "key_dropped" true
       DropItems { "BlackMarketKey"} {1}
@@ -3254,7 +3258,7 @@
     attr = {
       DAMAGE 22
       DEFENSE 14
-      SPELL_DAMAGE 36 
+      SPELL_DAMAGE 36
     }
     body = {
       type = Humanoid MEDIUM
@@ -3267,6 +3271,9 @@
       NIGHT_VISION 1
       DISTILLATION_SKILL 1
     }
+    maxLevelIncrease = {
+      SPELL_DAMAGE 10
+    }
     spells = { "advanced healing" "haste" "defense bonus" "damage bonus" "directed blast" }
     name = {
       name = "dark elf lord"
@@ -3275,7 +3282,6 @@
     inventory = {
       { "ElvenStaff" }
       { "LeatherArmor"}
-      { "ElvenBow"}
       { "GoldPiece" 80 120 }
       { Scroll Escape{} }
       { type = Glyph WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 10 LastingEffect INSANITY} chance = 0.3 }
