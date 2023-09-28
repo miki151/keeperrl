@@ -54,9 +54,9 @@ class Game : public OwnedObject<Game> {
   Model* chooseSite(const string& message, Model* current) const;
   void presentWorldmap();
   // if destinations are empty then creature is placed on the edge of the map
-  void transferCreature(Creature*, WModel to, const vector<Position>& destinations = {});
-  bool canTransferCreature(Creature*, WModel to);
-  Position getTransferPos(WModel from, WModel to) const;
+  void transferCreature(Creature*, Model* to, const vector<Position>& destinations = {});
+  bool canTransferCreature(Creature*, Model* to);
+  Position getTransferPos(Model* from, Model* to) const;
   string getGameIdentifier() const;
   string getGameOrRetiredIdentifier(Position) const;
   string getGameDisplayName() const;
@@ -68,7 +68,7 @@ class Game : public OwnedObject<Game> {
   Tribe* getTribe(TribeId) const;
   GlobalTime getGlobalTime() const;
   Collective* getPlayerCollective() const;
-  WPlayerControl getPlayerControl() const;
+  PlayerControl* getPlayerControl() const;
   void addPlayer(Creature*);
   void removePlayer(Creature*);
   const vector<Creature*>& getPlayerCreatures() const;
@@ -97,10 +97,12 @@ class Game : public OwnedObject<Game> {
   void handleMessageBoard(Position, Creature*);
 
   PModel& getMainModel();
-  vector<WModel> getAllModels() const;
+  vector<Model*> getAllModels() const;
   bool isSingleModel() const;
   int getSaveProgressCount() const;
-  WModel getCurrentModel() const;
+  Model* getCurrentModel() const;
+  int getModelDifficulty(const Model*) const;
+  bool passesMaxAggressorCutOff(const Model*);
 
   void prepareSiteRetirement();
   void doneRetirement();
@@ -108,6 +110,7 @@ class Game : public OwnedObject<Game> {
 
   void addEvent(const GameEvent&);
   void addAnalytics(const string& name, const string& value);
+  void achieve(AchievementId) const;
   void setWasTransfered();
 
   ~Game();
@@ -121,9 +124,9 @@ class Game : public OwnedObject<Game> {
 
   private:
   void tick(GlobalTime);
-  Vec2 getModelCoords(const WModel) const;
-  bool updateModel(WModel, double timeDiff, optional<milliseconds> endTime);
+  bool updateModel(Model*, double timeDiff, optional<milliseconds> endTime);
   void uploadEvent(const string& name, const map<string, string>&);
+  void considerAchievement(const GameEvent&);
 
   SunlightInfo sunlightInfo;
   Table<PModel> SERIAL(models);
@@ -146,7 +149,7 @@ class Game : public OwnedObject<Game> {
   Highscores* highscores = nullptr;
   Encyclopedia* encyclopedia = nullptr;
   optional<milliseconds> lastUpdate;
-  WPlayerControl SERIAL(playerControl) = nullptr;
+  PlayerControl* SERIAL(playerControl) = nullptr;
   Collective* SERIAL(playerCollective) = nullptr;
   HeapAllocated<Campaign> SERIAL(campaign);
   bool wasTransfered = false;

@@ -8,7 +8,6 @@
 #include "parse_game.h"
 #include "highscores.h"
 #include "campaign_type.h"
-#include "player_role.h"
 #define ProgramOptions_no_colors
 #include "extern/ProgramOptions.h"
 
@@ -24,7 +23,6 @@ static string getString(Highscores::Score score) {
       ::toString(score.points) + delim +
       ::toString(score.turns) + delim +
       EnumInfo<CampaignType>::getString(score.campaignType) + delim +
-      EnumInfo<PlayerRole>::getString(score.playerRole) + delim +
       ::toString(score.version);
 }
 

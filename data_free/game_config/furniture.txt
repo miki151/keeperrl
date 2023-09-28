@@ -8,7 +8,7 @@
   canHideHere = true
   strength = 80
   maxTraining = {
-    MELEE 3
+    DAMAGE 3
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
@@ -23,7 +23,7 @@
   strength = 80
   upgrade = "TRAINING_WOOD"
   maxTraining = {
-    MELEE 7
+    DAMAGE 7
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
@@ -38,7 +38,7 @@
   strength = 80
   upgrade = "TRAINING_IRON"
   maxTraining = {
-    MELEE 99
+    DAMAGE 99
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
@@ -87,6 +87,26 @@ TRAINING("_DWARF", "_dwarf")
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   usageFX = FORGE
+}
+"LAVA_FORGE" inherit "FORGE"
+{
+  name = "lava forge"
+  viewId = { "lava_forge" }
+  upgrade = "FORGE"
+  usagePredicate = Not Area 1 Not FurnitureType "MAGMA"
+}
+"ADA_FORGE" inherit "FORGE"
+{
+  name = "adamantium forge"
+  viewId = { "ada_forge" }
+  upgrade = "FORGE"
+}
+"MYST_FORGE" inherit "FORGE"
+{
+  name = "myst forge"
+  viewId = { "myst_forge" }
+  upgrade = "FORGE"
+  usagePredicate = ContainsGas "FOG"
 }
 "LABORATORY"
 {
@@ -145,8 +165,8 @@ TRAINING("_DWARF", "_dwarf")
   viewId = { "dining_table" }
   name = "dining table"
   usageFX = none
-  diningFurniture = true
-  usageType = UsageEffect "eat from" Filter Humanoid {
+  diningFurniture = DINING_TABLE
+  usageType = UsageEffect "eat from dining table" Filter Humanoid {
     CreatureMessage { "eat a steaming pig" "eats a steaming pig"}
     Lasting SATIATED
   }
@@ -161,8 +181,8 @@ TRAINING("_DWARF", "_dwarf")
   fire = 100
   strength = 10
   destroyFX = { DESTROY_FURNITURE Rgb 200 200 0 255 }
-  diningFurniture = true
-  usageType = UsageEffect "eat from" Filter Not Humanoid {
+  diningFurniture = HAYPILE
+  usageType = UsageEffect "eat from hay pile" Filter Not Humanoid {
     CreatureMessage { "eat some hay" "eats some hay"}
     Lasting SATIATED
   }
@@ -175,7 +195,7 @@ TRAINING("_DWARF", "_dwarf")
   usageTime = 5
   canHideHere = true
   strength = 100
-  usageType = UsageEffect "use" {
+  usageType = UsageEffect "use distillery" {
     Chance 0.02 DropItems {"Moonshine"} {1}
     Chance 0.005 SummonEnemy "RAT" {1 4} none
   }
@@ -201,7 +221,7 @@ TRAINING("_DWARF", "_dwarf")
   fire = 70
   strength = 50
   maxTraining = {
-    SPELL 3
+    SPELL_DAMAGE 3
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
@@ -218,7 +238,7 @@ TRAINING("_DWARF", "_dwarf")
   strength = 50
   upgrade = "BOOKCASE_WOOD"
   maxTraining = {
-    SPELL 7
+    SPELL_DAMAGE 7
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
@@ -235,7 +255,7 @@ TRAINING("_DWARF", "_dwarf")
   strength = 50
   upgrade = "BOOKCASE_IRON"
   maxTraining = {
-    SPELL 99
+    SPELL_DAMAGE 99
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
@@ -252,7 +272,7 @@ BOOKCASES("_HUMAN", "_human")
   name = "throne"
   viewId = { "throne" }
   canHideHere = true
-  usageType = UsageEffect "sit on" { CreatureMessage { "sit on the throne" "sits on the throne" } Audience none }
+  usageType = UsageEffect "sit on throne" { CreatureMessage { "sit on the throne" "sits on the throne" } Audience none }
   luxury = 1.0
   strength = 80
   populationIncrease = { 10 none }
@@ -261,6 +281,11 @@ BOOKCASES("_HUMAN", "_human")
 "THRONE_HUMAN" inherit "THRONE"
 {
   viewId = { "throne_human" }
+}
+"BROKEN_THRONE" inherit "THRONE"
+{
+  name = "broken throne"
+  usageType = UsageEffect "sit on throne" { CreatureMessage { "sit on the throne" "sits on the throne" } SummonEnemy "GOBLIN_WARRIOR" {3 5} none }
 }
 "IMPALED_HEAD"
 {
@@ -277,7 +302,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "beast cage"
   viewId = { "beast_cage" }
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  usageType = UsageEffect "sleep in cage" Lasting SLEEP
   tickType = Effect BedHeal()
   canHideHere = true
   fire = 50
@@ -289,7 +314,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "basic bed"
   viewId = { "bed1" }
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  usageType = UsageEffect "sleep in bed" Lasting SLEEP
   tickType = Effect BedHeal()
   canHideHere = true
   fire = 50
@@ -301,7 +326,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "fine bed"
   viewId = { "bed2" }
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  usageType = UsageEffect "sleep in bed" Lasting SLEEP
   tickType = Effect BedHeal()
   canHideHere = true
   fire = 50
@@ -315,7 +340,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "luxurious bed"
   viewId = { "bed3" }
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  usageType = UsageEffect "sleep in bed" Lasting SLEEP
   tickType = Effect BedHeal()
   canHideHere = true
   luxury = 0.7
@@ -387,7 +412,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "prison tile"
   viewId = { "prison" }
   tickType = Effect BedHeal()
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  usageType = UsageEffect "sleep in prison" Lasting SLEEP
   bedType = PRISON
   layer = FLOOR
 }
@@ -414,6 +439,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
   strength = 80
   requiredSupport = { { { E W } } { { N S } {"prison_door_ns"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+}
+"PRISON_DOOR_LOCKED" inherit "PRISON_DOOR"
+{
+  movementSet = {}
 }
 "ANIMAL_FENCE"
 {
@@ -520,6 +549,19 @@ Def BedHeal() Heal { FLESH 0.005 } End
   storageIds = {"gold"}
   hidesItems = true
 }
+"EQUIPMENT_CHEST"
+{
+  name = "chest"
+  viewId = { "chest" }
+  emptyViewId = { "treasurechest_empty" }
+  canHideHere = true
+  fire = 50
+  luxury = 0.4
+  strength = 40
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  storageIds = {"equipment"}
+  hidesItems = true
+}
 "EYEBALL"
 {
   name = "eyeball"
@@ -558,7 +600,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   luxury = 1.0
   strength = 200
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
-  usageType = UsageEffect "transfer your soul to" {
+  usageType = UsageEffect "transfer your soul to phylactery" {
     Area 1
     Filter And { FurnitureType "PHYLACTERY" Not Flag "tmp" } {
       PlaceFurniture "PHYLACTERY_ACTIVE"
@@ -736,11 +778,13 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "tree trunk"
   viewId = { "tree_trunk" }
   canSilentlyReplace = true
+  removeInstantly = true
 }
 "BURNT_TREE"
 {
   name = "burnt tree"
   viewId = { "burnt_tree" }
+  removeInstantly = true
   canHideHere = true
   strength = 30
 }
@@ -767,18 +811,21 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "rocks"
   viewId = { "stones" }
   canSilentlyReplace = true
+  removeInstantly = true
 }
 "TERMITE_MOUND"
 {
   name = "termite mound"
   viewId = { "termite_mound" }
   canSilentlyReplace = true
+  removeInstantly = true
 }
 "FLOWER1"
 {
   name = "flower"
   viewId = { "flower1" }
   canSilentlyReplace = true
+  removeInstantly = true
 }
 "FLOWER2" inherit "FLOWER1"
 {
@@ -792,7 +839,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "wheat"
   viewId = { "swish_wheat" }
-  usageType = UsageEffect "scythe " Chance 0.3 CreatureMessage { "scythe the field" "scythes the field"}
+  usageType = UsageEffect "scythe wheat" Chance 0.3 CreatureMessage { "scythe the field" "scythes the field"}
   usageTime = 3
   layer = FLOOR
   viewLayer = FLOOR
@@ -939,7 +986,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "fountain" }
   canHideHere = true
   luxury = 0.7
-  usageType = UsageEffect "drink from"
+  usageType = UsageEffect "drink from fountain"
       {
         CreatureMessage { "take a sip" "takes a sip"}
         ChooseRandom {
@@ -964,7 +1011,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "altar" }
   canHideHere = true
   strength = 80
-  usageType = UsageEffect "desecrate" {
+  usageType = UsageEffect "desecrate altar" {
     CreatureMessage { "desecrate the altar" "desecrates the altar"}
     DestroyWalls BASH
     ChooseRandom {
@@ -1077,7 +1124,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "chest"
   viewId = { "chest" }
   canHideHere = true
-  usageType = UsageEffect "open" {
+  usageType = UsageEffect "open chest" {
     CreatureMessage { "open the chest" "opens the chest"}
     CreatureMessage { "find some equipment inside" "finds some equipment inside"}
     ChooseRandom {
@@ -1096,7 +1143,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 }
 "PAMPHLET_CHEST" inherit "ARMOR_CHEST"
 {
-  usageType = UsageEffect "open" {
+  usageType = UsageEffect "open chest" {
     CreatureMessage { "open the chest" "opens the chest"}
     CreatureMessage { "find some pamphlets inside" "finds some pamphlets inside"}
     DropItems {"AdoxieScroll"} {10 20}
@@ -1105,7 +1152,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 }
 "ZOMBIE_CHEST" inherit "ARMOR_CHEST"
 {
-  usageType = UsageEffect "open" {
+  usageType = UsageEffect "open chest" {
     CreatureMessage { "open the chest" "opens the chest"}
     CreatureMessage { "find a scroll inside" "finds a scroll inside"}
     DropItems {"ZombieScroll"} 1
@@ -1114,16 +1161,17 @@ Def BedHeal() Heal { FLESH 0.005 } End
 }
 "KNIFE_CHEST" inherit "ARMOR_CHEST"
 {
-  usageType = UsageEffect "open" {
+  usageType = UsageEffect "open chest" {
     CreatureMessage { "open the chest" "opens the chest"}
     CreatureMessage { "find an item inside" "finds an item inside"}
     DropItems {"AssassinsKnife"} 1
     RemoveFurniture "KNIFE_CHEST"
+    Achievement "assassin"
   }
 }
 "ADA_CHEST" inherit "ARMOR_CHEST"
 {
-  usageType = UsageEffect "open" {
+  usageType = UsageEffect "open chest" {
     CreatureMessage {"open the chest" "opens the chest"}
     CreatureMessage {"find an item inside" "finds an item inside"}
     ChooseRandom {
@@ -1142,7 +1190,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 }
 "SWARMER_CHEST" inherit "ARMOR_CHEST"
 {
-  usageType = UsageEffect "open" {
+  usageType = UsageEffect "open chest" {
     CreatureMessage { "open the chest" "opens the chest"}
     CreatureMessage { "find an item inside" "finds an item inside"}
     DropItems {Potion Permanent SWARMER} 1
@@ -1152,7 +1200,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 }
 "BLACKSMITH_CHEST" inherit "ARMOR_CHEST"
 {
-  usageType = UsageEffect "open" {
+  usageType = UsageEffect "open chest" {
     CreatureMessage { "open the chest" "opens the chest"}
     CreatureMessage { "find an item inside" "finds an item inside"}
     ChooseRandom {
@@ -1172,7 +1220,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 "DRAGON_CHEST" inherit "ARMOR_CHEST"
 {
   fire = 0
-  usageType = UsageEffect "open" {
+  usageType = UsageEffect "open chest" {
     CreatureMessage { "open the chest" "opens the chest"}
     CreatureMessage { "find an item inside" "finds an item inside"}
     ChooseRandom {
@@ -1198,7 +1246,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "basic coffin"
   viewId = { "coffin1" }
   canHideHere = true
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  usageType = UsageEffect "sleep in coffin" Lasting SLEEP
   fire = 50
   strength = 40
   bedType = COFFIN
@@ -1209,7 +1257,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "fine coffin"
   viewId = { "coffin2" }
   canHideHere = true
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  usageType = UsageEffect "sleep in coffin" Lasting SLEEP
   luxury = 0.3
   fire = 50
   strength = 40
@@ -1222,7 +1270,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "luxurious coffin"
   viewId = { "coffin3" }
   canHideHere = true
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  usageType = UsageEffect "sleep in coffin" Lasting SLEEP
   luxury = 0.7
   fire = 50
   strength = 40
@@ -1245,7 +1293,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "opened coffin"
   viewId = { "opened_coffin" }
   canHideHere = true
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  usageType = UsageEffect "sleep in coffin" Lasting SLEEP
   fire = 50
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
@@ -1374,7 +1422,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "up_staircase" }
   canHideHere = true
 # xForgetAfterBuilding = true
-  usageType = UsageEffect "use" Stairs
+  usageType = UsageEffect "use stairs" Stairs
   onBuilt = UP_STAIRS
 }
 "DOWN_STAIRS" inherit "UP_STAIRS"
@@ -1396,21 +1444,21 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "portal"
   canHideHere = true
   constructMessage = none
-  usageType = UsageEffect "use" {Stairs Fx { TELEPORT_OUT }}
+  usageType = UsageEffect "use portal" {Stairs Fx { TELEPORT_OUT }}
 }
 "DOWN_STAIRS_ADOXIE"
 {
   name = "stairs"
   viewId = { "down_staircase" }
   canHideHere = true
-  usageType = UsageEffect "use" { Message NORMAL "You lose your sense of direction" Stairs }
+  usageType = UsageEffect "use stairs" { Message NORMAL "You lose your sense of direction" Stairs }
   onBuilt = DOWN_STAIRS
 }
 "INACTIVE_PORTAL"
 {
   name = "portal"
   viewId = { "inactive_portal" }
-  usageType = UsageEffect "use" Message NORMAL "The portal is inactive."
+  usageType = UsageEffect "use portal" Message NORMAL "The portal is inactive."
 }
 "SOKOBAN_HOLE"
 {
@@ -1508,6 +1556,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
     500 DIG
     500 HOSTILE_DIG
   }
+  minedAchievement = "mined_ada"
 }
 "ADOXIUM_ORE" inherit "MOUNTAIN2"
 {
@@ -1520,6 +1569,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
     220 DIG
     200 HOSTILE_DIG
   }
+  minedAchievement = "mined_adoxium"
 }
 "INFERNITE_ORE" inherit "MOUNTAIN2"
 {
@@ -1534,6 +1584,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
     220 DIG
     200 HOSTILE_DIG
   }
+  minedAchievement = "mined_infernite"
 }
 "IRON_ORE" inherit "MOUNTAIN2"
 {
@@ -1546,6 +1597,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
     220 DIG
     200 HOSTILE_DIG
   }
+  minedAchievement = "mined_iron"
 }
 "STONE" inherit "MOUNTAIN2"
 {
@@ -1629,6 +1681,9 @@ Def BedHeal() Heal { FLESH 0.005 } End
   xForgetAfterBuilding = true
   tickType = Pit
   canBuildOutsideOfTerritory = true
+  strength2 = {
+    70 FILL
+  }
 }
 "CASTLE_PILLAR"
 {

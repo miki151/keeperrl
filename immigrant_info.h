@@ -12,6 +12,7 @@
 #include "pretty_archive.h"
 #include "sunlight_info.h"
 #include "keybinding.h"
+#include "achievement_id.h"
 
 class ContentFactory;
 struct SpecialTraitInfo;
@@ -47,9 +48,9 @@ struct RecruitmentInfo {
   vector<EnemyId> SERIAL(enemyId);
   int SERIAL(minPopulation);
   MinionTrait SERIAL(trait);
-  vector<Collective*> findEnemy(WGame) const;
-  vector<Creature*> getAvailableRecruits(WGame, CreatureId) const;
-  vector<Creature*> getAllRecruits(WGame, CreatureId) const;
+  vector<Collective*> findEnemy(Game*) const;
+  vector<Creature*> getAvailableRecruits(Game*, CreatureId) const;
+  vector<Creature*> getAllRecruits(Game*, CreatureId) const;
   SERIALIZE_ALL(enemyId, minPopulation, trait)
 };
 
@@ -164,6 +165,7 @@ class ImmigrantInfo {
   };
   vector<RequirementInfo> SERIAL(requirements);
   bool SERIAL(stripEquipment) = true;
+  optional<AchievementId> SERIAL(acceptedAchievement);
 
   private:
 

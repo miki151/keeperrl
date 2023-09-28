@@ -760,13 +760,11 @@ void Body::updateViewObject(ViewObject& obj, const ContentFactory* factory) cons
 }
 
 bool Body::heal(Creature* c, double amount) {
-  INFO << c->getName().the() << " heal";
   if (health < 1) {
     health = min(1., health + amount);
     auto factory = c->getGame()->getContentFactory();
     updateViewObject(c->modViewObject(), factory);
     if (health >= 1) {
-      c->you(MsgType::ARE, hasHealth(HealthType::FLESH, factory) ? "fully healed" : "fully materialized");
       health = 1;
       return true;
     }
@@ -856,7 +854,7 @@ void Body::setCanBeCaptured(bool value) {
 }
 
 bool Body::canBeCaptured(const ContentFactory* factory) const {
-  return !!canCapture ? *canCapture : !isImmuneTo(LastingEffect::TIED_UP, factory);
+  return hasAnyHealth(factory) && (!!canCapture ? *canCapture : !isImmuneTo(LastingEffect::TIED_UP, factory));
 }
 
 bool Body::isUndead(const ContentFactory* factory) const {

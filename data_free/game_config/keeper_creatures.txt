@@ -5,6 +5,7 @@
 {
   creatureId = { "KEEPER_MAGE" "KEEPER_MAGE_F" }
   tribeAlignment = EVIL
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {"imps" "dark_keeper"}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion" "humanoid mutation" "beast mutation"
@@ -35,6 +36,7 @@
 {
   creatureId = { "KEEPER_KNIGHT_WHITE" "KEEPER_KNIGHT_WHITE_F" }
   tribeAlignment = LAWFUL
+  villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
   immigrantGroups = {"peseants" "white_keeper"}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion"
@@ -56,6 +58,7 @@
 {
   creatureId = { "NECROMANCER" "NECROMANCER_F" }
   tribeAlignment = EVIL
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {"necromancer"}
   technology = { "embalming" "advanced embalming" "master embalming" "necromancy"
       "advanced necromancy" "master necromancy" "archery" "sorcery" "advanced sorcery"
@@ -74,11 +77,13 @@
   maxPopulation = 1
   flags = { "abomination_upgrades" }
   prisoners = false
+  requireQuartersForExp = false
 }
 "5_gnomes"
 {
   creatureId = { "GNOME" }
   tribeAlignment = LAWFUL
+  villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
   immigrantGroups = {"gnomes"}
   technology = {
       "traps" "advanced traps"
@@ -104,6 +109,7 @@
 {
   creatureId = { "DWARF_PLAYER" }
   tribeAlignment = LAWFUL
+  villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
   immigrantGroups = {"dwarves"}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion"
@@ -130,6 +136,7 @@
 {
   creatureId = { "GOBLIN_KEEPER" }
   tribeAlignment = EVIL
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {"goblins"}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion"
@@ -152,6 +159,7 @@
   creatureId = { "ZOMBIE_WORKER" }
   specialTraits = { Lasting {SWARMER} }
   tribeAlignment = EVIL
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {"zombies"}
   technology = {}
   initialTech = { }
@@ -175,6 +183,7 @@
 {
   creatureId = { "CYCLOPS_PLAYER" }
   tribeAlignment = EVIL
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion" "iron working" "jewellery"
@@ -195,3 +204,21 @@
   unlock = "cyclops"
 }
 
+"91_adventurer"
+{
+  creatureId = { "ADVENTURER" "ADVENTURER_F" }
+  tribeAlignment = LAWFUL
+  description = "Roam the land in search of adventures and loot!"
+  villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
+  immigrantGroups = {}
+  technology = {}
+  zLevelGroups = { "basic" }
+  initialTech = { }
+  buildingGroups = {}
+  workshopGroups = {}
+  minionTraits = {LEADER WORKER}
+  maxPopulation = 1
+  startingBase = {5 5} "adventurer_house"
+  prisoners = false
+  requireQuartersForExp = false
+}

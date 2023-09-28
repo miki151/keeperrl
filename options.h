@@ -50,6 +50,8 @@ RICH_ENUM(OptionId,
   MAIN_VILLAINS,
   RETIRED_VILLAINS,
   LESSER_VILLAINS,
+  MINOR_VILLAINS,
+
   ALLIES,
   CURRENT_MOD2,
   ENDLESS_ENEMIES,
@@ -61,7 +63,6 @@ RICH_ENUM(OptionId,
 enum class OptionSet {
   GENERAL,
   KEEPER,
-  ADVENTURER,
 };
 
 namespace ScriptedUIDataElems {

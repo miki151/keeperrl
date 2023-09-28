@@ -18,8 +18,14 @@
 #include "level.h"
 #include <limits>
 
+SERIALIZE_DEF(Sectors, bounds, sectors, allPos, extraConnections)
+
+SERIALIZATION_CONSTRUCTOR_IMPL(Sectors)
+
 Sectors::Sectors(Rectangle b, ExtraConnections con) : bounds(b), sectors(bounds, -1), extraConnections(std::move(con)) {
 }
+
+Sectors::Sectors(Rectangle b) : Sectors(b, ExtraConnections(b)) {}
 
 bool Sectors::same(Vec2 v, Vec2 w) const {
   return contains(v) && sectors[v] == sectors[w];
@@ -38,13 +44,12 @@ bool Sectors::add(Vec2 pos) {
       neighbors.insert(sectors[v]);
   if (neighbors.size() == 0)
     setSector(pos, getNewSector());
-  else
-  if (neighbors.size() == 1)
+  else if (neighbors.size() == 1)
     setSector(pos, *neighbors.begin());
   else {
     int largest = -1;
     for (int elem : neighbors)
-      if (largest == -1 || sizes[largest] < sizes[elem])
+      if (largest == -1 || allPos[largest].size() < allPos[elem].size())
         largest = elem;
     join(pos, largest);
   }
@@ -54,21 +59,21 @@ bool Sectors::add(Vec2 pos) {
 void Sectors::setSector(Vec2 pos, SectorId sector) {
   CHECK(sectors[pos] != sector);
   if (contains(pos))
-    --sizes[sectors[pos]];
+    allPos[sectors[pos]].erase(pos);
   sectors[pos] = sector;
-  ++sizes[sector];
+  allPos[sector].insert(pos);
 }
 
 Sectors::SectorId Sectors::getNewSector() {
-  sizes.push_back(0);
-  CHECK(sizes.size() < std::numeric_limits<SectorId>::max());
-  return sizes.size() - 1;
+  allPos.emplace_back(0);
+  CHECK(allPos.size() < std::numeric_limits<SectorId>::max());
+  return allPos.size() - 1;
 }
 
 int Sectors::getNumSectors() const {
   int ret = 0;
-  for (int s : sizes)
-    if (s > 0)
+  for (auto& elem : allPos)
+    if (elem.size() > 0)
       ++ret;
   return ret;
 }
@@ -126,7 +131,7 @@ vector<Vec2> Sectors::getDisjoint(Vec2 pos) const {
       break;
     }
   }
-  int maxSector = sizes.size() - 1;
+  int maxSector = allPos.size() - 1;
   vector<Vec2> ret;
   for (Vec2 v : getNeighbors(pos))
     if (v.inRectangle(bounds) && sectors[v] <= maxSector && contains(v) &&
@@ -147,7 +152,7 @@ void Sectors::addExtraConnection(Vec2 pos1, Vec2 pos2) {
     auto sector1 = sectors[pos1];
     auto sector2 = sectors[pos2];
     if (sector1 != sector2) {
-      if (sizes[sector1] > sizes[sector2])
+      if (allPos[sector1].size() > allPos[sector2].size())
         join(pos2, sector1);
       else
         join(pos1, sector2);
@@ -171,20 +176,28 @@ const Sectors::ExtraConnections Sectors::getExtraConnections() const {
 
 Sectors::SectorId Sectors::getLargest() const {
   int ret = 0;
-  for (int i : All(sizes))
-    if (sizes[i] > sizes[ret])
+  for (int i : All(allPos))
+    if (allPos[i].size() > allPos[ret].size())
       ret = i;
   return SectorId(ret);
 }
 
-bool Sectors::isSector(Vec2 v, Sectors::SectorId id) const {
-  return sectors[v] == id;
+const Sectors::PosSet& Sectors::getWholeSector(SectorId id) const {
+  return allPos[id];
+}
+
+optional<Sectors::SectorId> Sectors::getSector(Vec2 v) const {
+  auto id = sectors[v];
+  if (id >= 0)
+    return id;
+  else
+    return none;
 }
 
 bool Sectors::remove(Vec2 pos) {
   if (!contains(pos))
     return false;
-  --sizes[sectors[pos]];
+  allPos[sectors[pos]].erase(pos);
   sectors[pos] = -1;
   for (Vec2 v : getDisjoint(pos))
     join(v, getNewSector());

@@ -136,9 +136,86 @@
 { viewId = "up_staircase" symbol = "➚" color = ColorId ALMOST_WHITE isSymbolFont = true highlightAbove = true }
 { viewId = "down_staircase_rock" symbol = "➘" color = ColorId YELLOW isSymbolFont = true highlightAbove = true }
 { viewId = "up_staircase_rock" symbol = "➚" color = ColorId YELLOW isSymbolFont = true highlightAbove = true }
-{ "map_mountain1" "^" ColorId DARK_GRAY }
+{ "map_fow" " " ColorId BLACK }
+{ "map_grass1" "." ColorId LIGHT_GREEN }
+{ "map_grass2" "." ColorId GREEN }
+{ "map_grass3" "." ColorId GREEN }
+{ "map_grass4" "." ColorId LIGHT_GREEN }
+Def Connections(Name)
+  { Name + "_nw" " " ColorId LIGHT_GREEN }
+  { Name + "_w" " " ColorId LIGHT_GREEN }
+  { Name + "_sw" " " ColorId LIGHT_GREEN }
+  { Name + "_s" " " ColorId LIGHT_GREEN }
+  { Name + "_se" " " ColorId LIGHT_GREEN }
+  { Name + "_e" " " ColorId LIGHT_GREEN }
+  { Name + "_ne" " " ColorId LIGHT_GREEN }
+  { Name + "_n" " " ColorId LIGHT_GREEN }
+End
+Connections("map_grass")
+Connections("map_sand")
+Connections("map_snow")
+Connections("map_mountain")
+Connections("map_swamp")
+{ "map_snow1" "." ColorId WHITE }
+{ "map_snow2" "." ColorId LIGHT_BLUE }
+{ "map_snow3" "." ColorId WHITE }
+{ "map_snow4" "." ColorId LIGHT_BLUE }
+{ "map_water1" "~" ColorId LIGHT_BLUE }
+{ "map_water2" "~" ColorId BLUE }
+{ "map_water3" "~" ColorId LIGHT_BLUE }
+{ "map_water5" "~" ColorId BLUE }
+{ "map_sand1" "." ColorId YELLOW }
+{ "map_sand2" "." ColorId LIGHT_BROWN }
+{ "map_sand3" "." ColorId YELLOW }
+{ "map_sand4" "." ColorId LIGHT_BROWN }
+{ "map_swamp1" "~" ColorId GREEN }
+{ "map_swamp2" "~" ColorId LIGHT_GREEN }
+{ "map_swamp3" "~" ColorId GREEN }
+{ "map_swamp4" "~" ColorId LIGHT_GREEN }
+{ "map_pond1" "o" ColorId BLUE }
+{ "map_tree1" "T" ColorId GREEN }
+{ "map_tree2" "T" ColorId LIGHT_GREEN }
+{ "map_tree3" "T" ColorId GREEN }
+{ "map_mountain1" "^" ColorId LIGHT_GRAY }
 { "map_mountain2" "^" ColorId GRAY }
 { "map_mountain3" "^" ColorId LIGHT_GRAY }
+{ "map_mountain4" "^" ColorId GRAY }
+{ "map_mountain5" "^" ColorId GRAY }
+{ "map_mountain_large" "^" ColorId LIGHT_GRAY }
+{ "map_mountain_large2" "^" ColorId GRAY }
+{ "map_mountain_large3" "^" ColorId GRAY }
+{ "map_mountain_large4" "^" ColorId GRAY }
+{ "map_mountain_snow1" "^" ColorId WHITE }
+{ "map_mountain_snow2" "^" ColorId WHITE }
+{ "map_mountain_snow3" "^" ColorId WHITE }
+{ "map_mountain_snow4" "^" ColorId WHITE }
+{ "map_mountain_snow5" "^" ColorId WHITE }
+{ "map_mountain_bg1" "^" ColorId LIGHT_GRAY }
+{ "map_house1" "o" ColorId BLUE }
+{ "map_house2" "o" ColorId BROWN }
+{ "map_house_elf" "o" ColorId LIGHT_GREEN }
+{ "map_castle1" "o" ColorId BLUE }
+{ "map_guard_house1" "o" ColorId LIGHT_GRAY }
+{ "map_castle_snow1" "o" ColorId LIGHT_BLUE }
+{ "map_thieves" "o" ColorId LIGHT_BROWN }
+{ "map_warriors" "o" ColorId DARK_BROWN }
+{ "map_house_snow1" "o" ColorId SKY_BLUE }
+{ "map_dungeon1" ">" ColorId GRAY }
+{ "map_dungeon2" ">" ColorId GRAY }
+{ "map_dwarves" ">" ColorId LIGHT_BLUE }
+{ "map_ants" ">" ColorId WHITE }
+{ "map_ents" "@" ColorId LIGHT_BROWN }
+{ "map_hydra" "H" ColorId PURPLE }
+{ "map_dragon" "D" ColorId RED }
+{ "map_green_dragon" "D" ColorId GREEN }
+{ "map_adoxie" ">" ColorId PURPLE }
+{ "map_white_dragon" ">" ColorId GRAY }
+{ "map_tower1" "|" ColorId GRAY }
+{ "map_grave1" "+" ColorId GRAY }
+{ "map_base1" "X" ColorId PINK }
+{ "map_highlight" "_" ColorId WHITE }
+{ "map_cloud" "O" ColorId WHITE }
+{ "waternesw" "~" ColorId LIGHT_BLUE }
 { "dungeon_entrance" "➘" ColorId GRAY }
 { "unknown_monster" "?" ColorId LIGHT_GREEN false "unknown" }
 { "destroy_button" "X" ColorId RED false "remove" }
@@ -318,6 +395,7 @@
 { "bone" "%" ColorId WHITE }
 { "frozen_remains" "%" ColorId LIGHT_GRAY }
 { "dig_icon" "⛏" ColorId LIGHT_GRAY true }
+{ "fill_pit_icon" "⛏" ColorId LIGHT_GRAY true }
 { "sword" ")" ColorId LIGHT_GRAY }
 { viewId = "sword_v" symbol = ")" color = ColorId LIGHT_GRAY weaponOrigin = {10 16} }
 { "infernite_sword" ")" ColorId RED }
@@ -639,6 +717,12 @@ BOOKCASES("_human")
 { viewId = "beast_cage" symbol = "▥" color = ColorId LIGHT_GRAY
   isSymbolFont = true roundShadow = true }
 { viewId = "forge" symbol = "&" color = ColorId LIGHT_BLUE
+  roundShadow = true }
+{ viewId = "lava_forge" symbol = "&" color = ColorId LIGHT_RED
+  roundShadow = true }
+{ viewId = "ada_forge" symbol = "&" color = ColorId LIGHT_BLUE
+  roundShadow = true }
+{ viewId = "myst_forge" symbol = "&" color = ColorId WHITE
   roundShadow = true }
 { viewId = "workshop" symbol = "&" color = ColorId LIGHT_BROWN
   roundShadow = true }

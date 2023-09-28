@@ -24,6 +24,8 @@
 #include "automaton_part.h"
 #include "lasting_or_buff.h"
 #include "player_message.h"
+#include "tribe.h"
+#include "achievement_id.h"
 
 #define SIMPLE_EFFECT(Name) \
   struct Name { \
@@ -131,6 +133,10 @@ struct RemovePermanent {
   SERIALIZE_ALL(lastingEffect)
 };
 struct PlaceFurniture {
+  FurnitureType SERIAL(furniture);
+  SERIALIZE_ALL(furniture)
+};
+struct ModifyFurniture {
   FurnitureType SERIAL(furniture);
   SERIALIZE_ALL(furniture)
 };
@@ -257,10 +263,6 @@ struct RemoveAbility {
   SERIALIZE_ALL(id)
 };
 using AddSpellSchool = SpellSchoolId;
-struct IncreaseMorale {
-  double SERIAL(amount);
-  SERIALIZE_ALL(amount)
-};
 struct Chance : GenericModifierEffect {
   double SERIAL(value);
   SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
@@ -398,12 +400,20 @@ struct Price : GenericModifierEffect {
   SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
 };
 struct IncreaseMaxLevel {
-  ExperienceType SERIAL(type);
+  AttrType SERIAL(type);
+  int SERIAL(value);
+  SERIALIZE_ALL(type, value)
+};
+struct IncreaseLevel {
+  AttrType SERIAL(type);
   int SERIAL(value);
   SERIALIZE_ALL(type, value)
 };
 struct ApplyToSteed : GenericModifierEffect {
 };
+struct AllCreatures : GenericModifierEffect {
+};
+using Achievement = AchievementId;
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
   X(Teleport, 1)\
@@ -448,7 +458,7 @@ struct ApplyToSteed : GenericModifierEffect {
   X(Chain, 40)\
   X(ChainUntilFail, 41)\
   X(ChooseRandom, 42)\
-  X(IncreaseMorale, 43)\
+  X(AllCreatures, 43)\
   X(Message, 44)\
   X(UnseenMessage, 45)\
   X(AssembledMinion, 46)\
@@ -498,8 +508,11 @@ struct ApplyToSteed : GenericModifierEffect {
   X(Bleed, 90)\
   X(Price, 91)\
   X(IncreaseMaxLevel, 92)\
-  X(EquipmentType, 93)\
-  X(AddSpellSchool, 94)
+  X(IncreaseLevel, 93)\
+  X(EquipmentType, 94)\
+  X(AddSpellSchool, 95)\
+  X(Achievement, 96)\
+  X(ModifyFurniture, 97)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

@@ -52,6 +52,7 @@
 #include "perlin_noise.h"
 #include "collective_name.h"
 #include "position.h"
+#include "keeper_base_info.h"
 
 namespace {
 
@@ -2211,8 +2212,8 @@ static Vec2 getSize(const MapLayouts& layouts, RandomGen& random, LayoutType typ
     );
 }
 
-RandomLocations::LocationPredicate getSettlementPredicate(const SettlementInfo& info) {
-  return info.type.visit(
+RandomLocations::LocationPredicate getSettlementPredicate(const LayoutType& type) {
+  return type.visit(
       [&](const MapLayoutTypes::Builtin& type) -> RandomLocations::LocationPredicate {
         switch (type.id) {
           case BuiltinLayoutId::FOREST:
@@ -2620,6 +2621,10 @@ namespace {
         upStairs.push_back(info.upStairs[i]);
     }
 
+    RandomLayoutMaker(const LayoutGenerator& generator, const RandomLayoutId& id, const LayoutMapping& mapping,
+        TribeId tribe)
+      : id(id), mapping(mapping), generator(generator), tribe(tribe) {}
+
     struct StockpileData {
       ItemList items;
       int count;
@@ -2674,9 +2679,16 @@ namespace {
           },
           [&](LayoutActions::AddGas t) { builder->addPermanentGas(t, pos); },
           [&](LayoutActions::HostileCreature c) {
-            builder->putCreature(pos, builder->getContentFactory()->getCreatures().fromId(c, TribeId::getHostile(),
+            builder->putCreature(pos, builder->getContentFactory()->getCreatures().fromId(c.id, TribeId::getHostile(),
                 MonsterAIFactory::stayInLocation(
                     builder->toGlobalCoordinates(Rectangle::centered(pos, 4)).getAllSquares())));
+          },
+          [&](LayoutActions::AlliedPrisoner info) {
+            auto c = builder->getContentFactory()->getCreatures().fromIdNoInventory(info.id, TribeId::getDarkKeeper(),
+                MonsterAIFactory::stayInLocation(
+                    builder->toGlobalCoordinates(Rectangle::centered(pos, 4)).getAllSquares()));
+            c->getStatus().insert(CreatureStatus::PRISONER);
+            builder->putCreature(pos, std::move(c));
           }
       );
     }
@@ -2819,18 +2831,31 @@ static PMakerQueue getSettlementMaker(const ContentFactory& contentFactory, Rand
 constexpr int mapBorderUnavailableWidth = 2;
 
 PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settlements, int mapWidth,
-    optional<TribeId> keeperTribe, BiomeInfo biomeInfo, ResourceCounts resourceCounts,
-    const ContentFactory& contentFactory) {
+    optional<TribeId> keeperTribe, optional<KeeperBaseInfo> keeperInfo, BiomeInfo biomeInfo,
+    ResourceCounts resourceCounts, const ContentFactory& contentFactory) {
   auto queue = make_unique<MakerQueue>();
   auto locations = make_unique<RandomLocations>();
   LevelMaker* startingPos = nullptr;
   int locationMargin = 10;
   if (keeperTribe) {
-    auto startingPosMaker = make_unique<StartingPos>(Predicate::alwaysTrue(), StairKey::keeperSpawn());
-    startingPos = startingPosMaker.get();
-    locations->add(std::move(startingPosMaker), Vec2(4, 4), RandomLocations::LocationPredicate(
+    auto startingPosMaker = make_unique<MakerQueue>(
+        make_unique<StartingPos>(Predicate::alwaysTrue(), StairKey::keeperSpawn())
+    );
+    auto predicate = RandomLocations::LocationPredicate(
         Predicate::attrib(SquareAttrib::HILL) && Predicate::canEnter({MovementTrait::WALK}),
-        Predicate::attrib(SquareAttrib::MOUNTAIN), 1, 8));
+        Predicate::attrib(SquareAttrib::MOUNTAIN), 1, 8);
+    Vec2 size(4, 4);
+    if (keeperInfo) {
+          startingPosMaker = make_unique<MakerQueue>(
+          make_unique<RandomLayoutMaker>(contentFactory.randomLayouts.at(*keeperInfo->layout), *keeperInfo->layout,
+              contentFactory.layoutMapping.at(LayoutMappingId("default")), *keeperTribe),
+          std::move(startingPosMaker)
+      );
+      predicate = Predicate::canEnter({MovementTrait::WALK});
+      size = keeperInfo->size;
+    }
+    startingPos = startingPosMaker.get();
+    locations->add(std::move(startingPosMaker), size, std::move(predicate));
     int minMargin = 20;
     locations->setMinMargin(startingPos, minMargin - locationMargin);
   }
@@ -2849,7 +2874,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
       queue->addMaker(make_unique<Corpses>(*settlement.corpses));
     if (settlement.surroundWithResources > 0)
       surroundWithResources.push_back({queue.get(), settlement});
-    if (keeperTribe && !settlement.anyPlayerDistance) {
+    if (keeperInfo) {
       if (settlement.closeToPlayer) {
         locations->setMinDistance(startingPos, queue.get(), 20);
         locations->setMaxDistance(startingPos, queue.get(), 40);
@@ -2857,7 +2882,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
         locations->setMinDistance(startingPos, queue.get(), 40);
     }
     locations->add(std::move(queue), getSize(contentFactory.mapLayouts, random, settlement.type),
-        getSettlementPredicate(settlement));
+        getSettlementPredicate(settlement.type));
   }
   Predicate lowlandPred = Predicate::attrib(SquareAttrib::LOWLAND) && !Predicate::attrib(SquareAttrib::RIVER);
   for (auto& crops : addedCrops)
@@ -2880,15 +2905,23 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
           lowlandPred);
       locations->setMaxDistanceLast(crops.maker, crops.info.distance);
     }
-  if (auto& lakes = biomeInfo.lakes)
-    for (int i : Range(random.get(lakes->count))) {
+  if (auto& lakes = biomeInfo.lakes) {
+    auto lakeCount = mapWidth < 100 ? min(3, random.get(lakes->count)) : random.get(lakes->count);
+    for (int i : Range(lakeCount)) {
+      auto lakeSize = [&] {
+        return mapWidth < 100 ? min(5, random.get(lakes->size)) : random.get(lakes->size);
+      };
       auto treeChange = lakes->treeType.map([](auto type) {
           return SquareChange::reset(FurnitureType("GRASS")).add(type, 0.5); });
-      locations->add(make_unique<Lake>(treeChange, biomeInfo.overrideWaterType), {random.get(lakes->size), random.get(lakes->size)},
+      locations->add(make_unique<Lake>(treeChange, biomeInfo.overrideWaterType), {lakeSize(), lakeSize()},
           Predicate::attrib(lakes->where));
     }
+  }
   if (keeperTribe) {
-    generateResources(random, resourceCounts, startingPos, locations.get(), surroundWithResources, mapWidth, *keeperTribe);
+    generateResources(random, resourceCounts, startingPos, locations.get(), surroundWithResources, mapWidth,
+        *keeperTribe);
+    biomeInfo.mountains.lowlandRatio = min(0.6, biomeInfo.mountains.lowlandRatio);
+    biomeInfo.mountains.hillRatio = max(0.1, biomeInfo.mountains.hillRatio);
   }
   queue->addMaker(make_unique<Empty>(FurnitureType("WATER")));
   queue->addMaker(getMountains(biomeInfo.mountains, keeperTribe.value_or(TribeId::getHostile())));
@@ -2990,7 +3023,7 @@ PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo
   auto queue = make_unique<MakerQueue>();
   queue->addMaker(make_unique<Empty>(SquareChange(FurnitureType("FLOOR"))
       .add(FurnitureParams{FurnitureType("MOUNTAIN2"), keeperTribe})));
-  queue->addMaker(underground(random, Vec2(mapWidth, mapWidth)));
+  queue->addMaker(underground(random, Vec2(mapWidth, mapWidth), FurnitureType("FLOOR"), {WaterType::WATER}));
   auto locations = make_unique<RandomLocations>();
   vector<SurroundWithResourcesInfo> surroundWithResources;
   if (settlement) {
@@ -3099,6 +3132,7 @@ class SokobanFromFile : public LevelMaker {
 PLevelMaker LevelMaker::sokobanFromFile(RandomGen& random, SettlementInfo info, Table<char> file) {
   auto queue = make_unique<MakerQueue>();
   queue->addMaker(make_unique<SokobanFromFile>(file, info.downStairs.getOnlyElement()));
+  queue->addMaker(make_unique<PlaceCollective>(info.collective, Predicate::attrib(SquareAttrib::SOKOBAN_PRIZE)));
   auto& building = info.type.getReferenceMaybe<MapLayoutTypes::Builtin>()->buildingInfo;
   addStairs(*queue, info, building, Predicate::attrib(SquareAttrib::SOKOBAN_ENTRY));
   //queue->addMaker(make_unique<PlaceCollective>(info.collective));
@@ -3232,7 +3266,7 @@ PLevelMaker LevelMaker::upLevel(Position pos, const BiomeInfo& biomeInfo, vector
                 SquareAttrib::CONNECTOR)
         ),
         getSize(factory.mapLayouts, Random, settlement.type),
-        getSettlementPredicate(settlement));
+        getSettlementPredicate(settlement.type));
     queue->addMaker(std::move(locations));
   }
   if (resources) {

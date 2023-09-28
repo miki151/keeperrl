@@ -1,4 +1,4 @@
-"mage" SPELL
+"mage" SPELL_DAMAGE
 {
   "directed blast" 1
   "escape" 2
@@ -14,7 +14,7 @@
   "expert magic missile" 11
   "invisibility" 12
 }
-"healer" SPELL
+"healer" SPELL_DAMAGE
 {
   "advanced healing" 1
   "expert healing" 2
@@ -24,13 +24,13 @@
   "poison resistance" 6
   "group healing" 7
 }
-"spiritualist" SPELL
+"spiritualist" SPELL_DAMAGE
 {
   "heal spirit" 1
   "advanced heal spirit" 4
   "heal spirit group" 7
 }
-"fire" SPELL
+"fire" SPELL_DAMAGE
 {
   "fire elemental" 1
   "advanced fire elemental" 2
@@ -38,7 +38,7 @@
   "firewall" 5
   "fire trap" 7
 }
-"illusion" SPELL
+"illusion" SPELL_DAMAGE
 {
   "deception" 1
   "panic" 2
@@ -48,20 +48,20 @@
   "advanced invisibility" 6
   "blink" 7
 }
-"fighter" MELEE
+"fighter" DAMAGE
 {
   "shove" 4
   "swap positions" 7
 }
-"archer" ARCHERY
+"archer" RANGED_DAMAGE
 {
   "bypass allies" 7
 }
-"vampire" SPELL
+"vampire" SPELL_DAMAGE
 {
   "ennoblement" 7
 }
-"chickenmancy" SPELL
+"chickenmancy" SPELL_DAMAGE
 {
   "summon chicken" 1
   "summon more chickens" 3
@@ -69,7 +69,7 @@
   "advanced chickenmorph" 7
   "chickengeddon" 10
 }
-"dwarf" SPELL
+"dwarf" SPELL_DAMAGE
 {
   "defense bonus" 1
   "healing" 2
@@ -85,7 +85,7 @@
   "group healing" 12
 }
 
-"zombie mage" SPELL
+"zombie mage" SPELL_DAMAGE
 {
   "summon flies" 1
   "advanced defense bonus" 2

@@ -101,7 +101,85 @@ int Renderer::getTextLength(const string& s, int size, FontId font) {
   return getTextSize(s, size, font).x;
 }
 
+static optional<int> getMapFontOffset(char c) {
+  switch (c) {
+    case 'A': return 0;
+    case 'B': return 14;
+    case 'C': return 28;
+    case 'D': return 42;
+    case 'E': return 56;
+    case 'F': return 70;
+    case 'G': return 84;
+    case 'H': return 98;
+    case 'I': return 112;
+    case 'J': return 122;
+    case 'K': return 136;
+    case 'L': return 150;
+    case 'M': return 162;
+    case 'N': return 180;
+    case 'O': return 194;
+    case 'P': return 208;
+    case 'Q': return 222;
+    case 'R': return 236;
+    case 'S': return 250;
+    case 'T': return 264;
+    case 'U': return 278;
+    case 'V': return 292;
+    case 'W': return 306;
+    case 'X': return 324;
+    case 'Y': return 338;
+    case 'Z': return 352;
+    case 'a': return 366;
+    case 'b': return 378;
+    case 'c': return 390;
+    case 'd': return 400;
+    case 'e': return 412;
+    case 'f': return 424;
+    case 'g': return 434;
+    case 'h': return 446;
+    case 'i': return 458;
+    case 'j': return 464;
+    case 'k': return 472;
+    case 'l': return 484;
+    case 'm': return 490;
+    case 'n': return 508;
+    case 'o': return 520;
+    case 'p': return 532;
+    case 'q': return 544;
+    case 'r': return 556;
+    case 's': return 566;
+    case 't': return 578;
+    case 'u': return 588;
+    case 'v': return 600;
+    case 'w': return 612;
+    case 'x': return 626;
+    case 'y': return 638;
+    case 'z': return 650;
+    case 'z' + 1: return 660;
+  }
+  return none;
+}
+
+static optional<int> getMapFontWidth(char c) {
+  if (c == ' ')
+    return 8;
+  if (c >= 'A' && c <= 'Y')
+    return *getMapFontOffset(c + 1) - *getMapFontOffset(c);
+  if (c == 'Z')
+    return *getMapFontOffset('a') - *getMapFontOffset(c);
+  if (c >= 'a' && c <= 'z')
+    return *getMapFontOffset(c + 1) - *getMapFontOffset(c);
+  return none;
+}
+
 Vec2 Renderer::getTextSize(const string& s, int size, FontId id) {
+  if (id == FontId::MAP_FONT) {
+    auto ret = 0;
+    for (auto c : s)
+      if (auto width = getMapFontWidth(c))
+        ret += *width - 2;
+    return Vec2(ret, 22);
+  }
   if (s.empty())
     return Vec2(0, 0);
   float minx, maxx, miny, maxy;
@@ -119,11 +197,21 @@ int Renderer::getFont(FontId id) {
     case FontId::TILE_FONT:
     case FontId::TEXT_FONT: return fontSet.textFont;
     case FontId::SYMBOL_FONT: return fontSet.symbolFont;
+    case FontId::MAP_FONT: return 0;
   }
 }
 
 void Renderer::drawText(FontId id, int size, Color color, Vec2 pos, const string& s, CenterType center) {
   renderDeferredSprites();
+  if (id == FontId::MAP_FONT) {
+    for (auto c : s) {
+      if (auto offset = getMapFontOffset(c))
+        drawSprite(pos, Vec2(*offset, 0), Vec2(*getMapFontWidth(c), 22), *mapFontTexture, none, color);
+      if (auto width = getMapFontWidth(c))
+        pos.x += *width - 2;
+    }
+    return;
+  }
   if (!s.empty()) {
     int ox = 0;
     int oy = 0;
@@ -446,8 +534,9 @@ void Renderer::setFpsLimit(int fps) {
 }
 
 Renderer::Renderer(Clock* clock, MySteamInput* i, const string& title, const DirectoryPath& fontPath,
-    const FilePath& cursorP, const FilePath& clickedCursorP, const FilePath& iconPath)
-    : cursorPath(cursorP), clickedCursorPath(clickedCursorP), clock(clock), steamInput(i) {
+    const FilePath& cursorP, const FilePath& clickedCursorP, const FilePath& iconPath, const FilePath& mapFontPath)
+    : cursorPath(cursorP), clickedCursorPath(clickedCursorP),
+      clock(clock), steamInput(i) {
   CHECK(SDL::SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0) << SDL::SDL_GetError();
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MINOR_VERSION, 1 );
@@ -464,6 +553,7 @@ Renderer::Renderer(Clock* clock, MySteamInput* i, const string& title, const Dir
   loadFonts(fontPath, fonts);
   auto icon = SDL::IMG_Load(iconPath.getPath());
   SDL_SetWindowIcon(window, icon);
+  mapFontTexture.emplace(std::move(*Texture::loadMaybe(mapFontPath))); // work around compiler bug?
 }
 
 Vec2 getOffset(Vec2 sizeDiff, double scale) {
@@ -475,8 +565,8 @@ void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, Vec2 size, Co
   if (coords.empty())
     return;
   auto drawCoord = [&size, scale, this, pos, orientation] (const TileCoord& coord, Color color) {
-    Vec2 off = scale ? getOffset(Vec2(nominalSize, nominalSize) - coord.size, *scale)
-          : (Vec2(nominalSize, nominalSize) - coord.size).mult(size) / (nominalSize * 2);
+    auto sizeDiff = coord.size.x == 8 ? Vec2(0, 0) : Vec2(nominalSize, nominalSize) - coord.size;
+    Vec2 off = scale ? getOffset(sizeDiff, *scale) : sizeDiff.mult(size) / (nominalSize * 2);
     Vec2 tileSize = scale ? coord.size * *scale : coord.size.mult(size) / nominalSize;
     if (coord.size.y > nominalSize)
       off.y -= 3 * size.y / nominalSize;

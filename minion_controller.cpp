@@ -19,9 +19,9 @@
 
 class MinionController : public Player {
   public:
-  MinionController(Creature* c, SMapMemory memory, WPlayerControl ctrl, SMessageBuffer messages,
+  MinionController(Creature* c, SMapMemory memory, PlayerControl* ctrl, SMessageBuffer messages,
                    SVisibilityMap visibilityMap, SUnknownLocations locations, STutorial tutorial)
-      : Player(c, false, memory, messages, visibilityMap, locations, tutorial), control(ctrl) {}
+      : Player(c, memory, messages, visibilityMap, locations, tutorial), control(ctrl) {}
 
 
 
@@ -55,7 +55,7 @@ class MinionController : public Player {
     if (auto team = control->getCurrentTeam()) {
       info.teamOrders.emplace();
       for (auto order : ENUM_ALL(TeamOrder))
-        if (control->getTeams().hasTeamOrder(*team, creature, order))
+        if (control->getTeams().hasTeamOrder(*team, order))
           info.teamOrders->insert(order);
         else
           info.teamOrders->erase(order);
@@ -100,8 +100,8 @@ class MinionController : public Player {
       case UserInputId::TOGGLE_TEAM_ORDER: {
         if (auto team = control->getCurrentTeam()) {
           auto order = input.get<TeamOrder>();
-          bool was = control->getTeams().hasTeamOrder(*team, creature, order);
-          control->getTeams().setTeamOrder(*team, creature, order, !was);
+          bool was = control->getTeams().hasTeamOrder(*team, order);
+          control->getTeams().setTeamOrder(*team, order, !was);
         }
         return true;
       }
@@ -141,8 +141,10 @@ class MinionController : public Player {
   }
 
   virtual void onLostControl() override {
-    getGame()->getView()->presentText("Important!", "You lose control of your minion.");
-    control->leaveControl();
+    // Remove this method? Maybe it's better if the game waits for the minion to wake up instead of
+    // leaving control
+    //getGame()->getView()->presentText("Important!", "You lose control of your minion.");
+    //control->leaveControl();
   }
 
   virtual vector<Creature*> getTeam() const override {
@@ -174,13 +176,13 @@ class MinionController : public Player {
   SERIALIZATION_CONSTRUCTOR(MinionController)
 
   private:
-  WPlayerControl SERIAL(control) = nullptr;
+  PlayerControl* SERIAL(control) = nullptr;
 };
 
 REGISTER_TYPE(MinionController)
 
 
-PController getMinionController(Creature* c, SMapMemory m, WPlayerControl ctrl, SMessageBuffer buf, SVisibilityMap v,
+PController getMinionController(Creature* c, SMapMemory m, PlayerControl* ctrl, SMessageBuffer buf, SVisibilityMap v,
     SUnknownLocations l, STutorial t) {
   return makeOwner<MinionController>(c, m, ctrl, buf, v, l, t);
 }

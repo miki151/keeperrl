@@ -32,7 +32,6 @@
 
 class Clock;
 class MinionAction;
-struct HighscoreList;
 class Options;
 class MapGui;
 class CampaignAction;
@@ -98,8 +97,6 @@ class GuiBuilder {
       const vector<PlayerInfo>&, const string& cancelText);
   SGuiElem drawCreatureInfo(SyncQueue<bool>&, const string& title, bool prompt, const vector<PlayerInfo>& creatures);
   SGuiElem drawCost(pair<ViewId, int>, Color = Color::WHITE);
-  SGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<ScrollPosition>& scrollPos,
-      bool& online);
   SGuiElem drawMinimapIcons(const GameInfo&);
   optional<int> getNumber(const string& title, Vec2 position, Range, int initial);
 
@@ -139,15 +136,16 @@ class GuiBuilder {
 
   bool disableClickActions = false;
   bool disableTooltip = false;
-
   bool playerInventoryFocused() const;
+  bool mouseGone = false;
 
   private:
   SGuiElem withLine(int, SGuiElem);
   GuiFactory::ListBuilder withLine(int, GuiFactory::ListBuilder);
   SGuiElem getImmigrationHelpText();
-  SGuiElem drawCampaignGrid(const Campaign&, optional<Vec2> initialPos);
-  void moveCampaignGridPointer(const Campaign&, Dir);
+  SGuiElem drawCampaignGrid(const Campaign&, optional<Vec2> initialPos, function<bool(Vec2)> selectable,
+      function<void(Vec2)> selectCallback);
+  void moveCampaignGridPointer(const Campaign&, int iconSize, Dir);
   Renderer& renderer;
   GuiFactory& gui;
   Clock* clock;
@@ -161,12 +159,13 @@ class GuiBuilder {
   vector<SGuiElem> drawPlayerAttributes(const ViewObject::CreatureAttributes&);
   SGuiElem drawBestAttack(const BestAttack&);
   SGuiElem drawTrainingInfo(const CreatureExperienceInfo&, bool infoOnly = false);
+  SGuiElem drawExperienceInfo(const CreatureExperienceInfo&);
   SGuiElem drawBuildings(const vector<CollectiveInfo::Button>&, const optional<TutorialInfo>&);
   SGuiElem bottomBandCache;
   SGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id current, optional<TeamId> teamId);
   SGuiElem minionButtonsCache;
   int minionButtonsHash = 0;
-  SGuiElem drawMinionPage(const PlayerInfo&, const vector<ViewId>& allQuarters, const optional<TutorialInfo>&);
+  SGuiElem drawMinionPage(const PlayerInfo&, const optional<TutorialInfo>&);
   void updateMinionPageScroll();
   SGuiElem drawAttributesOnPage(vector<SGuiElem>);
   SGuiElem drawEquipmentAndConsumables(const PlayerInfo&, bool infoOnly = false);
@@ -174,7 +173,7 @@ class GuiBuilder {
   SGuiElem drawSpellsList(const vector<SpellInfo>&, GenericId creatureId, bool active);
   SGuiElem getSpellIcon(const SpellInfo&, int index, bool active, GenericId creatureId);
   vector<SGuiElem> drawEffectsList(const PlayerInfo&, bool withTooltip = true);
-  SGuiElem drawMinionActions(const PlayerInfo&, const optional<TutorialInfo>&, const vector<ViewId>& allQuarters);
+  SGuiElem drawMinionActions(const PlayerInfo&, const optional<TutorialInfo>&);
   function<void()> getButtonCallback(UserInput);
   void drawMiniMenu(SGuiElem, function<bool()> done, Vec2 menuPos, int width, bool darkBg);
   void drawMiniMenu(SGuiElem, bool& exit, Vec2 menuPos, int width, bool darkBg, bool resetScrolling = true);
@@ -221,6 +220,8 @@ class GuiBuilder {
   ScrollPosition workshopsScroll2;
   ScrollPosition libraryScroll;
   ScrollPosition minionPageScroll;
+  pair<double, double> scrollAreaScrollPos;
+  void scrollWorldMap(int iconSize, Vec2, Rectangle worldMapBounds);
   optional<int> itemIndex;
   optional<Vec2> campaignGridPointer;
   bool playerOverlayFocused = false;
@@ -256,8 +257,7 @@ class GuiBuilder {
   CounterMode counterMode = CounterMode::FPS;
 
   SGuiElem getButtonLine(CollectiveInfo::Button, int num, const optional<TutorialInfo>&);
-  SGuiElem drawMinionsOverlay(const CollectiveInfo::ChosenCreatureInfo&, const vector<ViewId>& allQuarters,
-      const optional<TutorialInfo>&);
+  SGuiElem drawMinionsOverlay(const CollectiveInfo::ChosenCreatureInfo&, const optional<TutorialInfo>&);
   SGuiElem minionsOverlayCache;
   int minionsOverlayHash = 0;
   SGuiElem drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopInfo&, const optional<TutorialInfo>&,
@@ -279,18 +279,16 @@ class GuiBuilder {
   shared_ptr<MapGui> mapGui;
   int getImmigrantAnimationOffset(milliseconds initTime);
   HeapAllocated<CallCache<SGuiElem>> cache;
-  SGuiElem drawMenuWarning(View::CampaignOptions::WarningType);
   SGuiElem drawTutorialOverlay(const TutorialInfo&);
-  unordered_set<pair<int, TutorialHighlight>, CustomHash<pair<int, TutorialHighlight>>> tutorialClicks;
+  HashSet<pair<int, TutorialHighlight>> tutorialClicks;
   bool wasTutorialClicked(size_t hash, TutorialHighlight);
   void onTutorialClicked(size_t hash, TutorialHighlight);
   SGuiElem drawLibraryContent(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawMapHintOverlay();
   SGuiElem getClickActions(const ViewObject&);
   vector<string> hint;
-  SGuiElem getExpIncreaseLine(const CreatureExperienceInfo&, ExperienceType, bool infoOnly = false);
+  SGuiElem getExpIncreaseLine(const CreatureExperienceInfo::TrainingInfo&, bool infoOnly = false);
   optional<int> highlightedTeamMember;
-  function<void(Rectangle)> getQuartersButtonFun(const PlayerInfo&, const vector<ViewId>& allQuarters);
   SGuiElem drawRebellionOverlay(const CollectiveInfo::RebellionChance&);
   SGuiElem drawVillainsOverlay(const VillageInfo&, const optional<CollectiveInfo::NextWave>&,
       const optional<CollectiveInfo::RebellionChance>&, optional<int> villainsIndexDummy);
@@ -307,14 +305,12 @@ class GuiBuilder {
   SGuiElem drawGenderButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar);
   SGuiElem drawFirstNameButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar,
       shared_ptr<int> chosenName);
-  SGuiElem drawRoleButtons(shared_ptr<View::AvatarRole> chosenRole, shared_ptr<int> chosenAvatar, shared_ptr<int> avatarPage,
-      const vector<View::AvatarData>&);
-  SGuiElem drawChosenCreatureButtons(View::AvatarRole, shared_ptr<int> chosenAvatar, shared_ptr<int> gender, int page,
+  SGuiElem drawChosenCreatureButtons(shared_ptr<int> chosenAvatar, shared_ptr<int> gender, int page,
       const vector<View::AvatarData>&);
   SGuiElem drawCreatureList(const vector<PlayerInfo>&, function<void(UniqueEntity<Creature>::Id)> button,
       int zoom = 2);
   SGuiElem drawAvatarsForRole(const vector<View::AvatarData>&, shared_ptr<int> avatarPage, shared_ptr<int> chosenAvatar,
-      shared_ptr<int> gender, shared_ptr<View::AvatarRole> chosenRole);
+      shared_ptr<int> gender);
   SGuiElem drawScreenshotOverlay();
   SGuiElem drawTitleButton(const PlayerInfo& minion);
   SGuiElem drawKillsLabel(const PlayerInfo& minion);
@@ -322,8 +318,6 @@ class GuiBuilder {
   function<void(Rectangle)> getAIButtonFun(const PlayerInfo&);
   SGuiElem drawSpellSchoolLabel(const SpellSchoolInfo&);
   SGuiElem drawResources(const vector<CollectiveInfo::Resource>&, const optional<TutorialInfo>&, int width);
-  SGuiElem drawBiomeMenu(SyncQueue<CampaignAction>&, const vector<View::CampaignOptions::BiomeInfo>&,
-      View::CampaignMenuState& state, int chosen);
   SGuiElem drawBestiaryOverlay(const vector<PlayerInfo>&, int index);
   SGuiElem drawBestiaryButtons(const vector<PlayerInfo>&, int index);
   SGuiElem drawBestiaryPage(const PlayerInfo&);

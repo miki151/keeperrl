@@ -31,7 +31,7 @@ class WarlordController : public Player, public EventListener<WarlordController>
   WarlordController(Creature* c, shared_ptr<Team> team, Team originalTeam, shared_ptr<MapMemory> memory,
         shared_ptr<MessageBuffer> messages, shared_ptr<VisibilityMap> visibility, shared_ptr<UnknownLocations> locations,
         shared_ptr<TeamOrders> orders)
-      : Player(c, false, memory, messages, visibility, locations), team(team), originalTeam(originalTeam), teamOrders(orders) {
+      : Player(c, memory, messages, visibility, locations), team(team), originalTeam(originalTeam), teamOrders(orders) {
   }
 
   void onEvent(const GameEvent& event) {

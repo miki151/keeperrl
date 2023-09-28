@@ -81,7 +81,6 @@
 #include "resource_info.h"
 #include "workshop_item.h"
 #include "time_queue.h"
-#include "quarters.h"
 #include "unknown_locations.h"
 #include "furniture_click.h"
 #include "campaign.h"
@@ -107,8 +106,8 @@ template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
   ar(memory, introText, nextKeeperWarning, tribeAlignment);
-  ar(newAttacks, notifiedAttacks, messages, hints);
-  ar(visibilityMap, unknownLocations, dismissedVillageInfos, buildInfo);
+  ar(newAttacks, notifiedAttacks, messages, hints, soloKeeper);
+  ar(visibilityMap, unknownLocations, dismissedVillageInfos, buildInfo, battleSummary);
   ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures, usedResources, allianceAttack);
 }
 
@@ -161,25 +160,26 @@ static string getPopulationIncreaseDescription(const Furniture::PopulationInfo& 
 void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const KeeperCreatureInfo& keeperCreatureInfo) {
   for (auto& group : keeperCreatureInfo.buildingGroups)
     buildInfo.append(contentFactory->buildInfo.at(group));
+  auto factory = getGame()->getContentFactory();
   for (auto& info : buildInfo)
     if (auto furniture = info.type.getReferenceMaybe<BuildInfoTypes::Furniture>()) {
       usedResources.insert(furniture->cost.id);
       for (auto type : furniture->types) {
-        double luxury = getGame()->getContentFactory()->furniture.getData(type).getLuxuryInfo().luxury;
+        double luxury = factory->furniture.getData(type).getLuxuryInfo().luxury;
         if (luxury > 0) {
           info.help += " Increases luxury by " + toString(luxury) + ".";
           break;
         }
       }
-      auto increase = getGame()->getContentFactory()->furniture.getData(furniture->types[0]).getPopulationIncrease();
+      auto increase = factory->furniture.getData(furniture->types[0]).getPopulationIncrease();
       if (increase.increase > 0) {
         info.help += " " + getPopulationIncreaseDescription(increase, keeperCreatureInfo.populationString);
         if (increase.limit)
           const_cast<optional<int>&>(furniture->limit) = int(*increase.limit / increase.increase);
       }
-      for (auto expType : ENUM_ALL(ExperienceType))
-        if (auto increase = getGame()->getContentFactory()->furniture.getData(furniture->types[0]).getMaxTraining(expType))
-          info.help += " Adds up to " + toString(increase) + " " + toLower(getName(expType)) + " levels.";
+      auto& maxTraining = factory->furniture.getData(furniture->types[0]).getMaxTraining();
+      for (auto& elem : maxTraining)
+        info.help += " Adds up to " + toString(elem.second) + " " + factory->attrInfo.at(elem.first).name + " levels.";
     }
 }
 
@@ -221,7 +221,7 @@ optional<TeamId> PlayerControl::getCurrentTeam() const {
   return none;
 }
 
-void PlayerControl::onControlledKilled(const Creature* victim) {
+void PlayerControl::onControlledKilled(Creature* victim) {
   TeamId currentTeam = *getCurrentTeam();
   if (getTeams().getLeader(currentTeam) == victim && getGame()->getPlayerCreatures().size() == 1) {
     vector<PlayerInfo> team;
@@ -240,11 +240,15 @@ void PlayerControl::onControlledKilled(const Creature* victim) {
         getTeams().setLeader(currentTeam, c);
         if (!c->isPlayer())
           c->pushController(createMinionController(c));
+        if (victim->isPlayer())
+          victim->popController();
         return;
       }
     }
     leaveControl();
   }
+  if (victim->isPlayer())
+    victim->popController();
 }
 
 void PlayerControl::onSunlightVisibilityChanged() {
@@ -315,6 +319,38 @@ void PlayerControl::teamMemberAction(TeamMemberAction action, Creature::Id id) {
     }
 }
 
+static ScriptedUIDataElems::Record getCreatureRecord(const ContentFactory* factory, const Creature* creature) {
+  auto bestAttack = creature->getBestAttack(factory);
+  return ScriptedUIDataElems::Record {{
+      {"view_id", creature->getViewObject().getViewIdList()},
+      {"attack_view_id", ViewIdList{bestAttack.viewId}},
+      {"attack_value", toString(bestAttack.value)},
+      {"name", capitalFirst(creature->getName().aOrTitle())},
+  }};
+}
+
+void PlayerControl::presentAndClearBattleSummary() {
+  auto data = ScriptedUIDataElems::Record{};
+  auto factory = getGame()->getContentFactory();
+  auto getCreatureList = [factory] (const vector<Creature*>& creatures) {
+    auto ret = ScriptedUIDataElems::List{};
+    for (auto c : creatures)
+      ret.push_back(getCreatureRecord(factory, c));
+    return ret;
+  };
+  if (!battleSummary.minionsKilled.empty())
+    data.elems["minions_killed"] = getCreatureList(battleSummary.minionsKilled);
+  if (!battleSummary.minionsCaptured.empty())
+    data.elems["minions_captured"] = getCreatureList(battleSummary.minionsCaptured);
+  if (!battleSummary.enemiesKilled.empty())
+    data.elems["enemies_killed"] = getCreatureList(battleSummary.enemiesKilled);
+  if (!battleSummary.enemiesCaptured.empty())
+    data.elems["enemies_captured"] = getCreatureList(battleSummary.enemiesCaptured);
+  if (!data.elems.empty())
+    getView()->scriptedUI("battle_summary", data);
+  battleSummary = BattleSummary {};
+}
+
 void PlayerControl::leaveControl() {
   set<TeamId> allTeams;
   for (auto controlled : copyOf(getControlled())) {
@@ -343,6 +379,7 @@ void PlayerControl::leaveControl() {
     break;
   }
   getView()->stopClock();
+  presentAndClearBattleSummary();
 }
 
 void PlayerControl::render(View* view) {
@@ -556,9 +593,10 @@ static ItemInfo getEmptySteedItemInfo(const ContentFactory* factory) {
   );
 }
 
-static ItemInfo getSteedItemInfo(const ContentFactory* factory, const Creature* steed, bool currentlyRiding) {
+static ItemInfo getSteedItemInfo(const ContentFactory* factory, const Creature* rider, const Creature* steed,
+    bool currentlyRiding) {
   return CONSTRUCT(ItemInfo,
-    c.name = steed->getName().bare();
+    c.name = steed->getName().bare() + (rider->getFirstCompanion() == steed ? " (companion)" : "");
     c.fullName = steed->getName().aOrTitle();
     c.viewId = steed->getViewObject().getViewIdList();
     c.equiped = currentlyRiding;
@@ -572,7 +610,7 @@ void PlayerControl::fillSteedInfo(Creature* creature, PlayerInfo& info) const {
   if (creature->isAffected(LastingEffect::RIDER)) {
     auto factory = getGame()->getContentFactory();
     if (auto steed = collective->getSteedOrRider(creature))
-      info.inventory.push_back(getSteedItemInfo(factory, steed, creature->getSteed() == steed));
+      info.inventory.push_back(getSteedItemInfo(factory, creature, steed, creature->getSteed() == steed));
     else
       info.inventory.push_back(getEmptySteedItemInfo(factory));
   }
@@ -648,13 +686,9 @@ static ScriptedUIDataElems::Record getItemRecord(const ContentFactory* factory, 
 
 static ScriptedUIDataElems::Record getItemOwnerRecord(const ContentFactory* factory, const Creature* creature,
     int count) {
-  auto bestAttack = creature->getBestAttack(factory);
-  return ScriptedUIDataElems::Record {{
-      {"view_id", creature->getViewObject().getViewIdList()},
-      {"count", toString(count)},
-      {"attack_view_id", ViewIdList{bestAttack.viewId}},
-      {"attack_value", toString(bestAttack.value)}
-  }};
+  auto ret = getCreatureRecord(factory, creature);
+  ret.elems["count"] = toString(count);
+  return ret;
 }
 
 Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
@@ -711,10 +745,14 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
   return ret;
 }
 
-static ScriptedUIDataElems::Record getSteedItemRecord(const ContentFactory* factory, const Creature* steed) {
+static ScriptedUIDataElems::Record getSteedItemRecord(const ContentFactory* factory, const Creature* steed,
+    const Creature* rider) {
   auto elem = ScriptedUIDataElems::Record{};
   elem.elems["view_id"] = steed->getViewObject().getViewIdList();
-  elem.elems["name"] = capitalFirst(steed->getName().bare());
+  if (steed == rider->getFirstCompanion())
+    elem.elems["name"] = capitalFirst(steed->getName().bare()) + " (companion)"_s;
+  else
+    elem.elems["name"] = capitalFirst(steed->getName().bare());
   elem.elems["tooltip"] = ScriptedUIDataElems::List {
     capitalFirst(steed->getName().aOrTitle()),
     capitalFirst(steed->getAttributes().getDescription(factory))
@@ -725,6 +763,8 @@ static ScriptedUIDataElems::Record getSteedItemRecord(const ContentFactory* fact
 Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSteeds) {
   vector<Creature*> availableItems;
   vector<Creature*> usedItems;
+  if (auto c = creature->getFirstCompanion())
+    allSteeds.insert(0, c);
   for (auto item : allSteeds) {
     if (auto owner = collective->getSteedOrRider(item))
       usedItems.push_back(item);
@@ -745,7 +785,7 @@ Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSt
   auto itemsList = ScriptedUIDataElems::List{};
   Creature* ret = nullptr;
   for (auto& stack : concat(Creature::stack(availableItems), usedStacks)) {
-    auto r = getSteedItemRecord(getGame()->getContentFactory(), stack[0]);
+    auto r = getSteedItemRecord(getGame()->getContentFactory(), stack[0], creature);
     if (auto c = collective->getSteedOrRider(stack[0]))
       r.elems["owner"] = getItemOwnerRecord(factory, c, stack.size());
     r.elems["callback"] = ScriptedUIDataElems::Callback {
@@ -795,6 +835,9 @@ ViewId PlayerControl::getViewId(const BuildInfoTypes::BuildType& info) const {
       },
       [&](const BuildInfoTypes::CutTree&) {
         return ViewId("dig_icon");
+      },
+      [&](const BuildInfoTypes::FillPit&) {
+        return ViewId("fill_pit_icon");
       },
       [&](const BuildInfoTypes::Chain& c) {
         return getViewId(c[0]);
@@ -895,8 +938,8 @@ string PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
       [&](const EnemyPopulation&) {
         return "population";
       },
-      [&](const Gold&) {
-        return "gold";
+      [&](const Resource& r) {
+        return collective->getResourceInfo(r.resource).name;
       },
       [&](const StolenItems&) {
         return "item theft";
@@ -1132,10 +1175,10 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
     minionInfo.groupName = chosenCreature->group;
     // only fill equipment for the chosen minion to avoid lag
     if (c->getUniqueId() == chosenCreature->id) {
-      for (auto expType : ENUM_ALL(ExperienceType))
-        if (auto requiredDummy = collective->getMissingTrainingFurniture(c, expType))
-          minionInfo.experienceInfo.warning[expType] =
-              "Requires " + getGame()->getContentFactory()->furniture.getData(*requiredDummy).getName() + " to train further.";
+      for (auto& elem : minionInfo.experienceInfo.training)
+        if (auto requiredDummy = collective->getMissingTrainingFurniture(c, elem.attr))
+          elem.warning = "Requires " + getGame()->getContentFactory()->furniture.getData(*requiredDummy).getName() +
+              " to train further.";
       for (MinionActivity t : ENUM_ALL(MinionActivity))
         if (c->getAttributes().getMinionActivities().isAvailable(collective, c, t, true)) {
           minionInfo.minionTasks.push_back({t,
@@ -1149,28 +1192,21 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
       fillSteedInfo(c, minionInfo);
       fillEquipment(c, minionInfo);
       if (canControlSingle(c) && !c->getRider())
-        minionInfo.actions.push_back(PlayerInfo::CONTROL);
+        minionInfo.actions.push_back(PlayerInfo::Action::CONTROL);
       if (!collective->hasTrait(c, MinionTrait::PRISONER)) {
-        minionInfo.actions.push_back(PlayerInfo::RENAME);
+        minionInfo.actions.push_back(PlayerInfo::Action::RENAME);
       } else
-        minionInfo.experienceInfo.limit.clear();
+        minionInfo.experienceInfo.training.clear();
       auto& leaders = collective->getLeaders();
       if (c->isAutomaton())
-        minionInfo.actions.push_back(PlayerInfo::DISASSEMBLE);
+        minionInfo.actions.push_back(PlayerInfo::Action::DISASSEMBLE);
       else if (leaders.size() > 1 || !collective->hasTrait(c, MinionTrait::LEADER))
-        minionInfo.actions.push_back(PlayerInfo::BANISH);
-      if (!collective->hasTrait(c, MinionTrait::PRISONER)) {
-        minionInfo.canAssignQuarters = true;
-        auto& quarters = collective->getQuarters();
-        if (auto index = quarters.getAssigned(c->getUniqueId()))
-          minionInfo.quarters = quarters.getAllQuarters()[*index].viewId;
-        else
-          minionInfo.quarters = none;
-      } else
-        minionInfo.canAssignQuarters = false;
+        minionInfo.actions.push_back(PlayerInfo::Action::BANISH);
       if (c->isAffected(BuffId("CONSUMPTION_SKILL")))
-        minionInfo.actions.push_back(PlayerInfo::CONSUME);
-      minionInfo.actions.push_back(PlayerInfo::LOCATE);
+        minionInfo.actions.push_back(PlayerInfo::Action::CONSUME);
+      minionInfo.actions.push_back(PlayerInfo::Action::LOCATE);
+      if (collective->usesEquipment(c))
+        minionInfo.actions.push_back(PlayerInfo::Action::ASSIGN_EQUIPMENT);
     }
   }
   return minions;
@@ -1365,7 +1401,7 @@ vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getFurnaceQueue() const {
   for (auto& item : collective->getFurnace().getQueued()) {
         auto itemInfo = getItemInfo(getGame()->getContentFactory(), {item.item.get()}, false, false, false);
         itemInfo.price = getCostObj(collective->getFurnace().getRecycledAmount(item.item.get()));
-    ret.push_back(CollectiveInfo::QueuedItemInfo{item.state, true, std::move(itemInfo), none, {}, {"", 0}, i, true});
+    ret.push_back(CollectiveInfo::QueuedItemInfo{item.state, true, std::move(itemInfo), none, {}, {"", 0}, i});
     ++i;
   }
   return ret;
@@ -1402,13 +1438,12 @@ vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions(int resourceIndex) 
 }
 
 CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQueuedItem& item, int cnt,
-    int itemIndex, bool hasLegendarySkill) const {
+    int itemIndex) const {
   auto contentFactory = getGame()->getContentFactory();
   CollectiveInfo::QueuedItemInfo ret {item.state,
-        item.paid && (item.runes.empty() || item.item.notArtifact || hasLegendarySkill) &&
-            (!item.item.requiresUpgrades || !item.runes.empty()),
+        item.paid && (!item.item.requiresUpgrades || !item.runes.empty()),
         getWorkshopItem(item.item, cnt), getImmigrantCreatureInfo(contentFactory, item.item.type),
-        {}, {"", 0}, itemIndex, item.item.notArtifact};
+        {}, {"", 0}, itemIndex};
   if (!item.paid)
     ret.itemInfo.description.push_back("Cannot afford item");
   auto addItem = [&ret] (CollectiveInfo::QueuedItemInfo::UpgradeInfo info, bool used) {
@@ -1432,8 +1467,6 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
       ret.itemInfo.description.push_back("Crafted from " + it->getAName());
     }
   }
-  if (!item.runes.empty() && !item.item.notArtifact)
-    ret.itemInfo.unavailableReason = "Requires a craftsman of legendary skills and positive morale.";
   if (item.runes.empty() && item.item.requiresUpgrades)
     ret.itemInfo.unavailableReason = "Item cannot be crafted without applied upgrades.";
   ret.itemInfo.actions = {ItemAction::REMOVE};
@@ -1444,7 +1477,7 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
 static bool runesEqual(const vector<PItem>& v1, const vector<PItem>& v2) {
   if (v1.size() != v2.size())
     return false;
-  unordered_set<pair<string, ViewId>, CustomHash<pair<string, ViewId>>> elems;
+  HashSet<pair<string, ViewId>> elems;
   for (auto& elem : v1)
     elems.insert(make_pair(elem->getName(), elem->getViewObject().id()));
   for (auto& elem : v2)
@@ -1455,46 +1488,30 @@ static bool runesEqual(const vector<PItem>& v1, const vector<PItem>& v2) {
 vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getQueuedWorkshopItems() const {
   PROFILE;
   vector<CollectiveInfo::QueuedItemInfo> ret;
-  bool hasLegendarySkill = [&] {
-    for (auto c : getCreatures())
-      if (c->getMorale().value_or(1) >= 0 &&
-          c->getAttr(getGame()->getContentFactory()->workshopInfo.at(chosenWorkshop->type).attr) >=
-              Workshops::getLegendarySkillThreshold())
-        return true;
-    return false;
-  }();
   auto& queued = collective->getWorkshops().types.at(chosenWorkshop->type).getQueued();
   for (int i : All(queued)) {
     if (i > 0 && queued[i - 1].indexInWorkshop == queued[i].indexInWorkshop && queued[i - 1].paid == queued[i].paid &&
         runesEqual(queued[i].runes, queued[i - 1].runes))
       ret.back() = getQueuedItemInfo(queued[ret.back().itemIndex],
-          ret.back().itemInfo.number + 1, ret.back().itemIndex, hasLegendarySkill);
+          ret.back().itemInfo.number + 1, ret.back().itemIndex);
     else
-      ret.push_back(getQueuedItemInfo(queued[i], 1, i, hasLegendarySkill));
+      ret.push_back(getQueuedItemInfo(queued[i], 1, i));
   }
   return ret;
 }
 
 void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
-  info.workshopButtons.clear();
   int index = 0;
   int i = 0;
+  auto factory = getGame()->getContentFactory();
   for (auto workshopType : collective->getWorkshops().getWorkshopsTypes()) {
-    auto& workshopInfo = getGame()->getContentFactory()->workshopInfo.at(workshopType);
-    bool unavailable = collective->getConstructions().getBuiltPositions(workshopInfo.furniture).empty();
-    info.workshopButtons.push_back({capitalFirst(workshopInfo.name),
-        getGame()->getContentFactory()->furniture.getConstructionObject(workshopInfo.furniture).id(), false, unavailable});
-    if (!!chosenWorkshop && chosenWorkshop->type == workshopType) {
+    auto& workshopInfo = factory->workshopInfo.at(workshopType);
+    if (!!chosenWorkshop && chosenWorkshop->type == workshopType)
       index = i;
-      info.workshopButtons.back().active = true;
-    }
     ++i;
   }
-  info.workshopButtons.push_back({"Furnace", ViewId("furnace"), false,
-      collective->getConstructions().getBuiltPositions(FurnitureType("FURNACE")).empty()});
   if (!!chosenWorkshop && chosenWorkshop->type == WorkshopType("FURNACE")) {
     index = i;
-    info.workshopButtons.back().active = true;
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
         {},
         chosenWorkshop->resourceIndex,
@@ -1504,7 +1521,9 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
         getFurnaceQueue(),
         index,
         "To be smelted:",
-        false
+        false,
+        1,
+        factory->attrInfo.at(AttrType("FURNACE")).viewId
     };
   } else
   if (chosenWorkshop) {
@@ -1515,6 +1534,7 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
     string tabName;
     if (!resourceTabs.empty())
       tabName = collective->getResourceInfo(resourceTabs[chosenWorkshop->resourceIndex]).name;
+    auto& workshopInfo = factory->workshopInfo.at(chosenWorkshop->type);
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
         resourceViewIds,
         chosenWorkshop->resourceIndex,
@@ -1524,7 +1544,9 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
         getQueuedWorkshopItems(),
         index,
         "In production:",
-        true
+        true,
+        workshopInfo.minAttr,
+        factory->attrInfo.at(workshopInfo.attr).viewId
     };
   }
 }
@@ -1534,13 +1556,12 @@ void PlayerControl::acceptPrisoner(int index) {
   auto immigrants = getPrisonerImmigrantStack();
   if (index < immigrants.size() && !immigrants[index].collective) {
     auto victim = immigrants[index].creatures[0];
-    victim->removeEffect(LastingEffect::STUNNED);
-    victim->unbindPhylactery();
     if (victim->getBody().isHumanoid())
       victim->getAttributes().setBaseAttr(AttrType("DIGGING"),
           max(15, victim->getRawAttr(AttrType("DIGGING"))));
-    collective->addCreature(victim, {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
+    collective->takePrisoner(victim);
     addMessage(PlayerMessage("You enslave " + victim->getName().a()).setPosition(victim->getPosition()));
+    getGame()->achieve(AchievementId("captured_prisoner"));
     for (auto& elem : copyOf(stunnedCreatures))
       if (elem.first == victim)
         stunnedCreatures.removeElement(elem);
@@ -1559,7 +1580,7 @@ void PlayerControl::rejectPrisoner(int index) {
 vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() const {
   vector<StunnedInfo> ret;
   vector<Creature*> outside;
-  unordered_map<Collective*, vector<Creature*>, CustomHash<Collective*>> inside;
+  HashMap<Collective*, vector<Creature*>> inside;
   for (auto stunned : stunnedCreatures)
     if (stunned.first->isAffected(LastingEffect::STUNNED) && !stunned.first->isDead()) {
       if (auto villain = stunned.second) {
@@ -1575,6 +1596,37 @@ vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() co
       ret.push_back(StunnedInfo{stack, elem.first});
   for (auto& stack : Creature::stack(outside))
     ret.push_back(StunnedInfo{stack, nullptr});
+  return ret;
+}
+
+static int getRequiredLuxury(double combatExp) {
+  for (int l = 0;; ++l)
+    if (getMaxPromotionLevel(l) >= combatExp / 5)
+      return l;
+  fail();
+}
+
+vector<ImmigrantDataInfo> PlayerControl::getUnrealizedPromotionsImmigrantData() const {
+  vector<ImmigrantDataInfo> ret;
+  auto contentFactory = getGame()->getContentFactory();
+  for (auto c : getCreatures())
+    if (c->getCombatExperienceRespectingMaxPromotion() < c->getCombatExperience()) {
+      ret.emplace_back();
+      ret.back().requirements.push_back("Creature requires more luxurious quarters to achieve full potential"_s);
+      auto req = getRequiredLuxury(c->getCombatExperience());
+      if (req == 0)
+        ret.back().requirements.push_back("Requires personal quarters.");
+      else {
+        auto cur = collective->getZones().getQuartersLuxury(c->getUniqueId());
+        if (!cur)
+          ret.back().requirements.push_back("Requires personal quarters with total luxury: " + toString(req));
+        else
+          ret.back().requirements.push_back("Requires more luxury in quarters: " + toString(req - *cur) +
+              " (" + toString(req) + " in total)");
+      }
+      ret.back().creature = getImmigrantCreatureInfo(c, contentFactory);
+      ret.back().id = -123456;
+    }
   return ret;
 }
 
@@ -1610,7 +1662,7 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
     }
     if (stack.collective)
       requirements.push_back("Requires conquering " + stack.collective->getName()->full);
-    ret.push_back(ImmigrantDataInfo());
+    ret.emplace_back();
     ret.back().requirements = requirements;
     ret.back().creature = getImmigrantCreatureInfo(c, contentFactory);
     ret.back().creature.name += " (prisoner)";
@@ -1641,7 +1693,7 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
   using TraitInfo = ImmigrantDataInfo::SpecialTraitInfo;
   return trait.visit<ImmigrantDataInfo::SpecialTraitInfo>(
       [&] (const ExtraTraining& t) {
-        return TraitInfo{"Extra "_s + toLower(getName(t.type)) + " training potential", false};
+        return TraitInfo{"Extra "_s + factory->attrInfo.at(t.type).name + " training potential", false};
       },
       [&] (const CompanionInfo& t) {
         return TraitInfo{capitalFirst(factory->getCreatures().getName(t.creatures[0])) + " companion", false};
@@ -1685,6 +1737,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   PROFILE;
   info.immigration.clear();
   auto& immigration = collective->getImmigration();
+  info.immigration.append(getUnrealizedPromotionsImmigrantData());
   info.immigration.append(getPrisonerImmigrantData());
   auto factory = getGame()->getContentFactory();
   if (collective->getWorkshops().getWorkshopsTypes().contains(WorkshopType("MORGUE")))
@@ -1957,7 +2010,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   }
   gameInfo.messageBuffer = messages;
   info.taskMap.clear();
-  for (WConstTask task : collective->getTaskMap().getAllTasks()) {
+  for (const Task* task : collective->getTaskMap().getAllTasks()) {
     optional<UniqueEntity<Creature>::Id> creature;
     if (auto c = collective->getTaskMap().getOwner(task))
       creature = c->getUniqueId();
@@ -1988,8 +2041,6 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   if (auto rebellionWarning = getRebellionChance(collective->getRebellionProbability()))
     if (!lastWarningDismiss || getModel()->getLocalTime() > *lastWarningDismiss + 1000_visible)
       info.rebellionChance = *rebellionWarning;
-  info.allQuarters = collective->getQuarters().getAllQuarters().transform(
-      [](const auto& info) { return info.viewId; });
 }
 
 void PlayerControl::addMessage(const PlayerMessage& msg) {
@@ -2039,6 +2090,23 @@ void PlayerControl::onEvent(const GameEvent& event) {
             addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
           collective->getDungeonLevel().onKilledVillain(col->getVillainType());
         }
+        for (auto pos : col->getTerritory().getPillagePositions())
+          if (auto c = pos.getCreature())
+            if (c->isAffected(LastingEffect::STUNNED))
+              if (auto traits = collective->stunnedMinions.getMaybe(c)) {
+                c->removeEffect(LastingEffect::STUNNED);
+                battleSummary.minionsCaptured.removeElementMaybe(c);
+                for (auto t : *traits)
+                  collective->setTrait(c, t);
+              }
+        for (auto c : copyOf(col->getCreatures()))
+          if (auto traits = collective->stunnedMinions.getMaybe(c)) {
+            c->getStatus().erase(CreatureStatus::PRISONER);
+            addMessage(PlayerMessage(c->getName().aOrTitle() + " has been freed from imprisonment!",
+                MessagePriority::HIGH));
+            collective->addCreature(c, *traits);
+            battleSummary.minionsCaptured.removeElementMaybe(c);
+          }
       },
       [&](const CreatureEvent& info) {
         if (collective->getCreatures().contains(info.creature))
@@ -2051,16 +2119,23 @@ void PlayerControl::onEvent(const GameEvent& event) {
         if (getCreatures().contains(info.creature))
           updateMinionVisibility(info.creature);
       },
-      [&](const ItemsEquipped& info) {
-        if (info.creature->isPlayer() &&
+      [&](const ItemsOwned& info) {
+        if (getCreatures().contains(info.creature) &&
             !collective->getMinionEquipment().tryToOwn(info.creature, info.items.getOnlyElement()))
-          getView()->presentText("", "Item won't be permanently assigned to creature because the equipment slot is locked.");
+          getView()->presentText("",
+              "Item won't be permanently assigned to creature because the equipment slot is locked.");
       },
       [&](const WonGame&) {
         getGame()->conquered(*collective->getName()->shortened, collective->getKills().getSize(),
             (int) collective->getDangerLevel() + collective->getPoints());
         getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
-          "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
+          "Other players will be able to invade it. To do this, press Escape and choose \'retire\'.");
+        getGame()->achieve(AchievementId("won_keeper"));
+        auto& leaders = collective->getLeaders();
+        if (leaders.size() == 1 && leaders[0]->getBody().getHealth() <= 0.05)
+          getGame()->achieve(AchievementId("won_game_low_health"));
+        if (soloKeeper)
+          getGame()->achieve(AchievementId("solo_keeper"));
       },
       [&](const RetiredGame&) {
         if (getGame()->getVillains(VillainType::MAIN).empty())
@@ -2085,6 +2160,8 @@ void PlayerControl::onEvent(const GameEvent& event) {
         }
       },
       [&](const CreatureStunned& info) {
+        if (collective->getCreatures().contains(info.attacker))
+          battleSummary.enemiesCaptured.push_back(info.victim);
         for (auto villain : getGame()->getCollectives())
           if (villain->getCreatures().contains(info.victim)) {
             if (villain != collective)
@@ -2098,6 +2175,8 @@ void PlayerControl::onEvent(const GameEvent& event) {
         if (canSee(pos))
           if (auto anim = info.victim->getBody().getDeathAnimation(getGame()->getContentFactory()))
             getView()->animation(pos.getCoord(), *anim);
+        if (collective->getCreatures().contains(info.attacker))
+          battleSummary.enemiesKilled.push_back(info.victim);
       },
       [&](const CreatureAttacked& info) {
         auto pos = info.victim->getPosition();
@@ -2141,11 +2220,13 @@ void PlayerControl::updateKnownLocations(const Position& pos) {
         else if (loc->isMarkedAsSurprise())
           addMessage(PlayerMessage("Your minions discover a new location.").setLocation(loc));
       }*/
-  if (getGame()) // check in case this method is called before Game is constructed
-    for (const Collective* col : getGame()->getCollectives())
+  if (auto game = getGame()) // check in case this method is called before Game is constructed
+    for (const Collective* col : game->getCollectives())
       if (col != collective && col->getTerritory().contains(pos)) {
         collective->addKnownVillain(col);
         if (!collective->isKnownVillainLocation(col)) {
+          if (auto& a = col->getConfig().discoverAchievement)
+            game->achieve(*a);
           collective->addKnownVillainLocation(col);
           if (col->isDiscoverable())
             if (auto& name = col->getName())
@@ -2214,6 +2295,12 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (!canSeePos)
     if (auto memIndex = getMemory().getViewIndex(position))
       index.mergeFromMemory(*memIndex);
+  if (draggedCreature)
+    if (Creature* c = getCreature(*draggedCreature))
+      for (auto task : collective->getTaskMap().getTasks(position))
+        if (auto activity = collective->getTaskMap().getTaskActivity(task))
+          if (c->getAttributes().getMinionActivities().isAvailable(collective, c, *activity))
+            index.setHighlight(HighlightType::CREATURE_DROP);
   if (collective->getTerritory().contains(position)) {
     if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE)) {
       if (auto clickType = furniture->getClickType())
@@ -2337,6 +2424,7 @@ vector<Creature*> PlayerControl::getTeam(const Creature* c) {
   vector<Creature*> ret;
   for (auto team : getTeams().getActive(c))
     append(ret, getTeams().getMembers(team).filter([](auto c) { return !c->getRider(); }));
+  CHECK(!ret.empty());
   return ret;
 }
 
@@ -2348,6 +2436,7 @@ void PlayerControl::commandTeam(TeamId team) {
   getTeams().activate(team);
   collective->freeTeamMembers(getTeams().getMembers(team));
   getView()->resetCenter();
+  battleSummary = BattleSummary {};
 }
 
 void PlayerControl::toggleControlAllTeamMembers() {
@@ -2459,6 +2548,14 @@ void PlayerControl::minionDragAndDrop(Vec2 v, variant<string, UniqueEntity<Creat
           return;
         }
       }
+    for (auto task : collective->getTaskMap().getTasks(pos)) {
+      if (auto activity = collective->getTaskMap().getTaskActivity(task))
+        if (c->getAttributes().getMinionActivities().isAvailable(collective, c, *activity)) {
+          collective->setMinionActivity(c, *activity);
+          collective->returnResource(collective->getTaskMap().takeTask(c, task));
+          return;
+        }
+    }
     PTask task = Task::goToAndWait(pos, 15_visible);
     task->setViewId(ViewId("guard_post"));
     collective->setTask(c, std::move(task));
@@ -2536,6 +2633,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::CREATURE_DRAG:
       draggedCreature = input.get<Creature::Id>();
+      for (auto task : collective->getTaskMap().getAllTasks())
+        if (auto pos = collective->getTaskMap().getPosition(task))
+          pos->setNeedsRenderUpdate(true);
       for (auto task : ENUM_ALL(MinionActivity))
         for (auto& pos : collective->getMinionActivities().getAllPositions(collective, nullptr, task))
           pos.first.setNeedsRenderUpdate(true);
@@ -2739,7 +2839,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       }
       else
         setChosenTeam(none);
-      break;
+    break;
     }
     case UserInputId::EQUIPMENT_GROUP_ACTION:
       equipmentGroupAction(input.get<EquipmentGroupAction>());
@@ -2759,39 +2859,43 @@ void PlayerControl::processInput(View* view, UserInput input) {
       }
       break;
     }
-    case UserInputId::CREATURE_CONTROL:
-      if (Creature* c = getCreature(input.get<Creature::Id>())) {
-        if (getChosenTeam() && getTeams().exists(*getChosenTeam())) {
-          getTeams().setLeader(*getChosenTeam(), c);
-          commandTeam(*getChosenTeam());
-        } else
-          controlSingle(c);
-        chosenCreature = none;
-        setChosenTeam(none);
-      }
+    case UserInputId::MINION_ACTION: {
+      auto info = input.get<MinionActionInfo>();
+      if (Creature* c = getCreature(info.id))
+        switch (info.action) {
+          case PlayerInfo::Action::CONTROL:
+            if (getChosenTeam() && getTeams().exists(*getChosenTeam())) {
+              getTeams().setLeader(*getChosenTeam(), c);
+              commandTeam(*getChosenTeam());
+            } else
+              controlSingle(c);
+            chosenCreature = none;
+            setChosenTeam(none);
+            break;
+          case PlayerInfo::Action::RENAME:
+            if (auto name = getView()->getText("Rename minion", c->getName().first().value_or(""), maxFirstNameLength))
+             c->getName().setFirst(*name);
+            break;
+          case PlayerInfo::Action::CONSUME:
+            if (auto creatureId = getView()->chooseCreature("Choose minion to absorb",
+                getConsumptionTargets(c).transform(
+                    [&] (const Creature* c) { return PlayerInfo(c, getGame()->getContentFactory());}), "Cancel"))
+              if (Creature* consumed = getCreature(*creatureId))
+                collective->setTask(c, Task::consume(consumed));
+            break;
+          case PlayerInfo::Action::LOCATE:
+            setScrollPos(c->getPosition());
+            break;
+          case PlayerInfo::Action::BANISH:
+          case PlayerInfo::Action::DISASSEMBLE:
+            handleBanishing(c);
+            break;
+          case PlayerInfo::Action::ASSIGN_EQUIPMENT:
+            collective->autoAssignEquipment(c);
+            break;
+        }
       break;
-    case UserInputId::CREATURE_RENAME:
-      if (Creature* c = getCreature(input.get<Creature::Id>()))
-        if (auto name = getView()->getText("Rename minion", c->getName().first().value_or(""), maxFirstNameLength))
-           c->getName().setFirst(*name);
-      break;
-    case UserInputId::CREATURE_CONSUME:
-      if (Creature* c = getCreature(input.get<Creature::Id>())) {
-        if (auto creatureId = getView()->chooseCreature("Choose minion to absorb",
-            getConsumptionTargets(c).transform(
-                [&] (const Creature* c) { return PlayerInfo(c, getGame()->getContentFactory());}), "Cancel"))
-          if (Creature* consumed = getCreature(*creatureId))
-            collective->setTask(c, Task::consume(consumed));
-      }
-      break;
-    case UserInputId::CREATURE_LOCATE:
-      if (Creature* c = getCreature(input.get<Creature::Id>()))
-        setScrollPos(c->getPosition());
-      break;
-    case UserInputId::CREATURE_BANISH:
-      if (Creature* c = getCreature(input.get<Creature::Id>()))
-        handleBanishing(c);
-      break;
+    }
     case UserInputId::AI_TYPE:
       minionAIAction(input.get<AIActionInfo>());
       break;
@@ -2825,11 +2929,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
           } else
             chosenCreature = none;
         }
-      break;
-    }
-    case UserInputId::ASSIGN_QUARTERS: {
-      auto& info = input.get<AssignQuartersInfo>();
-      collective->getQuarters().assign(info.index, info.minionId);
       break;
     }
     case UserInputId::IMMIGRANT_ACCEPT: {
@@ -3063,7 +3162,7 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
             otherPos = f->getSecondPart(position);
           collective->destroyOrder(position, layer);
           if (auto f = position.getFurniture(layer))
-            if (f->getType() == FurnitureType("TREE_TRUNK") || f->getType() == FurnitureType("STONES"))
+            if (f->canRemoveInstantly())
               position.removeFurniture(f);
           getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
           updateSquareMemory(position);
@@ -3071,7 +3170,7 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
             updateSquareMemory(*otherPos);
         } else
           if (auto f = position.getFurniture(layer))
-            if (f->getType() == FurnitureType("TREE_TRUNK") || f->getType() == FurnitureType("STONES"))
+            if (f->canRemoveInstantly())
               position.removeFurniture(f);
       }
     },
@@ -3092,6 +3191,12 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
     },
     [&](const BuildInfoTypes::Dig&) {
       handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::DIG, dryRun);
+    },
+    [&](const BuildInfoTypes::FillPit&) {
+      if (auto f = position.getFurniture(FurnitureLayer::MIDDLE))
+        if (auto t = f->getTickType())
+          if (t->contains<FurnitureTickTypes::Pit>())
+            handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::FILL, dryRun);
     },
     [&](const BuildInfoTypes::Chain& c) {
       for (auto& elem : c)
@@ -3205,6 +3310,44 @@ void PlayerControl::onSquareClick(Position pos) {
           setChosenWorkshop(ChosenWorkshopInfo{0, *workshopType});
     }
   }
+  if (collective->getZones().isZone(pos, ZoneId::QUARTERS)) {
+    vector<PlayerInfo> minions;
+    for (auto c : getCreatures())
+      if (collective->minionCanUseQuarters(c))
+        minions.push_back(PlayerInfo(c, getGame()->getContentFactory()));
+    if (auto id = getView()->chooseCreature("Assign these quarters to:", minions, "Cancel"))
+      if (auto c = getCreature(*id))
+        collective->assignQuarters(c, pos);
+  }
+}
+
+optional<PlayerControl::QuartersInfo> PlayerControl::getQuarters(Vec2 pos) const {
+  optional<QuartersInfo> ret;
+  auto level = getCurrentLevel();
+  auto& zones = collective->getZones();
+  if (auto info = zones.getQuartersInfo(Position(pos, level))) {
+    HashSet<Vec2> v;
+    double luxury = 0;
+    for (auto& pos : info->positions)
+      if (pos.getLevel() == level) {
+        v.insert(pos.getCoord());
+        luxury += pos.getTotalLuxury();
+      }
+    optional<ViewIdList> viewId;
+    optional<string> name;
+    if (info->id)
+      if (auto c = getCreature(*info->id)) {
+        viewId = c->getViewObject().getViewIdList();
+        name = c->getName().aOrTitle();
+      }
+    ret = QuartersInfo {
+      v,
+      viewId,
+      name,
+      luxury
+    };
+  }
+  return ret;
 }
 
 double PlayerControl::getAnimationTime() const {
@@ -3387,7 +3530,34 @@ void PlayerControl::considerNightfallMessage() {
     isNight = false;*/
 }
 
+bool PlayerControl::canAllyJoin(Creature* ally) const {
+  for (auto c : ally->getVisibleCreatures())
+    if (getCreatures().contains(c) && ally->getPosition().isConnectedTo(c->getPosition(), {MovementTrait::WALK}))
+      return true;
+  return false;
+}
+
+void PlayerControl::considerTogglingCaptureOrderOnMinions() const {
+  for (auto c : getCreatures())
+    c->setCaptureOrder(false);
+  auto toCapture = collective->getCreatures(MinionTrait::FIGHTER).filter([&](auto c) { return !collective->hasTrait(c, MinionTrait::LEADER); });
+  sort(toCapture.begin(), toCapture.end(),
+      [](auto c1, auto c2) { return c1->getCombatExperience() > c2->getCombatExperience(); });
+  if (toCapture.size() > 10)
+    toCapture.resize(10);
+/*  for (auto c : collective->getCreatures(MinionTrait::LEADER))
+    if (!toCapture.contains(c))
+      toCapture.push_back(c);*/
+  for (auto c : toCapture)
+    for (auto col : c->getPosition().getModel()->getCollectives())
+      if (col != collective && col->getConfig().canCapturePrisoners() && !col->isConquered())
+        for (auto pos : col->getTerritory().getPillagePositions())
+          if (pos.getCreature() == c)
+            c->setCaptureOrder(true);
+}
+
 void PlayerControl::update(bool currentlyActive) {
+  considerTogglingCaptureOrderOnMinions();
   vector<Creature*> addedCreatures;
   vector<Level*> currentLevels {getCurrentLevel()};
   for (auto c : getControlled())
@@ -3395,7 +3565,7 @@ void PlayerControl::update(bool currentlyActive) {
       currentLevels.push_back(c->getLevel());
   for (Level* l : currentLevels)
     for (Creature* c : l->getAllCreatures())
-      if (!getCreatures().contains(c) && c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c)) {
+      if (!getCreatures().contains(c) && c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c) && canAllyJoin(c)) {
         if (!collective->wasBanished(c) && !c->getBody().isFarmAnimal() && c->getAttributes().getCanJoinCollective()) {
           addedCreatures.push_back(c);
           collective->addCreature(c, {MinionTrait::FIGHTER, MinionTrait::NO_LIMIT});
@@ -3462,11 +3632,10 @@ void PlayerControl::considerAllianceAttack() {
     if (message) {
       string allianceName = combine(allianceAttack->transform([](auto col) { return col->getName()->race; }));
       collective->addRecordedEvent("the last alliance of " + allianceName);
-      ScriptedUIState state;
       auto data = ScriptedUIDataElems::Record{};
       data.elems["message"] = "The tribes of " + allianceName + " have formed an alliance against you.";
       data.elems["view_id"] = ViewIdList{allianceAttack->front()->getName()->viewId};
-      getView()->scriptedUI("alliance_message", data, state);
+      getView()->scriptedUI("alliance_message", data);
       allianceAttack = none;
     }
   }
@@ -3498,12 +3667,18 @@ void PlayerControl::considerNewAttacks() {
       }
 }
 
+void PlayerControl::considerSoloAchievement() {
+  if (!collective->getCreatures(MinionTrait::FIGHTER).empty())
+    soloKeeper = false;
+}
+
 void PlayerControl::tick() {
   PROFILE_BLOCK("PlayerControl::tick");
   for (auto c : collective->getCreatures()) {
     if (c->isAffectedPermanently(BuffId("BRIDGE_BUILDING_SKILL")))
       c->removePermanentEffect(BuffId("BRIDGE_BUILDING_SKILL"), 1, false);
   }
+  considerSoloAchievement();
   updateUnknownLocations();
   considerTransferingLostMinions();
   for (auto& elem : messages)
@@ -3550,24 +3725,31 @@ void PlayerControl::onConquered(Creature* victim, Creature* killer) {
     setScrollPos(victim->getPosition().plus(Vec2(0, 5)));
     getView()->updateView(this, false);
   }
-  getGame()->gameOver(victim, collective->getKills().getSize(), "enemies",
+  auto game = getGame();
+  if (auto& a = killer->getAttributes().killedByAchievement)
+    game->achieve(*a);
+  game->gameOver(victim, collective->getKills().getSize(), "enemies",
       collective->getDangerLevel() + collective->getPoints());
   if (!collective->getTerritory().isEmpty())
-    for (auto col : getGame()->getCollectives())
+    for (auto col : game->getCollectives())
       if (col != collective && col->getCreatures().contains(killer) && col->getConfig().xCanEnemyRetire() &&
           isOneOf(col->getVillainType(), VillainType::MAIN, VillainType::LESSER)) {
-        getGame()->setExitInfo(GameSaveType::RETIRED_SITE);
+        game->setExitInfo(GameSaveType::RETIRED_SITE);
         leaveControl();
         collective->makeConqueredRetired(col); // this call invalidates this
         return;
       }
 }
 
-void PlayerControl::onMemberKilled(const Creature* victim, const Creature* killer) {
+void PlayerControl::onMemberKilledOrStunned(Creature* victim, const Creature* killer) {
   if (victim->isPlayer() &&
       (!collective->hasTrait(victim, MinionTrait::LEADER) || collective->getCreatures(MinionTrait::LEADER).size() > 1))
     onControlledKilled(victim);
   visibilityMap->remove(victim);
+  if (victim->isDead())
+    battleSummary.minionsKilled.push_back(victim);
+  else
+    battleSummary.minionsCaptured.push_back(victim);
 }
 
 void PlayerControl::onMemberAdded(Creature* c) {
@@ -3578,11 +3760,11 @@ void PlayerControl::onMemberAdded(Creature* c) {
     addToCurrentTeam(c);
 }
 
-WModel PlayerControl::getModel() const {
+Model* PlayerControl::getModel() const {
   return collective->getModel();
 }
 
-WGame PlayerControl::getGame() const {
+Game* PlayerControl::getGame() const {
   return collective->getGame();
 }
 
@@ -3638,6 +3820,9 @@ void PlayerControl::onDestructed(Position pos, FurnitureType type, const Destroy
     considerAddingKeeperFloor(pos);
     pos.setNeedsRenderAndMemoryUpdate(true);
   }
+  auto game = getGame();
+  if (auto& a = game->getContentFactory()->furniture.getData(type).getMinedAchievement())
+    game->achieve(*a);
 }
 
 vector<Vec2> PlayerControl::getVisibleEnemies() const {

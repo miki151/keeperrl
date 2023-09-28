@@ -5,9 +5,10 @@
 #include "movement_type.h"
 #include "collective.h"
 #include "territory.h"
-#include "quarters.h"
+#include "level.h"
+#include "shortest_path.h"
 
-SERIALIZE_DEF(Zones, positions, zones)
+SERIALIZE_DEF(Zones, positions, zones, quarters, quartersSectors)
 SERIALIZATION_CONSTRUCTOR_IMPL(Zones)
 
 bool Zones::isZone(Position pos, ZoneId id) const {
@@ -30,6 +31,10 @@ void Zones::setZone(Position pos, ZoneId id) {
   zones.getOrInit(pos).insert(id);
   positions[id].insert(pos);
   pos.setNeedsRenderAndMemoryUpdate(true);
+  if (id == ZoneId::QUARTERS) {
+    getOrInitSectors(pos.getLevel()).add(pos.getCoord());
+    quartersPositionCache.clear();
+  }
 }
 
 void Zones::eraseZone(Position pos, ZoneId id) {
@@ -37,6 +42,10 @@ void Zones::eraseZone(Position pos, ZoneId id) {
   zones.getOrInit(pos).erase(id);
   positions[id].erase(pos);
   pos.setNeedsRenderAndMemoryUpdate(true);
+  if (id == ZoneId::QUARTERS) {
+    getOrInitSectors(pos.getLevel()).remove(pos.getCoord());
+    quartersPositionCache.clear();
+  }
 }
 
 const PositionSet& Zones::getPositions(ZoneId id) const {
@@ -53,12 +62,8 @@ static HighlightType getHighlight(ZoneId id) {
       return HighlightType::STORAGE_EQUIPMENT;
     case ZoneId::STORAGE_RESOURCES:
       return HighlightType::STORAGE_RESOURCES;
-    case ZoneId::QUARTERS1:
-      return HighlightType::QUARTERS1;
-    case ZoneId::QUARTERS2:
-      return HighlightType::QUARTERS2;
-    case ZoneId::QUARTERS3:
-      return HighlightType::QUARTERS3;
+    case ZoneId::QUARTERS:
+      return HighlightType::QUARTERS;
     case ZoneId::LEISURE:
       return HighlightType::LEISURE;
     case ZoneId::GUARD1:
@@ -85,9 +90,7 @@ bool Zones::canSet(Position pos, ZoneId id, const Collective* col) const {
     case ZoneId::GUARD2:
     case ZoneId::GUARD3:
       return pos.canEnterEmpty(MovementTrait::WALK);
-    case ZoneId::QUARTERS1:
-    case ZoneId::QUARTERS2:
-    case ZoneId::QUARTERS3:
+    case ZoneId::QUARTERS:
     case ZoneId::LEISURE:
       return col->getTerritory().contains(pos);
     default:
@@ -104,12 +107,8 @@ void Zones::tick() {
 
 ViewId getViewId(ZoneId id) {
   switch (id) {
-    case ZoneId::QUARTERS1:
-      return Quarters::getAllQuarters()[0].viewId;
-    case ZoneId::QUARTERS2:
-      return Quarters::getAllQuarters()[1].viewId;
-    case ZoneId::QUARTERS3:
-      return Quarters::getAllQuarters()[2].viewId;
+    case ZoneId::QUARTERS:
+      return ViewId("quarters", Color(255, 20, 147));
     case ZoneId::LEISURE:
       return ViewId("quarters", Color(50, 50, 200));
     case ZoneId::FETCH_ITEMS:
@@ -126,4 +125,74 @@ ViewId getViewId(ZoneId id) {
     case ZoneId::GUARD3:
       return ViewId("guard_zone", Color::SKY_BLUE);
   }
+}
+
+const PositionSet& Zones::getQuartersPositions(Level* level, Sectors::SectorId id) const {
+  if (!quartersPositionCache.count(make_pair(level, id))) {
+    PositionSet pos;
+    if (auto sectors = getReferenceMaybe(quartersSectors, level))
+      for (auto v : sectors->getWholeSector(id))
+        pos.insert(Position(v, level));
+    quartersPositionCache[make_pair(level, id)] = std::move(pos);
+  }
+  return quartersPositionCache.at(make_pair(level, id));
+}
+
+void Zones::assignQuarters(UniqueEntity<Creature>::Id id, Position pos) {
+  auto level = pos.getLevel();
+  if (!quartersSectors.count(level))
+    quartersSectors.emplace(level, Sectors(level->getBounds()));
+  auto& sectors = quartersSectors.at(level);
+  auto sectorId = *sectors.getSector(pos.getCoord());
+  quarters.erase(id);
+  quarters.erase(make_pair(level, sectorId));
+  quarters.insert(id, make_pair(level, sectorId));
+  quartersPositionCache.clear();
+}
+
+Sectors& Zones::getOrInitSectors(Level* level) {
+  if (!quartersSectors.count(level))
+    quartersSectors[level] = Sectors(level->getBounds());
+  return quartersSectors.at(level);
+}
+
+optional<Zones::QuartersInfo> Zones::getQuartersInfo(Position pos) const {
+  if (!pos.isValid())
+    return none;
+  auto level = pos.getLevel();
+  if (auto sectors = getReferenceMaybe(quartersSectors, level)) {
+    if (auto sectorId = sectors->getSector(pos.getCoord())) {
+      optional<UniqueEntity<Creature>::Id> id;
+      if (quarters.contains(make_pair(level, *sectorId)))
+        id = quarters.get(make_pair(level, *sectorId));
+      return QuartersInfo {
+        id, getQuartersPositions(level, *sectorId)
+      };
+    }
+  }
+  return none;
+}
+
+const PositionSet& Zones::getQuarters(UniqueEntity<Creature>::Id id) const {
+  static const PositionSet empty = PositionSet();
+  if (!quarters.contains(id))
+    return empty;
+  auto res = quarters.get(id);
+  return getQuartersPositions(res.first, res.second);
+}
+
+optional<double> Zones::getQuartersLuxury(UniqueEntity<Creature>::Id id) const {
+  auto& quarters = getQuarters(id);
+  if (quarters.empty())
+    return none;
+  double ret = 0;
+  for (auto& pos : quarters)
+    ret += pos.getTotalLuxury();
+  return ret;
+}
+
+optional<UniqueEntity<Creature>::Id> Zones::getAssignedToQuarters(Position pos) const {
+  if (auto info = getQuartersInfo(pos))
+    return info->id;
+  return none;
 }

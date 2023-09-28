@@ -1,10 +1,12 @@
 #pragma once
 
 #include "creature_list.h"
+#include "resource_id.h"
 
 EMPTY_STRUCT(KillLeader);
-EMPTY_STRUCT(StealGold);
 EMPTY_STRUCT(HalloweenKids);
+
+using StealResource = CollectiveResourceId;
 
 struct KillMembers {
   int SERIAL(count);
@@ -16,7 +18,7 @@ using CampAndSpawn = CreatureList;
 
 #define VARIANT_TYPES_LIST\
   X(KillLeader, 0)\
-  X(StealGold, 1)\
+  X(StealResource, 1)\
   X(HalloweenKids, 2)\
   X(KillMembers, 3)\
   X(CampAndSpawn, 4)

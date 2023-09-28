@@ -38,11 +38,11 @@ class EntitySet {
   void erase(typename UniqueEntity<T>::Id);
   bool contains(typename UniqueEntity<T>::Id) const;
 
-  template <class Archive> 
+  template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   ItemPredicate containsPredicate() const;
-  using SetType = unordered_set<typename UniqueEntity<T>::Id, CustomHash<typename UniqueEntity<T>::Id>>;
+  using SetType = HashSet<typename UniqueEntity<T>::Id>;
   using Iter = typename SetType::const_iterator;
 
   Iter begin() const;

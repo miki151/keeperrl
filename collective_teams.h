@@ -39,8 +39,8 @@ class CollectiveTeams {
   vector<TeamId> getAllActive() const;
   void cancel(TeamId);
   bool exists(TeamId) const;
-  bool hasTeamOrder(TeamId, const Creature*, TeamOrder) const;
-  void setTeamOrder(TeamId, const Creature*, TeamOrder, bool);
+  bool hasTeamOrder(TeamId, TeamOrder) const;
+  void setTeamOrder(TeamId, TeamOrder, bool);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

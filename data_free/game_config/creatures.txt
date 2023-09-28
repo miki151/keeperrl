@@ -9,7 +9,7 @@
     # ViewId upgrades of Keepers are applied every 5 tech level increases
     viewIdUpgrades = { { "keeper2" } { "keeper3" } { "keeper4" } }
     name = {
-      # The name gets changed appropriately to Keeper and Adventurer
+      # The name gets changed appropriately to 'Keeper'
       name = "wizard"
       # Definitions in name_generator.h
       firstNameGen = "FIRST_MALE"
@@ -32,10 +32,10 @@
     permanentEffects = {
       RIDER 1
     }
-    # experience_type.h
+    # attr_type.h
     maxLevelIncrease = {
-      MELEE 7
-      SPELL 12
+      DAMAGE 7
+      SPELL_DAMAGE 12
     }
     aiType = RANGED
     spellSchools = { "mage" }
@@ -66,7 +66,7 @@
     }
     spellSchools = { "zombie mage" }
     maxLevelIncrease = {
-      SPELL 12
+      SPELL_DAMAGE 12
     }
     attr = append {
       MORGUE 50
@@ -108,8 +108,8 @@
       RIDER 1
     }
     maxLevelIncrease = {
-      MELEE 12
-      SPELL 3
+      DAMAGE 12
+      SPELL_DAMAGE 3
     }
     spellSchools = { "fighter" }
     spells = { "healing" }
@@ -153,8 +153,8 @@
       RIDER 1
     }
     maxLevelIncrease = {
-      MELEE 12
-      SPELL 1
+      DAMAGE 12
+      SPELL_DAMAGE 1
     }
     hatedByEffect = HATE_HUMANS
     spellSchools = { "fighter" }
@@ -181,13 +181,13 @@
     viewId = { "player" }
     attr = {
       DAMAGE 15
-      DEFENSE 20 
+      DEFENSE 20
     }
     body = {
       type = Humanoid LARGE
     }
     name = {
-      name = "squire"
+      name = "adventurer"
       firstNameGen = "FIRST_MALE"
       fullTitle = true
      }
@@ -196,28 +196,30 @@
       RIDER 1
     }
     maxLevelIncrease = {
-      MELEE 16
-      SPELL 16
-      ARCHERY 16
+      DAMAGE 16
+      SPELL_DAMAGE 16
+      RANGED_DAMAGE 16
     }
     hatedByEffect = HATE_HUMANS
     spellSchools = { "fighter" "mage" }
     inventory = {
       { "FirstAidKit" 2 4 }
-      { "Knife"}
       { "Sword"}
       { "LeatherGloves"}
       { "LeatherArmor"}
       { "LeatherHelm"}
       { "GoldPiece" 16 26 }
     }
+    promotionGroup = "adventurer"
+    promotionCost = 1
+    maxPromotions = 1000
   }
 "ADVENTURER_F" inherit "ADVENTURER"
   {
     viewId = { "player_f" }
     gender = FEMALE
     name = {
-      name = "squire"
+      name = "adventurer"
       firstNameGen = "FIRST_FEMALE"
       fullTitle = true
      }
@@ -235,7 +237,7 @@
     }
     aiType = RANGED
     maxLevelIncrease = {
-      SPELL 7
+      SPELL_DAMAGE 7
     }
     inventory = append {
       { "IronStaff" }
@@ -296,7 +298,8 @@
     chatReactionFriendly = "curses all law enforcement"
     chatReactionHostile = "\"Die!\""
     maxLevelIncrease = {
-      MELEE 2
+      DAMAGE 3
+      RANGED_DAMAGE 3
     }
     name = {
       name = "bandit"
@@ -326,7 +329,7 @@
     chatReactionFriendly = "talks about sewers"
     chatReactionHostile = "talks about sewers"
     maxLevelIncrease = {
-      MELEE 2
+      DAMAGE 2
     }
     name = {
       name = "rat soldier"
@@ -352,7 +355,7 @@
     chatReactionFriendly = "talks about sewers"
     chatReactionHostile = "talks about sewers"
     maxLevelIncrease = {
-      MELEE 1
+      DAMAGE 1
     }
     name = {
       name = "rat woman"
@@ -371,7 +374,7 @@
     chatReactionFriendly = "talks about sewers"
     chatReactionHostile = "talks about sewers"
     maxLevelIncrease = {
-      MELEE 3
+      DAMAGE 3
     }
     name = {
       name = "rat king"
@@ -666,7 +669,7 @@
     chatReactionFriendly = "curses all humans"
     chatReactionHostile = "\"Die!\""
     maxLevelIncrease = {
-      SPELL 4
+      SPELL_DAMAGE 4
     }
     hatedByEffect = HATE_HUMANS
     inventory = {
@@ -723,7 +726,7 @@
     viewId = { "cyclops" }
     attr = {
       DAMAGE 32
-      DEFENSE 31 
+      DEFENSE 31
     }
     body = {
       type = Humanoid LARGE
@@ -743,7 +746,7 @@
       firstNameGen = "CYCLOPS"
     }
     maxLevelIncrease = {
-      MELEE 5
+      DAMAGE 5
     }
     inventory = {
       { "WarHammer"}
@@ -783,7 +786,7 @@
       firstNameGen = "CYCLOPS"
     }
     maxLevelIncrease = {
-      MELEE 16
+      DAMAGE 16
     }
   }
 "YETI"
@@ -806,7 +809,7 @@
       name = "yeti"
     }
     maxLevelIncrease = {
-      MELEE 10
+      DAMAGE 10
     }
     inventory = {
       { "HeavyClub"}
@@ -840,8 +843,8 @@
       groupName = "pack"
     }
     maxLevelIncrease = {
-      MELEE 4
-      SPELL 4
+      DAMAGE 4
+      SPELL_DAMAGE 4
     }
   }
 "DEMON_LORD"
@@ -872,7 +875,7 @@
       groupName = "pack"
     }
     maxLevelIncrease = {
-      SPELL 7
+      SPELL_DAMAGE 7
     }
     inventory = {
       { type = Glyph ARMOR LastingEffect MAGIC_RESISTANCE chance = 0.3 }
@@ -898,7 +901,7 @@
       droppedPartUpgrade = SpecialAttr DAMAGE 7 HatedBy HATE_HUMANS
     }
     maxLevelIncrease = {
-      MELEE 5
+      DAMAGE 5
     }
     name = {
       name = "minotaur"
@@ -909,6 +912,7 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 5 chance = 0.3 }
       { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 5 chance = 0.3 }
     }
+    killedAchievement = "killed_minotaur"
   }
 "SOFT_MONSTER"
   {
@@ -968,7 +972,7 @@
     viewId = { "shelob" }
     attr = {
       DAMAGE 40
-      DEFENSE 38 
+      DEFENSE 38
     }
     body = {
       type = NonHumanoid LARGE
@@ -1039,6 +1043,7 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
+    steedAchievement = "rode_dragon"
   }
 "KIRIN"
   {
@@ -1070,6 +1075,7 @@
       name = "ki-rin"
     }
     spells = { "group healing" "magic missile" "mass defense bonus" "mass damage bonus" }
+    killedAchievement = "killed_kirin"
   }
 "RED_NAGA"
   {
@@ -1146,6 +1152,7 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
+    steedAchievement = "rode_dragon"
   }
 "BLACK_NAGA"
   {
@@ -1222,6 +1229,8 @@
       { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
       { type = Glyph WEAPON SpecialAttr DAMAGE 5 Name "at night" Night chance = 0.3 }
     }
+    killedAchievement = "killed_black_dragon"
+    steedAchievement = "rode_dragon"
   }
 "WHITE_NAGA"
   {
@@ -1297,6 +1306,7 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
+    steedAchievement = "rode_dragon"
 }
 "YELLOW_NAGA"
   {
@@ -1371,6 +1381,7 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
+    steedAchievement = "rode_dragon"
   }
 "BONE_DRAGON"
   {
@@ -1402,6 +1413,7 @@
     }
     spells = { "black smoke breath" "animate corpses"}
     hatedByEffect = HATE_DRAGONS
+    steedAchievement = "rode_dragon"
   }
 "BALROG"
   {
@@ -1434,10 +1446,11 @@
       { "InferniteSword" }
       { "BalrogsWhip"}
     }
-    name = { 
+    name = {
       name = "fire demon"
     }
     spells = { "heal spirit" "deception" "haste" "fire trap" }
+    killedAchievement = "killed_balrog"
   }
 "KNIGHT_PLAYER"
   {
@@ -1453,7 +1466,7 @@
       type = Humanoid LARGE
     }
     maxLevelIncrease = {
-      MELEE 7
+      DAMAGE 7
     }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
@@ -1508,8 +1521,8 @@
     chatReactionHostile = "\"Die!\""
     spellSchools = { "archer" }
     maxLevelIncrease = {
-      MELEE 4
-      ARCHERY 7
+      DAMAGE 4
+      RANGED_DAMAGE 7
     }
     aiType = RANGED
     name = {
@@ -1532,7 +1545,7 @@
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     maxLevelIncrease = {
-      SPELL 7
+      SPELL_DAMAGE 7
     }
     aiType = RANGED
     name = {
@@ -1563,7 +1576,7 @@
     viewId = { "artisan" }
     attr = {
       DAMAGE 10
-      DEFENSE 10 
+      DEFENSE 10
       FURNACE 25
       WORKSHOP 30
       FORGE 30
@@ -1575,20 +1588,11 @@
     chatReactionFriendly = "talks about crafting"
     chatReactionHostile = "\"Die!\""
     aiType = RANGED
+    maxLevelIncrease = {
+      FORGE 10
+    }
     name = {
       name = "artisan"
-      firstNameGen = "FIRST_MALE"
-    }
-  }
-"ARTISAN_LEGEN" inherit "ARTISAN"
-  {
-    attr = append {
-      WORKSHOP 50
-      FORGE 50
-      JEWELER 50
-    }
-    name = {
-      name = "master artisan"
       firstNameGen = "FIRST_MALE"
     }
   }
@@ -1674,7 +1678,7 @@
       type = Humanoid LARGE
     }
     maxLevelIncrease = {
-      MELEE 4
+      DAMAGE 4
     }
     permanentEffects = {
       MELEE_RESISTANCE 1
@@ -1751,7 +1755,7 @@
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     maxLevelIncrease = {
-      MELEE 3
+      DAMAGE 3
     }
     name = {
       name = "Duke"
@@ -1788,7 +1792,7 @@
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     maxLevelIncrease = {
-      ARCHERY 4
+      RANGED_DAMAGE 4
     }
     name = {
       name = "archer"
@@ -1823,7 +1827,7 @@
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     maxLevelIncrease = {
-      SPELL 2
+      SPELL_DAMAGE 2
     }
     aiType = RANGED
     name = {
@@ -1866,7 +1870,7 @@
       type = Humanoid LARGE
     }
     maxLevelIncrease = {
-      MELEE 5
+      DAMAGE 5
     }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
@@ -1902,7 +1906,7 @@
     companions = {7 false SPELL_DAMAGE 0.05 { "SPIRIT" }}
     spells = { "advanced healing" "defense bonus" "directed blast" "heal spirit" }
     maxLevelIncrease = {
-      SPELL 5
+      SPELL_DAMAGE 5
     }
     name = {
       name = "shaman"
@@ -1971,7 +1975,7 @@
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     maxLevelIncrease = {
-      SPELL 2
+      SPELL_DAMAGE 2
     }
     name = {
       name = "sorcerer"
@@ -2072,7 +2076,7 @@
     viewId = { "clay_golem" }
     attr = {
       DAMAGE 17
-      DEFENSE 19 
+      DEFENSE 19
     }
     body = {
       type = HumanoidLike LARGE
@@ -2091,7 +2095,7 @@
     viewId = { "stone_golem" }
     attr = {
       DAMAGE 19
-      DEFENSE 23 
+      DEFENSE 23
     }
     body = {
       type = HumanoidLike LARGE
@@ -2440,7 +2444,7 @@
       SLOWED 1
     }
     maxLevelIncrease = {
-      MELEE 3
+      DAMAGE 3
     }
     name = {
       name = "zombie"
@@ -2488,7 +2492,7 @@
       RIDER 1
     }
     maxLevelIncrease = {
-      MELEE 7
+      DAMAGE 7
     }
 #    spellSchools = { "illusion" "vampire" }
     name = {
@@ -2531,7 +2535,7 @@
       RANGED_RESISTANCE 1
     }
     maxLevelIncrease = {
-      MELEE 3
+      DAMAGE 3
     }
     name = {
       name = "vampire brute"
@@ -2551,7 +2555,7 @@
       firstNameGen = "VAMPIRE"
     }
     maxLevelIncrease = {
-      SPELL 7
+      SPELL_DAMAGE 7
     }
     permanentEffects = {
       NIGHT_VISION 1
@@ -2589,7 +2593,7 @@
       SLOW_TRAINING 1
     }
     maxLevelIncrease = {
-      MELEE 55
+      DAMAGE 55
     }
     name = {
       name = "mummy"
@@ -2609,8 +2613,8 @@
       type = Humanoid LARGE
     }
     maxLevelIncrease = {
-      MELEE 4
-      SPELL 12
+      DAMAGE 4
+      SPELL_DAMAGE 12
     }
     aiType = RANGED
     chatReactionFriendly = "curses all elves"
@@ -2646,8 +2650,8 @@
     gender = FEMALE
     spellSchools = { "archer" }
     maxLevelIncrease = {
-      MELEE 4
-      ARCHERY 7
+      DAMAGE 4
+      RANGED_DAMAGE 7
     }
     name = {
       name = "harpy"
@@ -2688,7 +2692,7 @@
     attr = {
       DAMAGE 12
       DEFENSE 13
-      DIGGING 10 
+      DIGGING 10
       FURNACE 10
       WORKSHOP 25
       FORGE 25
@@ -2713,7 +2717,7 @@
     viewId = { "gnome_boss" }
     attr = {
       DAMAGE 15
-      DEFENSE 16 
+      DEFENSE 16
       JEWELER 50
     }
     body = {
@@ -2734,7 +2738,7 @@
     viewId = { "goblin_artificer" }
     attr = {
       DAMAGE 12
-      DEFENSE 13 
+      DEFENSE 13
       FURNACE 25
       LABORATORY 15
       WORKSHOP 30
@@ -2748,6 +2752,9 @@
     chatReactionHostile = "\"Die!\""
     permanentEffects = {
       DISARM_TRAPS_SKILL 1
+    }
+    maxLevelIncrease = {
+      FORGE 10
     }
     aiType = RANGED
     name = {
@@ -2765,7 +2772,7 @@
     viewId = { "imp" }
     attr = {
       DAMAGE 5
-      DEFENSE 15 
+      DEFENSE 15
       DIGGING 15
     }
     body = {
@@ -2810,7 +2817,7 @@
     viewId = { "dwarf" }
     attr = {
       DAMAGE 21
-      DEFENSE 25 
+      DEFENSE 25
       DIGGING 30
       FORGE 20
       FURNACE 15
@@ -2828,7 +2835,7 @@
       firstNameGen = "DWARF"
     }
     maxLevelIncrease = {
-      MELEE 2
+      DAMAGE 2
     }
     permanentEffects = {
       MAGIC_VULNERABILITY 1
@@ -2892,9 +2899,10 @@
     viewId = { "dwarf_female" }
     attr = {
       DAMAGE 21
-      DEFENSE 25 
+      DEFENSE 25
       DIGGING 25
       WORKSHOP 25
+      FORGE 25
     }
     specialAttr = {
       DEFENSE { -7 Name "when outdoors" Not Indoors }
@@ -2924,9 +2932,11 @@
       DAMAGE 35
       DEFENSE 35
       DIGGING 35
+      FORGE 30
     }
     maxLevelIncrease = {
-      MELEE 10
+      DAMAGE 10
+      FORGE 10
     }
     name = {
       name = "dwarf baron"
@@ -2955,8 +2965,11 @@
     }
     aiType = RANGED
     attr = append {
-      FORGE 50
-      FURNACE 40    
+      FORGE 30
+      FURNACE 40
+    }
+    maxLevelIncrease = {
+      FORGE 10
     }
     inventory = {}
   }
@@ -2965,7 +2978,7 @@
     viewId = { "lizardman" }
     attr = {
       DAMAGE 20
-      DEFENSE 14 
+      DEFENSE 14
     }
     body = {
       type = Humanoid MEDIUM
@@ -2983,7 +2996,7 @@
       POISON_RESISTANT 1
     }
     maxLevelIncrease = {
-      MELEE 5
+      DAMAGE 5
     }
     chatReactionFriendly = "curses all humans"
     chatReactionHostile = "\"Die!\""
@@ -3007,7 +3020,7 @@
       DEFENSE 16 
     }
     maxLevelIncrease = {
-      MELEE 10
+      DAMAGE 10
     }
     name = {
       name = "lizardman chief"
@@ -3037,7 +3050,7 @@
     spells = { "healing" }
     aiType = RANGED
     maxLevelIncrease = {
-      SPELL 1
+      SPELL_DAMAGE 1
     }
     permanentEffects = {
       ELF_VISION 1
@@ -3069,7 +3082,7 @@
     }
     spells = { "healing" }
     maxLevelIncrease = {
-      ARCHERY 3
+      RANGED_DAMAGE 3
     }
     name = {
       name = "elven archer"
@@ -3128,8 +3141,8 @@
     }
     spells = { "advanced healing" "haste" "defense bonus" "damage bonus" "directed blast" }
     maxLevelIncrease = {
-      SPELL 4
-      MELEE 4
+      SPELL_DAMAGE 4
+      DAMAGE 4
     }
     name = {
       name = "elf lord"
@@ -3199,8 +3212,8 @@
     }
     spells = { "healing" }
     maxLevelIncrease = {
-      MELEE 5
-      SPELL 5
+      DAMAGE 5
+      SPELL_DAMAGE 5
     }
     name = {
       name = "dark elf"
@@ -3242,7 +3255,7 @@
     attr = {
       DAMAGE 22
       DEFENSE 14
-      SPELL_DAMAGE 36 
+      SPELL_DAMAGE 36
     }
     body = {
       type = Humanoid MEDIUM
@@ -3255,6 +3268,9 @@
       NIGHT_VISION 1
       DISTILLATION_SKILL 1
     }
+    maxLevelIncrease = {
+      SPELL_DAMAGE 10
+    }
     spells = { "advanced healing" "haste" "defense bonus" "damage bonus" "directed blast" }
     name = {
       name = "dark elf lord"
@@ -3263,7 +3279,6 @@
     inventory = {
       { "ElvenStaff" }
       { "LeatherArmor"}
-      { "ElvenBow"}
       { "GoldPiece" 80 120 }
       { Scroll Escape{} }
       { type = Glyph WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 10 LastingEffect INSANITY} chance = 0.3 }
@@ -3296,7 +3311,7 @@
     chatReactionHostile = "\"Die!\""
     spells = { "healing" }
     maxLevelIncrease = {
-      ARCHERY 4
+      RANGED_DAMAGE 4
     }
     name = {
       name = "dryad"
@@ -3340,7 +3355,7 @@
     }
     afterKilledSomeone = {
       ApplyToSteed CreatureMessage { "are more experienced" "is more experienced"}
-      ApplyToSteed Polymorph "WARHORSE" none
+      ApplyToSteed Filter Kills 3 Polymorph "WARHORSE" none
     }
   }
 "WARHORSE" inherit "HORSE"
@@ -3411,7 +3426,7 @@
     viewId = { "pig" }
     attr = {
       DAMAGE 5
-      DEFENSE 2 
+      DEFENSE 2
     }
     aiType = RANGED
     body = {
@@ -3427,6 +3442,7 @@
     name = {
       name = "pig"
     }
+    killedByAchievement = "killed_by_pig"
   }
 "GOAT"
   {
@@ -3888,7 +3904,7 @@
       }
     }
     maxLevelIncrease = {
-      MELEE 12
+      DAMAGE 12
     }
     permanentEffects = {
       NIGHT_VISION 1
@@ -3924,7 +3940,7 @@
       DISTILLATION_SKILL 1
     }
     maxLevelIncrease = {
-      MELEE 12
+      DAMAGE 12
     }
     name = {
       name = "werewolf"
@@ -3972,7 +3988,7 @@
       droppedPartUpgrade = { IncreaseAttr DEFENSE 3 Permanent FIRE_RESISTANT }
     }
     maxLevelIncrease = {
-      SPELL 9
+      SPELL_DAMAGE 9
     }
     aiType = RANGED
     spells = { "fire trap" }
@@ -4288,6 +4304,7 @@
     deathDescription = "vanquished. May he never rise again"
     gender = IT
     deathEffect = Analytics "creatureKilled" "adoxie"
+    killedByAchievement = "killed_by_adoxie"
   }
 "ADOXIE_ADVENTURER" inherit "ADOXIE_HEAD"
   {
@@ -4352,6 +4369,7 @@
     chatReactionFriendly = "\"nothing, why did you think a foot could talk?\""
     chatReactionHostile = "\"nothing, why did you think a foot could talk?\""
     deathDescription = "destroyed"
+    killedByAchievement = "killed_by_adoxie"
   }
 "ADOXIE_FOOT_RIGHT" inherit "ADOXIE_FOOT_LEFT"
   {
@@ -4365,12 +4383,13 @@
 "ADOXIE_FOOT_LEFT_TRAP" inherit "ADOXIE_FOOT_LEFT"
   {
     attr = {
-      DEFENSE 30 
+      DEFENSE 30
       SPELL_DAMAGE 30
     }
     permanentEffects = append {
       IMMOBILE 1
     }
+    killedByAchievement = none
   }
 "ADOXIE_FOOT_RIGHT_TRAP" inherit "ADOXIE_FOOT_RIGHT"
   {
@@ -4381,6 +4400,7 @@
     permanentEffects = append {
       IMMOBILE 1
     }
+    killedByAchievement = none
   }
 "ADOXIE_LEFT_HAND" inherit "ADOXIE_FOOT_LEFT"
   {
@@ -4396,6 +4416,8 @@
       pluralName = "Hands"
       fullTitle = true
     }
+    chatReactionFriendly = "\"nothing, why did you think a foot could talk?\""
+    chatReactionHostile = "\"nothing, why did you think a foot could talk?\""
   }
 "ADOXIE_HAND_RIGHT" inherit "ADOXIE_LEFT_HAND"
   {
@@ -4405,6 +4427,8 @@
       pluralName = "Hands"
       fullTitle = true
     }
+    chatReactionFriendly = "\"nothing, why did you think a foot could talk?\""
+    chatReactionHostile = "\"nothing, why did you think a foot could talk?\""
   }
 "ADOXIE_PRIEST"
   {
@@ -4427,8 +4451,8 @@
     }
     aiType = RANGED
     maxLevelIncrease = {
-      MELEE 2
-      SPELL 4
+      DAMAGE 2
+      SPELL_DAMAGE 4
     }
     inventory = {
       { "AdoxiumStaff"}
@@ -4438,12 +4462,12 @@
     spells = { "summon flies" "expert magic missile" "advanced haste" "slow" "magic cancellation" "pull"
         "advanced defense bonus" "advanced damage bonus" "advanced fire elemental" }
   }
-"ABOMINATION" 
+"ABOMINATION"
   {
     viewId = { "abomination" }
     attr = {
       DAMAGE 60
-      DEFENSE 40 
+      DEFENSE 40
     }
     body = {
       type = FourLegged HUGE
@@ -4459,7 +4483,7 @@
   {
     attr = {
       DAMAGE 15
-      DEFENSE 15 
+      DEFENSE 15
     }
   }
 Def UnlockMessage(Text, ViewId)
@@ -4471,7 +4495,7 @@ End
     viewId = { "goblin_keeper4" }
     attr = {
       DAMAGE 12
-      DEFENSE 13 
+      DEFENSE 13
     }
     body = {
       type = Humanoid MEDIUM
@@ -4500,7 +4524,7 @@ End
     viewIdUpgrades = { { "goblin_keeper2" } { "goblin_keeper3" } { "goblin_keeper4" } }
     attr = {
       DAMAGE 12
-      DEFENSE 13 
+      DEFENSE 13
     }
     body = {
       type = Humanoid MEDIUM
@@ -4585,7 +4609,7 @@ End
       RIDER 1
     }
     maxLevelIncrease = {
-      MELEE 7
+      DAMAGE 7
     }
     hatedByEffect = HATE_GREENSKINS
     inventory = {
@@ -4623,7 +4647,7 @@ End
       firstNameGen = "ORC"
     }
     maxLevelIncrease = {
-      SPELL 7
+      SPELL_DAMAGE 7
     }
     spells = { "healing" }
     spellSchools = { "healer" }
@@ -4649,7 +4673,7 @@ End
       firstNameGen = "ORC"
     }
     maxLevelIncrease = {
-      SPELL 7
+      SPELL_DAMAGE 7
     }
     spellSchools = { "mage" }
     hatedByEffect = HATE_GREENSKINS
@@ -4717,7 +4741,7 @@ End
     }
     spellSchools = { "archer" }
     maxLevelIncrease = {
-      ARCHERY 7
+      RANGED_DAMAGE 7
     }
     hatedByEffect = HATE_GREENSKINS
     inventory = {
@@ -4782,7 +4806,7 @@ End
       firstNameGen = "ORC"
     }
     maxLevelIncrease = {
-      SPELL 10
+      SPELL_DAMAGE 10
     }
     spellSchools = { "chickenmancy" }
     hatedByEffect = HATE_GREENSKINS
@@ -4805,7 +4829,7 @@ End
       firstNameGen = "ORC"
     }
     maxLevelIncrease = {
-      MELEE 12
+      DAMAGE 12
     }
     inventory = {
       { "HeavyClub"}
@@ -4844,7 +4868,7 @@ End
     }
     aiType = RANGED
     maxLevelIncrease = {
-      SPELL 7
+      SPELL_DAMAGE 7
     }
     spellSchools = { "zombie mage" }
     name = {
@@ -4864,7 +4888,7 @@ End
       material = BONE
     }
     maxLevelIncrease = {
-      MELEE 7
+      DAMAGE 7
     }
     name = {
       name = "skeleton warrior"
@@ -4887,7 +4911,7 @@ End
     }
     aiType = RANGED
     maxLevelIncrease = {
-      ARCHERY 7
+      RANGED_DAMAGE 7
     }
     name = {
       name = "skeleton archer"
@@ -4952,7 +4976,7 @@ End
       name = "juggernaut"
     }
     maxLevelIncrease = {
-      MELEE 12
+      DAMAGE 12
     }
   }
 "VAMPIRE_LORD_NECRO" inherit "VAMPIRE_LORD"
@@ -4981,7 +5005,7 @@ End
     chatReactionFriendly = "curses all elves"
     chatReactionHostile = "\"Die!\""
     maxLevelIncrease = {
-      MELEE 7
+      DAMAGE 7
     }
     name = {
       name = "orc"
@@ -5009,8 +5033,8 @@ End
     chatReactionFriendly = "curses all elves"
     chatReactionHostile = "\"Die!\""
     maxLevelIncrease = {
-      MELEE 4
-      SPELL 7
+      DAMAGE 4
+      SPELL_DAMAGE 7
     }
     spellSchools = { "mage" }
     name = {
@@ -5032,8 +5056,8 @@ End
       SPELL_DAMAGE 25 
     }
     maxLevelIncrease = {
-      MELEE 4
-      SPELL 12
+      DAMAGE 4
+      SPELL_DAMAGE 12
     }
     spellSchools = {}
     spells = { "heal spirit" }
@@ -5051,7 +5075,7 @@ End
     viewId = { "orc_shaman" ColorId GREEN }
     spellSchools = { "healer" }
     maxLevelIncrease = {
-      SPELL 7
+      SPELL_DAMAGE 7
     }
     spells = { "healing" }
     name = {
@@ -5064,7 +5088,7 @@ End
     viewId = { "ogre" }
     attr = {
       DAMAGE 18
-      DEFENSE 18 
+      DEFENSE 18
       FURNACE 25
       WORKSHOP 25
       FORGE 25
@@ -5081,7 +5105,7 @@ End
       MAGIC_VULNERABILITY 1
     }
     maxLevelIncrease = {
-      MELEE 12
+      DAMAGE 12
     }
     hatedByEffect = HATE_GREENSKINS
     inventory = {

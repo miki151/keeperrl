@@ -12,7 +12,6 @@
 #include "territory.h"
 #include "item.h"
 #include "minion_activity.h"
-#include "experience_type.h"
 #include "game.h"
 #include "content_factory.h"
 #include "item_types.h"
@@ -31,7 +30,6 @@ void CollectiveWarnings::considerWarnings(Collective* col) {
   PROFILE;
   setWarning(Warning::DUNGEON_LEVEL, col->getDungeonLevel().level == 0 && col->getGame()->getGlobalTime() > 3000_global);
   setWarning(Warning::DIGGING, col->getTerritory().isEmpty());
-  considerMoraleWarning(col);
   considerWeaponWarning(col);
   considerTorchesWarning(col);
 }
@@ -48,12 +46,6 @@ void CollectiveWarnings::considerWeaponWarning(Collective* col) {
     if (col->usesEquipment(c) && col->getMinionEquipment().needsItem(c, genWeapon.get(), true))
       ++numNeededWeapons;
   setWarning(Warning::NO_WEAPONS, numNeededWeapons > numWeapons);
-}
-
-void CollectiveWarnings::considerMoraleWarning(Collective* col) {
-  vector<Creature*> minions = col->getCreatures(MinionTrait::FIGHTER);
-  setWarning(Warning::LOW_MORALE,
-      minions.filter([] (const Creature* c) { return c->getMorale().value_or(0) < -0.2; }).size() > minions.size() / 2);
 }
 
 void CollectiveWarnings::considerTorchesWarning(Collective* col) {
@@ -80,7 +72,6 @@ const char* CollectiveWarnings::getText(Warning w) {
     case Warning::NO_HATCHERY: return "You need to build a pigsty.";
     case Warning::WORKSHOP: return "Build a workshop to produce equipment and traps.";
     case Warning::NO_WEAPONS: return "You need weapons for your minions.";
-    case Warning::LOW_MORALE: return "Kill some enemies or summon a succubus to increase morale of your minions.";
     case Warning::GRAVES: return "You need a graveyard to collect corpses";
     case Warning::CHESTS: return "You need to build treasure chests.";
     case Warning::NO_PRISON: return "You need to build a prison.";

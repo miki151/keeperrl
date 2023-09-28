@@ -78,14 +78,14 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
     case MinionActivity::IDLE:
       return true;
     case MinionActivity::TRAIN:
-      return !c->getAttributes().isTrainingMaxedOut(ExperienceType::MELEE) &&
+      return !c->getAttributes().isTrainingMaxedOut(AttrType("DAMAGE")) &&
           !col->hasTrait(c, MinionTrait::PRISONER);
     case MinionActivity::STUDY:
       return !col->hasTrait(c, MinionTrait::PRISONER) &&
-          !c->getAttributes().isTrainingMaxedOut(ExperienceType::SPELL);
+          !c->getAttributes().isTrainingMaxedOut(AttrType("SPELL_DAMAGE"));
     case MinionActivity::ARCHERY:
       return !col->hasTrait(c, MinionTrait::PRISONER) &&
-          !c->getAttributes().isTrainingMaxedOut(ExperienceType::ARCHERY) &&
+          !c->getAttributes().isTrainingMaxedOut(AttrType("RANGED_DAMAGE")) &&
           !c->getEquipment().getItems(ItemIndex::RANGED_WEAPON).empty();
     case MinionActivity::BE_WHIPPED:
       return !c->getBody().isImmuneTo(LastingEffect::ENTANGLED, factory) &&

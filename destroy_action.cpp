@@ -17,6 +17,7 @@ const char* DestroyAction::getVerbSecondPerson() const {
     case Type::CUT: return "cut";
     case Type::HOSTILE_DIG:
     case Type::DIG: return "dig into";
+    case Type::FILL: return "fill";
   }
 }
 
@@ -27,6 +28,7 @@ const char* DestroyAction::getVerbThirdPerson() const {
     case Type::CUT: return "cuts";
     case Type::HOSTILE_DIG:
     case Type::DIG: return "digs into";
+    case Type::FILL: return "fills";
   }
 }
 
@@ -37,6 +39,7 @@ const char*DestroyAction::getIsDestroyed() const {
     case Type::CUT: return "falls";
     case Type::HOSTILE_DIG:
     case Type::DIG: return "is dug out";
+    case Type::FILL: return "is filled";
   }
 }
 
@@ -46,17 +49,19 @@ const char* DestroyAction::getSoundText() const {
     case Type::BOULDER:
     case Type::CUT: return "CRASH!";
     case Type::HOSTILE_DIG:
+    case Type::FILL:
     case Type::DIG: return "";
   }
 }
 
-Sound DestroyAction::getSound() const {
+optional<Sound> DestroyAction::getSound() const {
   switch (type) {
+    case Type::FILL: return none;
     case Type::BASH:
-    case Type::BOULDER: return SoundId::BANG_DOOR;
-    case Type::CUT: return SoundId::TREE_CUTTING;
+    case Type::BOULDER: return Sound(SoundId::BANG_DOOR);
+    case Type::CUT: return Sound(SoundId::TREE_CUTTING);
     case Type::HOSTILE_DIG:
-    case Type::DIG: return SoundId::DIGGING;
+    case Type::DIG: return Sound(SoundId::DIGGING);
    }
 }
 
@@ -74,10 +79,17 @@ bool DestroyAction::canDestroyFriendly() const {
   }
 }
 
+bool DestroyAction::destroyAnimation() const {
+  switch (type) {
+    case Type::FILL: return false;
+    default: return true;
+  }
+}
+
 bool DestroyAction::canNavigate(const Creature* c) const {
   switch (type) {
     case Type::HOSTILE_DIG:
-      return !isOneOf(c->getTribeId(), TribeId::getDarkKeeper(), TribeId::getAdventurer());
+      return !isOneOf(c->getTribeId(), TribeId::getDarkKeeper(), TribeId::getWhiteKeeper());
     case Type::BASH:
       return true;
     default:
@@ -104,6 +116,7 @@ double DestroyAction::getDamage(Creature* c) const {
     case Type::HOSTILE_DIG:
       return max(c->getAttr(AttrType("DIGGING")), 15) / 5.0;
     case Type::DIG:
+    case Type::FILL:
       return c->getAttr(AttrType("DIGGING")) / 5.0;
    }
 }

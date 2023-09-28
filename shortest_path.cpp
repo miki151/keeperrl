@@ -431,7 +431,7 @@ bool BfSearch::isReachable(Vec2 pos) const {
   return reachable.count(pos);
 }
 
-const set<Vec2>& BfSearch::getAllReachable() const {
+const BfSearch::ReachableSet& BfSearch::getAllReachable() const {
   return reachable;
 }
 

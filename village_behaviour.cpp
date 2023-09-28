@@ -11,6 +11,7 @@
 #include "construction_map.h"
 #include "villain_type.h"
 #include "attack_behaviour.h"
+#include "territory.h"
 
 SERIALIZE_DEF(VillageBehaviour, NAMED(minPopulation), NAMED(minTeamSize), OPTION(triggers), NAMED(attackBehaviour), OPTION(ransom), OPTION(ambushChance))
 
@@ -30,17 +31,24 @@ PTask getKillLeaderTask(Collective* enemy) {
     return Task::killFighters(enemy, 1000);
 }
 
+bool VillageBehaviour::isAttackBehaviourNonChasing() const {
+  return attackBehaviour->visit<bool>(
+      [&](StealResource r) { return true; },
+      [&](auto&) { return false; }
+  );
+}
+
 PTask VillageBehaviour::getAttackTask(VillageControl* self) const {
   Collective* enemy = self->getEnemyCollective();
-  return attackBehaviour->visit<PTask>(
+  auto task = attackBehaviour->visit<PTask>(
       [&](KillLeader) {
         return getKillLeaderTask(enemy);
       },
       [&](KillMembers t) {
         return Task::killFighters(enemy, t.count);
       },
-      [&](StealGold) {
-        if (auto ret = Task::stealFrom(enemy))
+      [&](StealResource r) {
+        if (auto ret = Task::stealFrom(enemy, r))
           return ret;
         else if (!enemy->getLeaders().empty())
           return Task::attackCreatures(enemy->getLeaders());
@@ -54,6 +62,11 @@ PTask VillageBehaviour::getAttackTask(VillageControl* self) const {
         FATAL << "Not handled";
         return PTask();
       }
+  );
+  return Task::chain(
+      std::move(task),
+      Task::transferTo(self->collective->getModel()),
+      Task::goTo(Random.choose(self->collective->getTerritory().getAll()))
   );
 }
 
@@ -116,7 +129,7 @@ static double goldFun(int gold, int minGold) {
 static double stolenItemsFun(int numStolen) {
   if (!numStolen)
     return 0;
-  else 
+  else
     return 1.0;
 }
 
@@ -127,7 +140,7 @@ static double getFinishOffProb(double maxPower, double currentPower, double self
   return 1 - 2 * (currentPower / maxPower) * (1 - minProb);
 }
 
-static double getNumConqueredProb(WConstGame game, int minCount) {
+static double getNumConqueredProb(const Game* game, int minCount) {
   int numConquered = 0;
   for (auto col : game->getCollectives())
     if ((col->getVillainType() == VillainType::LESSER || col->getVillainType() == VillainType::MAIN) &&
@@ -139,7 +152,24 @@ static double getNumConqueredProb(WConstGame game, int minCount) {
     return 0;
 }
 
+static bool triggersAboveMaxAggressorCutOff(const AttackTrigger& trigger) {
+  return trigger.visit<bool>(
+    [&](const auto& t) {
+      return false;
+    },
+    [&](const SelfVictims&) {
+      return true;
+    },
+    [&](const StolenItems&) {
+      return true;
+    }
+  );
+}
+
 double VillageBehaviour::getTriggerValue(const AttackTrigger& trigger, const VillageControl* self) const {
+  if (!self->collective->getGame()->passesMaxAggressorCutOff(self->collective->getModel()) &&
+      !triggersAboveMaxAggressorCutOff(trigger))
+    return 0;
   double powerMaxProb = 1.0 / 10000; // rather small chance that they attack just because you are strong
   double victimsMaxProb = 1.0 / 500;
   double populationMaxProb = 1.0 / 500;
@@ -176,8 +206,8 @@ double VillageBehaviour::getTriggerValue(const AttackTrigger& trigger, const Vil
           return populationMaxProb * populationFun(
               enemy->getPopulationSize(), t.value);
         },
-        [&](const Gold& t) {
-          return goldMaxProb * goldFun(enemy->numResource(CollectiveResourceId("GOLD")), t.value);
+        [&](const Resource& r) {
+          return goldMaxProb * goldFun(enemy->numResource(r.resource), r.value);
         },
         [&](const StolenItems&) {
           return stolenMaxProb * stolenItemsFun(self->stolenItemCount);

@@ -8,7 +8,7 @@
 #include "furniture_layer.h"
 #include "luxury_info.h"
 #include "furniture_type.h"
-#include "experience_type.h"
+#include "attr_type.h"
 #include "bed_type.h"
 #include "fx_info.h"
 #include "view_id.h"
@@ -19,6 +19,8 @@
 #include "furniture_tick.h"
 #include "storage_id.h"
 #include "lasting_or_buff.h"
+#include "creature_predicate.h"
+#include "achievement_id.h"
 
 class TribeId;
 class Creature;
@@ -125,9 +127,11 @@ class Furniture {
   void onCreatureWalkedInto(Position, Vec2 direction) const;
   bool onBloodNear(Position);
   void spreadBlood(Position);
-  int getMaxTraining(ExperienceType) const;
+  int getMaxTraining(AttrType) const;
+  const HashMap<AttrType, int>& getMaxTraining() const;
   bool hasRequiredSupport(Position) const;
-  bool isDiningFurniture() const;
+  optional<FurnitureType> getDiningFurnitureType() const;
+  const optional<CreaturePredicate>& getUsagePredicate() const;
   optional<ViewId> getSupportViewId(Position) const;
   optional<FurnitureType> getUpgrade() const;
   optional<FXVariantName> getUsageFX() const;
@@ -160,6 +164,8 @@ class Furniture {
   const vector<StorageId>& getStorageId() const;
   bool doesHideItems() const;
   const optional<ViewId>& getEmptyViewId() const;
+  const optional<AchievementId>& getMinedAchievement() const;
+  bool canRemoveInstantly() const;
 
   Furniture& setBlocking();
   Furniture& setBlockingEnemies();
@@ -216,7 +222,7 @@ class Furniture {
   BurnsDownMessage SERIAL(burnsDownMessage) = BurnsDownMessage::BURNS_DOWN;
   template<typename Archive>
   void serializeImpl(Archive&, const unsigned);
-  EnumMap<ExperienceType, int> SERIAL(maxTraining);
+  HashMap<AttrType, int> SERIAL(maxTraining);
   struct SupportInfo {
     vector<Dir> SERIAL(dirs);
     optional<ViewId> SERIAL(viewId);
@@ -254,7 +260,10 @@ class Furniture {
   vector<StorageId> SERIAL(storageIds);
   bool SERIAL(hidesItems) = false;
   optional<ViewId> SERIAL(emptyViewId);
-  bool SERIAL(diningFurniture) = false;
+  optional<FurnitureType> SERIAL(diningFurniture);
+  optional<CreaturePredicate> SERIAL(usagePredicate);
+  optional<AchievementId> SERIAL(minedAchievement);
+  bool SERIAL(removeInstantly) = false;
 };
 
 static_assert(std::is_nothrow_move_constructible<Furniture>::value, "T should be noexcept MoveConstructible");

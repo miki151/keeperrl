@@ -38,7 +38,14 @@ using ClearLayer = FurnitureLayer;
 using InsideFurniture = EmptyStruct<struct InsideFurnitureTag>;
 using OutsideFurniture = EmptyStruct<struct OutsideFurnitureTag>;
 using AddGas = TileGasType;
-using HostileCreature = CreatureId;
+struct HostileCreature {
+  CreatureId SERIAL(id);
+  SERIALIZE_ALL(id)
+};
+struct AlliedPrisoner {
+  CreatureId SERIAL(id);
+  SERIALIZE_ALL(id)
+};
 struct Stockpile {
   int SERIAL(index);
   SERIALIZE_ALL(index)
@@ -63,6 +70,7 @@ struct PlaceHostile {
   X(PlaceHostile, 12)\
   X(AddGas, 13)\
   X(HostileCreature, 14)\
+  X(AlliedPrisoner, 15)\
 
 #define VARIANT_NAME LayoutAction
 

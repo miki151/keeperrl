@@ -24,6 +24,7 @@
 #include "furniture_type.h"
 #include "conquer_condition.h"
 #include "creature_id.h"
+#include "achievement_id.h"
 
 enum class ItemClass;
 
@@ -70,7 +71,7 @@ struct FloorInfo {
 class CollectiveConfig {
   public:
   static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation, string populationString,
-      bool prisoners, ConquerCondition);
+      bool prisoners, ConquerCondition, bool requireQuartersForExp);
   static CollectiveConfig noImmigrants();
 
   bool isLeaderFighter() const;
@@ -95,10 +96,11 @@ class CollectiveConfig {
   CollectiveConfig& setConquerCondition(ConquerCondition);
   bool canCapturePrisoners() const;
   bool alwaysMountSteeds() const;
+  bool minionsRequireQuarters() const;
 
   static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&, ContentFactory*);
   static BedType getPrisonBedType(const Creature*);
-  
+
   bool hasImmigrantion(bool currentlyActiveModel) const;
   static const MinionActivityInfo& getActivityInfo(MinionActivity);
 
@@ -108,6 +110,8 @@ class CollectiveConfig {
   CollectiveConfig& operator = (CollectiveConfig&&) = default;
   CollectiveConfig& operator = (const CollectiveConfig&) = default;
   ~CollectiveConfig();
+
+  optional<AchievementId> SERIAL(discoverAchievement);
 
   private:
   enum CollectiveType { KEEPER, VILLAGE };
@@ -123,6 +127,7 @@ class CollectiveConfig {
   bool SERIAL(canEnemyRetire) = true;
   ConquerCondition SERIAL(conquerCondition) = ConquerCondition::KILL_FIGHTERS_AND_LEADER;
   string SERIAL(populationString);
-  bool SERIAL(prisoners) = true;
+  bool SERIAL(prisoners) = false;
   bool SERIAL(alwaysMount) = false;
+  bool SERIAL(requireQuartersForExp) = true;
 };

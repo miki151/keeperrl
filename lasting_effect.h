@@ -90,7 +90,6 @@ class LastingEffects {
   static bool canSee(const Creature*, const Creature*, GlobalTime);
   static bool modifyIsEnemyResult(const Creature*, const Creature*, GlobalTime, bool);
   static int getPrice(LastingEffect);
-  static double getMoraleIncrease(const Creature*, optional<GlobalTime>);
   static double getCraftingSpeed(const Creature*);
   static double getTrainingSpeed(const Creature*);
   static bool canConsume(LastingEffect);

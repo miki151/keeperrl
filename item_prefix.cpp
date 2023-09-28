@@ -54,6 +54,15 @@ void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAt
   }
 }
 
+void scale(const ContentFactory* factory, ItemPrefix& prefix, double value) {
+  prefix.visit<void>(
+      [&](ItemPrefixes::AssembledCreatureEffect& a) {
+        a.scale(value, factory);
+      },
+      [](auto&) {}
+  );
+}
+
 void applyPrefixToCreature(const ItemPrefix& prefix, Creature* c) {
   auto applyToIntrinsicAttack = [&] {
     auto& attacks = c->getBody().getIntrinsicAttacks();
@@ -82,7 +91,7 @@ void applyPrefixToCreature(const ItemPrefix& prefix, Creature* c) {
       },
       [&](const SpellId& spell) {
         c->getSpellMap().add(*c->getGame()->getContentFactory()->getCreatures().getSpell(spell),
-            ExperienceType::MELEE, 0);
+            AttrType("DAMAGE"), 0);
       },
       [&](const SpecialAttr& a) {
         c->getAttributes().specialAttr[a.attr].push_back(make_pair(a.value, a.predicate));

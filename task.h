@@ -65,7 +65,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   void setViewId(ViewId);
 
   static PTask construction(WTaskCallback, Position, FurnitureType);
-  static PTask destruction(WTaskCallback, Position, const Furniture*, DestroyAction, WPositionMatching);
+  static PTask destruction(WTaskCallback, Position, const Furniture*, DestroyAction, PositionMatching*);
   enum SearchType { LAZY, RANDOM_CLOSE };
   enum ActionType { APPLY, NONE };
   static PTask applySquare(WTaskCallback, vector<pair<Position, FurnitureLayer>>, SearchType, ActionType);
@@ -87,7 +87,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask attackCreatures(vector<Creature*>);
   static PTask campAndSpawn(Collective* target, const CreatureList&, int numAttacks);
   static PTask killFighters(Collective*, int numFighters);
-  static PTask stealFrom(Collective*);
+  static PTask stealFrom(Collective*, CollectiveResourceId);
   static PTask consumeItem(WTaskCallback, vector<Item*> items);
   static PTask copulate(WTaskCallback, Creature* target, int numTurns);
   static PTask consume(Creature* target);
@@ -100,7 +100,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask doneWhen(PTask, PTaskPredicate);
   static PTask follow(Creature*);
   static PTask goToTryForever(Position);
-  static PTask transferTo(WModel);
+  static PTask transferTo(Model*);
   static PTask goToAndWait(Position, TimeInterval waitTime);
   static PTask whipping(Position, Creature* whipped);
   static PTask dropItemsAnywhere(vector<Item*>);

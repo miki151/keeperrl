@@ -6,11 +6,12 @@
 #include "workshop_item.h"
 #include "game.h"
 #include "view_object.h"
+#include "content_factory.h"
 
 Workshops::Workshops(WorkshopArray options, const ContentFactory* factory) {
   for (auto& elem : options)
     types.insert(make_pair(elem.first, Type(elem.second.transform(
-        [&](const auto& elem){ return elem.get(factory); }))));
+        [&](const auto& item){ return item.get(elem.first, factory); }))));
 }
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Workshops)
@@ -32,7 +33,7 @@ void Workshops::Type::addDebt(CostInfo cost) {
 }
 
 void Workshops::Type::checkDebtConsistency() const {
-  unordered_map<CollectiveResourceId, int, CustomHash<CollectiveResourceId>> nowDebt;
+  HashMap<CollectiveResourceId, int> nowDebt;
   for (auto& elem : queued) {
     if (!elem.paid)
       nowDebt[options[elem.indexInWorkshop].cost.id] += options[elem.indexInWorkshop].cost.value;
@@ -75,18 +76,9 @@ vector<PItem> Workshops::Type::unqueue(Collective* collective, int index) {
 
 static const double prodMult = 0.15;
 
-int Workshops::getLegendarySkillThreshold() {
-  return 45;
-}
-
-static bool allowUpgrades(const WorkshopQueuedItem& item, int skillAmount, double morale) {
-  return (!item.item.requiresUpgrades || !item.runes.empty()) && (item.runes.empty() || item.item.notArtifact ||
-      (skillAmount >= Workshops::getLegendarySkillThreshold() && morale >= 0));
-}
-
-bool Workshops::Type::isIdle(const Collective* collective, int skillAmount, double morale) const {
+bool Workshops::Type::isIdle(const Collective* collective) const {
   for (auto& product : queued)
-    if ((product.paid || collective->hasResource(product.item.cost)) && allowUpgrades(product, skillAmount, morale))
+    if (product.paid || collective->hasResource(product.item.cost))
       return false;
   return true;
 }
@@ -104,34 +96,39 @@ PItem Workshops::Type::removeUpgrade(int itemIndex, int runeIndex) {
   return ret;
 }
 
-auto Workshops::Type::addWork(Collective* collective, double amount, int skillAmount, double morale) -> WorkshopResult {
+auto Workshops::Type::addWork(Collective* collective, double amount, int skillAmount,
+    int itemScaling) -> WorkshopResult {
   for (int productIndex : All(queued)) {
     auto& product = queued[productIndex];
-    if ((product.paid || collective->hasResource(product.item.cost)) && allowUpgrades(product, skillAmount, morale)) {
+    if (product.paid || collective->hasResource(product.item.cost)) {
       if (!product.paid) {
         collective->takeResource(product.item.cost);
         addDebt(-product.item.cost);
         product.paid = true;
       }
-      product.state += amount * prodMult / product.item.workNeeded;
+      auto workDone = amount * prodMult / product.item.workNeeded;
+      product.state += workDone;
+      if (product.state > 1)
+        workDone -= product.state - 1;
+      product.quality += workDone * skillAmount;
       if (product.state >= 1) {
-        auto ret = product.item.type.get(collective->getGame()->getContentFactory());
-        bool wasUpgraded = false;
-        for (auto& rune : product.runes) {
+        auto factory = collective->getGame()->getContentFactory();
+        auto ret = product.item.type.get(factory);
+        if (itemScaling > 1)
+          ret->scale(itemScaling, factory);
+        for (auto& rune : product.runes)
           if (auto& upgradeInfo = rune->getUpgradeInfo())
             ret->applyPrefix(*upgradeInfo->prefix, collective->getGame()->getContentFactory());
-          wasUpgraded = !product.item.notArtifact;
-        }
         bool applyImmediately = product.item.applyImmediately;
         queued.removeIndexPreserveOrder(productIndex);
         checkDebtConsistency();
-        return {std::move(ret), wasUpgraded, applyImmediately};
+        return {std::move(ret), applyImmediately};
       }
       break;
     }
   }
   checkDebtConsistency();
-  return WorkshopResult{{}, false, false};
+  return WorkshopResult{{}, false};
 }
 
 const vector<Workshops::QueuedItem>& Workshops::Type::getQueued() const {

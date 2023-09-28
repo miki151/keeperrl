@@ -8,7 +8,7 @@
 #include "item_type.h"
 #include "view_id.h"
 
-SERIALIZE_DEF(CreatureList, OPTION(count), OPTION(uniques), NAMED(all), OPTION(baseLevelIncrease), OPTION(expLevelIncrease), OPTION(inventory))
+SERIALIZE_DEF(CreatureList, OPTION(count), OPTION(uniques), NAMED(all), OPTION(combatExperience), OPTION(expLevelIncrease), OPTION(inventory))
 
 
 CreatureList::CreatureList() {}
@@ -38,10 +38,7 @@ string CreatureList::getSummary(CreatureFactory* factory) const {
     ret = uniques[0].data();
   else
     ret = all[0].second.data();
-  int inc = 0;
-  for (auto exp : ENUM_ALL(ExperienceType))
-    inc = max(inc, baseLevelIncrease[exp]);
-  ret += " " + toString(inc);
+  ret += " " + toString(combatExperience);
   return ret;
 }
 
@@ -50,25 +47,14 @@ CreatureList& CreatureList::addInventory(vector<ItemType> v) {
   return *this;
 }
 
-CreatureList& CreatureList::clearBaseLevel() {
-  baseLevelIncrease.clear();
+CreatureList& CreatureList::setCombatExperience(int l) {
+  combatExperience = l;
   return *this;
 }
 
-CreatureList& CreatureList::clearExpLevel() {
-  expLevelIncrease.clear();
-  return *this;
-}
-
-CreatureList& CreatureList::increaseBaseLevel(EnumMap<ExperienceType, int> l) {
-  for (auto exp : ENUM_ALL(ExperienceType))
-    baseLevelIncrease[exp] += l[exp];
-  return *this;
-}
-
-CreatureList& CreatureList::increaseExpLevel(EnumMap<ExperienceType, int> l) {
-  for (auto exp : ENUM_ALL(ExperienceType))
-    expLevelIncrease[exp] += l[exp];
+CreatureList& CreatureList::increaseExpLevel(const HashMap<AttrType, int>& l) {
+  for (auto& elem : l)
+    expLevelIncrease[elem.first] += elem.second;
   return *this;
 }
 
@@ -100,10 +86,9 @@ vector<PCreature> CreatureList::generate(RandomGen& random, CreatureFactory* fac
     } else
       id = random.choose(all);
     auto creature = factory->fromId(*id, tribe, aiFactory, inventory);
-    for (auto exp : ENUM_ALL(ExperienceType)) {
-      creature->getAttributes().increaseBaseExpLevel(exp, baseLevelIncrease[exp]);
-      creature->increaseExpLevel(exp, expLevelIncrease[exp]);
-    }
+    creature->setCombatExperience(combatExperience);
+    for (auto& elem : expLevelIncrease)
+      creature->increaseExpLevel(elem.first, elem.second);
     ret.push_back(std::move(creature));
   }
   return ret;

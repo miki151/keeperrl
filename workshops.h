@@ -16,8 +16,6 @@ class Workshops {
   typedef WorkshopItem Item;
   typedef WorkshopQueuedItem QueuedItem;
 
-  static int getLegendarySkillThreshold();
-
   class Type {
     public:
     Type(const vector<Item>& options);
@@ -25,14 +23,13 @@ class Workshops {
     const vector<QueuedItem>& getQueued() const;
     struct WorkshopResult {
       PItem item;
-      bool wasUpgraded;
       bool applyImmediately;
     };
-    WorkshopResult addWork(Collective*, double workAmount, int skillAmount, double morale);
+    WorkshopResult addWork(Collective*, double workAmount, int skillAmount, int attrScaling);
     void queue(Collective*, int index, optional<int> queueIndex = none);
     vector<PItem> unqueue(Collective*, int index);
     void changeNumber(int index, int number);
-    bool isIdle(const Collective*, int skillAmount, double morale) const;
+    bool isIdle(const Collective*) const;
     void addUpgrade(int index, PItem);
     PItem removeUpgrade(int itemIndex, int runeIndex);
     void updateState(Collective*);
@@ -45,7 +42,7 @@ class Workshops {
     void checkDebtConsistency() const;
     vector<Item> SERIAL(options);
     vector<QueuedItem> SERIAL(queued);
-    unordered_map<CollectiveResourceId, int, CustomHash<CollectiveResourceId>> SERIAL(debt);
+    HashMap<CollectiveResourceId, int> SERIAL(debt);
   };
 
   SERIALIZATION_DECL(Workshops)

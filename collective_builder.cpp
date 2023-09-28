@@ -22,7 +22,7 @@ CollectiveBuilder& CollectiveBuilder::setLevel(Level* l) {
   return *this;
 }
 
-CollectiveBuilder& CollectiveBuilder::setModel(WModel m) {
+CollectiveBuilder& CollectiveBuilder::setModel(Model* m) {
   model = m;
   return *this;
 }

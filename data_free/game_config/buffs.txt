@@ -16,8 +16,6 @@ Def ATTR_BUFF(Attr, Name, Amount, Adjective, Price) {
   name = Name
   adjective = Name + " bonus"
   description = "Gives a +" + Amount + " " + Name + " bonus"
-  addedMessage = ARE "more " + Adjective
-  removedMessage = ARE "no longer " + Adjective
   startEffect = IncreaseAttr Attr Amount
   endEffect = IncreaseAttr Attr -Amount
   combatConsumable = true
@@ -29,6 +27,34 @@ End
 
 "DAM_BONUS" ATTR_BUFF(DAMAGE, "damage", 3, "dangerous", 20)
 "DEF_BONUS" ATTR_BUFF(DEFENSE, "defense", 3, "protected", 20)
+
+Def ATTR_DEBUFF(Attr, Name, Amount, Price) {
+  name = Name + " debuff"
+  adjective = Name + " debuff"
+  description = "Gives a -" + Amount + " " + Name + " penalty"
+  startEffect = IncreaseAttr Attr -Amount
+  endEffect = IncreaseAttr Attr Amount
+  combatConsumable = true
+  consideredBad = true
+  fx = BUFF_RED
+  color = ColorId RED
+  price = Price
+}
+End
+
+"DEF_DEBUFF" ATTR_DEBUFF(DEFENSE, "defense", 3, 20)
+
+"HIGH_MORALE" {
+  name = "high morale"
+  adjective = "happy"
+  description = "Makes creatures more efficient in training and work"
+  addedMessage = YOUR "spirits are lifted"
+  removedMessage = YOUR "mood goes back to normal"
+  efficiencyMultiplier = 1.3
+  fx = BUFF_BLUE
+  color = ColorId BLUE
+  price = 10
+}
 
 "REGENERATION" {
   name = "regeneration"

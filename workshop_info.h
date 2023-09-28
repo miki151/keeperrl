@@ -8,5 +8,7 @@ struct WorkshopInfo {
   string SERIAL(name);
   string SERIAL(verb) = "produces";
   AttrType SERIAL(attr);
-  SERIALIZE_ALL(NAMED(furniture), NAMED(name), OPTION(verb), NAMED(attr))
+  int SERIAL(minAttr) = 1;
+  int SERIAL(itemScaling) = 1;
+  SERIALIZE_ALL(NAMED(furniture), NAMED(name), OPTION(verb), NAMED(attr), OPTION(minAttr), OPTION(itemScaling))
 };

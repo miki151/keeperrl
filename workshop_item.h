@@ -9,18 +9,17 @@
 struct WorkshopItem;
 
 struct WorkshopItemCfg {
-  WorkshopItem get(const ContentFactory*) const;
+  WorkshopItem get(WorkshopType, const ContentFactory*) const;
   ItemType SERIAL(item);
   double SERIAL(work) = 1;
   optional<CostInfo> SERIAL(cost);
   optional<TechId> SERIAL(tech);
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
   optional<string> SERIAL(requireIngredient);
-  bool SERIAL(notArtifact) = false;
   bool SERIAL(applyImmediately) = false;
   bool SERIAL(materialTab) = false;
   bool SERIAL(requiresUpgrades) = false;
-  SERIALIZE_ALL(NAMED(item), OPTION(work), NAMED(cost), NAMED(tech), NAMED(tutorialHighlight), OPTION(requireIngredient), OPTION(notArtifact), OPTION(applyImmediately), OPTION(materialTab), OPTION(requiresUpgrades))
+  SERIALIZE_ALL(NAMED(item), OPTION(work), NAMED(cost), NAMED(tech), NAMED(tutorialHighlight), OPTION(requireIngredient), OPTION(applyImmediately), OPTION(materialTab), OPTION(requiresUpgrades))
 };
 
 static_assert(std::is_nothrow_move_constructible<WorkshopItemCfg>::value, "T should be noexcept MoveConstructible");
@@ -39,11 +38,10 @@ struct WorkshopItem {
   vector<ItemUpgradeType> SERIAL(upgradeType);
   int SERIAL(maxUpgrades) = 0;
   optional<string> SERIAL(requireIngredient);
-  bool SERIAL(notArtifact) = false;
   bool SERIAL(applyImmediately) = false;
   bool SERIAL(materialTab) = false;
   bool SERIAL(requiresUpgrades) = false;
-  SERIALIZE_ALL(type, name, pluralName, viewId, cost, workNeeded, techId, description, tutorialHighlight, upgradeType, maxUpgrades, requireIngredient, notArtifact, applyImmediately, materialTab, requiresUpgrades)
+  SERIALIZE_ALL(type, name, pluralName, viewId, cost, workNeeded, techId, description, tutorialHighlight, upgradeType, maxUpgrades, requireIngredient, applyImmediately, materialTab, requiresUpgrades)
 };
 
 struct WorkshopQueuedItem {
@@ -56,7 +54,8 @@ struct WorkshopQueuedItem {
   WorkshopItem SERIAL(item);
   int SERIAL(indexInWorkshop);
   double SERIAL(state) = 0;
+  double SERIAL(quality) = 0;
   bool SERIAL(paid);
   vector<PItem> SERIAL(runes);
-  SERIALIZE_ALL(item, runes, state, paid, indexInWorkshop)
+  SERIALIZE_ALL(item, runes, state, paid, indexInWorkshop, quality)
 };

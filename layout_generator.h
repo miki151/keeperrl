@@ -105,6 +105,7 @@ struct Place {
   optional<int> placedCount;
   template <class Archive>
   void serialize(Archive& ar1, const unsigned int version) {
+    // ar(generators)
     if (version == 0)
       ar1(withRoundBrackets(generators));
     else
@@ -120,8 +121,9 @@ struct NoiseMap {
     HeapAllocated<LayoutGenerator> SERIAL(generator);
     SERIALIZE_ALL(roundBracket(), NAMED(lower), NAMED(upper), NAMED(generator))
   };
+  double SERIAL(exponent);
   vector<Elem> SERIAL(generators);
-  SERIALIZE_ALL(withRoundBrackets(generators))
+  SERIALIZE_ALL(roundBracket(), NAMED(exponent), NAMED(generators))
 };
 
 struct Chain {
@@ -165,6 +167,10 @@ struct FloodFill {
   SERIALIZE_ALL(roundBracket(), NAMED(predicate), NAMED(generator))
 };
 
+struct Fail {
+  SERIALIZE_EMPTY()
+};
+
 #define VARIANT_TYPES_LIST\
   X(None, 0)\
   X(Set, 1)\
@@ -183,7 +189,8 @@ struct FloodFill {
   X(Connect, 14)\
   X(Choose, 15)\
   X(Repeat, 16)\
-  X(FloodFill, 17)
+  X(FloodFill, 17)\
+  X(Fail, 18)
 
 #define VARIANT_NAME GeneratorImpl
 

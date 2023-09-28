@@ -52,7 +52,7 @@ class CallCache {
       return none;
   }
   const int maxSize;
-  unordered_map<Key, Value, CustomHash<Key>> cache;
+  HashMap<Key, Value> cache;
   BiMap<Key, int> lastUsed;
   int cnt = 0;
 };

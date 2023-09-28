@@ -23,7 +23,7 @@ class KeybindingMap {
   void reset();
 
   private:
-  using KeyMap = unordered_map<Keybinding, SDL::SDL_Keysym, CustomHash<Keybinding>>;
+  using KeyMap = HashMap<Keybinding, SDL::SDL_Keysym>;
   KeyMap bindings;
   KeyMap defaults;
   FilePath defaultsPath;

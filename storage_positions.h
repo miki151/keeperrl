@@ -6,7 +6,7 @@
 class StoragePositions {
   public:
 
-  using MapType = unordered_map<Position, int, CustomHash<Position>>;
+  using MapType = HashMap<Position, int>;
 
   void add(Position);
   void remove(Position);

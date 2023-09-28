@@ -909,7 +909,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
           if (buff.second.hatedGroupName)
             hateEffects.push_back(buff.first);
         for (auto& buff : hateEffects)
-          if (c->isAffected(buff) || (c->getAttributes().getHatedByEffect() != buff && 
+          if (c->isAffected(buff) || (c->getAttributes().getHatedByEffect() != buff &&
               Random.roll(10 * hateEffects.size()))) {
             hatedGroup = buff;
             break;
@@ -920,20 +920,26 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
         for (auto other : others)
           if (other != c && !other->isAffected(LastingEffect::SLEEP)) {
             if (hatedGroup && *hatedGroup == other->getAttributes().getHatedByEffect()) {
-              other->addMorale(-0.05);
               other->you(MsgType::ARE, "offended");
+              other->addEffect(BuffId("DEF_DEBUFF"), 100_visible);
             } else if (other->getBody().hasBrain(factory)) {
               other->verb("laugh", "laughs");
-              other->addMorale(0.01);
+              other->addEffect(BuffId("HIGH_MORALE"), 100_visible);
             } else
               other->verb("don't", "doesn't", "laugh");
           }
       }
       break;
     case LastingEffect::BAD_BREATH:
-      for (auto pos : c->getPosition().getRectangle(Rectangle::centered(7)))
-        if (auto other = pos.getCreature())
-          other->addMorale(-0.002);
+      if (Random.roll(50)) {
+        c->getPosition().globalMessage("The smell!");
+        for (auto pos : c->getPosition().getRectangle(Rectangle::centered(7)))
+          if (auto other = pos.getCreature())
+            if (Random.roll(5)) {
+              other->verb("cover your", "covers "_s + his(other->getAttributes().getGender()), "nose");
+              other->addEffect(BuffId("DEF_DEBUFF"), 10_visible);
+            }
+      }
       break;
     case LastingEffect::DISAPPEAR_DURING_DAY:
       if (c->getGame()->getSunlightInfo().getState() == SunlightState::DAY)
@@ -1144,20 +1150,6 @@ int LastingEffects::getPrice(LastingEffect e) {
     default:
       return 24;
   }
-}
-
-double LastingEffects::getMoraleIncrease(const Creature* c, optional<GlobalTime> time) {
-  PROFILE;
-  double ret = 0;
-  if (c->isAffected(LastingEffect::RESTED, time))
-    ret += 0.1;
-  else
-    ret -= 0.1;
-  if (c->isAffected(LastingEffect::SATIATED, time))
-    ret += 0.1;
-  else
-    ret -= 0.1;
-  return ret;
 }
 
 double LastingEffects::getCraftingSpeed(const Creature* c) {

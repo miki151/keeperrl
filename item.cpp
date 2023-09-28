@@ -40,7 +40,7 @@
 #include "effect_type.h"
 #include "creature_debt.h"
 
-template <class Archive> 
+template <class Archive>
 void Item::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Item>) & SUBCLASS(UniqueEntity) & SUBCLASS(Renderable);
   ar(attributes, discarded, shopkeeper, fire, classCache, canEquipCache, timeout, abilityInfo);
@@ -189,6 +189,14 @@ void Item::applyPrefix(const ItemPrefix& prefix, const ContentFactory* factory) 
   modViewObject().setModifier(ViewObject::Modifier::AURA);
   ::applyPrefix(factory, prefix, *attributes);
   updateAbility(factory);
+}
+
+void Item::scale(double value, const ContentFactory* factory) {
+  for (auto& attr : factory->attrOrder)
+    if (attributes->modifiers.count(attr))
+      attributes->modifiers[attr] *= value;
+  if (auto& info = attributes->upgradeInfo)
+    ::scale(factory, *info->prefix, value);
 }
 
 void Item::setTimeout(GlobalTime t) {
@@ -525,7 +533,7 @@ string Item::getSuffix() const {
 }
 
 string Item::getModifiers(const ContentFactory* factory, bool shorten) const {
-  unordered_set<AttrType, CustomHash<AttrType>> printAttr;
+  HashSet<AttrType> printAttr;
   if (!shorten) {
     for (auto attr : attributes->modifiers)
       printAttr.insert(attr.first);
@@ -619,7 +627,7 @@ void Item::addModifier(AttrType type, int value) {
   attributes->modifiers[type] += value;
 }
 
-const map<AttrType, int>& Item::getModifierValues() const {
+const HashMap<AttrType, int>& Item::getModifierValues() const {
   return attributes->modifiers;
 }
 
@@ -629,7 +637,7 @@ int Item::getModifier(AttrType type) const {
   return ret;
 }
 
-const map<AttrType, pair<int, CreaturePredicate>>& Item::getSpecialModifiers() const {
+const HashMap<AttrType, pair<int, CreaturePredicate>>& Item::getSpecialModifiers() const {
   return attributes->specialAttr;
 }
 

@@ -36,14 +36,15 @@ class TribeId;
 class ContentFactory;;
 struct BiomeInfo;
 class Position;
+struct KeeperBaseInfo;
 
 class LevelMaker {
   public:
   virtual void make(LevelBuilder* builder, Rectangle area) = 0;
   virtual ~LevelMaker() {}
 
-  static PLevelMaker topLevel(RandomGen&, vector<SettlementInfo> village, int width,
-      optional<TribeId> keeperTribe, BiomeInfo biomeInfo, ResourceCounts, const ContentFactory&);
+  static PLevelMaker topLevel(RandomGen&, vector<SettlementInfo> village, int width, optional<TribeId> keeperTribe,
+      optional<KeeperBaseInfo>, BiomeInfo, ResourceCounts, const ContentFactory&);
   static PLevelMaker mineTownLevel(RandomGen&, SettlementInfo, Vec2 size);
   static PLevelMaker towerLevel(RandomGen&, SettlementInfo, Vec2 size);
   static Vec2 getRandomExit(RandomGen&, Rectangle rect, int minCornerDist = 1);

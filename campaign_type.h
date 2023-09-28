@@ -3,5 +3,5 @@
 #include "util.h"
 
 RICH_ENUM(CampaignType,
-  FREE_PLAY, SINGLE_KEEPER, QUICK_MAP
+  FREE_PLAY, QUICK_MAP
 );

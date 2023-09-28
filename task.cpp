@@ -165,7 +165,7 @@ PTask Task::construction(WTaskCallback c, Position target, FurnitureType type) {
 namespace {
 class Destruction : public Task {
   public:
-  Destruction(WTaskCallback c, Position pos, const Furniture* furniture, DestroyAction action, WPositionMatching m)
+  Destruction(WTaskCallback c, Position pos, const Furniture* furniture, DestroyAction action, PositionMatching* m)
       : Task(true), position(pos), callback(c), destroyAction(action),
         description(action.getVerbSecondPerson() + " "_s + furniture->getName() + " at " + toString(position)),
         furnitureType(furniture->getType()), matching(m) {
@@ -234,12 +234,12 @@ class Destruction : public Task {
   DestroyAction SERIAL(destroyAction);
   string SERIAL(description);
   FurnitureType SERIAL(furnitureType);
-  WPositionMatching SERIAL(matching) = nullptr;
+  PositionMatching* SERIAL(matching) = nullptr;
 };
 
 }
 
-PTask Task::destruction(WTaskCallback c, Position target, const Furniture* furniture, DestroyAction destroyAction, WPositionMatching matching) {
+PTask Task::destruction(WTaskCallback c, Position target, const Furniture* furniture, DestroyAction destroyAction, PositionMatching* matching) {
   return makeOwner<Destruction>(c, target, furniture, destroyAction, matching);
 }
 
@@ -530,7 +530,7 @@ class ArcheryRange : public Task {
       }
       return none;
     };
-    unordered_map<Position, vector<ShootInfo>, CustomHash<Position>> shootPositions;
+    HashMap<Position, vector<ShootInfo>> shootPositions;
     for (auto pos : Random.permutation(targets))
       if (auto dir = getDir(pos))
         shootPositions[dir->pos].push_back(*dir);
@@ -815,16 +815,19 @@ PTask Task::attackCreatures(vector<Creature*> c) {
   return makeOwner<AttackCreatures>(std::move(c));
 }
 
-PTask Task::stealFrom(Collective* collective) {
+PTask Task::stealFrom(Collective* collective, CollectiveResourceId id) {
   vector<PTask> tasks;
-  for (Position pos : collective->getConstructions().getBuiltPositions(FurnitureType("TREASURE_CHEST"))) {
-    vector<Item*> gold = pos.getItems().filter(Item::classPredicate(ItemClass::GOLD));
-    if (!gold.empty())
-      tasks.push_back(pickUpItem(pos, gold));
-  }
-  if (!tasks.empty())
+  auto& info = collective->getResourceInfo(id);
+  for (auto storageId : info.storage)
+    for (auto& pos : collective->getStoragePositions(storageId)) {
+      vector<Item*> gold = pos.getItems(id);
+      if (!gold.empty())
+        tasks.push_back(pickUpItem(pos, gold));
+    }
+  if (!tasks.empty()) {
+    Random.shuffle(tasks.begin(), tasks.end());
     return chain(std::move(tasks));
-  else
+  } else
     return PTask(nullptr);
 }
 
@@ -1382,7 +1385,7 @@ PTask Task::follow(Creature* c) {
 namespace {
 class TransferTo : public Task {
   public:
-  TransferTo(WModel m) : model(m) {}
+  TransferTo(Model* m) : model(m) {}
 
   virtual MoveInfo getMove(Creature* c) override {
     if (c->getPosition().getModel() == model) {
@@ -1411,11 +1414,11 @@ class TransferTo : public Task {
 
   protected:
   optional<Position> SERIAL(target);
-  WModel SERIAL(model) = nullptr;
+  Model* SERIAL(model) = nullptr;
 };
 }
 
-PTask Task::transferTo(WModel m) {
+PTask Task::transferTo(Model* m) {
   return makeOwner<TransferTo>(m);
 }
 
@@ -1671,18 +1674,22 @@ class PickUpItem : public Task {
 
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(!pickedUp);
-    if (c->getPosition() == position) {
-      vector<Item*> hereItems;
-      for (Item* it : c->getPickUpOptions())
-        if (items.contains(it)) {
-          hereItems.push_back(it);
-          items.erase(it);
-        }
-      if (hereItems.empty()) {
-        setDone();
-        return NoMove;
+    if (!c->getBody().canPickUpItems()) {
+      setDone();
+      return NoMove;
+    }
+    vector<Item*> hereItems;
+    for (Item* it : position.getItems())
+      if (items.contains(it)) {
+        hereItems.push_back(it);
+        items.erase(it);
       }
-      items = hereItems;
+    if (hereItems.empty()) {
+      setDone();
+      return NoMove;
+    }
+    items = hereItems;
+    if (c->getPosition() == position) {
       if (auto action = c->pickUp(hereItems))
         return {1.0, action.append([=](Creature* c) {
           pickedUp = true;
@@ -1791,18 +1798,19 @@ class WithTeam : public Task {
     }
     auto leader = collective->getTeams().getLeader(teamId);
     CHECK(!leader->isDead());
-    if (c == leader)
-      return task->getMove(c);
-    else {
+    if (c != leader) {
       Position targetPos = leader->getPosition();
-      if (targetPos.dist8(c->getPosition()).value_or(3) < 3) {
+      if (targetPos.dist8(c->getPosition()).value_or(11) < 10) {
+        if (auto move = task->getMove(c))
+          return move;
         if (Random.roll(15))
           if (auto move = c->move(c->getPosition().plus(Vec2(Random.choose<Dir>()))))
             return move;
         return NoMove;
       }
       return c->moveTowards(targetPos);
-    }
+    } else
+      return task->getMove(c);
   }
 
   virtual string getDescription() const override {

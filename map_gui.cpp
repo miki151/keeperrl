@@ -144,8 +144,7 @@ optional<Vec2> MapGui::getHighlightedTile(Renderer&) {
     return none;
 }
 
-Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
-  bool quartersSelected = activeButton && activeButton->viewId.data() == "quarters"_s;
+Color MapGui::getHighlightColor(Vec2 pos, const ViewIndex& index, HighlightType type) {
   bool buildingSelected = activeButton && activeButton->isBuilding;
   switch (type) {
     case HighlightType::RECT_DESELECTION: return Color::RED.transparency(100);
@@ -155,18 +154,17 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
     case HighlightType::PERMANENT_FETCH_ITEMS: return Color::ORANGE.transparency(100);
     case HighlightType::STORAGE_EQUIPMENT: return Color::BLUE.transparency(100);
     case HighlightType::STORAGE_RESOURCES: return Color::GREEN.transparency(100);
-    case HighlightType::QUARTERS1: return Color::PINK.transparency(quartersSelected ? 70 : 20);
-    case HighlightType::QUARTERS2: return Color::SKY_BLUE.transparency(quartersSelected ? 70 : 20);
-    case HighlightType::QUARTERS3: return Color::ORANGE.transparency(quartersSelected ? 70 : 20);
-    case HighlightType::LEISURE: return Color::DARK_BLUE.transparency(quartersSelected ? 70 : 20);
+    case HighlightType::QUARTERS: return Color::PINK.transparency((!!quarters && quarters->positions.count(pos)) ? 70 : 30);
+    case HighlightType::LEISURE: return Color::DARK_BLUE.transparency(70);
     case HighlightType::RECT_SELECTION: return Color::YELLOW.transparency(100);
     case HighlightType::MEMORY: return Color::BLACK.transparency(80);
     case HighlightType::PRIORITY_TASK: return Color(0, 255, 0, 200);
     case HighlightType::CREATURE_DROP:
-      if (index.hasObject(ViewLayer::FLOOR) && getHighlightedFurniture() == index.getObject(ViewLayer::FLOOR).id())
-        return Color(0, 255, 0);
-      else
-        return Color(0, 255, 0, 120);
+      if (auto mousePos = getMousePos())
+        if (layout->projectOnMap(getBounds(), getScreenPos(), *mousePos) ==
+            layout->projectOnMap(getBounds(), getScreenPos(), pos))
+          return Color(0, 255, 0);
+      return Color(0, 255, 0, 120);
     case HighlightType::CLICKABLE_FURNITURE: return Color(255, 255, 0, 120);
     case HighlightType::CLICKED_FURNITURE: return Color(255, 255, 0);
     case HighlightType::GUARD_ZONE1: return Color(255, 255, 255, 120);
@@ -490,6 +488,10 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
 
 bool MapGui::isCreatureHighlighted(UniqueEntity<Creature>::Id creature) {
   return teamHighlight.getMaybe(creature).value_or(0) > 0;
+}
+
+const optional<CreatureView::QuartersInfo>& MapGui::getQuartersInfo() const {
+  return quarters;
 }
 
 bool MapGui::fxesAvailable() const {
@@ -863,9 +865,7 @@ bool MapGui::isRenderedHighlightLow(Renderer& renderer, const ViewIndex& index, 
     case HighlightType::PERMANENT_FETCH_ITEMS:
     case HighlightType::STORAGE_EQUIPMENT:
     case HighlightType::STORAGE_RESOURCES:
-    case HighlightType::QUARTERS1:
-    case HighlightType::QUARTERS2:
-    case HighlightType::QUARTERS3:
+    case HighlightType::QUARTERS:
     case HighlightType::GUARD_ZONE1:
     case HighlightType::GUARD_ZONE2:
     case HighlightType::GUARD_ZONE3:
@@ -909,7 +909,7 @@ void MapGui::fxHighlight(Renderer& renderer, const FXInfo& info1, Vec2 tilePos, 
 };
 
 void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight, Vec2 tilePos) {
-  auto color = blendNightColor(getHighlightColor(index, highlight), index);
+  auto color = blendNightColor(getHighlightColor(pos, index, highlight), index);
   switch (highlight) {
     case HighlightType::MEMORY:
       break;
@@ -922,9 +922,7 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
     case HighlightType::ALLIED_TOTEM:
       fxHighlight(renderer, FXInfo{FXName::MAGIC_FIELD, Color(100, 255, 100)}, tilePos, index);
       break;
-    case HighlightType::QUARTERS1:
-    case HighlightType::QUARTERS2:
-    case HighlightType::QUARTERS3:
+    case HighlightType::QUARTERS:
     case HighlightType::LEISURE:
     case HighlightType::UNAVAILABLE:
       renderTexturedHighlight(renderer, pos, size, color, ViewId("dig_mark2"));
@@ -1293,9 +1291,8 @@ void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, milliseconds c
 }
 
 bool MapGui::onScrollEvent(Vec2 pos, double x, double y, milliseconds timeDiff) {
-  auto time = Clock::getRealMillis();
   if (x != 0.0 || y != 0.0) {
-    double diff = double(timeDiff.count()) / 40;
+    double diff = double(timeDiff.count()) / layout->getSquareSize().x;
     center.x += diff * x;
     center.y -= diff * y;
     softCenter = none;
@@ -1461,6 +1458,19 @@ double MapGui::getDistanceToEdgeRatio(Vec2 pos) {
   return ret;
 }
 
+void MapGui::updateQuarters(CreatureView* view, Renderer& renderer) {
+  quarters = none;
+  if (auto pos = projectOnMap(renderer.getMousePos())) {
+    quarters = view->getQuarters(*pos);
+    if (quarters) {
+      HashSet<Vec2> translated;
+      for (auto& v : quarters->positions)
+        translated.insert(projectOnScreen(v));
+      quarters->positions = translated;
+    }
+  }
+}
+
 void MapGui::updateShortestPaths(CreatureView* view, Renderer& renderer, Vec2 tileSize, milliseconds curTimeReal) {
   shortestPath.clear();
   permaShortestPath = view->getPermanentPaths();
@@ -1513,6 +1523,7 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
   layout = mapLayout;
   auto currentTimeReal = clock->getRealMillis();
   updateShortestPaths(view, renderer, layout->getSquareSize(), currentTimeReal);
+  updateQuarters(view, renderer);
   // hacky way to detect that we're switching between real-time and turn-based and not between
   // team members in turn-based mode.
   const bool newView = (view->getCenterType() != previousView);

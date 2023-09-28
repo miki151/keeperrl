@@ -17,7 +17,7 @@ class ContentFactory;
 class CollectiveBuilder {
   public:
   CollectiveBuilder(const CollectiveConfig&, TribeId);
-  CollectiveBuilder& setModel(WModel);
+  CollectiveBuilder& setModel(Model*);
   CollectiveBuilder& setLevel(Level*);
   CollectiveBuilder& addCreature(Creature*, EnumSet<MinionTrait>);
   CollectiveBuilder& addArea(const vector<Vec2>&);
@@ -34,7 +34,7 @@ class CollectiveBuilder {
 
   private:
   optional<CollectiveName> getCollectiveName();
-  WModel model = nullptr;
+  Model* model = nullptr;
   Level* level = nullptr;
   struct CreatureInfo {
     Creature* creature = nullptr;

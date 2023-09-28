@@ -123,8 +123,8 @@ class Level : public OwnedObject<Level> {
 
   vector<Creature*> getPlayers() const;
 
-  WModel getModel() const;
-  WGame getGame() const;
+  Model* getModel() const;
+  Game* getGame() const;
 
   void addLightSource(Vec2, double radius);
   void removeLightSource(Vec2, double radius);
@@ -185,7 +185,7 @@ class Level : public OwnedObject<Level> {
   void unplaceCreature(Creature*, Vec2 pos);
   vector<Creature*> SERIAL(creatures);
   EntitySet<Creature> SERIAL(creatureIds);
-  WModel SERIAL(model) = nullptr;
+  Model* SERIAL(model) = nullptr;
   mutable HeapAllocated<EnumMap<VisionId, FieldOfView>> SERIAL(fieldOfView);
   Table<double> SERIAL(sunlight);
   Table<bool> SERIAL(covered);
@@ -194,17 +194,17 @@ class Level : public OwnedObject<Level> {
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
   EnumMap<TribeId::KeyType, unique_ptr<EffectsTable>> SERIAL(furnitureEffects);
-  mutable unordered_map<MovementType, Sectors, CustomHash<MovementType>> sectors;
+  mutable HashMap<MovementType, Sectors> sectors;
   Sectors& getSectorsDontCreate(const MovementType&) const;
 
   friend class LevelBuilder;
   struct Private {};
 
-  static PLevel create(SquareArray s, FurnitureArray f, WModel m, Table<double> sun, LevelId id,
+  static PLevel create(SquareArray s, FurnitureArray f, Model* m, Table<double> sun, LevelId id,
       Table<bool> cover, Table<bool> unavailable, const ContentFactory*);
 
   public:
-  Level(Private, SquareArray, FurnitureArray, WModel, Table<double> sunlight, LevelId);
+  Level(Private, SquareArray, FurnitureArray, Model*, Table<double> sunlight, LevelId);
 
   private:
   void addLightSource(Vec2 pos, double radius, int numLight);

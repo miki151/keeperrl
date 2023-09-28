@@ -332,7 +332,7 @@ ItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory* f) const {
       i.weight = 0.1;
       i.applyVerb = make_pair("read", "reads");
       i.effect = Effect(Effects::Area{10,
-          Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::IncreaseMorale{-0.1})))});
+          Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::Lasting{30_visible, BuffId("DEF_DEBUFF")})))});
       i.price = i.effect->getPrice(f);
       i.burnTime = 5;
       i.uses = 1;
@@ -350,7 +350,7 @@ ItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory* f) cons
       i.weight = 0.1;
       i.applyVerb = make_pair("read", "reads");
       i.effect = Effect(Effects::Area{10,
-          Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::IncreaseMorale{-0.1})))});
+          Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::Lasting{30_visible, BuffId("DEF_DEBUFF")})))});
       i.price = i.effect->getPrice(f);
       i.burnTime = 5;
       i.uses = 1;

@@ -43,7 +43,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   public:
   virtual ~Player() override;
 
-  Player(Creature*, bool adventurer, SMapMemory, SMessageBuffer, SVisibilityMap, SUnknownLocations,
+  Player(Creature*, SMapMemory, SMessageBuffer, SVisibilityMap, SUnknownLocations,
       STutorial = nullptr);
 
   void onEvent(const GameEvent&);
@@ -112,7 +112,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   SUnknownLocations SERIAL(unknownLocations);
   void showHistory();
   Game* getGame() const;
-  WModel getModel() const;
+  Model* getModel() const;
   View* getView() const;
 
   bool tryToPerform(CreatureAction);
@@ -121,7 +121,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
 
   private:
   Level* getLevel() const;
-  void considerAdventurerMusic();
   void considerKeeperModeTravelMusic();
   void creatureClickAction(Position, bool extended);
   void pickUpItemAction(int item, bool multi = false);
@@ -148,8 +147,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   string getPluralName(Item* item, int num);
   Vec2 SERIAL(travelDir);
   optional<Position> SERIAL(target);
-  bool SERIAL(adventurer);
-  bool SERIAL(displayGreeting);
   void retireMessages();
   string getRemainingString(LastingEffect) const;
   ItemInfo getFurnitureUsageInfo(const string& question, ViewId viewId) const;
@@ -159,8 +156,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   optional<GlobalTime> lastEnemyInterruption;
   void updateSquareMemory(Position);
   HeapAllocated<DungeonLevel> SERIAL(avatarLevel);
-  void playerLevelDialog();
-  vector<unordered_set<ViewIdList, CustomHash<ViewIdList>>> halluIds;
+  vector<HashSet<ViewIdList>> halluIds;
   void generateHalluIds();
   ViewIdList shuffleViewId(const ViewIdList&) const;
   void fillCurrentLevelInfo(GameInfo&) const;

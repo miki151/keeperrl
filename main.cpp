@@ -42,7 +42,6 @@
 #include "audio_device.h"
 #include "sokoban_input.h"
 #include "keybinding_map.h"
-#include "player_role.h"
 #include "campaign_type.h"
 #include "dummy_view.h"
 #include "sound.h"
@@ -355,7 +354,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   const auto modVersion = appConfig.get<string>("mod_version");
   const auto saveVersion = appConfig.get<int>("save_version");
   FileSharing fileSharing(uploadUrl, modVersion, saveVersion, options, installId);
-  Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
+  Highscores highscores(userPath.file("highscores.dat"));
   if (commandLineFlags["worldgen_test"].was_set()) {
     ofstream output("worldgen_out.txt");
     UserInfoLog.addOutput(DebugOutput::toStream(output));
@@ -384,7 +383,7 @@ static int keeperMain(po::parser& commandLineFlags) {
         auto enemyId = commandLineFlags["battle_enemy"].get().string;
         auto enemy2Id = commandLineFlags["battle_enemy_two"].get().string;
         if (enemyId == "campaign")
-          loop.campaignBattleText(numRounds, FilePath::fromFullPath(level), EnemyId(enemy2Id.data()), VillainGroup::EVIL_KEEPER);
+          loop.campaignBattleText(numRounds, FilePath::fromFullPath(level), EnemyId(enemy2Id.data()), VillainGroup("EVIL_KEEPER"));
         else
           loop.campaignBattleText(numRounds, FilePath::fromFullPath(level), EnemyId(enemy2Id.data()), EnemyId(enemyId.data()));
       }
@@ -401,7 +400,8 @@ static int keeperMain(po::parser& commandLineFlags) {
       contribDataPath,
       freeDataPath.file("images/mouse_cursor.png"),
       freeDataPath.file("images/mouse_cursor2.png"),
-      freeDataPath.file("images/icon.png"));
+      freeDataPath.file("images/icon.png"),
+      freeDataPath.file("images/map_font2.png"));
   initializeGLExtensions();
 
 #ifndef RELEASE

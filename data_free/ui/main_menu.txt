@@ -73,6 +73,8 @@ Position(SCREEN, {
       Height Spacing {}
       Using "highscores" MenuButton("Highscores")
       Height Spacing {}
+      Using "achievements" MenuButton("Achievements")
+      Height Spacing {}
       Using "credits" MenuButton("Credits")
       Height Spacing {}
       Using "quit" MenuButton("Quit")

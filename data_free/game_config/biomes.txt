@@ -7,8 +7,8 @@
   items = "wildernessItems"
   itemCount = {10 20}
   mountains = {
-    lowlandRatio = 0.60
-    hillRatio = 0.06
+    lowlandRatio = 1.0
+    hillRatio = 0.0
     hill = "HILL"
     grass = "GRASS"
     mountain = "MOUNTAIN"
@@ -57,7 +57,6 @@
     }
   }
   darkKeeperEnemies = {
-    { id = "GUARD_POST" probability = 0.5 }
     { id = "HUMAN_COTTAGE" count = { 3 5 } }
     { id = "COTTAGE_BANDITS" probability = 0.5 }
     { id = "CORPSES" probability = 0.2 }
@@ -84,7 +83,8 @@
     { id = "ADOXIE_VAULT" }
     { id = "KRAKEN" probability = 0.3 }
   }
-  keeperBiome = { "grass" } "grassland" 2
+  viewId = { "grass" }
+  name = "grassland"
 }
 "FOREST" inherit "GRASSLAND"
 {
@@ -136,7 +136,8 @@
     { id = "ADOXIE_VAULT" }
     { id = "WITCH" probability = 0.2 }
   }
-  keeperBiome = { "decid_tree" } "forest" 1
+  viewId = { "decid_tree" }
+  name = "forest"
 }
 "MOUNTAIN" inherit "GRASSLAND"
 {
@@ -170,7 +171,7 @@
     }
   }
   darkKeeperEnemies = {
-    { id = "DWARF_CAVE" count = { 1 3 } }
+    { id = "NO_AGGRO_DWARF_CAVE" count = { 1 3 } }
     { id = "KOBOLD_CAVE" count = { 1 3 } }
     { id = "NO_AGGRO_BANDITS" count = { 0 2 } }
     { id = "CORPSES" probability = 0.2 }
@@ -182,7 +183,8 @@
     { id = "CORPSES" probability = 0.2 }
     { id = "WIZARD_TOWER" probability = 0.1 }
   }
-  keeperBiome = { "map_mountain1" } "mountains" 0
+  viewId = { "map_mountain1" }
+  name = "mountains"
 }
 "SNOW"
 {
@@ -244,7 +246,8 @@
     { id = "WOLF_DEN" }
     { id = "ADOXIE_VAULT" }
   }
-  keeperBiome = { "snowman" } "winter" 3
+  viewId = { "snowman" }
+  name = "winter"
 }
 "DESERT"
 {
@@ -305,7 +308,8 @@
     { id = "ADOXIE_VAULT" }
     { id = "BANDITS" }
   }
-  keeperBiome = { "cactus1" } "desert" 4
+  viewId = { "cactus1" }
+  name = "desert"
 }
 "OUTBACK"
 {
@@ -342,6 +346,8 @@
       1 "KANGAROO"
     }
   }
+  viewId = { "termite_mound" }
+  name = "outback"
 }
 
 "SWAMP"
@@ -355,8 +361,8 @@
   items = "wildernessItems"
   itemCount = {20 40}
   mountains = {
-    lowlandRatio = 0.60
-    hillRatio = 0.01
+    lowlandRatio = 1.0
+    hillRatio = 0.0
     hill = "SWAMPGRASS"
     grass = "SWAMPGRASS"
     mountain = "MOUNTAIN"
@@ -386,6 +392,16 @@
       2 "RAVEN"
     }
   }
+  darkKeeperBaseEnemies = {
+    { id = "LIZARDMEN_SMALL" }
+    { id = "ADOXIE_VAULT" }
+    { id = "BANDITS" }
+  }
+  whiteKeeperBaseEnemies = {
+    { id = "LIZARDMEN_SMALL" }
+    { id = "ADOXIE_VAULT" }
+    { id = "BANDITS" }
+  }
   darkKeeperEnemies = {
     { id = "LIZARDMEN_COTTAGE" count = { 1 3 } }
     { id = "COTTAGE_BANDITS" probability = 0.3 }
@@ -400,5 +416,7 @@
     { id = "KOBOLD_CAVE" probability = 0.2 }
     { id = "WITCH" }
   }
+  viewId = { "grass" }
+  name = "swamp"
 }
 

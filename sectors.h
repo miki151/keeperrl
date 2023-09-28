@@ -21,6 +21,7 @@ class Sectors {
   public:
   using ExtraConnections = Table<optional<Vec2>>;
   Sectors(Rectangle bounds, ExtraConnections);
+  Sectors(Rectangle bounds);
 
   bool same(Vec2, Vec2) const;
   bool add(Vec2);
@@ -32,9 +33,14 @@ class Sectors {
   void removeExtraConnection(Vec2, Vec2);
   const ExtraConnections getExtraConnections() const;
 
+  using PosSet = HashSet<Vec2>;
   using SectorId = short;
+  const PosSet& getWholeSector(SectorId) const;
+
   SectorId getLargest() const;
-  bool isSector(Vec2, SectorId) const;
+  optional<SectorId> getSector(Vec2) const;
+
+  SERIALIZATION_DECL(Sectors)
 
   private:
   vector<Vec2> getNeighbors(Vec2) const;
@@ -42,9 +48,9 @@ class Sectors {
   SectorId getNewSector();
   void join(Vec2, SectorId);
   vector<Vec2> getDisjoint(Vec2) const;
-  Rectangle bounds;
-  Table<SectorId> sectors;
-  vector<int> sizes;
-  ExtraConnections extraConnections;
+  Rectangle SERIAL(bounds);
+  Table<SectorId> SERIAL(sectors);
+  vector<PosSet> SERIAL(allPos);
+  ExtraConnections SERIAL(extraConnections);
 };
 

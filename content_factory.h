@@ -17,7 +17,6 @@
 #include "layout_mapping_id.h"
 #include "layout_mapping.h"
 #include "keeper_creature_info.h"
-#include "adventurer_creature_info.h"
 #include "tile_gas_type.h"
 #include "dancing.h"
 #include "scripted_help_info.h"
@@ -27,6 +26,9 @@
 #include "body_material_id.h"
 #include "body_material.h"
 #include "keybinding_info.h"
+#include "world_map_info.h"
+#include "achievement_id.h"
+#include "achievement_info.h"
 
 class KeyVerifier;
 class BuildInfo;
@@ -45,6 +47,7 @@ struct BodyMaterial;
 class ContentFactory {
   public:
   optional<string> readData(const GameConfig*, const vector<string>& modNames);
+  vector<WorldMapInfo> SERIAL(worldMaps);
   FurnitureFactory SERIAL(furniture);
   map<string, vector<ZLevelInfo>> SERIAL(zLevels);
   vector<ResourceDistribution> SERIAL(resources);
@@ -59,7 +62,6 @@ class ContentFactory {
   VillainsTuple SERIAL(villains);
   GameIntros SERIAL(gameIntros);
   vector<pair<string, KeeperCreatureInfo>> SERIAL(keeperCreatures);
-  vector<pair<string, AdventurerCreatureInfo>> SERIAL(adventurerCreatures);
   map<CustomItemId, ItemAttributes> SERIAL(items);
   vector<pair<string, ViewId>> SERIAL(equipmentGroups);
   map<BuildingId, BuildingInfo> SERIAL(buildingInfo);
@@ -67,7 +69,7 @@ class ContentFactory {
   map<BiomeId, BiomeInfo> SERIAL(biomeInfo);
   CampaignInfo SERIAL(campaignInfo);
   map<WorkshopType, WorkshopInfo> SERIAL(workshopInfo);
-  unordered_map<CollectiveResourceId, ResourceInfo, CustomHash<CollectiveResourceId>> SERIAL(resourceInfo);
+  HashMap<CollectiveResourceId, ResourceInfo> SERIAL(resourceInfo);
   vector<CollectiveResourceId> SERIAL(resourceOrder);
   map<LayoutMappingId, LayoutMapping> SERIAL(layoutMapping);
   map<RandomLayoutId, LayoutGenerator> SERIAL(randomLayouts);
@@ -77,9 +79,12 @@ class ContentFactory {
   vector<ScriptedHelpInfo> SERIAL(scriptedHelp);
   map<AttrType, AttrInfo> SERIAL(attrInfo);
   vector<AttrType> SERIAL(attrOrder);
-  unordered_map<BuffId, BuffInfo, CustomHash<BuffId>> SERIAL(buffs);
-  unordered_map<BodyMaterialId, BodyMaterial, CustomHash<BodyMaterialId>> SERIAL(bodyMaterials);
+  HashMap<BuffId, BuffInfo> SERIAL(buffs);
+  vector<BuffId> SERIAL(buffsModifyingEfficiency);
+  HashMap<BodyMaterialId, BodyMaterial> SERIAL(bodyMaterials);
   vector<pair<Keybinding, KeybindingInfo>> SERIAL(keybindings);
+  map<AchievementId, AchievementInfo> SERIAL(achievements);
+  vector<AchievementId> SERIAL(achievementsOrder);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();

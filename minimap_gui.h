@@ -40,7 +40,7 @@ class MinimapGui : public GuiElem {
 
   struct MinimapInfo {
     Rectangle bounds;
-    unordered_set<Vec2, CustomHash<Vec2>> roads;
+    HashSet<Vec2> roads;
     vector<Vec2> enemies;
     optional<Vec2> player;
     vector<Vec2> locations;

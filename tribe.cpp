@@ -110,7 +110,7 @@ Tribe::Map Tribe::generateTribes() {
   init(ret, TribeId::getHuman(), true);
   init(ret, TribeId::getDwarf(), true);
   init(ret, TribeId::getGnome(), true);
-  init(ret, TribeId::getAdventurer(), false);
+  init(ret, TribeId::getWhiteKeeper(), false);
   init(ret, TribeId::getDarkKeeper(), false);
   init(ret, TribeId::getRetiredKeeper(), false);
   init(ret, TribeId::getGreenskin(), true);
@@ -124,7 +124,7 @@ Tribe::Map Tribe::generateTribes() {
   addEnemies(ret, TribeId::getGnome(),
       {TribeId::getBandit()});
   addEnemies(ret, TribeId::getDarkKeeper(), {
-      TribeId::getAdventurer(), TribeId::getElf(), TribeId::getDwarf(), TribeId::getHuman(), TribeId::getLizard(),
+      TribeId::getWhiteKeeper(), TribeId::getElf(), TribeId::getDwarf(), TribeId::getHuman(), TribeId::getLizard(),
       TribeId::getPest(), TribeId::getMonster(), TribeId::getBandit(), TribeId::getAnt(),
       TribeId::getRetiredKeeper(), TribeId::getWildlife()});
   addEnemies(ret, TribeId::getElf(), {
@@ -134,7 +134,7 @@ Tribe::Map Tribe::generateTribes() {
   addEnemies(ret, TribeId::getHuman(), {
       TribeId::getLizard(), TribeId::getBandit(), TribeId::getAnt(), TribeId::getDarkElf(),
       TribeId::getGreenskin()});
-  addEnemies(ret, TribeId::getAdventurer(), {
+  addEnemies(ret, TribeId::getWhiteKeeper(), {
       TribeId::getMonster(), TribeId::getPest(), TribeId::getBandit(), TribeId::getDarkElf(),
       TribeId::getGreenskin(), TribeId::getAnt(), TribeId::getRetiredKeeper(), TribeId::getLizard(), TribeId::getWildlife() });
   addEnemies(ret, TribeId::getMonster(), {
@@ -142,12 +142,12 @@ Tribe::Map Tribe::generateTribes() {
   addEnemies(ret, TribeId::getShelob(), {
       TribeId::getGreenskin(), TribeId::getMonster(), TribeId::getLizard(), TribeId::getPest(),
       TribeId::getWildlife(), TribeId::getElf(), TribeId::getHuman(), TribeId::getDwarf(), TribeId::getGnome(),
-      TribeId::getAdventurer(), TribeId::getDarkKeeper(), TribeId::getBandit(),
+      TribeId::getWhiteKeeper(), TribeId::getDarkKeeper(), TribeId::getBandit(),
       TribeId::getPeaceful(), TribeId::getAnt(), TribeId::getDarkElf(), TribeId::getRetiredKeeper()});
   addEnemies(ret, TribeId::getHostile(), {
       TribeId::getGreenskin(), TribeId::getMonster(), TribeId::getLizard(), TribeId::getPest(),
       TribeId::getWildlife(), TribeId::getElf(), TribeId::getHuman(), TribeId::getDwarf(), TribeId::getGnome(),
-      TribeId::getAdventurer(), TribeId::getDarkKeeper(), TribeId::getBandit(), TribeId::getHostile(),
+      TribeId::getWhiteKeeper(), TribeId::getDarkKeeper(), TribeId::getBandit(), TribeId::getHostile(),
       TribeId::getPeaceful(), TribeId::getAnt(), TribeId::getDarkElf(), TribeId::getShelob(),
       TribeId::getRetiredKeeper()});
   return ret;
@@ -187,8 +187,8 @@ TribeId TribeId::getGnome() {
   return TribeId(KeyType::GNOME);
 }
 
-TribeId TribeId::getAdventurer() {
-  return TribeId(KeyType::ADVENTURER);
+TribeId TribeId::getWhiteKeeper() {
+  return TribeId(KeyType::WHITE_KEEPER);
 }
 
 TribeId TribeId::getBandit() {
@@ -227,7 +227,7 @@ TribeId TribeId::getShelob() {
   return TribeId(KeyType::SHELOB);
 }
 
-static unordered_map<TribeId, TribeId, CustomHash<TribeId>> serialSwitch;
+static HashMap<TribeId, TribeId> serialSwitch;
 
 void TribeId::switchForSerialization(TribeId from, TribeId to) {
   serialSwitch[from] = to;
@@ -237,7 +237,7 @@ void TribeId::clearSwitch() {
   serialSwitch.clear();
 }
 
-template <class Archive> 
+template <class Archive>
 void TribeId::serialize(Archive& ar, const unsigned int version) {
   ar(key);
   if (serialSwitch.count(*this))

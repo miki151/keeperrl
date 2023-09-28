@@ -60,12 +60,11 @@ struct EnemyInfo {
   EnemyInfo(SettlementInfo s, CollectiveConfig c, optional<VillageBehaviour> v = none,
       optional<LevelConnection> = none);
   void updateBuildingInfo(const map<BuildingId, BuildingInfo>&);
+  optional<BiomeId> getBiome() const;
   STRUCT_DECLARATIONS(EnemyInfo)
   SERIALIZATION_DECL(EnemyInfo)
   EnemyInfo& setVillainType(VillainType type);
   EnemyInfo& setId(EnemyId);
-  EnemyInfo& setImmigrants(vector<ImmigrantInfo>);
-  EnemyInfo& setNonDiscoverable();
   void updateCreateOnBones(const EnemyFactory&);
   PCollective buildCollective(ContentFactory*) const;
   SettlementInfo SERIAL(settlement);
@@ -74,7 +73,7 @@ struct EnemyInfo {
   optional<VillainType> villainType;
   optional<LevelConnection> SERIAL(levelConnection);
   optional<EnemyId> id;
-  vector<BiomeId> SERIAL(biomes);
+  optional<BiomeId> SERIAL(biome);
   vector<ImmigrantInfo> SERIAL(immigrants);
   bool SERIAL(discoverable) = true;
   optional<BonesInfo> SERIAL(createOnBones);

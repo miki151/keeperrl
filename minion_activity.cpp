@@ -11,7 +11,6 @@
 #include "furniture_factory.h"
 #include "furniture.h"
 #include "task_map.h"
-#include "quarters.h"
 #include "zones.h"
 #include "resource_info.h"
 #include "equipment.h"
@@ -121,27 +120,18 @@ optional<MinionActivity> MinionActivities::getActivityFor(const Collective* col,
 template <typename PosType, typename PosFun>
 static vector<PosType> tryInQuarters(vector<PosType> pos, const Collective* collective, const Creature* c, PosFun posFun) {
   PROFILE;
-  auto& quarters = collective->getQuarters();
   auto& zones = collective->getZones();
-  bool hasAnyQuarters = [&] {
-    for (auto& q : quarters.getAllQuarters())
-      if (!zones.getPositions(q.zone).empty())
-        return true;
-    return false;
-  }();
-  if (!hasAnyQuarters)
+  if (zones.getPositions(ZoneId::QUARTERS).empty())
     return pos;
-  auto index = quarters.getAssigned(c->getUniqueId());
+  auto& myQuarters = zones.getQuarters(c->getUniqueId());
   vector<PosType> inQuarters;
-  if (index) {
+  if (!myQuarters.empty()) {
     PROFILE_BLOCK("has quarters");
-    inQuarters = pos.filter([&](auto& pos) {return zones.isZone(posFun(pos), quarters.getAllQuarters()[*index].zone);});
+    inQuarters = pos.filter([&](auto& pos) {return myQuarters.count(posFun(pos));});
   } else {
     PROFILE_BLOCK("no quarters");
-    EnumSet<ZoneId> allZones;
-    for (auto& q : quarters.getAllQuarters())
-      allZones.insert(q.zone);
-    inQuarters = pos.filter([&](auto& pos) { return !zones.isAnyZone(posFun(pos), allZones); });
+    auto& allQuarters = zones.getPositions(ZoneId::QUARTERS);
+    inQuarters = pos.filter([&](auto& pos) { return !allQuarters.count(posFun(pos)); });
   }
   if (!inQuarters.empty())
     return inQuarters;
@@ -186,7 +176,7 @@ vector<pair<Position, FurnitureLayer>> MinionActivities::getAllPositions(const C
 static PTask getDropItemsTask(Collective* collective, const Creature* creature) {
   auto& config = collective->getConfig();
   auto& items = creature->getEquipment().getItems();
-  unordered_map<StorageId, vector<Item*>, CustomHash<StorageId>> itemMap;
+  HashMap<StorageId, vector<Item*>> itemMap;
   for (auto it : items)
     if (!collective->getMinionEquipment().isOwner(it, creature))
       for (auto id : it->getStorageIds())
@@ -224,7 +214,7 @@ MinionActivities::MinionActivities(const ContentFactory* contentFactory) {
     }
 }
 
-WTask MinionActivities::getExisting(Collective* collective, Creature* c, MinionActivity activity) {
+Task* MinionActivities::getExisting(Collective* collective, Creature* c, MinionActivity activity) {
   PROFILE;
   return collective->getTaskMap().getClosestTask(c, activity, false, collective);
 }
@@ -247,8 +237,9 @@ static vector<Position> limitToIndoors(const PositionSet& v) {
 
 const PositionSet& getIdlePositions(const Collective* collective, const Creature* c) {
   auto& candidate = [&] () -> const PositionSet& {
-    if (auto q = collective->getQuarters().getAssigned(c->getUniqueId()))
-      return collective->getZones().getPositions(Quarters::getAllQuarters()[*q].zone);
+    auto& quarters = collective->getZones().getQuarters(c->getUniqueId());
+    if (!quarters.empty())
+      return quarters;
     if (collective->hasTrait(c, MinionTrait::PRISONER))
       return collective->getConstructions().getBuiltPositions(FurnitureType("PRISON"));
     if (!collective->hasTrait(c, MinionTrait::NO_LEISURE_ZONE))
@@ -369,7 +360,7 @@ optional<TimeInterval> MinionActivities::getDuration(const Creature* c, MinionAc
     case MinionActivity::RITUAL:
       return 150_visible;
     default:
-      return TimeInterval((int) 500 + 250 * c->getMorale().value_or(0));
+      return TimeInterval(500 + Random.get(Range(0, 250)));
   }
 }
 

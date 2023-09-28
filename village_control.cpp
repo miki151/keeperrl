@@ -39,10 +39,11 @@
 #include "enemy_aggression_level.h"
 #include "immigrant_info.h"
 #include "item.h"
+#include "team_order.h"
 
 SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl)
 
-SERIALIZE_DEF(VillageControl, SUBCLASS(CollectiveControl), SUBCLASS(EventListener), behaviour, victims, myItems, stolenItemCount, attackSizes, entries, maxEnemyPower)
+SERIALIZE_DEF(VillageControl, SUBCLASS(CollectiveControl), SUBCLASS(EventListener), behaviour, victims, myItems, stolenItemCount, attackSizes, entries, maxEnemyPower, cancelledAttacks)
 REGISTER_TYPE(ListenerTemplate<VillageControl>)
 
 VillageControl::VillageControl(Private, Collective* col, optional<VillageBehaviour> v) : CollectiveControl(col),
@@ -84,7 +85,7 @@ void VillageControl::onOtherKilled(const Creature* victim, const Creature* kille
       victims += 0.15; // small increase for same tribe but different village
 }
 
-void VillageControl::onMemberKilled(const Creature* victim, const Creature* killer) {
+void VillageControl::onMemberKilledOrStunned(Creature* victim, const Creature* killer) {
   if (isEnemy(killer))
     victims += 1;
 }
@@ -173,7 +174,7 @@ void VillageControl::updateAggression(EnemyAggressionLevel level) {
       break;
     case EnemyAggressionLevel::EXTREME:
       if (behaviour && !behaviour->triggers.empty())
-        behaviour->triggers.push_back(Timer{10});
+        behaviour->triggers.push_back(Timer{1000});
       break;
     default:
       break;
@@ -195,13 +196,15 @@ void VillageControl::launchAttack(vector<Creature*> attackers) {
       ransom = max<int>(behaviour->ransom->second,
           (Random.getDouble(behaviour->ransom->first * 0.6, behaviour->ransom->first)) * hisGold);
     TeamId team = collective->getTeams().create(attackers);
+    if (behaviour->isAttackBehaviourNonChasing())
+      collective->getTeams().setTeamOrder(team, TeamOrder::FLEE, true);
     collective->getTeams().activate(team);
     collective->freeTeamMembers(attackers);
-    vector<WConstTask> attackTasks;
+    vector<const Task*> attackTasks;
     for (Creature* c : attackers) {
       auto task = Task::withTeam(collective, team, behaviour->getAttackTask(this));
       attackTasks.push_back(task.get());
-      collective->setTask(c, std::move(task));
+      collective->setPriorityTask(c, std::move(task));
     }
     enemy->getControl()->addAttack(CollectiveAttack(std::move(attackTasks), collective, attackers, ransom));
     attackSizes[team] = attackers.size();
@@ -215,7 +218,7 @@ bool VillageControl::considerVillainAmbush(const vector<Creature*>& travellers) 
     auto attackers = getAttackers();
     if (!attackers.empty()) {
       const int maxDist = 3;
-      unordered_map<Position, int, CustomHash<Position>> distance;
+      HashMap<Position, int> distance;
       queue<Position> q;
       auto add = [&](Position p, int dist) {
         q.push(p);
@@ -289,7 +292,7 @@ void VillageControl::launchAllianceAttack(vector<Collective*> allies) {
     TeamId team = collective->getTeams().create(attackers);
     collective->getTeams().activate(team);
     collective->freeTeamMembers(attackers);
-    vector<WConstTask> attackTasks;
+    vector<const Task*> attackTasks;
     for (Creature* c : attackers) {
       auto task = Task::allianceAttack(allies, enemy, getKillLeaderTask(enemy));
       attackTasks.push_back(task.get());
@@ -301,17 +304,22 @@ void VillageControl::launchAllianceAttack(vector<Collective*> allies) {
 
 void VillageControl::considerCancellingAttack() {
   if (auto enemyCollective = getEnemyCollective())
-    for (auto team : collective->getTeams().getAll()) {
-      vector<Creature*> members = collective->getTeams().getMembers(team);
-      if (members.size() < (attackSizes[team] + 1) / 2 || (members.size() == 1 &&
-            members[0]->getBody().isSeriouslyWounded())) {
-        for (Creature* c : members)
-          collective->freeFromTask(c);
-        collective->getTeams().cancel(team);
-        if (auto& name = collective->getName())
-          enemyCollective->addRecordedEvent("resisting the attack of " + name->full);
+    for (auto team : collective->getTeams().getAll())
+      if (!cancelledAttacks.count(team)) {
+        vector<Creature*> members = collective->getTeams().getMembers(team);
+        if (members.size() < (attackSizes[team] + 1) / 2 || (members.size() == 1 &&
+              members[0]->getBody().isSeriouslyWounded())) {
+          for (Creature* c : members)
+            collective->setTask(c, Task::chain(
+                Task::transferTo(collective->getModel()),
+                Task::goTo(Random.choose(collective->getTerritory().getAll()))
+            ));
+          collective->getTeams().setTeamOrder(team, TeamOrder::FLEE, true);
+          if (auto& name = collective->getName())
+            enemyCollective->addRecordedEvent("resisting the attack of " + name->full);
+          cancelledAttacks.insert(team);
+        }
       }
-    }
 }
 
 void VillageControl::onRansomPaid() {
@@ -380,7 +388,22 @@ vector<Creature*> VillageControl::getAttackers() const {
   return {};
 }
 
+void VillageControl::considerAcceptingPrisoners() {
+  vector<Creature*> captured;
+  for (auto pos : collective->getTerritory().getPillagePositions())
+    if (auto c = pos.getCreature())
+      if (collective->getTribe()->isEnemy(c)) {
+        if (c->isAffected(LastingEffect::STUNNED))
+          captured.push_back(c);
+        else
+          return;
+      }
+  for (auto c : captured)
+    collective->takePrisoner(c);
+}
+
 void VillageControl::update(bool) {
+  considerAcceptingPrisoners();
   considerCancellingAttack();
   acceptImmigration();
   healAllCreatures();

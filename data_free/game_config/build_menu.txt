@@ -15,7 +15,9 @@
     { Furniture {{ "PIT" }                        "STONE" 0 }      "Dig a pit"         "Structure"
       "Dig a pit in the ground. Building next to water or lava will cause it to fill up." }
 
-    { Furniture {{ "FILL_UP_WATER_FLOOR" }        "STONE" 20 }     "Fill lava or water""Structure"
+    { { FillPit }                                        "Fill a pit"   "Structure"}
+
+    { Furniture {{ "FILL_UP_WATER_FLOOR" }        "STONE" 5 }     "Fill lava or water""Structure"
       "" }
 
     { Furniture {{ "FLOOR" }              }               "Building interior" "Structure"
@@ -155,14 +157,8 @@
 
   "zones"
   {
-    { Zone QUARTERS1                                           "Quarters 1"        "Zones"
+    { Zone QUARTERS                                           "Quarters"        "Zones"
         "Designate separate quarters for chosen minions." "QUARTERS" {} true}
-
-    { Zone QUARTERS2                                           "Quarters 2"        "Zones"
-        "Designate separate quarters for chosen minions."}
-
-    { Zone QUARTERS3                                           "Quarters 3"        "Zones"
-        "Designate separate quarters for chosen minions."}
 
     { Zone LEISURE                                             "Leisure"           "Zones"
         "Designate leisure zone where minions will hang out when they have nothing to do."}
@@ -288,7 +284,18 @@ TRAINING("_DWARF", "_dwarf")
         "Produces leather equipment, traps, first-aid kits and other." "WORKSHOPS" {} true  BUILD_WORKSHOP}
 
     { Furniture {{ "FORGE" }      "IRON" 20 }                      "Forge"             "Crafting"
-        "Produces metal weapons and armor."    none { TechId "iron working" }}
+        "Produces iron weapons and armor."    none { TechId "iron working" }}
+
+    { Furniture {{ "LAVA_FORGE" } "IRON" 20 }                      "Magma forge"        "Crafting"
+        "Quality of crafted items is increased by a factor of 2. Must be placed next to magma."
+        none { TechId "iron working" }}
+
+    { Furniture {{ "ADA_FORGE" }      "ADA" 20 }                      "Adamantium forge"             "Crafting"
+        "Produces adamantine weapons and armor."    none { TechId "iron working" }}
+
+    { Furniture {{ "MYST_FORGE" } "IRON" 20 }                      "Myst forge"        "Crafting"
+        "Produces adoxium and infernite equipment and other artifacts. Must be placed in underground fog."
+        none { TechId "iron working" }}
   }
 
   "laboratory"
@@ -321,7 +328,7 @@ TRAINING("_DWARF", "_dwarf")
   "morgue"
   {
     { Furniture {{ "MORGUE_TABLE" } "WOOD" 10 }                     "Morgue table"     "Crafting"
-        "Produces animated bodies."                           none { TechId "necromancy" } }
+        "Produces animated bodies."                           "WORKSHOPS" { TechId "necromancy" } true }
   }
   "furnace"
   {

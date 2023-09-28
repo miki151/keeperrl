@@ -55,6 +55,7 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltInfo), NAMED(dissolveTo));
   ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), NAMED(freezeTo), NAMED(fillPit), NAMED(itemsRemovedEffect));
   ar(OPTION(eyeball), OPTION(storageIds), OPTION(hidesItems), NAMED(emptyViewId), OPTION(diningFurniture));
+  ar(OPTION(usagePredicate), OPTION(minedAchievement), OPTION(removeInstantly));
 }
 
 template <class Archive>
@@ -156,7 +157,8 @@ void Furniture::destroy(Position pos, const DestroyAction& action, Creature* des
 
 void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& action) {
   if (auto& info = destroyedInfo[action.getType()]) {
-    c->addSound(action.getSound());
+    if (auto s = action.getSound())
+      c->addSound(*s);
     double damage = action.getDamage(c);
     info->health -= damage / info->strength;
     updateViewObject();
@@ -184,12 +186,24 @@ bool Furniture::doesHideItems() const {
   return hidesItems;
 }
 
-bool Furniture::isDiningFurniture() const {
+optional<FurnitureType> Furniture::getDiningFurnitureType() const {
   return diningFurniture;
+}
+
+const optional<CreaturePredicate>& Furniture::getUsagePredicate() const {
+  return usagePredicate;
 }
 
 const optional<ViewId>& Furniture::getEmptyViewId() const {
   return emptyViewId;
+}
+
+const optional<AchievementId>& Furniture::getMinedAchievement() const {
+  return minedAchievement;
+}
+
+bool Furniture::canRemoveInstantly() const {
+  return removeInstantly;
 }
 
 optional<ViewId> Furniture::getSupportViewId(Position pos) const {
@@ -454,8 +468,12 @@ void Furniture::spreadBlood(Position pos) {
   }
 }
 
-int Furniture::getMaxTraining(ExperienceType t) const {
-  return maxTraining[t];
+int Furniture::getMaxTraining(AttrType t) const {
+  return getValueMaybe(maxTraining, t).value_or(0);
+}
+
+const HashMap<AttrType, int>& Furniture::getMaxTraining() const {
+  return maxTraining;
 }
 
 optional<FurnitureType> Furniture::getUpgrade() const {
@@ -481,7 +499,7 @@ optional<FurnitureType> Furniture::getFillPit() const {
   return fillPit;
 }
 
-const LuxuryInfo&Furniture::getLuxuryInfo() const {
+const LuxuryInfo& Furniture::getLuxuryInfo() const {
   return luxury;
 }
 

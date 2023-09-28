@@ -3,7 +3,6 @@
 #include "util.h"
 #include "file_sharing.h"
 #include "exit_info.h"
-#include "experience_type.h"
 #include "game_time.h"
 
 class View;
@@ -67,13 +66,14 @@ class MainLoop {
   PGame prepareCampaign(RandomGen&);
   PGame prepareWarlord(const SaveFileInfo&);
   enum class ExitCondition;
-  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (WGame)> = nullptr,
+  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (Game*)> = nullptr,
       milliseconds stepTimeMilli = milliseconds{3}, optional<int> maxTurns = none);
   void showCredits();
+  void showAchievements();
   void showMods();
   void playMenuMusic();
   ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen&, ContentFactory*);
-  ModelTable prepareCampaignModels(CampaignSetup& campaign, TribeAlignment, ModelBuilder);
+  ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, ModelBuilder);
   PGame loadGame(const FilePath&);
   PGame loadOrNewGame();
   FilePath getSavePath(const PGame&, GameSaveType);
@@ -97,7 +97,7 @@ class MainLoop {
   TileSet* tileSet;
   int saveVersion;
   string modVersion;
-  PModel getBaseModel(ModelBuilder&, CampaignSetup&, TribeId, TribeAlignment);
+  PModel getBaseModel(ModelBuilder&, CampaignSetup&, const AvatarInfo&);
   void considerGameEventsPrompt();
   void considerFreeVersionText(bool tilesPresent);
   void eraseAllSavesExcept(const PGame&, optional<GameSaveType>);

@@ -96,9 +96,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool takeDamage(const Attack&);
   void onAttackedBy(Creature*);
   bool heal(double amount = 1000);
-  /** Morale is in the range [-1:1] **/
-  optional<double> getMorale(const ContentFactory* = nullptr) const;
-  void addMorale(double);
+  void setTeamExperience(double);
   void take(PItem item, const ContentFactory* = nullptr);
   void take(vector<PItem> item);
   const Equipment& getEquipment() const;
@@ -120,7 +118,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const CreatureName& getName() const;
   CreatureName& getName();
   const char* identify() const;
-  int getAttr(AttrType, bool includeWeapon = true) const;
+  int getAttr(AttrType, bool includeWeapon = true, bool includeTeamExp = true) const;
   int getSpecialAttr(AttrType, const Creature* against) const;
   int getAttrBonus(AttrType, int rawAttr, bool includeWeapon) const;
 
@@ -223,9 +221,9 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void retire();
   void removeGameReferences();
 
-  void increaseExpLevel(ExperienceType, double increase);
+  void increaseExpLevel(AttrType, double increase);
 
-  BestAttack getBestAttack(const ContentFactory*) const;
+  BestAttack getBestAttack(const ContentFactory*, bool includeTeamExp = true) const;
 
   vector<pair<Item*, double>> getRandomWeapons() const;
   int getMaxSimultaneousWeapons() const;
@@ -264,7 +262,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void privateMessage(const PlayerMessage&) const;
   void addFX(const FXInfo&) const;
 
-  WController getController() const;
+  Controller* getController() const;
   void pushController(PController);
   void setController(PController);
   void popController();
@@ -313,9 +311,15 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void addCombatIntent(Creature* attacker, CombatIntentInfo::Type);
   optional<CombatIntentInfo> getLastCombatIntent() const;
   void onKilledOrCaptured(Creature* victim);
+  Creature* getsCreditForKills();
   void updateCombatExperience(Creature* victim);
   double getCombatExperience() const;
-  int getRawAttr(AttrType) const;
+  double getCombatExperienceRespectingMaxPromotion() const;
+  double getTeamExperience() const;
+  void setCombatExperience(double);
+  void setMaxPromotion(int level);
+  int getCombatExperienceCap() const;
+  int getRawAttr(AttrType, bool includeTeamExp = true) const;
 
   void addSound(const Sound&) const;
   void updateViewObject(const ContentFactory*);
@@ -329,6 +333,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   EnumSet<CreatureStatus>& getStatus();
   const EnumSet<CreatureStatus>& getStatus() const;
   vector<Creature*> getCompanions() const;
+  Creature* getFirstCompanion() const;
   void removeCompanions(int index);
   void toggleCaptureOrder();
   void setCaptureOrder(bool);
@@ -381,7 +386,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<LastStairsNavigation> lastStairsNavigation;
   EntitySet<Creature> SERIAL(knownHiding);
   TribeId SERIAL(tribe);
-  double SERIAL(morale) = 0;
   optional<GlobalTime> SERIAL(deathTime);
   bool SERIAL(hidden) = false;
   Creature* lastAttacker = nullptr;
@@ -393,7 +397,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<PController> SERIAL(controllerStack);
   vector<string> SERIAL(killTitles);
   vector<KillInfo> SERIAL(kills);
-  unordered_set<string> SERIAL(uniqueKills);
   mutable int SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;
   using MoveId = pair<int, LevelId>;
@@ -407,7 +410,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   int SERIAL(lastMoveCounter) = 0;
   EnumSet<CreatureStatus> SERIAL(statuses);
   bool SERIAL(capture) = 0;
-  double SERIAL(captureHealth) = 1;
   bool captureDamage(double damage, Creature* attacker);
   mutable Game* gameCache = nullptr;
   optional<GlobalTime> SERIAL(globalTime);
@@ -433,12 +435,15 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<PromotionInfo> SERIAL(promotions);
   PCreature SERIAL(steed);
   vector<pair<BuffId, GlobalTime>> SERIAL(buffs);
-  unordered_map<BuffId, int, CustomHash<BuffId>> SERIAL(buffCount);
-  unordered_map<BuffId, int, CustomHash<BuffId>> SERIAL(buffPermanentCount);
+  HashMap<BuffId, int> SERIAL(buffCount);
+  HashMap<BuffId, int> SERIAL(buffPermanentCount);
   vector<AdjectiveInfo> getLastingEffectAdjectives(const ContentFactory*, bool bad) const;
   bool removeBuff(int index, bool msg);
   bool processBuffs();
   double SERIAL(combatExperience) = 0;
+  int SERIAL(maxPromotion) = 10000;
+  double SERIAL(teamExperience) = 0;
+  int SERIAL(highestAttackValueEver) = 0;
   AttrType modifyDamageAttr(AttrType, const ContentFactory*) const;
 };
 

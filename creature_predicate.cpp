@@ -13,6 +13,7 @@
 #include "sectors.h"
 #include "movement_type.h"
 #include "content_factory.h"
+#include "tile_gas_info.h"
 
 namespace Impl {
 static bool applyToCreature(const CreaturePredicates::Enemy&, const Creature* victim, const Creature* attacker) {
@@ -210,6 +211,14 @@ static string getName(FurnitureType, const ContentFactory*) {
   return "furniture";
 }
 
+static bool apply(CreaturePredicates::ContainsGas type, Position pos, const Creature* attacker) {
+  return pos.getGasAmount(type) > 0;
+}
+
+static string getName(CreaturePredicates::ContainsGas type, const ContentFactory* f) {
+  return "in " + f->tileGasTypes.at(type).name;
+}
+
 static bool applyToCreature(BodyMaterialId m, const Creature* victim, const Creature* attacker) {
   return victim->getBody().getMaterial() == m;
 }
@@ -369,6 +378,14 @@ static string getName(const CreaturePredicates::AttributeAtLeast& a, const Conte
   return "at least " + toString(a.value) + " " + f->attrInfo.at(a.attr).name;
 }
 
+static bool applyToCreature(const CreaturePredicates::HasAnyHealth&, const Creature* victim, const Creature* attacker) {
+  return victim->getBody().hasAnyHealth(victim->getGame()->getContentFactory());
+}
+
+static string getName(const CreaturePredicates::HasAnyHealth&, const ContentFactory*) {
+  return "with health";
+}
+
 static bool apply(const CreaturePredicates::Translate& m, Position pos, const Creature* attacker) {
   return m.pred->apply(pos.plus(m.dir), attacker);
 }
@@ -429,13 +446,22 @@ static bool apply(const T& t, Position pos, const Creature* attacker) {
 
 }
 
+template <typename T, REQUIRE(Impl::applyToCreature(TVALUE(const T&), TVALUE(const Creature*), TVALUE(const Creature*)))>
+static bool applyToCreature1(const T& t, const Creature* c, const Creature* attacker, int) {
+  return Impl::applyToCreature(t, c, attacker);
+}
+
+template <typename T, REQUIRE(Impl::apply(TVALUE(const T&), TVALUE(Position), TVALUE(const Creature*)))>
+static bool applyToCreature1(const T& t, const Creature* c, const Creature* attacker, double) {
+  return Impl::apply(t, c->getPosition(), attacker);
+}
 
 bool CreaturePredicate::apply(Position pos, const Creature* attacker) const {
   return visit<bool>([&](const auto& p) { return Impl::apply(p, pos, attacker); });
 }
 
 bool CreaturePredicate::apply(Creature* c, const Creature* attacker) const {
-  return apply(c->getPosition(), attacker);
+  return visit<bool>([&](const auto& p) { return applyToCreature1(p, c, attacker, 1); });
 }
 
 string CreaturePredicate::getName(const ContentFactory* f) const {

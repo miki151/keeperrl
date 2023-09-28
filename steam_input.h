@@ -79,5 +79,5 @@ class MySteamInput {
   private:
   void detectControllers();
   optional<milliseconds> lastControllersCheck;
-  unordered_map<ControllerKey, string, CustomHash<ControllerKey>> actionGlyphs;
+  HashMap<ControllerKey, string> actionGlyphs;
 };

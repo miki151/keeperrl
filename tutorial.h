@@ -10,10 +10,10 @@ class ContentFactory;
 class Tutorial {
   public:
   Tutorial();
-  void refreshInfo(WConstGame, optional<TutorialInfo>&) const;
-  void continueTutorial(WConstGame);
+  void refreshInfo(const Game*, optional<TutorialInfo>&) const;
+  void continueTutorial(const Game*);
   void goBack();
-  EnumSet<TutorialHighlight> getHighlights(WConstGame) const;
+  EnumSet<TutorialHighlight> getHighlights(const Game*) const;
   bool blockAutoEquipment() const;
 
   static void createTutorial(Game&, const ContentFactory* factory);
@@ -26,12 +26,12 @@ class Tutorial {
 
   private:
   string getMessage() const;
-  bool canContinue(WConstGame) const;
+  bool canContinue(const Game*) const;
 
   State SERIAL(state);
-  vector<Vec2> getHighlightedSquaresHigh(WConstGame) const;
-  vector<Vec2> getHighlightedSquaresLow(WConstGame) const;
-  void onNewState(WConstGame);
+  vector<Vec2> getHighlightedSquaresHigh(const Game*) const;
+  vector<Vec2> getHighlightedSquaresLow(const Game*) const;
+  void onNewState(const Game*);
   Vec2 SERIAL(entrance);
-  optional<string> getWarning(WConstGame) const;
+  optional<string> getWarning(const Game*) const;
 };

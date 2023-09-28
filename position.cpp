@@ -54,7 +54,7 @@ Level* Position::getLevel() const {
   return level;
 }
 
-WModel Position::getModel() const {
+Model* Position::getModel() const {
   PROFILE;
   if (isValid())
     return level->getModel();
@@ -62,7 +62,7 @@ WModel Position::getModel() const {
     return nullptr;
 }
 
-WGame Position::getGame() const {
+Game* Position::getGame() const {
   PROFILE;
   if (level)
     return level->getModel()->getGame();
@@ -183,6 +183,14 @@ vector<const Furniture*> Position::getFurniture() const {
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = getFurniture(layer))
       ret.push_back(f);
+  return ret;
+}
+
+double Position::getTotalLuxury() const {
+  double ret = 0;
+  for (auto layer : ENUM_ALL(FurnitureLayer))
+    if (auto f = getFurniture(layer))
+      ret += f->getLuxuryInfo().luxury;
   return ret;
 }
 
@@ -652,7 +660,7 @@ optional<Position> Position::getGroundBelow() const {
 bool Position::isClosedOff(MovementType movement) const {
   auto sectors = level->getSectors(movement);
   auto topLevel = getModel()->getGroundLevel();
-  if (level == topLevel && sectors.isSector(coord, sectors.getLargest()))
+  if (level == topLevel && sectors.getSector(coord) == sectors.getLargest())
     return false;
   for (auto key : level->getAllStairKeys())
     if (sectors.same(coord, level->getLandingSquares(key)[0].getCoord()))
@@ -1253,7 +1261,7 @@ optional<pair<Position, int>> Position::getStairsTo(Position targetPos, const Mo
     bool includeNeighbors) const {
   PROFILE;
   CHECK(isSameModel(targetPos));
-  unordered_map<StairKey, int, CustomHash<StairKey>> distance;
+  HashMap<StairKey, int> distance;
   using QueueElem = tuple<StairKey, Level*, Level*, int>;
   auto queueCmp = [](auto& elem1, auto& elem2) { return std::get<3>(elem1) > std::get<3>(elem2); };
   priority_queue<QueueElem, vector<QueueElem>, decltype(queueCmp)> q(queueCmp);

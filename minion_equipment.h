@@ -56,8 +56,7 @@ class MinionEquipment {
 
   EntityMap<Item, UniqueEntity<Creature>::Id> SERIAL(owners);
   EntityMap<Creature, vector<WeakPointer<Item>>> SERIAL(myItems);
-  unordered_set<pair<UniqueEntity<Creature>::Id, UniqueEntity<Item>::Id>,
-      CustomHash<pair<UniqueEntity<Creature>::Id, UniqueEntity<Item>::Id>>> SERIAL(locked);
+  HashSet<pair<UniqueEntity<Creature>::Id, UniqueEntity<Item>::Id>> SERIAL(locked);
   EntityMap<Creature, EnumSet<EquipmentSlot>> SERIAL(lockedSlots);
 };
 

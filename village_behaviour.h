@@ -23,6 +23,7 @@ class VillageBehaviour {
   double SERIAL(ambushChance) = 0.0;
 
   PTask getAttackTask(VillageControl* self) const;
+  bool isAttackBehaviourNonChasing() const;
   double getAttackProbability(const VillageControl* self) const;
   double getTriggerValue(const AttackTrigger&, const VillageControl* self) const;
 

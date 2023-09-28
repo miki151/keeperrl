@@ -29,8 +29,8 @@ class Position {
   struct IsValid{};
   Position(Vec2, Level*, IsValid);
   static vector<Position> getAll(Level*, Rectangle);
-  WModel getModel() const;
-  WGame getGame() const;
+  Model* getModel() const;
+  Game* getGame() const;
   optional<int> dist8(const Position&) const;
   bool isSameLevel(const Position&) const;
   bool isSameLevel(const Level*) const;
@@ -145,6 +145,7 @@ class Position {
   const Furniture* getFurniture(FurnitureLayer) const;
   const Furniture* getFurniture(FurnitureType) const;
   vector<const Furniture*> getFurniture() const;
+  double getTotalLuxury() const;
   Furniture* modFurniture(FurnitureLayer) const;
   Furniture* modFurniture(FurnitureType) const;
   vector<Furniture*> modFurniture() const;
@@ -183,4 +184,4 @@ inline string toString(const Position& t) {
   return ss.str();
 }
 
-using PositionSet = unordered_set<Position, CustomHash<Position>>;
+using PositionSet = HashSet<Position>;

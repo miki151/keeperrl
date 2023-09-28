@@ -46,7 +46,8 @@ template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
   ar(OPTION(immigrantInterval), OPTION(maxPopulation), OPTION(conquerCondition), OPTION(canEnemyRetire));
   ar(SKIP(type), OPTION(leaderAsFighter), OPTION(spawnGhosts), OPTION(ghostProb), OPTION(guardianInfo));
-  ar(SKIP(populationString), SKIP(prisoners), OPTION(alwaysMount));
+  ar(SKIP(populationString), OPTION(prisoners), OPTION(alwaysMount), OPTION(discoverAchievement));
+  ar(SKIP(requireQuartersForExp));
 }
 
 SERIALIZABLE(CollectiveConfig);
@@ -104,10 +105,11 @@ CollectiveConfig::CollectiveConfig(TimeInterval interval, CollectiveType t, int 
 }
 
 CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation,
-    string populationString, bool prisoners, ConquerCondition conquerCondition) {
+    string populationString, bool prisoners, ConquerCondition conquerCondition, bool requireQuartersForExp) {
   auto ret = CollectiveConfig(immigrantInterval, KEEPER, maxPopulation, conquerCondition);
   ret.populationString = populationString;
   ret.prisoners = prisoners;
+  ret.requireQuartersForExp = requireQuartersForExp;
   return ret;
 }
 
@@ -221,6 +223,10 @@ bool CollectiveConfig::alwaysMountSteeds() const {
   return alwaysMount;
 }
 
+bool CollectiveConfig::minionsRequireQuarters() const {
+  return type == KEEPER && requireQuartersForExp;
+}
+
 MinionActivityInfo::MinionActivityInfo(Type t) : type(t) {
   CHECK(type != FURNITURE);
 }
@@ -251,7 +257,7 @@ CollectiveConfig::CollectiveConfig(CollectiveConfig&&) noexcept = default;
 CollectiveConfig::~CollectiveConfig() {
 }
 
-static auto getTrainingPredicate(ExperienceType experienceType) {
+static auto getTrainingPredicate(AttrType experienceType) {
   return [experienceType] (const ContentFactory* contentFactory, const Collective*, const Creature* c, FurnitureType t) {
       if (auto maxIncrease = contentFactory->furniture.getData(t).getMaxTraining(experienceType))
         return !c || (c->getAttributes().getExpLevel(experienceType) < maxIncrease &&
@@ -269,7 +275,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
       case MinionActivity::HAULING: return {MinionActivityInfo::WORKER};
       case MinionActivity::WORKING: return {MinionActivityInfo::WORKER};
       case MinionActivity::DIGGING: return {MinionActivityInfo::WORKER};
-      case MinionActivity::TRAIN: return {getTrainingPredicate(ExperienceType::MELEE)};
+      case MinionActivity::TRAIN: return {getTrainingPredicate(AttrType("DAMAGE"))};
       case MinionActivity::SLEEP:
         return {[](const ContentFactory* f, const Collective*, const Creature* c, FurnitureType t) {
             if (!c)
@@ -277,10 +283,11 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
             return getBedType(c, f) == f->furniture.getData(t).getBedType();
           }};
       case MinionActivity::EAT:
-        return {[](const ContentFactory* f, const Collective* col, const Creature* c, FurnitureType t) {
+        return {[](const ContentFactory* factory, const Collective* col, const Creature* c, FurnitureType t) {
+            auto f = factory->furniture.getData(t);
             if (!c)
-              return f->furniture.getData(t).isDiningFurniture();
-            return t == c->getBody().getDiningFurniture();
+              return !!f.getDiningFurnitureType();
+            return f.getDiningFurnitureType() == c->getBody().getDiningFurniture();
           }};
       case MinionActivity::PHYLACTERY: return {FurnitureType("PHYLACTERY")};
       case MinionActivity::GUARDING1: return {MinionActivityInfo::GUARD1};
@@ -298,7 +305,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
             auto id = f->getViewObject()->id().data();
             return !startsWith(id, "painting") && (!startsWith(id, "canvas") || !NOTNULL(col)->getRecordedEvents().empty());
           }};
-      case MinionActivity::STUDY: return {getTrainingPredicate(ExperienceType::SPELL)};
+      case MinionActivity::STUDY: return {getTrainingPredicate(AttrType("SPELL_DAMAGE"))};
       case MinionActivity::DISTILLATION: return {FurnitureType("DISTILLERY")};
       case MinionActivity::CROPS: return {FurnitureType("CROPS")};
       case MinionActivity::RITUAL: return {BuiltinUsageId::DEMON_RITUAL};
@@ -324,9 +331,9 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
             if (auto type = f->getWorkshopType(t)) {
               if (!c || !col)
                 return true;
-              auto skill = c->getAttr(f->workshopInfo.at(*type).attr);
               auto workshop = getReferenceMaybe(col->getWorkshops().types, *type);
-              return skill > 0 && !!workshop && !workshop->isIdle(col, skill, c->getMorale().value_or(0));
+              auto& info = f->workshopInfo.at(*type);
+              return c->getAttr(info.attr) >= info.minAttr && !!workshop && !workshop->isIdle(col);
             } else
               return false;
           }};

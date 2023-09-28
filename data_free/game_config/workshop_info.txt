@@ -11,6 +11,33 @@
   attr = "FORGE"
 }
 
+"LAVA_FORGE" {
+  furniture = "LAVA_FORGE"
+  name = "magma forge"
+  verb = "forges"
+  attr = "FORGE"
+  itemScaling = 2
+  minAttr = 35
+}
+
+"ADA_FORGE" {
+  furniture = "ADA_FORGE"
+  name = "adamantium forge"
+  verb = "forges"
+  attr = "FORGE"
+  itemScaling = 3
+  minAttr = 50
+}
+
+"MYST_FORGE" {
+  furniture = "MYST_FORGE"
+  name = "myst forge"
+  verb = "forges"
+  attr = "FORGE"
+  itemScaling = 6
+  minAttr = 80
+}
+
 "LABORATORY" {
   furniture = "LABORATORY"
   name = "laboratory"

@@ -13,7 +13,7 @@ class CreatureGroup {
   PCreature random(CreatureFactory*, const MonsterAIFactory&);
   PCreature random(CreatureFactory*);
 
-  CreatureGroup& increaseBaseLevel(ExperienceType, int);
+  CreatureGroup& setCombatExperience(int);
 
   ~CreatureGroup();
   CreatureGroup& operator = (const CreatureGroup&);
@@ -30,5 +30,5 @@ class CreatureGroup {
   vector<double> weights;
   vector<CreatureId> unique;
   map<CreatureId, optional<TribeId>> tribeOverrides;
-  EnumMap<ExperienceType, int> baseLevelIncrease;
+  int combatExperience = 0;
 };

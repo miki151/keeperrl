@@ -64,7 +64,7 @@ class ItemAttributes {
   int SERIAL(burnTime) = 0;
   int SERIAL(price) = 0;
   bool SERIAL(noArticle) = false;
-  map<AttrType, int> SERIAL(modifiers);
+  HashMap<AttrType, int> SERIAL(modifiers);
   double SERIAL(variationChance) = 0.2;
   optional<EquipmentSlot> SERIAL(equipmentSlot);
   TimeInterval SERIAL(applyTime) = 1_visible;
@@ -93,7 +93,7 @@ class ItemAttributes {
   optional<string> SERIAL(ingredientType);
   Range SERIAL(wishedCount) = Range(1, 2);
   vector<SpellId> SERIAL(equipedAbility);
-  map<AttrType, pair<int, CreaturePredicate>> SERIAL(specialAttr);
+  HashMap<AttrType, pair<int, CreaturePredicate>> SERIAL(specialAttr);
   vector<StorageId> SERIAL(storageIds);
   optional<Effect> SERIAL(carriedTickEffect);
   CostInfo SERIAL(craftingCost) = CostInfo::noCost();

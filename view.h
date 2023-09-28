@@ -51,24 +51,14 @@ namespace fx {
 }
 class FXViewManager;
 
-struct HighscoreList {
-  string name;
-  struct Elem {
-    string text;
-    string score;
-    bool highlight;
-  };
-  vector<Elem> scores;
-};
-
 enum class CampaignActionId {
   CANCEL,
   REROLL_MAP,
   UPDATE_MAP,
   CONFIRM,
   UPDATE_OPTION,
-  CHANGE_TYPE,
-  BIOME
+  SET_POSITION,
+  CHANGE_WORLD_MAP
 };
 
 enum class PassableInfo {
@@ -78,10 +68,10 @@ enum class PassableInfo {
   UNKNOWN
 };
 
-class CampaignAction : public EnumVariant<CampaignActionId, TYPES(OptionId, CampaignType, string, int),
-  ASSIGN(CampaignType, CampaignActionId::CHANGE_TYPE),
-  ASSIGN(int, CampaignActionId::BIOME),
-  ASSIGN(OptionId, CampaignActionId::UPDATE_OPTION)> {
+class CampaignAction : public EnumVariant<CampaignActionId, TYPES(OptionId, string, Vec2, int),
+  ASSIGN(Vec2, CampaignActionId::SET_POSITION),
+  ASSIGN(OptionId, CampaignActionId::UPDATE_OPTION),
+  ASSIGN(int, CampaignActionId::CHANGE_WORLD_MAP)> {
     using EnumVariant::EnumVariant;
 };
 
@@ -195,7 +185,6 @@ class View {
     vector<vector<string>> firstNames;
     optional<TribeAlignment> alignment;
     string name;
-    AvatarRole role;
     string description;
     bool settlementNames;
     OptionId nameOption;
@@ -211,20 +200,10 @@ class View {
     const Campaign& campaign;
     optional<RetiredGames&> retired;
     vector<OptionId> options;
-    struct BiomeInfo {
-      string name;
-      ViewId viewId;
-    };
-    vector<BiomeInfo> biomes;
-    int chosenBiome;
     string introText;
-    struct CampaignTypeInfo {
-      CampaignType type;
-      vector<string> description;
-    };
-    vector<CampaignTypeInfo> availableTypes;
-    enum WarningType { NO_RETIRE };
-    optional<WarningType> warning;
+    string currentBiome;
+    vector<string> worldMapNames;
+    int currentWorldMap;
   };
 
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) = 0;
@@ -274,6 +253,5 @@ class View {
 RICH_ENUM(
   View::AvatarRole,
   KEEPER,
-  ADVENTURER,
   WARLORD
 );

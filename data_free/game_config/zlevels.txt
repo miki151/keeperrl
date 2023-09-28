@@ -3,11 +3,18 @@
 
 "basic"
 {
-  # This is a filled level that can appear at all depths
+  {
+    type = EnemyZLevel {
+      enemy = "Z_LEVEL_FULL_ONLY_WATER"
+    }
+    minDepth = 0
+    maxDepth = 6
+  }
   {
     type = EnemyZLevel {
       enemy = "Z_LEVEL_FULL"
     }
+    minDepth = 6
   }
   {
     type = FullZLevel {

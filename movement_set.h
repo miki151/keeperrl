@@ -25,7 +25,7 @@ class MovementSet {
   MovementSet& clearTraits();
 
   SERIALIZATION_DECL(MovementSet)
-  
+
   private:
   EnumSet<MovementTrait> SERIAL(traits);
   EnumSet<MovementTrait> SERIAL(forcibleTraits);

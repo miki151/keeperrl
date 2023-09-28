@@ -8,8 +8,6 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "campaign_villains";
     case GameConfigId::KEEPER_CREATURES:
       return "keeper_creatures";
-    case GameConfigId::ADVENTURER_CREATURES:
-      return "adventurer_creatures";
     case GameConfigId::BUILD_MENU:
       return "build_menu";
     case GameConfigId::WORKSHOPS_MENU:
@@ -80,6 +78,10 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "body_materials";
     case GameConfigId::KEYS:
       return "keys";
+    case GameConfigId::WORLD_MAPS:
+      return "world_maps";
+    case GameConfigId::ACHIEVEMENTS:
+      return "achievements";
   }
 }
 

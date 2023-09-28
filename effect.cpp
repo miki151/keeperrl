@@ -71,6 +71,8 @@ namespace {
 struct DefaultType {
   template <typename T>
   DefaultType(const T&) {}
+  template <typename T>
+  DefaultType(T&) {}
 };
 }
 
@@ -376,6 +378,10 @@ static string getName(const Effects::IncreaseAttr& e, const ContentFactory* f) {
   return f->attrInfo.at(e.attr).name + e.get(" boost", " loss");
 }
 
+static void scale(Effects::IncreaseAttr& e, double value, const ContentFactory* f) {
+  e.amount *= value;
+}
+
 static string getDescription(const Effects::IncreaseAttr& e, const ContentFactory* f) {
   return e.get("Increases", "Decreases") + " "_s + f->attrInfo.at(e.attr).name + " by " + toString(abs(e.amount));
 }
@@ -422,18 +428,32 @@ static string get(const Effects::IncreaseMaxLevel& e, string inc, string dec) {
 }
 
 static bool applyToCreature(const Effects::IncreaseMaxLevel& e, Creature* c, Creature*) {
-  c->you(MsgType::YOUR, ::getNameLowerCase(e.type) + get(e, " training limit increases", " training limit decreases"));
+  auto f = c->getGame()->getContentFactory();
+  c->you(MsgType::YOUR, f->attrInfo.at(e.type).name + get(e, " training limit increases", " training limit decreases"));
   c->getAttributes().increaseMaxExpLevel(e.type, e.value);
   return true;
 }
 
-static string getName(const Effects::IncreaseMaxLevel& e, const ContentFactory*) {
-  return ::getNameLowerCase(e.type) + " training limit"_s;
+static string getName(const Effects::IncreaseMaxLevel& e, const ContentFactory* f) {
+  return f->attrInfo.at(e.type).name + " training limit"_s;
 }
 
-static string getDescription(const Effects::IncreaseMaxLevel& e, const ContentFactory*) {
-  return get(e, "Increases", "Decreases") + " "_s + ::getNameLowerCase(e.type) + " training limit by " +
+static string getDescription(const Effects::IncreaseMaxLevel& e, const ContentFactory* f) {
+  return get(e, "Increases", "Decreases") + " "_s + f->attrInfo.at(e.type).name + " training limit by " +
       toString(std::fabs(e.value));
+}
+
+static bool applyToCreature(const Effects::IncreaseLevel& e, Creature* c, Creature*) {
+  c->increaseExpLevel(e.type, e.value);
+  return true;
+}
+
+static string getName(const Effects::IncreaseLevel& e, const ContentFactory* f) {
+  return f->attrInfo.at(e.type).name + " training"_s;
+}
+
+static string getDescription(const Effects::IncreaseLevel& e, const ContentFactory* f) {
+  return "Trains " + " "_s + f->attrInfo.at(e.type).name + " by " + toString(std::fabs(e.value));
 }
 
 static bool applyToCreature(const Effects::AddCompanion& e, Creature* c, Creature*) {
@@ -1083,6 +1103,32 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::PlaceFurniture& f, 
       isConsideredInDanger(victim) ? 1 : 0;
 }
 
+static string getName(const Effects::ModifyFurniture& e, const ContentFactory* c) {
+  return c->furniture.getData(e.furniture).getName();
+}
+
+static string getDescription(const Effects::ModifyFurniture& e, const ContentFactory* c) {
+  return "Creates a " + getName(e, c);
+}
+
+static bool apply(const Effects::ModifyFurniture& summon, Position pos, Creature*) {
+  auto data = pos.getGame()->getContentFactory()->furniture.getData(summon.furniture);
+  if (auto f = pos.modFurniture(data.getLayer())) {
+    auto keepType = f->getType();
+    auto keepTribe = f->getTribe();
+    *f = data;
+    f->setType(keepType);
+    f->setTribe(keepTribe);
+    return true;
+  }
+  return false;
+}
+
+static EffectAIIntent shouldAIApplyToCreature(const Effects::ModifyFurniture& f, const Creature* victim, bool isEnemy) {
+  return victim->getGame()->getContentFactory()->furniture.getData(f.furniture).isHostileSpell() &&
+      isConsideredInDanger(victim) ? 1 : 0;
+}
+
 static string getName(const Effects::DropItems&, const ContentFactory* c) {
   return "create items";
 }
@@ -1429,6 +1475,11 @@ static bool isOffensive(const Effects::Chain& c) {
   return false;
 }
 
+static void scale(Effects::Chain& e, double value, const ContentFactory* f) {
+  for (auto& e : e.effects)
+    e.scale(value, f);
+}
+
 static EffectAIIntent shouldAIApply(const Effects::Chain& chain, const Creature* caster, Position pos) {
   auto allRes = 0;
   auto badRes = 0;
@@ -1534,7 +1585,7 @@ static bool applyToCreature(const Effects::PlayerMessage& e, Creature* c, Creatu
 
 static bool applyToCreature(const Effects::GrantAbility& e, Creature* c, Creature*) {
   bool ret = !c->getSpellMap().contains(e.id);
-  c->getSpellMap().add(*c->getGame()->getContentFactory()->getCreatures().getSpell(e.id), ExperienceType::MELEE, 0);
+  c->getSpellMap().add(*c->getGame()->getContentFactory()->getCreatures().getSpell(e.id), AttrType("DAMAGE"), 0);
   return ret;
 }
 
@@ -1630,8 +1681,7 @@ static bool apply(const Effects::UI& e, Position pos, Creature*) {
   if (auto c = pos.getCreature())
     if (c->isPlayer())
       view->updateView(dynamic_cast<Player*>(c->getController()), true);
-  ScriptedUIState state;
-  view->scriptedUI(e.id, e.data, state);
+  view->scriptedUI(e.id, e.data);
   return true;
 }
 
@@ -1655,38 +1705,6 @@ static string getName(const Effects::RemoveAbility& e, const ContentFactory* f) 
 
 static string getDescription(const Effects::RemoveAbility& e, const ContentFactory* f) {
   return "Removes ability: "_s + f->getCreatures().getSpell(e.id)->getName(f);
-}
-
-static bool applyToCreature(const Effects::IncreaseMorale& e, Creature* c, Creature*) {
-  if (e.amount > 0)
-    c->you(MsgType::YOUR, "spirits are lifted");
-  else
-    c->you(MsgType::ARE, "disheartened");
-  if (auto before = c->getMorale()) {
-    c->addMorale(e.amount);
-    return c->getMorale() != *before;
-  }
-  return false;
-}
-
-static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::IncreaseMorale&) {
-  return MinionEquipmentType::COMBAT_ITEM;
-}
-
-static EffectAIIntent shouldAIApplyToCreature(const Effects::IncreaseMorale& e, const Creature* victim, bool isEnemy) {
-  return isEnemy == (e.amount < 0) ? 1 : -1;
-}
-
-static string getName(const Effects::IncreaseMorale& e, const ContentFactory*) {
-  return e.amount > 0 ? "morale increase" : "morale decrease";
-}
-
-static bool isOffensive(const Effects::IncreaseMorale& e) {
-  return e.amount < 0;
-}
-
-static string getDescription(const Effects::IncreaseMorale& e, const ContentFactory*) {
-  return e.amount > 0 ? "Increases morale" : "Decreases morale";
 }
 
 static string getName(const Effects::Caster& e, const ContentFactory* f) {
@@ -1738,6 +1756,10 @@ static optional<ViewId> getProjectile(const Effects::GenericModifierEffect& e) {
 
 static int getPrice(const Effects::GenericModifierEffect& e, const ContentFactory* f) {
   return e.effect->getPrice(f);
+}
+
+static void scale(Effects::GenericModifierEffect& e, double value, const ContentFactory* f) {
+  e.effect->scale(value, f);
 }
 
 static bool canAutoAssignMinionEquipment(const Effects::GenericModifierEffect& e) {
@@ -2025,6 +2047,7 @@ static bool apply(const Effects::AnimateItems& m, Position pos, Creature* attack
             attacker->getAttr(AttrType("SPELL_DAMAGE")));
     for (auto c : Effect::summonCreatures(v, makeVec(std::move(creature)))) {
       c->addEffect(LastingEffect::SUMMONED, TimeInterval{Random.get(m.time)}, false);
+      c->effectFlags.insert("animated");
       res = true;
     }
   }
@@ -2204,6 +2227,20 @@ static bool apply(const Effects::Unlock& e, Position pos, Creature*) {
   return true;
 }
 
+static string getName(const Effects::Achievement& e, const ContentFactory* f) {
+  return f->achievements.at(e).name;
+}
+
+static string getDescription(const Effects::Achievement& e, const ContentFactory* f) {
+  return f->achievements.at(e).description;
+}
+
+static bool apply(const Effects::Achievement& e, Position pos, Creature*) {
+  if (auto game = pos.getGame())
+    game->achieve(e);
+  return true;
+}
+
 static string getName(const Effects::Analytics& e, const ContentFactory*) {
   return "";
 }
@@ -2241,6 +2278,21 @@ static Collective* getCollective(Creature* c) {
     if (col->getCreatures().contains(c))
       return col;
   return nullptr;
+}
+
+static string getName(const Effects::AllCreatures& e, const ContentFactory* f) {
+  return e.effect->getName(f) + " (all creatures)";
+}
+
+static string getDescription(const Effects::AllCreatures& e, const ContentFactory* f) {
+  return e.effect->getDescription(f) + " (applied to all creatures on the map)";
+}
+
+static bool applyToCreature(const Effects::AllCreatures& e, Creature* c, Creature* attacker) {
+  bool res = false;
+  for (auto other : c->getPosition().getModel()->getAllCreatures())
+    res |= e.effect->applyToCreature(other, attacker);
+  return res;
 }
 
 static string getName(const Effects::AddMinionTrait& trait, const ContentFactory*) {
@@ -2333,6 +2385,10 @@ static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Filte
 
 static bool apply(const Effects::Filter& e, Position pos, Creature* attacker) {
   return e.predicate.apply(pos, attacker) && e.effect->apply(pos, attacker);
+}
+
+static bool applyToCreaturePreference(const Effects::Filter& e, Creature* c, Creature* attacker) {
+  return e.predicate.apply(c, attacker) && e.effect->applyToCreature(c, attacker);
 }
 
 static optional<FXInfo> getProjectileFX(const Effects::Filter& e) {
@@ -2433,6 +2489,10 @@ static bool applyToCreature1(const T& t, Creature* c, Creature* attacker, int) {
   return applyToCreature(t, c, attacker);
 }
 
+template <typename T, REQUIRE(applyToCreaturePreference(TVALUE(const T&), TVALUE(Creature*), TVALUE(Creature*)))>
+static bool applyToCreature1(const T& t, Creature* c, Creature* attacker, int) {
+  return applyToCreaturePreference(t, c, attacker);
+}
 template <typename T, REQUIRE(apply(TVALUE(const T&), TVALUE(Position), TVALUE(Creature*)))>
 static bool applyToCreature1(const T& t, Creature* c, Creature* attacker, double) {
   return apply(t, c->getPosition(), attacker);
@@ -2579,7 +2639,14 @@ static int getPrice(const DefaultType& e, const ContentFactory*) {
 }
 
 int Effect::getPrice(const ContentFactory* f) const {
-    return effect->visit<int>([f](const auto& elem) { return ::getPrice(elem, f); });
+  return effect->visit<int>([f](const auto& elem) { return ::getPrice(elem, f); });
+}
+
+static void scale(const DefaultType& e, double, const ContentFactory*) {
+}
+
+void Effect::scale(double value, const ContentFactory* f) {
+  effect->visit<void>([f, value](auto& elem) { ::scale(elem, value, f); });
 }
 
 SERIALIZE_DEF(Effect, effect)

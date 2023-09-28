@@ -16,7 +16,7 @@
 #include "content_factory.h"
 #include "special_trait.h"
 
-SERIALIZE_DEF(ImmigrantInfo, NAMED(ids), NAMED(frequency), OPTION(requirements), OPTION(traits), OPTION(spawnLocation), OPTION(groupSize), OPTION(initialRecruitment), OPTION(consumeIds), NAMED(keybinding), NAMED(sound), OPTION(noAuto), NAMED(tutorialHighlight), OPTION(hiddenInHelp), OPTION(invisible), OPTION(specialTraits), OPTION(stripEquipment))
+SERIALIZE_DEF(ImmigrantInfo, NAMED(ids), NAMED(frequency), OPTION(requirements), OPTION(traits), OPTION(spawnLocation), OPTION(groupSize), OPTION(initialRecruitment), OPTION(consumeIds), NAMED(keybinding), NAMED(sound), OPTION(noAuto), NAMED(tutorialHighlight), OPTION(hiddenInHelp), OPTION(invisible), OPTION(specialTraits), OPTION(stripEquipment), OPTION(acceptedAchievement))
 SERIALIZATION_CONSTRUCTOR_IMPL(ImmigrantInfo)
 
 
@@ -133,7 +133,7 @@ ImmigrantInfo& ImmigrantInfo::addRequirement(ImmigrantRequirement t) {
   return *this;
 }
 
-vector<Creature*> RecruitmentInfo::getAllRecruits(WGame game, CreatureId id) const {
+vector<Creature*> RecruitmentInfo::getAllRecruits(Game* game, CreatureId id) const {
   vector<Creature*> ret;
   for (auto col : findEnemy(game))
     ret.append(col->getCreatures().filter([&](const Creature* c) {
@@ -141,12 +141,12 @@ vector<Creature*> RecruitmentInfo::getAllRecruits(WGame game, CreatureId id) con
   return ret;
 }
 
-vector<Creature*> RecruitmentInfo::getAvailableRecruits(WGame game, CreatureId id) const {
+vector<Creature*> RecruitmentInfo::getAvailableRecruits(Game* game, CreatureId id) const {
   auto ret = getAllRecruits(game, id);
   return ret.getPrefix(max(0, (int)ret.size() - minPopulation));
 }
 
-vector<Collective*> RecruitmentInfo::findEnemy(WGame game) const {
+vector<Collective*> RecruitmentInfo::findEnemy(Game* game) const {
   vector<Collective*> ret;
   for (Collective* col : game->getCollectives())
     if (auto id = col->getEnemyId())
