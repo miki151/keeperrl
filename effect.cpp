@@ -565,7 +565,10 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::Summon&, const Crea
 }
 
 static string getName(const Effects::Summon& e, const ContentFactory* f) {
-  return "summon " + f->getCreatures().getName(e.creature);
+  if (e.count.getEnd() > 2)
+    return "summon " + f->getCreatures().getNamePlural(e.creature);
+  else
+    return "summon " + f->getCreatures().getName(e.creature);
 }
 
 static bool isOffensive(const Effects::Summon&) {
@@ -573,10 +576,13 @@ static bool isOffensive(const Effects::Summon&) {
 }
 
 static string getDescription(const Effects::Summon& e, const ContentFactory* f) {
-  if (e.count.getEnd() > 2)
-    return "Summons " + toString(e.count.getStart()) + " to " + toString(e.count.getEnd() - 1) + " "
-        + f->getCreatures().getNamePlural(e.creature);
-  else
+  if (e.count.getEnd() > 2) {
+    if (e.count.getLength() == 1)
+      return "Summons " + toString(e.count.getStart()) + " " + f->getCreatures().getNamePlural(e.creature);
+    else
+      return "Summons " + toString(e.count.getStart()) + " to " + toString(e.count.getEnd() - 1) + " "
+          + f->getCreatures().getNamePlural(e.creature);
+  } else
     return "Summons a " + f->getCreatures().getName(e.creature);
 }
 

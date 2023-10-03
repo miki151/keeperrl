@@ -46,7 +46,6 @@ class CreatureName {
   string the() const;
   string a() const;
   string plural() const;
-  string multiple(int) const;
   string groupOf(int) const;
   string title() const;
   string aOrTitle() const;
