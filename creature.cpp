@@ -2665,7 +2665,6 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
   auto currentPath = shortestPath;
   for (int i : Range(2)) {
     bool wasNew = false;
-    INFO << identify() << (away ? " retreating " : " navigating ") << position.getCoord() << " to " << pos.getCoord();
     if (!currentPath || Random.roll(10) || currentPath->isReversed() != away ||
         currentPath->getTarget().dist8(pos).value_or(10000000) > *position.dist8(pos) / 10) {
       INFO << "Calculating new path";

@@ -595,23 +595,6 @@ vector<Player::CommandInfo> Player::getCommands() const {
             [] (Player* player) { player->mountAction(); }, false},
     Player::CommandInfo{PlayerInfo::CommandInfo{"Chat", Keybinding("CHAT"), "Chat with someone.", canChat},
       [] (Player* player) { player->chatAction(); }, false},
-    /*{PlayerInfo::CommandInfo{"Test path-finding", 'C', "Displays calculated path and processed tiles.", true},
-      [] (Player* player) {
-        auto pos = player->getView()->chooseTarget(player->creature->getPosition().getCoord(),
-            TargetType::POSITION, Table<PassableInfo>(), "Choose destination", none).getValueMaybe<Vec2>();
-        if (pos) {
-          Position position(*pos, player->getLevel());
-          vector<Vec2> visited;
-          LevelShortestPath path(player->creature, position, 0, &visited);
-          Table<PassableInfo> result(Rectangle::boundingBox(visited), PassableInfo::UNKNOWN);
-          for (auto& v : visited)
-            result[v] = PassableInfo::PASSABLE;
-          for (auto& v : path.getPath())
-            result[v.getCoord()] = PassableInfo::NON_PASSABLE;
-          player->getView()->chooseTarget(player->creature->getPosition().getCoord(), TargetType::SHOW_ALL, result,
-              "Displaying calculated path and processed tiles", none);
-        }
-      }, false},*/
     {PlayerInfo::CommandInfo{"Hide", Keybinding("HIDE"), "Hide behind or under a terrain feature or piece of furniture.",
         !!creature->hide()},
       [] (Player* player) { player->hideAction(); }, false},

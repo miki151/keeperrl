@@ -87,7 +87,7 @@ ShortestPath::ShortestPath(TemplateConstr, Rectangle a, EntryFun entryFun, Lengt
     init(getCached(entryFun), lengthFun, directions, target, none, revShortestLimit);
     distanceTable.setDistance(target, infinity);
     navigationCostCache.clear();
-    reverse(getCached(entryFun), lengthFun, directions, mult, from, revShortestLimit);
+    reverse(getCached(entryFun), lengthFun, directions, mult, from);
   }
 }
 
@@ -157,14 +157,14 @@ void ShortestPath::init(EntryFun entryFun, LengthFun lengthFun, DirectionsFun di
 }
 
 void ShortestPath::reverse(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, function<vector<Vec2>(Vec2)> directions,
-    double mult, Vec2 from, int limit) {
+    double mult, Vec2 from) {
   PROFILE;
   reversed = true;
-  function<QueueElem(Vec2)> makeElem = [&](Vec2 pos)->QueueElem { return {pos, distanceTable.getDistance(pos) + lengthFun(pos)};};
+  auto makeElem = [&](Vec2 pos)->QueueElem { return {pos, distanceTable.getDistance(pos) + lengthFun(pos)};};
   priority_queue<QueueElem, vector<QueueElem>> q;
   for (Vec2 v : bounds) {
     double dist = distanceTable.getDistance(v);
-    if (dist <= limit) {
+    if (dist <= revShortestLimit) {
       distanceTable.setDistance(v, mult * dist);
       q.push(makeElem(v));
     }
@@ -253,8 +253,7 @@ Vec2 ShortestPath::getTarget() const {
   return target;
 }
 
-ShortestPath LevelShortestPath::makeShortestPath(Position from, MovementType movementType, Position to, double mult,
-    vector<Vec2>* visited) {
+ShortestPath LevelShortestPath::makeShortestPath(Position from, MovementType movementType, Position to, double mult) {
   PROFILE;
   Level* level = from.getLevel();
   Rectangle bounds = level->getBounds();
@@ -263,8 +262,6 @@ ShortestPath LevelShortestPath::makeShortestPath(Position from, MovementType mov
   auto& movementSectors = level->getSectors(copyOf(movementType).setCanBuildBridge(false).setDestroyActions({}));
   auto entryFun = [=, &sectors, &movementSectors, fromCoord = from.getCoord()](Vec2 v) {
     PROFILE_BLOCK("entry fun");
-    if (visited)
-      visited->push_back(v);
     if (fromCoord == v)
       return 1.0;
     if (!sectors.contains(v))
@@ -308,11 +305,11 @@ SERIALIZE_DEF(LevelShortestPath, path, level)
 SERIALIZATION_CONSTRUCTOR_IMPL(LevelShortestPath);
 
 
-LevelShortestPath::LevelShortestPath(const Creature* creature, Position target, double mult, vector<Vec2>* visited)
-    : LevelShortestPath(creature->getPosition(), creature->getMovementType(), target, mult, visited) {}
+LevelShortestPath::LevelShortestPath(const Creature* creature, Position target, double mult)
+    : LevelShortestPath(creature->getPosition(), creature->getMovementType(), target, mult) {}
 
-LevelShortestPath::LevelShortestPath(Position from, MovementType type, Position to, double mult, vector<Vec2>* visited)
-    : path(makeShortestPath(from, type, to, mult, visited)), level(to.getLevel()) {
+LevelShortestPath::LevelShortestPath(Position from, MovementType type, Position to, double mult)
+    : path(makeShortestPath(from, type, to, mult)), level(to.getLevel()) {
 }
 
 Level* LevelShortestPath::getLevel() const {
