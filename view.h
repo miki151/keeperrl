@@ -183,7 +183,7 @@ class View {
     vector<string> genderNames;
     vector<ViewObject> viewId;
     vector<vector<string>> firstNames;
-    optional<TribeAlignment> alignment;
+    TribeAlignment alignment;
     string name;
     string description;
     bool settlementNames;

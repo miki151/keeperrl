@@ -4889,12 +4889,9 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   rightLines.addElemAuto(drawAvatarsForRole(avatars, avatarPage, chosenAvatar, gender));
   rightLines.addSpace(12);
   rightLines.addElem(WL(labelFun, [&avatars, chosenAvatar] {
-        if (auto alignment = avatars[*chosenAvatar].alignment)
-          return capitalFirst(avatars[*chosenAvatar].name) +
-            ", " + getName(*alignment);
-        else
-          return capitalFirst(avatars[*chosenAvatar].name);
-      }));
+      return capitalFirst(avatars[*chosenAvatar].name) +
+        ", " + getName(avatars[*chosenAvatar].alignment);
+  }));
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElemAuto(WL(getListBuilder)
       .addElemAuto(WL(rightMargin, 30, leftLines.buildVerticalList()))
