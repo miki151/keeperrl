@@ -467,7 +467,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
         options->setValue(OptionId::SUGGEST_TUTORIAL, 0);
       }
     }
-    auto avatarChoice = getAvatarInfo(view, contentFactory.keeperCreatures, &contentFactory, *unlocks);
+    auto avatarChoice = getAvatarInfo(view, contentFactory.keeperCreatures, &contentFactory, *unlocks, options);
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
       CampaignBuilder builder(view, random, options, contentFactory.villains, contentFactory.gameIntros, *avatar);
       tileSet->setTilePathsAndReload(getTilePathsForAllMods());

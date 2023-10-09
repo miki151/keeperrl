@@ -18,6 +18,8 @@
 #include "game_info.h"
 #include "unlocks.h"
 #include "item.h"
+#include "scripted_ui_data.h"
+#include "avatar_menu_option.h"
 
 TribeId getPlayerTribeId(TribeAlignment variant) {
   switch (variant) {
@@ -39,7 +41,7 @@ static ViewObject getUpgradedViewId(const Creature* c) {
 
 variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
     const vector<pair<string, KeeperCreatureInfo>>& keeperCreatureInfos,
-    ContentFactory* contentFactory, const Unlocks& unlocks) {
+    ContentFactory* contentFactory, const Unlocks& unlocks, Options* options) {
   auto& creatureFactory = contentFactory->getCreatures();
   auto keeperCreatures = keeperCreatureInfos.transform([&](auto& elem) {
     return elem.second.creatureId.transform([&](auto& id) {
@@ -49,58 +51,136 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
       return ret;
     });
   });
-  vector<View::AvatarData> keeperAvatarData;
-  auto getAllNames = [&] (const PCreature& c) {
+  string keeperBase = keeperCreatureInfos[0].second.baseName;
+  int genderIndex = 0;
+  auto getFirstName = [&] (const PCreature& c, int keeperBase) {
+    if (auto& id = keeperCreatureInfos[keeperBase].second.baseNameGen)
+      return creatureFactory.getNameGenerator()->getNext(*id);
     if (auto id = c->getName().getNameGenerator())
-      return creatureFactory.getNameGenerator()->getAll(*id);
+      return creatureFactory.getNameGenerator()->getNext(*id);
     else
-      return makeVec(c->getName().firstOrBare());
+      return c->getName().firstOrBare();
   };
-  auto getKeeperFirstNames = [&] (int index) {
-    if (auto& nameId = keeperCreatureInfos[index].second.baseNameGen) {
-      vector<vector<string>> ret;
-      for (auto id : keeperCreatureInfos[index].second.creatureId)
-        ret.push_back(creatureFactory.getNameGenerator()->getAll(*nameId));
-      return ret;
-    } else
-      return keeperCreatures[index].transform(getAllNames);
-  };
-  auto getKeeperName = [&](int index) -> string {
-    if (keeperCreatureInfos[index].second.noLeader)
-      return keeperCreatures[index][0]->getName().plural();
-    return keeperCreatures[index][0]->getName().identify();
-  };
-  for (int i : All(keeperCreatures))
-    keeperAvatarData.push_back(View::AvatarData {
-      keeperCreatures[i].transform([](const auto& c) { return string(getName(c->getAttributes().getGender())); }),
-      keeperCreatures[i].transform([](const auto& c) { return getUpgradedViewId(c.get()); }),
-      getKeeperFirstNames(i),
-      keeperCreatureInfos[i].second.tribeAlignment,
-      getKeeperName(i),
-      keeperCreatureInfos[i].second.description,
-      !!keeperCreatureInfos[i].second.baseNameGen,
-      !!keeperCreatureInfos[i].second.baseNameGen ? OptionId::SETTLEMENT_NAME : OptionId::PLAYER_NAME,
-      !!keeperCreatureInfos[i].second.unlock ? unlocks.isUnlocked(*keeperCreatureInfos[i].second.unlock) : true
-    });
-  auto result1 = view->chooseAvatar(keeperAvatarData);
-  if (auto option = result1.getValueMaybe<AvatarMenuOption>())
-    return *option;
-  auto result = result1.getReferenceMaybe<View::AvatarChoice>();
-  string avatarId;
-  PCreature ret;
-  optional<string> chosenBaseName;
-  auto& creatureInfo = keeperCreatureInfos[result->creatureIndex].second;
-  avatarId = keeperCreatureInfos[result->creatureIndex].first;
-  ret = std::move(keeperCreatures[result->creatureIndex][result->genderIndex]);
-  if (!keeperCreatureInfos[result->creatureIndex].second.noLeader) {
-    ret->getName().setBare("Keeper");
-    ret->getName().setFirst(result->name);
-    ret->getName().useFullTitle();
-  } else
-    chosenBaseName = result->name;
-  CHECK(!creatureInfo.villainGroups.empty());
-  return AvatarInfo{std::move(ret), std::move(creatureInfo), avatarId, creatureInfo.tribeAlignment,
-      creatureInfo.villainGroups, chosenBaseName };
+  string keeperName = getFirstName(keeperCreatures[0][0], 0);
+  using RetType = variant<AvatarInfo, AvatarMenuOption>;
+  while (true) {
+    auto keeperList = ScriptedUIDataElems::List {};
+    auto genderList = ScriptedUIDataElems::List {};
+    unordered_set<string> addedBases;
+    string baseDescription;
+    string genderDescription;
+    function<bool()> reloadFirstName;
+    auto nameOption = OptionId::PLAYER_NAME;
+    auto getKeeperName = [&nameOption, &keeperName, options] {
+      auto set = options->getValueString(nameOption);
+      if (set.empty())
+        return keeperName;
+      return set;
+    };
+    for (int i : All(keeperCreatures)) {
+      auto baseName = keeperCreatureInfos[i].second.baseName;
+      if (!addedBases.count(baseName)) {
+        auto data = ScriptedUIDataElems::Record{{
+          {"base_name", baseName},
+          {"select_callback", ScriptedUIDataElems::Callback{[&keeperBase, baseName, &genderIndex,
+              &keeperName, newName = getFirstName(keeperCreatures[i][0], i)]{
+            keeperBase = baseName;
+            genderIndex = 0;
+            keeperName = newName;
+            return true;
+          }}},
+        }};
+        if (baseName == keeperBase) {
+          data.elems["selected"] = "blabla"_s;
+          nameOption = !keeperCreatureInfos[i].second.baseNameGen ? OptionId::PLAYER_NAME : OptionId::SETTLEMENT_NAME;
+        }
+        keeperList.push_back(std::move(data));
+        addedBases.insert(baseName);
+      }
+      if (baseName == keeperBase)
+        for (auto& keeper : keeperCreatures[i]) {
+          int selectIndex = genderList.size();
+          auto data = ScriptedUIDataElems::Record{{
+            {"view_id", getUpgradedViewId(keeper.get()).getViewIdList()},
+            {"select_callback", ScriptedUIDataElems::Callback{[&genderIndex, selectIndex, &keeperName,
+                newName = getFirstName(keeper, i)]{
+              genderIndex = selectIndex;
+              keeperName = newName;
+              return true;
+            }}},
+          }};
+          if (selectIndex == genderIndex) {
+            data.elems["selected"] = "blabla"_s;
+            baseDescription = keeperCreatureInfos[i].second.description;
+            genderDescription = keeperCreatureInfos[i].second.noLeader
+                ? capitalFirst(keeper->getName().plural())
+                : capitalFirst(keeper->getName().identify()) + ", " + getName(keeper->getAttributes().getGender());
+            reloadFirstName = [&keeperName, options, nameOption, newName = getFirstName(keeper, i)] {
+              keeperName = newName;
+              options->setValue(nameOption, string());
+              return true;
+            };
+          }
+          genderList.push_back(std::move(data));
+        }
+    }
+    optional<RetType> ret;
+    auto data = ScriptedUIDataElems::Record{{
+      {"gender_list",std::move(genderList)},
+      {"keeper_list", std::move(keeperList)},
+      {"tutorial_callback", ScriptedUIDataElems::Callback{[&ret]{
+        ret = RetType(AvatarMenuOption::TUTORIAL);
+        return true;
+      }}},
+      {"change_mod", ScriptedUIDataElems::Callback{[&ret]{
+        ret = RetType(AvatarMenuOption::CHANGE_MOD);
+        return true;
+      }}},
+      {"go_back", ScriptedUIDataElems::Callback{[&ret]{
+        ret = RetType(AvatarMenuOption::GO_BACK);
+        return true;
+      }}},
+      {"base_description", baseDescription},
+      {"gender_description", genderDescription},
+      {nameOption == OptionId::SETTLEMENT_NAME ? "settlement_name" : "first_name", getKeeperName()},
+      {"reload_first_name", ScriptedUIDataElems::Callback{std::move(reloadFirstName)}},
+      {"edit_first_name", ScriptedUIDataElems::Callback{[getKeeperName, options, view, nameOption] {
+        if (auto text = view->getText(
+            nameOption == OptionId::SETTLEMENT_NAME ? "Enter settlement name:" : "Enter first name:",
+            getKeeperName(), 16))
+          options->setValue(nameOption, *text);
+        return true;
+      }}},
+      {"start_game", ScriptedUIDataElems::Callback{[&]{
+        PCreature keeper;
+        optional<string> chosenBaseName;
+        for (int i : All(keeperCreatureInfos)) {
+          auto& creatureInfo = keeperCreatureInfos[i].second;
+          if (creatureInfo.baseName == keeperBase) {
+            if (genderIndex >= creatureInfo.creatureId.size())
+              genderIndex -= creatureInfo.creatureId.size();
+            else {
+              auto avatarId = keeperCreatureInfos[i].first;
+              keeper = std::move(keeperCreatures[i][genderIndex]);
+              if (!keeperCreatureInfos[i].second.noLeader) {
+                keeper->getName().setBare("Keeper");
+                keeper->getName().setFirst(getKeeperName());
+                keeper->getName().useFullTitle();
+              } else
+                chosenBaseName = getKeeperName();
+              CHECK(!creatureInfo.villainGroups.empty());
+              ret = RetType(AvatarInfo{std::move(keeper), std::move(creatureInfo), avatarId, creatureInfo.tribeAlignment,
+                  creatureInfo.villainGroups, chosenBaseName });
+            }
+          }
+        }
+        return true;
+      }}},
+    }};
+    view->scriptedUI("avatar_menu", data);
+    if (ret)
+      return *std::move(ret);
+  }
 }
 
 AvatarInfo getQuickGameAvatar(View* view, const vector<pair<string, KeeperCreatureInfo>>& keeperCreatures,

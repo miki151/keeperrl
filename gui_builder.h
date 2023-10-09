@@ -27,7 +27,6 @@
 #include "view_object.h"
 #include "item_counts.h"
 #include "scripted_ui_data.h"
-#include "avatar_index.h"
 #include "minion_page_index.h"
 
 class Clock;
@@ -91,7 +90,6 @@ class GuiBuilder {
   SGuiElem drawWarlordMinionsMenu(SyncQueue<variant<int, bool>>& queue, const vector<PlayerInfo>&,
       vector<int>& chosen, int maxCount);
   SGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&, Vec2 initialPos);
-  SGuiElem drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>&, const vector<View::AvatarData>&);
   SGuiElem drawWorldmap(Semaphore&, const Campaign&);
   SGuiElem drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
       const vector<PlayerInfo>&, const string& cancelText);
@@ -229,7 +227,6 @@ class GuiBuilder {
   optional<int> abilityIndex;
   optional<int> lastPlayerPositionHash;
   optional<int> techIndex;
-  AvatarIndex avatarIndex;
   int commandsIndex = -1;
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
   int scrollbarsHeld2 = GuiFactory::getHeldInitValue();
@@ -302,15 +299,8 @@ class GuiBuilder {
   function<void(Rectangle)> getItemUpgradeCallback(const CollectiveInfo::QueuedItemInfo&);
   SGuiElem drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&);
   function<void(Rectangle)> getItemCountCallback(const CollectiveInfo::QueuedItemInfo&);
-  SGuiElem drawGenderButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar);
-  SGuiElem drawFirstNameButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar,
-      shared_ptr<int> chosenName);
-  SGuiElem drawChosenCreatureButtons(shared_ptr<int> chosenAvatar, shared_ptr<int> gender, int page,
-      const vector<View::AvatarData>&);
   SGuiElem drawCreatureList(const vector<PlayerInfo>&, function<void(UniqueEntity<Creature>::Id)> button,
       int zoom = 2);
-  SGuiElem drawAvatarsForRole(const vector<View::AvatarData>&, shared_ptr<int> avatarPage, shared_ptr<int> chosenAvatar,
-      shared_ptr<int> gender);
   SGuiElem drawScreenshotOverlay();
   SGuiElem drawTitleButton(const PlayerInfo& minion);
   SGuiElem drawKillsLabel(const PlayerInfo& minion);

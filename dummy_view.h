@@ -2,7 +2,6 @@
 
 #include "view.h"
 #include "clock.h"
-#include "avatar_menu_option.h"
 #include "user_input.h"
 
 class DummyView : public View {
@@ -68,9 +67,6 @@ class DummyView : public View {
   virtual void addSound(const Sound&) override {}
   virtual void logMessage(const string&) override {}
   virtual void setBugReportSaveCallback(BugReportSaveCallback) override {}
-  virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&) override {
-    return AvatarMenuOption::GO_BACK;
-  }
   virtual void dungeonScreenshot(Vec2 size) override {
   }
   virtual bool zoomUIAvailable() const override {
