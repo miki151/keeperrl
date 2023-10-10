@@ -2874,7 +2874,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
       queue->addMaker(make_unique<Corpses>(*settlement.corpses));
     if (settlement.surroundWithResources > 0)
       surroundWithResources.push_back({queue.get(), settlement});
-    if (keeperInfo) {
+    if (!!startingPos) {
       if (settlement.closeToPlayer) {
         locations->setMinDistance(startingPos, queue.get(), 20);
         locations->setMaxDistance(startingPos, queue.get(), 40);
