@@ -108,6 +108,7 @@
   populationString = "automatons"
   noLeader = true
   prisoners = false
+  requireQuartersForExp = false
 }
 "6_dwarves"
 {
