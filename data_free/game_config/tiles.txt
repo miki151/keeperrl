@@ -827,6 +827,8 @@ BOOKCASES("_human")
   wallShadow = true mountainSides = "mountain" }
 { viewId = "mountain2" symbol = "#" color = ColorId DARK_GRAY
   wallShadow = true mountainSides = "mountain" }
+{ viewId = "hell_mountain" symbol = "#" color = ColorId DARK_RED
+  wallShadow = true mountainSides = "mountain" }
 { viewId = "dungeon_wall" symbol = "#" color = ColorId LIGHT_GRAY
   sprite = "mountain" wallShadow = true mountainSides = "dungeonwall" }
 { viewId = "dungeon_wall2" symbol = "#" color = ColorId DARK_BLUE
@@ -844,6 +846,9 @@ BOOKCASES("_human")
 { viewId = "gold_ore" symbol = "⁂" color = ColorId YELLOW
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
   background = "mountain2" fx = GoldGlitter() }
+{ viewId = "hell_gold_ore" sprite = "gold_ore" symbol = "⁂" color = ColorId YELLOW
+  isSymbolFont = true wallShadow = true mountainSides = "mountain"
+  background = "hell_mountain" fx = GoldGlitter() }
 { viewId = "gold" symbol = "$" color = ColorId YELLOW fx = GoldGlitter() }
 { viewId = "iron_ore" symbol = "⁂" color = ColorId DARK_BROWN
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
@@ -851,15 +856,21 @@ BOOKCASES("_human")
 { viewId = "stone" symbol = "⁂" color = ColorId LIGHT_GRAY
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
   background = "mountain2" }
+{ viewId = "hell_stone" sprite = "stone" symbol = "⁂" color = ColorId LIGHT_GRAY
+  isSymbolFont = true wallShadow = true mountainSides = "mountain"
+  background = "hell_mountain" }
 { viewId = "adamantium_ore" symbol = "⁂" color = ColorId LIGHT_BLUE
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
   background = "mountain2" fx = { GLITTERING ColorId LIGHT_BLUE } }
+{ viewId = "hell_adamantium_ore" sprite = "adamantium_ore" symbol = "⁂" color = ColorId LIGHT_BLUE
+  isSymbolFont = true wallShadow = true mountainSides = "mountain"
+  background = "hell_mountain" fx = { GLITTERING ColorId LIGHT_BLUE } }
 { viewId = "adoxium_ore" symbol = "⁂" color = ColorId PINK
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
-  background = "mountain2" fx = { GLITTERING ColorId PINK } }
+  background = "hell_mountain" fx = { GLITTERING ColorId PINK } }
 { viewId = "infernite_ore" symbol = "⁂" color = ColorId RED
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
-  background = "mountain2" fx = { GLITTERING ColorId ORANGE } }
+  background = "hell_mountain" fx = { GLITTERING ColorId ORANGE } }
 
 # Legacy tiles, not in vanilla anymore
   { "orc" "o" ColorId DARK_BLUE }

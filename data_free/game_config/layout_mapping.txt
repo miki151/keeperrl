@@ -70,6 +70,11 @@
   "workshop" Place "WORKSHOP"
 }
 
+"z_level_hell" inherit "default" append {
+  "hard_rock" Place "HELL_MOUNTAIN"
+  "water" { ClearFurniture Place "MAGMA"}
+}
+
 "z_level_vampire_vault" inherit "default" append {
   "bed" Place "COFFIN1"
   "workshop" Place "BOOKCASE_WOOD"

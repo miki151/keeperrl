@@ -45,7 +45,7 @@ static LevelMakerResult getLevelMaker(const ZLevelType& levelInfo, ResourceCount
         }
         return LevelMakerResult{
             LevelMaker::settlementLevel(*contentFactory, Random, enemy.settlement, size,
-                resources, tribe),
+                resources, tribe, level.mountainType),
             vector<EnemyInfo>{std::move(enemy)}
         };
       },

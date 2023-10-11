@@ -15,11 +15,11 @@
       enemy = "Z_LEVEL_FULL"
     }
     minDepth = 6
+    maxDepth = 22
   }
   {
     type = FullZLevel {
-      # You can optionally add an EnemyId. The player will dig down right into their base.
-      # Warning: some enemies might not work
+      # You can optionally add an EnemyId. Warning: some enemies might not work
       enemy = "BLACK_RATS"
     }
     # Possible depths for this level, inclusive. The first level when you dig down is 1.
@@ -59,6 +59,13 @@
     minDepth = 23
     maxDepth = 23
     guarantee = true
+  }
+  {
+    type = EnemyZLevel {
+      enemy = "Z_LEVEL_HELL"
+      mountainType = "HELL_MOUNTAIN"
+    }
+    minDepth = 24
   }
   {
     # A level full of water with some islands
@@ -113,9 +120,6 @@ Def LEVEL(NAME, D1, D2) LEVEL(NAME, D1, D2, 1.0) End
   LEVEL("DARK_ELVES_Z_LEVEL3", 12, 16, 0.5)
   LEVEL("GOBLINS_Z_LEVEL4", 17, 21, 0.5)
   LEVEL("DARK_ELVES_Z_LEVEL4", 17, 21, 0.5)
-  LEVEL("GOBLINS_Z_LEVEL5", 22, 26, 0.5)
-  LEVEL("DARK_ELVES_Z_LEVEL5", 22, 26, 0.5)
-  LEVEL("GOBLINS_Z_LEVEL6", 27, 1000)
   {
     type = EnemyZLevel {
       enemy = "Z_LEVEL_DWARF_VAULT"
@@ -134,7 +138,6 @@ Def LEVEL(NAME, D1, D2) LEVEL(NAME, D1, D2, 1.0) End
   LEVEL("DWARVES_Z_LEVEL2", 7, 11)
   LEVEL("DWARVES_Z_LEVEL3", 12, 16)
   LEVEL("DWARVES_Z_LEVEL4", 17, 21)
-  LEVEL("DWARVES_Z_LEVEL5", 22, 26)
   {
     type = EnemyZLevel {
       enemy = "Z_LEVEL_VAMPIRE_VAULT"

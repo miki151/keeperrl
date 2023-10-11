@@ -1545,6 +1545,12 @@ Def BedHeal() Heal { FLESH 0.005 } End
   destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
   tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
 }
+"HELL_MOUNTAIN" inherit "MOUNTAIN2"
+{
+  name = "melted rock"
+  viewId = { "hell_mountain" }
+  lightEmission = 2.2
+}
 "ADAMANTIUM_ORE" inherit "MOUNTAIN2"
 {
   name = "adamantium ore"
@@ -1557,6 +1563,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
     500 HOSTILE_DIG
   }
   minedAchievement = "mined_ada"
+}
+"HELL_ADAMANTIUM_ORE" inherit "ADAMANTIUM_ORE"
+{
+  viewId = { "hell_adamantium_ore" }
 }
 "ADOXIUM_ORE" inherit "MOUNTAIN2"
 {
@@ -1611,6 +1621,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
     200 HOSTILE_DIG
   }
 }
+"HELL_STONE" inherit "STONE"
+{
+  viewId = { "hell_stone" }
+}
 "GOLD_ORE" inherit "MOUNTAIN2"
 {
   name = "gold ore"
@@ -1622,6 +1636,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
     220 DIG
     200 HOSTILE_DIG
   }
+}
+"HELL_GOLD_ORE" inherit "GOLD_ORE"
+{
+  viewId = { "hell_gold_ore" }
 }
 "DUNGEON_WALL"
 {

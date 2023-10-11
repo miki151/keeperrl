@@ -56,6 +56,7 @@ struct Color {
   static Color DARK_GREEN;
   static Color RED;
   static Color LIGHT_RED;
+  static Color DARK_RED;
   static Color PINK;
   static Color ORANGE;
   static Color BLUE;

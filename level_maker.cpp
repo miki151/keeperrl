@@ -2443,7 +2443,8 @@ struct SurroundWithResourcesInfo {
 };
 
 static void generateResources(RandomGen& random, ResourceCounts resourceCounts, LevelMaker* startingPos,
-    RandomLocations* locations, const vector<SurroundWithResourcesInfo>& surroundWithResources, int mapWidth, TribeId tribe) {
+    RandomLocations* locations, const vector<SurroundWithResourcesInfo>& surroundWithResources, int mapWidth,
+    TribeId tribe, FurnitureType mountainType = FurnitureType("MOUNTAIN2")) {
   auto addResources = [&](int count, Range size, int maxDist, FurnitureType type, LevelMaker* center,
       CollectiveBuilder* collective) {
     for (int i : Range(count)) {
@@ -2452,7 +2453,7 @@ static void generateResources(RandomGen& random, ResourceCounts resourceCounts, 
         change.add(SquareChange::addTerritory(collective));
       auto queue = make_unique<MakerQueue>(make_unique<FurnitureBlob>(std::move(change)));
       locations->add(std::move(queue), {random.get(size), random.get(size)},
-          Predicate::type(FurnitureType("MOUNTAIN2")) && !Predicate::attrib(SquareAttrib::NO_RESOURCES));
+          Predicate::type(mountainType) && !Predicate::attrib(SquareAttrib::NO_RESOURCES));
       if (center)
         locations->setMaxDistanceLast(center, maxDist);
       locations->setLastOptional();
@@ -2997,9 +2998,9 @@ static PLevelMaker underground(RandomGen& random, Vec2 size, FurnitureType floor
 }
 
 PLevelMaker LevelMaker::settlementLevel(const ContentFactory& factory, RandomGen& random, SettlementInfo settlement,
-    Vec2 size, optional<ResourceCounts> resources, optional<TribeId> resourceTribe) {
+    Vec2 size, optional<ResourceCounts> resources, optional<TribeId> resourceTribe, FurnitureType mountainType) {
   auto queue = make_unique<MakerQueue>();
-  queue->addMaker(make_unique<Empty>(SquareChange(FurnitureType("FLOOR")).add(FurnitureType("MOUNTAIN2"))
+  queue->addMaker(make_unique<Empty>(SquareChange(FurnitureType("FLOOR")).add(mountainType)
       .add(SquareAttrib::NO_RESOURCES)));
   auto locations = make_unique<RandomLocations>();
   auto maker = getSettlementMaker(factory, random, settlement);
@@ -3012,7 +3013,7 @@ PLevelMaker LevelMaker::settlementLevel(const ContentFactory& factory, RandomGen
   queue->addMaker(std::move(locations));
   if (resources) {
     auto resLocations = make_unique<RandomLocations>();
-    generateResources(random, *resources, nullptr, resLocations.get(), {}, 0, *resourceTribe);
+    generateResources(random, *resources, nullptr, resLocations.get(), {}, 0, *resourceTribe, mountainType);
     queue->addMaker(std::move(resLocations));
   }
   return std::move(queue);

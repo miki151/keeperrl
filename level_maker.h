@@ -59,6 +59,6 @@ class LevelMaker {
       const ContentFactory&);
   static PLevelMaker getWaterZLevel(RandomGen&, FurnitureType waterType, int mapWidth, CreatureList);
   static PLevelMaker settlementLevel(const ContentFactory&, RandomGen&, SettlementInfo, Vec2 size,
-      optional<ResourceCounts> resources, optional<TribeId> resourceTribe);
+      optional<ResourceCounts> resources, optional<TribeId> resourceTribe, FurnitureType mountainType);
 };
 
