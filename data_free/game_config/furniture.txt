@@ -1550,6 +1550,11 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "melted rock"
   viewId = { "hell_mountain" }
   lightEmission = 2.2
+  tickType = Effect Chance 0.0005 Filter Not Area 1 Not And { Kills 0 Not CreatureId "LAVA_GOLEM" } {
+    RemoveFurniture "HELL_MOUNTAIN"
+    SummonEnemy "LAVA_GOLEM" {1} none
+  }
+
 }
 "ADAMANTIUM_ORE" inherit "MOUNTAIN2"
 {
@@ -1986,7 +1991,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   entryType = Trap { Area 2 DestroyWalls DIG }
   warning = true
   constructMessage = SET_UP
-}   
+}
 "BOULDER_TRAP"
 {
   name = "boulder trap"
@@ -2029,7 +2034,7 @@ Def Boulder(Id) {
   tickType = Trap 1 {
     Def SummonGargoyle() {
       Message HIGH "The gargoyle comes to life!"
-      Summon "GARGOYLE" 1 20
+      SummonEnemy "GARGOYLE" 1 20
     } End
     SummonGargoyle()
     SummonGargoyle()

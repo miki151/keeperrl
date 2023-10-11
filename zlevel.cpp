@@ -12,6 +12,10 @@
 #include "level.h"
 #include "enemy_aggression_level.h"
 
+int getZLevelCombatExp(int depth) {
+  return depth * 3 / 2;
+}
+
 static EnemyInfo getEnemy(EnemyId id, ContentFactory* contentFactory) {
   auto enemy = EnemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,
       contentFactory->buildingInfo, {}).get(id);

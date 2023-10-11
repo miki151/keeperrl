@@ -2125,7 +2125,7 @@
     viewId = { "iron_golem" }
     attr = {
       DAMAGE 23
-      DEFENSE 30 
+      DEFENSE 30
     }
     body = {
       type = HumanoidLike LARGE
@@ -2144,11 +2144,11 @@
     viewId = { "lava_golem" }
     attr = {
       DAMAGE 26
-      DEFENSE 36 
+      DEFENSE 36
     }
     body = {
       type = HumanoidLike LARGE
-      material = IRON
+      material = LAVA
       intrinsicAttacks = {
         ARM {{{ Intrinsic { "fist_attack" } "fists" 10 {
             attackType = HIT
