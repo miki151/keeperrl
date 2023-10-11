@@ -4048,7 +4048,7 @@
     }
     attr = {
       DAMAGE 25
-      DEFENSE 35 
+      DEFENSE 35
     }
     permanentEffects = {
       FLYING 1

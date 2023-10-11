@@ -83,6 +83,10 @@ static Color getPortalColor(int index) {
   return Color(255 * (index % 2), 255 * ((index / 2) % 2), 255 * ((index / 4) % 2));
 }
 
+static int getCombatExp(int depth) {
+  return depth * 3 / 2;
+}
+
 void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
   switch (type) {
     case FurnitureOnBuilt::UP_STAIRS: {
@@ -127,6 +131,8 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
         for (auto& c : newLevel.collective)
           pos.getModel()->addCollective(std::move(c));
         targetLevel = newLevel.level;
+        for (auto c : newLevel.level->getAllCreatures())
+          c->setCombatExperience(getCombatExp(levelIndex));
       } else
         targetLevel = pos.getModel()->getMainLevel(levelIndex + 1);
       addStairs(pos, targetLevel, FurnitureType("UP_STAIRS"));
