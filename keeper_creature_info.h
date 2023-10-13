@@ -37,6 +37,7 @@ struct KeeperCreatureInfo {
   vector<VillainGroup> SERIAL(villainGroups);
   bool SERIAL(requireQuartersForExp) = true;
   optional<KeeperBaseInfo> SERIAL(startingBase) = none;
+  string SERIAL(baseName);
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);
 };

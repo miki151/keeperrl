@@ -1208,7 +1208,7 @@ int Creature::getCombatExperienceCap() const {
 }
 
 void Creature::updateCombatExperience(Creature* victim) {
-  if (!victim->getAttributes().getIllusionViewObject()) {
+  if (getBody().hasBrain(getGame()->getContentFactory())) {
     double attackDiff = victim->highestAttackValueEver - highestAttackValueEver;
     constexpr double maxLevelGain = 3.0;
     constexpr double minLevelGain = 0.02;
@@ -1239,7 +1239,7 @@ void Creature::onKilledOrCaptured(Creature* victim) {
   if (!victim->getBody().isFarmAnimal() && !victim->getAttributes().getIllusionViewObject()) {
     updateCombatExperience(victim);
     int difficulty = victim->getDifficultyPoints();
-    CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
+    CHECK(difficulty >= 0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
     points += difficulty;
     kills.push_back(KillInfo{victim->getUniqueId(), victim->getViewObject().getViewIdList()});
     if (victim->getStatus().contains(CreatureStatus::LEADER) && getBody().hasBrain(getGame()->getContentFactory())) {
@@ -2665,7 +2665,6 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
   auto currentPath = shortestPath;
   for (int i : Range(2)) {
     bool wasNew = false;
-    INFO << identify() << (away ? " retreating " : " navigating ") << position.getCoord() << " to " << pos.getCoord();
     if (!currentPath || Random.roll(10) || currentPath->isReversed() != away ||
         currentPath->getTarget().dist8(pos).value_or(10000000) > *position.dist8(pos) / 10) {
       INFO << "Calculating new path";

@@ -66,6 +66,7 @@
 #include "tile_gas.h"
 #include "tile_gas_info.h"
 #include "buff_info.h"
+#include "zlevel.h"
 
 namespace {
 struct DefaultType {
@@ -565,7 +566,10 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::Summon&, const Crea
 }
 
 static string getName(const Effects::Summon& e, const ContentFactory* f) {
-  return "summon " + f->getCreatures().getName(e.creature);
+  if (e.count.getEnd() > 2)
+    return "summon " + f->getCreatures().getNamePlural(e.creature);
+  else
+    return "summon " + f->getCreatures().getName(e.creature);
 }
 
 static bool isOffensive(const Effects::Summon&) {
@@ -573,10 +577,13 @@ static bool isOffensive(const Effects::Summon&) {
 }
 
 static string getDescription(const Effects::Summon& e, const ContentFactory* f) {
-  if (e.count.getEnd() > 2)
-    return "Summons " + toString(e.count.getStart()) + " to " + toString(e.count.getEnd() - 1) + " "
-        + f->getCreatures().getNamePlural(e.creature);
-  else
+  if (e.count.getEnd() > 2) {
+    if (e.count.getLength() == 1)
+      return "Summons " + toString(e.count.getStart()) + " " + f->getCreatures().getNamePlural(e.creature);
+    else
+      return "Summons " + toString(e.count.getStart()) + " to " + toString(e.count.getEnd() - 1) + " "
+          + f->getCreatures().getNamePlural(e.creature);
+  } else
     return "Summons a " + f->getCreatures().getName(e.creature);
 }
 
@@ -655,7 +662,16 @@ static string getDescription(const Effects::SummonEnemy& e, const ContentFactory
 
 static bool apply(const Effects::SummonEnemy& summon, Position pos, Creature*) {
   CreatureGroup f = CreatureGroup::singleType(TribeId::getMonster(), summon.creature);
-  return !Effect::summon(pos, f, Random.get(summon.count), summon.ttl.map([](int v) { return TimeInterval(v); }), 1_visible).empty();
+  auto ret = Effect::summon(pos, f, Random.get(summon.count),
+      summon.ttl.map([](int v) { return TimeInterval(v); }), 1_visible);
+  int exp = [&] {
+    if (auto depth = pos.getModel()->getMainLevelDepth(pos.getLevel()))
+      return getZLevelCombatExp(*depth);
+    return pos.getGame()->getModelDifficulty(pos.getModel());
+  }();
+  for (auto c : ret)
+    c->setCombatExperience(exp);
+  return !ret.empty();
 }
 
 static bool applyToCreature(const Effects::SummonElement&, Creature* c, Creature*) {

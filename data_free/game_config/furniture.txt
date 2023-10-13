@@ -1545,6 +1545,17 @@ Def BedHeal() Heal { FLESH 0.005 } End
   destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
   tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
 }
+"HELL_MOUNTAIN" inherit "MOUNTAIN2"
+{
+  name = "melted rock"
+  viewId = { "hell_mountain" }
+  lightEmission = 2.2
+  tickType = Effect Chance 0.0005 Filter Not Area 1 Not And { Kills 0 Not CreatureId "LAVA_GOLEM" } {
+    RemoveFurniture "HELL_MOUNTAIN"
+    SummonEnemy "LAVA_GOLEM" {1} none
+  }
+
+}
 "ADAMANTIUM_ORE" inherit "MOUNTAIN2"
 {
   name = "adamantium ore"
@@ -1557,6 +1568,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
     500 HOSTILE_DIG
   }
   minedAchievement = "mined_ada"
+}
+"HELL_ADAMANTIUM_ORE" inherit "ADAMANTIUM_ORE"
+{
+  viewId = { "hell_adamantium_ore" }
 }
 "ADOXIUM_ORE" inherit "MOUNTAIN2"
 {
@@ -1611,6 +1626,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
     200 HOSTILE_DIG
   }
 }
+"HELL_STONE" inherit "STONE"
+{
+  viewId = { "hell_stone" }
+}
 "GOLD_ORE" inherit "MOUNTAIN2"
 {
   name = "gold ore"
@@ -1622,6 +1641,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
     220 DIG
     200 HOSTILE_DIG
   }
+}
+"HELL_GOLD_ORE" inherit "GOLD_ORE"
+{
+  viewId = { "hell_gold_ore" }
 }
 "DUNGEON_WALL"
 {
@@ -1968,7 +1991,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   entryType = Trap { Area 2 DestroyWalls DIG }
   warning = true
   constructMessage = SET_UP
-}   
+}
 "BOULDER_TRAP"
 {
   name = "boulder trap"
@@ -2011,7 +2034,7 @@ Def Boulder(Id) {
   tickType = Trap 1 {
     Def SummonGargoyle() {
       Message HIGH "The gargoyle comes to life!"
-      Summon "GARGOYLE" 1 20
+      SummonEnemy "GARGOYLE" 1 20
     } End
     SummonGargoyle()
     SummonGargoyle()

@@ -40,6 +40,7 @@ Color Color::LIGHT_GREEN(100, 255, 100);
 Color Color::DARK_GREEN(0, 150, 0);
 Color Color::RED(255, 0, 0);
 Color Color::LIGHT_RED(255, 100, 100);
+Color Color::DARK_RED(150, 0, 0);
 Color Color::PINK(255, 20, 147);
 Color Color::ORANGE(255, 165, 0);
 Color Color::BLUE(0, 0, 255);
@@ -115,6 +116,7 @@ RICH_ENUM(
     DARK_GREEN,
     RED,
     LIGHT_RED,
+    DARK_RED,
     PINK,
     ORANGE,
     BLUE,
@@ -169,6 +171,7 @@ void Color::serialize(PrettyInputArchive& ar, unsigned int) {
           MAP_COLOR(DARK_GREEN);
           MAP_COLOR(RED);
           MAP_COLOR(LIGHT_RED);
+          MAP_COLOR(DARK_RED);
           MAP_COLOR(PINK);
           MAP_COLOR(ORANGE);
           MAP_COLOR(BLUE);

@@ -19,6 +19,7 @@
       "GOLD_ORE" {5 10} 1 0
   }
   minDepth = 1
+  maxDepth = 23
 }
 {
   counts = {
@@ -26,29 +27,23 @@
       "ADAMANTIUM_ORE" {5 10} 2 0
   }
   minDepth = 14
+  maxDepth = 23
 }
 {
   counts = {
       "GIANT_MUSHROOM" {5 10} 6 0
   }
   minDepth = 2
+  maxDepth = 22
 }
 {
   counts = {
-      "STONE" {5 10} 1 0
-      "IRON_ORE" {5 10} 1 0
-      "GOLD_ORE" {5 10} 1 0
-      "ADOXIUM_ORE" {5 10} 2 0
+      "HELL_STONE" {5 10} 1 0
+      "HELL_ADAMANTIUM_ORE" {5 10} 1 0
+      "HELL_GOLD_ORE" {5 10} 1 0
+      "INFERNITE_ORE" {5 10} 1 0
+      "ADOXIUM_ORE" {5 10} 1 0
   }
-  minDepth = 20
-}
-{
-  counts = {
-      "STONE" {5 10} 1 0
-      "IRON_ORE" {5 10} 1 0
-      "GOLD_ORE" {5 10} 1 0
-      "INFERNITE_ORE" {5 10} 2 0
-  }
-  minDepth = 27
+  minDepth = 24
 }
 

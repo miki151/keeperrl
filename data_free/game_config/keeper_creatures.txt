@@ -3,6 +3,7 @@
 
 "1_dark_mage"
 {
+  baseName = "Classic"
   creatureId = { "KEEPER_MAGE" "KEEPER_MAGE_F" }
   tribeAlignment = EVIL
   villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
@@ -34,6 +35,7 @@
 }
 "3_white_knight"
 {
+  baseName = "Castle"
   creatureId = { "KEEPER_KNIGHT_WHITE" "KEEPER_KNIGHT_WHITE_F" }
   tribeAlignment = LAWFUL
   villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
@@ -56,6 +58,7 @@
 }
 "4_necromancer"
 {
+  baseName = "Undead"
   creatureId = { "NECROMANCER" "NECROMANCER_F" }
   tribeAlignment = EVIL
   villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
@@ -81,6 +84,7 @@
 }
 "5_gnomes"
 {
+  baseName = "Automatons"
   creatureId = { "GNOME" }
   tribeAlignment = LAWFUL
   villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
@@ -104,9 +108,11 @@
   populationString = "automatons"
   noLeader = true
   prisoners = false
+  requireQuartersForExp = false
 }
 "6_dwarves"
 {
+  baseName = "Colony"
   creatureId = { "DWARF_PLAYER" }
   tribeAlignment = LAWFUL
   villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
@@ -134,6 +140,7 @@
 }
 "7_goblins"
 {
+  baseName = "Greenskins"
   creatureId = { "GOBLIN_KEEPER" }
   tribeAlignment = EVIL
   villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
@@ -156,6 +163,7 @@
 }
 "8_zombies"
 {
+  baseName = "Zombies"
   creatureId = { "ZOMBIE_WORKER" }
   specialTraits = { Lasting {SWARMER} }
   tribeAlignment = EVIL
@@ -181,6 +189,7 @@
 }
 "9_cyclops"
 {
+  baseName = "Hermit"
   creatureId = { "CYCLOPS_PLAYER" }
   tribeAlignment = EVIL
   villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
@@ -204,12 +213,13 @@
   unlock = "cyclops"
 }
 
-"91_adventurer"
+"91_dark_mage_adventurer"
 {
-  creatureId = { "ADVENTURER" "ADVENTURER_F" }
-  tribeAlignment = LAWFUL
+  baseName = "Adventurer"
+  creatureId = { "ADVENTURER_MAGE" "ADVENTURER_MAGE_F" }
+  tribeAlignment = EVIL
   description = "Roam the land in search of adventures and loot!"
-  villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {}
   technology = {}
   zLevelGroups = { "basic" }
@@ -221,4 +231,15 @@
   startingBase = {5 5} "adventurer_house"
   prisoners = false
   requireQuartersForExp = false
+}
+
+"92_dark_knight_adventurer" inherit "91_dark_mage_adventurer"
+{
+  creatureId = { "ADVENTURER_KNIGHT" "ADVENTURER_KNIGHT_F" }
+}
+
+"93_white_knight_adventurer" inherit "91_dark_mage_adventurer"
+{
+  creatureId = { "ADVENTURER_KNIGHT_WHITE" "ADVENTURER_KNIGHT_WHITE_F" }
+  tribeAlignment = EVIL
 }

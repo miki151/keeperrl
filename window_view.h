@@ -86,7 +86,6 @@ class WindowView: public View {
   virtual void addSound(const Sound&) override;
   virtual optional<Vec2> chooseSite(const string& message, const Campaign&, Vec2 current) override;
   virtual void presentWorldmap(const Campaign&) override;
-  virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&) override;
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) override;
   virtual vector<int> prepareWarlordGame(RetiredGames&, const vector<PlayerInfo>&, int maxTeam, int maxDungeons) override;
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<PlayerInfo>&,

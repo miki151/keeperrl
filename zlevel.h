@@ -13,3 +13,4 @@ LevelMakerResult getLevelMaker(RandomGen& random, ContentFactory* contentFactory
     int depth, TribeId tribe, Vec2 size, EnemyAggressionLevel);
 
 LevelMakerResult getUpLevel(RandomGen& random, ContentFactory* contentFactory, int depth, Position, bool withEnemy);
+extern int getZLevelCombatExp(int depth);

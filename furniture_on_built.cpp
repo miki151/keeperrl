@@ -127,6 +127,8 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
         for (auto& c : newLevel.collective)
           pos.getModel()->addCollective(std::move(c));
         targetLevel = newLevel.level;
+        for (auto c : newLevel.level->getAllCreatures())
+          c->setCombatExperience(getZLevelCombatExp(levelIndex));
       } else
         targetLevel = pos.getModel()->getMainLevel(levelIndex + 1);
       addStairs(pos, targetLevel, FurnitureType("UP_STAIRS"));

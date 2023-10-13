@@ -173,25 +173,6 @@ class View {
 
   virtual void setBugReportSaveCallback(BugReportSaveCallback) = 0;
 
-  struct AvatarChoice {
-    int creatureIndex;
-    int genderIndex;
-    string name;
-  };
-  enum class AvatarRole;
-  struct AvatarData {
-    vector<string> genderNames;
-    vector<ViewObject> viewId;
-    vector<vector<string>> firstNames;
-    optional<TribeAlignment> alignment;
-    string name;
-    string description;
-    bool settlementNames;
-    OptionId nameOption;
-    bool unlocked;
-  };
-  virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&) = 0;
-
   struct CampaignMenuState {
     bool helpText;
     CampaignMenuIndex index;
@@ -249,9 +230,3 @@ class View {
 
   virtual bool zoomUIAvailable() const = 0;
 };
-
-RICH_ENUM(
-  View::AvatarRole,
-  KEEPER,
-  WARLORD
-);

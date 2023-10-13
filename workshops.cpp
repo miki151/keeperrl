@@ -76,9 +76,14 @@ vector<PItem> Workshops::Type::unqueue(Collective* collective, int index) {
 
 static const double prodMult = 0.15;
 
+static bool canCraft(const Workshops::QueuedItem& product, const Collective* collective) {
+  return (product.paid || collective->hasResource(product.item.cost)) &&
+      (!product.item.requiresUpgrades || !product.runes.empty());
+}
+
 bool Workshops::Type::isIdle(const Collective* collective) const {
   for (auto& product : queued)
-    if (product.paid || collective->hasResource(product.item.cost))
+    if (canCraft(product, collective))
       return false;
   return true;
 }
@@ -100,7 +105,7 @@ auto Workshops::Type::addWork(Collective* collective, double amount, int skillAm
     int itemScaling) -> WorkshopResult {
   for (int productIndex : All(queued)) {
     auto& product = queued[productIndex];
-    if (product.paid || collective->hasResource(product.item.cost)) {
+    if (canCraft(product, collective)) {
       if (!product.paid) {
         collective->takeResource(product.item.cost);
         addDebt(-product.item.cost);
