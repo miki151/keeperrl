@@ -47,6 +47,26 @@
       # Take a look a CYCLOPS for a more detailed example.
     }
   }
+Def AdventurerEquipment(Weapon)
+{
+  { "FirstAidKit" 2 4 }
+  { Weapon}
+  { "LeatherGloves"}
+  { "LeatherArmor"}
+  { "LeatherHelm"}
+  { "GoldPiece" 16 26 }
+}
+End
+"ADVENTURER_MAGE" inherit "KEEPER_MAGE"
+  {
+    promotionGroup = "spell_adventurer"
+    promotionCost = 1
+    maxPromotions = 1000
+    maxLevelIncrease = {
+      SPELL_DAMAGE 50
+    }
+    inventory = AdventurerEquipment("WoodenStaff")
+  }
 "KEEPER_MAGE_F" inherit "KEEPER_MAGE"
   {
     viewId = { "keeper_f1" }
@@ -55,6 +75,16 @@
       firstNameGen = "FIRST_FEMALE"
     }
     viewIdUpgrades = { { "keeper_f2" } { "keeper_f3" } { "keeper_f4" }}
+  }
+"ADVENTURER_MAGE_F" inherit "KEEPER_MAGE_F"
+  {
+    promotionGroup = "spell_adventurer"
+    promotionCost = 1
+    maxPromotions = 1000
+    maxLevelIncrease = {
+      SPELL_DAMAGE 50
+    }
+    inventory = AdventurerEquipment("WoodenStaff")
   }
 "NECROMANCER" inherit "KEEPER_MAGE"
   {
@@ -119,6 +149,16 @@
       { "Sword"}
     }
   }
+"ADVENTURER_KNIGHT" inherit "KEEPER_KNIGHT"
+  {
+    promotionGroup = "melee_adventurer"
+    promotionCost = 1
+    maxPromotions = 1000
+    maxLevelIncrease = {
+      DAMAGE 50
+    }
+    inventory = AdventurerEquipment("Sword")
+  }
 "KEEPER_KNIGHT_F" inherit "KEEPER_KNIGHT"
   {
     viewId = { "keeper_knight_f1" }
@@ -129,6 +169,16 @@
       fullTitle = true
     }
     viewIdUpgrades = { { "keeper_knight_f2" } { "keeper_knight_f3" } { "keeper_knight_f4" }}
+  }
+"ADVENTURER_KNIGHT_F" inherit "KEEPER_KNIGHT_F"
+  {
+    promotionGroup = "melee_adventurer"
+    promotionCost = 1
+    maxPromotions = 1000
+    maxLevelIncrease = {
+      DAMAGE 50
+    }
+    inventory = AdventurerEquipment("Sword")
   }
 "KEEPER_KNIGHT_WHITE"
   {
@@ -165,6 +215,16 @@
       { "Sword"}
     }
   }
+"ADVENTURER_KNIGHT_WHITE" inherit "KEEPER_KNIGHT_WHITE"
+{
+  promotionGroup = "melee_adventurer"
+  promotionCost = 1
+  maxPromotions = 1000
+  maxLevelIncrease = {
+    DAMAGE 50
+  }
+  inventory = AdventurerEquipment("Sword")
+}
 "KEEPER_KNIGHT_WHITE_F" inherit "KEEPER_KNIGHT_WHITE"
   {
     viewId = { "duke_f1" }
@@ -176,54 +236,16 @@
      }
     viewIdUpgrades = { { "duke_f2" } { "duke_f3" } { "duke_f4" }}
   }
-"ADVENTURER"
-  {
-    viewId = { "player" }
-    attr = {
-      DAMAGE 15
-      DEFENSE 20
-    }
-    body = {
-      type = Humanoid LARGE
-    }
-    name = {
-      name = "adventurer"
-      firstNameGen = "FIRST_MALE"
-      fullTitle = true
-     }
-    permanentEffects = {
-      AMBUSH_SKILL 1
-      RIDER 1
-    }
-    maxLevelIncrease = {
-      DAMAGE 16
-      SPELL_DAMAGE 16
-      RANGED_DAMAGE 16
-    }
-    hatedByEffect = HATE_HUMANS
-    spellSchools = { "fighter" "mage" }
-    inventory = {
-      { "FirstAidKit" 2 4 }
-      { "Sword"}
-      { "LeatherGloves"}
-      { "LeatherArmor"}
-      { "LeatherHelm"}
-      { "GoldPiece" 16 26 }
-    }
-    promotionGroup = "adventurer"
-    promotionCost = 1
-    maxPromotions = 1000
+"ADVENTURER_KNIGHT_WHITE_F" inherit "KEEPER_KNIGHT_WHITE_F"
+{
+  promotionGroup = "melee_adventurer"
+  promotionCost = 1
+  maxPromotions = 1000
+  maxLevelIncrease = {
+    DAMAGE 50
   }
-"ADVENTURER_F" inherit "ADVENTURER"
-  {
-    viewId = { "player_f" }
-    gender = FEMALE
-    name = {
-      name = "adventurer"
-      firstNameGen = "FIRST_FEMALE"
-      fullTitle = true
-     }
-  }
+  inventory = AdventurerEquipment("Sword")
+}
 "WHITE_WIZARD" inherit "KEEPER_MAGE"
   {
     viewId = { "keeper4" ColorId PURPLE }
@@ -261,6 +283,9 @@
       intrinsicAttacks = {
         HEAD {{{"UnicornHorn"}}}
       }
+     }
+     maxLevelIncrease = {
+       SPELL_DAMAGE 7
      }
     permanentEffects = {
       RANGED_RESISTANCE 1

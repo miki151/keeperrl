@@ -213,13 +213,13 @@
   unlock = "cyclops"
 }
 
-"91_adventurer"
+"91_dark_mage_adventurer"
 {
   baseName = "Adventurer"
-  creatureId = { "ADVENTURER" "ADVENTURER_F" }
-  tribeAlignment = LAWFUL
+  creatureId = { "ADVENTURER_MAGE" "ADVENTURER_MAGE_F" }
+  tribeAlignment = EVIL
   description = "Roam the land in search of adventures and loot!"
-  villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {}
   technology = {}
   zLevelGroups = { "basic" }
@@ -231,4 +231,15 @@
   startingBase = {5 5} "adventurer_house"
   prisoners = false
   requireQuartersForExp = false
+}
+
+"92_dark_knight_adventurer" inherit "91_dark_mage_adventurer"
+{
+  creatureId = { "ADVENTURER_KNIGHT" "ADVENTURER_KNIGHT_F" }
+}
+
+"93_white_knight_adventurer" inherit "91_dark_mage_adventurer"
+{
+  creatureId = { "ADVENTURER_KNIGHT_WHITE" "ADVENTURER_KNIGHT_WHITE_F" }
+  tribeAlignment = EVIL
 }

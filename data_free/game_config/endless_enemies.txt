@@ -299,21 +299,6 @@
   }
   {
     {
-      all = {
-        1 "ADVENTURER"
-        1 "ADVENTURER_F"
-      }
-      count = { 3 6 }
-      inventory = {{Scroll Area 1 DestroyWalls DIG}}
-      combatExperience = 20
-    }
-    KillLeader
-    "a group of adventurers"
-    { 10000 25000 }
-    100
-  }
-  {
-    {
       all = { 1 "TROLL" }
       count = { 3 6 }
       combatExperience = 25
