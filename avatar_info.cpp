@@ -189,10 +189,11 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
               CHECK(!creatureInfo.villainGroups.empty());
               ret = RetType(AvatarInfo{std::move(keeper), std::move(creatureInfo), avatarId, creatureInfo.tribeAlignment,
                   creatureInfo.villainGroups, chosenBaseName });
+              return true;
             }
           }
         }
-        return true;
+        fail();
       }}},
     }};
     view->scriptedUI("avatar_menu", data);
