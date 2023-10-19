@@ -20,7 +20,7 @@ else
 	sh ./linux_make.sh
 fi
 
-cp -R data ~/sdk/tools/ContentBuilder/content/common/
+cp -R -L data ~/sdk/tools/ContentBuilder/content/common/
 cp -R data_free ~/sdk/tools/ContentBuilder/content/common/
 cd ~/sdk/tools/ContentBuilder/
 ./run_build.sh
