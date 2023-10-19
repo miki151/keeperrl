@@ -49,6 +49,7 @@ class Campaign {
     optional<BiomeId> SERIAL(biome);
     typedef variant<VillainInfo, RetiredInfo, KeeperInfo> Dweller;
     optional<Dweller> SERIAL(dweller);
+    vector<SavedGameInfo::MinionInfo> SERIAL(inhabitants);
     optional<VillainInfo> getVillain() const;
     optional<RetiredInfo> getRetired() const;
     optional<KeeperInfo> getKeeper() const;
@@ -60,7 +61,7 @@ class Campaign {
     optional<string> getDwellerDescription() const;
     optional<string> getDwellerName() const;
     optional<VillainType> getVillainType() const;
-    SERIALIZE_ALL(viewId, biome, dweller, blocked)
+    SERIALIZE_ALL(viewId, biome, dweller, blocked, inhabitants)
   };
 
   const Table<SiteInfo>& getSites() const;
@@ -80,6 +81,7 @@ class Campaign {
   int getBaseLevelIncrease(Vec2) const;
   bool passesMaxAggressorCutOff(Vec2);
   CampaignType getType() const;
+  void updateInhabitants(ContentFactory*);
 
   map<string, string> getParameters() const;
 

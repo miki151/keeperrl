@@ -4534,11 +4534,19 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
           elem.push_back(WL(viewObject, *id, iconScale));
           labelPlacer.setOccupied(pos);
         }
-      if (auto desc = sites[x][y].getDwellerDescription())
-        elem.push_back(WL(margins, WL(tooltip, {
-            *desc,
-            "+" + toString(c.getBaseLevelIncrease(Vec2(x, y))) + " difficulty"
-        }, milliseconds{0}), -4));
+      if (auto desc = sites[x][y].getDwellerDescription()) {
+        auto minions = WL(getListBuilder);
+        for (auto& m : sites[x][y].inhabitants)
+          minions.addElemAuto(drawMinionAndLevel(m.viewId, m.level, 1));
+        auto lines = WL(getListBuilder, legendLineHeight).addElem(WL(label, *desc));
+        auto exp = c.getBaseLevelIncrease(Vec2(x, y));
+        if (exp > 0)
+          lines.addElem(WL(label, "Experience: " + toString(exp)));
+        if (!minions.isEmpty())
+          lines.addElem(minions.buildHorizontalList());
+        elem.push_back(WL(margins, WL(tooltip2, WL(miniWindow, WL(margins,
+            lines.buildVerticalList(), 15)), [](auto& r) { return r.bottomLeft(); }), -4));
+      }
       columns2.addElem(WL(stack, std::move(elem)));
     }
     rows.addElem(WL(stack, columns.buildHorizontalList(), columns2.buildHorizontalList()));

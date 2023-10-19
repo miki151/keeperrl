@@ -8,6 +8,10 @@
 #include "pretty_archive.h"
 #include "perlin_noise.h"
 #include "content_factory.h"
+#include "enemy_info.h"
+#include "tribe.h"
+#include "monster_ai.h"
+#include "creature.h"
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Campaign);
 
@@ -88,6 +92,31 @@ string Campaign::VillainInfo::getDescription() const {
     case VillainType::PLAYER: return "player";
     case VillainType::MINOR:
     case VillainType::NONE: return "minor villain";
+  }
+}
+
+void Campaign::updateInhabitants(ContentFactory* factory) {
+  for (auto pos : sites.getBounds()) {
+    auto& site = sites[pos];
+    site.inhabitants.clear();
+    if (site.dweller)
+      site.dweller->match(
+          [&](const VillainInfo& info) {
+            auto& inhabitants = factory->enemies.at(info.enemyId).settlement.inhabitants;
+            auto creatures = inhabitants.leader.generate(Random,
+                &factory->getCreatures(), TribeId::getMonster(), MonsterAIFactory::monster());
+            creatures.append(inhabitants.fighters.generate(Random,
+                &factory->getCreatures(), TribeId::getMonster(), MonsterAIFactory::monster()));
+            auto exp = getBaseLevelIncrease(pos);
+            for (auto& c : creatures) {
+              c->setCombatExperience(exp);
+              site.inhabitants.push_back(SavedGameInfo::MinionInfo::get(factory, c.get()));
+              if (site.inhabitants.size() >= 4)
+                break;
+            }
+          },
+          [&](const RetiredInfo& info) { site.inhabitants = info.gameInfo.minions ;},
+          [&](const KeeperInfo&) { site.inhabitants.clear(); });
   }
 }
 

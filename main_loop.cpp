@@ -471,7 +471,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
       CampaignBuilder builder(view, random, options, contentFactory.villains, contentFactory.gameIntros, *avatar);
       tileSet->setTilePathsAndReload(getTilePathsForAllMods());
-      if (auto setup = builder.prepareCampaign(&contentFactory, bindMethod(&MainLoop::getRetiredGames, this),
+     if (auto setup = builder.prepareCampaign(&contentFactory, bindMethod(&MainLoop::getRetiredGames, this),
           CampaignType::FREE_PLAY,
           contentFactory.getCreatures().getNameGenerator()->getNext(NameGeneratorId("WORLD")))) {
         auto models = prepareCampaignModels(*setup, *avatar, random, &contentFactory);
@@ -1253,11 +1253,11 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
   EnemyFactory enemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,
       contentFactory->buildingInfo, getExternalEnemiesFor(avatarInfo, contentFactory));
   ModelBuilder modelBuilder(nullptr, random, options, sokobanInput, contentFactory, std::move(enemyFactory));
-  return prepareCampaignModels(setup, avatarInfo, std::move(modelBuilder));
+  return prepareCampaignModels(setup, avatarInfo, std::move(modelBuilder), contentFactory);
 }
 
 ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInfo& avatarInfo,
-    ModelBuilder modelBuilder) {
+    ModelBuilder modelBuilder, ContentFactory* contentFactory) {
   Table<PModel> models(setup.campaign.getSites().getBounds());
   auto& sites = setup.campaign.getSites();
   for (Vec2 v : sites.getBounds())

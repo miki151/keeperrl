@@ -73,12 +73,13 @@ const char* CampaignBuilder::getIntroText() const {
     "As you conquer more enemies, your influence zone will increase.\n\n";
 }
 
-void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewIdList playerViewId) {
+void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewIdList playerViewId, ContentFactory* f) {
   campaign.sites[campaign.playerPos].dweller.reset();
   campaign.playerPos = pos;
   campaign.sites[campaign.playerPos].dweller =
       Campaign::SiteInfo::Dweller(Campaign::KeeperInfo{playerViewId,
           avatarInfo.playerCreature->getTribeId()});
+  campaign.updateInhabitants(f);
 }
 
 static bool tileExists(const ContentFactory* factory, const string& s) {
@@ -288,7 +289,7 @@ static bool isGoodStartingPos(const Campaign& campaign, Vec2 pos, int visibility
   return numLesser >= min(3, totalLesserVillains);
 }
 
-optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* contentFactory,
+optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* contentFactory,
     function<optional<RetiredGames>(CampaignType)> genRetired,
     CampaignType type, string worldName) {
   auto& campaignInfo = contentFactory->campaignInfo;
@@ -319,7 +320,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
         .minusMargin(campaignInfo.initialRadius + 1).getAllSquares())) {
       if (isGoodStartingPos(campaign, pos, campaignInfo.initialRadius, villainCounts.numLesser) ||
           type == CampaignType::QUICK_MAP) {
-        setPlayerPos(campaign, pos, avatarInfo.playerCreature->getMaxViewIdUpgrade());
+        setPlayerPos(campaign, pos, avatarInfo.playerCreature->getMaxViewIdUpgrade(), contentFactory);
         campaign.originalPlayerPos = pos;
         break;
       }
@@ -347,7 +348,8 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
           updateMap = true;
           break;
         case CampaignActionId::SET_POSITION:
-          setPlayerPos(campaign, action.get<Vec2>(), avatarInfo.playerCreature->getMaxViewIdUpgrade());
+          setPlayerPos(campaign, action.get<Vec2>(), avatarInfo.playerCreature->getMaxViewIdUpgrade(),
+              contentFactory);
           break;
         case CampaignActionId::CHANGE_WORLD_MAP:
           worldMapIndex = action.get<int>();

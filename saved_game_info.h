@@ -4,10 +4,13 @@
 #include "view_id.h"
 #include "enemy_id.h"
 
+class ContentFactory;
+
 struct SavedGameInfo {
   struct MinionInfo {
     ViewIdList SERIAL(viewId);
     int SERIAL(level);
+    static MinionInfo get(const ContentFactory*, const Creature*);
     SERIALIZE_ALL(viewId, level)
   };
   ViewIdList getViewId() const;
