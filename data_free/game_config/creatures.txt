@@ -284,9 +284,6 @@ End
         HEAD {{{"UnicornHorn"}}}
       }
      }
-     maxLevelIncrease = {
-       SPELL_DAMAGE 7
-     }
     permanentEffects = {
       RANGED_RESISTANCE 1
       MAGIC_RESISTANCE 1
@@ -324,7 +321,6 @@ End
     chatReactionHostile = "\"Die!\""
     maxLevelIncrease = {
       DAMAGE 3
-      RANGED_DAMAGE 3
     }
     name = {
       name = "bandit"
@@ -819,7 +815,7 @@ End
     viewId = { "yeti" }
     attr = {
       DAMAGE 30
-      DEFENSE 30 
+      DEFENSE 30
     }
     body = {
       type = Humanoid LARGE
@@ -869,7 +865,6 @@ End
     }
     maxLevelIncrease = {
       DAMAGE 4
-      SPELL_DAMAGE 4
     }
   }
 "DEMON_LORD"
@@ -900,7 +895,7 @@ End
       groupName = "pack"
     }
     maxLevelIncrease = {
-      SPELL_DAMAGE 7
+      DAMAGE 7
     }
     inventory = {
       { type = Glyph ARMOR LastingEffect MAGIC_RESISTANCE chance = 0.3 }
@@ -914,7 +909,7 @@ End
     viewId = { "minotaur" }
     attr = {
       DAMAGE 35
-      DEFENSE 45 
+      DEFENSE 45
     }
     permanentEffects = {
       RANGED_RESISTANCE 1
@@ -1482,11 +1477,12 @@ End
     viewId = { "knight" }
     attr = {
       DAMAGE 16
-      DEFENSE 14 
+      DEFENSE 14
       FURNACE 10
       WORKSHOP 5
       FORGE 5
     }
+    fixedAttr = { FORGE FURNACE WORKSHOP }
     body = {
       type = Humanoid LARGE
     }
@@ -1613,9 +1609,6 @@ End
     chatReactionFriendly = "talks about crafting"
     chatReactionHostile = "\"Die!\""
     aiType = RANGED
-    maxLevelIncrease = {
-      FORGE 10
-    }
     name = {
       name = "artisan"
       firstNameGen = "FIRST_MALE"
@@ -2778,9 +2771,6 @@ End
     permanentEffects = {
       DISARM_TRAPS_SKILL 1
     }
-    maxLevelIncrease = {
-      FORGE 10
-    }
     aiType = RANGED
     name = {
       name = "goblin artificer"
@@ -2888,7 +2878,9 @@ End
       FORGE 10
       LABORATORY 10
       JEWELER 10
+      FURNACE 10
     }
+    fixedAttr = { FORGE FURNACE WORKSHOP LABORATORY JEWELER }
     permanentEffects = {
       DISTILLATION_SKILL 1
       CAN_DANCE 1
@@ -2961,7 +2953,6 @@ End
     }
     maxLevelIncrease = {
       DAMAGE 10
-      FORGE 10
     }
     name = {
       name = "dwarf baron"
@@ -2992,9 +2983,6 @@ End
     attr = append {
       FORGE 30
       FURNACE 40
-    }
-    maxLevelIncrease = {
-      FORGE 10
     }
     inventory = {}
   }
@@ -3042,7 +3030,7 @@ End
     }
     attr = {
       DAMAGE 30
-      DEFENSE 16 
+      DEFENSE 16
     }
     maxLevelIncrease = {
       DAMAGE 10
@@ -3064,7 +3052,7 @@ End
     }
     attr = {
       DAMAGE 14
-      DEFENSE 6 
+      DEFENSE 6
       JEWELER 48
     }
     body = {
@@ -3074,9 +3062,6 @@ End
     chatReactionHostile = "\"Die!\""
     spells = { "healing" }
     aiType = RANGED
-    maxLevelIncrease = {
-      SPELL_DAMAGE 1
-    }
     permanentEffects = {
       ELF_VISION 1
     }
@@ -3092,7 +3077,7 @@ End
     attr = {
       DAMAGE 18
       DEFENSE 12
-      RANGED_DAMAGE 25 
+      RANGED_DAMAGE 25
     }
     body = {
       type = Humanoid MEDIUM
@@ -3150,7 +3135,7 @@ End
       DAMAGE 22
       DEFENSE 14
       SPELL_DAMAGE 36
-      RANGED_DAMAGE 30 
+      RANGED_DAMAGE 30
     }
     aiType = RANGED
     body = {
@@ -3167,6 +3152,7 @@ End
     spells = { "advanced healing" "haste" "defense bonus" "damage bonus" "directed blast" }
     maxLevelIncrease = {
       SPELL_DAMAGE 4
+      RANGED_DAMAGE 4
       DAMAGE 4
     }
     name = {
@@ -3223,7 +3209,7 @@ End
     attr = {
       DAMAGE 18
       DEFENSE 12
-      SPELL_DAMAGE 6 
+      SPELL_DAMAGE 6
     }
     body = {
       type = Humanoid MEDIUM
@@ -3948,7 +3934,7 @@ End
     viewId = { "werewolf" }
     attr = {
       DAMAGE 20
-      DEFENSE 7 
+      DEFENSE 7
     }
     body = {
       type = Humanoid LARGE
@@ -4475,10 +4461,6 @@ End
       NO_FRIENDLY_FIRE 1
     }
     aiType = RANGED
-    maxLevelIncrease = {
-      DAMAGE 2
-      SPELL_DAMAGE 4
-    }
     inventory = {
       { "AdoxiumStaff"}
       { "AdoxiumArmor"}
@@ -4621,6 +4603,7 @@ End
       WORKSHOP 15
       FORGE 15
     }
+    fixedAttr = { FORGE FURNACE WORKSHOP }
     body = {
       type = Humanoid MEDIUM
     }

@@ -1175,8 +1175,8 @@ int Creature::getRawAttr(AttrType type, bool includeTeamExp) const {
   PROFILE;
   int combatExp = getCombatExperienceRespectingMaxPromotion();
   int ret = attributes->getRawAttr(type);
-  if (attributes->getMaxExpLevel().count(type) || type == AttrType("DEFENSE") ||
-      (type == AttrType("DAMAGE") && attributes->getMaxExpLevel().empty())) {
+  if (attributes->getMaxExpLevel().count(type) || type == AttrType("DEFENSE") || (
+      ret > 0 && !attributes->fixedAttr.count(type))) {
     auto exp = (includeTeamExp && teamExperience > 0) ? (teamExperience + combatExp) / 2 : combatExp;
     ret += int(exp);
   }
