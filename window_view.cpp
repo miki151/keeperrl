@@ -818,9 +818,9 @@ optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& cam
   return getBlockingGui(returnQueue, guiBuilder.drawChooseSiteMenu(returnQueue, message, campaign, current));
 }
 
-void WindowView::presentWorldmap(const Campaign& campaign) {
+void WindowView::presentWorldmap(const Campaign& campaign, Vec2 current) {
   Semaphore sem;
-  return getBlockingGui(sem, guiBuilder.drawWorldmap(sem, campaign));
+  return getBlockingGui(sem, guiBuilder.drawWorldmap(sem, campaign, current));
 }
 
 CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, CampaignMenuState& state) {

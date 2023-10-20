@@ -4651,12 +4651,12 @@ void GuiBuilder::moveCampaignGridPointer(const Campaign& c, int iconSize, Dir di
     scrollWorldMap(iconSize, cur, bounds);
 }
 
-SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign) {
+SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign, Vec2 current) {
   auto lines = WL(getListBuilder, getStandardLineHeight());
   lines.addElem(WL(centerHoriz, WL(label, "Map of " + campaign.getWorldName())));
   lines.addElem(WL(centerHoriz, WL(label, "Use the travel command while controlling a minion or team "
           "to travel to another site.", Renderer::smallTextSize(), Color::LIGHT_GRAY)));
-  lines.addElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, none, nullptr, nullptr)));
+  lines.addElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, current, nullptr, nullptr)));
   lines.addSpace(legendLineHeight / 2);
   lines.addElem(WL(centerHoriz, WL(buttonLabel, "Close", [&] { sem.v(); })));
   return WL(preferredSize, 1000, 750,

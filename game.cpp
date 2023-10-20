@@ -547,7 +547,7 @@ int Game::getModelDistance(const Collective* c1, const Collective* c2) const {
 }
 
 void Game::presentWorldmap() {
-  view->presentWorldmap(*campaign);
+  view->presentWorldmap(*campaign, baseModel);
 }
 
 Model* Game::chooseSite(const string& message, Model* current) const {
