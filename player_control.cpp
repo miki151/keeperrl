@@ -3224,7 +3224,9 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
       if (!dryRun) {
         collective->unclaimSquare(position);
         if (NOTNULL(position.getFurniture(FurnitureLayer::GROUND))->getViewObject()->id() == ViewId("keeper_floor")) {
-          position.modFurniture(FurnitureLayer::GROUND)->getViewObject()->setId(ViewId("floor"));
+          auto& obj = position.modFurniture(FurnitureLayer::GROUND)->getViewObject();
+          obj->setId(ViewId("floor"));
+          obj->setDescription("Floor");
           position.setNeedsRenderAndMemoryUpdate(true);
           updateSquareMemory(position);
         }
@@ -3800,8 +3802,11 @@ PController PlayerControl::createMinionController(Creature* c) {
 }
 
 static void considerAddingKeeperFloor(Position pos) {
-  if (NOTNULL(pos.getFurniture(FurnitureLayer::GROUND))->getViewObject()->id() == ViewId("floor"))
-    pos.modFurniture(FurnitureLayer::GROUND)->getViewObject()->setId(ViewId("keeper_floor"));
+  if (NOTNULL(pos.getFurniture(FurnitureLayer::GROUND))->getViewObject()->id() == ViewId("floor")) {
+    auto& obj = pos.modFurniture(FurnitureLayer::GROUND)->getViewObject();
+    obj->setId(ViewId("keeper_floor"));
+    obj->setDescription("Claimed floor");
+  }
 }
 
 void PlayerControl::onClaimedSquare(Position position) {
