@@ -52,7 +52,7 @@ const PositionSet& Zones::getPositions(ZoneId id) const {
   return positions[id];
 }
 
-static HighlightType getHighlight(ZoneId id) {
+HighlightType getHighlight(ZoneId id) {
   switch (id) {
     case ZoneId::FETCH_ITEMS:
       return HighlightType::FETCH_ITEMS;
@@ -103,28 +103,6 @@ void Zones::tick() {
   for (auto pos : copyOf(positions[ZoneId::FETCH_ITEMS]))
     if (pos.getItems().empty())
       eraseZone(pos, ZoneId::FETCH_ITEMS);
-}
-
-ViewId getViewId(ZoneId id) {
-  switch (id) {
-    case ZoneId::QUARTERS:
-      return ViewId("quarters", Color(255, 20, 147));
-    case ZoneId::LEISURE:
-      return ViewId("quarters", Color(50, 50, 200));
-    case ZoneId::FETCH_ITEMS:
-    case ZoneId::PERMANENT_FETCH_ITEMS:
-      return ViewId("fetch_icon");
-    case ZoneId::STORAGE_EQUIPMENT:
-      return ViewId("storage_equipment");
-    case ZoneId::STORAGE_RESOURCES:
-      return ViewId("storage_resources");
-    case ZoneId::GUARD1:
-      return ViewId("guard_zone");
-    case ZoneId::GUARD2:
-      return ViewId("guard_zone", Color::PURPLE);
-    case ZoneId::GUARD3:
-      return ViewId("guard_zone", Color::SKY_BLUE);
-  }
 }
 
 const PositionSet& Zones::getQuartersPositions(Level* level, Sectors::SectorId id) const {

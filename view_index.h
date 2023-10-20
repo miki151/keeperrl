@@ -53,6 +53,9 @@ RICH_ENUM(HighlightType,
   TILE_BELOW
 );
 
+extern const char* getDescription(HighlightType);
+ViewId getViewId(HighlightType, bool active);
+
 class ViewIndex {
   public:
   ViewIndex();
@@ -92,7 +95,7 @@ class ViewIndex {
   ItemCounts& modItemCounts();
   ItemCounts& modEquipmentCounts();
 
-  template <class Archive> 
+  template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:

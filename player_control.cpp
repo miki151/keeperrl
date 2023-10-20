@@ -846,7 +846,7 @@ ViewId PlayerControl::getViewId(const BuildInfoTypes::BuildType& info) const {
         return ViewId("dig_icon");
       },
       [&](ZoneId zone) {
-        return ::getViewId(zone);
+        return ::getViewId(getHighlight(zone), true);
       },
       [&](BuildInfoTypes::ClaimTile) {
         return ViewId("keeper_floor");
