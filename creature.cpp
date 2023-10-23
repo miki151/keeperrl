@@ -72,7 +72,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(attributes, position, equipment, shortestPath, knownHiding, tribe);
   ar(deathTime, hidden, lastMoveCounter, effectFlags);
   ar(deathReason, nextPosIntent, globalTime, drops, promotions, maxPromotion);
-  ar(unknownAttackers, privateEnemies, holding, attributesStack);
+  ar(unknownAttackers, privateEnemies, holding, attributesStack, butcherInfo);
   ar(controllerStack, kills, statuses, automatonParts, phylactery, highestAttackValueEver);
   ar(difficultyPoints, points, capture, spellMap, killTitles, companions, combatExperience, teamExperience);
   ar(vision, debt, lastCombatIntent, primaryViewId, steed, buffs, buffCount, buffPermanentCount);
@@ -2956,6 +2956,17 @@ void Creature::addPromotion(PromotionInfo info) {
 
 const vector<PromotionInfo>& Creature::getPromotions() const {
   return promotions;
+}
+
+bool Creature::addButcheringEvent(const string& villageName) {
+  if (!butcherInfo || butcherInfo->villageName != villageName) {
+    butcherInfo = ButcherInfo {villageName, 1};
+  }
+  else if (++butcherInfo->kills >= 5) {
+    attributes->getName().setKillTitle("butcher of " + villageName);
+    return true;
+  }
+  return false;
 }
 
 #define CASE(VAR, ELEM, TYPE, ...) \

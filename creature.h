@@ -355,6 +355,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void unbindPhylactery();
   void addPromotion(PromotionInfo);
   const vector<PromotionInfo>& getPromotions() const;
+  bool addButcheringEvent(const string& villageName);
 
   void onEvent(const GameEvent&);
 
@@ -444,6 +445,12 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   int SERIAL(maxPromotion) = 10000;
   double SERIAL(teamExperience) = 0;
   int SERIAL(highestAttackValueEver) = 0;
+  struct ButcherInfo {
+    string SERIAL(villageName);
+    int SERIAL(kills);
+    SERIALIZE_ALL(villageName, kills)
+  };
+  optional<ButcherInfo> SERIAL(butcherInfo);
   AttrType modifyDamageAttr(AttrType, const ContentFactory*) const;
 };
 

@@ -34,6 +34,7 @@ End
     }
     crops = Crops()
     furniture = "roomFurniture"
+    locationNameGen = TOWN
   }
   config = {
     alwaysMount = true

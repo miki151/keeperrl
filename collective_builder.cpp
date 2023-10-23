@@ -77,9 +77,10 @@ optional<CollectiveName> CollectiveBuilder::generateName() const {
       ret.full = capitalFirst(*raceName);
     else
       ret.full = leader->getName().title();
-    if (locationName)
+    if (locationName) {
       ret.shortened = *locationName;
-    else if (auto leaderName = leader->getName().first())
+      ret.location = *locationName;
+    } else if (auto leaderName = leader->getName().first())
       ret.shortened = *leaderName;
     if (raceName)
       ret.race = *raceName;
