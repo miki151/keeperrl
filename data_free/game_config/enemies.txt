@@ -452,7 +452,7 @@ End
   otherEnemy = "KNIFE_COTTAGE"
   config = {
     immigrantInterval = 300
-    maxPopulation = 26
+    maxPopulation = 36
     ghostProb = 0.1
     spawnGhosts = 6
     alwaysMount = true
@@ -2527,7 +2527,7 @@ End
   }
   config = {
     immigrantInterval = 300
-    maxPopulation = 10
+    maxPopulation = 20
     ghostProb = 0.1
     spawnGhosts = 6
     alwaysMount = true
