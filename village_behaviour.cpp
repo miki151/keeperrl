@@ -13,7 +13,7 @@
 #include "attack_behaviour.h"
 #include "territory.h"
 
-SERIALIZE_DEF(VillageBehaviour, NAMED(minPopulation), NAMED(minTeamSize), OPTION(triggers), NAMED(attackBehaviour), OPTION(ransom), OPTION(ambushChance))
+SERIALIZE_DEF(VillageBehaviour, NAMED(minPopulation), NAMED(minTeamSize), OPTION(triggers), NAMED(attackBehaviour), OPTION(ransom), OPTION(ambushChance), OPTION(duelChance))
 
 VillageBehaviour::VillageBehaviour() {}
 

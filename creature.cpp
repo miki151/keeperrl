@@ -70,7 +70,7 @@ template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(OwnedObject<Creature>), SUBCLASS(Renderable), SUBCLASS(UniqueEntity), SUBCLASS(EventListener));
   ar(attributes, position, equipment, shortestPath, knownHiding, tribe);
-  ar(deathTime, hidden, lastMoveCounter, effectFlags);
+  ar(deathTime, hidden, lastMoveCounter, effectFlags, duelInfo);
   ar(deathReason, nextPosIntent, globalTime, drops, promotions, maxPromotion);
   ar(unknownAttackers, privateEnemies, holding, attributesStack, butcherInfo);
   ar(controllerStack, kills, statuses, automatonParts, phylactery, highestAttackValueEver);
@@ -1280,6 +1280,9 @@ bool Creature::isEnemy(const Creature* c) const {
   PROFILE;
   if (c == this || c->statuses.contains(CreatureStatus::PRISONER) || statuses.contains(CreatureStatus::PRISONER))
     return false;
+  if (duelInfo && duelInfo->timeout > *globalTime && c->tribe == duelInfo->enemy &&
+      c->getUniqueId() != duelInfo->opponent)
+    return false;
   auto result = getTribe()->isEnemy(c) || c->getTribe()->isEnemy(this) ||
     privateEnemies.hasKey(c) || c->privateEnemies.hasKey(this);
   if (auto time = getGlobalTime())
@@ -1648,6 +1651,12 @@ void Creature::onAttackedBy(Creature* attacker) {
 
 void Creature::removePrivateEnemy(const Creature* c) {
   privateEnemies.erase(c);
+}
+
+void Creature::setDuel(TribeId enemyTribe, Creature* opponent, GlobalTime timeout) {
+  duelInfo = DuelInfo{enemyTribe, opponent ? opponent->getUniqueId() : Creature::Id{}, timeout};
+  if (steed)
+    steed->duelInfo = DuelInfo{enemyTribe, Creature::Id{}, timeout};
 }
 
 constexpr double getDamage(double damageRatio) {

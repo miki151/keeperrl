@@ -1442,7 +1442,7 @@ CollectiveWarnings& Collective::getWarnings() {
   return *warnings;
 }
 
-const CollectiveConfig& Collective::getConfig() const {
+CollectiveConfig& Collective::getConfig() {
   return *config;
 }
 

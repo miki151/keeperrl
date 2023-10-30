@@ -122,7 +122,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   const KnownTiles& getKnownTiles() const;
   void retire();
   CollectiveWarnings& getWarnings();
-  const CollectiveConfig& getConfig() const;
+  CollectiveConfig& getConfig();
 
   bool usesEquipment(const Creature*) const;
 

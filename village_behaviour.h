@@ -21,6 +21,7 @@ class VillageBehaviour {
   HeapAllocated<AttackBehaviour> SERIAL(attackBehaviour);
   optional<pair<double, int>> SERIAL(ransom);
   double SERIAL(ambushChance) = 0.0;
+  double SERIAL(duelChance) = 0.0;
 
   PTask getAttackTask(VillageControl* self) const;
   bool isAttackBehaviourNonChasing() const;
