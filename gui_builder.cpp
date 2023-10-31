@@ -4522,7 +4522,7 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
       Vec2 pos(x, y);
       vector<SGuiElem> elem;
       if (auto id = sites[x][y].getDwellingViewId())
-        if (c.isInInfluence(Vec2(x, y))) {
+        if (c.isInInfluence(Vec2(x, y)) && !c.isDefeated(Vec2(x, y))) {
           elem.push_back(WL(asciiBackground, id->front()));
           elem.push_back(WL(viewObject, *id, iconScale));
           labelPlacer.setOccupied(pos);
@@ -4532,6 +4532,8 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
         for (auto& m : sites[x][y].inhabitants)
           minions.addElemAuto(drawMinionAndLevel(m.viewId, m.level, 1));
         auto lines = WL(getListBuilder, legendLineHeight).addElem(WL(label, *desc));
+        if (c.isDefeated(pos))
+          lines.addElem(WL(label, "Defeated"));
         auto exp = c.getBaseLevelIncrease(Vec2(x, y));
         if (exp > 0)
           lines.addElem(WL(label, "Experience: " + toString(exp)));
@@ -4561,9 +4563,10 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
       Vec2 pos(x, y);
       vector<SGuiElem> elem;
       if (c.isInInfluence(pos)) {
-        if (auto id = sites[x][y].getDwellerViewId())
-          if (auto color = getHighlightColor(*sites[pos].getVillainType()))
-            elem.push_back(translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale, *color)));
+        if (!c.isDefeated(Vec2(x, y)))
+          if (auto id = sites[x][y].getDwellerViewId())
+            if (auto color = getHighlightColor(*sites[pos].getVillainType()))
+              elem.push_back(translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale, *color)));
         if (campaignGridPointer)
           elem.push_back(WL(conditional, translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale)),
                 [this, pos] { return campaignGridPointer == pos;}));
@@ -4580,11 +4583,10 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
           if (c.isDefeated(pos))
             elem.push_back(WL(viewObject, ViewId("campaign_defeated"), iconScale));
         if (auto desc = sites[x][y].getDwellerName())
-          if (getHighlightColor(*sites[pos].getVillainType())) {
+          if (!c.isDefeated(pos) && getHighlightColor(*sites[pos].getVillainType())) {
             auto width = renderer.getTextLength(*desc, 12, FontId::MAP_FONT);
-            auto color = c.isInInfluence(pos) ? Color::WHITE : Color(200, 200, 200);
             elem.push_back(WL(translate,
-                WL(labelUnicode, *desc, color, 12, FontId::MAP_FONT),
+                WL(labelUnicode, *desc, Color::WHITE, 12, FontId::MAP_FONT),
             labelPlacer.getLabelPosition(Vec2(x, y), width), Vec2(width + 6, 18), GuiFactory::TranslateCorner::CENTER));
           }
       }
