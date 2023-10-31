@@ -340,6 +340,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool isCaptureOrdered() const;
   bool canBeCaptured() const;
   void removePrivateEnemy(const Creature*);
+  void setDuel(TribeId enemyTribe, Creature* opponent, GlobalTime timeout);
   const vector<AutomatonPart>& getAutomatonParts() const;
   bool isAutomaton() const;
   void addAutomatonPart(AutomatonPart);
@@ -355,6 +356,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void unbindPhylactery();
   void addPromotion(PromotionInfo);
   const vector<PromotionInfo>& getPromotions() const;
+  bool addButcheringEvent(const string& villageName);
 
   void onEvent(const GameEvent&);
 
@@ -444,7 +446,20 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   int SERIAL(maxPromotion) = 10000;
   double SERIAL(teamExperience) = 0;
   int SERIAL(highestAttackValueEver) = 0;
+  struct ButcherInfo {
+    string SERIAL(villageName);
+    int SERIAL(kills);
+    SERIALIZE_ALL(villageName, kills)
+  };
+  optional<ButcherInfo> SERIAL(butcherInfo);
   AttrType modifyDamageAttr(AttrType, const ContentFactory*) const;
+  struct DuelInfo {
+    TribeId SERIAL(enemy);
+    Creature::Id SERIAL(opponent);
+    GlobalTime SERIAL(timeout);
+    SERIALIZE_ALL(enemy, opponent, timeout)
+  };
+  optional<DuelInfo> SERIAL(duelInfo);
 };
 
 struct AdjectiveInfo {

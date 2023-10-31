@@ -32,6 +32,12 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
   virtual vector<TriggerInfo> getAllTriggers(const Collective* against) const;
   vector<TriggerInfo> getTriggers(const Collective* against) const;
   virtual bool canPerformAttack() const { fail(); }
+  enum class DuelAnswer {
+    ACCEPT,
+    REJECT,
+    UNKNOWN
+  };
+  virtual DuelAnswer acceptDuel(Creature* attacker) { return DuelAnswer::REJECT; }
 
   SERIALIZATION_DECL(CollectiveControl)
 

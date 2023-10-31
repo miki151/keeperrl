@@ -90,7 +90,7 @@ class GuiBuilder {
   SGuiElem drawWarlordMinionsMenu(SyncQueue<variant<int, bool>>& queue, const vector<PlayerInfo>&,
       vector<int>& chosen, int maxCount);
   SGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&, Vec2 initialPos);
-  SGuiElem drawWorldmap(Semaphore&, const Campaign&);
+  SGuiElem drawWorldmap(Semaphore&, const Campaign&, Vec2 current);
   SGuiElem drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
       const vector<PlayerInfo>&, const string& cancelText);
   SGuiElem drawCreatureInfo(SyncQueue<bool>&, const string& title, bool prompt, const vector<PlayerInfo>& creatures);

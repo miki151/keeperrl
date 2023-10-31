@@ -2,6 +2,14 @@
 #include "saved_game_info.h"
 #include "text_serialization.h"
 #include "parse_game.h"
+#include "creature.h"
+
+SavedGameInfo::MinionInfo SavedGameInfo::MinionInfo::get(const ContentFactory* factory, const Creature* c) {
+  MinionInfo ret;
+  ret.level = (int)c->getBestAttack(factory).value;
+  ret.viewId = c->getViewIdWithWeapon();
+  return ret;
+}
 
 ViewIdList SavedGameInfo::getViewId() const {
   return minions[0].viewId;

@@ -50,6 +50,10 @@
 #include "automaton_part.h"
 #include "spell_map.h"
 #include "keybinding.h"
+#include "collective_control.h"
+#include "collective_config.h"
+#include "conquer_condition.h"
+#include "duel_state.h"
 
 template <class Archive>
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -1832,15 +1836,17 @@ PTask Task::withTeam(Collective* col, TeamId teamId, PTask task) {
 }
 
 namespace {
+
+static PositionSet getExtendedTerritorySet(Collective* col) {
+  auto area = col->getTerritory().getExtended(10);
+  return PositionSet(area.begin(), area.end());
+}
+
+
 class AllianceTask : public Task {
   public:
   AllianceTask(vector<Collective*> allies, Collective* enemy, PTask task)
-      : allies(std::move(allies)), targetArea(getTargetArea(enemy)), task(std::move(task)) {}
-
-  static PositionSet getTargetArea(Collective* col) {
-    auto area = col->getTerritory().getExtended(10);
-    return PositionSet(area.begin(), area.end());
-  }
+      : allies(std::move(allies)), targetArea(getExtendedTerritorySet(enemy)), task(std::move(task)) {}
 
   virtual MoveInfo getMove(Creature* c) override {
     if (targetArea.count(c->getPosition()))
@@ -1867,6 +1873,96 @@ class AllianceTask : public Task {
 
 PTask Task::allianceAttack(vector<Collective*> allies, Collective* enemy, PTask task) {
   return makeOwner<AllianceTask>(std::move(allies), enemy, std::move(task));
+}
+
+namespace {
+class DuelTask : public Task {
+  public:
+  DuelTask(Collective* target, Collective* attacker, vector<Creature*> team, PTask attackTask,
+      shared_ptr<DuelState> duelState)
+      : target(target), attacker(attacker), team(std::move(team)), attackTask(std::move(attackTask)),
+        duelState(std::move(duelState)), targetArea(getExtendedTerritorySet(target)) {}
+
+  const int minTeamDist = 3;
+
+  virtual MoveInfo getMove(Creature* c) override {
+    auto keeper = target->getLeaders()[0];
+    if (maxShowTime && *c->getGlobalTime() > *maxShowTime) {
+      target->getControl()->addMessage(PlayerMessage("You are a coward!", MessagePriority::CRITICAL));
+      attacker->getConfig().setConquerCondition(ConquerCondition::KILL_FIGHTERS_AND_LEADER);
+      *duelState = DuelState::CANCELLED;
+      maxShowTime = none;
+    }
+    auto attackLeader = team[0];
+    if (attackLeader->isDead())
+      switch (*duelState) {
+        case DuelState::ACTIVE:
+          setDone();
+          return NoMove;
+        default:
+          return attackTask->getMove(c);
+      }
+    auto leaderPos = attackLeader->getPosition();
+    switch (*duelState) {
+      case DuelState::CANCELLED:
+        break;
+      case DuelState::INACTIVE: {
+        if (targetArea.count(leaderPos)) {
+          switch (target->getControl()->acceptDuel(attackLeader)) {
+            case CollectiveControl::DuelAnswer::ACCEPT:
+              *duelState = DuelState::ACTIVE;
+              attacker->getConfig().setConquerCondition(ConquerCondition::KILL_LEADER);
+              maxShowTime = *attackLeader->getGlobalTime() + 500_visible;
+              for (auto minion : target->getCreatures())
+                minion->setDuel(attacker->getTribeId(), minion == keeper ? attackLeader : nullptr, *maxShowTime);
+              for (auto member : team)
+                member->setDuel(target->getTribeId(), member == attackLeader ? keeper : nullptr, *maxShowTime);
+              break;
+            case CollectiveControl::DuelAnswer::REJECT:
+              *duelState = DuelState::CANCELLED;
+              break;
+            case CollectiveControl::DuelAnswer::UNKNOWN:
+              break;
+          }
+        }
+        break;
+      }
+      case DuelState::ACTIVE: {
+        if (c == attackLeader)
+          return c->wait();
+        else if (c->getPosition().dist8(leaderPos).value_or(100) < minTeamDist)
+          return c->moveAway(leaderPos);
+        else if (c->getPosition().dist8(leaderPos).value_or(100) > minTeamDist + 1)
+          return c->moveTowards(leaderPos);
+        else
+          return c->wait();
+        break;
+      }
+    }
+    return attackTask->getMove(c);
+  }
+
+  virtual string getDescription() const override {
+     return "Duel task: " + attackTask->getDescription();
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), target, attacker, team, attackTask, duelState, targetArea, maxShowTime)
+  SERIALIZATION_CONSTRUCTOR(DuelTask)
+
+  private:
+  Collective* SERIAL(target);
+  Collective* SERIAL(attacker);
+  vector<Creature*> SERIAL(team);
+  PTask SERIAL(attackTask);
+  shared_ptr<DuelState> SERIAL(duelState);
+  PositionSet SERIAL(targetArea);
+  optional<GlobalTime> SERIAL(maxShowTime);
+};
+}
+
+PTask Task::duelTask(Collective* target, Collective* attacker, vector<Creature*> team, PTask attackTask,
+    shared_ptr<DuelState> duelState) {
+  return makeOwner<DuelTask>(target, attacker, std::move(team), std::move(attackTask), std::move(duelState));
 }
 
 namespace {
@@ -1947,6 +2043,7 @@ REGISTER_TYPE(DropItems)
 REGISTER_TYPE(DropItemsAnywhere)
 REGISTER_TYPE(CampAndSpawnTask)
 REGISTER_TYPE(AllianceTask)
+REGISTER_TYPE(DuelTask)
 REGISTER_TYPE(Spider)
 REGISTER_TYPE(WithTeam)
 REGISTER_TYPE(ArcheryRange)

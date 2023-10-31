@@ -114,10 +114,12 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask spider(Position origin, const vector<Position>& posClose);
   static PTask withTeam(Collective*, TeamId, PTask);
   static PTask allianceAttack(vector<Collective*> allies, Collective* enemy, PTask attackTask);
+  static PTask duelTask(Collective* target, Collective* attacker, vector<Creature*> team, PTask attackTask,
+      shared_ptr<DuelState>);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
-  
+
   protected:
   void setDone();
 

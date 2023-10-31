@@ -34,6 +34,7 @@ End
     }
     crops = Crops()
     furniture = "roomFurniture"
+    locationNameGen = TOWN
   }
   config = {
     alwaysMount = true
@@ -458,6 +459,7 @@ End
     prisoners = true
   }
   behaviour = {
+    duelChance = 1.0
     minPopulation = 7
     minTeamSize = 10
     ambushChance = 0.05

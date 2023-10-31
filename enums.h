@@ -102,6 +102,7 @@ enum class AIType;
 enum class StatId;
 enum class CollectiveTab;
 enum class ControllerJoy;
+enum class DuelState;
 
 struct TileGasType;
 struct FXInfo;

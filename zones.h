@@ -22,7 +22,7 @@ RICH_ENUM(ZoneId,
 class Position;
 class ViewIndex;
 
-extern ViewId getViewId(ZoneId);
+extern HighlightType getHighlight(ZoneId);
 
 class Zones {
   public:

@@ -140,6 +140,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void onClaimedSquare(Position) override;
   virtual void tick() override;
   virtual void update(bool currentlyActive) override;
+  virtual DuelAnswer acceptDuel(Creature* attacker) override;
 
   private:
 
@@ -153,7 +154,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   TribeId getTribeId() const;
   bool canSee(const Creature*) const;
   bool canSee(Position) const;
-  bool isConsideredAttacking(const Creature*, const Collective* enemy);
+  bool isConsideredAttacking(const CollectiveAttack&);
 
   static string getWarningText(CollectiveWarning);
   void updateSquareMemory(Position);

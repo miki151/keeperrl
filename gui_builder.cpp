@@ -3397,17 +3397,6 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
   } else {
     auto& highlighted = mapGui->getLastHighlighted();
     if (auto& index = highlighted.viewIndex) {
-      auto tryHighlight = [&] (HighlightType type, const char* text, Color color) {
-        if (index->isHighlight(type)) {
-          lines.addElem(WL(getListBuilder)
-                .addElem(WL(viewObject, ViewId("magic_field", color)), 30)
-                .addElemAuto(WL(label, text))
-                .buildHorizontalList());
-          lines.addElem(WL(margins, WL(rectangle, Color::DARK_GRAY), -9, 2, -9, 8), 12);
-        }
-      };
-      tryHighlight(HighlightType::ALLIED_TOTEM, "Allied magical field", Color::GREEN);
-      tryHighlight(HighlightType::HOSTILE_TOTEM, "Hostile magical field", Color::RED);
       for (auto& gas : index->getGasAmounts()) {
         lines.addElem(WL(getListBuilder)
               .addElem(WL(viewObject, ViewId("tile_gas", gas.color.transparency(254))), 30)
@@ -3474,6 +3463,18 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
             lines.addElem(WL(label, "Planned"));
           lines.addElem(WL(margins, WL(rectangle, Color::DARK_GRAY), -9, 2, -9, 8), 12);
         }
+      for (auto highlight : ENUM_ALL(HighlightType))
+        if (index->isHighlight(highlight))
+          if (auto desc = getDescription(highlight)) {
+            auto viewId = getViewId(highlight, true);
+            auto line = WL(getListBuilder)
+                .addElem(WL(viewObject, viewId, 1, viewId.getColor()), 30)
+                .addElemAuto(WL(labelMultiLineWidth, desc, legendLineHeight * 2 / 3, 300))
+                .buildHorizontalList();
+            int height = max(legendLineHeight, *line->getPreferredHeight() + 6);
+            lines.addElem(line, height);
+            lines.addElem(WL(margins, WL(rectangle, Color::DARK_GRAY), -9, 2, -9, 8), 12);
+          }
       if (auto& quarters = mapGui->getQuartersInfo()) {
         lines.addElem(WL(label, "Quarters:"));
         if (quarters->viewId)
@@ -3487,14 +3488,6 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
         lines.addElem(WL(label, "Click to assign"));
         lines.addElem(WL(margins, WL(rectangle, Color::DARK_GRAY), -9, 2, -9, 8), 12);
       }
-      if (index->isHighlight(HighlightType::INSUFFICIENT_LIGHT))
-        lines.addElem(WL(label, "Insufficient light", Color::RED));
-      if (index->isHighlight(HighlightType::TORTURE_UNAVAILABLE))
-        lines.addElem(WL(label, "Torture unavailable due to population limit", Color::RED));
-      if (index->isHighlight(HighlightType::PRISON_NOT_CLOSED))
-        lines.addElem(WL(label, "Prison must be separated from the outdoors and from all staircases using prison bars or prison door", Color::RED));
-      if (index->isHighlight(HighlightType::PIGSTY_NOT_CLOSED))
-        lines.addElem(WL(label, "Animal pen must be separated from the outdoors and from all staircases using animal fence", Color::RED));
       if (index->isHighlight(HighlightType::INDOORS))
         lines.addElem(WL(label, "Indoors"));
       else
@@ -3862,9 +3855,9 @@ static ViewId getViewId(MinionActivity option) {
     case MinionActivity::MINION_ABUSE: return ViewId("keeper4");
     case MinionActivity::COPULATE: return ViewId("succubus");
     case MinionActivity::SPIDER: return ViewId("spider");
-    case MinionActivity::GUARDING1: return getViewId(ZoneId::GUARD1);
-    case MinionActivity::GUARDING2: return getViewId(ZoneId::GUARD2);
-    case MinionActivity::GUARDING3: return getViewId(ZoneId::GUARD3);
+    case MinionActivity::GUARDING1: return getViewId(getHighlight(ZoneId::GUARD1), true);
+    case MinionActivity::GUARDING2: return getViewId(getHighlight(ZoneId::GUARD2), true);
+    case MinionActivity::GUARDING3: return getViewId(getHighlight(ZoneId::GUARD3), true);
     case MinionActivity::DISTILLATION: return ViewId("distillery");
     case MinionActivity::BE_WHIPPED: return ViewId("whipping_post");
     case MinionActivity::BE_TORTURED: return ViewId("torture_table");
@@ -4534,11 +4527,19 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
           elem.push_back(WL(viewObject, *id, iconScale));
           labelPlacer.setOccupied(pos);
         }
-      if (auto desc = sites[x][y].getDwellerDescription())
-        elem.push_back(WL(margins, WL(tooltip, {
-            *desc,
-            "+" + toString(c.getBaseLevelIncrease(Vec2(x, y))) + " difficulty"
-        }, milliseconds{0}), -4));
+      if (auto desc = sites[x][y].getDwellerDescription()) {
+        auto minions = WL(getListBuilder);
+        for (auto& m : sites[x][y].inhabitants)
+          minions.addElemAuto(drawMinionAndLevel(m.viewId, m.level, 1));
+        auto lines = WL(getListBuilder, legendLineHeight).addElem(WL(label, *desc));
+        auto exp = c.getBaseLevelIncrease(Vec2(x, y));
+        if (exp > 0)
+          lines.addElem(WL(label, "Experience: " + toString(exp)));
+        if (!minions.isEmpty())
+          lines.addElem(minions.buildHorizontalList());
+        elem.push_back(WL(margins, WL(tooltip2, WL(miniWindow, WL(margins,
+            lines.buildVerticalList(), 15)), [](auto& r) { return r.bottomLeft(); }), -4));
+      }
       columns2.addElem(WL(stack, std::move(elem)));
     }
     rows.addElem(WL(stack, columns.buildHorizontalList(), columns2.buildHorizontalList()));
@@ -4650,12 +4651,12 @@ void GuiBuilder::moveCampaignGridPointer(const Campaign& c, int iconSize, Dir di
     scrollWorldMap(iconSize, cur, bounds);
 }
 
-SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign) {
+SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign, Vec2 current) {
   auto lines = WL(getListBuilder, getStandardLineHeight());
   lines.addElem(WL(centerHoriz, WL(label, "Map of " + campaign.getWorldName())));
   lines.addElem(WL(centerHoriz, WL(label, "Use the travel command while controlling a minion or team "
           "to travel to another site.", Renderer::smallTextSize(), Color::LIGHT_GRAY)));
-  lines.addElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, none, nullptr, nullptr)));
+  lines.addElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, current, nullptr, nullptr)));
   lines.addSpace(legendLineHeight / 2);
   lines.addElem(WL(centerHoriz, WL(buttonLabel, "Close", [&] { sem.v(); })));
   return WL(preferredSize, 1000, 750,

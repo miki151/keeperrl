@@ -70,9 +70,9 @@ template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(OwnedObject<Creature>), SUBCLASS(Renderable), SUBCLASS(UniqueEntity), SUBCLASS(EventListener));
   ar(attributes, position, equipment, shortestPath, knownHiding, tribe);
-  ar(deathTime, hidden, lastMoveCounter, effectFlags);
+  ar(deathTime, hidden, lastMoveCounter, effectFlags, duelInfo);
   ar(deathReason, nextPosIntent, globalTime, drops, promotions, maxPromotion);
-  ar(unknownAttackers, privateEnemies, holding, attributesStack);
+  ar(unknownAttackers, privateEnemies, holding, attributesStack, butcherInfo);
   ar(controllerStack, kills, statuses, automatonParts, phylactery, highestAttackValueEver);
   ar(difficultyPoints, points, capture, spellMap, killTitles, companions, combatExperience, teamExperience);
   ar(vision, debt, lastCombatIntent, primaryViewId, steed, buffs, buffCount, buffPermanentCount);
@@ -1175,8 +1175,8 @@ int Creature::getRawAttr(AttrType type, bool includeTeamExp) const {
   PROFILE;
   int combatExp = getCombatExperienceRespectingMaxPromotion();
   int ret = attributes->getRawAttr(type);
-  if (attributes->getMaxExpLevel().count(type) || type == AttrType("DEFENSE") ||
-      (type == AttrType("DAMAGE") && attributes->getMaxExpLevel().empty())) {
+  if (attributes->getMaxExpLevel().count(type) || type == AttrType("DEFENSE") || (
+      ret > 0 && !attributes->fixedAttr.count(type))) {
     auto exp = (includeTeamExp && teamExperience > 0) ? (teamExperience + combatExp) / 2 : combatExp;
     ret += int(exp);
   }
@@ -1279,6 +1279,9 @@ bool Creature::isFriend(const Creature* c) const {
 bool Creature::isEnemy(const Creature* c) const {
   PROFILE;
   if (c == this || c->statuses.contains(CreatureStatus::PRISONER) || statuses.contains(CreatureStatus::PRISONER))
+    return false;
+  if (duelInfo && duelInfo->timeout > *globalTime && c->tribe == duelInfo->enemy &&
+      c->getUniqueId() != duelInfo->opponent)
     return false;
   auto result = getTribe()->isEnemy(c) || c->getTribe()->isEnemy(this) ||
     privateEnemies.hasKey(c) || c->privateEnemies.hasKey(this);
@@ -1648,6 +1651,12 @@ void Creature::onAttackedBy(Creature* attacker) {
 
 void Creature::removePrivateEnemy(const Creature* c) {
   privateEnemies.erase(c);
+}
+
+void Creature::setDuel(TribeId enemyTribe, Creature* opponent, GlobalTime timeout) {
+  duelInfo = DuelInfo{enemyTribe, opponent ? opponent->getUniqueId() : Creature::Id{}, timeout};
+  if (steed)
+    steed->duelInfo = DuelInfo{enemyTribe, Creature::Id{}, timeout};
 }
 
 constexpr double getDamage(double damageRatio) {
@@ -2956,6 +2965,17 @@ void Creature::addPromotion(PromotionInfo info) {
 
 const vector<PromotionInfo>& Creature::getPromotions() const {
   return promotions;
+}
+
+bool Creature::addButcheringEvent(const string& villageName) {
+  if (!butcherInfo || butcherInfo->villageName != villageName) {
+    butcherInfo = ButcherInfo {villageName, 1};
+  }
+  else if (++butcherInfo->kills >= 5) {
+    attributes->getName().setKillTitle("butcher of " + villageName);
+    return true;
+  }
+  return false;
 }
 
 #define CASE(VAR, ELEM, TYPE, ...) \

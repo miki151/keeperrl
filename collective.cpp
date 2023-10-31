@@ -880,6 +880,24 @@ void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
     points += difficulty;
     control->addMessage(PlayerMessage(victim->getName().a() + " is " + deathDescription + " by " + killer->getName().a())
         .setPosition(victim->getPosition()));
+    if (victim->getStatus().contains(CreatureStatus::CIVILIAN)) {
+      auto victimCollective = [&]() -> optional<string> {
+        for (auto col : killer->getPosition().getModel()->getCollectives())
+          if (col->getCreatures().contains(victim))
+            if (auto& name = col->getName())
+              if (name->location)
+                return name->location;
+        return none;
+      }();
+      if (victimCollective) {
+        auto butcher = killer;
+        auto team = teams->getContaining(killer);
+        if (!team.empty())
+          butcher = teams->getLeader(team[0]);
+        if (butcher->addButcheringEvent(*victimCollective))
+          addRecordedEvent("the massacre of " + *victimCollective);
+      }
+    }
   }
 }
 
@@ -1424,7 +1442,7 @@ CollectiveWarnings& Collective::getWarnings() {
   return *warnings;
 }
 
-const CollectiveConfig& Collective::getConfig() const {
+CollectiveConfig& Collective::getConfig() {
   return *config;
 }
 

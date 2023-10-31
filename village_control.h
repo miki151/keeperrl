@@ -53,7 +53,7 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
 
   private:
   friend class VillageBehaviour;
-  void launchAttack(vector<Creature*> attackers);
+  void launchAttack(vector<Creature*> attackers, bool duel);
   void considerCancellingAttack();
   bool isEnemy(const Creature*);
   Collective* getEnemyCollective() const;

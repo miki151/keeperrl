@@ -17,7 +17,7 @@ using GameIntros = vector<string>;
 class CampaignBuilder {
   public:
   CampaignBuilder(View*, RandomGen&, Options*, VillainsTuple, GameIntros, const AvatarInfo&);
-  optional<CampaignSetup> prepareCampaign(const ContentFactory*, function<optional<RetiredGames>(CampaignType)>,
+  optional<CampaignSetup> prepareCampaign(ContentFactory*, function<optional<RetiredGames>(CampaignType)>,
       CampaignType defaultType, string worldName);
   static CampaignSetup getEmptyCampaign();
   static CampaignSetup getWarlordCampaign(const vector<RetiredGames::RetiredGame>&,
@@ -33,7 +33,7 @@ class CampaignBuilder {
   vector<OptionId> getCampaignOptions(CampaignType) const;
   vector<OptionId> getPrimaryOptions() const;
   const char* getIntroText() const;
-  void setPlayerPos(Campaign&, Vec2, ViewIdList);
+  void setPlayerPos(Campaign&, Vec2, ViewIdList, ContentFactory*);
   vector<CampaignType> getAvailableTypes() const;
   bool placeVillains(const ContentFactory*, Campaign&, vector<Campaign::SiteInfo::Dweller>, int count);
   vector<Campaign::VillainInfo> getVillains(const vector<VillainGroup>&, VillainType);

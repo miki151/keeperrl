@@ -199,7 +199,7 @@ class View {
 
   virtual optional<Vec2> chooseSite(const string& message, const Campaign&, Vec2 current) = 0;
 
-  virtual void presentWorldmap(const Campaign&) = 0;
+  virtual void presentWorldmap(const Campaign&, Vec2 current) = 0;
 
   /** Draws an animation of an object between two locations on a map.*/
   virtual void animateObject(Vec2 begin, Vec2 end, optional<ViewId> object, optional<FXInfo> fx) = 0;

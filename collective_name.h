@@ -8,6 +8,7 @@ struct CollectiveName {
   string SERIAL(full);
   string SERIAL(race);
   ViewIdList SERIAL(viewId);
-  SERIALIZE_ALL(shortened, full, race, viewId)
+  optional<string> SERIAL(location);
+  SERIALIZE_ALL(shortened, full, race, viewId, location)
 };
 

@@ -73,12 +73,13 @@ const char* CampaignBuilder::getIntroText() const {
     "As you conquer more enemies, your influence zone will increase.\n\n";
 }
 
-void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewIdList playerViewId) {
+void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewIdList playerViewId, ContentFactory* f) {
   campaign.sites[campaign.playerPos].dweller.reset();
   campaign.playerPos = pos;
   campaign.sites[campaign.playerPos].dweller =
       Campaign::SiteInfo::Dweller(Campaign::KeeperInfo{playerViewId,
           avatarInfo.playerCreature->getTribeId()});
+  campaign.updateInhabitants(f);
 }
 
 static bool tileExists(const ContentFactory* factory, const string& s) {
@@ -278,7 +279,17 @@ static EnemyAggressionLevel getAggressionLevel(Options* options) {
   fail();
 }
 
-optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* contentFactory,
+static bool isGoodStartingPos(const Campaign& campaign, Vec2 pos, int visibilityRadius, int totalLesserVillains) {
+  if (!campaign.isGoodStartPos(pos))
+    return false;
+  int numLesser = 0;
+  for (auto v : campaign.getSites().getBounds().intersection(Rectangle::centered(pos, visibilityRadius)))
+    if (campaign.getSites()[v].getVillainType() == VillainType::LESSER && v.distD(pos) <= visibilityRadius + 0.5)
+      ++numLesser;
+  return numLesser >= min(3, totalLesserVillains);
+}
+
+optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* contentFactory,
     function<optional<RetiredGames>(CampaignType)> genRetired,
     CampaignType type, string worldName) {
   auto& campaignInfo = contentFactory->campaignInfo;
@@ -299,22 +310,17 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
     Campaign campaign(terrain, type, worldName);
     campaign.mapZoom = campaignInfo.mapZoom;
     campaign.minimapZoom = campaignInfo.minimapZoom;
-    if (!placeVillains(contentFactory, campaign, getVillainCounts(type, options), retired, avatarInfo.villainGroups)) {
+    const auto villainCounts = getVillainCounts(type, options);
+    if (!placeVillains(contentFactory, campaign, villainCounts, retired, avatarInfo.villainGroups)) {
       if (++failedPlaceVillains > 300)
         USER_FATAL << "Failed to place all villains on the world map";
       continue;
     }
     for (auto pos : Random.permutation(campaign.getSites().getBounds()
         .minusMargin(campaignInfo.initialRadius + 1).getAllSquares())) {
-      auto hasAnyVillain = [&] {
-        for (auto v : campaign.getSites().getBounds().intersection(Rectangle::centered(pos, campaignInfo.initialRadius)))
-          if (blocksInfluence(campaign.getSites()[v].getVillainType().value_or(VillainType::NONE)) &&
-              v.distD(pos) <= campaignInfo.initialRadius + 0.5)
-            return true;
-        return false;
-      };
-      if ((campaign.isGoodStartPos(pos) && hasAnyVillain()) || type == CampaignType::QUICK_MAP) {
-        setPlayerPos(campaign, pos, avatarInfo.playerCreature->getMaxViewIdUpgrade());
+      if (isGoodStartingPos(campaign, pos, campaignInfo.initialRadius, villainCounts.numLesser) ||
+          type == CampaignType::QUICK_MAP) {
+        setPlayerPos(campaign, pos, avatarInfo.playerCreature->getMaxViewIdUpgrade(), contentFactory);
         campaign.originalPlayerPos = pos;
         break;
       }
@@ -342,7 +348,8 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
           updateMap = true;
           break;
         case CampaignActionId::SET_POSITION:
-          setPlayerPos(campaign, action.get<Vec2>(), avatarInfo.playerCreature->getMaxViewIdUpgrade());
+          setPlayerPos(campaign, action.get<Vec2>(), avatarInfo.playerCreature->getMaxViewIdUpgrade(),
+              contentFactory);
           break;
         case CampaignActionId::CHANGE_WORLD_MAP:
           worldMapIndex = action.get<int>();

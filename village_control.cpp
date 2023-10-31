@@ -40,6 +40,7 @@
 #include "immigrant_info.h"
 #include "item.h"
 #include "team_order.h"
+#include "duel_state.h"
 
 SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl)
 
@@ -181,34 +182,38 @@ void VillageControl::updateAggression(EnemyAggressionLevel level) {
   }
 }
 
-void VillageControl::launchAttack(vector<Creature*> attackers) {
-  if (Collective* enemy = getEnemyCollective()) {
-    for (Creature* c : attackers) {
+void VillageControl::launchAttack(vector<Creature*> attackers, bool duel) {
+  auto enemy = getEnemyCollective();
+  for (Creature* c : attackers) {
 //      if (getCollective()->getGame()->canTransferCreature(c, enemy->getLevel()->getModel()))
-      if (c->isAffected(LastingEffect::RIDER))
-        if (auto steed = collective->getSteedOrRider(c))
-          c->forceMount(steed);
-      collective->getGame()->transferCreature(c, enemy->getModel());
-    }
-    optional<int> ransom;
-    int hisGold = enemy->numResource(CollectiveResourceId("GOLD"));
-    if (behaviour->ransom && hisGold >= behaviour->ransom->second)
-      ransom = max<int>(behaviour->ransom->second,
-          (Random.getDouble(behaviour->ransom->first * 0.6, behaviour->ransom->first)) * hisGold);
-    TeamId team = collective->getTeams().create(attackers);
-    if (behaviour->isAttackBehaviourNonChasing())
-      collective->getTeams().setTeamOrder(team, TeamOrder::FLEE, true);
-    collective->getTeams().activate(team);
-    collective->freeTeamMembers(attackers);
-    vector<const Task*> attackTasks;
-    for (Creature* c : attackers) {
-      auto task = Task::withTeam(collective, team, behaviour->getAttackTask(this));
-      attackTasks.push_back(task.get());
-      collective->setPriorityTask(c, std::move(task));
-    }
-    enemy->getControl()->addAttack(CollectiveAttack(std::move(attackTasks), collective, attackers, ransom));
-    attackSizes[team] = attackers.size();
+    if (c->isAffected(LastingEffect::RIDER))
+      if (auto steed = collective->getSteedOrRider(c))
+        c->forceMount(steed);
+    collective->getGame()->transferCreature(c, enemy->getModel());
   }
+  optional<int> ransom;
+  int hisGold = enemy->numResource(CollectiveResourceId("GOLD"));
+  if (!duel && behaviour->ransom && hisGold >= behaviour->ransom->second)
+    ransom = max<int>(behaviour->ransom->second,
+        (Random.getDouble(behaviour->ransom->first * 0.6, behaviour->ransom->first)) * hisGold);
+  TeamId team = collective->getTeams().create(attackers);
+  if (behaviour->isAttackBehaviourNonChasing())
+    collective->getTeams().setTeamOrder(team, TeamOrder::FLEE, true);
+  collective->getTeams().activate(team);
+  collective->freeTeamMembers(attackers);
+  vector<const Task*> attackTasks;
+  shared_ptr<DuelState> duelFlag;
+  if (duel)
+    duelFlag = make_shared<DuelState>(DuelState::INACTIVE);
+  for (Creature* c : attackers) {
+    auto task = Task::withTeam(collective, team, behaviour->getAttackTask(this));
+    if (duelFlag)
+      task = Task::duelTask(enemy, collective, attackers, std::move(task), duelFlag);
+    attackTasks.push_back(task.get());
+    collective->setPriorityTask(c, std::move(task));
+  }
+  enemy->getControl()->addAttack(CollectiveAttack(std::move(attackTasks), collective, attackers, ransom));
+  attackSizes[team] = attackers.size();
 }
 
 bool VillageControl::considerVillainAmbush(const vector<Creature*>& travellers) {
@@ -338,6 +343,8 @@ vector<TriggerInfo> VillageControl::getAllTriggers(const Collective* against) co
 }
 
 bool VillageControl::canPerformAttack() const {
+  if (collective->isConquered())
+    return false;
   // don't attack if player is not in the base site
   if (collective->getGame()->getCurrentModel() != collective->getGame()->getMainModel().get())
     return false;
@@ -421,13 +428,18 @@ void VillageControl::update(bool) {
   }
   double updateFreq = 0.1;
   if (isEnemy() && canPerformAttack() && Random.chance(updateFreq) && behaviour) {
-    if (Collective* enemy = getEnemyCollective())
-      maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
+    auto enemy = getEnemyCollective();
+    maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
     double prob = behaviour->getAttackProbability(this) / updateFreq;
     if (Random.chance(prob)) {
+      bool duel = !collective->getLeaders().empty() && enemy->getLeaders().size() == 1 &&
+          Random.chance(behaviour->duelChance);
       auto attackers = getAttackers();
-      if (!attackers.empty())
-        launchAttack(attackers);
+      if (!attackers.empty()) {
+        if (duel && !attackers.contains(collective->getLeaders()[0]))
+          attackers.insert(0, collective->getLeaders()[0]);
+        launchAttack(attackers, duel);
+      }
     }
   }
 }

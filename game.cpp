@@ -547,7 +547,7 @@ int Game::getModelDistance(const Collective* c1, const Collective* c2) const {
 }
 
 void Game::presentWorldmap() {
-  view->presentWorldmap(*campaign);
+  view->presentWorldmap(*campaign, baseModel);
 }
 
 Model* Game::chooseSite(const string& message, Model* current) const {
@@ -767,13 +767,6 @@ const vector<Creature*>& Game::getPlayerCreatures() const {
   return players;
 }
 
-static SavedGameInfo::MinionInfo getMinionInfo(const ContentFactory* factory, const Creature* c) {
-  SavedGameInfo::MinionInfo ret;
-  ret.level = (int)c->getBestAttack(factory).value;
-  ret.viewId = c->getViewIdWithWeapon();
-  return ret;
-}
-
 SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
   auto factory = contentFactory.get();
   auto sortMinions = [&](vector<Creature*>& minions, Creature* leader) {
@@ -791,7 +784,7 @@ SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
     creatures.resize(min<int>(creatures.size(), 4));
     vector<SavedGameInfo::MinionInfo> minions;
     for (Creature* c : creatures)
-      minions.push_back(getMinionInfo(factory, c));
+      minions.push_back(SavedGameInfo::MinionInfo::get(factory, c));
     optional<SavedGameInfo::RetiredEnemyInfo> retiredInfo;
     if (auto id = col->getEnemyId()) {
       retiredInfo = SavedGameInfo::RetiredEnemyInfo{*id, col->getVillainType()};
@@ -808,7 +801,7 @@ SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
           allCreatures.push_back(c);
     sortMinions(allCreatures, players[0]);
     return SavedGameInfo{
-        allCreatures.transform([&](auto c) { return getMinionInfo(factory, c); }),
+        allCreatures.transform([&](auto c) { return SavedGameInfo::MinionInfo::get(factory, c); }),
         none,
         players[0]->getName().bare(),
         getSaveProgressCount(),

@@ -846,7 +846,7 @@ ViewId PlayerControl::getViewId(const BuildInfoTypes::BuildType& info) const {
         return ViewId("dig_icon");
       },
       [&](ZoneId zone) {
-        return ::getViewId(zone);
+        return ::getViewId(getHighlight(zone), true);
       },
       [&](BuildInfoTypes::ClaimTile) {
         return ViewId("keeper_floor");
@@ -2221,7 +2221,7 @@ void PlayerControl::updateKnownLocations(const Position& pos) {
           addMessage(PlayerMessage("Your minions discover a new location.").setLocation(loc));
       }*/
   if (auto game = getGame()) // check in case this method is called before Game is constructed
-    for (const Collective* col : game->getCollectives())
+    for (Collective* col : game->getCollectives())
       if (col != collective && col->getTerritory().contains(pos)) {
         collective->addKnownVillain(col);
         if (!collective->isKnownVillainLocation(col)) {
@@ -3224,7 +3224,9 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
       if (!dryRun) {
         collective->unclaimSquare(position);
         if (NOTNULL(position.getFurniture(FurnitureLayer::GROUND))->getViewObject()->id() == ViewId("keeper_floor")) {
-          position.modFurniture(FurnitureLayer::GROUND)->getViewObject()->setId(ViewId("floor"));
+          auto& obj = position.modFurniture(FurnitureLayer::GROUND)->getViewObject();
+          obj->setId(ViewId("floor"));
+          obj->setDescription("Floor");
           position.setNeedsRenderAndMemoryUpdate(true);
           updateSquareMemory(position);
         }
@@ -3594,15 +3596,15 @@ Level* PlayerControl::getCurrentLevel() const {
     return currentLevel;
 }
 
-bool PlayerControl::isConsideredAttacking(const Creature* c, const Collective* enemy) {
+bool PlayerControl::isConsideredAttacking(const CollectiveAttack& attack) {
+  auto enemy = attack.getAttacker();
+  auto leader = attack.getCreatures()[0];
   if (enemy && enemy->getModel() == getModel())
-    return canSee(c) && (collective->getTerritory().contains(c->getPosition()) ||
-        collective->getTerritory().getStandardExtended().contains(c->getPosition()));
+    return canSee(leader) && (collective->getTerritory().contains(leader->getPosition()) ||
+        collective->getTerritory().getStandardExtended().contains(leader->getPosition()));
   else
-    return canSee(c) && c->getLevel()->getModel() == getModel();
+    return canSee(leader) && leader->getLevel()->getModel() == getModel();
 }
-
-const double messageTimeout = 80;
 
 void PlayerControl::updateUnknownLocations() {
   vector<Position> locations;
@@ -3643,28 +3645,28 @@ void PlayerControl::considerAllianceAttack() {
 
 void PlayerControl::considerNewAttacks() {
   for (auto attack : copyOf(newAttacks))
-    for (const Creature* c : attack.getCreatures())
-      if (isConsideredAttacking(c, attack.getAttacker())) {
-        newAttacks.removeElement(attack);
-        setScrollPos(c->getPosition().plus(Vec2(0, 5)));
-        getView()->refreshView();
-        if (attack.getRansom() && collective->hasResource({ResourceId("GOLD"), *attack.getRansom()})) {
-          if (getView()->yesOrNoPrompt(capitalFirst(attack.getAttackerName()) + " demand " +
-              toString(attack.getRansom()) + " gold for not attacking. Agree?", attack.getAttackerViewId(), true)) {
-            collective->takeResource({ResourceId("GOLD"), *attack.getRansom()});
-            attack.getAttacker()->onRansomPaid();
-            auto name = attack.getAttacker()->getName();
-            getGame()->addAnalytics("ransom_paid", name ? name->full : "unknown");
-            break;
-          }
-        } else
-          addWindowMessage(attack.getAttackerViewId(), "You are under attack by " + attack.getAttackerName() + "!");
-        getGame()->setCurrentMusic(MusicType::BATTLE);
-        if (auto attacker = attack.getAttacker())
-          collective->addKnownVillain(attacker);
-        notifiedAttacks.push_back(attack);
-        break;
-      }
+    if (isConsideredAttacking(attack)) {
+      auto attacker = attack.getAttacker();
+      newAttacks.removeElement(attack);
+      setScrollPos(attack.getCreatures()[0]->getPosition().plus(Vec2(0, 5)));
+      getView()->refreshView();
+      if (attack.getRansom() && collective->hasResource({ResourceId("GOLD"), *attack.getRansom()})) {
+        if (getView()->yesOrNoPrompt(capitalFirst(attack.getAttackerName()) + " demand " +
+            toString(attack.getRansom()) + " gold for not attacking. Agree?", attack.getAttackerViewId(), true)) {
+          collective->takeResource({ResourceId("GOLD"), *attack.getRansom()});
+          attacker->onRansomPaid();
+          auto name = attacker->getName();
+          getGame()->addAnalytics("ransom_paid", name ? name->full : "unknown");
+          break;
+        }
+      } else
+        addWindowMessage(attack.getAttackerViewId(), "You are under attack by " + attack.getAttackerName() + "!");
+      getGame()->setCurrentMusic(MusicType::BATTLE);
+      if (attacker)
+        collective->addKnownVillain(attacker);
+      notifiedAttacks.push_back(attack);
+      break;
+    }
 }
 
 void PlayerControl::considerSoloAchievement() {
@@ -3681,6 +3683,7 @@ void PlayerControl::tick() {
   considerSoloAchievement();
   updateUnknownLocations();
   considerTransferingLostMinions();
+  constexpr double messageTimeout = 80;
   for (auto& elem : messages)
     elem.setFreshness(max(0.0, elem.getFreshness() - 1.0 / messageTimeout));
   messages = messages.filter([&] (const PlayerMessage& msg) {
@@ -3800,14 +3803,34 @@ PController PlayerControl::createMinionController(Creature* c) {
 }
 
 static void considerAddingKeeperFloor(Position pos) {
-  if (NOTNULL(pos.getFurniture(FurnitureLayer::GROUND))->getViewObject()->id() == ViewId("floor"))
-    pos.modFurniture(FurnitureLayer::GROUND)->getViewObject()->setId(ViewId("keeper_floor"));
+  if (NOTNULL(pos.getFurniture(FurnitureLayer::GROUND))->getViewObject()->id() == ViewId("floor")) {
+    auto& obj = pos.modFurniture(FurnitureLayer::GROUND)->getViewObject();
+    obj->setId(ViewId("keeper_floor"));
+    obj->setDescription("Claimed floor");
+  }
 }
 
 void PlayerControl::onClaimedSquare(Position position) {
   considerAddingKeeperFloor(position);
   position.setNeedsRenderAndMemoryUpdate(true);
   updateSquareMemory(position);
+}
+
+CollectiveControl::DuelAnswer PlayerControl::acceptDuel(Creature* attacker) {
+  auto notified = [&] {
+    for (auto& a : notifiedAttacks)
+      if (a.getCreatures().contains(attacker))
+        return true;
+    return false;
+  }();
+  if (!notified)
+    return DuelAnswer::UNKNOWN;
+  if (getView()->yesOrNoPrompt(capitalFirst(attacker->getName().aOrTitle()) +
+      " challenges you to a duel. Do you accept?")) {
+    controlSingle(collective->getLeaders()[0]);
+    return DuelAnswer::ACCEPT;
+  }
+  return DuelAnswer::REJECT;
 }
 
 void PlayerControl::onDestructed(Position pos, FurnitureType type, const DestroyAction& action) {
