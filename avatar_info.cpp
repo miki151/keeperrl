@@ -198,7 +198,7 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
     }};
     view->scriptedUI("avatar_menu", data);
     if (ret)
-      return *std::move(ret);
+      return std::move(*ret);
   }
 }
 
