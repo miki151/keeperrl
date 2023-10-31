@@ -2628,8 +2628,8 @@ class ScrollArea : public GuiElem {
       scrollPos = {clickPos->x - v.x, clickPos->y - v.y};
       int areaWidth = getBounds().width();
       int areaHeight = getBounds().height();
-      scrollPos.first = max(0, min<int>(*content->getPreferredWidth() - areaWidth, scrollPos.first));
-      scrollPos.second = max(0, min<int>(*content->getPreferredHeight() - areaHeight, scrollPos.second));
+      scrollPos.first = max(-areaWidth / 2, min<int>(*content->getPreferredWidth() - areaWidth / 2, scrollPos.first));
+      scrollPos.second = max(-areaHeight / 2, min<int>(*content->getPreferredHeight() - areaHeight / 2, scrollPos.second));
       return true;
     } else {
       if (v.inRectangle(getBounds()))

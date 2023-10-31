@@ -4468,8 +4468,8 @@ static Vec2 maxWorldMapSize(800, 550);
 void GuiBuilder::scrollWorldMap(int iconSize, Vec2 pos, Rectangle worldMapBounds) {
   auto maxSize = maxWorldMapSize / iconSize;
   scrollAreaScrollPos = {
-      iconSize * max(worldMapBounds.left(), min(worldMapBounds.right() - maxSize.x, pos.x - maxSize.x / 2)),
-      iconSize * max(worldMapBounds.top(), min(worldMapBounds.bottom() - maxSize.y, pos.y - maxSize.y / 2))};
+      iconSize * (max(worldMapBounds.left(), min(worldMapBounds.right(), pos.x))  - maxSize.x / 2),
+      iconSize * (max(worldMapBounds.top(), min(worldMapBounds.bottom(), pos.y) - maxSize.y / 2))};
 }
 
 SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialPos, function<bool(Vec2)> selectable,
@@ -4602,12 +4602,12 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
             WL(margins, WL(rectangle, Color::BLACK), -margin),
             WL(renderInBounds, minimapRows.buildVerticalList()),
             WL(margins, WL(miniBorder2), -margin),
-            WL(translate,
+            WL(renderInBounds, WL(translate,
                 [this, iconSize, minimapScale] {
                   return Vec2(scrollAreaScrollPos.first, scrollAreaScrollPos.second) * minimapScale / iconSize;
                 },
                 WL(alignment, GuiFactory::Alignment::TOP_LEFT, WL(rectangle, Color::TRANSPARENT, Color::WHITE),
-                    maxWorldMapSize * minimapScale / iconSize)))));
+                    maxWorldMapSize * minimapScale / iconSize))))));
   if (campaignGridPointer)
     mapContent = WL(stack, makeVec(
         std::move(mapContent),
