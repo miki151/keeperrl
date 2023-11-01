@@ -2658,7 +2658,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
   auto& queued = info.queued;
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElem(WL(getListBuilder)
-      .addElemAuto(WL(label, "Requires: "))
+      .addElemAuto(WL(label, "Requires skill level: "))
       .addElemAuto(WL(viewObject, info.attr))
       .addElemAuto(WL(label, toString(info.minAttrValue)))
       .buildHorizontalList());

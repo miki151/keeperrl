@@ -2623,15 +2623,13 @@ End
   {
     viewId = { "goblin_shaman" }
     attr = {
-      DAMAGE 12
       DEFENSE 8
-      SPELL_DAMAGE 25 
+      SPELL_DAMAGE 25
     }
     body = {
       type = Humanoid LARGE
     }
     maxLevelIncrease = {
-      DAMAGE 4
       SPELL_DAMAGE 12
     }
     aiType = RANGED
