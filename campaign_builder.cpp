@@ -384,8 +384,11 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* content
               gameDisplayName = name + " of " + campaign.worldName;
             }
             gameIdentifier = stripFilename(std::move(gameIdentifier));
+            auto aggressionLevel = avatarInfo.creatureInfo.enemyAggression
+                ? getAggressionLevel(options)
+                : EnemyAggressionLevel::NONE;
             return CampaignSetup{campaign, gameIdentifier, gameDisplayName,
-                getIntroMessages(type), getExternalEnemies(options), getAggressionLevel(options)};
+                getIntroMessages(type), getExternalEnemies(options), aggressionLevel};
           }
       }
       if (updateMap)

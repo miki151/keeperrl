@@ -231,6 +231,7 @@
   startingBase = {5 5} "adventurer_house"
   prisoners = false
   requireQuartersForExp = false
+  enemyAggression = false
 }
 
 "92_dark_knight_adventurer" inherit "91_dark_mage_adventurer"
