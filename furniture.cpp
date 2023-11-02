@@ -499,7 +499,7 @@ optional<FurnitureType> Furniture::getFillPit() const {
   return fillPit;
 }
 
-const LuxuryInfo& Furniture::getLuxuryInfo() const {
+double Furniture::getLuxury() const {
   return luxury;
 }
 

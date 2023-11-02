@@ -165,7 +165,7 @@ void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const
     if (auto furniture = info.type.getReferenceMaybe<BuildInfoTypes::Furniture>()) {
       usedResources.insert(furniture->cost.id);
       for (auto type : furniture->types) {
-        double luxury = factory->furniture.getData(type).getLuxuryInfo().luxury;
+        double luxury = factory->furniture.getData(type).getLuxury();
         if (luxury > 0) {
           info.help += " Increases luxury by " + toString(luxury) + ".";
           break;
@@ -2333,10 +2333,10 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
           !position.isClosedOff(MovementType(MovementTrait::WALK).setFarmAnimal()))
         index.setHighlight(HighlightType::PIGSTY_NOT_CLOSED);
     for (auto furniture : position.getFurniture())
-      if (furniture->getLuxuryInfo().luxury > 0)
+      if (furniture->getLuxury() > 0)
         if (auto obj = furniture->getViewObject())
           if (index.hasObject(obj->layer()))
-            index.getObject(obj->layer()).setAttribute(ViewObject::Attribute::LUXURY, furniture->getLuxuryInfo().luxury);
+           index.getObject(obj->layer()).setAttribute(ViewObject::Attribute::LUXURY, furniture->getLuxury());
   }
   if (auto highlight = collective->getTaskMap().getHighlightType(position))
     index.setHighlight(*highlight);

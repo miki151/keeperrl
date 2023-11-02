@@ -6,7 +6,6 @@
 #include "vision_id.h"
 #include "event_listener.h"
 #include "furniture_layer.h"
-#include "luxury_info.h"
 #include "furniture_type.h"
 #include "attr_type.h"
 #include "bed_type.h"
@@ -142,7 +141,7 @@ class Furniture {
   vector<PItem> dropItems(Position, vector<PItem>) const;
   optional<FurnitureType> getDefaultBridge() const;
   optional<FurnitureType> getFillPit() const;
-  const LuxuryInfo& getLuxuryInfo() const;
+  double getLuxury() const;
   struct PopulationInfo {
     double SERIAL(increase);
     optional<int> SERIAL(limit);
@@ -217,7 +216,7 @@ class Furniture {
   bool SERIAL(noProjectiles) = false;
   bool SERIAL(clearFogOfWar) = false;
   bool SERIAL(xForgetAfterBuilding) = false;
-  LuxuryInfo SERIAL(luxury);
+  double SERIAL(luxury);
   void updateViewObject();
   BurnsDownMessage SERIAL(burnsDownMessage) = BurnsDownMessage::BURNS_DOWN;
   template<typename Archive>

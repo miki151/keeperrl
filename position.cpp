@@ -190,11 +190,11 @@ double Position::getTotalLuxury() const {
   double ret = 0;
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = getFurniture(layer))
-      ret += f->getLuxuryInfo().luxury;
+      ret += f->getLuxury();
   for (auto v : neighbors4())
     if (auto f = v.getFurniture(FurnitureLayer::MIDDLE))
       if (f->isWall())
-        ret += f->getLuxuryInfo().luxury;
+        ret += f->getLuxury();
   return ret;
 }
 

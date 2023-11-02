@@ -951,6 +951,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   layer = CEILING
   viewLayer = TORCH1
   attachmentDir = N
+  luxury = 0.3
   requiredSupport = { { { N } } }
 }
 "PAINTING_S" inherit "PAINTING_N"
