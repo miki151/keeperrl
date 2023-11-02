@@ -119,6 +119,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureName& getName();
   const char* identify() const;
   int getAttr(AttrType, bool includeWeapon = true, bool includeTeamExp = true) const;
+  int getAttrWithExp(AttrType, int combatExperience, bool includeWeapon = true) const;
   int getSpecialAttr(AttrType, const Creature* against) const;
   int getAttrBonus(AttrType, int rawAttr, bool includeWeapon) const;
 
@@ -223,7 +224,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   void increaseExpLevel(AttrType, double increase);
 
-  BestAttack getBestAttack(const ContentFactory*, bool includeTeamExp = true) const;
+  BestAttack getBestAttack(const ContentFactory*) const;
+  BestAttack getBestAttackWithExp(const ContentFactory*, int combatExp) const;
 
   vector<pair<Item*, double>> getRandomWeapons() const;
   int getMaxSimultaneousWeapons() const;
@@ -313,13 +315,12 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void onKilledOrCaptured(Creature* victim);
   Creature* getsCreditForKills();
   void updateCombatExperience(Creature* victim);
-  double getCombatExperience() const;
-  double getCombatExperienceRespectingMaxPromotion() const;
+  double getCombatExperience(bool respectMaxPromotion, bool includeTeamExp) const;
   double getTeamExperience() const;
   void setCombatExperience(double);
   void setMaxPromotion(int level);
   int getCombatExperienceCap() const;
-  int getRawAttr(AttrType, bool includeTeamExp = true) const;
+  int getRawAttr(AttrType, int combatExp) const;
 
   void addSound(const Sound&) const;
   void updateViewObject(const ContentFactory*);

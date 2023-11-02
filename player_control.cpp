@@ -1557,8 +1557,7 @@ void PlayerControl::acceptPrisoner(int index) {
   if (index < immigrants.size() && !immigrants[index].collective) {
     auto victim = immigrants[index].creatures[0];
     if (victim->getBody().isHumanoid())
-      victim->getAttributes().setBaseAttr(AttrType("DIGGING"),
-          max(15, victim->getRawAttr(AttrType("DIGGING"))));
+      victim->getAttributes().increaseBaseAttr(AttrType("DIGGING"), 15);
     collective->takePrisoner(victim);
     addMessage(PlayerMessage("You enslave " + victim->getName().a()).setPosition(victim->getPosition()));
     getGame()->achieve(AchievementId("captured_prisoner"));
@@ -1610,10 +1609,10 @@ vector<ImmigrantDataInfo> PlayerControl::getUnrealizedPromotionsImmigrantData() 
   vector<ImmigrantDataInfo> ret;
   auto contentFactory = getGame()->getContentFactory();
   for (auto c : getCreatures())
-    if (c->getCombatExperienceRespectingMaxPromotion() < c->getCombatExperience()) {
+    if (c->getCombatExperience(true, false) < c->getCombatExperience(false, false)) {
       ret.emplace_back();
       ret.back().requirements.push_back("Creature requires more luxurious quarters to achieve full potential"_s);
-      auto req = getRequiredLuxury(c->getCombatExperience());
+      auto req = getRequiredLuxury(c->getCombatExperience(false, false));
       if (req == 0)
         ret.back().requirements.push_back("Requires personal quarters.");
       else {
@@ -3544,7 +3543,7 @@ void PlayerControl::considerTogglingCaptureOrderOnMinions() const {
     c->setCaptureOrder(false);
   auto toCapture = collective->getCreatures(MinionTrait::FIGHTER).filter([&](auto c) { return !collective->hasTrait(c, MinionTrait::LEADER); });
   sort(toCapture.begin(), toCapture.end(),
-      [](auto c1, auto c2) { return c1->getCombatExperience() > c2->getCombatExperience(); });
+      [](auto c1, auto c2) { return c1->getCombatExperience(true, false) > c2->getCombatExperience(true, false); });
   if (toCapture.size() > 10)
     toCapture.resize(10);
 /*  for (auto c : collective->getCreatures(MinionTrait::LEADER))

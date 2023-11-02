@@ -219,7 +219,7 @@ vector<AttributeInfo> AttributeInfo::fromCreature(const ContentFactory* contentF
   vector<AttributeInfo> ret;
   for (auto& attr : contentFactory->attrOrder) {
     auto& info = contentFactory->attrInfo.at(attr);
-    auto rawAttr = c->getRawAttr(attr);
+    auto rawAttr = c->getRawAttr(attr, c->getCombatExperience(true, true));
     ret.push_back(AttributeInfo {
         capitalFirst(info.name),
         info.viewId,

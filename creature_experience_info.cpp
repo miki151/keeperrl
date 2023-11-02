@@ -17,7 +17,7 @@ CreatureExperienceInfo getCreatureExperienceInfo(const ContentFactory* f, const 
     });
   return CreatureExperienceInfo {
     std::move(training),
-    c->getCombatExperience(),
+    c->getCombatExperience(false, false),
     c->getTeamExperience(),
     c->getCombatExperienceCap(),
     0

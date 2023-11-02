@@ -488,7 +488,7 @@ void Collective::updateTeamExperience() {
   for (TeamId team : getTeams().getAllActive()) {
     double exp = 0;
     for (auto c : getTeams().getMembers(team))
-      exp = max(exp, c->getCombatExperienceRespectingMaxPromotion());
+      exp = max(exp, c->getCombatExperience(true, false));
     for (auto c : getTeams().getMembers(team))
       c->setTeamExperience(exp);
   }
