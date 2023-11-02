@@ -4655,6 +4655,7 @@ void GuiBuilder::moveCampaignGridPointer(const Campaign& c, int iconSize, Dir di
 
 SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign, Vec2 current) {
   auto lines = WL(getListBuilder, getStandardLineHeight());
+  campaignGridPointer = none;
   lines.addElem(WL(centerHoriz, WL(label, "Map of " + campaign.getWorldName())));
   lines.addElem(WL(centerHoriz, WL(label, "Use the travel command while controlling a minion or team "
           "to travel to another site.", Renderer::smallTextSize(), Color::LIGHT_GRAY)));
