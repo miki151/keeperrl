@@ -5116,6 +5116,8 @@ SGuiElem GuiBuilder::drawRetiredDungeonMenu(SyncQueue<variant<string, bool, none
 SGuiElem GuiBuilder::drawCreatureTooltip(const PlayerInfo& info) {
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElem(WL(label, info.title));
+  if (!info.description.empty())
+    lines.addElem(WL(label, info.description, Color::RED));
   lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(info.attributes)));
   for (auto& elem : drawEffectsList(info, false))
     lines.addElem(std::move(elem));

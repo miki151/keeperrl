@@ -3312,10 +3312,34 @@ void PlayerControl::onSquareClick(Position pos) {
     }
   }
   if (collective->getZones().isZone(pos, ZoneId::QUARTERS)) {
+    auto creatures = getCreatures().filter([this] (auto c) { return collective->minionCanUseQuarters(c); });
+    auto& zones = collective->getZones();
+    auto hasQuarters = [this] (auto c) { return !collective->getZones().getQuarters(c->getUniqueId()).empty(); };
+    sort(creatures.begin(), creatures.end(), [hasQuarters](auto c1, auto c2) {
+      auto h1 = hasQuarters(c1);
+      auto h2 = hasQuarters(c2);
+      if (h1 && !h2)
+        return false;
+      if (h2 && !h1)
+        return true;
+      if (!h1 && !h2) {
+        auto needs1 = c1->getCombatExperience(false, false) > c1->getCombatExperienceCap();
+        auto needs2 = c2->getCombatExperience(false, false) > c2->getCombatExperienceCap();
+        if (needs1 && !needs2)
+          return true;
+        if (needs2 && !needs1)
+          return false;
+      }
+      return c1->getUniqueId() > c2->getUniqueId();
+    });
     vector<PlayerInfo> minions;
-    for (auto c : getCreatures())
-      if (collective->minionCanUseQuarters(c))
-        minions.push_back(PlayerInfo(c, getGame()->getContentFactory()));
+    for (auto c : creatures) {
+      minions.push_back(PlayerInfo(c, getGame()->getContentFactory()));
+      if (!hasQuarters(c))
+        minions.back().description = "No quarters assigned yet";
+      else
+        minions.back().description.clear();
+    }
     if (auto id = getView()->chooseCreature("Assign these quarters to:", minions, "Cancel"))
       if (auto c = getCreature(*id))
         collective->assignQuarters(c, pos);
