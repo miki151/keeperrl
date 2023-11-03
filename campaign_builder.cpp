@@ -163,7 +163,7 @@ bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campai
   auto isFreeSpot = [&](Vec2 v) {
     if (campaign.sites[v].blocked || !v.inRectangle(campaign.sites.getBounds().minusMargin(10)))
       return false;
-    for (auto v2 : Rectangle::centered(v, 1))
+    for (auto v2 : Rectangle::centered(v, 5))
       if (v2.inRectangle(campaign.sites.getBounds()) && !campaign.sites[v2].isEmpty())
         return false;
     return true;
