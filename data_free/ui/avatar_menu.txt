@@ -49,12 +49,12 @@ End
       Width 800 Height 330
       Vertical {
         Horizontal {
-          Width 300 Vertical {
+          Width 300 Height 290 Vertical {
             Label("Choose base type:")
             Height 10 {}
-            Stretch Using "keeper_list" Scrolling(MarginRight(10, List(VERTICAL, KeeperButton())))
+            Stretch Using "keeper_list" MarginRight(40, Scrolling(MarginRight(10, List(VERTICAL, KeeperButton()))))
           }
-          Vertical {
+          Stretch Vertical {
             Label("Choose your Keeper character:")
             Height 10 {}
             Horizontal {
@@ -76,9 +76,7 @@ End
               Using "reload_first_name" StandardButton(Label(text = "🔄", font = SYMBOL_FONT))
             }
             Height 30 {}
-            Stretch {}
             Using "base_description" Paragraph(width = 450, color = ColorId LIGHT_GRAY)
-            Height 20 {}
           }
         }
         Height 20 {}
