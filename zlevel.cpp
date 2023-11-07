@@ -26,8 +26,8 @@ static EnemyInfo getEnemy(EnemyId id, ContentFactory* contentFactory) {
 static double modifyAggression(double value, EnemyAggressionLevel aggressionLevel) {
   switch (aggressionLevel) {
     case EnemyAggressionLevel::NONE: return 0;
-    case EnemyAggressionLevel::MODERATE: return 0.5 * value;
-    case EnemyAggressionLevel::EXTREME: return value;
+    case EnemyAggressionLevel::MODERATE: return value;
+    case EnemyAggressionLevel::EXTREME: return min(1.0, 2 * value);
   }
 }
 
