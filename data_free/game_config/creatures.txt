@@ -2156,6 +2156,7 @@ End
     viewId = { "lava_golem" }
     attr = {
       DAMAGE 26
+      FIRE_DAMAGE 36
       DEFENSE 36
     }
     body = {
