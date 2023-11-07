@@ -1309,7 +1309,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
   auto& info = collectiveInfo.libraryInfo;
   auto& dungeonLevel = collective->getDungeonLevel();
   if (dungeonLevel.numResearchAvailable() == 0)
-    info.warning = "Conquer some villains to advance your level."_s;
+    info.warning = "Conquer some villains to advance."_s;
   info.totalProgress = 100 * dungeonLevel.getNecessaryProgress(dungeonLevel.level);
   info.currentProgress = int(100 * dungeonLevel.progress * dungeonLevel.getNecessaryProgress(dungeonLevel.level));
   auto& technology = collective->getTechnology();
