@@ -216,7 +216,7 @@ class Furniture {
   bool SERIAL(noProjectiles) = false;
   bool SERIAL(clearFogOfWar) = false;
   bool SERIAL(xForgetAfterBuilding) = false;
-  double SERIAL(luxury);
+  double SERIAL(luxury) = 0;
   void updateViewObject();
   BurnsDownMessage SERIAL(burnsDownMessage) = BurnsDownMessage::BURNS_DOWN;
   template<typename Archive>
