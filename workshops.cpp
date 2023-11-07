@@ -102,7 +102,7 @@ PItem Workshops::Type::removeUpgrade(int itemIndex, int runeIndex) {
 }
 
 auto Workshops::Type::addWork(Collective* collective, double amount, int skillAmount,
-    int itemScaling) -> WorkshopResult {
+    double itemScaling) -> WorkshopResult {
   for (int productIndex : All(queued)) {
     auto& product = queued[productIndex];
     if (canCraft(product, collective)) {
