@@ -377,7 +377,7 @@ ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage
     name = "adamantine sword"
     shortName = "adamantine"
     modifiers = {
-      DAMAGE 11
+      DAMAGE 20
     }
     price = 20
     craftingCost = "ADA" 20
@@ -402,7 +402,7 @@ End
     name = "infernite sword"
     shortName = "infernite"
     modifiers = {
-      DAMAGE 16
+      DAMAGE 30
     }
     price = 200
     craftingCost = "INFERNITE" 20
@@ -466,7 +466,7 @@ End
     shortName = "adamantine"
     name = "adamantine battle axe"
     modifiers = {
-      DAMAGE 18
+      DAMAGE 40
     }
     price = 150
     craftingCost = "ADA" 50
@@ -483,7 +483,7 @@ End
     shortName = "infernite"
     name = "infernite battle axe"
     modifiers = {
-      DAMAGE 25
+      DAMAGE 60
     }
     price = 1500
     craftingCost = "INFERNITE" 50
@@ -523,7 +523,7 @@ End
     equipedViewId = { "war_hammer_v" Rgb 148 189 189 255 }
     name = "adamantine war hammer"
     modifiers = {
-      DAMAGE 15
+      DAMAGE 35
     }
     price = 100
     craftingCost = "ADA" 40
@@ -540,7 +540,7 @@ End
     shortName = "infernite"
     name = "infernite war hammer"
     modifiers = {
-      DAMAGE 20
+      DAMAGE 55
     }
     price = 1000
     craftingCost = "INFERNITE" 40
@@ -665,8 +665,8 @@ End
     equipedViewId = { "adoxium_staff_v" }
     name = "adoxium staff"
     modifiers = {
-      SPELL_DAMAGE 15
-      SPELL_SPEED 10
+      SPELL_DAMAGE 30
+      SPELL_SPEED 30
     }
     price = 1800
     craftingCost = "ADOXIUM" 40
@@ -872,7 +872,7 @@ End
     price = 25
     craftingCost = "ADA" 2
     modifiers = {
-      DEFENSE 3
+      DEFENSE 6
     }
     genPrefixes = {
       1 ItemAttrBonus DAMAGE 3
@@ -890,7 +890,7 @@ End
     price = 250
     craftingCost = "ADOXIUM" 2
     modifiers = {
-      DEFENSE 5
+      DEFENSE 10
       SPELL_SPEED 10
     }
   }
@@ -979,8 +979,8 @@ End
     price = 50
     craftingCost = "ADA" 24
     modifiers = {
-      PARRY 3
-      DEFENSE 4
+      PARRY 4
+      DEFENSE 8
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
@@ -1024,7 +1024,7 @@ End
     weight = 10
     price = 250
     modifiers = {
-      DEFENSE 10
+      DEFENSE 40
       SPELL_DAMAGE 2
     }
     equipedEffect = {FIRE_RESISTANT}
@@ -1049,8 +1049,8 @@ End
     weight = 10
     price = 250
     modifiers = {
-      DEFENSE 15
-      SPELL_DAMAGE 2
+      DEFENSE 40
+      SPELL_DAMAGE 10
     }
     equipedEffect = {DARKNESS_SOURCE TELEPATHY}
     maxUpgrades = 2
@@ -1074,8 +1074,8 @@ End
     weight = 10
     price = 250
     modifiers = {
-      DEFENSE 7
-      SPELL_DAMAGE 4
+      DEFENSE 40
+      SPELL_DAMAGE 10
     }
     equipedEffect = {COLD_RESISTANT}
     maxUpgrades = 2
@@ -1099,8 +1099,8 @@ End
     weight = 10
     price = 250
     modifiers = {
-      DEFENSE 7
-      SPELL_DAMAGE 4
+      DEFENSE 40
+      SPELL_DAMAGE 10
       ACID_DAMAGE 40
     }
     equipedAbility = {"acid stream"}
@@ -1125,8 +1125,8 @@ End
     weight = 10
     price = 250
     modifiers = {
-      DEFENSE 10
-      SPELL_DAMAGE 2
+      DEFENSE 40
+      SPELL_DAMAGE 10
     }
     equipedEffect = {POISON_RESISTANT}
     maxUpgrades = 2
@@ -1143,7 +1143,7 @@ End
     price = 160
     craftingCost = "ADA" 40
     modifiers = {
-      DEFENSE 8
+      DEFENSE 24
     }
     genPrefixes = {
       1 ItemAttrBonus DEFENSE 3
@@ -1159,8 +1159,8 @@ End
     price = 1600
     craftingCost = "ADOXIUM" 40
     modifiers = {
-      DEFENSE 10
-      SPELL_SPEED 25
+      DEFENSE 35
+      SPELL_SPEED 45
     }
     equipmentGroup = "adoxium equipment"
   }
@@ -1351,7 +1351,7 @@ End
     price = 40
     craftingCost = "ADA" 16
     modifiers = {
-      DEFENSE 4
+      DEFENSE 6
     }
     genPrefixes = {
       1 LastingEffect TELEPATHY
@@ -1366,8 +1366,8 @@ End
     viewId = { "iron_helm" ColorId PINK }
     name = "adoxium helm"
     modifiers = {
-      DEFENSE 5
-      SPELL_SPEED 15
+      DEFENSE 10
+      SPELL_SPEED 25
     }
     price = 400
     craftingCost = "ADOXIUM" 16
@@ -1474,7 +1474,7 @@ End
     price = 50
     craftingCost = "ADA" 24
     modifiers = {
-      DEFENSE 4
+      DEFENSE 5
     }
     genPrefixes = {
       1 LastingEffect SPEED
@@ -1490,7 +1490,8 @@ End
     plural = "pairs of adoxium boots"
     price = 500
     craftingCost = "ADOXIUM" 24
-    modifiers = append {
+    modifiers = {
+      DEFENSE 10
       SPELL_SPEED 10
     }
     equipmentGroup = "adoxium equipment"
@@ -1516,7 +1517,7 @@ End
     weight = 4
     price = 800
     modifiers = {
-      DEFENSE 5
+      DEFENSE 8
     }
     equipedEffect = {FLYING SPELL_DAMAGE}
     maxUpgrades = 1
