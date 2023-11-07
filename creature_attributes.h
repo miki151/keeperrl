@@ -131,7 +131,7 @@ class CreatureAttributes {
   vector<CompanionInfo> SERIAL(companions);
   optional<string> SERIAL(promotionGroup);
   double SERIAL(promotionCost) = 1.0;
-  int SERIAL(maxPromotions) = 5;
+  int SERIAL(maxPromotions) = 1000;
   vector<BuffId> SERIAL(permanentBuffs);
   optional<AchievementId> SERIAL(killedAchievement);
   optional<AchievementId> SERIAL(killedByAchievement);

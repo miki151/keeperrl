@@ -61,7 +61,6 @@ End
   {
     promotionGroup = "spell_adventurer"
     promotionCost = 1
-    maxPromotions = 1000
     maxLevelIncrease = {
       SPELL_DAMAGE 50
     }
@@ -80,7 +79,6 @@ End
   {
     promotionGroup = "spell_adventurer"
     promotionCost = 1
-    maxPromotions = 1000
     maxLevelIncrease = {
       SPELL_DAMAGE 50
     }
@@ -153,7 +151,6 @@ End
   {
     promotionGroup = "melee_adventurer"
     promotionCost = 1
-    maxPromotions = 1000
     maxLevelIncrease = {
       DAMAGE 50
     }
@@ -174,7 +171,6 @@ End
   {
     promotionGroup = "melee_adventurer"
     promotionCost = 1
-    maxPromotions = 1000
     maxLevelIncrease = {
       DAMAGE 50
     }
@@ -219,7 +215,6 @@ End
 {
   promotionGroup = "melee_adventurer"
   promotionCost = 1
-  maxPromotions = 1000
   maxLevelIncrease = {
     DAMAGE 50
   }
@@ -240,7 +235,6 @@ End
 {
   promotionGroup = "melee_adventurer"
   promotionCost = 1
-  maxPromotions = 1000
   maxLevelIncrease = {
     DAMAGE 50
   }
