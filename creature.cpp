@@ -1798,7 +1798,7 @@ void Creature::updateViewObject(const ContentFactory* factory) {
   object.setCreatureAttributes(std::move(attrs));
   updateViewObjectFlanking();
   object.setModifier(ViewObject::Modifier::DRAW_MORALE);
-  object.setModifier(ViewObject::Modifier::STUNNED, isAffected(LastingEffect::STUNNED));
+  object.setModifier(ViewObject::Modifier::STUNNED, isAffected(LastingEffect::STUNNED) || isAffected(LastingEffect::COLLAPSED));
   object.setModifier(ViewObject::Modifier::FLYING, isAffected(LastingEffect::FLYING));
   auto rider = getRider();
   object.setModifier(ViewObject::Modifier::INVISIBLE, isAffected(LastingEffect::INVISIBLE) ||
