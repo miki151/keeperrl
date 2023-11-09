@@ -646,7 +646,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       optional<Color> colorVariant;
       if (!tile.animated)
         colorVariant = object.id().getColor();
-      auto orientation = object.hasModifier(ViewObject::Modifier::STUNNED) ? 
+      auto orientation = object.hasModifier(ViewObject::Modifier::STUNNED) ?
           Renderer::SpriteOrientation(Vec2(0, -1), false) :
           Renderer::SpriteOrientation(false, object.hasModifier(ViewObject::Modifier::FLIPX));
       renderer.drawTile(pos + move, coord, size, color, orientation, colorVariant);

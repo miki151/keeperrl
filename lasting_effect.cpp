@@ -125,6 +125,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
     case LastingEffect::SWARMER:
       c->getPosition().addSwarmer();
       break;
+    case LastingEffect::COLLAPSED:
+      c->tryToDismount();
+      break;
     default:
       break;
   }
