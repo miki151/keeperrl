@@ -2439,8 +2439,8 @@ function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInf
       for (int i : All(elem.upgrades)) {
         auto& upgrade = elem.upgrades[i];
         auto idLine = WL(getListBuilder);
-        auto colorFun = [&increases, i, upgrade, &totalUsed, cnt, max = elem.maxUpgrades.second] {
-          return increases[i] + cnt > upgrade.count || totalUsed >= max ? Color::LIGHT_GRAY : Color::WHITE;
+        auto colorFun = [upgrade, &totalUsed, max = elem.maxUpgrades.second] {
+          return totalUsed >= max ? Color::LIGHT_GRAY : Color::WHITE;
         };
         idLine.addElemAuto(WL(viewObject, upgrade.viewId));
         idLine.addElemAuto(WL(label, upgrade.name, colorFun));
@@ -2448,8 +2448,9 @@ function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInf
             return "(" + toString(upgrade.used * cnt + increases[i]) + "/" + toString(upgrade.used * cnt + upgrade.count) + ")  "; },
             colorFun), 70);
         auto callbackIncrease = [&increases, &totalUsed, i, upgrade, cnt, max = elem.maxUpgrades.second] {
-          if (increases[i] <= upgrade.count - cnt && totalUsed < max) {
-            increases[i] += cnt;
+          int toAdd = min(cnt, upgrade.count - increases[i]);
+          if (totalUsed < max) {
+            increases[i] += toAdd;
             ++totalUsed;
           }
         };
