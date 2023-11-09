@@ -638,16 +638,16 @@ End
     storageIds = {"weapons" "equipment"}
     equipmentGroup = "basic equipment"
   }
-"IronStaff" inherit "WoodenStaff"
+"EnchantedStaff" inherit "WoodenStaff"
   {
-    viewId = { "iron_staff" }
-    equipedViewId = { "iron_staff_v" }
-    name = "iron staff"
+    viewId = { "enchanted_staff" }
+    equipedViewId = { "enchanted_staff_v" }
+    name = "enchanted staff"
     modifiers = {
-      SPELL_DAMAGE 8
+      SPELL_DAMAGE 15
+      SPELL_SPEED 15
     }
     price = 60
-    craftingCost = "IRON" 40
     genPrefixes = {
       1 VictimEffect 1.0 Escape{}
       1 VictimEffect 0.4 DestroyEquipment
@@ -657,17 +657,30 @@ End
       }
     }
     maxUpgrades = 2
-    equipmentGroup = "iron equipment"
+    equipmentGroup = "artifact equipment"
   }
-"AdoxiumStaff" inherit "IronStaff"
+"ArchwoodStaff" inherit "EnchantedStaff" {
+  viewId = { "archwood_staff" }
+  equipedViewId = { "archwood_staff_v" }
+  name = "archwood staff"
+  modifiers = {
+    SPELL_DAMAGE 24
+    SPELL_SPEED 24
+  }
+  price = 400
+}
+"AdoxiumStaff"
   {
     viewId = { "adoxium_staff" }
     equipedViewId = { "adoxium_staff_v" }
     name = "adoxium staff"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
     modifiers = {
-      SPELL_DAMAGE 30
-      SPELL_SPEED 30
+      SPELL_DAMAGE 33
+      SPELL_SPEED 33
     }
+    weight = 3
     price = 1800
     craftingCost = "ADOXIUM" 40
     genPrefixes = {
@@ -676,6 +689,7 @@ End
       1 VictimEffect 0.5 Fire{20}
     }
     maxUpgrades = 5
+    storageIds = {"weapons" "equipment"}
     equipmentGroup = "adoxium equipment"
   }
 "ElvenStaff" inherit "WoodenStaff"
@@ -734,14 +748,24 @@ End
     name = "silver elven bow"
     price = 100
   }
+"EnchantedBow" inherit "Bow"
+  {
+    viewId = { "enchanted_bow" }
+    modifiers = {
+      RANGED_DAMAGE 18
+    }
+    name = "enchanted bow"
+    maxUpgrades = 1
+    price = 200
+  }
 "ArchwoodBow" inherit "Bow"
   {
     viewId = { "archwood_bow" }
     modifiers = {
-      RANGED_DAMAGE 22
+      RANGED_DAMAGE 25
     }
     name = "archwood bow"
-    maxUpgrades = 2
+    maxUpgrades = 3
     price = 1000
   }
 "Crossbow"
@@ -762,6 +786,16 @@ End
     maxUpgrades = 1
     storageIds = {"bows" "weapons" "equipment"}
     equipmentGroup = "ranged weapons"
+  }
+"EnchantedCrossbow" inherit "Crossbow"
+  {
+    viewId = { "enchanted_crossbow" }
+    modifiers = {
+      RANGED_DAMAGE 32
+    }
+    name = "enchanted crossbow"
+    maxUpgrades = 2
+    price = 1000
   }
 "Torch"
   {
@@ -1016,7 +1050,7 @@ End
     ingredientType = "red_scales"
     storageIds = {"upgrades" "equipment"}
   }
-"RedDragonArmor" inherit "ChainArmor"
+"RedDragonArmor" inherit "LeatherArmor"
   {
     viewId = { "chain_armor" Rgb 156 58 68 255 }
     shortName = "red dragon"
@@ -1041,7 +1075,7 @@ End
     ingredientType = "black_scales"
     storageIds = {"upgrades" "equipment"}
   }
-"BlackDragonArmor" inherit "ChainArmor"
+"BlackDragonArmor" inherit "LeatherArmor"
   {
     viewId = { "chain_armor" Rgb 80 80 80 255 }
     shortName = "black dragon"
@@ -1066,7 +1100,7 @@ End
     ingredientType = "white_scales"
     storageIds = {"upgrades" "equipment"}
   }
-"WhiteDragonArmor" inherit "ChainArmor"
+"WhiteDragonArmor" inherit "LeatherArmor"
   {
     viewId = { "chain_armor" Rgb 254 254 254 255 }
     shortName = "white dragon"
@@ -1091,7 +1125,7 @@ End
     ingredientType = "yellow_scales"
     storageIds = {"upgrades" "equipment"}
   }
-"YellowDragonArmor" inherit "ChainArmor"
+"YellowDragonArmor" inherit "LeatherArmor"
   {
     viewId = { "chain_armor" Rgb 254 254 10 255 }
     shortName = "yellow dragon"
@@ -1117,7 +1151,7 @@ End
     ingredientType = "green_scales"
     storageIds = {"upgrades" "equipment"}
   }
-"GreenDragonArmor" inherit "ChainArmor"
+"GreenDragonArmor" inherit "LeatherArmor"
   {
     viewId = { "chain_armor" Rgb 151 162 81 255 }
     shortName = "green dragon"
@@ -1238,7 +1272,7 @@ End
     ingredientType = "cyclops_testes"
     storageIds = {"upgrades" "equipment"}
   }
-"CyclopsHelm" inherit "IronHelm"
+"CyclopsHelm" inherit "LeatherHelm"
   {
     viewId = { "cyclops_helm" }
     shortName = "cyclops"

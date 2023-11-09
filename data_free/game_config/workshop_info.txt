@@ -4,6 +4,13 @@
   attr = "WORKSHOP"
 }
 
+"ENCHANTED_WORKSHOP" {
+  furniture = "ENCHANTED_WORKSHOP"
+  name = "enchanted workshop"
+  attr = "WORKSHOP"
+  minAttr = 35
+}
+
 "FORGE" {
   furniture = "FORGE"
   name = "forge"
@@ -28,9 +35,9 @@
   minAttr = 50
 }
 
-"MYST_FORGE" {
-  furniture = "MYST_FORGE"
-  name = "myst forge"
+"ADOXIUM_FORGE" {
+  furniture = "ADOXIUM_FORGE"
+  name = "adoxium forge"
   verb = "forges"
   attr = "FORGE"
   minAttr = 80

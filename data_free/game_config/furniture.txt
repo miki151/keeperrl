@@ -76,6 +76,12 @@ TRAINING("_DWARF", "_dwarf")
   requiresLight = true
   usageFX = WORKSHOP
 }
+"ENCHANTED_WORKSHOP" inherit "WORKSHOP"
+{
+  name = "enchanted workshop"
+  viewId = { "enchanted_workshop" }
+  usagePredicate = ContainsGas "FOG"
+}
 "FORGE"
 {
   name = "forge"
@@ -101,12 +107,11 @@ TRAINING("_DWARF", "_dwarf")
   viewId = { "ada_forge" }
   upgrade = "FORGE"
 }
-"MYST_FORGE" inherit "FORGE"
+"ADOXIUM_FORGE" inherit "FORGE"
 {
-  name = "myst forge"
-  viewId = { "myst_forge" }
+  name = "adoxium forge"
+  viewId = { "adoxium_forge" }
   upgrade = "FORGE"
-  usagePredicate = ContainsGas "FOG"
 }
 "LABORATORY"
 {
@@ -1229,7 +1234,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
       DropItems {PrefixChance 1 {"Sword"}} 1
       DropItems {PrefixChance 1 {"BattleAxe"}} 1
       DropItems {PrefixChance 1 {"WarHammer"}} 1
-      DropItems {PrefixChance 1 {"IronStaff"}} 1
+      DropItems {PrefixChance 1 {"EnchantedStaff"}} 1
     }
     RemoveFurniture "DRAGON_CHEST"
   }

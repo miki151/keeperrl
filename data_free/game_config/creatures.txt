@@ -256,7 +256,7 @@ End
       SPELL_DAMAGE 7
     }
     inventory = append {
-      { "IronStaff" }
+      { "EnchantedStaff" }
       { type = Glyph ARMOR LastingEffect MAGIC_RESISTANCE chance = 0.3 }
       { type = Glyph ARMOR LastingEffect SPEED chance = 0.3 }
       { type = Glyph ARMOR LastingEffect NO_CARRY_LIMIT chance = 0.3 }
@@ -1848,7 +1848,7 @@ End
     spells = { "advanced healing" "haste" "defense bonus" "directed blast" "magic missile" }
     hatedByEffect = HATE_HUMANS
     inventory = {
-      { "IronStaff"}
+      { "WoodenStaff"}
       { "LeatherBoots"}
       { type = "Robe" prefixChance = 1 }
     }
@@ -2584,7 +2584,7 @@ End
     chatReactionHostile = "\"There are times when you simply cannot refuse a drink!\""
     inventory = {
       { "Robe"}
-      { "IronStaff"}
+      { "WoodenStaff"}
       { type = Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 4 chance = 0.3 }
     }
   }
@@ -3175,7 +3175,7 @@ End
     }
     attr = {
       DAMAGE 14
-      DEFENSE 6 
+      DEFENSE 6
     }
     body = {
       type = Humanoid MEDIUM
@@ -4010,7 +4010,7 @@ End
     }
     hatedByEffect = HATE_HUMANS
     inventory = {
-      { "IronStaff"}
+      { "EnchantedStaff"}
       { "Torch"}
       { type = Glyph ARMOR LastingEffect FIRE_RESISTANT chance = 0.3 }
     }
@@ -4690,7 +4690,7 @@ End
       DEFENSE 26
     }
     inventory = {
-      { "IronStaff" }
+      { "WoodenStaff" }
       { "LeatherArmor"}
     }
   }

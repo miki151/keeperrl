@@ -421,13 +421,17 @@ Connections("map_swamp")
 { viewId = "sceptre_v" symbol = ")" color = ColorId RED weaponOrigin = {13 13} }
 { "bow" ")" ColorId BROWN }
 { "archwood_bow" ")" ColorId LIGHT_BLUE }
+{ "enchanted_bow" ")" ColorId LIGHT_RED }
 { "elven_bow" ")" ColorId YELLOW false "bow" }
 { "crossbow" ")" ColorId LIGHT_BROWN }
+{ "enchanted_crossbow" ")" ColorId LIGHT_RED }
 { "arrow" "/" ColorId BROWN }
 { "wooden_staff" ")" ColorId DARK_BROWN }
 { viewId = "wooden_staff_v" symbol = ")" color = ColorId DARK_BROWN weaponOrigin = {12 13} }
-{ "iron_staff" ")" ColorId ORANGE }
-{ viewId = "iron_staff_v" symbol = ")" color = ColorId ORANGE weaponOrigin = {11 14} }
+{ "archwood_staff" ")" ColorId BLUE }
+{ viewId = "archwood_staff_v" symbol = ")" color = ColorId BLUE weaponOrigin = {11 14} }
+{ "enchanted_staff" ")" ColorId LIGHT_RED }
+{ viewId = "enchanted_staff_v" symbol = ")" color = ColorId LIGHT_RED weaponOrigin = {11 14} }
 { "adoxium_staff" ")" ColorId PINK }
 { viewId = "adoxium_staff_v" symbol = ")" color = ColorId PINK weaponOrigin = {10 14} }
 { "elven_staff" ")" ColorId WHITE }
@@ -722,9 +726,11 @@ BOOKCASES("_human")
   roundShadow = true }
 { viewId = "ada_forge" symbol = "&" color = ColorId LIGHT_BLUE
   roundShadow = true }
-{ viewId = "myst_forge" symbol = "&" color = ColorId WHITE
+{ viewId = "adoxium_forge" symbol = "&" color = ColorId PINK
   roundShadow = true }
 { viewId = "workshop" symbol = "&" color = ColorId LIGHT_BROWN
+  roundShadow = true }
+{ viewId = "enchanted_workshop" symbol = "&" color = ColorId PURPLE
   roundShadow = true }
 { viewId = "jeweller" symbol = "&" color = ColorId YELLOW
   roundShadow = true }
@@ -736,7 +742,7 @@ BOOKCASES("_human")
   roundShadow = true }
 { viewId = "distillery" symbol = "&" color = ColorId LIGHT_GRAY
   roundShadow = true }
-{ viewId = "furnace" symbol = "&" color = ColorId PINK
+{ viewId = "furnace" symbol = "&" color = ColorId ORANGE
   roundShadow = true fx = {SMOKE} }
 { viewId = "grave" symbol = "☗" color = ColorId GRAY
   isSymbolFont = true roundShadow = true }

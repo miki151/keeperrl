@@ -10,12 +10,29 @@
       {{"WoodenShield"}          2        "WOOD" 10}
       {{"LeatherGloves"}         1}
       {{"HeavyClub"}             5        "WOOD" 20      "two-handed weapons"}
-      {{"Cornuthaum1"}           5        "GOLD" 0       "sorcery"}
-      {{"Cornuthaum2"}           8        "GOLD" 20      "advanced sorcery"}
-      {{"Cornuthaum3"}           12       "GOLD" 40      "master sorcery"}
-      {item = {"DevilBoots"}       work = 30 cost = "WOOD" 0 requireIngredient = "devil_hooves" }
-      {{"WoodenStaff"}           13       "WOOD" 20      "magical weapons"}
       {{"Torch"}                 2        "WOOD" 4}
+      {{"WoodenStaff"}           13       "WOOD" 20      "magical weapons"}
+      {{"Cornuthaum1"}           5        none           "sorcery"}
+  }
+
+  "ENCHANTED_WORKSHOP"
+  {
+      {{"Cornuthaum2"}           8        none      "advanced sorcery"}
+      {{"Cornuthaum3"}           12       none      "master sorcery"}
+      {item = {"EnchantedStaff"}       work = 20  cost = "WOOD" 20   tech = "magical weapons"}
+      {item = {"ArchwoodStaff"}        work = 20  cost = none
+          requireIngredient = "archwood" tech = "magical weapons"}
+      {item = {"RedDragonArmor"}   work = 30  cost = none   requireIngredient = "red_scales" }
+      {item = {"BlackDragonArmor"} work = 30  cost = none   requireIngredient = "black_scales" }
+      {item = {"WhiteDragonArmor"} work = 30  cost = none   requireIngredient = "white_scales" }
+      {item = {"GreenDragonArmor"} work = 30  cost = none   requireIngredient = "green_scales" }
+      {item = {"YellowDragonArmor"}work = 30  cost = none   requireIngredient = "yellow_scales" }
+      {item = {"DevilBoots"}       work = 30 cost = "WOOD" 0 requireIngredient = "devil_hooves" }
+      {item = {"CyclopsHelm"}
+       work = 30
+       cost = none
+       requireIngredient = "cyclops_testes"
+      }
   }
 
   "FORGE"
@@ -24,16 +41,10 @@
       {item = {"ChainArmor"}     work = 30    cost = none   materialTab = true}
       {item = {"IronHelm"}        work = 8    cost = none   materialTab = true}
       {item = {"IronBoots"}       work = 12   cost = none   materialTab = true}
-      {item = {"CyclopsHelm"}
-       work = 30
-       cost = none
-       requireIngredient = "cyclops_testes"
-      }
       {item = {"IronGloves"}      work = 3    cost = none   materialTab = true}
       {item = {"IronShield"}      work = 12   cost = none   materialTab = true}
       {item = {"WarHammer"}       work = 16   cost = none   tech = "two-handed weapons"  materialTab = true}
       {item = {"BattleAxe"}       work = 22   cost = none   tech = "two-handed weapons"  materialTab = true}
-      {item = {"IronStaff"}       work = 20   cost = none   tech = "magical weapons"  materialTab = true}
   }
   "LAVA_FORGE" inherit "FORGE" append {}
   "ADA_FORGE"
@@ -47,7 +58,7 @@
     {item = {"AdaWarHammer"}    work = 20   cost = none   tech = "two-handed weapons"  materialTab = true}
     {item = {"AdaBattleAxe"}    work = 22   cost = none   tech = "two-handed weapons"  materialTab = true}
   }
-  "MYST_FORGE"
+  "ADOXIUM_FORGE"
   {
     {item = {"AdoxiumArmor"}    work = 30   cost = none   materialTab = true}
     {item = {"AdoxiumHelm"}     work = 15   cost = none   materialTab = true}
@@ -57,11 +68,6 @@
     {item = {"InferniteSword"}        work = 20   cost = none   materialTab = true}
     {item = {"InferniteWarHammer"}    work = 20   cost = none   tech = "two-handed weapons"  materialTab = true}
     {item = {"InferniteBattleAxe"}    work = 22   cost = none   tech = "two-handed weapons"  materialTab = true}
-    {item = {"RedDragonArmor"}   work = 30  cost = none   requireIngredient = "red_scales" }
-    {item = {"BlackDragonArmor"} work = 30  cost = none   requireIngredient = "black_scales" }
-    {item = {"WhiteDragonArmor"} work = 30  cost = none   requireIngredient = "white_scales" }
-    {item = {"GreenDragonArmor"} work = 30  cost = none   requireIngredient = "green_scales" }
-    {item = {"YellowDragonArmor"}work = 30  cost = none   requireIngredient = "yellow_scales" }
   }
 
 Def OneTimeBoost()
@@ -134,8 +140,13 @@ append {
   "WORKSHOP"
   {
       {{"Bow"}                   13       "WOOD" 20      "archery"}
-      {item = {"ArchwoodBow"}  work = 30 cost = "WOOD" 20 requireIngredient = "archwood"
-          tech = "archery" }
+  }
+
+  "ENCHANTED_WORKSHOP"
+  {
+    {item = {"EnchantedBow"} work = 30 cost = "WOOD" 20 tech = "archery" }
+    {item = {"ArchwoodBow"}  work = 30 cost = "WOOD" 20 requireIngredient = "archwood"
+        tech = "archery" }
   }
 }
 
@@ -144,6 +155,10 @@ append {
   "WORKSHOP"
   {
       {{"Crossbow"}                   13       "WOOD" 20      "archery"}
+  }
+  "ENCHANTED_WORKSHOP"
+  {
+    {item = {"EnchantedCrossbow"}  work = 30 cost = "WOOD" 20 tech = "archery" }
   }
 }
 
@@ -215,7 +230,7 @@ End
     { item = {"AcidHeadAda"} work = 2 tech = "advanced automatons" materialTab = true}
     { item = {"HumanoidHeadAda"} work = 2 tech = "automaton brains" materialTab = true}
   }
-  "MYST_FORGE" {
+  "ADOXIUM_FORGE" {
     CORPUS("AUTOMATON_CORPUS_INFERNITE", "automaton corpus", "INFERNITE" 30, "automatons", 3)
     CORPUS("LIGHT_AUTOMATON_CORPUS_INFERNITE", "light automaton corpus", "INFERNITE" 20, "advanced automatons", 2)
     CORPUS("HEAVY_AUTOMATON_CORPUS_INFERNITE", "heavy automaton corpus", "INFERNITE" 40, "advanced automatons", 3)

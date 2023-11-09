@@ -24,7 +24,7 @@ EVIL_KEEPER {
     {{"map_dwarves"}{ { "battle_axe_v"} {"dwarf_baron" } } "DWARVES" "Dwarves" MAIN}
     {{"map_dragon"}{ "red_dragon" } "RED_DRAGON" "Red dragon" MAIN}
     {{"map_white_dragon"}{ "red_dragon" Rgb 240 240 240 255 } "WHITE_DRAGON" "White dragon" MAIN}
-    {{"map_tower1"}{ { "iron_staff_v"} {"elementalist"} } "ELEMENTALIST" "Elementalist" MAIN}
+    {{"map_tower1"}{ { "archwood_staff_v"} {"elementalist"} } "ELEMENTALIST" "Elementalist" MAIN}
     {{"map_green_dragon"}{ "red_dragon" Rgb 33 120 27 255 } "GREEN_DRAGON" "Green dragon" MAIN}
     {{"map_house1"}{ "lizardlord" } "LIZARDMEN" "Lizardmen" MAIN}
     {{"map_warriors"} { { "wooden_staff_v"} {"shaman"} } "WARRIORS" "Warriors" MAIN}

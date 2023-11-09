@@ -4,7 +4,7 @@
 
   "structure_without_reinforce"
   {
-    { { Dig CutTree }                                        "Dig or cut tree"   "Structure"  
+    { { Dig CutTree }                                        "Dig or cut tree"   "Structure"
       "" "DIG" {} true DIG_OR_CUT_TREES}
 # If you want you can use "just dig" or "just cut tree" in your mod
 #    { Dig                                                          "Dig"   "Structure" }
@@ -283,18 +283,21 @@ TRAINING("_DWARF", "_dwarf")
     { Furniture {{ "WORKSHOP" }   "WOOD" 15 }                      "Workshop"          "Crafting"
         "Produces leather equipment, traps, first-aid kits and other." "WORKSHOPS" {} true  BUILD_WORKSHOP}
 
+    { Furniture {{ "ENCHANTED_WORKSHOP" }   "WOOD" 15 }            "Enchanted workshop"          "Crafting"
+        "Produces magical equipment and artifacts. Must be placed in an underground fog."}
+
     { Furniture {{ "FORGE" }      "IRON" 20 }                      "Forge"             "Crafting"
         "Produces iron weapons and armor."    none { TechId "iron working" }}
 
     { Furniture {{ "LAVA_FORGE" } "IRON" 20 }                      "Magma forge"        "Crafting"
-        "Quality of crafted items is increased by a factor of 2. Must be placed next to magma."
+        "Quality of crafted items is increased by a factor of 1.5. Must be placed next to magma."
         none { TechId "iron working" }}
 
     { Furniture {{ "ADA_FORGE" }      "ADA" 20 }                      "Adamantium forge"             "Crafting"
         "Produces adamantine weapons and armor."    none { TechId "iron working" }}
 
-    { Furniture {{ "MYST_FORGE" } "IRON" 20 }                      "Myst forge"        "Crafting"
-        "Produces adoxium and infernite equipment and other artifacts. Must be placed in underground fog."
+    { Furniture {{ "ADOXIUM_FORGE" } "ADOXIUM" 20 }                      "Adoxium forge"        "Crafting"
+        "Produces adoxium and infernite equipment."
         none { TechId "iron working" }}
   }
 
