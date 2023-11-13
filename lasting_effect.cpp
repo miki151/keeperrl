@@ -126,7 +126,8 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       c->getPosition().addSwarmer();
       break;
     case LastingEffect::COLLAPSED:
-      c->tryToDismount();
+      if (c->getSteed())
+        c->tryToDismount();
       break;
     default:
       break;
