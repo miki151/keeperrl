@@ -86,7 +86,7 @@ TRAINING("_DWARF", "_dwarf")
 "FORGE"
 {
   name = "forge"
-  viewId = { "forge" }
+  viewId = { "lava_forge" }
   blockMovement = true
   usageTime = 5
   canHideHere = true
@@ -94,12 +94,6 @@ TRAINING("_DWARF", "_dwarf")
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   usageFX = FORGE
-}
-"LAVA_FORGE" inherit "FORGE"
-{
-  name = "lava forge"
-  viewId = { "lava_forge" }
-  upgrade = "FORGE"
   usagePredicate = Not Area 1 Not FurnitureType "MAGMA"
 }
 "ADA_FORGE" inherit "FORGE"

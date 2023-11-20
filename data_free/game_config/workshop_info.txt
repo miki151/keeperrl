@@ -18,15 +18,6 @@
   attr = "FORGE"
 }
 
-"LAVA_FORGE" {
-  furniture = "LAVA_FORGE"
-  name = "magma forge"
-  verb = "forges"
-  attr = "FORGE"
-  itemScaling = 1.5
-  minAttr = 35
-}
-
 "ADA_FORGE" {
   furniture = "ADA_FORGE"
   name = "adamantium forge"

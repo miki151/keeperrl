@@ -46,7 +46,6 @@
       {item = {"WarHammer"}       work = 16   cost = none   tech = "two-handed weapons"  materialTab = true}
       {item = {"BattleAxe"}       work = 22   cost = none   tech = "two-handed weapons"  materialTab = true}
   }
-  "LAVA_FORGE" inherit "FORGE" append {}
   "ADA_FORGE"
   {
     {item = {"AdaSword"}        work = 20   cost = none   materialTab = true}
@@ -225,7 +224,6 @@ End
       {{Potion Name "more fire" Area 1 Fire{20}} 8 "GOLD" 10}
       {{Potion Lasting OIL} 4 "GOLD" 15}
   }
-  "LAVA_FORGE" inherit "FORGE" append {}
   "ADA_FORGE" {
     WORKER("AUTOMATON_WORKER_ADA", 148 189 189, "ADA" 40)
     CORPUS("AUTOMATON_CORPUS_ADA", "automaton corpus", "ADA" 30, "automatons", 3)
