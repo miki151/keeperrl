@@ -3753,8 +3753,9 @@ void PlayerControl::onConquered(Creature* victim, Creature* killer) {
     getView()->updateView(this, false);
   }
   auto game = getGame();
-  if (auto& a = killer->getAttributes().killedByAchievement)
-    game->achieve(*a);
+  if (killer)
+    if (auto& a = killer->getAttributes().killedByAchievement)
+      game->achieve(*a);
   game->gameOver(victim, collective->getKills().getSize(), "enemies",
       collective->getDangerLevel() + collective->getPoints());
   if (!collective->getTerritory().isEmpty())
