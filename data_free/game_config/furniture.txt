@@ -75,6 +75,7 @@ TRAINING("_DWARF", "_dwarf")
   strength = 80
   requiresLight = true
   usageFX = WORKSHOP
+  usagePredicate = Not ContainsGas "FOG"
 }
 "ENCHANTED_WORKSHOP" inherit "WORKSHOP"
 {
@@ -124,6 +125,14 @@ TRAINING("_DWARF", "_dwarf")
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   usageFX = LABORATORY
+  usagePredicate = Area 1 Not FurnitureType "ENCHANTED_WATER"
+}
+"ENCHANTED_LABORATORY" inherit "LABORATORY"
+{
+  name = "enchanted laboratory"
+  viewId = { "enchanted_cauldron" }
+  usageFX = ENCHANTED_LABORATORY
+  usagePredicate = Not Area 1 Not FurnitureType "ENCHANTED_WATER"
 }
 "CAULDRON_TAR"
 {
@@ -2106,6 +2115,14 @@ Def Boulder(Id) {
     forcibleTraits = { WALK }
   }
   walkIntoFX = { WATER_SPLASH Rgb 82 148 255 255 }
+}
+"ENCHANTED_WATER" inherit "WATER"
+{
+  name = "enchanted pool"
+  viewId = { "enchanted_water" }
+  bloodCountdown = none
+  walkIntoFX = { WATER_SPLASH Rgb 255 82 148 255 }
+  tickType = Effect Chance 0.00002 Filter Area 10 Not CreatureId "KRAKEN" SummonEnemy "KRAKEN" 1 none
 }
 "KRAKEN_WATER" inherit "WATER"
 {

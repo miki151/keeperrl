@@ -133,6 +133,17 @@ append {
       {{"Rock"}                                1        "GOLD" 1      "alchemical conversion"}
   }
 
+  "ENCHANTED_LABORATORY"
+  {
+      {{Potion OneTimeBoost() IncreaseAttr DAMAGE 5}           20       "GOLD" 100}
+      {{Potion OneTimeBoost() IncreaseAttr SPELL_DAMAGE 5}     20       "GOLD" 100}
+      {{Potion OneTimeBoost() IncreaseAttr RANGED_DAMAGE 5}    20       "GOLD" 100}
+      {{Potion OneTimeBoost() RegrowBodyPart 1000 }            50       "GOLD" 100}
+      {{Potion EquipmentType COMBAT_ITEM Name "keeper polymorph"
+          Description "Permanently polymorphs a Keeper into a random creature"
+          Filter CreatureStatus LEADER Polymorph none none}              50       "GOLD" 1000}
+  }
+
 }
 
 "bows"

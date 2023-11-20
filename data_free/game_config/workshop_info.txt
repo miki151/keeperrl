@@ -50,6 +50,14 @@
   attr = "LABORATORY"
 }
 
+"ENCHANTED_LABORATORY" {
+  furniture = "ENCHANTED_LABORATORY"
+  name = "enchanted laboratory"
+  verb = "concocts"
+  attr = "LABORATORY"
+  minAttr = 50
+}
+
 "JEWELER" {
   furniture = "JEWELLER"
   name = "jeweler"

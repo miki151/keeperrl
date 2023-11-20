@@ -531,7 +531,9 @@ Connections("map_swamp")
 { viewId = "candelabrum_w" symbol = "*" color = ColorId ORANGE animated = true }
 { viewId = "candelabrum_e" symbol = "*" color = ColorId ORANGE animated = true }
 { "sokoban_hole" "0" ColorId DARK_BLUE }
-{ viewId = "cauldron" symbol = "ω" color = ColorId PURPLE
+{ viewId = "cauldron" symbol = "ω" color = ColorId GREEN
+  isSymbolFont = true roundShadow = true }
+{ viewId = "enchanted_cauldron" symbol = "ω" color = ColorId PURPLE
   isSymbolFont = true roundShadow = true }
 { viewId = "cauldron_tar" symbol = "ω" color = ColorId GRAY
   isSymbolFont = true roundShadow = true }
@@ -813,6 +815,8 @@ BOOKCASES("_human")
   extraBorders = { "water" "sand" "floor" "keeper_floor" "roof" } }
 { viewId = "water" symbol = "~" color = ColorId LIGHT_BLUE
   waterSides = "water" animated = true spriteColor = Rgb 100 130 220 255 }
+{ viewId = "enchanted_water" symbol = "~" color = ColorId PURPLE
+  waterSides = "water" animated = true spriteColor = Rgb 170 100 220 255 }
 { viewId = "tar" symbol = "~" color = ColorId DARK_GRAY
   waterSides = "water" spriteColor = Rgb 50 50 50 255 }
 { viewId = "magma" symbol = "~" color = ColorId RED

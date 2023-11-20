@@ -11,6 +11,7 @@
   "hard_rock" Place "MOUNTAIN2"
   "water" { ClearFurniture Place "WATER"}
   "kraken_water" { ClearFurniture Place "KRAKEN_WATER"}
+  "enchanted_water" { ClearFurniture Place "ENCHANTED_WATER"}
   "lava" { ClearFurniture Place "MAGMA"}
   "stockpile" Stockpile 0
   "bed" Place "BED1"

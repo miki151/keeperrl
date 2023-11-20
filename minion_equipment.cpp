@@ -93,7 +93,7 @@ bool MinionEquipment::canUseItemType(const Creature* c, MinionEquipmentType type
 bool MinionEquipment::needsItem(const Creature* c, const Item* it, bool noLimit) const {
   PROFILE;
   if (optional<MinionEquipmentType> type = getEquipmentType(it)) {
-    if (!canUseItemType(c, *type, it)) 
+    if (!canUseItemType(c, *type, it))
       return false;
     if (!noLimit) {
       auto itemValue = getItemValue(c, it);

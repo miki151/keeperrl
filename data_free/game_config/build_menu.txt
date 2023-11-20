@@ -280,11 +280,8 @@ TRAINING("_DWARF", "_dwarf")
 
   "crafting"
   {
-    { Furniture {{ "WORKSHOP" }   "WOOD" 15 }                      "Workshop"          "Crafting"
+    { Furniture {{ "WORKSHOP" "ENCHANTED_WORKSHOP" }   "WOOD" 15 }                      "Workshop"          "Crafting"
         "Produces leather equipment, traps, first-aid kits and other." "WORKSHOPS" {} true  BUILD_WORKSHOP}
-
-    { Furniture {{ "ENCHANTED_WORKSHOP" }   "WOOD" 15 }            "Enchanted workshop"          "Crafting"
-        "Produces magical equipment and artifacts. Must be placed in an underground fog."}
 
     { Furniture {{ "FORGE" }      "IRON" 20 }                      "Forge"             "Crafting"
         "Produces iron weapons and armor."    none { TechId "iron working" }}
@@ -303,7 +300,7 @@ TRAINING("_DWARF", "_dwarf")
 
   "laboratory"
   {
-    { Furniture {{ "LABORATORY" } "STONE" 10 }                     "Laboratory"        "Crafting"
+    { Furniture {{ "LABORATORY" "ENCHANTED_LABORATORY" } "STONE" 10 }                     "Laboratory"        "Crafting"
         "Produces magical potions."            none { TechId "alchemy" }}
   }
 

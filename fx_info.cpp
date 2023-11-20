@@ -22,6 +22,8 @@ FXInfo getFXInfo(FXVariantName var) {
       return {FXName::FIRE};
     case Name::LABORATORY:
       return {FXName::LABORATORY, Color::GREEN};
+    case Name::ENCHANTED_LABORATORY:
+      return {FXName::LABORATORY, Color::PURPLE};
     case Name::PEACEFULNESS:
       return {FXName::LOVE_LOOPED, Color::RED};
     case Name::FORGE:
