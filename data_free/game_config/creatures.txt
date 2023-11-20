@@ -1009,6 +1009,7 @@ End
       RANGED_RESISTANCE 1
       SPIDER_SKILL 1
     }
+    gender = FEMALE
     name = {
       name = "giant spider"
     }
