@@ -171,6 +171,11 @@ struct AddBodyPart {
   optional<ItemType> SERIAL(attack);
   SERIALIZE_ALL(part, count, attack)
 };
+struct AddIntrinsicAttack {
+  BodyPart SERIAL(part);
+  ItemType SERIAL(attack);
+  SERIALIZE_ALL(part, attack)
+};
 SIMPLE_EFFECT(MakeHumanoid);
 struct GenericModifierEffect {
   HeapAllocated<Effect> SERIAL(effect);
@@ -443,7 +448,7 @@ using Achievement = AchievementId;
   X(LoseBodyPart, 25)\
   X(RegrowBodyPart, 26)\
   X(AddBodyPart, 27)\
-  X(DestroyWalls, 28)\
+  X(AddIntrinsicAttack, 28)\
   X(Area, 29)\
   X(CustomArea, 30)\
   X(ReviveCorpse, 31)\
@@ -512,7 +517,8 @@ using Achievement = AchievementId;
   X(EquipmentType, 94)\
   X(AddSpellSchool, 95)\
   X(Achievement, 96)\
-  X(ModifyFurniture, 97)
+  X(ModifyFurniture, 97)\
+  X(DestroyWalls, 98)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

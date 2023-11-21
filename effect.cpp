@@ -1281,6 +1281,20 @@ static string getDescription(const Effects::AddBodyPart& e, const ContentFactory
   return "Adds "_s + getPlural(::getName(e.part), e.count);
 }
 
+static bool applyToCreature(const Effects::AddIntrinsicAttack& p, Creature* c, Creature* attacker) {
+  c->getBody().addIntrinsicAttack(p.part, IntrinsicAttack{p.attack, true});
+  c->getBody().initializeIntrinsicAttack(c->getGame()->getContentFactory());
+  return true;
+}
+
+static string getName(const Effects::AddIntrinsicAttack& e, const ContentFactory*) {
+  return "extra "_s + ::getName(e.part) + " attack";
+}
+
+static string getDescription(const Effects::AddIntrinsicAttack& e, const ContentFactory*) {
+  return "Adds an extra "_s + ::getName(e.part) + " attack";
+}
+
 static bool applyToCreature(const Effects::MakeHumanoid&, Creature* c, Creature*) {
   bool ret = !c->getBody().isHumanoid();
   c->getBody().setHumanoid(true);

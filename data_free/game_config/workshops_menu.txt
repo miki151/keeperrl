@@ -134,10 +134,21 @@ append {
 
   "ENCHANTED_LABORATORY"
   {
-      {{Potion OneTimeBoost() IncreaseAttr DAMAGE 5}           20       "GOLD" 100}
-      {{Potion OneTimeBoost() IncreaseAttr SPELL_DAMAGE 5}     20       "GOLD" 100}
-      {{Potion OneTimeBoost() IncreaseAttr RANGED_DAMAGE 5}    20       "GOLD" 100}
-      {{Potion OneTimeBoost() RegrowBodyPart 1000 }            50       "GOLD" 100}
+      {{Potion OneTimeBoost() Name "iron arms" Permanent IRON_ARMS }      20       "GOLD" 100}
+      {{Potion OneTimeBoost() Name "thick skin" Permanent THICK_SKIN }     20       "GOLD" 100}
+      {{Potion OneTimeBoost() Name "stable hand" Permanent STABLE_HAND }    20       "GOLD" 100}
+      {{Potion OneTimeBoost() Name "piercing voice" Permanent PIERCING_VOICE }  20       "GOLD" 100}
+      {{Potion OneTimeBoost() Name "venomous fangs"
+          Description "Makes the victim grow a pair of venomous fangs"
+          AddIntrinsicAttack HEAD { Intrinsic { "bite_attack" } "fangs" 5 {
+          attackType = BITE
+          attackMsg = BITE
+          victimEffect = {0.2 Lasting POISON} } } }            50       "GOLD" 100}
+      {{Potion OneTimeBoost() Name "horns"
+          Description "Makes the victim grow a pair of horns"
+          AddIntrinsicAttack HEAD { Intrinsic { "horn_attack" } "horns" 5 {
+          attackType = STAB
+          attackMsg = THRUST } } }            50       "GOLD" 100}
       {{Potion EquipmentType COMBAT_ITEM Name "keeper polymorph"
           Description "Permanently polymorphs a Keeper into a random creature"
           Filter CreatureStatus LEADER Polymorph none none}              50       "GOLD" 1000}

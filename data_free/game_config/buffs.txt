@@ -12,10 +12,10 @@
   color = ColorId RED
 }
 
-Def ATTR_BUFF(Attr, Name, Amount, Adjective, Price) {
+Def ATTR_BUFF(Attr, AttrName, Name, Amount, Adjective, Price) {
   name = Name
-  adjective = Name + " bonus"
-  description = "Gives a +" + Amount + " " + Name + " bonus"
+  adjective = Adjective
+  description = "Gives a +" + Amount + " " + AttrName + " bonus."
   startEffect = IncreaseAttr Attr Amount
   endEffect = IncreaseAttr Attr -Amount
   combatConsumable = true
@@ -25,13 +25,18 @@ Def ATTR_BUFF(Attr, Name, Amount, Adjective, Price) {
 }
 End
 
-"DAM_BONUS" ATTR_BUFF(DAMAGE, "damage", 3, "dangerous", 20)
-"DEF_BONUS" ATTR_BUFF(DEFENSE, "defense", 3, "protected", 20)
+"DAM_BONUS" ATTR_BUFF(DAMAGE, "damage", "damage", 3, "dangerous", 20)
+"DEF_BONUS" ATTR_BUFF(DEFENSE, "damage", "defense", 3, "protected", 20)
+
+"THICK_SKIN" ATTR_BUFF(DEFENSE, "defense", "thick skin", 10, "thick skin", 200)
+"IRON_ARMS" ATTR_BUFF(DAMAGE, "damage", "iron arms", 10, "iron arms", 200)
+"STABLE_HAND" ATTR_BUFF(RANGED_DAMAGE, "ranged damage", "stable hand", 10, "stable hand", 200)
+"PIERCING_VOICE" ATTR_BUFF(SPELL_DAMAGE, "spell damage", "piercing voice", 10, "piercing voice", 200)
 
 Def ATTR_DEBUFF(Attr, Name, Amount, Price) {
   name = Name + " debuff"
   adjective = Name + " debuff"
-  description = "Gives a -" + Amount + " " + Name + " penalty"
+  description = "Gives a -" + Amount + " " + Name + " penalty. "
   startEffect = IncreaseAttr Attr -Amount
   endEffect = IncreaseAttr Attr Amount
   combatConsumable = true
