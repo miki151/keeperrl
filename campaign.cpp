@@ -78,6 +78,7 @@ void Campaign::removeDweller(Vec2 pos) {
 void Campaign::setDefeated(const ContentFactory* f, Vec2 pos) {
   defeated[pos] = true;
   refreshInfluencePos(f);
+  refreshMaxAggressorCutOff();
 }
 
 bool Campaign::VillainInfo::isEnemy() const {
@@ -288,7 +289,6 @@ void Campaign::refreshInfluencePos(const ContentFactory* f) {
     continue;
   }
   CHECK(!influencePos.empty());
-  refreshMaxAggressorCutOff();
 }
 
 int Campaign::getNumNonEmpty() const {

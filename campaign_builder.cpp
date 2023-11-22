@@ -82,15 +82,11 @@ void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewIdList play
   campaign.updateInhabitants(f);
 }
 
-static bool tileExists(const ContentFactory* factory, const string& s) {
-  for (auto& def : factory->tilePaths.definitions)
-    if (s == def.viewId.data())
-      return true;
-  return false;
-}
-
 static Table<Campaign::SiteInfo> getTerrain(RandomGen& random, const ContentFactory* factory,
     RandomLayoutId worldMapId, Vec2 size) {
+  unordered_set<Token> allViewIds;
+  for (auto& def : factory->tilePaths.definitions)
+    allViewIds.insert(def.viewId.data());
   LayoutCanvas::Map map{Table<vector<Token>>(Rectangle(Vec2(0, 0), size))};
   LayoutCanvas canvas{map.elems.getBounds(), &map};
   bool generated = false;
@@ -105,7 +101,7 @@ static Table<Campaign::SiteInfo> getTerrain(RandomGen& random, const ContentFact
     for (auto& token : map.elems[v]) {
       if (token == "blocked")
         ret[v].blocked = true;
-      else if (tileExists(factory, token))
+      else if (allViewIds.count(token))
         ret[v].viewId.push_back(ViewId(token.data()));
       else
         for (auto& biome : factory->biomeInfo)
@@ -154,20 +150,14 @@ static string getNewIdSuffix() {
   return ret;
 }
 
-bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campaign& campaign,
-    vector<Campaign::SiteInfo::Dweller> villains, int count) {
+constexpr auto mapMargin = 10;
+
+bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campaign& campaign, Table<bool>& blocked,
+    vector<Campaign::SiteInfo::Dweller> villains, int count, Range playerDist) {
   for (int i = 0; villains.size() < count; ++i)
     villains.push_back(villains[i]);
   if (villains.size() > count)
     villains.resize(count);
-  auto isFreeSpot = [&](Vec2 v) {
-    if (campaign.sites[v].blocked || !v.inRectangle(campaign.sites.getBounds().minusMargin(10)))
-      return false;
-    for (auto v2 : Rectangle::centered(v, 5))
-      if (v2.inRectangle(campaign.sites.getBounds()) && !campaign.sites[v2].isEmpty())
-        return false;
-    return true;
-  };
   for (int i : All(villains)) {
     auto biome = [&] {
       return villains[i].match(
@@ -177,9 +167,12 @@ bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campai
       );
     }();
     auto placed = [&] {
-      for (Vec2 v : random.permutation(campaign.sites.getBounds().getAllSquares())) {
-        if (isFreeSpot(v) && (!biome || campaign.sites[v].biome == biome)) {
+      for (Vec2 v : random.permutation(campaign.sites.getBounds().minusMargin(mapMargin).getAllSquares())) {
+        if (!blocked[v] && playerDist.contains((int) v.distD(campaign.getPlayerPos())) &&
+            (!biome || campaign.sites[v].biome == biome)) {
           campaign.sites[v].dweller = villains[i];
+          for (auto v2 : Rectangle::centered(v, 5).intersection(blocked.getBounds()))
+            blocked[v2] = true;
           return true;
         }
       }
@@ -187,11 +180,6 @@ bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campai
     }();
     if (!placed)
       return false;
-/*      USER_FATAL << "Couldn't place " << villains[i].match(
-              [&](const Campaign::VillainInfo& info) { return info.enemyId.data(); },
-              [](const Campaign::RetiredInfo& info) { return info.gameInfo.name.data(); },
-              [](const Campaign::KeeperInfo& info) { return "Home map"; })
-          << " in " << (biome ? biome->data() : "Any biome");*/
   }
   return true;
 }
@@ -221,23 +209,39 @@ vector<Campaign::VillainInfo> CampaignBuilder::getVillains(const vector<VillainG
 bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campaign& campaign,
     const VillainCounts& counts, const optional<RetiredGames>& retired, const vector<VillainGroup>& villainGroups) {
   int retiredLimit = counts.numMain;
-  auto mainVillains = getVillains(villainGroups, VillainType::MAIN);
-  for (auto& v : mainVillains)
-    if (v.alwaysPresent && retiredLimit > 0)
-      --retiredLimit;
-  int numRetired = retired ? min(retired->getNumActive(), min(retiredLimit, counts.maxRetired)) : 0;
-  if (!placeVillains(contentFactory, campaign, shuffle(random, mainVillains), counts.numMain - numRetired) ||
-      !placeVillains(contentFactory, campaign, shuffle(random, getVillains(villainGroups, VillainType::LESSER)),
-          counts.numLesser) ||
-      !placeVillains(contentFactory, campaign, shuffle(random, getVillains(villainGroups, VillainType::MINOR)),
-          counts.numMinor) ||
-      !placeVillains(contentFactory, campaign, shuffle(random, getVillains(villainGroups, VillainType::ALLY)),
-          counts.numAllies))
+  auto allMainVillains = getVillains(villainGroups, VillainType::MAIN);
+  auto regularMainVillains = allMainVillains.filter([](auto& v) { return !v.alwaysPresent; });
+  auto endGameVillains = allMainVillains.filter([](auto& v) { return v.alwaysPresent; })
+      .transform([](auto& t) { return Dweller(t); });
+  if (retired) {
+    int numRetired = min(retired->getNumActive(), min(retiredLimit, counts.maxRetired));
+    endGameVillains.append(retired->getActiveGames().transform(
+          [](const RetiredGames::RetiredGame& game) -> Dweller {
+            return Campaign::RetiredInfo{game.gameInfo, game.fileInfo};
+          }).getPrefix(numRetired));
+  }
+  Table<bool> blocked(campaign.sites.getBounds(), false);
+  for (auto v : campaign.sites.getBounds())
+    if (campaign.sites[v].blocked)
+      blocked[v] = true;
+  for (auto v : Rectangle::centered(campaign.playerPos, 5).intersection(blocked.getBounds()))
+    blocked[v] = true;
+  auto initialRadius = contentFactory->campaignInfo.initialRadius;
+  if (!placeVillains(contentFactory, campaign, blocked, shuffle(random, regularMainVillains),
+      counts.numMain - endGameVillains.size(), Range(initialRadius + 2, 1000)))
     return false;
-  if (retired && !placeVillains(contentFactory, campaign, retired->getActiveGames().transform(
-      [](const RetiredGames::RetiredGame& game) -> Dweller {
-        return Campaign::RetiredInfo{game.gameInfo, game.fileInfo};
-      }), numRetired))
+  auto allLesser = shuffle(random, getVillains(villainGroups, VillainType::LESSER));
+  if (!placeVillains(contentFactory, campaign, blocked, allLesser.getPrefix(3), 3, Range(1, initialRadius)))
+    return false;
+  if (!placeVillains(contentFactory, campaign, blocked, allLesser.getSubsequence(3), counts.numLesser - 3, Range(initialRadius + 2, 1000)))
+    return false;
+  if (!placeVillains(contentFactory, campaign, blocked, shuffle(random, getVillains(villainGroups, VillainType::MINOR)),
+          counts.numMinor, Range(0, 1000)) ||
+      !placeVillains(contentFactory, campaign, blocked, shuffle(random, getVillains(villainGroups, VillainType::ALLY)),
+          counts.numAllies, Range(0, 1000)))
+    return false;
+  if (!placeVillains(contentFactory, campaign, blocked, endGameVillains, endGameVillains.size(),
+      Range((campaign.getSites().getBounds().width() - mapMargin) / 2 - 5, 1000)))
     return false;
   return true;
 }
@@ -279,16 +283,6 @@ static EnemyAggressionLevel getAggressionLevel(Options* options) {
   fail();
 }
 
-static bool isGoodStartingPos(const Campaign& campaign, Vec2 pos, int visibilityRadius, int totalLesserVillains) {
-  if (!campaign.isGoodStartPos(pos))
-    return false;
-  int numLesser = 0;
-  for (auto v : campaign.getSites().getBounds().intersection(Rectangle::centered(pos, visibilityRadius)))
-    if (campaign.getSites()[v].getVillainType() == VillainType::LESSER && v.distD(pos) <= visibilityRadius + 0.5)
-      ++numLesser;
-  return numLesser >= min(3, totalLesserVillains);
-}
-
 optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* contentFactory,
     function<optional<RetiredGames>(CampaignType)> genRetired,
     CampaignType type, string worldName) {
@@ -310,21 +304,22 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* content
     Campaign campaign(terrain, type, worldName);
     campaign.mapZoom = campaignInfo.mapZoom;
     campaign.minimapZoom = campaignInfo.minimapZoom;
+    for (auto pos : Random.permutation(campaign.getSites().getBounds()
+        .minusMargin(campaignInfo.initialRadius + 1).getAllSquares())) {
+      if (campaign.isGoodStartPos(pos) || type == CampaignType::QUICK_MAP) {
+        setPlayerPos(campaign, pos, avatarInfo.playerCreature->getMaxViewIdUpgrade(), contentFactory);
+        campaign.originalPlayerPos = pos;
+        break;
+      }
+    }
     const auto villainCounts = getVillainCounts(type, options);
     if (!placeVillains(contentFactory, campaign, villainCounts, retired, avatarInfo.villainGroups)) {
       if (++failedPlaceVillains > 300)
         USER_FATAL << "Failed to place all villains on the world map";
       continue;
     }
-    for (auto pos : Random.permutation(campaign.getSites().getBounds()
-        .minusMargin(campaignInfo.initialRadius + 1).getAllSquares())) {
-      if (isGoodStartingPos(campaign, pos, campaignInfo.initialRadius, villainCounts.numLesser) ||
-          type == CampaignType::QUICK_MAP) {
-        setPlayerPos(campaign, pos, avatarInfo.playerCreature->getMaxViewIdUpgrade(), contentFactory);
-        campaign.originalPlayerPos = pos;
-        break;
-      }
-    }
+    failedPlaceVillains = 0;
+    campaign.updateInhabitants(contentFactory);
     while (1) {
       bool updateMap = false;
       campaign.refreshInfluencePos(contentFactory);
@@ -387,6 +382,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* content
             auto aggressionLevel = avatarInfo.creatureInfo.enemyAggression
                 ? getAggressionLevel(options)
                 : EnemyAggressionLevel::NONE;
+            campaign.refreshMaxAggressorCutOff();
             return CampaignSetup{campaign, gameIdentifier, gameDisplayName,
                 getIntroMessages(type), getExternalEnemies(options), aggressionLevel};
           }

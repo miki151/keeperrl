@@ -35,7 +35,8 @@ class CampaignBuilder {
   const char* getIntroText() const;
   void setPlayerPos(Campaign&, Vec2, ViewIdList, ContentFactory*);
   vector<CampaignType> getAvailableTypes() const;
-  bool placeVillains(const ContentFactory*, Campaign&, vector<Campaign::SiteInfo::Dweller>, int count);
+  bool placeVillains(const ContentFactory*, Campaign&, Table<bool>&, vector<Campaign::SiteInfo::Dweller>, int count,
+      Range playerDist);
   vector<Campaign::VillainInfo> getVillains(const vector<VillainGroup>&, VillainType);
   bool placeVillains(const ContentFactory*, Campaign&, const VillainCounts&, const optional<RetiredGames>&,
       const vector<VillainGroup>&);
