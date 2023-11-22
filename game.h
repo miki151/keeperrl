@@ -103,6 +103,7 @@ class Game : public OwnedObject<Game> {
   Model* getCurrentModel() const;
   int getModelDifficulty(const Model*) const;
   bool passesMaxAggressorCutOff(const Model*);
+  int getNumLesserVillainsDefeated() const;
 
   void prepareSiteRetirement();
   void doneRetirement();
@@ -171,6 +172,7 @@ class Game : public OwnedObject<Game> {
   void considerAllianceAttack();
   bool SERIAL(allianceAttackPossible) = true;
   EnemyAggressionLevel SERIAL(enemyAggressionLevel);
+  int SERIAL(numLesserVillainsDefeated) = 0;
 };
 
 CEREAL_CLASS_VERSION(Game, 1)

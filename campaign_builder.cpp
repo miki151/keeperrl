@@ -228,7 +228,7 @@ bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campai
     blocked[v] = true;
   auto initialRadius = contentFactory->campaignInfo.initialRadius;
   if (!placeVillains(contentFactory, campaign, blocked, shuffle(random, regularMainVillains),
-      counts.numMain - endGameVillains.size(), Range(initialRadius + 2, 1000)))
+      counts.numMain - endGameVillains.size(), Range(0, 1000)))
     return false;
   auto allLesser = shuffle(random, getVillains(villainGroups, VillainType::LESSER));
   if (!placeVillains(contentFactory, campaign, blocked, allLesser.getPrefix(3), 3, Range(1, initialRadius)))

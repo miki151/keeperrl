@@ -51,7 +51,7 @@
 template <class Archive>
 void Game::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Game>);
-  ar(villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime, avatarId);
+  ar(villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime, avatarId, numLesserVillainsDefeated);
   ar(musicType, statistics, tribes, gameIdentifier, players, contentFactory, sunlightTimeOffset, allianceAttackPossible);
   ar(gameDisplayName, models, visited, baseModel, campaign, localTime, turnEvents, effectFlags, zLevelGroups);
   if (version == 1)
@@ -234,6 +234,10 @@ int Game::getModelDifficulty(const Model* model) const {
 
 bool Game::passesMaxAggressorCutOff(const Model* model) {
   return campaign->passesMaxAggressorCutOff(model->position);
+}
+
+int Game::getNumLesserVillainsDefeated() const {
+  return numLesserVillainsDefeated;
 }
 
 PModel& Game::getMainModel() {
@@ -964,6 +968,8 @@ void Game::addEvent(const GameEvent& event) {
               campaign->setDefeated(contentFactory.get(), coords);
           }
         }
+        if (col->getVillainType() == VillainType::LESSER || col->getVillainType() == VillainType::MAIN)
+          ++numLesserVillainsDefeated;
         if (col->getVillainType() == VillainType::MAIN && gameWon()) {
           addEvent(WonGame{});
         }

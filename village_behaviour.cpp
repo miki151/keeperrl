@@ -167,7 +167,9 @@ static bool triggersAboveMaxAggressorCutOff(const AttackTrigger& trigger) {
 }
 
 double VillageBehaviour::getTriggerValue(const AttackTrigger& trigger, const VillageControl* self) const {
-  if (!self->collective->getGame()->passesMaxAggressorCutOff(self->collective->getModel()) &&
+  auto game = self->collective->getGame();
+  if ((!game->passesMaxAggressorCutOff(self->collective->getModel())
+       || (self->collective->getVillainType() == VillainType::MAIN && game->getNumLesserVillainsDefeated() < 3)) &&
       !triggersAboveMaxAggressorCutOff(trigger))
     return 0;
   double powerMaxProb = 1.0 / 10000; // rather small chance that they attack just because you are strong
@@ -216,13 +218,13 @@ double VillageBehaviour::getTriggerValue(const AttackTrigger& trigger, const Vil
           return entryMaxProb * self->entries;
         },
         [&](const Proximity&) {
-          if (enemy->getGame()->getModelDistance(enemy, self->collective) == 1)
+          if (game->getModelDistance(enemy, self->collective) == 1)
             return proximityMaxProb;
           else
             return 0.0;
         },
         [&](const NumConquered& t) {
-          return numConqueredMaxProb * getNumConqueredProb(self->collective->getGame(), t.value);
+          return numConqueredMaxProb * getNumConqueredProb(game, t.value);
         },
         [&](Immediate) {
           return 1;
