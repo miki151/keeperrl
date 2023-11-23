@@ -1,71 +1,71 @@
 EVIL_COTTAGES {
-  {{"map_house2"} {"peasant"} "HUMAN_COTTAGE" "Cottage" MINOR}
-  {{"map_house2"} {"bandit"} "COTTAGE_BANDITS" "Cottage" MINOR}
-  {{"map_house_snow1"} {"eskimo"} "ESKIMO_COTTAGE" "Cottage" MINOR}
-  {{"map_house1"} {"nomad"} "NOMAD_COTTAGE" "Cottage" MINOR}
-  {{"map_house1"} {"lizardman"} "LIZARDMEN_COTTAGE" "Cottage" MINOR}
-  {{"map_house_elf"} {"elf"} "ELVEN_COTTAGE" "Cottage" MINOR}
-  {{"map_dungeon2"} {"dwarf"} "DWARF_CAVE" "Cave" MINOR}
-  {{"map_guard_house1"} {"knight"} "GUARD_POST" "Guard post" MINOR}
+  {{"map_house2"} "HUMAN_COTTAGE" "Cottage" MINOR}
+  {{"map_house2"} "COTTAGE_BANDITS" "Cottage" MINOR}
+  {{"map_house_snow1"} "ESKIMO_COTTAGE" "Cottage" MINOR}
+  {{"map_house1"} "NOMAD_COTTAGE" "Cottage" MINOR}
+  {{"map_house1"} "LIZARDMEN_COTTAGE" "Cottage" MINOR}
+  {{"map_house_elf"} "ELVEN_COTTAGE" "Cottage" MINOR}
+  {{"map_dungeon2"} "DWARF_CAVE" "Cave" MINOR}
+  {{"map_guard_house1"} "GUARD_POST" "Guard post" MINOR}
 }
 
 LAWFUL_COTTAGES {
-  {{"map_dungeon2"} {"dark_elf"} "DARK_ELF_CAVE" "Cave" MINOR}
-  {{"map_house2"} {"bandit"} "COTTAGE_BANDITS" "Cottage" MINOR}
-  {{"map_house1"} {"lizardman"} "LIZARDMEN_COTTAGE" "Cottage" MINOR}
-  {{"map_house2"} {"witch"} "WITCH" "Cottage" MINOR}
+  {{"map_dungeon2"} "DARK_ELF_CAVE" "Cave" MINOR}
+  {{"map_house2"} "COTTAGE_BANDITS" "Cottage" MINOR}
+  {{"map_house1"} "LIZARDMEN_COTTAGE" "Cottage" MINOR}
+  {{"map_house2"} "WITCH" "Cottage" MINOR}
 }
 
 EVIL_KEEPER {
     # Line goes like this:
     # ViewId EnemyId Villain-name Villain-type [always present on campaign map (false by default)]
-    {{"map_castle1"} { {"sword_v"} { "duke4" }} "KNIGHTS" "Knights" MAIN}
-    {{"map_house_elf"}{ { "elven_staff_v" ColorId LIGHT_GREEN } {"elf_lord"} } "ELVES" "Elves" MAIN}
-    {{"map_dwarves"}{ { "battle_axe_v"} {"dwarf_baron" } } "DWARVES" "Dwarves" MAIN}
-    {{"map_dragon"}{ "red_dragon" } "RED_DRAGON" "Red dragon" MAIN}
-    {{"map_white_dragon"}{ "red_dragon" Rgb 240 240 240 255 } "WHITE_DRAGON" "White dragon" MAIN}
-    {{"map_tower1"}{ { "archwood_staff_v"} {"elementalist"} } "ELEMENTALIST" "Elementalist" MAIN}
-    {{"map_green_dragon"}{ "red_dragon" Rgb 33 120 27 255 } "GREEN_DRAGON" "Green dragon" MAIN}
-    {{"map_house1"}{ "lizardlord" } "LIZARDMEN" "Lizardmen" MAIN}
-    {{"map_warriors"} { { "wooden_staff_v"} {"shaman"} } "WARRIORS" "Warriors" MAIN}
-    {{"map_thieves"} { { "sword_v" } {"thief_leader" }} "THIEVES" "Thieves" MAIN}
-    {{"map_castle1"} { "demon_lord" } "DEMON_DEN" "Demon den" MAIN}
-    {{"map_adoxie"}{ "dungeon_entrance" ColorId RED } "MAIN_DUNGEON" "Adoxie priest" MAIN true}
+    {{"map_castle1"} "KNIGHTS" "Knights" MAIN}
+    {{"map_house_elf"} "ELVES" "Elves" MAIN}
+    {{"map_dwarves"} "DWARVES" "Dwarves" MAIN}
+    {{"map_dragon"} "RED_DRAGON" "Red dragon" MAIN}
+    {{"map_white_dragon"} "WHITE_DRAGON" "White dragon" MAIN}
+    {{"map_tower1"} "ELEMENTALIST" "Elementalist" MAIN}
+    {{"map_green_dragon"} "GREEN_DRAGON" "Green dragon" MAIN}
+    {{"map_house1"} "LIZARDMEN" "Lizardmen" MAIN}
+    {{"map_warriors"} "WARRIORS" "Warriors" MAIN}
+    {{"map_thieves"} "THIEVES" "Thieves" MAIN}
+    {{"map_castle1"} "DEMON_DEN" "Demon den" MAIN}
+    {{"map_adoxie"} "MAIN_DUNGEON" "Adoxie priest" MAIN true}
 
-    {{"map_ents"}{ "ent" } "ENTS" "Tree spirits" LESSER}
-    {{"map_house_elf"}{ "driad" } "DRIADS" "Driads" LESSER}
-    {{"map_dungeon1"}{ "cyclops" } "CYCLOPS" "Cyclops" LESSER}
-    {{"map_ants"}{ "shelob" } "SHELOB" "Giant spider" LESSER}
-    {{"map_hydra"} { "hydra" } "HYDRA" "Hydra" LESSER}
-    {{"map_house_elf"}{ "unicorn" } "UNICORN_HERD" "Unicorn herd" LESSER}
-    {{"map_ants"}{ "ant_queen" } "ANTS_OPEN" "Ants" LESSER}
-    {{"map_grave1"}{ "zombie" } "CEMETERY" "Zombies" LESSER}
+    {{"map_ents"} "ENTS" "Tree spirits" LESSER}
+    {{"map_house_elf"} "DRIADS" "Driads" LESSER}
+    {{"map_dungeon1"} "CYCLOPS" "Cyclops" LESSER}
+    {{"map_ants"} "SHELOB" "Giant spider" LESSER}
+    {{"map_hydra"} "HYDRA" "Hydra" LESSER}
+    {{"map_house_elf"} "UNICORN_HERD" "Unicorn herd" LESSER}
+    {{"map_ants"} "ANTS_OPEN" "Ants" LESSER}
+    {{"map_grave1"} "CEMETERY" "Zombies" LESSER}
 
-    {{"map_dungeon1"}{ "unknown_monster" } "GOBLIN_CAVE_ALLY" "Unknown" ALLY}
-    {{"map_dungeon1"}{ "unknown_monster" } "HARPY_CAVE" "Unknown" ALLY}
-    {{"map_dungeon1"}{ "unknown_monster" } "SOKOBAN" "Unknown" ALLY}
-    {{"map_dungeon1"}{ { "elven_staff_v" } {"dark_elf_lord" }} "DARK_ELVES_ALLY" "Dark elves" ALLY}
-    {{"map_dungeon1"}{ "gnome_boss" } "GNOMES" "Gnomes" ALLY}
+    {{"map_dungeon1"} "GOBLIN_CAVE_ALLY" "Unknown" ALLY}
+    {{"map_dungeon1"} "HARPY_CAVE" "Unknown" ALLY}
+    {{"map_dungeon1"} "SOKOBAN" "Unknown" ALLY}
+    {{"map_dungeon1"} "DARK_ELVES_ALLY" "Dark elves" ALLY}
+    {{"map_dungeon1"} "GNOMES" "Gnomes" ALLY}
 }
 
 LAWFUL_KEEPER {
-    {{"map_dragon"}{ "red_dragon" } "RED_DRAGON" "Red dragon" MAIN}
-    {{"map_green_dragon"}{ "red_dragon" Rgb 10 240 10 255 } "GREEN_DRAGON" "Green dragon" MAIN}
-    {{"map_white_dragon"}{ "red_dragon" Rgb 240 240 240 255 } "WHITE_DRAGON" "White dragon" MAIN}
-    {{"map_dungeon1"}{ { "elven_staff_v" } {"dark_elf_lord" }} "DARK_ELVES_ENEMY" "Dark elves" MAIN}
-    {{"map_house1"}{ { "sceptre_v"} {"goblin_keeper4" }} "GOBLIN_VILLAGE" "Goblin town" MAIN}
-    {{"map_castle1"}{ "demon_lord" } "DEMON_DEN" "Demon den" MAIN}
-    {{"map_house1"}{ "lizardlord" } "LIZARDMEN" "Lizardmen" MAIN}
+    {{"map_dragon"} "RED_DRAGON" "Red dragon" MAIN}
+    {{"map_green_dragon"} "GREEN_DRAGON" "Green dragon" MAIN}
+    {{"map_white_dragon"} "WHITE_DRAGON" "White dragon" MAIN}
+    {{"map_dungeon1"} "DARK_ELVES_ENEMY" "Dark elves" MAIN}
+    {{"map_house1"} "GOBLIN_VILLAGE" "Goblin town" MAIN}
+    {{"map_castle1"} "DEMON_DEN" "Demon den" MAIN}
+    {{"map_house1"} "LIZARDMEN" "Lizardmen" MAIN}
 
-    {{"map_ants"}{ "shelob" } "SHELOB" "Giant spider" LESSER}
-    {{"map_dungeon1"}{ "cyclops" } "CYCLOPS" "Cyclops" LESSER}
-    {{"map_hydra"}{ "hydra" } "HYDRA" "Hydra" LESSER}
-    {{"map_grave1"}{ "zombie" } "CEMETERY" "Zombies" LESSER}
-    {{"map_dungeon1"}{ {"sword_v"} {"goblin_warrior" }} "GOBLIN_CAVE" "Goblins" LESSER}
-    {{"map_dungeon1"}{ "harpy" } "HARPY_CAVE" "Harpies" LESSER}
-    {{"map_ants"}{ "ant_queen" } "ANTS_OPEN" "Ants" LESSER}
-    {{"map_adoxie"}{ "dungeon_entrance" ColorId RED } "MAIN_DUNGEON" "Adoxie priest" MAIN true}
+    {{"map_ants"} "SHELOB" "Giant spider" LESSER}
+    {{"map_dungeon1"} "CYCLOPS" "Cyclops" LESSER}
+    {{"map_hydra"} "HYDRA" "Hydra" LESSER}
+    {{"map_grave1"} "CEMETERY" "Zombies" LESSER}
+    {{"map_dungeon1"} "GOBLIN_CAVE" "Goblins" LESSER}
+    {{"map_dungeon1"} "HARPY_CAVE" "Harpies" LESSER}
+    {{"map_ants"} "ANTS_OPEN" "Ants" LESSER}
+    {{"map_adoxie"} "MAIN_DUNGEON" "Adoxie priest" MAIN true}
 
-    {{"map_dwarves"}{ { "battle_axe_v"} {"dwarf_baron" } } "DWARVES" "Dwarves" ALLY}
-    {{"map_castle1"} { { "sword_v"} {"teuton_boss" } } "TEUTONS" "Teutonic Knights" ALLY}
+    {{"map_dwarves"} "DWARVES" "Dwarves" ALLY}
+    {{"map_castle1"} "TEUTONS" "Teutonic Knights" ALLY}
 }

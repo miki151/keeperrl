@@ -4564,10 +4564,9 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
       Vec2 pos(x, y);
       vector<SGuiElem> elem;
       if (c.isInInfluence(pos)) {
-        if (!c.isDefeated(Vec2(x, y)))
-          if (auto id = sites[x][y].getDwellerViewId())
-            if (auto color = getHighlightColor(*sites[pos].getVillainType()))
-              elem.push_back(translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale, *color)));
+        if (!!sites[x][y].getVillainType() && !c.isDefeated(Vec2(x, y)))
+          if (auto color = getHighlightColor(*sites[pos].getVillainType()))
+            elem.push_back(translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale, *color)));
         if (campaignGridPointer)
           elem.push_back(WL(conditional, translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale)),
                 [this, pos] { return campaignGridPointer == pos;}));
@@ -4580,9 +4579,8 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
               }),
               WL(mouseHighlight2, translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale)), nullptr, false)
           ));
-        if (auto id = sites[x][y].getDwellerViewId())
-          if (c.isDefeated(pos))
-            elem.push_back(WL(viewObject, ViewId("campaign_defeated"), iconScale));
+        if (!!sites[x][y].getVillainType() && c.isDefeated(pos))
+          elem.push_back(WL(viewObject, ViewId("campaign_defeated"), iconScale));
         if (auto desc = sites[x][y].getDwellerName())
           if (!c.isDefeated(pos) && getHighlightColor(*sites[pos].getVillainType())) {
             auto width = renderer.getTextLength(*desc, 12, FontId::MAP_FONT);

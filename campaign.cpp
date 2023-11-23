@@ -173,16 +173,6 @@ optional<VillainType> Campaign::SiteInfo::getVillainType() const {
     return none;
 }
 
-optional<ViewIdList> Campaign::SiteInfo::getDwellerViewId() const {
-  if (dweller)
-    return dweller->match(
-        [](const VillainInfo& info) { return info.viewId.ids; },
-        [](const RetiredInfo& info) { return info.gameInfo.getViewId(); },
-        [](const KeeperInfo& info) { return info.viewId; });
-  else
-    return none;
-}
-
 optional<ViewIdList> Campaign::SiteInfo::getDwellingViewId() const {
   if (dweller)
     return dweller->match(
