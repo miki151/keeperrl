@@ -61,14 +61,11 @@
     { id = "COTTAGE_BANDITS" probability = 0.5 }
     { id = "CORPSES" probability = 0.2 }
     { id = "BLACKSMITH" probability = 0.2 }
-    { id = "WIZARD_TOWER" probability = 0.1 }
     { id = "RUINS" probability = 0.5 }
   }
   whiteKeeperEnemies = {
-    { id = "ADOXIE_FEET" probability = 0.5 }
     { id = "COTTAGE_BANDITS" count = { 3 5 } }
     { id = "CORPSES" probability = 0.2 }
-    { id = "WIZARD_TOWER" probability = 0.1 }
     { id = "RUINS" probability = 0.5 }
   }
   darkKeeperBaseEnemies = {
@@ -114,13 +111,11 @@
   darkKeeperEnemies = {
     { id = "ELVEN_COTTAGE" count = { 3 5 } }
     { id = "CORPSES" probability = 0.2 }
-    { id = "WIZARD_TOWER" probability = 0.1 }
     { id = "RUINS" probability = 0.5 }
   }
   whiteKeeperEnemies = {
     { id = "LIZARDMEN_COTTAGE" count = { 3 5 } }
     { id = "CORPSES" probability = 0.2 }
-    { id = "WIZARD_TOWER" probability = 0.1 }
     { id = "RUINS" probability = 0.5 }
   }
   darkKeeperBaseEnemies = {
@@ -175,13 +170,11 @@
     { id = "KOBOLD_CAVE" count = { 1 3 } }
     { id = "NO_AGGRO_BANDITS" count = { 0 2 } }
     { id = "CORPSES" probability = 0.2 }
-    { id = "WIZARD_TOWER" probability = 0.1 }
   }
   whiteKeeperEnemies = {
     { id = "DARK_ELF_CAVE" count = { 1 4 } }
     { id = "NO_AGGRO_BANDITS" count = { 0 2 } }
     { id = "CORPSES" probability = 0.2 }
-    { id = "WIZARD_TOWER" probability = 0.1 }
   }
   viewId = { "map_mountain1" }
   name = "mountains"
@@ -229,11 +222,9 @@
   }
   darkKeeperEnemies = {
     { id = "ESKIMO_COTTAGE" count = { 3 5 } }
-    { id = "WIZARD_TOWER" probability = 0.1 }
   }
   whiteKeeperEnemies = {
     { id = "ESKIMO_COTTAGE" count = { 3 5 } }
-    { id = "WIZARD_TOWER" probability = 0.1 }
   }
   darkKeeperBaseEnemies = {
     { id = "ESKIMO_VILLAGE" }
@@ -292,11 +283,9 @@
   }
   darkKeeperEnemies = {
     { id = "NOMAD_COTTAGE" count = { 3 5 } }
-    { id = "WIZARD_TOWER" probability = 0.1 }
   }
   whiteKeeperEnemies = {
     { id = "NOMAD_COTTAGE" count = { 3 5 } }
-    { id = "WIZARD_TOWER" probability = 0.1 }
   }
   darkKeeperBaseEnemies = {
     { id = "NOMAD_VILLAGE" }

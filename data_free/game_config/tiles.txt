@@ -136,6 +136,7 @@
 { viewId = "up_staircase" symbol = "➚" color = ColorId ALMOST_WHITE isSymbolFont = true highlightAbove = true }
 { viewId = "down_staircase_rock" symbol = "➘" color = ColorId YELLOW isSymbolFont = true highlightAbove = true }
 { viewId = "up_staircase_rock" symbol = "➚" color = ColorId YELLOW isSymbolFont = true highlightAbove = true }
+{ "map_unknown" "?" ColorId GREEN }
 { "map_fow" " " ColorId BLACK }
 { "map_grass1" "." ColorId LIGHT_GREEN }
 { "map_grass2" "." ColorId GREEN }
