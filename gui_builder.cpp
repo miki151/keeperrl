@@ -4538,7 +4538,7 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
         auto exp = c.getBaseLevelIncrease(Vec2(x, y));
         if (exp > 0)
           lines.addElem(WL(label, "Experience: " + toString(exp)));
-        if (!minions.isEmpty())
+        if (!minions.isEmpty() && !sites[x][y].getDwellingViewId()->contains(ViewId("map_unknown")))
           lines.addElem(minions.buildHorizontalList());
         elem.push_back(WL(margins, WL(tooltip2, WL(miniWindow, WL(margins,
             lines.buildVerticalList(), 15)), [](auto& r) { return r.bottomLeft(); }), -4));
