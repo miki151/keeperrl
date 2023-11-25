@@ -195,6 +195,7 @@ Connections("map_swamp")
 { "map_house1" "o" ColorId BLUE }
 { "map_house2" "o" ColorId BROWN }
 { "map_house_elf" "o" ColorId LIGHT_GREEN }
+{ "map_shop1" "o" ColorId PINK }
 { "map_castle1" "o" ColorId BLUE }
 { "map_guard_house1" "o" ColorId LIGHT_GRAY }
 { "map_castle_snow1" "o" ColorId LIGHT_BLUE }
@@ -459,10 +460,7 @@ Connections("map_swamp")
 { "trap_item" "+" ColorId YELLOW }
 { "potion1" "!" ColorId LIGHT_RED }
 { "potion2" "!" ColorId BLUE }
-{ "potion3" "!" ColorId YELLOW }
-{ "potion4" "!" ColorId VIOLET }
-{ "potion5" "!" ColorId DARK_BROWN }
-{ "potion6" "!" ColorId LIGHT_GRAY }
+{ "potion3" "!" ColorId DARK_RED }
 { "glyph" "~" ColorId GREEN }
 { "dragon_scales" "~" ColorId GREEN }
 { "devil_hooves" "~" ColorId RED }

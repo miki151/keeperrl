@@ -2265,6 +2265,25 @@ End
     furniture = "witchInside"
   }
 }
+"ARMOR_SHOP"
+{
+  biome = "GRASSLAND"
+  settlement = {
+    type = Builtin COTTAGE "WOOD"
+    tribe = PEACEFUL
+    shopItems = {
+      {15 30} "armory"
+    }
+  }
+}
+"POTION_SHOP" inherit "ARMOR_SHOP"
+{
+  settlement = append {
+    shopItems = {
+      {15 30} "potions"
+    }
+  }
+}
 "TEMPLE"
 {
   settlement = {

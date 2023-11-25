@@ -45,7 +45,19 @@ End
     {{"IronHelm"} 1}
     {{"LeatherBoots"} 2}
     {{"LeatherGloves"} 2}
+    {{"IronGloves"} 1}
     {{"IronBoots"} 1}
+    {{Glyph ARMOR ItemAttrBonus DEFENSE 3} 1}
+    {{Glyph WEAPON ItemAttrBonus DAMAGE 3} 1}
+    {{Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 3} 1}
+
+    {id = {"AdaArmor"} weight = 4 count = 1 minDifficulty = 25}
+    {{"AdaHelm"} 4 1 25}
+    {{"AdaBoots"} 4 1 25}
+    {{"AdaGloves"} 4 1 25}
+    {{Glyph ARMOR ItemAttrBonus DEFENSE 12} 2 1 25}
+    {{Glyph WEAPON ItemAttrBonus DAMAGE 12} 2 1 25}
+    {{Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 12} 2 1 25}
   }
   unique = {
     {"Bow"} {1 2}
@@ -96,6 +108,14 @@ End
     {{Potion Lasting FLYING} 1 }
     {{Potion Lasting SPEED} 1 }
     {{FogPotion()} 2 }
+    {{Potion2 Lasting SLEEP} 1 1 20 }
+    {{Potion2 Lasting SLOWED} 1 1 20 }
+    {{Potion2 Lasting BLIND} 1 1 20 }
+    {{Potion2 Lasting INVISIBLE} 1 1 20 }
+    {{Potion2 Lasting POISON} 1 1 20 }
+    {{Potion2 Lasting POISON_RESISTANT} 1 1 20 }
+    {{Potion2 Lasting FLYING} 1 1 20 }
+    {{Potion2 Lasting SPEED} 1 1 20 }
   }
 }
 
