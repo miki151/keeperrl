@@ -33,6 +33,7 @@
 #include "tile_gas_info.h"
 #include "attack.h"
 #include "attack_level.h"
+#include "zlevel.h"
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {
@@ -91,6 +92,11 @@ bool Position::isSameLevel(const Position& p) const {
 bool Position::isSameModel(const Position& p) const {
   PROFILE;
   return isValid() && p.isValid() && getModel() == p.getModel();
+}
+
+int Position::getModelDifficulty() const {
+  auto model = getModel();
+  return model->getGame()->getModelDifficulty(model) + getZLevelCombatExp(model->getMainLevelDepth(level).value_or(0));
 }
 
 bool Position::isSameLevel(const Level* l) const {  PROFILE

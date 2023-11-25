@@ -143,7 +143,7 @@ void Furniture::destroy(Position pos, const DestroyAction& action, Creature* des
   auto myLayer = layer;
   auto myType = type;
   if (itemDrop)
-    pos.dropItems(itemDrop->random(pos.getGame()->getContentFactory()));
+    pos.dropItems(itemDrop->random(pos.getGame()->getContentFactory(), pos.getModelDifficulty()));
   if (destroyFX)
     pos.getGame()->addEvent(EventInfo::FX{pos, *destroyFX});
   auto effect = destroyedEffect;

@@ -35,6 +35,7 @@ class Position {
   bool isSameLevel(const Position&) const;
   bool isSameLevel(const Level*) const;
   bool isSameModel(const Position&) const;
+  int getModelDifficulty() const;
   Vec2 getDir(const Position&) const;
   Creature* getCreature() const;
   void removeCreature();

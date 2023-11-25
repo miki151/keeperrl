@@ -43,22 +43,22 @@ class LevelMaker {
   virtual void make(LevelBuilder* builder, Rectangle area) = 0;
   virtual ~LevelMaker() {}
 
-  static PLevelMaker topLevel(RandomGen&, vector<SettlementInfo> village, int width, optional<TribeId> keeperTribe,
-      optional<KeeperBaseInfo>, BiomeInfo, ResourceCounts, const ContentFactory&);
-  static PLevelMaker mineTownLevel(RandomGen&, SettlementInfo, Vec2 size);
-  static PLevelMaker towerLevel(RandomGen&, SettlementInfo, Vec2 size);
+  static PLevelMaker topLevel(RandomGen&, vector<SettlementInfo> village, int width, int difficulty,
+      optional<TribeId> keeperTribe, optional<KeeperBaseInfo>, BiomeInfo, ResourceCounts, const ContentFactory&);
+  static PLevelMaker mineTownLevel(RandomGen&, SettlementInfo, Vec2 size, int difficulty);
+  static PLevelMaker towerLevel(RandomGen&, SettlementInfo, Vec2 size, int difficulty);
   static Vec2 getRandomExit(RandomGen&, Rectangle rect, int minCornerDist = 1);
-  static PLevelMaker roomLevel(RandomGen&, SettlementInfo, Vec2 size);
-  static PLevelMaker mazeLevel(RandomGen&, SettlementInfo, Vec2 size);
-  static PLevelMaker blackMarket(RandomGen&, SettlementInfo, Vec2 size);
+  static PLevelMaker roomLevel(RandomGen&, SettlementInfo, Vec2 size, int difficulty);
+  static PLevelMaker mazeLevel(RandomGen&, SettlementInfo, Vec2 size, int difficulty);
+  static PLevelMaker blackMarket(RandomGen&, SettlementInfo, Vec2 size, int difficulty);
   static PLevelMaker emptyLevel(FurnitureType, bool withFloor);
   static PLevelMaker upLevel(Position, const BiomeInfo&, vector<SettlementInfo>, optional<ResourceCounts>);
   static PLevelMaker sokobanFromFile(RandomGen&, SettlementInfo, Table<char>);
   static PLevelMaker battleLevel(Table<char>, vector<PCreature> allies, vector<CreatureList> enemies);
   static PLevelMaker getFullZLevel(RandomGen&, optional<SettlementInfo>, ResourceCounts, int mapWidth, TribeId keeperTribe,
-      const ContentFactory&);
+      const ContentFactory&, int difficulty);
   static PLevelMaker getWaterZLevel(RandomGen&, FurnitureType waterType, int mapWidth, CreatureList);
   static PLevelMaker settlementLevel(const ContentFactory&, RandomGen&, SettlementInfo, Vec2 size,
-      optional<ResourceCounts> resources, optional<TribeId> resourceTribe, FurnitureType mountainType);
+      optional<ResourceCounts> resources, optional<TribeId> resourceTribe, FurnitureType mountainType, int difficulty);
 };
 

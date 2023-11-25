@@ -31,7 +31,7 @@ class ModelBuilder {
   ModelBuilder(ModelBuilder&&) = default;
   ModelBuilder(const ModelBuilder&) = delete;
   PModel campaignBaseModel(const AvatarInfo&, BiomeId, optional<ExternalEnemiesType>);
-  PModel campaignSiteModel(EnemyId, VillainType, TribeAlignment);
+  PModel campaignSiteModel(EnemyId, VillainType, TribeAlignment, int difficulty);
   PModel tutorialModel(optional<KeeperBaseInfo>);
 
   void measureSiteGen(int numTries, vector<string> types, vector<BiomeId> biomes);
@@ -44,11 +44,11 @@ class ModelBuilder {
   void measureModelGen(const std::string& name, int numTries, function<void()> genFun);
   PModel tryCampaignBaseModel(TribeAlignment, optional<KeeperBaseInfo>, BiomeId, optional<ExternalEnemiesType>);
   PModel tryTutorialModel(optional<KeeperBaseInfo>);
-  PModel tryCampaignSiteModel(EnemyId, VillainType, TribeAlignment);
-  PModel tryModel(int width, vector<EnemyInfo>, optional<TribeId> keeperTribe, optional<KeeperBaseInfo>, BiomeId,
-      optional<ExternalEnemies>);
+  PModel tryCampaignSiteModel(EnemyId, VillainType, TribeAlignment, int difficulty);
+  PModel tryModel(int width, int difficulty, vector<EnemyInfo>, optional<TribeId> keeperTribe,
+      optional<KeeperBaseInfo>, BiomeId, optional<ExternalEnemies>);
   void makeExtraLevel(Model* model, LevelConnection& connection, SettlementInfo& mainSettlement, StairKey upLink,
-      vector<EnemyInfo>& extraEnemies, int depth, bool mainDungeon);
+      vector<EnemyInfo>& extraEnemies, int depth, bool mainDungeon, int difficulty);
   PModel tryBuilding(int numTries, function<PModel()> buildFun, const string& name);
   void addMapVillains(vector<EnemyInfo>&, const vector<BiomeEnemyInfo>&);
   RandomGen& random;
@@ -56,8 +56,8 @@ class ModelBuilder {
   HeapAllocated<EnemyFactory> enemyFactory;
   SokobanInput* sokobanInput = nullptr;
   ContentFactory* contentFactory = nullptr;
-  using LevelMakerMethod = function<PLevelMaker(RandomGen&, SettlementInfo, Vec2 size)>;
+  using LevelMakerMethod = function<PLevelMaker(RandomGen&, SettlementInfo, Vec2 size, int difficulty)>;
   LevelMakerMethod getMaker(LevelType);
   SettlementInfo& processLevelConnection(Model*, EnemyInfo&, vector<EnemyInfo>& extraEnemies, int depth,
-      bool mainDungeon);
+      bool mainDungeon, int difficulty);
 };

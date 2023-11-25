@@ -451,6 +451,10 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
     CHECK(!area.empty());
   }
 
+  virtual bool dontReplaceInCollective() override {
+    return true;
+  }
+
   vector<Position> getAllShopPositions() const {
     return shopArea.transform([this](Vec2 v){ return Position(v, myLevel); });
   }

@@ -1274,6 +1274,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
         for (Vec2 v : sites.getBounds()) {
           if (!sites[v].isEmpty())
             meter.addProgress();
+          int difficulty = setup.campaign.getBaseLevelIncrease(v);
           if (auto info = sites[v].getKeeper()) {
             models[v] = getBaseModel(modelBuilder, setup, avatarInfo);
           } else if (auto villain = sites[v].getVillain()) {
@@ -1289,7 +1290,8 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
                         break;
                       }
             if (!models[v])
-              models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, avatarInfo.tribeAlignment);
+              models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, avatarInfo.tribeAlignment,
+                  difficulty);
           } else if (auto retired = sites[v].getRetired()) {
             if (auto info = loadRetiredModelFromFile(userPath.file(retired->fileInfo.filename))) {
               models[v] = PModel(std::move(info->model));
@@ -1300,7 +1302,6 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
             }
           }
           if (models[v]) {
-            int difficulty = setup.campaign.getBaseLevelIncrease(v);
             for (auto c : models[v]->getAllCreatures())
               c->setCombatExperience(difficulty);
           }

@@ -664,13 +664,8 @@ static bool apply(const Effects::SummonEnemy& summon, Position pos, Creature*) {
   CreatureGroup f = CreatureGroup::singleType(TribeId::getMonster(), summon.creature);
   auto ret = Effect::summon(pos, f, Random.get(summon.count),
       summon.ttl.map([](int v) { return TimeInterval(v); }), 1_visible);
-  int exp = [&] {
-    if (auto depth = pos.getModel()->getMainLevelDepth(pos.getLevel()))
-      return getZLevelCombatExp(*depth);
-    return pos.getGame()->getModelDifficulty(pos.getModel());
-  }();
   for (auto c : ret)
-    c->setCombatExperience(exp);
+    c->setCombatExperience(pos.getModelDifficulty());
   return !ret.empty();
 }
 

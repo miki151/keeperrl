@@ -64,7 +64,7 @@ static void useChest(Position pos, const Furniture* furniture, Creature* c, cons
   if (auto itemInfo = chestInfo.itemInfo) {
     c->message(itemInfo->msgItem);
     auto itemList = pos.getGame()->getContentFactory()->itemFactory.get(itemInfo->items);
-    vector<PItem> items = itemList.random(pos.getGame()->getContentFactory());
+    vector<PItem> items = itemList.random(pos.getGame()->getContentFactory(), pos.getModelDifficulty());
     c->getGame()->addEvent(EventInfo::ItemsAppeared{pos, getWeakPointers(items)});
     pos.dropItems(std::move(items));
   }

@@ -42,6 +42,10 @@ string CreatureList::getSummary(CreatureFactory* factory) const {
   return ret;
 }
 
+bool CreatureList::empty() const {
+  return count.getEnd() == 1;
+}
+
 CreatureList& CreatureList::addInventory(vector<ItemType> v) {
   inventory = v;
   return *this;

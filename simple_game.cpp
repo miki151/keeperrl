@@ -21,7 +21,7 @@ void SimpleGame::addResourcesForLevel(int level) {
     if (auto drop = factory->furniture.getData(count.type).getItemDrop()) {
       for (int patch : Range(count.countFurther + count.countStartingPos))
         for (int i : Range(Random.get(count.size)))
-          for (auto& item : drop->random(factory))
+          for (auto& item : drop->random(factory, 0))
             ++resources[*item->getResourceId()];
     }
 }

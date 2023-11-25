@@ -25,6 +25,7 @@ struct CreatureList {
   CreatureList& addInventory(vector<ItemType>);
 
   string getSummary(CreatureFactory* factory) const;
+  bool empty() const;
 
   ViewIdList getViewId(CreatureFactory*) const;
   vector<PCreature> generate(RandomGen&, CreatureFactory*, TribeId, MonsterAIFactory, bool nonUnique = false) const;
