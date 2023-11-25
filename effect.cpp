@@ -347,7 +347,14 @@ static string getName(const Effects::Lasting& e, const ContentFactory* f) {
 }
 
 static string getDescription(const Effects::Lasting& e, const ContentFactory* f) {
-  return getDescription(e.lastingEffect, f);
+  auto ret = getDescription(e.lastingEffect, f);
+  if (ret.back() == '.')
+    ret.pop_back();
+  auto duration = !!e.duration
+      ? *e.duration
+      : LastingEffects::getDuration(*e.lastingEffect.getValueMaybe<LastingEffect>());
+  ret += " for " + toString(duration) + " turns.";
+  return ret;
 }
 
 static bool applyToCreature(const Effects::RemoveLasting& e, Creature* c, Creature*) {

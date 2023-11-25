@@ -788,6 +788,10 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
   PROFILE_BLOCK("LastingEffects::tick");
   auto factory = c->getGame()->getContentFactory();
   switch (effect) {
+    case LastingEffect::ENTANGLED:
+      if (Random.chance(0.002 * max(15, c->getAttr(AttrType("DAMAGE")))))
+        c->removeEffect(LastingEffect::ENTANGLED);
+      break;
     case LastingEffect::SPYING: {
       Collective* enemy = nullptr;
       optional<ViewId> enemyId;
@@ -829,7 +833,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
         for (auto pos : c->getPosition().neighbors8())
           if (auto other = pos.getCreature())
             if (Random.roll(10)) {
-              other->addEffect(LastingEffect::PLAGUE, getDuration(c, LastingEffect::PLAGUE));
+              other->addEffect(LastingEffect::PLAGUE, getDuration(LastingEffect::PLAGUE));
             }
         if (suffers) {
           if (c->getBody().getHealth() > 0.5 || canDie) {
@@ -1353,11 +1357,7 @@ bool LastingEffects::shouldEnemyApply(const Creature* victim, LastingEffect effe
   return ::getAdjective(effect).bad;
 }
 
-static TimeInterval entangledTime(int strength) {
-  return TimeInterval(max(5, 30 - strength / 2));
-}
-
-TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
+TimeInterval LastingEffects::getDuration(LastingEffect e) {
   PROFILE;
   switch (e) {
     case LastingEffect::PLAGUE:
@@ -1374,7 +1374,7 @@ TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
     case LastingEffect::WARNING:
     case LastingEffect::TELEPATHY:
     case LastingEffect::ENTANGLED:
-      return entangledTime(c->getAttr(AttrType("DAMAGE")));
+      return 30_visible;
     case LastingEffect::HALLU:
     case LastingEffect::SLOWED:
     case LastingEffect::SPEED:
