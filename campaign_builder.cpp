@@ -154,6 +154,8 @@ constexpr auto mapMargin = 10;
 
 bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campaign& campaign, Table<bool>& blocked,
     vector<Campaign::SiteInfo::Dweller> villains, int count, Range playerDist) {
+  if (villains.empty())
+    return true;
   for (int i = 0; villains.size() < count; ++i)
     villains.push_back(villains[i]);
   if (villains.size() > count)
@@ -233,8 +235,9 @@ bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campai
   auto allLesser = shuffle(random, getVillains(villainGroups, VillainType::LESSER));
   if (!placeVillains(contentFactory, campaign, blocked, allLesser.getPrefix(3), 3, Range(1, initialRadius)))
     return false;
-  if (!placeVillains(contentFactory, campaign, blocked, allLesser.getSubsequence(3), counts.numLesser - 3, Range(initialRadius + 2, 1000)))
-    return false;
+  if (allLesser.size() > 3)
+    if (!placeVillains(contentFactory, campaign, blocked, allLesser.getSubsequence(3), counts.numLesser - 3, Range(initialRadius + 2, 1000)))
+      return false;
   if (!placeVillains(contentFactory, campaign, blocked, shuffle(random, getVillains(villainGroups, VillainType::MINOR)),
           counts.numMinor, Range(0, 1000)) ||
       !placeVillains(contentFactory, campaign, blocked, shuffle(random, getVillains(villainGroups, VillainType::ALLY)),
