@@ -316,6 +316,13 @@ static bool applyToCreature(const Effects::Lasting& e, Creature* c, Creature*) {
   return addEffect(e.lastingEffect, c, e.duration);
 }
 
+static void scale(Effects::Lasting& e, double value, const ContentFactory* f) {
+  if (e.duration)
+    *e.duration *= value;
+  else
+    e.duration = LastingEffects::getDuration(*e.lastingEffect.getValueMaybe<LastingEffect>()) * value;
+}
+
 /*static bool isOffensive(const Effects::Lasting& e) {
   return LastingEffects::isConsideredBad(e.lastingEffect);
 }*/
@@ -2656,7 +2663,7 @@ template <typename T, REQUIRE(getColor(TVALUE(const T&), TVALUE(const ContentFac
 static Color getColor(const T& t, const Effect& effect, const ContentFactory* f) {
   return getColor(t, f);
 }
- 
+
 static Color getColor(const DefaultType& e, const Effect& effect, const ContentFactory* f) {
   int h = int(combineHash(effect.getName(f)));
   return Color(h % 256, ((h / 256) % 256), ((h / 256 / 256) % 256));

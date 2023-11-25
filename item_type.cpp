@@ -434,18 +434,20 @@ ItemAttributes CustomItemId::getAttributes(const ContentFactory* factory) const 
   }
 }
 
-ItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory* factory) const {
+static ItemAttributes getPotionAttr(const ContentFactory* factory, Effect effect, double scale, const char* prefix,
+    const char* viewId) {
+  effect.scale(scale, factory);
   return ITATTR(
-      i.viewId = ViewId("potion1", effect.getColor(factory));
+      i.viewId = ViewId(viewId, effect.getColor(factory));
       i.shortName = effect.getName(factory);
-      i.name = "potion of " + *i.shortName;
-      i.plural = "potions of " + *i.shortName;
+      i.name = prefix + "potion of "_s + *i.shortName;
+      i.plural = prefix + "potions of "_s + *i.shortName;
       i.blindName = "potion"_s;
       i.applyVerb = make_pair("drink", "drinks");
       i.fragile = true;
       i.weight = 0.3;
       i.effect = effect;
-      i.price = i.effect->getPrice(factory);
+      i.price = i.effect->getPrice(factory) * scale * scale;
       i.burnTime = 1;
       i.effectAppliedWhenThrown = true;
       i.uses = 1;
@@ -453,6 +455,14 @@ ItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory* factory) c
       i.storageIds = LIST(StorageId("potions"), StorageId("equipment"));
       i.equipmentGroup = "consumables"_s;
   );
+}
+
+ItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory* factory) const {
+  return getPotionAttr(factory, effect, 1, "", "potion1");
+}
+
+ItemAttributes ItemTypes::Potion2::getAttributes(const ContentFactory* factory) const {
+  return getPotionAttr(factory, effect, 2, "concentrated ", "potion3");
 }
 
 ItemAttributes ItemTypes::PrefixChance::getAttributes(const ContentFactory* factory) const {
