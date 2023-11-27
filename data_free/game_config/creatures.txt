@@ -3369,7 +3369,7 @@ End
     viewId = { "horse" }
     attr = {
       DAMAGE 16
-      DEFENSE 7 
+      DEFENSE 7
     }
     body = {
       type = FourLegged LARGE

@@ -536,6 +536,11 @@ string Item::getModifiers(const ContentFactory* factory, bool shorten) const {
       printAttr.insert(attr.first);
   } else
     switch (getClass()) {
+      case ItemClass::OTHER:
+        for (auto& attr : attributes->modifiers)
+          if (attr.second > 0)
+            printAttr.insert(attr.first);
+        break;
       case ItemClass::RANGED_WEAPON:
         for (auto& attr : attributes->modifiers)
           if (factory->attrInfo.at(attr.first).isAttackAttr)
@@ -553,12 +558,12 @@ string Item::getModifiers(const ContentFactory* factory, bool shorten) const {
     }
   vector<string> attrStrings;
   for (auto attr : printAttr)
-    attrStrings.push_back(withSign(getValueMaybe(attributes->modifiers, attr).value_or(0)) + 
+    attrStrings.push_back(withSign(getValueMaybe(attributes->modifiers, attr).value_or(0)) +
         (shorten ? "" : " " + factory->attrInfo.at(attr).name));
   string attrString = combine(attrStrings, true);
   if (!attrString.empty())
     attrString = "(" + attrString + ")";
-  if (attributes->uses > -1 && attributes->displayUses) 
+  if (attributes->uses > -1 && attributes->displayUses)
     appendWithSpace(attrString, "(" + toString(attributes->uses) + " uses left)");
   return attrString;
 }

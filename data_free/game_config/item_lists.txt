@@ -246,7 +246,7 @@ End
 
 "amulets"
 {
-  items = { 
+  items = {
     {{Amulet REGENERATION} 1}
     {{Amulet WARNING} 1}
     {{"DefenseAmulet"} 1}
@@ -396,7 +396,7 @@ End
     {{Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 1} 2}
   }
   unique = {
-    {Scroll Name "blacksmithing mastery" Price 800 
+    {Scroll Name "blacksmithing mastery" Price 800
       Description "Contains secrets of legendary blacksmithing knowledge"
       IncreaseAttr "FORGE" 50} {1}
   }
