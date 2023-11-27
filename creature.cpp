@@ -1211,7 +1211,7 @@ int Creature::getCombatExperienceCap() const {
 }
 
 void Creature::updateCombatExperience(Creature* victim) {
-  if (getBody().hasBrain(getGame()->getContentFactory())) {
+  if (getBody().hasBrain(getGame()->getContentFactory()) && victim->attributes->grantsExperience) {
     double attackDiff = victim->highestAttackValueEver - highestAttackValueEver;
     constexpr double maxLevelGain = 3.0;
     constexpr double minLevelGain = 0.02;
@@ -1499,6 +1499,11 @@ void Creature::tickCompanions() {
       append(companions[i].creatures, summonPersonal(this, Random.choose(summonsInfo.creatures),
           summonsInfo.statsBase ? optional<int>(getAttr(*summonsInfo.statsBase)) : optional<int>(),
           summonsInfo.spawnAway ? getCompanionPosition(this) : none));
+    if (summonsInfo.hostile)
+      for (auto c : companions[i].creatures) {
+        c->setTribe(TribeId::getHostile());
+        c->unknownAttackers.insert(this);
+      }
   }
 }
 

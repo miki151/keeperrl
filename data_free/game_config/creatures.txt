@@ -284,7 +284,13 @@ End
       STEED 1
     }
     aiType = RANGED
-    companions = {5 false SPELL_DAMAGE 0.05 { "SPIRIT" }}
+    companions = {{
+      count = 5
+      spawnAway = false
+      statsBase = SPELL_DAMAGE
+      summonFreq = 0.05
+      creatures = { "SPIRIT" }}
+    }
     spells = { "advanced healing" "heal spirit" }
     chatReactionFriendly = "\"mhhhhhrrrr!\""
     chatReactionHostile = "\"mhhhhhrrrr!\""
@@ -530,6 +536,33 @@ End
     chatReactionHostile = "\"Wouuuouuu!!!\""
     name = {
       name = "ghost"
+    }
+  }
+"WRAITH"
+  {
+    body = {
+      type = NonHumanoid LARGE
+      material = SPIRIT
+      deathSound = none
+      intrinsicAttacks = {
+        TORSO {{{ Intrinsic { "touch_attack" } "touch" 0 {
+            attackType = HIT
+            attackMsg = TOUCH } }}}
+      }
+    }
+    viewId = { "wraith" }
+    grantsExperience = false
+    attr = {
+      DEFENSE 25
+      SPELL_DAMAGE 25
+    }
+    permanentEffects = {
+      FLYING 1
+    }
+    chatReactionFriendly = "\"Wouuuouuu!!!\""
+    chatReactionHostile = "\"Wouuuouuu!!!\""
+    name = {
+      name = "wraith"
     }
   }
 "SUCCUBUS"
@@ -1916,7 +1949,7 @@ End
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     aiType = RANGED
-    companions = {7 false SPELL_DAMAGE 0.05 { "SPIRIT" }}
+    companions = {{count = 7 spawnAway = false statsBase = SPELL_DAMAGE summonFreq = 0.05 creatures = { "SPIRIT" }}}
     spells = { "advanced healing" "defense bonus" "directed blast" "heal spirit" }
     maxLevelIncrease = {
       SPELL_DAMAGE 5
@@ -2633,7 +2666,7 @@ End
     chatReactionHostile = "\"Die!\""
     spellSchools = {}
     spells = { "heal spirit" }
-    companions = {4 false SPELL_DAMAGE 0.02 { "SPIRIT" }}
+    companions = {{count = 4 spawnAway = false statsBase = SPELL_DAMAGE summonFreq = 0.02 creatures = { "SPIRIT" }}}
     permanentEffects = {
       DISTILLATION_SKILL 1
     }
@@ -4002,7 +4035,13 @@ End
       FIRE_RESISTANT 1
       MAGIC_RESISTANCE 1
     }
-    companions = {5 false SPELL_DAMAGE 0.1 { "FIRE_ELEMENTAL" "AIR_ELEMENTAL" "WATER_ELEMENTAL" "EARTH_ELEMENTAL" }}
+    companions = {{
+      count = 5
+      spawnAway = false
+      statsBase = SPELL_DAMAGE
+      summonFreq = 0.1
+      creatures = { "FIRE_ELEMENTAL" "AIR_ELEMENTAL" "WATER_ELEMENTAL" "EARTH_ELEMENTAL" }
+    }}
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     name = {
@@ -4443,7 +4482,7 @@ End
     }
     body = {
       type = Humanoid LARGE
-      droppedPartUpgrade = { IncreaseAttr DEFENSE 5 AddCompanion 6 true none 0.1 { "FLY" } }
+      droppedPartUpgrade = { IncreaseAttr DEFENSE 5 AddCompanion {count = 6 summonFreq = 0.1 creatures = { "FLY" } }}
     }
     attr = {
       DAMAGE 12
@@ -5055,7 +5094,7 @@ End
     attr = {
       DAMAGE 12
       DEFENSE 8
-      SPELL_DAMAGE 25 
+      SPELL_DAMAGE 25
     }
     maxLevelIncrease = {
       DAMAGE 4
@@ -5063,7 +5102,13 @@ End
     }
     spellSchools = {}
     spells = { "heal spirit" }
-    companions = {4 false SPELL_DAMAGE 0.02 { "SPIRIT" }}
+    companions = {{
+      count = 4
+      spawnAway = false
+      statsBase = SPELL_DAMAGE
+      summonFreq = 0.02
+      creatures = { "SPIRIT" }
+    }}
     permanentEffects = append {
       DISTILLATION_SKILL 1
     }

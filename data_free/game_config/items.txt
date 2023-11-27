@@ -1620,10 +1620,23 @@ End
     viewId = { "ring" ColorId WHITE }
     name = "ring of spider summoning"
     shortName = "spider"
-    equipedCompanion = 5 true none 0.01 { "SPIDER" }
+    equipedCompanion = {count = 5 summonFreq = 0.01 creatures = { "SPIDER" }}
     weight = 0.05
     equipmentSlot = RINGS
     price = 1
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
+"InvisibilityRing"
+  {
+    viewId = { "gold_ring" }
+    name = "gold ring"
+    equipedCompanion = {count = 9 statsBase = "DEFENSE" summonFreq = 0.4 creatures = { "WRAITH" } hostile = true}
+    equipedEffect = {INVISIBLE}
+    weight = 0.05
+    equipmentSlot = RINGS
+    price = 1
+    autoEquipPredicate = Or {}
     storageIds = {"jewellery" "equipment"}
     equipmentGroup = "jewellery"
   }
@@ -1632,7 +1645,7 @@ End
     viewId = { "ring" ColorId PURPLE }
     name = "ring of dragon summoning"
     shortName = "dragon"
-    equipedCompanion = 1 true none 0.001 { "RED_DRAGON" "WHITE_DRAGON" "YELLOW_DRAGON" "GREEN_DRAGON" }
+    equipedCompanion = {summonFreq = 0.001 creatures = { "RED_DRAGON" "WHITE_DRAGON" "YELLOW_DRAGON" "GREEN_DRAGON" }}
     price = 2000
   }
 "Rock"

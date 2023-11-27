@@ -137,6 +137,7 @@ class CreatureAttributes {
   optional<AchievementId> SERIAL(killedByAchievement);
   optional<AchievementId> SERIAL(steedAchievement);
   HashSet<AttrType> SERIAL(fixedAttr);
+  bool SERIAL(grantsExperience) = true;
 
   private:
   void consumeEffects(Creature* self, const EnumMap<LastingEffect, int>&);

@@ -133,7 +133,7 @@ void Item::onUnequip(Creature* c, bool msg, const ContentFactory* factory) {
   if (attributes->equipedCompanion)
     [&, &companions = c->getAttributes().companions] {
       for (int i : All(companions))
-        if (companions[i] == *attributes->equipedCompanion) {
+        if (companions[i].creatures == attributes->equipedCompanion->creatures) {
           c->removeCompanions(i);
           return;
         }
