@@ -1232,7 +1232,7 @@ void Creature::updateCombatExperience(Creature* victim) {
 Creature* Creature::getsCreditForKills() {
   for (auto pos : position.getRectangle(Rectangle::centered(10)))
     if (auto c = pos.getCreature())
-      if (c->getCompanions().contains(this)) {
+      if (c->getCompanions(true).contains(this)) {
         return c;
       }
   return this;
@@ -1492,7 +1492,8 @@ void Creature::tickCompanions() {
       }
     }
   while (companions.size() < attributes->companions.size())
-    companions.push_back(CompanionGroup{{}, attributes->companions[companions.size()].statsBase});
+    companions.push_back(CompanionGroup{{}, attributes->companions[companions.size()].statsBase,
+        attributes->companions[companions.size()].getsKillCredit});
   for (int i : All(attributes->companions)) {
     auto& summonsInfo = attributes->companions[i];
     if (companions[i].creatures.size() < summonsInfo.count && Random.chance(summonsInfo.summonFreq))
@@ -1507,11 +1508,12 @@ void Creature::tickCompanions() {
   }
 }
 
-vector<Creature*> Creature::getCompanions() const {
+vector<Creature*> Creature::getCompanions(bool withNoKillCreditOnly) const {
   vector<Creature*> ret;
   for (auto& group : companions)
-    for (auto c : group.creatures)
-      ret.push_back(c.get());
+    if (!withNoKillCreditOnly || !group.getsKillCredit)
+      for (auto c : group.creatures)
+        ret.push_back(c.get());
   return ret;
 }
 

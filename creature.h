@@ -333,7 +333,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   EnumSet<CreatureStatus>& getStatus();
   const EnumSet<CreatureStatus>& getStatus() const;
-  vector<Creature*> getCompanions() const;
+  vector<Creature*> getCompanions(bool withNoKillCreditOnly = false) const;
   Creature* getFirstCompanion() const;
   void removeCompanions(int index);
   void toggleCaptureOrder();
@@ -423,7 +423,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   struct CompanionGroup {
     vector<WeakPointer<Creature>> SERIAL(creatures);
     optional<AttrType> SERIAL(statsBase);
-    SERIALIZE_ALL(creatures, statsBase)
+    bool SERIAL(getsKillCredit);
+    SERIALIZE_ALL(creatures, statsBase, getsKillCredit)
   };
   vector<CompanionGroup> SERIAL(companions);
   void tickCompanions();

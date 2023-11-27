@@ -10,5 +10,6 @@ struct CompanionInfo {
   double SERIAL(summonFreq);
   vector<CreatureId> SERIAL(creatures);
   bool SERIAL(hostile) = false;
-  SERIALIZE_ALL(OPTION(count), OPTION(spawnAway), OPTION(statsBase), NAMED(summonFreq), NAMED(creatures), OPTION(hostile))
+  bool SERIAL(getsKillCredit) = false;
+  SERIALIZE_ALL(OPTION(count), OPTION(spawnAway), OPTION(statsBase), NAMED(summonFreq), NAMED(creatures), OPTION(hostile), OPTION(getsKillCredit))
 };

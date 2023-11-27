@@ -1648,6 +1648,71 @@ End
     equipedCompanion = {summonFreq = 0.001 creatures = { "RED_DRAGON" "WHITE_DRAGON" "YELLOW_DRAGON" "GREEN_DRAGON" }}
     price = 2000
   }
+"HorseRing" inherit "SpiderRing"
+  {
+    viewId = { "ring" ColorId BROWN }
+    name = "ring of horse taming"
+    shortName = "horse"
+    equipedCompanion = {summonFreq = 0.01 creatures = { "HORSE_CAN_TRAIN" } getsKillCredit = true}
+    price = 100
+  }
+Def DAMAGE_RING(VALUE)
+  {
+    viewId = { "ring" ColorId BLUE }
+    shortName = "damage"
+    name = "ring of damage"
+    plural = "rings of damage"
+    description = "Increases the force of your physical attacks, making you deal more damage in combat."
+    equipmentSlot = RINGS
+    price = 60
+    modifiers = {
+      DAMAGE VALUE
+    }
+    weight = 0.3
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
+End
+"DamageRing3" DAMAGE_RING(3)
+"DamageRing10" DAMAGE_RING(10)
+Def SPELL_DAMAGE_RING(VALUE)
+  {
+    viewId = { "ring" ColorId GREEN }
+    shortName = "spell damage"
+    name = "ring of spell damage"
+    plural = "rings of spell damage"
+    description = "Increases the force of your spell attacks, making you deal more damage in combat."
+    equipmentSlot = RINGS
+    price = 60
+    modifiers = {
+      SPELL_DAMAGE VALUE
+    }
+    weight = 0.3
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
+End
+"SpellDamageRing3" SPELL_DAMAGE_RING(3)
+"SpellDamageRing10" SPELL_DAMAGE_RING(10)
+Def RANGED_DAMAGE_RING(VALUE)
+  {
+    viewId = { "ring" ColorId YELLOW }
+    shortName = "ranged damage"
+    name = "ring of ranged damage"
+    plural = "rings of ranged damage"
+    description = "Increases the precision of your ranged attacks, making you deal more damage in combat."
+    equipmentSlot = RINGS
+    price = 60
+    modifiers = {
+      RANGED_DAMAGE VALUE
+    }
+    weight = 0.3
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
+End
+"RangedDamageRing3" RANGED_DAMAGE_RING(3)
+"RangedDamageRing10" RANGED_DAMAGE_RING(10)
 "Rock"
   {
     viewId = { "rock" }
