@@ -2119,9 +2119,10 @@ void PlayerControl::onEvent(const GameEvent& event) {
           updateMinionVisibility(info.creature);
       },
       [&](const ItemsOwned& info) {
+        auto& equipment = collective->getMinionEquipment();
         if (getCreatures().contains(info.creature))
           for (auto item : info.items)
-            if (!collective->getMinionEquipment().tryToOwn(info.creature, item))
+            if (!equipment.isOwner(item, info.creature) && !equipment.tryToOwn(info.creature, item))
               getView()->presentText("",
                   item->getTheName() + " won't be permanently assigned to creature because the equipment slot is locked.");
       },
