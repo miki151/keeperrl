@@ -1938,7 +1938,7 @@ static optional<Position> findInaccessiblePos(Position startingPos) {
 void Creature::tryToDestroyLastingEffect(LastingEffect effect) {
   removeEffect(effect, false);
   for (auto item : copyOf(equipment->getAllEquipped()))
-    if (item->hasEquipedEffect(effect)) {
+    if (item->getEquipedEffects().contains(effect)) {
       you(MsgType::YOUR, item->getName() + " crumbles to dust");
       equipment->removeItem(item, this);
       return;

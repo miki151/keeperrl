@@ -39,6 +39,8 @@ struct AutomatonPart;
 struct CreaturePredicate;
 class CostInfo;
 
+using LastingOrBuff = variant<LastingEffect, BuffId>;
+
 class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<Item> {
   public:
   Item(const ItemAttributes&, const ContentFactory*);
@@ -104,7 +106,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getApplyMsgThirdPerson(const Creature* owner) const;
   string getApplyMsgFirstPerson(const Creature* owner) const;
   optional<StatId> getProducedStat() const;
-  bool hasEquipedEffect(LastingEffect) const;
+  const vector<LastingOrBuff>& getEquipedEffects() const;
   void onEquip(Creature*, bool msg = true, const ContentFactory* = nullptr);
   void onUnequip(Creature*, bool msg = true, const ContentFactory* = nullptr);
   void onOwned(Creature*, bool msg = true, const ContentFactory* factory = nullptr);

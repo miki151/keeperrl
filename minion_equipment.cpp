@@ -119,6 +119,20 @@ bool MinionEquipment::needsItem(const Creature* c, const Item* it, bool noLimit)
         };
         if (getItemsOwnedBy(c, pred).size() >= limit)
           return false;
+        if (slot == EquipmentSlot::RINGS) {
+          for (auto e : it->getEquipedEffects()) {
+            auto satisfiedEffect = [&] {
+              for (auto other : getItemsOwnedBy(c))
+                if (other != it && other->getEquipedEffects().contains(e))
+                  return true;
+              return false;
+            };
+            if (!satisfiedEffect())
+              return true;
+          }
+          if (!it->getEquipedEffects().empty())
+            return false;
+        }
       }
     }
     return true;
@@ -146,7 +160,7 @@ void MinionEquipment::updateOwners(const vector<Creature*>& creatures) {
       }
   for (auto c : creatures)
     for (auto item : getItemsOwnedBy(c))
-      if (!needsItem(c, item))
+      if (!needsItem(c, item) && !isLocked(c, item->getUniqueId()))
         discard(item);
 }
 

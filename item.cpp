@@ -113,11 +113,8 @@ void Item::onDropped(Creature* c, bool msg, const ContentFactory* factory) {
     removePermanentEffect(*attributes->ownedEffect, c, msg, factory);
 }
 
-bool Item::hasEquipedEffect(LastingEffect l) const {
-  for (auto& e : attributes->equipedEffect)
-    if (e == l)
-      return true;
-  return false;
+const vector<LastingOrBuff>& Item::getEquipedEffects() const {
+  return attributes->equipedEffect;
 }
 
 void Item::onEquip(Creature* c, bool msg, const ContentFactory* factory) {
