@@ -2057,6 +2057,7 @@ End
 }
 "YETI"
 {
+  biome = "SNOW"
   settlement = {
     type = Builtin EMPTY "DUNGEON"
     inhabitants = {
