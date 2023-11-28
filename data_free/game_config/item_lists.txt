@@ -64,7 +64,44 @@ End
   }
   prefixChance = 0.03
 }
-
+"jeweler"
+{
+  items = {
+    {{"DefenseAmulet"} 10}
+    {{"DamageRing3"} 10}
+    {{"SpellDamageRing3"} 10}
+    {{"RangedDamageRing3"} 10}
+    {{"UndeadProtectionRing5"} 10}
+    {{"ElfProtectionRing5"} 10}
+    {{"DwarfProtectionRing5"} 10}
+    {{"GreenskinProtectionRing5"} 10}
+    {{"SpiderRing"} 10}
+    {{"BatRing"} 10}
+    {{"JumpRing"} 10}
+    {{Ring FIRE_RESISTANT} 10}
+    {{Ring COLD_RESISTANT} 10}
+    {{Ring ACID_RESISTANT} 10}
+    {{Ring POISON_RESISTANT} 10}
+    {{Ring DARKNESS_SOURCE} 10 1 15}
+    {{"HorseRing"} 10 1 15}
+    {{Ring FIRE_IMMUNITY} 10 1 15}
+    {{Ring COLD_IMMUNITY} 10 1 15}
+    {{Ring ACID_IMMUNITY} 10 1 15}
+    {{"InvisibilityRing"} 10 1 20}
+    {{"DefenseAmulet10"} 10 1 20}
+    {{"DamageRing10"} 10 1 20}
+    {{"SpellDamageRing10"} 10 1 20}
+    {{"RangedDamageRing10"} 10 1 20}
+    {{"UndeadProtectionRing15"} 10 1 20}
+    {{"ElfProtectionRing15"} 10 1 20}
+    {{"DwarfProtectionRing15"} 10 1 20}
+    {{"GreenskinProtectionRing15"} 10 1 20}
+    {{"DragonProtectionRing15"} 10 1 20}
+    {{"DragonRing"} 5 1 40}
+    {{"Sceptre"} 5 1 40}
+    {{"MagicLamp"} 5 1 40}
+  }
+}
 "gnomeShop" inherit "armory"
 {
   unique = {

@@ -2284,6 +2284,14 @@ End
     }
   }
 }
+"JEWELER_SHOP" inherit "ARMOR_SHOP"
+{
+  settlement = append {
+    shopItems = {
+      {15 30} "jeweler"
+    }
+  }
+}
 "TEMPLE"
 {
   settlement = {

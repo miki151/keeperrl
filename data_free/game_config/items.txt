@@ -710,7 +710,7 @@ End
     equipmentSlot = WEAPON
     weight = 20
     modifiers = {
-      DAMAGE 5
+      DAMAGE 15
     }
     price = 2000
     weaponInfo = {
@@ -1584,6 +1584,12 @@ End
     storageIds = {"jewellery" "equipment"}
     equipmentGroup = "jewellery"
   }
+"DefenseAmulet10" inherit "DefenseAmulet"
+  {
+    modifiers = {
+      DEFENSE 10
+    }
+  }
 "FirstAidKit"
   {
     viewId = { "first_aid" }
@@ -1615,18 +1621,30 @@ End
     storageIds = {"equipment"}
     equipmentGroup = "light emitting equipment"
   }
-"SpiderRing"
+Def PROTECTION_RING(CreatureType, Predicate, Value)
   {
     viewId = { "ring" ColorId WHITE }
-    name = "ring of spider summoning"
-    shortName = "spider"
-    equipedCompanion = {count = 5 summonFreq = 0.01 creatures = { "SPIDER" }}
+    name = "ring of protection from " + CreatureType
+    shortName = "from " + CreatureType
+    specialAttr = {
+      DEFENSE Value Name "against " + CreatureType Attacker Predicate
+    }
     weight = 0.05
     equipmentSlot = RINGS
-    price = 1
+    price = 60
     storageIds = {"jewellery" "equipment"}
     equipmentGroup = "jewellery"
   }
+End
+"UndeadProtectionRing5" PROTECTION_RING("undead", BodyMaterial "UNDEAD_FLESH", 5)
+"ElfProtectionRing5" PROTECTION_RING("elves", HatedBy "HATE_ELVES", 5)
+"DwarfProtectionRing5" PROTECTION_RING("dwarves", HatedBy "HATE_DWARVES", 5)
+"GreenskinProtectionRing5" PROTECTION_RING("dwarves", HatedBy "HATE_GREENSKINS", 5)
+"UndeadProtectionRing15" PROTECTION_RING("undead", BodyMaterial "UNDEAD_FLESH", 15)
+"ElfProtectionRing15" PROTECTION_RING("elves", HatedBy "HATE_ELVES", 15)
+"DwarfProtectionRing15" PROTECTION_RING("dwarves", HatedBy "HATE_DWARVES", 15)
+"GreenskinProtectionRing15" PROTECTION_RING("dwarves", HatedBy "HATE_GREENSKINS", 15)
+"DragonProtectionRing15" PROTECTION_RING("dragons", HatedBy "HATE_DRAGONS", 15)
 "InvisibilityRing"
   {
     viewId = { "gold_ring" }
@@ -1635,27 +1653,45 @@ End
     equipedEffect = {INVISIBLE}
     weight = 0.05
     equipmentSlot = RINGS
-    price = 1
+    price = 50
     autoEquipPredicate = Or {}
     storageIds = {"jewellery" "equipment"}
     equipmentGroup = "jewellery"
   }
-"DragonRing" inherit "SpiderRing"
+"JumpRing"
   {
-    viewId = { "ring" ColorId PURPLE }
-    name = "ring of dragon summoning"
-    shortName = "dragon"
-    equipedCompanion = {summonFreq = 0.001 creatures = { "RED_DRAGON" "WHITE_DRAGON" "YELLOW_DRAGON" "GREEN_DRAGON" }}
-    price = 2000
+    viewId = { "ring" ColorId PINK }
+    name = "ring of jumping"
+    shortName = "jumping"
+    equipedAbility = {"jump"}
+    weight = 0.05
+    equipmentSlot = RINGS
+    price = 50
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
   }
-"HorseRing" inherit "SpiderRing"
+Def TAMING_RING(Creature, Count, Name, Price, Freq)
   {
-    viewId = { "ring" ColorId BROWN }
-    name = "ring of horse taming"
-    shortName = "horse"
-    equipedCompanion = {summonFreq = 0.01 creatures = { "HORSE_CAN_TRAIN" } getsKillCredit = true}
-    price = 100
+    viewId = { "ring" ColorId WHITE }
+    name = "ring of " + Name + " taming"
+    shortName = Name
+    equipedCompanion = {
+      count = Count
+      summonFreq = Freq
+      creatures = { Creature }
+      getsKillCredit = true
+    }
+    weight = 0.05
+    equipmentSlot = RINGS
+    price = Price
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
   }
+End
+"SpiderRing" TAMING_RING("SPIDER", 5, "spider", 1, 0.01)
+"DragonRing" TAMING_RING("RED_DRAGON" "WHITE_DRAGON" "YELLOW_DRAGON" "GREEN_DRAGON", 1, "dragon", 500, 0.001)
+"HorseRing" TAMING_RING("HORSE_CAN_TRAIN", 1, "horse", 100, 0.005)
+"BatRing" TAMING_RING("BAT", 5, "bat", 5, 0.01)
 Def DAMAGE_RING(VALUE)
   {
     viewId = { "ring" ColorId BLUE }

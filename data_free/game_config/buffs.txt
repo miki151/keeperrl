@@ -257,6 +257,7 @@ Def IMMUNITY(Name, Attr)
   color = ColorId WHITE
   fx = BUFF_WHITE
   defenseMultiplier = 1000
+  price = 200
   defenseMultiplierAttr = Attr
   combatConsumable = true
   canAbsorb = false
