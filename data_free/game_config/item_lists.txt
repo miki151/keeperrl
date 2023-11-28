@@ -8,6 +8,8 @@ End
     {{Scroll Escape{}} 5 }
     {{Scroll Enhance ARMOR 1} 5 }
     {{Scroll Enhance WEAPON 1} 5 }
+    {{Scroll Enhance ARMOR 4} 5 1 20 }
+    {{Scroll Enhance WEAPON 4} 5 1 20 }
     {{FireScroll} 5}
     {{"Torch"} 10}
     {{Scroll Summon "FIRE_ELEMENTAL" {1 2} 100} 5 }
@@ -22,12 +24,18 @@ End
     {{Potion Lasting SLOWED} 5 }
     {{Potion Lasting SPEED}5 }
     {{Potion Lasting BLIND} 5 }
-    {{Potion Lasting INVISIBLE} 2 }
+    {{Potion2 Lasting SLEEP} 5 1 25 }
+    {{Potion2 Lasting SLOWED} 5 1 25 }
+    {{Potion2 Lasting SPEED}5 1 25 }
+    {{Potion2 Lasting BLIND} 5 1 25 }
+    {{Potion2 Lasting INVISIBLE} 2 1 25}
     {{Amulet WARNING} 0.5 }
     {{Amulet REGENERATION} 0.5 }
     {{"DefenseAmulet"} 0.5 }
+    {{"DefenseAmulet10"} 0.5 1 25 }
     {{Ring POISON_RESISTANT} 0.5}
     {{Ring FIRE_RESISTANT} 0.5}
+    {{Ring FIRE_IMMUNITY} 0.5 1 25}
   }
   prefixChance = 0.03
 }
@@ -156,22 +164,6 @@ End
   }
 }
 
-"scrolls"
-{
-  items = {
-    {{Scroll Escape{}} 1 }
-    {{Scroll Enhance ARMOR 1} 1 }
-    {{Scroll Enhance WEAPON 1} 1 }
-    {{FireScroll} 1 }
-    {{Scroll Summon "FIRE_ELEMENTAL" {1 2} 100} 1 }
-    {{Scroll CircularBlast} 1 }
-    {{Scroll Deception} 1 }
-    {{Scroll Audience none} 1 }
-    {{Scroll Summon "FLY" {3 6} 100} 1 }
-    {{"AdoxieScroll"} 1}
-  }
-}
-
 "goodMushrooms"
 {
   items = {
@@ -281,34 +273,34 @@ End
   }
 }
 
-"amulets"
-{
-  items = {
-    {{Amulet REGENERATION} 1}
-    {{Amulet WARNING} 1}
-    {{"DefenseAmulet"} 1}
-  }
-}
-
 "dungeon"
 {
   items = {
     {{"Knife"} 50 }
     {{"Sword"} 50 }
+    {{"AdaSword"} 50 1 25 }
     {{"BattleAxe"} 10 }
+    {{"AdaBattleAxe"} 10 1 25 }
     {{"WarHammer"} 20 }
+    {{"AdaWarHammer"} 20 1 25 }
     {{"LeatherArmor"} 20 }
-    {{"ChainArmor"} 1 }
+    {{"ChainArmor"} 10 }
+    {{"AdaArmor"} 10 1 25 }
     {{"LeatherHelm"} 20 }
     {{"IronHelm"} 5 }
+    {{"AdaHelm"} 5  1 25}
     {{"LeatherBoots"} 20 }
     {{"IronBoots"} 7 }
+    {{"AdaBoots"} 7 1 25 }
     {{"Torch"} 7 }
     {{"LeatherGloves"} 30 }
+    {{"AdaGloves"} 10 1 25 }
     {{"AdoxieScroll"} 1}
     {{Scroll Escape{}} 30 }
     {{Scroll Enhance ARMOR 1} 30 }
     {{Scroll Enhance WEAPON 1} 30 }
+    {{Scroll Enhance ARMOR 4} 30 1 25 }
+    {{Scroll Enhance WEAPON 4} 30 1 25 }
     {{FireScroll} 30 }
     {{Scroll Summon "FIRE_ELEMENTAL" {1 2} 100} 30 }
     {{Scroll CircularBlast} 5 }
@@ -325,11 +317,21 @@ End
     {{Potion Lasting POISON_RESISTANT} 20 }
     {{Potion Lasting FLYING} 20 }
     {{Potion Lasting SPEED} 50 }
+    {{Potion2 Lasting SLEEP} 50 1 25 }
+    {{Potion2 Lasting SLOWED} 50 1 25 }
+    {{Potion2 Lasting BLIND} 30 1 25 }
+    {{Potion2 Lasting INVISIBLE} 10 1 25 }
+    {{Potion2 Lasting POISON} 20 1 25 }
+    {{Potion2 Lasting POISON_RESISTANT} 20 1 25 }
+    {{Potion2 Lasting FLYING} 20 1 25 }
+    {{Potion2 Lasting SPEED} 50 1 25 }
     {{Amulet WARNING} 3 }
     {{Amulet REGENERATION} 3 }
     {{"DefenseAmulet"} 3 }
+    {{"DefenseAmulet10"} 3 1 25 }
     {{Ring POISON_RESISTANT} 3}
     {{Ring FIRE_RESISTANT} 3}
+    {{Ring FIRE_IMMUNITY} 3 1 25}
   }
   prefixChance = 0.03
 }
