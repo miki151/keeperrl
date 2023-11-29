@@ -19,7 +19,7 @@ FXInfo getFXInfo(FXVariantName var) {
     case Name::FIRE_SPHERE:
       return {FXName::FIRE_SPHERE};
     case Name::FIRE:
-      return {FXName::FIRE};
+      return {FXName::FIRE, Color::WHITE, .8f};
     case Name::LABORATORY:
       return {FXName::LABORATORY, Color::GREEN};
     case Name::ENCHANTED_LABORATORY:
