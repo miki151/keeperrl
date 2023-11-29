@@ -35,6 +35,7 @@
   bodyPartInjury = "is incinerated"
   isAttackAttr = true
   meleeFX = {FIREBALL_SPLASH}
+  onAttackedEffect = Lasting ON_FIRE
   help = "Base damage value of fire attacks."
 }
 

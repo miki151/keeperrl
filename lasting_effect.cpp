@@ -823,7 +823,14 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
       break;
     }
     case LastingEffect::ON_FIRE:
-      c->getPosition().fireDamage(5);
+      c->getBody().bleed(c, 0.03);
+      c->secondPerson(PlayerMessage("You are burning alive!", MessagePriority::HIGH));
+      c->thirdPerson(PlayerMessage(c->getName().the() + " is burning alive.", MessagePriority::NORMAL));
+      if (c->getBody().getHealth() <= 0) {
+        c->verb("burn", "burns", "to death");
+        c->dieWithLastAttacker();
+        return true;
+      }
       break;
     case LastingEffect::PLAGUE:
       if (!c->isAffected(LastingEffect::FROZEN)) {
@@ -1074,7 +1081,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::SPYING: return "The creature can infiltrate enemy lines.";
     case LastingEffect::LIFE_SAVED: return "Prevents the death of the creature.";
     case LastingEffect::UNSTABLE: return "Creature may become insane after witnessing the death of an ally.";
-    case LastingEffect::OIL: return "Creature may be set on fire.";
+    case LastingEffect::OIL: return "Creature is covered in oil and may be set on fire.";
     case LastingEffect::SWARMER: return "Grants damage and defense bonus for every other swarmer in vicinity.";
     case LastingEffect::PSYCHIATRY: return "Creature won't be attacked by insane creatures.";
     case LastingEffect::TURNED_OFF: return "Creature requires more automaton engines built.";

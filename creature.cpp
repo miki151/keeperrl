@@ -1770,6 +1770,8 @@ bool Creature::takeDamage(const Attack& attack) {
     }
   } else
     message(attack.harmlessMessage);
+  if (auto& effect = factory->attrInfo.at(attack.damageType).onAttackedEffect)
+    effect->applyToCreature(this, attack.attacker);
   for (auto& e : attack.effect) {
     e.apply(position, attack.attacker);
     if (isDead())
