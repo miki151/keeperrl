@@ -1198,8 +1198,11 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
       } else
         minionInfo.experienceInfo.training.clear();
       auto& leaders = collective->getLeaders();
-      if (c->isAutomaton())
+      if (c->isAutomaton()) {
         minionInfo.actions.push_back(PlayerInfo::Action::DISASSEMBLE);
+        if (c->isAffected(LastingEffect::IMMOBILE))
+          minionInfo.actions.push_back(PlayerInfo::Action::LOCK_POSITION);
+      }
       else if (leaders.size() > 1 || !collective->hasTrait(c, MinionTrait::LEADER))
         minionInfo.actions.push_back(PlayerInfo::Action::BANISH);
       if (c->isAffected(BuffId("CONSUMPTION_SKILL")))
@@ -2893,6 +2896,12 @@ void PlayerControl::processInput(View* view, UserInput input) {
             break;
           case PlayerInfo::Action::ASSIGN_EQUIPMENT:
             collective->autoAssignEquipment(c);
+            break;
+          case PlayerInfo::Action::LOCK_POSITION:
+            if (c->isAffected(LastingEffect::LOCKED_POSITION))
+              c->removePermanentEffect(LastingEffect::LOCKED_POSITION);
+            else
+              c->addPermanentEffect(LastingEffect::LOCKED_POSITION);
             break;
         }
       break;

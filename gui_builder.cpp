@@ -4199,10 +4199,17 @@ SGuiElem GuiBuilder::drawMinionActions(const PlayerInfo& minion, const optional<
         break;
       case PlayerInfo::Action::LOCATE:
         line.addElem(WL(buttonLabelFocusable, "Locate", getButtonCallback(input), focusCallback, false, true));
-            break;
+        break;
       case PlayerInfo::Action::ASSIGN_EQUIPMENT:
         line.addElem(WL(buttonLabelFocusable, "Assign gear", getButtonCallback(input), focusCallback, false, true));
-            break;
+        break;
+      case PlayerInfo::Action::LOCK_POSITION:
+          line.addElem(WL(stack,
+              WL(buttonLabelFocusable, "Lock position", getButtonCallback(input), focusCallback, false, true),
+              getTooltip({"Enabling will prevent other minions from swapping position with this automaton.",
+                  "You will still be able to push it forward in control mode."}, THIS_LINE)
+          ));
+          break;
     }
     line.addSpace(buttonSpacing);
   }

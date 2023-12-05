@@ -686,6 +686,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::OIL: return "Covered in oil"_bad;
     case LastingEffect::TURNED_OFF: return "Turned off"_bad;
     case LastingEffect::AGGRAVATES: return "Aggravates enemies"_bad;
+    case LastingEffect::LOCKED_POSITION: return "Disabled position swap"_bad;
   }
 }
 
@@ -1027,6 +1028,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::CAN_DANCE: return "dancing";
     case LastingEffect::STEED: return "mounting";
     case LastingEffect::RIDER: return "riding";
+    case LastingEffect::LOCKED_POSITION: return "disabled position swap";
   }
 }
 
@@ -1092,6 +1094,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::CAN_DANCE: return "Can dance all night long.";
     case LastingEffect::STEED: return "Can carry a rider.";
     case LastingEffect::RIDER: return "Can ride a steed.";
+    case LastingEffect::LOCKED_POSITION: return "Creatures can't swap position with this automaton.";
   }
 }
 

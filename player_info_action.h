@@ -7,5 +7,6 @@ enum class PlayerInfoAction {
   DISASSEMBLE,
   CONSUME,
   LOCATE,
-  ASSIGN_EQUIPMENT
+  ASSIGN_EQUIPMENT,
+  LOCK_POSITION
 };

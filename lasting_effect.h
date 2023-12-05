@@ -63,7 +63,8 @@ RICH_ENUM(
   AGGRAVATES,
   CAN_DANCE,
   STEED,
-  RIDER
+  RIDER,
+  LOCKED_POSITION
 );
 
 struct Color;
