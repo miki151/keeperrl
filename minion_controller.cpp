@@ -143,8 +143,8 @@ class MinionController : public Player {
   virtual void onLostControl() override {
     // Remove this method? Maybe it's better if the game waits for the minion to wake up instead of
     // leaving control
-    //getGame()->getView()->presentText("Important!", "You lose control of your minion.");
-    //control->leaveControl();
+    getGame()->getView()->presentText("Important!", "You lose control of your minion.");
+    control->leaveControl();
   }
 
   virtual vector<Creature*> getTeam() const override {

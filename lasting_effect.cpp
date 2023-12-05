@@ -713,13 +713,13 @@ optional<std::string> LastingEffects::getBadAdjective(LastingEffect effect) {
 }
 
 bool LastingEffects::losesControl(const Creature* c) {
-  return c->isAffected(LastingEffect::SLEEP)
-      || c->isAffected(LastingEffect::TURNED_OFF)
+  return c->isAffected(LastingEffect::TURNED_OFF)
       || c->isAffected(LastingEffect::STUNNED);
 }
 
 bool LastingEffects::doesntMove(const Creature* c) {
   return losesControl(c)
+      || c->isAffected(LastingEffect::SLEEP)
       || c->isAffected(LastingEffect::FROZEN);
 }
 
