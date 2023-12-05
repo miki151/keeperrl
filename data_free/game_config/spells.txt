@@ -204,6 +204,13 @@ End
   cooldown = {100 301}
   sound = SPELL_INVISIBILITY
 }
+"automaton invisibility"
+{
+  symbol = "🕵️"
+  effect = Name "invisibility" Lasting 10 INVISIBLE
+  cooldown = 20
+  sound = SPELL_INVISIBILITY
+}
 "escape"
 {
   symbol = "✈️"
@@ -234,6 +241,15 @@ End
   effect = Name "advanced teleport" Teleport
   range = 8
   cooldown = {50 201}
+  endOnly = true
+  sound = SPELL_TELEPORT
+}
+"automaton teleport"
+{
+  symbol = "🌀"
+  effect = Teleport
+  range = 3
+  cooldown = 10
   endOnly = true
   sound = SPELL_TELEPORT
 }
@@ -432,6 +448,16 @@ End
   cooldown = {15 31}
   sound = SPELL_BLAST
   message = "breathe fire!" "breathes fire!"
+}
+"oil breath"
+{
+  symbol = "🛢"
+  effect = Name "oil breath" Lasting OIL
+  fx = {FLAMETHROWER ColorId BLACK}
+  range = 4
+  cooldown = {15 31}
+  sound = SPELL_BLAST
+  message = "spit oil!" "spits oil!"
 }
 "firewall"
 {

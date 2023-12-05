@@ -77,7 +77,7 @@
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
   bodyPartItem = {"WoodPlank"}
 }
- 
+
 "IRON" {
   name = "iron"
   deathDescription = "destroyed"
@@ -85,7 +85,7 @@
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
   bodyPartItem = {"IronOre"}
 }
- 
+
 "LAVA" {
   name = "lava"
   deathDescription = "destroyed"
@@ -100,7 +100,7 @@
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
   bodyPartItem = {"AdaOre"}
 }
- 
+
 "GOLD" {
   name = "gold"
   deathDescription = "destroyed"

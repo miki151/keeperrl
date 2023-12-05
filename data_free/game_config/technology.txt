@@ -27,6 +27,8 @@
 "demonology"               { "Build demon shrines and attract demons."                      {"advanced sorcery"}}
 "worship"                  { "Build angel shrines and attract angels."}
 "automatons"               { "Build mechanical creatures that work and fight for you."}
+"automated crafting"       { "Build crafting and repair automaton arms to automate your production." {"automatons"}}
 "advanced automatons"      { "Build advanced mechanical creatures that work and fight for you." {"automatons"}}
 "automaton brains"         { "Build automatons that behave like humanoids."                 {"advanced automatons"}}
 "aerodynamics"             { "Build flying automatons."                                     {"advanced automatons"}}
+"explosives"               { "Build exploding automatons."                                  {"advanced automatons"}}

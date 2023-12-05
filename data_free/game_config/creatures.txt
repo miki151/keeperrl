@@ -4827,7 +4827,7 @@ End
     permanentEffects = {
       LIGHT_SOURCE 1
       RANGED_VULNERABILITY 1
-    }   
+    }
   }
 "GOBLIN_CHICKENMANCER"
   {

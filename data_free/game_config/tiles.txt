@@ -305,7 +305,9 @@ Connections("map_swamp")
 { "automaton_heavy" "A" ColorId DARK_BLUE }
 { "automaton_head" ")" ColorId LIGHT_BROWN }
 { "automaton_fire" ")" ColorId LIGHT_BROWN }
+{ "automaton_oil" ")" ColorId LIGHT_BROWN }
 { "automaton_acid" ")" ColorId LIGHT_BROWN }
+{ "automaton_spell" ")" ColorId LIGHT_BROWN }
 { "automaton_arrow" ")" ColorId LIGHT_BROWN }
 { "automaton_legs" ")" ColorId LIGHT_BROWN }
 { "automaton_arms" ")" ColorId LIGHT_BROWN }
@@ -316,7 +318,9 @@ Connections("map_swamp")
 { "installed_kaboom_head" ")" ColorId LIGHT_BROWN }
 { "installed_head" ")" ColorId LIGHT_BROWN }
 { "installed_fire" ")" ColorId LIGHT_BROWN }
+{ "installed_oil" ")" ColorId LIGHT_BROWN }
 { "installed_acid" ")" ColorId LIGHT_BROWN }
+{ "installed_spell" ")" ColorId LIGHT_BROWN }
 { "installed_arrow" ")" ColorId LIGHT_BROWN }
 { "installed_legs" ")" ColorId LIGHT_BROWN }
 { "installed_arms" ")" ColorId LIGHT_BROWN }

@@ -91,14 +91,14 @@
   immigrantGroups = {"gnomes"}
   technology = {
       "traps" "advanced traps"
-      "automatons" "advanced automatons" "automaton brains" "aerodynamics"
+      "automatons" "advanced automatons" "automated crafting" "automaton brains" "aerodynamics" "explosives"
       "iron working" "alchemy" "incendiary alchemy" "distillation" "two-handed weapons"
   }
   zLevelGroups = { "basic" "lawful" }
   initialTech = { "automatons" }
   baseNameGen = "TOWN"
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "automaton_storage" "zones" "beds" "crafting"
+      "structure" "doors" "floors" "storage" "automaton_storage" "zones" "beds" "dining table" "crafting"
       "laboratory" "distillery" "furnace" "automatons" "orders" "installations" "traps" "gnome_traps"
   }
   workshopGroups = { "gnomes" "basic" "crossbows" }

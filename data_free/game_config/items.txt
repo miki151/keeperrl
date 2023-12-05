@@ -33,76 +33,47 @@ Def HUMANOID_HEAD(Suffix, Color, Adjective, ResourceId, Defense)
     storageIds = {"automaton_parts" "equipment"}
   }
 End
-Def ARCHER_HEAD(Suffix, Color, Adjective, ResourceId, Defense, Damage)
-"ArcherHead" + Suffix
+Def RANGED_HEAD(Suffix, Color, Adjective, ResourceId, Defense, Damage, Spell, SpellShort, SpellLower, SpellId, Attr, AttrName)
+Spell + "Head" + Suffix
   {
-    viewId = { "automaton_arrow" Rgb Color 255 }
-    name = Adjective + " arrow shooting head"
-    shortName = "arrow shooting"
+    viewId = { "automaton_" + SpellShort Rgb Color 255 }
+    name = Adjective + " " + SpellLower + " head"
+    shortName = SpellLower
     weight = 4
     craftingCost = ResourceId 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name Adjective + " arrow shooting head"
-      Description "Allows shooting arrows. Adds +" + Defense + " defense. Second head adds additional +" + Damage + " ranged damage."
+      Name Adjective + " head"
+      Description "Grants the \"" + SpellId + "\" ability. Adds +" + Defense + " defense. Second head adds additional +" + Damage + " " + AttrName
       {
-        IncreaseAttr RANGED_DAMAGE (Damage * 2)
+        IncreaseAttr Attr (Damage * 2)
         IncreaseAttr DEFENSE Defense
         AddBodyPart HEAD 1 none
         FirstSuccessful {
-          GrantAbility "shoot arrow"
-          IncreaseAttr RANGED_DAMAGE -Damage
+          GrantAbility SpellId
+          IncreaseAttr Attr -Damage
         }
-        AddAutomatonPart 2 "archer" { "installed_arrow" Rgb Color 255 }
+        AddAutomatonPart 2 SpellShort { "installed_" + SpellShort Rgb Color 255 }
       }
     upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 End
-Def FIRE_HEAD(Suffix, Color, Adjective, ResourceId, Defense, Damage)
-"FireHead" + Suffix
+Def SPELL_HEAD(Suffix, Color, Adjective, ResourceId, Defense, ViewId, SpellId, Spell, SpellLower)
+Spell + "Head" + Suffix
   {
-    viewId = { "automaton_fire" Rgb Color 255 }
-    name = Adjective + " fire breathing head"
-    shortName = "fire breathing"
+    viewId = { ViewId Rgb Color 255 }
+    name = Adjective + " " + SpellLower + " head"
+    shortName = SpellLower
     weight = 4
     craftingCost = ResourceId 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name Adjective + " fire breathing head"
-      Description "Grants the \"fire breath\" ability. Adds +" + Defense + " defense. Second head adds additional +" + Damage + " fire damage."
+      Name Adjective + " " + SpellLower + " head"
+      Description "Grants the \"" + SpellLower + "\" ability. Adds +" + Defense + " defense."
       {
-        IncreaseAttr FIRE_DAMAGE (Damage * 2)
         IncreaseAttr DEFENSE Defense
         AddBodyPart HEAD 1 none
-        FirstSuccessful {
-          GrantAbility "fire breath"
-          IncreaseAttr FIRE_DAMAGE -Damage
-        }
-        AddAutomatonPart 2 "fire" { "installed_fire" Rgb Color 255 }
-      }
-    upgradeType = {ARMOR}
-    storageIds = {"automaton_parts" "equipment"}
-  }
-End
-Def ACID_HEAD(Suffix, Color, Adjective, ResourceId, Defense, Damage)
-"AcidHead" + Suffix
-  {
-    viewId = { "automaton_acid" Rgb Color 255 }
-    name = Adjective + " acid spitting head"
-    shortName = "acid spitting"
-    weight = 4
-    craftingCost = ResourceId 5
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name Adjective + " acid spitting head"
-      Description "Grants the \"acid stream\" ability. Adds +" + Defense + " defense. Second head adds additional +" + Damage + " acid damage."
-      {
-        IncreaseAttr ACID_DAMAGE (Damage * 2)
-        IncreaseAttr DEFENSE Defense
-        AddBodyPart HEAD 1 none
-        FirstSuccessful {
-          GrantAbility "acid stream"
-          IncreaseAttr ACID_DAMAGE -Damage
-        }
-        AddAutomatonPart 2 "acid" { "installed_acid" Rgb Color 255 }
+        GrantAbility SpellId
+        AddAutomatonPart 2 SpellLower { "installed_spell" Rgb Color 255 }
       }
     upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
@@ -216,31 +187,38 @@ Def REPAIR_ARMS(Suffix, Color, Adjective, ResourceId, Defense)
 End
 
 HUMANOID_HEAD("Wood", 180 140 55, "wooden", WOOD, 2)
-ARCHER_HEAD("Wood", 180 140 55, "wooden", WOOD, 2, 12)
+RANGED_HEAD("Wood", 180 140 55, "wooden", WOOD, 2, 12, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE", "ranged damage")
 LEGS("Wood", 180 140 55, "wooden", WOOD, 2)
 ARMS("Wood", 180 140 55, "wooden", WOOD, 8, DAMAGE, "melee damage")
 DRILL("Wood", 180 140 55, "wooden", WOOD, 10)
 CRAFTING_ARMS("Wood", 180 140 55, "wooden", WOOD, 10)
 HUMANOID_HEAD("Iron", 140 148 148, "iron", IRON, 4)
-ARCHER_HEAD("Iron", 140 148 148, "iron", IRON, 4, 15)
-FIRE_HEAD("Iron", 140 148 148, "iron", IRON, 5, 15)
-ACID_HEAD("Iron", 140 148 148, "iron", IRON, 5, 15)
+RANGED_HEAD("Iron", 140 148 148, "iron", IRON, 4, 15, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE", "ranged damage")
+RANGED_HEAD("Iron", 140 148 148, "iron", IRON, 5, 15, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE", "fire damage")
+SPELL_HEAD("Iron", 140 148 148, "iron", IRON, 5, "automaton_oil", "oil breath", "Oil", "oil spitting")
+RANGED_HEAD("Iron", 140 148 148, "iron", IRON, 5, 15, "Acid", "acid", "acid spitting", "acid stream", "ACID_DAMAGE", "acid damage")
 LEGS("Iron", 140 148 148, "iron", IRON, 5)
 ARMS("Iron", 140 148 148, "iron", IRON, 12, DAMAGE, "melee damage")
 DRILL("Iron", 140 148 148, "iron", IRON, 15)
 CRAFTING_ARMS("Iron", 140 148 148, "iron", IRON, 15)
 REPAIR_ARMS("Iron", 140 148 148, "iron", IRON, 5)
 HUMANOID_HEAD("Ada", 148 189 189, "admantine", ADA, 6)
-ARCHER_HEAD("Ada", 148 189 189, "adamantine", ADA, 6, 20)
-FIRE_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, 20)
-ACID_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, 20)
+RANGED_HEAD("Ada", 148 189 189, "adamantine", ADA, 6, 20, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE", "ranged damage")
+RANGED_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, 20, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE", "fire damage")
+SPELL_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, "automaton_oil", "oil breath", "Oil", "oil spitting")
+RANGED_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, 20, "Acid", "acid", "acid spitting", "acid stream", "ACID_DAMAGE", "acid damage")
 LEGS("Ada", 148 189 189, "adamantine", ADA, 8)
 ARMS("Ada", 148 189 189, "adamantine", ADA, 18, DAMAGE, "melee damage")
 DRILL("Ada", 148 189 189, "adamantine", ADA, 20)
 CRAFTING_ARMS("Ada", 148 189 189, "adamantine", ADA, 25)
 REPAIR_ARMS("Ada", 148 189 189, "adamantine", ADA, 8)
-ARMS("Infernite", 220 148 148, "infernite", INFERNITE, 18, FIRE_DAMAGE, "fire damage")
-ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage")
+ARMS("Infernite", 220 148 148, "infernite", INFERNITE, 28, FIRE_DAMAGE, "fire damage")
+ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 28, SPELL_DAMAGE, "spell damage")
+LEGS("Infernite", 220 148 148, "infernite", INFERNITE, 18)
+RANGED_HEAD("Infernite", 220 148 148, "infernite", INFERNITE, 18, 48, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE", "fire damage")
+LEGS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18)
+SPELL_HEAD("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, "automaton_spell", "automaton invisibility", "Invisibility", "invisibility")
+SPELL_HEAD("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, "automaton_spell", "automaton teleport", "Teleport", "teleport")
 
 "KaboomHead"
   {
@@ -258,8 +236,8 @@ ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage
           meleeAttackAttr = FIRE_DAMAGE
           attackMsg = THRUST
           itselfMessage = true
-          attackerEffect = {Suicide DIE}
-          victimEffect = {1.0 CircularBlast 1.0 Area 1 Fire{50}} } }
+          victimEffect = {1.0 Suicide DIE}
+          attackerEffect = {CircularBlast Area 1 Fire{30} Suicide DIE}}}
         AddAutomatonPart 2 "kaboom" { "installed_kaboom_head" }
       }
     upgradeType = {ARMOR}
