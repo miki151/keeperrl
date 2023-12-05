@@ -258,6 +258,8 @@ PTask MinionActivities::generate(Collective* collective, Creature* c, MinionActi
   switch (info.type) {
     case MinionActivityInfo::IDLE: {
       PROFILE_BLOCK("Idle");
+      if (c->isAutomaton())
+        return Task::idle();
       if (collective->getDancing().getTarget(c))
         return Task::dance(collective);
       auto& myTerritory = getIdlePositions(collective, c);
