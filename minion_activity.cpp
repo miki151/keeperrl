@@ -258,11 +258,11 @@ PTask MinionActivities::generate(Collective* collective, Creature* c, MinionActi
   switch (info.type) {
     case MinionActivityInfo::IDLE: {
       PROFILE_BLOCK("Idle");
-      if (c->isAutomaton())
-        return Task::idle();
       if (collective->getDancing().getTarget(c))
         return Task::dance(collective);
       auto& myTerritory = getIdlePositions(collective, c);
+      if (c->isAutomaton() && myTerritory.count(c->getPosition()))
+        return Task::idle();
       if (auto p = collective->getTerritory().getCentralPoint())
         if (p->getLevel()->depth == 0)
           if (!myTerritory.empty() && collective->getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
