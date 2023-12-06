@@ -12,6 +12,16 @@
   color = ColorId RED
 }
 
+"LEADERSHIP" {
+  name = "leadership"
+  adjective = "leader"
+  description = "Creature's combat experience will be granted to the entire team."
+  addedMessage = "feel in command of your" "feels in command of the" "team"
+  removedMessage = "feel like you" "feels like they" "are no longer in command"
+  canWishFor = true
+  color = ColorId PURPLE
+}
+
 Def ATTR_BUFF(Attr, AttrName, Name, Amount, Adjective, Price) {
   name = Name
   adjective = Adjective

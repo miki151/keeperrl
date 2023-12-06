@@ -96,7 +96,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool takeDamage(const Attack&);
   void onAttackedBy(Creature*);
   bool heal(double amount = 1000);
-  void setTeamExperience(double);
+  void setTeamExperience(double, bool leadershipExp);
   void take(PItem item, const ContentFactory* = nullptr);
   void take(vector<PItem> item);
   const Equipment& getEquipment() const;
@@ -447,6 +447,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   double SERIAL(combatExperience) = 0;
   int SERIAL(maxPromotion) = 10000;
   double SERIAL(teamExperience) = 0;
+  bool SERIAL(leadershipExp) = false;
   int SERIAL(highestAttackValueEver) = 0;
   struct ButcherInfo {
     string SERIAL(villageName);

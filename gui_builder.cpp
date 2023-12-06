@@ -1856,10 +1856,10 @@ SGuiElem GuiBuilder::drawExperienceInfo(const CreatureExperienceInfo& info) {
   auto builder = WL(getListBuilder)
       .addElemAuto(WL(label, "Experience: ", Color::YELLOW))
       .addElemAuto(WL(label, toStringRounded(promoLevel, 0.01)));
-  if (info.teamExperience > info.combatExperience)
+  if (info.teamExperience > 0)
     builder
-        .addElemAuto(WL(label, " + "))
-        .addElemAuto(WL(label, toStringRounded((info.teamExperience - info.combatExperience) / 2, 0.01)));
+        .addElemAuto(WL(label, info.teamExperience > 0 ? " + "  : " - "))
+        .addElemAuto(WL(label, toStringRounded(info.teamExperience, 0.01)));
   lines.addElem(WL(stack,
       builder.buildHorizontalList(),
       getTooltip({"Experience increases every attribute that can be or has been trained. If the creature has",

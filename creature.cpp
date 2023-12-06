@@ -70,7 +70,7 @@ template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(OwnedObject<Creature>), SUBCLASS(Renderable), SUBCLASS(UniqueEntity), SUBCLASS(EventListener));
   ar(attributes, position, equipment, shortestPath, knownHiding, tribe);
-  ar(deathTime, hidden, lastMoveCounter, effectFlags, duelInfo);
+  ar(deathTime, hidden, lastMoveCounter, effectFlags, duelInfo, leadershipExp);
   ar(deathReason, nextPosIntent, globalTime, drops, promotions, maxPromotion);
   ar(unknownAttackers, privateEnemies, holding, attributesStack, butcherInfo);
   ar(controllerStack, kills, statuses, automatonParts, phylactery, highestAttackValueEver);
@@ -1190,13 +1190,21 @@ double Creature::getCombatExperience(bool respectMaxPromotion, bool includeTeamE
   auto ret = combatExperience;
   if (respectMaxPromotion)
     ret = min<double>(getCombatExperienceCap(), ret);
-  if (includeTeamExp && teamExperience > 0)
-    ret = (teamExperience + ret) / 2;
+  if (includeTeamExp) {
+    if (leadershipExp)
+      ret = teamExperience;
+    else if (teamExperience > 0)
+      ret = (teamExperience + ret) / 2;
+  }
   return ret;
 }
 
 double Creature::getTeamExperience() const {
-  return teamExperience;
+  if (leadershipExp)
+    return teamExperience - combatExperience;
+  else if (teamExperience > 0)
+    return (teamExperience - combatExperience) / 2;
+  return 0.0;
 }
 
 void Creature::setCombatExperience(double value) {
@@ -1344,8 +1352,9 @@ void Creature::considerMovingFromInaccessibleSquare() {
       }
 }
 
-void Creature::setTeamExperience(double value) {
+void Creature::setTeamExperience(double value, bool leadership) {
   teamExperience = value;
+  leadershipExp = leadership;
 }
 
 void Creature::tick() {

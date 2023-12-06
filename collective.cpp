@@ -484,13 +484,19 @@ static int getKeeperUpgradeLevel(int dungeonLevel) {
 
 void Collective::updateTeamExperience() {
   for (auto c : getCreatures())
-    c->setTeamExperience(0);
+    c->setTeamExperience(0, false);
   for (TeamId team : getTeams().getAllActive()) {
     double exp = 0;
+    bool leadership = false;
     for (auto c : getTeams().getMembers(team))
-      exp = max(exp, c->getCombatExperience(true, false));
+      if (c->isAffected(BuffId("LEADERSHIP"))) {
+        exp = c->getCombatExperience(true, false);
+        leadership = true;
+        break;
+      } else
+        exp = max(exp, c->getCombatExperience(true, false));
     for (auto c : getTeams().getMembers(team))
-      c->setTeamExperience(exp);
+      c->setTeamExperience(exp, leadership);
   }
 }
 
