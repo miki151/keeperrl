@@ -164,3 +164,10 @@
 {
   unique = { "ADOXIE_STATUE" }
 }
+"sokobanPrize"
+{
+  elems = {
+    "MINION_STATUE" 1
+  }
+  unique = { "SOKOBAN_CHEST" }
+}

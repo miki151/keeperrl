@@ -1150,6 +1150,21 @@ Def BedHeal() Heal { FLESH 0.005 } End
   strength = 30
   destroyedRemains = "OPENED_CHEST"
 }
+"SOKOBAN_CHEST"
+{
+  name = "chest"
+  viewId = { "chest" }
+  canHideHere = true
+  usageType = UsageEffect "open chest" {
+    CreatureMessage { "open the chest" "opens the chest"}
+    CreatureMessage { "find some equipment inside" "finds some equipment inside"}
+    DropItems {Ring "LEADERSHIP"} 1
+    RemoveFurniture "SOKOBAN_CHEST"
+  }
+  fire = 50
+  strength = 30
+  destroyedRemains = "OPENED_CHEST"
+}
 "PAMPHLET_CHEST" inherit "ARMOR_CHEST"
 {
   usageType = UsageEffect "open chest" {

@@ -2236,10 +2236,8 @@ End
 {
   settlement = {
     type = Builtin CAVE "DUNGEON"
-    inhabitants = {
-      leader = {{ "SPECIAL_HLBN" "SPECIAL_HLBW" "SPECIAL_HLGN" "SPECIAL_HLGW" }}
-    }
     tribe = DARK_KEEPER
+    furniture = "sokobanPrize"
   }
   levelConnection = {
     direction = UP
