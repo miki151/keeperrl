@@ -1167,6 +1167,21 @@ static bool apply(const Effects::DropItems& effect, Position pos, Creature*) {
   return true;
 }
 
+static string getName(const Effects::DropItemList&, const ContentFactory* c) {
+  return "create items";
+}
+
+static string getDescription(const Effects::DropItemList&, const ContentFactory* c) {
+  return "Creates items";
+}
+
+static bool apply(const Effects::DropItemList& listId, Position pos, Creature*) {
+  auto factory = pos.getGame()->getContentFactory();
+  auto list = factory->itemFactory.get(listId);
+  pos.dropItems(list.random(factory, pos.getModelDifficulty()));
+  return true;
+}
+
 template <>
 double getSteedChance<Effects::Damage>() {
   return 0.5;

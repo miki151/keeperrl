@@ -26,11 +26,7 @@ struct Shop {
   int SERIAL(index);
   SERIALIZE_ALL(index)
 };
-struct Items {
-  Range SERIAL(count);
-  ItemListId SERIAL(id);
-  SERIALIZE_ALL(count, id)
-};
+using Items = ItemListId;
 struct LayoutAction;
 using Chain = vector<LayoutAction>;
 using ClearFurniture = EmptyStruct<struct ClearFurniturTag>;

@@ -88,6 +88,10 @@ void LevelBuilder::putItems(Vec2 posT, vector<PItem> it) {
   append(items[pos], std::move(it));
 }
 
+bool LevelBuilder::hasAnyItems(Vec2 posT) {
+  return !items[transform(posT)].empty();
+}
+
 bool LevelBuilder::canPutItems(Vec2 posT) {
   return canNavigate(posT, {MovementTrait::WALK});
 }

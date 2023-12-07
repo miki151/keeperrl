@@ -85,6 +85,10 @@ class Predicate {
     return Predicate([=] (LevelBuilder* builder, Vec2 pos) { return builder->hasAttrib(pos, attr);});
   }
 
+  static Predicate hasAnyItems() {
+    return Predicate([=] (LevelBuilder* builder, Vec2 pos) { return builder->hasAnyItems(pos);});
+  }
+
   Predicate operator !() const {
     PredFun self(predFun);
     return Predicate([self] (LevelBuilder* builder, Vec2 pos) { return !self(builder, pos);});
@@ -172,6 +176,15 @@ class SquareChange {
       funCopy(builder, pos);
       if (builder->getRandom().chance(prob))
         added.changeFun(builder, pos);
+    };
+    return *this;
+  }
+
+  SquareChange& maybe(Predicate pred) {
+    auto funCopy = changeFun; // copy just the function because storing "this" leads to a crash
+    changeFun = [pred, funCopy] (LevelBuilder* builder, Vec2 pos) {
+      if (pred.apply(builder, pos))
+        funCopy(builder, pos);
     };
     return *this;
   }
@@ -2661,7 +2674,7 @@ namespace {
           [&](LayoutActions::RemoveFlag f) { builder->removeAttrib(pos, f.flag); },
           [&](LayoutActions::Items items) {
             auto f = builder->getContentFactory();
-            auto list = f->itemFactory.get(items.id);
+            auto list = f->itemFactory.get(items);
             builder->putItems(pos, list.random(f, difficulty));
           },
           [&](LayoutActions::ClearFurniture) { builder->removeAllFurniture(pos); },
@@ -3149,13 +3162,18 @@ class SokobanFromFile : public LevelMaker {
 
 }
 
-PLevelMaker LevelMaker::sokobanFromFile(RandomGen& random, SettlementInfo info, Table<char> file) {
+PLevelMaker LevelMaker::sokobanFromFile(RandomGen& random, SettlementInfo info, Table<char> file, int difficulty) {
   auto queue = make_unique<MakerQueue>();
   queue->addMaker(make_unique<SokobanFromFile>(file, info.downStairs.getOnlyElement()));
-  queue->addMaker(make_unique<PlaceCollective>(info.collective, Predicate::attrib(SquareAttrib::SOKOBAN_PRIZE)));
-  if (!!info.furniture)
-    queue->addMaker(make_unique<Furnitures>(Predicate::attrib(SquareAttrib::SOKOBAN_PRIZE), 0.0,
-        *info.furniture, info.tribe));
+  auto prizePred = Predicate::attrib(SquareAttrib::SOKOBAN_PRIZE);
+  queue->addMaker(make_unique<PlaceCollective>(info.collective, prizePred));
+  if (!info.stockpiles.empty()) {
+    queue->addMaker(make_unique<Items>(info.stockpiles[0].items, Range::singleElem(info.stockpiles[0].count),
+        difficulty, prizePred, !!info.stockpiles[0].furniture));
+    if (info.stockpiles[0].furniture)
+      queue->addMaker(make_unique<Empty>(SquareChange(info.stockpiles[0].furniture).maybe(
+          Predicate::hasAnyItems())));
+  }
   auto& building = info.type.getReferenceMaybe<MapLayoutTypes::Builtin>()->buildingInfo;
   addStairs(*queue, info, building, Predicate::attrib(SquareAttrib::SOKOBAN_ENTRY));
   //queue->addMaker(make_unique<PlaceCollective>(info.collective));
@@ -3244,7 +3262,7 @@ class UpLevelMaker : public LevelMaker {
     auto ground = level;
     for (ground = level; !!ground->below; ground = ground->below)
       ++thisHeight;
-    for (auto v : area) 
+    for (auto v : area)
       if (ground->mountainLevel[v] < thisHeight) {
         builder->setSunlight(v, 1.0);
         builder->setUnavailable(v);

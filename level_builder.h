@@ -23,7 +23,7 @@ class LevelBuilder {
   LevelBuilder(ProgressMeter*, RandomGen&, ContentFactory*, int width, int height,
       bool covered = true, optional<double> defaultLight = none);
   LevelBuilder(RandomGen&, ContentFactory*, int width, int height, bool covered = true);
-  
+
   LevelBuilder(LevelBuilder&&);
   ~LevelBuilder();
 
@@ -38,6 +38,7 @@ class LevelBuilder {
 
   /** Puts items on a given square. If the square is later changed to something else, the items remain.*/
   void putItems(Vec2, vector<PItem> items);
+  bool hasAnyItems(Vec2);
   bool canPutItems(Vec2);
 
   /** Sets the message displayed when the player first enters the level.*/

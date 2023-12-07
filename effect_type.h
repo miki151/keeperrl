@@ -26,6 +26,7 @@
 #include "player_message.h"
 #include "tribe.h"
 #include "achievement_id.h"
+#include "item_list_id.h"
 
 #define SIMPLE_EFFECT(Name) \
   struct Name { \
@@ -292,6 +293,7 @@ struct DropItems {
   Range SERIAL(count);
   SERIALIZE_ALL(type, count)
 };
+using DropItemList = ItemListId;
 struct SoundEffect {
   Sound SERIAL(sound);
   SERIALIZE_ALL(sound)
@@ -475,7 +477,7 @@ using Achievement = AchievementId;
   X(CreatureMessage, 52)\
   X(SoundEffect, 53)\
   X(DropItems, 54)\
-  X(FirstSuccessful, 55)\
+  X(DropItemList, 55)\
   X(PlayerMessage, 56)\
   X(ColorVariant, 57)\
   X(Jump, 58)\
@@ -519,6 +521,7 @@ using Achievement = AchievementId;
   X(Achievement, 96)\
   X(ModifyFurniture, 97)\
   X(DestroyWalls, 98)\
+  X(FirstSuccessful, 99)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

@@ -1095,14 +1095,35 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "altar_des" }
   canHideHere = true
 }
-"CHEST"
+"CHEST_WITH_ITEMS"
 {
   name = "chest"
   viewId = { "chest" }
   canHideHere = true
-  usageType = BuiltinUsageId CHEST
+  tickType = Effect {
+    DropItemList "chest"
+    PlaceFurniture "CHEST"
+  }
   fire = 50
   strength = 30
+}
+"CHEST"
+{
+  name = "chest"
+  viewId = { "chest" }
+  emptyViewId = { "opened_chest" }
+  canHideHere = true
+  hidesItems = true
+  fire = 50
+  strength = 30
+}
+"NONFLAMMABLE_CHEST" inherit "CHEST"
+{
+  fire = none
+}
+"ASSASSIN_CHEST" inherit "CHEST"
+{
+  entryType = Effect Achievement "assassin"
 }
 "BOOKCASE_STAIRS" inherit "BOOKCASE_WOOD"
 {
@@ -1126,135 +1147,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
   destroyedEffect = {
     Message NORMAL "The forge is destroyed!"
     Analytics "milestone" "forgeStairs"
-  }
-}
-"ARMOR_CHEST"
-{
-  name = "chest"
-  viewId = { "chest" }
-  canHideHere = true
-  usageType = UsageEffect "open chest" {
-    CreatureMessage { "open the chest" "opens the chest"}
-    CreatureMessage { "find some equipment inside" "finds some equipment inside"}
-    ChooseRandom {
-      DropItems {"ChainArmor"} 1
-      DropItems {"IronBoots"} 1
-      DropItems {"IronHelm"} 1
-      DropItems {"LeatherArmor"} 1
-      DropItems {"LeatherBoots"} 1
-      DropItems {"LeatherGloves"} 1
-    }
-    RemoveFurniture "ARMOR_CHEST"
-  }
-  fire = 50
-  strength = 30
-  destroyedRemains = "OPENED_CHEST"
-}
-"SOKOBAN_CHEST"
-{
-  name = "chest"
-  viewId = { "chest" }
-  canHideHere = true
-  usageType = UsageEffect "open chest" {
-    CreatureMessage { "open the chest" "opens the chest"}
-    CreatureMessage { "find some equipment inside" "finds some equipment inside"}
-    DropItems {Ring "LEADERSHIP"} 1
-    RemoveFurniture "SOKOBAN_CHEST"
-  }
-  fire = 50
-  strength = 30
-  destroyedRemains = "OPENED_CHEST"
-}
-"PAMPHLET_CHEST" inherit "ARMOR_CHEST"
-{
-  usageType = UsageEffect "open chest" {
-    CreatureMessage { "open the chest" "opens the chest"}
-    CreatureMessage { "find some pamphlets inside" "finds some pamphlets inside"}
-    DropItems {"AdoxieScroll"} {10 20}
-    RemoveFurniture "PAMPHLET_CHEST"
-  }
-}
-"ZOMBIE_CHEST" inherit "ARMOR_CHEST"
-{
-  usageType = UsageEffect "open chest" {
-    CreatureMessage { "open the chest" "opens the chest"}
-    CreatureMessage { "find a scroll inside" "finds a scroll inside"}
-    DropItems {"ZombieScroll"} 1
-    RemoveFurniture "ZOMBIE_CHEST"
-  }
-}
-"KNIFE_CHEST" inherit "ARMOR_CHEST"
-{
-  usageType = UsageEffect "open chest" {
-    CreatureMessage { "open the chest" "opens the chest"}
-    CreatureMessage { "find an item inside" "finds an item inside"}
-    DropItems {"AssassinsKnife"} 1
-    RemoveFurniture "KNIFE_CHEST"
-    Achievement "assassin"
-  }
-}
-"ADA_CHEST" inherit "ARMOR_CHEST"
-{
-  usageType = UsageEffect "open chest" {
-    CreatureMessage {"open the chest" "opens the chest"}
-    CreatureMessage {"find an item inside" "finds an item inside"}
-    ChooseRandom {
-      DropItems {"AdaSword"} 1
-      DropItems {"AdaBattleAxe"} 1
-      DropItems {"AdaWarHammer"} 1
-      DropItems {"AdaGloves"} 1
-      DropItems {"AdaShield"} 1
-      DropItems {"AdaArmor"} 1
-      DropItems {"AdaHelm"} 1
-      DropItems {"AdaBoots"} 1
-    }
-    Analytics "milestone" "adaChest"
-    RemoveFurniture "ADA_CHEST"
-  }
-}
-"SWARMER_CHEST" inherit "ARMOR_CHEST"
-{
-  usageType = UsageEffect "open chest" {
-    CreatureMessage { "open the chest" "opens the chest"}
-    CreatureMessage { "find an item inside" "finds an item inside"}
-    DropItems {Potion Permanent SWARMER} 1
-    Analytics "milestone" "swarmerChest"
-    RemoveFurniture "SWARMER_CHEST"
-  }
-}
-"BLACKSMITH_CHEST" inherit "ARMOR_CHEST"
-{
-  usageType = UsageEffect "open chest" {
-    CreatureMessage { "open the chest" "opens the chest"}
-    CreatureMessage { "find an item inside" "finds an item inside"}
-    ChooseRandom {
-      DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 2} 1
-      DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 3} 1
-      DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 4} 1
-      DropItems {Glyph WEAPON ItemAttrBonus DAMAGE 2} 1
-      DropItems {Glyph WEAPON ItemAttrBonus DAMAGE 3} 1
-      DropItems {Glyph WEAPON ItemAttrBonus DAMAGE 4} 1
-      DropItems {Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 2} 1
-      DropItems {Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3} 1
-      DropItems {Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 4} 1
-    }
-    RemoveFurniture "BLACKSMITH_CHEST"
-  }
-}
-"DRAGON_CHEST" inherit "ARMOR_CHEST"
-{
-  fire = 0
-  usageType = UsageEffect "open chest" {
-    CreatureMessage { "open the chest" "opens the chest"}
-    CreatureMessage { "find an item inside" "finds an item inside"}
-    ChooseRandom {
-      DropItems {"GoldPiece"} {30 100} 
-      DropItems {PrefixChance 1 {"Sword"}} 1
-      DropItems {PrefixChance 1 {"BattleAxe"}} 1
-      DropItems {PrefixChance 1 {"WarHammer"}} 1
-      DropItems {PrefixChance 1 {"EnchantedStaff"}} 1
-    }
-    RemoveFurniture "DRAGON_CHEST"
   }
 }
 "OPENED_CHEST"
@@ -1306,18 +1198,9 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "coffin"
   viewId = { "coffin1" }
+  emptyViewId = { "opened_coffin" }
   canHideHere = true
-  usageType = BuiltinUsageId COFFIN
-  fire = 50
-  strength = 40
-  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
-}
-"OPENED_COFFIN"
-{
-  name = "opened coffin"
-  viewId = { "opened_coffin" }
-  canHideHere = true
-  usageType = UsageEffect "sleep in coffin" Lasting SLEEP
+  hidesItems = true
   fire = 50
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }

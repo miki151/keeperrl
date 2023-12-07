@@ -3,7 +3,7 @@
   {
     "BED1" 2
     "GROUND_TORCH" 1
-    "CHEST" 2
+    "CHEST_WITH_ITEMS" 2
   }
 }
 "hellFurniture"
@@ -25,7 +25,7 @@
     "BED1" 2
     "GROUND_TORCH" 1
     "FOUNTAIN" 1
-    "CHEST" 2
+    "CHEST_WITH_ITEMS" 2
   }
 }
 "dungeonOutside"
@@ -141,7 +141,7 @@
 "templeInside"
 {
   {
-    "CHEST" 1
+    "CHEST_WITH_ITEMS" 1
   }
   {
     "ALTAR"
@@ -163,11 +163,4 @@
 "adoxie" inherit "roomFurniture"
 {
   unique = { "ADOXIE_STATUE" }
-}
-"sokobanPrize"
-{
-  elems = {
-    "MINION_STATUE" 1
-  }
-  unique = { "SOKOBAN_CHEST" }
 }

@@ -38,25 +38,25 @@
   "clear_middle" ClearLayer MIDDLE
   "outside_furniture" OutsideFurniture
   "inside_furniture" InsideFurniture
-  "loot_coffin" Place "LOOT_COFFIN"
-  "armor_chest" Place "ARMOR_CHEST"
-  "pamphlet_chest" Place "PAMPHLET_CHEST"
-  "knife_chest" Place "KNIFE_CHEST"
-  "ada_chest" Place "ADA_CHEST"
+  "loot_coffin" { Place "LOOT_COFFIN" Items "chest" Items "corpse" }
+  "armor_chest" { Place "CHEST" Items "armorChest" }
+  "pamphlet_chest" { Place "CHEST" Items "pamphlets" }
+  "knife_chest" { Place "ASSASSIN_CHEST" Items "assassinChest" }
+  "ada_chest" { Place "CHEST" Items "lakeChest" }
   "weapon_rack" Place "WEAPON_RACK"
-  "swarmer_chest" Place "SWARMER_CHEST"
-  "blacksmith_chest" Place "BLACKSMITH_CHEST"
-  "zombie_chest" Place "ZOMBIE_CHEST"
+  "swarmer_chest" { Place "CHEST" Items "swarmerChest" }
+  "blacksmith_chest" { Place "CHEST" Items "blacksmithChest" }
+  "zombie_chest" { Place "CHEST" Items "zombieChest" }
   "torch" Place "GROUND_TORCH"
   "throne" Place "THRONE"
   "broken_throne" Place "BROKEN_THRONE"
   "forge" Place "FORGE"
   "crops" Place "CROPS"
   "scarecrow" Place "SCARECROW"
-  "corpse" Items 1 "corpse"
-  "wizard_corpse" Items 1 "wizard_corpse"
-  "gnome_corpse" Items 1 "gnome_corpse"
-  "automaton_parts" Items 1 "automaton_parts"
+  "corpse" Items "battle_corpse"
+  "wizard_corpse" Items "wizard_corpse"
+  "gnome_corpse" Items "gnome_corpse"
+  "automaton_parts" Items "automaton_parts"
   "shop0" Shop 0
   "fog" AddGas "FOG"
   "spider_web" Place "SPIDER_WEB"
@@ -115,11 +115,11 @@
 }
 
 "dragon" inherit "default" append {
-  "chest" Place "DRAGON_CHEST"
+  "chest" { Place "NONFLAMMABLE_CHEST" Items "dragonChest" }
 }
 
 "z_level_castle" inherit "default" append {
   "castle_wall" Place "DUNGEON_WALL2"
   "archer_wall" Place "DUNGEON_WALL2"
-  "black_dragon_weapon" Items {2 4} "blackDragonWeapons"
+  "black_dragon_weapon" Items "blackDragonWeapons"
 }

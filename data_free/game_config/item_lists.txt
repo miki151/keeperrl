@@ -215,6 +215,11 @@ End
 
 "corpse"
 {
+  items = {{{Corpse} 1}}
+}
+
+"battle_corpse"
+{
   multiItems = {
     {10000} {
       {"BattleAxe"} 0.1
@@ -450,4 +455,83 @@ End
     {{"AdoxiumStaff"} 1}
     {{"InferniteBattleAxe"} 1}
   }
+}
+
+"armorChest"
+{
+  items = {
+    {{"ChainArmor"} 1}
+    {{"IronBoots"} 1}
+    {{"IronHelm"} 1}
+    {{"LeatherArmor"} 1}
+    {{"LeatherBoots"} 1}
+    {{"LeatherGloves"} 1}
+  }
+}
+
+"pamphlets"
+{
+  multiItems = {
+    {10 20} { {"AdoxieScroll"} 1.0 }
+  }
+}
+
+"zombieChest"
+{
+  items = {{{"ZombieScroll"} 1}}
+}
+
+"assassinChest"
+{
+  items = {{{"AssassinsKnife"} 1}}
+}
+
+"lakeChest"
+{
+  items = {
+    {{"AdaSword"} 1}
+    {{"AdaBattleAxe"} 1}
+    {{"AdaWarHammer"} 1}
+    {{"AdaGloves"} 1}
+    {{"AdaShield"} 1}
+    {{"AdaArmor"} 1}
+    {{"AdaHelm"} 1}
+    {{"AdaBoots"} 1}
+  }
+}
+
+"blacksmithChest"
+{
+  items = {
+    {{Glyph ARMOR ItemAttrBonus DEFENSE 2} 1}
+    {{Glyph ARMOR ItemAttrBonus DEFENSE 3} 1}
+    {{Glyph ARMOR ItemAttrBonus DEFENSE 4} 1}
+    {{Glyph WEAPON ItemAttrBonus DAMAGE 2} 1}
+    {{Glyph WEAPON ItemAttrBonus DAMAGE 3} 1}
+    {{Glyph WEAPON ItemAttrBonus DAMAGE 4} 1}
+    {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 2} 1}
+    {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3} 1}
+    {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 4} 1}
+  }
+}
+
+"dragonChest"
+{
+  items = {
+    {{"GoldPiece"} 1 {30 100}}
+    {{PrefixChance 1 {"Sword"}} 1}
+    {{PrefixChance 1 {"BattleAxe"}} 1}
+    {{PrefixChance 1 {"WarHammer"}} 1}
+    {{PrefixChance 1 {"EnchantedStaff"}} 1}
+  }
+}
+
+"swarmerChest"
+{
+  items = {{{Potion Permanent SWARMER} 1}}
+}
+
+"sokobanPrize"
+{
+  items = {{{Ring "LEADERSHIP"} 1}}
 }

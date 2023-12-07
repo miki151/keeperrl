@@ -80,7 +80,7 @@ ModelBuilder::LevelMakerMethod ModelBuilder::getMaker(LevelType type) {
     case LevelType::SOKOBAN: {
       Table<char> sokoLevel = sokobanInput->getNext();
       return [sokoLevel](RandomGen& random, SettlementInfo info, Vec2, int difficulty) {
-        return LevelMaker::sokobanFromFile(random, info, sokoLevel);
+        return LevelMaker::sokobanFromFile(random, info, sokoLevel, difficulty);
       };
     }
   }

@@ -206,7 +206,7 @@ End
     type = Builtin EMPTY "BRICK"
     tribe = MONSTER
     dontBuildRoad = true
-    shopItems = {{10 15} "corpse" }
+    shopItems = {{10 15} "battle_corpse" }
   }
 }
 "GOBLIN_VILLAGE"
@@ -2237,7 +2237,7 @@ End
   settlement = {
     type = Builtin CAVE "DUNGEON"
     tribe = DARK_KEEPER
-    furniture = "sokobanPrize"
+    stockpiles = {{ "sokobanPrize" 1 "CHEST" }}
   }
   levelConnection = {
     direction = UP

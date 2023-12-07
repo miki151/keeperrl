@@ -9,8 +9,6 @@ class Creature;
 
 RICH_ENUM(
   BuiltinUsageId,
-  CHEST,
-  COFFIN,
   KEEPER_BOARD,
   TIE_UP,
   TRAIN,
