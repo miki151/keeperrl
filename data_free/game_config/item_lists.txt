@@ -466,6 +466,22 @@ End
     {{"LeatherArmor"} 1}
     {{"LeatherBoots"} 1}
     {{"LeatherGloves"} 1}
+    {{"AdaSword"} 1 1 15}
+    {{"AdaBattleAxe"} 1 1 15}
+    {{"AdaWarHammer"} 1 1 15}
+    {{"AdaGloves"} 1 1 15}
+    {{"AdaShield"} 1 1 15}
+    {{"AdaArmor"} 1 1 15}
+    {{"AdaHelm"} 1 1 15}
+    {{"AdaBoots"} 1 1 15}
+    {{"InferniteSword"} 1 1 25}
+    {{"InferniteBattleAxe"} 1 1 25}
+    {{"InferniteWarHammer"} 1 1 25}
+    {{"AdoxiumGloves"} 1 1 25}
+    {{"AdoxiumShield"} 1 1 25}
+    {{"AdoxiumArmor"} 1 1 25}
+    {{"AdoxiumHelm"} 1 1 25}
+    {{"AdoxiumBoots"} 1 1 25}
   }
 }
 
@@ -497,6 +513,14 @@ End
     {{"AdaArmor"} 1}
     {{"AdaHelm"} 1}
     {{"AdaBoots"} 1}
+    {{"InferniteSword"} 1 1 15}
+    {{"InferniteBattleAxe"} 1 1 15}
+    {{"InferniteWarHammer"} 1 1 15}
+    {{"AdoxiumGloves"} 1 1 15}
+    {{"AdoxiumShield"} 1 1 15}
+    {{"AdoxiumArmor"} 1 1 15}
+    {{"AdoxiumHelm"} 1 1 15}
+    {{"AdoxiumBoots"} 1 1 15}
   }
 }
 
@@ -512,6 +536,15 @@ End
     {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 2} 1}
     {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3} 1}
     {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 4} 1}
+    {{Glyph ARMOR ItemAttrBonus DEFENSE 10} 1 1 25}
+    {{Glyph ARMOR ItemAttrBonus DEFENSE 12} 1 1 25}
+    {{Glyph ARMOR ItemAttrBonus DEFENSE 15} 1 1 25}
+    {{Glyph WEAPON ItemAttrBonus DAMAGE 10} 1 1 25}
+    {{Glyph WEAPON ItemAttrBonus DAMAGE 12} 1 1 25}
+    {{Glyph WEAPON ItemAttrBonus DAMAGE 15} 1 1 25}
+    {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 10} 1 1 25}
+    {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 12} 1 1 25}
+    {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 15} 1 1 25}
   }
 }
 
@@ -523,6 +556,10 @@ End
     {{PrefixChance 1 {"BattleAxe"}} 1}
     {{PrefixChance 1 {"WarHammer"}} 1}
     {{PrefixChance 1 {"EnchantedStaff"}} 1}
+    {{PrefixChance 1 {"AdaSword"}} 1 1 25}
+    {{PrefixChance 1 {"AdaBattleAxe"}} 1 1 25}
+    {{PrefixChance 1 {"AdaWarHammer"}} 1 1 25}
+    {{PrefixChance 1 {"AdoxiumStaff"}} 1 1 25}
   }
 }
 
