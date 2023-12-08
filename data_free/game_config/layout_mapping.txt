@@ -86,11 +86,19 @@
   "workshop" Place "FORGE"
 }
 
-"adoxie_feet" inherit "default" append {
+"adoxie_feet_entry" inherit "default" append {
   "adoxie_left_foot" Place "ADOXIE_LEFT_FOOT"
   "adoxie_right_foot" Place "ADOXIE_RIGHT_FOOT"
-  "adoxie_feet_trigger" Place "ADOXIE_FEET_TRIGGER"
   "down_stairs0" Stairs DOWN "ADOXIE_FEET_ALTAR" 0
+  "castle_wall" Place "DUNGEON_WALL"
+}
+
+"adoxie_feet" inherit "default" append {
+  "prophet_remains" { Place "REMAINS_TABLE" Items "prophetRemains" }
+  "rock" Place "NECRO_WALL"
+  "castle_wall" Place "NECRO_WALL"
+  "floor" { Place "FLOOR" Place "FLOOR_STONE2" }
+  "adoxie_feet_trigger" Place "ADOXIE_FEET_TRIGGER"
 }
 
 "village" inherit "default" append {

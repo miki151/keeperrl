@@ -467,6 +467,7 @@ Connections("map_swamp")
 { "potion1" "!" ColorId LIGHT_RED }
 { "potion2" "!" ColorId BLUE }
 { "potion3" "!" ColorId DARK_RED }
+{ "potion4" "!" ColorId YELLOW }
 { "glyph" "~" ColorId GREEN }
 { "dragon_scales" "~" ColorId GREEN }
 { "devil_hooves" "~" ColorId RED }
@@ -602,6 +603,9 @@ Connections("map_swamp")
 { "leg_attack" "*" ColorId GRAY }
 { "fist_attack" "*" ColorId ORANGE }
 { "item_aura" " " ColorId ORANGE }
+{ "remains_table" "=" ColorId LIGHT_GREEN }
+{ "remains_table_empty" "=" ColorId GRAY }
+{ "prophet_remains" "%" ColorId LIGHT_GREEN}
 { viewId = "storage_equipment" symbol = "." color = ColorId BLUE
   sprite = "dig_mark" spriteColor = Rgb 0 0 255 120 }
 { viewId = "storage_resources" symbol = "." color = ColorId GREEN

@@ -123,6 +123,7 @@ append {
       {item = {Potion Lasting PLAGUE} work = 5 cost = "GOLD" 10 requireIngredient = "zombie_brain" }
       {item = {Potion OneTimeBoost() Permanent POISON_RESISTANT} work = 20 cost = "GOLD" 80
           requireIngredient = "hydra_tongue" }
+      {item = {"ProphetSoup"} work = 20 requireIngredient = "prophet_remains" }
       {item = {Potion Name "mass insanity" Area 20 Lasting INSANITY}
           work = 50 cost = "GOLD" 666 requireIngredient = "devil_horns" }
       {{"GoldPiece"}                           1        "IRON" 3      "alchemical conversion"}

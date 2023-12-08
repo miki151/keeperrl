@@ -158,6 +158,10 @@ struct IncreaseAttr {
   const char* get(const char* ifIncrease, const char* ifDecrease) const;
   SERIALIZE_ALL(attr, amount)
 };
+struct AddExperience {
+  double SERIAL(amount);
+  SERIALIZE_ALL(amount)
+};
 struct InjureBodyPart {
   BodyPart SERIAL(part);
   SERIALIZE_ALL(part)
@@ -522,6 +526,7 @@ using Achievement = AchievementId;
   X(ModifyFurniture, 97)\
   X(DestroyWalls, 98)\
   X(FirstSuccessful, 99)\
+  X(AddExperience, 100)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

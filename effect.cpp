@@ -412,6 +412,20 @@ const char* Effects::IncreaseAttr::get(const char* ifIncrease, const char* ifDec
     return ifDecrease;
 }
 
+static bool applyToCreature(const Effects::AddExperience& e, Creature* c, Creature* attacker) {
+  c->setCombatExperience(c->getCombatExperience(false, false) + e.amount);
+  c->you(MsgType::ARE, "more experienced");
+  return true;
+}
+
+static string getName(const Effects::AddExperience& e, const ContentFactory*) {
+  return "experience";
+}
+
+static string getDescription(const Effects::AddExperience& e, const ContentFactory*) {
+  return "Increases creature's combat experience";
+}
+
 static const char* get(const Effects::SpecialAttr& a, const char* ifIncrease, const char* ifDecrease) {
   if (a.value > 0)
     return ifIncrease;

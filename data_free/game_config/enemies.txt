@@ -2323,15 +2323,16 @@ End
 "ADOXIE_FEET_ENTRY"
 {
   settlement = {
-    type = RandomLayout { "adoxie_feet_entry" { 5 5 } "adoxie_feet"}
+    type = RandomLayout { "adoxie_feet_entry" { 5 5 } "adoxie_feet_entry"}
     tribe = MONSTER
     race = "altar of Evil God Adoxie"
   }
 }
 "ADOXIE_FEET"
 {
+  biome = "DESERT"
   settlement = {
-    type = RandomLayout { "adoxie_feet_under" { 15 15 } "adoxie_feet"}
+    type = RandomLayout { "adoxie_feet_under" { 17 17 } "adoxie_feet"}
     tribe = HUMAN
     race = "altar of Evil God Adoxie"
     stockpiles = {{ "gold" 160 "TREASURE_CHEST" }}
@@ -2341,7 +2342,7 @@ End
     direction = DOWN
     topLevel = ExtraEnemy { "ADOXIE_FEET_ENTRY" }
     levels = {
-      {MainEnemy {17 17} BASIC none true }
+      {MainEnemy {19 19} BASIC "Ancient tomb" false false }
     }
   }
 }

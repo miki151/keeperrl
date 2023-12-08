@@ -344,18 +344,27 @@ End
 
 "adoxie_feet_entry" AdoxieFeetEntry()
 
+Def AdoxieFeetUnderRemains(EntrancePos)
+{
+  Reset("stone_floor", "adoxie_feet_trigger")
+  Border(-1, Set("no_dig", "stone_floor","castle_wall"))
+  Inside(-1, Position(EntrancePos, {1 1}, Remove("no_dig", "rock")))
+  Position(MIDDLE, {1 1}, Set("prophet_remains"))
+}
+End
+
 Def AdoxieFeetUnderRoom(EntrancePos)
 {
   Reset("floor", "stockpile", "adoxie_feet_trigger")
-  Border(-1, Set("no_dig"))
+  Border(-1, Set("no_dig", "stone_floor", "castle_wall"))
   Inside(-1, Position(EntrancePos, {1 1}, Remove("no_dig", "rock")))
 }
 End
 
 Def AdoxieFeetUnder() {
   Set("rock")
-  Inside(1, {
-    Position(TOP_CENTER, {3 3}, AdoxieFeetUnderRoom(BOTTOM_CENTER))
+  Inside(2, {
+    Position(TOP_CENTER, {3 3}, AdoxieFeetUnderRemains(BOTTOM_CENTER))
     Position(RIGHT_CENTER,  {3 3}, AdoxieFeetUnderRoom(LEFT_CENTER))
     Position(LEFT_CENTER, {3 3}, AdoxieFeetUnderRoom(RIGHT_CENTER))
     Position(BOTTOM_CENTER,  {1 1}, Reset("floor", "up_stairs0"))

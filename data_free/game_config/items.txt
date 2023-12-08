@@ -1250,6 +1250,39 @@ End
     ingredientType = "cyclops_testes"
     storageIds = {"upgrades" "equipment"}
   }
+"ProphetRemains"
+  {
+    viewId = { "prophet_remains" }
+    shortName = "prophet Ynnuf Yrewosbe"
+    name = "mummified remains of ancient prophet Ynnuf Yrewosbe"
+    itemClass = OTHER
+    weight = 5
+    price = 50
+    ingredientType = "prophet_remains"
+    storageIds = {"upgrades" "equipment"}
+  }
+"ProphetSoup"
+  {
+    viewId = { "potion4" }
+    shortName = "prophet soup"
+    name = "soup made of mummified prophet remains"
+    plural = "soups"
+    blindName = "soup"
+    applyVerb = "drink" "drinks"
+    fragile = true
+    weight = 0.3
+    effect = NoAutoAssign EquipmentType COMBAT_ITEM AI And {} -1 1 AI And {} 0 1
+        Name "Increases experience"
+        Description "Increases creature's combat experience" {
+      AddExperience 20
+      CreatureMessage { "have very bad stomach cramps" "has very bad stomach cramps" }
+    }
+    price = 10
+    burnTime = 1
+    uses = 1
+    producedStat = POTION_PRODUCED
+    storageIds = {"potions" "equipment"}
+  }
 "CyclopsHelm" inherit "LeatherHelm"
   {
     viewId = { "cyclops_helm" }

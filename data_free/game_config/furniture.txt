@@ -1117,6 +1117,15 @@ Def BedHeal() Heal { FLESH 0.005 } End
   fire = 50
   strength = 30
 }
+"REMAINS_TABLE"
+{
+  name = "pedestal"
+  viewId = { "remains_table" }
+  emptyViewId = { "remains_table_empty" }
+  canHideHere = true
+  hidesItems = true
+  strength = 30
+}
 "NONFLAMMABLE_CHEST" inherit "CHEST"
 {
   fire = none

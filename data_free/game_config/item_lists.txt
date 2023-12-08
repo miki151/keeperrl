@@ -570,3 +570,8 @@ End
 {
   items = {{{Ring "LEADERSHIP"} 1}}
 }
+
+"prophetRemains"
+{
+  items = {{{"ProphetRemains"}}}
+}
