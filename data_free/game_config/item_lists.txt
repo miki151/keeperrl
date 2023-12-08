@@ -478,7 +478,6 @@ End
     {{"InferniteBattleAxe"} 1 1 25}
     {{"InferniteWarHammer"} 1 1 25}
     {{"AdoxiumGloves"} 1 1 25}
-    {{"AdoxiumShield"} 1 1 25}
     {{"AdoxiumArmor"} 1 1 25}
     {{"AdoxiumHelm"} 1 1 25}
     {{"AdoxiumBoots"} 1 1 25}
@@ -517,7 +516,6 @@ End
     {{"InferniteBattleAxe"} 1 1 15}
     {{"InferniteWarHammer"} 1 1 15}
     {{"AdoxiumGloves"} 1 1 15}
-    {{"AdoxiumShield"} 1 1 15}
     {{"AdoxiumArmor"} 1 1 15}
     {{"AdoxiumHelm"} 1 1 15}
     {{"AdoxiumBoots"} 1 1 15}
