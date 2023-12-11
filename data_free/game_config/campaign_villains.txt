@@ -10,6 +10,7 @@ COTTAGES {
   {{"map_shop1"} "POTION_SHOP" "Shop" MINOR}
   {{"map_shop1"} "JEWELER_SHOP" "Shop" MINOR}
   {{"map_white_dragon"} "YETI" "Cave" MINOR}
+  {{"map_house2"} "KNIFE_COTTAGE" "Cottage" MINOR}
 }
 
 EVIL_COTTAGES inherit COTTAGES append {

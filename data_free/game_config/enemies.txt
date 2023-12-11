@@ -449,7 +449,6 @@ End
     furniture = "castleFurniture"
     outsideFeatures = "castleOutside"
   }
-  otherEnemy = "KNIFE_COTTAGE"
   config = {
     immigrantInterval = 300
     maxPopulation = 36
