@@ -812,7 +812,8 @@ BOOKCASES("_human")
   extraBorders = { "water" "floor" "keeper_floor" "roof" } }
 { viewId = "mud" symbol = "." color = ColorId BROWN
   extraBorders = { "water" "hill" "sand" "floor" "keeper_floor" "roof" } }
-{ viewId = "snow" symbol = "." color = ColorId WHITE }
+{ viewId = "snow" symbol = "." color = ColorId WHITE
+  extraBorders = { "floor" "keeper_floor" "roof" }}
 { viewId = "ice" symbol = "." color = ColorId LIGHT_BLUE waterSides = "water" }
 { viewId = "grass" symbol = "𝃰" color = ColorId GREEN
   isSymbolFont = true canMirror = true
