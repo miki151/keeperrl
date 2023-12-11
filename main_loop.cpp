@@ -1291,7 +1291,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
                       }
             if (!models[v])
               models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, avatarInfo.tribeAlignment,
-                  difficulty);
+                  *setup.campaign.getSites()[v].biome, difficulty);
           } else if (auto retired = sites[v].getRetired()) {
             if (auto info = loadRetiredModelFromFile(userPath.file(retired->fileInfo.filename))) {
               models[v] = PModel(std::move(info->model));

@@ -46,7 +46,7 @@ optional<BiomeId> EnemyInfo::getBiome() const {
         }
       },
       [&](const auto&) -> optional<BiomeId> {
-        return BiomeId("GRASSLAND");
+        return none;
       }
     );
 }

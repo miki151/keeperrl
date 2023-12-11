@@ -31,7 +31,7 @@ class ModelBuilder {
   ModelBuilder(ModelBuilder&&) = default;
   ModelBuilder(const ModelBuilder&) = delete;
   PModel campaignBaseModel(const AvatarInfo&, BiomeId, optional<ExternalEnemiesType>);
-  PModel campaignSiteModel(EnemyId, VillainType, TribeAlignment, int difficulty);
+  PModel campaignSiteModel(EnemyId, VillainType, TribeAlignment, BiomeId, int difficulty);
   PModel tutorialModel(optional<KeeperBaseInfo>);
 
   void measureSiteGen(int numTries, vector<string> types, vector<BiomeId> biomes);
@@ -44,7 +44,7 @@ class ModelBuilder {
   void measureModelGen(const std::string& name, int numTries, function<void()> genFun);
   PModel tryCampaignBaseModel(TribeAlignment, optional<KeeperBaseInfo>, BiomeId, optional<ExternalEnemiesType>);
   PModel tryTutorialModel(optional<KeeperBaseInfo>);
-  PModel tryCampaignSiteModel(EnemyId, VillainType, TribeAlignment, int difficulty);
+  PModel tryCampaignSiteModel(EnemyId, VillainType, TribeAlignment, BiomeId, int difficulty);
   PModel tryModel(int width, int difficulty, vector<EnemyInfo>, optional<TribeId> keeperTribe,
       optional<KeeperBaseInfo>, BiomeId, optional<ExternalEnemies>);
   void makeExtraLevel(Model* model, LevelConnection& connection, SettlementInfo& mainSettlement, StairKey upLink,

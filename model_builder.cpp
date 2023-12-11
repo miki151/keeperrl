@@ -120,17 +120,15 @@ PModel ModelBuilder::tryTutorialModel(optional<KeeperBaseInfo> keeperBase) {
   return tryModel(114, 0, enemyInfo, TribeId::getDarkKeeper(), keeperBase, biome, {});
 }
 
-PModel ModelBuilder::tryCampaignSiteModel(EnemyId enemyId, VillainType type, TribeAlignment alignment,
+PModel ModelBuilder::tryCampaignSiteModel(EnemyId enemyId, VillainType type, TribeAlignment alignment, BiomeId biomeId,
     int difficulty) {
   vector<EnemyInfo> enemyInfo { enemyFactory->get(enemyId).setVillainType(type)};
   if (auto id = enemyInfo[0].otherEnemy)
     enemyInfo.push_back(enemyFactory->get(*id));
-  auto biomeId = enemyInfo[0].getBiome();
-  CHECK(biomeId) << "Unimplemented enemy in campaign " << enemyId.data();
-  auto& biomeInfo = contentFactory->biomeInfo.at(*biomeId);
+  auto& biomeInfo = contentFactory->biomeInfo.at(biomeId);
   if (type != VillainType::MINOR)
     addMapVillains(enemyInfo, alignment == TribeAlignment::EVIL ? biomeInfo.darkKeeperEnemies : biomeInfo.whiteKeeperEnemies);
-  return tryModel(type == VillainType::MINOR ? 60 : 114, difficulty, enemyInfo, none, none, *biomeId, {});
+  return tryModel(type == VillainType::MINOR ? 60 : 114, difficulty, enemyInfo, none, none, biomeId, {});
 }
 
 PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, const string& name) {
@@ -158,8 +156,10 @@ PModel ModelBuilder::tutorialModel(optional<KeeperBaseInfo> keeperBase) {
   return tryBuilding(20, [=] { return tryTutorialModel(keeperBase); }, "tutorial");
 }
 
-PModel ModelBuilder::campaignSiteModel(EnemyId enemyId, VillainType type, TribeAlignment alignment, int difficulty) {
-  return tryBuilding(20, [&] { return tryCampaignSiteModel(enemyId, type, alignment, difficulty); }, enemyId.data());
+PModel ModelBuilder::campaignSiteModel(EnemyId enemyId, VillainType type, TribeAlignment alignment, BiomeId biome,
+    int difficulty) {
+  return tryBuilding(20, [&] { return tryCampaignSiteModel(enemyId, type, alignment, biome, difficulty); },
+      enemyId.data());
 }
 
 void ModelBuilder::measureSiteGen(int numTries, vector<string> types, vector<BiomeId> biomes) {
@@ -201,7 +201,7 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types, vector<Bio
       auto id = EnemyId(type.data());
       for (auto alignment : ENUM_ALL(TribeAlignment))
         tasks.push_back([=] { measureModelGen(type, numTries, [&] {
-            tryCampaignSiteModel(id, VillainType::LESSER, alignment, 0); }); });
+            tryCampaignSiteModel(id, VillainType::LESSER, alignment, Random.choose(biomes), 0); }); });
     }
   }
   for (auto& t : tasks)

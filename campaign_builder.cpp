@@ -171,7 +171,7 @@ bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campai
     auto placed = [&] {
       for (Vec2 v : random.permutation(campaign.sites.getBounds().minusMargin(mapMargin).getAllSquares())) {
         if (!blocked[v] && playerDist.contains((int) v.distD(campaign.getPlayerPos())) &&
-            (!biome || campaign.sites[v].biome == biome)) {
+            !!campaign.sites[v].biome && (!biome || campaign.sites[v].biome == biome)) {
           campaign.sites[v].dweller = villains[i];
           for (auto v2 : Rectangle::centered(v, 5).intersection(blocked.getBounds()))
             blocked[v2] = true;
