@@ -2315,7 +2315,7 @@ void Creature::forceMount(Creature* whom) {
 }
 
 CreatureAction Creature::mount(Creature* whom) const {
-  if (!canMount(whom) || whom->getPosition().dist8(position) != 1 || !!steed || !!whom->steed || whom->getRider() ||
+  if (!isSteedGoodSize(whom) || whom->getPosition().dist8(position) != 1 || !!steed || !!whom->steed || whom->getRider() ||
       whom->isPlayer() || isEnemy(whom) || !whom->isAffected(LastingEffect::STEED) || !isAffected(LastingEffect::RIDER))
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
@@ -2337,7 +2337,7 @@ vector<string> Creature::getSteedSizes() const {
   return ret;
 }
 
-bool Creature::canMount(Creature* whom) const {
+bool Creature::isSteedGoodSize(Creature* whom) const {
   auto mySize = getBody().getSize();
   auto hisSize = whom->getBody().getSize();
   return mySize == hisSize || (mySize == BodySize::LARGE && hisSize == BodySize::HUGE);

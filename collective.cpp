@@ -676,12 +676,12 @@ void Collective::autoAssignSteeds() {
     auto steed = getSteedOrRider(c);
     auto bestAvailable = [&]() -> Creature* {
       for (int i : All(freeSteeds).reverse())
-        if (c->canMount(freeSteeds[i]))
+        if (c->isSteedGoodSize(freeSteeds[i]))
           return freeSteeds[i];
       return nullptr;
     }();
     auto companion = c->getFirstCompanion();
-    if (!!companion && c->canMount(companion) &&
+    if (!!companion && c->isSteedGoodSize(companion) && companion->isAffected(LastingEffect::STEED) &&
         (!bestAvailable || companion->getBestAttack(factory).value > bestAvailable->getBestAttack(factory).value))
       bestAvailable = companion;
     if (bestAvailable &&

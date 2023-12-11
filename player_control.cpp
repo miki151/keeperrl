@@ -455,7 +455,7 @@ void PlayerControl::minionEquipmentAction(const EquipmentActionInfo& action) {
         break;
       case ItemAction::REPLACE_STEED:
         if (auto steed = chooseSteed(creature, getCreatures().filter(
-            [creature](Creature* c) { return c->isAffected(LastingEffect::STEED) && creature->canMount(c); })))
+            [creature](Creature* c) { return c->isAffected(LastingEffect::STEED) && creature->isSteedGoodSize(c); })))
           collective->setSteed(creature, steed);
         break;
       case ItemAction::REPLACE:
@@ -764,7 +764,8 @@ Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSt
   vector<Creature*> availableItems;
   vector<Creature*> usedItems;
   if (auto c = creature->getFirstCompanion())
-    allSteeds.insert(0, c);
+    if (c->isAffected(LastingEffect::STEED))
+      allSteeds.insert(0, c);
   for (auto item : allSteeds) {
     if (auto owner = collective->getSteedOrRider(item))
       usedItems.push_back(item);

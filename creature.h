@@ -205,7 +205,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void forceMount(Creature* whom);
   void forceDismount(Vec2 dir);
   void tryToDismount();
-  bool canMount(Creature* whom) const;
+  bool isSteedGoodSize(Creature* whom) const;
   vector<string> getSteedSizes() const;
   CreatureAction mount(Creature* whom) const;
   Creature* getSteed() const;
