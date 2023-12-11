@@ -73,3 +73,4 @@
 "workshop" W brown
 "gnome_corpse" % white
 "automaton_parts" ( brown
+"trap" ^ gray

@@ -375,6 +375,30 @@ End
 
 "adoxie_feet_under" AdoxieFeetUnder()
 
+Def AdoxieStatueUnderLoot(EntrancePos)
+{
+  Reset("stone_floor")
+  Border(-1, Set("no_dig"))
+  Inside(-1, Position(EntrancePos, {1 1}, Remove("no_dig", "rock")))
+  Position(TOP_STRETCHED, {1 1}, Set("chest"))
+  Position(BOTTOM_STRETCHED, {1 1}, Set("chest"))
+  Position(BOTTOM_RIGHT, {1 1}, {Remove("chest") Set("scroll_chest")})
+  Position(RIGHT_CENTER, {1 1}, Set("trap"))
+}
+End
+
+Def AdoxieStatueUnder() {
+  Set("rock")
+  Inside(2, {
+    Position(RIGHT_CENTER, {3 3}, AdoxieStatueUnderLoot(LEFT_CENTER))
+    Position(BOTTOM_CENTER,  {1 1}, Reset("floor", "up_stairs0"))
+  })
+  Connector()
+}
+End
+
+"adoxie_statue_under" AdoxieStatueUnder()
+
 Def CastleUpStairs() {
   Set("floor")
   Position(

@@ -71,13 +71,11 @@
   darkKeeperBaseEnemies = {
     { id = "TUTORIAL_VILLAGE" }
     { id = "BANDITS" }
-    { id = "ADOXIE_VAULT" }
     { id = "KRAKEN" probability = 0.3 }
   }
   whiteKeeperBaseEnemies = {
     { id = "DARK_ELF_CAVE" }
     { id = "COTTAGE_BANDITS" }
-    { id = "ADOXIE_VAULT" }
     { id = "KRAKEN" probability = 0.3 }
   }
   viewId = { "grass" }
@@ -121,14 +119,12 @@
   darkKeeperBaseEnemies = {
     { id = "TUTORIAL_VILLAGE" }
     { id = "COTTAGE_BANDITS" }
-    { id = "ADOXIE_VAULT" }
     { id = "WITCH" probability = 0.2 }
   }
   whiteKeeperBaseEnemies = {
     { id = "DARK_ELF_CAVE" }
     { id = "COTTAGE_GOBLINS" }
     { id = "ANTS_CLOSED_SMALL" }
-    { id = "ADOXIE_VAULT" }
     { id = "WITCH" probability = 0.2 }
   }
   viewId = { "decid_tree" }
@@ -229,13 +225,11 @@
   darkKeeperBaseEnemies = {
     { id = "ESKIMO_VILLAGE" }
     { id = "BANDITS" }
-    { id = "ADOXIE_VAULT" }
   }
   whiteKeeperBaseEnemies = {
     { id = "DARK_ELF_CAVE" }
     { id = "BANDITS" }
     { id = "WOLF_DEN" }
-    { id = "ADOXIE_VAULT" }
   }
   viewId = { "snowman" }
   name = "winter"
@@ -289,12 +283,10 @@
   }
   darkKeeperBaseEnemies = {
     { id = "NOMAD_VILLAGE" }
-    { id = "ADOXIE_VAULT" }
     { id = "BANDITS" }
   }
   whiteKeeperBaseEnemies = {
     { id = "LIZARDMEN_SMALL" }
-    { id = "ADOXIE_VAULT" }
     { id = "BANDITS" }
   }
   viewId = { "cactus1" }
@@ -383,12 +375,10 @@
   }
   darkKeeperBaseEnemies = {
     { id = "LIZARDMEN_SMALL" }
-    { id = "ADOXIE_VAULT" }
     { id = "BANDITS" }
   }
   whiteKeeperBaseEnemies = {
     { id = "LIZARDMEN_SMALL" }
-    { id = "ADOXIE_VAULT" }
     { id = "BANDITS" }
   }
   darkKeeperEnemies = {

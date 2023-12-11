@@ -1,6 +1,7 @@
 COTTAGES {
   {{"map_unknown"} "SOKOBAN" "Unknown" MINOR}
   {{"map_unknown"} "WIZARD_TOWER" "Unknown" MINOR}
+  {{"map_unknown"} "ADOXIE_VAULT" "Unknown" MINOR}
   {{"map_unknown"} "ADOXIE_FEET" "Unknown" MINOR}
   {{"map_house2"} "COTTAGE_BANDITS" "Cottage" MINOR}
   {{"map_house1"} "LIZARDMEN_COTTAGE" "Cottage" MINOR}

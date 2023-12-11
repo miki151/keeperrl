@@ -131,3 +131,9 @@
   "archer_wall" Place "DUNGEON_WALL2"
   "black_dragon_weapon" Items "blackDragonWeapons"
 }
+
+"adoxie_statue_under" inherit "default" append {
+  "trap" Place "BOULDER_TRAP"
+  "chest" { Place "CHEST" Items "armorChest" }
+  "scroll_chest" { Place "CHEST" Items "adoxieScroll" }
+}

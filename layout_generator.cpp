@@ -137,6 +137,14 @@ static Rectangle getPosition(LayoutGenerators::PlacementPos pos, Rectangle area,
     case PlacementPos::RIGHT_CENTER:
       return Rectangle(area.right() - size.x, area.middle().y - size.y / 2,
                        area.right(), area.middle().y - size.y / 2 + size.y);
+    case PlacementPos::LEFT_STRETCHED:
+      return Rectangle(area.topLeft(), area.bottomLeft() + Vec2(size.x, 0));
+    case PlacementPos::RIGHT_STRETCHED:
+      return Rectangle(area.topRight() - Vec2(size.x, 0), area.bottomRight());
+    case PlacementPos::TOP_STRETCHED:
+      return Rectangle(area.topLeft(), area.topRight() + Vec2(0, size.y));
+    case PlacementPos::BOTTOM_STRETCHED:
+      return Rectangle(area.bottomLeft() - Vec2(0, size.y), area.bottomRight());
     case PlacementPos::TOP_CENTER:
       return Rectangle(area.middle().x - size.x / 2, area.top(),
                        area.middle().x - size.x / 2 + size.x, area.top() + size.y);

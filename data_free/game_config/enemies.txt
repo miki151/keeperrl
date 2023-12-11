@@ -1167,9 +1167,7 @@ End
 "ADOXIE_VAULT"
 {
   settlement = {
-    type = Predefined { "adoxie_vault" "ADOXIE_VAULT" MOUNTAIN } 
-    closeToPlayer = true
-    dontConnectCave = true
+    type = Predefined { "adoxie_vault" "ADOXIE_VAULT" OUTDOOR }
     tribe = MONSTER
   }
   config = {
@@ -1178,25 +1176,15 @@ End
   levelConnection = {
     topLevel = MainEnemy
     levels = {
-      { ExtraEnemy { "ADOXIE_VAULT_UNDER" {1} } {20 20} DUNGEON "Adoxie's Vault" }
+      { ExtraEnemy { "ADOXIE_VAULT_UNDER" {1} } {32 17} BASIC "Adoxie's Vault" }
     }
   }
 }
 "ADOXIE_VAULT_UNDER"
 {
-  discoverable = false
   settlement = {
-    type = Builtin MINETOWN "HELL"
+    type = RandomLayout { "adoxie_statue_under" { 30 15 } "adoxie_statue_under"}
     tribe = MONSTER
-    furniture = "hellFurniture"
-    inhabitants = {
-      fighters = {
-        count = {1}
-        all = {
-          10 "DEVIL_VAULT"
-        }
-      }
-    }
   }
 }
 "WOLF_DEN"

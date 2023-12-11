@@ -575,3 +575,8 @@ End
 {
   items = {{{"ProphetRemains"}}}
 }
+
+"adoxieScroll"
+{
+  items = {{{"AdoxieScrollVault"}}}
+}
