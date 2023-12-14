@@ -4614,18 +4614,6 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
                 },
                 WL(alignment, GuiFactory::Alignment::TOP_LEFT, WL(rectangle, Color::TRANSPARENT, Color::WHITE),
                     maxWorldMapSize * minimapScale / iconSize))))));
-  if (campaignGridPointer)
-    mapContent = WL(stack, makeVec(
-        std::move(mapContent),
-        WL(keyHandler, [&c, iconSize, this] {
-            moveCampaignGridPointer(c, iconSize, Dir::N); }, Keybinding("MENU_UP"), true),
-        WL(keyHandler, [&c, iconSize, this] {
-            moveCampaignGridPointer(c, iconSize, Dir::S); }, Keybinding("MENU_DOWN"), true),
-        WL(keyHandler, [&c, iconSize, this] {
-            moveCampaignGridPointer(c, iconSize, Dir::W); }, Keybinding("MENU_LEFT"), true),
-        WL(keyHandler, [&c, iconSize, this] {
-            moveCampaignGridPointer(c, iconSize, Dir::E); }, Keybinding("MENU_RIGHT"), true)
-    ));
   return WL(preferredSize, maxWorldMapSize + Vec2(margin, margin) * 2, WL(stack, WL(rectangle, Color::BLACK),
     WL(miniBorder2),
     WL(margins, std::move(mapContent), margin)));
