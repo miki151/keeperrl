@@ -1,30 +1,4 @@
 
-Def SavedGameContent() Vertical {
-  {
-    {
-      Horizontal {
-        Vertical {
-          Horizontal { Using "label" Label() Using "warlord" Label(" (retired)") }
-          Using "date" Label(none, 14, ColorId GRAY)
-          Using "viewIds" List(HORIZONTAL, ViewId(1))
-        }
-        Stretch {}
-        Position(TOP_RIGHT, {
-          Using "load" StandardButton(Label("Load game"))
-          Using "warlord" StandardButton(Label("Play as a warlord"))
-        })
-      }
-    }
-    MarginRight(2, Using "erase" Position(BOTTOM_RIGHT, Height 20 Width 45 {
-        Button()
-        StandardButton(Label("erase", 16, Rgb 200 100 100 255))
-    }))
-  }
-  Position(BOTTOM_STRETCHED, Height 10 Texture(HORI_BAR_MINI2))
-  LoadButtonSpacing()
-}
-End
-
 Def KeeperButton() {
   Using "selected" MarginTop(-1, MarginBottom(-4, NewHighlight()))
   If "select_callback" MarginTop(2, MarginBottom(2, Using "base_name" Label()))
@@ -43,19 +17,35 @@ End
 {
   BlockEvents
   ExitButtons()
+  Using "base_inc_callback" KeybindingHandler(MENU_DOWN)
+  Using "base_dec_callback" KeybindingHandler(MENU_UP)
+  Using "gender_inc_callback" KeybindingHandler(MENU_RIGHT)
+  Using "gender_dec_callback" KeybindingHandler(MENU_LEFT)
   Vertical {
     Stretch Window({
-      FocusKeysVertical()
+      #FocusKeysVertical()
       Width 800 Height 330
       Vertical {
         Horizontal {
           Width 300 Height 290 Vertical {
-            Label("Choose base type:")
+            Horizontal {
+              Label("Choose base type:")
+              Width 5{}
+              RenderKeybinding("MENU_UP", true)
+              Width 5{}
+              RenderKeybinding("MENU_DOWN", true)
+            }
             Height 10 {}
             Stretch Using "keeper_list" MarginRight(40, Scrolling(MarginRight(10, List(VERTICAL, KeeperButton()))))
           }
           Stretch Vertical {
-            Label("Choose your Keeper character:")
+            Horizontal {
+              Label("Choose your Keeper character:")
+              Width 5{}
+              RenderKeybinding("MENU_LEFT", true)
+              Width 5{}
+              RenderKeybinding("MENU_RIGHT", true)
+            }
             Height 10 {}
             Horizontal {
               Using "gender_list" List(HORIZONTAL, GenderButton())
@@ -73,7 +63,7 @@ End
                 MarginTop(2, MarginRight(5, MarginLeft(5, Using "settlement_name" Label())))
                 Using "edit_first_name" Button()
               }
-              Using "reload_first_name" StandardButton(Label(text = "🔄", font = SYMBOL_FONT))
+              Using "reload_first_name" StandardButtonNotFocusable(Label(text = "🔄", font = SYMBOL_FONT))
             }
             Height 30 {}
             Using "base_description" Paragraph(width = 450, color = ColorId LIGHT_GRAY)
@@ -81,14 +71,14 @@ End
         }
         Height 20 {}
         Stretch {}
-        Position(MIDDLE, Using "start_game" Width 265 StandardButton(Label("Start new game")))
+        Position(MIDDLE, Using "start_game" Width 265 KeybindingButton("Start new game", MENU_SELECT))
       }
     })
     MarginTop(-3,
     Position(MIDDLE, Horizontal {
-      Width 265 Using "tutorial_callback" StandardButton(Label("Tutorial"))
-      Width 265 Using "change_mod" StandardButton(Label("Mods"))
-      Width 265 Using "go_back" StandardButton(Label("Go back"))
+      Width 265 Using "tutorial_callback" StandardButtonNotFocusable("Tutorial")
+      Width 265 Using "change_mod" StandardButtonNotFocusable("Mods")
+      Width 265 Using "go_back" KeybindingButton("Go back", EXIT_MENU)
     }))
   }
 }
