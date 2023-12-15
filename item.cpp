@@ -188,14 +188,6 @@ void Item::applyPrefix(const ItemPrefix& prefix, const ContentFactory* factory) 
   updateAbility(factory);
 }
 
-void Item::scale(double value, const ContentFactory* factory) {
-  for (auto& attr : factory->attrOrder)
-    if (attributes->modifiers.count(attr))
-      attributes->modifiers[attr] *= value;
-  if (auto& info = attributes->upgradeInfo)
-    ::scale(factory, *info->prefix, value);
-}
-
 void Item::setTimeout(GlobalTime t) {
   timeout = t;
 }
@@ -499,6 +491,8 @@ string Item::getVisibleName(bool getPlural) const {
     else
       ret = attributes->name;
   }
+  if (!attributes->prefixes.empty())
+    ret = attributes->prefixes.back() + " " + ret;
   appendWithSpace(ret, getSuffix());
   return ret;
 }
@@ -520,8 +514,8 @@ void Item::setArtifactName(const string& s) {
 
 string Item::getSuffix() const {
   string artStr;
-  if (!attributes->prefixes.empty())
-    artStr += attributes->prefixes.back();
+  if (!attributes->suffixes.empty())
+    artStr += attributes->suffixes.back();
   if (attributes->artifactName)
     appendWithSpace(artStr, "named " + *attributes->artifactName);
   if (fire->isBurning())
@@ -575,7 +569,9 @@ string Item::getShortName(const ContentFactory* factory, const Creature* owner, 
   if (attributes->artifactName)
     return *attributes->artifactName + " " + getModifiers(factory, true);
   string name;
-  if (!attributes->prefixes.empty())
+  if (!attributes->suffixes.empty())
+    name = attributes->suffixes.back();
+  else if (!attributes->prefixes.empty())
     name = attributes->prefixes.back();
   else if (attributes->shortName) {
     name = *attributes->shortName;

@@ -49,6 +49,8 @@ class ItemAttributes {
   void serializeImpl(Archive& ar, const unsigned int);
   SERIALIZATION_DECL(ItemAttributes)
 
+  void scale(double value, const ContentFactory*);
+
   ViewId SERIAL(viewId);
   optional<ViewId> SERIAL(equipedViewId);
   vector<ViewId> SERIAL(partIds);
@@ -87,6 +89,7 @@ class ItemAttributes {
   WeaponInfo SERIAL(weaponInfo);
   vector<pair<int, ItemPrefix>> SERIAL(genPrefixes);
   vector<string> SERIAL(prefixes);
+  vector<string> SERIAL(suffixes);
   optional<ItemUpgradeInfo> SERIAL(upgradeInfo);
   int SERIAL(maxUpgrades) = 3;
   vector<ItemUpgradeType> SERIAL(upgradeType);

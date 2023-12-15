@@ -22,15 +22,16 @@
 #include "lasting_effect.h"
 #include "sound.h"
 #include "statistics.h"
+#include "content_factory.h"
 
-template <class Archive> 
+template <class Archive>
 void ItemAttributes::serializeImpl(Archive& ar, const unsigned int version) {
   ar(NAMED(name), NAMED(viewId), OPTION(description), NAMED(weight), OPTION(itemClass), NAMED(plural), NAMED(blindName));
   ar(NAMED(artifactName), NAMED(resourceId), OPTION(burnTime), OPTION(price), OPTION(noArticle), NAMED(equipmentSlot), OPTION(equipedAbility));
   ar(OPTION(applyTime), NAMED(ownedEffect), OPTION(maxUpgrades), OPTION(fragile), NAMED(effect), OPTION(uses), OPTION(usedUpMsg));
   ar(OPTION(displayUses), OPTION(modifiers), NAMED(shortName), OPTION(equipedEffect), NAMED(upgradeInfo), OPTION(effectDescription));
   ar(NAMED(applyMsgFirstPerson), NAMED(applyMsgThirdPerson), NAMED(applySound), OPTION(weaponInfo), OPTION(applyVerb));
-  ar(OPTION(prefixes), OPTION(genPrefixes), NAMED(ingredientType), OPTION(variationChance), OPTION(wishedCount));
+  ar(OPTION(prefixes), OPTION(suffixes), OPTION(genPrefixes), NAMED(ingredientType), OPTION(variationChance), OPTION(wishedCount));
   ar(OPTION(specialAttr), OPTION(partIds), OPTION(equipedCompanion), OPTION(upgradeType), OPTION(producedStat));
   ar(OPTION(effectAppliedWhenThrown), OPTION(applyPredicate), NAMED(storageIds), NAMED(carriedTickEffect), OPTION(craftingCost));
   ar(OPTION(equipmentGroup), OPTION(autoEquipPredicate), NAMED(equipedViewId));
@@ -41,6 +42,14 @@ void ItemAttributes::serializeImpl(Archive& ar, const unsigned int version) {
 template <class Archive>
 void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
   serializeImpl(ar, version);
+}
+
+void ItemAttributes::scale(double value, const ContentFactory* factory) {
+  for (auto& attr : factory->attrOrder)
+    if (modifiers.count(attr))
+      modifiers[attr] *= value;
+  if (upgradeInfo)
+    ::scale(factory, *upgradeInfo->prefix, value);
 }
 
 SERIALIZABLE(ItemAttributes);

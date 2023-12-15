@@ -25,7 +25,7 @@ class Workshops {
       PItem item;
       bool applyImmediately;
     };
-    WorkshopResult addWork(Collective*, double workAmount, int skillAmount, double attrScaling);
+    WorkshopResult addWork(Collective*, double workAmount, int skillAmount);
     void queue(Collective*, int index, optional<int> queueIndex = none);
     vector<PItem> unqueue(Collective*, int index);
     void changeNumber(int index, int number);

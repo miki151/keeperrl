@@ -101,7 +101,6 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   virtual bool canEverTick(bool carried) const;
   void applyPrefix(const ItemPrefix&, const ContentFactory*);
   void setTimeout(GlobalTime);
-  void scale(double, const ContentFactory*);
 
   string getApplyMsgThirdPerson(const Creature* owner) const;
   string getApplyMsgFirstPerson(const Creature* owner) const;

@@ -283,15 +283,14 @@ TRAINING("_DWARF", "_dwarf")
     { Furniture {{ "WORKSHOP" "ENCHANTED_WORKSHOP" }   "WOOD" 15 }                      "Workshop"          "Crafting"
         "Produces leather equipment, traps, first-aid kits and other." "WORKSHOPS" {} true  BUILD_WORKSHOP}
 
-    { Furniture {{ "FORGE" }      "IRON" 20 }                      "Forge"             "Crafting"
-        "Produces iron weapons and armor. Must be placed next to magma."    none { TechId "iron working" }}
+    { Furniture {{ "FORGE" "LAVA_FORGE" }      "IRON" 20 }                      "Forge"             "Crafting"
+        "Produces iron weapons and armor."    none { TechId "iron working" }}
 
-    { Furniture {{ "ADA_FORGE" }      "ADA" 20 }                      "Adamantium forge"             "Crafting"
-        "Produces adamantine weapons and armor. Must be placed next to magma."    none { TechId "iron working" }}
+    { Furniture {{ "ADA_FORGE" "ADA_LAVA_FORGE" }      "ADA" 20 }               "Adamantium forge"    "Crafting"
+        "Produces adamantine weapons and armor."    none { TechId "iron working" }}
 
-    { Furniture {{ "ADOXIUM_FORGE" } "ADOXIUM" 20 }                      "Adoxium forge"        "Crafting"
-        "Produces adoxium and infernite equipment. Must be placed next to magma."
-        none { TechId "iron working" }}
+    { Furniture {{ "ADOXIUM_FORGE" "ADOXIUM_LAVA_FORGE" } "ADOXIUM" 20 }        "Adoxium forge"        "Crafting"
+        "Produces adoxium and infernite equipment." none { TechId "iron working" }}
   }
 
   "laboratory"

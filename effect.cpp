@@ -669,7 +669,7 @@ static bool applyToCreature(const Effects::ItemPrefix& e, Creature* c, Creature*
 }
 
 static string getName(const Effects::ItemPrefix& e, const ContentFactory* f) {
-  return getItemName(f, e);
+  return *getItemName(f, e);
 }
 
 static string getDescription(const Effects::ItemPrefix& e, const ContentFactory* f) {

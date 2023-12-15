@@ -46,6 +46,10 @@
       {item = {"WarHammer"}       work = 16   cost = none   tech = "two-handed weapons"  materialTab = true}
       {item = {"BattleAxe"}       work = 22   cost = none   tech = "two-handed weapons"  materialTab = true}
   }
+  "LAVA_FORGE" inherit "FORGE" append
+  {
+  }
+
   "ADA_FORGE"
   {
     {item = {"AdaSword"}        work = 20   cost = none   materialTab = true}
@@ -57,6 +61,11 @@
     {item = {"AdaWarHammer"}    work = 20   cost = none   tech = "two-handed weapons"  materialTab = true}
     {item = {"AdaBattleAxe"}    work = 22   cost = none   tech = "two-handed weapons"  materialTab = true}
   }
+
+  "ADA_LAVA_FORGE" inherit "ADA_FORGE" append
+  {
+  }
+
   "ADOXIUM_FORGE"
   {
     {item = {"AdoxiumArmor"}    work = 30   cost = none   materialTab = true}
@@ -67,6 +76,10 @@
     {item = {"InferniteSword"}        work = 20   cost = none   materialTab = true}
     {item = {"InferniteWarHammer"}    work = 20   cost = none   tech = "two-handed weapons"  materialTab = true}
     {item = {"InferniteBattleAxe"}    work = 22   cost = none   tech = "two-handed weapons"  materialTab = true}
+  }
+
+  "ADOXIUM_LAVA_FORGE" inherit "ADOXIUM_FORGE" append
+  {
   }
 
 Def OneTimeBoost()

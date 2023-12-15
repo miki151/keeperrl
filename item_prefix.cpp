@@ -18,9 +18,11 @@ void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAt
   if (attr.upgradeInfo && attr.upgradeInfo->prefix->contains<ItemPrefixes::AssembledCreatureEffect>()) {
     auto& effect = *attr.upgradeInfo->prefix->getReferenceMaybe<ItemPrefixes::AssembledCreatureEffect>();
     attr.upgradeInfo->prefix = Effect(EffectType::Chain{{effect, Effect(prefix)}});
-    attr.prefixes.push_back(getItemName(factory, prefix));
+    if (auto name = getItemName(factory, prefix))
+      attr.suffixes.push_back(*name);
   } else {
-    attr.prefixes.push_back(getItemName(factory, prefix));
+    if (auto name = getItemName(factory, prefix))
+      attr.suffixes.push_back(*name);
     prefix.visit<void>(
         [&](LastingOrBuff effect) {
           attr.equipedEffect.push_back(effect);
@@ -44,6 +46,17 @@ void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAt
         [&](const SpecialAttr& a) {
           attr.specialAttr[a.attr] = make_pair(a.value, a.predicate);
         },
+        [&](const ItemPrefixes::Scale& a) {
+          attr.scale(a.value, factory);
+        },
+        [&](const ItemPrefixes::Prefix& a) {
+          attr.prefixes.push_back(a.value);
+          ::applyPrefix(factory, *a.prefix, attr);
+        },
+        [&](const ItemPrefixes::Suffix& a) {
+          attr.suffixes.push_back(a.value);
+          ::applyPrefix(factory, *a.prefix, attr);
+        },
         [&](const ItemPrefixes::AssembledCreatureEffect& a) {
           if (auto effect = attr.effect->effect->getValueMaybe<Effects::AssembledMinion>()) {
             effect->effects.push_back(a);
@@ -59,6 +72,12 @@ void scale(const ContentFactory* factory, ItemPrefix& prefix, double value) {
       [&](ItemPrefixes::AssembledCreatureEffect& a) {
         a.scale(value, factory);
       },
+      [&](ItemPrefixes::Prefix& a) {
+        ::scale(factory, *a.prefix, value);
+      },
+      [&](ItemPrefixes::Suffix& a) {
+        ::scale(factory, *a.prefix, value);
+      },
       [](auto&) {}
   );
 }
@@ -73,6 +92,12 @@ void applyPrefixToCreature(const ItemPrefix& prefix, Creature* c) {
       }
   };
   prefix.visit<void>(
+      [&](const ItemPrefixes::Prefix& a) {
+        ::applyPrefixToCreature(*a.prefix, c);
+      },
+      [&](const ItemPrefixes::Suffix& a) {
+        ::applyPrefixToCreature(*a.prefix, c);
+      },
       [&](LastingOrBuff effect) {
         addPermanentEffect(effect, c);
       },
@@ -102,6 +127,12 @@ void applyPrefixToCreature(const ItemPrefix& prefix, Creature* c) {
 
 vector<string> getEffectDescription(const ContentFactory* factory, const ItemPrefix& prefix) {
   return prefix.visit<vector<string>>(
+      [&](const ItemPrefixes::Prefix& a) {
+        return ::getEffectDescription(factory, *a.prefix);
+      },
+      [&](const ItemPrefixes::Suffix& a) {
+        return ::getEffectDescription(factory, *a.prefix);
+      },
       [&](LastingOrBuff effect) -> vector<string> {
         return {"grants " + getName(effect, factory)};
       },
@@ -123,6 +154,9 @@ vector<string> getEffectDescription(const ContentFactory* factory, const ItemPre
       [&](const SpellId& id) -> vector<string> {
         return {"grants "_s + id.data() + " ability"};
       },
+      [&](const ItemPrefixes::Scale& e) -> vector<string> {
+        return {"item attributes are improved by " + toString(e.value)};
+      },
       [&](const SpecialAttr& a) -> vector<string> {
         return {toStringWithSign(a.value) + " " + factory->attrInfo.at(a.attr).name + " " +
             a.predicate.getName(factory)};
@@ -133,8 +167,8 @@ vector<string> getEffectDescription(const ContentFactory* factory, const ItemPre
   );
 }
 
-string getItemName(const ContentFactory* factory, const ItemPrefix& prefix) {
-  return prefix.visit<string>(
+optional<string> getItemName(const ContentFactory* factory, const ItemPrefix& prefix) {
+  return prefix.visit<optional<string>>(
       [&](LastingOrBuff effect) {
         return "of " + getName(effect, factory);
       },
@@ -156,6 +190,9 @@ string getItemName(const ContentFactory* factory, const ItemPrefix& prefix) {
       [&](const SpecialAttr& a) -> string {
         return a.predicate.getName(factory);
       },
+      [&](const auto&) -> optional<string> {
+        return none;
+      },
       [&](const ItemPrefixes::AssembledCreatureEffect& effect) -> string {
         return "with " + effect.getName(factory);
       }
@@ -164,8 +201,17 @@ string getItemName(const ContentFactory* factory, const ItemPrefix& prefix) {
 
 string getGlyphName(const ContentFactory* factory, const ItemPrefix& prefix) {
   return prefix.visit<string>(
+      [&](const ItemPrefixes::Prefix& a) {
+        return ::getGlyphName(factory, *a.prefix);
+      },
+      [&](const ItemPrefixes::Suffix& a) {
+        return ::getGlyphName(factory, *a.prefix);
+      },
+      [&](const ItemPrefixes::Scale& a) -> string {
+        return "improvement";
+      },
       [&](const auto&) {
-        return ::getItemName(factory, prefix);
+        return *::getItemName(factory, prefix);
       },
       [&](ItemPrefixes::ItemAttrBonus bonus) {
         return "of +"_s + toString(bonus.value) + " " + factory->attrInfo.at(bonus.attr).name;

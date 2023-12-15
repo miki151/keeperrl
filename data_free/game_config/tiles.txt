@@ -739,6 +739,10 @@ BOOKCASES("_human")
   roundShadow = true }
 { viewId = "adoxium_forge" symbol = "&" color = ColorId PINK
   roundShadow = true }
+{ viewId = "ada_lava_forge" symbol = "&" color = ColorId LIGHT_RED
+  roundShadow = true }
+{ viewId = "adoxium_lava_forge" symbol = "&" color = ColorId LIGHT_RED
+  roundShadow = true }
 { viewId = "workshop" symbol = "&" color = ColorId LIGHT_BROWN
   roundShadow = true }
 { viewId = "enchanted_workshop" symbol = "&" color = ColorId PURPLE

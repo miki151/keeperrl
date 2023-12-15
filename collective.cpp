@@ -1578,9 +1578,10 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
         auto& workshopInfo = contentFactory->workshopInfo.at(*workshopType);
         auto craftingSkill = c->getAttr(workshopInfo.attr);
         auto result = workshop->addWork(this, efficiency * double(craftingSkill) * 0.02
-            * LastingEffects::getCraftingSpeed(c),
-            craftingSkill, workshopInfo.itemScaling);
+            * LastingEffects::getCraftingSpeed(c), craftingSkill);
         if (result.item) {
+          if (auto& prefix = workshopInfo.prefix)
+            result.item->applyPrefix(*prefix, contentFactory);
           if (result.item->getClass() == ItemClass::WEAPON)
             getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
           if (result.item->getClass() == ItemClass::ARMOR)

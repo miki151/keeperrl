@@ -18,6 +18,11 @@
   attr = "FORGE"
 }
 
+"LAVA_FORGE" inherit "FORGE" {
+  furniture = "LAVA_FORGE"
+  prefix = Prefix "fine" Scale 1.5
+}
+
 "ADA_FORGE" {
   furniture = "ADA_FORGE"
   name = "adamantium forge"
@@ -26,12 +31,22 @@
   minAttr = 50
 }
 
+"ADA_LAVA_FORGE" inherit "ADA_FORGE" {
+  furniture = "ADA_LAVA_FORGE"
+  prefix = Prefix "fine" Scale 1.3
+}
+
 "ADOXIUM_FORGE" {
   furniture = "ADOXIUM_FORGE"
   name = "adoxium forge"
   verb = "forges"
   attr = "FORGE"
   minAttr = 80
+}
+
+"ADOXIUM_LAVA_FORGE" inherit "ADOXIUM_FORGE" {
+  furniture = "ADOXIUM_LAVA_FORGE"
+  prefix = Prefix "fine" Scale 1.3
 }
 
 "LABORATORY" {

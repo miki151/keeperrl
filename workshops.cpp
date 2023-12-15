@@ -101,8 +101,7 @@ PItem Workshops::Type::removeUpgrade(int itemIndex, int runeIndex) {
   return ret;
 }
 
-auto Workshops::Type::addWork(Collective* collective, double amount, int skillAmount,
-    double itemScaling) -> WorkshopResult {
+auto Workshops::Type::addWork(Collective* collective, double amount, int skillAmount) -> WorkshopResult {
   for (int productIndex : All(queued)) {
     auto& product = queued[productIndex];
     if (canCraft(product, collective)) {
@@ -119,8 +118,6 @@ auto Workshops::Type::addWork(Collective* collective, double amount, int skillAm
       if (product.state >= 1) {
         auto factory = collective->getGame()->getContentFactory();
         auto ret = product.item.type.get(factory);
-        if (itemScaling > 1)
-          ret->scale(itemScaling, factory);
         for (auto& rune : product.runes)
           if (auto& upgradeInfo = rune->getUpgradeInfo())
             ret->applyPrefix(*upgradeInfo->prefix, collective->getGame()->getContentFactory());

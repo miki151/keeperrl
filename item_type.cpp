@@ -382,9 +382,9 @@ ItemAttributes ItemTypes::Intrinsic::getAttributes(const ContentFactory* factory
       i.viewId = viewId;
       i.name = name;
       for (auto& effect : weaponInfo.attackerEffect)
-        i.prefixes.push_back("of " + effect.getName(factory));
+        i.suffixes.push_back("of " + effect.getName(factory));
       for (auto& effect : weaponInfo.victimEffect)
-        i.prefixes.push_back("of " + effect.effect.getName(factory));
+        i.suffixes.push_back("of " + effect.effect.getName(factory));
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 0.3;

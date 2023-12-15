@@ -2,6 +2,7 @@
 
 #include "furniture_type.h"
 #include "attr_type.h"
+#include "item_prefix.h"
 
 struct WorkshopInfo {
   FurnitureType SERIAL(furniture);
@@ -9,6 +10,6 @@ struct WorkshopInfo {
   string SERIAL(verb) = "produces";
   AttrType SERIAL(attr);
   int SERIAL(minAttr) = 1;
-  double SERIAL(itemScaling) = 1;
-  SERIALIZE_ALL(NAMED(furniture), NAMED(name), OPTION(verb), NAMED(attr), OPTION(minAttr), OPTION(itemScaling))
+  optional<ItemPrefix> SERIAL(prefix);
+  SERIALIZE_ALL(NAMED(furniture), NAMED(name), OPTION(verb), NAMED(attr), OPTION(minAttr), OPTION(prefix))
 };

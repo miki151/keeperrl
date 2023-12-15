@@ -17,9 +17,8 @@ WorkshopItem WorkshopItemCfg::get(WorkshopType type, const ContentFactory* facto
   // for some reason removing this line causes a linker error, probably a compiler bug
   auto t = tech;
   PItem elem = item.get(factory);
-  auto itemScaling = factory->workshopInfo.at(type).itemScaling;
-  if (itemScaling > 1)
-    elem->scale(itemScaling, factory);
+  if (auto& prefix = factory->workshopInfo.at(type).prefix)
+    elem->applyPrefix(*prefix, factory);
   vector<string> description;
   if (elem->getNameAndModifiers(factory) != elem->getName())
     description.push_back(elem->getNameAndModifiers(factory));
