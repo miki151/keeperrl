@@ -61,6 +61,7 @@ Item::Item(const ItemAttributes& attr, const ContentFactory* factory)
 }
 
 void Item::updateAbility(const ContentFactory* factory) {
+  abilityInfo.clear();
   for (auto id : attributes->equipedAbility)
     abilityInfo.push_back(ItemAbility { *factory->getCreatures().getSpell(id), none, getUniqueId().getGenericId() });
 }
