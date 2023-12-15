@@ -9,6 +9,7 @@
   name = "enchanted workshop"
   attr = "WORKSHOP"
   minAttr = 35
+  prefix = Prefix "enchanted" Scale 1.5
 }
 
 "FORGE" {

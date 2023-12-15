@@ -13,13 +13,8 @@
       {{"Torch"}                 2        "WOOD" 4}
       {{"WoodenStaff"}           13       "WOOD" 20      "magical weapons"}
       {{"Cornuthaum1"}           5        none           "sorcery"}
-  }
-
-  "ENCHANTED_WORKSHOP"
-  {
       {{"Cornuthaum2"}           8        none      "advanced sorcery"}
       {{"Cornuthaum3"}           12       none      "master sorcery"}
-      {item = {"EnchantedStaff"}       work = 20  cost = "WOOD" 20   tech = "magical weapons"}
       {item = {"ArchwoodStaff"}        work = 20  cost = none
           requireIngredient = "archwood" tech = "magical weapons"}
       {item = {"RedDragonArmor"}   work = 30  cost = none   requireIngredient = "red_scales" }
@@ -35,6 +30,8 @@
       }
   }
 
+  "ENCHANTED_WORKSHOP" inherit "WORKSHOP" append {}
+
   "FORGE"
   {
       {item = {"Sword"}          work = 10    cost = none   materialTab = true}
@@ -46,6 +43,7 @@
       {item = {"WarHammer"}       work = 16   cost = none   tech = "two-handed weapons"  materialTab = true}
       {item = {"BattleAxe"}       work = 22   cost = none   tech = "two-handed weapons"  materialTab = true}
   }
+
   "LAVA_FORGE" inherit "FORGE" append
   {
   }
@@ -175,14 +173,10 @@ append {
   "WORKSHOP"
   {
       {{"Bow"}                   13       "WOOD" 20      "archery"}
+      {item = {"ArchwoodBow"}  work = 30 cost = "WOOD" 20 requireIngredient = "archwood" tech = "archery" }
   }
 
-  "ENCHANTED_WORKSHOP"
-  {
-    {item = {"EnchantedBow"} work = 30 cost = "WOOD" 20 tech = "archery" }
-    {item = {"ArchwoodBow"}  work = 30 cost = "WOOD" 20 requireIngredient = "archwood"
-        tech = "archery" }
-  }
+  "ENCHANTED_WORKSHOP" inherit "WORKSHOP" append {}
 }
 
 "crossbows"
@@ -190,11 +184,10 @@ append {
   "WORKSHOP"
   {
       {{"Crossbow"}                   13       "WOOD" 20      "archery"}
+      {item = {"ArchwoodCrossbow"}  work = 30 requireIngredient = "archwood" tech = "archery" }
   }
-  "ENCHANTED_WORKSHOP"
-  {
-    {item = {"EnchantedCrossbow"}  work = 30 cost = "WOOD" 20 tech = "archery" }
-  }
+
+  "ENCHANTED_WORKSHOP" inherit "WORKSHOP" append {}
 }
 
 Def CORPUS(Id, Name, Resource, Tech, Slots)
@@ -244,6 +237,7 @@ End
 #      { item = {"AcidHeadIron"} work = 2 tech = "advanced automatons" materialTab = true}
       { item = {"HumanoidHeadIron"} work = 2 tech = "automaton brains" materialTab = true}
   }
+  "LAVA_FORGE" inherit "FORGE" append { }
   "LABORATORY"
   {
       {{Potion Fire{25}} 4 "GOLD" 5}
@@ -266,6 +260,7 @@ End
     { item = {"AcidHeadAda"} work = 2 tech = "advanced automatons" materialTab = true}
     { item = {"HumanoidHeadAda"} work = 2 tech = "automaton brains" materialTab = true}
   }
+  "ADA_LAVA_FORGE" inherit "ADA_FORGE" append { }
   "ADOXIUM_FORGE" {
     CORPUS("AUTOMATON_CORPUS_INFERNITE", "automaton corpus", "INFERNITE" 30, "automatons", 3)
     CORPUS("LIGHT_AUTOMATON_CORPUS_INFERNITE", "light automaton corpus", "INFERNITE" 20, "automatons", 2)
@@ -282,6 +277,7 @@ End
     { item = {"InvisibilityHeadAdoxium"} work = 3 tech = "advanced automatons" materialTab = true}
     { item = {"TeleportHeadAdoxium"} work = 3 tech = "advanced automatons" materialTab = true}
   }
+  "ADOXIUM_LAVA_FORGE" inherit "ADOXIUM_FORGE" append { }
 }
 
 "morgue"

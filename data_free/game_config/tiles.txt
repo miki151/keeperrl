@@ -428,10 +428,9 @@ Connections("map_swamp")
 { viewId = "sceptre_v" symbol = ")" color = ColorId RED weaponOrigin = {13 13} }
 { "bow" ")" ColorId BROWN }
 { "archwood_bow" ")" ColorId LIGHT_BLUE }
-{ "enchanted_bow" ")" ColorId LIGHT_RED }
 { "elven_bow" ")" ColorId YELLOW false "bow" }
 { "crossbow" ")" ColorId LIGHT_BROWN }
-{ "enchanted_crossbow" ")" ColorId LIGHT_RED }
+{ "archwood_crossbow" ")" ColorId LIGHT_RED }
 { "arrow" "/" ColorId BROWN }
 { "wooden_staff" ")" ColorId DARK_BROWN }
 { viewId = "wooden_staff_v" symbol = ")" color = ColorId DARK_BROWN weaponOrigin = {12 13} }

@@ -726,16 +726,6 @@ End
     name = "silver elven bow"
     price = 100
   }
-"EnchantedBow" inherit "Bow"
-  {
-    viewId = { "enchanted_bow" }
-    modifiers = {
-      RANGED_DAMAGE 18
-    }
-    name = "enchanted bow"
-    maxUpgrades = 1
-    price = 200
-  }
 "ArchwoodBow" inherit "Bow"
   {
     viewId = { "archwood_bow" }
@@ -765,14 +755,14 @@ End
     storageIds = {"bows" "weapons" "equipment"}
     equipmentGroup = "ranged weapons"
   }
-"EnchantedCrossbow" inherit "Crossbow"
+"ArchwoodCrossbow" inherit "Crossbow"
   {
-    viewId = { "enchanted_crossbow" }
+    viewId = { "archwood_crossbow" }
     modifiers = {
       RANGED_DAMAGE 32
     }
-    name = "enchanted crossbow"
-    maxUpgrades = 2
+    name = "archwood crossbow"
+    maxUpgrades = 3
     price = 1000
   }
 "Torch"

@@ -75,13 +75,13 @@ TRAINING("_DWARF", "_dwarf")
   strength = 80
   requiresLight = true
   usageFX = WORKSHOP
-  usagePredicate = Not ContainsGas "FOG"
+  usagePredicate = Area 1 Not FurnitureType "ENCHANTED_WATER"
 }
 "ENCHANTED_WORKSHOP" inherit "WORKSHOP"
 {
   name = "enchanted workshop"
   viewId = { "enchanted_workshop" }
-  usagePredicate = ContainsGas "FOG"
+  usagePredicate = Not Area 1 Not FurnitureType "ENCHANTED_WATER"
 }
 "FORGE"
 {
