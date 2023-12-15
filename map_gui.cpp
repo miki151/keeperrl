@@ -1063,7 +1063,8 @@ void MapGui::renderFloorObjects(Renderer& renderer, Vec2 size, milliseconds curr
         if (index->hasObject(layer)) {
           auto& obj = index->getObject(layer);
           const Tile& tile = renderer.getTileSet().getTile(obj.id(), spriteMode);
-          if (layer == ViewLayer::FLOOR_BACKGROUND || !tile.moveUp)
+          if (layer == ViewLayer::FLOOR_BACKGROUND ||
+              (tile.getSpriteCoord()[0].size.y == Renderer::nominalSize && !tile.moveUp))
             drawObjectAbs(renderer, pos, obj, size, Vec2(), wpos, currentTimeReal, *index);
         }
     }
@@ -1131,7 +1132,7 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
             object = &index.getObject(layer);
           if (object) {
             const Tile& tile = renderer.getTileSet().getTile(object->id(), spriteMode);
-            if (layer != ViewLayer::FLOOR || tile.moveUp) {
+            if (layer != ViewLayer::FLOOR || tile.getSpriteCoord()[0].size.y > Renderer::nominalSize || tile.moveUp) {
               Vec2 movement = getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true, wpos);
               drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal, index);
               if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos &&
