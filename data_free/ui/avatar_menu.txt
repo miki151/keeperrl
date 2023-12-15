@@ -76,8 +76,8 @@ End
     })
     MarginTop(-3,
     Position(MIDDLE, Horizontal {
-      Width 265 Using "tutorial_callback" StandardButtonNotFocusable("Tutorial")
-      Width 265 Using "change_mod" StandardButtonNotFocusable("Mods")
+      Width 265 Using "tutorial_callback" StandardButtonNotFocusable(Label("Tutorial"))
+      Width 265 Using "change_mod" StandardButtonNotFocusable(Label("Mods"))
       Width 265 Using "go_back" KeybindingButton("Go back", EXIT_MENU)
     }))
   }
