@@ -1,8 +1,9 @@
 cmake_minimum_required (VERSION 2.6)
 project(keeper)
+option(ENABLE_STEAM "Enable Steam integration" ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # set default cxxflags
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-shift-count-overflow -ftemplate-depth=512 -DUSE_STEAMWORKS -I /home/michal/keeperrl/extern/steamworks/public")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-shift-count-overflow -ftemplate-depth=512")
 # clang specific cflags
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags")
@@ -14,8 +15,13 @@ set(STDAFX_H_GCH "${CMAKE_CURRENT_BINARY_DIR}/stdagx.h.gch")
 # set debug cxxflags
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wimplicit-fallthrough -Wno-unused-function")
 #if ((${CMAKE_BUILD_TYPE} MATCHES "Debug") AND (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld -L ${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/linux64/ -L /usr/local/lib -lsteam_api -Wl,-rpath=. -Wl,--gdb-index")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld -L /usr/local/lib -Wl,-rpath=. -Wl,--gdb-index")
   #endif()
+if(ENABLE_STEAM)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_STEAMWORKS -I ${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/public")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L ${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/linux64/ -lsteam_api")
+endif()
+
 
 # additional cmake modules directory
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
@@ -67,6 +73,9 @@ add_custom_command(
 
 # rules to create `keeper` binary
 file(GLOB SOURCES "*.cpp" "extern/*.cpp")
+if(NOT ENABLE_STEAM)
+    list(FILTER SOURCES EXCLUDE REGEX ".*steam_.*\\.cpp$")
+endif()
 add_executable(keeper ${SOURCES} ${KEEPER_VERSION_H} ${CHECK_SERIAL_STAMP})
 target_include_directories(keeper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(keeper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern)
