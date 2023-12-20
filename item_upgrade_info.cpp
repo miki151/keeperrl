@@ -44,7 +44,7 @@ const char* getItemTypeName(ItemUpgradeType type) {
   }
 }
 
-SERIALIZE_DEF(ItemUpgradeInfo, type, prefix)
+SERIALIZE_DEF(ItemUpgradeInfo, NAMED(type), NAMED(prefix), OPTION(diminishModifier))
 
 #include "pretty_archive.h"
 template

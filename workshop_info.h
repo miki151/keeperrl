@@ -11,5 +11,6 @@ struct WorkshopInfo {
   AttrType SERIAL(attr);
   int SERIAL(minAttr) = 1;
   optional<ItemPrefix> SERIAL(prefix);
-  SERIALIZE_ALL(NAMED(furniture), NAMED(name), OPTION(verb), NAMED(attr), OPTION(minAttr), OPTION(prefix))
+  bool SERIAL(hideFromTech) = false;
+  SERIALIZE_ALL(NAMED(furniture), NAMED(name), OPTION(verb), NAMED(attr), OPTION(minAttr), OPTION(prefix), OPTION(hideFromTech))
 };

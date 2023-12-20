@@ -257,10 +257,10 @@ End
     }
     inventory = append {
       { "EnchantedStaff" }
-      { type = Glyph ARMOR LastingEffect MAGIC_RESISTANCE chance = 0.3 }
-      { type = Glyph ARMOR LastingEffect SPEED chance = 0.3 }
-      { type = Glyph ARMOR LastingEffect NO_CARRY_LIMIT chance = 0.3 }
-      { type = Glyph WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 20 AttackerEffect Suicide DIE} chance = 0.3 }
+      { type = Glyph { ARMOR LastingEffect MAGIC_RESISTANCE } chance = 0.3 }
+      { type = Glyph { ARMOR LastingEffect SPEED } chance = 0.3 }
+      { type = Glyph { ARMOR LastingEffect NO_CARRY_LIMIT } chance = 0.3 }
+      { type = Glyph { WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 20 AttackerEffect Suicide DIE} } chance = 0.3 }
     }
   }
 "UNICORN"
@@ -730,11 +730,11 @@ End
       { Potion Lasting POISON }
       { Potion Lasting SPEED }
       { type = "SpiderRing" chance = 0.2 }
-      { type = Glyph ARMOR JoinPrefixes {
+      { type = Glyph { ARMOR JoinPrefixes {
           LastingEffect MAGIC_VULNERABILITY
           LastingEffect MELEE_VULNERABILITY
           LastingEffect RANGED_VULNERABILITY
-          LastingEffect INVISIBLE } chance = 0.3 }
+          LastingEffect INVISIBLE }} chance = 0.3 }
     }
   }
 "WITCHMAN"
@@ -805,9 +805,9 @@ End
       { "GoldPiece" 40 80 }
       # Put them in any order in the format "key = value"
       { countMin = 10 countMax = 15 type = "GoldPiece" chance = 0.1}
-      { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
-      { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
-      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
+      { type = Glyph { ARMOR ItemAttrBonus DEFENSE 3 } chance = 0.3 }
+      { type = Glyph { WEAPON ItemAttrBonus DAMAGE 3 } chance = 0.3 }
+      { type = Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 } chance = 0.3 }
     }
   }
 "CYCLOPS_PLAYER"
@@ -925,10 +925,10 @@ End
       DAMAGE 7
     }
     inventory = {
-      { type = Glyph ARMOR LastingEffect MAGIC_RESISTANCE chance = 0.3 }
-      { type = Glyph ARMOR LastingEffect SPEED chance = 0.3 }
-      { type = Glyph ARMOR LastingEffect NO_CARRY_LIMIT chance = 0.3 }
-      { type = Glyph WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 20 AttackerEffect Suicide DIE} chance = 0.3 }
+      { type = Glyph { ARMOR LastingEffect MAGIC_RESISTANCE } chance = 0.3 }
+      { type = Glyph { ARMOR LastingEffect SPEED } chance = 0.3 }
+      { type = Glyph { ARMOR LastingEffect NO_CARRY_LIMIT } chance = 0.3 }
+      { type = Glyph { WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 20 AttackerEffect Suicide DIE} } chance = 0.3 }
     }
   }
 "MINOTAUR"
@@ -955,9 +955,9 @@ End
     }
     inventory = {
       { "BattleAxe"}
-      { type = Glyph ARMOR ItemAttrBonus DEFENSE 5 chance = 0.3 }
-      { type = Glyph WEAPON ItemAttrBonus DAMAGE 5 chance = 0.3 }
-      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 5 chance = 0.3 }
+      { type = Glyph { ARMOR ItemAttrBonus DEFENSE 5 } chance = 0.3 }
+      { type = Glyph { WEAPON ItemAttrBonus DAMAGE 5 } chance = 0.3 }
+      { type = Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 5 } chance = 0.3 }
     }
     killedAchievement = "killed_minotaur"
   }
@@ -1084,12 +1084,12 @@ End
     hatedByEffect = HATE_DRAGONS
     inventory = {
       { "GoldPiece" 60 100 }
-      { type = Glyph WEAPON VictimEffect 0.3 Lasting POISON chance = 0.3 }
-      { type = Glyph ARMOR LastingEffect POISON_RESISTANT chance = 0.3 }
-      { type = Glyph ARMOR LastingEffect REGENERATION chance = 0.3 }
-      { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
-      { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
-      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
+      { type = Glyph { WEAPON VictimEffect 0.3 Lasting POISON } chance = 0.3 }
+      { type = Glyph { ARMOR LastingEffect POISON_RESISTANT } chance = 0.3 }
+      { type = Glyph { ARMOR LastingEffect REGENERATION } chance = 0.3 }
+      { type = Glyph { ARMOR ItemAttrBonus DEFENSE 3 } chance = 0.3 }
+      { type = Glyph { WEAPON ItemAttrBonus DAMAGE 3 } chance = 0.3 }
+      { type = Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 } chance = 0.3 }
     }
     steedAchievement = "rode_dragon"
   }
@@ -1193,12 +1193,12 @@ End
     hatedByEffect = HATE_DRAGONS
     inventory = {
       { "GoldPiece" 120 200 }
-      { type = Glyph WEAPON VictimEffect 0.3 Fire{25} chance = 0.3 }
-      { type = Glyph WEAPON VictimEffect 0.3 Lasting 50 BLEEDING chance = 0.3 }
-      { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
-      { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
-      { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
-      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
+      { type = Glyph { WEAPON VictimEffect 0.3 Fire{25} } chance = 0.3 }
+      { type = Glyph { WEAPON VictimEffect 0.3 Lasting 50 BLEEDING } chance = 0.3 }
+      { type = Glyph { WEAPON LastingEffect ENTERTAINER } chance = 0.3 }
+      { type = Glyph { ARMOR ItemAttrBonus DEFENSE 3 } chance = 0.3 }
+      { type = Glyph { WEAPON ItemAttrBonus DAMAGE 3 } chance = 0.3 }
+      { type = Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 } chance = 0.3 }
     }
     steedAchievement = "rode_dragon"
   }
@@ -1269,13 +1269,13 @@ End
     hatedByEffect = HATE_DRAGONS
     inventory = {
       { "GoldPiece" 120 200 }
-      { type = Glyph WEAPON VictimEffect 0.3 Lasting BLIND chance = 1.0 }
-      { type = Glyph WEAPON VictimEffect 0.3 Lasting 50 BLEEDING chance = 0.3 }
-      { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
-      { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
-      { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
-      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
-      { type = Glyph WEAPON SpecialAttr DAMAGE 5 Name "at night" Night chance = 0.3 }
+      { type = Glyph { WEAPON VictimEffect 0.3 Lasting BLIND } chance = 1.0 }
+      { type = Glyph { WEAPON VictimEffect 0.3 Lasting 50 BLEEDING } chance = 0.3 }
+      { type = Glyph { WEAPON LastingEffect ENTERTAINER } chance = 0.3 }
+      { type = Glyph { ARMOR ItemAttrBonus DEFENSE 3 } chance = 0.3 }
+      { type = Glyph { WEAPON ItemAttrBonus DAMAGE 3 } chance = 0.3 }
+      { type = Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 } chance = 0.3 }
+      { type = Glyph { WEAPON SpecialAttr DAMAGE 5 Name "at night" Night } chance = 0.3 }
     }
     killedAchievement = "killed_black_dragon"
     steedAchievement = "rode_dragon"
@@ -1347,12 +1347,12 @@ End
     hatedByEffect = HATE_DRAGONS
     inventory = {
       { "GoldPiece" 120 200 }
-      { type = Glyph WEAPON VictimEffect 0.3 Lasting FROZEN chance = 1.0 }
-      { type = Glyph WEAPON VictimEffect 0.3 Lasting 50 BLEEDING chance = 0.3 }
-      { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
-      { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
-      { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
-      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
+      { type = Glyph { WEAPON VictimEffect 0.3 Lasting FROZEN } chance = 1.0 }
+      { type = Glyph { WEAPON VictimEffect 0.3 Lasting 50 BLEEDING } chance = 0.3 }
+      { type = Glyph { WEAPON LastingEffect ENTERTAINER } chance = 0.3 }
+      { type = Glyph { ARMOR ItemAttrBonus DEFENSE 3 } chance = 0.3 }
+      { type = Glyph { WEAPON ItemAttrBonus DAMAGE 3 } chance = 0.3 }
+      { type = Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 } chance = 0.3 }
     }
     steedAchievement = "rode_dragon"
 }
@@ -1422,12 +1422,12 @@ End
     hatedByEffect = HATE_DRAGONS
     inventory = {
       { "GoldPiece" 120 200 }
-      { type = Glyph WEAPON VictimEffect 0.3 Acid{30} chance = 0.1 }
-      { type = Glyph WEAPON VictimEffect 0.3 Lasting 50 BLEEDING chance = 0.3 }
-      { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
-      { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
-      { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
-      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
+      { type = Glyph { WEAPON VictimEffect 0.3 Acid{30} } chance = 0.1 }
+      { type = Glyph { WEAPON VictimEffect 0.3 Lasting 50 BLEEDING } chance = 0.3 }
+      { type = Glyph { WEAPON LastingEffect ENTERTAINER } chance = 0.3 }
+      { type = Glyph { ARMOR ItemAttrBonus DEFENSE 3 } chance = 0.3 }
+      { type = Glyph { WEAPON ItemAttrBonus DAMAGE 3 } chance = 0.3 }
+      { type = Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 } chance = 0.3 }
     }
     steedAchievement = "rode_dragon"
   }
@@ -1766,7 +1766,7 @@ End
       droppedPartUpgrade = IncreaseAttr DEFENSE 7
     }
     inventory = append {
-      { type = Glyph WEAPON SpellId "audience" }
+      { type = Glyph { WEAPON SpellId "audience" }}
     }
   }
 "FRIAR" inherit "CLERIC"
@@ -1962,13 +1962,13 @@ End
       { "LeatherArmor"}
       { "WoodenStaff"}
       { "GoldPiece" 80 120 }
-      { type = Glyph ARMOR ItemAttrBonus SPELL_DAMAGE 5 chance = 0.3 }
-      { type = Glyph ARMOR LastingEffect FLYING chance = 0.3 }
-      { type = Glyph ARMOR JoinPrefixes { LastingEffect BLIND LastingEffect INVISIBLE} chance = 0.3 }
-      { type = Glyph WEAPON VictimEffect 0.2 DestroyEquipment chance = 0.3 }
-      { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
-      { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
-      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
+      { type = Glyph { ARMOR ItemAttrBonus SPELL_DAMAGE 5 } chance = 0.3 }
+      { type = Glyph { ARMOR LastingEffect FLYING } chance = 0.3 }
+      { type = Glyph { ARMOR JoinPrefixes { LastingEffect BLIND LastingEffect INVISIBLE} } chance = 0.3 }
+      { type = Glyph { WEAPON VictimEffect 0.2 DestroyEquipment } chance = 0.3 }
+      { type = Glyph { ARMOR ItemAttrBonus DEFENSE 3 } chance = 0.3 }
+      { type = Glyph { WEAPON ItemAttrBonus DAMAGE 3 } chance = 0.3 }
+      { type = Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 } chance = 0.3 }
     }
   }
 "THIEF" inherit "WARRIOR"
@@ -2619,7 +2619,7 @@ End
     inventory = {
       { "Robe"}
       { "WoodenStaff"}
-      { type = Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 4 chance = 0.3 }
+      { type = Glyph { WEAPON ItemAttrBonus SPELL_DAMAGE 4 } chance = 0.3 }
     }
   }
 "MUMMY"
@@ -2996,8 +2996,8 @@ End
       { "IronHelm"}
       { type = "Torch" chance = 0.3 }
       { "GoldPiece" 80 120 }
-      { type = Glyph ARMOR ItemAttrBonus DEFENSE 4 chance = 0.3 }
-      { type = Glyph WEAPON JoinPrefixes { LastingEffect BAD_BREATH VictimEffect 0.2 Lasting PANIC } chance = 0.3 }
+      { type = Glyph { ARMOR ItemAttrBonus DEFENSE 4 } chance = 0.3 }
+      { type = Glyph { WEAPON JoinPrefixes { LastingEffect BAD_BREATH VictimEffect 0.2 Lasting PANIC } } chance = 0.3 }
     }
   }
 "DWARF_BLACKSMITH" inherit "DWARF"
@@ -3192,13 +3192,13 @@ End
       { "ElvenBow"}
       { "GoldPiece" 80 120 }
       { Scroll Escape{} }
-      { type = Glyph WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 10 LastingEffect INSANITY} chance = 0.3 }
-      { type = Glyph ARMOR LastingEffect NIGHT_VISION chance = 0.3 }
-      { type = Glyph ARMOR LastingEffect ELF_VISION chance = 0.3 }
-      { type = Glyph ARMOR LastingEffect REGENERATION chance = 0.3 }
-      { type = Glyph WEAPON LastingEffect DARKNESS_SOURCE chance = 0.3 }
-      { type = Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 4 chance = 0.3 }
-      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 7 chance = 0.3 }
+      { type = Glyph { WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 10 LastingEffect INSANITY} } chance = 0.3 }
+      { type = Glyph { ARMOR LastingEffect NIGHT_VISION } chance = 0.3 }
+      { type = Glyph { ARMOR LastingEffect ELF_VISION } chance = 0.3 }
+      { type = Glyph { ARMOR LastingEffect REGENERATION } chance = 0.3 }
+      { type = Glyph { WEAPON LastingEffect DARKNESS_SOURCE } chance = 0.3 }
+      { type = Glyph { WEAPON ItemAttrBonus SPELL_DAMAGE 4 } chance = 0.3 }
+      { type = Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 7 } chance = 0.3 }
     }
   }
 "DARK_ELF"
@@ -3319,13 +3319,13 @@ End
       { "LeatherArmor"}
       { "GoldPiece" 80 120 }
       { Scroll Escape{} }
-      { type = Glyph WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 10 LastingEffect INSANITY} chance = 0.3 }
-      { type = Glyph ARMOR LastingEffect NIGHT_VISION chance = 0.3 }
-      { type = Glyph ARMOR LastingEffect ELF_VISION chance = 0.3 }
-      { type = Glyph ARMOR LastingEffect REGENERATION chance = 0.3 }
-      { type = Glyph WEAPON LastingEffect DARKNESS_SOURCE chance = 0.3 }
-      { type = Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 4 chance = 0.3 }
-      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
+      { type = Glyph { WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 10 LastingEffect INSANITY} } chance = 0.3 }
+      { type = Glyph { ARMOR LastingEffect NIGHT_VISION } chance = 0.3 }
+      { type = Glyph { ARMOR LastingEffect ELF_VISION } chance = 0.3 }
+      { type = Glyph { ARMOR LastingEffect REGENERATION } chance = 0.3 }
+      { type = Glyph { WEAPON LastingEffect DARKNESS_SOURCE } chance = 0.3 }
+      { type = Glyph { WEAPON ItemAttrBonus SPELL_DAMAGE 4 } chance = 0.3 }
+      { type = Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 } chance = 0.3 }
     }
   }
 "DRIAD"
@@ -4052,7 +4052,7 @@ End
     inventory = {
       { "EnchantedStaff"}
       { "Torch"}
-      { type = Glyph ARMOR LastingEffect FIRE_RESISTANT chance = 0.3 }
+      { type = Glyph { ARMOR LastingEffect FIRE_RESISTANT } chance = 0.3 }
     }
   }
 "FIRE_ELEMENTAL"
@@ -4198,9 +4198,9 @@ End
     }
     inventory = {
       { type = "Sword" prefixChance = 0.1 }
-      { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
-      { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
-      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
+      { type = Glyph { ARMOR ItemAttrBonus DEFENSE 3 } chance = 0.3 }
+      { type = Glyph { WEAPON ItemAttrBonus DAMAGE 3 } chance = 0.3 }
+      { type = Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 } chance = 0.3 }
     }
   }
 "BAT"

@@ -4,12 +4,10 @@
   attr = "WORKSHOP"
 }
 
-"ENCHANTED_WORKSHOP" {
+"ENCHANTED_WORKSHOP" inherit "WORKSHOP" {
   furniture = "ENCHANTED_WORKSHOP"
-  name = "enchanted workshop"
-  attr = "WORKSHOP"
-  minAttr = 35
   prefix = Prefix "enchanted" Scale 1.5
+  hideFromTech = true
 }
 
 "FORGE" {
@@ -22,6 +20,7 @@
 "LAVA_FORGE" inherit "FORGE" {
   furniture = "LAVA_FORGE"
   prefix = Prefix "fine" Scale 1.5
+  hideFromTech = true
 }
 
 "ADA_FORGE" {
@@ -35,6 +34,7 @@
 "ADA_LAVA_FORGE" inherit "ADA_FORGE" {
   furniture = "ADA_LAVA_FORGE"
   prefix = Prefix "fine" Scale 1.3
+  hideFromTech = true
 }
 
 "ADOXIUM_FORGE" {
@@ -48,6 +48,7 @@
 "ADOXIUM_LAVA_FORGE" inherit "ADOXIUM_FORGE" {
   furniture = "ADOXIUM_LAVA_FORGE"
   prefix = Prefix "fine" Scale 1.3
+  hideFromTech = true
 }
 
 "LABORATORY" {
@@ -57,12 +58,10 @@
   attr = "LABORATORY"
 }
 
-"ENCHANTED_LABORATORY" {
+"ENCHANTED_LABORATORY" inherit "LABORATORY" {
   furniture = "ENCHANTED_LABORATORY"
   name = "enchanted laboratory"
-  verb = "concocts"
-  attr = "LABORATORY"
-  minAttr = 50
+  hideFromTech = true
 }
 
 "JEWELER" {

@@ -698,7 +698,7 @@ Def NoEffect() Unlock "nothing" End
 "repair automaton"
 {
   symbol = "🔧"
-  effect = Name "repair automaton" Filter Automaton RegrowBodyPart 10
+  effect = Name "repair automaton" Description "Repairs broken automaton parts" Filter Automaton RegrowBodyPart 10
   range = 1
   targetSelf = true
   cooldown = 15

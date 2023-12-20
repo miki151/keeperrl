@@ -35,6 +35,7 @@
 #include "storage_id.h"
 #include "cost_info.h"
 #include "lasting_or_buff.h"
+#include "assembled_minion.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 
@@ -72,6 +73,7 @@ class ItemAttributes {
   TimeInterval SERIAL(applyTime) = 1_visible;
   bool SERIAL(fragile) = false;
   optional<Effect> SERIAL(effect);
+  optional<AssembledMinion> SERIAL(assembledMinion);
   int SERIAL(uses) = -1;
   bool SERIAL(usedUpMsg) = false;
   bool SERIAL(displayUses) = false;

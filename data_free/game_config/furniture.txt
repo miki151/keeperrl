@@ -394,7 +394,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   canHideHere = true
   strength = 50
   blockMovement = true
-  populationIncrease = { 1 4 }
+  populationIncrease = { 1 8 }
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
 }
 "AUTOMATON_ENGINE_IRON"
@@ -404,7 +404,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   canHideHere = true
   strength = 50
   blockMovement = true
-  populationIncrease = { 1 16 }
+  populationIncrease = { 1 24 }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
 "AUTOMATON_ENGINE_ADA"
@@ -1097,11 +1097,11 @@ Def BedHeal() Heal { FLESH 0.005 } End
       {
         CreatureMessage { "find a glyph in the cracks!" "finds a glyph in the cracks!"}
         ChooseRandom {
-          DropItems {Glyph ARMOR ItemAttrBonus DAMAGE 2} {1}
-          DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 2} {1}
-          DropItems {Glyph ARMOR LastingEffect TELEPATHY} {1}
-          DropItems {Glyph WEAPON VictimEffect 0.3 Lasting 50 BLEEDING} {1}
-          DropItems {Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 2} {1}
+          DropItems {Glyph { ARMOR ItemAttrBonus DAMAGE 2}} {1}
+          DropItems {Glyph { ARMOR ItemAttrBonus DEFENSE 2}} {1}
+          DropItems {Glyph { ARMOR LastingEffect TELEPATHY}} {1}
+          DropItems {Glyph { WEAPON VictimEffect 0.3 Lasting 50 BLEEDING}} {1}
+          DropItems {Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 2}} {1}
         }
       }
     }

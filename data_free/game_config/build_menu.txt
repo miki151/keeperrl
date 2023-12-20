@@ -335,9 +335,9 @@ TRAINING("_DWARF", "_dwarf")
     { Furniture {{ "AUTOMATON_ENGINE_WOOD" } "WOOD" 50 }                "Wooden engine"   "Automaton engines"
         ""            none { TechId "automatons" }}
     { Furniture {{ "AUTOMATON_ENGINE_IRON" } "IRON" 50 }                "Iron engine"   "Automaton engines"
-        ""            none { TechId "automatons" }}
+        ""            none { TechId "iron working" }}
     { Furniture {{ "AUTOMATON_ENGINE_ADA" } "ADA" 50 }                "Adamantine engine"   "Automaton engines"
-        ""            none { TechId "automatons" }}
+        ""            none { TechId "iron working" }}
   }
 
   "prison"

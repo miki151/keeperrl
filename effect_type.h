@@ -88,14 +88,7 @@ struct Summon {
   optional<int> SERIAL(ttl);
   SERIALIZE_ALL(creature, count, ttl)
 };
-struct AssembledMinion {
-  CreatureId SERIAL(creature);
-  EnumSet<MinionTrait> SERIAL(traits);
-  vector<Effect> SERIAL(effects);
-  SERIALIZE_ALL(NAMED(creature), NAMED(traits), OPTION(effects))
-};
 using AddAutomatonPart = AutomatonPart;
-using ItemPrefix = ::ItemPrefix;
 struct SummonEnemy {
   SummonEnemy(CreatureId id, Range c) : creature(id), count(c) {}
   SummonEnemy() {}
@@ -472,7 +465,7 @@ using Achievement = AchievementId;
   X(AllCreatures, 43)\
   X(Message, 44)\
   X(UnseenMessage, 45)\
-  X(AssembledMinion, 46)\
+  X(AddExperience, 46)\
   X(TriggerTrap, 47)\
   X(AnimateItems, 48)\
   X(MakeHumanoid, 49)\
@@ -491,7 +484,7 @@ using Achievement = AchievementId;
   X(Name, 62)\
   X(AI, 63)\
   X(ApplyToSteed, 64)\
-  X(ItemPrefix, 65)\
+  X(FirstSuccessful, 65)\
   X(AddAutomatonPart, 66)\
   X(AddMinionTrait, 67)\
   X(RemoveMinionTrait, 68)\
@@ -525,8 +518,6 @@ using Achievement = AchievementId;
   X(Achievement, 96)\
   X(ModifyFurniture, 97)\
   X(DestroyWalls, 98)\
-  X(FirstSuccessful, 99)\
-  X(AddExperience, 100)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

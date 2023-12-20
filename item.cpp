@@ -66,6 +66,32 @@ void Item::updateAbility(const ContentFactory* factory) {
     abilityInfo.push_back(ItemAbility { *factory->getCreatures().getSpell(id), none, getUniqueId().getGenericId() });
 }
 
+void Item::upgrade(vector<PItem> runes, const ContentFactory* factory) {
+  unordered_map<string, double> multipliers;
+  for (auto& rune : runes)
+    if (auto& upgradeInfo = rune->getUpgradeInfo()) {
+      applyPrefix(*upgradeInfo->prefix, factory);
+      double mult = 1.0;
+      if (auto& d = upgradeInfo->diminishModifier) {
+        if (!multipliers.count(d->first))
+          multipliers[d->first] = 1.0;
+        mult = multipliers[d->first];
+        multipliers[d->first] *= d->second;
+      }
+      for (auto& mod : rune->getModifierValues())
+        addModifier(mod.first, mod.second * mult);
+      for (auto& a : rune->getAbility())
+        attributes->equipedAbility.push_back(a.spell.getId());
+      updateAbility(factory);
+      attributes->equipedEffect.append(rune->attributes->equipedEffect);
+      attributes->equipedCompanion = rune->attributes->equipedCompanion;
+      attributes->weaponInfo.attackerEffect.append(rune->attributes->weaponInfo.attackerEffect);
+      attributes->weaponInfo.victimEffect.append(rune->attributes->weaponInfo.victimEffect);
+      for (auto& elem : rune->attributes->specialAttr)
+        attributes->specialAttr.insert(elem);
+    }
+}
+
 Item::~Item() {
 }
 
@@ -264,7 +290,7 @@ vector<string> Item::getDescription(const ContentFactory* factory) const {
   for (auto& info : abilityInfo)
     ret.push_back("Grants ability: "_s + info.spell.getName(factory));
   for (auto& elem : attributes->specialAttr)
-    ret.push_back(toStringWithSign(elem.second.first) + " " + factory->attrInfo.at(elem.first).name + " " + 
+    ret.push_back(toStringWithSign(elem.second.first) + " " + factory->attrInfo.at(elem.first).name + " " +
         elem.second.second.getName(factory));
   return ret;
 }
@@ -600,6 +626,10 @@ string Item::getBlindName(bool plural) const {
 
 bool Item::isDiscarded() {
   return discarded;
+}
+
+const optional<AssembledMinion>& Item::getAssembledMinion() const {
+  return attributes->assembledMinion;
 }
 
 const optional<Effect>& Item::getEffect() const {

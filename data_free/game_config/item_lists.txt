@@ -55,17 +55,17 @@ End
     {{"LeatherGloves"} 2}
     {{"IronGloves"} 1}
     {{"IronBoots"} 1}
-    {{Glyph ARMOR ItemAttrBonus DEFENSE 3} 1}
-    {{Glyph WEAPON ItemAttrBonus DAMAGE 3} 1}
-    {{Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 3} 1}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 3}} 1}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 3}} 1}
+    {{Glyph { WEAPON ItemAttrBonus SPELL_DAMAGE 3}} 1}
 
     {id = {"AdaArmor"} weight = 4 count = 1 minDifficulty = 25}
     {{"AdaHelm"} 4 1 25}
     {{"AdaBoots"} 4 1 25}
     {{"AdaGloves"} 4 1 25}
-    {{Glyph ARMOR ItemAttrBonus DEFENSE 12} 2 1 25}
-    {{Glyph WEAPON ItemAttrBonus DAMAGE 12} 2 1 25}
-    {{Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 12} 2 1 25}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 12}} 2 1 25}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 12}} 2 1 25}
+    {{Glyph { WEAPON ItemAttrBonus SPELL_DAMAGE 12}} 2 1 25}
   }
   unique = {
     {"Bow"} {1 2}
@@ -434,10 +434,10 @@ End
     {{"GreenDragonScales"} 1}
     {{"YellowDragonScales"} 1}
     {{"WhiteDragonScales"} 1}
-    {{Glyph ARMOR ItemAttrBonus DEFENSE 1} 2}
-    {{Glyph WEAPON ItemAttrBonus DAMAGE 1} 2}
-    {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 1} 2}
-    {{Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 1} 2}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 1}} 2}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 1}} 2}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 1}} 2}
+    {{Glyph { WEAPON ItemAttrBonus SPELL_DAMAGE 1}} 2}
   }
   unique = {
     {Scroll Name "blacksmithing mastery" Price 800
@@ -525,24 +525,24 @@ End
 "blacksmithChest"
 {
   items = {
-    {{Glyph ARMOR ItemAttrBonus DEFENSE 2} 1}
-    {{Glyph ARMOR ItemAttrBonus DEFENSE 3} 1}
-    {{Glyph ARMOR ItemAttrBonus DEFENSE 4} 1}
-    {{Glyph WEAPON ItemAttrBonus DAMAGE 2} 1}
-    {{Glyph WEAPON ItemAttrBonus DAMAGE 3} 1}
-    {{Glyph WEAPON ItemAttrBonus DAMAGE 4} 1}
-    {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 2} 1}
-    {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3} 1}
-    {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 4} 1}
-    {{Glyph ARMOR ItemAttrBonus DEFENSE 10} 1 1 25}
-    {{Glyph ARMOR ItemAttrBonus DEFENSE 12} 1 1 25}
-    {{Glyph ARMOR ItemAttrBonus DEFENSE 15} 1 1 25}
-    {{Glyph WEAPON ItemAttrBonus DAMAGE 10} 1 1 25}
-    {{Glyph WEAPON ItemAttrBonus DAMAGE 12} 1 1 25}
-    {{Glyph WEAPON ItemAttrBonus DAMAGE 15} 1 1 25}
-    {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 10} 1 1 25}
-    {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 12} 1 1 25}
-    {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 15} 1 1 25}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 2}} 1}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 3}} 1}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 4}} 1}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 2}} 1}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 3}} 1}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 4}} 1}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 2}} 1}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3}} 1}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 4}} 1}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 10}} 1 1 25}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 12}} 1 1 25}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 15}} 1 1 25}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 10}} 1 1 25}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 12}} 1 1 25}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 15}} 1 1 25}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 10}} 1 1 25}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 12}} 1 1 25}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 15}} 1 1 25}
   }
 }
 

@@ -69,6 +69,7 @@ class CreatureAttributes {
   const CreatureName& getName() const;
   CreatureName& getName();
   int getRawAttr(AttrType) const;
+  HashMap<AttrType, int>& getAllAttr();
   void increaseBaseAttr(AttrType, int);
   void setBaseAttr(AttrType, int);
   void setAIType(AIType);
@@ -124,7 +125,7 @@ class CreatureAttributes {
   ViewId SERIAL(viewId);
   vector<ViewId> SERIAL(viewIdUpgrades);
   vector<ItemType> SERIAL(automatonParts);
-  map<AttrType, vector<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
+  HashMap<AttrType, vector<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
   heap_optional<Effect> SERIAL(deathEffect);
   heap_optional<Effect> SERIAL(afterKilledSomeone);
 
@@ -143,7 +144,7 @@ class CreatureAttributes {
   void consumeEffects(Creature* self, const EnumMap<LastingEffect, int>&);
   heap_optional<ViewObject> SERIAL(illusionViewObject);
   CreatureName SERIAL(name);
-  map<AttrType, int> SERIAL(attr);
+  HashMap<AttrType, int> SERIAL(attr);
   HeapAllocated<Body> SERIAL(body);
   optional<string> SERIAL(chatReactionFriendly);
   optional<string> SERIAL(chatReactionHostile);

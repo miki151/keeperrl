@@ -64,6 +64,7 @@
 #include "furnace.h"
 #include "promotion_info.h"
 #include "dancing.h"
+#include "assembled_minion.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -1577,22 +1578,20 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
       if (auto workshop = getReferenceMaybe(workshops->types, *workshopType)) {
         auto& workshopInfo = contentFactory->workshopInfo.at(*workshopType);
         auto craftingSkill = c->getAttr(workshopInfo.attr);
-        auto result = workshop->addWork(this, efficiency * double(craftingSkill) * 0.02
-            * LastingEffects::getCraftingSpeed(c), craftingSkill);
-        if (result.item) {
-          if (auto& prefix = workshopInfo.prefix)
-            result.item->applyPrefix(*prefix, contentFactory);
-          if (result.item->getClass() == ItemClass::WEAPON)
+        auto item = workshop->addWork(this, efficiency * double(craftingSkill) * 0.02
+            * LastingEffects::getCraftingSpeed(c), craftingSkill, workshopInfo.prefix);
+        if (item) {
+          if (item->getClass() == ItemClass::WEAPON)
             getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
-          if (result.item->getClass() == ItemClass::ARMOR)
+          if (item->getClass() == ItemClass::ARMOR)
             getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
-          if (auto stat = result.item->getProducedStat())
+          if (auto stat = item->getProducedStat())
             getGame()->getStatistics().add(*stat);
-          control->addMessage(c->getName().a() + " " + workshopInfo.verb + " " + result.item->getAName());
-          if (result.applyImmediately)
-            result.item->getEffect()->apply(pos.first, c);
+          control->addMessage(c->getName().a() + " " + workshopInfo.verb + " " + item->getAName());
+          if (auto& minion = item->getAssembledMinion())
+            minion->assemble(this, item.get(), pos.first);
           else
-            c->getPosition().dropItem(std::move(result.item));
+            c->getPosition().dropItem(std::move(item));
         }
     }
   }

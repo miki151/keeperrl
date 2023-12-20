@@ -34,7 +34,7 @@ void ItemAttributes::serializeImpl(Archive& ar, const unsigned int version) {
   ar(OPTION(prefixes), OPTION(suffixes), OPTION(genPrefixes), NAMED(ingredientType), OPTION(variationChance), OPTION(wishedCount));
   ar(OPTION(specialAttr), OPTION(partIds), OPTION(equipedCompanion), OPTION(upgradeType), OPTION(producedStat));
   ar(OPTION(effectAppliedWhenThrown), OPTION(applyPredicate), NAMED(storageIds), NAMED(carriedTickEffect), OPTION(craftingCost));
-  ar(OPTION(equipmentGroup), OPTION(autoEquipPredicate), NAMED(equipedViewId));
+  ar(OPTION(equipmentGroup), OPTION(autoEquipPredicate), NAMED(equipedViewId), SKIP(assembledMinion));
   if (version >= 1)
       ar(OPTION(equipWarning));
 }
@@ -48,8 +48,8 @@ void ItemAttributes::scale(double value, const ContentFactory* factory) {
   for (auto& attr : factory->attrOrder)
     if (modifiers.count(attr))
       modifiers[attr] *= value;
-  if (upgradeInfo)
-    ::scale(factory, *upgradeInfo->prefix, value);
+  if (assembledMinion)
+    assembledMinion->scale *= value;
 }
 
 SERIALIZABLE(ItemAttributes);

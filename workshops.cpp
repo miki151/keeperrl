@@ -101,7 +101,8 @@ PItem Workshops::Type::removeUpgrade(int itemIndex, int runeIndex) {
   return ret;
 }
 
-auto Workshops::Type::addWork(Collective* collective, double amount, int skillAmount) -> WorkshopResult {
+PItem Workshops::Type::addWork(Collective* collective, double amount, int skillAmount,
+    const optional<ItemPrefix>& prefix) {
   for (int productIndex : All(queued)) {
     auto& product = queued[productIndex];
     if (canCraft(product, collective)) {
@@ -114,23 +115,21 @@ auto Workshops::Type::addWork(Collective* collective, double amount, int skillAm
       product.state += workDone;
       if (product.state > 1)
         workDone -= product.state - 1;
-      product.quality += workDone * skillAmount;
       if (product.state >= 1) {
         auto factory = collective->getGame()->getContentFactory();
         auto ret = product.item.type.get(factory);
-        for (auto& rune : product.runes)
-          if (auto& upgradeInfo = rune->getUpgradeInfo())
-            ret->applyPrefix(*upgradeInfo->prefix, collective->getGame()->getContentFactory());
-        bool applyImmediately = product.item.applyImmediately;
+        if (prefix)
+          ret->applyPrefix(*prefix, factory);
+        ret->upgrade(std::move(product.runes), factory);
         queued.removeIndexPreserveOrder(productIndex);
         checkDebtConsistency();
-        return {std::move(ret), applyImmediately};
+        return std::move(ret);
       }
       break;
     }
   }
   checkDebtConsistency();
-  return WorkshopResult{{}, false};
+  return nullptr;
 }
 
 const vector<Workshops::QueuedItem>& Workshops::Type::getQueued() const {

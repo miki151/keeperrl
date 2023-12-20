@@ -615,41 +615,6 @@ static string getDescription(const Effects::Summon& e, const ContentFactory* f) 
     return "Summons a " + f->getCreatures().getName(e.creature);
 }
 
-static string getName(const Effects::AssembledMinion& e, const ContentFactory* f) {
-  return f->getCreatures().getName(e.creature);
-}
-
-static string getDescription(const Effects::AssembledMinion& e, const ContentFactory* f) {
-  return "";// "Can be assembled to a " + getName(e, f);
-}
-
-static bool apply(const Effects::AssembledMinion& m, Position pos, Creature* attacker) {
-  auto group = CreatureGroup::singleType(attacker->getTribeId(), m.creature);
-  auto c = Effect::summon(pos, group, 1, none).getFirstElement();
-  if (c) {
-    (*c)->getEquipment().removeAllItems(*c);
-    for (auto col : pos.getGame()->getCollectives())
-      if (col->getCreatures().contains(attacker)) {
-        col->addCreature(*c, m.traits);
-        for (auto& e : m.effects)
-          e.apply((*c)->getPosition(), attacker);
-        for (auto& part : (*c)->getAttributes().automatonParts) {
-          auto item = part.get((*c)->getGame()->getContentFactory());
-          if (auto& upgradeInfo = item->getUpgradeInfo()) {
-            if (auto effect = upgradeInfo->prefix->getReferenceMaybe<ItemPrefixes::AssembledCreatureEffect>())
-              effect->apply((*c)->getPosition());
-            else
-              USER_FATAL << "Premade automaton part \"" << item->getName()
-                  << "\" contains an upgrade other than AssembledCreatureEffect";
-          } else
-            USER_FATAL << "Premade automaton part \"" << item->getName() << "\" has no upgrade info defined";
-        }
-        return true;
-      }
-  }
-  return false;
-}
-
 static bool applyToCreature(const Effects::AddAutomatonPart& e, Creature* c, Creature*) {
   c->addAutomatonPart(e);
   return true;
@@ -661,19 +626,6 @@ static string getName(const Effects::AddAutomatonPart& e, const ContentFactory* 
 
 static string getDescription(const Effects::AddAutomatonPart& e, const ContentFactory* f) {
   return "Attaches an automaton part to the creature.";
-}
-
-static bool applyToCreature(const Effects::ItemPrefix& e, Creature* c, Creature*) {
-  applyPrefixToCreature(e, c);
-  return true;
-}
-
-static string getName(const Effects::ItemPrefix& e, const ContentFactory* f) {
-  return *getItemName(f, e);
-}
-
-static string getDescription(const Effects::ItemPrefix& e, const ContentFactory* f) {
-  return getEffectDescription(f, e)[0];
 }
 
 static string getName(const Effects::SummonEnemy& e, const ContentFactory* f) {

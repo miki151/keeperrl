@@ -38,6 +38,7 @@ class ContentFactory;
 struct AutomatonPart;
 struct CreaturePredicate;
 class CostInfo;
+struct AssembledMinion;
 
 using LastingOrBuff = variant<LastingEffect, BuffId>;
 
@@ -65,9 +66,11 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
 
   const optional<Effect>& getEffect() const;
+  const optional<AssembledMinion>& getAssembledMinion() const;
   bool effectAppliedWhenThrown() const;
   const optional<CreaturePredicate>& getApplyPredicate() const;
   vector<ItemAbility>& getAbility();
+  void upgrade(vector<PItem>, const ContentFactory*);
 
   ItemClass getClass() const;
   const vector<StorageId>& getStorageIds() const;

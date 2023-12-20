@@ -26,6 +26,7 @@
 #include "item_prefix.h"
 #include "statistics.h"
 #include "lasting_or_buff.h"
+#include "assembled_minion.h"
 
 STRUCT_IMPL(ItemType)
 
@@ -366,10 +367,9 @@ ItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory* factory
       i.viewId = allIds.front();
       i.partIds = allIds.getSubsequence(1);
       i.partIds.append(partIds);
-      i.effect = Effect(Effects::AssembledMinion{creature, traits});
+      i.assembledMinion = AssembledMinion LIST(creature, traits);
       i.name = itemName;
       i.weight = 1;
-      i.price = i.effect->getPrice(factory);
       i.uses = 1;
       i.maxUpgrades = maxUpgrades;
       i.upgradeType = upgradeType;

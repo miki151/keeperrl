@@ -109,6 +109,10 @@ void CreatureAttributes::increaseBaseAttr(AttrType type, int v) {
   attr[type] = max(0, attr[type]);
 }
 
+HashMap<AttrType, int>& CreatureAttributes::getAllAttr() {
+  return attr;
+}
+
 void CreatureAttributes::setBaseAttr(AttrType type, int v) {
   attr[type] = max(0, v);
 }
@@ -264,7 +268,7 @@ bool CreatureAttributes::considerTimeout(LastingEffect effect, GlobalTime curren
   }
   return false;
 }
-  
+
 void CreatureAttributes::addLastingEffect(LastingEffect effect, GlobalTime endTime) {
   if (lastingEffects[effect] < endTime)
     lastingEffects[effect] = endTime;
@@ -277,7 +281,7 @@ static bool consumeProb() {
 template <typename T>
 void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj, const int& cap) {
   int hisCapped = (his > cap) ? cap : his;
-  if (consumeProb() && mine < hisCapped) {                    
+  if (consumeProb() && mine < hisCapped) {
     mine = hisCapped;
     if (!adj.empty())
       adjectives.push_back(adj);

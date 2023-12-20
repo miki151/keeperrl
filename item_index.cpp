@@ -10,6 +10,7 @@
 #include "item_type.h"
 #include "effect_type.h"
 
+
 const char* getName(ItemIndex index, int count) {
   switch (index) {
     case ItemIndex::RANGED_WEAPON: return count == 1 ? "ranged weapon" : "ranged weapons";
@@ -30,9 +31,5 @@ bool hasIndex(ItemIndex index, const Item* item) {
       return item->isOrWasForSale();
     case ItemIndex::RUNE:
       return !!item->getUpgradeInfo() || !!item->getIngredientType();
-    case ItemIndex::ASSEMBLED_MINION:
-      if (auto& e = item->getEffect())
-        return !!e->effect->getReferenceMaybe<Effects::AssembledMinion>();
-      return false;
   }
 }

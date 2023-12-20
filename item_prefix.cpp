@@ -15,113 +15,46 @@
 #include "effect_type.h"
 
 void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAttributes& attr) {
-  if (attr.upgradeInfo && attr.upgradeInfo->prefix->contains<ItemPrefixes::AssembledCreatureEffect>()) {
-    auto& effect = *attr.upgradeInfo->prefix->getReferenceMaybe<ItemPrefixes::AssembledCreatureEffect>();
-    attr.upgradeInfo->prefix = Effect(EffectType::Chain{{effect, Effect(prefix)}});
-    if (auto name = getItemName(factory, prefix))
-      attr.suffixes.push_back(*name);
-  } else {
-    if (auto name = getItemName(factory, prefix))
-      attr.suffixes.push_back(*name);
-    prefix.visit<void>(
-        [&](LastingOrBuff effect) {
-          attr.equipedEffect.push_back(effect);
-        },
-        [&](const ItemPrefixes::AttackerEffect& e) {
-          attr.weaponInfo.attackerEffect.push_back(e.effect);
-        },
-        [&](const ItemPrefixes::VictimEffect& e) {
-          attr.weaponInfo.victimEffect.push_back(e);
-        },
-        [&](ItemPrefixes::ItemAttrBonus bonus) {
-          attr.modifiers[bonus.attr] += bonus.value;
-        },
-        [&](const ItemPrefixes::JoinPrefixes& join) {
-          for (auto& elem : join.prefixes)
-            applyPrefix(factory, elem, attr);
-        },
-        [&](const SpellId& spell) {
-          attr.equipedAbility.push_back(spell);
-        },
-        [&](const SpecialAttr& a) {
-          attr.specialAttr[a.attr] = make_pair(a.value, a.predicate);
-        },
-        [&](const ItemPrefixes::Scale& a) {
-          attr.scale(a.value, factory);
-        },
-        [&](const ItemPrefixes::Prefix& a) {
-          attr.prefixes.push_back(a.value);
-          ::applyPrefix(factory, *a.prefix, attr);
-        },
-        [&](const ItemPrefixes::Suffix& a) {
-          attr.suffixes.push_back(a.value);
-          ::applyPrefix(factory, *a.prefix, attr);
-        },
-        [&](const ItemPrefixes::AssembledCreatureEffect& a) {
-          if (auto effect = attr.effect->effect->getValueMaybe<Effects::AssembledMinion>()) {
-            effect->effects.push_back(a);
-            attr.effect = Effect(*effect);
-          }
-        }
-    );
-  }
-}
-
-void scale(const ContentFactory* factory, ItemPrefix& prefix, double value) {
+  if (auto name = getItemName(factory, prefix))
+    attr.suffixes.push_back(*name);
   prefix.visit<void>(
-      [&](ItemPrefixes::AssembledCreatureEffect& a) {
-        a.scale(value, factory);
-      },
-      [&](ItemPrefixes::Prefix& a) {
-        ::scale(factory, *a.prefix, value);
-      },
-      [&](ItemPrefixes::Suffix& a) {
-        ::scale(factory, *a.prefix, value);
-      },
-      [](auto&) {}
-  );
-}
-
-void applyPrefixToCreature(const ItemPrefix& prefix, Creature* c) {
-  auto applyToIntrinsicAttack = [&] {
-    auto& attacks = c->getBody().getIntrinsicAttacks();
-    for (auto part : ENUM_ALL(BodyPart))
-      if (!attacks[part].empty()) {
-        attacks[part].back().item->applyPrefix(prefix, c->getGame()->getContentFactory());
-        break;
-      }
-  };
-  prefix.visit<void>(
-      [&](const ItemPrefixes::Prefix& a) {
-        ::applyPrefixToCreature(*a.prefix, c);
-      },
-      [&](const ItemPrefixes::Suffix& a) {
-        ::applyPrefixToCreature(*a.prefix, c);
-      },
       [&](LastingOrBuff effect) {
-        addPermanentEffect(effect, c);
+        attr.equipedEffect.push_back(effect);
       },
       [&](const ItemPrefixes::AttackerEffect& e) {
-        applyToIntrinsicAttack();
+        attr.weaponInfo.attackerEffect.push_back(e.effect);
       },
       [&](const ItemPrefixes::VictimEffect& e) {
-        applyToIntrinsicAttack();
+        attr.weaponInfo.victimEffect.push_back(e);
       },
-      [&](ItemPrefixes::ItemAttrBonus e) {
-        c->getAttributes().increaseBaseAttr(e.attr, e.value);
+      [&](ItemPrefixes::ItemAttrBonus bonus) {
+        attr.modifiers[bonus.attr] += bonus.value;
       },
       [&](const ItemPrefixes::JoinPrefixes& join) {
         for (auto& elem : join.prefixes)
-          applyPrefixToCreature(elem, c);
+          applyPrefix(factory, elem, attr);
       },
       [&](const SpellId& spell) {
-        c->getSpellMap().add(*c->getGame()->getContentFactory()->getCreatures().getSpell(spell),
-            AttrType("DAMAGE"), 0);
+        attr.equipedAbility.push_back(spell);
       },
       [&](const SpecialAttr& a) {
-        c->getAttributes().specialAttr[a.attr].push_back(make_pair(a.value, a.predicate));
+        attr.specialAttr[a.attr] = make_pair(a.value, a.predicate);
       },
-      [](auto&) {}
+      [&](const ItemPrefixes::Scale& a) {
+        attr.scale(a.value, factory);
+      },
+      [&](const ItemPrefixes::Prefix& a) {
+        attr.prefixes.push_back(a.value);
+        ::applyPrefix(factory, *a.prefix, attr);
+      },
+      [&](const ItemPrefixes::Suffix& a) {
+        attr.suffixes.push_back(a.value);
+        ::applyPrefix(factory, *a.prefix, attr);
+      },
+      [&](const ItemPrefixes::AssembledCreatureEffect& a) {
+        if (attr.assembledMinion)
+          attr.assembledMinion->effects.push_back(a);
+      }
   );
 }
 

@@ -21,11 +21,7 @@ class Workshops {
     Type(const vector<Item>& options);
     const vector<Item>& getOptions() const;
     const vector<QueuedItem>& getQueued() const;
-    struct WorkshopResult {
-      PItem item;
-      bool applyImmediately;
-    };
-    WorkshopResult addWork(Collective*, double workAmount, int skillAmount);
+    PItem addWork(Collective*, double workAmount, int skillAmount, const optional<ItemPrefix>&);
     void queue(Collective*, int index, optional<int> queueIndex = none);
     vector<PItem> unqueue(Collective*, int index);
     void changeNumber(int index, int number);
