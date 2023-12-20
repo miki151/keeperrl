@@ -191,12 +191,12 @@ append {
 }
 
 Def CORPUS(Id, Name, Resource, Tech, Slots)
-  { item = {Assembled{ Id Name {FIGHTER AUTOMATON} {AUTOMATONS_UPPER AUTOMATONS_LOWER} Slots}}
+  { item = {Assembled{ Id Name {FIGHTER AUTOMATON NO_LEISURE_ZONE} {AUTOMATONS_UPPER AUTOMATONS_LOWER} Slots}}
     work = 8 cost = Resource tech = Tech materialTab = true requiresUpgrades = true}
 End
 
 Def WORKER(Id, Color, Resource)
-  { item = {Assembled{Id "drilling automaton" {FIGHTER AUTOMATON}
+  { item = {Assembled{Id "drilling automaton" {FIGHTER AUTOMATON NO_LEISURE_ZONE}
         {AUTOMATONS_UPPER AUTOMATONS_LOWER} 1 { { "installed_legs" Rgb Color 255 }
             { "installed_drill" Rgb Color 255 }}}}
     work = 8 cost = Resource tech = "automatons" materialTab = true}
