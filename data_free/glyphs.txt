@@ -67,9 +67,13 @@
 "bat" b gray
 "fog" = white
 "gargoyle" G gray
-"mountain" ^ gray
-"tree" T green
-"snow" = white
+"MOUNTAIN" ^ gray
+"SNOW" = white
+"DESERT" = yellow
+"set_water" ~ blue
+"SWAMP" ~ green
+"GRASSLAND" = green
+"FOREST" T green
 "workshop" W brown
 "gnome_corpse" % white
 "automaton_parts" ( brown
