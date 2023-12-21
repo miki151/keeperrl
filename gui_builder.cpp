@@ -4518,7 +4518,7 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
       if (c.isInInfluence(pos))
         for (auto& id : sites[x][y].viewId) {
           v.push_back(WL(asciiBackground, id));
-          if (startsWith(id.data(), "map_mountain_large"))
+          if (startsWith(id.data(), "map_mountains_large"))
             v.push_back(WL(translate, WL(viewObject, id, iconScale), -Vec2(24, 24)));
           else
             v.push_back(WL(viewObject, id, iconScale));

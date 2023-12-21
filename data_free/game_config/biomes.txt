@@ -172,7 +172,7 @@
     { id = "NO_AGGRO_BANDITS" count = { 0 2 } }
     { id = "CORPSES" probability = 0.2 }
   }
-  viewId = { "map_mountain1" }
+  viewId = { "map_mountains1" }
   name = "mountains"
 }
 "SNOW"

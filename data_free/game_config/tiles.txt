@@ -155,7 +155,7 @@ End
 Connections("map_grass")
 Connections("map_sand")
 Connections("map_snow")
-Connections("map_mountain")
+Connections("map_mountains")
 Connections("map_swamp")
 { "map_snow1" "." ColorId WHITE }
 { "map_snow2" "." ColorId LIGHT_BLUE }
@@ -177,21 +177,21 @@ Connections("map_swamp")
 { "map_tree1" "T" ColorId GREEN }
 { "map_tree2" "T" ColorId LIGHT_GREEN }
 { "map_tree3" "T" ColorId GREEN }
-{ "map_mountain1" "^" ColorId LIGHT_GRAY }
-{ "map_mountain2" "^" ColorId GRAY }
-{ "map_mountain3" "^" ColorId LIGHT_GRAY }
-{ "map_mountain4" "^" ColorId GRAY }
-{ "map_mountain5" "^" ColorId GRAY }
-{ "map_mountain_large" "^" ColorId LIGHT_GRAY }
-{ "map_mountain_large2" "^" ColorId GRAY }
-{ "map_mountain_large3" "^" ColorId GRAY }
-{ "map_mountain_large4" "^" ColorId GRAY }
-{ "map_mountain_snow1" "^" ColorId WHITE }
-{ "map_mountain_snow2" "^" ColorId WHITE }
-{ "map_mountain_snow3" "^" ColorId WHITE }
-{ "map_mountain_snow4" "^" ColorId WHITE }
-{ "map_mountain_snow5" "^" ColorId WHITE }
-{ "map_mountain_bg1" "^" ColorId LIGHT_GRAY }
+{ "map_mountains1" "^" ColorId LIGHT_GRAY }
+{ "map_mountains2" "^" ColorId GRAY }
+{ "map_mountains3" "^" ColorId LIGHT_GRAY }
+{ "map_mountains4" "^" ColorId GRAY }
+{ "map_mountains5" "^" ColorId GRAY }
+{ "map_mountains_large" "^" ColorId LIGHT_GRAY }
+{ "map_mountains_large2" "^" ColorId GRAY }
+{ "map_mountains_large3" "^" ColorId GRAY }
+{ "map_mountains_large4" "^" ColorId GRAY }
+{ "map_mountains_snow1" "^" ColorId WHITE }
+{ "map_mountains_snow2" "^" ColorId WHITE }
+{ "map_mountains_snow3" "^" ColorId WHITE }
+{ "map_mountains_snow4" "^" ColorId WHITE }
+{ "map_mountains_snow5" "^" ColorId WHITE }
+{ "map_mountains_bg1" "^" ColorId LIGHT_GRAY }
 { "map_house1" "o" ColorId BLUE }
 { "map_house2" "o" ColorId BROWN }
 { "map_house_elf" "o" ColorId LIGHT_GREEN }
