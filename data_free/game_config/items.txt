@@ -182,7 +182,6 @@ Def CRAFTING_ARMS(Suffix, Color, Adjective, ResourceId, Skill)
     craftingCost = ResourceId 5
     upgradeInfo = {
       type = AUTOMATONS_UPPER
-      diminishModifier = "crafting" 0.5
       prefix = AssembledCreatureEffect
         Name Adjective + " crafting arms"
         Description "Grants the automaton the ability to craft."
@@ -229,7 +228,7 @@ RANGED_HEAD("Iron", 140 148 148, "iron", IRON, 5, 15, "Acid", "acid", "acid spit
 LEGS("Iron", 140 148 148, "iron", IRON, 5)
 ARMS("Iron", 140 148 148, "iron", IRON, 16, DAMAGE)
 DRILL("Iron", 140 148 148, "iron", IRON, 15)
-CRAFTING_ARMS("Iron", 140 148 148, "iron", IRON, 15)
+CRAFTING_ARMS("Iron", 140 148 148, "iron", IRON, 17)
 REPAIR_ARMS("Iron", 140 148 148, "iron", IRON, 5)
 HUMANOID_HEAD("Ada", 148 189 189, "admantine", ADA, 6)
 RANGED_HEAD("Ada", 148 189 189, "adamantine", ADA, 6, 20, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
@@ -239,7 +238,7 @@ RANGED_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, 20, "Acid", "acid", "acid 
 LEGS("Ada", 148 189 189, "adamantine", ADA, 8)
 ARMS("Ada", 148 189 189, "adamantine", ADA, 24, DAMAGE)
 DRILL("Ada", 148 189 189, "adamantine", ADA, 20)
-CRAFTING_ARMS("Ada", 148 189 189, "adamantine", ADA, 25)
+CRAFTING_ARMS("Ada", 148 189 189, "adamantine", ADA, 27)
 REPAIR_ARMS("Ada", 148 189 189, "adamantine", ADA, 8)
 ARMS("Infernite", 220 148 148, "infernite", INFERNITE, 38, FIRE_DAMAGE)
 ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 38, SPELL_DAMAGE)
