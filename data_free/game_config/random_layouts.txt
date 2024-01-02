@@ -786,6 +786,8 @@ End
 Def EnchantedPool() {
   CellularAutomaton(Reset("floor"), 0.85)
   Inside(3, CellularAutomaton(Reset("enchanted_water"), 0.85))
+  Maybe(0.2, Place({1 1}, Set("enchanted_workshop"), 1, And(Not On("enchanted_water"), NextTo(On("enchanted_water")))))
+  Maybe(0.2, Place({1 1}, Set("enchanted_lab"), 1, And(Not On("enchanted_water"), NextTo(On("enchanted_water")))))
 }
 End
 
@@ -858,6 +860,7 @@ End
 "z_level_full_only_water" {
   Set("set_territory") # Even though its an empty level, some code will crash if territory is empty
   ZLevelMostlyFull("water")
+  Maybe(0.5, Place({12 12}, EnchantedPool(), 1, On("hard_rock")))
 }
 
 "z_level_vault" {

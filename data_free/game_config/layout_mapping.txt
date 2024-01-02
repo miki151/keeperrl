@@ -12,6 +12,8 @@
   "water" { ClearFurniture Place "WATER"}
   "kraken_water" { ClearFurniture Place "KRAKEN_WATER"}
   "enchanted_water" { ClearFurniture Place "ENCHANTED_WATER"}
+  "enchanted_workshop" { Place "ENCHANTED_WORKSHOP"}
+  "enchanted_lab" { Place "ENCHANTED_LABORATORY"}
   "lava" { ClearFurniture Place "MAGMA"}
   "stockpile" Stockpile 0
   "bed" Place "BED1"
