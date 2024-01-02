@@ -44,6 +44,7 @@
 "swarmer_chest" = red
 "blacksmith_chest" = gray
 "forge" & gray
+"lava_forge" & yellow
 "torch" * yellow
 "lava" ~ red
 "shop0" ~ blue

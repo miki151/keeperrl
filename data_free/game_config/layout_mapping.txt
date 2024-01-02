@@ -53,6 +53,7 @@
   "throne" Place "THRONE"
   "broken_throne" Place "BROKEN_THRONE"
   "forge" Place "FORGE"
+  "lava_forge" Place "LAVA_FORGE"
   "crops" Place "CROPS"
   "scarecrow" Place "SCARECROW"
   "corpse" Items "battle_corpse"

@@ -892,7 +892,15 @@ End
 }
 
 "z_level_dungeon" {
-  Choose(ZLevelBase("water"), ZLevelBase("lava"))
+  Choose(ZLevelBase("water"), {
+    ZLevelBase("lava")
+    Maybe(0.25, Place({1 1},
+      {
+        Inside(-1, Filter(Not On("lava"), Reset("floor")))
+        Position(MIDDLE, {1 1}, Set("lava_forge"))
+      }
+      1, And(Not On("lava"), NextTo(On("lava")))))
+  })
   Inside(5, Place({15 12}, {
     Place(none, Reset("floor", "set_territory"), {3 6}, True, {2 2}, {5 5}, 1)
   }, 1, On("hard_rock")))
