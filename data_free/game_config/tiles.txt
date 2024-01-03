@@ -748,6 +748,8 @@ BOOKCASES("_human")
   roundShadow = true }
 { viewId = "jeweller" symbol = "&" color = ColorId YELLOW
   roundShadow = true }
+{ viewId = "lava_jeweller" symbol = "&" color = ColorId LIGHT_GRAY
+  roundShadow = true }
 { viewId = "dining_table" symbol = "&" color = ColorId LIGHT_BLUE
   roundShadow = true }
 { viewId = "haypile" symbol = "&" color = ColorId YELLOW

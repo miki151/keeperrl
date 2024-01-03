@@ -307,7 +307,7 @@ TRAINING("_DWARF", "_dwarf")
 
   "jeweller"
   {
-    { Furniture {{ "JEWELLER" }   "WOOD" 12 }                      "Jeweller"          "Crafting"
+    { Furniture {{ "JEWELLER" "LAVA_JEWELLER" }   "WOOD" 12 }                      "Jeweller"          "Crafting"
         "Produces magical rings and amulets." none { TechId "jewellery" }}
   }
   "poetry"

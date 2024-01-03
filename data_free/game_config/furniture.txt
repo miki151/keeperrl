@@ -146,6 +146,7 @@ TRAINING("_DWARF", "_dwarf")
   viewId = { "enchanted_cauldron" }
   usageFX = ENCHANTED_LABORATORY
   usagePredicate = Not Area 1 Not FurnitureType "ENCHANTED_WATER"
+  upgrade = "LABORATORY"
 }
 "CAULDRON_TAR"
 {
@@ -167,7 +168,17 @@ TRAINING("_DWARF", "_dwarf")
   strength = 40
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  usagePredicate = Area 1 Not FurnitureType "MAGMA"
   usageFX = JEWELLER
+}
+"LAVA_JEWELLER" inherit "JEWELLER"
+{
+  name = "magma jeweller"
+  viewId = { "lava_jeweller" }
+  usageFX = LAVA_JEWELLER
+  usagePredicate = Not Area 1 Not FurnitureType "MAGMA"
+  upgrade = "JEWELLER"
+  fire = none
 }
 "MORGUE_TABLE"
 {

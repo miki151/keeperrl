@@ -106,6 +106,18 @@ End
       {{"DefenseAmulet"}                     10       "GOLD" 40}
       {{Amulet REGENERATION}                 10       "GOLD" 60}
   }
+
+  "LAVA_JEWELER"
+  {
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 2 }} 10 "GOLD" 15}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 2 }} 10 "GOLD" 15}
+    {{Glyph { WEAPON ItemAttrBonus SPELL_DAMAGE 2 }} 10 "GOLD" 15}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 }} 10 "GOLD" 15}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 8 }} 10 "GOLD" 100}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 8 }} 10 "GOLD" 100}
+    {{Glyph { WEAPON ItemAttrBonus SPELL_DAMAGE 8 }} 10 "GOLD" 100}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 8 }} 10 "GOLD" 100}
+  }
 }
 
 "basic" inherit "basic_without_lab"

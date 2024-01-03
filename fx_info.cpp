@@ -32,6 +32,8 @@ FXInfo getFXInfo(FXVariantName var) {
       return {FXName::WORKSHOP};
     case Name::JEWELLER:
       return {FXName::JEWELLER, Color(253, 247, 140)};
+    case Name::LAVA_JEWELLER:
+      return {FXName::JEWELLER, Color(253, 140, 140)};
     case Name::EMBALMENT:
       return {FXName::EMBALMENT};
     case Name::LICH:

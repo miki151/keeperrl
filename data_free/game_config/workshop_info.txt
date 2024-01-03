@@ -70,6 +70,12 @@
   attr = "JEWELER"
 }
 
+"LAVA_JEWELER" inherit "JEWELER"
+{
+  furniture = "LAVA_JEWELLER"
+  hideFromTech = true
+}
+
 "MORGUE" {
   furniture = "MORGUE_TABLE"
   name = "morgue"
