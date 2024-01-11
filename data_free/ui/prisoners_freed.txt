@@ -1,0 +1,7 @@
+{
+  ExitButtons()
+  FocusKeysVertical()
+  Window(MarginLeft(10, MarginBottom(10, Width 450 {
+      CreatureList("Minions freed from imprisonment:")
+  })))
+}

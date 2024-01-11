@@ -196,3 +196,22 @@ Def Sliding() {
   Slider Width 6 Position(MIDDLE_STRETCHED_X, Height 20 Fill(ColorId WHITE))
 }
 End
+
+Def CreatureList(Title)
+Vertical {
+  Label(Title)
+  Height 5 {}
+  List(HORIZONTAL_FIT, 400, {
+    Using "view_id" ViewId()
+    Using "attack_value" Label(size = 14)
+    Tooltip(timeout = 0, elem = MiniWindow(Horizontal {
+      Using "name" Label()
+      Horizontal {
+        Using "attack_view_id" ViewId()
+        Using "attack_value" Label()
+      }
+    }))
+  })
+  Height 5 {}
+}
+End
