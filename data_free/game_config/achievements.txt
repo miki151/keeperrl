@@ -18,7 +18,7 @@
 "killed_by_pig" {{"pig"}} "Killed by a pig" ""
 "tricked_death" {{"special_hlgn"}} "Tricked Death" ""
 "saved_by_phylactery" {{"phylactery_active"}} "Saved by a phylactery" ""
-"succubus_breading" {{"succubus"}} "Successfully started a succubus breading program" ""
+"succubus_breading" {{"succubus"}} "Successfully started a succubus breeding program" ""
 "black_market" {{"black_market_guard"}} "Discovered the Black Market" ""
 "sokoban" {{"boulder"}} "Solved the sokoban puzzle" ""
 "blacksmith_stash" {{"artisan"}} "Discovered an artisan's hidden stash" ""
