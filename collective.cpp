@@ -65,6 +65,7 @@
 #include "promotion_info.h"
 #include "dancing.h"
 #include "assembled_minion.h"
+#include "creature_experience_info.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -588,10 +589,6 @@ void Collective::updateAutomatonEngines() {
     if (c->getAttributes().isAffectedPermanently(LastingEffect::TURNED_OFF))
       taskMap->freeFromTask(c);
   }
-}
-
-int getMaxPromotionLevel(double quartersLuxury) {
-  return int(2 + quartersLuxury / 3);
 }
 
 bool Collective::minionCanUseQuarters(Creature* c) {

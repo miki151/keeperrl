@@ -4,6 +4,17 @@
 #include "creature_attributes.h"
 #include "content_factory.h"
 
+int getMaxPromotionLevel(double quartersLuxury) {
+  return int(2 + quartersLuxury / 3);
+}
+
+int getRequiredLuxury(double combatExp) {
+  for (int l = 0;; ++l)
+    if (getMaxPromotionLevel(l) >= combatExp / 5)
+      return l;
+  fail();
+}
+
 CreatureExperienceInfo getCreatureExperienceInfo(const ContentFactory* f, const Creature* c) {
   vector<CreatureExperienceInfo::TrainingInfo> training;
   for (auto& elem : c->getAttributes().getMaxExpLevel())
@@ -15,11 +26,13 @@ CreatureExperienceInfo getCreatureExperienceInfo(const ContentFactory* f, const 
       elem.second,
       none
     });
+  double combatExp = c->getCombatExperience(false, false);
   return CreatureExperienceInfo {
     std::move(training),
-    c->getCombatExperience(false, false),
+    combatExp,
     c->getTeamExperience(),
     c->getCombatExperienceCap(),
+    getRequiredLuxury(combatExp),
     0
   };
 }

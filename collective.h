@@ -347,5 +347,3 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   unique_ptr<Dancing> SERIAL(dancing);
   void updateTeamExperience();
 };
-
-int getMaxPromotionLevel(double quartersLuxury);

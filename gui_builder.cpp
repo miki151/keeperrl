@@ -1869,10 +1869,14 @@ SGuiElem GuiBuilder::drawExperienceInfo(const CreatureExperienceInfo& info) {
           THIS_LINE)
   ));
   if (info.combatExperience > promoLevel)
-    lines.addElem(WL(getListBuilder)
-      .addElemAuto(WL(label, "Unrealized experience: ", Color::YELLOW))
-      .addElemAuto(WL(label, toStringRounded(info.combatExperience - promoLevel, 0.01)))
-      .buildHorizontalList());
+    lines.addElem(WL(stack,
+        WL(getListBuilder)
+          .addElemAuto(WL(label, "Unrealized experience: ", Color::YELLOW))
+          .addElemAuto(WL(label, toStringRounded(info.combatExperience - promoLevel, 0.01)))
+          .buildHorizontalList(),
+        getTooltip({info.requiredLuxury == 0 ? "Creature requires personal quarters to realize combat experience."
+            : "Creature requires personal quarters with " + toString(info.requiredLuxury) + " units of luxury." },
+            THIS_LINE)));
   return lines.buildVerticalList();
 }
 

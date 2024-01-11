@@ -20,8 +20,11 @@ struct CreatureExperienceInfo {
   double HASH(combatExperience);
   double HASH(teamExperience);
   int HASH(combatExperienceCap);
+  int HASH(requiredLuxury);
   int HASH(numAvailableUpgrades);
-  HASH_ALL(training, combatExperience, teamExperience, combatExperienceCap, numAvailableUpgrades)
+  HASH_ALL(training, combatExperience, teamExperience, combatExperienceCap, numAvailableUpgrades, requiredLuxury)
 };
 
 extern CreatureExperienceInfo getCreatureExperienceInfo(const ContentFactory*, const Creature*);
+extern int getMaxPromotionLevel(double quartersLuxury);
+extern int getRequiredLuxury(double combatExp);

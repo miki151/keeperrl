@@ -1610,13 +1610,6 @@ vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() co
   return ret;
 }
 
-static int getRequiredLuxury(double combatExp) {
-  for (int l = 0;; ++l)
-    if (getMaxPromotionLevel(l) >= combatExp / 5)
-      return l;
-  fail();
-}
-
 vector<ImmigrantDataInfo> PlayerControl::getUnrealizedPromotionsImmigrantData() const {
   vector<ImmigrantDataInfo> ret;
   auto contentFactory = getGame()->getContentFactory();
