@@ -306,6 +306,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   };
   BattleSummary SERIAL(battleSummary);
   void presentAndClearBattleSummary();
+  void presentMinionsFreedMessage(const vector<Creature*>&);
   void considerSoloAchievement();
   bool SERIAL(soloKeeper) = true;
 };

@@ -329,6 +329,14 @@ static ScriptedUIDataElems::Record getCreatureRecord(const ContentFactory* facto
   }};
 }
 
+void PlayerControl::presentMinionsFreedMessage(const vector<Creature*>& creatures) {
+  auto data = ScriptedUIDataElems::List{};
+  auto factory = getGame()->getContentFactory();
+  for (auto c : creatures)
+    data.push_back(getCreatureRecord(factory, c));
+  getView()->scriptedUI("prisoners_freed", data);
+}
+
 void PlayerControl::presentAndClearBattleSummary() {
   auto data = ScriptedUIDataElems::Record{};
   auto factory = getGame()->getContentFactory();
@@ -2102,14 +2110,15 @@ void PlayerControl::onEvent(const GameEvent& event) {
                 for (auto t : *traits)
                   collective->setTrait(c, t);
               }
+        vector<Creature*> freed;
         for (auto c : copyOf(col->getCreatures()))
           if (auto traits = collective->stunnedMinions.getMaybe(c)) {
             c->getStatus().erase(CreatureStatus::PRISONER);
-            addMessage(PlayerMessage(c->getName().aOrTitle() + " has been freed from imprisonment!",
-                MessagePriority::HIGH));
+            freed.push_back(c);
             collective->addCreature(c, *traits);
-            battleSummary.minionsCaptured.removeElementMaybe(c);
           }
+        if (!freed.empty())
+          presentMinionsFreedMessage(freed);
       },
       [&](const CreatureEvent& info) {
         if (collective->getCreatures().contains(info.creature))
