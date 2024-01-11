@@ -288,7 +288,7 @@ End
       count = 5
       spawnAway = false
       statsBase = SPELL_DAMAGE
-      summonFreq = 0.05
+      summonFreq = 0.03
       creatures = { "SPIRIT" }}
     }
     spells = { "advanced healing" "heal spirit" }
@@ -1642,6 +1642,14 @@ End
       firstNameGen = "FIRST_MALE"
     }
   }
+"ARTISAN_VILLAIN" inherit "ARTISAN"
+{
+  attr = append {
+    WORKSHOP 50
+    FORGE 50
+    JEWELER 50
+  }
+}
 "PESEANT"
   {
     viewId = { "peasant" }
@@ -2656,7 +2664,7 @@ End
       SPELL_DAMAGE 25
     }
     body = {
-      type = Humanoid LARGE
+      type = Humanoid MEDIUM
     }
     maxLevelIncrease = {
       SPELL_DAMAGE 12
@@ -2809,6 +2817,14 @@ End
       { type = "LeatherBoots" chance = 0.3 }
     }
   }
+"GOBLIN_ARTIFICER_VILLAIN" inherit "GOBLIN_ARTIFICER"
+{
+  attr = append {
+    WORKSHOP 50
+    FORGE 50
+    JEWELER 50
+  }
+}
 "IMP"
   {
     viewId = { "imp" }
@@ -4608,7 +4624,7 @@ End
     viewId = { "goblin_matron" }
     attr = {
       DAMAGE 7
-      DEFENSE 8 
+      DEFENSE 8
     }
     body = {
       type = Humanoid MEDIUM
@@ -4762,7 +4778,7 @@ End
       { "IronHelm" }
     }
   }
-"GOBLIN_ARCHER" 
+"GOBLIN_ARCHER"
   {
     viewId = { "goblin_archer" }
     attr = {

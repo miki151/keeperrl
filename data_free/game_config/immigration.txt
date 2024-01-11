@@ -38,6 +38,14 @@ Def DarkRecruits()
       }
     }
     {
+      ids = { "GOBLIN_ARTIFICER_VILLAIN" }
+      traits = { FIGHTER NO_AUTO_EQUIPMENT }
+      requirements = {
+        { 0.0 RecruitmentInfo { "GOBLIN_BLACKSMITH" } 0 FIGHTER }
+        { 1.0 CostInfo "GOLD" 250 }
+      }
+    }
+    {
       ids = { "GOBLIN_WARRIOR" }
       traits = { FIGHTER }
       requirements = {
@@ -68,6 +76,14 @@ Def WhiteRecruits()
       traits = { FIGHTER }
       requirements = {
         { 0.0 RecruitmentInfo { "Z_LEVEL_DWARF_VAULT" } 0 FIGHTER }
+      }
+    }
+    {
+      ids = { "ARTISAN_VILLAIN" }
+      traits = { FIGHTER NO_AUTO_EQUIPMENT }
+      requirements = {
+        { 0.0 RecruitmentInfo { "HUMAN_BLACKSMITH" } 0 FIGHTER }
+        { 1.0 CostInfo "GOLD" 250 }
       }
     }
 End

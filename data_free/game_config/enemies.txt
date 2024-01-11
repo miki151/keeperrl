@@ -554,18 +554,18 @@ End
     }
   }
 }
-"BLACKSMITH"
+Def BLACKSMITH(Tribe, Crafter, Troop1, Troop2)
 {
   settlement = {
     type = RandomLayout { "blacksmith" { 8 12 } "blacksmith"}
-    tribe = HUMAN
+    tribe = Tribe
     inhabitants = {
-      leader = { { "ARTISAN" } }
+      leader = { { Crafter } }
       fighters = {
         count = {2 5}
         all = {
-          1 "KNIGHT"
-          1 "ARCHER"
+          1 Troop1
+          1 Troop2
         }
       }
     }
@@ -580,6 +580,10 @@ End
     }
   }
 }
+End
+"HUMAN_BLACKSMITH" BLACKSMITH(HUMAN, "ARTISAN_VILLAIN", "KNIGHT", "ARCHER")
+"GOBLIN_BLACKSMITH" BLACKSMITH(GREENSKIN, "GOBLIN_ARTIFICER_VILLAIN", "GOBLIN_GUARD_VILLAIN", "GOBLIN_ARCHER_VILLAIN")
+
 "BLACKSMITH_CELLAR"
 {
   settlement = {
