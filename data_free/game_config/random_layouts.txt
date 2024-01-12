@@ -136,6 +136,37 @@ End
 "village1" Village1()
 "village2" Village2()
 
+"stable" {
+  Place(
+    (size = {4 7}
+    generator = {
+      Building("wood_wall", "mud_floor")
+      Corners(Set("corner"), 1)
+      Place(1,
+        ({1 2}, Reset("mud_floor", "wood_gate"), 1, And(On("wood_wall"), Not On("corner")))
+        ({2 1}, Reset("mud_floor", "wood_gate"), 1, And(On("wood_wall"), Not On("corner")))
+      )
+      Place({1 1}, Set("haypile"), {3 6} And(Not On("wood_wall"), Not On("wood_gate")))
+    }
+    count = 1
+    minSpacing = 2
+  ),
+  (size = {5 5}
+  generator = {
+    Building("castle_wall", "floor")
+    Corners(Set("corner"), 1)
+    Place({1 1}, Reset("wood_door", "floor"), 1, And(On("castle_wall"), Not On("corner")))
+    Place(
+      ({1 1}, Set("bed"), {3 6} And(Not On("castle_wall"), Not NextTo(On("wood_door")))),
+      ({1 1}, Set("dining_table"), 1 And(Not On("castle_wall"), Not NextTo(On("wood_door"))))
+    )
+  }
+  count = 1
+  minSpacing = 2
+  )
+  )
+}
+
 Def CastleGate1()
   Border(TOP, 1, Position(MIDDLE, {2 1}, Reset("floor", "iron_gate")))
 End

@@ -594,6 +594,45 @@ End
     discoverAchievement = "blacksmith_stash"
   }
 }
+Def STABLE(Tribe, Mount1, Mount2, Creature1, Creature2)
+{
+  settlement = {
+    type = RandomLayout { "stable" { 13 13 } "default"}
+    tribe = HUMAN
+    race = "stable"
+    locationNameGen = TOWN
+    inhabitants = {
+      fighters = {
+        count = 2
+        all = {
+          1 Creature1
+          1 Creature2
+        }
+      }
+      civilians = {
+        count = {3 8}
+        all = {
+          1 Mount1
+          1 Mount2
+        }
+      }
+    }
+  }
+  config = {
+    prisoners = true
+  }
+}
+End
+"HUMAN_STABLE" STABLE(HUMAN, "HORSE_CAN_TRAIN", "WARHORSE", "KNIGHT", "PESEANT")
+"THIEF_STABLE" STABLE(HUMAN, "CAMEL", "GOAT", "THIEF", "NOMAD")
+
+"THIEF_STABLE" modify {
+  biome = "DESERT"
+  settlement = append {
+    type = RandomLayout { "stable" { 13 13 } "thief_stable"}
+  }
+}
+
 "GUARD_POST"
 {
   settlement = {

@@ -47,11 +47,10 @@ class Game;
 struct RecruitmentInfo {
   vector<EnemyId> SERIAL(enemyId);
   int SERIAL(minPopulation);
-  MinionTrait SERIAL(trait);
   vector<Collective*> findEnemy(Game*) const;
   vector<Creature*> getAvailableRecruits(Game*, CreatureId) const;
   vector<Creature*> getAllRecruits(Game*, CreatureId) const;
-  SERIALIZE_ALL(enemyId, minPopulation, trait)
+  SERIALIZE_ALL(enemyId, minPopulation)
 };
 
 struct TutorialRequirement {

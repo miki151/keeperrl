@@ -213,7 +213,7 @@ TRAINING("_DWARF", "_dwarf")
 {
   viewId = { "haypile" }
   name = "hay pile"
-  blockMovement = true
+  #blockMovement = true
   usageTime = 5
   canHideHere = true
   fire = 100
@@ -2122,6 +2122,10 @@ Def Boulder(Id) {
   layer = GROUND
   walkOverFX = { SAND_DUST Rgb 255 229 178 255 }
 }
+"SAND_FLOOR" inherit "SAND"
+{
+  buildingFloor = true
+}
 "RED_SAND"
 {
   name = "sand"
@@ -2154,6 +2158,10 @@ Def Boulder(Id) {
   viewId = { "mud" }
   layer = GROUND
 }
+"MUD_FLOOR" inherit "MUD"
+{
+  buildingFloor = true
+}
 "SWAMPGRASS"
 {
   name = "grass"
@@ -2181,6 +2189,7 @@ Def Boulder(Id) {
   viewId = { "floor" }
   layer = GROUND
   canBuildOutsideOfTerritory = true
+  buildingFloor = true
   builtOver = {"HILL" "GRASS" "SAND" "SNOW" "FILL_UP_WATER_FLOOR" "ROOF"}
 }
 "GHOST_SPAWN" inherit "FLOOR"

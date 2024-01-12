@@ -10,6 +10,7 @@
   "rock" Place "MOUNTAIN"
   "hard_rock" Place "MOUNTAIN2"
   "water" { ClearFurniture Place "WATER"}
+  "mud_floor" { ClearFurniture Place "MUD_FLOOR" Flag EMPTY_ROOM}
   "kraken_water" { ClearFurniture Place "KRAKEN_WATER"}
   "enchanted_water" { ClearFurniture Place "ENCHANTED_WATER"}
   "enchanted_workshop" { Place "ENCHANTED_WORKSHOP"}
@@ -17,6 +18,7 @@
   "lava" { ClearFurniture Place "MAGMA"}
   "stockpile" Stockpile 0
   "bed" Place "BED1"
+  "haypile" Place "HAYPILE"
   "wall" Place "WOOD_WALL"
   "wood_wall" Place "WOOD_WALL"
   "castle_wall" Place "CASTLE_WALL"
@@ -139,4 +141,10 @@
   "trap" Place "BOULDER_TRAP"
   "chest" { Place "CHEST" Items "armorChest" }
   "scroll_chest" { Place "CHEST" Items "adoxieScroll" }
+}
+
+"thief_stable" inherit "default" append {
+  "mud_floor" { ClearFurniture Place "SAND_FLOOR" Flag EMPTY_ROOM}
+  "wood_wall" Place "SANDSTONE_WALL"
+  "castle_wall" Place "SANDSTONE_WALL"
 }

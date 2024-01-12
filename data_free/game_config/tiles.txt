@@ -197,6 +197,7 @@ Connections("map_swamp")
 { "map_house_elf" "o" ColorId LIGHT_GREEN }
 { "map_shop1" "o" ColorId PINK }
 { "map_blacksmith1" "o" ColorId LIGHT_GRAY }
+{ "map_stable1" "o" ColorId LIGHT_BROWN }
 { "map_castle1" "o" ColorId BLUE }
 { "map_guard_house1" "o" ColorId LIGHT_GRAY }
 { "map_castle_snow1" "o" ColorId LIGHT_BLUE }

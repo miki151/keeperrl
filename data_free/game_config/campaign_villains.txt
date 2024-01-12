@@ -11,6 +11,8 @@ COTTAGES {
   {{"map_shop1"} "JEWELER_SHOP" "Shop" MINOR}
   {{"map_blacksmith1"} "HUMAN_BLACKSMITH" "Blacksmith" MINOR}
   {{"map_blacksmith1"} "GOBLIN_BLACKSMITH" "Blacksmith" MINOR}
+  {{"map_stable1"} "HUMAN_STABLE" "Stable" MINOR}
+  {{"map_stable1"} "THIEF_STABLE" "Stable" MINOR}
   {{"map_white_dragon"} "YETI" "Cave" MINOR}
   {{"map_house2"} "KNIFE_COTTAGE" "Cottage" MINOR}
 }

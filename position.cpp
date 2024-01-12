@@ -971,7 +971,7 @@ bool Position::isCovered() const {
       return true;
     auto ground = getFurniture(FurnitureLayer::GROUND);
     auto middle = getFurniture(FurnitureLayer::MIDDLE);
-    return (ground && ground->getType() == FurnitureType("FLOOR")) || (middle && middle->isWall());
+    return (ground && ground->isBuildingFloor()) || (middle && middle->isWall());
   } else
     return false;
 }

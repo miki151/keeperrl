@@ -33,7 +33,7 @@ Def DarkRecruits()
       ids = { "DARK_ELF_WARRIOR" }
       traits = { FIGHTER }
       requirements = {
-        { 0.0 RecruitmentInfo { "DARK_ELVES_ALLY" } 3 FIGHTER }
+        { 0.0 RecruitmentInfo { "DARK_ELVES_ALLY" } 3 }
         { 1.0 CostInfo "GOLD" 20 }
       }
     }
@@ -41,7 +41,7 @@ Def DarkRecruits()
       ids = { "GOBLIN_ARTIFICER_VILLAIN" }
       traits = { FIGHTER NO_AUTO_EQUIPMENT }
       requirements = {
-        { 0.0 RecruitmentInfo { "GOBLIN_BLACKSMITH" } 0 FIGHTER }
+        { 0.0 RecruitmentInfo { "GOBLIN_BLACKSMITH" } 0 }
         { 1.0 CostInfo "GOLD" 250 }
       }
     }
@@ -49,7 +49,7 @@ Def DarkRecruits()
       ids = { "GOBLIN_WARRIOR" }
       traits = { FIGHTER }
       requirements = {
-        { 0.0 RecruitmentInfo { "GOBLIN_CAVE_ALLY" } 3 FIGHTER }
+        { 0.0 RecruitmentInfo { "GOBLIN_CAVE_ALLY" } 3 }
         { 1.0 CostInfo "GOLD" 5 }
       }
     }
@@ -57,7 +57,7 @@ Def DarkRecruits()
       ids = { "HARPY" }
       traits = { FIGHTER }
       requirements = {
-        { 0.0 RecruitmentInfo { "HARPY_CAVE" } 3 FIGHTER }
+        { 0.0 RecruitmentInfo { "HARPY_CAVE" } 3 }
         { 1.0 CostInfo "GOLD" 12 }
       }
     }
@@ -65,7 +65,7 @@ Def DarkRecruits()
       ids = { "VAMPIRE" }
       traits = { FIGHTER }
       requirements = {
-        { 0.0 RecruitmentInfo { "Z_LEVEL_VAMPIRE_VAULT" } 0 FIGHTER }
+        { 0.0 RecruitmentInfo { "Z_LEVEL_VAMPIRE_VAULT" } 0 }
       }
     }
 End
@@ -75,15 +75,39 @@ Def WhiteRecruits()
       ids = { "DWARF" }
       traits = { FIGHTER }
       requirements = {
-        { 0.0 RecruitmentInfo { "Z_LEVEL_DWARF_VAULT" } 0 FIGHTER }
+        { 0.0 RecruitmentInfo { "Z_LEVEL_DWARF_VAULT" } 0 }
       }
     }
     {
       ids = { "ARTISAN_VILLAIN" }
       traits = { FIGHTER NO_AUTO_EQUIPMENT }
       requirements = {
-        { 0.0 RecruitmentInfo { "HUMAN_BLACKSMITH" } 0 FIGHTER }
+        { 0.0 RecruitmentInfo { "HUMAN_BLACKSMITH" } 0 }
         { 1.0 CostInfo "GOLD" 250 }
+      }
+    }
+    {
+      ids = { "HORSE_CAN_TRAIN" }
+      traits = { NO_LIMIT }
+      requirements = {
+        { 0.0 RecruitmentInfo { "HUMAN_STABLE" } 0 }
+        { 1.0 CostInfo "GOLD" 15 }
+      }
+    }
+    {
+      ids = { "WARHORSE" }
+      traits = { NO_LIMIT }
+      requirements = {
+        { 0.0 RecruitmentInfo { "HUMAN_STABLE" } 0 }
+        { 1.0 CostInfo "GOLD" 25 }
+      }
+    }
+    {
+      ids = { "CAMEL" }
+      traits = { NO_LIMIT }
+      requirements = {
+        { 0.0 RecruitmentInfo { "THIEF_STABLE" } 0 }
+        { 1.0 CostInfo "GOLD" 10 }
       }
     }
 End
@@ -486,7 +510,7 @@ End
       ids = { "DWARF_BLACKSMITH" }
       traits = { FIGHTER }
       requirements = {
-        { 0.0 RecruitmentInfo { "DWARVES" } 0 FIGHTER }
+        { 0.0 RecruitmentInfo { "DWARVES" } 0 }
         { 1.0 CostInfo "GOLD" 100 }
       }
     }
@@ -524,7 +548,7 @@ End
       ids = { "TEUTON" }
       traits = { FIGHTER }
       requirements = {
-        { 0.0 RecruitmentInfo { "TEUTONS" } 3 FIGHTER }
+        { 0.0 RecruitmentInfo { "TEUTONS" } 3 }
         { 1.0 CostInfo "GOLD" 150 }
       }
     }

@@ -5,6 +5,8 @@
 "rock" # brown
 "hard_rock" # gray
 "water" ~ blue
+"mud" ~ brown
+"haypile" % yellow
 "kraken_water" ~ yellow
 "grass" = green
 "sand" = yellow
@@ -15,6 +17,7 @@
 "wood_door" + brown
 "iron_door" + gray
 "hidden_door" + red
+"wood_gate" ⩲ brown
 "iron_gate" ⩲ gray
 "iron_gate_blocking" ⩲ gray
 "bed" = white
