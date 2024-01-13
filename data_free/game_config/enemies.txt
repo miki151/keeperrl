@@ -1231,6 +1231,7 @@ End
 }
 "WOLF_DEN"
 {
+  biome = "MOUNTAIN"
   settlement = {
     type = Builtin CAVE "DUNGEON"
     inhabitants = {

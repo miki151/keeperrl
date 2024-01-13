@@ -15,6 +15,7 @@ COTTAGES {
   {{"map_stable1"} "THIEF_STABLE" "Stable" MINOR}
   {{"map_white_dragon"} "YETI" "Cave" MINOR}
   {{"map_house2"} "KNIFE_COTTAGE" "Cottage" MINOR}
+  {{"map_dungeon2"} "WOLF_DEN" "Cave" MINOR}
 }
 
 EVIL_COTTAGES inherit COTTAGES append {
