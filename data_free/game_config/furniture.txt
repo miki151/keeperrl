@@ -890,6 +890,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "chicken coop"
   viewId = { "mud" }
+  viewLayer = FLOOR_BACKGROUND
   tickType = Effect Chance 0.05 Filter
     And {
       IsClosedOffPigsty
