@@ -877,6 +877,16 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   viewId = { "flower3" }
 }
+"STABLE"
+{
+  name = "stable"
+  viewId = { "mud" }
+  usageType = UsageEffect "sleep in stable" Lasting SLEEP
+  viewLayer = FLOOR_BACKGROUND
+  bedType = STABLE
+  canBuildOutsideOfTerritory = false
+  layer = FLOOR
+}
 "CROPS"
 {
   name = "wheat"

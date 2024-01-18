@@ -88,26 +88,26 @@ Def WhiteRecruits()
     }
     {
       ids = { "HORSE_CAN_TRAIN" }
-      traits = { NO_LIMIT }
-      requirements = {
-        { 0.0 RecruitmentInfo { "HUMAN_STABLE" } 0 }
-        { 1.0 CostInfo "GOLD" 15 }
-      }
-    }
-    {
-      ids = { "WARHORSE" }
-      traits = { NO_LIMIT }
+      traits = { NO_LIMIT INCREASE_POPULATION }
       requirements = {
         { 0.0 RecruitmentInfo { "HUMAN_STABLE" } 0 }
         { 1.0 CostInfo "GOLD" 25 }
       }
     }
     {
+      ids = { "WARHORSE" }
+      traits = { NO_LIMIT INCREASE_POPULATION }
+      requirements = {
+        { 0.0 RecruitmentInfo { "HUMAN_STABLE" } 0 }
+        { 1.0 CostInfo "GOLD" 40 }
+      }
+    }
+    {
       ids = { "CAMEL" }
-      traits = { NO_LIMIT }
+      traits = { NO_LIMIT INCREASE_POPULATION }
       requirements = {
         { 0.0 RecruitmentInfo { "THIEF_STABLE" } 0 }
-        { 1.0 CostInfo "GOLD" 10 }
+        { 1.0 CostInfo "GOLD" 25 }
       }
     }
 End
@@ -559,16 +559,10 @@ End
     }
     {
       ids = { "HORSE_CAN_TRAIN" }
-      traits = { NO_LIMIT }
-      requirements = {
-        { 1.0 CostInfo "GOLD" 30 }
-      }
-    }
-    {
-      ids = { "DONKEY" "COW" "GOAT" }
       traits = { NO_LIMIT INCREASE_POPULATION }
       requirements = {
         { 1.0 CostInfo "GOLD" 50 }
+        { 1.0 AttractionInfo 2 {FurnitureType "STABLE"}}
       }
     }
     WhiteRecruits()

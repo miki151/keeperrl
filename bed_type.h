@@ -7,7 +7,8 @@ RICH_ENUM(
     BED,
     COFFIN,
     PRISON,
-    CAGE
+    CAGE,
+    STABLE
 );
 
 const char* getName(BedType);

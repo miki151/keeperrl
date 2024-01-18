@@ -240,6 +240,8 @@ const PositionSet& getIdlePositions(const Collective* collective, const Creature
     auto& quarters = collective->getZones().getQuarters(c->getUniqueId());
     if (!quarters.empty())
       return quarters;
+    if (c->isAffected(LastingEffect::STEED))
+      return collective->getConstructions().getBuiltPositions(FurnitureType("STABLE"));
     if (collective->hasTrait(c, MinionTrait::PRISONER))
       return collective->getConstructions().getBuiltPositions(FurnitureType("PRISON"));
     if (!collective->hasTrait(c, MinionTrait::NO_LEISURE_ZONE))

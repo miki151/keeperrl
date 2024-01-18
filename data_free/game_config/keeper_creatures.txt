@@ -18,7 +18,7 @@
   initialTech = { "sorcery" }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "beds"
-      "dining table" "coffins" "pigsty"
+      "dining table" "stable" "coffins" "pigsty"
       "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace"
       "prison" "orders" "throne" "demon_shrine" "installations" "minion_statues" "magical_installations" "healing_totem"
       "traps"
@@ -50,7 +50,7 @@
   initialTech = { "archery" }
   buildingGroups = {
       "structure" "arrowslits" "doors" "floors" "storage" "zones" "library_human" "beds"
-      "dining table" "pigsty" "training_human" "crafting" "laboratory" "jeweller" "poetry" "distillery"
+      "dining table"  "stable" "pigsty" "training_human" "crafting" "laboratory" "jeweller" "poetry" "distillery"
       "furnace" "prison" "orders" "throne_human" "angel_shrine" "installations"
   }
   workshopGroups = { "basic" "bows" }
@@ -70,7 +70,7 @@
   zLevelGroups = { "basic" "evil" }
   initialTech = { "necromancy" }
   buildingGroups = {
-      "structure_necro" "doors" "floors" "storage" "zones" "library_necro" "beds" "coffins"
+      "structure_necro" "doors" "floors" "storage" "zones" "library_necro" "beds" "stable" "coffins"
       "training_necro" "morgue" "crafting" "embalming" "poetry" "distillery" "furnace" "orders"
       "phylactery" "installations_no_heads" "magical_installations"
   }
@@ -153,7 +153,7 @@
   zLevelGroups = { "basic" "evil" "goblins" }
   initialTech = { }
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "library" "beds" "dining table" "coffins" 
+      "structure" "doors" "floors" "storage" "zones" "library" "beds" "dining table" "stable" "coffins"
       "pigsty" "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "prison"
       "orders" "throne" "installations" "minion_statues" "traps"
   }

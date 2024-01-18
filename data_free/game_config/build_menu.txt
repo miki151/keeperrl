@@ -211,6 +211,12 @@ End
         "A place to eat for non-humanoids" none {}}
   }
 
+  "stable"
+  {
+    { Furniture {{ "STABLE" }     "WOOD" 5 }                      "Stable"             "Living"
+      "An area for keeping horses and other mounts" none {}}
+  }
+
   "coffins"
   {
     { Furniture {{ "COFFIN1" }    "WOOD" 15 }                      "Basic coffin"      "Living"
