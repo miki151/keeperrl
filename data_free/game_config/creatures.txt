@@ -1504,8 +1504,36 @@ End
   {
     viewId = { "knight" }
     attr = {
-      DAMAGE 16
-      DEFENSE 14
+      DAMAGE 20
+      DEFENSE 16
+      FURNACE 15
+      WORKSHOP 15
+      FORGE 15
+    }
+    fixedAttr = { FORGE FURNACE WORKSHOP }
+    body = {
+      type = Humanoid LARGE
+    }
+    maxLevelIncrease = {
+      DAMAGE 12
+    }
+    chatReactionFriendly = "curses all dungeons"
+    chatReactionHostile = "\"Die!\""
+    permanentEffects = {
+      RIDER 1
+    }
+    name = {
+      name = "knight"
+      firstNameGen = "FIRST_MALE"
+    }
+    hatedByEffect = HATE_HUMANS
+  }
+"SQUIRE_PLAYER"
+  {
+    viewId = { "squire" }
+    attr = {
+      DAMAGE 14
+      DEFENSE 12
       FURNACE 10
       WORKSHOP 5
       FORGE 5
@@ -1523,9 +1551,11 @@ End
       RIDER 1
     }
     name = {
-      name = "knight"
+      name = "squire"
       firstNameGen = "FIRST_MALE"
     }
+    promotionGroup = "knight"
+    promotionCost = 1.0
     hatedByEffect = HATE_HUMANS
   }
 "JESTER"
@@ -3611,7 +3641,7 @@ End
     viewId = { "kangaroo" }
     attr = {
       DAMAGE 30
-      DEFENSE 15 
+      DEFENSE 15
     }
     body = {
       type = FourLegged LARGE
@@ -3627,7 +3657,7 @@ End
     viewId = { "bear" }
     attr = {
       DAMAGE 20
-      DEFENSE 18 
+      DEFENSE 18
     }
     body = {
       type = FourLegged LARGE
@@ -3641,7 +3671,7 @@ End
       STEED 1
     }
     name = {
-      name = "cave bear"
+      name = "brown bear"
     }
   }
 "POLAR_BEAR" inherit "CAVE_BEAR"

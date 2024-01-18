@@ -424,11 +424,11 @@ End
       }
     }
     {
-      ids = { "KNIGHT_PLAYER" }
+      ids = { "SQUIRE_PLAYER" }
       traits = { FIGHTER }
       frequency = 0.7
       requirements = {
-        { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_IRON_HUMAN"}}
+        { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_WOOD_HUMAN"}}
       }
       specialTraits = {
         { 0.05 { SpecialAttr DAMAGE 8 HatedBy HATE_DRAGONS }}
@@ -516,7 +516,7 @@ End
     }
     {
       ids = { "GALEAM" }
-      traits = { FIGHTER }
+      traits = { FIGHTER NO_LIMIT }
       frequency = 0.3
       spawnLocation = FurnitureType "ANGEL_SHRINE"
       requirements = {
@@ -526,7 +526,7 @@ End
     }
     {
       ids = { "CHERUB" }
-      traits = { FIGHTER }
+      traits = { FIGHTER NO_LIMIT }
       frequency = 0.2
       spawnLocation = FurnitureType "ANGEL_SHRINE"
       requirements = {
@@ -536,7 +536,7 @@ End
     }
     {
       ids = { "ANGEL" }
-      traits = { FIGHTER }
+      traits = { FIGHTER NO_LIMIT }
       frequency = 0.15
       spawnLocation = FurnitureType "ANGEL_SHRINE"
       requirements = {

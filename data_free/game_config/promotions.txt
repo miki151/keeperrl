@@ -60,3 +60,9 @@
         Description "Increases spell damage training by 1."
         IncreaseLevel SPELL_DAMAGE 1
 }
+
+"knight" {
+    "knighthood" { "sword" }
+        Description "Promotes to a knight."
+        Polymorph "KNIGHT_PLAYER" none
+}

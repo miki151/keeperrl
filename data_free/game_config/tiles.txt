@@ -26,8 +26,8 @@
 { viewId = "keeper_knight_f2" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 15} }
 { viewId = "keeper_knight_f3" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 16} }
 { viewId = "keeper_knight_f4" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 16} }
-{ viewId = "player" symbol = "@" color = ColorId WHITE weaponOrigin = {4 13}   }
-{ viewId = "player_f" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 14}   }
+{ viewId = "squire" symbol = "@" color = ColorId WHITE weaponOrigin = {4 13}   }
+{ viewId = "squire_f" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 14}   }
 { "demon_dweller" "U" ColorId PURPLE }
 { "demon_lord" "U" ColorId YELLOW }
 { viewId = "vampire_warrior" symbol = "V" color = ColorId DARK_GRAY weaponOrigin = {2 12} }
