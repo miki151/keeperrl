@@ -584,10 +584,15 @@ void Position::dropItems(vector<PItem> v) const {
 }
 
 void Position::addFurniture(PFurniture f) const {
-  if (auto prev = getFurniture(f->getLayer()))
+  auto layer = f->getLayer();
+  if (auto prev = getFurniture(layer))
     removeFurniture(prev, std::move(f));
   else
     addFurnitureImpl(std::move(f));
+  if (layer == FurnitureLayer::GROUND)
+    if (auto f = getFurniture(FurnitureLayer::MIDDLE))
+      if (f->canRemoveInstantly())
+        removeFurniture(f);
 }
 
 void Position::addFurnitureImpl(PFurniture f) const {
