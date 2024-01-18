@@ -228,12 +228,10 @@ void PlayerControl::onControlledKilled(Creature* victim) {
     for (auto c : getTeams().getMembers(currentTeam))
       if (c != victim)
         team.push_back(PlayerInfo(c, getGame()->getContentFactory()));
-    if (team.empty())
-      return;
     optional<Creature::Id> newLeader;
     if (team.size() == 1)
       newLeader = team[0].creatureId;
-    else
+    else if (!team.empty())
       newLeader = getView()->chooseCreature("Choose new team leader:", team, "Order team back to base");
     if (newLeader) {
       if (Creature* c = getCreature(*newLeader)) {
