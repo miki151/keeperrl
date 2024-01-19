@@ -133,17 +133,18 @@ ImmigrantInfo& ImmigrantInfo::addRequirement(ImmigrantRequirement t) {
   return *this;
 }
 
-vector<Creature*> RecruitmentInfo::getAllRecruits(Game* game, CreatureId id) const {
+vector<Creature*> RecruitmentInfo::getAvailableRecruits(Collective* collective, CreatureId id) const {
+  auto game = collective->getGame();
   vector<Creature*> ret;
   for (auto col : findEnemy(game))
-    ret.append(col->getCreatures().filter([&](const Creature* c) {
-         return !c->isAffected(LastingEffect::STUNNED) && c->getAttributes().getCreatureId() == id; }));
+    if (collective->isKnownVillainLocation(col)) {
+      auto creatures = col->getCreatures().filter([&](const Creature* c) {
+          return !c->isAffected(LastingEffect::STUNNED) && c->getAttributes().getCreatureId() == id; });
+      ret.append(creatures.getPrefix(max(0, (int)creatures.size() - minPopulation)));
+    }
+  sort(ret.begin(), ret.end(), [](Creature* c1, Creature* c2) {
+      return c1->getCombatExperience(false, false) > c2->getCombatExperience(false, false); });
   return ret;
-}
-
-vector<Creature*> RecruitmentInfo::getAvailableRecruits(Game* game, CreatureId id) const {
-  auto ret = getAllRecruits(game, id);
-  return ret.getPrefix(max(0, (int)ret.size() - minPopulation));
 }
 
 vector<Collective*> RecruitmentInfo::findEnemy(Game* game) const {

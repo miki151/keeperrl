@@ -1660,7 +1660,7 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
       if (prisonSize == 0)
         requirements.push_back("Requires a "_s + getName(prisonBedType));
       else
-        requirements.push_back("Requires " + getPlural("more "_s + getName(prisonBedType), missingSize));  
+        requirements.push_back("Requires " + getPlural("more "_s + getName(prisonBedType), missingSize));
     }
     if (stack.collective)
       requirements.push_back("Requires conquering " + stack.collective->getName()->full);
@@ -1753,6 +1753,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
     if (auto time = candidate.getEndTime())
       timeRemaining = *time - getGame()->getGlobalTime();
     vector<string> infoLines;
+    Creature* c = candidate.getCreatures()[0];
     candidate.getInfo().visitRequirements(makeVisitor(
         [&](const Pregnancy&) {
           optional<TimeInterval> maxT;
@@ -1765,13 +1766,12 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
             timeRemaining = *maxT;
         },
         [&](const RecruitmentInfo& info) {
-          infoLines.push_back(
-              toString(info.getAvailableRecruits(getGame(), candidate.getInfo().getNonRandomId(0)).size()) +
-              " recruits available");
+          auto recruits = info.getAvailableRecruits(collective, candidate.getInfo().getNonRandomId(0));
+          infoLines.push_back(toString(recruits.size()) + " recruits available");
+          c = recruits[0];
         },
         [&](const auto&) {}
     ));
-    Creature* c = candidate.getCreatures()[0];
     string name = count > 1 ? c->getName().groupOf(count) : c->getName().title();
     if (auto& s = c->getName().stackOnly())
       name += " (" + *s + ")";
@@ -1786,11 +1786,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
     info.immigration.back().specialTraits = candidate.getSpecialTraits().transform(
         [&](const auto& trait){ return getSpecialTraitInfo(trait, factory); });
     info.immigration.back().cost = getCostObj(candidate.getCost());
-    info.immigration.back().creature = ImmigrantCreatureInfo {
-        name,
-        c->getViewObject().getViewIdList(),
-        AttributeInfo::fromCreature(factory, c)
-    };
+    info.immigration.back().creature = getImmigrantCreatureInfo(c, factory);
     info.immigration.back().count = count == 1 ? none : optional<int>(count);
     info.immigration.back().timeLeft = timeRemaining;
     info.immigration.back().id = elem.first;

@@ -48,8 +48,7 @@ struct RecruitmentInfo {
   vector<EnemyId> SERIAL(enemyId);
   int SERIAL(minPopulation);
   vector<Collective*> findEnemy(Game*) const;
-  vector<Creature*> getAvailableRecruits(Game*, CreatureId) const;
-  vector<Creature*> getAllRecruits(Game*, CreatureId) const;
+  vector<Creature*> getAvailableRecruits(Collective*, CreatureId) const;
   SERIALIZE_ALL(enemyId, minPopulation)
 };
 

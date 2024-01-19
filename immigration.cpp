@@ -171,7 +171,7 @@ optional<string> Immigration::getMissingRequirement(const ImmigrantRequirement& 
         for (auto col : cols) {
           if (!collective->isKnownVillainLocation(col))
             result = "Ally hasn't been discovered"_s;
-          else if (info.getAvailableRecruits(collective->getGame(), immigrantInfo.getNonRandomId(0)).empty())
+          else if (info.getAvailableRecruits(collective, immigrantInfo.getNonRandomId(0)).empty())
             result = "Ally doesn't have recruits available at this moment"_s;
           else
             return none;
@@ -433,7 +433,7 @@ void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositi
   auto game = collective->getGame();
   info.visitRequirements(makeVisitor(
       [&](const RecruitmentInfo& recruitmentInfo) {
-        auto recruits = recruitmentInfo.getAllRecruits(game, info.getId(0));
+        auto recruits = recruitmentInfo.getAvailableRecruits(collective, info.getId(0));
         if (!recruits.empty()) {
           Creature* c = recruits[0];
           collective->addCreature(c, info.getTraits());
@@ -549,9 +549,11 @@ Immigration::Available Immigration::Available::generate(Immigration* immigration
         }
       }
   }
-  int difficulty = game->getModelDifficulty(collective->getModel());
-  for (auto& c : immigrants)
-    c->setCombatExperience(difficulty);
+  if (game->getMainModel().get() != collective->getModel()) {
+    int difficulty = game->getModelDifficulty(collective->getModel());
+    for (auto& c : immigrants)
+      c->setCombatExperience(difficulty);
+  }
   return Available(
     immigration,
     std::move(immigrants),
