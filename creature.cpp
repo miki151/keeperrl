@@ -2311,6 +2311,8 @@ void Creature::forceMount(Creature* whom) {
     whom->removeEffect(LastingEffect::SLEEP);
     steed = whom->position.getModel()->extractCreature(whom);
     steed->position = position;
+    steed->modViewObject().setModifier(ViewObjectModifier::FLIPX,
+        getViewObject().hasModifier(ViewObjectModifier::FLIPX));
   }
 }
 
