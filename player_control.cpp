@@ -2267,7 +2267,7 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
       if (auto steed = c->getSteed()) {
         index.getObject(ViewLayer::CREATURE).setModifier(ViewObjectModifier::RIDER);
         auto obj = steed->getViewObject();
-        obj.setLayer(ViewLayer::TORCH2);
+        obj.setLayer(ViewLayer::STEED);
         obj.getCreatureStatus().intersectWith(getDisplayedOnMinions());
         index.insert(std::move(obj));
       }
@@ -2289,10 +2289,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (!position.isValid())
     return;
   if (auto belowPos = position.getGroundBelow()) {
-    if (auto memIndex = getMemory().getViewIndex(*belowPos)) {
-      index.mergeFromMemory(*memIndex);
-      index.setHighlight(HighlightType::TILE_BELOW);
-    }
+    if (auto memIndex = getMemory().getViewIndex(*belowPos))
+      index.mergeGroundBelow(*memIndex);
     return;
   }
   bool canSeePos = canSee(position);

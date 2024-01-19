@@ -8,6 +8,7 @@ RICH_ENUM(ViewLayer,
   ITEM,
   TORCH1,
   CREATURE,
+  STEED,
   TORCH2
 );
 

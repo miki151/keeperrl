@@ -47,6 +47,8 @@ void MapMemory::update(Position pos, const ViewIndex& index1) {
   if (index.hasObject(ViewLayer::CREATURE) &&
       !index.getObject(ViewLayer::CREATURE).hasModifier(ViewObjectModifier::REMEMBER))
     index.removeObject(ViewLayer::CREATURE);
+  if (index.hasObject(ViewLayer::STEED))
+    index.removeObject(ViewLayer::STEED);
   updateUpdated(pos);
 }
 

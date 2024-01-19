@@ -262,3 +262,12 @@ void ViewIndex::mergeFromMemory(const ViewIndex& memory) {
       insert(memory.getObject(ViewLayer::FLOOR_BACKGROUND));
   }
 }
+
+void ViewIndex::mergeGroundBelow(const ViewIndex& memory) {
+  if (isEmpty()) {
+    *this = memory;
+    removeObject(ViewLayer::TORCH1);
+    removeObject(ViewLayer::TORCH2);
+    setHighlight(HighlightType::TILE_BELOW);
+  }
+}

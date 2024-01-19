@@ -66,6 +66,7 @@ class ViewIndex {
   ViewObject& getObject(ViewLayer);
   const ViewObject* getTopObject(const vector<ViewLayer>&) const;
   void mergeFromMemory(const ViewIndex& memory);
+  void mergeGroundBelow(const ViewIndex& memory);
   bool isEmpty() const;
   bool noObjects() const;
   bool hasAnyHighlight() const;

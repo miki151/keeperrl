@@ -616,7 +616,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       move.y += 11;
     const auto& coord = tile.getSpriteCoord(dirs);
     if (object.hasModifier(ViewObject::Modifier::RIDER)) {
-      auto& steedObject = index.getObject(ViewLayer::TORCH2);
+      auto& steedObject = index.getObject(ViewLayer::STEED);
       const Tile& steedTile = renderer.getTileSet().getTile(steedObject.id(), spriteMode);
       const auto& steedCoord = steedTile.getSpriteCoord(dirs);
       move.y -= (7 + steedCoord[0].size.y - coord[0].size.y) * zoom;
@@ -1136,7 +1136,7 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
               Vec2 movement = getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true, wpos);
               drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal, index);
               if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos &&
-                  object->layer() != ViewLayer::CREATURE && object->layer() != ViewLayer::ITEM)
+                !isOneOf(object->layer(), ViewLayer::STEED, ViewLayer::CREATURE, ViewLayer::ITEM))
                 lastHighlighted.object = *object;
               }
           }
@@ -1164,7 +1164,7 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
             object = &index.getObject(layer);
           if (object) {
             Vec2 movement = [&] {
-              if (layer == ViewLayer::TORCH2 && index.hasObject(ViewLayer::CREATURE)) {
+              if (layer == ViewLayer::STEED && index.hasObject(ViewLayer::CREATURE)) {
                 auto& riderObj = index.getObject(ViewLayer::CREATURE);
                 if (riderObj.hasModifier(ViewObject::Modifier::RIDER))
                   return getMovementOffset(riderObj, size, currentTimeGame, currentTimeReal, true, wpos);
@@ -1172,7 +1172,8 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
               return getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true, wpos);
             }();
             drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal, index);
-            if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos && object->layer() != ViewLayer::CREATURE)
+            if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos &&
+                !isOneOf(object->layer(), ViewLayer::CREATURE, ViewLayer::STEED))
               lastHighlighted.object = *object;
           }
         }

@@ -1108,10 +1108,8 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
       getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP);
   Position position = creature->getPosition().withCoord(pos);
   if (auto belowPos = position.getGroundBelow()) {
-    if (auto memIndex = getMemory().getViewIndex(*belowPos)) {
-      index.mergeFromMemory(*memIndex);
-      index.setHighlight(HighlightType::TILE_BELOW);
-    }
+    if (auto memIndex = getMemory().getViewIndex(*belowPos))
+      index.mergeGroundBelow(*memIndex);
     return;
   }
   if (canSee)
@@ -1146,7 +1144,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
         index.getObject(ViewLayer::CREATURE).setModifier(ViewObjectModifier::RIDER);
         auto obj = steed->getViewObjectFor(creature->getTribe());
         obj.getCreatureStatus().intersectWith(getDisplayedOnMinions());
-        obj.setLayer(ViewLayer::TORCH2);
+        obj.setLayer(ViewLayer::STEED);
         index.insert(std::move(obj));
       }
       auto& object = index.getObject(ViewLayer::CREATURE);
