@@ -1555,7 +1555,7 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
         index,
         "In production:",
         true,
-        workshopInfo.minAttr,
+        workshopInfo.getMinAttrFor(resourceTabs[chosenWorkshop->resourceIndex]),
         factory->attrInfo.at(workshopInfo.attr).viewId
     };
   }
@@ -2721,7 +2721,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
           auto options = getWorkshopOptions(chosenWorkshop->resourceIndex);
           if (index >= 0 && index < options.size()) {
             auto& item = options[index];
-            workshop.queue(collective, item.optionIndex);
+            auto skill = getGame()->getContentFactory()->workshopInfo.at(chosenWorkshop->type)
+                .getMinAttrFor(workshop.getOptions()[item.optionIndex].cost.id);
+            workshop.queue(collective, item.optionIndex, skill);
             if (item.ingredient) {
               workshop.addUpgrade(workshop.getQueued().size() - 1,
                   item.ingredient->second.removeItem(item.ingredient->first));

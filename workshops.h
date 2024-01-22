@@ -22,10 +22,10 @@ class Workshops {
     const vector<Item>& getOptions() const;
     const vector<QueuedItem>& getQueued() const;
     PItem addWork(Collective*, double workAmount, int skillAmount, const optional<ItemPrefix>&);
-    void queue(Collective*, int index, optional<int> queueIndex = none);
+    void queue(Collective*, int index, int requiredSkill, optional<int> queueIndex = none);
     vector<PItem> unqueue(Collective*, int index);
     void changeNumber(int index, int number);
-    bool isIdle(const Collective*) const;
+    bool isIdle(const Collective*, int skillAmount) const;
     void addUpgrade(int index, PItem);
     PItem removeUpgrade(int itemIndex, int runeIndex);
     void updateState(Collective*);

@@ -335,7 +335,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
                 return true;
               auto workshop = getReferenceMaybe(col->getWorkshops().types, *type);
               auto& info = f->workshopInfo.at(*type);
-              return c->getAttr(info.attr) >= info.minAttr && !!workshop && !workshop->isIdle(col);
+              return !!workshop && !workshop->isIdle(col, c->getAttr(info.attr));
             } else
               return false;
           }};

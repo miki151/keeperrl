@@ -23,7 +23,7 @@
     { Furniture {{ "FLOOR" }              }               "Building interior" "Structure"
       "" none {} false none true}
 
-    { Furniture {{ "WOOD_WALL" }                  "WOOD" 5 }       "Wooden wall"   "Structure"
+    { Furniture {{ "WOOD_WALL" }                  "WOOD" 4 }       "Wooden wall"   "Structure"
       "Outdoor building. Tiles covered by the roof are considered territory and can be built on." }
 
     { Furniture {{ "WOOD_PILLAR" }                "WOOD" 2 }       "Wooden pillar"     "Structure"
@@ -286,23 +286,27 @@ TRAINING("_DWARF", "_dwarf")
 
   "crafting"
   {
-    { Furniture {{ "WORKSHOP" "ENCHANTED_WORKSHOP" }   "WOOD" 15 }                      "Workshop"          "Crafting"
-        "Produces leather equipment, traps, first-aid kits and other." "WORKSHOPS" {} true  BUILD_WORKSHOP}
+    { Furniture {{ "WORKSHOP" }   "WOOD" 15 }                      "Workshop"          "Crafting"
+        "Produces leather and wooden equipment." "WORKSHOPS" {} true  BUILD_WORKSHOP}
 
-    { Furniture {{ "FORGE" "LAVA_FORGE" }      "IRON" 20 }                      "Forge"             "Crafting"
-        "Produces iron weapons and armor."    none { TechId "iron working" }}
+    { Furniture {{ "ENCHANTED_WORKSHOP" }   "WOOD" 15 }                      "Workshop"          "Crafting"
+        "Produces improved leather and wooden equipment. Must be placed near an enchanted pool." "WORKSHOPS"}
 
-    { Furniture {{ "ADA_FORGE" "ADA_LAVA_FORGE" }      "ADA" 20 }               "Adamantium forge"    "Crafting"
-        "Produces adamantine weapons and armor."    none { TechId "iron working" }}
+    { Furniture {{ "FORGE"  }      "IRON" 20 }                      "Forge"             "Crafting"
+        "Produces weapons and armor made of iron and other metals."    none { TechId "iron working" }}
 
-    { Furniture {{ "ADOXIUM_FORGE" "ADOXIUM_LAVA_FORGE" } "ADOXIUM" 20 }        "Adoxium forge"        "Crafting"
-        "Produces adoxium and infernite equipment." none { TechId "iron working" }}
+    { Furniture {{ "LAVA_FORGE" }      "IRON" 20 }               "Magma forge"    "Crafting"
+        "Produces improved weapons and armor. Must be placed next to lava."    none { TechId "iron working" }}
   }
 
   "laboratory"
   {
-    { Furniture {{ "LABORATORY" "ENCHANTED_LABORATORY" } "STONE" 10 }                     "Laboratory"        "Crafting"
+    { Furniture {{ "LABORATORY" } "STONE" 10 }                     "Laboratory"        "Crafting"
         "Produces magical potions."            none { TechId "alchemy" }}
+
+    { Furniture {{ "ENCHANTED_LABORATORY" } "STONE" 10 }                     "Enchanted laboratory"        "Crafting"
+        "Produces magical potions used to mutate your minions. Must be placed near an enchanted pool."
+                    none { TechId "alchemy" }}
   }
 
   "embalming"
@@ -313,8 +317,11 @@ TRAINING("_DWARF", "_dwarf")
 
   "jeweller"
   {
-    { Furniture {{ "JEWELLER" "LAVA_JEWELLER" }   "WOOD" 12 }                      "Jeweller"          "Crafting"
+    { Furniture {{ "JEWELLER" }   "WOOD" 12 }                      "Jeweller"          "Crafting"
         "Produces magical rings and amulets." none { TechId "jewellery" }}
+
+    { Furniture {{ "LAVA_JEWELLER" }   "IRON" 12 }                      "Magma jeweller"          "Crafting"
+        "Produces glyphs used to improve weapons and armor. Must be placed next to lava." none { TechId "jewellery" }}
   }
   "poetry"
   {

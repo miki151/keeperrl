@@ -45,8 +45,8 @@ struct WorkshopItem {
 
 struct WorkshopQueuedItem {
   SERIALIZATION_CONSTRUCTOR(WorkshopQueuedItem)
-  WorkshopQueuedItem(WorkshopItem item, int index, bool paid)
-      : item(std::move(item)), indexInWorkshop(index), paid(paid) {}
+  WorkshopQueuedItem(WorkshopItem item, int index, bool paid, int minSkill)
+      : item(std::move(item)), indexInWorkshop(index), paid(paid), minSkill(minSkill) {}
   WorkshopQueuedItem(const WorkshopQueuedItem&) = delete;
   WorkshopQueuedItem(WorkshopQueuedItem&& o) = default;
   WorkshopQueuedItem& operator = (WorkshopQueuedItem&& o) = default;
@@ -55,5 +55,6 @@ struct WorkshopQueuedItem {
   double SERIAL(state) = 0;
   bool SERIAL(paid);
   vector<PItem> SERIAL(runes);
-  SERIALIZE_ALL(item, runes, state, paid, indexInWorkshop)
+  int SERIAL(minSkill) = 0;
+  SERIALIZE_ALL(item, runes, state, paid, indexInWorkshop, minSkill)
 };

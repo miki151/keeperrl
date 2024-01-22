@@ -103,30 +103,6 @@ TRAINING("_DWARF", "_dwarf")
   usagePredicate = Not Area 1 Not FurnitureType "MAGMA"
   upgrade = "FORGE"
 }
-"ADA_FORGE" inherit "FORGE"
-{
-  name = "adamantium forge"
-  viewId = { "ada_forge" }
-  upgrade = "FORGE"
-}
-"ADA_LAVA_FORGE" inherit "ADA_FORGE"
-{
-  name = "adamantium magma forge"
-  viewId = { "ada_lava_forge" }
-  usagePredicate = Not Area 1 Not FurnitureType "MAGMA"
-}
-"ADOXIUM_FORGE" inherit "FORGE"
-{
-  name = "adoxium forge"
-  viewId = { "adoxium_forge" }
-  upgrade = "FORGE"
-}
-"ADOXIUM_LAVA_FORGE" inherit "ADOXIUM_FORGE"
-{
-  name = "adoxium magma forge"
-  viewId = { "adoxium_lava_forge" }
-  usagePredicate = Not Area 1 Not FurnitureType "MAGMA"
-}
 "LABORATORY"
 {
   name = "laboratory"

@@ -44,9 +44,9 @@ void Workshops::Type::checkDebtConsistency() const {
     CHECK(getValueMaybe(nowDebt, elem.first).value_or(0) == elem.second);
 }
 
-void Workshops::Type::queue(Collective* collective, int index, optional<int> queueIndex) {
+void Workshops::Type::queue(Collective* collective, int index, int requiredSkill, optional<int> queueIndex) {
   addDebt(options[index].cost);
-  queued.insert(queueIndex.value_or(queued.size()), QueuedItem { options[index], index, false});
+  queued.insert(queueIndex.value_or(queued.size()), QueuedItem(options[index], index, false, requiredSkill));
   updateState(collective);
 }
 
@@ -76,14 +76,14 @@ vector<PItem> Workshops::Type::unqueue(Collective* collective, int index) {
 
 static const double prodMult = 0.15;
 
-static bool canCraft(const Workshops::QueuedItem& product, const Collective* collective) {
+static bool canCraft(const Workshops::QueuedItem& product, const Collective* collective, int skillAmount) {
   return (product.paid || collective->hasResource(product.item.cost)) &&
-      (!product.item.requiresUpgrades || !product.runes.empty());
+      (!product.item.requiresUpgrades || !product.runes.empty()) && skillAmount >= product.minSkill;
 }
 
-bool Workshops::Type::isIdle(const Collective* collective) const {
+bool Workshops::Type::isIdle(const Collective* collective, int skillAmount) const {
   for (auto& product : queued)
-    if (canCraft(product, collective))
+    if (canCraft(product, collective, skillAmount))
       return false;
   return true;
 }
@@ -105,7 +105,7 @@ PItem Workshops::Type::addWork(Collective* collective, double amount, int skillA
     const optional<ItemPrefix>& prefix) {
   for (int productIndex : All(queued)) {
     auto& product = queued[productIndex];
-    if (canCraft(product, collective)) {
+    if (canCraft(product, collective, skillAmount)) {
       if (!product.paid) {
         collective->takeResource(product.item.cost);
         addDebt(-product.item.cost);
@@ -146,4 +146,3 @@ int Workshops::getDebt(CollectiveResourceId resource) const {
 vector<WorkshopType> Workshops::getWorkshopsTypes() const {
   return getKeys(types);
 }
-
