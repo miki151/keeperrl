@@ -844,7 +844,7 @@ class RandomGen {
   template <typename T>
   vector<T> permutation(initializer_list<T> vi) {
     vector<T> v(vi);
-    std::random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    std::shuffle(v.begin(), v.end(), generator);
     return v;
   }
 
@@ -852,14 +852,14 @@ class RandomGen {
     vector<int> v;
     for (int i : r)
       v.push_back(i);
-    std::random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    std::shuffle(v.begin(), v.end(), generator);
     return v;
   }
 
   template <typename T>
   vector<T> chooseN(int n, vector<T> v) {
     CHECK(n <= v.size());
-    std::random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    std::shuffle(v.begin(), v.end(), generator);
     return v.getPrefix(n);
   }
 
