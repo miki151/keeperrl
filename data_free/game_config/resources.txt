@@ -10,7 +10,7 @@
       "IRON_ORE" {5 10} 1 2
   }
   minDepth = -2
-  maxDepth = 1
+  maxDepth = -1
 }
 {
   counts = {
@@ -23,6 +23,13 @@
 }
 {
   counts = {
+      "STONE" {5 10} 2 0
+  }
+  minDepth = 0
+  maxDepth = 1
+}
+{
+  counts = {
       "GOLD_ORE" {5 10} 2 0
       "ADAMANTIUM_ORE" {5 10} 2 0
   }
@@ -32,8 +39,9 @@
 {
   counts = {
       "GIANT_MUSHROOM" {5 10} 6 0
+      "STONE" {5 10} 2 0
   }
-  minDepth = 0
+  minDepth = 1
   maxDepth = 22
 }
 {
