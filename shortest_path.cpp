@@ -361,9 +361,7 @@ Dijkstra::Dijkstra(Rectangle bounds, vector<Vec2> from, int maxDist, function<do
     distanceTable.setDistance(v, 0);
     q.push(v);
   }
-  int numPopped = 0;
   while (!q.empty()) {
-    ++numPopped;
     Vec2 pos = q.top();
     double cdist = distanceTable.getDistance(pos);
     if (cdist > maxDist)
@@ -406,9 +404,7 @@ BfSearch::BfSearch(Rectangle bounds, Vec2 from, function<bool(Vec2)> entryFun, v
   queue<Vec2> q;
   distanceTable.setDistance(from, 0);
   q.push(from);
-  int numPopped = 0;
   while (!q.empty()) {
-    ++numPopped;
     Vec2 pos = q.front();
     q.pop();
     CHECK(!reachable.count(pos));

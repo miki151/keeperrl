@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include "dirent.h"
 
-DirectoryPath::DirectoryPath(string p) : path(move(p)) {
+DirectoryPath::DirectoryPath(string p) : path(std::move(p)) {
 }
 
 FilePath DirectoryPath::file(const std::string& f) const {

@@ -54,14 +54,12 @@ void FXManager::simulateStable(double timeDelta, int visibleFps, int simulateFps
   double drawDelta = 1.0 / visibleFps;
   double simulationDelta = 1.0 / simulateFps;
   int numSimSteps = simulateFps / visibleFps;
-  int numSteps = 0;
 
   // TODO: limit number of steps?
   while (timeDelta > drawDelta) {
     for (int n = 0; n < numSimSteps; n++)
       simulate(simulationDelta);
     timeDelta -= drawDelta;
-    numSteps++;
   }
 
   accumFrameTime = timeDelta;
