@@ -1416,7 +1416,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 }
 "STONE_BRIDGE" inherit "BRIDGE"
 {
-  viewId = { "bridge" ColorId GRAY }
+  viewId = { "bridge_stone" }
   fire = 0
   name = "bridge"
 }

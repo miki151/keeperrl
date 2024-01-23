@@ -98,8 +98,8 @@
 { "floor" "." ColorId LIGHT_GRAY }
 { "roof" "=" ColorId LIGHT_RED }
 { "floor_red" "." ColorId LIGHT_RED }
-{ viewId = "bridge" symbol = "_" color = ColorId BROWN
-  southSide = "bridge2" }
+{ viewId = "bridge" symbol = "_" color = ColorId BROWN wallConnections = true }
+{ viewId = "bridge_stone" symbol = "_" color = ColorId DARK_GRAY wallConnections = true }
 { "keeper_floor" "." ColorId WHITE }
 { "wood_floor1" "." ColorId LIGHT_BROWN }
 { "wood_floor2" "." ColorId BROWN }
