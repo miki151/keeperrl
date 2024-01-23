@@ -3256,6 +3256,7 @@ End
     attr = {
       DAMAGE 14
       DEFENSE 6
+      DIGGING 40
     }
     body = {
       type = Humanoid MEDIUM
@@ -3283,6 +3284,7 @@ End
       DAMAGE 18
       DEFENSE 12
       SPELL_DAMAGE 6
+      DIGGING 40
     }
     body = {
       type = Humanoid MEDIUM
@@ -3315,7 +3317,8 @@ End
     viewId = { "dark_elf_child" }
     attr = {
       DAMAGE 6
-      DEFENSE 6 
+      DEFENSE 6
+      DIGGING 30
     }
     body = {
       type = Humanoid SMALL
@@ -3340,6 +3343,7 @@ End
       DAMAGE 22
       DEFENSE 14
       SPELL_DAMAGE 36
+      DIGGING 40
     }
     body = {
       type = Humanoid MEDIUM
