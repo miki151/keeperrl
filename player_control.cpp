@@ -1555,7 +1555,7 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
         index,
         "In production:",
         true,
-        workshopInfo.getMinAttrFor(resourceTabs[chosenWorkshop->resourceIndex]),
+        resourceTabs.empty() ? 0 : workshopInfo.getMinAttrFor(resourceTabs[chosenWorkshop->resourceIndex]),
         factory->attrInfo.at(workshopInfo.attr).viewId
     };
   }
