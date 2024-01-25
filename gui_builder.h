@@ -97,6 +97,7 @@ class GuiBuilder {
   SGuiElem drawCost(pair<ViewId, int>, Color = Color::WHITE);
   SGuiElem drawMinimapIcons(const GameInfo&);
   optional<int> getNumber(const string& title, Vec2 position, Range, int initial);
+  bool yesOrNo(const string& question);
 
   struct BugReportInfo {
     string text;

@@ -2416,6 +2416,19 @@ SGuiElem GuiBuilder::drawTasksOverlay(const CollectiveInfo& info) {
           margin))));
 }
 
+bool GuiBuilder::yesOrNo(const string& question) {
+  bool ret = false;
+  bool exit = false;
+  ScriptedUIData data = ScriptedUIDataElems::Record {{
+    {"callback"_s, ScriptedUIDataElems::Callback{[&ret, &exit] { ret = true; exit = true; return true; }}},
+    {"message"_s, question},
+  }};
+  ScriptedUIState state;
+  auto ui = gui.scripted([&exit]{ exit = true; }, ScriptedUIId("yes_or_no"), data, state);
+  drawMiniMenu(std::move(ui), [&]{ return exit; }, renderer.getSize() / 2, 650, false);
+  return ret;
+}
+
 function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInfo::QueuedItemInfo& elem) {
   return [=] (Rectangle bounds) {
       auto lines = WL(getListBuilder, legendLineHeight);
@@ -2451,11 +2464,16 @@ function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInf
         idLine.addBackElem(WL(labelFun, [&increases, i, upgrade, cnt] {
             return "(" + toString(upgrade.used * cnt + increases[i]) + "/" + toString(upgrade.used * cnt + upgrade.count) + ")  "; },
             colorFun), 70);
-        auto callbackIncrease = [&increases, &totalUsed, i, upgrade, cnt, max = elem.maxUpgrades.second] {
+        auto callbackIncrease = [this, &exit, &increases, &totalUsed, i, upgrade, cnt, max = elem.maxUpgrades.second] {
           int toAdd = min(cnt, upgrade.count - increases[i]);
-          if (totalUsed < max) {
+          bool mustSplit = cnt > upgrade.count - increases[i];
+          if (toAdd > 0 && totalUsed < max && (!mustSplit ||
+              yesOrNo("Not enough upgrades for the entire batch. Apply only to " +
+                  toString(upgrade.count - increases[i]) + " out of " + toString(cnt) + " items?"))) {
             increases[i] += toAdd;
             ++totalUsed;
+            if (mustSplit)
+              exit = true;
           }
         };
         auto callbackDecrease = [&increases, &totalUsed, i, upgrade, cnt] {

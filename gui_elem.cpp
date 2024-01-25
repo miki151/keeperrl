@@ -570,7 +570,7 @@ SGuiElem GuiFactory::scripted(function<void()> endCallback, ScriptedUIId id, con
     ScriptedUIState& state) {
   if (!state.highlightedElem && !getSteamInput()->controllers.empty())
     state.highlightedElem = 0;
-  return SGuiElem(new DrawScripted(ScriptedContext{&renderer, this, endCallback, state, 0, 0}, id, std::move(data)));
+  return SGuiElem(new DrawScripted(ScriptedContext{&renderer, this, endCallback, state, 0, 0}, id, data));
 }
 
 SGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, Vec2 offset,
