@@ -16,7 +16,7 @@ class SoundLibrary {
 
   private:
   void addSounds(SoundId, const DirectoryPath&);
-  EnumMap<SoundId, vector<SoundBuffer>> sounds;
+  HashMap<SoundId, vector<SoundBuffer>> sounds;
   double volume;
   AudioDevice& audioDevice;
 };

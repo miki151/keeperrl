@@ -5,7 +5,7 @@
 Sound::Sound(SoundId i) : id(i) {
 }
 
-SERIALIZE_DEF(Sound, id, pitch)
+SERIALIZE_DEF(Sound, NAMED(id), OPTION(volume), OPTION(pitch))
 SERIALIZATION_CONSTRUCTOR_IMPL(Sound)
 
 Sound& Sound::setPosition(const Position& p) {
@@ -28,6 +28,10 @@ const optional<Position>& Sound::getPosition() const {
 
 double Sound::getPitch() const {
   return pitch;
+}
+
+double Sound::getVolume() const {
+  return volume;
 }
 
 #include "pretty_archive.h"

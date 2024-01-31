@@ -619,7 +619,7 @@ PCreature CreatureFactory::getIllusion(Creature* creature) {
           c.illusionViewObject = creature->getViewObject();
           c.illusionViewObject->setModifier(ViewObject::Modifier::INVISIBLE, false);
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
-          c.body->setDeathSound(SoundId::MISSED_ATTACK);
+          c.body->setDeathSound(SoundId("MISSED_ATTACK"));
           c.attr[AttrType("DAMAGE")] = 20; // just so it's not ignored by creatures
           c.attr[AttrType("DEFENSE")] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;

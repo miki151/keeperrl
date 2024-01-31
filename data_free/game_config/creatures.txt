@@ -2885,12 +2885,13 @@ End
     viewId = { "chicken" }
     attr = {
       DAMAGE 2
-      DEFENSE 2 
+      DEFENSE 2
     }
     body = {
       type = Bird SMALL
       minionFood = true
       weight = 3
+      ambientSound = 0.01 {"CHICKEN_AMBIENT" 0.2}
     }
     aiType = RANGED
     permanentEffects = {
@@ -3471,13 +3472,14 @@ End
     viewId = { "cow" }
     attr = {
       DAMAGE 10
-      DEFENSE 7 
+      DEFENSE 7
     }
     aiType = RANGED
     body = {
       type = FourLegged LARGE
       weight = 400
       minionFood = true
+      ambientSound = 0.01 {"COW_AMBIENT" 0.2}
     }
     noChase = true
     chatReactionFriendly = "\"my name is Cow\""
@@ -3491,12 +3493,12 @@ End
     viewId = { "donkey" }
     attr = {
       DAMAGE 10
-      DEFENSE 7 
+      DEFENSE 7
     }
     body = {
       type = FourLegged LARGE
       weight = 200
-      deathSound = DYING_DONKEY
+      deathSound = "DYING_DONKEY"
     }
     noChase = true
     name = {
@@ -3520,7 +3522,8 @@ End
     body = {
       type = FourLegged MEDIUM
       weight = 150
-      deathSound = DYING_PIG
+      deathSound = "DYING_PIG"
+      ambientSound = 0.01 {"PIG_AMBIENT" 0.2}
       minionFood = true
     }
     permanentEffects = {
@@ -3537,12 +3540,14 @@ End
     viewId = { "goat" }
     attr = {
       DAMAGE 10
-      DEFENSE 7 
+      DEFENSE 7
     }
     aiType = RANGED
     body = {
       type = FourLegged MEDIUM
       weight = 50
+      dyingSound = "DYING_GOAT"
+      ambientSound = 0.01 {"GOAT_AMBIENT" 0.2}
     }
     petReaction = "\"Meh-eh-eh!\""
     noChase = true
@@ -3561,7 +3566,7 @@ End
     viewId = { "jackal" }
     attr = {
       DAMAGE 15
-      DEFENSE 10 
+      DEFENSE 10
     }
     aiType = RANGED
     body = {
@@ -3577,7 +3582,7 @@ End
     viewId = { "deer" }
     attr = {
       DAMAGE 10
-      DEFENSE 10 
+      DEFENSE 10
     }
     aiType = RANGED
     body = {
@@ -4856,7 +4861,7 @@ End
     }
     body = {
       type = Humanoid MEDIUM
-      deathSound = SPELL_AIR_BLAST
+      deathSound = "SPELL_AIR_BLAST"
       intrinsicAttacks = {
         TORSO {{{ Intrinsic { "touch_attack" } "self destruct" 1 {
           attackType = HIT

@@ -58,10 +58,10 @@ optional<Sound> DestroyAction::getSound() const {
   switch (type) {
     case Type::FILL: return none;
     case Type::BASH:
-    case Type::BOULDER: return Sound(SoundId::BANG_DOOR);
-    case Type::CUT: return Sound(SoundId::TREE_CUTTING);
+    case Type::BOULDER: return Sound(SoundId("BANG_DOOR"));
+    case Type::CUT: return Sound(SoundId("TREE_CUTTING"));
     case Type::HOSTILE_DIG:
-    case Type::DIG: return Sound(SoundId::DIGGING);
+    case Type::DIG: return Sound(SoundId("DIGGING"));
    }
 }
 

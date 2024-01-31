@@ -1903,7 +1903,7 @@ static bool apply(const Effects::DirectedBlast& b, Position pos, Creature*) {
   for (int i : All(trajectory).reverse())
     airBlast(nullptr, pos, trajectory[i], pos.plus(b.dir * (b.length + 1)));
   pos.getGame()->addEvent(
-      EventInfo::Projectile{{FXName::AIR_BLAST}, ViewId("air_blast"), pos, pos.plus(b.dir * b.length), SoundId::SPELL_BLAST});
+      EventInfo::Projectile{{FXName::AIR_BLAST}, ViewId("air_blast"), pos, pos.plus(b.dir * b.length), SoundId("SPELL_BLAST")});
   return true;
 }
 

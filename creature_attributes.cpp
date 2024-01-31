@@ -194,9 +194,9 @@ optional<SoundId> CreatureAttributes::getAttackSound(AttackType type, bool damag
   if (!noAttackSound)
     switch (type) {
       case AttackType::HIT:
-      case AttackType::CRUSH: return damage ? SoundId::BLUNT_DAMAGE : SoundId::BLUNT_NO_DAMAGE;
+      case AttackType::CRUSH: return damage ? SoundId("BLUNT_DAMAGE") : SoundId("BLUNT_NO_DAMAGE");
       case AttackType::CUT:
-      case AttackType::STAB: return damage ? SoundId::BLADE_DAMAGE : SoundId::BLADE_NO_DAMAGE;
+      case AttackType::STAB: return damage ? SoundId("BLADE_DAMAGE") : SoundId("BLADE_NO_DAMAGE");
       default: return none;
     }
   else

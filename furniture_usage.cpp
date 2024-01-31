@@ -84,7 +84,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, const Furnitu
         c->addEffect(LastingEffect::TIED_UP, 100_visible);
         break;
       case BuiltinUsageId::TRAIN:
-        c->addSound(SoundId::MISSED_ATTACK);
+        c->addSound(SoundId("MISSED_ATTACK"));
         break;
       case BuiltinUsageId::PORTAL:
         usePortal(pos, c);

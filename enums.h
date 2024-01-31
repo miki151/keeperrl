@@ -70,7 +70,6 @@ enum class LastingEffect;
 enum class ItemIndex;
 
 enum class CollectiveWarning;
-enum class SoundId;
 enum class TutorialHighlight;
 
 enum class MessagePriority;
@@ -132,3 +131,4 @@ using EffectAIIntent = int;
 using SteamId = unsigned long long;
 using ScriptedUIId = string;
 using UnlockId = string;
+using SoundId = string;

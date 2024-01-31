@@ -1404,6 +1404,8 @@ void Creature::tick() {
   }
   if (steed)
     steed->tick();
+  if (auto sound = getBody().rollAmbientSound())
+    addSound(*sound);
 }
 
 bool Creature::processBuffs() {
@@ -2234,7 +2236,7 @@ CreatureAction Creature::whip(const Position& pos, double animChance) const {
     thirdPerson(PlayerMessage(getName().the() + " whips " + whipped->getName().the()));
     auto moveInfo = *self->spendTime();
     if (Random.chance(animChance)) {
-      addSound(SoundId::WHIP);
+      addSound(SoundId("WHIP"));
       self->addMovementInfo(moveInfo
           .setDirection(position.getDir(pos))
           .setType(MovementInfo::ATTACK)
@@ -2260,7 +2262,7 @@ void Creature::addSound(const Sound& sound1) const {
 CreatureAction Creature::construct(Vec2 direction, FurnitureType type) const {
   if (getPosition().plus(direction).canConstruct(type))
     return CreatureAction(this, [=](Creature* self) {
-        addSound(Sound(SoundId::DIGGING).setPitch(0.5));
+        addSound(Sound(SoundId("DIGGING")).setPitch(0.5));
         getPosition().plus(direction).construct(type, self);
         self->spendTime();
       });

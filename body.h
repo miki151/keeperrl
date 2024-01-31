@@ -91,6 +91,7 @@ class Body {
   int numBodyParts(BodyPart) const;
   void getBadAdjectives(vector<AdjectiveInfo>&) const;
   optional<Sound> getDeathSound() const;
+  optional<Sound> rollAmbientSound() const;
   optional<AnimationId> getDeathAnimation(const ContentFactory*) const;
   bool injureBodyPart(Creature*, BodyPart, bool drop);
 
@@ -149,6 +150,7 @@ class Body {
   double SERIAL(health) = 1;
   bool SERIAL(minionFood) = false;
   optional<SoundId> SERIAL(deathSound);
+  optional<pair<double, Sound>> SERIAL(ambientSound);
   EnumMap<BodyPart, vector<IntrinsicAttack>> SERIAL(intrinsicAttacks);
   Size SERIAL(minPushSize);
   bool SERIAL(noHealth) = false;

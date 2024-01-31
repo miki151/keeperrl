@@ -7,8 +7,8 @@
 #include "audio_device.h"
 
 SoundLibrary::SoundLibrary(AudioDevice& audio, const DirectoryPath& path) : audioDevice(audio) {
-  for (SoundId id : ENUM_ALL(SoundId))
-    addSounds(id, path.subdirectory(toLower(EnumInfo<SoundId>::getString(id))));
+  for (auto subdir : path.getSubDirs())
+    addSounds(subdir, path.subdirectory(subdir));
 }
 
 void SoundLibrary::addSounds(SoundId id, const DirectoryPath& path) {
@@ -20,10 +20,10 @@ void SoundLibrary::addSounds(SoundId id, const DirectoryPath& path) {
 void SoundLibrary::playSound(const Sound& s) {
   if (volume < 0.0001)
     return;
-  if (int numSounds = sounds[s.getId()].size()) {
-    int ind = Random.get(numSounds);
-    audioDevice.play(sounds[s.getId()][ind], volume, s.getPitch());
-  }
+  if (auto clips = getReferenceMaybe(sounds, toLower(s.getId())))
+    audioDevice.play(Random.choose(*clips), s.getVolume() * volume, s.getPitch());
+  else
+    USER_INFO << "Sound not found: " << toLower(s.getId());
 }
 
 void SoundLibrary::setVolume(int v) {

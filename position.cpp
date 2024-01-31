@@ -1017,14 +1017,14 @@ void Position::throwItem(vector<PItem> item, const Attack& attack, int maxDist, 
         item[0]->onHitSquareMessage(pos, attack, item.size());
         trajectory.pop_back();
         getGame()->addEvent(
-            EventInfo::Projectile{none, item[0]->getViewObject().id(), *this, prev, SoundId::SHOOT_BOW});
+            EventInfo::Projectile{none, item[0]->getViewObject().id(), *this, prev, SoundId("SHOOT_BOW")});
         if (!item[0]->isDiscarded())
           prev.dropItems(std::move(item));
         return;
       }
       if (++cnt > maxDist || pos.getCreature() || pos == trajectory.back()) {
         getGame()->addEvent(
-            EventInfo::Projectile{none, item[0]->getViewObject().id(), *this, pos, SoundId::SHOOT_BOW});
+            EventInfo::Projectile{none, item[0]->getViewObject().id(), *this, pos, SoundId("SHOOT_BOW")});
         pos.modSquare()->onItemLands(pos, std::move(item), attack);
         return;
       }

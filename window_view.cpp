@@ -528,12 +528,13 @@ void WindowView::playSounds(const CreatureView* view) {
   auto curTime = clock->getRealMillis();
   const milliseconds soundCooldown {70};
   for (auto& sound : soundQueue) {
-    auto lastTime = lastPlayed[sound.getId()];
+    auto id = toLower(sound.getId());
+    auto lastTime = getValueMaybe(lastPlayed, id);
     if ((!lastTime || curTime > *lastTime + soundCooldown) && (!sound.getPosition() ||
         (sound.getPosition()->isSameLevel(view->getCreatureViewLevel()) &&
          sound.getPosition()->getCoord().inRectangle(area)))) {
       soundLibrary->playSound(sound);
-      lastPlayed[sound.getId()] = curTime;
+      lastPlayed[id] = curTime;
     }
   }
   soundQueue.clear();

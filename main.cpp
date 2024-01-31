@@ -436,7 +436,7 @@ static int keeperMain(po::parser& commandLineFlags) {
         soundLibrary = new SoundLibrary(audioDevice, paidDataPath.subdirectory("sound"));
         options.addTrigger(OptionId::SOUND, [soundLibrary](int volume) {
           soundLibrary->setVolume(volume);
-          soundLibrary->playSound(SoundId::SPELL_DECEPTION);
+          soundLibrary->playSound(SoundId("SPELL_DECEPTION"));
         });
         soundLibrary->setVolume(options.getIntValue(OptionId::SOUND));
       }

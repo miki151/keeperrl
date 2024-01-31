@@ -4,7 +4,7 @@
     name = "automaton"
     applyMsgFirstPerson = "assemble the automaton"
     applyMsgThirdPerson = "assembles an automaton"
-    applySound = TRAP_ARMING
+    applySound = "TRAP_ARMING"
     weight = 30
     applyTime = 3
     uses = 1

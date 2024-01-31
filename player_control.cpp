@@ -3105,7 +3105,7 @@ void PlayerControl::handleDestructionOrder(Position position, HighlightType high
   if (markedToDig && selection != Selection::SELECT) {
     if (!dryRun) {
       collective->cancelMarkedTask(position);
-      getView()->addSound(SoundId::DIG_UNMARK);
+      getView()->addSound(SoundId("DIG_UNMARK"));
     }
     selection = Selection::DESELECT;
   } else
@@ -3114,7 +3114,7 @@ void PlayerControl::handleDestructionOrder(Position position, HighlightType high
       if (furniture->canDestroy(destructionType)) {
         if (!dryRun) {
           collective->orderDestruction(position, destructionType);
-          getView()->addSound(SoundId::DIG_MARK);
+          getView()->addSound(SoundId("DIG_MARK"));
         }
         selection = Selection::SELECT;
       }
@@ -3159,7 +3159,7 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
         auto f = collective->getConstructions().getFurniture(position, layer);
         if (f && !f->isBuilt(position, layer)) {
           collective->removeUnbuiltFurniture(position, layer);
-          getView()->addSound(SoundId::DIG_UNMARK);
+          getView()->addSound(SoundId("DIG_UNMARK"));
           selection = Selection::SELECT;
         } else
         if (collective->getKnownTiles().isKnown(position) && !position.isBurning()) {
@@ -3171,7 +3171,7 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
           if (auto f = position.getFurniture(layer))
             if (f->canRemoveInstantly())
               position.removeFurniture(f);
-          getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
+          getView()->addSound(SoundId("REMOVE_CONSTRUCTION"));
           updateSquareMemory(position);
           if (otherPos)
             updateSquareMemory(*otherPos);
@@ -3282,12 +3282,12 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
           (!info.limit || *info.limit > totalCount)) {
         if (!dryRun) {
           collective->addFurniture(position, info.types[nextIndex], info.cost, info.noCredit);
-          getView()->addSound(SoundId::ADD_CONSTRUCTION);
+          getView()->addSound(SoundId("ADD_CONSTRUCTION"));
         }
         selection = Selection::SELECT;
       } else if (removed) {
         if (!dryRun)
-          getView()->addSound(SoundId::DIG_UNMARK);
+          getView()->addSound(SoundId("DIG_UNMARK"));
         selection = Selection::DESELECT;
       }
     }

@@ -38,7 +38,7 @@ void Body::serializeImpl(Archive& ar, const unsigned int version) {
   ar(OPTION(xhumanoid), OPTION(size), OPTION(weight), OPTION(bodyParts), OPTION(injuredBodyParts), OPTION(lostBodyParts));
   ar(OPTION(material), OPTION(health), OPTION(minionFood), NAMED(deathSound), OPTION(intrinsicAttacks), OPTION(minPushSize));
   ar(OPTION(noHealth), OPTION(fallsApart), OPTION(drops), OPTION(canCapture), OPTION(xCanPickUpItems), OPTION(droppedPartUpgrade));
-  ar(OPTION(corpseIngredientType), OPTION(canBeRevived), OPTION(overrideDiningFurniture));
+  ar(OPTION(corpseIngredientType), OPTION(canBeRevived), OPTION(overrideDiningFurniture), OPTION(ambientSound));
 }
 
 template <class Archive>
@@ -61,7 +61,7 @@ static int getDefaultIntrinsicDamage(Body::Size size) {
 
 Body::Body(bool humanoid, BodyMaterialId m, Size size) : xhumanoid(humanoid), size(size),
     weight(getDefaultWeight(size)), material(m),
-    deathSound(humanoid ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH),
+    deathSound(humanoid ? SoundId("HUMANOID_DEATH") : SoundId("BEAST_DEATH")),
     minPushSize(Size((int)size + 1)) {
   if (humanoid)
     setHumanoidBodyParts(getDefaultIntrinsicDamage(size));
@@ -888,6 +888,12 @@ optional<Sound> Body::getDeathSound() const {
     return Sound(*deathSound).setPitch(getDeathSoundPitch(size));
 }
 
+optional<Sound> Body::rollAmbientSound() const {
+  if (ambientSound && Random.chance(ambientSound->first))
+    return ambientSound->second;
+  return none;
+}
+
 optional<AnimationId> Body::getDeathAnimation(const ContentFactory* factory) const {
   if (isHumanoid() && hasAnyHealth(factory))
     return AnimationId::DEATH;
@@ -935,23 +941,23 @@ struct BodyTypeReader {
     switch (type) {
       case BodyType::Humanoid:
         body->setHumanoidBodyParts(getDefaultIntrinsicDamage(size));
-        body->setDeathSound(SoundId::HUMANOID_DEATH);
+        body->setDeathSound(SoundId("HUMANOID_DEATH"));
         body->setHumanoid(true);
         break;
       case BodyType::HumanoidLike:
         body->setHumanoidBodyParts(getDefaultIntrinsicDamage(size));
-        body->setDeathSound(SoundId::BEAST_DEATH);
+        body->setDeathSound(SoundId("BEAST_DEATH"));
         break;
       case BodyType::Bird:
         body->setBirdBodyParts(getDefaultIntrinsicDamage(size));
-        body->setDeathSound(SoundId::BEAST_DEATH);
+        body->setDeathSound(SoundId("BEAST_DEATH"));
         break;
       case BodyType::FourLegged:
         body->setHorseBodyParts(getDefaultIntrinsicDamage(size));
-        body->setDeathSound(SoundId::BEAST_DEATH);
+        body->setDeathSound(SoundId("BEAST_DEATH"));
         break;
       default:
-        body->setDeathSound(SoundId::BEAST_DEATH);
+        body->setDeathSound(SoundId("BEAST_DEATH"));
         break;
     }
   }
