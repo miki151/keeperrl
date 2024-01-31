@@ -3546,7 +3546,7 @@ End
     body = {
       type = FourLegged MEDIUM
       weight = 50
-      dyingSound = "DYING_GOAT"
+      deathSound = "DYING_GOAT"
       ambientSound = 0.01 {"GOAT_AMBIENT" 0.2}
     }
     petReaction = "\"Meh-eh-eh!\""
