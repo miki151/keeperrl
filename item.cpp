@@ -392,7 +392,7 @@ const optional<string>& Item::getIngredientType() const {
 
 void Item::apply(Creature* c, bool noSound) {
   if (attributes->applySound && !noSound)
-    c->addSound(*attributes->applySound);
+    c->getPosition().addSound(*attributes->applySound);
   applySpecial(c);
 }
 

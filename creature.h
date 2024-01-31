@@ -322,7 +322,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   int getCombatExperienceCap() const;
   int getRawAttr(AttrType, int combatExp) const;
 
-  void addSound(const Sound&) const;
   void updateViewObject(const ContentFactory*);
   void updateViewObjectFlanking();
   void swapPosition(Vec2 direction, bool withExcuseMe = true);

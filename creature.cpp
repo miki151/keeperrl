@@ -254,7 +254,7 @@ CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
     return CreatureAction("You can't "_s + verb + " at yourself.");
   return CreatureAction(this, [=] (Creature* c) {
     if (auto sound = spell->getSound())
-      c->addSound(*sound);
+      c->position.addSound(*sound);
     spell->addMessage(c);
     if (spell->getType() == SpellType::SPELL)
       getGame()->getStatistics().add(StatId::SPELL_CAST);
@@ -1405,7 +1405,7 @@ void Creature::tick() {
   if (steed)
     steed->tick();
   if (auto sound = getBody().rollAmbientSound())
-    addSound(*sound);
+    position.addSound(*sound);
 }
 
 bool Creature::processBuffs() {
@@ -1763,7 +1763,7 @@ bool Creature::takeDamage(const Attack& attack) {
   double damage = getDamage((double) attack.strength / defense);
   if (attack.withSound)
     if (auto sound = attributes->getAttackSound(attack.type, damage > 0))
-      addSound(*sound);
+      position.addSound(*sound);
   bool returnValue = damage > 0;
   if (damage > 0) {
     bool canCapture = capture && attack.attacker;
@@ -2040,7 +2040,7 @@ void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
   if (drops == DropType::EVERYTHING) {
     position.dropItems(generateCorpse(factory, game));
     if (auto sound = getBody().getDeathSound())
-      addSound(*sound);
+      position.addSound(*sound);
     if (getBody().hasHealth(HealthType::FLESH, factory)) {
       auto addBlood = [](Position v) {
         for (auto f : v.modFurniture())
@@ -2236,7 +2236,7 @@ CreatureAction Creature::whip(const Position& pos, double animChance) const {
     thirdPerson(PlayerMessage(getName().the() + " whips " + whipped->getName().the()));
     auto moveInfo = *self->spendTime();
     if (Random.chance(animChance)) {
-      addSound(SoundId("WHIP"));
+      position.addSound(SoundId("WHIP"));
       self->addMovementInfo(moveInfo
           .setDirection(position.getDir(pos))
           .setType(MovementInfo::ATTACK)
@@ -2251,18 +2251,10 @@ CreatureAction Creature::whip(const Position& pos, double animChance) const {
   });
 }
 
-void Creature::addSound(const Sound& sound1) const {
-  if (auto game = getGame()) {
-    Sound sound(sound1);
-    sound.setPosition(getPosition());
-    game->getView()->addSound(sound);
-  }
-}
-
 CreatureAction Creature::construct(Vec2 direction, FurnitureType type) const {
   if (getPosition().plus(direction).canConstruct(type))
     return CreatureAction(this, [=](Creature* self) {
-        addSound(Sound(SoundId("DIGGING")).setPitch(0.5));
+        position.addSound(Sound(SoundId("DIGGING")).setPitch(0.5));
         getPosition().plus(direction).construct(type, self);
         self->spendTime();
       });
