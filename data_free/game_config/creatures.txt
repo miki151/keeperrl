@@ -3930,7 +3930,7 @@ End
     viewId = { "wolf" }
     attr = {
       DAMAGE 18
-      DEFENSE 11 
+      DEFENSE 11
     }
     body = {
       type = FourLegged MEDIUM
@@ -3939,6 +3939,7 @@ End
         LEG  {{itemType = { Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
         HEAD {{itemType = { Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
       }
+      deathSound = "DOG_DEATH"
     }
     permanentEffects = {
       NIGHT_VISION 1
@@ -3957,7 +3958,7 @@ End
     viewId = { "skeleton_wolf" }
     attr = {
       DAMAGE 18
-      DEFENSE 11 
+      DEFENSE 11
     }
     body = {
       type = FourLegged LARGE
@@ -3986,7 +3987,7 @@ End
     viewId = { "feral_child" }
     attr = {
       DAMAGE 25
-      DEFENSE 14 
+      DEFENSE 14
     }
     body = {
       type = Humanoid MEDIUM
@@ -4046,7 +4047,7 @@ End
     viewId = { "dog" }
     attr = {
       DAMAGE 18
-      DEFENSE 7 
+      DEFENSE 7
     }
     body = {
       type = FourLegged MEDIUM
@@ -4054,6 +4055,8 @@ End
         HEAD {{{ Intrinsic { "bite_attack" }  "fangs" 4 { attackType = BITE attackMsg = BITE } }}}
       }
       weight = 25
+      ambientSound = 0.01 {"DOG_AMBIENT" 0.2}
+      deathSound = "DOG_DEATH"
     }
     aiType = RANGED
     name = {
