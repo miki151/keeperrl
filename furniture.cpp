@@ -55,7 +55,8 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltInfo), NAMED(dissolveTo));
   ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), NAMED(freezeTo), NAMED(fillPit), NAMED(itemsRemovedEffect));
   ar(OPTION(eyeball), OPTION(storageIds), OPTION(hidesItems), NAMED(emptyViewId), OPTION(diningFurniture));
-  ar(OPTION(usagePredicate), OPTION(minedAchievement), OPTION(removeInstantly), OPTION(buildingFloor));
+  ar(OPTION(usagePredicate), OPTION(minedAchievement), OPTION(removeInstantly), OPTION(buildingFloor), OPTION(usageSound));
+  ar(OPTION(walkIntoSound));
 }
 
 template <class Archive>
@@ -301,6 +302,8 @@ void Furniture::click(Position pos) const {
 void Furniture::use(Position pos, Creature* c) const {
   if (usageType)
     FurnitureUsage::handle(*usageType, pos, this, c);
+  if (usageSound)
+    pos.addSound(*usageSound);
 }
 
 bool Furniture::canUse(const Creature* c) const {
@@ -446,8 +449,12 @@ void Furniture::onCreatureWalkedOver(Position pos, Vec2 direction) const {
 }
 
 void Furniture::onCreatureWalkedInto(Position pos, Vec2 direction) const {
-  if (walkIntoFX)
-    pos.getGame()->addEvent((EventInfo::FX{pos, *walkIntoFX, direction}));
+  auto game = pos.getGame();
+  if (walkIntoFX) {
+    game->addEvent((EventInfo::FX{pos, *walkIntoFX, direction}));
+  }
+  if (walkIntoSound)
+    pos.addSound(*walkIntoSound);
 }
 
 bool Furniture::onBloodNear(Position pos) {
@@ -487,6 +494,7 @@ optional<FurnitureType> Furniture::getUpgrade() const {
 optional<FXVariantName> Furniture::getUsageFX() const {
   return usageFX;
 }
+
 
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
   if (droppedItems) {

@@ -411,9 +411,11 @@ optional<FurnitureClickType> Position::getClickType() const {
 
 void Position::addSound(const Sound& sound1) const {
   PROFILE;
-  Sound sound(sound1);
-  sound.setPosition(*this);
-  getGame()->getView()->addSound(sound);
+  if (auto game = getGame()) {
+    Sound sound(sound1);
+    sound.setPosition(*this);
+    game->getView()->addSound(sound);
+  }
 }
 
 string Position::getName() const {

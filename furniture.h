@@ -20,6 +20,7 @@
 #include "lasting_or_buff.h"
 #include "creature_predicate.h"
 #include "achievement_id.h"
+#include "sound.h"
 
 class TribeId;
 class Creature;
@@ -242,7 +243,9 @@ class Furniture {
   optional<FXInfo> SERIAL(tryDestroyFX);
   optional<FXInfo> SERIAL(walkOverFX);
   optional<FXInfo> SERIAL(walkIntoFX);
+  optional<Sound> SERIAL(walkIntoSound);
   optional<FXVariantName> SERIAL(usageFX);
+  optional<Sound> SERIAL(usageSound);
   bool SERIAL(hostileSpell) = false;
   optional<FurnitureEffectInfo> SERIAL(lastingEffect);
   optional<FurnitureType> SERIAL(freezeTo);
