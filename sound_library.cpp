@@ -17,13 +17,16 @@ void SoundLibrary::addSounds(SoundId id, const DirectoryPath& path) {
       sounds[id].emplace_back(file);
 }
 
-void SoundLibrary::playSound(const Sound& s) {
+milliseconds SoundLibrary::playSound(const Sound& s) {
   if (volume < 0.0001)
-    return;
-  if (auto clips = getReferenceMaybe(sounds, toLower(s.getId())))
-    audioDevice.play(Random.choose(*clips), s.getVolume() * volume, s.getPitch());
-  else
+    return milliseconds{1000};
+  if (auto clips = getReferenceMaybe(sounds, toLower(s.getId()))) {
+    auto& sound = Random.choose(*clips);
+    audioDevice.play(sound, s.getVolume() * volume, s.getPitch());
+    return audioDevice.getDuration(sound);
+  } else
     USER_INFO << "Sound not found: " << toLower(s.getId());
+  return milliseconds{1000};
 }
 
 void SoundLibrary::setVolume(int v) {

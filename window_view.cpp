@@ -526,15 +526,14 @@ void WindowView::updateView(CreatureView* view, bool noRefresh) {
 void WindowView::playSounds(const CreatureView* view) {
   Rectangle area = mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds(), mapGui->getScreenPos());
   auto curTime = clock->getRealMillis();
-  const milliseconds soundCooldown {70};
   for (auto& sound : soundQueue) {
     auto id = toLower(sound.getId());
-    auto lastTime = getValueMaybe(lastPlayed, id);
-    if ((!lastTime || curTime > *lastTime + soundCooldown) && (!sound.getPosition() ||
+    auto nextTime = getValueMaybe(nextPlayed, id);
+    if ((!nextTime || curTime > *nextTime) && (!sound.getPosition() ||
         (sound.getPosition()->isSameLevel(view->getCreatureViewLevel()) &&
          sound.getPosition()->getCoord().inRectangle(area)))) {
-      soundLibrary->playSound(sound);
-      lastPlayed[id] = curTime;
+      auto duration = soundLibrary->playSound(sound);
+      nextPlayed[id] = curTime + duration;
     }
   }
   soundQueue.clear();

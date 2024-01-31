@@ -229,7 +229,7 @@ class WindowView: public View {
   atomic<int> zoomUI;
   void playSounds(const CreatureView*);
   vector<Sound> soundQueue;
-  HashMap<SoundId, milliseconds> lastPlayed;
+  HashMap<SoundId, milliseconds> nextPlayed;
   SoundLibrary* soundLibrary;
   deque<string> messageLog;
   void propagateMousePosition(const vector<SGuiElem>&);

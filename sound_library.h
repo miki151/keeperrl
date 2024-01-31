@@ -11,7 +11,7 @@ class DirectoryPath;
 class SoundLibrary {
   public:
   SoundLibrary(AudioDevice&, const DirectoryPath&);
-  void playSound(const Sound&);
+  milliseconds playSound(const Sound&);
   void setVolume(int); // between 1..100
 
   private:
