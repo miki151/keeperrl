@@ -874,10 +874,10 @@ vector<AttackLevel> Body::getAttackLevels() const {
 
 static double getDeathSoundPitch(Body::Size size) {
   switch (size) {
-    case Body::Size::HUGE: return 0.6;
-    case Body::Size::LARGE: return 0.9;
-    case Body::Size::MEDIUM: return 1.5;
-    case Body::Size::SMALL: return 3.3;
+    case Body::Size::HUGE: return 1.0;
+    case Body::Size::LARGE: return 1.3;
+    case Body::Size::MEDIUM: return 2.5;
+    case Body::Size::SMALL: return 5.3;
   }
 }
 
