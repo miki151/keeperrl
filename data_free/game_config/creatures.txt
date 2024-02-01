@@ -3894,12 +3894,13 @@ End
     viewId = { "raven" }
     attr = {
       DAMAGE 2
-      DEFENSE 12 
+      DEFENSE 12
     }
     body = {
       type = Bird SMALL
       weight = 0.5
       deathSound = none
+      ambientSound = 0.01 {"CROW_AMBIENT" 0.2}
     }
     aiType = RANGED
     noChase = true
@@ -3918,12 +3919,13 @@ End
     viewId = { "vulture" }
     attr = {
       DAMAGE 2
-      DEFENSE 12 
+      DEFENSE 12
     }
     body = {
       type = Bird SMALL
       weight = 5
       deathSound = none
+      ambientSound = 0.01 {"VULTURE_AMBIENT" 0.2}
     }
     noChase = true
     aiType = RANGED
@@ -3946,6 +3948,7 @@ End
         HEAD {{itemType = { Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
       }
       deathSound = "DOG_DEATH"
+      ambientSound = 0.01 {"WOLF_AMBIENT" 0.2}
     }
     permanentEffects = {
       NIGHT_VISION 1
