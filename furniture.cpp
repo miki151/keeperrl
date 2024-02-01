@@ -56,7 +56,7 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), NAMED(freezeTo), NAMED(fillPit), NAMED(itemsRemovedEffect));
   ar(OPTION(eyeball), OPTION(storageIds), OPTION(hidesItems), NAMED(emptyViewId), OPTION(diningFurniture));
   ar(OPTION(usagePredicate), OPTION(minedAchievement), OPTION(removeInstantly), OPTION(buildingFloor), OPTION(usageSound));
-  ar(OPTION(walkIntoSound));
+  ar(OPTION(walkIntoSound), OPTION(destroySound));
 }
 
 template <class Archive>
@@ -154,12 +154,12 @@ void Furniture::destroy(Position pos, const DestroyAction& action, Creature* des
       destroyedBy);
   if (effect)
     effect->apply(pos);
+  if (destroySound)
+    pos.addSound(*destroySound);
 }
 
 void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& action) {
   if (auto& info = destroyedInfo[action.getType()]) {
-    if (auto s = action.getSound())
-      pos.addSound(*s);
     double damage = action.getDamage(c);
     info->health -= damage / info->strength;
     updateViewObject();
@@ -168,6 +168,9 @@ void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& a
       pos.getGame()->addEvent(EventInfo::FX{pos, *tryDestroyFX});
     if (info->health <= 0)
       destroy(pos, action, c);
+    else
+      if (auto s = action.getSound())
+        pos.addSound(*s);
   }
 }
 
@@ -590,8 +593,8 @@ bool Furniture::acidDamage(Position pos) {
     PFurniture replace = pos.getGame()->getContentFactory()->furniture.getFurniture(*dissolveTo, getTribe());
     pos.removeFurniture(this, std::move(replace));
     return true;
-  } else
-  if (destroyedInfo[DestroyAction::Type::BASH]) {
+  }
+  else if (destroyedInfo[DestroyAction::Type::BASH]) {
     destroy(pos, DestroyAction(DestroyAction::Type::BASH));
     return true;
   }
@@ -606,8 +609,8 @@ bool Furniture::fireDamage(Position pos, bool withMessage) {
       replace = pos.getGame()->getContentFactory()->furniture.getFurniture(*meltInfo->meltTo, getTribe());
     pos.removeFurniture(this, std::move(replace));
     return true;
-  } else
-  if (fire) {
+  }
+  else if (fire) {
     bool burning = fire->isBurning();
     fire->set();
     if (!burning && fire->isBurning()) {

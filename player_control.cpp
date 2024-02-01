@@ -3171,7 +3171,6 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
           if (auto f = position.getFurniture(layer))
             if (f->canRemoveInstantly())
               position.removeFurniture(f);
-          getView()->addSound(SoundId("REMOVE_CONSTRUCTION"));
           updateSquareMemory(position);
           if (otherPos)
             updateSquareMemory(*otherPos);

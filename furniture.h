@@ -246,6 +246,7 @@ class Furniture {
   optional<Sound> SERIAL(walkIntoSound);
   optional<FXVariantName> SERIAL(usageFX);
   optional<Sound> SERIAL(usageSound);
+  optional<Sound> SERIAL(destroySound) = Sound(SoundId("REMOVE_CONSTRUCTION"));
   bool SERIAL(hostileSpell) = false;
   optional<FurnitureEffectInfo> SERIAL(lastingEffect);
   optional<FurnitureType> SERIAL(freezeTo);
