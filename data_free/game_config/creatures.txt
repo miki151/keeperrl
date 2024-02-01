@@ -3430,6 +3430,7 @@ End
     body = {
       type = FourLegged LARGE
       weight = 500
+      ambientSound = 0.01 {"HORSE_AMBIENT" 0.2}
     }
     permanentEffects = {
       STEED 1

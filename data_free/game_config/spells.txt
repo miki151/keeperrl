@@ -301,7 +301,7 @@ End
   symbol = "🐎"
   effect = Name "gallop" ApplyToSteed Lasting SPEED
   cooldown = 50
-  sound = "SPELL_SPEED_SELF"
+  sound = "HORSE_GALLOP"
   message = "gallop" "gallops"
 }
 "slow"
