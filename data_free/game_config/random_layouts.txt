@@ -1,7 +1,7 @@
 Def AnyWall() Or(On("wood_wall"), On("castle_wall")) End
 Def AnyFloor() And(Not AnyWall(), Or(On("stone_floor"), On("wood_floor"), On("floor"))) End
 Def AnyDoor() Or(On("wood_door"), On("iron_door"), On("iron_gate"), On("wood_gate")) End
-Def AnyWater() Or(On("lava"), On("water")) End
+Def AnyWater() Or(On("lava"), On("water"), On("underground_water")) End
 
 Def NextTo(Pred)
   Area(1, Pred)
@@ -18,7 +18,7 @@ Def Connector()
     (10, And(On("wood_wall"), Not On("no_dig")), { Remove("wood_wall") Set("clear_middle", "wood_door")}),
     (10, And(On("castle_wall"), Not On("no_dig")), { Remove("castle_wall") Set("clear_middle", "iron_door")}),
     (8, On("lava"), Set("stone_bridge")),
-    (8, On("water"), Set("wood_bridge")),
+    (8, Or(On("water"), On("underground_water")), Set("wood_bridge")),
     (6, And(Not AnyWall(), Not AnyWater(), Not AnyFloor(), Not On("no_dig"), On("room_wall")),
         Filter(And(Chance(0.4), Not NextTo(On("wood_door"))), Reset("wood_door"), Reset("floor"))),
     (4, And(Not AnyWall(), Not AnyFloor(), Or(On("rock"), On("hard_rock")),
@@ -685,7 +685,7 @@ Def AdoxieTemple() {
     )),
     {
       CellularAutomaton(Set("lava"), 0.55)
-      Place( 
+      Place(
         {7 7}
         {
           Inside(1, {
@@ -711,14 +711,14 @@ End
 "dungeon1" Dungeon1()
 "dungeon2" Dungeon2()
 "dungeon3" Dungeon3()
-"dungeon4" Dungeon4("water")
+"dungeon4" Dungeon4("underground_water")
 "dungeon"
   Choose(
     Dungeon1(),
     Dungeon2(),
     Dungeon3(),
     Dungeon4("lava"),
-    Dungeon4("water")
+    Dungeon4("underground_water")
   )
 
 Def ZLevelLakes(Type) {
@@ -730,7 +730,7 @@ Def ZLevelLakes(Type) {
 End
 
 "z_level_lava" ZLevelLakes("lava")
-"z_level_water" ZLevelLakes("water")
+"z_level_water" ZLevelLakes("underground_water")
 
 Def ZLevelMostlyFull(WaterType) {
   Set("hard_rock", "resources")
@@ -750,7 +750,7 @@ Def ZLevelCaverns(FloorType, Amount) {
 End
 
 "z_level_caverns" ZLevelCaverns("floor", 0.45)
-"z_level_flooded_caverns" ZLevelCaverns("water", 0.55)
+"z_level_flooded_caverns" ZLevelCaverns("underground_water", 0.55)
 
 Def MiniWorkshop() {
   Reset("floor")
@@ -795,10 +795,10 @@ Def ZLevelMiniFeatures(WaterType) {
 }
 End
 
-"z_level_minifeatures" ZLevelMiniFeatures("water")
+"z_level_minifeatures" ZLevelMiniFeatures("underground_water")
 
 Def ZLevelBase(WaterType)
-  Choose(ZLevelMiniFeatures(WaterType), ZLevelCaverns("floor", 0.45), ZLevelCaverns("water", 0.55))
+  Choose(ZLevelMiniFeatures(WaterType), ZLevelCaverns("floor", 0.45), ZLevelCaverns("underground_water", 0.55))
 End
 
 Def MiniGargoyleRoom() {
@@ -885,17 +885,17 @@ End
 
 "z_level_full" {
   Set("set_territory") # Even though its an empty level, some code will crash if territory is empty
-  Choose(ZLevelMostlyFull("water"), ZLevelMostlyFull("lava"))
+  Choose(ZLevelMostlyFull("underground_water"), ZLevelMostlyFull("lava"))
 }
 
 "z_level_full_only_water" {
   Set("set_territory") # Even though its an empty level, some code will crash if territory is empty
-  ZLevelMostlyFull("water")
+  ZLevelMostlyFull("underground_water")
   Maybe(0.5, Place({12 12}, EnchantedPool(), 1, On("hard_rock")))
 }
 
 "z_level_vault" {
-  Choose(ZLevelBase("water"), ZLevelBase("lava"))
+  Choose(ZLevelBase("underground_water"), ZLevelBase("lava"))
   Inside(5, Place({4 7}, {
     Reset("floor", "set_territory")
     Margin(TOP, 1, Set("workshop"),
@@ -909,21 +909,21 @@ End
 }
 
 "z_level_cave" {
-  Choose(ZLevelBase("water"), ZLevelBase("lava"))
+  Choose(ZLevelBase("underground_water"), ZLevelBase("lava"))
   Inside(5, Place({10 10}, CellularAutomaton(Reset("floor", "set_territory"), 0.85), 1, On("hard_rock")))
   Connector()
   Filter(Not On("set_territory"), Set("no_territory"))
 }
 
 "z_level_cave_only_water" {
-  Choose(ZLevelBase("water"))
+  Choose(ZLevelBase("underground_water"))
   Inside(5, Place({10 10}, CellularAutomaton(Reset("floor", "set_territory"), 0.85), 1, On("hard_rock")))
   Connector()
   Filter(Not On("set_territory"), Set("no_territory"))
 }
 
 "z_level_dungeon" {
-  Choose(ZLevelBase("water"), {
+  Choose(ZLevelBase("underground_water"), {
     ZLevelBase("lava")
     Maybe(0.25, Place({1 1},
       {
@@ -1034,9 +1034,9 @@ End
 "zombie_crypt" ZombieCrypt()
 
 Def KrakenPrison() {
-  CellularAutomaton(Reset("water"), 0.65)
+  CellularAutomaton(Reset("underground_water"), 0.65)
   Position(MIDDLE, {6 6}, {Reset("stone_floor") Border(1, Reset("floor", "castle_wall"))})
-  Place(({1 1} Reset("kraken_water") 10 On("water")))
+  Place(({1 1} Reset("kraken_water") 10 On("underground_water")))
 }
 End
 

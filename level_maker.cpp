@@ -2508,12 +2508,12 @@ static void generateResources(RandomGen& random, ResourceCounts resourceCounts, 
 }
 
 
-static FurnitureType getWaterFurniture(WaterType waterType) {
+static FurnitureType getWaterFurniture(WaterType waterType, bool underground) {
   switch (waterType) {
     case WaterType::ICE:
       return FurnitureType("ICE");
     case WaterType::WATER:
-      return FurnitureType("WATER");
+      return underground ? FurnitureType("UNDERGROUND_WATER") : FurnitureType("WATER");
     case WaterType::LAVA:
       return FurnitureType("MAGMA");
     case WaterType::TAR:
@@ -2530,7 +2530,7 @@ namespace {
 
     virtual void make(LevelBuilder* builder, Rectangle area) override {
       CHECK(area.getSize() == layout.getBounds().getSize());
-      auto waterType = getWaterFurniture(builder->getRandom().choose(buildingInfo.water));
+      auto waterType = getWaterFurniture(builder->getRandom().choose(buildingInfo.water), false);
       set<Vec2> isGate;
       vector<Vec2> upStairsPositions;
       vector<Vec2> downStairsPositions;
@@ -2993,7 +2993,7 @@ static PLevelMaker underground(RandomGen& random, Vec2 size, FurnitureType floor
         return CreatureGroup::lavaCreatures(TribeId::getMonster());
     }
   }();
-  auto water = getWaterFurniture(waterType);
+  auto water = getWaterFurniture(waterType, true);
   auto queue = make_unique<MakerQueue>();
   if (random.roll(1)) {
     auto caverns = make_unique<RandomLocations>();

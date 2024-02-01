@@ -755,7 +755,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
     100 BOULDER
     70 CUT
   }
-  tickType = Effect Chance 0.006 {
+  tickType = Effect Chance 0.002 {
     Filter Night SoundEffect { "OWL_AMBIENT" 0.2 }
     Filter Not Night SoundEffect { "SONGBIRD_AMBIENT" 0.2 }
   }
@@ -2050,6 +2050,10 @@ Def Boulder(Id) {
   walkIntoFX = { WATER_SPLASH Rgb 82 148 255 255 }
   walkIntoSound = { "WATER_WALK_INTO" 0.3 }
 }
+"UNDERGROUND_WATER" inherit "WATER"
+{
+  tickType = Effect Chance 0.0006 SoundEffect { "UNDERGROUND_WATER_AMBIENT" 0.2 }
+}
 "ENCHANTED_WATER" inherit "WATER"
 {
   name = "enchanted pool"
@@ -2094,7 +2098,7 @@ Def Boulder(Id) {
   tickType = Effect {
     Area 1 Chance 0.03 SetFurnitureOnFire
     Chance 0.1 SetFurnitureOnFire
-    Chance 0.006 SoundEffect { "LAVA_AMBIENT" 0.2 }
+    Chance 0.0006 SoundEffect { "LAVA_AMBIENT" 0.2 }
   }
   movementSet = {
     traits = { FLY }
