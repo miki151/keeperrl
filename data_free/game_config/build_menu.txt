@@ -320,7 +320,7 @@ TRAINING("_DWARF", "_dwarf")
     { Furniture {{ "JEWELLER" }   "WOOD" 12 }                      "Jeweller"          "Crafting"
         "Produces magical rings and amulets." none { TechId "jewellery" }}
 
-    { Furniture {{ "LAVA_JEWELLER" }   "IRON" 12 }                      "Magma jeweller"          "Crafting"
+    { Furniture {{ "LAVA_JEWELLER" }   "STONE" 12 }                      "Magma jeweller"          "Crafting"
         "Produces glyphs used to improve weapons and armor. Must be placed next to lava." none { TechId "jewellery" }}
   }
   "poetry"
