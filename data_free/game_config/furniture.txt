@@ -755,6 +755,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
     100 BOULDER
     70 CUT
   }
+  tickType = Effect Chance 0.006 {
+    Filter Night SoundEffect { "OWL_AMBIENT" 0.2 }
+    Filter Not Night SoundEffect { "SONGBIRD_AMBIENT" 0.2 }
+  }
   fire = 100
   itemDrop = {{{{"WoodPlank"} 1 { 8 14 }}}}
   summonedElement = "ENT"
@@ -792,6 +796,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "giant_mushroom" }
   name = "giant treeshroom"
   clearFogOfWar = true
+  tickType = none
   blockVision = {}
 }
 "TREE_TRUNK"
@@ -1533,7 +1538,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
   clearFogOfWar = true
   itemDrop = {{{{"InferniteOre"} 1 { 16 28 }}}}
   lightEmission = 4.2
-  tickType = SetFurnitureOnFire
+  tickType = Effect {
+    Area 1 Chance 0.03 SetFurnitureOnFire
+    Chance 0.1 SetFurnitureOnFire
+  }
   strength2 = {
     200 BOULDER
     220 DIG
@@ -2083,7 +2091,11 @@ Def Boulder(Id) {
   freezeTo = "FLOOR"
   fillPit = "MAGMA"
   canSilentlyReplace = true
-  tickType = SetFurnitureOnFire
+  tickType = Effect {
+    Area 1 Chance 0.03 SetFurnitureOnFire
+    Chance 0.1 SetFurnitureOnFire
+    Chance 0.006 SoundEffect { "LAVA_AMBIENT" 0.2 }
+  }
   movementSet = {
     traits = { FLY }
     forcibleTraits = { WALK }
@@ -2157,6 +2169,7 @@ Def Boulder(Id) {
 {
   name = "grass"
   viewId = { "swampgrass" }
+  tickType = Effect Chance 0.006 SoundEffect { "FROG_AMBIENT" 0.2 }
   layer = GROUND
 }
 "HILL"

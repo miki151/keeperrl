@@ -276,14 +276,7 @@ struct AnimateItems {
   int SERIAL(radius);
   Range SERIAL(time);
   AnimatedItemType SERIAL(type);
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar(maxCount, radius, time);
-    if (version == 0)
-      type = AnimatedItemType::WEAPON;
-    else
-      ar(type);
-  }
+  SERIALIZE_ALL(maxCount, radius, time, type)
 };
 struct DropItems {
   ItemType SERIAL(type);
@@ -418,6 +411,7 @@ struct ApplyToSteed : GenericModifierEffect {
 struct AllCreatures : GenericModifierEffect {
 };
 using Achievement = AchievementId;
+SIMPLE_EFFECT(SetFurnitureOnFire);
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
   X(Teleport, 1)\
@@ -518,6 +512,7 @@ using Achievement = AchievementId;
   X(Achievement, 96)\
   X(ModifyFurniture, 97)\
   X(DestroyWalls, 98)\
+  X(SetFurnitureOnFire, 99)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
@@ -531,8 +526,6 @@ template <class Archive>
 void serialize(Archive& ar1, EffectType& v);
 
 }
-
-CEREAL_CLASS_VERSION(Effects::AnimateItems, 1)
 
 class EffectType : public Effects::EffectType {
   public:

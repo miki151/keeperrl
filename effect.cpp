@@ -930,6 +930,30 @@ static Color getColor(const Effects::Heal& e, const ContentFactory* f) {
   }
 }
 
+static string getName(const Effects::SetFurnitureOnFire&, const ContentFactory*) {
+  return "set on fire";
+}
+
+static bool isOffensive(const Effects::SetFurnitureOnFire&) {
+  return true;
+}
+
+static int getPrice(const Effects::SetFurnitureOnFire&, const ContentFactory*) {
+  return 12;
+}
+
+static string getDescription(const Effects::SetFurnitureOnFire&, const ContentFactory*) {
+  return "Sets objects on fire";
+}
+
+static bool apply(const Effects::SetFurnitureOnFire& a, Position pos, Creature* attacker) {
+  bool ret = false;
+  for (auto& f : pos.getFurniture())
+    if (f->getFire())
+      ret |= pos.modFurniture(f->getLayer())->fireDamage(pos, true);
+  return ret;
+}
+
 static string getName(const Effects::Fire&, const ContentFactory*) {
   return "fire";
 }

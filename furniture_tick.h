@@ -11,7 +11,6 @@ namespace FurnitureTickTypes {
 
 struct MeteorShower : EmptyStruct<struct MeteorShowerTag> {};
 struct Pit : EmptyStruct<struct PitTag> {};
-struct SetFurnitureOnFire : EmptyStruct<struct SetFurnitureOnFireTag> {};
 
 struct Trap {
   int SERIAL(maxDistance);
@@ -23,7 +22,6 @@ struct Trap {
   X(Effect, 0)\
   X(MeteorShower, 1)\
   X(Pit, 2)\
-  X(SetFurnitureOnFire, 3)\
   X(Trap, 4)
 
 #define VARIANT_NAME FurnitureTickType
