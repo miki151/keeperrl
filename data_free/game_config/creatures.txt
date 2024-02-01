@@ -777,7 +777,7 @@ End
       DEFENSE 31
     }
     body = {
-      type = Humanoid LARGE
+      type = Humanoid HUGE
       weight = 400
       drops = {
         { "CyclopsBrain" } 10
