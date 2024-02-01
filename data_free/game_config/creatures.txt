@@ -1068,6 +1068,7 @@ End
       }
       drops = {{ "GreenDragonScales" } 1}
       droppedPartUpgrade = GrantAbility "poison breath"
+      deathSound = "DYING_DRAGON"
     }
     permanentEffects = {
       POISON_RESISTANT 1
@@ -1176,6 +1177,7 @@ End
       }
       drops = { { "RedDragonScales" } 1}
       droppedPartUpgrade = GrantAbility "fire breath"
+      deathSound = "DYING_DRAGON"
     }
     permanentEffects = {
       FIRE_IMMUNITY 1
@@ -1251,6 +1253,7 @@ End
       }
       drops = {{ "BlackDragonScales" } 1}
       droppedPartUpgrade = Permanent TELEPATHY
+      deathSound = "DYING_DRAGON"
     }
     permanentEffects = {
       RANGED_VULNERABILITY 1
@@ -1330,6 +1333,7 @@ End
             attackMsg = BITE } }}}
       }
       drops = {{ "WhiteDragonScales" } 1}
+      deathSound = "DYING_DRAGON"
     }
     permanentEffects = {
       RANGED_VULNERABILITY 1
@@ -1405,6 +1409,7 @@ End
             attackMsg = BITE } }}}
       }
       drops = {{ "YellowDragonScales" } 1}
+      deathSound = "DYING_DRAGON"
     }
     permanentEffects = {
       ACID_IMMUNITY 1
@@ -4076,7 +4081,7 @@ End
     attr = {
       DAMAGE 15
       DEFENSE 20
-      SPELL_DAMAGE 25 
+      SPELL_DAMAGE 25
       LABORATORY 50
     }
     body = {
