@@ -4599,15 +4599,24 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
         if (campaignGridPointer)
           elem.push_back(WL(conditional, translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale)),
                 [this, pos] { return campaignGridPointer == pos;}));
-        if (campaignGridPointer && !!selectable && selectable(pos))
+        if (campaignGridPointer && !!selectable && selectable(pos)) {
+          auto marginSize = [&] {
+            for (auto v : pos.neighbors8())
+              if (v.inRectangle(sites.getBounds()) && selectable(v))
+                return 0;
+            return 4;
+          }();
           elem.push_back(WL(stack,
               WL(button, [this, pos, selectCallback] {
                 if (selectCallback)
                   selectCallback(pos);
                 campaignGridPointer = pos;
               }),
-              WL(mouseHighlight2, translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale)), nullptr, false)
+              WL(margins, WL(mouseHighlight2, WL(margins,
+                  translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale)), marginSize), nullptr, false),
+                  -marginSize)
           ));
+        }
         if (!!sites[x][y].getVillainType() && c.isDefeated(pos))
           elem.push_back(WL(viewObject, ViewId("campaign_defeated"), iconScale));
         if (auto desc = sites[x][y].getDwellerName())
@@ -4688,7 +4697,7 @@ SGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
   lines.addElem(WL(centerHoriz, WL(label, message)));
   campaignGridPointer = initialPos;
   lines.addElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, initialPos,
-      [&campaign](Vec2 pos){ return campaign.isInInfluence(pos); }, nullptr)));
+      [&campaign](Vec2 pos){ return campaign.canTravelTo(pos); }, nullptr)));
   lines.addSpace(legendLineHeight / 2);
   auto confirmCallback = [&] {
     if (campaign.canTravelTo(*campaignGridPointer))
