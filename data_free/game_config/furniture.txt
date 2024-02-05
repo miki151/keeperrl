@@ -868,6 +868,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   usageType = UsageEffect "sleep in stable" Lasting SLEEP
   viewLayer = FLOOR_BACKGROUND
   bedType = STABLE
+  tickType = Effect BedHeal()
   canBuildOutsideOfTerritory = false
   layer = FLOOR
 }
