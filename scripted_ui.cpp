@@ -12,6 +12,7 @@
 #include "steam_input.h"
 #include "keybinding.h"
 #include "keybinding_map.h"
+#include "sound_library.h"
 
 namespace EnumsDetail {
 enum class TextureFlip;
@@ -117,13 +118,17 @@ void performAction(const ScriptedUIData& data, ScriptedContext& context, EventCa
 struct Button : ScriptedUIInterface {
   void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
       Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
-    if (id == buttonId && (pos.inRectangle(bounds) == !reverse))
+    if (id == buttonId && (pos.inRectangle(bounds) == !reverse)) {
       performAction(data, context, callback);
+      if (soundId)
+        context.factory->soundLibrary->playSound(*soundId);
+    }
   }
 
   bool SERIAL(reverse);
   MouseButtonId SERIAL(buttonId) = MouseButtonId::LEFT;
-  SERIALIZE_ALL(roundBracket(), OPTION(reverse), OPTION(buttonId))
+  optional<SoundId> SERIAL(soundId);
+  SERIALIZE_ALL(roundBracket(), OPTION(reverse), OPTION(buttonId), OPTION(soundId))
 };
 
 REGISTER_SCRIPTED_UI(Button);
@@ -183,8 +188,13 @@ REGISTER_SCRIPTED_UI(KeyCatcher);
 struct KeybindingHandler : ScriptedUIInterface {
   void onKeypressed(const ScriptedUIData& data, ScriptedContext& context,
       SDL::SDL_Keysym sym, Rectangle, EventCallback& callback) const override {
-    if (context.factory->getKeybindingMap()->matches(key, sym))
+    if (context.factory->getKeybindingMap()->matches(key, sym)) {
       performAction(data, context, callback);
+      if (key == Keybinding("MENU_SELECT"))
+        context.factory->soundLibrary->playSound(SoundId("BUTTON_CLICK"));
+      if (isOneOf(key, Keybinding("MENU_UP"), Keybinding("MENU_DOWN"), Keybinding("MENU_RIGHT"), Keybinding("MENU_LEFT")))
+        context.factory->soundLibrary->playSound(SoundId("MENU_TRAVEL"));
+    }
   }
 
   Keybinding SERIAL(key);
@@ -781,8 +791,10 @@ struct Focusable : ScriptedUIInterface {
   void onKeypressed(const ScriptedUIData& data, ScriptedContext& context,
       SDL::SDL_Keysym sym, Rectangle bounds, EventCallback& callback) const override {
     if (context.factory->getKeybindingMap()->matches(Keybinding("MENU_SELECT"), sym) &&
-        context.elemCounter == context.state.highlightedElem)
+        context.elemCounter == context.state.highlightedElem) {
       onClicked(data, context, callback);
+      context.factory->soundLibrary->playSound(SoundId("BUTTON_CLICK"));
+    }
     callback = [&, y = bounds.middle().y, callback, myCounter = context.elemCounter] {
       auto ret = callback ? callback() : false;
       if (context.isHighlighted(myCounter))

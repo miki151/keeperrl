@@ -108,7 +108,7 @@ Def StandardButtonNotFocusable(Content) {
   ButtonLayout(BUTTON_BOTTOM, BUTTON_SIDE, BUTTON_CORNER)
   MouseOver ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
   Position(MIDDLE, Margins(10, 5, 10, 8, Content))
-  Button()
+  Button(soundId = "BUTTON_CLICK")
 }
 End
 
@@ -116,7 +116,7 @@ Def StandardButton(Content) {
   ButtonLayout(BUTTON_BOTTOM, BUTTON_SIDE, BUTTON_CORNER)
   Focusable ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
   Position(MIDDLE, Margins(10, 5, 10, 8, Content))
-  Button()
+  Button(soundId = "BUTTON_CLICK")
 }
 End
 

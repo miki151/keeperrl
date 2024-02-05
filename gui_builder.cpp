@@ -4886,17 +4886,17 @@ SGuiElem GuiBuilder::drawRetiredDungeonsButton(SyncQueue<CampaignAction>& queue,
                 focused = 0;
               focused = (focused + 1) % dungeonElems.size();
               miniMenuScroll.setRelative(dungeonElems[focused]->getBounds().top(), Clock::getRealMillis());
-            }, Keybinding("MENU_DOWN"), true),
+            }, Keybinding("MENU_DOWN"), SoundId("MENU_TRAVEL")),
             WL(keyHandler, [&] {
               if (focused == -1)
                 focused = 0;
               focused = (focused + dungeonElems.size() - 1) % dungeonElems.size();
               miniMenuScroll.setRelative(dungeonElems[focused]->getBounds().top(), Clock::getRealMillis());
-            }, Keybinding("MENU_UP"), true),
+            }, Keybinding("MENU_UP"), SoundId("MENU_TRAVEL")),
             WL(keyHandler, [&focused] { if (focused == 0) focused = -1; },
-                Keybinding("MENU_RIGHT"), true),
+                Keybinding("MENU_RIGHT"), SoundId("MENU_TRAVEL")),
             WL(keyHandler, [&focused] { if (focused == -1) focused = 0; },
-                Keybinding("MENU_LEFT"), true),
+                Keybinding("MENU_LEFT"), SoundId("MENU_TRAVEL")),
             WL(setHeight, getStandardLineHeight(), WL(getListBuilder)
                 .addElemAuto(WL(label, "Search: "))
                 .addElem(searchField, 200)
@@ -4937,9 +4937,9 @@ SGuiElem GuiBuilder::drawCampaignSettingsButton(SyncQueue<CampaignAction>& queue
       auto content = WL(stack,
         optionsLines.buildVerticalList(),
         WL(keyHandler, [&focused, cnt] { focused = (focused + 1) % cnt; },
-            Keybinding("MENU_DOWN"), true),
+            Keybinding("MENU_DOWN"), SoundId("MENU_TRAVEL")),
         WL(keyHandler, [&focused, cnt] { focused = (focused + cnt - 1) % cnt; },
-            Keybinding("MENU_UP"), true)
+            Keybinding("MENU_UP"), SoundId("MENU_TRAVEL"))
       );
       drawMiniMenu(std::move(content), exit, rect.bottomLeft(), 444, true);
       if (!clicked)
@@ -4967,9 +4967,9 @@ SGuiElem GuiBuilder::drawGameModeButton(SyncQueue<CampaignAction>& queue, View::
     auto content = WL(stack,
       lines.buildVerticalList(),
       WL(keyHandler, [&focused, cnt] { focused = (focused + 1) % cnt; },
-          Keybinding("MENU_DOWN"), true),
+          Keybinding("MENU_DOWN"), SoundId("MENU_TRAVEL")),
       WL(keyHandler, [&focused, cnt] { focused = (focused + cnt - 1) % cnt; },
-          Keybinding("MENU_UP"), true)
+          Keybinding("MENU_UP"), SoundId("MENU_TRAVEL"))
     );
     drawMiniMenu(std::move(content), exit, bounds.bottomLeft(), 350, true);
   };
@@ -5023,17 +5023,17 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
       WL(stopKeyEvents),
       WL(keyHandler, [&menuState] {
         menuState.index.left();
-      }, Keybinding("MENU_LEFT"), true),
+      }, Keybinding("MENU_LEFT"), SoundId("MENU_TRAVEL")),
       WL(keyHandler, [&menuState]{
         menuState.index.right();
-      }, Keybinding("MENU_RIGHT"), true),
+      }, Keybinding("MENU_RIGHT"), SoundId("MENU_TRAVEL")),
       WL(keyHandler, [&menuState] {
         menuState.index.up();
-      }, Keybinding("MENU_UP"), true),
+      }, Keybinding("MENU_UP"), SoundId("MENU_TRAVEL")),
       WL(keyHandler, [&menuState]{
         menuState.index.down();
-      }, Keybinding("MENU_DOWN"), true),
-      WL(keyHandler, [&] { queue.push(CampaignActionId::CANCEL); }, Keybinding("EXIT_MENU"), true),
+      }, Keybinding("MENU_DOWN"), SoundId("MENU_TRAVEL")),
+      WL(keyHandler, [&] { queue.push(CampaignActionId::CANCEL); }, Keybinding("EXIT_MENU"), SoundId("MENU_TRAVEL")),
   };
   interior.push_back(lines.buildVerticalList());
   interior.push_back(centerLines.buildVerticalList());

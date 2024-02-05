@@ -327,7 +327,6 @@ static int keeperMain(po::parser& commandLineFlags) {
   auto installId = getInstallId(userPath.file("installId.txt"), Random);
   if (steamInput->isRunningOnDeck())
     installId += "_deck";
-  SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
   auto modsDir = userPath.subdirectory(gameConfigSubdir);
@@ -411,7 +410,23 @@ static int keeperMain(po::parser& commandLineFlags) {
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserInfoLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   atomic<bool> splashDone { false };
-  GuiFactory guiFactory(renderer, &clock, &options, freeDataPath.subdirectory("images"));
+  SoundLibrary* soundLibrary = nullptr;
+  auto loadThread = makeThread([&] {
+    if (tilesPresent) {
+      if (!audioError) {
+        soundLibrary = new SoundLibrary(audioDevice, paidDataPath.subdirectory("sound"));
+        options.addTrigger(OptionId::SOUND, [soundLibrary](int volume) {
+          soundLibrary->setVolume(volume);
+          soundLibrary->playSound(SoundId("SPELL_DECEPTION"));
+        });
+        soundLibrary->setVolume(options.getIntValue(OptionId::SOUND));
+      }
+    }
+    splashDone = true;
+  });
+  showLogoSplash(renderer, freeDataPath.file("images/succubi.png"), splashDone);
+  loadThread.join();
+  GuiFactory guiFactory(renderer, &clock, &options, soundLibrary, freeDataPath.subdirectory("images"));
   TileSet tileSet(paidDataPath.subdirectory("images"), modsDir, freeDataPath.subdirectory("ui"));
   renderer.setTileSet(&tileSet);
   unique_ptr<fx::FXManager> fxManager;
@@ -430,21 +445,6 @@ static int keeperMain(po::parser& commandLineFlags) {
       fxViewManager = make_unique<FXViewManager>(fxManager.get(), fxRenderer.get());
     }
   }
-  auto loadThread = makeThread([&] {
-    if (tilesPresent) {
-      if (!audioError) {
-        soundLibrary = new SoundLibrary(audioDevice, paidDataPath.subdirectory("sound"));
-        options.addTrigger(OptionId::SOUND, [soundLibrary](int volume) {
-          soundLibrary->setVolume(volume);
-          soundLibrary->playSound(SoundId("SPELL_DECEPTION"));
-        });
-        soundLibrary->setVolume(options.getIntValue(OptionId::SOUND));
-      }
-    }
-    splashDone = true;
-  });
-  showLogoSplash(renderer, freeDataPath.file("images/succubi.png"), splashDone);
-  loadThread.join();
   FileSharing bugreportSharing("http://retired.keeperrl.com/~bugreports", modVersion, saveVersion, options, installId);
   bugreportSharing.downloadPersonalMessage();
   unique_ptr<View> view;

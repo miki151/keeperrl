@@ -30,6 +30,7 @@ class Clock;
 class Options;
 class ScrollPosition;
 class KeybindingMap;
+class SoundLibrary;
 struct ScriptedUI;
 struct ScriptedUIData;
 struct ScriptedUIState;
@@ -67,7 +68,7 @@ class GuiElem {
 
 class GuiFactory {
   public:
-  GuiFactory(Renderer&, Clock*, Options*, const DirectoryPath& freeImages);
+  GuiFactory(Renderer&, Clock*, Options*, SoundLibrary*, const DirectoryPath& freeImages);
   void loadImages();
   ~GuiFactory();
 
@@ -98,11 +99,13 @@ class GuiFactory {
   SGuiElem mouseWheel(function<void(bool)>);
   SGuiElem keyHandler(function<void(SDL::SDL_Keysym)>, bool capture = false);
   SGuiElem keyHandler(function<void()>, Keybinding, bool capture = false);
+  SGuiElem keyHandler(function<void()>, Keybinding, SoundId);  // capture = true here
   SGuiElem keyHandlerBool(function<bool()>, vector<SDL::SDL_Keysym>);
   SGuiElem keyHandlerBool(function<bool()>, Keybinding);
   SGuiElem keyHandler(function<void()>, vector<SDL::SDL_Keysym>, bool capture = false);
   SGuiElem keyHandlerRect(function<void(Rectangle)>, vector<SDL::SDL_Keysym>, bool capture = false);
   SGuiElem keyHandlerRect(function<void(Rectangle)>, Keybinding, bool capture = false);
+  SGuiElem keyHandlerRect(function<void(Rectangle)>, Keybinding, SoundId); // capture = true here
   SGuiElem stack(vector<SGuiElem>);
   SGuiElem stack(SGuiElem, SGuiElem);
   SGuiElem stack(SGuiElem, SGuiElem, SGuiElem);
@@ -336,6 +339,7 @@ class GuiFactory {
   KeybindingMap* getKeybindingMap();
   MySteamInput* getSteamInput();
   Clock* clock;
+  SoundLibrary* soundLibrary;
 
   private:
 

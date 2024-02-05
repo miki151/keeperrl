@@ -30,7 +30,7 @@
 #include "mouse_button_id.h"
 #include "tileset.h"
 #include "steam_input.h"
-
+#include "sound_library.h"
 #include "sdl.h"
 
 using SDL::SDL_Keysym;
@@ -193,8 +193,8 @@ class ButtonKey : public ButtonElem {
   bool capture;
 };
 
-GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o, const DirectoryPath& freeImages)
-    : clock(c), renderer(r), options(o), imagesPath(freeImages) {
+GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o, SoundLibrary* s, const DirectoryPath& freeImages)
+    : clock(c), soundLibrary(s), renderer(r), options(o), imagesPath(freeImages) {
 }
 
 GuiFactory::~GuiFactory() {}
@@ -760,7 +760,7 @@ SGuiElem GuiFactory::buttonLabelFocusable(SGuiElem content, function<void()> cal
     bool matchTextWidth, bool centerHorizontally) {
   return stack(
       buttonLabelFocusableImpl(std::move(content), button(callback), focused, matchTextWidth, centerHorizontally),
-      conditionalStopKeys(keyHandler(callback, Keybinding("MENU_SELECT"), true), focused)
+      conditionalStopKeys(keyHandler(callback, Keybinding("MENU_SELECT"), SoundId("BUTTON_CLICK")), focused)
   );
 }
 
@@ -768,7 +768,7 @@ SGuiElem GuiFactory::buttonLabelFocusable(SGuiElem content, function<void(Rectan
     bool matchTextWidth, bool centerHorizontally) {
   return stack(
       buttonLabelFocusableImpl(std::move(content), buttonRect(callback), focused, matchTextWidth, centerHorizontally),
-      conditionalStopKeys(keyHandlerRect(callback, Keybinding("MENU_SELECT"), true), focused)
+      conditionalStopKeys(keyHandlerRect(callback, Keybinding("MENU_SELECT"), SoundId("BUTTON_CLICK")), focused)
   );
 }
 
@@ -783,13 +783,13 @@ SGuiElem GuiFactory::buttonLabelFocusable(const string& text, function<void(Rect
   return stack(
       buttonLabelFocusableImpl(unicode ? labelUnicode(text) : label(text), buttonRect(callback), focused,
           matchTextWidth, centerHorizontally),
-      conditionalStopKeys(keyHandlerRect(callback, Keybinding("MENU_SELECT"), true), focused)
+      conditionalStopKeys(keyHandlerRect(callback, Keybinding("MENU_SELECT"), SoundId("BUTTON_CLICK")), focused)
   );
 }
 
 /*SGuiElem GuiFactory::buttonLabelFocusable(const string& text, function<void()> callback, function<bool()> focused,
     bool matchTextWidth, bool centerHorizontally, bool unicode) {
-  return buttonLabelFocusable(text, button(std::move(callback)), std::move(focused), 
+  return buttonLabelFocusable(text, button(std::move(callback)), std::move(focused),
       matchTextWidth, centerHorizontally, unicode);
 }*/
 
@@ -823,7 +823,7 @@ SGuiElem GuiFactory::buttonLabelBlink(const string& s, function<void()> f, funct
     content = centerHoriz(std::move(content));
   return stack(ret,
       std::move(content),
-      conditionalStopKeys(keyHandler(f, Keybinding("MENU_SELECT"), true), focused));
+      conditionalStopKeys(keyHandler(f, Keybinding("MENU_SELECT"), SoundId("BUTTON_CLICK")), focused));
 }
 
 SGuiElem GuiFactory::buttonLabel(const string& s, SGuiElem button, bool matchTextWidth, bool centerHorizontally, bool unicode) {
@@ -1367,9 +1367,15 @@ class KeybindingHandler : public GuiElem {
   KeybindingHandler(KeybindingMap* m, Keybinding key, function<bool(Rectangle)> f)
       : fun(std::move(f)), keybindingMap(m), key(key) {}
 
+  KeybindingHandler(KeybindingMap* m, Keybinding key, function<void(Rectangle)> f, SoundLibrary* s, SoundId id)
+      : fun([f] (Rectangle r) { f(r); return true; }), keybindingMap(m), key(key), soundLibrary(s), soundId(id) {}
+
   virtual bool onKeyPressed2(SDL_Keysym sym) override {
-    if (keybindingMap->matches(key, sym))
+    if (keybindingMap->matches(key, sym)) {
+      if (soundLibrary)
+        soundLibrary->playSound(soundId);
       return fun(getBounds());
+    }
     return false;
   }
 
@@ -1377,6 +1383,8 @@ class KeybindingHandler : public GuiElem {
   function<bool(Rectangle)> fun;
   KeybindingMap* keybindingMap;
   Keybinding key;
+  SoundLibrary* soundLibrary = nullptr;
+  SoundId soundId;
 };
 
 SGuiElem GuiFactory::keyHandler(function<void()> fun, Keybinding keybinding, bool capture) {
@@ -1384,8 +1392,18 @@ SGuiElem GuiFactory::keyHandler(function<void()> fun, Keybinding keybinding, boo
       [fun = std::move(fun)](Rectangle) { fun(); }, capture));
 }
 
+SGuiElem GuiFactory::keyHandler(function<void()> fun, Keybinding keybinding, SoundId sound) {
+  return SGuiElem(new KeybindingHandler(options->getKeybindingMap(), keybinding,
+      [fun = std::move(fun)](Rectangle) { fun(); }, soundLibrary, sound));
+}
+
 SGuiElem GuiFactory::keyHandlerRect(function<void(Rectangle)> fun, Keybinding keybinding, bool capture) {
   return SGuiElem(new KeybindingHandler(options->getKeybindingMap(), keybinding, std::move(fun), capture));
+}
+
+SGuiElem GuiFactory::keyHandlerRect(function<void(Rectangle)> fun, Keybinding keybinding, SoundId soundId) {
+  return SGuiElem(new KeybindingHandler(options->getKeybindingMap(), keybinding, std::move(fun), soundLibrary,
+      soundId));
 }
 
 KeybindingMap* GuiFactory::getKeybindingMap() {

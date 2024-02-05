@@ -16,7 +16,7 @@ Def MenuButton(Name) Height 45  {
   TextureFit(MENU_ITEM)
   Position(MIDDLE, MarginBottom(4, Label(Name, 22, TextColor())))
   Focusable Position(MIDDLE, MarginBottom(4, Label(Name, 22, Rgb 255 255 255 255)))
-  Button()
+  Button(soundId = "BUTTON_CLICK")
 }
 End
 
