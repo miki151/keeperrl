@@ -8,6 +8,7 @@ class Sound {
   Sound(SoundId);
   Sound& setPosition(const Position&);
   Sound& setPitch(double);
+  Sound& setVolume(double);
   const optional<Position>& getPosition() const;
   SoundId getId() const;
   double getPitch() const;

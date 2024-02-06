@@ -872,7 +872,7 @@ vector<AttackLevel> Body::getAttackLevels() const {
   }
 }
 
-static double getDeathSoundPitch(Body::Size size) {
+double Body::getDeathSoundPitch() const {
   switch (size) {
     case Body::Size::HUGE: return 0.6;
     case Body::Size::LARGE: return 0.9;
@@ -885,7 +885,7 @@ optional<Sound> Body::getDeathSound() const {
   if (!deathSound)
     return none;
   else
-    return Sound(*deathSound).setPitch(getDeathSoundPitch(size));
+    return Sound(*deathSound).setPitch(getDeathSoundPitch());
 }
 
 optional<Sound> Body::rollAmbientSound() const {

@@ -91,6 +91,7 @@ class Body {
   int numBodyParts(BodyPart) const;
   void getBadAdjectives(vector<AdjectiveInfo>&) const;
   optional<Sound> getDeathSound() const;
+  double getDeathSoundPitch() const;
   optional<Sound> rollAmbientSound() const;
   optional<AnimationId> getDeathAnimation(const ContentFactory*) const;
   bool injureBodyPart(Creature*, BodyPart, bool drop);

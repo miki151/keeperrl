@@ -2098,6 +2098,12 @@ CreatureAction Creature::disappear() const {
   });
 }
 
+static Sound getTortureSound(Creature* c) {
+  if (!c->getBody().isHumanoid())
+    return SoundId("TORTURE_BEAST");
+  return SoundId(c->getAttributes().getGender() == Gender::FEMALE ? "TORTURE_FEMALE" : "TORTURE_MALE");
+}
+
 CreatureAction Creature::torture(Creature* other) const {
   if (!LastingEffects::restrictedMovement(other) || other->getPosition().dist8(getPosition()) != 1)
     return CreatureAction();
@@ -2107,6 +2113,7 @@ CreatureAction Creature::torture(Creature* other) const {
     if (Random.roll(4)) {
       other->thirdPerson(other->getName().the() + " screams!");
       other->getPosition().unseenMessage("You hear a horrible scream");
+      position.addSound(getTortureSound(other).setVolume(0.3).setPitch(other->getBody().getDeathSoundPitch()));
     }
     auto dir = position.getDir(other->position);
     // Note: the event can kill the victim

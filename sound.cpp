@@ -18,6 +18,11 @@ Sound& Sound::setPitch(double v) {
   return *this;
 }
 
+Sound& Sound::setVolume(double v) {
+  volume = v;
+  return *this;
+}
+
 SoundId Sound::getId() const {
   return id;
 }
