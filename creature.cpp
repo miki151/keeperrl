@@ -2039,8 +2039,11 @@ void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
   auto factory = game->getContentFactory();
   if (drops == DropType::EVERYTHING) {
     position.dropItems(generateCorpse(factory, game));
-    if (auto sound = getBody().getDeathSound())
+    if (auto sound = getBody().getDeathSound()) {
+      if (attributes->getGender() == Gender::FEMALE && sound->getId() == "HUMANOID_DEATH") // a bit of a hack
+        sound->setId("FEMALE_DEATH");
       position.addSound(*sound);
+    }
     if (getBody().hasHealth(HealthType::FLESH, factory)) {
       auto addBlood = [](Position v) {
         for (auto f : v.modFurniture())

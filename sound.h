@@ -11,6 +11,7 @@ class Sound {
   Sound& setVolume(double);
   const optional<Position>& getPosition() const;
   SoundId getId() const;
+  Sound& setId(SoundId);
   double getPitch() const;
   double getVolume() const;
 

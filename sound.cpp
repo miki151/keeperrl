@@ -27,6 +27,11 @@ SoundId Sound::getId() const {
   return id;
 }
 
+Sound& Sound::setId(SoundId i) {
+  id = i;
+  return *this;
+}
+
 const optional<Position>& Sound::getPosition() const {
   return position;
 }
