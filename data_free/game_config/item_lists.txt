@@ -553,7 +553,7 @@ End
     {{PrefixChance 1 {"Sword"}} 1}
     {{PrefixChance 1 {"BattleAxe"}} 1}
     {{PrefixChance 1 {"WarHammer"}} 1}
-    {{PrefixChance 1 {"EnchantedStaff"}} 1}
+    {{PrefixChance 1 {"ArchwoodStaff"}} 1}
     {{PrefixChance 1 {"AdaSword"}} 1 1 25}
     {{PrefixChance 1 {"AdaBattleAxe"}} 1 1 25}
     {{PrefixChance 1 {"AdaWarHammer"}} 1 1 25}

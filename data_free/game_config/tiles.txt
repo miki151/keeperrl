@@ -438,8 +438,6 @@ Connections("map_swamp")
 { viewId = "wooden_staff_v" symbol = ")" color = ColorId DARK_BROWN weaponOrigin = {12 13} }
 { "archwood_staff" ")" ColorId BLUE }
 { viewId = "archwood_staff_v" symbol = ")" color = ColorId BLUE weaponOrigin = {11 14} }
-{ "enchanted_staff" ")" ColorId LIGHT_RED }
-{ viewId = "enchanted_staff_v" symbol = ")" color = ColorId LIGHT_RED weaponOrigin = {11 14} }
 { "adoxium_staff" ")" ColorId PINK }
 { viewId = "adoxium_staff_v" symbol = ")" color = ColorId PINK weaponOrigin = {10 14} }
 { "elven_staff" ")" ColorId WHITE }

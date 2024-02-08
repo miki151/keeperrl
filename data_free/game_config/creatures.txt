@@ -256,7 +256,7 @@ End
       SPELL_DAMAGE 7
     }
     inventory = append {
-      { "EnchantedStaff" }
+      { "ArchwoodStaff" }
       { type = Glyph { ARMOR LastingEffect MAGIC_RESISTANCE } chance = 0.3 }
       { type = Glyph { ARMOR LastingEffect SPEED } chance = 0.3 }
       { type = Glyph { ARMOR LastingEffect NO_CARRY_LIMIT } chance = 0.3 }
@@ -4117,7 +4117,7 @@ End
     }
     hatedByEffect = HATE_HUMANS
     inventory = {
-      { "EnchantedStaff"}
+      { "ArchwoodStaff"}
       { "Torch"}
       { type = Glyph { ARMOR LastingEffect FIRE_RESISTANT } chance = 0.3 }
     }

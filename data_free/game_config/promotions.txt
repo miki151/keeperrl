@@ -19,7 +19,7 @@
           Filter Gender FEMALE SetViewId {"dwarf_crossbowman_f"}
         }
 
-    "spellcaster" {"enchanted_staff"}
+    "spellcaster" {"archwood_staff"}
         Description "Increases max spell training level by 3, adds 14 spell damage when applied for the first time."
         {
           Filter Not CreatureFlag "is_spellcaster" IncreaseAttr SPELL_DAMAGE 14
@@ -56,7 +56,7 @@
 }
 
 "spell_adventurer" {
-    "spellcaster" {"enchanted_staff"}
+    "spellcaster" {"archwood_staff"}
         Description "Increases spell damage training by 1."
         IncreaseLevel SPELL_DAMAGE 1
 }

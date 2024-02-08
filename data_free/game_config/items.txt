@@ -645,16 +645,16 @@ End
     storageIds = {"weapons" "equipment"}
     equipmentGroup = "basic equipment"
   }
-"EnchantedStaff" inherit "WoodenStaff"
+"ArchwoodStaff" inherit "WoodenStaff"
   {
-    viewId = { "enchanted_staff" }
-    equipedViewId = { "enchanted_staff_v" }
-    name = "enchanted staff"
+    viewId = { "archwood_staff" }
+    equipedViewId = { "archwood_staff_v" }
+    name = "archwood staff"
     modifiers = {
-      SPELL_DAMAGE 15
-      SPELL_SPEED 15
+      SPELL_DAMAGE 24
+      SPELL_SPEED 24
     }
-    price = 60
+    price = 400
     genPrefixes = {
       1 VictimEffect 1.0 Escape{}
       1 VictimEffect 0.4 DestroyEquipment
@@ -666,16 +666,6 @@ End
     maxUpgrades = 2
     equipmentGroup = "artifact equipment"
   }
-"ArchwoodStaff" inherit "EnchantedStaff" {
-  viewId = { "archwood_staff" }
-  equipedViewId = { "archwood_staff_v" }
-  name = "archwood staff"
-  modifiers = {
-    SPELL_DAMAGE 24
-    SPELL_SPEED 24
-  }
-  price = 400
-}
 "AdoxiumStaff"
   {
     viewId = { "adoxium_staff" }
