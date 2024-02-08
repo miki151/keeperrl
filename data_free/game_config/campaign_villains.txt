@@ -47,7 +47,7 @@ EVIL_KEEPER {
     {{"map_adoxie"} "MAIN_DUNGEON" "Adoxie priest" MAIN true}
 
     {{"map_ents"} "ENTS" "Tree spirits" LESSER}
-    {{"map_house_elf"} "DRIADS" "Driads" LESSER}
+    {{"map_house_elf"} "DRIADS" "Dryads" LESSER}
     {{"map_dungeon1"} "CYCLOPS" "Cyclops" LESSER}
     {{"map_ants"} "SHELOB" "Giant spider" LESSER}
     {{"map_hydra"} "HYDRA" "Hydra" LESSER}
