@@ -39,7 +39,7 @@
   creatureId = { "KEEPER_KNIGHT_WHITE" "KEEPER_KNIGHT_WHITE_F" }
   tribeAlignment = LAWFUL
   villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
-  immigrantGroups = {"peseants" "white_keeper"}
+  immigrantGroups = {"peseants" "white_keeper" "white_recruits" "white_stables"}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion"
       "chicken breeding" "pig breeding" "cow breeding" "iron working" "jewellery"
@@ -228,7 +228,7 @@
   workshopGroups = {}
   minionTraits = {LEADER WORKER}
   maxPopulation = 1
-  startingBase = {5 5} "adventurer_house"
+  startingBase = {12 12} "adventurer_house"
   prisoners = false
   requireQuartersForExp = false
   enemyAggression = false
@@ -242,5 +242,6 @@
 "93_white_knight_adventurer" inherit "91_dark_mage_adventurer"
 {
   creatureId = { "ADVENTURER_KNIGHT_WHITE" "ADVENTURER_KNIGHT_WHITE_F" }
-  tribeAlignment = EVIL
+  tribeAlignment = LAWFUL
+  immigrantGroups = { "white_stables" }
 }

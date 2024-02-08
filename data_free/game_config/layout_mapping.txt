@@ -20,6 +20,7 @@
   "stockpile" Stockpile 0
   "bed" Place "BED1"
   "haypile" Place "HAYPILE"
+  "stable" Place "STABLE"
   "wall" Place "WOOD_WALL"
   "wood_wall" Place "WOOD_WALL"
   "castle_wall" Place "CASTLE_WALL"

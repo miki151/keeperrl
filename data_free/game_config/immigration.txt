@@ -70,7 +70,8 @@ Def DarkRecruits()
     }
 End
 
-Def WhiteRecruits()
+"white_recruits"
+{
     {
       ids = { "DWARF" }
       traits = { FIGHTER }
@@ -86,6 +87,10 @@ Def WhiteRecruits()
         { 1.0 CostInfo "GOLD" 250 }
       }
     }
+}
+
+"white_stables"
+{
     {
       ids = { "HORSE_CAN_TRAIN" }
       traits = { NO_LIMIT INCREASE_POPULATION }
@@ -110,7 +115,7 @@ Def WhiteRecruits()
         { 1.0 CostInfo "GOLD" 25 }
       }
     }
-End
+}
 
 "dark_keeper"
 {
@@ -565,7 +570,6 @@ End
         { 1.0 AttractionInfo 2 {FurnitureType "STABLE"}}
       }
     }
-    WhiteRecruits()
 }
 "gnomes"
 {

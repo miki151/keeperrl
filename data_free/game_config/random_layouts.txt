@@ -563,7 +563,19 @@ End
 
 "cottage_cellar" CottageCellar()
 
-"adventurer_house" {
+Def AdventurerStable() {
+  Building("wood_wall", "wood_floor")
+  Corners(Set("no_door"), 1)
+  Place({1 1} Reset("wood_floor", "wood_door") 1 And(On("wood_wall"), Not On("no_door")))
+  Filter(On("wood_floor"), Set("stable"))
+  Place (
+    ({1 1} Set("haypile") 1 FurnitureLoc()),
+    ({1 1} Set("torch") 1 FurnitureLoc()),
+  )
+}
+End
+
+Def AdventurerHut() {
   Building("wood_wall", "wood_floor")
   Corners(Set("no_door"), 1)
   Place({1 1} Reset("wood_floor", "wood_door") 1 And(On("wood_wall"), Not On("no_door")))
@@ -572,6 +584,14 @@ End
     ({1 1} Set("bed") 1 FurnitureLoc()),
     ({1 1} Set("torch") 1 FurnitureLoc()),
     ({1 1} Set("equipment_chest") 1 FurnitureLoc()),
+  )
+}
+End
+
+"adventurer_house" {
+  Place(
+    (size = {5 5} generator = AdventurerHut() minSpacing = 1),
+    (size = {5 4} generator = AdventurerStable() minSpacing = 1)
   )
 }
 
