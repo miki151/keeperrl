@@ -35,7 +35,7 @@ int DungeonLevel::numResearchAvailable() const {
 }
 
 double DungeonLevel::numPromotionsAvailable() const {
-  return level + 1 - consumedPromotions;
+  return level - consumedPromotions;
 }
 
 void DungeonLevel::addAbsoluteProgress(double amount) {
