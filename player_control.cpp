@@ -2173,7 +2173,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
       },
       [&](const CreatureKilled& info) {
         auto pos = info.victim->getPosition();
-        if (canSee(pos))
+        if (canSee(pos) && pos.isSameLevel(getCurrentLevel()))
           if (auto anim = info.victim->getBody().getDeathAnimation(getGame()->getContentFactory()))
             getView()->animation(pos.getCoord(), *anim);
         if (collective->getCreatures().contains(info.attacker))
