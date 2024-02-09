@@ -290,7 +290,7 @@ TRAINING("_DWARF", "_dwarf")
         "Produces leather and wooden equipment." "WORKSHOPS" {} true  BUILD_WORKSHOP}
 
     { Furniture {{ "ENCHANTED_WORKSHOP" }   "WOOD" 15 }                      "Workshop"          "Crafting"
-        "Produces improved leather and wooden equipment. Must be placed near an enchanted pool." "WORKSHOPS"}
+        "Produces improved leather and wooden equipment. Must be placed near an enchanted pool."}
 
     { Furniture {{ "FORGE"  }      "IRON" 20 }                      "Forge"             "Crafting"
         "Produces weapons and armor made of iron and other metals."    none { TechId "iron working" }}
