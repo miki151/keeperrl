@@ -1219,6 +1219,13 @@ int Creature::getCombatExperienceCap() const {
   return 5 * maxPromotion;
 }
 
+static Sound getLevelUpSound(Creature* c) {
+  if (!c->getBody().isHumanoid())
+    return SoundId("LEVEL_UP_BEAST");
+  return Sound(SoundId(c->getAttributes().getGender() == Gender::FEMALE ? "LEVEL_UP_FEMALE" : "LEVEL_UP_MALE"))
+      .setPitch(c->getBody().getDeathSoundPitch()).setVolume(0.4);
+}
+
 void Creature::updateCombatExperience(Creature* victim) {
   if (getBody().hasBrain(getGame()->getContentFactory()) && victim->attributes->grantsExperience) {
     double attackDiff = victim->highestAttackValueEver - highestAttackValueEver;
@@ -1234,6 +1241,8 @@ void Creature::updateCombatExperience(Creature* victim) {
     if (curLevel != newLevel) {
       you(MsgType::ARE, "more experienced");
       addPersonalEvent(getName().a() + " reaches experience level " + toString(newLevel));
+      position.addSound(getLevelUpSound(this));
+      addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::YELLOW));
     }
   }
 }
@@ -2164,6 +2173,8 @@ void Creature::increaseExpLevel(AttrType type, double increase) {
       addPersonalEvent(getName().a() + " reaches " + game->getContentFactory()->attrInfo.at(type).name +
           " training level " + toString(newLevel));
     spellMap->onExpLevelReached(this, type, newLevel);
+    position.addSound(getLevelUpSound(this));
+    addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::YELLOW));
   }
 }
 
