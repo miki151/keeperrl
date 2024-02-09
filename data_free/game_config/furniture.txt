@@ -2053,7 +2053,7 @@ Def Boulder(Id) {
 }
 "UNDERGROUND_WATER" inherit "WATER"
 {
-  tickType = Effect Chance 0.0006 SoundEffect { "UNDERGROUND_WATER_AMBIENT" 0.2 }
+  tickType = Effect Chance 0.002 SoundEffect { "UNDERGROUND_WATER_AMBIENT" 0.2 }
 }
 "ENCHANTED_WATER" inherit "WATER"
 {
@@ -2099,7 +2099,7 @@ Def Boulder(Id) {
   tickType = Effect {
     Area 1 Chance 0.03 SetFurnitureOnFire
     Chance 0.1 SetFurnitureOnFire
-    Chance 0.0006 SoundEffect { "LAVA_AMBIENT" 0.2 }
+    Chance 0.002 SoundEffect { "LAVA_AMBIENT" 0.2 }
   }
   movementSet = {
     traits = { FLY }
