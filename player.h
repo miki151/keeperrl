@@ -143,6 +143,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void fireAction();
   void scrollStairs(int);
   void tryToCast(const Spell*, Position target);
+  bool teamCanSeeAndSameLevel(Position) const;
   string getInventoryItemName(const Item*, bool plural) const;
   string getPluralName(Item* item, int num);
   Vec2 SERIAL(travelDir);

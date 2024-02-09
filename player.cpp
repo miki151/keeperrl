@@ -103,20 +103,20 @@ void Player::onEvent(const GameEvent& event) {
           visibilityMap->update(creature, creature->getVisibleTiles());
       },
       [&](const Projectile& info) {
-        if (creature->canSee(info.begin) || creature->canSee(info.end))
+        if (teamCanSeeAndSameLevel(info.begin) || teamCanSeeAndSameLevel(info.end))
           getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId, info.fx);
         if (info.sound)
           getView()->addSound(*info.sound);
       },
       [&](const CreatureKilled& info) {
         auto pos = info.victim->getPosition();
-        if (creature->canSee(pos))
+        if (teamCanSeeAndSameLevel(pos))
           if (auto anim = info.victim->getBody().getDeathAnimation(factory))
             getView()->animation(pos.getCoord(), *anim);
       },
       [&](const CreatureAttacked& info) {
         auto pos = info.victim->getPosition();
-        if (creature->canSee(pos)) {
+        if (teamCanSeeAndSameLevel(pos)) {
           auto dir = info.attacker->getPosition().getDir(pos);
           if (dir.length8() == 1) {
             auto orientation = dir.getCardinalDir();
@@ -139,7 +139,7 @@ void Player::onEvent(const GameEvent& event) {
         }
       },
       [&](const FX& info) {
-        if (creature->canSee(info.position))
+        if (teamCanSeeAndSameLevel(info.position))
           getView()->animation(FXSpawnInfo(info.fx, info.position.getCoord(), info.direction.value_or(Vec2(0, 0))));
       },
       [&](const auto&) {}
@@ -1103,9 +1103,13 @@ void Player::grantWish(const string& message) {
   }
 }
 
+bool Player::teamCanSeeAndSameLevel(Position pos) const {
+  return pos.isSameLevel(creature->getPosition()) &&
+      (visibilityMap->isVisible(pos) || getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP));
+}
+
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
-  bool canSee = visibilityMap->isVisible(Position(pos, getLevel())) ||
-      getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP);
+  bool canSee = teamCanSeeAndSameLevel(Position(pos, getLevel()));
   Position position = creature->getPosition().withCoord(pos);
   if (auto belowPos = position.getGroundBelow()) {
     if (auto memIndex = getMemory().getViewIndex(*belowPos))
