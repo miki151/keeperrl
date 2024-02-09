@@ -867,8 +867,8 @@ void Renderer::makeScreenshot(const FilePath& path, Rectangle bounds) {
   SDL_FreeSurface(inverted);
 }
 
-void playfile(const char *fname, SDL::SDL_Window* screen, Renderer&, bool withAudio);
+void playfile(const char *fname, SDL::SDL_Window* screen, Renderer&, float volume);
 
-void Renderer::playVideo(const string& path, bool withAudio) {
-  playfile(path.data(), window, *this, withAudio);
+void Renderer::playVideo(const string& path, int volume) {
+  playfile(path.data(), window, *this, ((float)volume) / 100);
 }

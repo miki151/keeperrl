@@ -253,7 +253,7 @@ void WindowView::clearSplash() {
 }
 
 void WindowView::playVideo(const string& path) {
-  renderer.playVideo(path, options->getIntValue(OptionId::SOUND) > 0);
+  renderer.playVideo(path, options->getIntValue(OptionId::SOUND));
 }
 
 void WindowView::resize(int width, int height) {

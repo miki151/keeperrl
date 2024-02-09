@@ -29,7 +29,7 @@ static volatile AudioQueue *audio_queue_tail = NULL;
 
 static void SDLCALL audio_callback(void *userdata, Uint8 *stream, int len) {
   Sint16 *dst = (Sint16 *)stream;
-  bool withAudio = *((bool*)userdata);
+  float volume = *((float*)userdata);
   while (audio_queue && (len > 0)) {
     volatile AudioQueue *item = audio_queue;
     AudioQueue *next = item->next;
@@ -43,7 +43,7 @@ static void SDLCALL audio_callback(void *userdata, Uint8 *stream, int len) {
       cpy = len / sizeof(Sint16);
 
     for (i = 0; i < cpy; i++) {
-      const float val = withAudio ? *(src++) : 0.0;
+      const float val = volume * *(src++);
       if (val < -1.0f)
         *(dst++) = -32768;
       else if (val > 1.0f)
@@ -91,7 +91,7 @@ static void queue_audio(const THEORAPLAY_AudioPacket *audio) {
 }
 
 
-void playfile(const char *fname, SDL_Window* screen, Renderer& renderer, bool withAudio) {
+void playfile(const char *fname, SDL_Window* screen, Renderer& renderer, float volume) {
   THEORAPLAY_Decoder *decoder = NULL;
   const THEORAPLAY_VideoFrame *video = NULL;
   const THEORAPLAY_AudioPacket *audio = NULL;
@@ -121,7 +121,7 @@ void playfile(const char *fname, SDL_Window* screen, Renderer& renderer, bool wi
   spec.channels = audio->channels;
   spec.samples = 2048;
   spec.callback = audio_callback;
-  spec.userdata = &withAudio;
+  spec.userdata = &volume;
   initfailed = quit = (initfailed || (SDL_OpenAudio(&spec, NULL) != 0));
   while (audio) {
     queue_audio(audio);
