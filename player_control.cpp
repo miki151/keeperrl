@@ -2058,7 +2058,7 @@ void PlayerControl::updateMinionVisibility(const Creature* c) {
   auto visibleTiles = c->getVisibleTiles();
   visibilityMap->update(c, visibleTiles);
   for (auto& pos : visibleTiles) {
-    if (collective->addKnownTile(pos))
+    if (collective->addKnownTile(pos) && c->getPosition().dist8(pos).value_or(11) <= 10)
       updateKnownLocations(pos);
     addToMemory(pos);
   }
