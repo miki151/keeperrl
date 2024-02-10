@@ -876,8 +876,8 @@ double Body::getDeathSoundPitch() const {
   switch (size) {
     case Body::Size::HUGE: return 0.6;
     case Body::Size::LARGE: return 0.9;
-    case Body::Size::MEDIUM: return 1.5;
-    case Body::Size::SMALL: return 3.3;
+    case Body::Size::MEDIUM: return 1.3;
+    case Body::Size::SMALL: return 3.0;
   }
 }
 
