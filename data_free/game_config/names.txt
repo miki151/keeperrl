@@ -7890,7 +7890,6 @@
   "Mervidelo"
   "Mervidelon"
   "Mervidelot"
-  "Michal"
   "Michar"
   "Michard"
   "Michardo"

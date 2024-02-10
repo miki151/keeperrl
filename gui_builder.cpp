@@ -3559,9 +3559,10 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, const GameInfo& info) {
   switch (info.infoType) {
     case GameInfo::InfoType::BAND: {
       auto& collectiveInfo = *info.playerInfo.getReferenceMaybe<CollectiveInfo>();
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawVillainsOverlay, this), THIS_LINE,
-              info.villageInfo, collectiveInfo.nextWave, collectiveInfo.rebellionChance, villainsIndex),
-          OverlayInfo::VILLAINS});
+      if (!info.tutorial)
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawVillainsOverlay, this), THIS_LINE,
+                info.villageInfo, collectiveInfo.nextWave, collectiveInfo.rebellionChance, villainsIndex),
+            OverlayInfo::VILLAINS});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), THIS_LINE,
           collectiveInfo.immigration, info.tutorial, !collectiveInfo.allImmigration.empty()),
           OverlayInfo::IMMIGRATION});

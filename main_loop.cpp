@@ -966,7 +966,7 @@ void MainLoop::launchQuickGame(optional<int> maxTurns, bool tryToLoad) {
     AvatarInfo avatar = getQuickGameAvatar(view, contentFactory.keeperCreatures, &contentFactory.getCreatures());
     CampaignBuilder builder(view, Random, options, contentFactory.villains, contentFactory.gameIntros, avatar);
     auto result = builder.prepareCampaign(&contentFactory, bindMethod(&MainLoop::getRetiredGames, this),
-        CampaignType::QUICK_MAP, "[world]");
+        CampaignType::QUICK_MAP, "Jarnsaxaland");
     auto models = prepareCampaignModels(*result, std::move(avatar), Random, &contentFactory);
     game = Game::campaignGame(std::move(models.models), *result, std::move(avatar), std::move(contentFactory), {});
     dumpMemUsage(game);
