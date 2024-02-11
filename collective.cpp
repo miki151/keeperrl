@@ -173,7 +173,7 @@ void Collective::takePrisoner(Creature* c) {
 }
 
 void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
-  CHECK(!creatures.contains(c));
+  CHECK(!creatures.contains(c)) << "Creature already added " << c->identify();
   if (c->getGlobalTime()) { // only do this if creature already exists on the map
     c->addEffect(LastingEffect::RESTED, 500_visible, false);
     c->addEffect(LastingEffect::SATIATED, 500_visible, false);
