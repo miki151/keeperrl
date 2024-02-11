@@ -1291,7 +1291,7 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
     taskMap->removeTask(task);
   claimSquare(pos);
   for (auto v : pos.neighbors8())
-    if (v.isCovered())
+    if (v.isCovered() && !v.isUnavailable())
       claimSquare(v);
   recalculateFurniturePopIncrease();
 }
