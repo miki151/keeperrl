@@ -3316,7 +3316,7 @@ PLevelMaker LevelMaker::upLevel(Position pos, const BiomeInfo& biomeInfo, vector
     queue->addMaker(std::move(resLocations));
   }
   auto all = make_unique<MakerQueue>();
-  all->addMaker(make_unique<Margin>(mapBorderUnavailableWidth, std::move(queue)));
+  all->addMaker(std::move(queue));
   all->addMaker(make_unique<AddMapBorder>(mapBorderUnavailableWidth));
   return std::move(all);
 }

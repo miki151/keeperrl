@@ -98,7 +98,7 @@ class LevelBuilder {
   void addPermanentGas(TileGasType, Vec2);
 
   void setMountainLevel(Vec2, int);
- 
+
   enum Rot { CW0, CW1, CW2, CW3};
 
   void pushMap(Rectangle bounds, Rot);
@@ -108,7 +108,7 @@ class LevelBuilder {
   ContentFactory* getContentFactory() const;
 
   CreatureList wildlife;
-  
+
   private:
   Vec2 transform(Vec2);
   SquareArray squares;
