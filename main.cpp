@@ -264,7 +264,7 @@ static int keeperMain(po::parser& commandLineFlags) {
       return commandLineFlags["data_dir"].get().string;
     else
       return DATA_DIR;
-  }());  
+  }());
   auto freeDataPath = dataPath.subdirectory("data_free");
   auto paidDataPath = dataPath.subdirectory("data");
   auto contribDataPath = dataPath.subdirectory("data_contrib");
@@ -294,11 +294,13 @@ static int keeperMain(po::parser& commandLineFlags) {
     maxTurns = commandLineFlags["max_turns"].get().i32;
   Clock clock(!!maxTurns);
   userPath.createIfDoesntExist();
-  auto settingsPath = userPath.file("options.txt");
+  auto settingsPath = userPath.file("options_v1_0.txt");
   auto userKeysPath = userPath.file("keybindings.txt");
+  auto highscoresPath = userPath.file("highscores_v1_0.dat");
   if (commandLineFlags["restore_settings"].was_set()) {
     settingsPath.erase();
     userKeysPath.erase();
+    highscoresPath.erase();
   }
   unique_ptr<MySteamInput> steamInput;
   #ifdef RELEASE
@@ -353,7 +355,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   const auto modVersion = appConfig.get<string>("mod_version");
   const auto saveVersion = appConfig.get<int>("save_version");
   FileSharing fileSharing(uploadUrl, modVersion, saveVersion, options, installId);
-  Highscores highscores(userPath.file("highscores.dat"));
+  Highscores highscores(highscoresPath);
   if (commandLineFlags["worldgen_test"].was_set()) {
     ofstream output("worldgen_out.txt");
     UserInfoLog.addOutput(DebugOutput::toStream(output));
