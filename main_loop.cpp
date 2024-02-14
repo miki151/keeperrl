@@ -397,7 +397,7 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
 }
 
 PGame MainLoop::prepareTutorial(const ContentFactory* contentFactory) {
-  PGame game = loadGame(dataFreePath.file("tutorial.kep"));
+  PGame game = loadGame(dataFreePath.file("tutorial.kep"), "tutorial");
   if (game) {
     USER_CHECK(contentFactory->immigrantsData.count("tutorial"));
     Tutorial::createTutorial(*game, contentFactory);
@@ -959,8 +959,10 @@ void MainLoop::launchQuickGame(optional<int> maxTurns, bool tryToLoad) {
     auto files = getSaveOptions({GameSaveType::AUTOSAVE, GameSaveType::KEEPER});
     auto toLoad = std::min_element(files.begin(), files.end(),
         [](const auto& f1, const auto& f2) { return f1.date > f2.date; });
-    if (toLoad != files.end())
-      game = loadGame(userPath.file((*toLoad).filename));
+    if (toLoad != files.end()) {
+      auto path = userPath.file((*toLoad).filename);
+      game = loadGame(path, "\"" + getNameAndVersion(path)->first + "\"");
+    }
   }
   if (!game) {
     AvatarInfo avatar = getQuickGameAvatar(view, contentFactory.keeperCreatures, &contentFactory.getCreatures());
@@ -1312,10 +1314,10 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
   return ModelTable{std::move(models), std::move(factories), numRetiredVillains};
 }
 
-PGame MainLoop::loadGame(const FilePath& file) {
+PGame MainLoop::loadGame(const FilePath& file, const string& name) {
   optional<PGame> game;
   if (auto info = loadSavedGameInfo(file))
-    doWithSplash("Loading "_s + file.getPath() + "...", info->progressCount,
+    doWithSplash("Loading "_s + name + ".", info->progressCount,
         [&] (ProgressMeter& meter) {
           Square::progressMeter = &meter;
           INFO << "Loading from " << file;
@@ -1358,7 +1360,7 @@ static void changeSaveType(const FilePath& file, GameSaveType newType) {
 
 PGame MainLoop::loadOrNewGame() {
   auto games = ScriptedUIDataElems::List{};
-  optional<SaveFileInfo> savedGame;
+  optional<pair<SaveFileInfo, string>> savedGame;
   optional<SaveFileInfo> warlordGame;
   optional<SaveFileInfo> eraseGame;
   auto addGames = [&](GameSaveType type) {
@@ -1367,10 +1369,10 @@ PGame MainLoop::loadOrNewGame() {
     if (!files.empty()) {
       append(games, files.transform(
           [&] (const SaveFileInfo& info) {
-              auto nameAndVersion = getNameAndVersion(userPath.file(info.filename));
+              auto nameAndVersion = *getNameAndVersion(userPath.file(info.filename));
               auto gameInfo = loadSavedGameInfo(userPath.file(info.filename));
               auto record = ScriptedUIDataElems::Record{{
-                {"label", ScriptedUIData{nameAndVersion->first}},
+                {"label", ScriptedUIData{nameAndVersion.first}},
                 {"date", ScriptedUIData{getDateString(info.date)}},
                 {"viewIds", ScriptedUIData{gameInfo->minions.transform([](auto minion){ return ScriptedUIData{minion.viewId}; })}},
                 {"erase", ScriptedUIData{ScriptedUIDataElems::Callback{[&eraseGame, info]{
@@ -1384,8 +1386,8 @@ PGame MainLoop::loadOrNewGame() {
                   return true;
                 }}};
               else
-                record.elems["load"] = ScriptedUIData{ScriptedUIDataElems::Callback{[&savedGame, info]{
-                  savedGame = info;
+                record.elems["load"] = ScriptedUIData{ScriptedUIDataElems::Callback{[&savedGame, name = nameAndVersion.first, info]{
+                  savedGame = make_pair(info, name);
                   return true;
                 }}};
               return record;
@@ -1410,9 +1412,9 @@ PGame MainLoop::loadOrNewGame() {
     if (auto res = prepareCampaign(Random))
       return std::move(res);
   } else if (savedGame) {
-    if (PGame ret = loadGame(userPath.file(savedGame->filename))) {
+    if (PGame ret = loadGame(userPath.file(savedGame->first.filename), "\"" + savedGame->second + "\"")) {
       if (eraseSave())
-        changeSaveType(userPath.file(savedGame->filename), GameSaveType::AUTOSAVE);
+        changeSaveType(userPath.file(savedGame->first.filename), GameSaveType::AUTOSAVE);
       return ret;
     } else
       view->presentText("Sorry", "Failed to load the save file :(");
