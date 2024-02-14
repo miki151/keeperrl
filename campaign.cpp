@@ -92,7 +92,7 @@ string Campaign::VillainInfo::getDescription() const {
     case VillainType::LESSER: return "lesser villain";
     case VillainType::PLAYER: return "player";
     case VillainType::MINOR:
-    case VillainType::NONE: return "minor villain";
+    case VillainType::NONE: return "";
   }
 }
 
@@ -146,7 +146,10 @@ bool Campaign::SiteInfo::isEmpty() const {
 optional<string> Campaign::SiteInfo::getDwellerDescription() const {
   if (dweller)
     return dweller->match(
-        [](const VillainInfo& info) { return info.name + " (" + info.getDescription() + ")"; },
+        [](const VillainInfo& info) {
+          auto desc = info.getDescription();
+          return info.name + (desc.empty() ? ""_s : " (" + desc + ")");
+        },
         [](const RetiredInfo& info) { return info.gameInfo.name + " (main villain)" ;},
         [](const KeeperInfo&)->string { return "This is your home site"; });
   else
