@@ -500,8 +500,6 @@ string Body::getDescription(const ContentFactory* factory) const {
   vector<string> ret;
   bool anyLimbs = false;
   vector<BodyPart> listParts = {BodyPart::ARM, BodyPart::LEG, BodyPart::WING};
-  if (xhumanoid)
-    listParts = {BodyPart::WING};
   for (BodyPart part : listParts)
     if (int num = numBodyParts(part)) {
       ret.push_back(getPluralText(getName(part), num));
@@ -516,8 +514,8 @@ string Body::getDescription(const ContentFactory* factory) const {
       ret.push_back("no arms");
     else if (noLegs)
       ret.push_back("no legs");
-  } else
-  if (!anyLimbs)
+  }
+  else if (!anyLimbs)
     ret.push_back("no limbs");
   auto numHeads = numBodyParts(BodyPart::HEAD);
   if (numHeads == 0)
