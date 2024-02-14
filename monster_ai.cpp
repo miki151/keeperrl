@@ -903,8 +903,12 @@ class ByCollective : public Behaviour {
     auto& minionEquipment = collective->getMinionEquipment();
     for (Item* it : creature->getEquipment().getItems())
       if (!creature->getEquipment().isEquipped(it) && minionEquipment.isOwner(it, creature) &&
-          creature->canEquipIfEmptySlot(it))
+          creature->canEquipIfEmptySlot(it)) {
+        for (Item* it : creature->getEquipment().getItems())
+          if (creature->getEquipment().isEquipped(it) && !minionEquipment.isOwner(it, creature))
+            return creature->unequip(it);
         return creature->equip(it);
+      }
     return NoMove;
   }
 
