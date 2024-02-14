@@ -4353,6 +4353,7 @@ End
     viewId = { "shopkeeper" }
     body = {
       type = Humanoid LARGE
+      canCapture = false
     }
     attr = {
       DAMAGE 17
