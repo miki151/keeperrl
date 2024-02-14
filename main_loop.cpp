@@ -166,12 +166,12 @@ void MainLoop::saveMainModel(PGame& game, const FilePath& modelPath, const FileP
     game->getContentFactory()
   };
   modelOut.getArchive() << info;
-  if (!savedInfo.retiredEnemyInfo) {
+/*  if (!savedInfo.retiredEnemyInfo) {
     CompressedOutput warlordOut(warlordPath.getPath());
     auto warlordInfo = game->getWarlordInfo();
     game->getMainModel()->discardForRetirement();
     warlordOut.getArchive() << saveVersion << name << savedInfo << warlordInfo;
-  }
+  }*/
 }
 
 int MainLoop::getSaveVersion(const SaveFileInfo& save) {
