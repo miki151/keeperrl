@@ -24,6 +24,8 @@ EVIL_COTTAGES inherit COTTAGES append {
   {{"map_house1"} "NOMAD_COTTAGE" "Cottage" MINOR}
   {{"map_house_elf"} "ELVEN_COTTAGE" "Cottage" MINOR}
   {{"map_dungeon2"} "DWARF_CAVE" "Cave" MINOR}
+  {{"map_dungeon1"} "GOBLIN_CAVE_ALLY" "Cave" MINOR}
+  {{"map_dungeon1"} "HARPY_CAVE" "Cave" MINOR}
 }
 
 LAWFUL_COTTAGES inherit COTTAGES append {
@@ -56,8 +58,6 @@ EVIL_KEEPER {
     {{"map_grave1"} "CEMETERY" "Zombies" LESSER}
     {{"map_guard_house1"} "GUARD_POST" "Guard post" LESSER}
 
-    {{"map_dungeon1"} "GOBLIN_CAVE_ALLY" "Unknown" ALLY}
-    {{"map_dungeon1"} "HARPY_CAVE" "Unknown" ALLY}
     {{"map_dungeon1"} "DARK_ELVES_ALLY" "Dark elves" ALLY}
     {{"map_dungeon1"} "GNOMES" "Gnomes" ALLY}
 }
