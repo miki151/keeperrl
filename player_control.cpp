@@ -2794,7 +2794,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
                 Random.choose(collective->getConstructions().getAllStoragePositions().asVector())
                     .dropItem(std::move(upgrade));
             for (int i : Range(info.newCount - info.count))
-              workshop.queue(collective, workshop.getQueued()[info.itemIndex].indexInWorkshop, info.itemIndex + 1);
+              workshop.queue(collective, workshop.getQueued()[info.itemIndex].indexInWorkshop,
+                  workshop.getQueued()[info.itemIndex].minSkill, info.itemIndex + 1);
           }
         }
       }
