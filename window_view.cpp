@@ -519,8 +519,7 @@ void WindowView::updateView(CreatureView* view, bool noRefresh) {
   updateMinimap(view);
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     guiBuilder.setGameSpeed(GuiBuilder::GameSpeed::NORMAL);
-  if (soundLibrary)
-    playSounds(view);
+  playSounds(view);
 }
 
 void WindowView::playSounds(const CreatureView* view) {

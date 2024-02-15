@@ -414,16 +414,15 @@ static int keeperMain(po::parser& commandLineFlags) {
   atomic<bool> splashDone { false };
   SoundLibrary* soundLibrary = nullptr;
   auto loadThread = makeThread([&] {
-    if (tilesPresent) {
-      if (!audioError) {
-        soundLibrary = new SoundLibrary(audioDevice, paidDataPath.subdirectory("sound"));
-        options.addTrigger(OptionId::SOUND, [soundLibrary](int volume) {
-          soundLibrary->setVolume(volume);
-          soundLibrary->playSound(SoundId("SPELL_DECEPTION"));
-        });
-        soundLibrary->setVolume(options.getIntValue(OptionId::SOUND));
-      }
-    }
+    if (tilesPresent && !audioError) {
+      soundLibrary = new SoundLibrary(audioDevice, paidDataPath.subdirectory("sound"));
+      options.addTrigger(OptionId::SOUND, [&soundLibrary](int volume) {
+        soundLibrary->setVolume(volume);
+        soundLibrary->playSound(SoundId("SPELL_DECEPTION"));
+      });
+      soundLibrary->setVolume(options.getIntValue(OptionId::SOUND));
+    } else
+      soundLibrary = new SoundLibrary();
     splashDone = true;
   });
   showLogoSplash(renderer, freeDataPath.file("images/succubi.png"), splashDone);

@@ -6,7 +6,9 @@
 
 #include "audio_device.h"
 
-SoundLibrary::SoundLibrary(AudioDevice& audio, const DirectoryPath& path) : audioDevice(audio) {
+SoundLibrary::SoundLibrary() {}
+
+SoundLibrary::SoundLibrary(AudioDevice& audio, const DirectoryPath& path) : audioDevice(&audio) {
   for (auto subdir : path.getSubDirs())
     addSounds(subdir, path.subdirectory(subdir));
 }
@@ -18,12 +20,12 @@ void SoundLibrary::addSounds(SoundId id, const DirectoryPath& path) {
 }
 
 milliseconds SoundLibrary::playSound(const Sound& s) {
-  if (volume < 0.0001)
+  if (!audioDevice || volume < 0.0001)
     return milliseconds{1000};
   if (auto clips = getReferenceMaybe(sounds, toLower(s.getId()))) {
     auto& sound = Random.choose(*clips);
-    audioDevice.play(sound, s.getVolume() * volume, s.getPitch());
-    return audioDevice.getDuration(sound);
+    audioDevice->play(sound, s.getVolume() * volume, s.getPitch());
+    return audioDevice->getDuration(sound);
   } else
     USER_INFO << "Sound not found: " << toLower(s.getId());
   return milliseconds{1000};
