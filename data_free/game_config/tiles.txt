@@ -816,7 +816,8 @@ BOOKCASES("_human")
   isSymbolFont = true canMirror = true
   extraBorders = { "water" "hill" "sand" "mud" "floor" "keeper_floor" "roof" } }
 { viewId = "swampgrass" symbol = "𝃰" color = ColorId DARK_GREEN
-  isSymbolFont = true canMirror = true }
+  isSymbolFont = true canMirror = true
+  extraBorders = { "water" "hill" "sand" "mud" "floor" "keeper_floor" "roof" } }
 { viewId = "hill" symbol = "𝀢" color = ColorId DARK_GREEN
   isSymbolFont = true canMirror = true
   extraBorders = { "water" "sand" "floor" "keeper_floor" "roof" } }
