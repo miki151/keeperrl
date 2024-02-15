@@ -583,7 +583,7 @@ Def AdventurerHut() {
     ({1 1} Set("dining_table") 1 FurnitureLoc()),
     ({1 1} Set("bed") 1 FurnitureLoc()),
     ({1 1} Set("torch") 1 FurnitureLoc()),
-    ({1 1} Set("equipment_chest") 1 FurnitureLoc()),
+    ({1 1} Set("adventurer_chest") 1 FurnitureLoc()),
   )
 }
 End

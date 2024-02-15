@@ -570,7 +570,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   storageIds = {"gold"}
   hidesItems = true
 }
-"EQUIPMENT_CHEST"
+"ADVENTURER_CHEST"
 {
   name = "chest"
   viewId = { "chest" }
@@ -580,7 +580,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   luxury = 0.4
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
-  storageIds = {"equipment"}
+  storageIds = {"equipment" "gold"}
   hidesItems = true
 }
 "EYEBALL"
