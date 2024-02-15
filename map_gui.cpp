@@ -800,6 +800,14 @@ void MapGui::renderExtraBorders(Renderer& renderer, milliseconds currentTimeReal
                 dirs.insert(v.getCardinalDir());
             Vec2 pos = projectOnScreen(wpos);
             renderer.drawTile(pos, tile.getExtraBorderCoord(dirs), layout->getSquareSize(), color);
+            if (dirs == DirSet{Dir::N, Dir::S}) {
+              renderer.drawTile(pos, tile.getExtraBorderCoord({Dir::N}), layout->getSquareSize(), color);
+              renderer.drawTile(pos, tile.getExtraBorderCoord({Dir::S}), layout->getSquareSize(), color);
+            }
+            if (dirs == DirSet{Dir::W, Dir::E}) {
+              renderer.drawTile(pos, tile.getExtraBorderCoord({Dir::W}), layout->getSquareSize(), color);
+              renderer.drawTile(pos, tile.getExtraBorderCoord({Dir::E}), layout->getSquareSize(), color);
+            }
             break;
           }
       }
