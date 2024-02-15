@@ -529,16 +529,16 @@ Position Game::getTransferPos(Model* from, Model* to) const {
 void Game::transferCreature(Creature* c, Model* to, const vector<Position>& destinations) {
   Model* from = c->getLevel()->getModel();
   if (from != to && !c->getRider()) {
-    auto transfer = [&] (Creature* c) {
-      if (destinations.empty())
-        to->transferCreature(from->extractCreature(c), from->position - to->position);
-      else
-        to->transferCreature(from->extractCreature(c), destinations);
-    };
-    transfer(c);
+    if (destinations.empty())
+      to->transferCreature(from->extractCreature(c), from->position - to->position);
+    else
+      to->transferCreature(from->extractCreature(c), destinations);
     for (auto& summon : c->getCompanions())
       if (c->getSteed() != summon)
-        transfer(summon);
+        transferCreature(summon, to, destinations);
+    if (auto steed = c->getSteed())
+      for (auto& summon : steed->getCompanions())
+        transferCreature(summon, to, destinations);
   }
 }
 

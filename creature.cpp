@@ -2326,6 +2326,8 @@ void Creature::forceMount(Creature* whom) {
     whom->removeEffect(LastingEffect::SLEEP);
     steed = whom->position.getModel()->extractCreature(whom);
     steed->position = position;
+    for (auto& summon : steed->getCompanions())
+      getGame()->transferCreature(summon, position.getModel(), position.neighbors8(Random));
     steed->modViewObject().setModifier(ViewObjectModifier::FLIPX,
         getViewObject().hasModifier(ViewObjectModifier::FLIPX));
   }
