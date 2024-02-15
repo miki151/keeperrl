@@ -2199,7 +2199,7 @@ Def Boulder(Id) {
   layer = GROUND
   canBuildOutsideOfTerritory = true
   buildingFloor = true
-  builtOver = {"HILL" "GRASS" "SAND" "SNOW" "FILL_UP_WATER_FLOOR" "ROOF"}
+  builtOver = {"HILL" "GRASS" "SWAMPGRASS" "SAND" "SNOW" "FILL_UP_WATER_FLOOR" "ROOF"}
 }
 "GHOST_SPAWN" inherit "FLOOR"
 {
