@@ -32,12 +32,13 @@ struct ModDetails;
 class TribeId;
 struct RetiredModelInfo;
 class Unlocks;
+class SteamAchievements;
 
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& paidDataPath, const DirectoryPath& dataFreePath,
       const DirectoryPath& userPath, const DirectoryPath& modsDir, Options*, Jukebox*, SokobanInput*, TileSet*, Unlocks*,
-      int saveVersion, string modVersion);
+      SteamAchievements*, int saveVersion, string modVersion);
 
   void start(bool tilesPresent);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
@@ -129,4 +130,5 @@ class MainLoop {
   optional<RetiredModelInfo> loadRetiredModelFromFile(const FilePath&);
   bool useSingleThread();
   Unlocks* unlocks;
+  SteamAchievements* steamAchievements = nullptr;
 };
