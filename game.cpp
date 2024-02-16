@@ -47,6 +47,7 @@
 #include "body.h"
 #include "enemy_aggression_level.h"
 #include "unlocks.h"
+#include "steam_achievements.h"
 
 template <class Archive>
 void Game::serialize(Archive& ar, const unsigned int version) {
@@ -741,13 +742,15 @@ Unlocks* Game::getUnlocks() const {
   return unlocks;
 }
 
-void Game::initialize(Options* o, Highscores* h, View* v, FileSharing* f, Encyclopedia* e, Unlocks* u) {
+void Game::initialize(Options* o, Highscores* h, View* v, FileSharing* f, Encyclopedia* e, Unlocks* u,
+    SteamAchievements* achievements) {
   options = o;
   highscores = h;
   view = v;
   fileSharing = f;
   encyclopedia = e;
   unlocks = u;
+  steamAchievements = achievements;
 }
 
 const string& Game::getWorldName() const {
@@ -828,10 +831,14 @@ void Game::addAnalytics(const string& name, const string& value) {
 }
 
 void Game::achieve(AchievementId id) const {
+  if (steamAchievements)
+    steamAchievements->achieve(id);
   if (!unlocks->isAchieved(id)) {
     unlocks->achieve(id);
-    auto& info = contentFactory->achievements.at(id);
-    view->windowedMessage(info.viewId, "Achievement unlocked: " + info.name);
+    if (!steamAchievements) {
+      auto& info = contentFactory->achievements.at(id);
+      view->windowedMessage(info.viewId, "Achievement unlocked: " + info.name);
+    }
   }
 }
 

@@ -25,6 +25,7 @@ class ContentFactory;
 class NameGenerator;
 class Encyclopedia;
 class Unlocks;
+class SteamAchievements;
 
 struct WarlordInfoWithReference {
   vector<shared_ptr<Creature>> SERIAL(creatures);
@@ -45,7 +46,7 @@ class Game : public OwnedObject<Game> {
   Encyclopedia* getEncyclopedia();
   Unlocks* getUnlocks() const;
   EnemyAggressionLevel getEnemyAggressionLevel() const;
-  void initialize(Options*, Highscores*, View*, FileSharing*, Encyclopedia*, Unlocks*);
+  void initialize(Options*, Highscores*, View*, FileSharing*, Encyclopedia*, Unlocks*, SteamAchievements*);
   void initializeModels();
   View* getView() const;
   ContentFactory* getContentFactory();
@@ -169,10 +170,9 @@ class Game : public OwnedObject<Game> {
   string SERIAL(avatarId);
   map<string, string> analytics;
   Unlocks* unlocks = nullptr;
+  SteamAchievements* steamAchievements = nullptr;
   void considerAllianceAttack();
   bool SERIAL(allianceAttackPossible) = true;
   EnemyAggressionLevel SERIAL(enemyAggressionLevel);
   int SERIAL(numLesserVillainsDefeated) = 0;
 };
-
-CEREAL_CLASS_VERSION(Game, 1)

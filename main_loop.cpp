@@ -65,10 +65,10 @@
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& paidDataPath,
     const DirectoryPath& freePath, const DirectoryPath& uPath, const DirectoryPath& modsDir, Options* o, Jukebox* j,
-    SokobanInput* soko, TileSet* tileSet, Unlocks* unlocks, int sv, string modVersion)
+    SokobanInput* soko, TileSet* tileSet, Unlocks* unlocks, SteamAchievements* achievements, int sv, string modVersion)
       : view(v), paidDataPath(paidDataPath), dataFreePath(freePath), userPath(uPath), modsDir(modsDir), options(o),
         jukebox(j), highscores(h), fileSharing(fSharing), sokobanInput(soko), tileSet(tileSet), saveVersion(sv),
-        modVersion(modVersion), unlocks(unlocks) {
+        modVersion(modVersion), unlocks(unlocks), steamAchievements(achievements) {
   CHECK(!!unlocks);
 }
 
@@ -278,7 +278,7 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
     view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });
   DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
   Encyclopedia encyclopedia(game->getContentFactory());
-  game->initialize(options, highscores, view, fileSharing, &encyclopedia, unlocks);
+  game->initialize(options, highscores, view, fileSharing, &encyclopedia, unlocks, steamAchievements);
   doWithSplash("Initializing game...", 0,
       [&] (ProgressMeter& meter) {
         game->initializeModels();
@@ -1008,10 +1008,11 @@ void MainLoop::start(bool tilesPresent) {
       showCredits();
       return false;
     }};
-    data.elems["achievements"] = ScriptedUIDataElems::Callback{[this] {
-      showAchievements();
-      return false;
-    }};
+    if (!steamAchievements)
+      data.elems["achievements"] = ScriptedUIDataElems::Callback{[this] {
+        showAchievements();
+        return false;
+      }};
     data.elems["quit"] = ScriptedUIDataElems::Callback{[&choice] { choice = 4; return true;}};
     data.elems["version"] = string(BUILD_DATE) + " " + BUILD_VERSION;
     data.elems["install_id"] = fileSharing->getInstallId();
