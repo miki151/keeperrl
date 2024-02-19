@@ -2080,6 +2080,8 @@ void PlayerControl::onEvent(const GameEvent& event) {
       },
       [&](const ConqueredEnemy& info) {
         auto col = info.collective;
+        if (col == collective)
+          return;
         if (col->isDiscoverable() && info.byPlayer) {
           if (auto& name = col->getName()) {
             collective->addRecordedEvent("the conquering of " + name->full);
