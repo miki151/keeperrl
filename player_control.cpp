@@ -372,7 +372,7 @@ void PlayerControl::leaveControl() {
   for (auto team : allTeams) {
     // a creature may die when landing and be removed from the team so copy the members vector
     for (Creature* c : copyOf(getTeams().getMembers(team)))
-      if (c->getPosition().getModel() != getModel()) {
+      if (c->getPosition().getModel() != getModel() && !c->isAffected(LastingEffect::STUNNED)) {
         getGame()->transferCreature(c, getModel());
         if (c->isAffected(LastingEffect::RIDER))
           if (auto steed = collective->getSteedOrRider(c))
@@ -3651,7 +3651,7 @@ void PlayerControl::updateUnknownLocations() {
 void PlayerControl::considerTransferingLostMinions() {
   if (getGame()->getCurrentModel() == getModel())
     for (auto c : copyOf(getCreatures()))
-      if (c->getPosition().getModel() != getModel())
+      if (c->getPosition().getModel() != getModel() && !c->isAffected(LastingEffect::STUNNED))
         getGame()->transferCreature(c, getModel());
 }
 
