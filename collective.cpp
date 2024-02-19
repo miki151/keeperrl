@@ -776,7 +776,7 @@ void Collective::onEvent(const GameEvent& event) {
         if (getCreatures().contains(victim)) {
           if (Random.roll(30)) {
             addRecordedEvent("the torturing of " + victim->getName().aOrTitle());
-            if (Random.roll(2)) {
+            if (victim->getUniqueId().getGenericId() % 2 == 0) {
               victim->dieWithReason("killed by torture");
             } else {
               control->addMessage("A prisoner is converted to your side");
