@@ -127,7 +127,7 @@ static VillainCounts getVillainCounts(CampaignType type, Options* options) {
         options->getIntValue(OptionId::LESSER_VILLAINS),
         options->getIntValue(OptionId::MINOR_VILLAINS),
         options->getIntValue(OptionId::ALLIES),
-        10000
+        10
       };
     }
     case CampaignType::QUICK_MAP:
@@ -215,6 +215,7 @@ bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campai
   auto regularMainVillains = allMainVillains.filter([](auto& v) { return !v.alwaysPresent; });
   auto endGameVillains = allMainVillains.filter([](auto& v) { return v.alwaysPresent; })
       .transform([](auto& t) { return Dweller(t); });
+  const int numAlwaysPresent = endGameVillains.size();
   if (retired) {
     int numRetired = min(retired->getNumActive(), min(retiredLimit, counts.maxRetired));
     endGameVillains.append(retired->getActiveGames().transform(
@@ -230,7 +231,7 @@ bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campai
     blocked[v] = true;
   auto initialRadius = contentFactory->campaignInfo.initialRadius;
   if (!placeVillains(contentFactory, campaign, blocked, shuffle(random, regularMainVillains),
-      counts.numMain - endGameVillains.size(), Range(0, 1000)))
+      counts.numMain - numAlwaysPresent, Range(0, 1000)))
     return false;
   auto allLesser = shuffle(random, getVillains(villainGroups, VillainType::LESSER));
   if (!placeVillains(contentFactory, campaign, blocked, allLesser.getPrefix(3), min(3, counts.numLesser), Range(1, initialRadius)))
