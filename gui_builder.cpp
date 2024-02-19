@@ -4196,52 +4196,54 @@ SGuiElem GuiBuilder::drawMinionActions(const PlayerInfo& minion, const optional<
   const int buttonWidth = 110;
   const int buttonSpacing = 15;
   auto line = WL(getListBuilder, buttonWidth);
+  auto lineExtra = WL(getListBuilder, buttonWidth);
   const bool tutorialHighlight = tutorial && tutorial->highlights.contains(TutorialHighlight::CONTROL_TEAM);
   for (auto action : Iter(minion.actions)) {
     auto focusCallback = [this, action]{ return minionPageIndex == MinionPageElems::MinionAction{action.index()};};
     auto input = UserInput{UserInputId::MINION_ACTION, MinionActionInfo{minion.creatureId, *action}};
+    auto& whichLine = action.index() <= 4 ? line : lineExtra;
     switch (*action) {
       case PlayerInfo::Action::CONTROL: {
         auto callback = getButtonCallback(input);
-        line.addElem(tutorialHighlight
+        whichLine.addElem(tutorialHighlight
             ? WL(buttonLabelBlink, "Control", callback, focusCallback, false, true)
             : WL(buttonLabelFocusable, "Control", callback, focusCallback, false, true));
         break;
       }
       case PlayerInfo::Action::RENAME:
-        line.addElem(WL(buttonLabelFocusable, "Rename", getButtonCallback(input), focusCallback, false, true));
+        whichLine.addElem(WL(buttonLabelFocusable, "Rename", getButtonCallback(input), focusCallback, false, true));
         break;
       case PlayerInfo::Action::BANISH:
-        line.addElem(WL(buttonLabelFocusable, "Banish", getButtonCallback(input), focusCallback, false, true));
+        whichLine.addElem(WL(buttonLabelFocusable, "Banish", getButtonCallback(input), focusCallback, false, true));
         break;
       case PlayerInfo::Action::DISASSEMBLE:
-        line.addElem(WL(buttonLabelFocusable, "Disassemble", getButtonCallback(input), focusCallback, false, true));
+        whichLine.addElem(WL(buttonLabelFocusable, "Disassemble", getButtonCallback(input), focusCallback, false, true));
         break;
       case PlayerInfo::Action::CONSUME:
-        line.addElem(WL(buttonLabelFocusable, "Absorb", getButtonCallback(input), focusCallback, false, true));
+        whichLine.addElem(WL(buttonLabelFocusable, "Absorb", getButtonCallback(input), focusCallback, false, true));
         break;
       case PlayerInfo::Action::LOCATE:
-        line.addElem(WL(buttonLabelFocusable, "Locate", getButtonCallback(input), focusCallback, false, true));
+        whichLine.addElem(WL(buttonLabelFocusable, "Locate", getButtonCallback(input), focusCallback, false, true));
         break;
       case PlayerInfo::Action::ASSIGN_EQUIPMENT:
-        line.addElem(WL(buttonLabelFocusable, "Assign gear", getButtonCallback(input), focusCallback, false, true));
+        whichLine.addElem(WL(buttonLabelFocusable, "Assign gear", getButtonCallback(input), focusCallback, false, true));
         break;
       case PlayerInfo::Action::LOCK_POSITION:
-          line.addElem(WL(stack,
+          whichLine.addElem(WL(stack,
               WL(buttonLabelFocusable, "Lock position", getButtonCallback(input), focusCallback, false, true),
               getTooltip({"Enabling will prevent other minions from swapping position with this automaton.",
                   "You will still be able to push it forward in control mode."}, THIS_LINE)
           ));
           break;
     }
-    line.addSpace(buttonSpacing);
+    whichLine.addSpace(buttonSpacing);
   }
-  auto line2 = WL(getListBuilder, buttonWidth);
   int numSettingButtons = 0;
   auto getNextFocusPredicate = [&]() -> function<bool()> {
     ++numSettingButtons;
     return [this, numSettingButtons] { return minionPageIndex == MinionPageElems::Setting{numSettingButtons - 1}; };
   };
+  auto line2 = WL(getListBuilder, buttonWidth);
   line2.addElem(WL(buttonLabelFocusable,
       WL(centerHoriz, WL(getListBuilder)
           .addElemAuto(WL(label, "AI type: "))
@@ -4263,6 +4265,10 @@ SGuiElem GuiBuilder::drawMinionActions(const PlayerInfo& minion, const optional<
   if (!minion.equipmentGroups.empty())
     line2.addElem(WL(buttonLabelFocusable, "Restrict gear",
         getEquipmentGroupsFun(minion), getNextFocusPredicate(), false, true));
+  if (!lineExtra.isEmpty()) {
+    line2.addBackElemAuto(lineExtra.buildHorizontalList());
+    line2.addBackSpace(buttonSpacing);
+  }
   return WL(getListBuilder, legendLineHeight)
       .addElem(line.buildHorizontalList())
       .addSpace(5)
