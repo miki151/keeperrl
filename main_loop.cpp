@@ -57,6 +57,7 @@
 #include "unlocks.h"
 #include "scripted_ui_data.h"
 #include "version.h"
+#include "collective.h"
 
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
@@ -1298,6 +1299,9 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
           } else if (auto retired = sites[v].getRetired()) {
             if (auto info = loadRetiredModelFromFile(userPath.file(retired->fileInfo.filename))) {
               models[v] = PModel(std::move(info->model));
+              for (auto col : models[v]->getCollectives())
+                if (col->getVillainType() == VillainType::MAIN)
+                  col->setVillainType(VillainType::RETIRED);
               factories.push_back(std::move(info->factory));
             } else {
               failedToLoad = retired->fileInfo.filename;

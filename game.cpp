@@ -273,7 +273,7 @@ void Game::prepareSiteRetirement() {
       col->setVillainType(VillainType::NONE);
   if (playerCollective->getVillainType() == VillainType::PLAYER) {
     // if it's not PLAYER then it's a conquered collective and villainType and VillageControl is already set up
-    playerCollective->setVillainType(VillainType::MAIN);
+    playerCollective->setVillainType(VillainType::RETIRED);
     playerCollective->setControl(VillageControl::create(
         playerCollective, CONSTRUCT(VillageBehaviour,
             c.minPopulation = 24;

@@ -8,7 +8,8 @@ RICH_ENUM(VillainType,
   MINOR,
   ALLY,
   PLAYER,
-  NONE
+  NONE,
+  RETIRED
 );
 
 extern const char* getName(VillainType);

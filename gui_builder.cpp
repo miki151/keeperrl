@@ -4450,6 +4450,8 @@ SGuiElem GuiBuilder::drawBugreportMenu(bool saveFile, function<void(optional<Bug
 
 static optional<Color> getHighlightColor(VillainType type) {
   switch (type) {
+    case VillainType::RETIRED:
+      return Color::PURPLE;
     case VillainType::MAIN:
       return Color::RED;
     case VillainType::LESSER:

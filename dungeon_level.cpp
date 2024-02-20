@@ -10,6 +10,7 @@ double DungeonLevel::getProgress(VillainType type) {
       return 1.5;
     case VillainType::LESSER:
       return 6;
+    case VillainType::RETIRED:
     case VillainType::MAIN:
       return 12;
     case VillainType::PLAYER:
