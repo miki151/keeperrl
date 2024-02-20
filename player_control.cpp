@@ -3651,8 +3651,12 @@ void PlayerControl::updateUnknownLocations() {
 void PlayerControl::considerTransferingLostMinions() {
   if (getGame()->getCurrentModel() == getModel())
     for (auto c : copyOf(getCreatures()))
-      if (c->getPosition().getModel() != getModel() && !c->isAffected(LastingEffect::STUNNED))
+      if (c->getPosition().getModel() != getModel() && !c->isAffected(LastingEffect::STUNNED)) {
+        if (auto r = c->getRider())
+          if (!getCreatures().contains(r))
+            r->tryToDismount();
         getGame()->transferCreature(c, getModel());
+      }
 }
 
 void PlayerControl::considerAllianceAttack() {
