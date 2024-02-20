@@ -4560,26 +4560,28 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
     for (int x : xRange) {
       Vec2 pos(x, y);
       vector<SGuiElem> elem;
-      if (auto id = sites[x][y].getDwellingViewId())
-        if (c.isInInfluence(Vec2(x, y)) && !c.isDefeated(Vec2(x, y))) {
-          elem.push_back(WL(asciiBackground, id->front()));
-          elem.push_back(WL(viewObject, *id, iconScale));
-          labelPlacer.setOccupied(pos);
+      if (c.isInInfluence(Vec2(x, y))) {
+        if (auto id = sites[x][y].getDwellingViewId())
+          if (!c.isDefeated(Vec2(x, y))) {
+            elem.push_back(WL(asciiBackground, id->front()));
+            elem.push_back(WL(viewObject, *id, iconScale));
+            labelPlacer.setOccupied(pos);
+          }
+        if (auto desc = sites[x][y].getDwellerDescription()) {
+          auto minions = WL(getListBuilder);
+          for (auto& m : sites[x][y].inhabitants)
+            minions.addElemAuto(drawMinionAndLevel(m.viewId, m.level, 1));
+          auto lines = WL(getListBuilder, legendLineHeight).addElem(WL(label, *desc));
+          if (c.isDefeated(pos))
+            lines.addElem(WL(label, "Defeated"));
+          auto exp = c.getBaseLevelIncrease(Vec2(x, y));
+          if (exp > 0)
+            lines.addElem(WL(label, "Experience: " + toString(exp)));
+          if (!minions.isEmpty() && !sites[x][y].getDwellingViewId()->contains(ViewId("map_unknown")))
+            lines.addElem(minions.buildHorizontalList());
+          elem.push_back(WL(margins, WL(tooltip2, WL(miniWindow, WL(margins,
+              lines.buildVerticalList(), 15)), [](auto& r) { return r.bottomLeft(); }), -4));
         }
-      if (auto desc = sites[x][y].getDwellerDescription()) {
-        auto minions = WL(getListBuilder);
-        for (auto& m : sites[x][y].inhabitants)
-          minions.addElemAuto(drawMinionAndLevel(m.viewId, m.level, 1));
-        auto lines = WL(getListBuilder, legendLineHeight).addElem(WL(label, *desc));
-        if (c.isDefeated(pos))
-          lines.addElem(WL(label, "Defeated"));
-        auto exp = c.getBaseLevelIncrease(Vec2(x, y));
-        if (exp > 0)
-          lines.addElem(WL(label, "Experience: " + toString(exp)));
-        if (!minions.isEmpty() && !sites[x][y].getDwellingViewId()->contains(ViewId("map_unknown")))
-          lines.addElem(minions.buildHorizontalList());
-        elem.push_back(WL(margins, WL(tooltip2, WL(miniWindow, WL(margins,
-            lines.buildVerticalList(), 15)), [](auto& r) { return r.bottomLeft(); }), -4));
       }
       columns2.addElem(WL(stack, std::move(elem)));
     }
@@ -4615,15 +4617,15 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
                 return 0;
             return 4;
           }();
-          elem.push_back(WL(stack,
+          elem.push_back(WL(margins, WL(stack,
               WL(button, [this, pos, selectCallback] {
                 if (selectCallback)
                   selectCallback(pos);
                 campaignGridPointer = pos;
               }),
-              WL(margins, WL(mouseHighlight2, WL(margins,
-                  translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale)), marginSize), nullptr, false),
-                  -marginSize)
+              WL(mouseHighlight2, WL(margins,
+                  translateHighlight(WL(viewObject, ViewId("map_highlight"), iconScale)), marginSize), nullptr, false)),
+                  -marginSize
           ));
         }
         if (!!sites[x][y].getVillainType() && c.isDefeated(pos))
