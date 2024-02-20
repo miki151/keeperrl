@@ -117,6 +117,33 @@ End
     }
 }
 
+"white_stables_no_pop"
+{
+    {
+      ids = { "HORSE_CAN_TRAIN" }
+      traits = { NO_LIMIT }
+      requirements = {
+        { 0.0 RecruitmentInfo { "HUMAN_STABLE" } 0 }
+        { 1.0 CostInfo "GOLD" 25 }
+      }
+    }
+    {
+      ids = { "WARHORSE" }
+      traits = { NO_LIMIT }
+      requirements = {
+        { 0.0 RecruitmentInfo { "HUMAN_STABLE" } 0 }
+        { 1.0 CostInfo "GOLD" 40 }
+      }
+    }
+    {
+      ids = { "CAMEL" }
+      traits = { NO_LIMIT }
+      requirements = {
+        { 0.0 RecruitmentInfo { "THIEF_STABLE" } 0 }
+        { 1.0 CostInfo "GOLD" 25 }
+      }
+    }
+}
 "dark_keeper"
 {
     {

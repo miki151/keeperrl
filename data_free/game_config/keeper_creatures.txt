@@ -242,6 +242,7 @@
 "93_white_knight_adventurer" inherit "91_dark_mage_adventurer"
 {
   creatureId = { "ADVENTURER_KNIGHT_WHITE" "ADVENTURER_KNIGHT_WHITE_F" }
+  villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
   tribeAlignment = LAWFUL
-  immigrantGroups = { "white_stables" }
+  immigrantGroups = { "white_stables_no_pop" }
 }
