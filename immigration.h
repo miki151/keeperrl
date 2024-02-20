@@ -38,7 +38,6 @@ class Immigration : public OwnedObject<Immigration> {
     optional<milliseconds> getCreatedTime() const;
     int getImmigrantIndex() const;
     const vector<SpecialTrait>& getSpecialTraits() const;
-
     SERIALIZATION_DECL(Available)
 
     private:
@@ -46,7 +45,7 @@ class Immigration : public OwnedObject<Immigration> {
     static Available generate(Immigration*, int index);
     vector<Position> getSpawnPositions() const;
     Available(Immigration*, vector<PCreature>, int immigrantIndex, optional<GlobalTime> endTime, vector<SpecialTrait>);
-    void addAllCreatures(const vector<Position>& spawnPositions);
+    vector<Creature*> addAllCreatures(const vector<Position>& spawnPositions);
     friend class Immigration;
     vector<PCreature> SERIAL(creatures);
     int SERIAL(immigrantIndex);
@@ -95,4 +94,5 @@ class Immigration : public OwnedObject<Immigration> {
   map<int, ImmigrantAutoState> SERIAL(autoState);
   int getNumGeneratedAndCandidates(int index) const;
   vector<ImmigrantInfo> SERIAL(immigrants);
+  void considerRespawningHorses();
 };
