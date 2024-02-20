@@ -831,6 +831,8 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "plant"
   viewId = { "swampplant" }
+  canSilentlyReplace = true
+  removeInstantly = true
 }
 "STONES"
 {
