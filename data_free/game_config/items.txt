@@ -679,6 +679,11 @@ End
     }
     weight = 3
     price = 1800
+    weaponInfo = {
+      attackType = SPELL
+      attackMsg = WAVE
+      meleeAttackAttr = SPELL_DAMAGE
+    }
     craftingCost = "ADOXIUM" 40
     genPrefixes = {
       1 VictimEffect 0.2 Lasting INSANITY
