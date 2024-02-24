@@ -2176,7 +2176,7 @@ Def Boulder(Id) {
 {
   name = "grass"
   viewId = { "swampgrass" }
-  tickType = Effect Chance 0.006 SoundEffect { "FROG_AMBIENT" 0.02 }
+  tickType = Effect Chance 0.006 SoundEffect { "FROG_AMBIENT" 0.15 }
   layer = GROUND
 }
 "HILL"
