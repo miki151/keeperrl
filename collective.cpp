@@ -445,7 +445,9 @@ void Collective::makeConqueredRetired(Collective* conqueror) {
   setEnemyId(*conqueror->getEnemyId());
   auto oldCreatures = getCreatures();
   for (auto c : copyOf(conqueror->getCreatures()))
-    addCreature(c, conqueror->getAllTraits(c));
+    // shopkeepers keep references to their shop positions so hack it by skipping them
+    if (c->getAttributes().getCreatureId() != CreatureId("SHOPKEEPER"))
+      addCreature(c, conqueror->getAllTraits(c));
   for (auto c : creatures)
     getGame()->transferCreature(c, getModel(), territory->getAll());
   for (auto c : oldCreatures)
