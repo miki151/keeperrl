@@ -73,6 +73,7 @@ class MapGui : public GuiElem {
   void setCenter(Vec2, Level* level);
   void clearCenter();
   void resetScrolling();
+  void releaseMouseHeld();
   bool isCentered() const;
   Vec2 getScreenPos() const;
   optional<Vec2> projectOnMap(Vec2 screenCoord);

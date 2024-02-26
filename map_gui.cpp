@@ -230,6 +230,10 @@ bool MapGui::onKeyPressed2(SDL_Keysym key) {
   return false;
 }
 
+void MapGui::releaseMouseHeld() {
+  mouseHeldPos = none;
+}
+
 bool MapGui::onLeftClick(Vec2 v) {
   if (v.inRectangle(getBounds())) {
     mouseHeldPos = v;

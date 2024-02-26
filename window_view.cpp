@@ -236,6 +236,8 @@ void WindowView::getSmallSplash(const ProgressMeter* meter, const string& text, 
 }
 
 void WindowView::displaySplash(const ProgressMeter* meter, const string& text, function<void()> cancelFun) {
+  mapGui->releaseMouseHeld();
+  inputQueue.push(UserInputId::RECT_CANCEL);
   splashDone = false;
   renderDialog.push([=] {
     getSmallSplash(meter, text, cancelFun);
