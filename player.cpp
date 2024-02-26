@@ -491,7 +491,8 @@ void Player::sleeping() {
   MEASURE(
       getView()->updateView(this, false),
       "level render time");
-  if (LastingEffects::losesControl(creature))
+  if (LastingEffects::losesControl(creature,
+      creature->getPosition().getModel() == getGame()->getMainModel().get()))
     onLostControl();
   // Pop all queued actions and discard them
   do {
@@ -813,7 +814,8 @@ void Player::makeMove() {
         default:
           return;
       }
-    if (LastingEffects::losesControl(creature)) {
+    if (LastingEffects::losesControl(creature,
+        creature->getPosition().getModel() == getGame()->getMainModel().get())) {
       onLostControl();
       return;
     }

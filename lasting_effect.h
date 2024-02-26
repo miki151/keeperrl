@@ -104,7 +104,7 @@ class LastingEffects {
   static TimeInterval getDuration(LastingEffect);
   static void runTests();
   static Color getColor(LastingEffect);
-  static bool losesControl(const Creature*);
+  static bool losesControl(const Creature*, bool homeSite);
   static bool doesntMove(const Creature*);
   static bool restrictedMovement(const Creature*);
   static bool canSwapPosition(const Creature*);
