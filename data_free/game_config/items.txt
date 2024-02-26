@@ -257,7 +257,7 @@ SPELL_HEAD("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, "automaton_spell", "a
     craftingCost = IRON 15
     upgradeInfo = { AUTOMATONS_UPPER AssembledCreatureEffect
       Name "kaboom head"
-      Description "Explodes, destroying the equiped automaton and wounding everything around it with +50 fire damage."
+      Description "Explodes, destroying the equiped automaton and killing the target. Aggravates enemies."
       {
         AddBodyPart HEAD 1 { Intrinsic { "touch_attack" } "self destruct" 1 {
           attackType = HIT
@@ -267,6 +267,7 @@ SPELL_HEAD("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, "automaton_spell", "a
           victimEffect = {1.0 Suicide DIE}
           attackerEffect = {CircularBlast Area 1 Fire{30} Suicide DIE}}}
         AddAutomatonPart 2 "kaboom" { "installed_kaboom_head" }
+        Permanent AGGRAVATES
       }
     }
     upgradeType = {ARMOR}
