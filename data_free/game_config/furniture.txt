@@ -1443,7 +1443,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockMovement = true
   blockAllVision = true
   constructMessage = FILL_UP
-  viewLayer = FLOOR_BACKGROUND
+  #viewLayer = FLOOR_BACKGROUND
   wall = true
   xForgetAfterBuilding = true
   strength2 = {
@@ -1604,7 +1604,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockMovement = true
   blockAllVision = true
   wall = true
-  viewLayer = FLOOR_BACKGROUND
+  #viewLayer = FLOOR_BACKGROUND
   xForgetAfterBuilding = true
   luxury = 0.2
   constructMessage = REINFORCE
@@ -1677,7 +1677,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockMovement = true
   blockAllVision = true
   wall = true
-  viewLayer = FLOOR_BACKGROUND
+  #viewLayer = FLOOR_BACKGROUND
 }
 "ARCHER_WALL" inherit "CASTLE_WALL"
 {
@@ -1691,7 +1691,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "castle_wall" }
   blockAllVision = true
   strength = 1
-  viewLayer = FLOOR_BACKGROUND
+  #viewLayer = FLOOR_BACKGROUND
   entryType = Effect {
       Message NORMAL "It was just an illusion!"
       Fx { TELEPORT_OUT }
@@ -1725,7 +1725,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockMovement = true
   blockAllVision = true
   wall = true
-  viewLayer = FLOOR_BACKGROUND
+  #viewLayer = FLOOR_BACKGROUND
 }
 "MUD_WALL"
 {
