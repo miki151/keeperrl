@@ -197,6 +197,7 @@ CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const char* n
       c.viewId = id;
       c.body = Body::nonHumanoid(Body::Size::LARGE);
       c.body->setDeathSound(none);
+      c.body->setCanBeCaptured(false);
       c.attr[AttrType("DAMAGE")] = 28;
       c.attr[AttrType("DEFENSE")] = 28;
       c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
