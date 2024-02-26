@@ -1384,6 +1384,7 @@ TimeInterval LastingEffects::getDuration(LastingEffect e) {
     case LastingEffect::WARNING:
     case LastingEffect::TELEPATHY:
     case LastingEffect::ENTANGLED:
+    case LastingEffect::ON_FIRE:
       return 30_visible;
     case LastingEffect::HALLU:
     case LastingEffect::SLOWED:
