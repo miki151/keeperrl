@@ -57,6 +57,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::KEEPER_WARNING_TIMEOUT, 200},
   {OptionId::SINGLE_THREAD, 0},
   {OptionId::UNLOCK_ALL, 0},
+  {OptionId::EXP_INCREASE, 1}
 };
 
 const map<OptionId, string> names {
@@ -95,6 +96,7 @@ const map<OptionId, string> names {
   {OptionId::KEEPER_WARNING_TIMEOUT, "Keeper danger timeout"},
   {OptionId::SINGLE_THREAD, "Use a single thread for loading operations"},
   {OptionId::UNLOCK_ALL, "Unlock all hidden gameplay features"},
+  {OptionId::EXP_INCREASE, "Enemy difficulty curve"},
 };
 
 const map<OptionId, string> hints {
@@ -117,6 +119,7 @@ const map<OptionId, string> hints {
   {OptionId::SINGLE_THREAD, "Please try this option if you're experiencing slow saving, loading, or map generation. "
         "Note: this will make the game unresponsive during the operation."},
   {OptionId::UNLOCK_ALL, "Unlocks all player characters and gameplay features that are normally unlocked by finding secrets in the game."},
+  {OptionId::EXP_INCREASE, "Defines the increase in experience for every lesser and main villain as you travel further away from your home site."}
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -348,6 +351,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::CURRENT_MOD2:
       return combine(*value.getValueMaybe<vector<string>>(), true);
     case OptionId::ENDLESS_ENEMIES:
+    case OptionId::EXP_INCREASE:
     case OptionId::ENEMY_AGGRESSION:
       return choices[id][(*value.getValueMaybe<int>() + choices[id].size()) % choices[id].size()];
     case OptionId::FPS_LIMIT:

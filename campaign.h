@@ -89,7 +89,7 @@ class Campaign {
   friend class CampaignBuilder;
   void refreshInfluencePos(const ContentFactory*);
   void refreshMaxAggressorCutOff();
-  Campaign(Table<SiteInfo>, CampaignType, const string& worldName);
+  Campaign(Table<SiteInfo>, CampaignType, const string& worldName, int expIncrease);
   Table<SiteInfo> SERIAL(sites);
   Vec2 SERIAL(playerPos);
   string SERIAL(worldName);
@@ -100,4 +100,7 @@ class Campaign {
   int SERIAL(minimapZoom) = 2;
   Vec2 SERIAL(originalPlayerPos);
   Table<bool> SERIAL(belowMaxAgressorCutOff);
+  int SERIAL(expIncrease) = 3;
 };
+
+CEREAL_CLASS_VERSION(Campaign, 1)

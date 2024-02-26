@@ -46,6 +46,7 @@ vector<OptionId> CampaignBuilder::getCampaignOptions(CampaignType type) const {
         OptionId::LESSER_VILLAINS,
         OptionId::MINOR_VILLAINS,
         OptionId::ALLIES,
+        OptionId::EXP_INCREASE,
         OptionId::ENDLESS_ENEMIES,
         OptionId::ENEMY_AGGRESSION,
       };
@@ -287,6 +288,18 @@ static EnemyAggressionLevel getAggressionLevel(Options* options) {
   fail();
 }
 
+static int getExpIncrease(Options* options) {
+  auto v = options->getIntValue(OptionId::EXP_INCREASE);
+  if (v == 0)
+    return 2;
+  if (v == 1)
+    return 3;
+  if (v == 2)
+    return 5;
+  FATAL << "Bad exp increase value " << v;
+  fail();
+}
+
 optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* contentFactory,
     function<optional<RetiredGames>(CampaignType)> genRetired,
     CampaignType type, string worldName) {
@@ -297,6 +310,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* content
   View::CampaignMenuState menuState { true, CampaignMenuIndex{CampaignMenuElems::None{}} };
   options->setChoices(OptionId::ENDLESS_ENEMIES, {"none", "from the start", "after winning"});
   options->setChoices(OptionId::ENEMY_AGGRESSION, {"none", "moderate", "extreme"});
+  options->setChoices(OptionId::EXP_INCREASE, {"mild", "normal", "extreme"});
   int worldMapIndex = 0;
   auto worldMapId = [&] {
     return contentFactory->worldMaps[worldMapIndex].layout;
@@ -305,7 +319,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* content
   while (1) {
     setCountLimits(campaignInfo);
     Table<Campaign::SiteInfo> terrain = getTerrain(random, contentFactory, worldMapId(), size);
-    Campaign campaign(terrain, type, worldName);
+    Campaign campaign(terrain, type, worldName, getExpIncrease(options));
     campaign.mapZoom = campaignInfo.mapZoom;
     campaign.minimapZoom = campaignInfo.minimapZoom;
     for (auto pos : Random.permutation(campaign.getSites().getBounds()
@@ -398,13 +412,13 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* content
 }
 
 CampaignSetup CampaignBuilder::getEmptyCampaign() {
-  Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::QUICK_MAP, "");
+  Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::QUICK_MAP, "", 1);
   return CampaignSetup{ret, "", "", {}, none, EnemyAggressionLevel::MODERATE};
 }
 
 CampaignSetup CampaignBuilder::getWarlordCampaign(const vector<RetiredGames::RetiredGame>& games,
     const string& gameName) {
-  Campaign ret(Table<Campaign::SiteInfo>(games.size(), 1), CampaignType::QUICK_MAP, "");
+  Campaign ret(Table<Campaign::SiteInfo>(games.size(), 1), CampaignType::QUICK_MAP, "", 1);
   for (int i : All(games)) {
     auto site = Campaign::SiteInfo {
       games[i].gameInfo.getViewId(),

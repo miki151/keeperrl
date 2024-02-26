@@ -15,7 +15,14 @@
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Campaign);
 
-SERIALIZE_DEF(Campaign, sites, playerPos, worldName, defeated, influencePos, type, mapZoom, minimapZoom, originalPlayerPos, belowMaxAgressorCutOff)
+template <class Archive>
+void Campaign::serialize(Archive& ar, const unsigned int version) {
+  ar(sites, playerPos, worldName, defeated, influencePos, type, mapZoom, minimapZoom, originalPlayerPos, belowMaxAgressorCutOff);
+  if (version == 1)
+    ar(expIncrease);
+}
+
+SERIALIZABLE(Campaign);
 
 void VillainViewId::serialize(PrettyInputArchive& ar1, unsigned int) {
   if (ar1.peek() == "{" && ar1.peek(2) == "{")
@@ -51,8 +58,8 @@ BiomeId Campaign::getBaseBiome() const {
   return *sites[playerPos].biome;
 }
 
-Campaign::Campaign(Table<SiteInfo> s, CampaignType t, const string& w)
-    : sites(s), worldName(w), defeated(sites.getBounds(), false), type(t) {
+Campaign::Campaign(Table<SiteInfo> s, CampaignType t, const string& w, int expIncrease)
+    : sites(s), worldName(w), defeated(sites.getBounds(), false), type(t), expIncrease(expIncrease) {
 }
 
 bool Campaign::isGoodStartPos(Vec2 pos) const {
@@ -201,7 +208,7 @@ int Campaign::getBaseLevelIncrease(Vec2 pos) const {
   for (Vec2 v : sites.getBounds())
     if (blocksInfluence(sites[v].getVillainType().value_or(VillainType::NONE)) && v.distD(playerPos) < dist)
       ++res;
-  return res * 3;
+  return res * expIncrease;
 }
 
 bool Campaign::passesMaxAggressorCutOff(Vec2 pos) {
