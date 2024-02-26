@@ -2713,6 +2713,11 @@ namespace {
                 MonsterAIFactory::stayInLocation(
                     builder->toGlobalCoordinates(Rectangle::centered(pos, 4)).getAllSquares())));
           },
+          [&](LayoutActions::PeacefulCreature c) {
+            builder->putCreature(pos, builder->getContentFactory()->getCreatures().fromId(c.id, TribeId::getPeaceful(),
+                MonsterAIFactory::stayInLocation(
+                    builder->toGlobalCoordinates(Rectangle::centered(pos, 4)).getAllSquares())));
+          },
           [&](LayoutActions::AlliedPrisoner info) {
             auto c = builder->getContentFactory()->getCreatures().fromIdNoInventory(info.id, TribeId::getDarkKeeper(),
                 MonsterAIFactory::stayInLocation(

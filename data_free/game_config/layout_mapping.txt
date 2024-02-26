@@ -71,7 +71,7 @@
   "prison_bars" PlaceHostile "PRISON_BARS"
   "prison_door" PlaceHostile "PRISON_DOOR_LOCKED"
   "ant_worker" HostileCreature "ANT_WORKER"
-  "bat" HostileCreature "BAT"
+  "bat" PeacefulCreature "BAT"
   "elf_archer" AlliedPrisoner "ELF_ARCHER"
   "ghost_spawn" Place "GHOST_SPAWN"
   "gargoyle" Place "GARGOYLE_TRAP"

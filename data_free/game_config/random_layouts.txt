@@ -812,6 +812,7 @@ Def ZLevelMiniFeatures(WaterType) {
       Inside(3, FourCorners(Reset("hard_rock")))
     }, 1, On("hard_rock"))
   ))
+  Place({1 1}, Set("bat"), {1 4}, On("floor"))
 }
 End
 
