@@ -636,7 +636,7 @@ class Fighter : public Behaviour {
       if (auto move = considerCircularBlast())
         return move;
     if (distance > 1) {
-      if (chase && !other->getAttributes().dontChase() && !isChaseFrozen(other)) {
+      if (chase && !other->dontChase() && !isChaseFrozen(other)) {
         lastSeen = none;
         if (auto action = creature->moveTowards(other->getPosition())) {
           // TODO: instead consider treating a 0-weighted move as NoMove.

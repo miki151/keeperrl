@@ -88,6 +88,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const vector<Creature*>& getVisibleCreatures() const;
   bool shouldAIAttack(const Creature* enemy) const;
   bool shouldAIChase(const Creature* enemy) const;
+  bool dontChase() const;
   vector<Position> getVisibleTiles() const;
   void setGlobalTime(GlobalTime);
   void setPosition(Position);

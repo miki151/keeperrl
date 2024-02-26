@@ -380,10 +380,6 @@ MinionActivityMap& CreatureAttributes::getMinionActivities() {
   return minionActivities;
 }
 
-bool CreatureAttributes::dontChase() const {
-  return noChase;
-}
-
 bool CreatureAttributes::getCanJoinCollective() const {
   return canJoinCollective;
 }

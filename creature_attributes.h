@@ -111,7 +111,6 @@ class CreatureAttributes {
   void consume(Creature* self, CreatureAttributes& other);
   const MinionActivityMap& getMinionActivities() const;
   MinionActivityMap& getMinionActivities();
-  bool dontChase() const;
   bool getCanJoinCollective() const;
   void setCanJoinCollective(bool);
   void increaseExpFromCombat(double attackDiff);
@@ -139,6 +138,7 @@ class CreatureAttributes {
   optional<AchievementId> SERIAL(steedAchievement);
   HashSet<AttrType> SERIAL(fixedAttr);
   bool SERIAL(grantsExperience) = true;
+  bool SERIAL(noChase) = false;
 
   private:
   void consumeEffects(Creature* self, const EnumMap<LastingEffect, int>&);
@@ -155,7 +155,6 @@ class CreatureAttributes {
   bool SERIAL(cantEquip) = false;
   AIType SERIAL(aiType) = AIType::MELEE;
   bool SERIAL(boulder) = false;
-  bool SERIAL(noChase) = false;
   bool SERIAL(isSpecial) = false;
   vector<SpellSchoolId> SERIAL(spellSchools);
   vector<SpellId> SERIAL(spells);

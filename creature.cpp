@@ -2972,6 +2972,10 @@ optional<Creature::CombatIntentInfo> Creature::getLastCombatIntent() const {
     return none;
 }
 
+bool Creature::dontChase() const {
+  return tribe == TribeId::getWildlife() || attributes->noChase;
+}
+
 Creature* Creature::getClosestEnemy(bool meleeOnly) const {
   PROFILE;
   int dist = 1000000000;
@@ -2979,7 +2983,7 @@ Creature* Creature::getClosestEnemy(bool meleeOnly) const {
   for (Creature* other : getVisibleEnemies()) {
     int curDist = *other->getPosition().dist8(position);
     if (curDist < dist &&
-        (!other->getAttributes().dontChase() || curDist == 1) &&
+        (!other->dontChase() || curDist == 1) &&
         !other->isAffected(LastingEffect::STUNNED) &&
         (!meleeOnly || other->shouldAIAttack(this))) {
       result = other;
