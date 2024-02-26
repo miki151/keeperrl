@@ -829,13 +829,21 @@ void Player::transferAction() {
   if (auto to = game->chooseSite("Choose destination site:", creatures[0]->getLevel()->getModel())) {
     creatures = creatures.filter([&](const Creature* c) { return c->getPosition().getModel() != to; });
     vector<PlayerInfo> cant;
+    vector<PlayerInfo> turnedOff;
     auto contentFactory = getGame()->getContentFactory();
-    for (Creature* c : copyOf(creatures))
+    for (Creature* c : copyOf(creatures)) {
+      if (c->isAffected(LastingEffect::TURNED_OFF)) {
+        turnedOff.push_back(PlayerInfo(c, contentFactory));
+        creatures.removeElement(c);
+      }
       if (!game->canTransferCreature(c, to)) {
         cant.push_back(PlayerInfo(c, contentFactory));
         creatures.removeElement(c);
       }
+    }
     if (!cant.empty() && !view->creatureInfo("These minions will be left behind due to sunlight. Continue?", true, cant))
+      return;
+    if (!turnedOff.empty() && !view->creatureInfo("These minions will be left behind due to being turned off. Continue?", true, turnedOff))
       return;
     if (!creatures.empty()) {
       for (Creature* c : creatures) {

@@ -5240,7 +5240,7 @@ SGuiElem GuiBuilder::drawCreatureInfo(SyncQueue<bool>& queue, const string& titl
     const vector<PlayerInfo>& creatures) {
   auto lines = WL(getListBuilder, getStandardLineHeight());
   lines.addElem(WL(centerHoriz, WL(label, title)));
-  const int windowWidth = 540;
+  const int windowWidth = 590;
   lines.addMiddleElem(WL(scrollable, WL(margins, drawCreatureList(creatures, nullptr), 10)));
   lines.addSpace(15);
   auto bottomLine = WL(getListBuilder)
