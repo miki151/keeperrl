@@ -70,6 +70,7 @@
   "connect" { RemoveFlag NO_DIG Flag CONNECT_CORRIDOR }
   "prison_bars" PlaceHostile "PRISON_BARS"
   "prison_door" PlaceHostile "PRISON_DOOR_LOCKED"
+  "prison" Place "PRISON"
   "ant_worker" HostileCreature "ANT_WORKER"
   "bat" PeacefulCreature "BAT"
   "elf_archer" AlliedPrisoner "ELF_ARCHER"

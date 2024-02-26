@@ -92,10 +92,15 @@ bool FurnitureFactory::canBuild(FurnitureType type, Position pos) const {
   CHECK(groundF);
   if (data.isBridge())
     return !!groundF->getDefaultBridge();
-  if (auto otherPos = data.getSecondPart(pos))
+  if (auto otherPos = data.getSecondPart(pos)) {
     if (auto f = otherPos->getFurniture(FurnitureLayer::MIDDLE))
-      if (!f->isWall())
+      // check for castle wall and prison as a hack to disallow digging into goblin matrons
+      if (!f->isWall() || f->getType() == FurnitureType("CASTLE_WALL"))
         return false;
+    if (auto f = otherPos->getFurniture(FurnitureLayer::FLOOR))
+      if (f->getType() == FurnitureType("PRISON"))
+        return false;
+  }
   if (!data.getBuiltOver().empty()) {
     for (auto f : data.getBuiltOver())
       if (!!pos.getFurniture(f))
