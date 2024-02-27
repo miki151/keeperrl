@@ -409,7 +409,16 @@ void VillageControl::considerAcceptingPrisoners() {
     collective->takePrisoner(c);
 }
 
-void VillageControl::update(bool) {
+void VillageControl::update(bool currentlyActive) {
+  if (!currentlyActive)
+    for (auto c : getCreatures())
+      if (collective->getModel() == c->getPosition().getModel() &&
+          !collective->getTerritory().contains(c->getPosition()))
+        for (auto pos : Random.permutation(collective->getTerritory().getAll()))
+          if (pos.canEnter(c)) {
+            c->getPosition().moveCreature(pos);
+            break;
+          }
   considerAcceptingPrisoners();
   considerCancellingAttack();
   acceptImmigration();
