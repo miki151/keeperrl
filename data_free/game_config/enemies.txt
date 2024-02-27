@@ -2082,7 +2082,7 @@ End
   behaviour = {
     minPopulation = 0
     minTeamSize = 1
-    triggers = {EnemyPopulation 13 AggravatingMinions}
+    triggers = {EnemyPopulation 13 AggravatingMinions StolenItems}
     attackBehaviour = KillMembers 4
   }
 }
