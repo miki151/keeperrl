@@ -1734,9 +1734,10 @@ double Creature::getFlankedMod() const {
   int cnt = 1 + getAttr(AttrType("PARRY"));
   for (auto pos : position.neighbors8())
     if (auto c = pos.getCreature()) {
-      if (isEnemy(c))
-        --cnt;
-      else
+      if (isEnemy(c)) {
+        if (!LastingEffects::doesntMove(c))
+          --cnt;
+      } else
         ++cnt;
     }
   return pow(1.07, min(0, cnt));
