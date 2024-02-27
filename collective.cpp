@@ -201,8 +201,9 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
   updateCreatureStatus(c);
-  for (Item* item : c->getEquipment().getItems())
-    CHECK(minionEquipment->tryToOwn(c, item));
+  if (!traits.contains(MinionTrait::PRISONER))
+    for (Item* item : c->getEquipment().getItems())
+      CHECK(minionEquipment->tryToOwn(c, item));
   for (auto minion : getCreatures()) {
     c->removePrivateEnemy(minion);
     minion->removePrivateEnemy(c);
