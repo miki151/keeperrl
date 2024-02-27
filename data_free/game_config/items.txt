@@ -920,6 +920,7 @@ End
       DEFENSE 10
       SPELL_SPEED 10
     }
+    equipmentGroup = "adoxium equipment"
   }
 "LeatherArmor"
   {
