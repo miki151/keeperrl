@@ -78,7 +78,7 @@ milliseconds AudioDevice::getDuration(const SoundBuffer& sound) {
 
   alGetBufferi(id, AL_FREQUENCY, &frequency);
 
-  return milliseconds{1000 * lengthInSamples / frequency};
+  return milliseconds{lengthInSamples / frequency * 1000};
 }
 
 void AudioDevice::play(const SoundBuffer& sound, double volume, double pitch) {
