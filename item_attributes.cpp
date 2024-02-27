@@ -46,8 +46,12 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
 
 void ItemAttributes::scale(double value, const ContentFactory* factory) {
   for (auto& attr : factory->attrOrder)
-    if (modifiers.count(attr))
+    if (modifiers.count(attr)) {
+      auto prev = modifiers[attr];
       modifiers[attr] *= value;
+      if (prev == modifiers[attr] && value > 1)
+        ++modifiers[attr];
+    }
   if (assembledMinion)
     assembledMinion->scale *= value;
 }
