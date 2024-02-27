@@ -226,7 +226,8 @@ void Player::throwItem(Item* item, optional<Position> target) {
     if (!target)
       return;
   }
-  tryToPerform(creature->throwItem(item, *target, false));
+  tryToPerform(creature->throwItem(item, *target, item->effectAppliedWhenThrown() &&
+      item->getEffect()->shouldAIApply(creature, *target) >= 0));
 }
 
 void Player::handleIntrinsicAttacks(const vector<UniqueEntity<Item>::Id>& itemIds, ItemAction action) {
