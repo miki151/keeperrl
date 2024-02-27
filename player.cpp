@@ -649,12 +649,21 @@ bool Player::canTravel() const {
         getView()->presentText("Sorry", c->getName().the() + " can't travel while being poisoned.");
       return false;
     }
+    Creature* attacker = nullptr;
+    auto tryAttacker = [&] (Creature* c) {
+      if (!LastingEffects::doesntMove(c) && attacker->getPosition().dist8(creature->getPosition()).value_or(10) < 10)
+        attacker = c;
+    };
     if (auto intent = c->getLastCombatIntent())
-      if (intent->time > *creature->getGlobalTime() - 7_visible && intent->isHostile()) {
-        getView()->presentText("Sorry", "You can't travel while being attacked by " +
-            intent->attacker->getName().a() + ".");
-        return false;
-      }
+      if (intent->time > *creature->getGlobalTime() - 7_visible && intent->isHostile())
+        tryAttacker(intent->attacker);
+    if (auto closest = c->getClosestEnemy())
+      if (closest->getPosition().dist8(creature->getPosition()).value_or(4) < 4)
+        tryAttacker(closest);
+    if (attacker) {
+      getView()->presentText("Sorry", "You can't travel while being attacked by " + attacker->getName().a() + ".");
+      return false;
+    }
     for (auto item : c->getEquipment().getItems())
       if (item->getShopkeeper(c)) {
         getView()->presentText("Sorry", "You can't travel while carrying unpaid items.");
