@@ -3482,6 +3482,8 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
                   WL(label, "Luxury: " + getLuxuryNumber(*luxury))));
           if (viewObject.hasModifier(ViewObjectModifier::UNPAID))
             lines.addElem(WL(label, "Cannot afford item", Color::RED));
+          if (viewObject.hasModifier(ViewObjectModifier::DANGEROUS))
+            lines.addElem(WL(label, "Location too dangerous to build", Color::RED));
           if (viewObject.hasModifier(ViewObjectModifier::PLANNED))
             lines.addElem(WL(label, "Planned"));
           lines.addElem(WL(margins, WL(rectangle, Color::DARK_GRAY), -9, 2, -9, 8), 12);

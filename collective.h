@@ -248,6 +248,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   EntityMap<Creature, EnumSet<MinionTrait>> SERIAL(stunnedMinions);
 
   void takePrisoner(Creature*);
+  bool isDelayed(Position);
 
   private:
   struct Private {};
@@ -302,7 +303,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   EntityMap<Item, WeakPointer<const Task>> SERIAL(markedItems);
   void updateConstructions();
   void delayDangerousTasks(const vector<Position>& enemyPos, LocalTime delayTime);
-  bool isDelayed(Position);
   HashMap<Position, LocalTime> SERIAL(delayedPos);
   vector<Position> getEnemyPositions() const;
   EntitySet<Creature> SERIAL(kills);

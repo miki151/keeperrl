@@ -2364,8 +2364,12 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     if (auto f = constructions.getFurniture(position, layer))
       if (!f->isBuilt(position, layer)) {
         auto obj = furnitureFactory->getConstructionObject(f->getFurnitureType());
-        if (!f->hasTask())
-          obj.setModifier(ViewObjectModifier::UNPAID);
+        if (!f->hasTask()) {
+          if (collective->isDelayed(position))
+            obj.setModifier(ViewObjectModifier::DANGEROUS);
+          else
+            obj.setModifier(ViewObjectModifier::UNPAID);
+        }
         if (auto viewId = furnitureFactory->getData(f->getFurnitureType()).getSupportViewId(position))
           obj.setId(*viewId);
         index.insert(std::move(obj));
