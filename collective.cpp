@@ -1294,8 +1294,8 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
   if (Task* task = taskMap->getMarked(pos))
     taskMap->removeTask(task);
   claimSquare(pos);
-  for (auto v : pos.neighbors8())
-    if (v.isCovered() && !v.isUnavailable())
+  for (auto v : pos.neighbors8()) // check for furniture as a workaround to not claim the zombie zlevel gate when building a bridge
+    if (v.isCovered() && !v.isUnavailable() && !v.getFurniture(FurnitureLayer::MIDDLE))
       claimSquare(v);
   recalculateFurniturePopIncrease();
 }
