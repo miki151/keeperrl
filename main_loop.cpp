@@ -829,7 +829,7 @@ void MainLoop::playMenuMusic() {
 
 void MainLoop::considerGameEventsPrompt() {
   if (options->getIntValue(OptionId::GAME_EVENTS) == 1) {
-    if (view->yesOrNoPrompt("The imps would like to gather statistics while you're playing the game and send them anonymously to the developer. This would be very helpful in designing the game. Do you agree?"))
+    if (view->yesOrNoPrompt("The game would like to gather statistics while you're playing and send them anonymously to the developer. Do you agree?"))
       options->setValue(OptionId::GAME_EVENTS, 2);
     else
       options->setValue(OptionId::GAME_EVENTS, 0);
