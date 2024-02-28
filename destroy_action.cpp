@@ -89,7 +89,8 @@ bool DestroyAction::destroyAnimation() const {
 bool DestroyAction::canNavigate(const Creature* c) const {
   switch (type) {
     case Type::HOSTILE_DIG:
-      return !isOneOf(c->getTribeId(), TribeId::getDarkKeeper(), TribeId::getWhiteKeeper());
+      return !isOneOf(c->getTribeId(), TribeId::getDarkKeeper(), TribeId::getWhiteKeeper(),
+          TribeId::getRetiredKeeper());
     case Type::BASH:
       return true;
     default:
