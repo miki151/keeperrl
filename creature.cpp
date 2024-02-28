@@ -65,6 +65,7 @@
 #include "companion_info.h"
 #include "promotion_info.h"
 #include "buff_info.h"
+#include "collective.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
@@ -2010,7 +2011,8 @@ bool Creature::considerPhylactery(DropType drops, const Creature* attacker) {
     if (pos.canEnter(this))
       position.moveCreature(pos, true);
     phylactery = none;
-    getGame()->achieve(AchievementId("saved_by_phylactery"));
+    if (getGame()->getPlayerCollective()->getCreatures().contains(this))
+      getGame()->achieve(AchievementId("saved_by_phylactery"));
     return true;
   }
   return false;
