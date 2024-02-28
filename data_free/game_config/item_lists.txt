@@ -413,13 +413,15 @@ End
     {{Potion Permanent BAD_BREATH} 1 }
     {{Potion Lasting FROZEN} 1 }
     {{Potion Lasting ON_FIRE} 1 }
-    {{Potion Permanent NO_CARRY_LIMIT} 1 }
     {{Potion Lasting BLIND} 1 }
     {{Potion Lasting INVISIBLE} 1 }
     {{Potion Lasting POISON} 1 }
     {{Potion Permanent POISON_RESISTANT} 1 }
     {{Potion Permanent FLYING} 1 }
     {{Potion Lasting SPEED} 1 }
+  }
+  unique = {
+    {Potion NoAutoAssign EquipmentType COMBAT_ITEM AI And {} -1 1 AI And {} 0 1 Permanent NO_CARRY_LIMIT} {1}
   }
 }
 
@@ -440,7 +442,7 @@ End
     {{Glyph { WEAPON ItemAttrBonus SPELL_DAMAGE 1}} 2}
   }
   unique = {
-    {Scroll Name "blacksmithing mastery" Price 800
+    {Scroll NoAutoAssign EquipmentType COMBAT_ITEM AI And {} -1 1 AI And {} 0 1 Name "blacksmithing mastery" Price 800
       Description "Contains secrets of legendary blacksmithing knowledge"
       IncreaseAttr "FORGE" 50} {1}
   }
