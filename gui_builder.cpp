@@ -695,6 +695,8 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
     bottomLine.addBackElem(WL(stack,
         WL(labelFun, [=]()->string {
           switch (counterMode) {
+            case CounterMode::NONE:
+              return "";
             case CounterMode::FPS:
               return "FPS " + toString(fpsCounter.getFps()) + " / " + toString(upsCounter.getFps());
             case CounterMode::LAT:
@@ -703,7 +705,7 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
               return "SMOD " + toString(modifiedSquares) + "/" + toString(totalSquares);
           }
         }, Color::WHITE),
-        WL(button, [=]() { counterMode = (CounterMode) ( ((int) counterMode + 1) % 3); })), 120);
+        WL(button, [=]() { counterMode = (CounterMode) ( ((int) counterMode + 1) % 4); })), 120);
     main = WL(margin, WL(leftMargin, 10, bottomLine.buildHorizontalList()),
         std::move(main), 18, gui.BOTTOM);
     rightBandInfoCache = WL(margin, std::move(butGui), std::move(main), 55, gui.TOP);

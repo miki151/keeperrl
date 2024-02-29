@@ -251,8 +251,8 @@ class GuiBuilder {
   const char* getCurrentGameSpeedName() const;
 
   FpsCounter fpsCounter, upsCounter;
-  enum class CounterMode { FPS, LAT, SMOD };
-  CounterMode counterMode = CounterMode::FPS;
+  enum class CounterMode { NONE, FPS, LAT, SMOD };
+  CounterMode counterMode = CounterMode::NONE;
 
   SGuiElem getButtonLine(CollectiveInfo::Button, int num, const optional<TutorialInfo>&);
   SGuiElem drawMinionsOverlay(const CollectiveInfo::ChosenCreatureInfo&, const optional<TutorialInfo>&);
