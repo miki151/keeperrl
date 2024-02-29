@@ -1296,21 +1296,22 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
             if (!models[v])
               models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, avatarInfo.tribeAlignment,
                   *setup.campaign.getSites()[v].biome, difficulty);
+            for (auto c : models[v]->getAllCreatures())
+              c->setCombatExperience(difficulty);
           } else if (auto retired = sites[v].getRetired()) {
             if (auto info = loadRetiredModelFromFile(userPath.file(retired->fileInfo.filename))) {
               models[v] = PModel(std::move(info->model));
               for (auto col : models[v]->getCollectives())
                 if (col->getVillainType() == VillainType::MAIN)
                   col->setVillainType(VillainType::RETIRED);
+              if (endsWith(retired->fileInfo.filename, getSaveSuffix(GameSaveType::RETIRED_CAMPAIGN)))
+                for (auto c : models[v]->getAllCreatures())
+                  c->setCombatExperience(50);
               factories.push_back(std::move(info->factory));
             } else {
               failedToLoad = retired->fileInfo.filename;
               setup.campaign.removeDweller(v);
             }
-          }
-          if (models[v]) {
-            for (auto c : models[v]->getAllCreatures())
-              c->setCombatExperience(difficulty);
           }
         }
       });
