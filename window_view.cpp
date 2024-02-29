@@ -601,8 +601,8 @@ void WindowView::refreshScreen(bool flipBuffer) {
   }
   drawMap();
   auto bugReportPos = getBugReportPos(renderer);
-  renderer.drawFilledRectangle(bugReportPos, Color::TRANSPARENT, Color::RED);
-  renderer.drawText(Color::RED, bugReportPos.middle() - Vec2(0, 2), "report bug", Renderer::CenterType::HOR_VER);
+  renderer.drawFilledRectangle(bugReportPos, Color::TRANSPARENT, Color::RED.transparency(50));
+  renderer.drawText(Color::RED.transparency(50), bugReportPos.middle() - Vec2(0, 2), "report bug", Renderer::CenterType::HOR_VER);
   if (flipBuffer)
     renderer.drawAndClearBuffer();
 }
