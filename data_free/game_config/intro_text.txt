@@ -1,10 +1,10 @@
-"Welcome to KeeperRL Alpha 36! This patch was released on Feb 17th, 2023.
+"Welcome to KeeperRL v1.0! This patch was released on Feb 29th, 2024.
 
-Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
+In addition to being an huge milestone, this update also contains major gameplay improvements. Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
 
-* Full support for the Steam Deck console.
-* Massive optimizations in gameplay code.
-* Reworked big parts of the UI and added keyboard support to menus.
+* A new, large, and better looking world map with more interesting locations to explore.
+* New difficulty scaling and player's power curve along with a new difficulty level setting.
+* Big improvements in the crafting system.
 
 If this is your first time playing KeeperRL, remember to start with the tutorial!
 "
