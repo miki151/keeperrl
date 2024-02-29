@@ -57,7 +57,8 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::KEEPER_WARNING_TIMEOUT, 200},
   {OptionId::SINGLE_THREAD, 0},
   {OptionId::UNLOCK_ALL, 0},
-  {OptionId::EXP_INCREASE, 1}
+  {OptionId::EXP_INCREASE, 1},
+  {OptionId::DPI_AWARE, 0}
 };
 
 const map<OptionId, string> names {
@@ -97,6 +98,7 @@ const map<OptionId, string> names {
   {OptionId::SINGLE_THREAD, "Use a single thread for loading operations"},
   {OptionId::UNLOCK_ALL, "Unlock all hidden gameplay features"},
   {OptionId::EXP_INCREASE, "Enemy difficulty curve"},
+  {OptionId::DPI_AWARE, "Override Windows DPI scaling"},
 };
 
 const map<OptionId, string> hints {
@@ -119,7 +121,8 @@ const map<OptionId, string> hints {
   {OptionId::SINGLE_THREAD, "Please try this option if you're experiencing slow saving, loading, or map generation. "
         "Note: this will make the game unresponsive during the operation."},
   {OptionId::UNLOCK_ALL, "Unlocks all player characters and gameplay features that are normally unlocked by finding secrets in the game."},
-  {OptionId::EXP_INCREASE, "Defines the increase in experience for every lesser and main villain as you travel further away from your home site."}
+  {OptionId::EXP_INCREASE, "Defines the increase in experience for every lesser and main villain as you travel further away from your home site."},
+  {OptionId::DPI_AWARE, "If you find the game blurry, this setting might help. Requires restarting the game. "},
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -146,6 +149,9 @@ const map<OptionSet, vector<OptionId>> optionSets {
 #ifndef RELEASE
       OptionId::KEEP_SAVEFILES,
       OptionId::SHOW_MAP,
+#endif
+#ifdef WINDOWS
+      OptionId::DPI_AWARE
 #endif
   }},
   {OptionSet::KEEPER, {
@@ -314,6 +320,7 @@ static bool isBoolean(OptionId id) {
     case OptionId::START_WITH_NIGHT:
     case OptionId::SINGLE_THREAD:
     case OptionId::UNLOCK_ALL:
+    case OptionId::DPI_AWARE:
       return true;
     default:
       return false;
@@ -328,6 +335,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::FULLSCREEN:
     case OptionId::VSYNC:
     case OptionId::KEEPER_WARNING:
+    case OptionId::DPI_AWARE:
       return getOnOff(value);
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:

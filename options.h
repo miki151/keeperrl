@@ -59,7 +59,9 @@ RICH_ENUM(OptionId,
   SINGLE_THREAD,
   UNLOCK_ALL,
 
-  EXP_INCREASE
+  EXP_INCREASE,
+
+  DPI_AWARE
 );
 
 enum class OptionSet {

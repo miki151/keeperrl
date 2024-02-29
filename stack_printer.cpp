@@ -4,6 +4,7 @@
 #include <dbghelp.h>
 #include <cstdio>
 #include "version.h"
+#include "shellscalingapi.h"
 
 int printStacktraceWithGdb() {
   char gdbcmd[512] = {0};
@@ -65,6 +66,10 @@ void setConsoleColor(int col) {
   SetConsoleTextAttribute(handle, col);
 }
 
+void dpiAwareness() {
+  SetProcessDPIAware();
+}
+
 extern "C"
 {
     __declspec( dllexport ) unsigned int NvOptimusEnablement                = 0x00000001;
@@ -77,6 +82,8 @@ void attachConsole() {
 void initializeMiniDump() {
 }
 void setConsoleColor(int) {
+}
+void dpiAwareness() {
 }
 
 #endif

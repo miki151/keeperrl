@@ -328,6 +328,8 @@ static int keeperMain(po::parser& commandLineFlags) {
   #endif
   KeybindingMap keybindingMap(freeDataPath.file("default_keybindings.txt"), userKeysPath);
   Options options(settingsPath, &keybindingMap, steamInput.get());
+  if (options.getBoolValue(OptionId::DPI_AWARE))
+    dpiAwareness();
   Random.init(int(time(nullptr)));
   auto installId = getInstallId(userPath.file("installId.txt"), Random);
   if (steamInput->isRunningOnDeck())
