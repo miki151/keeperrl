@@ -759,7 +759,7 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
     return false;
   }
   if (item->getModifier(AttrType("RANGED_DAMAGE")) > 0 && item->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON &&
-      getAttr(AttrType("RANGED_DAMAGE"), false) == 0 && attributes->getMaxExpLevel().count(AttrType("RANGED_DAMAGE"))) {
+      getAttr(AttrType("RANGED_DAMAGE"), false) == 0 && !attributes->getMaxExpLevel().count(AttrType("RANGED_DAMAGE"))) {
     setReason("You are not skilled in archery");
     return false;
   }

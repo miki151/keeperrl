@@ -193,6 +193,7 @@ vector<const Furniture*> Position::getFurniture() const {
 }
 
 double Position::getTotalLuxury() const {
+  PROFILE;
   double ret = 0;
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = getFurniture(layer))

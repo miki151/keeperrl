@@ -1076,7 +1076,7 @@ void MapGui::renderFloorObjects(Renderer& renderer, Vec2 size, milliseconds curr
           auto& obj = index->getObject(layer);
           const Tile& tile = renderer.getTileSet().getTile(obj.id(), spriteMode);
           if (layer == ViewLayer::FLOOR_BACKGROUND ||
-              (tile.getSpriteCoord()[0].size.y == Renderer::nominalSize && !tile.moveUp))
+              (tile.getSpriteCoord()[0].size.y <= Renderer::nominalSize && !tile.moveUp))
             drawObjectAbs(renderer, pos, obj, size, Vec2(), wpos, currentTimeReal, *index);
         }
     }

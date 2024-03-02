@@ -1609,6 +1609,7 @@ vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() co
 }
 
 vector<ImmigrantDataInfo> PlayerControl::getUnrealizedPromotionsImmigrantData() const {
+  PROFILE;
   vector<ImmigrantDataInfo> ret;
   auto contentFactory = getGame()->getContentFactory();
   for (auto c : getCreatures())
@@ -1633,16 +1634,14 @@ vector<ImmigrantDataInfo> PlayerControl::getUnrealizedPromotionsImmigrantData() 
 }
 
 vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
+  PROFILE;
   vector<ImmigrantDataInfo> ret;
   int index = -1;
   auto contentFactory = getGame()->getContentFactory();
-  for (auto stack : getPrisonerImmigrantStack()) {
-    auto c = stack.creatures[0];
-    const auto prisonBedType = CollectiveConfig::getPrisonBedType(c);
-    const int numPrisoners = collective->getCreatures(MinionTrait::PRISONER)
-        .filter([&](auto other) {  return CollectiveConfig::getPrisonBedType(other) == prisonBedType; })
-        .size();
-    const int prisonSize = [&] {
+  EnumMap<BedType, optional<int>> prisonSizeCache;
+  const auto getPrisonSize = [&prisonSizeCache, this, contentFactory] (BedType prisonBedType) {
+    if (!prisonSizeCache[prisonBedType]) {
+      PROFILE_BLOCK("prisonSize");
       int cnt = 0;
       auto& constructions = collective->getConstructions();
       for (auto type : contentFactory->furniture.getBedFurniture(prisonBedType))
@@ -1652,9 +1651,18 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
               ++cnt;
         } else
           cnt += constructions.getBuiltCount(type);
-      return cnt;
-    }();
+      prisonSizeCache[prisonBedType] = cnt;
+    }
+    return *prisonSizeCache[prisonBedType];
+  };
+  for (auto stack : getPrisonerImmigrantStack()) {
+    auto c = stack.creatures[0];
+    const auto prisonBedType = CollectiveConfig::getPrisonBedType(c);
+    const int numPrisoners = collective->getCreatures(MinionTrait::PRISONER)
+        .filter([&](auto other) {  return CollectiveConfig::getPrisonBedType(other) == prisonBedType; })
+        .size();
     vector<string> requirements;
+    const auto prisonSize = getPrisonSize(prisonBedType);
     const int missingSize = numPrisoners + 1 - prisonSize;
     if (missingSize > 0) {
       if (prisonSize == 0)
@@ -1745,6 +1753,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   if (collective->getWorkshops().getWorkshopsTypes().contains(WorkshopType("MORGUE")))
     info.immigration.append(getNecromancerImmigrationHelp());
   for (auto& elem : immigration.getAvailable()) {
+    PROFILE_BLOCK("elem");
     const auto& candidate = elem.second.get();
     if (candidate.getInfo().isInvisible())
       continue;
@@ -2882,7 +2891,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
             break;
           case PlayerInfo::Action::RENAME:
             if (auto name = getView()->getText("Rename minion", c->getName().first().value_or(""), maxFirstNameLength))
-             c->getName().setFirst(*name);
+              c->getName().setFirst(*name);
             break;
           case PlayerInfo::Action::CONSUME:
             if (auto creatureId = getView()->chooseCreature("Choose minion to absorb",
@@ -3716,6 +3725,7 @@ void PlayerControl::considerSoloAchievement() {
 }
 
 void PlayerControl::tick() {
+  collective->getConstructions().checkDebtConsistency();
   PROFILE_BLOCK("PlayerControl::tick");
   for (auto c : collective->getCreatures()) {
     if (c->isAffectedPermanently(BuffId("BRIDGE_BUILDING_SKILL")))

@@ -160,6 +160,7 @@ const PositionSet& Zones::getQuarters(UniqueEntity<Creature>::Id id) const {
 }
 
 optional<double> Zones::getQuartersLuxury(UniqueEntity<Creature>::Id id) const {
+  PROFILE;
   auto& quarters = getQuarters(id);
   if (quarters.empty())
     return none;
