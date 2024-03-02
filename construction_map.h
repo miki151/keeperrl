@@ -59,8 +59,9 @@ class ConstructionMap {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
-  private:
   void checkDebtConsistency();
+
+  private:
   EnumMap<FurnitureLayer, PositionMap<FurnitureInfo>> SERIAL(furniture);
   HashMap<FurnitureType, PositionSet> SERIAL(furniturePositions);
   HashMap<FurnitureType, int> SERIAL(unbuiltCounts);

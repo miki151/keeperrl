@@ -2882,7 +2882,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
             break;
           case PlayerInfo::Action::RENAME:
             if (auto name = getView()->getText("Rename minion", c->getName().first().value_or(""), maxFirstNameLength))
-             c->getName().setFirst(*name);
+              c->getName().setFirst(*name);
             break;
           case PlayerInfo::Action::CONSUME:
             if (auto creatureId = getView()->chooseCreature("Choose minion to absorb",
@@ -3716,6 +3716,7 @@ void PlayerControl::considerSoloAchievement() {
 }
 
 void PlayerControl::tick() {
+  collective->getConstructions().checkDebtConsistency();
   PROFILE_BLOCK("PlayerControl::tick");
   for (auto c : collective->getCreatures()) {
     if (c->isAffectedPermanently(BuffId("BRIDGE_BUILDING_SKILL")))
