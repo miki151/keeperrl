@@ -1305,7 +1305,7 @@ void PlayerControl::fillTechUnlocks(CollectiveInfo::LibraryInfo::TechInfo& techI
   for (auto& workshop : collective->getWorkshops().types)
     for (auto& option : workshop.second.getOptions())
       if (!option.hideFromTech && option.techId == tech)
-        techInfo.unlocks.push_back({{option.viewId}, option.name, "workshop items"});
+        techInfo.unlocks.push_back({{option.viewId}, option.name, "crafted items"});
   auto& creatureFactory = getGame()->getContentFactory()->getCreatures();
   for (auto& immigrant : collective->getImmigration().getImmigrants())
     for (auto& req : immigrant.requirements)
