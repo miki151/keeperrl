@@ -927,16 +927,17 @@ void Game::considerAchievement(const GameEvent& event) {
   using namespace EventInfo;
   event.visit<void>(
       [&](const ConqueredEnemy& info) {
-        switch (info.collective->getVillainType()) {
-          case VillainType::LESSER:
-            achieve(AchievementId("lesser_villain"));
-            break;
-          case VillainType::MAIN:
-            achieve(AchievementId("main_villain"));
-            break;
-          default:
-            break;
-        }
+        if (info.byPlayer && info.collective != playerCollective)
+          switch (info.collective->getVillainType()) {
+            case VillainType::LESSER:
+              achieve(AchievementId("lesser_villain"));
+              break;
+            case VillainType::MAIN:
+              achieve(AchievementId("main_villain"));
+              break;
+            default:
+              break;
+          }
       },
       [&](const CreatureKilled& info) {
         if (auto& a = info.victim->getAttributes().killedAchievement)
