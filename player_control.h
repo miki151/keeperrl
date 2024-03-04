@@ -25,6 +25,7 @@
 #include "keeper_creature_info.h"
 #include "workshop_type.h"
 #include "resource_id.h"
+#include "bed_type.h"
 
 class Model;
 class Technology;
@@ -309,4 +310,5 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void presentMinionsFreedMessage(const vector<Creature*>&);
   void considerSoloAchievement();
   bool SERIAL(soloKeeper) = true;
+  mutable EnumMap<BedType, optional<int>> prisonSizeCache;
 };

@@ -1638,8 +1638,7 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
   vector<ImmigrantDataInfo> ret;
   int index = -1;
   auto contentFactory = getGame()->getContentFactory();
-  EnumMap<BedType, optional<int>> prisonSizeCache;
-  const auto getPrisonSize = [&prisonSizeCache, this, contentFactory] (BedType prisonBedType) {
+  const auto getPrisonSize = [this, contentFactory] (BedType prisonBedType) {
     if (!prisonSizeCache[prisonBedType]) {
       PROFILE_BLOCK("prisonSize");
       int cnt = 0;
@@ -2331,7 +2330,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
               index.setHighlight(HighlightType::CREATURE_DROP);
       if (furnitureFactory->getData(furniture->getType()).isRequiresLight() && position.getLightingEfficiency() < 0.99)
         index.setHighlight(HighlightType::INSUFFICIENT_LIGHT);
-      if (collective->getMaxPopulation() <= collective->getPopulationSize() && 
+      if (collective->getMaxPopulation() <= collective->getPopulationSize() &&
           furniture->getType() == FurnitureType("TORTURE_TABLE"))
         index.setHighlight(HighlightType::TORTURE_UNAVAILABLE);
     }
@@ -3725,6 +3724,7 @@ void PlayerControl::considerSoloAchievement() {
 }
 
 void PlayerControl::tick() {
+  prisonSizeCache.clear();
   collective->getConstructions().checkDebtConsistency();
   PROFILE_BLOCK("PlayerControl::tick");
   for (auto c : collective->getCreatures()) {
