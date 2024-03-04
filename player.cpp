@@ -652,7 +652,7 @@ bool Player::canTravel() const {
     }
     Creature* attacker = nullptr;
     auto tryAttacker = [&] (Creature* c) {
-      if (!LastingEffects::doesntMove(c) && c->getPosition().dist8(creature->getPosition()).value_or(10) < 10)
+      if (!team.contains(c) && !LastingEffects::doesntMove(c) && c->getPosition().dist8(creature->getPosition()).value_or(10) < 10)
         attacker = c;
     };
     if (auto intent = c->getLastCombatIntent())
