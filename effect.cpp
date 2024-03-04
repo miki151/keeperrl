@@ -584,7 +584,13 @@ static bool isConsideredHostile(const Effects::Acid&, const Creature* victim) {
 }
 
 static bool apply(const Effects::Summon& e, Position pos, Creature* attacker) {
-  auto tribe = attacker ? attacker->getTribeId() : TribeId::getHostile();
+  auto tribe = [&] {
+    if (attacker)
+      return attacker->getTribeId();
+    if (auto col = pos.getCollective())
+      return col->getTribeId();
+    return TribeId::getHostile();
+  }();
   CreatureGroup f = CreatureGroup::singleType(tribe, e.creature);
   return !Effect::summon(pos, f, Random.get(e.count), e.ttl.map([](int v) { return TimeInterval(v); }), 1_visible).empty();
 }
