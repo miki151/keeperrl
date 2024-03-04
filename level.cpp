@@ -233,8 +233,8 @@ double Level::getLevelGenSunlight(Vec2 pos) const {
 }
 
 const vector<Position>& Level::getLandingSquares(StairKey key) const {
-  if (landingSquares.count(key))
-    return landingSquares.at(key);
+  if (auto res = getReferenceMaybe(landingSquares, key))
+    return *res;
   else {
     static vector<Position> empty;
     return empty;
@@ -243,6 +243,10 @@ const vector<Position>& Level::getLandingSquares(StairKey key) const {
 
 vector<StairKey> Level::getAllStairKeys() const {
   return getKeys(landingSquares);
+}
+
+const Level::LandingSquares& Level::getAllLandingSquares() const {
+  return landingSquares;
 }
 
 bool Level::hasStairKey(StairKey key) const {
@@ -598,6 +602,7 @@ static Sectors::ExtraConnections getOrCreateExtraConnections(Rectangle bounds,
 }
 
 Sectors& Level::getSectors(const MovementType& movement) const {
+  PROFILE;
   if (auto res = getReferenceMaybe(sectors, movement))
     return *res;
   else {

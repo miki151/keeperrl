@@ -84,6 +84,8 @@ class Level : public OwnedObject<Level> {
   const vector<Position>& getLandingSquares(StairKey) const;
   Position getLandingSquare(StairKey, Vec2 travelDir) const;
 
+  using LandingSquares = unordered_map<StairKey, vector<Position>>;
+  const LandingSquares& getAllLandingSquares() const;
   vector<StairKey> getAllStairKeys() const;
   bool hasStairKey(StairKey) const;
 
@@ -178,7 +180,7 @@ class Level : public OwnedObject<Level> {
   Table<bool> SERIAL(memoryUpdates);
   Table<bool> renderUpdates = Table<bool>(getMaxBounds(), true);
   Table<bool> SERIAL(unavailable);
-  unordered_map<StairKey, vector<Position>> SERIAL(landingSquares);
+  LandingSquares SERIAL(landingSquares);
   set<Vec2> SERIAL(tickingSquares);
   set<Vec2> SERIAL(tickingFurniture);
   void placeCreature(Creature*, Vec2 pos);

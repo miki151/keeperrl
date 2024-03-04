@@ -681,8 +681,8 @@ bool Position::isClosedOff(MovementType movement) const {
   auto topLevel = getModel()->getGroundLevel();
   if (level == topLevel && sectors.getSector(coord) == sectors.getLargest())
     return false;
-  for (auto key : level->getAllStairKeys())
-    if (sectors.same(coord, level->getLandingSquares(key)[0].getCoord()))
+  for (auto& elem : level->getAllLandingSquares())
+    if (!elem.second.empty() && sectors.same(coord, elem.second[0].getCoord()))
       return false;
   return true;
 }

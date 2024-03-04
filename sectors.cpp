@@ -175,6 +175,7 @@ const Sectors::ExtraConnections Sectors::getExtraConnections() const {
 }
 
 Sectors::SectorId Sectors::getLargest() const {
+  PROFILE;
   int ret = 0;
   for (int i : All(allPos))
     if (allPos[i].size() > allPos[ret].size())
