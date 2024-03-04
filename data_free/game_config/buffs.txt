@@ -36,7 +36,7 @@ Def ATTR_BUFF(Attr, AttrName, Name, Amount, Adjective, Price) {
 End
 
 "DAM_BONUS" ATTR_BUFF(DAMAGE, "damage", "damage", 3, "dangerous", 20)
-"DEF_BONUS" ATTR_BUFF(DEFENSE, "damage", "defense", 3, "protected", 20)
+"DEF_BONUS" ATTR_BUFF(DEFENSE, "defense", "defense", 3, "protected", 20)
 
 "THICK_SKIN" ATTR_BUFF(DEFENSE, "defense", "thick skin", 10, "thick skin", 200)
 "IRON_ARMS" ATTR_BUFF(DAMAGE, "damage", "iron arms", 10, "iron arms", 200)
