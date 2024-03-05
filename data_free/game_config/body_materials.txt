@@ -12,7 +12,7 @@
   deathDescription = "killed"
   hasBrain = true
   undead = true
-  intrinsicallyAffected = { SUNLIGHT_VULNERABLE }
+  intrinsicallyAffected = { SUNLIGHT_VULNERABLE SWIMMING_SKILL }
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING }
   canCopulate = true
 }
@@ -50,6 +50,7 @@
   name = "bone"
   undead = true
   deathDescription = "destroyed"
+  intrinsicallyAffected = { SWIMMING_SKILL }
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING }
   bodyPartItem = {"Bone"}
 }
@@ -74,6 +75,7 @@
   name = "wood"
   deathDescription = "destroyed"
   flamable = true
+  intrinsicallyAffected = { SWIMMING_SKILL }
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
   bodyPartItem = {"WoodPlank"}
 }
