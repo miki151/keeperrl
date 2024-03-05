@@ -1282,7 +1282,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
           if (auto info = sites[v].getKeeper()) {
             models[v] = getBaseModel(modelBuilder, setup, avatarInfo);
           } else if (auto villain = sites[v].getVillain()) {
-            for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE)))
+            /*for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE)))
               if (isCompatible(getSaveVersion(info)))
                 if (auto saved = loadSavedGameInfo(userPath.file(info.filename)))
                   if (auto& retiredInfo = saved->retiredEnemyInfo)
@@ -1292,7 +1292,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
                         ++numRetiredVillains;
                         remove(userPath.file(info.filename).getPath());
                         break;
-                      }
+                      }*/
             if (!models[v])
               models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, avatarInfo.tribeAlignment,
                   *setup.campaign.getSites()[v].biome, difficulty);
