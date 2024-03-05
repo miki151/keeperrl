@@ -2234,12 +2234,12 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
     const int numPerLine = 7;
     auto teamLine = WL(getListBuilder, legendLineHeight);
     vector<SGuiElem> currentLine;
-    for (auto member : team.members) {
-      auto& memberInfo = *info.getMinion(member);
-      currentLine.push_back(drawMinionAndLevel(memberInfo.viewId, (int) memberInfo.bestAttack.value, 1));
-      if (currentLine.size() >= numPerLine)
-        teamLine.addElem(WL(horizontalList, std::move(currentLine), elemWidth));
-    }
+    for (auto member : team.members)
+      if (auto memberInfo = info.getMinion(member)) {
+        currentLine.push_back(drawMinionAndLevel(memberInfo->viewId, (int) memberInfo->bestAttack.value, 1));
+        if (currentLine.size() >= numPerLine)
+          teamLine.addElem(WL(horizontalList, std::move(currentLine), elemWidth));
+      }
     if (!currentLine.empty())
       teamLine.addElem(WL(horizontalList, std::move(currentLine), elemWidth));
     auto leaderViewId = info.getMinion(team.members[0])->viewId;
