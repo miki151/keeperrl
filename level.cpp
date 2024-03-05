@@ -49,6 +49,8 @@
 
 template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
+  if (Archive::is_saving::value)
+    CHECK(!model->serializationLocked);
   ar & SUBCLASS(OwnedObject<Level>);
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
   ar(sunlight, bucketMap, lightAmount, unavailable, swarmMaps, territory);

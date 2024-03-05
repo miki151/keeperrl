@@ -69,6 +69,8 @@
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
+  if (Archive::is_saving::value)
+    CHECK(!model->serializationLocked);
   ar(SUBCLASS(TaskCallback), SUBCLASS(UniqueEntity<Collective>), SUBCLASS(EventListener));
   ar(creatures, taskMap, tribe, control, byTrait, populationGroups, hadALeader, dancing, lockedEquipmentGroups);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment, groupLockedAcitivities);
