@@ -343,7 +343,7 @@ static string getName(const CreaturePredicates::DistanceD& p, const ContentFacto
 }
 
 static bool apply(const CreaturePredicates::DistanceD& e, Position pos, const Creature* attacker) {
-  if (!attacker->getPosition().isSameLevel(pos))
+  if (!attacker || !attacker->getPosition().isSameLevel(pos))
     return false;
   auto dist = attacker->getPosition().getCoord().distD(pos.getCoord());
   return dist >= e.min.value_or(-1) && dist <= e.max.value_or(10000);
