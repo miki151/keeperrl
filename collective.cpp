@@ -449,7 +449,7 @@ void Collective::makeConqueredRetired(Collective* conqueror) {
     // shopkeepers keep references to their shop positions so hack it by skipping them
     if (c->getAttributes().getCreatureId() != CreatureId("SHOPKEEPER"))
       addCreature(c, conqueror->getAllTraits(c));
-  for (auto c : creatures)
+  for (auto c : copyOf(creatures)) // creatures might die during transfer so make a copy
     getGame()->transferCreature(c, getModel(), territory->getAll());
   for (auto c : oldCreatures)
     c->dieNoReason();
