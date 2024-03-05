@@ -81,7 +81,7 @@ class Immigration : public OwnedObject<Immigration> {
   int SERIAL(idCnt) = 0;
   TimeInterval SERIAL(candidateTimeout);
   void occupyAttraction(const Creature*, const AttractionInfo&);
-  void occupyRequirements(const Creature*, int immigrantIndex);
+  void occupyRequirements(const Creature*, int immigrantIndex, int groupSize);
   double getRequirementMultiplier(const Group&) const;
   vector<string> getMissingRequirements(const Group&) const;
   optional<string> getMissingRequirement(const ImmigrantRequirement&, const Group&) const;
