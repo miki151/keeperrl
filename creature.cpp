@@ -1535,14 +1535,16 @@ vector<Creature*> Creature::getCompanions(bool withNoKillCreditOnly) const {
   for (auto& group : companions)
     if (!withNoKillCreditOnly || !group.getsKillCredit)
       for (auto c : group.creatures)
-        ret.push_back(c.get());
+        if (!c->isDead())
+          ret.push_back(c.get());
   return ret;
 }
 
 Creature* Creature::getFirstCompanion() const {
   for (auto& group : companions)
     for (auto c : group.creatures)
-      return c.get();
+      if (!c->isDead())
+        return c.get();
   return nullptr;
 }
 
