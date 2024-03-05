@@ -1681,9 +1681,9 @@ static bool applyToCreature(const Effects::Polymorph& e, Creature* c, Creature*)
   }();
   auto spells = factory.getSpellMap(attributes);
   auto origName = c->getName().the();
-  if (e.timeout) {
+  if (auto timeout = e.timeout) { // make a copy as it's possible e is invalidated in pushAttributes()
     c->pushAttributes(std::move(attributes), std::move(spells));
-    c->addEffect(LastingEffect::POLYMORPHED, *e.timeout);
+    c->addEffect(LastingEffect::POLYMORPHED, *timeout);
   } else
     c->setAttributes(std::move(attributes), std::move(spells));
   c->secondPerson("You turn into " + c->getName().a() + "!");

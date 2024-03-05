@@ -69,6 +69,8 @@
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
+  if (Archive::is_saving::value)
+    CHECK(!model->serializationLocked);
   ar(SUBCLASS(TaskCallback), SUBCLASS(UniqueEntity<Collective>), SUBCLASS(EventListener));
   ar(creatures, taskMap, tribe, control, byTrait, populationGroups, hadALeader, dancing, lockedEquipmentGroups);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment, groupLockedAcitivities);
@@ -449,7 +451,7 @@ void Collective::makeConqueredRetired(Collective* conqueror) {
     // shopkeepers keep references to their shop positions so hack it by skipping them
     if (c->getAttributes().getCreatureId() != CreatureId("SHOPKEEPER"))
       addCreature(c, conqueror->getAllTraits(c));
-  for (auto c : creatures)
+  for (auto c : copyOf(creatures)) // creatures might die during transfer so make a copy
     getGame()->transferCreature(c, getModel(), territory->getAll());
   for (auto c : oldCreatures)
     c->dieNoReason();

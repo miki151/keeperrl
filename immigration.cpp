@@ -237,7 +237,7 @@ double Immigration::getRequirementMultiplier(const Group& group) const {
   return ret;
 }
 
-void Immigration::occupyRequirements(const Creature* c, int index) {
+void Immigration::occupyRequirements(const Creature* c, int index, int groupSize) {
   PROFILE;
   auto visitor = makeVisitor(
       [&](const AttractionInfo& attraction) { occupyAttraction(c, attraction); },
@@ -248,6 +248,7 @@ void Immigration::occupyRequirements(const Creature* c, int index) {
         collective->takeResource(cost);
       },
       [&](const ExponentialCost& cost) {
+        CHECK(groupSize == 1) << "ExponentialCost doesn't work for immigrant groups larger than 1";
         collective->takeResource(calculateCost(index, cost));
       },
       [&](const Pregnancy&) {
@@ -495,7 +496,7 @@ void Immigration::accept(int id, bool withMessage) {
     Creature* c = creatures[i];
     if (i == 0 && groupSize > 1) // group leader
       c->setCombatExperience(2);
-    occupyRequirements(c, candidate.immigrantIndex);
+    occupyRequirements(c, candidate.immigrantIndex, creatures.size());
     generated[candidate.immigrantIndex].insert(c);
   }
   if (!immigrantInfo.isPersistent())

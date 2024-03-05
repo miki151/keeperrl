@@ -112,6 +112,8 @@ class Model : public OwnedObject<Model> {
   HeapAllocated<Portals> SERIAL(portals);
   Vec2 SERIAL(position);
 
+  bool serializationLocked = false;
+
   private:
   struct Private {};
 
@@ -138,7 +140,6 @@ class Model : public OwnedObject<Model> {
   using StairConnections = HashMap<StairKey, int>;
   StairConnections createStairConnections(const MovementType&) const;
   HashMap<MovementType, StairConnections> SERIAL(stairNavigation);
-  bool serializationLocked = false;
   template <typename>
   friend class EventListener;
   OwnerPointer<EventGenerator> SERIAL(eventGenerator);
