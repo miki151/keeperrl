@@ -5209,7 +5209,7 @@ SGuiElem GuiBuilder::drawCreatureList(const vector<PlayerInfo>& creatures,
     minionLines.addSpace(10 * zoom);
   }
   const auto numRows = (creatures.size() + numColumns - 1) / numColumns;
-  const auto lastRow = creatures.size() % numColumns;
+  const auto lastRow = (creatures.size() - 1) % numColumns + 1;
   return WL(stack, makeVec(
       WL(keyHandler, [this, numRows, lastRow, numColumns] {
         if (!creatureListIndex)
