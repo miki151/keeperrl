@@ -872,7 +872,7 @@ End
     {
       ids = { "GOBLIN_ARTIFICER" }
       frequency = 0.1
-      traits = { NO_AUTO_EQUIPMENT }
+      traits = { FIGHTER NO_AUTO_EQUIPMENT }
       consumeIds = true
 #          hiddenInHelp = true
       requirements = {

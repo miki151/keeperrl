@@ -31,6 +31,7 @@
 #include "content_factory.h"
 #include "immigrant_info.h"
 #include "item_types.h"
+#include "creature_attributes.h"
 
 SERIALIZE_DEF(Tutorial, state, entrance)
 
@@ -39,6 +40,11 @@ static bool isTeam(const Collective* collective) {
     if (collective->getTeams().getMembers(team).size() >= 4)
       return true;
   return false;
+}
+
+static vector<Creature*> getGoblins(const Collective* collective) {
+  return collective->getCreatures(MinionTrait::FIGHTER)
+      .filter([](Creature* c) { return c->getAttributes().getCreatureId() == CreatureId("GOBLIN_WARRIOR"); });
 }
 
 bool Tutorial::canContinue(const Game* game) const {
@@ -73,7 +79,7 @@ bool Tutorial::canContinue(const Game* game) const {
     case State::DIG_2_ROOMS:
       return getHighlightedSquaresHigh(game).empty();
     case State::ACCEPT_IMMIGRANT:
-      return collective->getCreatures(MinionTrait::FIGHTER).size() >= 1;
+      return getGoblins(collective).size() >= 1;
     case State::TORCHES:
       for (auto furniture : {FurnitureType("BOOKCASE_WOOD"), FurnitureType("TRAINING_WOOD")})
         for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
@@ -95,16 +101,15 @@ bool Tutorial::canContinue(const Game* game) const {
     case State::ORDER_CRAFTING:
       return collective->getNumItems(ItemIndex::WEAPON) >= 2;
     case State::EQUIP_WEAPON:
-      for (auto c : collective->getCreatures(MinionTrait::FIGHTER))
-        if (!collective->hasTrait(c, MinionTrait::LEADER) && !c->getEquipment().getSlotItems(EquipmentSlot::WEAPON).empty())
+      for (auto c : getGoblins(collective))
+        if (!c->getEquipment().getSlotItems(EquipmentSlot::WEAPON).empty())
           return true;
       return false;
     case State::ACCEPT_MORE_IMMIGRANTS:
-      return collective->getCreatures(MinionTrait::FIGHTER).size() >= 4;
+      return getGoblins(collective).size() >= 4;
     case State::EQUIP_ALL_FIGHTERS:
-      for (auto c : collective->getCreatures(MinionTrait::FIGHTER))
-        if (!collective->hasTrait(c, MinionTrait::NO_EQUIPMENT) &&
-            c->getEquipment().getSlotItems(EquipmentSlot::WEAPON).empty())
+      for (auto c : getGoblins(collective))
+        if (c->getEquipment().getSlotItems(EquipmentSlot::WEAPON).empty())
           return false;
       return true;
     case State::CREATE_TEAM:
