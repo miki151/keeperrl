@@ -788,7 +788,9 @@ CreatureAction Creature::equip(Item* item, const ContentFactory* factory) const 
     self->equipment->equip(item, slot, self, factory ? factory : getGame()->getContentFactory());
     if (auto game = getGame())
       game->addEvent(EventInfo::ItemsOwned{self, {item}});
-    //self->spendTime();
+    if (!isPlayer()) // hack to avoid weird endless equip-unequip loop. if time is allowed to pass,
+      // the loop is stopped likely after some equipment update in tick
+      self->spendTime();
   });
   vector<Item*> toUnequip;
   if (equipment->getSlotItems(slot).size() >= equipment->getMaxItems(slot, this))
