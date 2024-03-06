@@ -2434,6 +2434,7 @@ bool GuiBuilder::yesOrNo(const string& question) {
 function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInfo::QueuedItemInfo& elem) {
   return [=] (Rectangle bounds) {
       auto lines = WL(getListBuilder, legendLineHeight);
+      lines.addElem(WL(label, "Note that upgrades need to be in placed storage before they can be added.", Renderer::smallTextSize()));
       lines.addElem(hasController()
           ? WL(getListBuilder)
               .addElemAuto(WL(label, "Use ", Color::YELLOW))
@@ -2815,7 +2816,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
           .buildHorizontalList();
     line.addMiddleElem(WL(renderInBounds, std::move(label)));
     function<void(Rectangle)> itemUpgradeCallback;
-    if (!elem.upgrades.empty() && elem.maxUpgrades.second > 0) {
+    if (/*!elem.upgrades.empty() && */elem.maxUpgrades.second > 0) {
       line.addBackElemAuto(WL(leftMargin, 7, drawItemUpgradeButton(elem)));
       itemUpgradeCallback = getItemUpgradeCallback(elem);
     }
