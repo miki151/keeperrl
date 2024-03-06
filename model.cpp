@@ -84,6 +84,8 @@ void Model::prepareForRetirement() {
   for (PCreature& c : deadCreatures)
     c->clearInfoForRetiring();
   externalEnemies = none;
+  for (auto& l : levels)
+    l->prepareForRetirement();
 }
 
 int Model::getSaveProgressCount() const {
