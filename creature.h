@@ -408,6 +408,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   mutable optional<pair<MoveId, vector<Creature*>>> visibleCreatures;
   HeapAllocated<Vision> SERIAL(vision);
   bool forceMovement = false;
+  void setForceMovement(bool value);
   optional<CombatIntentInfo> SERIAL(lastCombatIntent);
   HeapAllocated<CreatureDebt> SERIAL(debt);
   int SERIAL(lastMoveCounter) = 0;

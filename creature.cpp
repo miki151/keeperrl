@@ -417,13 +417,19 @@ CreatureAction Creature::forceMove(Vec2 dir) const {
   return forceMove(getPosition().plus(dir));
 }
 
+void Creature::setForceMovement(bool value) {
+  forceMovement = value;
+  if (auto steed = getSteed())
+    steed->forceMovement = value;
+}
+
 CreatureAction Creature::forceMove(Position pos) const {
-  const_cast<Creature*>(this)->forceMovement = true;
+  const_cast<Creature*>(this)->setForceMovement(true);
   CreatureAction action = move(pos, none);
-  const_cast<Creature*>(this)->forceMovement = false;
+  const_cast<Creature*>(this)->setForceMovement(false);
   if (action)
-    return action.prepend([] (Creature* c) { c->forceMovement = true; })
-      .append([] (Creature* c) { c->forceMovement = false; });
+    return action.prepend([] (Creature* c) { c->setForceMovement(true); })
+      .append([] (Creature* c) { c->setForceMovement(false); });
   else
     return action;
 }
