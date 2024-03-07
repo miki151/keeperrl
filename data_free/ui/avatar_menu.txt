@@ -3,6 +3,7 @@ Def KeeperButton() {
   Using "selected" MarginTop(-1, MarginBottom(-4, NewHighlight()))
   If "select_callback" MarginTop(2, MarginBottom(2, Using "base_name" Label()))
   MarginTop(2, MarginBottom(2, If "locked" Using "base_name" Label(color = ColorId LIGHT_GRAY)))
+  If "locked" GetTooltip(Label("This base can be unlocked by solving a puzzle or finding a secret while playing the game. You can also unlock all content in the settings."))
   Using "select_callback" Button()
 }
 End
