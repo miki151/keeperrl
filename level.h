@@ -137,6 +137,8 @@ class Level : public OwnedObject<Level> {
 
   void updateSunlightMovement();
 
+  void prepareForRetirement();
+
   int getNumGeneratedSquares() const;
   int getNumTotalSquares() const;
 

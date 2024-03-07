@@ -307,6 +307,7 @@ BOOKCASES("_HUMAN", "_human")
     SummonEnemy "GOBLIN_WARRIOR" {3 5} none
     RemoveFurniture "BROKEN_THRONE"
   }
+  populationIncrease = { 0 none }
 }
 "IMPALED_HEAD"
 {

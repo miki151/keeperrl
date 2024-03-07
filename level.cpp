@@ -618,6 +618,11 @@ Sectors& Level::getSectors(const MovementType& movement) const {
   }
 }
 
+void Level::prepareForRetirement() {
+  for (auto l : ENUM_ALL(FurnitureLayer))
+    furniture->getBuilt(l).clearModified();
+}
+
 void Level::updateSunlightMovement() {
   for (auto movement : getKeys(sectors))
     if (movement.isSunlightVulnerable())
