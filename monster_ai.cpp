@@ -1073,9 +1073,9 @@ class ByCollective : public Behaviour {
     return getFirstGoodMove(
         bindMethod(&ByCollective::equipOwnedItems, this),
         bindMethod(&ByCollective::getFighterMove, this),
-        bindMethod(&ByCollective::priorityTask, this),
         bindMethod(&ByCollective::steedOrRider, this),
         bindMethod(&ByCollective::followTeamLeader, this),
+        bindMethod(&ByCollective::priorityTask, this),
         bindMethod(&ByCollective::goToAlarm, this),
         bindMethod(&ByCollective::normalTask, this),
         bindMethod(&ByCollective::newEquipmentTask, this),

@@ -15,6 +15,15 @@ class ReadWriteArray {
     return modified.getBounds();
   }
 
+  void clearModified() {
+    unordered_set<int> used;
+    for (auto v : modified.getBounds())
+      used.insert(modified[v]);
+    for (int i : All(allModified))
+      if (!used.count(i))
+        allModified[i].reset();
+  }
+
   WType getWritable(Vec2 pos) {
     if (modified[pos] == -1)
       if (auto type = types[pos])
