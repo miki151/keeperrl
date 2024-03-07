@@ -49,17 +49,14 @@ find_package(VorbisFile REQUIRED)
 find_package(THEORA REQUIRED)
 
 # generate version.h
-if(ENABLE_GEN_VERSION)
-    file(GLOB GENERATE_VERSION_SH "gen_version.sh")
-    set(KEEPER_VERSION_H "${CMAKE_CURRENT_SOURCE_DIR}/version.h")
-    add_custom_command(
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/
-        COMMAND ${GENERATE_VERSION_SH}
-        DEPENDS ${GENERATE_VERSION_SH}
-        OUTPUT ${KEEPER_VERSION_H}
-        COMMENT "Generating version.h"
-    )
-endif()
+set(KEEPER_VERSION_H "${CMAKE_CURRENT_SOURCE_DIR}/version.h")
+string(TIMESTAMP BUILD_DATE "%Y-%m-%d")
+execute_process(COMMAND git describe --abbrev=4 --dirty --always OUTPUT_VARIABLE GIT_HASH OUTPUT_STRIP_TRAILING_WHITESPACE)
+configure_file(
+    ${KEEPER_VERSION_H}.in
+    ${KEEPER_VERSION_H}
+    @ONLY
+)
 
 # check member serialization
 # the stamp file is not actually generated, but it doesn't seem to matter
