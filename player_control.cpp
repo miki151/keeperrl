@@ -2342,12 +2342,12 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       if (furniture->getPopulationIncrease().requiresAnimalFence &&
           !position.isClosedOff(MovementType(MovementTrait::WALK).setFarmAnimal()))
         index.setHighlight(HighlightType::PIGSTY_NOT_CLOSED);
-    for (auto furniture : position.getFurniture())
-      if (furniture->getLuxury() > 0)
-        if (auto obj = furniture->getViewObject())
-          if (index.hasObject(obj->layer()))
-           index.getObject(obj->layer()).setAttribute(ViewObject::Attribute::LUXURY, furniture->getLuxury());
   }
+  for (auto furniture : position.getFurniture())
+    if (furniture->getLuxury() > 0)
+      if (auto obj = furniture->getViewObject())
+        if (index.hasObject(obj->layer()))
+         index.getObject(obj->layer()).setAttribute(ViewObject::Attribute::LUXURY, furniture->getLuxury());
   if (auto highlight = collective->getTaskMap().getHighlightType(position))
     index.setHighlight(*highlight);
   if (collective->hasPriorityTasks(position))
