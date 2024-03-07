@@ -11,6 +11,9 @@ class IndexedVector {
       indexes.emplace(elems[i]->getUniqueId(), i);
   }
 
+  IndexedVector(const IndexedVector&) = default;
+  IndexedVector& operator=(const IndexedVector&) = default;
+
   IndexedVector(IndexedVector&&) = default;
 
   IndexedVector& operator = (IndexedVector&&) = default;

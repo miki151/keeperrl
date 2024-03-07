@@ -16,8 +16,12 @@
 #include <sys/types.h>
 
 //#ifdef unix
+#ifndef _WIN32
 # include <unistd.h>
 # include <utime.h>
+#else
+# include <filesystem>
+#endif
 /*#else
 # include <direct.h>
 # include <io.h>
@@ -96,7 +100,10 @@ void change_file_date(
 optional<string> mymkdir(
     const char* dirname)
 {
-#ifndef WINDOWS
+#ifdef _MSC_VER
+    std::error_code err;
+    if(!std::filesystem::create_directory(dirname, err))
+#elif !defined(WINDOWS)
     if (mkdir (dirname,0775) != 0)
 #else
     if (mkdir (dirname) != 0)

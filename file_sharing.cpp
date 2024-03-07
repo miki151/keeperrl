@@ -395,7 +395,7 @@ static string firstLines(string text, int max_lines = 3) {
       }
     }
   }
-  while (text.back() == '\n')
+  while (!text.empty() && text.back() == '\n')
     text.pop_back();
   return text;
 }

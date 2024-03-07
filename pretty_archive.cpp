@@ -28,7 +28,7 @@ static bool contains(const vector<StreamChar>& a, const string& substring, int i
 }
 
 static void eatWhitespace(const vector<StreamChar>& s, int& index) {
-  while (index < s.size() && isspace(s[index].c))
+  while (index < s.size() && isspace((unsigned char)s[index].c))
     ++index;
 }
 
@@ -107,9 +107,9 @@ void eatArgument(const vector<StreamChar>& s, int& index) {
 optional<string> scanWord(const vector<StreamChar>& s, int& index) {
   string ret;
   int origIndex = index;
-  while (index < s.size() && isspace(s[index].c))
+  while (index < s.size() && isspace((unsigned char)s[index].c))
     ++index;
-  while (index < s.size() && (isalnum(s[index].c) || s[index].c == '_'))
+  while (index < s.size() && (isalnum((unsigned char)s[index].c) || s[index].c == '_'))
     ret += s[index++].c;
   if (ret.empty()) {
     index = origIndex;

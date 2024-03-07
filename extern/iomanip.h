@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-#ifdef _LIBCPP_VERSION
+#if defined(_LIBCPP_VERSION) || defined(_WIN32)
 #include <iomanip>
 #else
 

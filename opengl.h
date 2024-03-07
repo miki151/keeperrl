@@ -24,7 +24,7 @@ void initializeGLExtensions();
 enum class OpenglFeature { FRAMEBUFFER, SEPARATE_BLEND_FUNC, DEBUG };
 bool isOpenglFeatureAvailable(OpenglFeature);
 
-#ifdef WINDOWS
+#if defined(_WIN32) || defined(WINDOWS)
 
 namespace SDL {
 #define EXT_ENTRY __stdcall

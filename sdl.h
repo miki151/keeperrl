@@ -1,6 +1,12 @@
 #pragma once
 
-#ifdef WINDOWS
+#ifdef _WIN32
+#ifndef _WINDOWS_
+#define _WINDOWS_
+#define APIENTRY __stdcall
+#define WINGDIAPI __declspec(dllimport)
+#endif
+#elif defined(WINDOWS)
 #ifndef _WINDOWS_
 #define _WINDOWS_
 #define APIENTRY __attribute__((__stdcall__))

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "dirent.h"
+// #include "dirent.h"
 #include "sound_library.h"
 #include "sound.h"
 #include "options.h"

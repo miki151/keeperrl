@@ -49,7 +49,9 @@
 #include "ctype.h"
 #include <cstring>
 #include <time.h>
-#include <sys/time.h>
+#ifdef __LINUX__
+#  include <sys/time.h>
+#endif
 #include <cstdlib>
 #include <typeinfo>
 #include <unordered_set>
