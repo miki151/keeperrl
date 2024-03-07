@@ -29,7 +29,7 @@ inline float degToRad(float v) { return v * (2.0f * fconstant::pi / 360.0f); }
 inline float radToDeg(float v) { return v * (360.0 / (2.0 * fconstant::pi)); }
 
 inline std::pair<float, float> sincos(float radians) {
-#ifndef _WIN32
+#ifndef WINDOWS
   std::pair<float, float> out;
   ::sincosf(radians, &out.first, &out.second);
   return out;

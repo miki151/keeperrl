@@ -181,7 +181,7 @@ void glQuad(float x, float y, float ex, float ey) {
   SDL::glEnd();
 }
 
-#if defined(WINDOWS) || defined(_WIN32)
+#if defined(WINDOWS)
 void *winLoadFunction(const char *name) {
   auto ret = SDL::SDL_GL_GetProcAddress(name);
   //USER_CHECK(!!ret) << "Unable to load OpenGL function: " << name << ". Please update your video card driver.";
@@ -208,7 +208,7 @@ namespace SDL {
 #endif
 
 bool isOpenglFeatureAvailable(OpenglFeature feature) {
-#if defined(WINDOWS) || defined(_WIN32)
+#if defined(WINDOWS)
 #define ON_WINDOWS(check) check
 #else
 #define ON_WINDOWS(check)
@@ -228,7 +228,7 @@ bool isOpenglFeatureAvailable(OpenglFeature feature) {
 }
 
 void initializeGLExtensions() {
-#if defined(WINDOWS) || defined(_WIN32)
+#if defined(WINDOWS)
 #define LOAD(func) SDL::func = (decltype(SDL::func))winLoadFunction(#func);
   LOAD(glBindFramebuffer);
   LOAD(glDeleteFramebuffers);

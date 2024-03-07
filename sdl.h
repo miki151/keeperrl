@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef _WIN32
+#if defined(WINDOWS) && defined(_MSC_VER)
 #ifndef _WINDOWS_
 #define _WINDOWS_
 #define APIENTRY __stdcall
