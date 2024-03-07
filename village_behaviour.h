@@ -5,7 +5,7 @@
 #include "creature_factory.h"
 
 class AttackBehaviour;
-class AttackTrigger;
+struct AttackTrigger;
 
 class VillageBehaviour {
   public:

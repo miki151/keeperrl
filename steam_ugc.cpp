@@ -332,7 +332,7 @@ void UGC::beginUpdateItem(const UpdateItemInfo& info) {
       SteamParamStringArray_t strings;
       strings.m_nNumStrings = buffer.size();
       strings.m_ppStrings = buffer.data();
-      auto ret = SteamAPI_ISteamUGC_SetItemTags(ptr, handle, &strings);
+      auto ret = SteamAPI_ISteamUGC_SetItemTags(ptr, handle, &strings, true);
       CHECK(ret);
     }
 

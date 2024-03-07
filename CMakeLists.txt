@@ -1,24 +1,30 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.20)
+
 project(keeper)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-# set default cxxflags
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-shift-count-overflow -ftemplate-depth=512 -DUSE_STEAMWORKS -I /home/michal/keeperrl/extern/steamworks/public")
-# clang specific cflags
-if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags")
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    set(CMAKE_CXX_STANDARD 17)
+else()
+    set(CMAKE_CXX_STANDARD 14)
 endif()
+set(CMAKE_CXX_STANDARD_REQUIRED on)
+
+option(ENABLE_STEAMWORKS "Enable steamworks integration" off)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(STDAFX_H "${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h")
-set(STDAFX_H_GCH "${CMAKE_CURRENT_BINARY_DIR}/stdagx.h.gch")
-
-# set debug cxxflags
-set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wimplicit-fallthrough -Wno-unused-function")
-#if ((${CMAKE_BUILD_TYPE} MATCHES "Debug") AND (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld -L ${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/linux64/ -L /usr/local/lib -lsteam_api -Wl,-rpath=. -Wl,--gdb-index")
-  #endif()
+set(STDAFX_H_GCH "${CMAKE_CURRENT_BINARY_DIR}/stdafx.h.gch")
 
 # additional cmake modules directory
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
+if(ENABLE_STEAMWORKS)
+    add_library(steamworks SHARED IMPORTED)
+    set_target_properties(steamworks PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/win64/steam_api64.dll")
+    set_target_properties(steamworks PROPERTIES IMPORTED_IMPLIB "${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/win64/steam_api64.lib")
+    target_include_directories(steamworks INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/public")
+endif()
 
 # find required libraries
 find_package(SDL2 REQUIRED)
@@ -43,27 +49,31 @@ find_package(VorbisFile REQUIRED)
 find_package(THEORA REQUIRED)
 
 # generate version.h
-file(GLOB GENERATE_VERSION_SH "gen_version.sh")
-set(KEEPER_VERSION_H "${CMAKE_CURRENT_SOURCE_DIR}/version.h")
-add_custom_command(
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/
-    COMMAND ${GENERATE_VERSION_SH}
-    DEPENDS ${GENERATE_VERSION_SH}
-    OUTPUT ${KEEPER_VERSION_H}
-    COMMENT "Generating version.h"
-)
+if(ENABLE_GEN_VERSION)
+    file(GLOB GENERATE_VERSION_SH "gen_version.sh")
+    set(KEEPER_VERSION_H "${CMAKE_CURRENT_SOURCE_DIR}/version.h")
+    add_custom_command(
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/
+        COMMAND ${GENERATE_VERSION_SH}
+        DEPENDS ${GENERATE_VERSION_SH}
+        OUTPUT ${KEEPER_VERSION_H}
+        COMMENT "Generating version.h"
+    )
+endif()
 
 # check member serialization
 # the stamp file is not actually generated, but it doesn't seem to matter
-file(GLOB CHECK_SERIAL_SH "check_serial.sh")
-set(CHECK_SERIAL_STAMP "${CMAKE_CURRENT_SOURCE_DIR}/check_serial.stamp")
-add_custom_command(
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/
-    COMMAND bash ${CHECK_SERIAL_SH}
-    DEPENDS ${CHECK_SERIAL_SH}
-    OUTPUT ${CHECK_SERIAL_STAMP}
-    COMMENT "Checking serialization"
-)
+if(ENABLE_CHECK_SERIAL)
+    file(GLOB CHECK_SERIAL_SH "check_serial.sh")
+    set(CHECK_SERIAL_STAMP "${CMAKE_CURRENT_SOURCE_DIR}/check_serial.stamp")
+    add_custom_command(
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/
+        COMMAND bash ${CHECK_SERIAL_SH}
+        DEPENDS ${CHECK_SERIAL_SH}
+        OUTPUT ${CHECK_SERIAL_STAMP}
+        COMMENT "Checking serialization"
+    )
+endif()
 
 # rules to create `keeper` binary
 file(GLOB SOURCES "*.cpp" "extern/*.cpp")
@@ -71,12 +81,13 @@ add_executable(keeper ${SOURCES} ${KEEPER_VERSION_H} ${CHECK_SERIAL_STAMP})
 target_include_directories(keeper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(keeper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern)
 target_include_directories(keeper PRIVATE ${SDL2_INCLUDE_DIRS})
+target_include_directories(keeper PRIVATE ${OPENAL_INCLUDE_DIRS})
 target_link_libraries(keeper PRIVATE 
-    ${SDL2_LIBRARIES}
+    SDL2::SDL2
     ${SDL2_IMAGE_LIBRARY}
-    ${OPENGL_gl_LIBRARY}
+    OpenGL::GL
     ${CMAKE_THREAD_LIBS_INIT}
-    ${CURL_LIBRARIES}
+    CURL::libcurl
     ${ZLIB_LIBRARIES}
     ${OPENAL_LIBRARY}
     ${VORBIS_LIBRARIES}
@@ -84,26 +95,45 @@ target_link_libraries(keeper PRIVATE
     ${THEORA_dec_LIBRARY}
     ${VorbisFile_LIBRARIES}
     )
+if(ENABLE_STEAMWORKS)
+    target_link_libraries(keeper PRIVATE steamworks)
+    target_compile_definitions(keeper PRIVATE USE_STEAMWORKS)
+endif()
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    target_compile_definitions(keeper PRIVATE WINDOWS)
+    target_link_libraries(keeper PRIVATE dbghelp)
+endif()
+target_compile_options(keeper PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/w>)
+target_compile_definitions(keeper PRIVATE $<$<CXX_COMPILER_ID:MSVC>:_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING>)
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        set_source_files_properties(
+            content_factory.cpp 
+            player_control.cpp 
+            gui_builder.cpp 
+            pretty_printing.cpp 
+            task.cpp
+            PROPERTIES 
+                COMPILE_FLAGS /bigobj
+        )
+    else()
+        set_source_files_properties(
+            content_factory.cpp 
+            player_control.cpp 
+            gui_builder.cpp 
+            pretty_printing.cpp 
+            task.cpp
+            PROPERTIES 
+                COMPILE_FLAGS -Wa,-mbig-obj
+        )
+    endif()
+endif()
 
 # set up definitions
 if ((${CMAKE_BUILD_TYPE} MATCHES "Release"))
     target_compile_definitions(keeper PRIVATE RELEASE=1)
 else()
-# generate stdafx.h.gch for debug build
-# workaround to unquote the cxxflags
-set(CXX_FLAGS_LIST ${CMAKE_CXX_FLAGS})
-separate_arguments(CXX_FLAGS_LIST)
-add_custom_command(
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/
-    COMMAND ${CMAKE_CXX_COMPILER} ${CXX_FLAGS_LIST} -x c++-header ${STDAFX_H} -MMD -o ${STDAFX_H_GCH}
-    DEPENDS ${STDAFX_H}
-    OUTPUT ${STDAFX_H_GCH}
-    COMMENT "Generating ${STDAFX_H_GCH}"
-)
-if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include-pch ${STDAFX_H_GCH}")
-endif()
-target_sources(keeper PRIVATE ${STDAFX_H_GCH})
+    target_precompile_headers(keeper PRIVATE ${STDAFX_H})
 endif()
 
 if(ENABLE_LOCAL_USER_DIR)

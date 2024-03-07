@@ -2,8 +2,13 @@
 #include "file_path.h"
 #include "debug.h"
 #include "util.h"
-#include <sys/types.h>
-#include <sys/stat.h>
+
+#ifndef _MSC_VER
+# include <sys/types.h>
+# include <sys/stat.h>
+#else
+# include <filesystem>
+#endif
 
 FilePath FilePath::fromFullPath(const std::string& path) {
   return FilePath(split(path, {'/'}).back(), path);
@@ -28,7 +33,10 @@ time_t FilePath::getModificationTime() const {
 }
 
 bool FilePath::exists() const {
-#ifdef WINDOWS
+#ifdef _MSC_VER
+  std::error_code err;
+  return std::filesystem::is_regular_file(fullPath.c_str(), err);
+#elif defined(WINDOWS)
   struct _stat buf;
   _stat(fullPath.c_str(), &buf);
   return S_ISREG(buf.st_mode);

@@ -14,7 +14,7 @@
    If not, see http://www.gnu.org/licenses/ . */
 
 #include "stdafx.h"
-#include "dirent.h"
+// #include "dirent.h"
 #include "extern/lodepng.h"
 
 #include "renderer.h"

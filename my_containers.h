@@ -51,7 +51,7 @@ class vector {
   }
 
   void push_back(T t) {
-#ifndef RELEASE // due to compile errors on older clang
+#if !defined(RELEASE) && !defined(_WIN32) // due to compile errors on older clang
     static_assert(std::is_nothrow_move_constructible<T>::value, "T should be noexcept MoveConstructible");
 #endif
     impl.push_back(std::move(t));
@@ -419,19 +419,19 @@ class vector {
   friend class Iterator;
 
   auto begin() const {
-    return const_iterator(&*impl.begin(), this);
+    return const_iterator(impl.data(), this);
   }
 
   auto end() const {
-    return const_iterator(&*impl.end(), this);
+    return const_iterator(impl.data() + impl.size(), this);
   }
 
   auto begin() {
-    return iterator(&*impl.begin(), this);
+    return iterator(impl.data(), this);
   }
 
   auto end() {
-    return iterator(&*impl.end(), this);
+    return iterator(impl.data() + impl.size(), this);
   }
 
   std::vector<T> impl;

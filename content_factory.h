@@ -32,12 +32,12 @@
 
 class KeyVerifier;
 class BuildInfo;
-class ExternalEnemy;
-class ResourceDistribution;
-class EnemyInfo;
+struct ExternalEnemy;
+struct ResourceDistribution;
+struct EnemyInfo;
 class ImmigrantInfo;
-class ZLevelInfo;
-class BuildingInfo;
+struct ZLevelInfo;
+struct BuildingInfo;
 struct LayoutGenerator;
 struct TileGasInfo;
 struct PromotionInfo;

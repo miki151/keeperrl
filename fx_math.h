@@ -29,9 +29,16 @@ inline float degToRad(float v) { return v * (2.0f * fconstant::pi / 360.0f); }
 inline float radToDeg(float v) { return v * (360.0 / (2.0 * fconstant::pi)); }
 
 inline std::pair<float, float> sincos(float radians) {
+#ifndef _WIN32
   std::pair<float, float> out;
   ::sincosf(radians, &out.first, &out.second);
   return out;
+#else
+  std::pair<float, float> out;
+  out.first = std::sin(radians);
+  out.second = std::cos(radians);
+  return out;
+#endif
 }
 
 // Return angle in range (0; 2 * PI)
