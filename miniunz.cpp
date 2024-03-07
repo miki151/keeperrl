@@ -16,29 +16,24 @@
 #include <sys/types.h>
 
 //#ifdef unix
-#ifndef _WIN32
+#ifndef WIN32
 # include <unistd.h>
 # include <utime.h>
 #else
-# include <filesystem>
-#endif
-/*#else
 # include <direct.h>
 # include <io.h>
-#endif*/
+#endif
 
 #include "unzip.h"
-
-#undef WIN32
 
 #define CASESENSITIVITY (0)
 #define WRITEBUFFERSIZE (8192)
 #define MAXFILENAME (256)
 
-#ifdef WIN32
-#define USEWIN32IOAPI
-#include "iowin32.h"
-#endif
+// #ifdef WIN32
+// #define USEWIN32IOAPI
+// #include "iowin32.h"
+// #endif
 
 #include "util.h"
 /*
@@ -61,7 +56,7 @@ void change_file_date(
     uLong dosdate,
     tm_unz tmu_date)
 {
-#ifdef WIN32
+#if 0 // defined(WIN32)
   HANDLE hFile;
   FILETIME ftm,ftLocal,ftCreate,ftLastAcc,ftLastWrite;
 
@@ -100,10 +95,7 @@ void change_file_date(
 optional<string> mymkdir(
     const char* dirname)
 {
-#ifdef _MSC_VER
-    std::error_code err;
-    if(!std::filesystem::create_directory(dirname, err))
-#elif !defined(WINDOWS)
+#ifndef WIN32
     if (mkdir (dirname,0775) != 0)
 #else
     if (mkdir (dirname) != 0)
