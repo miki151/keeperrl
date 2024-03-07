@@ -224,7 +224,12 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
         return true;
       }}},
     }};
-    view->scriptedUI("avatar_menu", data);
+    ScriptedUIState state;
+    state.exit = ScriptedUIDataElems::Callback{[&ret] {
+      ret = RetType(AvatarMenuOption::GO_BACK);
+      return true;
+    }};
+    view->scriptedUI("avatar_menu", data, state);
     if (ret)
       return std::move(*ret);
   }
