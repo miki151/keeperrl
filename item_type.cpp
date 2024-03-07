@@ -510,7 +510,6 @@ ItemAttributes ItemTypes::Mushroom::getAttributes(const ContentFactory* factory)
       i.blindName = "mushroom"_s;
       i.itemClass= ItemClass::FOOD;
       i.weight = 0.1;
-      i.modifiers[AttrType("DAMAGE")] = -15;
       i.effect = effect;
       i.price = i.effect->getPrice(factory);
       i.uses = 1;
