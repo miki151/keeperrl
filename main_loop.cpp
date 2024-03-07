@@ -157,22 +157,21 @@ optional<RetiredModelInfo> MainLoop::loadRetiredModelFromFile(const FilePath& pa
   return loadFromFile<RetiredModelInfo>(path);
 }
 
-void MainLoop::saveMainModel(PGame& game, const FilePath& modelPath, const FilePath& warlordPath) {
-  CompressedOutput modelOut(modelPath.getPath());
-  string name = game->getGameDisplayName();
-  SavedGameInfo savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods());
-  modelOut.getArchive() << saveVersion << name << savedInfo;
-  RetiredModelInfoWithReference info {
-    game->getMainModel().giveMeSharedPointer(),
-    game->getContentFactory()
-  };
-  modelOut.getArchive() << info;
-/*  if (!savedInfo.retiredEnemyInfo) {
-    CompressedOutput warlordOut(warlordPath.getPath());
-    auto warlordInfo = game->getWarlordInfo();
-    game->getMainModel()->discardForRetirement();
-    warlordOut.getArchive() << saveVersion << name << savedInfo << warlordInfo;
-  }*/
+void MainLoop::saveMainModel(PGame& game, const FilePath& modelPath) {
+  FilePath tmpPath = modelPath.withSuffix(".tmp");
+  {
+    CompressedOutput modelOut(tmpPath.getPath());
+    string name = game->getGameDisplayName();
+    SavedGameInfo savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods());
+    modelOut.getArchive() << saveVersion << name << savedInfo;
+    RetiredModelInfoWithReference info {
+      game->getMainModel().giveMeSharedPointer(),
+      game->getContentFactory()
+    };
+    modelOut.getArchive() << info;
+  }
+  tmpPath.copyTo(modelPath);
+  tmpPath.erase();
 }
 
 int MainLoop::getSaveVersion(const SaveFileInfo& save) {
@@ -221,8 +220,7 @@ void MainLoop::saveUI(PGame& game, GameSaveType type) {
                 savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods())] {
               uploadFile(path, name, savedInfo);
             };
-          auto warlordPath = getSavePath(game, GameSaveType::WARLORD);
-          saveMainModel(game, path, warlordPath);
+          saveMainModel(game, path);
         });
   } else {
     int saveTime = game->getSaveProgressCount();

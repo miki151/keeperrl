@@ -44,6 +44,10 @@ bool FilePath::hasSuffix(const string& suf) const {
   return filename.size() >= suf.size() && filename.substr(filename.size() - suf.size()) == suf;
 }
 
+FilePath FilePath::withSuffix(const string& suf) const {
+  return FilePath(filename + suf, fullPath + suf);
+}
+
 FilePath FilePath::changeSuffix(const string& current, const string& newSuf) const {
   CHECK(hasSuffix(current));
   return FilePath(
