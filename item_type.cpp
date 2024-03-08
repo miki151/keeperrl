@@ -596,7 +596,7 @@ ItemAttributes ItemTypes::FireScroll::getAttributes(const ContentFactory*) const
       i.price = 15;
       i.burnTime = 10;
       i.uses = 1;
-      i.effect = Effect(EffectType::Chain{});
+      i.effect = Effect(EffectType::EChain{});
       i.effectDescription = false;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
       i.storageIds = {StorageId("equipment")};

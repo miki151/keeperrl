@@ -49,7 +49,7 @@
 #include "ctype.h"
 #include <cstring>
 #include <time.h>
-#ifdef __LINUX__
+#ifndef WINDOWS
 #  include <sys/time.h>
 #endif
 #include <cstdlib>
