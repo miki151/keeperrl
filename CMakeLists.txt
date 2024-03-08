@@ -24,6 +24,7 @@ if(ENABLE_STEAMWORKS)
     if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         set_target_properties(steamworks PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/win64/steam_api64.dll")
         set_target_properties(steamworks PROPERTIES IMPORTED_IMPLIB "${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/win64/steam_api64.lib")
+        install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/win64/steam_api64.dll" TYPE BIN)
     elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         set_target_properties(steamworks PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/linux64/libsteam_api.so")
     endif()
@@ -99,6 +100,16 @@ target_link_libraries(keeper PRIVATE
 if(ENABLE_STEAMWORKS)
     target_link_libraries(keeper PRIVATE steamworks)
     target_compile_definitions(keeper PRIVATE USE_STEAMWORKS)
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        add_custom_command(
+            TARGET keeper
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+                "${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/win64/steam_api64.dll"
+                "$<TARGET_FILE_DIR:keeper>"
+        )
+    endif()
 endif()
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_compile_definitions(keeper PRIVATE WINDOWS)
@@ -149,3 +160,9 @@ if(EASY_PROFILER)
     target_compile_definitions(keeper PRIVATE EASY_PROFILER=1)
     target_link_libraries(keeper PRIVATE libeasy_profiler)
 endif()
+
+
+install(
+    TARGETS keeper
+    RUNTIME
+)
