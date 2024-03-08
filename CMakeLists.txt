@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.14)
 
 set(BUILD_SHARED_LIBS off)
 set(BUILD_STATIC_LIBS on)
+set(BUILD_CURL_EXE off)
+set(BUILD_LIBCURL_DOCS off)
 
 project(KeeperRL)
 
@@ -71,7 +73,7 @@ add_executable(
 )
 target_include_directories(keeper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(keeper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern)
-target_include_directories(keeper PRIVATE ${sdl2_image_SOURCE_DIR}/include ${theora_SOURCE_DIR}/include)
+target_include_directories(keeper PRIVATE ${sdl2_image_SOURCE_DIR}/include ${theora_SOURCE_DIR}/include ${OPENAL_INCLUDE_DIR})
 target_link_libraries(
     keeper
     PRIVATE
@@ -85,7 +87,7 @@ target_link_libraries(
     vorbisfile
     theoradec
     OpenGL::GL
-    OpenAL::OpenAL
+    ${OPENAL_LIBRARY}
 )
 target_precompile_headers(keeper PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h")
 if(ENABLE_STEAMWORKS)
