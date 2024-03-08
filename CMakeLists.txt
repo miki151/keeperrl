@@ -1,6 +1,9 @@
-cmake_minimum_required (VERSION 3.20)
+cmake_minimum_required(VERSION 3.14)
 
-project(keeper)
+set(BUILD_SHARED_LIBS off)
+set(BUILD_STATIC_LIBS on)
+
+project(KeeperRL)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CXX_STANDARD 17)
@@ -9,15 +12,7 @@ else()
 endif()
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 
-option(ENABLE_STEAMWORKS "Enable steamworks integration" off)
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-set(STDAFX_H "${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h")
-set(STDAFX_H_GCH "${CMAKE_CURRENT_BINARY_DIR}/stdafx.h.gch")
-
-# additional cmake modules directory
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+option(ENABLE_STEAMWORKS "Enable steamworks integration" ON)
 
 if(ENABLE_STEAMWORKS)
     add_library(steamworks SHARED IMPORTED)
@@ -31,27 +26,32 @@ if(ENABLE_STEAMWORKS)
     target_include_directories(steamworks INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/public")
 endif()
 
-# find required libraries
-find_package(SDL2 REQUIRED)
-find_package(SDL2_image REQUIRED)
+include(FetchContent)
+
+FetchContent_Declare(SDL2 GIT_REPOSITORY https://github.com/libsdl-org/SDL GIT_TAG release-2.30.1)
+FetchContent_Declare(SDL2_image GIT_REPOSITORY https://github.com/libsdl-org/SDL_image GIT_TAG release-2.8.2)
+FetchContent_Declare(CURL GIT_REPOSITORY https://github.com/curl/curl GIT_TAG curl-8_6_0)
+FetchContent_Declare(ZLIB GIT_REPOSITORY https://github.com/madler/zlib GIT_TAG v1.3.1)
+FetchContent_Declare(OGG GIT_REPOSITORY https://github.com/xiph/ogg GIT_TAG v1.3.5)
+FetchContent_Declare(VORBIS GIT_REPOSITORY https://github.com/xiph/vorbis GIT_TAG v1.3.7)
+FetchContent_Declare(THEORA GIT_REPOSITORY https://github.com/xiph/theora GIT_TAG v1.2.0alpha1)
+FetchContent_MakeAvailable(SDL2 SDL2_image CURL ZLIB OGG VORBIS THEORA)
+
 find_package(OpenGL REQUIRED)
-if(APPLE)
-    # assume built-in pthreads on MacOS
-    set(CMAKE_THREAD_LIBS_INIT "-lpthread")
-    set(CMAKE_HAVE_THREADS_LIBRARY 1)
-    set(CMAKE_USE_WIN32_THREADS_INIT 0)
-    set(CMAKE_USE_PTHREADS_INIT 1)
-    set(THREADS_PREFER_PTHREAD_FLAG ON)
-else()
-    find_package(Threads REQUIRED)
-endif()
-find_package(CURL REQUIRED)
-find_package(ZLIB REQUIRED)
 find_package(OpenAL REQUIRED)
-find_package(Vorbis REQUIRED)
-find_package(Ogg REQUIRED)
-find_package(VorbisFile REQUIRED)
-find_package(THEORA REQUIRED)
+
+add_library(
+    theoradec
+    "${theora_SOURCE_DIR}/lib/apiwrapper.c"
+	"${theora_SOURCE_DIR}/lib/bitpack.c" "${theora_SOURCE_DIR}/lib/dequant.c"
+	"${theora_SOURCE_DIR}/lib/fragment.c" "${theora_SOURCE_DIR}/lib/idct.c"
+	"${theora_SOURCE_DIR}/lib/info.c" "${theora_SOURCE_DIR}/lib/internal.c"
+	"${theora_SOURCE_DIR}/lib/state.c" "${theora_SOURCE_DIR}/lib/quant.c"
+	"${theora_SOURCE_DIR}/lib/decapiwrapper.c" "${theora_SOURCE_DIR}/lib/decinfo.c"
+	"${theora_SOURCE_DIR}/lib/decode.c" "${theora_SOURCE_DIR}/lib/huffdec.c"
+)
+target_link_libraries(theoradec PRIVATE ogg)
+target_include_directories(theoradec PUBLIC ${theora_SOURCE_DIR}/include)
 
 # generate version.h
 set(KEEPER_VERSION_H "${CMAKE_CURRENT_SOURCE_DIR}/version.h")
@@ -63,40 +63,31 @@ configure_file(
     @ONLY
 )
 
-# check member serialization
-# the stamp file is not actually generated, but it doesn't seem to matter
-if(ENABLE_CHECK_SERIAL)
-    file(GLOB CHECK_SERIAL_SH "check_serial.sh")
-    set(CHECK_SERIAL_STAMP "${CMAKE_CURRENT_SOURCE_DIR}/check_serial.stamp")
-    add_custom_command(
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/
-        COMMAND bash ${CHECK_SERIAL_SH}
-        DEPENDS ${CHECK_SERIAL_SH}
-        OUTPUT ${CHECK_SERIAL_STAMP}
-        COMMENT "Checking serialization"
-    )
-endif()
-
-# rules to create `keeper` binary
-file(GLOB SOURCES "*.cpp" "extern/*.cpp")
-add_executable(keeper ${SOURCES} ${KEEPER_VERSION_H} ${CHECK_SERIAL_STAMP})
+file(GLOB KEEPER_SOURCES "*.cpp" "extern/*.cpp")
+add_executable(
+    keeper
+    ${KEEPER_SOURCES}
+    ${KEEPER_VERSION_H}
+)
 target_include_directories(keeper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(keeper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern)
-target_include_directories(keeper PRIVATE ${SDL2_INCLUDE_DIRS})
-target_include_directories(keeper PRIVATE ${OPENAL_INCLUDE_DIRS})
-target_link_libraries(keeper PRIVATE 
-    SDL2::SDL2
-    ${SDL2_IMAGE_LIBRARY}
+target_include_directories(keeper PRIVATE ${sdl2_image_SOURCE_DIR}/include ${theora_SOURCE_DIR}/include)
+target_link_libraries(
+    keeper
+    PRIVATE
+    SDL2-static
+    SDL2main
+    SDL2_image
+    libcurl_static
+    zlibstatic
+    ogg
+    vorbis
+    vorbisfile
+    theoradec
     OpenGL::GL
-    ${CMAKE_THREAD_LIBS_INIT}
-    CURL::libcurl
-    ${ZLIB_LIBRARIES}
-    ${OPENAL_LIBRARY}
-    ${VORBIS_LIBRARIES}
-    ${OGG_LIBRARIES}
-    ${THEORA_dec_LIBRARY}
-    ${VorbisFile_LIBRARIES}
-    )
+    OpenAL::OpenAL
+)
+target_precompile_headers(keeper PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h")
 if(ENABLE_STEAMWORKS)
     target_link_libraries(keeper PRIVATE steamworks)
     target_compile_definitions(keeper PRIVATE USE_STEAMWORKS)
@@ -112,12 +103,10 @@ if(ENABLE_STEAMWORKS)
     endif()
 endif()
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    target_compile_definitions(keeper PRIVATE WINDOWS)
+    target_compile_definitions(keeper PRIVATE WINDOWS $<$<CXX_COMPILER_ID:MSVC>:_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING>)
+    target_compile_options(keeper PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/w>)
     target_link_libraries(keeper PRIVATE dbghelp)
-endif()
-target_compile_options(keeper PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/w>)
-target_compile_definitions(keeper PRIVATE $<$<CXX_COMPILER_ID:MSVC>:_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING>)
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+
     if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         set_source_files_properties(
             content_factory.cpp 
@@ -141,25 +130,11 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     endif()
 endif()
 
-# set up definitions
-if ((${CMAKE_BUILD_TYPE} MATCHES "Release"))
+if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDbgInfo")
     target_compile_definitions(keeper PRIVATE RELEASE=1)
 endif()
-target_precompile_headers(keeper PRIVATE ${STDAFX_H})
 
-if(ENABLE_LOCAL_USER_DIR)
-    target_compile_definitions(keeper PRIVATE ENABLE_LOCAL_USER_DIR=1)
-endif()
-if(SANITIZE)
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
-endif()
-if(PROF)
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
-endif()
-if(EASY_PROFILER)
-    target_compile_definitions(keeper PRIVATE EASY_PROFILER=1)
-    target_link_libraries(keeper PRIVATE libeasy_profiler)
-endif()
+
 
 
 install(
