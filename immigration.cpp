@@ -471,6 +471,7 @@ vector<Creature*> Immigration::Available::addAllCreatures(const vector<Position>
       for (auto& c : immigrants)
         c->modViewObject().setColorVariant(*specialTrait.colorVariant);*/
     applySpecialTrait(game->getGlobalTime(), trait, immigrants.back(), game->getContentFactory());
+    immigrants.back()->specialTraits.push_back(trait);
   }
   return immigrants;
 }

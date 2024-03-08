@@ -66,6 +66,7 @@
 #include "promotion_info.h"
 #include "buff_info.h"
 #include "collective.h"
+#include "special_trait.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
@@ -77,6 +78,8 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(controllerStack, kills, statuses, automatonParts, phylactery, highestAttackValueEver);
   ar(difficultyPoints, points, capture, spellMap, killTitles, companions, combatExperience, teamExperience);
   ar(vision, debt, lastCombatIntent, primaryViewId, steed, buffs, buffCount, buffPermanentCount);
+  if (version == 1)
+    ar(specialTraits);
 }
 
 SERIALIZABLE(Creature)

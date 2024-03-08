@@ -67,6 +67,7 @@
 #include "tile_gas_info.h"
 #include "buff_info.h"
 #include "zlevel.h"
+#include "special_trait.h"
 
 namespace {
 struct DefaultType {
@@ -1684,8 +1685,11 @@ static bool applyToCreature(const Effects::Polymorph& e, Creature* c, Creature*)
   if (auto timeout = e.timeout) { // make a copy as it's possible e is invalidated in pushAttributes()
     c->pushAttributes(std::move(attributes), std::move(spells));
     c->addEffect(LastingEffect::POLYMORPHED, *timeout);
-  } else
+  } else {
     c->setAttributes(std::move(attributes), std::move(spells));
+    for (auto& elem : c->specialTraits)
+      applySpecialTrait(*c->getGlobalTime(), elem, c, c->getGame()->getContentFactory());
+  }
   c->secondPerson("You turn into " + c->getName().a() + "!");
   c->thirdPerson(origName + " turns into " + c->getName().a() + "!");
   summonFX(c->getPosition());
