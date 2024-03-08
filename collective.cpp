@@ -917,7 +917,13 @@ double Collective::getEfficiency(const Creature* c) const {
   for (auto buff : f->buffsModifyingEfficiency)
     if (c->isAffected(buff))
       fromBuffs *= *f->buffs.at(buff).efficiencyMultiplier;
-  return fromBuffs *
+  double luxury = [&] {
+    double ret = 0;
+    for (auto v : c->getPosition().neighbors8())
+      ret += v.getTotalLuxury();
+    return min(2.0, 1 + ret / 2);
+  }();
+  return luxury * fromBuffs *
       (c->isAffected(LastingEffect::SPEED) ? 1.4 : 1.0) *
       (c->isAffected(LastingEffect::SLOWED) ? (1 / 1.4) : 1.0);
 }

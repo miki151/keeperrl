@@ -146,6 +146,7 @@ class Position {
   const Furniture* getFurniture(FurnitureLayer) const;
   const Furniture* getFurniture(FurnitureType) const;
   vector<const Furniture*> getFurniture() const;
+  double getTotalLuxuryPlusWalls() const;
   double getTotalLuxury() const;
   Furniture* modFurniture(FurnitureLayer) const;
   Furniture* modFurniture(FurnitureType) const;

@@ -198,6 +198,12 @@ double Position::getTotalLuxury() const {
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = getFurniture(layer))
       ret += f->getLuxury();
+  return ret;
+}
+
+double Position::getTotalLuxuryPlusWalls() const {
+  PROFILE;
+  double ret = getTotalLuxury();
   for (auto v : neighbors4())
     if (auto f = v.getFurniture(FurnitureLayer::MIDDLE))
       if (f->isWall())

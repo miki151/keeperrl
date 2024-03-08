@@ -3378,7 +3378,7 @@ optional<PlayerControl::QuartersInfo> PlayerControl::getQuarters(Vec2 pos) const
     for (auto& pos : info->positions)
       if (pos.getLevel() == level) {
         v.insert(pos.getCoord());
-        luxury += pos.getTotalLuxury();
+        luxury += pos.getTotalLuxuryPlusWalls();
       }
     optional<ViewIdList> viewId;
     optional<string> name;

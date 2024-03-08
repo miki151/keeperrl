@@ -166,7 +166,7 @@ optional<double> Zones::getQuartersLuxury(UniqueEntity<Creature>::Id id) const {
     return none;
   double ret = 0;
   for (auto& pos : quarters)
-    ret += pos.getTotalLuxury();
+    ret += pos.getTotalLuxuryPlusWalls();
   return ret;
 }
 
