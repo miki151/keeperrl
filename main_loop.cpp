@@ -747,7 +747,7 @@ void MainLoop::showMods() {
       };
       for (auto& action : mod.actions)
         modInfo.elems[action] = getCallback(action);
-      if (mod.versionInfo.steamId != 0)
+      if (steamAchievements && mod.versionInfo.steamId != 0)
         modInfo.elems["show_workshop"] = ScriptedUIDataElems::Callback {
             [id = mod.versionInfo.steamId] {
               openUrl("https://steamcommunity.com/sharedfiles/filedetails/?id=" + toString(id));
