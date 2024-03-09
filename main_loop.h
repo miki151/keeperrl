@@ -105,7 +105,7 @@ class MainLoop {
   PGame prepareTutorial(const ContentFactory*);
   void bugReportSave(PGame&, FilePath);
   void saveGame(PGame&, const FilePath&);
-  void saveMainModel(PGame&, const FilePath& modelPath, const FilePath& warlordPath);
+  void saveMainModel(PGame&, const FilePath& modelPath);
   TilePaths getTilePathsForAllMods() const;
   vector<string> getCurrentMods() const;
 

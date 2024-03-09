@@ -139,6 +139,7 @@ static po::parser getCommandLineFlags() {
   flags["layout_name"].type(po::string).description("Name of layout to generate");
   flags["stderr"].description("Log to stderr");
   flags["nolog"].description("No logging");
+  flags["no_crash_reports"].description("Don't intercept game crashes and send crash reports to the developer");
   flags["free_mode"].description("Run in free ascii mode");
   flags["gen_z_levels"].type(po::string).description("Generate and print z-level types for a given keeper");
 #ifndef RELEASE
@@ -167,14 +168,15 @@ void onException() {
 }
 
 int main(int argc, char* argv[]) {
-  initializeMiniDump();
+  po::parser flags = getCommandLineFlags();
+  if (!flags.parseArgs(argc, argv))
+    return -1;
+  if (!flags["no_crash_reports"].was_set())
+    initializeMiniDump();
   std::set_terminate(onException);
   setInitializedStatics();
   if (argc > 1)
     attachConsole();
-  po::parser flags = getCommandLineFlags();
-  if (!flags.parseArgs(argc, argv))
-    return -1;
   return keeperMain(flags);
 }
 

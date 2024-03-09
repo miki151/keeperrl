@@ -157,22 +157,21 @@ optional<RetiredModelInfo> MainLoop::loadRetiredModelFromFile(const FilePath& pa
   return loadFromFile<RetiredModelInfo>(path);
 }
 
-void MainLoop::saveMainModel(PGame& game, const FilePath& modelPath, const FilePath& warlordPath) {
-  CompressedOutput modelOut(modelPath.getPath());
-  string name = game->getGameDisplayName();
-  SavedGameInfo savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods());
-  modelOut.getArchive() << saveVersion << name << savedInfo;
-  RetiredModelInfoWithReference info {
-    game->getMainModel().giveMeSharedPointer(),
-    game->getContentFactory()
-  };
-  modelOut.getArchive() << info;
-/*  if (!savedInfo.retiredEnemyInfo) {
-    CompressedOutput warlordOut(warlordPath.getPath());
-    auto warlordInfo = game->getWarlordInfo();
-    game->getMainModel()->discardForRetirement();
-    warlordOut.getArchive() << saveVersion << name << savedInfo << warlordInfo;
-  }*/
+void MainLoop::saveMainModel(PGame& game, const FilePath& modelPath) {
+  FilePath tmpPath = modelPath.withSuffix(".tmp");
+  {
+    CompressedOutput modelOut(tmpPath.getPath());
+    string name = game->getGameDisplayName();
+    SavedGameInfo savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods());
+    modelOut.getArchive() << saveVersion << name << savedInfo;
+    RetiredModelInfoWithReference info {
+      game->getMainModel().giveMeSharedPointer(),
+      game->getContentFactory()
+    };
+    modelOut.getArchive() << info;
+  }
+  tmpPath.copyTo(modelPath);
+  tmpPath.erase();
 }
 
 int MainLoop::getSaveVersion(const SaveFileInfo& save) {
@@ -221,8 +220,7 @@ void MainLoop::saveUI(PGame& game, GameSaveType type) {
                 savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods())] {
               uploadFile(path, name, savedInfo);
             };
-          auto warlordPath = getSavePath(game, GameSaveType::WARLORD);
-          saveMainModel(game, path, warlordPath);
+          saveMainModel(game, path);
         });
   } else {
     int saveTime = game->getSaveProgressCount();
@@ -749,7 +747,7 @@ void MainLoop::showMods() {
       };
       for (auto& action : mod.actions)
         modInfo.elems[action] = getCallback(action);
-      if (mod.versionInfo.steamId != 0)
+      if (steamAchievements && mod.versionInfo.steamId != 0)
         modInfo.elems["show_workshop"] = ScriptedUIDataElems::Callback {
             [id = mod.versionInfo.steamId] {
               openUrl("https://steamcommunity.com/sharedfiles/filedetails/?id=" + toString(id));
@@ -1282,8 +1280,9 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
           if (auto info = sites[v].getKeeper()) {
             models[v] = getBaseModel(modelBuilder, setup, avatarInfo);
           } else if (auto villain = sites[v].getVillain()) {
-            /*for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE)))
-              if (isCompatible(getSaveVersion(info)))
+            for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE))) {
+              auto version = getSaveVersion(info);
+              if (isCompatible(version) && version >= 8101)
                 if (auto saved = loadSavedGameInfo(userPath.file(info.filename)))
                   if (auto& retiredInfo = saved->retiredEnemyInfo)
                     if (retiredInfo->enemyId == villain->enemyId)
@@ -1292,7 +1291,8 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
                         ++numRetiredVillains;
                         remove(userPath.file(info.filename).getPath());
                         break;
-                      }*/
+                      }
+            }
             if (!models[v])
               models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, avatarInfo.tribeAlignment,
                   *setup.campaign.getSites()[v].biome, difficulty);

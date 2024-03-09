@@ -534,6 +534,8 @@ void WindowView::playSounds(const CreatureView* view) {
         (sound.getPosition()->isSameLevel(view->getCreatureViewLevel()) &&
          sound.getPosition()->getCoord().inRectangle(area)))) {
       auto duration = soundLibrary->playSound(sound);
+      if (id == "frog_ambient" || id == "owl_ambient")
+        duration = milliseconds{Random.get(8000, 20000)};
       nextPlayed[id] = curTime + duration;
     }
   }

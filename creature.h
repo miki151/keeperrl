@@ -35,6 +35,7 @@
 #include "buff_id.h"
 #include "player_message.h"
 
+class SpecialTrait;
 class Level;
 class Tribe;
 class ViewObject;
@@ -368,6 +369,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   };
 
   unordered_set<string> SERIAL(effectFlags);
+  vector<SpecialTrait> SERIAL(specialTraits);
 
   private:
 
@@ -470,3 +472,5 @@ struct AdjectiveInfo {
   string name;
   string help;
 };
+
+CEREAL_CLASS_VERSION(Creature, 1)

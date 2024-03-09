@@ -10,6 +10,7 @@ class FilePath {
   time_t getModificationTime() const;
   bool exists() const;
   bool hasSuffix(const string&) const;
+  FilePath withSuffix(const string& suf) const;
   FilePath changeSuffix(const string& current, const string& newSuf) const;
   optional<string> readContents() const;
   void erase() const;
