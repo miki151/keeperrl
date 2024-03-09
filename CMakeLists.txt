@@ -30,6 +30,9 @@ endif()
 
 include(FetchContent)
 
+set(OGG_LIBRARY ogg)
+set(OGG_INCLUDE_DIR "dummy")
+
 FetchContent_Declare(SDL2 GIT_REPOSITORY https://github.com/libsdl-org/SDL GIT_TAG release-2.30.1)
 FetchContent_Declare(SDL2_image GIT_REPOSITORY https://github.com/libsdl-org/SDL_image GIT_TAG release-2.8.2)
 FetchContent_Declare(CURL GIT_REPOSITORY https://github.com/curl/curl GIT_TAG curl-8_6_0)
