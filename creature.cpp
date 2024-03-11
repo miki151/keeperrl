@@ -70,6 +70,9 @@
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
+  if (Archive::is_saving::value)
+    if (auto model = position.getModel())
+      CHECK(!model->serializationLocked) << identify() << " is outside model bounds";
   ar(SUBCLASS(OwnedObject<Creature>), SUBCLASS(Renderable), SUBCLASS(UniqueEntity), SUBCLASS(EventListener));
   ar(attributes, position, equipment, shortestPath, knownHiding, tribe);
   ar(deathTime, hidden, lastMoveCounter, effectFlags, duelInfo, leadershipExp);
@@ -1631,7 +1634,7 @@ AttrType Creature::modifyDamageAttr(AttrType type, const ContentFactory* factory
 }
 
 CreatureAction Creature::attack(Creature* other) const {
-  CHECK(!other->isDead());
+  CHECK(!other->isDead()) << other->identify();
   if (!position.isSameLevel(other->getPosition()))
     return CreatureAction();
   Vec2 dir = getPosition().getDir(other->getPosition());
