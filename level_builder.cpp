@@ -197,7 +197,8 @@ PLevel LevelBuilder::build(const ContentFactory* factory, Model* m, LevelMaker* 
     /*CHECK(pos.canEnter(c.first.get())) << c.first->getName().bare();
     pos.addCreature(std::move(c.first));*/
     // Use landCreature instead, because it will try to put it in adjacent positions
-    CHECK(l->landCreature({pos}, c.first.get()));
+    if (!l->landCreature({pos}, c.first.get()))
+      throw LevelGenException();
     m->addCreature(std::move(c.first));
   }
   for (CollectiveBuilder* c : collectives)
