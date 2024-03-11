@@ -3730,7 +3730,8 @@ void PlayerControl::considerNewAttacks() {
 }
 
 void PlayerControl::considerSoloAchievement() {
-  if (!collective->getCreatures(MinionTrait::FIGHTER).empty())
+  auto& fighters = collective->getCreatures(MinionTrait::FIGHTER);
+  if (!fighters.empty() && (fighters.size() > 1 || !collective->getLeaders().contains(fighters[0])))
     soloKeeper = false;
 }
 
