@@ -3483,6 +3483,11 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
             lines.addElem(WL(stack,
                   WL(margins, WL(progressBar, Color::GREEN.transparency(70), fabs(*luxury)), -2, 0, 0, 3),
                   WL(label, "Luxury: " + getLuxuryNumber(*luxury))));
+          if (auto efficiency = viewObject.getAttribute(ViewObjectAttribute::EFFICIENCY))
+            if (*efficiency >= 0.4) // Loading saves from before this change, non-relevant furniture would have this initialized to 0 so skip them
+              lines.addElem(WL(stack,
+                    WL(margins, WL(progressBar, Color::GREEN.transparency(70), fabs(*efficiency / 2)), -2, 0, 0, 3),
+                    WL(label, "Work efficiency multiplier: " + getLuxuryNumber(*efficiency))));
           if (viewObject.hasModifier(ViewObjectModifier::UNPAID))
             lines.addElem(WL(label, "Cannot afford item", Color::RED));
           if (viewObject.hasModifier(ViewObjectModifier::DANGEROUS))

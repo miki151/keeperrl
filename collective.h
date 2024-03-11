@@ -93,6 +93,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   GlobalTime getGlobalTime() const;
   const StoragePositions& getStoragePositions(StorageId) const;
   const StoragePositions& getStoragePositions(const vector<StorageId>&) const;
+  bool usesEfficiency(const Furniture*) const;
 
   SERIALIZATION_DECL(Collective)
 
@@ -110,7 +111,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   PItem buyItem(Item*);
   vector<TriggerInfo> getTriggers(const Collective* against) const;
 
-  double getEfficiency(const Creature*) const;
   const vector<Creature*>& getLeaders() const;
   bool needsToBeKilledToConquer(const Creature*) const;
 
@@ -275,6 +275,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   bool isItemNeeded(const Item*) const;
   int getDebt(ResourceId id) const;
+  double getEfficiency(const Creature*) const;
 
   PPositionMatching SERIAL(positionMatching);
   HeapAllocated<MinionEquipment> SERIAL(minionEquipment);

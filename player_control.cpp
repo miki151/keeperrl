@@ -2328,11 +2328,17 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
           if (auto task = collective->getMinionActivities().getActivityFor(collective, c, furniture->getType()))
             if (collective->isActivityGood(c, *task, true))
               index.setHighlight(HighlightType::CREATURE_DROP);
-      if (furnitureFactory->getData(furniture->getType()).isRequiresLight() && position.getLightingEfficiency() < 0.99)
-        index.setHighlight(HighlightType::INSUFFICIENT_LIGHT);
       if (collective->getMaxPopulation() <= collective->getPopulationSize() &&
           furniture->getType() == FurnitureType("TORTURE_TABLE"))
         index.setHighlight(HighlightType::TORTURE_UNAVAILABLE);
+      if (auto& obj = furniture->getViewObject()) {
+        if (collective->usesEfficiency(furniture)) {
+          index.getObject(obj->layer()).setAttribute(ViewObject::Attribute::EFFICIENCY,
+              position.getLuxuryEfficiencyMultiplier() * position.getLightingEfficiency());
+          if (position.getLightingEfficiency() < 0.99)
+            index.setHighlight(HighlightType::INSUFFICIENT_LIGHT);
+        }
+      }
     }
     if (auto furniture = position.getFurniture(FurnitureLayer::FLOOR))
       if (furniture->getType() == FurnitureType("PRISON") &&
@@ -2344,10 +2350,9 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         index.setHighlight(HighlightType::PIGSTY_NOT_CLOSED);
   }
   for (auto furniture : position.getFurniture())
-    if (furniture->getLuxury() > 0)
-      if (auto obj = furniture->getViewObject())
-        if (index.hasObject(obj->layer()))
-         index.getObject(obj->layer()).setAttribute(ViewObject::Attribute::LUXURY, furniture->getLuxury());
+    if (auto& obj = furniture->getViewObject())
+      if (furniture->getLuxury() > 0 && index.hasObject(obj->layer()))
+        index.getObject(obj->layer()).setAttribute(ViewObject::Attribute::LUXURY, furniture->getLuxury());
   if (auto highlight = collective->getTaskMap().getHighlightType(position))
     index.setHighlight(*highlight);
   if (collective->hasPriorityTasks(position))
