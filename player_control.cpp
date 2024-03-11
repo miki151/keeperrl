@@ -3731,8 +3731,15 @@ void PlayerControl::considerNewAttacks() {
 
 void PlayerControl::considerSoloAchievement() {
   auto& fighters = collective->getCreatures(MinionTrait::FIGHTER);
-  if (!fighters.empty() && (fighters.size() > 1 || !collective->getLeaders().contains(fighters[0])))
+  auto& leaders = collective->getLeaders();
+  if (leaders.size() > 1 || (!fighters.empty() && (fighters.size() > 1 || !leaders.contains(fighters[0]))))
     soloKeeper = false;
+  if (collective->getImmigration().getImmigrants().empty() && !collective->getConfig().canCapturePrisoners() &&
+      leaders.size() == 1 && leaders[0]->getAttributes().getCreatureId() == CreatureId("CYCLOPS_PLAYER")) {
+    soloKeeper = true;
+    if (getGame()->gameWon())
+      getGame()->achieve(AchievementId("solo_keeper"));
+  }
 }
 
 void PlayerControl::tick() {
