@@ -5,7 +5,7 @@
 #include "content_factory.h"
 
 int getMaxPromotionLevel(double quartersLuxury) {
-  return int(2 + quartersLuxury / 3);
+  return int(2 + round(10 * quartersLuxury) * 0.1 / 3);
 }
 
 int getRequiredLuxury(double combatExp) {

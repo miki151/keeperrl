@@ -1612,6 +1612,12 @@ vector<ImmigrantDataInfo> PlayerControl::getUnrealizedPromotionsImmigrantData() 
   PROFILE;
   vector<ImmigrantDataInfo> ret;
   auto contentFactory = getGame()->getContentFactory();
+  auto getLuxuryString = [](double value) {
+    auto ret = toString(round(value * 10) / 10);
+    if (ret == "0")
+      return "0.1"_s;
+    return ret;
+  };
   for (auto c : getCreatures())
     if (c->getCombatExperience(true, false) < c->getCombatExperience(false, false)) {
       ret.emplace_back();
@@ -1622,10 +1628,10 @@ vector<ImmigrantDataInfo> PlayerControl::getUnrealizedPromotionsImmigrantData() 
       else {
         auto cur = collective->getZones().getQuartersLuxury(c->getUniqueId());
         if (!cur)
-          ret.back().requirements.push_back("Requires personal quarters with total luxury: " + toString(req));
+          ret.back().requirements.push_back("Requires personal quarters with total luxury: " + getLuxuryString(req));
         else
-          ret.back().requirements.push_back("Requires more luxury in quarters: " + toString(req - *cur) +
-              " (" + toString(req) + " in total)");
+          ret.back().requirements.push_back("Requires more luxury in quarters: " + getLuxuryString(req - *cur) +
+              " (" + getLuxuryString(req) + " in total)");
       }
       ret.back().creature = getImmigrantCreatureInfo(c, contentFactory);
       ret.back().id = -123456;
