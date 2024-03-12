@@ -1224,7 +1224,7 @@ class RandomLocations : public LevelMaker {
           if (!res.first.empty())
             break;
         }
-        checkGen(!res.first.empty());
+        checkGen(optionalMakers.count(insideMakers[i].get()) || !res.first.empty());
         allowedPositions.push_back(res.first);
         rotations.push_back(res.second);
       }
