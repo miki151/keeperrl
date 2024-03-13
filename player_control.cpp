@@ -1449,6 +1449,7 @@ vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions(int resourceIndex) 
 
 CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQueuedItem& item, int cnt,
     int itemIndex) const {
+  PROFILE;
   auto contentFactory = getGame()->getContentFactory();
   CollectiveInfo::QueuedItemInfo ret {item.state,
         item.paid && (!item.item.requiresUpgrades || !item.runes.empty()),
@@ -1456,22 +1457,25 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
         {}, {"", 0}, itemIndex};
   if (!item.paid)
     ret.itemInfo.description.push_back("Cannot afford item");
-  auto addItem = [&ret] (CollectiveInfo::QueuedItemInfo::UpgradeInfo info, bool used) {
+  auto addItem = [this, &ret] (const ItemUpgradeInfo& info, const Item* it, bool used) {
+    auto viewId = it->getViewObject().id();
+    auto name = it->getName();
     for (auto& elem : ret.upgrades)
-      if (elem.name == info.name && elem.viewId == info.viewId) {
+      if (elem.name == name && elem.viewId == viewId) {
         ++(used ? elem.used : elem.count);
         return;
       }
-    ret.upgrades.push_back(std::move(info));
+    ret.upgrades.push_back(CollectiveInfo::QueuedItemInfo::UpgradeInfo {
+      viewId, name, used ? 1 : 0, used ? 0 : 1,
+      it->getUpgradeInfo()->getDescription(getGame()->getContentFactory())
+    });
   };
   for (auto& it : getItemUpgradesFor(item.item)) {
-    addItem({it.first->getViewObject().id(), it.first->getName(), 0, 1,
-        it.first->getUpgradeInfo()->getDescription(getGame()->getContentFactory())}, false);
+    addItem(*it.first->getUpgradeInfo(), it.first, false);
   }
   for (auto& it : item.runes) {
     if (auto& upgradeInfo = it->getUpgradeInfo())
-      addItem({it->getViewObject().id(), it->getName(), 1, 0,
-          upgradeInfo->getDescription(getGame()->getContentFactory())}, true);
+      addItem(*upgradeInfo, it.get(), true);
     else {
       ret.itemInfo.ingredient = getItemInfo(getGame()->getContentFactory(), {it.get()}, false, false, false);
       ret.itemInfo.description.push_back("Crafted from " + it->getAName());
