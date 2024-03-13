@@ -138,6 +138,7 @@ static po::parser getCommandLineFlags() {
   flags["layout_size"].type(po::string).description("Size of the generated map layout");
   flags["layout_name"].type(po::string).description("Name of layout to generate");
   flags["stderr"].description("Log to stderr");
+  flags["console"].description("Attach windows console");
   flags["nolog"].description("No logging");
   flags["no_crash_reports"].description("Don't intercept game crashes and send crash reports to the developer");
   flags["free_mode"].description("Run in free ascii mode");
@@ -175,7 +176,7 @@ int main(int argc, char* argv[]) {
     initializeMiniDump();
   std::set_terminate(onException);
   setInitializedStatics();
-  if (argc > 1)
+  if (flags["console"].was_set())
     attachConsole();
   return keeperMain(flags);
 }
