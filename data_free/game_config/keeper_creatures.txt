@@ -82,7 +82,7 @@
   prisoners = false
   requireQuartersForExp = false
 }
-"0_gnomes"
+"5_gnomes"
 {
   baseName = "Automatons"
   creatureId = { "GNOME" }
