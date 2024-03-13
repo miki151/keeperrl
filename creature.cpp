@@ -2396,7 +2396,7 @@ void Creature::forceDismount(Vec2 v) {
 void Creature::tryToDismount() {
   CHECK(!!steed);
   for (auto v : position.neighbors8(Random))
-    if (v.canEnter(getMovementTypeNotSteed(getGame()))) {
+    if (v.canEnter(getSelfMovementType(getGame(), false))) {
       verb("fall off", "falls off", steed->getName().the());
       forceDismount(position.getDir(v));
       return;
@@ -2407,7 +2407,7 @@ CreatureAction Creature::dismount() const {
   if (!steed)
     return CreatureAction();
   for (auto v : position.neighbors8(Random))
-    if (v.canEnter(getMovementTypeNotSteed(getGame())))
+    if (v.canEnter(getSelfMovementType(getGame(), false)))
       return CreatureAction(this, [=](Creature* self) {
         auto dir = position.getDir(v);
         self->verb("dismount", "dismounts", steed->getName().the());
@@ -2636,7 +2636,7 @@ MovementType Creature::getMovementType() const {
   return getMovementType(getGame());
 }
 
-MovementType Creature::getMovementTypeNotSteed(Game* game) const {
+MovementType Creature::getSelfMovementType(Game* game, bool amSteed) const {
   auto time = getGlobalTime();
   return MovementType(hasAlternativeViewId() ? TribeSet::getFull() : getFriendlyTribes(), {
       true,
@@ -2644,7 +2644,7 @@ MovementType Creature::getMovementTypeNotSteed(Game* game) const {
       isAffected(BuffId("SWIMMING_SKILL")),
       getBody().canWade()})
     .setDestroyActions(EnumSet<DestroyAction::Type>([this](auto t) { return DestroyAction(t).canNavigate(this); }))
-    .setForced(isAffected(LastingEffect::BLIND, time) || getHoldingCreature() || forceMovement)
+    .setForced((!amSteed && isAffected(LastingEffect::BLIND, time)) || getHoldingCreature() || forceMovement)
     .setFireResistant(isAffected(BuffId("FIRE_IMMUNITY")))
     .setSunlightVulnerable(isAffected(LastingEffect::SUNLIGHT_VULNERABLE, time)
         && !isAffected(LastingEffect::DARKNESS_SOURCE, time)
@@ -2656,9 +2656,10 @@ MovementType Creature::getMovementTypeNotSteed(Game* game) const {
 MovementType Creature::getMovementType(Game* game) const {
   PROFILE;
   if (steed)
-    return steed->getMovementTypeNotSteed(game);
+    return steed->getSelfMovementType(game, true)
+        .setForced(isAffected(LastingEffect::BLIND, getGlobalTime()) || getHoldingCreature() || forceMovement);
   else
-    return getMovementTypeNotSteed(game);
+    return getSelfMovementType(game, false);
 }
 
 int Creature::getDifficultyPoints() const {
