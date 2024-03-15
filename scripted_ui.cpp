@@ -205,12 +205,14 @@ REGISTER_SCRIPTED_UI(KeybindingHandler);
 
 struct RenderKeybinding : ScriptedUIInterface {
   variant<Texture*, string> getKeybindingGlyph(GuiFactory* f, Keybinding binding) const {
+    #ifdef USE_STEAMWORKS
     auto steamInput = f->getSteamInput();
     if (steamInput && !steamInput->controllers.empty()) {
       if (auto key = KeybindingMap::getControllerMapping(binding))
         if (auto path = steamInput->getGlyph(*key))
           return &f->steamInputTexture(*path);
     }
+    #endif
     if (!controllerOnly)
       if (auto k = f->getKeybindingMap()->getText(binding))
         return "[" + *k + "]";

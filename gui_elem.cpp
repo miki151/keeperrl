@@ -223,13 +223,17 @@ class TextFieldElem : public GuiElem {
       : callback(std::move(callback)), getText(std::move(text)), controllerFocus(std::move(controllerFocus)),
         maxLength(maxLength), alwaysFocused(alwaysFocused), steamInput(steamInput),
         keybindingMap(keybindingMap) {
+    #ifdef USE_STEAMWORKS
     if (alwaysFocused && steamInput)
       steamInput->showFloatingKeyboard(Rectangle(100, 30, 800, 60));
+    #endif
   }
 
   virtual ~TextFieldElem() {
+    #ifdef USE_STEAMWORKS
     if (alwaysFocused && steamInput)
       steamInput->dismissFloatingKeyboard();
+    #endif
   }
 
   virtual bool onClick(MouseButtonId b, Vec2 pos) override {
@@ -283,8 +287,10 @@ class TextFieldElem : public GuiElem {
         case SDL::SDLK_RETURN:
           callback(current);
           focused = false;
+          #ifdef USE_STEAMWORKS
           if (!alwaysFocused && steamInput)
             steamInput->dismissFloatingKeyboard();
+          #endif
           return true;
         default:
           break;
@@ -292,8 +298,10 @@ class TextFieldElem : public GuiElem {
       return true;
     } else if (!alwaysFocused && keybindingMap->matches(Keybinding("MENU_SELECT"), sym) && controllerFocus()) {
       focused = true;
+      #ifdef USE_STEAMWORKS
       if (steamInput)
         steamInput->showFloatingKeyboard(getBounds());
+      #endif
       return true;
     }
     return false;
@@ -568,8 +576,11 @@ class DrawScripted : public GuiElem {
 
 SGuiElem GuiFactory::scripted(function<void()> endCallback, ScriptedUIId id, const ScriptedUIData& data,
     ScriptedUIState& state) {
-  if (!state.highlightedElem && !getSteamInput()->controllers.empty())
+  #ifdef USE_STEAMWORKS
+  auto steamInput = getSteamInput();
+  if (!state.highlightedElem && steamInput && !getSteamInput()->controllers.empty())
     state.highlightedElem = 0;
+  #endif
   return SGuiElem(new DrawScripted(ScriptedContext{&renderer, this, endCallback, state, 0, 0}, id, data));
 }
 
@@ -3295,11 +3306,13 @@ SGuiElem GuiFactory::sprite(TexId id, Alignment a, optional<Color> c) {
 SGuiElem GuiFactory::steamInputGlyph(ControllerKey key, int size) {
   return preferredSize(Vec2(size, size), drawCustom(
       [this, key, size] (Renderer& r, Rectangle bounds) {
+        #ifdef USE_STEAMWORKS
         if (auto path = getSteamInput()->getGlyph(key)) {
           auto& tex = steamInputTexture(*path);
           Vec2 texSize = tex.getSize();
           r.drawSprite(bounds.topLeft(), Vec2(0, 0), texSize, tex, Vec2(size, size));
         }
+        #endif
       }));
 }
 
@@ -3327,6 +3340,7 @@ SGuiElem GuiFactory::darken() {
 }
 
 void GuiFactory::propagateScrollEvent(const vector<SGuiElem>& guiElems) {
+  #ifdef USE_STEAMWORKS
   if (auto steamInput = getSteamInput()) {
     auto pos = steamInput->getJoyPos(ControllerJoy::MAP_SCROLLING);
     auto time = Clock::getRealMillis();
@@ -3339,6 +3353,7 @@ void GuiFactory::propagateScrollEvent(const vector<SGuiElem>& guiElems) {
       lastJoyScrollUpdate = time;
     }
   }
+  #endif
 }
 
 void GuiFactory::propagateEvent(const Event& event, const vector<SGuiElem>& guiElems) {

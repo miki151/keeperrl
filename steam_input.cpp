@@ -1,3 +1,5 @@
+#ifdef USE_STEAMWORKS
+
 #include "steam_input.h"
 #include "extern/steamworks/public/steam/isteaminput.h"
 #include "extern/steamworks/public/steam/isteamutils.h"
@@ -184,3 +186,5 @@ void MySteamInput::dismissFloatingKeyboard() {
   if (auto utils = SteamUtils())
     utils->DismissFloatingGamepadTextInput();
 }
+
+#endif
