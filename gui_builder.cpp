@@ -815,11 +815,7 @@ int GuiBuilder::getImmigrationBarWidth() const {
 }
 
 bool GuiBuilder::hasController() const {
-  #ifdef USE_STEAMWORKS
   return !gui.getSteamInput()->controllers.empty();
-  #else
-  return false;
-  #endif
 }
 
 SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
