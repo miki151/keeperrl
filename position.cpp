@@ -201,6 +201,13 @@ double Position::getTotalLuxury() const {
   return ret;
 }
 
+double Position::getLuxuryEfficiencyMultiplier() const {
+  double ret = getTotalLuxury();
+  for (auto v : neighbors8())
+    ret += v.getTotalLuxury();
+  return min(2.0, 1 + ret / 4);
+}
+
 double Position::getTotalLuxuryPlusWalls() const {
   PROFILE;
   double ret = getTotalLuxury();

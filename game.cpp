@@ -844,7 +844,7 @@ void Game::achieve(AchievementId id) const {
 
 void Game::handleMessageBoard(Position pos, Creature* c) {
   auto gameId = getGameOrRetiredIdentifier(pos);
-  auto boardId = int(combineHash(pos, gameId));
+  auto boardId = int(combineHash(pos.getCoord(), pos.getLevel()->getUniqueId(), gameId));
   FileSharing::CancelFlag cancel;
   view->displaySplash(nullptr, "Fetching board contents...", [&] {
     cancel.cancel();

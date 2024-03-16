@@ -648,7 +648,7 @@ static string getDescription(const Effects::SummonEnemy& e, const ContentFactory
 }
 
 static bool apply(const Effects::SummonEnemy& summon, Position pos, Creature*) {
-  CreatureGroup f = CreatureGroup::singleType(TribeId::getMonster(), summon.creature);
+  CreatureGroup f = CreatureGroup::singleType(TribeId::getHostile(), summon.creature);
   auto ret = Effect::summon(pos, f, Random.get(summon.count),
       summon.ttl.map([](int v) { return TimeInterval(v); }), 1_visible);
   for (auto c : ret)

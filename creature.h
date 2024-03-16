@@ -162,7 +162,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   MovementType getMovementType() const;
   MovementType getMovementType(Game*) const;
-  MovementType getMovementTypeNotSteed(Game*) const;
+  MovementType getSelfMovementType(Game*, bool amSteed) const;
 
   int getDifficultyPoints() const;
 

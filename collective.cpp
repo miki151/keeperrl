@@ -917,13 +917,7 @@ double Collective::getEfficiency(const Creature* c) const {
   for (auto buff : f->buffsModifyingEfficiency)
     if (c->isAffected(buff))
       fromBuffs *= *f->buffs.at(buff).efficiencyMultiplier;
-  double luxury = [&] {
-    double ret = 0;
-    for (auto v : c->getPosition().neighbors8())
-      ret += v.getTotalLuxury();
-    return min(2.0, 1 + ret / 2);
-  }();
-  return luxury * fromBuffs *
+  return fromBuffs *
       (c->isAffected(LastingEffect::SPEED) ? 1.4 : 1.0) *
       (c->isAffected(LastingEffect::SLOWED) ? (1 / 1.4) : 1.0);
 }
@@ -1484,6 +1478,32 @@ void Collective::summonDemon(Creature* c) {
   getGame()->addAnalytics("milestone", "poetryDemon");
 }
 
+bool Collective::usesEfficiency(const Furniture* f) const {
+  if (isOneOf(f->getType(),
+          FurnitureType("POETRY_TABLE"),
+          FurnitureType("PAINTING_N"),
+          FurnitureType("PAINTING_S"),
+          FurnitureType("PAINTING_E"),
+          FurnitureType("PAINTING_W"),
+          FurnitureType("FURNACE")))
+    return true;
+  if (auto usage = f->getUsageType())
+    if (auto id = usage->getReferenceMaybe<BuiltinUsageId>())
+      switch (*id) {
+        case BuiltinUsageId::DEMON_RITUAL:
+        case BuiltinUsageId::TRAIN:
+        case BuiltinUsageId::STUDY:
+        case BuiltinUsageId::ARCHERY_RANGE:
+          return true;
+        default:
+          break;
+      }
+  if (auto workshopType = getGame()->getContentFactory()->getWorkshopType(f->getType()))
+    if (getReferenceMaybe(workshops->types, *workshopType))
+      return true;
+  return false;
+}
+
 void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos) {
   PROFILE;
   auto contentFactory = getGame()->getContentFactory();
@@ -1492,7 +1512,8 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
       if (!pred->apply(pos.first, c))
         return;
     // Furniture have variable usage time, so just multiply by it to be independent of changes.
-    double efficiency = furniture->getUsageTime().getVisibleDouble() * getEfficiency(c);
+    double efficiency = furniture->getUsageTime().getVisibleDouble() * getEfficiency(c)
+        * pos.first.getLuxuryEfficiencyMultiplier();
     if (furniture->isRequiresLight())
       efficiency *= pos.first.getLightingEfficiency();
     if (furniture->getType() == FurnitureType("WHIPPING_POST"))

@@ -1449,6 +1449,7 @@ vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions(int resourceIndex) 
 
 CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQueuedItem& item, int cnt,
     int itemIndex) const {
+  PROFILE;
   auto contentFactory = getGame()->getContentFactory();
   CollectiveInfo::QueuedItemInfo ret {item.state,
         item.paid && (!item.item.requiresUpgrades || !item.runes.empty()),
@@ -1456,22 +1457,25 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
         {}, {"", 0}, itemIndex};
   if (!item.paid)
     ret.itemInfo.description.push_back("Cannot afford item");
-  auto addItem = [&ret] (CollectiveInfo::QueuedItemInfo::UpgradeInfo info, bool used) {
+  auto addItem = [this, &ret] (const ItemUpgradeInfo& info, const Item* it, bool used) {
+    auto viewId = it->getViewObject().id();
+    auto name = it->getName();
     for (auto& elem : ret.upgrades)
-      if (elem.name == info.name && elem.viewId == info.viewId) {
+      if (elem.name == name && elem.viewId == viewId) {
         ++(used ? elem.used : elem.count);
         return;
       }
-    ret.upgrades.push_back(std::move(info));
+    ret.upgrades.push_back(CollectiveInfo::QueuedItemInfo::UpgradeInfo {
+      viewId, name, used ? 1 : 0, used ? 0 : 1,
+      it->getUpgradeInfo()->getDescription(getGame()->getContentFactory())
+    });
   };
   for (auto& it : getItemUpgradesFor(item.item)) {
-    addItem({it.first->getViewObject().id(), it.first->getName(), 0, 1,
-        it.first->getUpgradeInfo()->getDescription(getGame()->getContentFactory())}, false);
+    addItem(*it.first->getUpgradeInfo(), it.first, false);
   }
   for (auto& it : item.runes) {
     if (auto& upgradeInfo = it->getUpgradeInfo())
-      addItem({it->getViewObject().id(), it->getName(), 1, 0,
-          upgradeInfo->getDescription(getGame()->getContentFactory())}, true);
+      addItem(*upgradeInfo, it.get(), true);
     else {
       ret.itemInfo.ingredient = getItemInfo(getGame()->getContentFactory(), {it.get()}, false, false, false);
       ret.itemInfo.description.push_back("Crafted from " + it->getAName());
@@ -1612,6 +1616,12 @@ vector<ImmigrantDataInfo> PlayerControl::getUnrealizedPromotionsImmigrantData() 
   PROFILE;
   vector<ImmigrantDataInfo> ret;
   auto contentFactory = getGame()->getContentFactory();
+  auto getLuxuryString = [](double value) {
+    auto ret = toString(round(value * 10) / 10);
+    if (ret == "0")
+      return "0.1"_s;
+    return ret;
+  };
   for (auto c : getCreatures())
     if (c->getCombatExperience(true, false) < c->getCombatExperience(false, false)) {
       ret.emplace_back();
@@ -1622,10 +1632,10 @@ vector<ImmigrantDataInfo> PlayerControl::getUnrealizedPromotionsImmigrantData() 
       else {
         auto cur = collective->getZones().getQuartersLuxury(c->getUniqueId());
         if (!cur)
-          ret.back().requirements.push_back("Requires personal quarters with total luxury: " + toString(req));
+          ret.back().requirements.push_back("Requires personal quarters with total luxury: " + getLuxuryString(req));
         else
-          ret.back().requirements.push_back("Requires more luxury in quarters: " + toString(req - *cur) +
-              " (" + toString(req) + " in total)");
+          ret.back().requirements.push_back("Requires more luxury in quarters: " + getLuxuryString(req - *cur) +
+              " (" + getLuxuryString(req) + " in total)");
       }
       ret.back().creature = getImmigrantCreatureInfo(c, contentFactory);
       ret.back().id = -123456;
@@ -2328,11 +2338,17 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
           if (auto task = collective->getMinionActivities().getActivityFor(collective, c, furniture->getType()))
             if (collective->isActivityGood(c, *task, true))
               index.setHighlight(HighlightType::CREATURE_DROP);
-      if (furnitureFactory->getData(furniture->getType()).isRequiresLight() && position.getLightingEfficiency() < 0.99)
-        index.setHighlight(HighlightType::INSUFFICIENT_LIGHT);
       if (collective->getMaxPopulation() <= collective->getPopulationSize() &&
           furniture->getType() == FurnitureType("TORTURE_TABLE"))
         index.setHighlight(HighlightType::TORTURE_UNAVAILABLE);
+      if (auto& obj = furniture->getViewObject()) {
+        if (collective->usesEfficiency(furniture)) {
+          index.getObject(obj->layer()).setAttribute(ViewObject::Attribute::EFFICIENCY,
+              position.getLuxuryEfficiencyMultiplier() * position.getLightingEfficiency());
+          if (position.getLightingEfficiency() < 0.99)
+            index.setHighlight(HighlightType::INSUFFICIENT_LIGHT);
+        }
+      }
     }
     if (auto furniture = position.getFurniture(FurnitureLayer::FLOOR))
       if (furniture->getType() == FurnitureType("PRISON") &&
@@ -2344,10 +2360,9 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         index.setHighlight(HighlightType::PIGSTY_NOT_CLOSED);
   }
   for (auto furniture : position.getFurniture())
-    if (furniture->getLuxury() > 0)
-      if (auto obj = furniture->getViewObject())
-        if (index.hasObject(obj->layer()))
-         index.getObject(obj->layer()).setAttribute(ViewObject::Attribute::LUXURY, furniture->getLuxury());
+    if (auto& obj = furniture->getViewObject())
+      if (furniture->getLuxury() > 0 && index.hasObject(obj->layer()))
+        index.getObject(obj->layer()).setAttribute(ViewObject::Attribute::LUXURY, furniture->getLuxury());
   if (auto highlight = collective->getTaskMap().getHighlightType(position))
     index.setHighlight(*highlight);
   if (collective->hasPriorityTasks(position))
@@ -3719,8 +3734,16 @@ void PlayerControl::considerNewAttacks() {
 }
 
 void PlayerControl::considerSoloAchievement() {
-  if (!collective->getCreatures(MinionTrait::FIGHTER).empty())
+  auto& fighters = collective->getCreatures(MinionTrait::FIGHTER);
+  auto& leaders = collective->getLeaders();
+  if (leaders.size() > 1 || (!fighters.empty() && (fighters.size() > 1 || !leaders.contains(fighters[0]))))
     soloKeeper = false;
+  if (collective->getImmigration().getImmigrants().empty() && !collective->getConfig().canCapturePrisoners() &&
+      leaders.size() == 1 && leaders[0]->getAttributes().getCreatureId() == CreatureId("CYCLOPS_PLAYER")) {
+    soloKeeper = true;
+    if (getGame()->gameWon())
+      getGame()->achieve(AchievementId("solo_keeper"));
+  }
 }
 
 void PlayerControl::tick() {
