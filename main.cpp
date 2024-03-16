@@ -312,8 +312,8 @@ static int keeperMain(po::parser& commandLineFlags) {
   #else
     AppConfig appConfig(dataPath.file("appconfig-dev.txt"));
   #endif
+  steamInput = make_unique<MySteamInput>();
   #ifdef USE_STEAMWORKS
-    steamInput = make_unique<MySteamInput>();
     optional<steam::Client> steamClient;
     if (appConfig.get<int>("steamworks") > 0) {
       if (steam::initAPI()) {

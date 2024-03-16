@@ -1,3 +1,5 @@
+#ifdef USE_STEAMWORKS
+
 #include "steam_internal.h"
 #include "steam_user.h"
 #include "steamworks/public/steam/isteamuser.h"
@@ -19,3 +21,5 @@ bool User::isLoggedOn() const {
 }
 }
 #undef FUNC
+
+#endif
