@@ -1,5 +1,3 @@
-#ifdef USE_STEAMWORKS
-
 #include "steam_internal.h"
 #include "steam_call_result.h"
 #include "steam_utils.h"
@@ -44,5 +42,3 @@ string CallResultBase::failText() const {
 }
 
 #undef FUNC
-
-#endif

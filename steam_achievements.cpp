@@ -1,5 +1,3 @@
-#ifdef USE_STEAMWORKS
-
 #include "steam_achievements.h"
 #include "achievement_id.h"
 
@@ -20,5 +18,3 @@ void SteamAchievements::achieve(AchievementId id) {
     stats->StoreStats();
   }
 }
-
-#endif

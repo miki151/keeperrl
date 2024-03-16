@@ -1,5 +1,3 @@
-#ifdef USE_STEAMWORKS
-
 #include "stdafx.h"
 #include "steam_internal.h"
 #include "steam_utils.h"
@@ -31,5 +29,3 @@ unsigned Utils::appId() const {
   return FUNC(GetAppID)(ptr);
 }
 }
-
-#endif

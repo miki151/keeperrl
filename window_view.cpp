@@ -616,9 +616,7 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
   addReturnDialog<optional<Vec2>>(returnQueue, [=] ()-> optional<Vec2> {
   rebuildGui();
   refreshScreen();
-  #ifdef USE_STEAMWORKS
   renderer.getSteamInput()->setGameActionLayer(MySteamInput::GameActionLayer::TURNED_BASED);
-  #endif
   bool useController = !gui.getSteamInput()->controllers.empty();
   do {
     Event event;

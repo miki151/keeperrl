@@ -1,5 +1,3 @@
-#ifdef USE_STEAMWORKS
-
 #include "steam_internal.h"
 #include "steam_ugc.h"
 #include "steam_utils.h"
@@ -421,5 +419,3 @@ void UGC::stopPlaytimeTracking(const vector<ItemId>& ids) {
 }
 }
 #undef FUNC
-
-#endif

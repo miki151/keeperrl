@@ -1,5 +1,3 @@
-#ifdef USE_STEAMWORKS
-
 #include "steam_internal.h"
 #include "steam_friends.h"
 #include "steamworks/public/steam/isteamfriends.h"
@@ -67,5 +65,3 @@ optional<int> Friends::retrieveUserAvatar(UserId steamId, AvatarSize size) {
 }
 }
 #undef FUNC
-
-#endif

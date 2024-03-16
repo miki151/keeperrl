@@ -532,9 +532,7 @@ void Options::handle(View* view, const ContentFactory* factory, OptionSet set, i
     };
     main.elems["set_keys"] = ScriptedUIDataElems::Callback{ [&] {
       if (steamInput && !steamInput->controllers.empty()) {
-        #ifdef USE_STEAMWORKS
         steamInput->showBindingScreen();
-        #endif
         return false;
       } else {
         keybindingsTab = true;

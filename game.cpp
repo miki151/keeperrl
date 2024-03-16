@@ -831,10 +831,8 @@ void Game::addAnalytics(const string& name, const string& value) {
 }
 
 void Game::achieve(AchievementId id) const {
-  #ifdef USE_STEAMWORKS
   if (steamAchievements)
     steamAchievements->achieve(id);
-  #endif
   if (!unlocks->isAchieved(id)) {
     unlocks->achieve(id);
     if (!steamAchievements) {

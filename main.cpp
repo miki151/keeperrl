@@ -334,10 +334,8 @@ static int keeperMain(po::parser& commandLineFlags) {
     dpiAwareness();
   Random.init(int(time(nullptr)));
   auto installId = getInstallId(userPath.file("installId.txt"), Random);
-  #ifdef USE_STEAMWORKS
-  if (steamInput && steamInput->isRunningOnDeck())
+  if (steamInput->isRunningOnDeck())
     installId += "_deck";
-  #endif
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
   auto modsDir = userPath.subdirectory(gameConfigSubdir);
