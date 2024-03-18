@@ -98,10 +98,6 @@ void Player::onEvent(const GameEvent& event) {
   using namespace EventInfo;
   auto factory = getGame()->getContentFactory();
   event.visit<void>(
-      [&](const CreatureMoved& info) {
-        if (info.creature == creature)
-          visibilityMap->update(creature, creature->getVisibleTiles());
-      },
       [&](const Projectile& info) {
         if (teamCanSeeAndSameLevel(info.begin) || teamCanSeeAndSameLevel(info.end))
           getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId, info.fx);

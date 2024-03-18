@@ -291,6 +291,7 @@ void Model::calculateStairNavigation() {
 }
 
 bool Model::areConnected(StairKey key1, StairKey key2, const MovementType& movement) {
+  PROFILE;
   auto& connections = [&]() -> StairConnections& {
     if (auto ret = getReferenceMaybe(stairNavigation, movement))
       return *ret;
