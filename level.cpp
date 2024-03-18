@@ -46,6 +46,7 @@
 #include "known_tiles.h"
 #include "territory.h"
 #include "player_control.h"
+#include "portals.h"
 
 template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
@@ -614,6 +615,9 @@ Sectors& Level::getSectors(const MovementType& movement) const {
     for (Position pos : getAllPositions())
       if (pos.canNavigateCalc(movement))
         newSectors.add(pos.getCoord());
+    for (auto& portal : model->portals->getMatchedPortals())
+      if (portal.first.getLevel() == this && portal.second.getLevel() == this)
+        newSectors.addExtraConnection(portal.first.getCoord(), portal.second.getCoord());
     return newSectors;
   }
 }
