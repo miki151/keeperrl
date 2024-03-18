@@ -1094,12 +1094,14 @@ const vector<Position>& Position::getLandingAtNextLevel(StairKey stairKey) {
 
 static bool checkStairConnection(const Position& from, const Position& to, const MovementType& type) {
   PROFILE;
+  auto& fromSectors = from.getLevel()->getSectors(type);
+  auto& toSectors = to.getLevel()->getSectors(type);
   for (auto key1 : to.getLevel()->getAllStairKeys()) {
     auto pos1 = to.getLevel()->getLandingSquares(key1)[0];
-    if (to.isConnectedTo(pos1, type))
+    if (toSectors.same(to.getCoord(), pos1.getCoord()))
       for (auto key2 : from.getLevel()->getAllStairKeys()) {
         auto pos2 = from.getLevel()->getLandingSquares(key2)[0];
-        if (from.isConnectedTo(pos2, type) && to.getModel()->areConnected(key1, key2, type))
+        if (fromSectors.same(from.getCoord(), pos2.getCoord()) && to.getModel()->areConnected(key1, key2, type))
           return true;
       }
   }
