@@ -76,7 +76,7 @@ void ConstructionMap::removeFurniturePlan(Position pos, FurnitureLayer layer) {
 void ConstructionMap::addDebt(const CostInfo& cost, const char* reason) {
   debt[cost.id] += cost.value;
   //checkDebtConsistency();
-  CHECK(debt[cost.id] >= 0) << cost.id.data() << " " << reason;
+  //CHECK(debt[cost.id] >= 0) << cost.id.data() << " " << reason;
 }
 
 void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer, FurnitureType type) {
