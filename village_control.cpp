@@ -440,7 +440,7 @@ void VillageControl::update(bool currentlyActive) {
     for (auto c : collective->getCreatures())
       if (collective->getTerritory().contains(c->getPosition()) && c->getPosition().isClosedOff({MovementTrait::WALK}))
         for (auto pos : c->getPosition().getLevel()->getAllPositions())
-          if (!pos.isClosedOff({MovementTrait::WALK})) {
+          if (pos.canEnter(c) && !pos.isClosedOff({MovementTrait::WALK})) {
             c->getPosition().moveCreature(pos, true);
             break;
           }
