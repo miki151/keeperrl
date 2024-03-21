@@ -7,7 +7,8 @@
 # include <sys/types.h>
 # include <sys/stat.h>
 #else
-# include <filesystem>
+# define WIN32_LEAN_AND_MEAN
+# include <Windows.h>
 #endif
 
 FilePath FilePath::fromFullPath(const std::string& path) {
@@ -34,8 +35,11 @@ time_t FilePath::getModificationTime() const {
 
 bool FilePath::exists() const {
 #ifdef _MSC_VER
-  std::error_code err;
-  return std::filesystem::is_regular_file(fullPath.c_str(), err);
+  auto attribs = GetFileAttributesA(fullPath.c_str());
+  if(attribs == INVALID_FILE_ATTRIBUTES)
+    return false;
+  else
+    return (attribs & FILE_ATTRIBUTE_DIRECTORY) == 0;
 #elif defined(WINDOWS)
   struct _stat buf;
   _stat(fullPath.c_str(), &buf);

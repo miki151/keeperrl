@@ -7,7 +7,8 @@
 # include <unistd.h>
 # include "dirent.h"
 #else
-#include <filesystem>
+# define WIN32_LEAN_AND_MEAN
+# include <Windows.h>
 #endif
 
 DirectoryPath::DirectoryPath(string p) : path(std::move(p)) {
@@ -31,8 +32,11 @@ static bool isDirectory(const string& path) {
 }
 #else
 static bool isDirectory(const string& path) {
-  std::error_code err;
-  return std::filesystem::is_directory(path, err);
+  auto attribs = GetFileAttributesA(path.c_str());
+  if(attribs == INVALID_FILE_ATTRIBUTES)
+    return false;
+  else
+    return attribs & FILE_ATTRIBUTE_DIRECTORY;
 }
 #endif
 
@@ -43,8 +47,7 @@ bool DirectoryPath::exists() const {
 void DirectoryPath::createIfDoesntExist() const {
   if (!exists()) {
 #ifdef _MSC_VER
-    std::error_code err;
-    USER_CHECK(!std::filesystem::create_directory(path.data(), err));
+    USER_CHECK(CreateDirectoryA(path.data(), nullptr));
 #elif !defined(WINDOWS)
     USER_CHECK(!mkdir(path.data(), 0750)) << "Unable to create directory \"" + path + "\": " + strerror(errno);
 #else
@@ -60,8 +63,7 @@ void DirectoryPath::removeRecursively() const {
     for (auto subdir : getSubDirs())
       subdirectory(subdir).removeRecursively();
     #ifdef _MSC_VER
-      std::error_code err;
-      std::filesystem::remove(getPath(), err);
+      RemoveDirectoryA(getPath());
     #else
       rmdir(getPath());
     #endif
@@ -76,8 +78,11 @@ static bool isRegularFile(const string& path) {
   else
     return S_ISREG(path_stat.st_mode);
 #else
-  std::error_code err;
-  return std::filesystem::is_regular_file(path, err);
+  auto attribs = GetFileAttributesA(path.c_str());
+  if(attribs == INVALID_FILE_ATTRIBUTES)
+    return false;
+  else
+    return !(attribs & FILE_ATTRIBUTE_DIRECTORY);
 #endif
 }
 
@@ -93,10 +98,22 @@ vector<FilePath> DirectoryPath::getFiles() const {
   return ret;
 #else
   vector<FilePath> res;
-  for(const auto& entry : std::filesystem::directory_iterator{path.data()}) {
-    if(entry.is_regular_file())
-      res.push_back(FilePath(entry.path().filename().string(), entry.path().string()));
+  
+  auto searchStr = path + "\\*";
+  WIN32_FIND_DATA findData;
+  auto findHandle = FindFirstFileA(searchStr.c_str(), &findData);
+  if(findHandle != INVALID_HANDLE_VALUE) {
+    if((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
+      res.push_back(FilePath(*this, findData.cFileName));
+
+    while(FindNextFileA(findHandle, &findData)) {
+      if((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
+        res.push_back(FilePath(*this, findData.cFileName));
+    }
+
+    FindClose(findHandle);
   }
+
   return res;
 #endif
 }
@@ -113,11 +130,22 @@ vector<string> DirectoryPath::getSubDirs() const {
   return ret;
 #else
   vector<string> res;
-  std::error_code err;
-  for(const auto& entry : std::filesystem::directory_iterator{path.data(), err}) {
-    if(entry.is_directory())
-      res.push_back(entry.path().filename().string());
+  
+  auto searchStr = path + "\\*";
+  WIN32_FIND_DATA findData;
+  auto findHandle = FindFirstFileA(searchStr.c_str(), &findData);
+  if(findHandle != INVALID_HANDLE_VALUE) {
+    if((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0 && strcmp(findData.cFileName, "..") != 0 && strcmp(findData.cFileName, ".") != 0)
+      res.push_back(findData.cFileName);
+
+    while(FindNextFileA(findHandle, &findData)) {
+      if((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0 && strcmp(findData.cFileName, "..") != 0 && strcmp(findData.cFileName, ".") != 0)
+        res.push_back(findData.cFileName);
+    }
+
+    FindClose(findHandle);
   }
+
   return res;
 #endif
 }
@@ -156,7 +184,11 @@ DirectoryPath DirectoryPath::current() {
   CHECK(name && "getcwd error");
   return DirectoryPath(name);
 #else
-  return DirectoryPath(std::filesystem::current_path().string());
+  auto cwdLen = GetCurrentDirectoryA(0, nullptr);
+  std::vector<char> cwd;
+  cwd.resize(cwdLen);
+  GetCurrentDirectoryA(cwdLen, cwd.data());
+  return DirectoryPath(cwd.data());
 #endif
 }
 
