@@ -227,7 +227,7 @@ void Item::onHitSquareMessage(Position pos, const Attack& attack, int numItems) 
   } else
     pos.globalMessage(getPluralTheNameAndVerb(numItems, "hits", "hit") + " the " + pos.getName());
   if (attributes->ownedEffect && *attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
-    pos.fireDamage(1);
+    pos.fireDamage(20);
   if (attributes->effect && effectAppliedWhenThrown())
     attributes->effect->apply(pos, attack.attacker);
 }

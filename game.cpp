@@ -955,9 +955,12 @@ void Game::considerAchievement(const GameEvent& event) {
 }
 
 void Game::addEvent(const GameEvent& event) {
-  for (Vec2 v : models.getBounds())
-    if (models[v])
-      models[v]->addEvent(event);
+  if (event.contains<EventInfo::CreatureMoved>() && !!playerControl) {
+    playerControl->onEvent(event); // shortcut to optimize because only PlayerControl cares about this event
+  } else
+    for (Vec2 v : models.getBounds())
+      if (models[v])
+        models[v]->addEvent(event);
   using namespace EventInfo;
   event.visit<void>(
       [&](const ConqueredEnemy& info) {

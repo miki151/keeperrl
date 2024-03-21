@@ -319,7 +319,15 @@ struct Paragraph : ScriptedUIInterface {
   }
 
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
-    return Vec2(width, size * context.factory->breakText(getText(data), width, size).size());
+    auto text = getText(data);
+    auto getSize = [&] {
+      if (auto elem = getValueMaybe(context.state.paragraphSizeCache, text))
+        return *elem;
+      auto ret = context.factory->breakText(getText(data), width, size).size();
+      context.state.paragraphSizeCache[text] = ret;
+      return ret;
+    };
+    return Vec2(width, size * getSize());
   }
 
   optional<string> SERIAL(text);

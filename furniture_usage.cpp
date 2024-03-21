@@ -64,8 +64,8 @@ static void usePortal(Position pos, Creature* c) {
     } else {
       if (auto link = pos.getLandingLink()) {
         c->getLevel()->changeLevel(*link, c);
-        pos.getGame()->addEvent(EventInfo::FX{*otherPos, FXName::TELEPORT_OUT});
-        pos.getGame()->addEvent(EventInfo::FX{pos, FXName::TELEPORT_IN});
+        pos.getGame()->addEvent(EventInfo::FX{pos, FXName::TELEPORT_OUT});
+        pos.getGame()->addEvent(EventInfo::FX{*otherPos, FXName::TELEPORT_IN});
         return;
       }
     }

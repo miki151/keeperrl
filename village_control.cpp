@@ -436,6 +436,14 @@ void VillageControl::update(bool currentlyActive) {
     return;
   }
   double updateFreq = 0.1;
+  if (currentlyActive && victims > 2 && collective->getEnemyId() == EnemyId("DEMON_DEN"))
+    for (auto c : collective->getCreatures())
+      if (collective->getTerritory().contains(c->getPosition()) && c->getPosition().isClosedOff({MovementTrait::WALK}))
+        for (auto pos : c->getPosition().getLevel()->getAllPositions())
+          if (pos.canEnter(c) && !pos.isClosedOff({MovementTrait::WALK})) {
+            c->getPosition().moveCreature(pos, true);
+            break;
+          }
   if (isEnemy() && canPerformAttack() && Random.chance(updateFreq) && behaviour) {
     auto enemy = getEnemyCollective();
     maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());

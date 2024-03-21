@@ -98,10 +98,6 @@ void Player::onEvent(const GameEvent& event) {
   using namespace EventInfo;
   auto factory = getGame()->getContentFactory();
   event.visit<void>(
-      [&](const CreatureMoved& info) {
-        if (info.creature == creature)
-          visibilityMap->update(creature, creature->getVisibleTiles());
-      },
       [&](const Projectile& info) {
         if (teamCanSeeAndSameLevel(info.begin) || teamCanSeeAndSameLevel(info.end))
           getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId, info.fx);
@@ -139,8 +135,13 @@ void Player::onEvent(const GameEvent& event) {
         }
       },
       [&](const FX& info) {
-        if (teamCanSeeAndSameLevel(info.position))
-          getView()->animation(FXSpawnInfo(info.fx, info.position.getCoord(), info.direction.value_or(Vec2(0, 0))));
+        if (teamCanSeeAndSameLevel(info.position)) {
+          auto fx = FXSpawnInfo(info.fx, info.position.getCoord(), info.direction.value_or(Vec2(0, 0)));
+          if (info.fx.name == FXName::TELEPORT_IN)
+            deferredAnimations.push_back(std::move(fx));
+          else
+            getView()->animation(std::move(fx));
+        }
       },
       [&](const auto&) {}
   );
@@ -688,6 +689,9 @@ void Player::makeMove() {
       getView()->updateView(this, false),
       "level render time");
   //}
+  for (auto& elem : deferredAnimations)
+    getView()->animation(std::move(elem));
+  deferredAnimations.clear();
   getView()->refreshView();
   /*if (displayTravelInfo && creature->getPosition().getName() == "road"
       && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {

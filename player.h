@@ -164,5 +164,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   optional<SpellId> highlightedSpell;
   optional<GlobalTime> friendlyFireWarningCooldown;
   void transferAction();
+  vector<FXSpawnInfo> deferredAnimations;
 };
 
