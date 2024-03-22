@@ -86,9 +86,9 @@ bool PositionMap<T>::contains(Position pos) const {
 template <class T>
 Table<heap_optional<T>>& PositionMap<T>::getTable(Position pos) {
   LevelId levelId = pos.getLevel()->getUniqueId();
-  try {
-    return tables.at(levelId);
-  } catch (std::out_of_range) {
+  if (auto ret = ::getReferenceMaybe(tables, levelId))
+    return *ret;
+  else {
     auto it = tables.insert(make_pair(levelId, Table<heap_optional<T>>(pos.getLevel()->getBounds().minusMargin(-2))));
     return it.first->second;
   }
@@ -103,11 +103,7 @@ T& PositionMap<T>::getOrInit(Position pos) {
       table[pos.getCoord()] = T();
     return *table[pos.getCoord()];
   }
-  else try {
-    return outliers.at(levelId).at(pos.getCoord());
-  } catch (std::out_of_range) {
-    return outliers[levelId][pos.getCoord()] = T();
-  }
+  return outliers[levelId][pos.getCoord()];
 }
 
 template <class T>
