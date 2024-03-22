@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 
 option(ENABLE_STEAMWORKS "Enable steamworks integration" ON)
+option(BUILD_ALSOFT "Build OpenAL-soft from source instead of using regular OpenAL" OFF)
 
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
@@ -31,17 +32,25 @@ include(FetchContent)
 set(OGG_LIBRARY ogg)
 set(OGG_INCLUDE_DIR "dummy")
 
-FetchContent_Declare(SDL2 GIT_REPOSITORY https://github.com/libsdl-org/SDL GIT_TAG release-2.30.1)
-FetchContent_Declare(SDL2_image GIT_REPOSITORY https://github.com/libsdl-org/SDL_image GIT_TAG release-2.8.2)
-FetchContent_Declare(CURL GIT_REPOSITORY https://github.com/curl/curl GIT_TAG curl-8_6_0)
-FetchContent_Declare(ZLIB GIT_REPOSITORY https://github.com/madler/zlib GIT_TAG v1.3.1)
-FetchContent_Declare(OGG GIT_REPOSITORY https://github.com/xiph/ogg GIT_TAG v1.3.5)
-FetchContent_Declare(VORBIS GIT_REPOSITORY https://github.com/xiph/vorbis GIT_TAG v1.3.7)
-FetchContent_Declare(THEORA GIT_REPOSITORY https://github.com/xiph/theora GIT_TAG v1.2.0alpha1)
-FetchContent_MakeAvailable(SDL2 SDL2_image CURL ZLIB OGG VORBIS THEORA)
+if(BUILD_ALSOFT)
+    FetchContent_Declare(ALSOFT GIT_REPOSITORY https://github.com/kcat/openal-soft GIT_TAG 1.23.1)
+    set(ALSOFT_DECL ALSOFT)
+    set(OPENAL_LIBRARY OpenAL)
+    unset(OPENAL_INCLUDE_DIR CACHE)
+else()
+    find_package(OpenAL REQUIRED)
+endif()
+
+FetchContent_Declare(SDL2 GIT_REPOSITORY https://github.com/libsdl-org/SDL GIT_TAG release-2.30.1 EXCLUDE_FROM_ALL)
+FetchContent_Declare(SDL2_image GIT_REPOSITORY https://github.com/libsdl-org/SDL_image GIT_TAG release-2.8.2 EXCLUDE_FROM_ALL)
+FetchContent_Declare(CURL GIT_REPOSITORY https://github.com/curl/curl GIT_TAG curl-8_6_0 EXCLUDE_FROM_ALL)
+FetchContent_Declare(ZLIB GIT_REPOSITORY https://github.com/madler/zlib GIT_TAG v1.3.1 EXCLUDE_FROM_ALL)
+FetchContent_Declare(OGG GIT_REPOSITORY https://github.com/xiph/ogg GIT_TAG v1.3.5 EXCLUDE_FROM_ALL)
+FetchContent_Declare(VORBIS GIT_REPOSITORY https://github.com/xiph/vorbis GIT_TAG v1.3.7 EXCLUDE_FROM_ALL)
+FetchContent_Declare(THEORA GIT_REPOSITORY https://github.com/xiph/theora GIT_TAG v1.2.0alpha1 EXCLUDE_FROM_ALL)
+FetchContent_MakeAvailable(SDL2 SDL2_image CURL ZLIB OGG VORBIS THEORA ${ALSOFT_DECL})
 
 find_package(OpenGL REQUIRED)
-find_package(OpenAL REQUIRED)
 
 add_library(
     theoradec
