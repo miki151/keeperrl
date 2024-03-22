@@ -26,7 +26,6 @@ class ViewIndex;
 class MapMemory {
   public:
   MapMemory();
-  void addObject(Position, const ViewObject&);
   void update(Position, const ViewIndex&);
   const HashSet<Position>& getUpdated(const Level*) const;
   void clearUpdated(const Level*) const;

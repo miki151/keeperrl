@@ -1343,12 +1343,12 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
 
 vector<pair<Item*, Position>> PlayerControl::getItemUpgradesFor(const WorkshopItem& workshopItem) const {
   vector<pair<Item*, Position>> ret;
-  for (auto& pos : collective->getConstructions().getAllStoragePositions())
-    for (auto& item : pos.getItems(ItemIndex::RUNE))
-      if (auto& upgradeInfo = item->getUpgradeInfo())
-        if (workshopItem.upgradeType.contains(upgradeInfo->type))
-          ret.push_back({make_pair(item, pos)});
-
+  if (!workshopItem.upgradeType.empty())
+    for (auto& pos : collective->getConstructions().getAllStoragePositions())
+      for (auto& item : pos.getItems(ItemIndex::RUNE))
+        if (auto& upgradeInfo = item->getUpgradeInfo())
+          if (workshopItem.upgradeType.contains(upgradeInfo->type))
+            ret.push_back({make_pair(item, pos)});
   return ret;
 }
 
@@ -1484,7 +1484,8 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
   if (item.runes.empty() && item.item.requiresUpgrades)
     ret.itemInfo.unavailableReason = "Item cannot be crafted without applied upgrades.";
   ret.itemInfo.actions = {ItemAction::REMOVE};
-  ret.maxUpgrades = {!item.item.upgradeType.empty() ? getItemTypeName(item.item.upgradeType[0]) : "", item.item.maxUpgrades};
+  ret.maxUpgrades = !item.item.upgradeType.empty() ? make_pair(getItemTypeName(item.item.upgradeType[0]), item.item.maxUpgrades)
+      : make_pair(""_s, 0);
   return ret;
 }
 

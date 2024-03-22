@@ -24,14 +24,6 @@ SERIALIZE_DEF(MapMemory, table)
 
 MapMemory::MapMemory() {}
 
-void MapMemory::addObject(Position pos, const ViewObject& obj) {
-  CHECK(pos.isValid());
-  auto& index = table->getOrInit(pos);
-  index.insert(obj);
-  index.setHighlight(HighlightType::MEMORY);
-  updateUpdated(pos);
-}
-
 optional<ViewIndex&> MapMemory::getViewIndex(Position pos) {
   return table->getReferenceMaybe(pos);
 }
