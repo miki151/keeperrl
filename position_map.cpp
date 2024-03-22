@@ -31,22 +31,21 @@ optional<const T&> PositionMap<T>::getReferenceMaybe(Position pos) const {
   LevelId levelId = pos.getLevel()->getUniqueId();
 
   auto tableIter = tables.find(levelId);
-  if(tableIter != tables.end()) {
+  if (tableIter != tables.end()) {
     const auto& table = tableIter->second;
 
-    if(pos.getCoord().inRectangle(table.getBounds()))
+    if (pos.getCoord().inRectangle(table.getBounds()))
       return getReferenceOptional(table[pos.getCoord()]);
 
     auto outliersIter = outliers.find(levelId);
-    if(outliersIter != outliers.end()) {
+    if (outliersIter != outliers.end()) {
       const auto& outlier = outliersIter->second;
       auto innerIter = outlier.find(pos.getCoord());
       if(innerIter != outlier.end())
         return innerIter->second;
     }
   }
-
-    return none;
+  return none;
 }
 
 template <class T>
@@ -54,21 +53,20 @@ optional<T&> PositionMap<T>::getReferenceMaybe(Position pos) {
   LevelId levelId = pos.getLevel()->getUniqueId();
 
   auto tableIter = tables.find(levelId);
-  if(tableIter != tables.end()) {
+  if (tableIter != tables.end()) {
     auto& table = tableIter->second;
 
-    if(pos.getCoord().inRectangle(table.getBounds()))
+    if (pos.getCoord().inRectangle(table.getBounds()))
       return getReferenceOptional(table[pos.getCoord()]);
 
     auto outliersIter = outliers.find(levelId);
-    if(outliersIter != outliers.end()) {
+    if (outliersIter != outliers.end()) {
       auto& outlier = outliersIter->second;
       auto innerIter = outlier.find(pos.getCoord());
       if(innerIter != outlier.end())
         return innerIter->second;
     }
   }
-
   return none;
 }
 
