@@ -29,29 +29,47 @@ static optional<const T&> getReferenceOptional(const heap_optional<T>& t) {
 template <class T>
 optional<const T&> PositionMap<T>::getReferenceMaybe(Position pos) const {
   LevelId levelId = pos.getLevel()->getUniqueId();
-  try {
-    const auto& table = tables.at(levelId);
-    if (pos.getCoord().inRectangle(table.getBounds()))
+
+  auto tableIter = tables.find(levelId);
+  if(tableIter != tables.end()) {
+    const auto& table = tableIter->second;
+
+    if(pos.getCoord().inRectangle(table.getBounds()))
       return getReferenceOptional(table[pos.getCoord()]);
-    else
-      return outliers.at(levelId).at(pos.getCoord());
-  } catch (std::out_of_range) {
-    return none;
+
+    auto outliersIter = outliers.find(levelId);
+    if(outliersIter != outliers.end()) {
+      const auto& outlier = outliersIter->second;
+      auto innerIter = outlier.find(pos.getCoord());
+      if(innerIter != outlier.end())
+        return innerIter->second;
+    }
   }
+
+    return none;
 }
 
 template <class T>
 optional<T&> PositionMap<T>::getReferenceMaybe(Position pos) {
   LevelId levelId = pos.getLevel()->getUniqueId();
-  try {
-    auto& table = tables.at(levelId);
-    if (pos.getCoord().inRectangle(table.getBounds()))
+
+  auto tableIter = tables.find(levelId);
+  if(tableIter != tables.end()) {
+    auto& table = tableIter->second;
+
+    if(pos.getCoord().inRectangle(table.getBounds()))
       return getReferenceOptional(table[pos.getCoord()]);
-    else
-      return outliers.at(levelId).at(pos.getCoord());
-  } catch (std::out_of_range) {
-    return none;
+
+    auto outliersIter = outliers.find(levelId);
+    if(outliersIter != outliers.end()) {
+      auto& outlier = outliersIter->second;
+      auto innerIter = outlier.find(pos.getCoord());
+      if(innerIter != outlier.end())
+        return innerIter->second;
+    }
   }
+
+  return none;
 }
 
 template<class T>
