@@ -690,7 +690,7 @@ optional<Position> Position::getGroundBelow() const {
 
 bool Position::isClosedOff(MovementType movement) const {
   PROFILE;
-  auto sectors = level->getSectors(movement);
+  auto& sectors = level->getSectors(movement);
   auto topLevel = getModel()->getGroundLevel();
   if (level == topLevel && sectors.getSector(coord) == sectors.getLargest())
     return false;
