@@ -12,6 +12,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED on)
 
 option(ENABLE_STEAMWORKS "Enable steamworks integration" ON)
 
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
 if(ENABLE_STEAMWORKS)
     add_library(steamworks SHARED IMPORTED)
     if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
