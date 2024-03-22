@@ -25,7 +25,7 @@
 #include "storage_id.h"
 
 class TaskCallback;
-class CreatureList;
+struct CreatureList;
 
 using WTaskCallback = WeakPointer<TaskCallback>;
 

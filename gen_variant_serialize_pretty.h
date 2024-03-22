@@ -9,7 +9,8 @@ void serialize(PrettyInputArchive& ar1, VARIANT_NAME& v) {
     v.index = Index; \
     new(&v.elem##Index) Type;\
     ar1(v.elem##Index); \
-  } else
+    return; \
+  }
   VARIANT_TYPES_LIST
 #undef X
 #ifdef DEFAULT_ELEM
@@ -19,7 +20,8 @@ void serialize(PrettyInputArchive& ar1, VARIANT_NAME& v) {
     new(&v.elem##Index) Type;\
     ar1.seek(bookmark);\
     ar1(v.elem##Index); \
-  } else
+    return; \
+  }
   VARIANT_TYPES_LIST
   #undef X
   ar1.error("Bad default elem");

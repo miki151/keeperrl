@@ -619,7 +619,7 @@ static void addMagicMissileEffect(FXManager& mgr) {
     pdef.textureName = TextureName::MISSILE_CORE;
 
     SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
-    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+    ssdef.emitFunc = [=](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
       em.direction = ctx.ps.targetDirAngle;
       em.directionSpread = 0.0f;
       em.strength = ctx.ps.targetTileDist * 24.0f / flightTime;

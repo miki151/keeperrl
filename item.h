@@ -30,7 +30,7 @@ class Fire;
 class ItemAttributes;
 class Effect;
 struct CorpseInfo;
-class WeaponInfo;
+struct WeaponInfo;
 struct ItemUpgradeInfo;
 class ItemPrefix;
 class ItemType;

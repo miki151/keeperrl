@@ -50,7 +50,7 @@ class Tutorial;
 struct BuildInfo;
 class MoveInfo;
 class UnknownLocations;
-class AttackTrigger;
+struct AttackTrigger;
 class ImmigrantInfo;
 struct WorkshopOptionInfo;
 struct FurnaceOptionInfo;
