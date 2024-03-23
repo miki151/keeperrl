@@ -75,10 +75,11 @@ void FXRenderer::applyTexScale() {
 }
 
 IRect FXRenderer::visibleTiles(const View& view) {
-  float scale = 1.0f / (view.zoom * nominalSize);
+  float scaleX = 1.0f / (view.zoomX * nominalSize);
+  float scaleY = 1.0f / (view.zoomY * nominalSize);
 
-  FVec2 topLeft = -view.offset * scale;
-  FVec2 size = FVec2(view.size) * scale;
+  FVec2 topLeft = -view.offset * FVec2{scaleX, scaleY};
+  FVec2 size = FVec2(view.size) * FVec2{scaleX, scaleY};
 
   IVec2 iTopLeft(floor(topLeft.x), floor(topLeft.y));
   IVec2 iSize(ceil(size.x), ceil(size.y));
@@ -235,8 +236,8 @@ void FXRenderer::printSystemDrawsInfo() const {
   }
 }
 
-void FXRenderer::setView(float zoom, float offsetX, float offsetY, int w, int h) {
-  worldView = View{zoom, {offsetX, offsetY}, {w, h}};
+void FXRenderer::setView(float zoomX, float zoomY, float offsetX, float offsetY, int w, int h) {
+  worldView = View{zoomX, zoomY, {offsetX, offsetY}, {w, h}};
   fboView = visibleTiles(worldView);
   auto size = fboView.size() * nominalSize;
 
@@ -269,7 +270,7 @@ void FXRenderer::drawParticles(FVec2 viewOffset, Framebuffer& blendFBO, Framebuf
   SDL::glClear(GL_COLOR_BUFFER_BIT);
 
   SDL::glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
-  drawParticles({1.0f, viewOffset, viewSize}, BlendMode::normal);
+  drawParticles({1.0f, 1.0f, viewOffset, viewSize}, BlendMode::normal);
 
   addFBO.bind();
   SDL::glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -277,7 +278,7 @@ void FXRenderer::drawParticles(FVec2 viewOffset, Framebuffer& blendFBO, Framebuf
 
   // TODO: Each effect could control how alpha builds up
   SDL::glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-  drawParticles({1.0f, viewOffset, viewSize}, BlendMode::additive);
+  drawParticles({1.0f, 1.0f, viewOffset, viewSize}, BlendMode::additive);
 
   Framebuffer::unbind();
   SDL::glPopAttrib();
@@ -328,7 +329,7 @@ void FXRenderer::drawOrdered(const int* ids, int count, float offsetX, float off
 
       // TODO: some rects are only additive or only blend; filter them
       FRect rect(draw.worldRect);
-      rect = rect * worldView.zoom + worldView.offset + FVec2(offsetX, offsetY);
+      rect = rect * FVec2{worldView.zoomX, worldView.zoomY} + worldView.offset + FVec2(offsetX, offsetY);
       auto trect = FRect(IRect(draw.fboPos, draw.fboPos + draw.worldRect.size())) * invSize;
       tempRects.emplace_back(rect);
       tempRects.emplace_back(trect);
@@ -442,8 +443,8 @@ void FXRenderer::drawUnordered(Layer layer) {
     SDL::glGetTexEnviv(GL_TEXTURE_ENV, GL_COMBINE_RGB, &defaultCombine);
 
     // TODO: positioning is wrong for non-integral zoom values
-    FVec2 c1 = FVec2(fboView.min() * nominalSize * worldView.zoom) + worldView.offset;
-    FVec2 c2 = FVec2(fboView.max() * nominalSize * worldView.zoom) + worldView.offset;
+    FVec2 c1 = FVec2(fboView.min() * nominalSize) * FVec2{worldView.zoomX, worldView.zoomY} + worldView.offset;
+    FVec2 c2 = FVec2(fboView.max() * nominalSize) * FVec2{worldView.zoomX, worldView.zoomY} + worldView.offset;
 
     SDL::glBlendFunc(GL_ONE, GL_SRC_ALPHA);
     SDL::glBindTexture(GL_TEXTURE_2D, blendFBO->texId);
@@ -501,7 +502,7 @@ void FXRenderer::drawParticles(const View& view, BlendMode blendMode) {
   SDL::glPushMatrix();
 
   SDL::glTranslatef(view.offset.x, view.offset.y, 0.0f);
-  SDL::glScalef(view.zoom, view.zoom, 1.0f);
+  SDL::glScalef(view.zoomX, view.zoomY, 1.0f);
 
   SDL::glPushAttrib(GL_ENABLE_BIT);
   SDL::glEnableClientState(GL_VERTEX_ARRAY);

@@ -1196,9 +1196,10 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
 void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds currentTimeReal) {
   PROFILE;
   if (fxViewManager) {
-    float zoom = float(layout->getSquareSize().x) / float(Renderer::nominalSize);
+    float zoomX = float(layout->getSquareSize().x) / float(Renderer::nominalSize);
+    float zoomY = float(layout->getSquareSize().y) / float(Renderer::nominalSize);
     auto offset = projectOnScreen(Vec2(0, 0));
-    fxViewManager->beginFrame(renderer, zoom, offset.x, offset.y);
+    fxViewManager->beginFrame(renderer, zoomX, zoomY, offset.x, offset.y);
   }
   renderAndInitFoW(renderer, size);
   if (spriteMode) {
