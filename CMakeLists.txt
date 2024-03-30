@@ -118,6 +118,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_compile_definitions(keeper PRIVATE WINDOWS $<$<CXX_COMPILER_ID:MSVC>:_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING>)
     target_compile_options(keeper PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/w>)
     target_link_libraries(keeper PRIVATE dbghelp)
+    target_sources(keeper PRIVATE keeper.rc)
 
     if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         set_source_files_properties(
