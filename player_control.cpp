@@ -833,6 +833,7 @@ string PlayerControl::getMinionName(CreatureId id) const {
 }
 
 ViewId PlayerControl::getViewId(const BuildInfoTypes::BuildType& info) const {
+  PROFILE;
   return info.visit<ViewId>(
       [&](const BuildInfoTypes::Furniture& elem) {
         return getGame()->getContentFactory()->furniture.getData(elem.types[0]).getViewObject()->id();
@@ -880,10 +881,14 @@ ViewId PlayerControl::getViewId(const BuildInfoTypes::BuildType& info) const {
 }
 
 vector<Button> PlayerControl::fillButtons() const {
+  PROFILE;
   vector<Button> buttons;
+  HashMap<CollectiveResourceId, int> resourceCache;
   for (auto& button : buildInfo) {
+    PROFILE_BLOCK("BUTTON")
     button.type.visit<void>(
         [&](const BuildInfoTypes::Furniture& elem) {
+          PROFILE_BLOCK("Furniture")
           string description;
           if (elem.cost.value > 0) {
             int num = 0;
@@ -892,7 +897,15 @@ vector<Button> PlayerControl::fillButtons() const {
             if (num > 0)
               description = "[" + toString(num) + "]";
           }
-          int availableNow = !elem.cost.value ? 1 : collective->numResource(elem.cost.id) / elem.cost.value;
+          int availableNow = [&] {
+            if (!elem.cost.value)
+              return 1;
+            if (auto res = getValueMaybe(resourceCache, elem.cost.id))
+              return *res / elem.cost.value;
+            auto res = collective->numResource(elem.cost.id);
+            resourceCache[elem.cost.id] = res;
+            return res / elem.cost.value;
+          }();
           if (!collective->getResourceInfo(elem.cost.id).viewId && availableNow)
             description += " (" + toString(availableNow) + " available)";
           buttons.push_back(Button{getViewId(button.type), button.name,
@@ -902,15 +915,18 @@ vector<Button> PlayerControl::fillButtons() const {
                  CollectiveInfo::Button::GRAY_CLICKABLE : CollectiveInfo::Button::ACTIVE });
           },
         [&](const auto&) {
+          PROFILE;
           buttons.push_back({this->getViewId(button.type), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         }
     );
     vector<string> unmetReqText;
-    for (auto& req : button.requirements)
+    for (auto& req : button.requirements) {
+      PROFILE_BLOCK("Requirement")
       if (!BuildInfo::meetsRequirement(collective, req)) {
         unmetReqText.push_back("Requires " + BuildInfo::getRequirementText(req) + ".");
         buttons.back().state = CollectiveInfo::Button::INACTIVE;
       }
+    }
     if (unmetReqText.empty())
       buttons.back().help = button.help;
     else
@@ -970,6 +986,7 @@ string PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
 }
 
 VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const {
+  PROFILE;
   VillageInfo::Village info;
   info.name = col->getName()->shortened;
   info.id = col->getUniqueId();
@@ -1253,6 +1270,7 @@ vector<CollectiveInfo::CreatureGroup> PlayerControl::getAutomatonGroups(vector<C
 }
 
 void PlayerControl::fillMinions(CollectiveInfo& info) const {
+  PROFILE;
   vector<Creature*> minions;
   for (auto trait : {MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER, MinionTrait::INCREASE_POPULATION, MinionTrait::LEADER})
     for (Creature* c : collective->getCreatures(trait))
@@ -1925,6 +1943,7 @@ static optional<CollectiveInfo::RebellionChance> getRebellionChance(double prob)
 }
 
 void PlayerControl::fillCurrentLevelInfo(GameInfo& gameInfo) const {
+  PROFILE;
   auto level = getCurrentLevel();
   auto levels = getModel()->getDungeonBranch(level, getMemory());
   gameInfo.currentLevel = CurrentLevelInfo {
