@@ -55,16 +55,22 @@ class Inventory {
 
   SERIALIZATION_DECL(Inventory)
 
-  private:
-
   typedef IndexedVector<Item*, UniqueEntity<Item>::Id> ItemVector;
   typedef IndexedVector<PItem, UniqueEntity<Item>::Id> PItemVector;
+
+  private:
 
   ItemCounts SERIAL(counts);
   PItemVector SERIAL(items);
   ItemVector SERIAL(itemsCache);
+  const ItemVector& getItemsCache() const;
+  ItemVector& getItemsCache();
   double SERIAL(weight) = 0;
   mutable EnumMap<ItemIndex, optional<ItemVector>> indexes;
   mutable vector<optional<ItemVector>> resourceIndexes;
   void addViewId(ViewId, int count);
 };
+
+CEREAL_CLASS_VERSION(Inventory::ItemVector, 1)
+CEREAL_CLASS_VERSION(Inventory::PItemVector, 1)
+CEREAL_CLASS_VERSION(Inventory, 1)
