@@ -47,6 +47,7 @@
 #include "territory.h"
 #include "player_control.h"
 #include "portals.h"
+#include "effect_type.h"
 
 template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
@@ -55,8 +56,12 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Level>);
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
   ar(sunlight, bucketMap, lightAmount, unavailable, swarmMaps, territory);
-  ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates, above, below, mountainLevel);
-  ar(furniture, tickingFurniture, covered, name, depth, wildlife, addedWildlife, mainDungeon);
+  ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates, above, below, mountainLevel, furniture);
+  if (version == 0) {
+    set<Vec2> SERIAL(tickingFurniture);
+    ar(tickingFurniture);
+  }
+  ar(covered, name, depth, wildlife, addedWildlife, mainDungeon);
   vector<pair<TribeId, unique_ptr<EffectsTable>>> SERIAL(tmp);
   for (auto t : ENUM_ALL(TribeId::KeyType))
     if (!!furnitureEffects[t])
@@ -69,8 +74,36 @@ void Level::serialize(Archive& ar, const unsigned int version) {
       table = std::move(elem.second);
     }
   // ar(furnitureEffects)
-  if (Archive::is_loading::value) // some code requires these Sectors to be always initialized
+  if (Archive::is_loading::value) {
+    // some code requires these Sectors to be always initialized
     getSectors({MovementTrait::WALK});
+    updateTickingFurniture();
+  }
+}
+
+void Level::updateTickingFurniture() {
+  for (auto v : squares->getBounds())
+    for (auto layer : ENUM_ALL(FurnitureLayer))
+      if (auto f = furniture->getBuilt(layer).getReadonly(v)) {
+        if (auto t = f->getTickType()) {
+          double chance = 1.0;
+          t->visit<void>(
+              [&](const auto&) {},
+              [&](const Effect& effect) {
+                effect.effect->visit(
+                    [&](const Effects::Chance& c) {
+                      chance = c.value;
+                      furniture->getBuilt(layer).getWritable(v)->tickType = FurnitureTickType(std::move(*c.effect));
+                    },
+                    [&](const auto&) {}
+                );
+              }
+          );
+          tickingFurniture.insert(make_tuple(v, layer, chance));
+        }
+        if ((f->getFire() && f->getFire()->isBurning()) || f->hasBlood())
+          burningFurniture.insert(make_pair(v, layer));
+      }
 }
 
 SERIALIZABLE(Level);
@@ -95,6 +128,7 @@ Level::Level(Private, SquareArray s, FurnitureArray f, Model* m, Table<double> s
       swarmMaps(getSwarmMaps(squares->getBounds().getSize())),
       lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
       levelId(id) {
+  updateTickingFurniture();
 }
 
 PLevel Level::create(SquareArray s, FurnitureArray f, Model* m,
@@ -109,7 +143,7 @@ PLevel Level::create(SquareArray s, FurnitureArray f, Model* m,
       ret->furniture->getBuilt(layer).shrinkToFit();
       if (auto f = ret->furniture->getBuilt(layer).getReadonly(pos))
         if (f->isTicking())
-          ret->addTickingFurniture(pos);
+          ret->addTickingFurniture(pos, layer);
     }
   }
   for (VisionId vision : ENUM_ALL(VisionId))
@@ -534,18 +568,25 @@ void Level::addTickingSquare(Vec2 pos) {
   tickingSquares.insert(pos);
 }
 
-void Level::addTickingFurniture(Vec2 pos) {
-  tickingFurniture.insert(pos);
+void Level::addTickingFurniture(Vec2 pos, FurnitureLayer layer) {
+  tickingFurniture.insert(make_tuple(pos, layer, 1.0));
+}
+
+void Level::addBurningFurniture(Vec2 pos, FurnitureLayer layer) {
+  burningFurniture.insert(make_pair(pos, layer));
 }
 
 void Level::tick() {
   PROFILE_BLOCK("Level::tick");
   for (Vec2 pos : tickingSquares)
     squares->getWritable(pos)->tick(Position(pos, this));
-  for (Vec2 pos : tickingFurniture)
-    for (auto layer : ENUM_ALL(FurnitureLayer))
-      if (auto f = furniture->getBuilt(layer).getWritable(pos))
-        f->tick(Position(pos, this), layer);
+  for (auto& elem : tickingFurniture)
+    if (auto f = furniture->getBuilt(std::get<1>(elem)).getWritable(std::get<0>(elem)))
+      if (Random.chance(std::get<2>(elem)))
+        f->tick(Position(std::get<0>(elem), this), std::get<1>(elem));
+  for (auto& elem : burningFurniture)
+    if (auto f = furniture->getBuilt(std::get<1>(elem)).getWritable(std::get<0>(elem)))
+      f->updateFire(Position(std::get<0>(elem), this), std::get<1>(elem));
   addedWildlife = addedWildlife.filter([this, col = getGame()->getPlayerCollective()](Creature* c) {
     return c->getPosition().getLevel() == this && (!col || !col->getCreatures().contains(c)); });
   if (Random.roll(50) && addedWildlife.size() < wildlife.count.getStart()) {
@@ -667,7 +708,9 @@ void Level::setFurniture(Vec2 pos, PFurniture f) {
   auto layer = f->getLayer();
   furniture->eraseConstruction(pos, layer);
   if (f->isTicking())
-    addTickingFurniture(pos);
+    addTickingFurniture(pos, f->getLayer());
+  if ((f->getFire() && f->getFire()->isBurning()) || f->hasBlood())
+    addBurningFurniture(pos, f->getLayer());
   furniture->getBuilt(layer).putElem(pos, std::move(f));
 }
 

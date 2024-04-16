@@ -91,6 +91,7 @@ class Furniture {
   bool acidDamage(Position);
   bool iceDamage(Position);
   void tick(Position, FurnitureLayer supposedLayer);
+  void updateFire(Position, FurnitureLayer supposedLayer);
   bool canSeeThru(VisionId) const;
   bool blocksAnyVision() const;
   bool stopsProjectiles(VisionId) const;
@@ -126,6 +127,7 @@ class Furniture {
   void onCreatureWalkedOver(Position, Vec2 direction) const;
   void onCreatureWalkedInto(Position, Vec2 direction) const;
   bool onBloodNear(Position);
+  bool hasBlood() const;
   void spreadBlood(Position);
   int getMaxTraining(AttrType) const;
   const HashMap<AttrType, int>& getMaxTraining() const;
@@ -177,6 +179,8 @@ class Furniture {
 
   ~Furniture();
 
+  optional<FurnitureTickType> SERIAL(tickType);
+
   private:
   heap_optional<ViewObject> SERIAL(viewObject);
   string SERIAL(name);
@@ -197,7 +201,6 @@ class Furniture {
   EnumSet<VisionId> SERIAL(blockVision);
   optional<FurnitureUsageType> SERIAL(usageType);
   optional<FurnitureClickType> SERIAL(clickType);
-  optional<FurnitureTickType> SERIAL(tickType);
   optional<FurnitureOnBuilt> SERIAL(onBuilt);
   heap_optional<FurnitureEntry> SERIAL(entryType);
   heap_optional<FurnitureDroppedItems> SERIAL(droppedItems);
