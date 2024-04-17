@@ -132,3 +132,6 @@ using SteamId = unsigned long long;
 using ScriptedUIId = string;
 using UnlockId = string;
 using SoundId = string;
+
+class ItemAttributes;
+using SItemAttributes = shared_ptr<ItemAttributes>;

@@ -1042,8 +1042,8 @@ static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
   for (auto& elem : factory->items) {
     ret.push_back(WishedItemInfo {
       ItemType(elem.first),
-      elem.second.name,
-      elem.second.wishedCount
+      elem.second->name,
+      elem.second->wishedCount
     });
   }
   for (auto effect : ENUM_ALL(LastingEffect))

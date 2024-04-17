@@ -12,8 +12,9 @@
 #include "minion_trait.h"
 #include "lasting_or_buff.h"
 
+
 #define ITEM_TYPE_INTERFACE\
-  ItemAttributes getAttributes(const ContentFactory*) const
+  SItemAttributes getAttributes(const ContentFactory*) const
 
 #define SIMPLE_ITEM(Name) \
   struct Name : public EmptyStruct<Name> { \
