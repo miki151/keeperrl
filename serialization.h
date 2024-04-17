@@ -76,10 +76,19 @@ typedef cereal::BinaryOutputArchive OutputArchive;
 
 #define UNIQUE_NAME(base) CONCAT(base, __COUNTER__)
 
-#define REGISTER_TYPE(M) static ConstructorFunction UNIQUE_NAME(Register)(\
+#define REGISTER_TYPE(M)\
+namespace cereal {                                                     \
+namespace detail {                                                     \
+template <>                                                            \
+struct binding_name<M>                                       \
+{                                                                      \
+  CEREAL_STATIC_CONSTEXPR char const * name() { return #M; } \
+};                                                                     \
+} } /* end namespaces */                                               \
+static ConstructorFunction UNIQUE_NAME(Register)(\
   [] {\
-  cereal::detail::OutputBindingCreator<cereal::BinaryOutputArchive, M> b(#M);\
-  cereal::detail::InputBindingCreator<cereal::BinaryInputArchive, M> a(#M);\
+  cereal::detail::OutputBindingCreator<cereal::BinaryOutputArchive, M> b;\
+  cereal::detail::InputBindingCreator<cereal::BinaryInputArchive, M> a;\
   });
 
 #define SERIAL(X) X
