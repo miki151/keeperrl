@@ -364,7 +364,8 @@ const EnumSet<CreatureStatus>& Creature::getStatus() const {
 
 bool Creature::canBeCaptured() const {
   PROFILE;
-  return getBody().canBeCaptured(getGame()->getContentFactory()) && !isAffected(LastingEffect::STUNNED);
+  return getBody().canBeCaptured(getGame()->getContentFactory()) && !isAffected(LastingEffect::STUNNED) &&
+      !duelInfo;
 }
 
 void Creature::setCaptureOrder(bool state) {
@@ -1705,6 +1706,7 @@ void Creature::setDuel(TribeId enemyTribe, Creature* opponent, GlobalTime timeou
   duelInfo = DuelInfo{enemyTribe, opponent ? opponent->getUniqueId() : Creature::Id{}, timeout};
   if (steed)
     steed->duelInfo = DuelInfo{enemyTribe, Creature::Id{}, timeout};
+  setCaptureOrder(false);
 }
 
 constexpr double getDamage(double damageRatio) {
