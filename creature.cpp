@@ -2649,7 +2649,6 @@ MovementType Creature::getSelfMovementType(Game* game, bool amSteed) const {
     .setForced((!amSteed && isAffected(LastingEffect::BLIND, time)) || getHoldingCreature() || forceMovement)
     .setFireResistant(isAffected(BuffId("FIRE_IMMUNITY")))
     .setSunlightVulnerable(isAffected(LastingEffect::SUNLIGHT_VULNERABLE, time)
-        && !isAffected(LastingEffect::DARKNESS_SOURCE, time)
         && (!game || game->getSunlightInfo().getState() == SunlightState::DAY))
     .setCanBuildBridge(isAffected(BuffId("BRIDGE_BUILDING_SKILL")))
     .setFarmAnimal(getBody().isFarmAnimal());
@@ -2657,10 +2656,15 @@ MovementType Creature::getSelfMovementType(Game* game, bool amSteed) const {
 
 MovementType Creature::getMovementType(Game* game) const {
   PROFILE;
-  if (steed)
+  if (steed) {
+    auto time = getGlobalTime();
     return steed->getSelfMovementType(game, true)
+        .setSunlightVulnerable((isAffected(LastingEffect::SUNLIGHT_VULNERABLE, time) ||
+                steed->isAffected(LastingEffect::SUNLIGHT_VULNERABLE, time))
+            && (!game || game->getSunlightInfo().getState() == SunlightState::DAY))
+        .setFireResistant(isAffected(BuffId("FIRE_IMMUNITY")) && steed->isAffected(BuffId("FIRE_IMMUNITY")))
         .setForced(isAffected(LastingEffect::BLIND, getGlobalTime()) || getHoldingCreature() || forceMovement);
-  else
+  } else
     return getSelfMovementType(game, false);
 }
 
