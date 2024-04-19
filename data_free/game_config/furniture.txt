@@ -783,13 +783,16 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "cactus"
   destroyedRemains = none
   summonedElement = none
+  tickType = none
 }
 "PALM_TREE" inherit "CANIF_TREE"
 {
+  tickType = none
   viewId = { "palm_tree" }
 }
 "GUM_TREE" inherit "CANIF_TREE"
 {
+  tickType = none
   viewId = { "tree_gum" }
 }
 "GIANT_MUSHROOM" inherit "CANIF_TREE"
