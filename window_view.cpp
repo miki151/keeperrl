@@ -894,6 +894,8 @@ void WindowView::logMessage(const std::string& message) {
 }
 
 void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> origin) {
+  mapGui->releaseMouseHeld();
+  inputQueue.push(UserInputId::RECT_CANCEL);
   TempClockPause pause(clock);
   bool origOrigin = !!origin;
   if (!origin)
