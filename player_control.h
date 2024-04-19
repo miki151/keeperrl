@@ -199,8 +199,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<Creature*> getMinionGroup(const string& groupName) const;
   vector<PlayerInfo> getPlayerInfos(vector<Creature*>) const;
   void sortMinionsForUI(vector<Creature*>&) const;
-  vector<CollectiveInfo::CreatureGroup> getCreatureGroups(vector<Creature*>) const;
-  vector<CollectiveInfo::CreatureGroup> getAutomatonGroups(vector<Creature*>) const;
+  vector<CollectiveInfo::CreatureGroup> getCreatureGroups(const vector<Creature*>&) const;
+  vector<CollectiveInfo::CreatureGroup> getAutomatonGroups(const vector<Creature*>&) const;
   void minionEquipmentAction(const EquipmentActionInfo&);
   void addEquipment(Creature*, EquipmentSlot);
   void addConsumableItem(Creature*);

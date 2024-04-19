@@ -1239,8 +1239,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
   return minions;
 }
 
-vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<Creature*> v) const {
-  sortMinionsForUI(v);
+vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(const vector<Creature*>& v) const {
   map<string, CollectiveInfo::CreatureGroup> groups;
   for (Creature* c : v) {
     auto groupName = collective->getMinionGroupName(c);
@@ -1254,8 +1253,7 @@ vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<Cr
   return getValues(groups);
 }
 
-vector<CollectiveInfo::CreatureGroup> PlayerControl::getAutomatonGroups(vector<Creature*> v) const {
-  sortMinionsForUI(v);
+vector<CollectiveInfo::CreatureGroup> PlayerControl::getAutomatonGroups(const vector<Creature*>& v) const {
   map<string, CollectiveInfo::CreatureGroup> groups;
   for (Creature* c : v)
     for (auto& groupName : collective->getAutomatonGroupNames(c)) {
