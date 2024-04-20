@@ -62,7 +62,7 @@ class ContentFactory {
   VillainsTuple SERIAL(villains);
   GameIntros SERIAL(gameIntros);
   vector<pair<string, KeeperCreatureInfo>> SERIAL(keeperCreatures);
-  map<CustomItemId, ItemAttributes> SERIAL(items);
+  map<CustomItemId, SItemAttributes> SERIAL(items);
   vector<pair<string, ViewId>> SERIAL(equipmentGroups);
   map<BuildingId, BuildingInfo> SERIAL(buildingInfo);
   MapLayouts SERIAL(mapLayouts);
@@ -114,3 +114,5 @@ class ContentFactory {
 };
 
 static_assert(std::is_nothrow_move_constructible<ContentFactory>::value, "T should be noexcept MoveConstructible");
+
+CEREAL_CLASS_VERSION(ContentFactory, 1)

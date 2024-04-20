@@ -976,6 +976,7 @@ GlobalTime Collective::getGlobalTime() const {
 }
 
 int Collective::numResource(ResourceId id) const {
+  PROFILE;
   auto& info = getResourceInfo(id);
   int ret = getValueMaybe(credit, id).value_or(0);
   PositionSet visited;

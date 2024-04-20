@@ -42,22 +42,32 @@
 
 template <class Archive>
 void Item::serialize(Archive& ar, const unsigned int version) {
-  ar & SUBCLASS(OwnedObject<Item>) & SUBCLASS(UniqueEntity) & SUBCLASS(Renderable);
-  ar(attributes, discarded, shopkeeper, fire, classCache, canEquipCache, timeout, abilityInfo);
+  ar(SUBCLASS(OwnedObject<Item>), SUBCLASS(UniqueEntity), SUBCLASS(Renderable));
+  if (version == 0) {
+    HeapAllocated<ItemAttributes> SERIAL(attr);
+    ar(attr);
+    attributes = make_shared<ItemAttributes>(std::move(*attr));
+  } else
+    ar(attributes);
+  ar(discarded, shopkeeper, fire, classCache, canEquipCache, timeout, abilityInfo);
 }
 
 SERIALIZABLE(Item)
 SERIALIZATION_CONSTRUCTOR_IMPL(Item)
 
-Item::Item(const ItemAttributes& attr, const ContentFactory* factory)
-    : Renderable(ViewObject(attr.viewId, ViewLayer::ITEM, capitalFirst(attr.name))),
-      attributes(attr), fire(attr.burnTime), canEquipCache(!!attributes->equipmentSlot),
+Item::Item(SItemAttributes attr, const ContentFactory* factory)
+    : Renderable(ViewObject(attr->viewId, ViewLayer::ITEM, capitalFirst(attr->name))),
+      attributes(attr), fire(attr->burnTime), canEquipCache(!!attributes->equipmentSlot),
       classCache(attributes->itemClass) {
   if (!attributes->prefixes.empty())
     modViewObject().setModifier(ViewObject::Modifier::AURA);
   modViewObject().setGenericId(getUniqueId().getGenericId());
-  modViewObject().partIds = attr.partIds;
+  modViewObject().partIds = attributes->partIds;
   updateAbility(factory);
+}
+
+void Item::setAttributes(SItemAttributes a) {
+  attributes = a;
 }
 
 void Item::updateAbility(const ContentFactory* factory) {
@@ -96,7 +106,7 @@ Item::~Item() {
 }
 
 PItem Item::getCopy(const ContentFactory* f) const {
-  auto ret = makeOwner<Item>(*attributes, f);
+  auto ret = makeOwner<Item>(make_shared<ItemAttributes>(*attributes), f);
   ret->getAbility().clear();
   return ret;
 }

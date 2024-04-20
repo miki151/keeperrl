@@ -852,7 +852,8 @@ void Player::transferAction() {
         turnedOff.push_back(PlayerInfo(c, contentFactory));
         creatures.removeElement(c);
       }
-      if (!game->canTransferCreature(c, to)) {
+      if (!game->canTransferCreature(c, to) || (c->isAffected(LastingEffect::SUNLIGHT_VULNERABLE) &&
+            game->getSunlightInfo().getState() == SunlightState::DAY)) {
         cant.push_back(PlayerInfo(c, contentFactory));
         creatures.removeElement(c);
       }
@@ -1042,8 +1043,8 @@ static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
   for (auto& elem : factory->items) {
     ret.push_back(WishedItemInfo {
       ItemType(elem.first),
-      elem.second.name,
-      elem.second.wishedCount
+      elem.second->name,
+      elem.second->wishedCount
     });
   }
   for (auto effect : ENUM_ALL(LastingEffect))

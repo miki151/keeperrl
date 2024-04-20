@@ -26,10 +26,17 @@
 #include "buff_info.h"
 
 template <class Archive>
-void ContentFactory::serialize(Archive& ar, const unsigned int) {
+void ContentFactory::serialize(Archive& ar, const unsigned int version) {
   ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups);
-  ar(immigrantsData, buildInfo, villains, gameIntros, keeperCreatures, technology, items, buffs);
-  ar(buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping);
+  ar(immigrantsData, buildInfo, villains, gameIntros, keeperCreatures, technology);
+  if (version == 0) {
+    map<CustomItemId, ItemAttributes> SERIAL(itemsOld);
+    ar(itemsOld);
+    for (auto& elem : itemsOld)
+      items.emplace(elem.first, make_shared<ItemAttributes>(std::move(elem.second)));
+  } else
+    ar(items);
+  ar(buffs, buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping);
   ar(randomLayouts, tileGasTypes, promotions, dancePositions, equipmentGroups, scriptedHelp, attrInfo, attrOrder);
   ar(bodyMaterials, keybindings, worldMaps, achievements, achievementsOrder, buffsModifyingEfficiency);
   creatures.setContentFactory(this);
@@ -201,7 +208,8 @@ optional<string> ContentFactory::readItems(const GameConfig* config, KeyVerifier
   map<PrimaryId<CustomItemId>, ItemAttributes> itemsTmp;
   if (auto res = config->readObject(itemsTmp, GameConfigId::ITEMS, keyVerifier))
     return *res;
-  items = convertKeys(itemsTmp);
+  for (auto& elem : itemsTmp)
+    items.insert(make_pair(CustomItemId(elem.first), make_shared<ItemAttributes>(std::move(elem.second))));
   return none;
 }
 
@@ -471,10 +479,10 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
     }
   furniture.initializeInfos();
   for (auto& elem : items)
-    if (auto id = elem.second.resourceId) {
+    if (auto id = elem.second->resourceId) {
       auto& info = resourceInfo.at(*id);
       info.itemId = ItemType(elem.first);
-      for (auto storageId : elem.second.storageIds)
+      for (auto storageId : elem.second->storageIds)
         if (!info.storage.contains(storageId))
           info.storage.push_back(storageId);
     }

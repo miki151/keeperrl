@@ -364,7 +364,8 @@ const EnumSet<CreatureStatus>& Creature::getStatus() const {
 
 bool Creature::canBeCaptured() const {
   PROFILE;
-  return getBody().canBeCaptured(getGame()->getContentFactory()) && !isAffected(LastingEffect::STUNNED);
+  return getBody().canBeCaptured(getGame()->getContentFactory()) && !isAffected(LastingEffect::STUNNED) &&
+      !duelInfo;
 }
 
 void Creature::setCaptureOrder(bool state) {
@@ -1705,6 +1706,7 @@ void Creature::setDuel(TribeId enemyTribe, Creature* opponent, GlobalTime timeou
   duelInfo = DuelInfo{enemyTribe, opponent ? opponent->getUniqueId() : Creature::Id{}, timeout};
   if (steed)
     steed->duelInfo = DuelInfo{enemyTribe, Creature::Id{}, timeout};
+  setCaptureOrder(false);
 }
 
 constexpr double getDamage(double damageRatio) {
@@ -2647,7 +2649,6 @@ MovementType Creature::getSelfMovementType(Game* game, bool amSteed) const {
     .setForced((!amSteed && isAffected(LastingEffect::BLIND, time)) || getHoldingCreature() || forceMovement)
     .setFireResistant(isAffected(BuffId("FIRE_IMMUNITY")))
     .setSunlightVulnerable(isAffected(LastingEffect::SUNLIGHT_VULNERABLE, time)
-        && !isAffected(LastingEffect::DARKNESS_SOURCE, time)
         && (!game || game->getSunlightInfo().getState() == SunlightState::DAY))
     .setCanBuildBridge(isAffected(BuffId("BRIDGE_BUILDING_SKILL")))
     .setFarmAnimal(getBody().isFarmAnimal());
@@ -2655,10 +2656,15 @@ MovementType Creature::getSelfMovementType(Game* game, bool amSteed) const {
 
 MovementType Creature::getMovementType(Game* game) const {
   PROFILE;
-  if (steed)
+  if (steed) {
+    auto time = getGlobalTime();
     return steed->getSelfMovementType(game, true)
+        .setSunlightVulnerable((isAffected(LastingEffect::SUNLIGHT_VULNERABLE, time) ||
+                steed->isAffected(LastingEffect::SUNLIGHT_VULNERABLE, time))
+            && (!game || game->getSunlightInfo().getState() == SunlightState::DAY))
+        .setFireResistant(isAffected(BuffId("FIRE_IMMUNITY")) && steed->isAffected(BuffId("FIRE_IMMUNITY")))
         .setForced(isAffected(LastingEffect::BLIND, getGlobalTime()) || getHoldingCreature() || forceMovement);
-  else
+  } else
     return getSelfMovementType(game, false);
 }
 

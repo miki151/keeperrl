@@ -234,8 +234,9 @@ const Furniture::SupportInfo* Furniture::getSupportInfo(Position pos) const {
   return nullptr;
 }
 
-void Furniture::tick(Position pos, FurnitureLayer supposedLayer) {
-  PROFILE_BLOCK("Furniture::tick");
+void Furniture::updateFire(Position pos, FurnitureLayer supposedLayer) {
+  PROFILE_BLOCK("Furniture::updateFire");
+  PROFILE_BLOCK(type.data());
   if (fire && fire->isBurning()) {
     {
       auto otherF = pos.getFurniture(layer);
@@ -275,6 +276,11 @@ void Furniture::tick(Position pos, FurnitureLayer supposedLayer) {
   }
   if (bloodTime && *bloodTime <= pos.getModel()->getLocalTime())
     spreadBlood(pos);
+}
+
+void Furniture::tick(Position pos, FurnitureLayer supposedLayer) {
+  PROFILE_BLOCK("Furniture::tick");
+  PROFILE_BLOCK(type.data());
   if (tickType)
     tickType->handle(pos, this); // this function can delete this
 }
@@ -467,6 +473,10 @@ bool Furniture::onBloodNear(Position pos) {
   return false;
 }
 
+bool Furniture::hasBlood() const {
+  return !!bloodTime;
+}
+
 void Furniture::spreadBlood(Position pos) {
   if (!!bloodCountdown) {
     bloodCountdown = none;
@@ -477,7 +487,7 @@ void Furniture::spreadBlood(Position pos) {
       if (auto f = v.getFurniture(layer))
         if (!!f->bloodCountdown) {
           v.modFurniture(layer)->bloodTime = pos.getModel()->getLocalTime() + 1_visible;
-          v.getLevel()->addTickingFurniture(v.getCoord());
+          v.getLevel()->addBurningFurniture(v.getCoord(), layer);
         }
   }
 }
@@ -619,7 +629,7 @@ bool Furniture::fireDamage(Position pos, bool withMessage) {
       if (viewObject)
         viewObject->setAttribute(ViewObject::Attribute::BURNING, 0.3);
       pos.updateMovementDueToFire();
-      pos.getLevel()->addTickingFurniture(pos.getCoord());
+      pos.getLevel()->addBurningFurniture(pos.getCoord(), layer);
       pos.addCreatureLight(false);
       return true;
     }

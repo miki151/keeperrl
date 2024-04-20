@@ -37,7 +37,7 @@
 #include "lasting_or_buff.h"
 #include "assembled_minion.h"
 
-#define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
+#define ITATTR(X) make_shared<ItemAttributes>([&](ItemAttributes& i) { X })
 
 class EnemyCheck;
 

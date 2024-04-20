@@ -995,8 +995,8 @@ class Table {
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
     ar << bounds;
-    for (Vec2 v : bounds)
-      ar << (*this)[v];
+    for (Vec2 vAbs : bounds)
+      ar << mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
   }
 
 #ifdef MEM_USAGE_TEST
@@ -1011,8 +1011,8 @@ class Table {
   void load(Archive& ar, const unsigned int version) {
     ar >> bounds;
     mem.reset(new T[bounds.width() * bounds.height()]);
-    for (Vec2 v : bounds)
-      ar >> (*this)[v];
+    for (Vec2 vAbs : bounds)
+      ar >> mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
   }
 
   SERIALIZATION_CONSTRUCTOR(Table)

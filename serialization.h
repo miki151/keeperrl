@@ -71,7 +71,25 @@ typedef cereal::BinaryOutputArchive OutputArchive;
   template void T<__VA_ARGS__>::serialize(OutputArchive&, unsigned);
 #endif
 
-#define REGISTER_TYPE(M) CEREAL_REGISTER_TYPE(M)
+#define CONCAT(a, b) CONCAT_INNER(a, b)
+#define CONCAT_INNER(a, b) a ## b
+
+#define UNIQUE_NAME(base) CONCAT(base, __COUNTER__)
+
+#define REGISTER_TYPE(M)\
+namespace cereal {                                                     \
+namespace detail {                                                     \
+template <>                                                            \
+struct binding_name<M>                                       \
+{                                                                      \
+  CEREAL_STATIC_CONSTEXPR char const * name() { return #M; } \
+};                                                                     \
+} } /* end namespaces */                                               \
+static ConstructorFunction UNIQUE_NAME(Register)(\
+  [] {\
+  cereal::detail::OutputBindingCreator<cereal::BinaryOutputArchive, M> b;\
+  cereal::detail::InputBindingCreator<cereal::BinaryInputArchive, M> a;\
+  });
 
 #define SERIAL(X) X
 

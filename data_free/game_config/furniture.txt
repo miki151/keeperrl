@@ -783,13 +783,16 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "cactus"
   destroyedRemains = none
   summonedElement = none
+  tickType = none
 }
 "PALM_TREE" inherit "CANIF_TREE"
 {
+  tickType = none
   viewId = { "palm_tree" }
 }
 "GUM_TREE" inherit "CANIF_TREE"
 {
+  tickType = none
   viewId = { "tree_gum" }
 }
 "GIANT_MUSHROOM" inherit "CANIF_TREE"
@@ -2099,10 +2102,10 @@ Def Boulder(Id) {
   freezeTo = "FLOOR"
   fillPit = "MAGMA"
   canSilentlyReplace = true
-  tickType = Effect {
-    Area 1 Chance 0.03 SetFurnitureOnFire
-    Chance 0.1 SetFurnitureOnFire
-    Chance 0.002 SoundEffect { "LAVA_AMBIENT" 0.2 }
+  tickType = Effect Chance 0.1 {
+    Area 1 Chance 0.3 SetFurnitureOnFire
+    SetFurnitureOnFire
+    Chance 0.02 SoundEffect { "LAVA_AMBIENT" 0.2 }
   }
   movementSet = {
     traits = { FLY }

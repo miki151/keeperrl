@@ -103,7 +103,8 @@ class Level : public OwnedObject<Level> {
   vector<Position> getAllLandingPositions() const;
 
   void addTickingSquare(Vec2 pos);
-  void addTickingFurniture(Vec2 pos);
+  void addTickingFurniture(Vec2 pos, FurnitureLayer);
+  void addBurningFurniture(Vec2 pos, FurnitureLayer);
 
   void tick();
 
@@ -184,7 +185,8 @@ class Level : public OwnedObject<Level> {
   Table<bool> SERIAL(unavailable);
   LandingSquares SERIAL(landingSquares);
   set<Vec2> SERIAL(tickingSquares);
-  set<Vec2> SERIAL(tickingFurniture);
+  set<tuple<Vec2, FurnitureLayer, double>> tickingFurniture;
+  HashSet<pair<Vec2, FurnitureLayer>> burningFurniture;
   void placeCreature(Creature*, Vec2 pos);
   void unplaceCreature(Creature*, Vec2 pos);
   vector<Creature*> SERIAL(creatures);
@@ -223,4 +225,7 @@ class Level : public OwnedObject<Level> {
   void forEachEffect(Vec2, TribeId, Fun);
   void placeSwarmer(Vec2, Creature*);
   void unplaceSwarmer(Vec2, Creature*);
+  void updateTickingFurniture();
 };
+
+CEREAL_CLASS_VERSION(Level, 1)

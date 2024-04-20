@@ -27,7 +27,6 @@
 class Level;
 class Attack;
 class Fire;
-class ItemAttributes;
 class Effect;
 struct CorpseInfo;
 struct WeaponInfo;
@@ -44,7 +43,8 @@ using LastingOrBuff = variant<LastingEffect, BuffId>;
 
 class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<Item> {
   public:
-  Item(const ItemAttributes&, const ContentFactory*);
+  Item(SItemAttributes, const ContentFactory*);
+  void setAttributes(SItemAttributes);
   virtual ~Item();
   PItem getCopy(const ContentFactory* f) const;
 
@@ -153,7 +153,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getModifiers(const ContentFactory*, bool shorten = false) const;
   string getVisibleName(bool plural) const;
   string getBlindName(bool plural) const;
-  HeapAllocated<ItemAttributes> SERIAL(attributes);
+  SItemAttributes SERIAL(attributes);
   optional<UniqueEntity<Creature>::Id> SERIAL(shopkeeper);
   HeapAllocated<Fire> SERIAL(fire);
   bool SERIAL(canEquipCache);
@@ -163,3 +163,5 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   vector<ItemAbility> SERIAL(abilityInfo);
   void updateAbility(const ContentFactory*);
 };
+
+CEREAL_CLASS_VERSION(Item, 1)
