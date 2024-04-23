@@ -49,7 +49,7 @@ End
             }
             Height 10 {}
             Horizontal {
-              Using "gender_list" List(HORIZONTAL, GenderButton())
+              Using "gender_list" List(HORIZONTAL, MarginRight(5, GenderButton()))
             }
             Height 5 {}
             Using "gender_description" Label()
@@ -57,13 +57,14 @@ End
             Height 27 Horizontal {
               Using "first_name" MarginTop(1, Label("First name: "))
               Using "settlement_name" MarginTop(1, Label("Settlement name: "))
-              Width 300{
-                Frame(ColorId LIGHT_GRAY)
-                MouseOver Frame(ColorId WHITE)
-                MarginTop(2, MarginRight(5, MarginLeft(5, Using "first_name" Label())))
-                MarginTop(2, MarginRight(5, MarginLeft(5, Using "settlement_name" Label())))
-                Using "edit_first_name" Button()
-              }
+              If "edit_first_name"
+                Width 300{
+                  Frame(ColorId LIGHT_GRAY)
+                  MouseOver Frame(ColorId WHITE)
+                  MarginTop(2, MarginRight(5, MarginLeft(5, Using "first_name" Label())))
+                  MarginTop(2, MarginRight(5, MarginLeft(5, Using "settlement_name" Label())))
+                  Using "edit_first_name" Button()
+                }
               Using "reload_first_name" StandardButtonNotFocusable(Label(text = "🔄", font = SYMBOL_FONT))
             }
             Height 30 {}

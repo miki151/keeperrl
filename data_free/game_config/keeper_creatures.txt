@@ -246,3 +246,25 @@
   tribeAlignment = LAWFUL
   immigrantGroups = { "white_stables_no_pop" }
 }
+
+"94_adoxie_adventurer"
+{
+  baseName = "Adventurer"
+  creatureId = { "ADOXIE_ADVENTURER" }
+  tribeAlignment = EVIL
+  description = "Play as the Evil God Adoxie, and wipe the floor with silly mortals."
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
+  immigrantGroups = {}
+  technology = {}
+  zLevelGroups = { "basic" }
+  initialTech = { }
+  buildingGroups = {}
+  workshopGroups = {}
+  minionTraits = {LEADER WORKER}
+  maxPopulation = 1
+  startingBase = insideMountain {12 12} "adoxie_adventurer"
+  prisoners = false
+  unlock = "adoxie"
+  requireQuartersForExp = false
+ # enemyAggression = false
+}

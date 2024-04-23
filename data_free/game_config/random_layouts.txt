@@ -595,6 +595,11 @@ End
   )
 }
 
+"adoxie_adventurer" {
+    CellularAutomaton(Set("clear_middle", "connect"), 0.75)
+    Inside(2, CellularAutomaton(Set("lava"), 0.75))
+}
+
 Def DungeonContent()
   Place (
     (
