@@ -124,6 +124,8 @@ class Game : public OwnedObject<Game> {
   unordered_set<string> SERIAL(effectFlags);
   vector<string> SERIAL(zLevelGroups);
 
+  void clearPlayerControl();
+
   private:
   void tick(GlobalTime);
   bool updateModel(Model*, double timeDiff, optional<milliseconds> endTime);
