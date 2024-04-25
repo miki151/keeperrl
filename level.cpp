@@ -139,12 +139,8 @@ PLevel Level::create(SquareArray s, FurnitureArray f, Model* m,
     square->onAddedToLevel(Position(pos, ret.get()));
     if (optional<StairKey> link = square->getLandingLink())
       ret->landingSquares[*link].push_back(Position(pos, ret.get()));
-    for (auto layer : ENUM_ALL(FurnitureLayer)) {
+    for (auto layer : ENUM_ALL(FurnitureLayer))
       ret->furniture->getBuilt(layer).shrinkToFit();
-      if (auto f = ret->furniture->getBuilt(layer).getReadonly(pos))
-        if (f->isTicking())
-          ret->addTickingFurniture(pos, layer);
-    }
   }
   for (VisionId vision : ENUM_ALL(VisionId))
     (*ret->fieldOfView)[vision] = FieldOfView(ret.get(), vision, factory);
