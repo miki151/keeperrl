@@ -577,9 +577,31 @@ void Level::tick() {
   for (Vec2 pos : tickingSquares)
     squares->getWritable(pos)->tick(Position(pos, this));
   for (auto& elem : tickingFurniture)
-    if (auto f = furniture->getBuilt(std::get<1>(elem)).getWritable(std::get<0>(elem)))
-      if (Random.chance(std::get<2>(elem)))
+    if (auto f = furniture->getBuilt(std::get<1>(elem)).getWritable(std::get<0>(elem))) {
+      auto chance = std::get<2>(elem);
+      if (f->getType() == FurnitureType("UNDERGROUND_WATER"))
+        chance = 0.002;
+      if (f->getType() == FurnitureType("ENCHANTED_WATER"))
+        chance = 0.00002;
+      if (f->getType() == FurnitureType("MAGMA"))
+        chance = 0.1;
+      if (f->getType() == FurnitureType("SWAMPGRASS"))
+        chance = 0.006;
+      if (f->getType() == FurnitureType("GHOST_SPAWN"))
+        chance = 0.002;
+      if (f->getType() == FurnitureType("CANIF_TREE"))
+        chance = 0.002;
+      if (f->getType() == FurnitureType("CHICKEN_COOP"))
+        chance = 0.05;
+      if (f->getType() == FurnitureType("PIGSTY"))
+        chance = 0.05;
+      if (f->getType() == FurnitureType("COW_PEN"))
+        chance = 0.05;
+      if (f->getType() == FurnitureType("HELL_MOUNTAIN"))
+        chance = 0.0005;
+      if (Random.chance(chance))
         f->tick(Position(std::get<0>(elem), this), std::get<1>(elem));
+    }
   for (auto& elem : burningFurniture)
     if (auto f = furniture->getBuilt(std::get<1>(elem)).getWritable(std::get<0>(elem)))
       f->updateFire(Position(std::get<0>(elem), this), std::get<1>(elem));
