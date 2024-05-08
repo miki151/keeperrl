@@ -16,7 +16,7 @@ class ContentFactory;
 
 class CollectiveBuilder {
   public:
-  CollectiveBuilder(const CollectiveConfig&, TribeId);
+  CollectiveBuilder(const CollectiveConfig&, TribeId, string enemyId);
   CollectiveBuilder& setModel(Model*);
   CollectiveBuilder& setLevel(Level*);
   CollectiveBuilder& addCreature(Creature*, EnumSet<MinionTrait>);
@@ -31,6 +31,8 @@ class CollectiveBuilder {
   PCollective build(const ContentFactory*) const;
   bool hasCreatures() const;
   optional<CollectiveName> generateName() const;
+
+  string enemyId;
 
   private:
   optional<CollectiveName> getCollectiveName();

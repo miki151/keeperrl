@@ -19,7 +19,7 @@ int getZLevelCombatExp(int depth) {
 static EnemyInfo getEnemy(EnemyId id, ContentFactory* contentFactory) {
   auto enemy = EnemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,
       contentFactory->buildingInfo, {}).get(id);
-  enemy.settlement.collective = new CollectiveBuilder(enemy.config, enemy.settlement.tribe);
+  enemy.settlement.collective = new CollectiveBuilder(enemy.config, enemy.settlement.tribe, id.data());
   return enemy;
 }
 
@@ -92,8 +92,8 @@ LevelMakerResult getUpLevel(RandomGen& random, ContentFactory* contentFactory,
       if (enemyInfo.first.contains(depth) && random.chance(enemyInfo.second.probability))
         for (int it : Range(Random.get(enemyInfo.second.count))) {
           enemies.push_back(getEnemy(enemyInfo.second.id, contentFactory));
-          enemies.back().settlement.collective = new CollectiveBuilder(enemies.back().config,
-              enemies.back().settlement.tribe);
+         enemies.back().settlement.collective = new CollectiveBuilder(enemies.back().config,
+              enemies.back().settlement.tribe, enemyInfo.second.id.data());
         }
   auto res = chooseResourceCounts(random, contentFactory->resources, -depth);
   auto maker = LevelMaker::upLevel(pos, biomeInfo, enemies.transform([](auto e) {return e.settlement; }), res);
