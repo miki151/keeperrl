@@ -1518,7 +1518,8 @@ void Creature::tickCompanions() {
   PROFILE;
   for (auto& summonsType : companions)
     for (auto elem : copyOf(summonsType.creatures)) {
-      if (elem->isDead())
+      // elem might be null, perhaps after retirement?
+      if (!elem || elem->isDead())
         summonsType.creatures.removeElement(elem);
       else if (summonsType.statsBase) { // update the spirit's attributes
         auto base = getAttr(*summonsType.statsBase);
