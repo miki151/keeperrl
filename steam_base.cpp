@@ -24,7 +24,7 @@ string formatError(int value, const pair<int, const char*>* strings, int count) 
     if (strings[n].first == value)
       return strings[n].second;
   char buffer[64];
-  sprintf(buffer, "unknown (%d)", value);
+  snprintf(buffer, sizeof(buffer), "unknown (%d)", value);
   return buffer;
 }
 
