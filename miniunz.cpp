@@ -117,7 +117,7 @@ int makedir (
     return 0;
 
   buffer = (char*)malloc(len+1);
-  strcpy(buffer,newdir);
+  strlcpy(buffer,newdir,len+1);
 
   if (buffer[len-1] == '/') {
     buffer[len-1] = '\0';
