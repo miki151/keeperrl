@@ -48,6 +48,7 @@
 #include "player_control.h"
 #include "portals.h"
 #include "effect_type.h"
+#include "content_factory.h"
 
 template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
@@ -81,25 +82,28 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   }
 }
 
+static Effects::Chance* getChanceTick(FurnitureTickType& t) {
+  return t.visit<Effects::Chance*>(
+    [&](auto&) { return nullptr;},
+    [&](Effect& effect) {
+      return effect.effect->visit<Effects::Chance*>(
+          [&](Effects::Chance& c) {
+            return &c;
+          },
+          [&](auto&) { return nullptr;}
+      );
+    }
+  );
+}
+
 void Level::updateTickingFurniture() {
   for (auto v : squares->getBounds())
     for (auto layer : ENUM_ALL(FurnitureLayer))
       if (auto f = furniture->getBuilt(layer).getReadonly(v)) {
         if (auto t = f->getTickType()) {
-          double chance = 1.0;
-          t->visit<void>(
-              [&](const auto&) {},
-              [&](const Effect& effect) {
-                effect.effect->visit(
-                    [&](const Effects::Chance& c) {
-                      chance = c.value;
-                      furniture->getBuilt(layer).getWritable(v)->tickType = FurnitureTickType(std::move(*c.effect));
-                    },
-                    [&](const auto&) {}
-                );
-              }
-          );
-          tickingFurniture.insert(make_tuple(v, layer, chance));
+          if (auto chance = getChanceTick(*t))
+            furniture->getBuilt(layer).getWritable(v)->tickType = FurnitureTickType(std::move(*chance->effect));
+          tickingFurniture.insert(make_pair(make_pair(v, layer), -1));
         }
         if ((f->getFire() && f->getFire()->isBurning()) || f->hasBlood())
           burningFurniture.insert(make_pair(v, layer));
@@ -139,12 +143,8 @@ PLevel Level::create(SquareArray s, FurnitureArray f, Model* m,
     square->onAddedToLevel(Position(pos, ret.get()));
     if (optional<StairKey> link = square->getLandingLink())
       ret->landingSquares[*link].push_back(Position(pos, ret.get()));
-    for (auto layer : ENUM_ALL(FurnitureLayer)) {
+    for (auto layer : ENUM_ALL(FurnitureLayer))
       ret->furniture->getBuilt(layer).shrinkToFit();
-      if (auto f = ret->furniture->getBuilt(layer).getReadonly(pos))
-        if (f->isTicking())
-          ret->addTickingFurniture(pos, layer);
-    }
   }
   for (VisionId vision : ENUM_ALL(VisionId))
     (*ret->fieldOfView)[vision] = FieldOfView(ret.get(), vision, factory);
@@ -569,7 +569,7 @@ void Level::addTickingSquare(Vec2 pos) {
 }
 
 void Level::addTickingFurniture(Vec2 pos, FurnitureLayer layer) {
-  tickingFurniture.insert(make_tuple(pos, layer, 1.0));
+  tickingFurniture[make_pair(pos, layer)] = 1.0;
 }
 
 void Level::addBurningFurniture(Vec2 pos, FurnitureLayer layer) {
@@ -580,10 +580,19 @@ void Level::tick() {
   PROFILE_BLOCK("Level::tick");
   for (Vec2 pos : tickingSquares)
     squares->getWritable(pos)->tick(Position(pos, this));
+  auto& furnitureFactory = getGame()->getContentFactory()->furniture;
   for (auto& elem : tickingFurniture)
-    if (auto f = furniture->getBuilt(std::get<1>(elem)).getWritable(std::get<0>(elem)))
-      if (Random.chance(std::get<2>(elem)))
-        f->tick(Position(std::get<0>(elem), this), std::get<1>(elem));
+    if (auto f = furniture->getBuilt(elem.first.second).getWritable(elem.first.first)) {
+      auto& chance = elem.second;
+      if (chance <= 0)
+        if (auto tickType = furnitureFactory.getData(f->getType()).tickType)
+          if (auto chanceTick = getChanceTick(*tickType))
+            chance = chanceTick->value;
+      if (chance <= 0)
+        chance = 1;
+      if (Random.chance(chance))
+        f->tick(Position(elem.first.first, this), elem.first.second);
+    }
   for (auto& elem : burningFurniture)
     if (auto f = furniture->getBuilt(std::get<1>(elem)).getWritable(std::get<0>(elem)))
       f->updateFire(Position(std::get<0>(elem), this), std::get<1>(elem));

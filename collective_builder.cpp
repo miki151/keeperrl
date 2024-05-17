@@ -13,8 +13,8 @@
 #include "view_object.h"
 #include "level.h"
 
-CollectiveBuilder::CollectiveBuilder(const CollectiveConfig& cfg, TribeId t)
-    : config(cfg), tribe(t) {
+CollectiveBuilder::CollectiveBuilder(const CollectiveConfig& cfg, TribeId t, string enemyId)
+    : enemyId(enemyId), config(cfg), tribe(t) {
 }
 
 CollectiveBuilder& CollectiveBuilder::setLevel(Level* l) {
@@ -82,6 +82,8 @@ optional<CollectiveName> CollectiveBuilder::generateName() const {
       ret.location = *locationName;
     } else if (auto leaderName = leader->getName().first())
       ret.shortened = *leaderName;
+    else
+      ret.shortened = leader->getName().bare();
     if (raceName)
       ret.race = *raceName;
     else

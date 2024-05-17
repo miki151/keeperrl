@@ -4426,6 +4426,13 @@ End
     attr = append {
       SPELL_DAMAGE 60
     }
+    spells = {}
+    companions = {
+      { count = 1 spawnAway = false statsBase = SPELL_DAMAGE summonFreq = 0.02 creatures = { "ADOXIE_LEFT_HAND" } }
+      { count = 1 spawnAway = false statsBase = SPELL_DAMAGE summonFreq = 0.02 creatures = { "ADOXIE_HAND_RIGHT" } }
+      { count = 1 spawnAway = false statsBase = SPELL_DAMAGE summonFreq = 0.02 creatures = { "ADOXIE_FOOT_LEFT" } }
+      { count = 1 spawnAway = false statsBase = SPELL_DAMAGE summonFreq = 0.02 creatures = { "ADOXIE_FOOT_RIGHT" } }
+    }
     body = {
       type = NonHumanoid HUGE
       bodyParts = {
@@ -4437,7 +4444,7 @@ End
         TORSO {{{ Intrinsic { "fist_attack" } "spell" 1 {
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}}
       }
-      material = SPIRIT
+      material = SPIRIT_WITH_BRAIN
       drops = {
         { "AdoxieEye" } 1
       }

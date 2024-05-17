@@ -1612,13 +1612,8 @@ class PlaceCollective : public LevelMaker {
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     auto territory = builder->toGlobalCoordinates(area.getAllSquares()
         .filter([&](Vec2 pos) { return predicate.apply(builder, pos); }));
-    auto getName = [&] {
-      if (auto name = collective->generateName())
-        return name->full;
-      return "noname"_s;
-    };
     if (!collective->hasCentralPoint()) {
-      CHECK(!territory.empty()) << "Tried to place " << getName() << " on an empty territory";
+      CHECK(!territory.empty()) << "Tried to place " << collective->enemyId << " on an empty territory";
       collective->setCentralPoint(Vec2::getCenterOfWeight(territory));
     }
     collective->addArea(territory);
@@ -2887,7 +2882,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
               contentFactory.layoutMapping.at(LayoutMappingId("default")), *keeperTribe),
           std::move(startingPosMaker)
       );
-      predicate = Predicate::canEnter({MovementTrait::WALK});
+      predicate = keeperInfo->insideMountain ? (Predicate::type(FurnitureType("MOUNTAIN2")) || Predicate::type(FurnitureType("MOUNTAIN")))
+          : Predicate::canEnter({MovementTrait::WALK});
       size = keeperInfo->size;
     }
     startingPos = startingPosMaker.get();

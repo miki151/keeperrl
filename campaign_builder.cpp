@@ -159,6 +159,7 @@ bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campai
     return true;
   for (int i = 0; villains.size() < count; ++i)
     villains.push_back(villains[i]);
+  CHECK(count >= 0);
   if (villains.size() > count)
     villains.resize(count);
   for (int i : All(villains)) {
@@ -232,7 +233,7 @@ bool CampaignBuilder::placeVillains(const ContentFactory* contentFactory, Campai
     blocked[v] = true;
   auto initialRadius = contentFactory->campaignInfo.initialRadius;
   if (!placeVillains(contentFactory, campaign, blocked, shuffle(random, regularMainVillains),
-      counts.numMain - numAlwaysPresent, Range(0, 1000)))
+      max(0, counts.numMain - numAlwaysPresent), Range(0, 1000)))
     return false;
   auto allLesser = shuffle(random, getVillains(villainGroups, VillainType::LESSER));
   if (!placeVillains(contentFactory, campaign, blocked, allLesser.getPrefix(3), min(3, counts.numLesser), Range(1, initialRadius)))

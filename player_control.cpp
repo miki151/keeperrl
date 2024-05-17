@@ -372,7 +372,8 @@ void PlayerControl::leaveControl() {
   for (auto team : allTeams) {
     // a creature may die when landing and be removed from the team so copy the members vector
     for (Creature* c : copyOf(getTeams().getMembers(team)))
-      if (c->getPosition().getModel() != getModel() && !c->isAffected(LastingEffect::STUNNED)) {
+      // c might be dead if it was just killed which caused a crash if it was riding a steed
+      if (!c->isDead() && c->getPosition().getModel() != getModel() && !c->isAffected(LastingEffect::STUNNED)) {
         getGame()->transferCreature(c, getModel());
         if (c->isAffected(LastingEffect::RIDER))
           if (auto steed = collective->getSteedOrRider(c))

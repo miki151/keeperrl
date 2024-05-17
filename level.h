@@ -185,7 +185,7 @@ class Level : public OwnedObject<Level> {
   Table<bool> SERIAL(unavailable);
   LandingSquares SERIAL(landingSquares);
   set<Vec2> SERIAL(tickingSquares);
-  set<tuple<Vec2, FurnitureLayer, double>> tickingFurniture;
+  HashMap<pair<Vec2, FurnitureLayer>, double> tickingFurniture;
   HashSet<pair<Vec2, FurnitureLayer>> burningFurniture;
   void placeCreature(Creature*, Vec2 pos);
   void unplaceCreature(Creature*, Vec2 pos);

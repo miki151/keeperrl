@@ -27,6 +27,10 @@
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED TIED_UP ENTANGLED }
 }
 
+"SPIRIT_WITH_BRAIN" inherit "SPIRIT" {
+  hasBrain = true
+}
+
 "FIRE" {
   name = "fire"
   deathDescription = "destroyed"

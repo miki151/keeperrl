@@ -73,7 +73,7 @@ ModelBuilder::LevelMakerMethod ModelBuilder::getMaker(LevelType type) {
       return [this] (RandomGen& random, SettlementInfo info, Vec2, int difficulty) {
         auto& biomeInfo = contentFactory->biomeInfo.at(BiomeId("OUTBACK"));
         auto natives = enemyFactory->get(EnemyId("NATIVE_VILLAGE"));
-        natives.settlement.collective = new CollectiveBuilder(natives.config, natives.settlement.tribe);
+        natives.settlement.collective = new CollectiveBuilder(natives.config, natives.settlement.tribe, "native village");
         return LevelMaker::topLevel(random, {info, natives.settlement}, 100, difficulty, none, none, biomeInfo, ResourceCounts{},
             *contentFactory);
       };
@@ -286,7 +286,7 @@ SettlementInfo& ModelBuilder::processLevelConnection(Model* model, EnemyInfo& en
     if (auto extra = enemyInfo.getReferenceMaybe<LevelConnection::ExtraEnemy>()) {
       for (auto& enemy : extra->enemyInfo) {
         enemy.settlement.collective =
-            new CollectiveBuilder(enemy.config, enemy.settlement.tribe);
+            new CollectiveBuilder(enemy.config, enemy.settlement.tribe, !!enemy.id ? enemy.id->data() : "unknown");
         extraEnemies.push_back(enemy);
       }
     }
@@ -318,7 +318,7 @@ PModel ModelBuilder::tryModel(int width, int difficulty, vector<EnemyInfo> enemy
   vector<SettlementInfo> topLevelSettlements;
   vector<EnemyInfo> extraEnemies;
   for (auto& elem : enemyInfo) {
-    elem.settlement.collective = new CollectiveBuilder(elem.config, elem.settlement.tribe);
+    elem.settlement.collective = new CollectiveBuilder(elem.config, elem.settlement.tribe, !!elem.id ? elem.id->data() : "unknown");
     topLevelSettlements.push_back(processLevelConnection(model.get(), elem, extraEnemies, 0, true, difficulty));
   }
   append(enemyInfo, extraEnemies);

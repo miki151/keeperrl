@@ -270,9 +270,10 @@ void Campaign::refreshInfluencePos(const ContentFactory* f) {
     if (siteOwners.count(e.pos))
       continue;
     siteOwners[e.pos] = e.owner;
-    for (auto v : e.pos.neighbors4())
-      if (v.inRectangle(sites.getBounds()) && !sites[v].blocked && !siteOwners.count(v))
-        q.push(QueueElem({v, e.dist + 3 * noiseTable[v], e.owner}));
+    if (e.owner != Vec2(0, 0) || e.dist < 15)
+      for (auto v : e.pos.neighbors4())
+        if (v.inRectangle(sites.getBounds()) && !sites[v].blocked && !siteOwners.count(v))
+          q.push(QueueElem({v, e.dist + 3 * noiseTable[v], e.owner}));
   }
   for (auto& elem : siteOwners)
     if (elem.second != Vec2(0, 0))

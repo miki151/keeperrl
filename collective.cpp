@@ -440,6 +440,7 @@ void Collective::makeConqueredRetired(Collective* conqueror) {
   auto control = VillageControl::copyOf(this, dynamic_cast<VillageControl*>(conqueror->control.get()));
   control->updateAggression(EnemyAggressionLevel::NONE);
   setControl(std::move(control));
+  getGame()->clearPlayerControl();
   name = conqueror->name;
   config = conqueror->config;
   discoverable = conqueror->discoverable;

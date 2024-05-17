@@ -111,10 +111,10 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
   model->addCreature(std::move(avatarInfo.playerCreature));
   auto& keeperInfo = avatarInfo.creatureInfo;
-  auto builder = CollectiveBuilder(CollectiveConfig::keeper(
+ auto builder = CollectiveBuilder(CollectiveConfig::keeper(
           TimeInterval(keeperInfo.immigrantInterval), keeperInfo.maxPopulation, keeperInfo.populationString,
           keeperInfo.prisoners, ConquerCondition::KILL_LEADER, keeperInfo.requireQuartersForExp),
-      keeperRef->getTribeId())
+      keeperRef->getTribeId(), "keeper collective")
       .setModel(model)
       .addCreature(keeperRef, keeperInfo.minionTraits);
   if (avatarInfo.chosenBaseName)
@@ -954,10 +954,14 @@ void Game::considerAchievement(const GameEvent& event) {
   );
 }
 
+void Game::clearPlayerControl() {
+  playerControl = nullptr;
+}
+
 void Game::addEvent(const GameEvent& event) {
-  if (event.contains<EventInfo::CreatureMoved>() && !!playerControl) {
+  if (event.contains<EventInfo::CreatureMoved>() && !!playerControl)
     playerControl->onEvent(event); // shortcut to optimize because only PlayerControl cares about this event
-  } else
+  else
     for (Vec2 v : models.getBounds())
       if (models[v])
         models[v]->addEvent(event);
