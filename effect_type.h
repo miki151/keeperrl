@@ -412,6 +412,7 @@ struct AllCreatures : GenericModifierEffect {
 };
 using Achievement = AchievementId;
 SIMPLE_EFFECT(SetFurnitureOnFire);
+SIMPLE_EFFECT(ClaimTile);
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
   X(Teleport, 1)\
@@ -513,6 +514,7 @@ SIMPLE_EFFECT(SetFurnitureOnFire);
   X(ModifyFurniture, 97)\
   X(DestroyWalls, 98)\
   X(SetFurnitureOnFire, 99)\
+  X(ClaimTile, 100)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

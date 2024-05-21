@@ -961,6 +961,23 @@ static bool apply(const Effects::SetFurnitureOnFire& a, Position pos, Creature* 
   return ret;
 }
 
+static string getName(const Effects::ClaimTile&, const ContentFactory*) {
+  return "claim tile";
+}
+
+static string getDescription(const Effects::ClaimTile&, const ContentFactory*) {
+  return "Claims the tile as the player's territory";
+}
+
+static bool apply(const Effects::ClaimTile& a, Position pos, Creature* attacker) {
+  if (auto col = pos.getGame()->getPlayerCollective())
+    if (!col->getTerritory().contains(pos) && col->canClaimSquare(pos)) {
+      col->claimSquare(pos);
+      return true;
+    }
+  return false;
+}
+
 static string getName(const Effects::Fire&, const ContentFactory*) {
   return "fire";
 }
