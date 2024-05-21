@@ -195,7 +195,8 @@ void GuiBuilder::onTutorialClicked(size_t hash, TutorialHighlight state) {
 }
 
 SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, const optional<TutorialInfo>& tutorial) {
-  auto getValue = [this] (CollectiveInfo::Button button, int num, const optional<TutorialInfo>& tutorial) {
+// Caching messes button overlays on the deck, so disable
+//  auto getValue = [this] (CollectiveInfo::Button button, int num, const optional<TutorialInfo>& tutorial) {
     auto line = WL(getListBuilder);
     line.addElem(WL(viewObject, button.viewId), 35);
     auto tutorialHighlight = button.tutorialHighlight;
@@ -233,8 +234,8 @@ SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, const
         WL(uiHighlightFrameFilled, [=] { return getActiveButton() == num; }),
         tutorialElem,
         line.buildHorizontalList())));
-  };
-  return cache->get(getValue, THIS_LINE, button, num, tutorial);
+//  };
+//  return cache->get(getValue, THIS_LINE, button, num, tutorial);
 }
 
 static optional<int> getFirstActive(const vector<CollectiveInfo::Button>& buttons, int begin) {
@@ -3348,7 +3349,7 @@ SGuiElem GuiBuilder::drawBuildingsOverlay(const vector<CollectiveInfo::Button>& 
     elems.push_back(WL(setWidth, 350, WL(conditionalStopKeys,
           WL(miniWindow, WL(stack,
               WL(keyHandler, [=] { clearActiveButton(); }, Keybinding("EXIT_MENU"), true),
-              WL(margins, lines.buildVerticalList(), margin))),
+              WL(margins, WL(scrollable, lines.buildVerticalList(), &minionButtonsScroll, &scrollbarsHeld, 3), margin))),
           [this, groupName] {
               return collectiveTab == CollectiveTab::BUILDINGS && activeGroup == groupName;
           })));

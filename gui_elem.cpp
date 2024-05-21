@@ -2791,7 +2791,7 @@ class ScrollBar : public GuiLayout {
 
 class Scrollable : public GuiElem {
   public:
-  Scrollable(SGuiElem c, ScrollPosition* scrollP, Clock* cl) : content(c), scrollPos(scrollP), clock(cl) {
+  Scrollable(SGuiElem c, ScrollPosition* scrollP, Clock* cl, int topMargin) : content(c), scrollPos(scrollP), clock(cl), topMargin(topMargin) {
   }
 
   double getScrollPos() {
@@ -2804,10 +2804,9 @@ class Scrollable : public GuiElem {
   }
 
   virtual void render(Renderer& r) override {
-    Rectangle visible(0, getBounds().top(), r.getSize().x, getBounds().bottom());
-    r.setScissor(visible);
+    r.setScissor(Rectangle(0, getBounds().top() - topMargin, r.getSize().x, getBounds().bottom()));
     onRefreshBounds();
-    content->renderPart(r, visible);
+    content->renderPart(r, Rectangle(0, getBounds().top(), r.getSize().x, getBounds().bottom()));
     r.setScissor(none);
   }
 
@@ -2841,6 +2840,7 @@ class Scrollable : public GuiElem {
   SGuiElem content;
   ScrollPosition* scrollPos;
   Clock* clock;
+  int topMargin;
 };
 
 Texture& GuiFactory::get(TexId id) {
@@ -2981,13 +2981,13 @@ class GuiContainScrollPos : public GuiElem {
 
 const int scrollbarWidth = 22;
 
-SGuiElem GuiFactory::scrollable(SGuiElem content, ScrollPosition* scrollPos, int* held) {
+SGuiElem GuiFactory::scrollable(SGuiElem content, ScrollPosition* scrollPos, int* held, int topMargin) {
   if (!scrollPos) {
     auto cont = new GuiContainScrollPos();
     scrollPos = &cont->pos;
     content = stack(SGuiElem(cont), std::move(content));
   }
-  SGuiElem scrollable(new Scrollable(content, scrollPos, clock));
+  SGuiElem scrollable(new Scrollable(content, scrollPos, clock, topMargin));
   int scrollBarMargin = get(TexId::SCROLL_UP).getSize().y;
   SGuiElem bar(new ScrollBar(
         getScrollButton(), content, getScrollButtonSize(), scrollBarMargin, scrollPos, held, clock));
