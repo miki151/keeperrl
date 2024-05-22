@@ -66,7 +66,7 @@
       "Outdoor building with arrowslits." }
   }
 
-  "structure" modify append
+Def Stairs()
   {
     { Furniture {{ "UP_STAIRS" }                  }              "Up stairs"       "Stairs"
       "Build to reach higher z-levels." }
@@ -86,6 +86,12 @@
     { Furniture {{ "DOWN_STAIRS_CARPET" }  "GOLD" 10       }              "Down stairs"       "Stairs"
       "Build to reach deeper z-levels." }
   }
+End
+
+"structure" modify append Stairs()
+"structure_necro" modify append Stairs()
+"structure_dwarf" modify append Stairs()
+
   "doors"
   {
     { Furniture {{ "WOOD_DOOR" }                  "WOOD" 5 }       "Wooden door"       "Doors"
