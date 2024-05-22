@@ -766,8 +766,10 @@ void MainLoop::showMods() {
         return 2;
     };
     sort(allMods.begin(), allMods.end(), [getState](const ModInfo& m1, const ModInfo& m2) {
-      return std::forward_as_tuple(getState(m1), m1.name)
-           < std::forward_as_tuple(getState(m2), m2.name);
+      int m1up = -m1.upvotes;
+      int m2up = -m2.upvotes;
+      return std::forward_as_tuple(getState(m1), m1up, m1.name)
+           < std::forward_as_tuple(getState(m2), m2up, m2.name);
     });
     auto modLists = vector<ScriptedUIDataElems::List>(4);
     for (int i : All(allMods)) {
