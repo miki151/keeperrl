@@ -25,7 +25,7 @@ public:
   FXRenderer(const FXRenderer &) = delete;
   void operator=(const FXRenderer &) = delete;
 
-  void setView(float zoom, float offsetX, float offsetY, int w, int h);
+  void setView(float zoomX, float zoomY, float offsetX, float offsetY, int w, int h);
   void prepareOrdered();
 
   // TODO: span<> would be very useful
@@ -41,7 +41,8 @@ public:
 
   private:
   struct View {
-    float zoom;
+    float zoomX;
+    float zoomY;
     FVec2 offset;
     IVec2 size;
   };

@@ -24,7 +24,7 @@ class FXViewManager {
   FXViewManager(const FXViewManager&) = delete;
   void operator=(const FXViewManager&) = delete;
 
-  void beginFrame(Renderer&, float zoom, float ox, float oy);
+  void beginFrame(Renderer&, float zoomX, float zoomY, float ox, float oy);
   void finishFrame();
 
   void addEntity(GenericId, float x, float y);
@@ -52,5 +52,6 @@ class FXViewManager {
   std::unique_ptr<EntityMap> entities;
   fx::FXManager* fxManager = nullptr;
   fx::FXRenderer* fxRenderer = nullptr;
-  float m_zoom = 1.0f;
+  float m_zoomX = 1.0f;
+  float m_zoomY = 1.0f;
 };
