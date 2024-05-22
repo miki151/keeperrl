@@ -104,7 +104,7 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
         targetLevel = newLevel.level;
       } else
         targetLevel = pos.getModel()->getMainLevel(levelIndex - 1);
-      addStairs(pos, targetLevel, FurnitureType("DOWN_STAIRS"));
+      addStairs(pos, targetLevel, f->getOtherStairs().value_or(FurnitureType("DOWN_STAIRS")));
       break;
     }
     case FurnitureOnBuilt::DOWN_STAIRS: {
@@ -131,7 +131,7 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
           c->setCombatExperience(getZLevelCombatExp(levelIndex));
       } else
         targetLevel = pos.getModel()->getMainLevel(levelIndex + 1);
-      addStairs(pos, targetLevel, FurnitureType("UP_STAIRS"));
+      addStairs(pos, targetLevel, f->getOtherStairs().value_or(FurnitureType("UP_STAIRS")));
       break;
     }
     case FurnitureOnBuilt::PORTAL:

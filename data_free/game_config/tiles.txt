@@ -134,6 +134,10 @@
 { "flower3" "." ColorId LIGHT_BLUE }
 { viewId = "down_staircase" symbol = "➘" color = ColorId ALMOST_WHITE isSymbolFont = true highlightAbove = true }
 { viewId = "up_staircase" symbol = "➚" color = ColorId ALMOST_WHITE isSymbolFont = true highlightAbove = true }
+{ viewId = "down_staircase_carpet" symbol = "➘" color = ColorId LIGHT_RED isSymbolFont = true highlightAbove = true }
+{ viewId = "up_staircase_carpet" symbol = "➚" color = ColorId LIGHT_RED isSymbolFont = true highlightAbove = true }
+{ viewId = "down_staircase_castle" symbol = "➘" color = ColorId LIGHT_BLUE isSymbolFont = true highlightAbove = true }
+{ viewId = "up_staircase_castle" symbol = "➚" color = ColorId LIGHT_BLUE isSymbolFont = true highlightAbove = true }
 { viewId = "down_staircase_rock" symbol = "➘" color = ColorId YELLOW isSymbolFont = true highlightAbove = true }
 { viewId = "up_staircase_rock" symbol = "➚" color = ColorId YELLOW isSymbolFont = true highlightAbove = true }
 { "map_unknown" "?" ColorId GREEN }

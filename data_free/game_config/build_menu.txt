@@ -40,12 +40,6 @@
 
     { Furniture {{ "STONE_BRIDGE" }               "STONE" 5 }      "Stone bridge"      "Structure"
       "Build to pass over water or lava." }
-
-    { Furniture {{ "UP_STAIRS" }                  }              "Up stairs"       "Structure"
-      "Build to reach higher z-levels." }
-
-    { Furniture {{ "DOWN_STAIRS" }                }              "Down stairs"       "Structure"
-      "Build to reach deeper z-levels." }
   }
 
   "structure" inherit "structure_without_reinforce" append
@@ -72,6 +66,26 @@
       "Outdoor building with arrowslits." }
   }
 
+  "structure" modify append
+  {
+    { Furniture {{ "UP_STAIRS" }                  }              "Up stairs"       "Stairs"
+      "Build to reach higher z-levels." }
+
+    { Furniture {{ "DOWN_STAIRS" }                }              "Down stairs"       "Stairs"
+      "Build to reach deeper z-levels." }
+
+    { Furniture {{ "UP_STAIRS_CASTLE" }   "STONE" 10        }              "Up stairs"       "Stairs"
+      "Build to reach higher z-levels." }
+
+    { Furniture {{ "DOWN_STAIRS_CASTLE" }  "STONE" 10       }              "Down stairs"       "Stairs"
+      "Build to reach deeper z-levels." }
+
+    { Furniture {{ "UP_STAIRS_CARPET" }   "GOLD" 10        }              "Up stairs"       "Stairs"
+      "Build to reach higher z-levels." }
+
+    { Furniture {{ "DOWN_STAIRS_CARPET" }  "GOLD" 10       }              "Down stairs"       "Stairs"
+      "Build to reach deeper z-levels." }
+  }
   "doors"
   {
     { Furniture {{ "WOOD_DOOR" }                  "WOOD" 5 }       "Wooden door"       "Doors"

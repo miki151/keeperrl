@@ -1377,10 +1377,30 @@ Def BedHeal() Heal { FLESH 0.005 } End
   usageType = UsageEffect "use stairs" Stairs
   onBuilt = UP_STAIRS
 }
+"UP_STAIRS_CARPET" inherit "UP_STAIRS"
+{
+  viewId = { "up_staircase_carpet" }
+  otherStairs = "DOWN_STAIRS_CARPET"
+}
+"UP_STAIRS_CASTLE" inherit "UP_STAIRS"
+{
+  viewId = { "up_staircase_castle" }
+  otherStairs = "DOWN_STAIRS_CASTLE"
+}
 "DOWN_STAIRS" inherit "UP_STAIRS"
 {
   viewId = { "down_staircase" }
   onBuilt = DOWN_STAIRS
+}
+"DOWN_STAIRS_CARPET" inherit "DOWN_STAIRS"
+{
+  viewId = { "down_staircase_carpet" }
+  otherStairs = "UP_STAIRS_CARPET"
+}
+"DOWN_STAIRS_CASTLE" inherit "DOWN_STAIRS"
+{
+  viewId = { "down_staircase_castle" }
+  otherStairs = "UP_STAIRS_CASTLE"
 }
 "UP_STAIRS_ROCK" inherit "UP_STAIRS"
 {

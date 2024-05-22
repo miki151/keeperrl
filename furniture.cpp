@@ -42,7 +42,7 @@ Furniture::Furniture() {
 Furniture::~Furniture() {}
 
 template<typename Archive>
-void Furniture::serializeImpl(Archive& ar, const unsigned) {
+void Furniture::serializeImpl(Archive& ar, const unsigned version) {
   ar(OPTION(viewObject), OPTION(removeNonFriendly), OPTION(canBuildOutsideOfTerritory));
   ar(NAMED(name), OPTION(pluralName), OPTION(type), OPTION(movementSet), OPTION(fire), OPTION(burntRemains), OPTION(destroyedRemains));
   ar(OPTION(destroyedInfo), OPTION(itemDrop), OPTION(wall), SKIP(creator), NAMED(createdTime), OPTION(canSilentlyReplace));
@@ -57,6 +57,8 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(eyeball), OPTION(storageIds), OPTION(hidesItems), NAMED(emptyViewId), OPTION(diningFurniture));
   ar(OPTION(usagePredicate), OPTION(minedAchievement), OPTION(removeInstantly), OPTION(buildingFloor), OPTION(usageSound));
   ar(OPTION(walkIntoSound), OPTION(destroySound));
+  if (version >= 1)
+    ar(NAMED(otherStairs));
 }
 
 template <class Archive>
@@ -212,6 +214,10 @@ bool Furniture::canRemoveInstantly() const {
 
 bool Furniture::isBuildingFloor() const {
   return buildingFloor;
+}
+
+optional<FurnitureType> Furniture::getOtherStairs() const {
+  return otherStairs;
 }
 
 optional<ViewId> Furniture::getSupportViewId(Position pos) const {

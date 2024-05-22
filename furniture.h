@@ -169,6 +169,7 @@ class Furniture {
   const optional<AchievementId>& getMinedAchievement() const;
   bool canRemoveInstantly() const;
   bool isBuildingFloor() const;
+  optional<FurnitureType> getOtherStairs() const;
 
   Furniture& setBlocking();
   Furniture& setBlockingEnemies();
@@ -272,6 +273,9 @@ class Furniture {
   optional<AchievementId> SERIAL(minedAchievement);
   bool SERIAL(removeInstantly) = false;
   bool SERIAL(buildingFloor) = false;
+  optional<FurnitureType> SERIAL(otherStairs);
 };
 
 static_assert(std::is_nothrow_move_constructible<Furniture>::value, "T should be noexcept MoveConstructible");
+
+CEREAL_CLASS_VERSION(Furniture, 1)
