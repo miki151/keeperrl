@@ -2044,6 +2044,7 @@ Def Boulder(Id) {
   layer = CEILING
   constructMessage = none
   tickType = MeteorShower
+  xForgetAfterBuilding = true
 }
 "FIRE_WALL"
 {
@@ -2054,6 +2055,7 @@ Def Boulder(Id) {
   onBuilt = SET_ON_FIRE
   burnsDownMessage = STOPS_BURNING
   hostileSpell = true
+  xForgetAfterBuilding = true
   fire = 10
 }
 "WATER"
