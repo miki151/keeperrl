@@ -32,7 +32,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::FULLSCREEN, 0},
   {OptionId::VSYNC, 1},
   {OptionId::FPS_LIMIT, 0},
-  {OptionId::ZOOM_UI, 0},
+  {OptionId::ZOOM_UI, 10},
   {OptionId::DISABLE_MOUSE_WHEEL, 0},
   {OptionId::DISABLE_CURSOR, 0},
   {OptionId::ONLINE, 1},
@@ -108,8 +108,8 @@ const map<OptionId, string> hints {
   {OptionId::FULLSCREEN, "Switch between fullscreen and windowed mode."},
   {OptionId::VSYNC, "Limits frame rate to your monitor's refresh rate. Turning off may fix frame rate issues."},
   {OptionId::FPS_LIMIT, "Limits frame rate. Lower framerate keeps GPU cooler."},
-  {OptionId::ZOOM_UI, "All UI and graphics are zoomed in 2x. "
-      "Use you have a large resolution screen and things appear too small."},
+  {OptionId::ZOOM_UI, "All UI and graphics are zoomed in. "
+      "Use if you have a large resolution screen and things appear too small."},
   {OptionId::ONLINE, "Enable online features, like dungeon sharing and highscores."},
   {OptionId::GAME_EVENTS, "Enable sending anonymous statistics to the developer."},
   {OptionId::AUTOSAVE2, "Autosave the game every X number turns. "
@@ -269,6 +269,8 @@ static optional<pair<int, int>> getIntRange(OptionId id) {
       return make_pair(0, 100);
     case OptionId::AUTOSAVE2:
       return make_pair(0, 5000);
+    case OptionId::ZOOM_UI:
+      return make_pair(10, 20);
     case OptionId::FPS_LIMIT:
       return make_pair(0, 30);
     case OptionId::KEEPER_WARNING_TIMEOUT:
@@ -291,6 +293,8 @@ static optional<int> getIntInterval(OptionId id) {
       return 500;
     case OptionId::FPS_LIMIT:
       return 5;
+    case OptionId::ZOOM_UI:
+      return 2;
     case OptionId::KEEPER_WARNING_TIMEOUT:
       return 50;
     default:
@@ -314,7 +318,6 @@ static bool isBoolean(OptionId id) {
     case OptionId::STARTING_RESOURCE:
     case OptionId::ONLINE:
     case OptionId::GAME_EVENTS:
-    case OptionId::ZOOM_UI:
     case OptionId::DISABLE_MOUSE_WHEEL:
     case OptionId::DISABLE_CURSOR:
     case OptionId::START_WITH_NIGHT:
@@ -346,7 +349,6 @@ string Options::getValueString(OptionId id) {
     case OptionId::STARTING_RESOURCE:
     case OptionId::ONLINE:
     case OptionId::GAME_EVENTS:
-    case OptionId::ZOOM_UI:
     case OptionId::DISABLE_MOUSE_WHEEL:
     case OptionId::DISABLE_CURSOR:
     case OptionId::START_WITH_NIGHT:
@@ -375,6 +377,8 @@ string Options::getValueString(OptionId id) {
     case OptionId::AUTOSAVE2:
     case OptionId::KEEPER_WARNING_TIMEOUT:
       return toString(getIntValue(id));
+    case OptionId::ZOOM_UI:
+      return toString(10 * getIntValue(id)) + "%";
   }
 }
 
@@ -424,7 +428,7 @@ void Options::handleIntInterval(OptionId option, ScriptedUIDataElems::Record& da
   auto value = getIntValue(option);
   auto interval = *getIntInterval(option);
   auto range = *getIntRange(option);
-  data.elems.insert({"value", value > 0 ? toString(value) : "off"});
+  data.elems.insert({"value", value > 0 ? getValueString(option) : "off"});
   data.elems.insert({"increase", ScriptedUIDataElems::Callback{
       [this, &wasSet, option, value, interval, range] {
         auto newVal = value + interval;
@@ -490,9 +494,9 @@ static optional<SDL::SDL_Keysym> captureKey(View* view, const string& text) {
 void Options::handle(View* view, const ContentFactory* factory, OptionSet set, int lastIndex) {
   bool keybindingsTab = false;
   auto optionSet = optionSets.at(set);
-  if (!view->zoomUIAvailable())
+/*  if (!view->zoomUIAvailable())
     optionSet.removeElementMaybe(OptionId::ZOOM_UI);
-  ScriptedUIState state;
+*/  ScriptedUIState state;
   while (1) {
     state.sliderState.clear();
     ScriptedUIDataElems::List options;
@@ -576,6 +580,12 @@ void Options::readValues() {
       if (auto val = readValue(optionId, p.getSuffix(p.size() - 1))) {
         if ((optionId == OptionId::SOUND || optionId == OptionId::MUSIC) && *val == 1)
           *val = 100;
+        if (optionId == OptionId::ZOOM_UI) {
+          if (*val == 0)
+            *val = 10;
+          if (*val == 1)
+            *val = 20;
+        }
         (*values)[optionId] = *val;
       }
     }

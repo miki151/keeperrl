@@ -43,8 +43,8 @@ class Renderer {
   void setFullscreenMode(int);
   void setVsync(bool);
   void setFpsLimit(int);
-  void setZoom(int);
-  int getZoom();
+  void setZoom(double);
+  double getZoom();
   void enableCustomCursor(bool);
   void initialize();
   bool isFullscreen();
@@ -155,7 +155,7 @@ class Renderer {
   int fullscreenMode;
   int fpsLimit = 0;
   uint64_t frameStart = 0;
-  int zoom = 1;
+  double zoom = 1;
   bool cursorEnabled = true;
   void reloadCursors();
   FilePath cursorPath;

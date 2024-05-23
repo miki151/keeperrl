@@ -107,7 +107,7 @@ void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FX
   renderer.setVsync(options->getBoolValue(OptionId::VSYNC));
   renderer.enableCustomCursor(!options->getBoolValue(OptionId::DISABLE_CURSOR));
   renderer.initialize();
-  renderer.setZoom(options->getBoolValue(OptionId::ZOOM_UI) ? 2 : 1);
+  renderer.setZoom(0.1 * options->getIntValue(OptionId::ZOOM_UI));
   renderer.setFpsLimit(options->getIntValue(OptionId::FPS_LIMIT));
   options->addTrigger(OptionId::FULLSCREEN, [this] (int on) {
     renderer.setFullscreen(on);
@@ -120,7 +120,7 @@ void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FX
     renderer.setFpsLimit(fps);
   });
   options->addTrigger(OptionId::DISABLE_CURSOR, [this] (int on) { renderer.enableCustomCursor(!on); });
-  options->addTrigger(OptionId::ZOOM_UI, [this] (int on) { zoomUI = on; });
+  options->addTrigger(OptionId::ZOOM_UI, [this] (int value) { zoomUI = value; });
   renderThreadId = currentThreadId();
   vector<ViewLayer> allLayers;
   for (auto l : ENUM_ALL(ViewLayer))
@@ -598,7 +598,7 @@ static Rectangle getBugReportPos(Renderer& renderer) {
 
 void WindowView::refreshScreen(bool flipBuffer) {
   if (zoomUI > -1) {
-    renderer.setZoom(zoomUI ? 2 : 1);
+    renderer.setZoom(0.1 * zoomUI);
     zoomUI = -1;
   }
   drawMap();

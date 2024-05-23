@@ -366,7 +366,7 @@ void Renderer::addQuad(const Rectangle& r, Color color) {
 void Renderer::setScissor(optional<Rectangle> s, bool reset) {
   renderDeferredSprites();
   auto applyScissor = [&] (Rectangle rect) {
-    int zoom = getZoom();
+    double zoom = getZoom();
     SDL::glScissor(rect.left() * zoom, (getSize().y - rect.bottom()) * zoom,
         rect.width() * zoom, rect.height() * zoom);
     SDL::glEnable(GL_SCISSOR_TEST);
@@ -438,14 +438,11 @@ Vec2 Renderer::getMinResolution() {
   return minResolution;
 }
 
-int Renderer::getZoom() {
-  if (zoom == 1 || (width / zoom >= minResolution.x && height / zoom >= minResolution.y))
-    return zoom;
-  else
-    return 1;
+double Renderer::getZoom() {
+  return min(zoom, min(double(width) / minResolution.x, double(height) / minResolution.y));
 }
 
-void Renderer::setZoom(int v) {
+void Renderer::setZoom(double v) {
   zoom = v;
   initOpenGL();
 }
