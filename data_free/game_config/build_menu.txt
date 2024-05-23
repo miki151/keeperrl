@@ -60,7 +60,7 @@
       "Reinforced walls are better at stopping enemies from digging into your dungeon."}
   }
 
-  "arrowslits"
+  "structure_white_knight" inherit "structure" append
   {
     { Furniture {{ "ARCHER_WALL" }                "STONE" 20 }     "Wall with arrowslits"  "Structure"
       "Outdoor building with arrowslits." }
@@ -91,6 +91,7 @@ End
 "structure" modify append Stairs()
 "structure_necro" modify append Stairs()
 "structure_dwarf" modify append Stairs()
+"structure_white_knight" modify append Stairs()
 
   "doors"
   {
