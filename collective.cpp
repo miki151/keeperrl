@@ -747,7 +747,7 @@ const optional<Collective::AlarmInfo>& Collective::getAlarmInfo() const {
 }
 
 bool Collective::needsToBeKilledToConquer(const Creature* c) const {
-  return hasTrait(c, MinionTrait::FIGHTER) || hasTrait(c, MinionTrait::LEADER);
+  return (hasTrait(c, MinionTrait::FIGHTER) && !c->wasDuel()) || hasTrait(c, MinionTrait::LEADER);
 }
 
 bool Collective::creatureConsideredPlayer(Creature* c) const {

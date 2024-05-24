@@ -343,6 +343,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canBeCaptured() const;
   void removePrivateEnemy(const Creature*);
   void setDuel(TribeId enemyTribe, Creature* opponent, GlobalTime timeout);
+  bool wasDuel() const;
   const vector<AutomatonPart>& getAutomatonParts() const;
   bool isAutomaton() const;
   void addAutomatonPart(AutomatonPart);

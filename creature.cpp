@@ -1703,6 +1703,10 @@ void Creature::removePrivateEnemy(const Creature* c) {
   privateEnemies.erase(c);
 }
 
+bool Creature::wasDuel() const {
+  return !!duelInfo;
+}
+
 void Creature::setDuel(TribeId enemyTribe, Creature* opponent, GlobalTime timeout) {
   duelInfo = DuelInfo{enemyTribe, opponent ? opponent->getUniqueId() : Creature::Id{}, timeout};
   if (steed)
