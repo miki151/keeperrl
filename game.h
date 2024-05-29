@@ -26,6 +26,7 @@ class NameGenerator;
 class Encyclopedia;
 class Unlocks;
 class SteamAchievements;
+class ProgressMeter;
 
 struct WarlordInfoWithReference {
   vector<shared_ptr<Creature>> SERIAL(creatures);
@@ -47,7 +48,7 @@ class Game : public OwnedObject<Game> {
   Unlocks* getUnlocks() const;
   EnemyAggressionLevel getEnemyAggressionLevel() const;
   void initialize(Options*, Highscores*, View*, FileSharing*, Encyclopedia*, Unlocks*, SteamAchievements*);
-  void initializeModels();
+  void initializeModels(ProgressMeter&);
   View* getView() const;
   ContentFactory* getContentFactory();
   WarlordInfoWithReference getWarlordInfo();

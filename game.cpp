@@ -48,6 +48,7 @@
 #include "enemy_aggression_level.h"
 #include "unlocks.h"
 #include "steam_achievements.h"
+#include "progress_meter.h"
 
 template <class Archive>
 void Game::serialize(Archive& ar, const unsigned int version) {
@@ -348,7 +349,7 @@ optional<ExitInfo> Game::updateInput() {
 
 static const TimeInterval initialModelUpdate = 2_visible;
 
-void Game::initializeModels() {
+void Game::initializeModels(ProgressMeter& meter) {
   for (auto col : getCollectives())
     col->update(col->getModel() == getCurrentModel());
   // Give every model a couple of turns so that things like shopkeepers can initialize.
@@ -368,6 +369,7 @@ void Game::initializeModels() {
         localTime[id] = (model->getLocalTime() + initialModelUpdate).getDouble();
       if (getCurrentModel() != model)
         updateModel(model, localTime[id], none);
+      meter.addProgress();
     }
 }
 

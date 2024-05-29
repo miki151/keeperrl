@@ -278,9 +278,9 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
   DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
   Encyclopedia encyclopedia(game->getContentFactory());
   game->initialize(options, highscores, view, fileSharing, &encyclopedia, unlocks, steamAchievements);
-  doWithSplash("Initializing game...", 0,
+  doWithSplash("Initializing game...", game->getAllModels().size(),
       [&] (ProgressMeter& meter) {
-        game->initializeModels();
+        game->initializeModels(meter);
       });
   Intervalometer meter(stepTimeMilli);
   Intervalometer pausingMeter(stepTimeMilli);

@@ -91,7 +91,7 @@ void Model::prepareForRetirement() {
 int Model::getSaveProgressCount() const {
   int ret = 0;
   for (const PLevel& l : levels)
-    ret += l->getNumGeneratedSquares();
+    ret += l->getNumTotalSquares();
   return ret;
 }
 
