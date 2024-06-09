@@ -30,7 +30,7 @@ template <class T> using vector = std::vector<T>;
 #if defined(PARANOID_CHECKS) && !defined(NDEBUG)
 #define PASSERT CHECK
 #else
-#define PASSERT(...)
+#define PASSERT(...) CHECK(true)
 #endif
 
 #endif
