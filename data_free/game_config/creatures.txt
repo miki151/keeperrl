@@ -2077,7 +2077,7 @@ End
     viewId = { "child" }
     attr = {
       DAMAGE 8
-      DEFENSE 8 
+      DEFENSE 8
     }
     body = {
       type = Humanoid MEDIUM
@@ -2093,6 +2093,7 @@ End
       pluralName = "children"
     }
     hatedByEffect = HATE_HUMANS
+    noCopulation = true
   }
 "CHILD_ENTS" inherit "CHILD"
   {
@@ -3206,6 +3207,7 @@ End
       pluralName = "elf children"
     }
     hatedByEffect = HATE_ELVES
+    noCopulation = true
   }
 "ELF_LORD"
   {
@@ -3341,6 +3343,7 @@ End
       pluralName = "dark elf children"
     }
     hatedByEffect = HATE_ELVES
+    noCopulation = true
   }
 "DARK_ELF_LORD"
   {
@@ -4020,6 +4023,7 @@ End
       firstNameGen = "DOG"
       groupName = "pack"
     }
+    noCopulation = true
   }
 "WEREWOLF"
   {

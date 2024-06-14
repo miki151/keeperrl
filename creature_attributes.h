@@ -127,6 +127,7 @@ class CreatureAttributes {
   HashMap<AttrType, vector<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
   heap_optional<Effect> SERIAL(deathEffect);
   heap_optional<Effect> SERIAL(afterKilledSomeone);
+  bool SERIAL(noCopulation) = false;
 
   vector<CompanionInfo> SERIAL(companions);
   optional<string> SERIAL(promotionGroup);
@@ -173,3 +174,5 @@ class CreatureAttributes {
   void initializeLastingEffects();
   CreatureInventory SERIAL(inventory);
 };
+
+CEREAL_CLASS_VERSION(CreatureAttributes, 1)
