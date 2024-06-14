@@ -2199,12 +2199,20 @@ End
       name = "stone golem"
     }
   }
-"GARGOYLE" inherit "STONE_GOLEM"
+"GARGOYLE"
   {
     viewId = { "gargoyle" }
     attr = {
       DAMAGE 35
       DEFENSE 25
+    }
+    body = {
+      type = HumanoidLike MEDIUM
+      material = ROCK
+    }
+    permanentEffects = {
+      MELEE_RESISTANCE 1
+      SLOWED 1
     }
     name = {
       name = "gargoyle"
