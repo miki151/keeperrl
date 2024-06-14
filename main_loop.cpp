@@ -213,7 +213,7 @@ void MainLoop::saveUI(PGame& game, GameSaveType type) {
     int saveTime = game->getMainModel()->getSaveProgressCount();
     doWithSplash("Retiring site...", saveTime,
         [&] (ProgressMeter& meter) {
-          Square::progressMeter = &meter;
+          Level::progressMeter = &meter;
           if (!game->getSavedGameInfo(tileSet->getSpriteMods()).retiredEnemyInfo)
             // only upload if it's not a retired enemy
             uploadFun = [this, path, name = game->getGameDisplayName(),
@@ -226,10 +226,10 @@ void MainLoop::saveUI(PGame& game, GameSaveType type) {
     int saveTime = game->getSaveProgressCount();
     doWithSplash(type == GameSaveType::AUTOSAVE ? "Autosaving" : "Saving game...", saveTime,
         [&] (ProgressMeter& meter) {
-        Square::progressMeter = &meter;
+        Level::progressMeter = &meter;
         MEASURE(saveGame(game, path), "saving time")});
   }
-  Square::progressMeter = nullptr;
+  Level::progressMeter = nullptr;
   if (uploadFun)
     uploadFun();
 }
@@ -249,9 +249,9 @@ void MainLoop::bugReportSave(PGame& game, FilePath path) {
   int saveTime = game->getSaveProgressCount();
   doWithSplash("Saving game...", saveTime,
       [&] (ProgressMeter& meter) {
-      Square::progressMeter = &meter;
+      Level::progressMeter = &meter;
       MEASURE(saveGame(game, path), "saving time")});
-  Square::progressMeter = nullptr;
+  Level::progressMeter = nullptr;
 }
 
 template <class T>
@@ -1327,11 +1327,11 @@ PGame MainLoop::loadGame(const FilePath& file, const string& name) {
   if (auto info = loadSavedGameInfo(file))
     doWithSplash("Loading "_s + name + ".", info->progressCount,
         [&] (ProgressMeter& meter) {
-          Square::progressMeter = &meter;
+          Level::progressMeter = &meter;
           INFO << "Loading from " << file;
           MEASURE(game = loadFromFile<PGame>(file), "Loading game");
     });
-  Square::progressMeter = nullptr;
+  Level::progressMeter = nullptr;
   return game ? std::move(*game) : nullptr;
 }
 

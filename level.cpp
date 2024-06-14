@@ -80,7 +80,11 @@ void Level::serialize(Archive& ar, const unsigned int version) {
     getSectors({MovementTrait::WALK});
     updateTickingFurniture();
   }
+  if (progressMeter)
+    progressMeter->addProgress();
 }
+
+ProgressMeter* Level::progressMeter = nullptr;
 
 static Effects::Chance* getChanceTick(FurnitureTickType& t) {
   return t.visit<Effects::Chance*>(

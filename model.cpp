@@ -89,10 +89,7 @@ void Model::prepareForRetirement() {
 }
 
 int Model::getSaveProgressCount() const {
-  int ret = 0;
-  for (const PLevel& l : levels)
-    ret += l->getNumTotalSquares();
-  return ret;
+  return levels.size();
 }
 
 vector<Collective*> Model::getCollectives() const {

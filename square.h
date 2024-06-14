@@ -34,9 +34,6 @@ class Square {
   public:
   Square();
 
-  /** For displaying progress while loading/saving the game.*/
-  static ProgressMeter* progressMeter;
-
   /** Links this square as point of entry from another level.
     * \param direction direction where the creature is coming from
     * \param key id specific to a dungeon branch*/

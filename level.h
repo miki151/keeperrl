@@ -55,6 +55,8 @@ class Level : public OwnedObject<Level> {
   static Rectangle getMaxBounds();
   static double getCreatureLightRadius();
 
+  static ProgressMeter* progressMeter;
+
   /** Moves the creature. Updates the creature's position.*/
   void moveCreature(Creature*, Vec2 direction);
 
