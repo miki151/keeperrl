@@ -20,7 +20,10 @@
 #include "scripted_ui_data.h"
 #include "keybinding_map.h"
 #include "content_factory.h"
-#include "steam_input.h"
+
+#ifdef USE_STEAMWORKS
+#  include "steam_input.h"
+#endif
 
 const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::HINTS, 1},
@@ -189,7 +192,9 @@ Options::Value Options::getValue(OptionId id) {
     case OptionId::CONTROLLER_HINT_MAIN_MENU:
     case OptionId::CONTROLLER_HINT_TURN_BASED:
     case OptionId::CONTROLLER_HINT_REAL_TIME:
+#ifdef USE_STEAMWORKS
       if (!steamInput || steamInput->controllers.empty())
+#endif
         return 0;
       break;
     default:
@@ -535,10 +540,13 @@ void Options::handle(View* view, const ContentFactory* factory, OptionSet set, i
         [&] { keybindingsTab = false; wasSet = true; return true; }
     };
     main.elems["set_keys"] = ScriptedUIDataElems::Callback{ [&] {
+#ifdef USE_STEAMWORKS
       if (steamInput && !steamInput->controllers.empty()) {
         steamInput->showBindingScreen();
         return false;
-      } else {
+      } else
+#endif
+             {
         keybindingsTab = true;
         wasSet = true;
         return true;

@@ -46,11 +46,14 @@
 #include "ai_type.h"
 #include "container_range.h"
 #include "keybinding_map.h"
-#include "steam_input.h"
 #include "tutorial_state.h"
 #include "campaign_menu_index.h"
 #include "tileset.h"
 #include "zones.h"
+
+#ifdef USE_STEAMWORKS
+#  include "steam_input.h"
+#endif
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -816,7 +819,11 @@ int GuiBuilder::getImmigrationBarWidth() const {
 }
 
 bool GuiBuilder::hasController() const {
-  return !gui.getSteamInput()->controllers.empty();
+#ifdef USE_STEAMWORKS
+  if (auto steamInput = gui.getSteamInput())
+      return !steamInput->controllers.empty();
+#endif
+  return false;
 }
 
 SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
