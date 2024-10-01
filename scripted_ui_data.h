@@ -5,6 +5,7 @@
 #include "util.h"
 #include "view_index.h"
 #include "pretty_archive.h"
+#include "keybinding.h"
 
 struct ScriptedUIData;
 
