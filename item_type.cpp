@@ -267,7 +267,7 @@ PItem ItemType::get(const ContentFactory* factory) const {
     if (Random.chance(attributes->variationChance) && var > 0)
       mod = max(1, mod + Random.get(-var, var + 1));
   }
-  if (attributes->ingredientType)
+  if (attributes->ingredientType && attributes->description.empty())
     attributes->description = "Special crafting ingredient";
   return type->visit<PItem>(
       [&](const ItemTypes::FireScroll&) {
