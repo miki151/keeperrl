@@ -855,14 +855,14 @@ void Position::updateMovementDueToFire() const {
     update(v);
 }
 
-bool Position::fireDamage(int amount) const {
+bool Position::fireDamage(int amount, Creature* attacker) const {
   PROFILE;
   bool res = false;
   for (auto furniture : modFurniture())
     if (Random.chance(0.05 * amount))
       res |= furniture->fireDamage(*this);
   if (Creature* creature = getCreature())
-    creature->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), AttackType::HIT, amount,
+    creature->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), AttackType::HIT, amount,
         AttrType("FIRE_DAMAGE"), {}, "The fire is harmless", false));
   for (Item* it : getItems())
     if (Random.chance(0.05 * amount))
@@ -870,14 +870,14 @@ bool Position::fireDamage(int amount) const {
   return res;
 }
 
-bool Position::iceDamage(int amount) const {
+bool Position::iceDamage(int amount, Creature* attacker) const {
   PROFILE;
   bool res = false;
   for (auto furniture : modFurniture())
     if (Random.chance(0.05 * amount))
       res |= furniture->iceDamage(*this);
   if (Creature* creature = getCreature())
-    creature->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), AttackType::HIT, amount,
+    creature->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), AttackType::HIT, amount,
         AttrType("COLD_DAMAGE"), {}, "The cold is harmless"));
   for (Item* it : getItems())
     if (Random.chance(0.05 * amount))
@@ -885,14 +885,14 @@ bool Position::iceDamage(int amount) const {
   return res;
 }
 
-bool Position::acidDamage(int amount) const {
+bool Position::acidDamage(int amount, Creature* attacker) const {
   PROFILE;
   bool res = false;
   for (auto furniture : modFurniture())
     if (Random.chance(0.05 * amount))
       res |= furniture->acidDamage(*this);
   if (Creature* creature = getCreature())
-    creature->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), AttackType::HIT, amount,
+    creature->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), AttackType::HIT, amount,
         AttrType("ACID_DAMAGE"), {}, "The acid is harmless"));
   /*for (Item* it : getItems())
     if (Random.chance(amount))

@@ -200,7 +200,7 @@ void Item::tick(Position position, bool carried) {
   PROFILE_BLOCK("Item::tick");
   if (fire->isBurning()) {
 //    INFO << getName() << " burning ";
-    position.fireDamage(5);
+    position.fireDamage(5, nullptr);
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, min(1.0, double(fire->getBurnState()) / 50));
     fire->tick();
     if (!fire->isBurning()) {
@@ -237,7 +237,7 @@ void Item::onHitSquareMessage(Position pos, const Attack& attack, int numItems) 
   } else
     pos.globalMessage(getPluralTheNameAndVerb(numItems, "hits", "hit") + " the " + pos.getName());
   if (attributes->ownedEffect && *attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
-    pos.fireDamage(20);
+    pos.fireDamage(20, attack.attacker);
   if (attributes->effect && effectAppliedWhenThrown())
     attributes->effect->apply(pos, attack.attacker);
 }

@@ -259,8 +259,8 @@ void Furniture::updateFire(Position pos, FurnitureLayer supposedLayer) {
       viewObject->setAttribute(ViewObject::Attribute::BURNING, min(1.0, double(burnState) / 50));
     INFO << getName() << " burning ";
     for (Position v : pos.neighbors8())
-      v.fireDamage(burnState / 5);
-    pos.fireDamage(burnState);
+      v.fireDamage(burnState / 5, nullptr);
+    pos.fireDamage(burnState, nullptr);
     fire->tick();
     if (fire->isBurntOut()) {
       switch (burnsDownMessage) {

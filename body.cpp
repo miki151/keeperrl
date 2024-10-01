@@ -594,7 +594,7 @@ vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool ins
 
 void Body::affectPosition(Position position) {
   if (material == BodyMaterialId("FIRE"))
-    position.fireDamage(10);
+    position.fireDamage(10, nullptr);
 }
 
 static void youHit(const Creature* c, BodyPart part, const Attack& attack, const ContentFactory* factory) {

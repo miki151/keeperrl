@@ -573,7 +573,7 @@ static Color getColor(const Effects::Acid&, const ContentFactory* f) {
 }
 
 static bool apply(const Effects::Acid& a, Position pos, Creature* attacker) {
-  return pos.acidDamage(a.amount.value_or(attacker ? attacker->getAttr(AttrType("ACID_DAMAGE")) : 10));
+  return pos.acidDamage(a.amount.value_or(attacker ? attacker->getAttr(AttrType("ACID_DAMAGE")) : 10), attacker);
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Acid&, const Creature* victim, bool isEnemy) {
@@ -996,7 +996,7 @@ static string getDescription(const Effects::Fire&, const ContentFactory*) {
 
 static bool apply(const Effects::Fire& a, Position pos, Creature* attacker) {
   pos.getGame()->addEvent(EventInfo::FX{pos, {FXName::FIREBALL_SPLASH}});
-  return pos.fireDamage(a.amount.value_or(attacker ? attacker->getAttr(AttrType("FIRE_DAMAGE")) : 10));
+  return pos.fireDamage(a.amount.value_or(attacker ? attacker->getAttr(AttrType("FIRE_DAMAGE")) : 10), attacker);
 }
 
 static optional<ViewId> getProjectile(const Effects::Fire&) {
@@ -1026,7 +1026,7 @@ static string getDescription(const Effects::Ice&, const ContentFactory*) {
 }
 
 static bool apply(const Effects::Ice& a, Position pos, Creature* attacker) {
-  return pos.iceDamage(a.amount.value_or(attacker ? attacker->getAttr(AttrType("COLD_DAMAGE")) : 10));
+  return pos.iceDamage(a.amount.value_or(attacker ? attacker->getAttr(AttrType("COLD_DAMAGE")) : 10), attacker);
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Ice&, const Creature* victim, bool isEnemy) {

@@ -94,9 +94,9 @@ class Position {
   bool construct(FurnitureType, TribeId) const;
   bool isActiveConstruction(FurnitureLayer) const;
   bool isBurning() const;
-  bool fireDamage(int amount) const;
-  bool iceDamage(int amount) const;
-  bool acidDamage(int value) const;
+  bool fireDamage(int amount, Creature* attacker) const;
+  bool iceDamage(int amount, Creature* attacker) const;
+  bool acidDamage(int value, Creature* attacker) const;
   bool needsRenderUpdate() const;
   void setNeedsRenderUpdate(bool) const;
   bool needsMemoryUpdate() const;
