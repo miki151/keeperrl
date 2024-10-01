@@ -76,6 +76,10 @@ void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) 
   ar(OPTION(killedByAchievement), OPTION(steedAchievement), OPTION(fixedAttr), OPTION(grantsExperience));
   if (version >= 1)
     ar(OPTION(noCopulation));
+  if (version >= 2) {
+    ar(OPTION(copulationEffect));
+    ar(OPTION(copulationClientEffect));
+  }
   for (auto& a : attr)
     a.second = max(0, a.second);
 }

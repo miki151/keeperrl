@@ -1702,11 +1702,8 @@ void Collective::addRecordedEvent(string s) {
 void Collective::onCopulated(Creature* who, Creature* with) {
   PROFILE;
   control->addMessage(who->getName().a() + " makes love to " + with->getName().a());
-  with->addEffect(BuffId("HIGH_MORALE"), 200_visible);
-  if (!who->isAffected(LastingEffect::PREGNANT) && Random.roll(2)) {
-    who->addEffect(LastingEffect::PREGNANT, getConfig().getImmigrantTimeout());
-    control->addMessage(who->getName().a() + " becomes pregnant.");
-  }
+  who->getAttributes().copulationClientEffect.apply(with->getPosition(), who);
+  who->getAttributes().copulationEffect.apply(who->getPosition());
   addRecordedEvent("a sex act between " + who->getName().a() + " and " + with->getName().a());
 }
 

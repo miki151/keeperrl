@@ -33,6 +33,8 @@
 #include "creature_predicate.h"
 #include "ai_type.h"
 #include "achievement_id.h"
+#include "effect_type.h"
+#include "creature_predicate.h"
 
 inline bool isLarger(CreatureSize s1, CreatureSize s2) {
   return int(s1) > int(s2);
@@ -140,6 +142,12 @@ class CreatureAttributes {
   HashSet<AttrType> SERIAL(fixedAttr);
   bool SERIAL(grantsExperience) = true;
   bool SERIAL(noChase) = false;
+  Effect SERIAL(copulationClientEffect) = Effect(Effects::Lasting { 200_visible, BuffId("HIGH_MORALE") });
+  Effect SERIAL(copulationEffect) = Effect(Effects::Filter(CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::PREGNANT)}),
+    Effect(Effects::Chance(0.5, Effect(Effects::Chain{{
+      Effect(Effects::Lasting { 500_visible, LastingEffect::PREGNANT }),
+      Effect(Effects::CollectiveMessage { "A minion becomes pregnant" })
+    }})))));
 
   private:
   void consumeEffects(Creature* self, const EnumMap<LastingEffect, int>&);
@@ -175,4 +183,4 @@ class CreatureAttributes {
   CreatureInventory SERIAL(inventory);
 };
 
-CEREAL_CLASS_VERSION(CreatureAttributes, 1)
+CEREAL_CLASS_VERSION(CreatureAttributes, 2)
