@@ -267,6 +267,8 @@ struct RemoveAbility {
 };
 using AddSpellSchool = SpellSchoolId;
 struct Chance : GenericModifierEffect {
+  Chance() {}
+  Chance(double value, Effect effect) : GenericModifierEffect{std::move(effect)}, value(value) {}
   double SERIAL(value);
   SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
 };
