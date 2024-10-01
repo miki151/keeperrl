@@ -281,3 +281,19 @@ End
 "MELEE_IMMUNITY" IMMUNITY("melee", DAMAGE)
 "MAGIC_IMMUNITY" IMMUNITY("magic", SPELL_DAMAGE)
 "RANGED_IMMUNITY" IMMUNITY("ranged", RANGED_DAMAGE)
+
+Def SPECIAL_RESISTANCE(Name, Predicate, Value)
+{
+  name = "protection from " + Name
+  adjective = "protected from " + Name
+  description = "Grants a +" + Value + " defense bonus against " + Name
+  addedMessage = ARE "protected from " + Name
+  removedMessage = ARE "no longer protected from " + Name
+  color = ColorId PURPLE
+  fx = BUFF_PURPLE
+  price = 200
+  specialAttr = "DEFENSE" Value Predicate
+}
+End
+
+"DRAGON_RESISTANCE" SPECIAL_RESISTANCE("dragons", HatedBy HATE_DRAGONS, 15)

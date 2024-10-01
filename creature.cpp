@@ -1185,6 +1185,12 @@ int Creature::getSpecialAttr(AttrType type, const Creature* against) const {
     if (auto elem = getValueMaybe(item->getSpecialModifiers(), type))
       if (elem->second.apply(against->getPosition(), this))
         ret += elem->first;
+  auto factory = getGame()->getContentFactory();
+  for (auto& buff : buffs)
+    if (auto& attr = factory->buffs.at(buff.first).specialAttr)
+      if (attr->attr == type)
+        if (attr->predicate.apply(against->getPosition(), this))
+          ret += attr->value;
   return ret;
 }
 
