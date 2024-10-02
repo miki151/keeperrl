@@ -240,6 +240,40 @@ End
   }
   inventory = AdventurerEquipment("Sword")
 }
+"KEEPER_BISHOP"
+  {
+    viewId = { "dgr_bishop" }
+    attr = {
+      DAMAGE 10
+      DEFENSE 16
+      DIVINITY 16
+    }
+    body = {
+      type = Humanoid LARGE
+    }
+    name = {
+      name = "bishop"
+      firstNameGen = "FIRST_MALE"
+      fullTitle = true
+    }
+#    viewIdUpgrades = { { "duke2" } { "duke3" } { "duke4" }}
+    maxLevelIncrease = {
+      DAMAGE 3
+      SPELL_DAMAGE 12
+      DIVINITY 12
+    }
+    permanentEffects = {
+      PREACHING_SKILL 1
+    }
+    hatedByEffect = HATE_HUMANS
+    spellSchools = { "prayers" }
+    spells = { "healing prayer" }
+    inventory = {
+      { "LeatherArmor" }
+      { "LeatherHelm" }
+      { "PrayerBookProtection" }
+    }
+  }
 "WHITE_WIZARD" inherit "KEEPER_MAGE"
   {
     viewId = { "keeper4" ColorId PURPLE }
@@ -1563,6 +1597,29 @@ End
     promotionCost = 1.0
     hatedByEffect = HATE_HUMANS
   }
+"ARMED_BROTHER"
+  {
+    viewId = { "armed_brother" }
+    attr = {
+      DAMAGE 14
+      DEFENSE 12
+    }
+    body = {
+      type = Humanoid LARGE
+    }
+    maxLevelIncrease = {
+      DAMAGE 12
+      DIVINITY 12
+    }
+    chatReactionFriendly = "curses all dungeons"
+    chatReactionHostile = "\"Die!\""
+    spellSchools = { "prayers" }
+    name = {
+      name = "armed brother"
+      firstNameGen = "FIRST_MALE"
+    }
+    hatedByEffect = HATE_HUMANS
+  }
 "JESTER"
   {
     viewId = { "jester" }
@@ -1685,6 +1742,33 @@ End
     JEWELER 50
   }
 }
+"PROSTITUTE"
+{
+  viewId = { "prostitute" }
+  attr = {
+    DAMAGE 1
+    DEFENSE 10
+  }
+  body = {
+    type = Humanoid LARGE
+  }
+  gender = FEMALE
+  chatReactionFriendly = "curses all dungeons"
+  chatReactionHostile = "\"Heeelp!\""
+  permanentEffects = {
+    COPULATION_SKILL 1
+  }
+  copulationClientEffect = ChooseRandom {
+    #Lasting FAST_TRAINING
+    Filter MaxLevelBelow "DAMAGE" 15 IncreaseMaxLevel "DAMAGE" 1
+  }
+  copulationEffect = {}
+  aiType = RANGED
+  name = {
+    name = "prostitute"
+  }
+  hatedByEffect = HATE_HUMANS
+}
 "PESEANT"
   {
     viewId = { "peasant" }
@@ -1721,6 +1805,20 @@ End
   }
 "PESEANT_PLAYER" inherit "PESEANT"
   {
+    permanentEffects = {}
+  }
+"ACOLYTE" inherit "PESEANT"
+  {
+    viewId = { "dgr_acolyte" }
+    genderAlternatives = {
+      FEMALE { "dgr_acolyte_f" }
+    }
+    maxLevelIncrease = {
+      DIVINITY 2
+    }
+    name = {
+      name = "acolyte"
+    }
     permanentEffects = {}
   }
 "NOMAD" inherit "PESEANT"
@@ -4261,7 +4359,7 @@ End
     attr = {
       DAMAGE 30
       DEFENSE 22
-      SPELL_DAMAGE 20 
+      SPELL_DAMAGE 20
     }
     body = {
       type = Humanoid LARGE
@@ -4275,6 +4373,7 @@ End
     name = {
       name = "angel"
     }
+    canJoinCollective = false
     inventory = {
       { type = "Sword" prefixChance = 0.1 }
       { type = Glyph { ARMOR ItemAttrBonus DEFENSE 3 } chance = 0.3 }
@@ -5114,7 +5213,48 @@ End
       LABORATORY 25
     }
   }
-
+"TENGU"
+  {
+    viewId = { "tengu" }
+    attr = {
+      DAMAGE 40
+      DEFENSE 40
+    }
+    body = {
+      type = HumanoidLike LARGE
+      material = SPIRIT
+      intrinsicAttacks = {
+        TORSO {{{ Intrinsic { "fist_attack" } "spell" 1 {
+            attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}}
+      }
+    }
+    name = {
+      name = "tengu"
+    }
+    spells = {
+      "tengu teleport"
+    }
+  }
+"SHAITAN" inherit "TENGU"
+  {
+    viewId = { "shaitan" }
+    name = {
+      name = "shaitan"
+    }
+    spells = {
+      "shaitan insanity"
+    }
+  }
+"BANSHEE" inherit "TENGU"
+  {
+    viewId = { "banshee" }
+    name = {
+      name = "banshee"
+    }
+    spells = {
+      "banshee scream"
+    }
+  }
 # legacy creatures not in vanilla anymore
 
 "ORC"
@@ -5246,4 +5386,3 @@ End
       { "HeavyClub"}
     }
   }
-

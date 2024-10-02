@@ -212,6 +212,28 @@ End
   LIBRARY("_HUMAN", "_human")
   LIBRARY("_NECRO", "_necro")
 
+  "mass"
+  {
+    { Furniture {{ "ROSTRUM_WOOD" }       "WOOD" 10 }                      "Wooden rostrum"         "Mass"
+        "A basic rostrum for performing mass." }
+    { Furniture {{ "ROSTRUM_IRON" }       "IRON" 10 }                      "Iron rostrum"         "Mass"
+        "An improved rostrum for performing mass." }
+    { Furniture {{ "ROSTRUM_GOLD" }       "GOLD" 10 }                      "Golden rostrum"         "Mass"
+        "A luxurious rostrum for performing mass." none { TechId "luxury" } }
+    { Furniture {{ "PEW_WOOD" }           "WOOD" 10 }                      "Wooden church pew"      "Mass"
+        "Used by mass participants." }
+    { Furniture {{ "PEW_IRON" }           "IRON" 10 }                      "Iron church pew"      "Mass"
+        "An improved pew for mass participants." }
+    { Furniture {{ "PEW_GOLD" }           "GOLD" 10 }                      "Golden church pew"      "Mass"
+        "A luxurious pew for mass participants." none { TechId "luxury" } }
+    { Furniture {{ "PRAYER_BENCH_WOOD" }  "WOOD" 10 }                      "Wooden prayer bench"      "Mass"
+        "Used by priests when praying." }
+    { Furniture {{ "PRAYER_BENCH_IRON" }  "IRON" 10 }                      "Iron prayer bench"      "Mass"
+        "Used by priests when praying." }
+    { Furniture {{ "PRAYER_BENCH_GOLD" }  "GOLD" 10 }                      "Golden prayer bench"      "Mass"
+        "Used by priests when praying." }
+  }
+
   "beds"
   {
     { Furniture {{ "BED1" }       "WOOD" 12 }                      "Basic bed"         "Living"
@@ -336,6 +358,12 @@ TRAINING("_DWARF", "_dwarf")
         "Produces magical body balsams."            none { TechId "embalming" }}
   }
 
+  "jeweller_church"
+  {
+    { Furniture {{ "JEWELLER" }   "WOOD" 12 }                      "Jeweller"          "Crafting"
+        "Produces magical rings and amulets." none { TechId "luxury" }}
+  }
+
   "jeweller"
   {
     { Furniture {{ "JEWELLER" }   "WOOD" 12 }                      "Jeweller"          "Crafting"
@@ -349,10 +377,20 @@ TRAINING("_DWARF", "_dwarf")
     { Furniture {{ "POETRY_TABLE" } "WOOD" 12 }                    "Poetry table"       "Crafting"
         "Allows writing poems."}
   }
+  "scriptorium"
+  {
+    { Furniture {{ "SCRIPTORIUM" } "WOOD" 12 }                    "Scriptorium"       "Crafting"
+        "Allows writing prayer books."}
+  }
   "distillery"
   {
     { Furniture {{ "DISTILLERY" }   "IRON" 30 }                    "Distillery"       "Crafting"
         "Allows making moonshine." none { TechId "distillation" }}
+  }
+  "distillery_church"
+  {
+    { Furniture {{ "DISTILLERY" }   "IRON" 30 }                    "Distillery"       "Crafting"
+        "Allows making moonshine." none { TechId "small temptations" }}
   }
   "morgue"
   {
@@ -395,6 +433,17 @@ TRAINING("_DWARF", "_dwarf")
         "Beasts sleep here."}
   }
 
+  "prison_church"
+  {
+    { Furniture {{ "PRISON" }        "IRON" 15 }                   "Prison"            "Prison"
+        "Required to capture enemies." "PRISON" { TechId "slavery" } true}
+
+    { Furniture {{ "PRISON_BARS" }        "IRON" 5 }               "Prison bars"            "Prison"
+        "Used to secure prison." none { TechId "slavery" } }
+
+    { Furniture {{ "PRISON_DOOR" }        "IRON" 30 }              "Prison door"            "Prison"
+        "Used to secure prison." none { TechId "slavery" } }
+  }
 
   "orders"
   {

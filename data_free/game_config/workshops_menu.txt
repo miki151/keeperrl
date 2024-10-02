@@ -360,5 +360,19 @@ End
   }
 }
 
+"scriptorium"
+{
+  "SCRIPTORIUM"
+  {
+    {{"PrayerBookFireResistance"}      100 "GOLD" 100}
+    {{"PrayerBookPoisonResistance"}      100 "GOLD" 100}
+    {{"PrayerBookRangedResistance"}    100 "GOLD" 100}
+    {{"PrayerBookProtection"}          200 "GOLD" 150}
+    {{"PrayerBookStrength"}            200 "GOLD" 150}
+    {{"PrayerBookGuardian"}            250 "GOLD" 300}
+    {{"PrayerBookAdoxie"}              500 "GOLD" 300 "worship of Adoxie"}
+  }
+}
+
 # Add more groups here, remember that you need to add your new group to your keeper in keeper_creatures.txt
 

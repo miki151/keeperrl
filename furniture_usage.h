@@ -15,7 +15,8 @@ RICH_ENUM(
   ARCHERY_RANGE,
   STUDY,
   PORTAL,
-  DEMON_RITUAL
+  DEMON_RITUAL,
+  PRAY
 );
 
 struct UsageEffect {

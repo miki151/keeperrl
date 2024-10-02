@@ -33,7 +33,10 @@ RICH_ENUM(
     GUARDING1,
     GUARDING2,
     GUARDING3,
-    PHYLACTERY
+    PHYLACTERY,
+    PREACHING,
+    MASS,
+    PRAYER
 );
 
 class Position;

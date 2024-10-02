@@ -170,6 +170,8 @@ vector<pair<Position, FurnitureLayer>> MinionActivities::getAllPositions(const C
     ret = ret.filter([&](auto& pos) { return pos.first.canNavigateToOrNeighbor(c->getPosition(), movement); });
     ret = tryInQuarters(ret, collective, c, [](const pair<Position, FurnitureLayer>& p) -> const Position& { return p.first; });
   }
+  if (c && info.type == MinionActivityInfo::Type::FURNITURE && info.searchType == Task::SearchType::LAZY)
+    ret = ret.filter([&](auto& pos) { return !pos.first.getCreature() || pos.first.getCreature() == c; });
   return ret;
 }
 
@@ -299,7 +301,7 @@ PTask MinionActivities::generate(Collective* collective, Creature* c, MinionActi
       PROFILE_BLOCK("Furniture");
       vector<pair<Position, FurnitureLayer>> squares = getAllPositions(collective, c, activity);
       if (!squares.empty())
-        return Task::applySquare(collective, squares, Task::RANDOM_CLOSE, Task::APPLY);
+        return Task::applySquare(collective, squares, info.searchType, Task::APPLY);
       break;
     }
     case MinionActivityInfo::ARCHERY: {
@@ -363,6 +365,9 @@ optional<TimeInterval> MinionActivities::getDuration(const Creature* c, MinionAc
       return TimeInterval((int) 30 + Random.get(-10, 10));
     case MinionActivity::RITUAL:
       return 150_visible;
+    case MinionActivity::PREACHING:
+    case MinionActivity::MASS:
+      return 200_visible;
     default:
       return TimeInterval(500 + Random.get(Range(0, 250)));
   }

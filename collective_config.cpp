@@ -235,10 +235,10 @@ MinionActivityInfo::MinionActivityInfo(Type t) : type(t) {
 
 MinionActivityInfo::MinionActivityInfo() {}
 
-MinionActivityInfo::MinionActivityInfo(FurnitureType type)
+MinionActivityInfo::MinionActivityInfo(FurnitureType type, Task::SearchType searchType)
     : type(FURNITURE), furniturePredicate(
-        [type](const ContentFactory*, const Collective*, const Creature*, FurnitureType t) { return t == type;})
-       {
+        [type](const ContentFactory*, const Collective*, const Creature*, FurnitureType t) { return t == type;}),
+      searchType(searchType) {
 }
 
 MinionActivityInfo::MinionActivityInfo(BuiltinUsageId usage)
@@ -249,8 +249,9 @@ MinionActivityInfo::MinionActivityInfo(BuiltinUsageId usage)
      {
 }
 
-MinionActivityInfo::MinionActivityInfo(UsagePredicate pred, SecondaryPredicate pred2)
-    : type(FURNITURE), furniturePredicate(std::move(pred)), secondaryPredicate(std::move(pred2)) {
+MinionActivityInfo::MinionActivityInfo(UsagePredicate pred, SecondaryPredicate pred2, Task::SearchType searchType)
+    : type(FURNITURE), furniturePredicate(std::move(pred)), secondaryPredicate(std::move(pred2)),
+      searchType(searchType) {
 }
 
 CollectiveConfig::CollectiveConfig(const CollectiveConfig&) = default;
@@ -339,6 +340,12 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
             } else
               return false;
           }};
+      case MinionActivity::PREACHING: return {[](const ContentFactory*, const Collective*, const Creature*, FurnitureType t) {
+        return isOneOf(t, FurnitureType("ROSTRUM_WOOD"), FurnitureType("ROSTRUM_IRON"), FurnitureType("ROSTRUM_GOLD"));}};
+      case MinionActivity::MASS: return {[](const ContentFactory*, const Collective*, const Creature*, FurnitureType t) {
+        return isOneOf(t, FurnitureType("PEW_WOOD"), FurnitureType("PEW_IRON"), FurnitureType("PEW_GOLD"));}, nullptr,
+          Task::SearchType::LAZY};
+      case MinionActivity::PRAYER: return {getTrainingPredicate(AttrType("DIVINITY")), nullptr, Task::SearchType::LAZY};
     }
   });
   return map[task];

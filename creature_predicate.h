@@ -44,6 +44,11 @@ struct Ingredient {
   SERIALIZE_ALL(name)
 };
 
+struct EquipedIngredient {
+  string SERIAL(name);
+  SERIALIZE_ALL(name)
+};
+
 struct OnTheGround {
   string SERIAL(name);
   SERIALIZE_ALL(name)
@@ -139,6 +144,18 @@ struct AttributeAtLeast {
   SERIALIZE_ALL(attr, value)
 };
 
+struct TimeOfDay {
+  int SERIAL(min);
+  int SERIAL(max);
+  SERIALIZE_ALL(min, max);
+};
+
+struct MaxLevelBelow {
+  AttrType SERIAL(type);
+  int SERIAL(value);
+  SERIALIZE_ALL(type, value)
+};
+
 using ContainsGas = TileGasType;
 
 #define CREATURE_PREDICATE_LIST\
@@ -183,6 +200,9 @@ using ContainsGas = TileGasType;
   X(AttributeAtLeast, 38)\
   X(ContainsGas, 39)\
   X(HasAnyHealth, 40)\
+  X(TimeOfDay, 41)\
+  X(MaxLevelBelow, 42)\
+  X(EquipedIngredient, 43)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST

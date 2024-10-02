@@ -60,3 +60,10 @@
   verb = "raises"
   attr = "MORGUE"
 }
+
+"SCRIPTORIUM" {
+  furniture = "SCRIPTORIUM"
+  name = "scriptorium"
+  verb = "writes"
+  attr = "DIVINITY"
+}

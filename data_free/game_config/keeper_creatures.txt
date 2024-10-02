@@ -56,6 +56,27 @@
   workshopGroups = { "basic" "bows" }
   description = "Play as a not-so-evil human race. Recruit knights, priests and angelic beings!"
 }
+"3_zchurch"
+{
+  baseName = "Corrupt church"
+  creatureId = { "KEEPER_BISHOP" }
+  tribeAlignment = LAWFUL
+  villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
+  immigrantGroups = { "church" "white_recruits" }
+  technology = {
+      "chicken breeding" "pig breeding" "cow breeding" "iron working"
+      "luxury" "small temptations" "big temptations" "slavery" "dark crafts" "worship of Adoxie"
+  }
+  zLevelGroups = { "basic" "lawful" }
+  initialTech = { }
+  buildingGroups = {
+      "structure_white_knight" "doors" "floors" "storage" "zones" "mass" "beds"
+      "dining table"  "pigsty" "training_dummies" "crafting" "jeweller_church" "distillery_church" "scriptorium"
+      "furnace" "prison_church" "orders" "installations"
+  }
+  workshopGroups = { "basic" "scriptorium" }
+  description = "Build a church, pray a lot and create some holy water."
+}
 "4_necromancer"
 {
   baseName = "Undead"

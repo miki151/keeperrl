@@ -806,7 +806,6 @@ Def NoEffect() Unlock "nothing" End
   endOnly = true
   message = "lash your whip!" "lashes his whip!"
 }
-
 "kings charge"
 {
   symbol = "👑"
@@ -816,4 +815,62 @@ Def NoEffect() Unlock "nothing" End
   }
   cooldown = 300
   sound = "SPELL_STR_BONUS"
+}
+"shaitan insanity"
+{
+  symbol = "😈"
+  effect = Lasting 30 INSANITY
+  cooldown = 5
+}
+"tengu teleport"
+{
+  symbol = "🌀"
+  effect = Teleport
+  range = 10
+  cooldown = 1
+  endOnly = true
+  sound = "SPELL_TELEPORT"
+}
+"banshee scream"
+{
+  symbol = "😱"
+  effect = Area 6 Filter Enemy Damage SPELL_DAMAGE SPELL
+  cooldown = 30
+}
+"healing prayer" inherit "healing" {
+  effect = Name "healing prayer" Heal { FLESH }
+}
+"strength prayer" inherit "damage bonus" {
+  effect = Name "strength prayer" Heal { FLESH }
+}
+"protection prayer" inherit "defense bonus" {
+  effect = Name "protection prayer" Heal { FLESH }
+}
+
+Def TryHolyMissile()
+  TryNoFriendlyFire(
+    {
+      CreatureMessage {"are hit by the missile" "is hit by the missile"}
+      Damage DIVINITY SPELL
+    },
+    CreatureMessage {"are spared by the missile" "is spared by the missile"}
+  )
+End
+
+"holy missile" inherit "magic missile"
+{
+  effect = MinDistanceFromStrongEnemy(2) Name "holy missile" Description "Shoots a holy missile"
+      TryHolyMissile()
+}
+"advanced holy missile" inherit "advanced magic missile"
+{
+  upgrade = "holy missile"
+  effect = MinDistanceFromStrongEnemy(2) Name "advanced holy missile" Description "Shoots a holy missile"
+      TryHolyMissile()
+}
+"expert holy missile" inherit "expert magic missile"
+{
+  upgrade = "advanced holy missile"
+  effect = MinDistanceFromStrongEnemy(2) Name "expert holy missile" Description "Shoots a holy missile"
+      TryHolyMissile()
 }

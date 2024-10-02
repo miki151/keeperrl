@@ -17,6 +17,7 @@ class SunlightInfo {
   SunlightState getState() const;
   double getLightAmount() const;
   TimeInterval getTimeRemaining() const;
+  TimeInterval getTimeSinceDawn() const;
 
   private:
   double lightAmount;

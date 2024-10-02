@@ -28,6 +28,59 @@
     }
 }
 
+"church"
+{
+    {
+      ids = { "ACOLYTE" }
+      traits = { WORKER NO_LIMIT NO_EQUIPMENT NO_LEISURE_ZONE }
+      keybinding = CREATE_IMP
+      noAuto = true
+      initialRecruitment = 4
+      requirements = {
+        { 1 ExponentialCost "GOLD" 30 5 4 }
+      }
+    }
+    {
+      ids = { "ARMED_BROTHER" }
+      traits = { FIGHTER }
+      frequency = 0.7
+      requirements = {
+        { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_WOOD_HUMAN"}}
+      }
+      specialTraits = {
+        { 0.05 { SpecialAttr DAMAGE 8 HatedBy HATE_DRAGONS }}
+        { 0.05 { ExtraTraining DAMAGE 2}}
+        { 0.05 { OneOfTraits { Lasting { FAST_TRAINING } Lasting { SLOW_TRAINING } } }}
+        { 0.05 { Lasting { HATE_ELVES } }}
+        { 0.05 { Lasting { HATE_DWARVES } }}
+        { 0.05 { Lasting { HATE_GREENSKINS } }}
+        { 0.03 { Lasting { BAD_BREATH } }}
+      }
+    }
+    {
+      ids = { "ARTISAN" }
+      traits = { FIGHTER NO_AUTO_EQUIPMENT }
+      frequency = 0.5
+      requirements = {
+        { 0.1 AttractionInfo 1 {FurnitureType "FORGE" FurnitureType "WORKSHOP" FurnitureType "JEWELLER"}}
+      }
+      specialTraits = {
+         { 0.05 { OneOfTraits { Lasting { FAST_CRAFTING } Lasting { SLOW_CRAFTING } } }}
+         { 0.03 { AttrBonus FORGE 20 Lasting { INSANITY } }}
+         { 0.03 { Lasting { BAD_BREATH } }}
+      }
+    }
+    {
+      ids = { "PROSTITUTE" }
+      frequency = 0.2
+      traits = { NO_EQUIPMENT }
+      requirements = {
+        { 1.0 CostInfo "GOLD" 50 }
+        { 0.0 TechId "big temptations"}
+      }
+    }
+}
+
 Def DarkRecruits()
     {
       ids = { "DARK_ELF_WARRIOR" }

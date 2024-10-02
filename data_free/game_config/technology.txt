@@ -32,3 +32,9 @@
 "automaton brains"         { "Build automatons that behave like humanoids."                 {"advanced automatons"}}
 "aerodynamics"             { "Build flying automatons."                                     {"advanced automatons"}}
 "explosives"               { "Build exploding automatons."                                  {"advanced automatons"}}
+"luxury"                   { "" }
+"small temptations"        { ""                                                             {"luxury"}}
+"big temptations"          { ""                                                             {"small temptations"}}
+"slavery"                  { ""                                                             {"big temptations"}}
+"dark crafts"              { ""                                                             {"slavery"}}
+"worship of Adoxie"        { ""                                                             {"dark crafts"}}

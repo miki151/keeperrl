@@ -107,6 +107,19 @@ static string getName(const CreaturePredicates::Ingredient& e, const ContentFact
   return "holding " + e.name;
 }
 
+static bool applyToCreature(const CreaturePredicates::EquipedIngredient& e, const Creature* victim, const Creature* attacker) {
+  auto& equipment = victim->getEquipment();
+  for (auto& item : equipment.getItems(ItemIndex::RUNE))
+    if (equipment.isEquipped(item) && item->getIngredientType() == e.name)
+      return true;
+  return false;
+}
+
+static string getName(const CreaturePredicates::EquipedIngredient& e, const ContentFactory*) {
+  return "holding " + e.name;
+}
+
+
 static bool apply(const CreaturePredicates::OnTheGround& e, Position pos, const Creature*) {
   for (auto& item : pos.getItems(ItemIndex::RUNE))
     if (item->getIngredientType() == e.name)
@@ -384,6 +397,23 @@ static bool applyToCreature(const CreaturePredicates::HasAnyHealth&, const Creat
 
 static string getName(const CreaturePredicates::HasAnyHealth&, const ContentFactory*) {
   return "with health";
+}
+
+static bool apply(const CreaturePredicates::TimeOfDay& t, Position pos, const Creature* attacker) {
+  auto time = pos.getGame()->getSunlightInfo().getTimeSinceDawn();
+  return time.getVisibleInt() < t.max && time.getVisibleInt() >= t.min;
+}
+
+static string getName(const CreaturePredicates::TimeOfDay& m, const ContentFactory* f) {
+  return "during a certain time of day";
+}
+
+static bool applyToCreature(const CreaturePredicates::MaxLevelBelow& p, const Creature* victim, const Creature* attacker) {
+  return getValueMaybe(victim->getAttributes().getMaxExpLevel(), p.type).value_or(0) < p.value;
+}
+
+static string getName(const CreaturePredicates::MaxLevelBelow& p, const ContentFactory*) {
+  return "with max training level below " + toString(p.value);
 }
 
 static bool apply(const CreaturePredicates::Translate& m, Position pos, const Creature* attacker) {

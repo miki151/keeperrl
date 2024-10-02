@@ -1694,7 +1694,7 @@ static void addDebuffEffect(FXManager& mgr) {
   mgr.genSnapshots(FXName::DEBUFF, {1.0f, 1.4f, 1.8f}, {}, 1);
 }
 
-static void addGlitteringEffect(FXManager& mgr, FXName name, double life, double animLength, double size) {
+static void addGlitteringEffect(FXManager& mgr, FXName name, double life, double animLength, double size, bool looped) {
   EmitterDef edef;
   edef.source = FRect(-10, -10, 10, 10);
 
@@ -1744,7 +1744,7 @@ static void addGlitteringEffect(FXManager& mgr, FXName name, double life, double
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  psdef.isLooped = true;
+  psdef.isLooped = looped;
   psdef.animLength = animLength;
 
   mgr.addDef(name, psdef);
@@ -1864,8 +1864,9 @@ void FXManager::initializeDefs() {
   addLoopedLoveEffect(*this);
   addLichEffect(*this);
   addBlindEffect(*this);
-  addGlitteringEffect(*this, FXName::GLITTERING, 0.5, 1.0, 3.5);
-  addGlitteringEffect(*this, FXName::MAGIC_FIELD, 1.0, 1.0, 2.5);
+  addGlitteringEffect(*this, FXName::GLITTERING, 0.5, 1.0, 3.5, true);
+  addGlitteringEffect(*this, FXName::MAGIC_FIELD, 1.0, 1.0, 2.5, true);
+  addGlitteringEffect(*this, FXName::MASS, 1.0, 1.0, 2.5, false);
   addTeleportEffects(*this);
 
   addLaboratoryEffect(*this);

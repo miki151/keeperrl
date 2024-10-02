@@ -3865,6 +3865,9 @@ static string getTaskText(MinionActivity option) {
     case MinionActivity::BE_TORTURED: return "Being tortured";
     case MinionActivity::BE_EXECUTED: return "Being executed";
     case MinionActivity::PHYLACTERY: return "Phylactery";
+    case MinionActivity::PREACHING: return "Performing mass";
+    case MinionActivity::MASS: return "Attending mass";
+    case MinionActivity::PRAYER: return "Praying";
   }
 }
 
@@ -3898,6 +3901,9 @@ static ViewId getViewId(MinionActivity option) {
     case MinionActivity::BE_TORTURED: return ViewId("torture_table");
     case MinionActivity::BE_EXECUTED: return ViewId("gallows");
     case MinionActivity::PHYLACTERY: return ViewId("phylactery");
+    case MinionActivity::PREACHING: return ViewId("rostrum");
+    case MinionActivity::MASS: return ViewId("pew");
+    case MinionActivity::PRAYER: return ViewId("prayer_bench");
   }
 }
 

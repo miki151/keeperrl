@@ -49,6 +49,7 @@ bool MinionActivityMap::canChooseRandomly(const Creature* c, MinionActivity t) c
   switch (t) {
     case MinionActivity::BE_EXECUTED:
     case MinionActivity::BE_WHIPPED:
+    case MinionActivity::PREACHING:
     case MinionActivity::BE_TORTURED:
       return false;
     case MinionActivity::SLEEP:
@@ -73,7 +74,8 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
   PROFILE;
   if ((isLocked(col, c, t) || col->isActivityGroupLocked(c, t)) && !ignoreTaskLock)
     return false;
-  auto factory = col->getGame()->getContentFactory();
+  auto game = col->getGame();
+  auto factory = game->getContentFactory();
   switch (t) {
     case MinionActivity::IDLE:
       return true;
@@ -132,9 +134,20 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
     case MinionActivity::DIGGING:
       return c->getAttr(AttrType("DIGGING")) > 0 && col->hasTrait(c, MinionTrait::WORKER);
     case MinionActivity::MINION_ABUSE:
-      return col->hasTrait(c, MinionTrait::LEADER) && col == col->getGame()->getPlayerCollective();
+      return col->hasTrait(c, MinionTrait::LEADER) && col == game->getPlayerCollective();
     case MinionActivity::DISTILLATION:
       return c->isAffected(BuffId("DISTILLATION_SKILL"));
+    case MinionActivity::PREACHING:
+      return c->isAffected(BuffId("PREACHING_SKILL"));
+    case MinionActivity::MASS: {
+      auto& leaders = col->getLeaders();
+      return !col->hasTrait(c, MinionTrait::PRISONER) && c->getBody().isHumanoid() &&
+          !c->isAffected(BuffId("PREACHING_SKILL")) &&
+          !leaders.empty() && col->getCurrentActivity(leaders[0]).activity == MinionActivity::PREACHING;
+    }
+    case MinionActivity::PRAYER:
+      return !col->hasTrait(c, MinionTrait::PRISONER) &&
+          !c->getAttributes().isTrainingMaxedOut(AttrType("DIVINITY"));
   }
 }
 

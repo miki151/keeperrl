@@ -25,6 +25,7 @@
 #include "conquer_condition.h"
 #include "creature_id.h"
 #include "achievement_id.h"
+#include "task.h"
 
 enum class ItemClass;
 
@@ -50,15 +51,17 @@ struct GuardianInfo {
 struct MinionActivityInfo {
   enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY, IDLE, MINION_ABUSE, GUARD1, GUARD2, GUARD3 } type;
   MinionActivityInfo();
-  MinionActivityInfo(FurnitureType);
+  MinionActivityInfo(FurnitureType, Task::SearchType = Task::SearchType::RANDOM_CLOSE);
   MinionActivityInfo(BuiltinUsageId);
   using UsagePredicate = function<bool(const ContentFactory*, const Collective*, const Creature*, FurnitureType)>;
   using SecondaryPredicate = function<bool(const Furniture*, const Collective*)>;
-  MinionActivityInfo(UsagePredicate, SecondaryPredicate = nullptr);
+  MinionActivityInfo(UsagePredicate, SecondaryPredicate = nullptr,
+      Task::SearchType searchType = Task::SearchType::RANDOM_CLOSE);
   MinionActivityInfo(Type);
   UsagePredicate furniturePredicate =
       [](const ContentFactory*, const Collective*, const Creature*, FurnitureType) { return true; };
   SecondaryPredicate secondaryPredicate;
+  Task::SearchType searchType;
 };
 
 struct FloorInfo {

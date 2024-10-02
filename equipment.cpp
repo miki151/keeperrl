@@ -29,7 +29,9 @@ map<EquipmentSlot, string> Equipment::slotTitles = {
   {EquipmentSlot::BODY_ARMOR, "Body armor"},
   {EquipmentSlot::BOOTS, "Boots"},
   {EquipmentSlot::RINGS, "Rings"},
-  {EquipmentSlot::AMULET, "Amulet"}};
+  {EquipmentSlot::AMULET, "Amulet"},
+  {EquipmentSlot::PRAYER_BOOK, "Prayer book"},
+};
 
 SERIALIZE_DEF(Equipment, inventory, items, equipped)
 SERIALIZATION_CONSTRUCTOR_IMPL(Equipment);
@@ -82,6 +84,8 @@ int Equipment::getMaxItems(EquipmentSlot slot, const Creature* c) const {
     case EquipmentSlot::AMULET:
     case EquipmentSlot::HELMET:
       return body.numGood(BodyPart::HEAD);
+    case EquipmentSlot::PRAYER_BOOK:
+      return c->isAffected(BuffId("PREACHING_SKILL"));
     default:
       return 1;
   }

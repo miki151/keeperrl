@@ -11,5 +11,6 @@ RICH_ENUM(EquipmentSlot,
   BODY_ARMOR,
   BOOTS,
   AMULET,
-  RINGS
+  RINGS,
+  PRAYER_BOOK
 );

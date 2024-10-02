@@ -84,7 +84,6 @@
   "mass damage bonus" 11
   "group healing" 12
 }
-
 "zombie mage" SPELL_DAMAGE
 {
   "summon flies" 1
@@ -95,4 +94,13 @@
   "mass defense bonus" 6
   "mass damage bonus" 7
   "advanced animate corpses" 8
+}
+"prayers" DIVINITY
+{
+  "healing prayer" 1
+  "protection prayer" 2
+  "strength prayer" 3
+  "holy missile" 4
+  "advanced holy missile" 5
+  "expert holy missile" 6
 }

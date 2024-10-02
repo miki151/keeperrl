@@ -10,5 +10,4 @@
 "bows"
 "weapons"
 "automaton_parts"
-
-
+"books"

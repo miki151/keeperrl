@@ -291,7 +291,7 @@ static optional<Position> chooseRandomClose(const Creature* c, const PositionCon
     bool stepOn) {
   auto canNavigate = [&] (const Position& pos) {
     auto other = pos.getCreature();
-    return (!other || !LastingEffects::restrictedMovement(other))
+    return (!other || other == c || !LastingEffects::restrictedMovement(other))
         && (stepOn ? c->canNavigateTo(pos) : c->canNavigateToOrNeighbor(pos));
   };
   int minD = 10000000;
@@ -376,7 +376,7 @@ class ApplySquare : public Task {
     vector<Position> candidates;
     for (auto& pos : positions) {
       if (Creature* other = pos.first.getCreature())
-        if (LastingEffects::restrictedMovement(other))
+        if (other != c && (searchType == SearchType::LAZY || LastingEffects::restrictedMovement(other)))
           continue;
       if (!rejectedPosition.count(pos.first))
         candidates.push_back(pos.first);

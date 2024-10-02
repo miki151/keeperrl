@@ -43,6 +43,9 @@ End
 "STABLE_HAND" ATTR_BUFF(RANGED_DAMAGE, "ranged damage", "stable hand", 10, "stable hand", 200)
 "PIERCING_VOICE" ATTR_BUFF(SPELL_DAMAGE, "spell damage", "piercing voice", 10, "piercing voice", 200)
 
+"DIVINE_PROTECTION" ATTR_BUFF(DEFENSE, "defense", "divine protection", 5, "protected", 400)
+"DIVINE_STRENGTH" ATTR_BUFF(DAMAGE, "damage", "divine strength", 5, "strong", 400)
+
 Def ATTR_DEBUFF(Attr, Name, Amount, Price) {
   name = Name + " debuff"
   adjective = Name + " debuff"
@@ -163,6 +166,7 @@ End
 "EXPLORE_CAVES_SKILL" SKILL("exploring caves", "Explores caves", "Can explore caves.")
 "BRIDGE_BUILDING_SKILL" SKILL("bridge building", "Builds bridges", "Creature will try to build bridges when travelling somewhere.")
 "DISTILLATION_SKILL" SKILL("distillation", "Distiller", "Can distill alcohol.")
+"PREACHING_SKILL" SKILL("preaching", "Preacher", "Can perform mass.")
 
 "SWIMMING_SKILL" modify {
   inheritsFromSteed = true
@@ -297,3 +301,33 @@ Def SPECIAL_RESISTANCE(Name, Predicate, Value)
 End
 
 "DRAGON_RESISTANCE" SPECIAL_RESISTANCE("dragons", HatedBy HATE_DRAGONS, 15)
+
+Def DIVINE_SPELL(EFFECT_NAME)
+Area 15 {
+  Filter Or { FurnitureType PEW_WOOD FurnitureType PEW_IRON FurnitureType PEW_GOLD } EFFECT_NAME
+}
+End
+
+"PREACHING" {
+  name = "Preaching"
+  adjective = "preaching"
+  description = ""
+  color = ColorId PURPLE
+  endEffect = Filter Or { FurnitureType "ROSTRUM_WOOD" FurnitureType "ROSTRUM_IRON" FurnitureType "ROSTRUM_GOLD" } {
+    SetMinionActivity IDLE
+    FirstSuccessful {
+      Filter EquipedIngredient "protection_prayer" DIVINE_SPELL(Lasting 500 "DIVINE_PROTECTION")
+      Filter EquipedIngredient "strength_prayer" DIVINE_SPELL(Lasting 500 "DIVINE_STRENGTH")
+      Filter EquipedIngredient "ranged_resistance_prayer" DIVINE_SPELL(Lasting 500 "RANGED_RESISTANCE")
+      Filter EquipedIngredient "fire_resistance_prayer" DIVINE_SPELL(Lasting 500 "FIRE_RESISTANT")
+      Filter EquipedIngredient "poison_resistance_prayer" DIVINE_SPELL(Lasting 500 POISON_RESISTANT)
+      Filter EquipedIngredient "dragon_resistance_prayer" DIVINE_SPELL(Lasting 500 "DRAGON_RESISTANCE")
+      Filter EquipedIngredient "guardian_prayer" DIVINE_SPELL(Filter CreatureStatus FIGHTER Summon "ANGEL" 1 500 )
+      Filter EquipedIngredient "adoxie_prayer" ChooseRandom {
+        Summon "TENGU" 1 500
+        Summon "SHAITAN" 1 500
+        Summon "BANSHEE" 1 500
+      }
+    }
+  }
+}

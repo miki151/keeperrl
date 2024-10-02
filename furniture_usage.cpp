@@ -90,6 +90,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, const Furnitu
         usePortal(pos, c);
         break;
       case BuiltinUsageId::DEMON_RITUAL:
+      case BuiltinUsageId::PRAY:
       case BuiltinUsageId::STUDY:
       case BuiltinUsageId::ARCHERY_RANGE:
         break;

@@ -331,6 +331,10 @@ void Collective::setMinionActivity(Creature* c, MinionActivity activity) {
     c->removeEffect(LastingEffect::SLEEP);
     currentActivity.set(c, {activity, getLocalTime() +
         MinionActivities::getDuration(c, activity).value_or(-1_visible)});
+    if (activity == MinionActivity::PREACHING)
+      for (auto other : getCreatures())
+        if (other != c && isActivityGood(other, MinionActivity::MASS))
+          setMinionActivity(other, MinionActivity::MASS);
   }
 }
 
@@ -1596,6 +1600,9 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
             break;
           case BuiltinUsageId::ARCHERY_RANGE:
             increaseLevel(AttrType("RANGED_DAMAGE"));
+            break;
+          case BuiltinUsageId::PRAY:
+            increaseLevel(AttrType("DIVINITY"));
             break;
           default:
             break;

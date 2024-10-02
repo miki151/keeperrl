@@ -284,6 +284,95 @@ Def BOOKCASES(SUF1, SUF2)
 End
 BOOKCASES("_NECRO", "_necro")
 BOOKCASES("_HUMAN", "_human")
+
+"SCRIPTORIUM" inherit "POETRY_TABLE"
+{
+  name = "scriptorium"
+  viewId = { "poetry_table" }
+  usageFX = none
+}
+
+"ROSTRUM_WOOD"
+{
+  name = "wooden rostrum"
+  viewId = { "rostrum" }
+  canHideHere = true
+  usageType = UsageEffect "perform mass" {
+    Chance 0.2 Fx { MASS Rgb 100 100 255 100 }
+    Filter Not LastingEffect PREACHING Lasting 200 PREACHING
+  }
+  strength = 5
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+}
+"ROSTRUM_IRON" inherit "ROSTRUM_WOOD"
+{
+  name = "iron rostrum"
+  strength = 20
+  destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+}
+"ROSTRUM_GOLD" inherit "ROSTRUM_WOOD"
+{
+  name = "golden rostrum"
+  strength = 20
+  destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+}
+"PEW_WOOD"
+{
+  name = "wooden pew"
+  viewId = { "pew" }
+  canHideHere = true
+  usageType = UsageEffect "sit on pew" {
+    Area 1 Chance 0.2 Fx { MASS Rgb 100 100 255 100 }
+    Filter LastingEffect DRUNK {
+      CreatureMessage { "fall asleep on the pew" "falls asleep on the pew" }
+      Lasting SLEEP
+    }
+  }
+  strength = 5
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+}
+"PEW_IRON" inherit "PEW_WOOD"
+{
+  name = "iron pew"
+  strength = 20
+  destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+}
+"PEW_GOLD" inherit "PEW_WOOD"
+{
+  name = "golden pew"
+  strength = 20
+  destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+}
+"PRAYER_BENCH_WOOD"
+{
+  name = "wooden prayer bench"
+  viewId = { "prayer_bench" }
+  canHideHere = true
+  usageType = BuiltinUsageId PRAY
+  maxTraining = {
+    DIVINITY 3
+  }
+  strength = 5
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+}
+"PRAYER_BENCH_IRON" inherit "PRAYER_BENCH_WOOD"
+{
+  name = "iron prayer bench"
+  maxTraining = {
+    DIVINITY 7
+  }
+  strength = 15
+  destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+}
+"PRAYER_BENCH_GOLD" inherit "PRAYER_BENCH_WOOD"
+{
+  name = "golden prayer bench"
+  maxTraining = {
+    DIVINITY 12
+  }
+  strength = 15
+  destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+}
 "THRONE"
 {
   name = "throne"

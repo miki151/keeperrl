@@ -46,5 +46,6 @@ RICH_ENUM(FXName,
   LICH,
   BALROGS_WHIP,
   SMOKE,
-  MUSIC
+  MUSIC,
+  MASS
 );
