@@ -112,9 +112,11 @@ vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, optional<T
     creatures.push_back(c->getGame()->getContentFactory()->getCreatures().fromId(id, c->getTribeId(),
         MonsterAIFactory::summoned(c)));
   auto ret = summonCreatures(position.value_or(c->getPosition()), std::move(creatures), delay);
-  for (auto c : ret)
+  for (auto summoned : ret) {
+    summoned->setCombatExperience(c->getCombatExperience(false, false));
     if (ttl)
-      c->addEffect(LastingEffect::SUMMONED, *ttl, false);
+      summoned->addEffect(LastingEffect::SUMMONED, *ttl, false);
+  }
   return ret;
 }
 
@@ -585,15 +587,19 @@ static bool isConsideredHostile(const Effects::Acid&, const Creature* victim) {
 }
 
 static bool apply(const Effects::Summon& e, Position pos, Creature* attacker) {
-  auto tribe = [&] {
-    if (attacker)
-      return attacker->getTribeId();
-    if (auto col = pos.getCollective())
-      return col->getTribeId();
-    return TribeId::getHostile();
-  }();
-  CreatureGroup f = CreatureGroup::singleType(tribe, e.creature);
-  return !Effect::summon(pos, f, Random.get(e.count), e.ttl.map([](int v) { return TimeInterval(v); }), 1_visible).empty();
+  if (auto c = pos.getCreature())
+    return !Effect::summon(c, e.creature, Random.get(e.count), e.ttl.map([](int v) { return TimeInterval(v); }), 1_visible).empty();
+  else {
+    auto tribe = [&] {
+      if (attacker)
+        return attacker->getTribeId();
+      if (auto col = pos.getCollective())
+        return col->getTribeId();
+      return TribeId::getHostile();
+    }();
+    CreatureGroup f = CreatureGroup::singleType(tribe, e.creature);
+    return !Effect::summon(pos, f, Random.get(e.count), e.ttl.map([](int v) { return TimeInterval(v); }), 1_visible).empty();
+  }
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Summon&, const Creature* victim, bool isEnemy) {
