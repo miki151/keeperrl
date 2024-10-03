@@ -156,6 +156,11 @@ struct MaxLevelBelow {
   SERIALIZE_ALL(type, value)
 };
 
+struct ExperienceBelow {
+  int SERIAL(value);
+  SERIALIZE_ALL(value)
+};
+
 using ContainsGas = TileGasType;
 
 #define CREATURE_PREDICATE_LIST\
@@ -202,7 +207,8 @@ using ContainsGas = TileGasType;
   X(HasAnyHealth, 40)\
   X(TimeOfDay, 41)\
   X(MaxLevelBelow, 42)\
-  X(EquipedIngredient, 43)
+  X(EquipedIngredient, 43)\
+  X(ExperienceBelow, 44)\
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST

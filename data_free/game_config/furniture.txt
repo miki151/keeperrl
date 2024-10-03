@@ -373,6 +373,25 @@ BOOKCASES("_HUMAN", "_human")
   strength = 15
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
 }
+"CONFESSIONAL"
+{
+  name = "confessional"
+  viewId = { "confessional" }
+  canHideHere = true
+  usageType = UsageEffect "confess" Filter And {
+    Not Area 1 Not LastingEffect PREACHING_SKILL
+    Not LastingEffect PREACHING_SKILL
+  } {
+    RemoveLasting SINNED
+    CollectiveMessage "A minion is absolved of their sins"
+    Filter ExperienceBelow 20 {
+      AddExperience 1
+      CollectiveMessage "A minion is more experienced"
+    }
+  }
+  strength = 15
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+}
 "THRONE"
 {
   name = "throne"

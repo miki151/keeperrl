@@ -54,7 +54,7 @@ Def ATTR_DEBUFF(Attr, Name, Amount, Price) {
   endEffect = IncreaseAttr Attr Amount
   combatConsumable = true
   consideredBad = true
-  fx = BUFF_RED
+  fx = DEBUFF_RED
   color = ColorId RED
   price = Price
 }
@@ -330,4 +330,13 @@ End
       }
     }
   }
+}
+
+"SINNED" {
+  name = "Sin"
+  adjective = "sinner"
+  description = "The creature has sinned and is seeking forgiveness"
+  color = ColorId BROWN
+  fx = DEBUFF_BROWN
+  consideredBad = true
 }

@@ -742,6 +742,8 @@ BOOKCASES("_human")
   isSymbolFont = true roundShadow = true }
 { viewId = "pew" symbol = "=" color = ColorId LIGHT_BROWN
   isSymbolFont = true roundShadow = true }
+{ viewId = "confessional" symbol = "H" color = ColorId LIGHT_BROWN
+  isSymbolFont = true roundShadow = true }
 { viewId = "prayer_bench" symbol = "H" color = ColorId LIGHT_BROWN
   isSymbolFont = true roundShadow = true }
 { viewId = "demon_shrine" symbol = "Ω" color = ColorId PURPLE

@@ -71,7 +71,7 @@
   initialTech = { }
   buildingGroups = {
       "structure_white_knight" "doors" "floors" "storage" "zones" "mass" "beds"
-      "dining table"  "pigsty" "training_dummies" "crafting" "jeweller_church" "distillery_church" "scriptorium"
+      "dining table"  "pigsty" "training_dummies_human" "crafting" "jeweller_church" "distillery_church" "scriptorium"
       "furnace" "prison_church" "orders" "installations"
   }
   workshopGroups = { "basic" "scriptorium" }

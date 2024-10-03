@@ -3868,6 +3868,8 @@ static string getTaskText(MinionActivity option) {
     case MinionActivity::PREACHING: return "Performing mass";
     case MinionActivity::MASS: return "Attending mass";
     case MinionActivity::PRAYER: return "Praying";
+    case MinionActivity::HEARING_CONFESSION: return "Hearing confessions";
+    case MinionActivity::CONFESSION: return "Confessing";
   }
 }
 
@@ -3904,6 +3906,8 @@ static ViewId getViewId(MinionActivity option) {
     case MinionActivity::PREACHING: return ViewId("rostrum");
     case MinionActivity::MASS: return ViewId("pew");
     case MinionActivity::PRAYER: return ViewId("prayer_bench");
+    case MinionActivity::HEARING_CONFESSION:
+    case MinionActivity::CONFESSION: return ViewId("confessional");
   }
 }
 

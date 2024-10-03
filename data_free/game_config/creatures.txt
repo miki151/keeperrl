@@ -1759,10 +1759,12 @@ End
     COPULATION_SKILL 1
   }
   copulationClientEffect = ChooseRandom {
-    #Lasting FAST_TRAINING
-    Filter MaxLevelBelow "DAMAGE" 15 IncreaseMaxLevel "DAMAGE" 1
+    Lasting 1000 SINNED
+    Lasting 200 HIGH_MORALE
+    CollectiveMessage "A minion has committed a sin."
   }
-  copulationEffect = {}
+  copulationEffect = {
+  }
   aiType = RANGED
   name = {
     name = "prostitute"
@@ -4375,10 +4377,7 @@ End
     }
     canJoinCollective = false
     inventory = {
-      { type = "Sword" prefixChance = 0.1 }
-      { type = Glyph { ARMOR ItemAttrBonus DEFENSE 3 } chance = 0.3 }
-      { type = Glyph { WEAPON ItemAttrBonus DAMAGE 3 } chance = 0.3 }
-      { type = Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 } chance = 0.3 }
+      { type = "Sword" }
     }
   }
 "BAT"

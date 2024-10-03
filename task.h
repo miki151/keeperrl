@@ -66,7 +66,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
 
   static PTask construction(WTaskCallback, Position, FurnitureType);
   static PTask destruction(WTaskCallback, Position, const Furniture*, DestroyAction, PositionMatching*);
-  enum SearchType { LAZY, RANDOM_CLOSE };
+  enum SearchType { LAZY, RANDOM_CLOSE, CONFESSION };
   enum ActionType { APPLY, NONE };
   static PTask applySquare(WTaskCallback, vector<pair<Position, FurnitureLayer>>, SearchType, ActionType);
   static constexpr int archeryRangeDistance = 5;
@@ -102,6 +102,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask goToTryForever(Position);
   static PTask transferTo(Model*);
   static PTask goToAndWait(Position, TimeInterval waitTime);
+  static PTask wait(TimeInterval waitTime);
   static PTask whipping(Position, Creature* whipped);
   static PTask dropItemsAnywhere(vector<Item*>);
   static PTask dropItems(vector<Item*>, vector<Position>);

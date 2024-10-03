@@ -439,6 +439,8 @@ class ApplySquare : public Task {
   }
 
   bool atTarget(Creature* c) {
+    if (searchType == SearchType::CONFESSION)
+      return position->first.dist8(c->getPosition()) == 1;
     return position->first == c->getPosition() ||
         (!position->first.canEnterEmpty(c) && position->first.dist8(c->getPosition()) == 1);
   }
@@ -1489,6 +1491,38 @@ PTask Task::goToAndWait(Position pos, TimeInterval waitTime) {
 }
 
 namespace {
+class Wait : public Task {
+  public:
+  Wait(TimeInterval waitT) : waitTime(waitT) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (!maxTime)
+      maxTime = *c->getLocalTime() + waitTime;
+    if (*c->getLocalTime() >= *maxTime) {
+      setDone();
+      return NoMove;
+    }
+    return c->wait();
+  }
+
+  virtual string getDescription() const override {
+    return "Wait for " + toString(waitTime) + " turns";
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), waitTime, maxTime)
+  SERIALIZATION_CONSTRUCTOR(Wait)
+
+  private:
+  TimeInterval SERIAL(waitTime);
+  optional<LocalTime> SERIAL(maxTime);
+};
+}
+
+PTask Task::wait(TimeInterval waitTime) {
+  return makeOwner<Wait>(waitTime);
+}
+
+namespace {
 class Whipping : public Task {
   public:
   Whipping(Position pos, Creature* w) : position(pos), whipped(w) {}
@@ -2049,3 +2083,4 @@ REGISTER_TYPE(WithTeam)
 REGISTER_TYPE(ArcheryRange)
 REGISTER_TYPE(OutsidePredicate)
 REGISTER_TYPE(AlwaysPredicate)
+REGISTER_TYPE(Wait)

@@ -416,6 +416,14 @@ static string getName(const CreaturePredicates::MaxLevelBelow& p, const ContentF
   return "with max training level below " + toString(p.value);
 }
 
+static bool applyToCreature(const CreaturePredicates::ExperienceBelow& p, const Creature* victim, const Creature* attacker) {
+  return victim->getCombatExperience(false, false) < p.value;
+}
+
+static string getName(const CreaturePredicates::ExperienceBelow& p, const ContentFactory*) {
+  return "with experience level below " + toString(p.value);
+}
+
 static bool apply(const CreaturePredicates::Translate& m, Position pos, const Creature* attacker) {
   return m.pred->apply(pos.plus(m.dir), attacker);
 }

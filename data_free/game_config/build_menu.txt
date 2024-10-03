@@ -232,6 +232,8 @@ End
         "Used by priests when praying." }
     { Furniture {{ "PRAYER_BENCH_GOLD" }  "GOLD" 10 }                      "Golden prayer bench"      "Mass"
         "Used by priests when praying." }
+    { Furniture {{ "CONFESSIONAL" }  "WOOD" 40 }                           "Confessional"      "Mass"
+        "Confessing sins increases minion's experience up to a level of 20." none { TechId "big temptations"} }
   }
 
   "beds"
@@ -310,7 +312,7 @@ End
   }
 
 Def TRAINING(SUF1, SUF2)
-  "training" + SUF2
+  "training_dummies" + SUF2
   {
     { Furniture {{ "TRAINING_WOOD" + SUF1 } "WOOD" 12 }                   "Wooden dummy"      "Training room"
         "Train your minions' melee skills here." "TRAINING_DUMMIES" {} true  TRAINING_ROOM}
@@ -318,6 +320,9 @@ Def TRAINING(SUF1, SUF2)
         "Train your minions' melee skills here."   none { TechId "iron working" } }
     { Furniture {{ "TRAINING_ADA" + SUF1 }  "ADA"  12 }                   "Adamantine dummy"  "Training room"
         "Train your minions' melee skills here."   none { TechId "iron working" }}
+  }
+  "training" + SUF2 inherit "training_dummies" + SUF2 append
+  {
     { Furniture {{ "ARCHERY_RANGE" } "WOOD" 12 }                   "Archery target"    "Training room"
         "Train your minions' archery skills here." none { TechId "archery" }}
   }

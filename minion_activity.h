@@ -36,7 +36,9 @@ RICH_ENUM(
     PHYLACTERY,
     PREACHING,
     MASS,
-    PRAYER
+    PRAYER,
+    HEARING_CONFESSION,
+    CONFESSION
 );
 
 class Position;

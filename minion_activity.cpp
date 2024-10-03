@@ -330,13 +330,24 @@ PTask MinionActivities::generate(Collective* collective, Creature* c, MinionActi
         return Task::copulate(collective, target, 20);
       break;
     }
+    case MinionActivityInfo::CONFESSION: {
+      PROFILE_BLOCK("Confess");
+      const auto& pos = collective->getConstructions().getBuiltPositions(FurnitureType("CONFESSIONAL"));
+      if (!pos.empty())
+        return Task::chain(
+            Task::applySquare(collective, pos.transform([](auto pos){ return make_pair(pos, FurnitureLayer::MIDDLE); }),
+                Task::SearchType::CONFESSION, Task::APPLY),
+            Task::wait(10_visible)
+        );
+      break;
+    }
     case MinionActivityInfo::EAT: {
       PROFILE_BLOCK("Eat");
       const auto& hatchery = collective->getConstructions().getBuiltPositions(FurnitureType("PIGSTY"));
       if (!hatchery.empty())
         return Task::eat(tryInQuarters(vector<Position>(hatchery.begin(), hatchery.end()), collective, c));
       break;
-      }
+    }
     case MinionActivityInfo::SPIDER: {
       PROFILE_BLOCK("Spider");
       auto& territory = collective->getTerritory();
@@ -365,9 +376,13 @@ optional<TimeInterval> MinionActivities::getDuration(const Creature* c, MinionAc
       return TimeInterval((int) 30 + Random.get(-10, 10));
     case MinionActivity::RITUAL:
       return 150_visible;
+    case MinionActivity::HEARING_CONFESSION:
+      return 50_visible;
     case MinionActivity::PREACHING:
     case MinionActivity::MASS:
       return 200_visible;
+    case MinionActivity::CONFESSION:
+      return none;
     default:
       return TimeInterval(500 + Random.get(Range(0, 250)));
   }
