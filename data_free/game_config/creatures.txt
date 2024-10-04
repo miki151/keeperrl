@@ -5216,7 +5216,7 @@ End
   {
     viewId = { "tengu" }
     attr = {
-      DAMAGE 40
+      SPELL_DAMAGE 40
       DEFENSE 40
     }
     body = {
@@ -5254,6 +5254,69 @@ End
       "banshee scream"
     }
   }
+"VETALA" inherit "TENGU"
+  {
+    viewId = { "vetala" }
+    name = {
+      name = "vetala"
+    }
+    spells = {
+      "vetala animate corpses"
+    }
+  }
+"LEYAK" inherit "TENGU"
+  {
+    viewId = { "leyak" }
+    name = {
+      name = "leyak"
+    }
+    spells = {
+      "leyak acid"
+    }
+  }
+"BAKU" inherit "TENGU"
+  {
+    viewId = { "baku" }
+    name = {
+      name = "baku"
+    }
+    specialAttr = {
+      SPELL_DAMAGE { 40 LastingEffect SLEEP }
+    }
+  }
+"RAKSHASA" inherit "TENGU"
+  {
+    viewId = { "rakshasa" }
+    name = {
+      name = "rakshasa"
+    }
+    specialAttr = {
+      SPELL_DAMAGE { 40 HatedBy HATE_HUMANS }
+    }
+  }
+"GHOUL" inherit "TENGU"
+  {
+    viewId = { "ghoul" }
+    name = {
+      name = "ghoul"
+    }
+    spells = {
+      "ghoul corpse feast"
+    }
+  }
+"SUANGGI" inherit "TENGU"
+  {
+    viewId = { "suanggi" }
+    name = {
+      name = "suanggi"
+    }
+    body = append {
+      intrinsicAttacks = {
+        TORSO {{{ Intrinsic { "fist_attack" } "spell" 1 {
+            attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL victimEffect = { 1.0 Lasting PLAGUE} } }}}
+      }
+    }
+  }
 # legacy creatures not in vanilla anymore
 
 "ORC"
@@ -5261,7 +5324,7 @@ End
     viewId = { "orc" }
     attr = {
       DAMAGE 16
-      DEFENSE 14 
+      DEFENSE 14
       FURNACE 5
       WORKSHOP 15
       FORGE 15

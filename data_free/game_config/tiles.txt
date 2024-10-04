@@ -43,6 +43,12 @@
 { viewId = "tengu" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId LIGHT_BLUE }
 { viewId = "shaitan" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId LIGHT_RED }
 { viewId = "banshee" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId LIGHT_BROWN }
+{ viewId = "vetala" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId GREEN }
+{ viewId = "leyak" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId YELLOW }
+{ viewId = "baku" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId WHITE }
+{ viewId = "rakshasa" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId ORANGE }
+{ viewId = "ghoul" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId LIGHT_GRAY }
+{ viewId = "suanggi" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId LIGHT_GREEN }
 { "adoxie_foot_left" "u" ColorId PURPLE }
 { "adoxie_foot_right" "u" ColorId PURPLE }
 { "adoxie_hand_right" "u" ColorId PURPLE }

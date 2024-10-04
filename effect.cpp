@@ -586,6 +586,24 @@ static bool isConsideredHostile(const Effects::Acid&, const Creature* victim) {
   return !victim->isAffected(BuffId("ACID_RESISTANT"));
 }
 
+static string getName(const Effects::EatCorpse&, const ContentFactory*) {
+  return "eat corpse";
+}
+
+static string getDescription(const Effects::EatCorpse&, const ContentFactory*) {
+  return "Creature will feast on a corpse.";
+}
+
+static bool apply(const Effects::EatCorpse& a, Position pos, Creature* attacker) {
+  for (auto& item : pos.getItems())
+    if (auto info = item->getCorpseInfo()) {
+      auto it = pos.removeItem(item);
+      attacker->verb("eat", "eats", it->getTheName());
+      return true;
+    }
+  return false;
+}
+
 static bool apply(const Effects::Summon& e, Position pos, Creature* attacker) {
   if (auto c = pos.getCreature())
     return !Effect::summon(c, e.creature, Random.get(e.count), e.ttl.map([](int v) { return TimeInterval(v); }), 1_visible).empty();

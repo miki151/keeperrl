@@ -327,6 +327,12 @@ End
         Summon "TENGU" 1 500
         Summon "SHAITAN" 1 500
         Summon "BANSHEE" 1 500
+        Summon "VETALA" 1 500
+        Summon "LEYAK" 1 500
+        Summon "BAKU" 1 500
+        Summon "RAKSHASA" 1 500
+        Summon "GHOUL" 1 500
+        Summon "SUANGGI" 1 500
       }
     }
   }

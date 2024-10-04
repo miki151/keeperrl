@@ -836,6 +836,35 @@ Def NoEffect() Unlock "nothing" End
   symbol = "😱"
   effect = Area 6 Filter Enemy Damage SPELL_DAMAGE SPELL
   cooldown = 30
+  type = ABILITY
+}
+"vetala animate corpses"
+{
+  upgrade = "animate corpses"
+  symbol = "👤"
+  effect = Name "animate corpses" AnimateItems 2 5 {30 50} CORPSE
+  cooldown = {3}
+}
+"leyak acid"
+{
+  symbol = "🜅"
+  effect = Name "acid spit" Area 1 Acid{}
+  fx = {FLAMETHROWER ColorId YELLOW}
+  range = 5
+  cooldown = {5 10}
+  message = "spit acid!" "spits acid!"
+  type = ABILITY
+}
+"ghoul corpse feast"
+{
+  symbol = "👤"
+  effect = Name "feast on a corpse" Description "Increases spell damage and defense by 1 after feasting on a corpse." ChainUntilFail {
+    EatCorpse
+    IncreaseAttr DEFENSE 1
+    IncreaseAttr SPELL_DAMAGE 1
+  }
+  cooldown = 1
+  type = ABILITY
 }
 "healing prayer" inherit "healing" {
   effect = Name "healing prayer" Heal { FLESH }
