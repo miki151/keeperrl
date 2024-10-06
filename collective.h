@@ -50,7 +50,7 @@ class CollectiveWarnings;
 class Immigration;
 class PositionMatching;
 class MinionActivities;
-class ResourceInfo;
+struct ResourceInfo;
 class StoragePositions;
 class Furnace;
 class Dancing;

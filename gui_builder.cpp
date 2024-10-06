@@ -1776,7 +1776,7 @@ SGuiElem GuiBuilder::drawSpellsList(const vector<SpellInfo>& spells, GenericId c
       list.addElem(line.buildHorizontalList());
     auto ret = list.buildVerticalList();
     if (active) {
-      auto getNextSpell = [spells](int curIndex, int inc) -> optional<int> {
+      auto getNextSpell = [spells, spellsPerRow](int curIndex, int inc) -> optional<int> {
         int module = abs(inc) == 1 ? spells.size() : (spells.size() + spellsPerRow - 1) / spellsPerRow * spellsPerRow;
         for (int i : All(spells)) {
           int index = (curIndex + (i + 1) * inc + module) % module;
@@ -4396,7 +4396,7 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const optional<Tut
   return WL(stack, makeVec(
         WL(keyHandlerBool, [this] {
         if (minionPageIndex == MinionPageElems::None{}) {
-          minionPageIndex = MinionPageElems::MinionAction{0};
+          minionPageIndex = MinionPageElems::MinionPageIndexVariant(MinionPageElems::MinionAction{0});
           return true;
         }
         return false;
@@ -5012,7 +5012,7 @@ SGuiElem GuiBuilder::drawGameModeButton(SyncQueue<CampaignAction>& queue, View::
 SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
     View::CampaignMenuState& menuState) {
   if (menuState.index == CampaignMenuElems::None{} && hasController())
-    menuState.index = CampaignMenuElems::Help{};
+    menuState.index = CampaignMenuElems::CampaignMenuIndexVariant(CampaignMenuElems::Help{});
   const auto& campaign = campaignOptions.campaign;
   auto& retiredGames = campaignOptions.retired;
   auto lines = WL(getListBuilder, getStandardLineHeight());

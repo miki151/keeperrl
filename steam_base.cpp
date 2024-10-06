@@ -1,3 +1,5 @@
+#ifdef USE_STEAMWORKS
+
 #include "steam_internal.h"
 #include "steam_base.h"
 #include "steam_ugc.h"
@@ -94,3 +96,5 @@ optional<int> getItemVersion(const string& metadata) {
   return val > 0 ? val : optional<int>();
 }
 }
+
+#endif

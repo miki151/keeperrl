@@ -1,3 +1,5 @@
+#ifdef USE_STEAMWORKS
+
 #include "steam_internal.h"
 #include "steam_ugc.h"
 #include "steam_utils.h"
@@ -332,7 +334,7 @@ void UGC::beginUpdateItem(const UpdateItemInfo& info) {
       SteamParamStringArray_t strings;
       strings.m_nNumStrings = buffer.size();
       strings.m_ppStrings = buffer.data();
-      auto ret = SteamAPI_ISteamUGC_SetItemTags(ptr, handle, &strings);
+      auto ret = SteamAPI_ISteamUGC_SetItemTags(ptr, handle, &strings, true);
       CHECK(ret);
     }
 
@@ -419,3 +421,5 @@ void UGC::stopPlaytimeTracking(const vector<ItemId>& ids) {
 }
 }
 #undef FUNC
+
+#endif

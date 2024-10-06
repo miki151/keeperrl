@@ -95,7 +95,7 @@ void CollectiveConfig::addBedRequirementToImmigrants(vector<ImmigrantInfo>& immi
             [&](const auto&) {}
         ));
         if (!hasBed) {
-          info.addRequirement(AttractionInfo(1, factory->furniture.getBedFurniture(*bedType)[0]));
+          info.addRequirement(AttractionInfo(1, AttractionType(factory->furniture.getBedFurniture(*bedType)[0])));
         }
       }
   }
