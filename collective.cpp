@@ -331,10 +331,6 @@ void Collective::setMinionActivity(Creature* c, MinionActivity activity) {
     c->removeEffect(LastingEffect::SLEEP);
     currentActivity.set(c, {activity, getLocalTime() +
         MinionActivities::getDuration(c, activity).value_or(-1_visible)});
-    if (activity == MinionActivity::PREACHING)
-      for (auto other : getCreatures())
-        if (other != c && isActivityGood(other, MinionActivity::MASS))
-          setMinionActivity(other, MinionActivity::MASS);
   }
 }
 
