@@ -1337,12 +1337,7 @@ void MapGui::processScrolling(milliseconds time) {
 }
 
 bool MapGui::isDraggedCreature() const {
-  if (auto draggedContent = guiFactory->getDragContainer().getElement())
-    return draggedContent->visit<bool>(
-        [] (UniqueEntity<Creature>::Id) { return true; },
-        [] (const string& group) { return true; },
-        [] (auto&) { return false; });
-  return false;
+  return !!guiFactory->getDragContainer().getElement();
 }
 
 void MapGui::considerScrollingToCreature() {
