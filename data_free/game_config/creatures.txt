@@ -272,6 +272,7 @@ End
       { "LeatherArmor" }
       { "LeatherHelm" }
       { "PrayerBookProtection" }
+      { "PrayerBookDigging" }
     }
   }
 "WHITE_WIZARD" inherit "KEEPER_MAGE"
@@ -1609,7 +1610,6 @@ End
     }
     maxLevelIncrease = {
       DAMAGE 12
-      DIVINITY 12
     }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
@@ -1710,6 +1710,16 @@ End
     name = {
       name = "cleric"
       firstNameGen = "FIRST_MALE"
+    }
+  }
+"PRIEST_DIVINITY" inherit "PRIEST_PLAYER"
+  {
+    spellSchools = { "prayers" }
+    permanentEffects = append {
+      DISTILLATION_SKILL 1
+    }
+    maxLevelIncrease = {
+      DIVINITY 12
     }
   }
 "ARTISAN"

@@ -58,6 +58,21 @@
       }
     }
     {
+      ids = { "PRIEST_DIVINITY" }
+      traits = { FIGHTER }
+      frequency = 0.4
+      requirements = {
+        { 0.1 AttractionInfo 1 {FurnitureType "PRAYER_BENCH_WOOD"}}
+      }
+      specialTraits = {
+        { 0.15 { SpecialAttr DEFENSE 8 HatedBy HATE_UNDEAD }}
+        { 0.03 { AttrBonus DIVINITY 4 AttrBonus DEFENSE -4}}
+        { 0.02 { AttrBonus SPELL_SPEED 30 }}
+        { 0.05 { ExtraTraining DIVINITY 2}}
+        { 0.02 { Lasting { HATE_UNDEAD } }}
+      }
+    }
+    {
       ids = { "ARTISAN" }
       traits = { FIGHTER NO_AUTO_EQUIPMENT }
       frequency = 0.5

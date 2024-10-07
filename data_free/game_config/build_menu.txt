@@ -231,7 +231,7 @@ End
     { Furniture {{ "PRAYER_BENCH_IRON" }  "IRON" 10 }                      "Iron prayer bench"      "Mass"
         "Used by priests when praying." }
     { Furniture {{ "PRAYER_BENCH_GOLD" }  "GOLD" 10 }                      "Golden prayer bench"      "Mass"
-        "Used by priests when praying." }
+        "Used by priests when praying." none { TechId "luxury" } }
     { Furniture {{ "CONFESSIONAL" }  "WOOD" 40 }                           "Confessional"      "Mass"
         "Confessing sins increases minion's experience up to a level of 20." none { TechId "big temptations"} }
   }

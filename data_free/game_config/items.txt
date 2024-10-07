@@ -1963,6 +1963,27 @@ End
     ingredientType = "ranged_resistance_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed with the intention of protecting minions from arrows."
   }
+"PrayerBookDigging" inherit "PrayerBookProtection"
+  {
+    shortName = "digging"
+    name = "prayers for digging"
+    ingredientType = "digging_prayer"
+    effect = Name "None" Message NORMAL "Mass will be performed with the intention of giving minions more strength in digging."
+  }
+"PrayerBookFastTraining" inherit "PrayerBookProtection"
+  {
+    shortName = "fast training"
+    name = "prayers for fast training"
+    ingredientType = "training_prayer"
+    effect = Name "None" Message NORMAL "Mass will be performed with the intention of minions training at a faster pace."
+  }
+"PrayerBookFastCrafting" inherit "PrayerBookProtection"
+  {
+    shortName = "fast crafting"
+    name = "prayers for fast crafting"
+    ingredientType = "crafting_prayer"
+    effect = Name "None" Message NORMAL "Mass will be performed with the intention of minions crafting at a faster pace."
+  }
 "PrayerBookFireResistance" inherit "PrayerBookProtection"
   {
     shortName = "protection from fire"

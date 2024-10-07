@@ -45,6 +45,7 @@ End
 
 "DIVINE_PROTECTION" ATTR_BUFF(DEFENSE, "defense", "divine protection", 5, "protected", 400)
 "DIVINE_STRENGTH" ATTR_BUFF(DAMAGE, "damage", "divine strength", 5, "strong", 400)
+"DIVINE_DIGGING" ATTR_BUFF(DIGGING, "digging", "divine digging", 15, "divine digger", 200)
 
 Def ATTR_DEBUFF(Attr, Name, Amount, Price) {
   name = Name + " debuff"
@@ -302,9 +303,22 @@ End
 
 "DRAGON_RESISTANCE" SPECIAL_RESISTANCE("dragons", HatedBy HATE_DRAGONS, 15)
 
-Def DIVINE_SPELL(EFFECT_NAME)
-Area 15 {
-  Filter Or { FurnitureType PEW_WOOD FurnitureType PEW_IRON FurnitureType PEW_GOLD } EFFECT_NAME
+Def MassMessage(Text)
+  UI "unlock_message" { "message" Label Text "view_id" ViewIdList {{"rostrum"}}}
+End
+
+Def DIVINE_SPELL(EFFECT_NAME, MESSAGE) {
+  Area 15 {
+    Filter Or { FurnitureType PEW_WOOD FurnitureType PEW_IRON FurnitureType PEW_GOLD } EFFECT_NAME
+  }
+  MassMessage(MESSAGE)
+}
+End
+
+Def MASS_SOUND()
+FirstSuccessful {
+  Filter EquipedIngredient "adoxie_prayer" SoundEffect { "black_mass" }
+  SoundEffect { "latin_mass" }
 }
 End
 
@@ -313,16 +327,31 @@ End
   adjective = "preaching"
   description = ""
   color = ColorId PURPLE
+  startEffect = MASS_SOUND()
+  tickEffect = MASS_SOUND()
   endEffect = Filter Or { FurnitureType "ROSTRUM_WOOD" FurnitureType "ROSTRUM_IRON" FurnitureType "ROSTRUM_GOLD" } {
     SetMinionActivity IDLE
     FirstSuccessful {
-      Filter EquipedIngredient "protection_prayer" DIVINE_SPELL(Lasting 500 "DIVINE_PROTECTION")
-      Filter EquipedIngredient "strength_prayer" DIVINE_SPELL(Lasting 500 "DIVINE_STRENGTH")
-      Filter EquipedIngredient "ranged_resistance_prayer" DIVINE_SPELL(Lasting 500 "RANGED_RESISTANCE")
-      Filter EquipedIngredient "fire_resistance_prayer" DIVINE_SPELL(Lasting 500 "FIRE_RESISTANT")
-      Filter EquipedIngredient "poison_resistance_prayer" DIVINE_SPELL(Lasting 500 POISON_RESISTANT)
-      Filter EquipedIngredient "dragon_resistance_prayer" DIVINE_SPELL(Lasting 500 "DRAGON_RESISTANCE")
-      Filter EquipedIngredient "guardian_prayer" DIVINE_SPELL(Filter CreatureStatus FIGHTER Summon "ANGEL" 1 500 )
+      Filter EquipedIngredient "protection_prayer" DIVINE_SPELL(Lasting 500 "DIVINE_PROTECTION",
+          "Minions have been blessed with a +5 defense bonus for 500 turns.")
+      Filter EquipedIngredient "strength_prayer" DIVINE_SPELL(Lasting 500 "DIVINE_STRENGTH",
+          "Minions have been blessed with a +5 damage bonus for 500 turns.")
+      Filter EquipedIngredient "digging_prayer" DIVINE_SPELL(Lasting 1500 "DIVINE_DIGGING",
+          "Minions have been blessed with a +15 digging bonus for 1500 turns.")
+      Filter EquipedIngredient "training_prayer" DIVINE_SPELL(Lasting 1500 FAST_TRAINING,
+          "Minions have been blessed with faster training for 1500 turns.")
+      Filter EquipedIngredient "crafting_prayer" DIVINE_SPELL(Lasting 1500 FAST_CRAFTING,
+          "Minions have been blessed with faster crafting for 1500 turns.")
+      Filter EquipedIngredient "ranged_resistance_prayer" DIVINE_SPELL(Lasting 500 "RANGED_RESISTANCE",
+          "Minions have been blessed with resistance to ranged attacks for 500 turns.")
+      Filter EquipedIngredient "fire_resistance_prayer" DIVINE_SPELL(Lasting 500 "FIRE_RESISTANT",
+          "Minions have been blessed with resistance to fire attacks for 500 turns.")
+      Filter EquipedIngredient "poison_resistance_prayer" DIVINE_SPELL(Lasting 500 POISON_RESISTANT,
+          "Minions have been blessed with resistance to poison for 500 turns.")
+      Filter EquipedIngredient "dragon_resistance_prayer" DIVINE_SPELL(Lasting 500 "DRAGON_RESISTANCE",
+          "Minions have been blessed with resistance to dragon attacks for 500 turns.")
+      Filter EquipedIngredient "guardian_prayer" DIVINE_SPELL(Filter CreatureStatus FIGHTER Summon "ANGEL" 1 500,
+          "Minions have been blessed with guardian angels for 500 turns.")
       Filter EquipedIngredient "adoxie_prayer" ChooseRandom {
         Summon "TENGU" 1 500
         Summon "SHAITAN" 1 500

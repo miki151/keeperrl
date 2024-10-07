@@ -365,9 +365,10 @@ End
   "SCRIPTORIUM"
   {
     {{"PrayerBookFireResistance"}      100 "GOLD" 100}
-    {{"PrayerBookPoisonResistance"}      100 "GOLD" 100}
+    {{"PrayerBookPoisonResistance"}    100 "GOLD" 100}
     {{"PrayerBookRangedResistance"}    100 "GOLD" 100}
-    {{"PrayerBookProtection"}          200 "GOLD" 150}
+    {{"PrayerBookFastTraining"}        100 "GOLD" 100}
+    {{"PrayerBookFastCrafting"}        100 "GOLD" 100}
     {{"PrayerBookStrength"}            200 "GOLD" 150}
     {{"PrayerBookGuardian"}            250 "GOLD" 300}
     {{"PrayerBookAdoxie"}              500 "GOLD" 300 "worship of Adoxie"}
