@@ -380,7 +380,7 @@ optional<TimeInterval> MinionActivities::getDuration(const Creature* c, MinionAc
       return 50_visible;
     case MinionActivity::PREACHING:
     case MinionActivity::MASS:
-      return 200_visible;
+      return 300_visible;
     case MinionActivity::CONFESSION:
       return none;
     default:
