@@ -334,12 +334,14 @@ BOOKCASES("_HUMAN", "_human")
 "PEW_IRON" inherit "PEW_WOOD"
 {
   name = "iron pew"
+  upgrade = "PEW_WOOD"
   strength = 20
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
 "PEW_GOLD" inherit "PEW_WOOD"
 {
   name = "golden pew"
+  upgrade = "PEW_IRON"
   strength = 20
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
 }
@@ -358,6 +360,7 @@ BOOKCASES("_HUMAN", "_human")
 "PRAYER_BENCH_IRON" inherit "PRAYER_BENCH_WOOD"
 {
   name = "iron prayer bench"
+  upgrade = "PRAYER_BENCH_WOOD"
   maxTraining = {
     DIVINITY 7
   }
@@ -367,6 +370,7 @@ BOOKCASES("_HUMAN", "_human")
 "PRAYER_BENCH_GOLD" inherit "PRAYER_BENCH_WOOD"
 {
   name = "golden prayer bench"
+  upgrade = "PRAYER_BENCH_IRON"
   maxTraining = {
     DIVINITY 12
   }
