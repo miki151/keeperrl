@@ -1998,20 +1998,22 @@ End
     ingredientType = "poison_resistance_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed with the intention of protecting minions from poison."
   }
-"PrayerBookDragonResistance" inherit "PrayerBookProtection"
+Def PROTECTION_BOOK(NAME, LOWER, PLURAL)
+"PrayerBook" + NAME + "Resistance" inherit "PrayerBookProtection"
   {
-    shortName = "protection from dragons"
-    name = "prayers for protection from dragons"
-    ingredientType = "dragon_resistance_prayer"
-    effect = Name "None" Message NORMAL "Mass will be performed with the intention of protecting minions from dragons."
+    shortName = "protection from " + PLURAL
+    name = "prayers for protection from " + PLURAL
+    ingredientType = LOWER + "_resistance_prayer"
+    effect = Name "None" Message NORMAL "Mass will be performed with the intention of protecting minions from " + PLURAL + "."
   }
-"PrayerBookUndeadResistance" inherit "PrayerBookProtection"
-  {
-    shortName = "protection from undead"
-    name = "prayers for protection from undead"
-    ingredientType = "undead_resistance_prayer"
-    effect = Name "None" Message NORMAL "Mass will be performed with the intention of protecting minions from the undead."
-  }
+End
+PROTECTION_BOOK("Dragon", "dragon", "dragons")
+PROTECTION_BOOK("Demon", "demon", "demons")
+PROTECTION_BOOK("Undead", "undead", "the undead")
+PROTECTION_BOOK("Lizardmen", "lizardmen", "lizardmen")
+PROTECTION_BOOK("Elf", "elf", "elves")
+PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
+
 "PrayerBookGuardian" inherit "PrayerBookProtection"
   {
     shortName = "guardian"

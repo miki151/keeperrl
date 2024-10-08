@@ -466,6 +466,7 @@ End
     name = {
       name = "ancient spirit"
     }
+    hatedByEffect = HATE_DEMONS
   }
 "DJINN"
   {
@@ -491,6 +492,7 @@ End
     }
     spells = { "grant wish" }
     instantPrisoner = true
+    hatedByEffect = HATE_DEMONS
   }
 "DEVIL"
   {
@@ -511,6 +513,7 @@ End
     name = {
       name = "devil"
     }
+    hatedByEffect = HATE_DEMONS
   }
 "DEVIL_VAULT" inherit "DEVIL"
   {
@@ -544,6 +547,7 @@ End
     inventory = {
       { "InferniteTrident" }
     }
+    hatedByEffect = HATE_DEMONS
   }
 "LOST_SOUL"
   {
@@ -572,6 +576,7 @@ End
     name = {
       name = "ghost"
     }
+    hatedByEffect = HATE_DEMONS
   }
 "WRAITH"
   {
@@ -599,6 +604,7 @@ End
     name = {
       name = "wraith"
     }
+    hatedByEffect = HATE_DEMONS
   }
 "SUCCUBUS"
   {
@@ -629,6 +635,7 @@ End
       name = "succubus"
       pluralName = "succubi"
     }
+    hatedByEffect = HATE_DEMONS
   }
 "GALEAM"
   {
@@ -694,6 +701,7 @@ End
     name = {
       name = "ice demon"
     }
+    hatedByEffect = HATE_DEMONS
   }
 "DOPPLEGANGER"
   {
@@ -712,6 +720,7 @@ End
     name = {
       name = "doppelganger"
     }
+    hatedByEffect = HATE_DEMONS
   }
 "SHAPESHIFTER"
   {
@@ -728,6 +737,7 @@ End
     name = {
       name = "shapeshifter"
     }
+    hatedByEffect = HATE_DEMONS
   }
 "WITCH"
   {
@@ -928,6 +938,7 @@ End
     maxLevelIncrease = {
       DAMAGE 4
     }
+    hatedByEffect = HATE_DEMONS
   }
 "DEMON_LORD"
   {
@@ -965,6 +976,7 @@ End
       { type = Glyph { ARMOR LastingEffect NO_CARRY_LIMIT } chance = 0.3 }
       { type = Glyph { WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 20 AttackerEffect Suicide DIE} } chance = 0.3 }
     }
+    hatedByEffect = HATE_DEMONS
   }
 "MINOTAUR"
   {
@@ -1539,6 +1551,7 @@ End
     }
     spells = { "heal spirit" "deception" "haste" "fire trap" }
     killedAchievement = "killed_balrog"
+    hatedByEffect = HATE_DEMONS
   }
 "KNIGHT_PLAYER"
   {
@@ -1831,7 +1844,9 @@ End
     name = {
       name = "acolyte"
     }
-    permanentEffects = {}
+    permanentEffects = {
+      DISTILLATION_SKILL 1
+    }
   }
 "NOMAD" inherit "PESEANT"
   {
@@ -3219,6 +3234,7 @@ End
       { "LeatherArmor"}
       { "GoldPiece" 2 4 }
     }
+    hatedByEffect = HATE_LIZARDMEN
   }
 "LIZARDLORD" inherit "LIZARDMAN"
   {
@@ -3241,6 +3257,7 @@ End
       { Potion RegrowBodyPart 1000 }
       { "GoldPiece" 50 90 }
     }
+    hatedByEffect = HATE_LIZARDMEN
   }
 "ELF"
   {

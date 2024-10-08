@@ -203,6 +203,8 @@ End
 "HATE_ELVES" HATE("elves")
 "HATE_UNDEAD" HATE("undead")
 "HATE_DRAGONS" HATE("dragons")
+"HATE_DEMONS" HATE("demons")
+"HATE_LIZARDMEN" HATE("lizardmen")
 
 "INVULNERABLE" {
   name = "invulnerability"
@@ -302,6 +304,11 @@ Def SPECIAL_RESISTANCE(Name, Predicate, Value)
 End
 
 "DRAGON_RESISTANCE" SPECIAL_RESISTANCE("dragons", HatedBy HATE_DRAGONS, 15)
+"DEMON_RESISTANCE" SPECIAL_RESISTANCE("demons", HatedBy HATE_DRAGONS, 15)
+"UNDEAD_RESISTANCE" SPECIAL_RESISTANCE("the undead", HatedBy HATE_UNDEAD, 15)
+"LIZARDMEN_RESISTANCE" SPECIAL_RESISTANCE("lizardmen", HatedBy HATE_LIZARDMEN, 15)
+"ELF_RESISTANCE" SPECIAL_RESISTANCE("elves", HatedBy HATE_ELVES, 15)
+"GREENSKIN_RESISTANCE" SPECIAL_RESISTANCE("greenskins", HatedBy HATE_GREENSKINS, 15)
 
 Def MassMessage(Text)
   UI "unlock_message" { "message" Label Text "view_id" ViewIdList {{"rostrum"}}}
@@ -350,6 +357,16 @@ End
           "Minions have been blessed with resistance to poison for 500 turns.")
       Filter EquipedIngredient "dragon_resistance_prayer" DIVINE_SPELL(Lasting 500 "DRAGON_RESISTANCE",
           "Minions have been blessed with resistance to dragon attacks for 500 turns.")
+      Filter EquipedIngredient "demon_resistance_prayer" DIVINE_SPELL(Lasting 500 "DEMON_RESISTANCE",
+          "Minions have been blessed with resistance to demon attacks for 500 turns.")
+      Filter EquipedIngredient "undead_resistance_prayer" DIVINE_SPELL(Lasting 500 "UNDEAD_RESISTANCE",
+          "Minions have been blessed with resistance to undead attacks for 500 turns.")
+      Filter EquipedIngredient "lizardmen_resistance_prayer" DIVINE_SPELL(Lasting 500 "LIZARDMEN_RESISTANCE",
+          "Minions have been blessed with resistance to lizardmen attacks for 500 turns.")
+      Filter EquipedIngredient "elf_resistance_prayer" DIVINE_SPELL(Lasting 500 "ELF_RESISTANCE",
+          "Minions have been blessed with resistance to elf attacks for 500 turns.")
+      Filter EquipedIngredient "greenskin_resistance_prayer" DIVINE_SPELL(Lasting 500 "GREENSKIN_RESISTANCE",
+          "Minions have been blessed with resistance to greenskin attacks for 500 turns.")
       Filter EquipedIngredient "guardian_prayer" DIVINE_SPELL(Filter CreatureStatus FIGHTER Summon "ANGEL" 1 500,
           "Minions have been blessed with guardian angels for 500 turns.")
       Filter EquipedIngredient "adoxie_prayer" ChooseRandom {
