@@ -372,6 +372,7 @@ End
     {{"PrayerBookStrength"}            200 "GOLD" 150}
     {{"PrayerBookGuardian"}            250 "GOLD" 300}
     {{"PrayerBookAdoxie"}              500 "GOLD" 300 "worship of Adoxie"}
+    {{"PrayerBookArmedHelp"}           200 "GOLD" 200}
   }
 }
 

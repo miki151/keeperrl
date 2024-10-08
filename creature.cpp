@@ -1497,17 +1497,6 @@ static vector<Creature*> summonPersonal(Creature* c, CreatureId id, optional<int
   return spirits;
 }
 
-static optional<Position> getCompanionPosition(Creature* c) {
-  auto level = c->getLevel();
-  for (int i : Range(100)) {
-    Position pos(level->getBounds().random(Random), level);
-    if (pos.isCovered() || c->canSee(pos) || !pos.canEnter(MovementTrait::WALK))
-      continue;
-    return pos;
-  }
-  return none;
-}
-
 void Creature::removeCompanions(int index) {
   attributes->companions.removeIndexPreserveOrder(index);
   if (index < companions.size()) {
@@ -1543,7 +1532,7 @@ void Creature::tickCompanions() {
     if (companions[i].creatures.size() < summonsInfo.count && Random.chance(summonsInfo.summonFreq))
       append(companions[i].creatures, summonPersonal(this, Random.choose(summonsInfo.creatures),
           summonsInfo.statsBase ? optional<int>(getAttr(*summonsInfo.statsBase)) : optional<int>(),
-          summonsInfo.spawnAway ? getCompanionPosition(this) : none));
+          summonsInfo.spawnAway ? Effect::getSummonAwayPosition(this) : none));
     if (summonsInfo.hostile)
       for (auto c : companions[i].creatures) {
         c->setTribe(TribeId::getHostile());

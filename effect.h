@@ -64,6 +64,7 @@ class Effect {
   static vector<Effect> getWishedForEffects(const ContentFactory*);
   static void enhanceWeapon(Creature*, int mod, const string& msg);
   static void enhanceArmor(Creature*, int mod, const string& msg);
+  static optional<Position> getSummonAwayPosition(Creature*);
 
   HeapAllocated<EffectType> SERIAL(effect);
 };

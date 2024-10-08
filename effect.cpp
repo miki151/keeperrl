@@ -604,6 +604,29 @@ static bool apply(const Effects::EatCorpse& a, Position pos, Creature* attacker)
   return false;
 }
 
+static string getName(const Effects::Banish&, const ContentFactory*) {
+  return "banish";
+}
+
+static string getDescription(const Effects::Banish&, const ContentFactory*) {
+  return "Creature will leave its village forever.";
+}
+
+static Collective* getCollective(Creature* c) {
+  for (auto col : NOTNULL(c->getGame())->getCollectives())
+    if (col->getCreatures().contains(c))
+      return col;
+  return nullptr;
+}
+
+static bool applyToCreature(const Effects::Banish& a, Creature *c, Creature* attacker) {
+  if (auto col = getCollective(c)) {
+    col->banishCreature(c);
+    return true;
+  }
+  return false;
+}
+
 static bool apply(const Effects::Summon& e, Position pos, Creature* attacker) {
   if (auto c = pos.getCreature())
     return !Effect::summon(c, e.creature, Random.get(e.count), e.ttl.map([](int v) { return TimeInterval(v); }), 1_visible).empty();
@@ -618,6 +641,29 @@ static bool apply(const Effects::Summon& e, Position pos, Creature* attacker) {
     CreatureGroup f = CreatureGroup::singleType(tribe, e.creature);
     return !Effect::summon(pos, f, Random.get(e.count), e.ttl.map([](int v) { return TimeInterval(v); }), 1_visible).empty();
   }
+}
+
+optional<Position> Effect::getSummonAwayPosition(Creature* c) {
+  auto level = c->getPosition().getModel()->getGroundLevel();
+  for (int i : Range(100)) {
+    Position pos(level->getBounds().random(Random), level);
+    if (pos.isCovered() || c->canSee(pos) || !pos.canEnter(MovementTrait::WALK) || !!pos.getCollective())
+      continue;
+    return pos;
+  }
+  return none;
+}
+
+static bool apply(const Effects::SummonAway& e, Position pos, Creature* attacker) {
+  if (auto c = pos.getCreature()) {
+    auto summoned = Effect::summon(c, e.creature, Random.get(e.count),
+        none, 1_visible, Effect::getSummonAwayPosition(c));
+    if (e.ttl)
+      for (auto other : summoned)
+        other->addEffect(BuffId("WILL_BANISH"), TimeInterval(*e.ttl));
+    return !summoned.empty();
+  }
+  return false;
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Summon&, const Creature* victim, bool isEnemy) {
@@ -2366,13 +2412,6 @@ static bool applyToCreature(const Effects::Stairs&, Creature* c, Creature* attac
     c->message("These stairs don't lead anywhere.");
     return false;
   }
-}
-
-static Collective* getCollective(Creature* c) {
-  for (auto col : NOTNULL(c->getGame())->getCollectives())
-    if (col->getCreatures().contains(c))
-      return col;
-  return nullptr;
 }
 
 static string getName(const Effects::AllCreatures& e, const ContentFactory* f) {

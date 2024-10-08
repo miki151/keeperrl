@@ -2014,6 +2014,14 @@ PROTECTION_BOOK("Lizardmen", "lizardmen", "lizardmen")
 PROTECTION_BOOK("Elf", "elf", "elves")
 PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
 
+"PrayerBookArmedHelp" inherit "PrayerBookProtection"
+  {
+    shortName = "armed help"
+    name = "prayers for armed help"
+    ingredientType = "teuton_prayer"
+    effect = Name "None" Message NORMAL "Mass will be performed with the intention of summoning armed help."
+  }
+
 "PrayerBookGuardian" inherit "PrayerBookProtection"
   {
     shortName = "guardian"

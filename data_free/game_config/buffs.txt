@@ -369,6 +369,10 @@ End
           "Minions have been blessed with resistance to greenskin attacks for 500 turns.")
       Filter EquipedIngredient "guardian_prayer" DIVINE_SPELL(Filter CreatureStatus FIGHTER Summon "ANGEL" 1 500,
           "Minions have been blessed with guardian angels for 500 turns.")
+      Filter EquipedIngredient "teuton_prayer" {
+        SummonAway "TEUTON" {3 6} 1500
+        MassMessage("Your prayers for summoning armed help have been answered.")
+      }
       Filter EquipedIngredient "adoxie_prayer" ChooseRandom {
         Summon "TENGU" 1 500
         Summon "SHAITAN" 1 500
@@ -385,10 +389,19 @@ End
 }
 
 "SINNED" {
-  name = "Sin"
+  name = "sin"
   adjective = "sinner"
   description = "The creature has sinned and is seeking forgiveness"
   color = ColorId BROWN
   fx = DEBUFF_BROWN
   consideredBad = true
+}
+
+"WILL_BANISH" {
+  name = "summon"
+  adjective = "prayed for"
+  description = "The creature was sent for a limited time as an answer to prayers"
+  color = ColorId WHITE
+  fx = BUFF_WHITE
+  endEffect = Banish
 }
