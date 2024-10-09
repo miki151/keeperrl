@@ -870,10 +870,10 @@ Def NoEffect() Unlock "nothing" End
   effect = Name "healing prayer" Heal { FLESH }
 }
 "strength prayer" inherit "damage bonus" {
-  effect = Name "strength prayer" Heal { FLESH }
+  effect = Name "strength prayer" Lasting 40 DAM_BONUS
 }
 "protection prayer" inherit "defense bonus" {
-  effect = Name "protection prayer" Heal { FLESH }
+  effect = Name "protection prayer" Lasting 40 DEF_BONUS
 }
 
 Def TryHolyMissile()

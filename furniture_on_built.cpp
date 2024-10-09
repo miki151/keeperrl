@@ -17,6 +17,7 @@
 #include "content_factory.h"
 #include "zlevel.h"
 #include "known_tiles.h"
+#include "name_generator.h"
 
 struct ZLevelResult {
   Level* level;
@@ -151,6 +152,15 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
       pos.globalMessage(PlayerMessage("A tower of flame errupts from the floor!", MessagePriority::HIGH));
       f->fireDamage(pos, false);
       break;
+    case FurnitureOnBuilt::SAINT_STATUE: {
+      if (auto game = pos.getGame()) {
+        auto fMod = pos.modFurniture(f->getLayer());
+        auto namegen = game->getContentFactory()->getCreatures().getNameGenerator();
+        fMod->setName(fMod->getName() + " of Saint " + namegen->getNext(
+            NameGeneratorId(Random.choose(makeVec<const char*>("FIRST_MALE", "FIRST_FEMALE")))));
+      }
+      break;
+    }
   }
 }
 
