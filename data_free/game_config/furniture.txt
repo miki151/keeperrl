@@ -772,6 +772,14 @@ Def BedHeal() Heal { FLESH 0.005 } End
   populationIncrease = { 1 4 }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
+"SAINT_STATUE" inherit "MINION_STATUE"
+{
+  onBuilt = SAINT_STATUE
+}
+"STONE_SAINT_STATUE" inherit "STONE_MINION_STATUE"
+{
+  onBuilt = SAINT_STATUE
+}
 "ADOXIE_STATUE_TEMPLE"
 {
   name = "statue of Evil God Adoxie"

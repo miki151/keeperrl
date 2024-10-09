@@ -542,6 +542,11 @@ TRAINING("_DWARF", "_dwarf")
     { Furniture {{ "MINION_STATUE" }        "GOLD"   50  }                  "Golden statue"     "Installations" ""}
     { Furniture {{ "STONE_MINION_STATUE" }  "STONE"  250 }                  "Stone statue"      "Installations" ""}
   }
+  "saint_statues"
+  {
+    { Furniture {{ "SAINT_STATUE" }        "GOLD"   50  }                  "Golden statue of a saint"     "Installations" ""}
+    { Furniture {{ "STONE_SAINT_STATUE" }  "STONE"  250 }                  "Stone statue of a saint"      "Installations" ""}
+  }
   "magical_installations"
   {
     { Furniture {{ "EYEBALL" }              "WOOD"   30 }                   "Eyeball"           "Installations"
