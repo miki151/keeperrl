@@ -364,19 +364,19 @@ End
 {
   "SCRIPTORIUM"
   {
-    {{"PrayerBookStrength"}            100 "GOLD" 100}
-    {{"PrayerBookFireResistance"}      100 "GOLD" 100}
-    {{"PrayerBookPoisonResistance"}    100 "GOLD" 100}
-    {{"PrayerBookRangedResistance"}    100 "GOLD" 100}
+    {{"PrayerBookStrength"}            100 none}
+    {{"PrayerBookFireResistance"}      100 none}
+    {{"PrayerBookPoisonResistance"}    100 none}
+    {{"PrayerBookRangedResistance"}    100 none}
 
-    {{"PrayerBookFastTraining"}        100 "GOLD" 100 "advanced theology"}
-    {{"PrayerBookFastCrafting"}        100 "GOLD" 100 "advanced theology"}
-    {{"PrayerBookDragonResistance"}    100 "GOLD" 100 "advanced theology"}
-    {{"PrayerBookDemonResistance"}     100 "GOLD" 100 "advanced theology"}
-    {{"PrayerBookUndeadResistance"}    100 "GOLD" 100 "advanced theology"}
-    {{"PrayerBookLizardmenResistance"} 100 "GOLD" 100 "advanced theology"}
-    {{"PrayerBookElfResistance"}       100 "GOLD" 100 "advanced theology"}
-    {{"PrayerBookGreenskinResistance"} 100 "GOLD" 100 "advanced theology"}
+    {{"PrayerBookFastTraining"}        100 "GOLD" 50 "advanced theology"}
+    {{"PrayerBookFastCrafting"}        100 "GOLD" 50 "advanced theology"}
+    {{"PrayerBookDragonResistance"}    100 "GOLD" 50 "advanced theology"}
+    {{"PrayerBookDemonResistance"}     100 "GOLD" 50 "advanced theology"}
+    {{"PrayerBookUndeadResistance"}    100 "GOLD" 50 "advanced theology"}
+    {{"PrayerBookLizardmenResistance"} 100 "GOLD" 50 "advanced theology"}
+    {{"PrayerBookElfResistance"}       100 "GOLD" 50 "advanced theology"}
+    {{"PrayerBookGreenskinResistance"} 100 "GOLD" 50 "advanced theology"}
 
     {{"PrayerBookArmedHelp"}           100 "GOLD" 100 "expert theology"}
     {{"PrayerBookGuardian"}            100 "GOLD" 100 "expert theology"}

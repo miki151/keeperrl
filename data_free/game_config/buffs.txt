@@ -374,8 +374,9 @@ End
       Filter EquipedIngredient "guardian_prayer" DIVINE_SPELL(Filter CreatureStatus FIGHTER Summon "ANGEL" 1 500,
           "Minions have been blessed with guardian angels for 500 turns.")
       Filter EquipedIngredient "teuton_prayer" {
-        SummonAway "TEUTON" {3 6} 1500
-        MassMessage("Your prayers for summoning armed help have been answered.")
+        SummonAway "TEUTON" 1 1500
+        DIVINE_SPELL(Chance 0.3 SummonAway "TEUTON" 1 1500,
+            MassMessage("Your prayers for summoning armed help have been answered.")
       }
       Filter EquipedIngredient "adoxie_prayer" ChooseRandom {
         Summon "TENGU" 1 500
