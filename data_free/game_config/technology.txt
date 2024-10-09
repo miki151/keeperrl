@@ -37,4 +37,6 @@
 "big temptations"          { ""                                                             {}}
 "slavery"                  { ""                                                             {}}
 "dark crafts"              { ""                                                             {}}
+"advanced theology"        { "" }
+"expert theology"          { ""                                                             {"advanced theology"}}
 "worship of Adoxie"        { ""                                                             {}}

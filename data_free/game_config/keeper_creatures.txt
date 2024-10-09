@@ -65,7 +65,8 @@
   immigrantGroups = { "church" "white_recruits" }
   technology = {
       "chicken breeding" "pig breeding" "cow breeding" "iron working"
-      "luxury" "small temptations" "big temptations" "slavery" "dark crafts" "worship of Adoxie"
+      "advanced theology" "expert theology" "luxury" "small temptations" "big temptations" "slavery"
+      "dark crafts" "worship of Adoxie"
   }
   zLevelGroups = { "basic" "lawful" }
   initialTech = { }

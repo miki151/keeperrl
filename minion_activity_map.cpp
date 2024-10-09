@@ -49,7 +49,7 @@ bool MinionActivityMap::canChooseRandomly(const Creature* c, MinionActivity t) c
   switch (t) {
     case MinionActivity::BE_EXECUTED:
     case MinionActivity::BE_WHIPPED:
-    case MinionActivity::PREACHING:
+//    case MinionActivity::PREACHING:
     case MinionActivity::BE_TORTURED:
       return false;
     case MinionActivity::SLEEP:

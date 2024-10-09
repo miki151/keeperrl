@@ -367,6 +367,10 @@ End
           "Minions have been blessed with resistance to elf attacks for 500 turns.")
       Filter EquipedIngredient "greenskin_resistance_prayer" DIVINE_SPELL(Lasting 500 "GREENSKIN_RESISTANCE",
           "Minions have been blessed with resistance to greenskin attacks for 500 turns.")
+      Filter EquipedIngredient "melee_prayer" DIVINE_SPELL(IncreaseMaxLevel "DAMAGE" 1,
+          "Minions have been blessed with increased melee training limits.")
+      Filter EquipedIngredient "divinity_prayer" DIVINE_SPELL(IncreaseMaxLevel "DIVINITY" 1,
+          "Minions have been blessed with increased divinity training limits.")
       Filter EquipedIngredient "guardian_prayer" DIVINE_SPELL(Filter CreatureStatus FIGHTER Summon "ANGEL" 1 500,
           "Minions have been blessed with guardian angels for 500 turns.")
       Filter EquipedIngredient "teuton_prayer" {

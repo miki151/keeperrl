@@ -2022,6 +2022,22 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     effect = Name "None" Message NORMAL "Mass will be performed with the intention of summoning armed help."
   }
 
+"PrayerBookMeleeTraining" inherit "PrayerBookProtection"
+  {
+    shortName = "melee training"
+    name = "prayers for melee training potential"
+    ingredientType = "melee_prayer"
+    effect = Name "None" Message NORMAL "Mass will be performed with the intention of increasing minions' melee training potential."
+  }
+
+"PrayerBookDivinityTraining" inherit "PrayerBookProtection"
+  {
+    shortName = "divinity training"
+    name = "prayers for divinity training potential"
+    ingredientType = "divinity_prayer"
+    effect = Name "None" Message NORMAL "Mass will be performed with the intention of increasing minions' divinity training potential."
+  }
+
 "PrayerBookGuardian" inherit "PrayerBookProtection"
   {
     shortName = "guardian"
