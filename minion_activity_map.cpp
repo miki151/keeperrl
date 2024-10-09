@@ -44,14 +44,15 @@ static bool isAutoLocked(const Collective* col, const Creature* c, MinionActivit
   }
 }
 
-bool MinionActivityMap::canChooseRandomly(const Creature* c, MinionActivity t) const {
+bool MinionActivityMap::canChooseRandomly(const Collective* collective, const Creature* c, MinionActivity t) const {
   PROFILE;
   switch (t) {
     case MinionActivity::BE_EXECUTED:
     case MinionActivity::BE_WHIPPED:
-//    case MinionActivity::PREACHING:
     case MinionActivity::BE_TORTURED:
       return false;
+    case MinionActivity::PREACHING:
+      return collective->lastMass < collective->getLocalTime() - 1500_visible;
     case MinionActivity::SLEEP:
       return !c->isAffected(LastingEffect::RESTED);
     case MinionActivity::EAT:

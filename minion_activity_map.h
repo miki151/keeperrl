@@ -24,7 +24,7 @@ class MinionActivityMap {
   static bool canLock(MinionActivity);
   static bool isActivityAutoGroupLocked(MinionActivity);
   bool isAvailable(const Collective*, const Creature*, MinionActivity, bool ignoreTaskLock = false) const;
-  bool canChooseRandomly(const Creature* c, MinionActivity) const;
+  bool canChooseRandomly(const Collective*, const Creature* c, MinionActivity) const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

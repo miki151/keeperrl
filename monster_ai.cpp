@@ -945,7 +945,7 @@ class ByCollective : public Behaviour {
     PROFILE;
     vector<pair<MinionActivity, PTask>> goodTasks;
     for (MinionActivity t : ENUM_ALL(MinionActivity))
-      if (creature->getAttributes().getMinionActivities().canChooseRandomly(creature, t)) {
+      if (creature->getAttributes().getMinionActivities().canChooseRandomly(collective, creature, t)) {
         if (collective->isActivityGoodAssumingHaveTasks(creature, t)) {
           if (MinionActivities::getExisting(collective, creature, t) || t == MinionActivity::IDLE)
             goodTasks.push_back({t, nullptr});
@@ -956,6 +956,8 @@ class ByCollective : public Behaviour {
     if (!goodTasks.empty()) {
       auto ret = Random.choose(std::move(goodTasks));
       collective->setMinionActivity(creature, ret.first);
+      if (ret.first == MinionActivity::PREACHING)
+        collective->lastMass = collective->getLocalTime();
       return std::move(ret);
     }
     return none;

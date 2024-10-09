@@ -246,6 +246,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   unordered_map<string, unordered_set<string>> SERIAL(lockedEquipmentGroups);
   EntityMap<Creature, EnumSet<MinionTrait>> SERIAL(stunnedMinions);
+  LocalTime lastMass = -10000_local;
 
   void takePrisoner(Creature*);
   bool isDelayed(Position);
