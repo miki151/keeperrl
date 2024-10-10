@@ -34,9 +34,9 @@
 "explosives"               { "Build exploding automatons."                                  {"advanced automatons"}}
 "luxury"                   { "" }
 "small temptations"        { ""                                                             {}}
-"big temptations"          { ""                                                             {}}
+"big temptations"          { ""                                                             {"small temptations"}}
 "slavery"                  { ""                                                             {}}
 "dark crafts"              { ""                                                             {}}
 "advanced theology"        { "" }
 "expert theology"          { ""                                                             {"advanced theology"}}
-"worship of Adoxie"        { ""                                                             {}}
+"worship of Adoxie"        { ""                                                             {"dark crafts"}}

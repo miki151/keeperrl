@@ -1611,6 +1611,15 @@ End
     promotionCost = 1.0
     hatedByEffect = HATE_HUMANS
   }
+"SQUIRE_CHURCH" inherit "SQUIRE_PLAYER"
+  {
+    inventory = {
+      { "Sword"}
+      { "LeatherBoots"}
+      { type = "Torch" chance = 0.3 }
+      { type = Potion Heal { FLESH } chance = 0.7 }
+    }
+  }
 "ARMED_BROTHER"
   {
     viewId = { "armed_brother" }
@@ -1623,6 +1632,7 @@ End
     }
     maxLevelIncrease = {
       DAMAGE 12
+      DIVINITY 3
     }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
@@ -1638,7 +1648,7 @@ End
     viewId = { "jester" }
     attr = {
       DAMAGE 8
-      DEFENSE 8 
+      DEFENSE 8
     }
     body = {
       type = Humanoid LARGE
@@ -1691,7 +1701,7 @@ End
     attr = {
       DAMAGE 12
       DEFENSE 8
-      SPELL_DAMAGE 16 
+      SPELL_DAMAGE 16
     }
     body = {
       type = Humanoid LARGE
@@ -1727,6 +1737,11 @@ End
   }
 "PRIEST_DIVINITY" inherit "PRIEST_PLAYER"
   {
+    attr = {
+      DAMAGE 12
+      DEFENSE 8
+      DIVINITY 16
+    }
     spellSchools = { "prayers" }
     permanentEffects = append {
       DISTILLATION_SKILL 1
@@ -1781,16 +1796,16 @@ End
   permanentEffects = {
     COPULATION_SKILL 1
   }
-  copulationClientEffect = ChooseRandom {
-    Lasting 1000 SINNED
+  copulationClientEffect = {
+    Filter Not LastingEffect MORTAL_SINNED Permanent MORTAL_SINNED
     Lasting 200 HIGH_MORALE
-    CollectiveMessage "A minion has committed a sin."
+    CollectiveMessage "A minion has committed a mortal sin."
   }
   copulationEffect = {
   }
   aiType = RANGED
   name = {
-    name = "prostitute"
+    name = "courtesan"
   }
   hatedByEffect = HATE_HUMANS
 }

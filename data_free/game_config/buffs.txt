@@ -330,8 +330,8 @@ FirstSuccessful {
 End
 
 "PREACHING" {
-  name = "Preaching"
-  adjective = "preaching"
+  name = "Performing mass"
+  adjective = "performing mass"
   description = ""
   color = ColorId PURPLE
   startEffect = MASS_SOUND()
@@ -376,7 +376,12 @@ End
       Filter EquipedIngredient "teuton_prayer" {
         SummonAway "TEUTON" 1 1500
         DIVINE_SPELL(Chance 0.3 SummonAway "TEUTON" 1 1500,
-            MassMessage("Your prayers for summoning armed help have been answered.")
+            "Your prayers for summoning stronger armed help will soon be answered.")
+      }
+      Filter EquipedIngredient "squire_prayer" {
+        SummonAway "SQUIRE_CHURCH" 1 1500
+        DIVINE_SPELL(Chance 0.3 SummonAway "SQUIRE_PLAYER" 1 1500,
+            "Your prayers for summoning armed help will soon be answered.")
       }
       Filter EquipedIngredient "adoxie_prayer" ChooseRandom {
         Summon "TENGU" 1 500
@@ -394,11 +399,20 @@ End
 }
 
 "SINNED" {
-  name = "sin"
-  adjective = "sinner"
+  name = "venial sin"
+  adjective = "venial sinner"
   description = "The creature has sinned and is seeking forgiveness"
   color = ColorId BROWN
   fx = DEBUFF_BROWN
+  consideredBad = true
+}
+
+"MORTAL_SINNED" {
+  name = "mortal sin"
+  adjective = "mortal sinner"
+  description = "The creature has mortally sinned and is seeking forgiveness"
+  color = ColorId BLACK
+  fx = DEBUFF_BLACK
   consideredBad = true
 }
 

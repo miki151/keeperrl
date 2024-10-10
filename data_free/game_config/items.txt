@@ -1926,7 +1926,11 @@ End
     applyVerb = "drink" "drinks"
     fragile = true
     weight = 0.3
-    effect = { Lasting 150 HIGH_MORALE Lasting DRUNK}
+    effect = {
+      Lasting 150 HIGH_MORALE
+      Lasting DRUNK
+      Filter Not MaxLevelBelow "DIVINITY" 1 Lasting 500 SINNED
+    }
     price = 10
     burnTime = 1
     uses = 1
@@ -1937,7 +1941,7 @@ End
   {
     viewId = { "book" }
     shortName = "protection"
-    name = "prayers for protection"
+    name = "book of prayers for protection"
     blindName = "book"
     applyVerb = "read" "reads"
     weight = 2
@@ -1952,49 +1956,49 @@ End
 "PrayerBookStrength" inherit "PrayerBookProtection"
   {
     shortName = "strength"
-    name = "prayers for strength"
+    name = "book of prayers for strength"
     ingredientType = "strength_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed with the intention of giving minions strength in battles."
   }
 "PrayerBookRangedResistance" inherit "PrayerBookProtection"
   {
     shortName = "protection from arrows"
-    name = "prayers for protection from arrows"
+    name = "book of prayers for protection from arrows"
     ingredientType = "ranged_resistance_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed with the intention of protecting minions from arrows."
   }
 "PrayerBookDigging" inherit "PrayerBookProtection"
   {
     shortName = "digging"
-    name = "prayers for digging"
+    name = "book of prayers for digging"
     ingredientType = "digging_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed with the intention of giving minions more strength in digging."
   }
 "PrayerBookFastTraining" inherit "PrayerBookProtection"
   {
     shortName = "fast training"
-    name = "prayers for fast training"
+    name = "book of prayers for fast training"
     ingredientType = "training_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed with the intention of minions training at a faster pace."
   }
 "PrayerBookFastCrafting" inherit "PrayerBookProtection"
   {
     shortName = "fast crafting"
-    name = "prayers for fast crafting"
+    name = "book of prayers for fast crafting"
     ingredientType = "crafting_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed with the intention of minions crafting at a faster pace."
   }
 "PrayerBookFireResistance" inherit "PrayerBookProtection"
   {
     shortName = "protection from fire"
-    name = "prayers for protection from fire"
+    name = "book of prayers for protection from fire"
     ingredientType = "fire_resistance_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed with the intention of protecting minions from fire."
   }
 "PrayerBookPoisonResistance" inherit "PrayerBookProtection"
   {
     shortName = "protection from poison"
-    name = "prayers for protection from poison"
+    name = "book of prayers for protection from poison"
     ingredientType = "poison_resistance_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed with the intention of protecting minions from poison."
   }
@@ -2002,7 +2006,7 @@ Def PROTECTION_BOOK(NAME, LOWER, PLURAL)
 "PrayerBook" + NAME + "Resistance" inherit "PrayerBookProtection"
   {
     shortName = "protection from " + PLURAL
-    name = "prayers for protection from " + PLURAL
+    name = "book of prayers for protection from " + PLURAL
     ingredientType = LOWER + "_resistance_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed with the intention of protecting minions from " + PLURAL + "."
   }
@@ -2014,18 +2018,26 @@ PROTECTION_BOOK("Lizardmen", "lizardmen", "lizardmen")
 PROTECTION_BOOK("Elf", "elf", "elves")
 PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
 
+"PrayerBookArmedHelpStrong" inherit "PrayerBookProtection"
+  {
+    shortName = "stronger armed help"
+    name = "book of prayers for stronger armed help"
+    ingredientType = "teuton_prayer"
+    effect = Name "None" Message NORMAL "Mass will be performed with the intention of summoning stronger armed help."
+  }
+
 "PrayerBookArmedHelp" inherit "PrayerBookProtection"
   {
     shortName = "armed help"
-    name = "prayers for armed help"
-    ingredientType = "teuton_prayer"
+    name = "book of prayers for armed help"
+    ingredientType = "squire_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed with the intention of summoning armed help."
   }
 
 "PrayerBookMeleeTraining" inherit "PrayerBookProtection"
   {
     shortName = "melee training"
-    name = "prayers for melee training potential"
+    name = "book of prayers for melee training potential"
     ingredientType = "melee_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed with the intention of increasing minions' melee training potential."
   }
@@ -2033,7 +2045,7 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
 "PrayerBookDivinityTraining" inherit "PrayerBookProtection"
   {
     shortName = "divinity training"
-    name = "prayers for divinity training potential"
+    name = "book of prayers for divinity training potential"
     ingredientType = "divinity_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed with the intention of increasing minions' divinity training potential."
   }
@@ -2041,7 +2053,7 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
 "PrayerBookGuardian" inherit "PrayerBookProtection"
   {
     shortName = "guardian"
-    name = "prayers for a guardian angel"
+    name = "book of prayers for a guardian angel"
     ingredientType = "guardian_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed with the intention of giving minions their guardian angels."
   }
@@ -2049,7 +2061,7 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
   {
     viewId = { "adoxie_book" }
     shortName = "Adoxie"
-    name = "prayers to the Evil God Adoxie"
+    name = "book of prayers to the Evil God Adoxie"
     ingredientType = "adoxie_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed in the name of the Evil God Adoxie."
   }

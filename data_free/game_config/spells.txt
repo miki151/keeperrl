@@ -875,6 +875,9 @@ Def NoEffect() Unlock "nothing" End
 "protection prayer" inherit "defense bonus" {
   effect = Name "protection prayer" Lasting 40 DEF_BONUS
 }
+"devout healing prayer" inherit "advanced healing" {
+  effect = Name "devout healing prayer" Heal { FLESH }
+}
 
 Def TryHolyMissile()
   TryNoFriendlyFire(

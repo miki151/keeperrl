@@ -386,15 +386,37 @@ BOOKCASES("_HUMAN", "_human")
     Not Area 1 Not LastingEffect PREACHING_SKILL
     Not LastingEffect PREACHING_SKILL
   } {
-    RemoveLasting SINNED
-    CollectiveMessage "A minion is absolved of their sins"
-    Filter ExperienceBelow 20 {
-      AddExperience 1
-      CollectiveMessage "A minion is more experienced"
+    Filter LastingEffect SINNED {
+      RemoveLasting SINNED
+      CollectiveMessage "A minion is absolved of their venial sins"
+      Filter ExperienceBelow 5 {
+        AddExperience 1
+        CollectiveMessage "A minion is more experienced"
+      }
     }
   }
   strength = 15
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+}
+"LUXURIOUS_CONFESSIONAL" inherit "CONFESSIONAL"
+{
+  name = "luxurious confessional"
+  viewId = { "luxurious_confessional" }
+  usageType = UsageEffect "confess" Filter And {
+    Not Area 1 Not LastingEffect PREACHING_SKILL
+    Not LastingEffect PREACHING_SKILL
+  } {
+    Filter LastingEffect MORTAL_SINNED {
+      RemovePermanent MORTAL_SINNED
+      CollectiveMessage "A minion is absolved of a mortal sin"
+      Filter ExperienceBelow 20 {
+        AddExperience 3
+        CollectiveMessage "A minion is more experienced"
+      }
+    }
+  }
+  strength = 35
+  destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
 }
 "THRONE"
 {

@@ -152,7 +152,7 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
     case MinionActivity::HEARING_CONFESSION:
       return c->isAffected(BuffId("PREACHING_SKILL"));
     case MinionActivity::CONFESSION:
-      return c->isAffected(BuffId("SINNED"));
+      return c->isAffected(BuffId("SINNED")) || c->isAffected(BuffId("MORTAL_SINNED"));
   }
 }
 
