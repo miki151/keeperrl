@@ -388,5 +388,23 @@ End
   }
 }
 
+"holy_weapons"
+{
+  "WORKSHOP"
+  {
+      {{"WoodenCrozier"}                   13       "WOOD" 20}
+  }
+
+  "ENCHANTED_WORKSHOP" inherit "WORKSHOP" append {}
+
+  "FORGE"
+  {
+      {{"IronCrozier"}                   13       "IRON" 20}
+  }
+
+  "LAVA_FORGE" inherit "FORGE" append {}
+}
+
+
 # Add more groups here, remember that you need to add your new group to your keeper in keeper_creatures.txt
 

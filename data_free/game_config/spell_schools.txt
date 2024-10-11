@@ -101,7 +101,7 @@
   "protection prayer" 2
   "strength prayer" 3
   "devout healing prayer" 4
-  "holy missile" 5
-  "advanced holy missile" 6
-  "expert holy missile" 7
+#  "holy missile" 5
+#  "advanced holy missile" 6
+#  "expert holy missile" 7
 }

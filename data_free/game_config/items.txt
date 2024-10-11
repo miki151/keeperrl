@@ -723,6 +723,44 @@ End
     storageIds = {"weapons" "equipment"}
     equipmentGroup = "artifact equipment"
   }
+"WoodenCrozier"
+  {
+    viewId = { "crozier_wood" }
+    equipedViewId = { "crozier_wood_v" }
+    name = "wooden crozier"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 10
+    modifiers = {
+      DIVINITY 4
+    }
+    price = 20
+    weaponInfo = {
+      attackType = HIT
+    }
+    equipedAbility = { "holy missile" }
+    storageIds = {"weapons" "equipment"}
+    equipmentGroup = "basic equipment"
+  }
+"IronCrozier"
+  {
+    viewId = { "crozier_iron" }
+    equipedViewId = { "crozier_iron_v" }
+    name = "iron crozier"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 15
+    modifiers = {
+      DIVINITY 8
+    }
+    price = 70
+    weaponInfo = {
+      attackType = HIT
+    }
+    equipedAbility = { "advanced holy missile" }
+    storageIds = {"weapons" "equipment"}
+    equipmentGroup = "iron equipment"
+  }
 "Bow"
   {
     viewId = { "bow" }

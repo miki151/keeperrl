@@ -447,6 +447,10 @@ Connections("map_swamp")
 { "special_battle_axe" ")" ColorId LIGHT_GREEN }
 { "sceptre" ")" ColorId RED }
 { viewId = "sceptre_v" symbol = ")" color = ColorId RED weaponOrigin = {13 13} }
+{ "crozier_wood" ")" ColorId LIGHT_BROWN }
+{ viewId = "crozier_wood_v" symbol = ")" color = ColorId LIGHT_BROWN weaponOrigin = {13 13} }
+{ "crozier_iron" ")" ColorId LIGHT_GRAY }
+{ viewId = "crozier_iron_v" symbol = ")" color = ColorId LIGHT_GRAY weaponOrigin = {13 13} }
 { "bow" ")" ColorId BROWN }
 { "archwood_bow" ")" ColorId LIGHT_BLUE }
 { "elven_bow" ")" ColorId YELLOW false "bow" }
@@ -749,6 +753,8 @@ BOOKCASES("_human")
 { viewId = "pew" symbol = "=" color = ColorId LIGHT_BROWN
   isSymbolFont = true roundShadow = true }
 { viewId = "confessional" symbol = "H" color = ColorId LIGHT_BROWN
+  isSymbolFont = true roundShadow = true }
+{ viewId = "luxurious_confessional" symbol = "H" color = ColorId YELLOW
   isSymbolFont = true roundShadow = true }
 { viewId = "prayer_bench" symbol = "H" color = ColorId LIGHT_BROWN
   isSymbolFont = true roundShadow = true }
