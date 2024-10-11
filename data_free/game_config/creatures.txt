@@ -5325,6 +5325,7 @@ End
     specialAttr = {
       SPELL_DAMAGE { 40 LastingEffect SLEEP }
     }
+    spells = {}
   }
 "RAKSHASA" inherit "TENGU"
   {
@@ -5335,6 +5336,7 @@ End
     specialAttr = {
       SPELL_DAMAGE { 40 HatedBy HATE_HUMANS }
     }
+    spells = {}
   }
 "GHOUL" inherit "TENGU"
   {
@@ -5358,6 +5360,7 @@ End
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL victimEffect = { 1.0 Lasting PLAGUE} } }}}
       }
     }
+    spells = {}
   }
 # legacy creatures not in vanilla anymore
 
