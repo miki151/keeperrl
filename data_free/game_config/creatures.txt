@@ -4606,7 +4606,7 @@ End
   {
     viewId = { "adoxie_foot_left" }
     attr = {
-      DEFENSE 50 
+      DEFENSE 50
       SPELL_DAMAGE 60
     }
     gender = IT
@@ -4625,6 +4625,7 @@ End
     spells = {
       "heal spirit"
     }
+    canJoinCollective = false
     permanentEffects = {
       MAGIC_RESISTANCE 1
       MELEE_RESISTANCE 1
@@ -4637,8 +4638,6 @@ End
       pluralName = "Feet"
       fullTitle = true
     }
-    chatReactionFriendly = "\"nothing, why did you think a foot could talk?\""
-    chatReactionHostile = "\"nothing, why did you think a foot could talk?\""
     deathDescription = "destroyed"
     killedByAchievement = "killed_by_adoxie"
   }
@@ -4687,8 +4686,6 @@ End
       pluralName = "Hands"
       fullTitle = true
     }
-    chatReactionFriendly = "\"nothing, why did you think a foot could talk?\""
-    chatReactionHostile = "\"nothing, why did you think a foot could talk?\""
   }
 "ADOXIE_HAND_RIGHT" inherit "ADOXIE_LEFT_HAND"
   {
@@ -4698,8 +4695,6 @@ End
       pluralName = "Hands"
       fullTitle = true
     }
-    chatReactionFriendly = "\"nothing, why did you think a foot could talk?\""
-    chatReactionHostile = "\"nothing, why did you think a foot could talk?\""
   }
 "ADOXIE_PRIEST"
   {

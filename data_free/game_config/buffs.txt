@@ -374,16 +374,25 @@ End
         DIVINE_SPELL(Chance 0.3 SummonAway "SQUIRE_PLAYER" 1 1500,
             "Your prayers for summoning armed help will soon be answered.")
       }
-      Filter EquipedIngredient "adoxie_prayer" ChooseRandom {
-        Summon "TENGU" 1 500
-        Summon "SHAITAN" 1 500
-        Summon "BANSHEE" 1 500
-        Summon "VETALA" 1 500
-        Summon "LEYAK" 1 500
-        Summon "BAKU" 1 500
-        Summon "RAKSHASA" 1 500
-        Summon "GHOUL" 1 500
-        Summon "SUANGGI" 1 500
+      Filter EquipedIngredient "adoxie_prayer" FirstSuccessful {
+        ChooseRandomUntilSuccessful {
+Def TRY_DEMON(NAME) Filter Not Flag NAME + "_summon" { Summon NAME 1 none SetFlag NAME + "_summon" true } End
+          TRY_DEMON("TENGU")
+          TRY_DEMON("SHAITAN")
+          TRY_DEMON("BANSHEE")
+          TRY_DEMON("VETALA")
+          TRY_DEMON("LEYAK")
+          TRY_DEMON("BAKU")
+          TRY_DEMON("RAKSHASA")
+          TRY_DEMON("GHOUL")
+          TRY_DEMON("SUANGGI")
+        }
+        {
+          Summon "ADOXIE_FOOT_LEFT" 1 200
+          Summon "ADOXIE_FOOT_RIGHT" 1 200
+          Summon "ADOXIE_LEFT_HAND" 1 200
+          Summon "ADOXIE_HAND_RIGHT" 1 200
+        }
       }
     }
   }

@@ -238,7 +238,8 @@ struct ChooseRandom : Chain {
 };
 struct ChainUntilFail : Chain {
 };
-
+struct ChooseRandomUntilSuccessful : Chain {
+};
 struct Message {
   string SERIAL(text);
   MessagePriority SERIAL(priority);
@@ -525,6 +526,7 @@ SIMPLE_EFFECT(Banish);
   X(EatCorpse, 101)\
   X(SummonAway, 102)\
   X(Banish, 103)\
+  X(ChooseRandomUntilSuccessful, 104)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

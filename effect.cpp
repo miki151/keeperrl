@@ -1669,6 +1669,21 @@ static bool apply(const Effects::ChooseRandom& r, Position pos, Creature* attack
   return r.effects[Random.get(r.effects.size())].apply(pos, attacker);
 }
 
+static string getName(const Effects::ChooseRandomUntilSuccessful& e, const ContentFactory* f) {
+  return e.effects[0].getName(f);
+}
+
+static string getDescription(const Effects::ChooseRandomUntilSuccessful& e, const ContentFactory* f) {
+  return e.effects[0].getDescription(f);
+}
+
+static bool apply(const Effects::ChooseRandomUntilSuccessful& r, Position pos, Creature* attacker) {
+  for (auto e : Random.permutation(r.effects))
+    if (e.apply(pos, attacker))
+      return true;
+  return false;
+}
+
 static string getName(const Effects::Message&, const ContentFactory*) {
   return "message";
 }
