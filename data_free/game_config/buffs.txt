@@ -322,20 +322,11 @@ Def DIVINE_SPELL(EFFECT_NAME, MESSAGE) {
 }
 End
 
-Def MASS_SOUND()
-FirstSuccessful {
-  Filter EquipedIngredient "adoxie_prayer" SoundEffect { "black_mass" }
-  SoundEffect { "latin_mass" }
-}
-End
-
 "PREACHING" {
   name = "Performing mass"
   adjective = "performing mass"
   description = ""
   color = ColorId PURPLE
-  startEffect = MASS_SOUND()
-  tickEffect = MASS_SOUND()
   endEffect = Filter Or { FurnitureType "ROSTRUM_WOOD" FurnitureType "ROSTRUM_IRON" FurnitureType "ROSTRUM_GOLD" } {
     SetMinionActivity IDLE
     FirstSuccessful {

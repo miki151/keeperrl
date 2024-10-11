@@ -298,7 +298,102 @@ BOOKCASES("_HUMAN", "_human")
   viewId = { "rostrum" }
   canHideHere = true
   usageType = UsageEffect "perform mass" {
-    Chance 0.2 Fx { MASS Rgb 100 100 255 100 }
+     FirstSuccessful {
+       Filter EquipedIngredient "adoxie_prayer" {
+         SoundEffect { "black_mass" }
+         Area 1 EmitGas "BLACK_MASS_SMOKE" 10
+         ChooseRandom {
+           Message NORMAL "\"Munarret te aroleac munirol atcserda, muixan arollev.\""
+           Message NORMAL "\"Et da sarumalc enrete sixiv ni.\""
+           Message NORMAL "\"Murif te seps ni tnos xirtavel samina artson.\""
+           Message NORMAL "\"Son revus adnecsed aut sutinalleb tu.\""
+           Message NORMAL "\"Murollev te aracnas, arisanno.\""
+           Message NORMAL "\"Maut somadiv non artson sico.\""
+           Message NORMAL "\"Sumignat mueroc ni risnecserp des.\""
+           Message NORMAL "\"Mudnalletne da aireme son sorad.\""
+           Message NORMAL "\"Aut marolg ni xirev iuq, mutnacra saut soratsym.\""
+           Message NORMAL "\"Sumarodual enif enis muimres.\""
+           Message NORMAL "\"Eaut satirev senmo tnacifirolg.\""
+           Message NORMAL "\"Sugluf murallets arpus douq animul ni.\""
+           Message NORMAL "\"Tnedeac marret munarpus douq sinires ni te.\""
+           Message NORMAL "\"Axeresim animod, son eritlacsa.\"" 
+           Message NORMAL "\"Siroma te satilimuh ni sarocerp.\""
+           Message NORMAL "\"Murolleb aimmus o, artson mecov eratxenoe.\""
+           Message NORMAL "\"Raxelletni sinmo murorepus eauq, merecap sarad.\""
+           Message NORMAL "\"Rutnaval, tnus sairav euq ,artson arortcep.\""
+           Message NORMAL "\"Araved aut mutacirup erivulf ni.\""
+           Message NORMAL "\"Metcnas aitaeb muc mus saxirolnoc son.\""
+           Message NORMAL "\"Sudnetse mauqnun aimul ibu acol ni.\""
+           Message NORMAL "\"Maut marret aneleb te, animod ,maut mulupop erivlas.\""
+           Message NORMAL "\"Amixam arallev o, tacifiralc et aineg sinmo tu.\""
+           Message NORMAL "\"Xirtarenluv arinas, mumrifni aritrof.\""
+           Message NORMAL "\"Muresserp te subiroxe aigufer anod te.\""
+           Message NORMAL "\"Xirtson xaros te soirtarf aranuda.\""
+           Message NORMAL "\"Sumaviv arido te airocsid enis tu.\""
+           Message NORMAL "\"Senmo son repus adnuffe maut xul muraitarg.\""
+           Message NORMAL "\"Etatirev te mutirips ni sumus sutaner tu.\""
+           Message NORMAL "\"Eraviv munrete aut aracap ni.\""
+           Message NORMAL "\"Aneres xap o, et da romalc aut sarutaerc sinmo.\""
+           Message NORMAL "\"Solitsoh musrevda artnoc son erisnefed.\""
+           Message NORMAL "\"Eaiv murev ni mudarg irtson aradiug te.\""
+           Message NORMAL "\"Animod, murtson muxul tis aut aranimul.\""
+           Message NORMAL "\"Sinrete muroivlas aiv tis aut aiv te.\""
+           Message NORMAL "\"Sumaradual et murolleces alleces ni.\""
+           Message NORMAL "\"Siroleac munger ni atcnas te silagna muc.\""
+           Message NORMAL "\"Xinrete aut nemon tis muracideneb.\""
+           Message NORMAL "\"Eidinmo son repus aut aitarg adnecsed te.\""
+           Message NORMAL "\"Eranger atised mauqmun iuq, aimmus aimon ni.\""
+           Message NORMAL "\"Etarcas siroma te eromit ni et sumaroda.\""
+         }
+       }
+       {
+         SoundEffect { "latin_mass" }
+         Area 6 Filter DistanceD none 6 Chance 0.2 Fx { MASS Rgb 100 100 255 100 }
+         ChooseRandom {
+           Message NORMAL "\"Vellora naxium, adrescta lorinum caelora et terranum.\""
+           Message NORMAL "\"In vixis eterne clamuras ad te.\""
+           Message NORMAL "\"Nostra animas levatrix sont in spes et firum.\""
+           Message NORMAL "\"Ut bellanitus tua descenda suver nos.\""
+           Message NORMAL "\"Onnasira, Sancara et Vellorum.\""
+           Message NORMAL "\"Ocis nostra non vidamos tuam.\""
+           Message NORMAL "\"Sed prescensir in coreum tangimus.\""
+           Message NORMAL "\"Daros nos emeria ad entellandum"
+           Message NORMAL "\"Mystaros tuas arcantum, qui verix in gloram tua.\""
+           Message NORMAL "\"Sermium sine fine laudoramus.\""
+           Message NORMAL "\"Glorificant omnes veritas tuae.\""
+           Message NORMAL "\"In lumina quod supra stellarum fulgus.\""
+           Message NORMAL "\"Et in serinis quod supranum terram caedent.\""
+           Message NORMAL "\"Ascaltire nos, Domina miserexa.\""
+           Message NORMAL "\"Precoras in humilitas et amoris.\""
+           Message NORMAL "\"Eonextare vocem nostra, o summia bellorum.\""
+           Message NORMAL "\"Daras pacerem, quae superorum omnis intellexar.\""
+           Message NORMAL "\"Pectrora nostra, que varias sunt, lavantur.\""
+           Message NORMAL "\"In fluvire puricatum tua devara.\""
+           Message NORMAL "\"Nos conlorixas sum cum beatia sanctem.\""
+           Message NORMAL "\"In loca ubi lumia nunquam estendus.\""
+           Message NORMAL "\"Salvire populum tuam, Domina, et belena terram tuam.\""
+           Message NORMAL "\"Ut omnis genia te clarificat, o vellara maxima.\""
+           Message NORMAL "\"Fortira infirmum, sanira vulneratrix.\""
+           Message NORMAL "\"Et dona refugia exoribus et presserum.\""
+           Message NORMAL "\"Adunara fratrios et sorax nostrix.\""
+           Message NORMAL "\"Ut sine discoria et odira vivamus.\""
+           Message NORMAL "\"Gratiarum lux tuam effunda super nos omnes.\""
+           Message NORMAL "\"Ut renatus sumus in spiritum et veritate.\""
+           Message NORMAL "\"In pacara tua eternum vivare.\""
+           Message NORMAL "\"Omnis creaturas tua clamor ad te, o Pax Serena.\""
+           Message NORMAL "\"Defensire nos contra adversum hostilos.\""
+           Message NORMAL "\"Et guidara nostri gradum in verum viae.\""
+           Message NORMAL "\"Luminara tua sit luxum nostrum, Domina.\""
+           Message NORMAL "\"Et via tua sit via salviorum eternis.\""
+           Message NORMAL "\"In secella secellorum te laudaramus.\""
+           Message NORMAL "\"Cum angalis et sancta in regnum caeloris.\""
+           Message NORMAL "\"Benedicarum sit nomen tua eternix.\""
+           Message NORMAL "\"Et descenda gratia tua super nos omnidie.\""
+           Message NORMAL "\"In nomia summia, qui numquam desita regnare.\""
+           Message NORMAL "\"Adoramus te in timore et amoris sacrate.\""
+         }
+       }
+     }
     Filter Not LastingEffect PREACHING Lasting 200 PREACHING
   }
   strength = 5
@@ -322,7 +417,6 @@ BOOKCASES("_HUMAN", "_human")
   viewId = { "pew" }
   canHideHere = true
   usageType = UsageEffect "sit on pew" {
-    Area 1 Chance 0.2 Fx { MASS Rgb 100 100 255 100 }
     Filter LastingEffect DRUNK {
       CreatureMessage { "fall asleep on the pew" "falls asleep on the pew" }
       Lasting SLEEP
