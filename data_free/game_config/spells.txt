@@ -836,6 +836,7 @@ Def NoEffect() Unlock "nothing" End
   symbol = "😱"
   effect = Area 6 Filter Enemy Damage SPELL_DAMAGE SPELL
   cooldown = 30
+  message = "let out an ear-piercing scream!" "lets out an ear-piercing scream!"
   type = ABILITY
 }
 "vetala animate corpses"
@@ -863,20 +864,30 @@ Def NoEffect() Unlock "nothing" End
     IncreaseAttr DEFENSE 1
     IncreaseAttr SPELL_DAMAGE 1
   }
+  message = "start feasting on corpses" "starts feasting on corpses"
   cooldown = 1
   type = ABILITY
 }
 "healing prayer" inherit "healing" {
   effect = Name "healing prayer" Heal { FLESH }
+  message = "recite a healing prayer" "recites a healing prayer"
+  type = ABILITY
 }
 "strength prayer" inherit "damage bonus" {
   effect = Name "strength prayer" Lasting 40 DAM_BONUS
+  message = "recite a strength prayer" "recites a strength prayer"
+  type = ABILITY
 }
 "protection prayer" inherit "defense bonus" {
   effect = Name "protection prayer" Lasting 40 DEF_BONUS
+  message = "recite a protection prayer" "recites a protection prayer"
+  type = ABILITY
 }
 "devout healing prayer" inherit "advanced healing" {
   effect = Name "devout healing prayer" Heal { FLESH }
+  message = "recite a devout healing prayer" "recites a devout healing prayer"
+  upgrade = "healing prayer"
+  type = ABILITY
 }
 
 Def TryHolyMissile()
@@ -893,16 +904,19 @@ End
 {
   effect = MinDistanceFromStrongEnemy(2) Name "holy missile" Description "Shoots a holy missile"
       TryHolyMissile()
+  type = ABILITY
 }
 "advanced holy missile" inherit "advanced magic missile"
 {
   upgrade = "holy missile"
   effect = MinDistanceFromStrongEnemy(2) Name "advanced holy missile" Description "Shoots a holy missile"
       TryHolyMissile()
+  type = ABILITY
 }
 "expert holy missile" inherit "expert magic missile"
 {
   upgrade = "advanced holy missile"
   effect = MinDistanceFromStrongEnemy(2) Name "expert holy missile" Description "Shoots a holy missile"
       TryHolyMissile()
+  type = ABILITY
 }
