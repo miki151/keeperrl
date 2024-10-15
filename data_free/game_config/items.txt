@@ -1964,7 +1964,7 @@ End
     applyVerb = "drink" "drinks"
     fragile = true
     weight = 0.3
-    effect = {
+    effect = Description "Increases morale, but makes minions drunk" {
       Lasting 150 HIGH_MORALE
       Lasting DRUNK
       Filter Not MaxLevelBelow "DIVINITY" 1 Lasting 500 SINNED
