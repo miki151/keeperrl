@@ -41,7 +41,7 @@
       }
     }
     {
-      ids = { "ARMED_BROTHER" }
+      ids = { "ARMED_BROTHER" "WARRIOR_NUN" }
       traits = { FIGHTER }
       frequency = 0.7
       requirements = {

@@ -27,10 +27,14 @@
 { viewId = "keeper_knight_f2" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 15} }
 { viewId = "keeper_knight_f3" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 16} }
 { viewId = "keeper_knight_f4" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 16} }
-{ viewId = "dgr_bishop" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {3 16} }
+{ viewId = "bishop1" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {3 16} }
+{ viewId = "bishop2" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {3 16} }
+{ viewId = "bishop3" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {3 16} }
+{ viewId = "bishop4" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {3 16} }
 { viewId = "dgr_acolyte" symbol = "@" color = ColorId LIGHT_BROWN weaponOrigin = {3 16} }
 { viewId = "dgr_acolyte_f" symbol = "@" color = ColorId LIGHT_BROWN weaponOrigin = {3 16} }
-{ viewId = "armed_brother" sprite = "dgr_paladin" symbol = "@" color = ColorId WHITE weaponOrigin = {4 13}   }
+{ viewId = "armed_brother" symbol = "@" color = ColorId WHITE weaponOrigin = {4 13}   }
+{ viewId = "nun_mage" symbol = "@" color = ColorId WHITE weaponOrigin = {4 13} }
 { viewId = "squire" symbol = "@" color = ColorId WHITE weaponOrigin = {4 13}   }
 { viewId = "squire_f" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 14}   }
 { "demon_dweller" "U" ColorId PURPLE }
@@ -40,13 +44,13 @@
 { "vampire_brute" "V" ColorId LIGHT_BROWN }
 { "devil" "&" ColorId ORANGE }
 { viewId = "satan" symbol = "&" color = ColorId RED weaponOrigin = {6 23} }
-{ viewId = "tengu" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId LIGHT_BLUE }
+{ viewId = "tengu" symbol = "&" color = ColorId LIGHT_BLUE }
 { viewId = "shaitan" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId LIGHT_RED }
-{ viewId = "banshee" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId LIGHT_BROWN }
+{ viewId = "banshee" symbol = "&" color = ColorId LIGHT_BROWN }
 { viewId = "vetala" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId GREEN }
-{ viewId = "leyak" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId YELLOW }
-{ viewId = "baku" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId WHITE }
-{ viewId = "rakshasa" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId ORANGE }
+{ viewId = "leyak" symbol = "&" color = ColorId YELLOW }
+{ viewId = "baku" symbol = "&" color = ColorId WHITE }
+{ viewId = "rakshasa" symbol = "&" color = ColorId ORANGE }
 { viewId = "ghoul" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId LIGHT_GRAY }
 { viewId = "suanggi" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId LIGHT_GREEN }
 { "adoxie_foot_left" "u" ColorId PURPLE }

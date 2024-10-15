@@ -242,7 +242,7 @@ End
 }
 "KEEPER_BISHOP"
   {
-    viewId = { "dgr_bishop" }
+    viewId = { "bishop1" }
     attr = {
       DAMAGE 10
       DEFENSE 16
@@ -256,7 +256,7 @@ End
       firstNameGen = "FIRST_MALE"
       fullTitle = true
     }
-#    viewIdUpgrades = { { "duke2" } { "duke3" } { "duke4" }}
+    viewIdUpgrades = { { "bishop2" } { "bishop3" } { "bishop4" }}
     maxLevelIncrease = {
       DAMAGE 3
       SPELL_DAMAGE 12
@@ -1642,6 +1642,15 @@ End
       firstNameGen = "FIRST_MALE"
     }
     hatedByEffect = HATE_HUMANS
+  }
+"WARRIOR_NUN" inherit "ARMED_BROTHER"
+  {
+    viewId = { "nun_mage" }
+    gender = FEMALE
+    name = {
+      name = "warrior nun"
+      firstNameGen = "FIRST_FEMALE"
+    }
   }
 "JESTER"
   {
