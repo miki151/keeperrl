@@ -1491,9 +1491,9 @@ PTask Task::goToAndWait(Position pos, TimeInterval waitTime) {
 }
 
 namespace {
-class Wait : public Task {
+class WaitTask : public Task {
   public:
-  Wait(TimeInterval waitT) : waitTime(waitT) {}
+  WaitTask(TimeInterval waitT) : waitTime(waitT) {}
 
   virtual MoveInfo getMove(Creature* c) override {
     if (!maxTime)
@@ -1510,7 +1510,7 @@ class Wait : public Task {
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), waitTime, maxTime)
-  SERIALIZATION_CONSTRUCTOR(Wait)
+  SERIALIZATION_CONSTRUCTOR(WaitTask)
 
   private:
   TimeInterval SERIAL(waitTime);
@@ -1519,7 +1519,7 @@ class Wait : public Task {
 }
 
 PTask Task::wait(TimeInterval waitTime) {
-  return makeOwner<Wait>(waitTime);
+  return makeOwner<WaitTask>(waitTime);
 }
 
 namespace {
@@ -2083,4 +2083,4 @@ REGISTER_TYPE(WithTeam)
 REGISTER_TYPE(ArcheryRange)
 REGISTER_TYPE(OutsidePredicate)
 REGISTER_TYPE(AlwaysPredicate)
-REGISTER_TYPE(Wait)
+REGISTER_TYPE(WaitTask)
