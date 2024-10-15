@@ -100,7 +100,7 @@ WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(param
         [this](const string& s) { presentText("", s); },
         }), zoomUI(-1),
     soundLibrary(params.soundLibrary), bugreportSharing(params.bugreportSharing), bugreportDir(params.bugreportDir),
-    installId(params.installId) {}
+    installId(params.installId), debugOptions(params.debugOptions) {}
 
 void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FXViewManager> fxViewManager) {
   renderer.setFullscreen(options->getBoolValue(OptionId::FULLSCREEN));
@@ -1146,33 +1146,34 @@ void WindowView::keyboardActionAlways(const SDL_Keysym& key) {
 // These commands will run only when the map is in focus (I think)
 void WindowView::keyboardAction(const SDL_Keysym& key) {
   keyboardActionAlways(key);
+  if (debugOptions)
+    switch (key.sym) {
+      case SDL::SDLK_F10:
+        if (auto input = getText("Enter effect", "", 100))
+          inputQueue.push({UserInputId::APPLY_EFFECT, *input});
+        break;
+      case SDL::SDLK_F11:
+        if (auto input = getText("Enter item type", "", 100))
+          inputQueue.push({UserInputId::CREATE_ITEM, *input});
+        break;
+      case SDL::SDLK_F12:
+        if (auto input = getText("Enter creature id", "", 100))
+          inputQueue.push({UserInputId::SUMMON_ENEMY, *input});
+        break;
+      case SDL::SDLK_F9:
+        inputQueue.push(UserInputId::CHEAT_ATTRIBUTES);
+        break;
+      /*case SDL::SDLK_F7:
+        presentList("", vector<string>(messageLog.begin(), messageLog.end()), true);
+        break;
+      case SDL::SDLK_F2:
+        if (!renderer.isMonkey()) {
+          options->handle(this, OptionSet::GENERAL);
+          refreshScreen();
+        }
+        break;*/
+    }
   switch (key.sym) {
-#ifndef RELEASE
-    case SDL::SDLK_F10:
-      if (auto input = getText("Enter effect", "", 100))
-        inputQueue.push({UserInputId::APPLY_EFFECT, *input});
-      break;
-    case SDL::SDLK_F11:
-      if (auto input = getText("Enter item type", "", 100))
-        inputQueue.push({UserInputId::CREATE_ITEM, *input});
-      break;
-    case SDL::SDLK_F12:
-      if (auto input = getText("Enter creature id", "", 100))
-        inputQueue.push({UserInputId::SUMMON_ENEMY, *input});
-      break;
-    case SDL::SDLK_F9:
-      inputQueue.push(UserInputId::CHEAT_ATTRIBUTES);
-      break;
-#endif
-    /*case SDL::SDLK_F7:
-      presentList("", vector<string>(messageLog.begin(), messageLog.end()), true);
-      break;
-    case SDL::SDLK_F2:
-      if (!renderer.isMonkey()) {
-        options->handle(this, OptionSet::GENERAL);
-        refreshScreen();
-      }
-      break;*/
     case C_OPEN_MENU:
     case SDL::SDLK_ESCAPE:
       if (!guiBuilder.clearActiveButton() && !renderer.isMonkey())

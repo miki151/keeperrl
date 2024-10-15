@@ -46,6 +46,7 @@ class WindowView: public View {
     FileSharing* bugreportSharing;
     DirectoryPath bugreportDir;
     string installId;
+    bool debugOptions;
   };
   static View* createDefaultView(ViewParams);
   static View* createLoggingView(OutputArchive& of, ViewParams);
@@ -239,6 +240,7 @@ class WindowView: public View {
   FileSharing* bugreportSharing;
   DirectoryPath bugreportDir;
   string installId;
+  bool debugOptions;
   void rebuildMinimapGui();
   fx::FXRenderer* fxRenderer;
   Vec2 getMinimapOrigin() const;

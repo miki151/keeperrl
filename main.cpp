@@ -221,6 +221,13 @@ struct AppConfig {
     fail();
   }
 
+  bool is_true(const char* key) {
+    if (auto value = getReferenceMaybe(values, key))
+      if (auto ret = fromStringSafe<int>(*value))
+        return *ret > 0;
+    return false;
+  }
+
   private:
   map<string, string> values;
 };
@@ -458,7 +465,8 @@ static int keeperMain(po::parser& commandLineFlags) {
   bugreportSharing.downloadPersonalMessage();
   unique_ptr<View> view;
   view.reset(WindowView::createDefaultView(
-      {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary, &bugreportSharing, userPath, installId}));
+      {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary, &bugreportSharing, userPath, installId,
+          appConfig.is_true("debug_options")}));
 #ifndef RELEASE
   InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
 #endif
