@@ -1967,7 +1967,7 @@ End
     effect = Description "Increases morale, but makes minions drunk" {
       Lasting 150 HIGH_MORALE
       Lasting DRUNK
-      Filter Not MaxLevelBelow "DIVINITY" 1 Lasting 500 SINNED
+      AI And {} -1 0 Filter Not MaxLevelBelow "DIVINITY" 1 Lasting 500 SINNED
     }
     price = 10
     burnTime = 1
