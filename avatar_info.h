@@ -21,5 +21,5 @@ class Unlocks;
 
 extern variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View*, const vector<pair<string, KeeperCreatureInfo>>&,
     ContentFactory*, const Unlocks&, Options*);
-extern AvatarInfo getQuickGameAvatar(View*, const vector<pair<string, KeeperCreatureInfo>>&, CreatureFactory*);
+extern AvatarInfo getQuickGameAvatar(View*, const KeeperCreatureInfo&, CreatureFactory*);
 extern TribeId getPlayerTribeId(TribeAlignment);

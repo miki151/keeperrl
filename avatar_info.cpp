@@ -240,10 +240,9 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
   }
 }
 
-AvatarInfo getQuickGameAvatar(View* view, const vector<pair<string, KeeperCreatureInfo>>& keeperCreatures,
+AvatarInfo getQuickGameAvatar(View* view, const KeeperCreatureInfo& myKeeper,
     CreatureFactory* creatureFactory) {
   AvatarInfo ret;
-  auto& myKeeper = keeperCreatures[0].second;
   ret.playerCreature = creatureFactory->fromId(myKeeper.creatureId[0], TribeId::getDarkKeeper());
   if (!myKeeper.noLeader)
     ret.playerCreature->getName().setBare("Keeper");

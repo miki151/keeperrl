@@ -949,24 +949,31 @@ vector<SaveFileInfo> MainLoop::getSaveOptions(const vector<GameSaveType>& games)
   return ret;
 }
 
-void MainLoop::launchQuickGame(optional<int> maxTurns, bool tryToLoad) {
+void MainLoop::launchQuickGame(optional<int> maxTurns, optional<string> keeperName) {
   PGame game;
   tileSet->clear();
   auto contentFactory = createContentFactory(true);
   if (tileSet)
     tileSet->setTilePaths(contentFactory.tilePaths);
   tileSet->loadTextures();
-  if (tryToLoad) {
+  if (!keeperName) {
     auto files = getSaveOptions({GameSaveType::AUTOSAVE, GameSaveType::KEEPER});
     auto toLoad = std::min_element(files.begin(), files.end(),
         [](const auto& f1, const auto& f2) { return f1.date > f2.date; });
     if (toLoad != files.end()) {
       auto path = userPath.file((*toLoad).filename);
       game = loadGame(path, "\"" + getNameAndVersion(path)->first + "\"");
-    }
-  }
-  if (!game) {
-    AvatarInfo avatar = getQuickGameAvatar(view, contentFactory.keeperCreatures, &contentFactory.getCreatures());
+    } else
+      return;
+  } else {
+    auto& keeperCreature = [&] ()-> const KeeperCreatureInfo& {
+      for (auto& elem : contentFactory.keeperCreatures)
+        if (elem.first == keeperName)
+          return elem.second;
+      USER_FATAL << "keeper not found " << *keeperName;
+      fail();
+    }();
+    AvatarInfo avatar = getQuickGameAvatar(view, keeperCreature, &contentFactory.getCreatures());
     CampaignBuilder builder(view, Random, options, contentFactory.villains, contentFactory.gameIntros, avatar);
     auto result = builder.prepareCampaign(&contentFactory, bindMethod(&MainLoop::getRetiredGames, this),
         CampaignType::QUICK_MAP, "Jarnsaxaland");

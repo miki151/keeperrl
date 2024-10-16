@@ -145,7 +145,7 @@ static po::parser getCommandLineFlags() {
   flags["gen_z_levels"].type(po::string).description("Generate and print z-level types for a given keeper");
 #ifndef RELEASE
   flags["quick_game"].description("Skip main menu and load the last save file or start a single map game");
-  flags["new_game"].description("Skip main menu and start a single map game");
+  flags["new_game"].type(po::string).description("Skip main menu and start a single map game");
   flags["max_turns"].type(po::i32).description("Quit the game after a given max number of turns");
 #endif
   return flags;
@@ -270,6 +270,8 @@ static int keeperMain(po::parser& commandLineFlags) {
     testAll();
     return 0;
   }
+  if (commandLineFlags["new_game"].was_set())
+    USER_CHECK(!commandLineFlags["new_game"].get().string.empty()) << "Please enter keeper name";
   DirectoryPath dataPath([&]() -> string {
     if (commandLineFlags["data_dir"].was_set())
       return commandLineFlags["data_dir"].get().string;
@@ -487,9 +489,11 @@ static int keeperMain(po::parser& commandLineFlags) {
     if (audioError)
       USER_INFO << "Failed to initialize audio. The game will be started without sound. " << *audioError;
     if (commandLineFlags["quick_game"].was_set())
-      loop.launchQuickGame(maxTurns, true);
-    if (commandLineFlags["new_game"].was_set())
-      loop.launchQuickGame(maxTurns, false);
+      loop.launchQuickGame(maxTurns, none);
+    if (commandLineFlags["new_game"].was_set()) {
+      USER_CHECK(!commandLineFlags["new_game"].get().string.empty());
+      loop.launchQuickGame(maxTurns, commandLineFlags["new_game"].get().string);
+    }
     loop.start(tilesPresent);
   } catch (GameExitException ex) {
   }
