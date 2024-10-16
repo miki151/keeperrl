@@ -1072,7 +1072,7 @@ bool Creature::addEffect(BuffId id, TimeInterval time, GlobalTime global, const 
       if (msg && info.addedMessage)
         applyMessage(*info.addedMessage, this);
       if (info.startEffect)
-        info.startEffect->applyToCreature(this);
+        info.startEffect->applyToCreature(this, this);
       return true;
     }
   }
@@ -1095,7 +1095,7 @@ bool Creature::removeBuff(int index, bool msg) {
     if (msg && info.removedMessage)
       applyMessage(*info.removedMessage, this);
     if (info.endEffect)
-      info.endEffect->applyToCreature(this);
+      info.endEffect->applyToCreature(this, this);
     return true;
   }
   return false;
@@ -1116,7 +1116,7 @@ bool Creature::addPermanentEffect(BuffId id, int count, bool msg, const ContentF
     if (msg && info.addedMessage)
       applyMessage(*info.addedMessage, this);
     if (info.startEffect)
-      info.startEffect->applyToCreature(this);
+      info.startEffect->applyToCreature(this, this);
     return true;
   }
   return false;
@@ -1459,7 +1459,7 @@ bool Creature::processBuffs() {
       auto buff = buffsCopy[index];
       auto& info = factory->buffs.at(buff.first);
       if (info.tickEffect)
-        info.tickEffect->applyToCreature(this);
+        info.tickEffect->applyToCreature(this, this);
       if (buff.second < time)
         removeBuff(index, true);
       if (isDead())
@@ -1471,7 +1471,7 @@ bool Creature::processBuffs() {
     for (auto& buff : buffPermanentCount) {
       auto& info = factory->buffs.at(buff.first);
       if (info.tickEffect)
-        info.tickEffect->applyToCreature(this);
+        info.tickEffect->applyToCreature(this, this);
       if (isDead())
         return true;
     }
