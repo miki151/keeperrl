@@ -28,3 +28,5 @@
 "killed_by_adoxie" {{"adoxie_head"}} "Killed by the Evil God Adoxie" ""
 "solo_keeper" {{"keeper4"}} "Won the game as a solo Keeper" ""
 "rode_dragon" {{"red_dragon"}} "Rode a dragon" ""
+"black_mass" {{"adoxie_head"}} "Performed a black mass" "You have dedicated the souls of you and your minions to the Evil God Adoxie"
+"mortal_sin" {{"prostitute"}} "Absolved of a mortal sin" "You have absolved a minion from their mortal sin"

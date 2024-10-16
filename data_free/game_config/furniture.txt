@@ -502,6 +502,7 @@ BOOKCASES("_HUMAN", "_human")
   } {
     Filter LastingEffect MORTAL_SINNED {
       RemovePermanent MORTAL_SINNED
+      Achivement "mortal_sin"
       CollectiveMessage "A minion is absolved of a mortal sin"
       Filter ExperienceBelow 20 {
         AddExperience 3

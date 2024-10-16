@@ -374,32 +374,35 @@ End
         DIVINE_SPELL(Chance 0.3 SummonAway "SQUIRE_PLAYER" 1 1500,
             "Your prayers for summoning armed help will soon be answered.")
       }
-      Filter EquipedIngredient "adoxie_prayer" FirstSuccessful {
-        ChainUntilFail {
-          Area 20 Filter Enemy Polymorph "CHICKEN" none
-          MassMessage("Adoxie has heard your prayers and punishes your enemies.")
-        }
-        ChainUntilFail {
-          ChooseRandomUntilSuccessful {
-Def TRY_DEMON(NAME) Filter Not Flag NAME + "_summon" { Summon NAME 1 none SetFlag NAME + "_summon" true } End
-            TRY_DEMON("TENGU")
-            TRY_DEMON("SHAITAN")
-            TRY_DEMON("BANSHEE")
-            TRY_DEMON("VETALA")
-            TRY_DEMON("LEYAK")
-            TRY_DEMON("BAKU")
-            TRY_DEMON("RAKSHASA")
-            TRY_DEMON("GHOUL")
-            TRY_DEMON("SUANGGI")
+      Filter EquipedIngredient "adoxie_prayer" {
+        Achievement "black_mass"
+        FirstSuccessful {
+          ChainUntilFail {
+            Area 20 Filter Enemy Polymorph "CHICKEN" none
+            MassMessage("Adoxie has heard your prayers and punishes your enemies.")
           }
-          MassMessage("Adoxie has heard your prayers and sends his servant.")
-        }
-        {
-          Summon "ADOXIE_FOOT_LEFT" 1 200
-          Summon "ADOXIE_FOOT_RIGHT" 1 200
-          Summon "ADOXIE_LEFT_HAND" 1 200
-          Summon "ADOXIE_HAND_RIGHT" 1 200
-          MassMessage("Adoxie has heard your prayers and sends his extremities.")
+          ChainUntilFail {
+            ChooseRandomUntilSuccessful {
+  Def TRY_DEMON(NAME) Filter Not Flag NAME + "_summon" { Summon NAME 1 none SetFlag NAME + "_summon" true } End
+              TRY_DEMON("TENGU")
+              TRY_DEMON("SHAITAN")
+              TRY_DEMON("BANSHEE")
+              TRY_DEMON("VETALA")
+              TRY_DEMON("LEYAK")
+              TRY_DEMON("BAKU")
+              TRY_DEMON("RAKSHASA")
+              TRY_DEMON("GHOUL")
+              TRY_DEMON("SUANGGI")
+            }
+            MassMessage("Adoxie has heard your prayers and sends his servant.")
+          }
+          {
+            Summon "ADOXIE_FOOT_LEFT" 1 200
+            Summon "ADOXIE_FOOT_RIGHT" 1 200
+            Summon "ADOXIE_LEFT_HAND" 1 200
+            Summon "ADOXIE_HAND_RIGHT" 1 200
+            MassMessage("Adoxie has heard your prayers and sends his extremities.")
+          }
         }
       }
     }
