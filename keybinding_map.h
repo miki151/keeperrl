@@ -4,7 +4,12 @@
 #include "keybinding.h"
 #include "file_path.h"
 #include "color.h"
-#include "steam_input.h"
+
+#ifdef USE_STEAMWORKS
+#  include "steam_input.h"
+#else
+#  include "input.h"
+#endif
 
 class FilePath;
 class GuiFactory;

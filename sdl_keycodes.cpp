@@ -1,6 +1,9 @@
 #include "util.h"
 #include "sdl.h"
-#include "steam_input.h"
+
+#ifdef USE_STEAMWORKS
+#  include "steam_input.h"
+#endif
 
 #define LIST_KEYS \
 X(SDLK_UNKNOWN)\

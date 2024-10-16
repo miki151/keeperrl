@@ -27,7 +27,10 @@
 #include "gzstream.h"
 #include "opengl.h"
 #include "tileset.h"
-#include "steam_input.h"
+
+#ifdef USE_STEAMWORKS
+#  include "steam_input.h"
+#endif
 
 void Renderer::renderDeferredSprites() {
   static vector<SDL::GLfloat> vertices;
@@ -669,8 +672,10 @@ void Renderer::setAnimationsDirectory(const DirectoryPath& path) {
 }
 
 void Renderer::drawAndClearBuffer() {
+#ifdef USE_STEAMWORKS
   if (steamInput)
     steamInput->runFrame();
+#endif
   renderDeferredSprites();
   CHECK_OPENGL_ERROR();
   if (fpsLimit) {
@@ -738,6 +743,7 @@ void Renderer::considerMouseMoveEvent(Event& ev) {
 
 bool Renderer::pollEvent(Event& ev) {
   CHECK(currentThreadId() == *renderThreadId);
+#ifdef USE_STEAMWORKS
   if (steamInput)
     if (auto e = steamInput->getEvent()) {
       ev.type = SDL::SDL_KEYDOWN;
@@ -750,6 +756,7 @@ bool Renderer::pollEvent(Event& ev) {
       };
       return true;
     }
+#endif
   if (monkey) {
     if (Random.roll(2))
       return pollEventOrFromQueue(ev);
@@ -761,6 +768,7 @@ bool Renderer::pollEvent(Event& ev) {
 
 Vec2 Renderer::getDiscreteJoyPos(ControllerJoy joy) {
   Vec2 ret;
+#ifdef USE_STEAMWORKS
   if (steamInput) {
     auto pos = steamInput->getJoyPos(joy);
     if (pos.first <= -0.5)
@@ -772,6 +780,7 @@ Vec2 Renderer::getDiscreteJoyPos(ControllerJoy joy) {
     else if (pos.second >= 0.5)
       ret.y = -1;
   }
+#endif
   return ret;
 }
 

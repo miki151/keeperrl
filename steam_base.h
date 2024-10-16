@@ -2,6 +2,11 @@
 
 #include "util.h"
 
+#ifndef USE_STEAMWORKS
+#error steam_base.h included despite USE_STEAMWORKS not being defined!
+#endif
+
+
 // Notes:
 //
 // - Whole interface is NOT thread safe, it should be used on a single thread only
@@ -19,9 +24,6 @@
 RICH_ENUM(QueryStatus, invalid, pending, completed, failed);
 
 namespace steam {
-
-  using int64 = long long;
-  using uint64 = unsigned long long;
 
 #define STEAM_IFACE_DECL(name, Type)                                                                                         \
   Type* ptr;                                                                                                        \
@@ -45,20 +47,6 @@ class Friends;
 class UGC;
 class Utils;
 class User;
-
-struct UserId {
-  explicit UserId(uint64 v) :value(v) {}
-  operator uint64() const { return value; }
-
-  uint64 value;
-};
-
-struct ItemId {
-  explicit ItemId(uint64 v) :value(v) {}
-  operator uint64() const { return value; }
-
-  uint64 value;
-};
 
 bool initAPI();
 
