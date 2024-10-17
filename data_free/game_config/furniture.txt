@@ -316,7 +316,7 @@ BOOKCASES("_HUMAN", "_human")
            Message NORMAL "\"Eaut satirev senmo tnacifirolg.\""
            Message NORMAL "\"Sugluf murallets arpus douq animul ni.\""
            Message NORMAL "\"Tnedeac marret munarpus douq sinires ni te.\""
-           Message NORMAL "\"Axeresim animod, son eritlacsa.\"" 
+           Message NORMAL "\"Axeresim animod, son eritlacsa.\""
            Message NORMAL "\"Siroma te satilimuh ni sarocerp.\""
            Message NORMAL "\"Murolleb aimmus o, artson mecov eratxenoe.\""
            Message NORMAL "\"Raxelletni sinmo murorepus eauq, merecap sarad.\""
@@ -502,7 +502,7 @@ BOOKCASES("_HUMAN", "_human")
   } {
     Filter LastingEffect MORTAL_SINNED {
       RemovePermanent MORTAL_SINNED
-      Achivement "mortal_sin"
+      Achievement "mortal_sin"
       CollectiveMessage "A minion is absolved of a mortal sin"
       Filter ExperienceBelow 20 {
         AddExperience 3
