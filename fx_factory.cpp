@@ -1270,6 +1270,37 @@ static void addIconEffect(FXManager& mgr, FXName fxName, SVec2 coord) {
   mgr.addDef(fxName, psdef);
 }
 
+static void addPrayerEffect(FXManager& mgr) {
+  EmitterDef edef;
+  edef.strength = 0.0f;
+  edef.direction = 0.0f;
+  edef.directionSpread = 0.0f;
+  edef.frequency = 1.2f;
+  edef.source = FRect(0, -12, 0, -12);
+
+  ParticleDef pdef;
+  pdef.life = 2.0f;
+  pdef.size = 15.0f;
+  pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 1.0, 0.0}, InterpType::cosine};
+
+  pdef.color = FVec3(1.0f);
+  pdef.textureName = TextureName::SPECIAL;
+
+  SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+  ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
+    defaultEmitParticle(ctx, em, pinst);
+    pinst.rot = 0;
+    pinst.texTile = {1, 0};
+  };
+
+  ParticleSystemDef psdef;
+  psdef.subSystems = {ssdef};
+  psdef.isLooped = false;
+  psdef.animLength = 3.0f;
+
+  mgr.addDef(FXName::AUREOLA, psdef);
+}
+
 static void addLoopedLoveEffect(FXManager& mgr) {
   EmitterDef edef;
   edef.strength = 10.0f;
@@ -1861,6 +1892,7 @@ void FXManager::initializeDefs() {
   addSleepEffect(*this);
   addIconEffect(*this, FXName::LOVE, {2, 1});
   addIconEffect(*this, FXName::MUSIC, {3, 1});
+  addPrayerEffect(*this);
   addLoopedLoveEffect(*this);
   addLichEffect(*this);
   addBlindEffect(*this);

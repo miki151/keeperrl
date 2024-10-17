@@ -321,6 +321,10 @@ ParticleSystem FXManager::makeSystem(FXName name, uint spawnTime, InitConfig con
 }
 
 ParticleSystemId FXManager::addSystem(FXName name, InitConfig config) {
+  if (name == FXName::AUREOLA)
+    for (int i : All(systems))
+      if (!systems[i].isDead && systems[i].pos == config.pos && systems[i].defId == FXName::AUREOLA)
+        return ParticleSystemId(i, systems[i].spawnTime);
   for (int n = 0; n < (int)systems.size(); n++)
     if (systems[n].isDead) {
       if (systems[n].spawnTime == spawnClock) {

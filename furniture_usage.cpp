@@ -90,9 +90,11 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, const Furnitu
         usePortal(pos, c);
         break;
       case BuiltinUsageId::DEMON_RITUAL:
-      case BuiltinUsageId::PRAY:
       case BuiltinUsageId::STUDY:
       case BuiltinUsageId::ARCHERY_RANGE:
+      case BuiltinUsageId::PRAY:
+        if (auto game = pos.getGame())
+          game->addEvent(EventInfo::FX{pos, FXInfo{FXName::AUREOLA}});
         break;
     }
   },
