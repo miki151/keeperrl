@@ -387,7 +387,7 @@ TRAINING("_DWARF", "_dwarf")
   "scriptorium"
   {
     { Furniture {{ "SCRIPTORIUM" } "WOOD" 12 }                    "Scriptorium"       "Crafting"
-        "Allows writing prayer books."}
+        "Allows writing liturgical books to be used during mass."}
   }
   "distillery"
   {

@@ -30,7 +30,7 @@ map<EquipmentSlot, string> Equipment::slotTitles = {
   {EquipmentSlot::BOOTS, "Boots"},
   {EquipmentSlot::RINGS, "Rings"},
   {EquipmentSlot::AMULET, "Amulet"},
-  {EquipmentSlot::PRAYER_BOOK, "Prayer book"},
+  {EquipmentSlot::PRAYER_BOOK, "Liturgical book"},
 };
 
 SERIALIZE_DEF(Equipment, inventory, items, equipped)
