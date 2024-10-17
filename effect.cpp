@@ -661,6 +661,9 @@ static bool apply(const Effects::SummonAway& e, Position pos, Creature* attacker
     if (e.ttl)
       for (auto other : summoned)
         other->addEffect(BuffId("WILL_BANISH"), TimeInterval(*e.ttl));
+    if (auto col = getCollective(c))
+      for (auto other : summoned)
+        col->addCreature(other, e.traits);
     return !summoned.empty();
   }
   return false;

@@ -369,6 +369,7 @@ End
     {{"PrayerBookPoisonResistance"}    30}
     {{"PrayerBookRangedResistance"}    30}
     {{"PrayerBookArmedHelp"}           30}
+    {{"PrayerBookRegeneration"}        30}
 
     {{"PrayerBookFastTraining"}        50 "GOLD" 20 "advanced theology"}
     {{"PrayerBookFastCrafting"}        50 "GOLD" 20 "advanced theology"}

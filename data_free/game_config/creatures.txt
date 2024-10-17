@@ -273,6 +273,7 @@ End
       { "LeatherHelm" }
       { "PrayerBookProtection" }
       { "PrayerBookDigging" }
+      { "PrayerBookWorkers" }
     }
   }
 "WHITE_WIZARD" inherit "KEEPER_MAGE"

@@ -2040,6 +2040,13 @@ End
     ingredientType = "poison_resistance_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed with the intention of protecting minions from poison."
   }
+"PrayerBookRegeneration" inherit "PrayerBookProtection"
+  {
+    shortName = "regeneration"
+    name = "liturgical book for regenerating wounds"
+    ingredientType = "regeneration_prayer"
+    effect = Name "None" Message NORMAL "Mass will be performed with the intention of giving minions the ability to regenerate wounds."
+  }
 Def PROTECTION_BOOK(NAME, LOWER, PLURAL)
 "PrayerBook" + NAME + "Resistance" inherit "PrayerBookProtection"
   {
@@ -2070,6 +2077,14 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     name = "liturgical book for armed help"
     ingredientType = "squire_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed with the intention of summoning armed help."
+  }
+
+"PrayerBookWorkers" inherit "PrayerBookProtection"
+  {
+    shortName = "workforce"
+    name = "liturgical book for summoning workforce"
+    ingredientType = "workers_prayer"
+    effect = Name "None" Message NORMAL "Mass will be performed with the intention of summoning more workforce."
   }
 
 "PrayerBookMeleeTraining" inherit "PrayerBookProtection"

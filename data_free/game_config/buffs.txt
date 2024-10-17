@@ -343,6 +343,8 @@ End
           "Minions have been blessed with faster crafting for 1500 turns.")
       Filter EquipedIngredient "ranged_resistance_prayer" DIVINE_SPELL(Lasting 500 "RANGED_RESISTANCE",
           "Minions have been blessed with resistance to ranged attacks for 500 turns.")
+      Filter EquipedIngredient "regeneration_prayer" DIVINE_SPELL(Lasting 500 "REGENERATION",
+          "Minions have been blessed with the ability to regenerate wounds for 500 turns.")
       Filter EquipedIngredient "fire_resistance_prayer" DIVINE_SPELL(Lasting 500 "FIRE_RESISTANT",
           "Minions have been blessed with resistance to fire attacks for 500 turns.")
       Filter EquipedIngredient "poison_resistance_prayer" DIVINE_SPELL(Lasting 500 POISON_RESISTANT,
@@ -366,14 +368,19 @@ End
       Filter EquipedIngredient "guardian_prayer" DIVINE_SPELL(Filter CreatureStatus FIGHTER Summon "ANGEL" 1 500,
           "Minions have been blessed with guardian angels for 500 turns.")
       Filter EquipedIngredient "teuton_prayer" {
-        SummonAway "TEUTON" 1 1500
-        DIVINE_SPELL(Chance 0.3 SummonAway "TEUTON" 1 1500,
+        SummonAway "TEUTON" 1 1500  {FIGHTER NO_LIMIT}
+        DIVINE_SPELL(Chance 0.3 SummonAway "TEUTON" 1 1500 {FIGHTER NO_LIMIT},
             "Your prayers for summoning stronger armed help will soon be answered.")
       }
       Filter EquipedIngredient "squire_prayer" {
-        SummonAway "SQUIRE_CHURCH" 1 1500
-        DIVINE_SPELL(Chance 0.3 SummonAway "SQUIRE_PLAYER" 1 1500,
+        SummonAway "SQUIRE_CHURCH" 1 1500 {FIGHTER NO_LIMIT}
+        DIVINE_SPELL(Chance 0.3 SummonAway "SQUIRE_PLAYER" 1 1500 {FIGHTER NO_LIMIT},
             "Your prayers for summoning armed help will soon be answered.")
+      }
+      Filter EquipedIngredient "workers_prayer" {
+        SummonAway "PESEANT_PLAYER" 2  1500 {WORKER NO_LIMIT}
+        DIVINE_SPELL(Chance 0.3 SummonAway "PESEANT_PLAYER" 1 1500 {WORKER NO_LIMIT},
+            "Your prayers for summoning more workforce will soon be answered.")
       }
       Filter EquipedIngredient "adoxie_prayer" {
         Achievement "black_mass"

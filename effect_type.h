@@ -89,7 +89,8 @@ struct Summon {
   SERIALIZE_ALL(creature, count, ttl)
 };
 struct SummonAway : Summon {
-  using Summon::Summon;
+  EnumSet<MinionTrait> SERIAL(traits);
+  SERIALIZE_ALL(SUBCLASS(Summon), traits)
 };
 using AddAutomatonPart = AutomatonPart;
 struct SummonEnemy {
