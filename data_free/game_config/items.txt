@@ -2129,6 +2129,7 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     modifiers = {
       DIVINITY 3
     }
+    equipedEffect = { "MAGIC_RESISTANCE" }
     weight = 0.3
     storageIds = {"jewellery" "equipment"}
     equipmentGroup = "jewellery"
@@ -2172,6 +2173,18 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
       DIVINITY 1
     }
     weight = 0.1
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
+"AdoxieAmulet"
+  {
+    viewId = { "amulet6" }
+    shortName = "Adoxie"
+    name = "amulet of The Evil God Adoxie"
+    equipmentSlot = AMULET
+    price = 600
+    equipedAbility = { "animate corpses" }
+    weight = 0.3
     storageIds = {"jewellery" "equipment"}
     equipmentGroup = "jewellery"
   }
