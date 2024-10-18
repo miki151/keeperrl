@@ -422,6 +422,7 @@ SIMPLE_EFFECT(SetFurnitureOnFire);
 SIMPLE_EFFECT(ClaimTile);
 SIMPLE_EFFECT(EatCorpse);
 SIMPLE_EFFECT(Banish);
+SIMPLE_EFFECT(SummonMinions);
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
   X(Teleport, 1)\
@@ -528,6 +529,7 @@ SIMPLE_EFFECT(Banish);
   X(SummonAway, 102)\
   X(Banish, 103)\
   X(ChooseRandomUntilSuccessful, 104)\
+  X(SummonMinions, 105)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

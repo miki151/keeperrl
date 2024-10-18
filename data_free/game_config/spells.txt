@@ -920,3 +920,9 @@ End
       TryHolyMissile()
   type = ABILITY
 }
+"bishop audience"
+{
+  symbol = "👑"
+  effect = Name "Summon congregation" Description "Bishop summons his congregation" Filter CreatureStatus LEADER SummonMinions
+  cooldown = {50 101}
+}

@@ -2241,6 +2241,21 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::Audience&, const Cr
   return isConsideredInDanger(victim) ? 1 : 0;
 }
 
+static bool tryTeleporting(Position pos, Creature* enemy, optional<int> maxDistance) {
+  bool result = false;
+  if (!enemy->getStatus().contains(CreatureStatus::CIVILIAN) && !enemy->getStatus().contains(CreatureStatus::PRISONER)) {
+    auto distance = enemy->getPosition().dist8(pos);
+    if ((!maxDistance || *maxDistance >= distance.value_or(10000)) &&
+        (distance.value_or(4) > 3 || !pos.canSee(enemy->getPosition(), Vision())))
+      if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
+        enemy->getPosition().moveCreature(*landing, true);
+        result = true;
+        enemy->removeEffect(LastingEffect::SLEEP);
+      }
+  }
+  return result;
+};
+
 static bool apply(const Effects::Audience& a, Position pos, Creature* attacker) {
   auto collective = [&]() -> Collective* {
     for (auto col : pos.getGame()->getCollectives())
@@ -2252,27 +2267,15 @@ static bool apply(const Effects::Audience& a, Position pos, Creature* attacker) 
     return nullptr;
   }();
   bool wasTeleported = false;
-  auto tryTeleporting = [&] (Creature* enemy) {
-    if (!enemy->getStatus().contains(CreatureStatus::CIVILIAN) && !enemy->getStatus().contains(CreatureStatus::PRISONER)) {
-      auto distance = enemy->getPosition().dist8(pos);
-      if ((!a.maxDistance || *a.maxDistance >= distance.value_or(10000)) &&
-          (distance.value_or(4) > 3 || !pos.canSee(enemy->getPosition(), Vision())))
-        if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
-          enemy->getPosition().moveCreature(*landing, true);
-          wasTeleported = true;
-          enemy->removeEffect(LastingEffect::SLEEP);
-        }
-    }
-  };
   if (collective) {
     for (auto enemy : copyOf(collective->getCreatures(MinionTrait::FIGHTER)))
-      tryTeleporting(enemy);
+      wasTeleported |= tryTeleporting(pos, enemy, a.maxDistance);
     if (collective != collective->getGame()->getPlayerCollective())
       for (auto l : collective->getLeaders())
-        tryTeleporting(l);
+        wasTeleported |= tryTeleporting(pos, l, a.maxDistance);
   } else
     for (auto enemy : pos.getLevel()->getAllCreatures())
-      tryTeleporting(enemy);
+      wasTeleported |= tryTeleporting(pos, enemy, a.maxDistance);
   if (wasTeleported) {
     if (attacker)
       attacker->privateMessage(PlayerMessage("Thy audience hath been summoned"_s +
@@ -2283,6 +2286,35 @@ static bool apply(const Effects::Audience& a, Position pos, Creature* attacker) 
   }
   pos.globalMessage("Nothing happens");
   return false;
+}
+
+static string getName(const Effects::SummonMinions&, const ContentFactory*) {
+  return "summon minions";
+}
+
+static bool isOffensive(const Effects::SummonMinions&) {
+  return true;
+}
+
+static string getDescription(const Effects::SummonMinions&, const ContentFactory*) {
+  return "Summons all fighter minions.";
+}
+
+static EffectAIIntent shouldAIApplyToCreature(const Effects::SummonMinions&, const Creature* victim, bool isEnemy) {
+  return isConsideredInDanger(victim) ? 1 : 0;
+}
+
+static bool applyToCreature(const Effects::SummonMinions& a, Creature* c, Creature* attacker) {
+  bool success = false;
+  if (auto collective = getCollective(c)) {
+    for (auto minion : collective->getCreatures(MinionTrait::FIGHTER))
+      success |= tryTeleporting(c->getPosition(), minion, none);
+  }
+  if (success)
+    c->privateMessage("The s heep have come to the shepard.");
+  else
+    c->privateMessage("Nothing happens.");
+  return success;
 }
 
 static string getName(const Effects::SoundEffect&, const ContentFactory*) {

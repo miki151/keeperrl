@@ -378,8 +378,8 @@ End
             "Your prayers for summoning armed help will soon be answered.")
       }
       Filter EquipedIngredient "workers_prayer" {
-        SummonAway "PESEANT_PLAYER" 2  1500 {WORKER NO_LIMIT}
-        DIVINE_SPELL(Chance 0.3 SummonAway "PESEANT_PLAYER" 1 1500 {WORKER NO_LIMIT},
+        SummonAway "PESEANT_PLAYER" 2  1500 {WORKER NO_LIMIT NO_EQUIPMENT}
+        DIVINE_SPELL(Chance 0.3 SummonAway "PESEANT_PLAYER" 1 1500 {WORKER NO_LIMIT NO_EQUIPMENT},
             "Your prayers for summoning more workforce will soon be answered.")
       }
       Filter EquipedIngredient "adoxie_prayer" {

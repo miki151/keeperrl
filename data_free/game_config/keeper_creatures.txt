@@ -75,7 +75,7 @@
       "dining table"  "pigsty" "training_dummies_human" "crafting" "jeweller_church" "distillery_church" "scriptorium"
       "furnace" "prison_church" "orders" "installations" "saint_statues"
   }
-  workshopGroups = { "basic" "holy_weapons" "scriptorium" }
+  workshopGroups = { "church" "holy_weapons" "scriptorium" }
   description = "Build a church, pray a lot and create some holy water."
 }
 "4_necromancer"

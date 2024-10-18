@@ -360,6 +360,14 @@ End
   }
 }
 
+"church" inherit "basic_without_lab" append {
+  "JEWELER" {
+    {{"DivinityAmulet"}               10       "GOLD" 20}
+    {{"RosaryRing"}                   10       "GOLD" 20}
+    {{"BishopRing"}                   10       "GOLD" 100}
+  }
+}
+
 "scriptorium"
 {
   "SCRIPTORIUM"

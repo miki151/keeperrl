@@ -2118,3 +2118,46 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     ingredientType = "adoxie_prayer"
     effect = Name "None" Message NORMAL "Mass will be performed in the name of the Evil God Adoxie."
   }
+"DivinityAmulet"
+  {
+    viewId = { "amulet4" }
+    shortName = "crucifix"
+    name = "crucifix necklace"
+    description = "Makes the owner more holy and divine."
+    equipmentSlot = AMULET
+    price = 60
+    modifiers = {
+      DIVINITY 3
+    }
+    weight = 0.3
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
+"RosaryRing"
+  {
+    viewId = { "ring" ColorId WHITE }
+    shortName = "rosary"
+    name = "rosary ring"
+    description = "Increases the owner's proficiency in reciting prayers."
+    equipmentSlot = RINGS
+    price = 30
+    modifiers = {
+      SPELL_SPEED 5
+    }
+    weight = 0.1
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
+"BishopRing"
+  {
+    viewId = { "ring" ColorId PURPLE }
+    shortName = "bishop"
+    name = "bishop ring"
+    description = "Grants the Bishop the ability to summon his congregation. May not be used by other minions."
+    equipmentSlot = RINGS
+    price = 150
+    equipedAbility = { "bishop audience" }
+    weight = 0.1
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
