@@ -45,14 +45,14 @@
 { "devil" "&" ColorId ORANGE }
 { viewId = "satan" symbol = "&" color = ColorId RED weaponOrigin = {6 23} }
 { viewId = "tengu" symbol = "&" color = ColorId LIGHT_BLUE }
-{ viewId = "shaitan" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId LIGHT_RED }
+{ viewId = "shaitan" symbol = "&" color = ColorId LIGHT_RED }
 { viewId = "banshee" symbol = "&" color = ColorId LIGHT_BROWN }
-{ viewId = "vetala" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId GREEN }
+{ viewId = "vetala" symbol = "&" color = ColorId GREEN }
 { viewId = "leyak" symbol = "&" color = ColorId YELLOW }
 { viewId = "baku" symbol = "&" color = ColorId WHITE }
 { viewId = "rakshasa" symbol = "&" color = ColorId ORANGE }
-{ viewId = "ghoul" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId LIGHT_GRAY }
-{ viewId = "suanggi" sprite = "abyssus_corruptus_unclean_one" symbol = "&" color = ColorId LIGHT_GREEN }
+{ viewId = "ghoul" symbol = "&" color = ColorId LIGHT_GRAY }
+{ viewId = "suanggi" sprite = "sunaggi" symbol = "&" color = ColorId LIGHT_GREEN }
 { "adoxie_foot_left" "u" ColorId PURPLE }
 { "adoxie_foot_right" "u" ColorId PURPLE }
 { "adoxie_hand_right" "u" ColorId PURPLE }
@@ -483,6 +483,7 @@ Connections("map_swamp")
 { "amulet3" "\"" ColorId YELLOW }
 { "amulet4" "\"" ColorId YELLOW }
 { "amulet5" "\"" ColorId YELLOW }
+{ "amulet6" "\"" ColorId WHITE }
 { "ring" "=" ColorId RED }
 { "devotional_medal" "=" ColorId YELLOW }
 { "gold_ring" "=" ColorId YELLOW }
@@ -702,9 +703,13 @@ Connections("map_swamp")
 
 Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
 
-{ viewId = "minion_statue" symbol = "&" color = ColorId LIGHT_GRAY
+{ viewId = "minion_statue" symbol = "&" color = ColorId YELLOW
   roundShadow = true fx = GoldGlitter() }
 { viewId = "stone_minion_statue" symbol = "&" color = ColorId ALMOST_WHITE
+  roundShadow = true }
+{ viewId = "saint_statue" sprite = "holy_statue1_gold" symbol = "&" color = ColorId YELLOW
+  roundShadow = true fx = GoldGlitter() }
+{ viewId = "stone_saint_statue" sprite = "holy_statue1" symbol = "&" color = ColorId ALMOST_WHITE
   roundShadow = true }
 { viewId = "throne" symbol = "Ω" color = ColorId YELLOW
   isSymbolFont = true roundShadow = true fx = GoldGlitter() }
@@ -759,13 +764,23 @@ BOOKCASES("_human")
   isSymbolFont = true roundShadow = true }
 { viewId = "rostrum_gold" sprite = "rostrum3" symbol = "T" color = ColorId YELLOW
   isSymbolFont = true roundShadow = true }
-{ viewId = "pew" symbol = "=" color = ColorId LIGHT_BROWN
+{ viewId = "pew_wood" sprite = "church_pew" symbol = "=" color = ColorId LIGHT_BROWN
+  isSymbolFont = true roundShadow = true }
+{ viewId = "pew_iron" sprite = "church_pew2" symbol = "=" color = ColorId LIGHT_GRAY
+  isSymbolFont = true roundShadow = true }
+{ viewId = "pew_gold" sprite = "church_pew3" symbol = "=" color = ColorId YELLOW
   isSymbolFont = true roundShadow = true }
 { viewId = "confessional" symbol = "H" color = ColorId LIGHT_BROWN
   isSymbolFont = true roundShadow = true }
 { viewId = "luxurious_confessional" symbol = "H" color = ColorId YELLOW
   isSymbolFont = true roundShadow = true }
-{ viewId = "prayer_bench" symbol = "H" color = ColorId LIGHT_BROWN
+{ viewId = "prayer_bench_wood" sprite = "prayer_bench" symbol = "H" color = ColorId LIGHT_BROWN
+  isSymbolFont = true roundShadow = true }
+{ viewId = "prayer_bench_iron" sprite = "prayer_bench2" symbol = "H" color = ColorId LIGHT_GRAY
+  isSymbolFont = true roundShadow = true }
+{ viewId = "prayer_bench_gold" sprite = "prayer_bench3" symbol = "H" color = ColorId YELLOW
+  isSymbolFont = true roundShadow = true }
+{ viewId = "scriptorium" symbol = "&" color = ColorId DARK_BROWN
   isSymbolFont = true roundShadow = true }
 { viewId = "demon_shrine" symbol = "Ω" color = ColorId PURPLE
   isSymbolFont = true roundShadow = true }

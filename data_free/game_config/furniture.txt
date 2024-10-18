@@ -288,7 +288,7 @@ BOOKCASES("_HUMAN", "_human")
 "SCRIPTORIUM" inherit "POETRY_TABLE"
 {
   name = "scriptorium"
-  viewId = { "poetry_table" }
+  viewId = { "scriptorium" }
   usageFX = none
 }
 
@@ -416,7 +416,7 @@ BOOKCASES("_HUMAN", "_human")
 "PEW_WOOD"
 {
   name = "wooden pew"
-  viewId = { "pew" }
+  viewId = { "pew_wood" }
   canHideHere = true
   usageType = UsageEffect "sit on pew" {
     Filter LastingEffect DRUNK {
@@ -429,6 +429,7 @@ BOOKCASES("_HUMAN", "_human")
 }
 "PEW_IRON" inherit "PEW_WOOD"
 {
+  viewId = { "pew_iron" }
   name = "iron pew"
   upgrade = "PEW_WOOD"
   strength = 20
@@ -436,6 +437,7 @@ BOOKCASES("_HUMAN", "_human")
 }
 "PEW_GOLD" inherit "PEW_WOOD"
 {
+  viewId = { "pew_gold" }
   name = "golden pew"
   upgrade = "PEW_IRON"
   strength = 20
@@ -444,7 +446,7 @@ BOOKCASES("_HUMAN", "_human")
 "PRAYER_BENCH_WOOD"
 {
   name = "wooden prayer bench"
-  viewId = { "prayer_bench" }
+  viewId = { "prayer_bench_wood" }
   canHideHere = true
   usageType = BuiltinUsageId PRAY
   maxTraining = {
@@ -456,6 +458,7 @@ BOOKCASES("_HUMAN", "_human")
 "PRAYER_BENCH_IRON" inherit "PRAYER_BENCH_WOOD"
 {
   name = "iron prayer bench"
+  viewId = { "prayer_bench_iron" }
   upgrade = "PRAYER_BENCH_WOOD"
   maxTraining = {
     DIVINITY 7
@@ -466,6 +469,7 @@ BOOKCASES("_HUMAN", "_human")
 "PRAYER_BENCH_GOLD" inherit "PRAYER_BENCH_WOOD"
 {
   name = "golden prayer bench"
+  viewId = { "prayer_bench_gold" }
   upgrade = "PRAYER_BENCH_IRON"
   maxTraining = {
     DIVINITY 12
@@ -894,10 +898,12 @@ Def BedHeal() Heal { FLESH 0.005 } End
 "SAINT_STATUE" inherit "MINION_STATUE"
 {
   onBuilt = SAINT_STATUE
+  viewId = { "saint_statue" }
 }
 "STONE_SAINT_STATUE" inherit "STONE_MINION_STATUE"
 {
   onBuilt = SAINT_STATUE
+  viewId = { "stone_saint_statue" }
 }
 "ADOXIE_STATUE_TEMPLE"
 {
