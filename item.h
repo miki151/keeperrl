@@ -123,6 +123,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   TimeInterval getApplyTime() const;
   double getWeight() const;
   vector<string> getDescription(const ContentFactory*) const;
+  void setDescription(string);
 
   CreaturePredicate getAutoEquipPredicate() const;
   const string& getEquipWarning() const;

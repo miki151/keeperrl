@@ -19,6 +19,7 @@
 #include "item.h"
 #include "body.h"
 #include "creature.h"
+#include "creature_attributes.h"
 
 map<EquipmentSlot, string> Equipment::slotTitles = {
   {EquipmentSlot::WEAPON, "Weapon"},
@@ -31,6 +32,7 @@ map<EquipmentSlot, string> Equipment::slotTitles = {
   {EquipmentSlot::RINGS, "Rings"},
   {EquipmentSlot::AMULET, "Amulet"},
   {EquipmentSlot::PRAYER_BOOK, "Liturgical book"},
+  {EquipmentSlot::DEVOTIONAL_ITEMS, "Devotional items"},
 };
 
 SERIALIZE_DEF(Equipment, inventory, items, equipped)
@@ -86,6 +88,9 @@ int Equipment::getMaxItems(EquipmentSlot slot, const Creature* c) const {
       return body.numGood(BodyPart::HEAD);
     case EquipmentSlot::PRAYER_BOOK:
       return c->isAffected(BuffId("PREACHING_SKILL"));
+    case EquipmentSlot::DEVOTIONAL_ITEMS:
+      return getValueMaybe(c->getAttributes().getMaxExpLevel(), AttrType("DIVINITY")).value_or(0) > 0
+          ? 3 : 0;
     default:
       return 1;
   }

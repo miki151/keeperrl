@@ -278,6 +278,10 @@ double Item::getWeight() const {
   return attributes->weight;
 }
 
+void Item::setDescription(string s) {
+  attributes->description = std::move(s);
+}
+
 vector<string> Item::getDescription(const ContentFactory* factory) const {
   vector<string> ret;
   if (!attributes->description.empty())

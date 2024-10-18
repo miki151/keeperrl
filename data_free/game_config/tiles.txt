@@ -484,6 +484,7 @@ Connections("map_swamp")
 { "amulet4" "\"" ColorId YELLOW }
 { "amulet5" "\"" ColorId YELLOW }
 { "ring" "=" ColorId RED }
+{ "devotional_medal" "=" ColorId YELLOW }
 { "gold_ring" "=" ColorId YELLOW }
 { "book" "+" ColorId YELLOW }
 { "adoxie_book" "+" ColorId PURPLE }

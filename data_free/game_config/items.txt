@@ -2161,3 +2161,17 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     storageIds = {"jewellery" "equipment"}
     equipmentGroup = "jewellery"
   }
+"DevotionalMedal"
+  {
+    viewId = { "devotional_medal" }
+    name = "devotional medal"
+    description = "Depicts an important religious event."
+    equipmentSlot = DEVOTIONAL_ITEMS
+    price = 5
+    modifiers = {
+      DIVINITY 1
+    }
+    weight = 0.1
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }

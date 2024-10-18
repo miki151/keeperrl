@@ -555,6 +555,7 @@ static ViewId getSlotViewId(EquipmentSlot slot) {
     case EquipmentSlot::AMULET: return ViewId("amulet1");
     case EquipmentSlot::SHIELD: return ViewId("wooden_shield");
     case EquipmentSlot::PRAYER_BOOK: return ViewId("book");
+    case EquipmentSlot::DEVOTIONAL_ITEMS: return ViewId("devotional_medal");
   }
 }
 

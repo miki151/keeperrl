@@ -1623,10 +1623,13 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
           if (auto stat = item->getProducedStat())
             getGame()->getStatistics().add(*stat);
           control->addMessage(c->getName().a() + " " + workshopInfo.verb + " " + item->getAName());
+          if (item->getName() == "devotional medal" && !recordedEvents.empty()) {
+            item->setDescription("Depicts " + Random.choose(recordedEvents));
           if (auto& minion = item->getAssembledMinion())
             minion->assemble(this, item.get(), pos.first);
           else
             c->getPosition().dropItem(std::move(item));
+          }
         }
     }
   }
