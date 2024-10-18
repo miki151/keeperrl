@@ -311,7 +311,7 @@ End
 "GREENSKIN_RESISTANCE" SPECIAL_RESISTANCE("greenskins", HatedBy HATE_GREENSKINS, 15)
 
 Def MassMessage(Text)
-  UI "unlock_message" { "message" Label Text "view_id" ViewIdList {{"rostrum"}}}
+  UI "unlock_message" { "message" Label Text "view_id" ViewIdList {{"rostrum_gold"}}}
 End
 
 Def DIVINE_SPELL(EFFECT_NAME, MESSAGE) {

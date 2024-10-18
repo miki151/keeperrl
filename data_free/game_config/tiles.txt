@@ -31,8 +31,8 @@
 { viewId = "bishop2" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {3 16} }
 { viewId = "bishop3" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {3 16} }
 { viewId = "bishop4" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {3 16} }
-{ viewId = "dgr_acolyte" symbol = "@" color = ColorId LIGHT_BROWN weaponOrigin = {3 16} }
-{ viewId = "dgr_acolyte_f" symbol = "@" color = ColorId LIGHT_BROWN weaponOrigin = {3 16} }
+{ viewId = "acolyte" symbol = "@" color = ColorId LIGHT_BROWN weaponOrigin = {3 16} }
+{ viewId = "acolyte_f" sprite = "acolyte" symbol = "@" color = ColorId LIGHT_BROWN weaponOrigin = {3 16} }
 { viewId = "armed_brother" symbol = "@" color = ColorId WHITE weaponOrigin = {4 13}   }
 { viewId = "nun_mage" symbol = "@" color = ColorId WHITE weaponOrigin = {4 13} }
 { viewId = "squire" symbol = "@" color = ColorId WHITE weaponOrigin = {4 13}   }
@@ -752,7 +752,11 @@ End
 BOOKCASES("")
 BOOKCASES("_necro")
 BOOKCASES("_human")
-{ viewId = "rostrum" sprite = "dgr_lectern" symbol = "T" color = ColorId LIGHT_BROWN
+{ viewId = "rostrum_wood" sprite = "rostrum" symbol = "T" color = ColorId LIGHT_BROWN
+  isSymbolFont = true roundShadow = true }
+{ viewId = "rostrum_iron" sprite = "rostrum2" symbol = "T" color = ColorId LIGHT_GRAY
+  isSymbolFont = true roundShadow = true }
+{ viewId = "rostrum_gold" sprite = "rostrum3" symbol = "T" color = ColorId YELLOW
   isSymbolFont = true roundShadow = true }
 { viewId = "pew" symbol = "=" color = ColorId LIGHT_BROWN
   isSymbolFont = true roundShadow = true }

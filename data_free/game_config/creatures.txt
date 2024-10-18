@@ -1859,9 +1859,9 @@ End
   }
 "ACOLYTE" inherit "PESEANT"
   {
-    viewId = { "dgr_acolyte" }
+    viewId = { "acolyte" }
     genderAlternatives = {
-      FEMALE { "dgr_acolyte_f" }
+      FEMALE { "acolyte_f" }
     }
     maxLevelIncrease = {
       DIVINITY 2

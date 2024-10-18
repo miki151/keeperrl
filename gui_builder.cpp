@@ -3903,7 +3903,7 @@ static ViewId getViewId(MinionActivity option) {
     case MinionActivity::BE_TORTURED: return ViewId("torture_table");
     case MinionActivity::BE_EXECUTED: return ViewId("gallows");
     case MinionActivity::PHYLACTERY: return ViewId("phylactery");
-    case MinionActivity::PREACHING: return ViewId("rostrum");
+    case MinionActivity::PREACHING: return ViewId("rostrum_wood");
     case MinionActivity::MASS: return ViewId("pew");
     case MinionActivity::PRAYER: return ViewId("prayer_bench");
     case MinionActivity::HEARING_CONFESSION:
