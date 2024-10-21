@@ -367,6 +367,7 @@ End
     {{"RosaryRing"}                   10       "GOLD" 20}
     {{"BishopRing"}                   10       "GOLD" 100}
     {{"AdoxieAmulet"}                 10       "GOLD" 100  "dark crafts"}
+    {{"AdoxieRing"}                   10       "GOLD" 100  "dark crafts"}
   }
 }
 

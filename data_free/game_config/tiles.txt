@@ -493,6 +493,7 @@ Connections("map_swamp")
 { "ring" "=" ColorId RED }
 { "devotional_medal" "=" ColorId YELLOW }
 { "gold_ring" "=" ColorId YELLOW }
+{ "adoxie_ring" "=" ColorId WHITE }
 { "book" "+" ColorId YELLOW }
 { "adoxie_book" "+" ColorId PURPLE }
 { "hand_torch" "/" ColorId YELLOW }

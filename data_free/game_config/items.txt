@@ -2190,3 +2190,18 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     storageIds = {"jewellery" "equipment"}
     equipmentGroup = "jewellery"
   }
+"AdoxieRing"
+  {
+    viewId = { "adoxie_ring" }
+    shortName = "Adoxie"
+    name = "ring of The Evil God Adoxie"
+    description = "Increases the owner's proficiency in reciting prayers."
+    equipmentSlot = RINGS
+    price = 300
+    modifiers = {
+      SPELL_SPEED 35
+    }
+    weight = 0.1
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
