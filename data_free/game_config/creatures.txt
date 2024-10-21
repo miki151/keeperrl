@@ -269,6 +269,7 @@ End
     spellSchools = { "prayers" }
     spells = { "healing prayer" }
     inventory = {
+      { "WoodenCrozier" }
       { "LeatherArmor" }
       { "LeatherHelm" }
       { "PrayerBookProtection" }
