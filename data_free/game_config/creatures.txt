@@ -1831,6 +1831,14 @@ End
   }
   hatedByEffect = HATE_HUMANS
 }
+"GIGOLO" inherit "PROSTITUTE"
+{
+  viewId = { "gigolo" }
+  gender = MALE
+  name = {
+    name = "gigolo"
+  }
+}
 "PESEANT"
   {
     viewId = { "peasant" }

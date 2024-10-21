@@ -313,6 +313,7 @@ Connections("map_swamp")
 { "peasant" "@" ColorId GREEN }
 { "peasant_woman" "@" ColorId GREEN }
 { "prostitute" "@" ColorId PINK }
+{ "gigolo" "@" ColorId PINK }
 { "child" "@" ColorId LIGHT_GREEN }
 { "eskimo" "@" ColorId LIGHT_GRAY }
 { "eskimo_woman" "@" ColorId LIGHT_GRAY }

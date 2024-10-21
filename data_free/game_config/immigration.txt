@@ -87,7 +87,16 @@
     }
     {
       ids = { "PROSTITUTE" }
-      frequency = 0.2
+      frequency = 0.1
+      traits = { NO_EQUIPMENT }
+      requirements = {
+        { 1.0 CostInfo "GOLD" 50 }
+        { 0.0 TechId "big temptations"}
+      }
+    }
+    {
+      ids = { "GIGOLO" }
+      frequency = 0.1
       traits = { NO_EQUIPMENT }
       requirements = {
         { 1.0 CostInfo "GOLD" 50 }
