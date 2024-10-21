@@ -28,9 +28,10 @@
 { viewId = "keeper_knight_f3" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 16} }
 { viewId = "keeper_knight_f4" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 16} }
 { viewId = "bishop1" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {7 19} }
-{ viewId = "bishop2" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {3 16} }
-{ viewId = "bishop3" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {3 16} }
-{ viewId = "bishop4" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {3 16} }
+{ viewId = "bishop2" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {7 19} }
+{ viewId = "bishop3" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {7 19} }
+{ viewId = "bishop4" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {7 19} }
+{ viewId = "bishop5" symbol = "@" color = ColorId PURPLE weaponOrigin = {7 19} }
 { viewId = "acolyte" symbol = "@" color = ColorId LIGHT_BROWN weaponOrigin = {4 13} }
 { viewId = "acolyte_f" sprite = "acolyte" symbol = "@" color = ColorId LIGHT_BROWN weaponOrigin = {4 13} }
 { viewId = "armed_brother" symbol = "@" color = ColorId WHITE weaponOrigin = {4 13}   }

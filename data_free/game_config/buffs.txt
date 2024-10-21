@@ -384,6 +384,7 @@ End
       }
       Filter EquipedIngredient "adoxie_prayer" {
         Achievement "black_mass"
+        Filter CreatureId "KEEPER_BISHOP" SetViewId {"bishop5"}
         FirstSuccessful {
           ChainUntilFail {
             Area 20 Filter And { Enemy Not CreatureStatus CIVILIAN } Polymorph "CHICKEN" none
