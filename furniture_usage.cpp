@@ -92,6 +92,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, const Furnitu
       case BuiltinUsageId::DEMON_RITUAL:
       case BuiltinUsageId::STUDY:
       case BuiltinUsageId::ARCHERY_RANGE:
+        break;
       case BuiltinUsageId::PRAY:
         if (auto game = pos.getGame())
           game->addEvent(EventInfo::FX{pos, FXInfo{FXName::AUREOLA}});
