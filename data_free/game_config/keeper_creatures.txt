@@ -59,7 +59,7 @@
 "3_zchurch"
 {
   baseName = "Corrupted church"
-  creatureId = { "KEEPER_BISHOP" }
+  creatureId = { "KEEPER_BISHOP" "MOTHER_SUPERIOR" }
   tribeAlignment = LAWFUL
   villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
   immigrantGroups = { "church" "white_recruits" }

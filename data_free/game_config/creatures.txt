@@ -277,6 +277,17 @@ End
       { "PrayerBookWorkers" }
     }
   }
+"MOTHER_SUPERIOR" inherit "KEEPER_BISHOP"
+  {
+    viewId = { "mother_superior1" }
+    name = {
+      name = "mother superior"
+      firstNameGen = "FIRST_FEMALE"
+      fullTitle = true
+    }
+    viewIdUpgrades = { { "mother_superior2" } { "mother_superior3" } { "mother_superior4" }}
+    gender = FEMALE
+  }
 "WHITE_WIZARD" inherit "KEEPER_MAGE"
   {
     viewId = { "keeper4" ColorId PURPLE }
