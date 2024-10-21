@@ -40,10 +40,9 @@
         { 1 ExponentialCost "GOLD" 30 5 4 }
       }
     }
-    {
-      ids = { "ARMED_BROTHER" "WARRIOR_NUN" }
+Def FIGHTER_ATTRS()
       traits = { FIGHTER }
-      frequency = 0.7
+      frequency = 0.35
       requirements = {
         { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_WOOD_HUMAN"}}
       }
@@ -56,6 +55,14 @@
         { 0.05 { Lasting { HATE_GREENSKINS } }}
         { 0.03 { Lasting { BAD_BREATH } }}
       }
+End
+    {
+      ids = { "ARMED_BROTHER" }
+      FIGHTER_ATTRS()
+    }
+    {
+      ids = { "WARRIOR_NUN" }
+      FIGHTER_ATTRS()
     }
     {
       ids = { "PRIEST_DIVINITY" }

@@ -292,6 +292,7 @@ Connections("map_swamp")
 { "cleric" "@" ColorId WHITE }
 { viewId = "teuton" symbol = "@" color = ColorId ALMOST_WHITE weaponOrigin = {4 16}   }
 { "teuton_boss" "@" ColorId PINK }
+{ viewId = "templar" sprite = "templar1" symbol = "@" color = ColorId ALMOST_WHITE weaponOrigin = {7 16}   }
 { "artisan" "@" ColorId LIGHT_BROWN }
 { "friar" "@" ColorId DARK_BROWN }
 { "black_market_guard" "B" ColorId BROWN }

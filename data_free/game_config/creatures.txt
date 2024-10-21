@@ -1982,6 +1982,13 @@ End
       { type = Glyph { WEAPON SpellId "audience" }}
     }
   }
+"TEMPLAR" inherit "KNIGHT"
+  {
+    viewId = { "templar" }
+    name = {
+      name = "Templar"
+    }
+  }
 "FRIAR" inherit "CLERIC"
   {
     viewId = { "friar" }
