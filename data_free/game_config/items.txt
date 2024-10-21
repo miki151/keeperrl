@@ -737,6 +737,7 @@ End
     price = 20
     weaponInfo = {
       attackType = HIT
+      meleeAttackAttr = DIVINITY
     }
     equipedAbility = { "holy missile" }
     storageIds = {"weapons" "equipment"}
@@ -756,6 +757,7 @@ End
     price = 70
     weaponInfo = {
       attackType = HIT
+      meleeAttackAttr = DIVINITY
     }
     equipedAbility = { "advanced holy missile" }
     storageIds = {"weapons" "equipment"}
