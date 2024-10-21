@@ -332,10 +332,20 @@ PTask MinionActivities::generate(Collective* collective, Creature* c, MinionActi
     }
     case MinionActivityInfo::CONFESSION: {
       PROFILE_BLOCK("Confess");
-      const auto& pos = collective->getConstructions().getBuiltPositions(FurnitureType("CONFESSIONAL"));
-      if (!pos.empty())
+      PositionSet targets;
+      if (c->isAffected(BuffId("MORTAL_SINNED")))
+        for (auto& pos : collective->getConstructions().getBuiltPositions(FurnitureType("LUXURIOUS_CONFESSIONAL")))
+          if (auto c = pos.getCreature())
+            if (c->isAffected(BuffId("CONFESSING_SKILL")))
+              targets.insert(pos);
+      if (targets.empty() && c->isAffected(BuffId("SINNED")))
+        for (auto& pos : collective->getConstructions().getBuiltPositions(FurnitureType("CONFESSIONAL")))
+          if (auto c = pos.getCreature())
+            if (c->isAffected(BuffId("CONFESSING_SKILL")))
+              targets.insert(pos);
+      if (!targets.empty())
         return Task::chain(
-            Task::applySquare(collective, pos.transform([](auto pos){ return make_pair(pos, FurnitureLayer::MIDDLE); }),
+            Task::applySquare(collective, targets.transform([](auto pos){ return make_pair(pos, FurnitureLayer::MIDDLE); }),
                 Task::SearchType::CONFESSION, Task::APPLY),
             Task::wait(10_visible)
         );

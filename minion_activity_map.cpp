@@ -150,7 +150,7 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
       return !col->hasTrait(c, MinionTrait::PRISONER) &&
           !c->getAttributes().isTrainingMaxedOut(AttrType("DIVINITY"));
     case MinionActivity::HEARING_CONFESSION:
-      return c->isAffected(BuffId("PREACHING_SKILL"));
+      return c->isAffected(BuffId("CONFESSING_SKILL"));
     case MinionActivity::CONFESSION:
       return c->isAffected(BuffId("SINNED")) || c->isAffected(BuffId("MORTAL_SINNED"));
   }

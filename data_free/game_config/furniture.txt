@@ -483,8 +483,11 @@ BOOKCASES("_HUMAN", "_human")
   viewId = { "confessional" }
   canHideHere = true
   usageType = UsageEffect "confess" Filter And {
-    Not Area 1 Not LastingEffect PREACHING_SKILL
-    Not LastingEffect PREACHING_SKILL
+    Not FurnitureType "CONFESSIONAL"
+    Not Area 1 Not And {
+      LastingEffect CONFESSING_SKILL
+      FurnitureType "CONFESSIONAL"
+    }
   } {
     Filter LastingEffect SINNED {
       RemoveLasting SINNED
@@ -503,8 +506,11 @@ BOOKCASES("_HUMAN", "_human")
   name = "luxurious confessional"
   viewId = { "luxurious_confessional" }
   usageType = UsageEffect "confess" Filter And {
-    Not Area 1 Not LastingEffect PREACHING_SKILL
-    Not LastingEffect PREACHING_SKILL
+    Not FurnitureType "LUXURIOUS_CONFESSIONAL"
+    Not Area 1 Not And {
+      LastingEffect CONFESSING_SKILL
+      FurnitureType "LUXURIOUS_CONFESSIONAL"
+    }
   } {
     Filter LastingEffect MORTAL_SINNED {
       RemovePermanent MORTAL_SINNED

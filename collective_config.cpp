@@ -310,7 +310,11 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
           }};
       case MinionActivity::STUDY: return {getTrainingPredicate(AttrType("SPELL_DAMAGE"))};
       case MinionActivity::DISTILLATION: return {FurnitureType("DISTILLERY")};
-      case MinionActivity::HEARING_CONFESSION: return {FurnitureType("CONFESSIONAL"), Task::SearchType::LAZY};
+      case MinionActivity::HEARING_CONFESSION: return {
+          [](const ContentFactory* f, const Collective* col, const Creature* c, FurnitureType t) {
+            return t == FurnitureType("CONFESSIONAL") || t == FurnitureType("LUXURIOUS_CONFESSIONAL");
+          },
+          nullptr, Task::SearchType::LAZY};
       case MinionActivity::CONFESSION: return {MinionActivityInfo::CONFESSION};
       case MinionActivity::CROPS: return {FurnitureType("CROPS")};
       case MinionActivity::RITUAL: return {BuiltinUsageId::DEMON_RITUAL};

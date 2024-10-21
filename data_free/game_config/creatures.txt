@@ -264,6 +264,7 @@ End
     }
     permanentEffects = {
       PREACHING_SKILL 1
+      CONFESSING_SKILL 1
     }
     hatedByEffect = HATE_HUMANS
     spellSchools = { "prayers" }
@@ -1767,6 +1768,7 @@ End
     spellSchools = { "prayers" }
     permanentEffects = append {
       DISTILLATION_SKILL 1
+      CONFESSING_SKILL 1
     }
     maxLevelIncrease = {
       DIVINITY 12

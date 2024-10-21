@@ -168,6 +168,7 @@ End
 "BRIDGE_BUILDING_SKILL" SKILL("bridge building", "Builds bridges", "Creature will try to build bridges when travelling somewhere.")
 "DISTILLATION_SKILL" SKILL("distillation", "Distiller", "Can distill alcohol.")
 "PREACHING_SKILL" SKILL("preaching", "Preacher", "Can perform mass.")
+"CONFESSING_SKILL" SKILL("hearing confession", "Confessor", "Can hear confession.")
 
 "SWIMMING_SKILL" modify {
   inheritsFromSteed = true
