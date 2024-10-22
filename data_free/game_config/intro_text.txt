@@ -2,9 +2,9 @@
 
 The latest update introduces a new faction called the \"Corrupted Church\". Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
 
-* Build and finish a church to conduct masses for you congregation.
-* Write liturgy books for special mass intentions, such as protection, faster digging or summoning help.
-* Research unholy ideas in order to perform a Black Mass and use the power of The Evil God Adoxie to punish your foes.
+* Build and finish a church in order to hold Masses for you congregation.
+* Write liturgical books to use during Mass to gain protection, faster digging or summoning help.
+* Research unholy ideas in order to hold a Black Mass and use the power of The Evil God Adoxie to punish your foes.
 
 If this is your first time playing KeeperRL, remember to start with the tutorial!
 "

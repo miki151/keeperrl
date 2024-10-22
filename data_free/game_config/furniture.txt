@@ -297,7 +297,7 @@ BOOKCASES("_HUMAN", "_human")
   name = "wooden rostrum"
   viewId = { "rostrum_wood" }
   canHideHere = true
-  usageType = UsageEffect "perform mass" {
+  usageType = UsageEffect "hold a Mass" {
      FirstSuccessful {
        Filter EquipedIngredient "adoxie_prayer" {
          SoundEffect { "black_mass" }

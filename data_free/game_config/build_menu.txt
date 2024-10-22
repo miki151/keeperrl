@@ -218,17 +218,17 @@ End
   "mass"
   {
     { Furniture {{ "ROSTRUM_WOOD" }       "WOOD" 10 }                      "Wooden rostrum"         "Mass"
-        "A basic rostrum for performing mass." }
+        "A basic rostrum for holding Mass." }
     { Furniture {{ "ROSTRUM_IRON" }       "IRON" 10 }                      "Iron rostrum"         "Mass"
-        "An improved rostrum for performing mass. Intention effects will be somewhat amplified." }
+        "An improved rostrum for holding Mass. Intention effects will be somewhat amplified." }
     { Furniture {{ "ROSTRUM_GOLD" }       "GOLD" 10 }                      "Golden rostrum"         "Mass"
-        "A luxurious rostrum for performing mass. Intention effects will be greatly amplified." none { TechId "luxury" } }
+        "A luxurious rostrum for holding Mass. Intention effects will be greatly amplified." none { TechId "luxury" } }
     { Furniture {{ "PEW_WOOD" }           "WOOD" 10 }                      "Wooden church pew"      "Mass"
-        "Used by mass participants." }
+        "Used by Mass participants to sit in." }
     { Furniture {{ "PEW_IRON" }           "IRON" 10 }                      "Iron church pew"      "Mass"
-        "An improved pew for mass participants. Intention effects will be somewhat amplified." }
+        "An improved pew for Mass participants. Intention effects will be somewhat amplified." }
     { Furniture {{ "PEW_GOLD" }           "GOLD" 10 }                      "Golden church pew"      "Mass"
-        "A luxurious pew for mass participants. Intention effects will be greatly amplified." none { TechId "luxury" } }
+        "A luxurious pew for Mass participants. Intention effects will be greatly amplified." none { TechId "luxury" } }
     { Furniture {{ "PRAYER_BENCH_WOOD" }  "WOOD" 10 }                      "Wooden prayer bench"      "Mass"
         "Used by priests when praying." }
     { Furniture {{ "PRAYER_BENCH_IRON" }  "IRON" 10 }                      "Iron prayer bench"      "Mass"
@@ -390,7 +390,7 @@ TRAINING("_DWARF", "_dwarf")
   "scriptorium"
   {
     { Furniture {{ "SCRIPTORIUM" } "WOOD" 12 }                    "Scriptorium"       "Crafting"
-        "Allows writing liturgical books to be used during mass."}
+        "Allows writing liturgical books to be used during Mass."}
   }
   "distillery"
   {

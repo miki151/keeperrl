@@ -167,7 +167,7 @@ End
 "EXPLORE_CAVES_SKILL" SKILL("exploring caves", "Explores caves", "Can explore caves.")
 "BRIDGE_BUILDING_SKILL" SKILL("bridge building", "Builds bridges", "Creature will try to build bridges when travelling somewhere.")
 "DISTILLATION_SKILL" SKILL("distillation", "Distiller", "Can distill alcohol.")
-"PREACHING_SKILL" SKILL("preaching", "Preacher", "Can perform mass.")
+"PREACHING_SKILL" SKILL("preaching", "Preacher", "Can hold a Mass.")
 "CONFESSING_SKILL" SKILL("hearing confession", "Confessor", "Can hear confession.")
 
 "SWIMMING_SKILL" modify {
@@ -334,8 +334,8 @@ Def DIVINE_EFFECT(LENGTH1, LENGTH2, LENGTH3, EFFECT_NAME, MESSAGE)
 End
 
 "PREACHING" {
-  name = "Performing mass"
-  adjective = "performing mass"
+  name = "Hold Mass"
+  adjective = "Holding Mass"
   description = ""
   color = ColorId PURPLE
   endEffect = Filter Or { FurnitureType "ROSTRUM_WOOD" FurnitureType "ROSTRUM_IRON" FurnitureType "ROSTRUM_GOLD" } {

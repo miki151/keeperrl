@@ -3865,8 +3865,8 @@ static string getTaskText(MinionActivity option) {
     case MinionActivity::BE_TORTURED: return "Being tortured";
     case MinionActivity::BE_EXECUTED: return "Being executed";
     case MinionActivity::PHYLACTERY: return "Phylactery";
-    case MinionActivity::PREACHING: return "Performing mass";
-    case MinionActivity::MASS: return "Attending mass";
+    case MinionActivity::PREACHING: return "Holding Mass";
+    case MinionActivity::MASS: return "Attending Mass";
     case MinionActivity::PRAYER: return "Praying";
     case MinionActivity::HEARING_CONFESSION: return "Hearing confessions";
     case MinionActivity::CONFESSION: return "Confessing";
