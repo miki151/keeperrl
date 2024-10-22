@@ -59,10 +59,10 @@
 "3_zchurch"
 {
   baseName = "Corrupted church"
-  creatureId = { "KEEPER_BISHOP" "MOTHER_SUPERIOR" }
+  creatureId = { "KEEPER_BISHOP" }
   tribeAlignment = LAWFUL
   villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
-  immigrantGroups = { "church" "white_recruits" }
+  immigrantGroups = { "bishop" "white_recruits" }
   technology = {
       "chicken breeding" "pig breeding" "cow breeding" "iron working"
       "advanced theology" "expert theology" "luxury" "small temptations" "big temptations" "slavery"
@@ -77,6 +77,11 @@
   }
   workshopGroups = { "church" "holy_weapons" "scriptorium" }
   description = "Build a church, pray a lot and create some holy water."
+}
+"3_zmother" inherit "3_zchurch"
+{
+  creatureId = { "MOTHER_SUPERIOR" }
+  immigrantGroups = { "mother" "white_recruits" }
 }
 "4_necromancer"
 {

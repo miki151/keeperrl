@@ -259,7 +259,6 @@ End
     viewIdUpgrades = { { "bishop2" } { "bishop3" } { "bishop4" }}
     maxLevelIncrease = {
       DAMAGE 3
-      SPELL_DAMAGE 12
       DIVINITY 12
     }
     permanentEffects = {

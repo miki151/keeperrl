@@ -28,7 +28,7 @@
     }
 }
 
-"church"
+"church_common"
 {
     {
       ids = { "ACOLYTE" }
@@ -39,30 +39,6 @@
       requirements = {
         { 1 ExponentialCost "GOLD" 30 5 4 }
       }
-    }
-Def FIGHTER_ATTRS()
-      traits = { FIGHTER }
-      frequency = 0.35
-      requirements = {
-        { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_WOOD_HUMAN"}}
-      }
-      specialTraits = {
-        { 0.05 { SpecialAttr DAMAGE 8 HatedBy HATE_DRAGONS }}
-        { 0.05 { ExtraTraining DAMAGE 2}}
-        { 0.05 { OneOfTraits { Lasting { FAST_TRAINING } Lasting { SLOW_TRAINING } } }}
-        { 0.05 { Lasting { HATE_ELVES } }}
-        { 0.05 { Lasting { HATE_DWARVES } }}
-        { 0.05 { Lasting { HATE_GREENSKINS } }}
-        { 0.03 { Lasting { BAD_BREATH } }}
-      }
-End
-    {
-      ids = { "ARMED_BROTHER" }
-      FIGHTER_ATTRS()
-    }
-    {
-      ids = { "WARRIOR_NUN" }
-      FIGHTER_ATTRS()
     }
     {
       ids = { "PRIEST_DIVINITY" }
@@ -92,24 +68,84 @@ End
          { 0.03 { Lasting { BAD_BREATH } }}
       }
     }
-    {
-      ids = { "PROSTITUTE" }
-      frequency = 0.1
-      traits = { NO_EQUIPMENT }
-      requirements = {
-        { 1.0 CostInfo "GOLD" 50 }
-        { 0.0 TechId "big temptations"}
-      }
+}
+
+"bishop" inherit "church_common" append
+{
+  {
+    ids = { "ARMED_BROTHER" }
+    traits = { FIGHTER }
+    frequency = 0.7
+    requirements = {
+      { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_WOOD_HUMAN"}}
     }
-    {
-      ids = { "GIGOLO" }
-      frequency = 0.1
-      traits = { NO_EQUIPMENT }
-      requirements = {
-        { 1.0 CostInfo "GOLD" 50 }
-        { 0.0 TechId "big temptations"}
-      }
+    specialTraits = {
+      { 0.05 { SpecialAttr DAMAGE 8 HatedBy HATE_DRAGONS }}
+      { 0.05 { ExtraTraining DAMAGE 2}}
+      { 0.05 { OneOfTraits { Lasting { FAST_TRAINING } Lasting { SLOW_TRAINING } } }}
+      { 0.05 { Lasting { HATE_ELVES } }}
+      { 0.05 { Lasting { HATE_DWARVES } }}
+      { 0.05 { Lasting { HATE_GREENSKINS } }}
+      { 0.03 { Lasting { BAD_BREATH } }}
     }
+  }
+  {
+    ids = { "PROSTITUTE" }
+    frequency = 0.2
+    traits = { NO_EQUIPMENT }
+    requirements = {
+      { 1.0 CostInfo "GOLD" 50 }
+      { 0.0 TechId "big temptations"}
+    }
+  }
+  {
+    ids = { "GIGOLO" }
+    frequency = 0.05
+    traits = { NO_EQUIPMENT }
+    requirements = {
+      { 1.0 CostInfo "GOLD" 50 }
+      { 0.0 TechId "big temptations"}
+    }
+  }
+}
+
+"mother" inherit "church_common" append
+{
+  {
+    ids = { "WARRIOR_NUN" }
+    traits = { FIGHTER }
+    frequency = 0.7
+    requirements = {
+      { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_WOOD_HUMAN"}}
+    }
+    specialTraits = {
+      { 0.05 { SpecialAttr DAMAGE 8 HatedBy HATE_DRAGONS }}
+      { 0.05 { ExtraTraining DAMAGE 2}}
+      { 0.05 { OneOfTraits { Lasting { FAST_TRAINING } Lasting { SLOW_TRAINING } } }}
+      { 0.05 { Lasting { HATE_ELVES } }}
+      { 0.05 { Lasting { HATE_DWARVES } }}
+      { 0.05 { Lasting { HATE_GREENSKINS } }}
+      { 0.03 { Lasting { BAD_BREATH } }}
+    }
+  }
+  {
+    ids = { "PROSTITUTE" }
+    frequency = 0.05
+    traits = { NO_EQUIPMENT }
+    requirements = {
+      { 1.0 CostInfo "GOLD" 50 }
+      { 0.0 TechId "big temptations"}
+    }
+  }
+  {
+    ids = { "GIGOLO" }
+    frequency = 0.2
+    traits = { NO_EQUIPMENT }
+    requirements = {
+      { 1.0 CostInfo "GOLD" 50 }
+      { 0.0 TechId "big temptations"}
+    }
+  }
 }
 
 Def DarkRecruits()

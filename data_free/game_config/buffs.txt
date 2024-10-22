@@ -386,15 +386,25 @@ End
             Chance 0.3 SummonAway "TEMPLAR" 1 1000 {FIGHTER NO_LIMIT},
             Chance 0.4 SummonAway "TEMPLAR" 1 1300 {FIGHTER NO_LIMIT},
             Chance 0.5 SummonAway "TEMPLAR" 1 1600 {FIGHTER NO_LIMIT},
-            "Your prayers for summoning stronger armed help will soon be answered.")
+            "Your prayers for summoning stronger armed help have been answered.")
       }
       Filter EquipedIngredient "squire_prayer" {
-        SummonAway "SQUIRE_CHURCH" 1 1600 {FIGHTER NO_LIMIT}
-        DIVINE_SPELL(
-            Chance 0.3 SummonAway "SQUIRE_PLAYER" 1 1000 {FIGHTER NO_LIMIT},
-            Chance 0.4 SummonAway "SQUIRE_PLAYER" 1 1300 {FIGHTER NO_LIMIT},
-            Chance 0.5 SummonAway "SQUIRE_PLAYER" 1 1600 {FIGHTER NO_LIMIT},
-            "Your prayers for summoning armed help will soon be answered.")
+        Filter CreatureId "KEEPER_BISHOP" {
+          SummonAway "WARRIOR_NUN" 1 1600 {FIGHTER NO_LIMIT}
+          DIVINE_SPELL(
+              Chance 0.3 SummonAway "WARRIOR_NUN" 1 1000 {FIGHTER NO_LIMIT},
+              Chance 0.4 SummonAway "WARRIOR_NUN" 1 1300 {FIGHTER NO_LIMIT},
+              Chance 0.5 SummonAway "WARRIOR_NUN" 1 1600 {FIGHTER NO_LIMIT},
+              "Your prayers for summoning armed help have been answered.")
+        }
+        Filter CreatureId "MOTHER_SUPERIOR" {
+          SummonAway "ARMED_BROTHER" 1 1600 {FIGHTER NO_LIMIT}
+          DIVINE_SPELL(
+              Chance 0.3 SummonAway "ARMED_BROTHER" 1 1000 {FIGHTER NO_LIMIT},
+              Chance 0.4 SummonAway "ARMED_BROTHER" 1 1300 {FIGHTER NO_LIMIT},
+              Chance 0.5 SummonAway "ARMED_BROTHER" 1 1600 {FIGHTER NO_LIMIT},
+              "Your prayers for summoning armed help have been answered.")
+        }
       }
       Filter EquipedIngredient "workers_prayer" {
         SummonAway "PESEANT_PLAYER" 2  1500 {WORKER NO_LIMIT NO_EQUIPMENT}
@@ -402,7 +412,7 @@ End
             Chance 0.3 SummonAway "PESEANT_PLAYER" 1 1000 {WORKER NO_LIMIT NO_EQUIPMENT},
             Chance 0.4 SummonAway "PESEANT_PLAYER" 1 1300 {WORKER NO_LIMIT NO_EQUIPMENT},
             Chance 0.5 SummonAway "PESEANT_PLAYER" 1 1600 {WORKER NO_LIMIT NO_EQUIPMENT},
-            "Your prayers for summoning more workforce will soon be answered.")
+            "Your prayers for summoning more workforce have been answered.")
       }
       Filter EquipedIngredient "adoxie_prayer" {
         Achievement "black_mass"
@@ -454,7 +464,7 @@ End
 "SINNED" {
   name = "venial sin"
   adjective = "venial sinner"
-  description = "The creature has sinned and is seeking forgiveness"
+  description = "The creature has sinned and is seeking forgiveness."
   color = ColorId BROWN
   fx = DEBUFF_BROWN
   consideredBad = true
@@ -463,7 +473,7 @@ End
 "MORTAL_SINNED" {
   name = "mortal sin"
   adjective = "mortal sinner"
-  description = "The creature has mortally sinned and is seeking forgiveness"
+  description = "The creature has mortally sinned and is seeking forgiveness."
   color = ColorId BLACK
   fx = DEBUFF_BLACK
   consideredBad = true
@@ -471,8 +481,8 @@ End
 
 "WILL_BANISH" {
   name = "summon"
-  adjective = "prayed for"
-  description = "The creature was sent for a limited time as an answer to prayers"
+  adjective = "armed help"
+  description = "The creature was sent for a limited time as an answer to prayers."
   color = ColorId WHITE
   fx = BUFF_WHITE
   endEffect = Banish
