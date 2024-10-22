@@ -399,6 +399,14 @@ static string getName(const CreaturePredicates::HasAnyHealth&, const ContentFact
   return "with health";
 }
 
+static bool applyToCreature(const CreaturePredicates::IsPlayer&, const Creature* victim, const Creature* attacker) {
+  return victim->isPlayer();
+}
+
+static string getName(const CreaturePredicates::IsPlayer&, const ContentFactory*) {
+  return "the player";
+}
+
 static bool apply(const CreaturePredicates::TimeOfDay& t, Position pos, const Creature* attacker) {
   auto time = pos.getGame()->getSunlightInfo().getTimeSinceDawn();
   return time.getVisibleInt() < t.max && time.getVisibleInt() >= t.min;

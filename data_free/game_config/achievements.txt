@@ -30,3 +30,4 @@
 "rode_dragon" {{"red_dragon"}} "Rode a dragon" ""
 "black_mass" {{"adoxie_head"}} "Performed a black mass" "You have dedicated the souls of you and your minions to the Evil God Adoxie"
 "mortal_sin" {{"prostitute"}} "Absolved of a mortal sin" "You have absolved a minion from their mortal sin"
+"polymorphed_into_chicken" {{"chicken"}} "Polymorphed into a chicken" ""

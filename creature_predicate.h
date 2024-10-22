@@ -33,6 +33,7 @@ SIMPLE_PREDICATE(IsClosedOffPigsty);
 SIMPLE_PREDICATE(CanCreatureEnter);
 SIMPLE_PREDICATE(SameTribe);
 SIMPLE_PREDICATE(HasAnyHealth);
+SIMPLE_PREDICATE(IsPlayer);
 
 struct HatedBy {
   BuffId SERIAL(effect);
@@ -209,6 +210,7 @@ using ContainsGas = TileGasType;
   X(MaxLevelBelow, 42)\
   X(EquipedIngredient, 43)\
   X(ExperienceBelow, 44)\
+  X(IsPlayer, 45)\
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST

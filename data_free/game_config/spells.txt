@@ -763,6 +763,7 @@ Def NoEffect() Unlock "nothing" End
   effect = Name "chickenmorph" Description "Turn yourself or someone into a chicken temporarily!" AI Health 0 0.4 0 1 {
     Polymorph "CHICKEN" 10
     Permanent INVULNERABLE
+    Filter IsPlayer Achievement "polymorphed_into_chicken"
   }
   cooldown = {30 101}
   message = "cluck" "clucks"
@@ -776,6 +777,7 @@ Def NoEffect() Unlock "nothing" End
       AI And { Health 0.25 1 Not Enemy } 1 -1 AI And { Not CreatureId "CHICKEN" Enemy } -1 1 {
     Polymorph "CHICKEN" 10
     Permanent INVULNERABLE
+    Filter IsPlayer Achievement "polymorphed_into_chicken"
   }
   targetSelf = true
   endOnly = true
@@ -791,6 +793,7 @@ Def NoEffect() Unlock "nothing" End
     Area 20 {
       Polymorph "CHICKEN" 10
       AI And {} 1 -1 Permanent INVULNERABLE
+      Filter IsPlayer Achievement "polymorphed_into_chicken"
     }
   cooldown = {150 301}
   message = "cluck" "clucks"
