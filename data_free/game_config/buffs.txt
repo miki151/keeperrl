@@ -410,8 +410,11 @@ End
         Filter CreatureId "MOTHER_SUPERIOR" SetViewId {"mother_superior5"}
         FirstSuccessful {
           ChainUntilFail {
-            Area 20 Filter And { Enemy Not CreatureStatus CIVILIAN } Polymorph "CHICKEN" none
-            MassMessage("Adoxie has heard your prayers and punishes your enemies.")
+            Area 20 Filter And { Enemy Not CreatureStatus CIVILIAN } {
+              Polymorph "CHICKEN" 500
+              PlayerMessage "An ancient, terrible evil reshapes your body and causes you to grow a beak."
+            }
+            MassMessage("Adoxie has heard your prayers and turns your enemies into chickens.")
           }
           ChainUntilFail {
             ChooseRandomUntilSuccessful {

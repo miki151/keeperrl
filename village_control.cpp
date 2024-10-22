@@ -311,7 +311,8 @@ void VillageControl::considerCancellingAttack() {
   if (auto enemyCollective = getEnemyCollective())
     for (auto team : collective->getTeams().getAll())
       if (!cancelledAttacks.count(team)) {
-        vector<Creature*> members = collective->getTeams().getMembers(team);
+        vector<Creature*> members = collective->getTeams().getMembers(team)
+            .filter([](Creature* c) { return !c->isAffected(LastingEffect::POLYMORPHED); });
         if (members.size() < (attackSizes[team] + 1) / 2 || (members.size() == 1 &&
               members[0]->getBody().isSeriouslyWounded())) {
           for (Creature* c : members)
