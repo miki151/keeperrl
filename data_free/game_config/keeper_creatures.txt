@@ -76,7 +76,7 @@
       "furnace" "prison_church" "orders" "installations" "saint_statues"
   }
   workshopGroups = { "church" "holy_weapons" "scriptorium" }
-  description = "Build a church, pray a lot and create some holy water."
+  description = "Build a church, perform masses for your congregation and try not to give in to temptations."
 }
 "3_zmother" inherit "3_zchurch"
 {
