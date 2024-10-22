@@ -315,13 +315,22 @@ Def MassMessage(Text)
   UI "unlock_message" { "message" Label Text "view_id" ViewIdList {{"rostrum_gold"}}}
 End
 
-Def DIVINE_SPELL(EFFECT_NAME, MESSAGE) {
+Def DIVINE_SPELL(EFFECT_NAME1, EFFECT_NAME2, EFFECT_NAME3, MESSAGE) {
   Area 15 {
-    Filter Or { FurnitureType PEW_WOOD FurnitureType PEW_IRON FurnitureType PEW_GOLD
-        FurnitureType ROSTRUM_WOOD FurnitureType ROSTRUM_IRON FurnitureType ROSTRUM_GOLD} EFFECT_NAME
+    Filter Or { FurnitureType PEW_WOOD FurnitureType ROSTRUM_WOOD} EFFECT_NAME1
+    Filter Or { FurnitureType PEW_IRON FurnitureType ROSTRUM_IRON} EFFECT_NAME2
+    Filter Or { FurnitureType PEW_GOLD FurnitureType ROSTRUM_GOLD} EFFECT_NAME3
   }
   MassMessage(MESSAGE)
 }
+End
+
+Def DIVINE_SPELL(EFFECT_NAME, MESSAGE)
+  DIVINE_SPELL(EFFECT_NAME, EFFECT_NAME, EFFECT_NAME, MESSAGE)
+End
+
+Def DIVINE_EFFECT(LENGTH1, LENGTH2, LENGTH3, EFFECT_NAME, MESSAGE)
+  DIVINE_SPELL(Lasting LENGTH1 EFFECT_NAME, Lasting LENGTH2 EFFECT_NAME, Lasting LENGTH2 EFFECT_NAME, MESSAGE)
 End
 
 "PREACHING" {
@@ -332,55 +341,67 @@ End
   endEffect = Filter Or { FurnitureType "ROSTRUM_WOOD" FurnitureType "ROSTRUM_IRON" FurnitureType "ROSTRUM_GOLD" } {
     SetMinionActivity IDLE
     FirstSuccessful {
-      Filter EquipedIngredient "protection_prayer" DIVINE_SPELL(Lasting 500 "DIVINE_PROTECTION",
-          "Minions have been blessed with a +5 defense bonus for 500 turns.")
-      Filter EquipedIngredient "strength_prayer" DIVINE_SPELL(Lasting 500 "DIVINE_STRENGTH",
-          "Minions have been blessed with a +5 damage bonus for 500 turns.")
-      Filter EquipedIngredient "digging_prayer" DIVINE_SPELL(Lasting 1500 "DIVINE_DIGGING",
-          "Minions have been blessed with a +15 digging bonus for 1500 turns.")
-      Filter EquipedIngredient "training_prayer" DIVINE_SPELL(Lasting 1500 FAST_TRAINING,
-          "Minions have been blessed with faster training for 1500 turns.")
-      Filter EquipedIngredient "crafting_prayer" DIVINE_SPELL(Lasting 1500 FAST_CRAFTING,
-          "Minions have been blessed with faster crafting for 1500 turns.")
-      Filter EquipedIngredient "ranged_resistance_prayer" DIVINE_SPELL(Lasting 500 "RANGED_RESISTANCE",
-          "Minions have been blessed with resistance to ranged attacks for 500 turns.")
-      Filter EquipedIngredient "regeneration_prayer" DIVINE_SPELL(Lasting 500 "REGENERATION",
-          "Minions have been blessed with the ability to regenerate wounds for 500 turns.")
-      Filter EquipedIngredient "fire_resistance_prayer" DIVINE_SPELL(Lasting 500 "FIRE_RESISTANT",
-          "Minions have been blessed with resistance to fire attacks for 500 turns.")
-      Filter EquipedIngredient "poison_resistance_prayer" DIVINE_SPELL(Lasting 500 POISON_RESISTANT,
-          "Minions have been blessed with resistance to poison for 500 turns.")
-      Filter EquipedIngredient "dragon_resistance_prayer" DIVINE_SPELL(Lasting 500 "DRAGON_RESISTANCE",
-          "Minions have been blessed with resistance to dragon attacks for 500 turns.")
-      Filter EquipedIngredient "demon_resistance_prayer" DIVINE_SPELL(Lasting 500 "DEMON_RESISTANCE",
-          "Minions have been blessed with resistance to demon attacks for 500 turns.")
-      Filter EquipedIngredient "undead_resistance_prayer" DIVINE_SPELL(Lasting 500 "UNDEAD_RESISTANCE",
-          "Minions have been blessed with resistance to undead attacks for 500 turns.")
-      Filter EquipedIngredient "lizardmen_resistance_prayer" DIVINE_SPELL(Lasting 500 "LIZARDMEN_RESISTANCE",
-          "Minions have been blessed with resistance to lizardmen attacks for 500 turns.")
-      Filter EquipedIngredient "elf_resistance_prayer" DIVINE_SPELL(Lasting 500 "ELF_RESISTANCE",
-          "Minions have been blessed with resistance to elf attacks for 500 turns.")
-      Filter EquipedIngredient "greenskin_resistance_prayer" DIVINE_SPELL(Lasting 500 "GREENSKIN_RESISTANCE",
-          "Minions have been blessed with resistance to greenskin attacks for 500 turns.")
+      Filter EquipedIngredient "protection_prayer" DIVINE_EFFECT(400, 600, 800, "DIVINE_PROTECTION",
+          "Minions have been blessed with a temporary +5 defense bonus.")
+      Filter EquipedIngredient "strength_prayer" DIVINE_EFFECT(400, 600, 800, "DIVINE_STRENGTH",
+          "Minions have been blessed with a temporary +5 damage bonus.")
+      Filter EquipedIngredient "digging_prayer" DIVINE_EFFECT(1200, 1600, 2000, "DIVINE_DIGGING",
+          "Minions have been blessed with a temporary +15 digging bonus.")
+      Filter EquipedIngredient "training_prayer" DIVINE_EFFECT(1200, 1600, 2000, FAST_TRAINING,
+          "Minions have been blessed with temporarily faster training.")
+      Filter EquipedIngredient "crafting_prayer" DIVINE_EFFECT(1200, 1600, 2000, FAST_CRAFTING,
+          "Minions have been blessed with temporarily faster crafting.")
+      Filter EquipedIngredient "ranged_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "RANGED_RESISTANCE",
+          "Minions have been blessed with temporary resistance to ranged attacks.")
+      Filter EquipedIngredient "regeneration_prayer" DIVINE_EFFECT(400, 600, 800, "REGENERATION",
+          "Minions have been blessed with a temporary ability to regenerate wounds.")
+      Filter EquipedIngredient "fire_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "FIRE_RESISTANT",
+          "Minions have been blessed with temporary resistance to fire attacks.")
+      Filter EquipedIngredient "poison_resistance_prayer" DIVINE_EFFECT(400, 600, 800, POISON_RESISTANT,
+          "Minions have been blessed with temporary resistance to poison.")
+      Filter EquipedIngredient "dragon_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "DRAGON_RESISTANCE",
+          "Minions have been blessed with temporary resistance to dragon attacks.")
+      Filter EquipedIngredient "demon_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "DEMON_RESISTANCE",
+          "Minions have been blessed with temporary resistance to demon attacks.")
+      Filter EquipedIngredient "undead_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "UNDEAD_RESISTANCE",
+          "Minions have been blessed with temporary resistance to undead attacks.")
+      Filter EquipedIngredient "lizardmen_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "LIZARDMEN_RESISTANCE",
+          "Minions have been blessed with temporary resistance to lizardmen attacks.")
+      Filter EquipedIngredient "elf_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "ELF_RESISTANCE",
+          "Minions have been blessed with temporary resistance to elf attacks.")
+      Filter EquipedIngredient "greenskin_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "GREENSKIN_RESISTANCE",
+          "Minions have been blessed with temporary resistance to greenskin attacks.")
       Filter EquipedIngredient "melee_prayer" DIVINE_SPELL(IncreaseMaxLevel "DAMAGE" 1,
           "Minions have been blessed with increased melee training limits.")
       Filter EquipedIngredient "divinity_prayer" DIVINE_SPELL(IncreaseMaxLevel "DIVINITY" 1,
           "Minions have been blessed with increased divinity training limits.")
-      Filter EquipedIngredient "guardian_prayer" DIVINE_SPELL(Filter CreatureStatus FIGHTER Summon "ANGEL" 1 500,
-          "Minions have been blessed with guardian angels for 500 turns.")
+      Filter EquipedIngredient "guardian_prayer" DIVINE_SPELL(
+          Filter CreatureStatus FIGHTER Summon "ANGEL" 1 400,
+          Filter CreatureStatus FIGHTER Summon "ANGEL" 1 600,
+          Filter CreatureStatus FIGHTER Summon "ANGEL" 1 800,
+          "Minions have been blessed with guardian angels.")
       Filter EquipedIngredient "teuton_prayer" {
-        SummonAway "TEMPLAR" 1 1500  {FIGHTER NO_LIMIT}
-        DIVINE_SPELL(Chance 0.3 SummonAway "TEMPLAR" 1 1500 {FIGHTER NO_LIMIT},
+        SummonAway "TEMPLAR" 1 1600  {FIGHTER NO_LIMIT}
+        DIVINE_SPELL(
+            Chance 0.3 SummonAway "TEMPLAR" 1 1000 {FIGHTER NO_LIMIT},
+            Chance 0.4 SummonAway "TEMPLAR" 1 1300 {FIGHTER NO_LIMIT},
+            Chance 0.5 SummonAway "TEMPLAR" 1 1600 {FIGHTER NO_LIMIT},
             "Your prayers for summoning stronger armed help will soon be answered.")
       }
       Filter EquipedIngredient "squire_prayer" {
-        SummonAway "SQUIRE_CHURCH" 1 1500 {FIGHTER NO_LIMIT}
-        DIVINE_SPELL(Chance 0.3 SummonAway "SQUIRE_PLAYER" 1 1500 {FIGHTER NO_LIMIT},
+        SummonAway "SQUIRE_CHURCH" 1 1600 {FIGHTER NO_LIMIT}
+        DIVINE_SPELL(
+            Chance 0.3 SummonAway "SQUIRE_PLAYER" 1 1000 {FIGHTER NO_LIMIT},
+            Chance 0.4 SummonAway "SQUIRE_PLAYER" 1 1300 {FIGHTER NO_LIMIT},
+            Chance 0.5 SummonAway "SQUIRE_PLAYER" 1 1600 {FIGHTER NO_LIMIT},
             "Your prayers for summoning armed help will soon be answered.")
       }
       Filter EquipedIngredient "workers_prayer" {
         SummonAway "PESEANT_PLAYER" 2  1500 {WORKER NO_LIMIT NO_EQUIPMENT}
-        DIVINE_SPELL(Chance 0.3 SummonAway "PESEANT_PLAYER" 1 1500 {WORKER NO_LIMIT NO_EQUIPMENT},
+        DIVINE_SPELL(
+            Chance 0.3 SummonAway "PESEANT_PLAYER" 1 1000 {WORKER NO_LIMIT NO_EQUIPMENT},
+            Chance 0.4 SummonAway "PESEANT_PLAYER" 1 1300 {WORKER NO_LIMIT NO_EQUIPMENT},
+            Chance 0.5 SummonAway "PESEANT_PLAYER" 1 1600 {WORKER NO_LIMIT NO_EQUIPMENT},
             "Your prayers for summoning more workforce will soon be answered.")
       }
       Filter EquipedIngredient "adoxie_prayer" {

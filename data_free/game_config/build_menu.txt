@@ -217,15 +217,15 @@ End
     { Furniture {{ "ROSTRUM_WOOD" }       "WOOD" 10 }                      "Wooden rostrum"         "Mass"
         "A basic rostrum for performing mass." }
     { Furniture {{ "ROSTRUM_IRON" }       "IRON" 10 }                      "Iron rostrum"         "Mass"
-        "An improved rostrum for performing mass." }
+        "An improved rostrum for performing mass. Intention effects will be somewhat amplified." }
     { Furniture {{ "ROSTRUM_GOLD" }       "GOLD" 10 }                      "Golden rostrum"         "Mass"
-        "A luxurious rostrum for performing mass." none { TechId "luxury" } }
+        "A luxurious rostrum for performing mass. Intention effects will be greatly amplified." none { TechId "luxury" } }
     { Furniture {{ "PEW_WOOD" }           "WOOD" 10 }                      "Wooden church pew"      "Mass"
         "Used by mass participants." }
     { Furniture {{ "PEW_IRON" }           "IRON" 10 }                      "Iron church pew"      "Mass"
-        "An improved pew for mass participants." }
+        "An improved pew for mass participants. Intention effects will be somewhat amplified." }
     { Furniture {{ "PEW_GOLD" }           "GOLD" 10 }                      "Golden church pew"      "Mass"
-        "A luxurious pew for mass participants." none { TechId "luxury" } }
+        "A luxurious pew for mass participants. Intention effects will be greatly amplified." none { TechId "luxury" } }
     { Furniture {{ "PRAYER_BENCH_WOOD" }  "WOOD" 10 }                      "Wooden prayer bench"      "Mass"
         "Used by priests when praying." }
     { Furniture {{ "PRAYER_BENCH_IRON" }  "IRON" 10 }                      "Iron prayer bench"      "Mass"
