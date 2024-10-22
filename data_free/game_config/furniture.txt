@@ -744,6 +744,18 @@ Def BedHeal() Heal { FLESH 0.005 } End
   storageIds = {"jewellery"}
   hidesItems = true
 }
+"BOOK_STORAGE"
+{
+  name = "book shelf"
+  viewId = { "prayer_book_storage" }
+  emptyViewId = { "prayer_book_storage_empty" }
+  canHideHere = true
+  fire = 50
+  strength = 40
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  storageIds = {"books"}
+  hidesItems = true
+}
 "ARMOR_RACK"
 {
   name = "armor rack"

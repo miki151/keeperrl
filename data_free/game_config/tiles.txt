@@ -527,6 +527,8 @@ Connections("map_swamp")
 { viewId = "automaton_storage_empty" symbol = "=" color = ColorId DARK_GRAY roundShadow = true }
 { viewId = "jewelry_storage" symbol = "=" color = ColorId ORANGE roundShadow = true }
 { viewId = "jewelry_storage_empty" symbol = "=" color = ColorId DARK_GRAY roundShadow = true }
+{ viewId = "prayer_book_storage" symbol = "=" color = ColorId PINK roundShadow = true }
+{ viewId = "prayer_book_storage_empty" symbol = "=" color = ColorId DARK_GRAY roundShadow = true }
 { viewId = "armor_rack" symbol = "=" color = ColorId DARK_BROWN roundShadow = true }
 { viewId = "armor_rack_empty" symbol = "=" color = ColorId DARK_GRAY roundShadow = true }
 { viewId = "weapon_rack" symbol = "=" color = ColorId LIGHT_BROWN roundShadow = true }
