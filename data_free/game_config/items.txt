@@ -752,8 +752,10 @@ End
     equipmentSlot = WEAPON
     weight = 15
     modifiers = {
-      DIVINITY 8
+      DIVINITY 16
+      SPELL_SPEED 16
     }
+    craftingCost = "IRON" 20
     price = 70
     weaponInfo = {
       attackType = HIT
@@ -762,6 +764,28 @@ End
     equipedAbility = { "advanced holy missile" }
     storageIds = {"weapons" "equipment"}
     equipmentGroup = "iron equipment"
+  }
+"AdoxiumCrozier"
+  {
+    viewId = { "crozier_adoxium" }
+    equipedViewId = { "crozier_adoxium_v" }
+    name = "adoxium crozier"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 6
+    modifiers = {
+      DIVINITY 30
+      SPELL_SPEED 30
+    }
+    craftingCost = "ADOXIUM" 40
+    price = 400
+    weaponInfo = {
+      attackType = HIT
+      meleeAttackAttr = DIVINITY
+    }
+    equipedAbility = { "expert holy missile" }
+    storageIds = {"weapons" "equipment"}
+    equipmentGroup = "adoxium equipment"
   }
 "Bow"
   {

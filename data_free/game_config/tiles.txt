@@ -463,6 +463,8 @@ Connections("map_swamp")
 { viewId = "crozier_wood_v" symbol = ")" color = ColorId LIGHT_BROWN weaponOrigin = {13 13} }
 { "crozier_iron" ")" ColorId LIGHT_GRAY }
 { viewId = "crozier_iron_v" symbol = ")" color = ColorId LIGHT_GRAY weaponOrigin = {13 13} }
+{ "crozier_adoxium" ")" ColorId PINK }
+{ viewId = "crozier_adoxium_v" symbol = ")" color = ColorId PINK weaponOrigin = {13 13} }
 { "bow" ")" ColorId BROWN }
 { "archwood_bow" ")" ColorId LIGHT_BLUE }
 { "elven_bow" ")" ColorId YELLOW false "bow" }

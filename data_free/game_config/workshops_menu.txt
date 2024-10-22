@@ -411,7 +411,8 @@ End
 
   "FORGE"
   {
-      {{"IronCrozier"}                   13       "IRON" 20}
+      {item = {"IronCrozier"}      work = 13   cost = none materialTab = true}
+      {item = {"AdoxiumCrozier"}   work = 20   cost = none tech = "dark crafts" materialTab = true}
   }
 
   "LAVA_FORGE" inherit "FORGE" append {}
