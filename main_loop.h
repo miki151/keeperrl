@@ -19,7 +19,7 @@ class SokobanInput;
 struct CampaignSetup;
 class ModelBuilder;
 class ItemType;
-class CreatureList;
+struct CreatureList;
 class GameConfig;
 class AvatarInfo;
 class NameGenerator;
@@ -32,7 +32,7 @@ struct ModDetails;
 class TribeId;
 struct RetiredModelInfo;
 class Unlocks;
-class SteamAchievements;
+struct SteamAchievements;
 
 class MainLoop {
   public:

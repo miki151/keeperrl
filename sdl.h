@@ -1,6 +1,12 @@
 #pragma once
 
-#ifdef WINDOWS
+#if defined(WINDOWS) && defined(_MSC_VER)
+#ifndef _WINDOWS_
+#define _WINDOWS_
+#define APIENTRY __stdcall
+#define WINGDIAPI __declspec(dllimport)
+#endif
+#elif defined(WINDOWS)
 #ifndef _WINDOWS_
 #define _WINDOWS_
 #define APIENTRY __attribute__((__stdcall__))
@@ -14,7 +20,7 @@
 
 namespace SDL {
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+#include <SDL_image.h>
 #include <SDL2/SDL_opengl.h>
 #include <SDL2/SDL_opengl_glext.h>
 }

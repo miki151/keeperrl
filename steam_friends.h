@@ -2,6 +2,7 @@
 
 #include "steam_base.h"
 
+#undef small
 RICH_ENUM(SteamAvatarSize, small, medium, large);
 
 struct ISteamFriends;
