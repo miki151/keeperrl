@@ -23,7 +23,12 @@
 #include "attr_type.h"
 #include "view_id.h"
 #include "keybinding.h"
-#include "steam_input.h"
+
+#ifdef USE_STEAMWORKS
+#  include "steam_input.h"
+#else
+#  include "input.h"
+#endif
 
 class ViewObject;
 class Clock;

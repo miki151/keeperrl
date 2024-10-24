@@ -9,10 +9,13 @@
 #include "clock.h"
 #include "container_range.h"
 #include "tileset.h"
-#include "steam_input.h"
 #include "keybinding.h"
 #include "keybinding_map.h"
 #include "sound_library.h"
+
+#ifdef USE_STEAMWORKS
+#  include "steam_input.h"
+#endif
 
 namespace EnumsDetail {
 enum class TextureFlip;
@@ -205,12 +208,14 @@ REGISTER_SCRIPTED_UI(KeybindingHandler);
 
 struct RenderKeybinding : ScriptedUIInterface {
   variant<Texture*, string> getKeybindingGlyph(GuiFactory* f, Keybinding binding) const {
+#ifdef USE_STEAMWORKS
     auto steamInput = f->getSteamInput();
     if (steamInput && !steamInput->controllers.empty()) {
       if (auto key = KeybindingMap::getControllerMapping(binding))
         if (auto path = steamInput->getGlyph(*key))
           return &f->steamInputTexture(*path);
     }
+#endif
     if (!controllerOnly)
       if (auto k = f->getKeybindingMap()->getText(binding))
         return "[" + *k + "]";

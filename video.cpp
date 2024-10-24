@@ -12,7 +12,12 @@
 
 #include "theoraplay.h"
 #include "renderer.h"
-#include "steam_input.h"
+
+#ifdef USE_STEAMWORKS
+#  include "steam_input.h"
+#else
+#  include "input.h"
+#endif
 
 using namespace SDL;
 

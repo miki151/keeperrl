@@ -47,8 +47,10 @@
 #include "body.h"
 #include "enemy_aggression_level.h"
 #include "unlocks.h"
-#include "steam_achievements.h"
 #include "progress_meter.h"
+#ifdef USE_STEAMWORKS
+#  include "steam_achievements.h"
+#endif
 
 template <class Archive>
 void Game::serialize(Archive& ar, const unsigned int version) {
@@ -833,8 +835,10 @@ void Game::addAnalytics(const string& name, const string& value) {
 }
 
 void Game::achieve(AchievementId id) const {
+#ifdef USE_STEAMWORKS
   if (steamAchievements)
     steamAchievements->achieve(id);
+#endif
   if (!unlocks->isAchieved(id)) {
     unlocks->achieve(id);
     if (!steamAchievements) {

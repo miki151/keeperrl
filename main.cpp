@@ -56,15 +56,15 @@
 #include "fx_view_manager.h"
 #include "layout_renderer.h"
 #include "unlocks.h"
-#include "steam_input.h"
-#include "steam_achievements.h"
 
 #include "stack_printer.h"
 
 #ifdef USE_STEAMWORKS
-#include "steam_base.h"
-#include "steam_client.h"
-#include "steam_user.h"
+#  include "steam_input.h"
+#  include "steam_achievements.h"
+#  include "steam_base.h"
+#  include "steam_client.h"
+#  include "steam_user.h"
 #endif
 
 #ifndef DATA_DIR
@@ -244,6 +244,35 @@ static void showLogoSplash(Renderer& renderer, FilePath logoPath, atomic<bool>& 
   }
 }
 
+class SteamPtrHolder {
+  private:
+#ifdef USE_STEAMWORKS
+  unique_ptr<MySteamInput> steamInput;
+  unique_ptr<SteamAchievements> steamAchievements;
+#endif
+  public:
+  MySteamInput * getInput() {
+#ifdef USE_STEAMWORKS
+    return steamInput.get()
+#else
+    return nullptr;
+#endif
+  }
+  SteamAchievements * getAchievements() {
+#ifdef USE_STEAMWORKS
+    return steamAchievements.get()
+#else
+    return nullptr;
+#endif
+  }
+  void create() {
+#ifdef USE_STEAMWORKS
+    steamInput = make_unique<MySteamInput>();
+    steamAchievements = make_unique<SteamAchievements>();
+#endif
+  }
+};
+
 static int keeperMain(po::parser& commandLineFlags) {
   ENABLE_PROFILER;
   if (commandLineFlags["help"].was_set()) {
@@ -315,21 +344,19 @@ static int keeperMain(po::parser& commandLineFlags) {
     userKeysPath.erase();
     highscoresPath.erase();
   }
-  unique_ptr<MySteamInput> steamInput;
-  unique_ptr<SteamAchievements> steamAchievements;
+  SteamPtrHolder steamPtr;
   #ifdef RELEASE
     AppConfig appConfig(dataPath.file("appconfig.txt"));
   #else
     AppConfig appConfig(dataPath.file("appconfig-dev.txt"));
   #endif
   #ifdef USE_STEAMWORKS
-    steamInput = make_unique<MySteamInput>();
     optional<steam::Client> steamClient;
     if (appConfig.get<int>("steamworks") > 0) {
       if (steam::initAPI()) {
+        steamPtr.create();
         steamClient.emplace();
-        steamInput->init();
-        steamAchievements = make_unique<SteamAchievements>();
+        steamPtr.getInput()->init();
         INFO << "\n" << steamClient->info();
       }
   #ifdef RELEASE
@@ -339,13 +366,15 @@ static int keeperMain(po::parser& commandLineFlags) {
     }
   #endif
   KeybindingMap keybindingMap(freeDataPath.file("default_keybindings.txt"), userKeysPath);
-  Options options(settingsPath, &keybindingMap, steamInput.get());
+  Options options(settingsPath, &keybindingMap, steamPtr.getInput());
   if (options.getBoolValue(OptionId::DPI_AWARE))
     dpiAwareness();
   Random.init(int(time(nullptr)));
   auto installId = getInstallId(userPath.file("installId.txt"), Random);
-  if (steamInput->isRunningOnDeck())
+#ifdef USE_STEAMWORKS
+  if (steamPtr.getInput()->isRunningOnDeck())
     installId += "_deck";
+#endif
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
   auto modsDir = userPath.subdirectory(gameConfigSubdir);
@@ -413,7 +442,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   Renderer renderer(
       &clock,
-      steamInput.get(),
+      steamPtr.getInput(),
       "KeeperRL",
       contribDataPath,
       freeDataPath.file("images/mouse_cursor.png"),
@@ -484,7 +513,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   options.addTrigger(OptionId::MUSIC, [&jukebox](int volume) { jukebox.setCurrentVolume(volume); });
   Unlocks unlocks(&options, userPath.file("unlocks.txt"));
   MainLoop loop(view.get(), &highscores, &fileSharing, paidDataPath, freeDataPath, userPath, modsDir, &options, &jukebox,
-      &sokobanInput, &tileSet, &unlocks, steamAchievements.get(), saveVersion, modVersion);
+      &sokobanInput, &tileSet, &unlocks, steamPtr.getAchievements(), saveVersion, modVersion);
   try {
     if (audioError)
       USER_INFO << "Failed to initialize audio. The game will be started without sound. " << *audioError;
