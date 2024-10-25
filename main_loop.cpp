@@ -913,6 +913,7 @@ GameConfig MainLoop::getGameConfig(const vector<string>& modNames) const {
 ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
   ContentFactory ret;
   auto tryConfig = [&](const vector<string>& modNames) {
+    ret = ContentFactory();
     auto config = getGameConfig(modNames);
     return ret.readData(&config, modNames);
   };
