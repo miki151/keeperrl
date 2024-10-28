@@ -92,7 +92,7 @@
   {
     ids = { "PROSTITUTE" }
     frequency = 0.2
-    traits = { NO_EQUIPMENT }
+    traits = { FIGHTER NO_EQUIPMENT }
     requirements = {
       { 1.0 CostInfo "GOLD" 50 }
       { 0.0 TechId "big temptations"}
@@ -101,7 +101,7 @@
   {
     ids = { "GIGOLO" }
     frequency = 0.05
-    traits = { NO_EQUIPMENT }
+    traits = { FIGHTER NO_EQUIPMENT }
     requirements = {
       { 1.0 CostInfo "GOLD" 50 }
       { 0.0 TechId "big temptations"}
@@ -131,7 +131,7 @@
   {
     ids = { "PROSTITUTE" }
     frequency = 0.05
-    traits = { NO_EQUIPMENT }
+    traits = { FIGHTER NO_EQUIPMENT }
     requirements = {
       { 1.0 CostInfo "GOLD" 50 }
       { 0.0 TechId "big temptations"}
@@ -140,7 +140,7 @@
   {
     ids = { "GIGOLO" }
     frequency = 0.2
-    traits = { NO_EQUIPMENT }
+    traits = { FIGHTER NO_EQUIPMENT }
     requirements = {
       { 1.0 CostInfo "GOLD" 50 }
       { 0.0 TechId "big temptations"}
