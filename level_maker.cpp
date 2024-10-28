@@ -1973,6 +1973,7 @@ static void addStairs(MakerQueue& queue, const SettlementInfo& info, const Build
 
 PLevelMaker LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info, Vec2 size, int difficulty) {
   auto queue = make_unique<MakerQueue>();
+  USER_CHECK(info.type.contains<MapLayoutTypes::Builtin>()) << "Maze Z-level type expects an enemy using a Builtin settlement type";
   auto& building = info.type.getReferenceMaybe<MapLayoutTypes::Builtin>()->buildingInfo;
   auto floor = building.floorOutside.value_or(FurnitureType("FLOOR"));
   queue->addMaker(make_unique<Empty>(SquareChange(floor, building.wall)));
@@ -2149,6 +2150,7 @@ static PMakerQueue tower(RandomGen& random, SettlementInfo info, bool withExit, 
 }
 
 PLevelMaker LevelMaker::blackMarket(RandomGen& random, SettlementInfo info, Vec2 size, int difficulty) {
+  USER_CHECK(info.type.contains<MapLayoutTypes::Builtin>()) << "Black market Z-level type expects an enemy using a Builtin settlement type";
   auto& building = info.type.getReferenceMaybe<MapLayoutTypes::Builtin>()->buildingInfo;
   auto marketArea = make_unique<MakerQueue>();
   marketArea->addMaker(make_unique<Empty>(SquareChange::reset(FurnitureType("FLOOR")).add(SquareAttrib::ROOM)));
@@ -2400,6 +2402,7 @@ static PMakerQueue islandVaultMaker(RandomGen& random, SettlementInfo info, bool
 PLevelMaker LevelMaker::mineTownLevel(RandomGen& random, SettlementInfo info, Vec2 size, int difficulty) {
   auto queue = make_unique<MakerQueue>();
   queue->addMaker(make_unique<Empty>(SquareChange(FurnitureType("FLOOR"), FurnitureType("MOUNTAIN"))));
+  USER_CHECK(info.type.contains<MapLayoutTypes::Builtin>()) << "Minetown Z-level type expects an enemy using a Builtin settlement type";
   auto& building = info.type.getReferenceMaybe<MapLayoutTypes::Builtin>()->buildingInfo;
   queue->addMaker(mineTownMaker(random, info, building, difficulty));
   return make_unique<BorderGuard>(std::move(queue), SquareChange(FurnitureType("FLOOR"), FurnitureType("MOUNTAIN")));
@@ -3101,6 +3104,7 @@ Vec2 LevelMaker::getRandomExit(RandomGen& random, Rectangle rect, int minCornerD
 
 PLevelMaker LevelMaker::roomLevel(RandomGen& random, SettlementInfo info, Vec2 size, int difficulty) {
   auto queue = make_unique<MakerQueue>();
+  USER_CHECK(info.type.contains<MapLayoutTypes::Builtin>()) << "Dungeon Z-level type expects an enemy using a Builtin settlement type";
   auto& building = info.type.getReferenceMaybe<MapLayoutTypes::Builtin>()->buildingInfo;
   auto floorOutside = building.floorOutside.value_or(FurnitureType("FLOOR"));
   auto floorInside = building.floorInside.value_or(FurnitureType("FLOOR"));
@@ -3175,6 +3179,7 @@ PLevelMaker LevelMaker::sokobanFromFile(RandomGen& random, SettlementInfo info, 
       queue->addMaker(make_unique<Empty>(SquareChange(info.stockpiles[0].furniture).maybe(
           Predicate::hasAnyItems())));
   }
+  USER_CHECK(info.type.contains<MapLayoutTypes::Builtin>()) << "Sokoban Z-level type expects an enemy using a Builtin settlement type";
   auto& building = info.type.getReferenceMaybe<MapLayoutTypes::Builtin>()->buildingInfo;
   addStairs(*queue, info, building, Predicate::attrib(SquareAttrib::SOKOBAN_ENTRY));
   //queue->addMaker(make_unique<PlaceCollective>(info.collective));
