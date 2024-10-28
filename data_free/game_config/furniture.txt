@@ -472,7 +472,7 @@ BOOKCASES("_HUMAN", "_human")
   viewId = { "prayer_bench_gold" }
   upgrade = "PRAYER_BENCH_IRON"
   maxTraining = {
-    DIVINITY 12
+    DIVINITY 99
   }
   strength = 15
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
