@@ -487,3 +487,20 @@ End
   fx = BUFF_WHITE
   endEffect = Banish
 }
+
+"WELL_FED" {
+  name = "feeding"
+  adjective = "well fed"
+  description = "The creature is well fed and receives a +1 spell damage and defense bonuses."
+  color = ColorId BROWN
+  fx = BUFF_BROWN
+  startEffect = {
+    IncreaseAttr SPELL_DAMAGE 1
+    IncreaseAttr DEFENSE 1
+  }
+  endEffect = {
+    IncreaseAttr SPELL_DAMAGE -1
+    IncreaseAttr DEFENSE -1
+  }
+  stacks = true
+}

@@ -862,10 +862,9 @@ Def NoEffect() Unlock "nothing" End
 "ghoul corpse feast"
 {
   symbol = "👤"
-  effect = Name "feast on a corpse" Description "Increases spell damage and defense by 1 after feasting on a corpse." ChainUntilFail {
+  effect = Name "feast on a corpse" Description "Increases spell damage and defense by 1 for 200 turns after feasting on a corpse." ChainUntilFail {
     EatCorpse
-    IncreaseAttr DEFENSE 1
-    IncreaseAttr SPELL_DAMAGE 1
+    Lasting 200 WELL_FED
   }
   message = "start feasting on corpses" "starts feasting on corpses"
   cooldown = 1
