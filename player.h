@@ -149,7 +149,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   Vec2 SERIAL(travelDir);
   optional<Position> SERIAL(target);
   void retireMessages();
-  string getRemainingString(LastingEffect) const;
   ItemInfo getFurnitureUsageInfo(const string& question, ViewId viewId) const;
   optional<FurnitureUsageType> getUsableUsageType() const;
   STutorial SERIAL(tutorial);

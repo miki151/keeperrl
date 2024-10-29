@@ -338,10 +338,6 @@ void CreatureAttributes::consume(Creature* self, CreatureAttributes& other) {
   consumeEffects(self, other.permanentEffects);
 }
 
-string CreatureAttributes::getRemainingString(LastingEffect effect, GlobalTime time) const {
-  return "[" + toString(lastingEffects[effect] - time) + "]";
-}
-
 bool CreatureAttributes::isBoulder() const {
   return boulder;
 }

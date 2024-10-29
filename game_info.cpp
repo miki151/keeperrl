@@ -180,9 +180,10 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory)
   aiType = c->getAttributes().getAIType();
   effects.clear();
   for (auto& adj : c->getBadAdjectives(contentFactory))
-    effects.push_back({adj.name, adj.help, true});
-  for (auto& adj : c->getGoodAdjectives(contentFactory))
-    effects.push_back({adj.name, adj.help, false});
+    effects.push_back({adj.getText(), adj.help, true});
+  for (auto& adj : c->getGoodAdjectives(contentFactory)) {
+    effects.push_back({adj.getText(), adj.help, false});
+  }
   spells.clear();
   for (auto spell : c->getSpellMap().getAvailable(c))
     spells.push_back({

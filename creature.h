@@ -472,6 +472,9 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 struct AdjectiveInfo {
   string name;
   string help;
+  optional<int> timeout;
+  int count;
+  string getText() const;
 };
 
 CEREAL_CLASS_VERSION(Creature, 1)

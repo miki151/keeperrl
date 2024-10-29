@@ -1824,8 +1824,17 @@ bool Creature::takeDamage(const Attack& attack) {
   return returnValue;
 }
 
+string AdjectiveInfo::getText() const {
+  auto ret = name;
+  if (timeout)
+    ret += "[" + toString(*timeout) + "]";
+  if (count > 1)
+    ret += "(x" + toString(count) + ")";
+  return ret;
+}
+
 static vector<string> extractNames(const vector<AdjectiveInfo>& adjectives) {
-  return adjectives.transform([] (const AdjectiveInfo& e) -> string { return e.name; });
+  return adjectives.transform([] (const AdjectiveInfo& e) -> string { return e.getText(); });
 }
 
 void Creature::updateViewObjectFlanking() {
@@ -2920,35 +2929,43 @@ vector<AdjectiveInfo> Creature::getSpecialAttrAdjectives(const ContentFactory* f
 
 vector<AdjectiveInfo> Creature::getLastingEffectAdjectives(const ContentFactory* factory, bool bad) const {
   vector<AdjectiveInfo> ret;
+  HashMap<string, int> added;
   auto time = getGlobalTime();
   for (auto& buff : buffs) {
     auto& info = factory->buffs.at(buff.first);
     if (info.consideredBad == bad) {
-      ret.push_back({ capitalFirst(info.adjective), info.description });
-      if (time)
-        ret.back().name += "[" + toString(buff.second - *time) + "]";
+      if (auto index = getReferenceMaybe(added, info.adjective)) {
+        ++ret[*index].count;
+        if (time)
+          ret[*index].timeout = min(*ret[*index].timeout, (buff.second - *time).getVisibleInt());
+      } else {
+        added[info.adjective] = ret.size();
+        ret.push_back({ capitalFirst(info.adjective), info.description, none, 1 });
+        if (time)
+          ret.back().timeout = (buff.second - *time).getVisibleInt();
+      }
     }
   }
   for (auto& buff : buffPermanentCount) {
     auto& info = factory->buffs.at(buff.first);
     if (info.consideredBad == bad)
-      ret.push_back({ capitalFirst(info.adjective), info.description });
+      ret.push_back({ capitalFirst(info.adjective), info.description, none, 1 });
   }
   if (time) {
     for (LastingEffect effect : ENUM_ALL(LastingEffect))
       if (attributes->isAffected(effect, *time))
         if (LastingEffects::isConsideredBad(effect) == bad) {
           auto name = LastingEffects::getAdjective(effect);
-          ret.push_back({ name, LastingEffects::getDescription(effect) });
+          ret.push_back({ name, LastingEffects::getDescription(effect), none, 1 });
           if (!attributes->isAffectedPermanently(effect))
-            ret.back().name += attributes->getRemainingString(effect, *getGlobalTime());
+            ret.back().timeout = (attributes->getTimeOut(effect) - *time).getVisibleInt();
         }
   } else
     for (LastingEffect effect : ENUM_ALL(LastingEffect))
       if (attributes->isAffectedPermanently(effect))
         if (LastingEffects::isConsideredBad(effect) == bad) {
           auto name = LastingEffects::getAdjective(effect);
-          ret.push_back({ name, LastingEffects::getDescription(effect) });
+          ret.push_back({ name, LastingEffects::getDescription(effect), none ,1 });
         }
   return ret;
 }
