@@ -42,6 +42,8 @@ class Tile {
   bool highlightAbove = false;
 
   Tile addConnection(DirSet, vector<TileCoord>);
+  Tile setConnectionMask(DirSet);
+
   Tile addOption(Dir, vector<TileCoord>);
   Tile setFloorBorders();
 

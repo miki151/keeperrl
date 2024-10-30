@@ -151,12 +151,25 @@ Tile TileSet::getExtraBorderTile(const string& prefix) {
     .addExtraBorder({Dir::W}, byName(prefix + "w"));
 }
 
+Tile TileSet::customConnections(const string& spriteName, const vector<TileInfo::Connection>& elems) {
+  auto ret = sprite(spriteName);
+  DirSet allDirs;
+  for (auto& elem : elems) {
+    ret.addConnection(elem.dirs, byName(elem.spriteName));
+    for (auto d : elem.dirs)
+      allDirs.insert(d);
+  }
+  return ret.setConnectionMask(allDirs);
+}
+
 void TileSet::loadModdedTiles(const vector<TileInfo>& tiles, bool useTiles) {
   for (auto& tile : tiles) {
     if (useTiles) {
       auto spriteName = tile.sprite.value_or(tile.viewId.data());
       //USER_CHECK(tileCoords.count(spriteName)) << "Sprite file not found: " << spriteName;
       auto t = [&] {
+        if (!tile.connections.empty())
+          return customConnections(spriteName, tile.connections);
         if (tile.wallConnections)
           return getWallTile(spriteName);
         if (tile.roadConnections)

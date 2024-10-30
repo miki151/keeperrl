@@ -778,11 +778,29 @@ BOOKCASES("_human")
 { viewId = "rostrum_gold" sprite = "rostrum3" symbol = "T" color = ColorId YELLOW
   isSymbolFont = true roundShadow = true }
 { viewId = "pew_wood" sprite = "church_pew" symbol = "=" color = ColorId LIGHT_BROWN
-  isSymbolFont = true roundShadow = true }
+  isSymbolFont = true roundShadow = true
+  connections = {
+    "church_pew_centre" { W E }
+    "church_pew_left" { E }
+    "church_pew_right" { W }
+  }
+}
 { viewId = "pew_iron" sprite = "church_pew2" symbol = "=" color = ColorId LIGHT_GRAY
-  isSymbolFont = true roundShadow = true }
+  isSymbolFont = true roundShadow = true
+  connections = {
+    "church_pew_iron_centre" { W E }
+    "church_pew_iron_left" { E }
+    "church_pew_iron_right" { W }
+  }
+}
 { viewId = "pew_gold" sprite = "church_pew3" symbol = "=" color = ColorId YELLOW
-  isSymbolFont = true roundShadow = true }
+  isSymbolFont = true roundShadow = true
+  connections = {
+    "church_pew_gold_centre" { W E }
+    "church_pew_gold_left" { E }
+    "church_pew_gold_right" { W }
+  }
+}
 { viewId = "confessional" symbol = "H" color = ColorId LIGHT_BROWN
   isSymbolFont = true roundShadow = true }
 { viewId = "luxurious_confessional" sprite = "confessional2" symbol = "H" color = ColorId YELLOW

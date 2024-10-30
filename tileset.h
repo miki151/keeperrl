@@ -66,6 +66,7 @@ class TileSet {
   Tile getMountainTile(const string& spriteName, const string& prefix);
   Tile getWaterTile(const string& background, const string& prefix);
   Tile getExtraBorderTile(const string& prefix);
+  Tile customConnections(const string& spriteName, const vector<TileInfo::Connection>&);
   Tile symbol(const string& s, Color id, bool symbol = false);
   void loadModdedTiles(const vector<TileInfo>& tiles, bool useTiles);
 };
