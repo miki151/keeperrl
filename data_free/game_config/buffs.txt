@@ -414,7 +414,10 @@ End
             Chance 0.5 SummonAway "PESEANT_PLAYER" 1 1600 {WORKER NO_LIMIT NO_EQUIPMENT},
             "Your prayers for summoning more workforce have been answered.")
       }
-      Filter EquipedIngredient "adoxie_prayer" {
+      Filter And { Flag "adoxie_dead" EquipedIngredient "adoxie_prayer" } {
+        MassMessage("Your prayers echo through the nave, before sinking like stones into the void.")
+      }
+      Filter And { Not Flag "adoxie_dead" EquipedIngredient "adoxie_prayer" } {
         Achievement "black_mass"
         Filter CreatureId "KEEPER_BISHOP" SetViewId {"bishop5"}
         Filter CreatureId "MOTHER_SUPERIOR" SetViewId {"mother_superior5"}

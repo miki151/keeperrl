@@ -4605,7 +4605,10 @@ End
     chatReactionHostile = "\"How dare you defy a GOD!\""
     deathDescription = "vanquished. May he never rise again"
     gender = IT
-    deathEffect = Analytics "creatureKilled" "adoxie"
+    deathEffect = {
+      Analytics "creatureKilled" "adoxie"
+      SetFlag "adoxie_dead" true
+    }
     killedByAchievement = "killed_by_adoxie"
   }
 "ADOXIE_ADVENTURER" inherit "ADOXIE_HEAD"
