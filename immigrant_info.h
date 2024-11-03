@@ -28,7 +28,7 @@ struct AttractionInfo {
 
   static string getAttractionName(const ContentFactory*, const AttractionType&, int count);
 
-  int SERIAL(amountClaimed);
+  int SERIAL(amountClaimed) = 0;
   vector<AttractionType> SERIAL(types);
 };
 

@@ -1549,7 +1549,6 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
           !lastSquareUpdate[pos] || *lastSquareUpdate[pos] < currentTimeReal - milliseconds{1000})
         updateObject(pos, view, renderer, currentTimeReal);
   previousView = view->getCenterType();
-  auto isGroundOrUpperZlevel = [](auto l) { return l->above || l->below; };
   previousLevel = level;
   keyScrolling = view->getCenterType() == CreatureView::CenterType::NONE;
   currentTimeGame = view->getAnimationTime();

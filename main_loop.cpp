@@ -1426,7 +1426,7 @@ PGame MainLoop::loadOrNewGame() {
   view->scriptedUI("load_menu", data, uiState);
   if (newGame) {
     if (auto res = prepareCampaign(Random))
-      return std::move(res);
+      return res;
   } else if (savedGame) {
     if (PGame ret = loadGame(userPath.file(savedGame->first.filename), "\"" + savedGame->second + "\"")) {
       if (eraseSave())

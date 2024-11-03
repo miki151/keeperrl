@@ -303,9 +303,9 @@ static optional<FileSharing::SiteInfo> parseSite(const vector<string>& fields) {
     elem.fileInfo.date = fromString<int>(fields[1]);
     elem.version = fromString<int>(fields[2]);
     elem.fileInfo.download = true;
-  } catch (cereal::Exception) {
+  } catch (cereal::Exception&) {
     return none;
-  } catch (ParsingException e) {
+  } catch (ParsingException& e) {
     return none;
   }
   return elem;
@@ -328,7 +328,7 @@ static optional<SiteConquestInfo> parseSiteConquest(const vector<string>& fields
     elem.filename = unescapeEverything(fields[0]);
     elem.wonGames = fromString<int>(fields[1]);
     elem.totalGames = fromString<int>(fields[2]);
-  } catch (cereal::Exception) {
+  } catch (cereal::Exception&) {
     return none;
   } catch (ParsingException e) {
     return none;

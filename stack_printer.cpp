@@ -44,7 +44,7 @@ LONG WINAPI miniDumpFunction2(EXCEPTION_POINTERS *ExceptionInfo) {
 void initializeMiniDump() {
   SetUnhandledExceptionFilter(miniDumpFunction2);
 }
-#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+//#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 
 void attachConsole() {
   if(AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()){

@@ -143,8 +143,6 @@ const vector<StorageId>& Furniture::getStorageId() const {
 void Furniture::destroy(Position pos, const DestroyAction& action, Creature* destroyedBy) {
   if (!destroyedEffect)
     pos.globalMessage("The " + name + " " + action.getIsDestroyed());
-  auto myLayer = layer;
-  auto myType = type;
   if (itemDrop)
     pos.dropItems(itemDrop->random(pos.getGame()->getContentFactory(), pos.getModelDifficulty()));
   if (destroyFX)
@@ -273,8 +271,6 @@ void Furniture::updateFire(Position pos, FurnitureLayer supposedLayer) {
       }
       pos.updateMovementDueToFire();
       pos.removeCreatureLight(false);
-      auto myLayer = layer;
-      auto myType = type;
       pos.removeFurniture(this, burntRemains ?
           pos.getGame()->getContentFactory()->furniture.getFurniture(*burntRemains, getTribe()) : nullptr);
       return;

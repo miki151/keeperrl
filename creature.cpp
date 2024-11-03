@@ -2914,13 +2914,13 @@ vector<AdjectiveInfo> Creature::getSpecialAttrAdjectives(const ContentFactory* f
   };
   for (auto& elems : attributes->specialAttr)
     for (auto& elem : elems.second)
-      if (elem.first > 0 == good)
+      if ((elem.first > 0) == good)
         ret.push_back(withTip(
             toStringWithSign(elem.first) + " " + factory->attrInfo.at(elems.first).name + " " + 
                 elem.second.getName(factory)));
   for (auto& item : equipment->getAllEquipped())
     for (auto& elem : item->getSpecialModifiers())
-      if (elem.second.first > 0 == good)
+      if ((elem.second.first > 0) == good)
         ret.push_back(withTip(
             toStringWithSign(elem.second.first) + " " + factory->attrInfo.at(elem.first).name + " " +
                 elem.second.second.getName(factory)));
@@ -3091,3 +3091,4 @@ void Creature::onEvent(const GameEvent& event) {
       )
     }
 }
+#undef CASE

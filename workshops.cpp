@@ -123,7 +123,7 @@ PItem Workshops::Type::addWork(Collective* collective, double amount, int skillA
         ret->upgrade(std::move(product.runes), factory);
         queued.removeIndexPreserveOrder(productIndex);
         checkDebtConsistency();
-        return std::move(ret);
+        return ret;
       }
       break;
     }
