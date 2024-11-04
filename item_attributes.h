@@ -80,7 +80,7 @@ class ItemAttributes {
   bool SERIAL(effectDescription) = true;
   vector<LastingOrBuff> SERIAL(equipedEffect);
   optional<CompanionInfo> SERIAL(equipedCompanion);
-  optional<LastingOrBuff> SERIAL(ownedEffect);
+  vector<LastingOrBuff> SERIAL(ownedEffect);
   optional<string> SERIAL(applyMsgFirstPerson);
   optional<string> SERIAL(applyMsgThirdPerson);
   pair<string, string> SERIAL(applyVerb) = {"apply", "applies"};
@@ -109,4 +109,4 @@ class ItemAttributes {
 
 static_assert(std::is_nothrow_move_constructible<ItemAttributes>::value, "T should be noexcept MoveConstructible");
 
-CEREAL_CLASS_VERSION(ItemAttributes, 1)
+CEREAL_CLASS_VERSION(ItemAttributes, 2)

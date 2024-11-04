@@ -141,13 +141,13 @@ vector<vector<Item*>> Item::stackItems(const ContentFactory* f, vector<Item*> it
 }
 
 void Item::onOwned(Creature* c, bool msg, const ContentFactory* factory) {
-  if (attributes->ownedEffect)
-    addPermanentEffect(*attributes->ownedEffect, c, msg, factory);
+  for (auto& e : attributes->ownedEffect)
+    addPermanentEffect(e, c, msg, factory);
 }
 
 void Item::onDropped(Creature* c, bool msg, const ContentFactory* factory) {
-  if (attributes->ownedEffect)
-    removePermanentEffect(*attributes->ownedEffect, c, msg, factory);
+  for (auto& e : attributes->ownedEffect)
+    removePermanentEffect(e, c, msg, factory);
 }
 
 const vector<LastingOrBuff>& Item::getEquipedEffects() const {
@@ -236,7 +236,7 @@ void Item::onHitSquareMessage(Position pos, const Attack& attack, int numItems) 
     discarded = true;
   } else
     pos.globalMessage(getPluralTheNameAndVerb(numItems, "hits", "hit") + " the " + pos.getName());
-  if (attributes->ownedEffect && *attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
+  if (attributes->ownedEffect.contains(LastingEffect::LIGHT_SOURCE))
     pos.fireDamage(20, attack.attacker);
   if (attributes->effect && effectAppliedWhenThrown())
     attributes->effect->apply(pos, attack.attacker);
@@ -310,7 +310,7 @@ vector<string> Item::getDescription(const ContentFactory* factory) const {
 }
 
 bool Item::hasOwnedEffect(LastingEffect e) const {
-  return attributes->ownedEffect && *attributes->ownedEffect == e;
+  return attributes->ownedEffect.contains(e);
 }
 
 CreaturePredicate Item::getAutoEquipPredicate() const {

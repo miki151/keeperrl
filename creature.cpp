@@ -2933,6 +2933,8 @@ vector<AdjectiveInfo> Creature::getLastingEffectAdjectives(const ContentFactory*
   auto time = getGlobalTime();
   for (auto& buff : buffs) {
     auto& info = factory->buffs.at(buff.first);
+    if (info.hiddenPredicate && info.hiddenPredicate->apply(this, nullptr))
+      continue;
     if (info.consideredBad == bad) {
       if (auto index = getReferenceMaybe(added, info.adjective)) {
         ++ret[*index].count;
@@ -2948,6 +2950,8 @@ vector<AdjectiveInfo> Creature::getLastingEffectAdjectives(const ContentFactory*
   }
   for (auto& buff : buffPermanentCount) {
     auto& info = factory->buffs.at(buff.first);
+    if (info.hiddenPredicate && info.hiddenPredicate->apply(this, nullptr))
+      continue;
     if (info.consideredBad == bad)
       ret.push_back({ capitalFirst(info.adjective), info.description, none, 1 });
   }
