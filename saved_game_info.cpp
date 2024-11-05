@@ -4,12 +4,14 @@
 #include "parse_game.h"
 #include "creature.h"
 
+#ifndef PARSE_GAME
 SavedGameInfo::MinionInfo SavedGameInfo::MinionInfo::get(const ContentFactory* factory, const Creature* c) {
   MinionInfo ret;
   ret.level = (int)c->getBestAttack(factory).value;
   ret.viewId = c->getViewIdWithWeapon();
   return ret;
 }
+#endif
 
 ViewIdList SavedGameInfo::getViewId() const {
   return minions[0].viewId;

@@ -477,4 +477,6 @@ struct AdjectiveInfo {
   string getText() const;
 };
 
+#ifndef PARSE_GAME
 CEREAL_CLASS_VERSION(Creature, 1)
+#endif
