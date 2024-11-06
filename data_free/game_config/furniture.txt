@@ -1465,12 +1465,18 @@ Def BedHeal() Heal { FLESH 0.005 } End
   fire = 50
   strength = 30
 }
+Def CoffinHeal(Prob)
+  Filter
+      And { LastingEffect SLEEP Or { BodyMaterial UNDEAD_FLESH BodyMaterial BONE } }
+      Chance Prob RegrowBodyPart 1
+End
 "COFFIN1"
 {
   name = "basic coffin"
   viewId = { "coffin1" }
   canHideHere = true
   usageType = UsageEffect "sleep in coffin" Lasting SLEEP
+  tickType = Effect CoffinHeal(0.005)
   fire = 50
   strength = 40
   bedType = COFFIN
@@ -1482,6 +1488,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "coffin2" }
   canHideHere = true
   usageType = UsageEffect "sleep in coffin" Lasting SLEEP
+  tickType = Effect CoffinHeal(0.0125)
   luxury = 0.3
   fire = 50
   strength = 40
@@ -1495,6 +1502,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "coffin3" }
   canHideHere = true
   usageType = UsageEffect "sleep in coffin" Lasting SLEEP
+  tickType = Effect CoffinHeal(0.05)
   luxury = 0.7
   fire = 50
   strength = 40

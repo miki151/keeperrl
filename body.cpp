@@ -269,13 +269,14 @@ int Body::numGood(BodyPart part) const {
   return numBodyParts(part) - numInjured(part);
 }
 
-void Body::clearInjured(BodyPart part) {
-  injuredBodyParts[part] = 0;
+void Body::clearInjured(BodyPart part, int count) {
+  injuredBodyParts[part] = max(0, injuredBodyParts[part] - count);
 }
 
-void Body::clearLost(BodyPart part) {
-  bodyParts[part] += lostBodyParts[part];
-  lostBodyParts[part] = 0;
+void Body::clearLost(BodyPart part, int count) {
+  count = min(lostBodyParts[part], count);
+  bodyParts[part] += count;
+  lostBodyParts[part] -= count;
 }
 
 optional<BodyPart> Body::getAnyGoodBodyPart() const {
@@ -321,19 +322,23 @@ bool Body::healBodyParts(Creature* creature, int max) {
   for (BodyPart part : ENUM_ALL(BodyPart)) {
     if (int count = numInjured(part)) {
       result = true;
+      count = min(max, count);
       creature->you(MsgType::YOUR,
           string(getName(part)) + (count > 1 ? "s are" : " is") + " in better shape");
-      clearInjured(part);
+      clearInjured(part, count);
       updateEffects(part, count);
-      if (--max == 0)
+      max -= count;
+      if (max <= 0)
         break;
     }
     if (int count = numLost(part)) {
       result = true;
+      count = min(max, count);
       creature->you(MsgType::YOUR, string(getName(part)) + (count > 1 ? "s grow back!" : " grows back!"));
-      clearLost(part);
+      clearLost(part, count);
       updateEffects(part, count);
-      if (--max == 0)
+      max -= count;
+      if (max <= 0)
         break;
     }
   }

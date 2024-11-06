@@ -131,8 +131,8 @@ class Body {
   friend class Test;
   optional<BodyPart> getBodyPart(const ContentFactory*) const;
   BodyPart armOrWing() const;
-  void clearInjured(BodyPart);
-  void clearLost(BodyPart);
+  void clearInjured(BodyPart, int count);
+  void clearLost(BodyPart, int count);
   bool looseBodyPart(BodyPart, const ContentFactory*);
   bool injureBodyPart(BodyPart, const ContentFactory*);
   void decreaseHealth(double amount);
