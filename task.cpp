@@ -197,6 +197,11 @@ class Destruction : public Task {
     return description;
   }
 
+  void setDoneAndRelease() {
+    setDone();
+    matching->releaseTarget(position);
+  }
+
   virtual MoveInfo getMove(Creature* c) override {
     if (!canPerform(c))
       return NoMove;
@@ -204,7 +209,7 @@ class Destruction : public Task {
       auto match = *matching->getMatch(position);
       if (c->getPosition() != match) {
         if (c->canNavigateTo(match))
-          return c->moveTowards(*matching->getMatch(position));
+          return c->moveTowards(match);
       }
     }
     if (c->getPosition().dist8(position).value_or(2) > 1)
@@ -214,17 +219,17 @@ class Destruction : public Task {
     if (auto action = c->destroy(dir, destroyAction))
       return {1.0, action.append([=](Creature* c) {
           if (!getFurniture() || getFurniture()->getType() != furnitureType) {
-            setDone();
+            setDoneAndRelease();
             callback->onDestructed(position, furnitureType, destroyAction);
           }
           })};
     else {
-      setDone();
+      setDoneAndRelease();
       return NoMove;
     }
   }
 
-  ~Destruction() override {
+  void cancel() override {
     if (matching)
       matching->releaseTarget(position);
   }
