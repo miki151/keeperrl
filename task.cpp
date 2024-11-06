@@ -199,7 +199,8 @@ class Destruction : public Task {
 
   void setDoneAndRelease() {
     setDone();
-    matching->releaseTarget(position);
+    if (matching)
+      matching->releaseTarget(position);
   }
 
   virtual MoveInfo getMove(Creature* c) override {
