@@ -256,12 +256,7 @@ int Body::numLost(BodyPart part) const {
 
 bool Body::fallsApartDueToLostBodyParts(const ContentFactory* factory) const {
   if (fallsApart && !hasAnyHealth(factory)) {
-    int ret = 0;
-    for (BodyPart part : ENUM_ALL(BodyPart))
-      ret += injuredBodyParts[part];
-    for (BodyPart part : ENUM_ALL(BodyPart))
-      ret += lostBodyParts[part];
-    return ret >= 4;
+    return getBodyPartHealth() < 0.1;
   } else
     return false;
 }
@@ -293,32 +288,16 @@ optional<BodyPart> Body::getAnyGoodBodyPart() const {
   return Random.choose(good);
 }
 
-optional<BodyPart> Body::getBodyPart(AttackLevel attack, bool flying, bool collapsed) const {
-  auto best = [&] {
-    if (flying)
-      return Random.choose({BodyPart::TORSO, BodyPart::HEAD, BodyPart::LEG, BodyPart::WING, BodyPart::ARM},
-          {1, 1, 1, 2, 1});
-    switch (attack) {
-      case AttackLevel::HIGH:
-         return BodyPart::HEAD;
-      case AttackLevel::MIDDLE:
-         if (size == Size::SMALL || size == Size::MEDIUM || collapsed)
-           return BodyPart::HEAD;
-         else
-           return Random.choose({BodyPart::TORSO, armOrWing()}, {1, 1});
-      case AttackLevel::LOW:
-         if (size == Size::SMALL || collapsed)
-           return Random.choose({BodyPart::TORSO, armOrWing(), BodyPart::HEAD, BodyPart::LEG}, {1, 1, 1, 1});
-         if (size == Size::MEDIUM)
-           return Random.choose({BodyPart::TORSO, armOrWing(), BodyPart::LEG}, {1, 1, 3});
-         else
-           return BodyPart::LEG;
-    }
-  }();
-  if (numGood(best) > 0)
-    return best;
-  else
-    return getAnyGoodBodyPart();
+optional<BodyPart> Body::getBodyPart(const ContentFactory* factory) const {
+  vector<BodyPart> allowed {BodyPart::LEG, BodyPart::ARM, BodyPart::WING};
+  if (getBodyPartHealth() < 0.4 || !factory->bodyMaterials.at(material).losingHeadsMeansDeath)
+    allowed.push_back(BodyPart::HEAD);
+  if (allowed.empty() || getBodyPartHealth() < 0.4)
+    allowed.push_back(BodyPart::TORSO);
+  for (auto part : Random.permutation(allowed))
+    if (numGood(part))
+      return part;
+  return none;
 }
 
 bool Body::healBodyParts(Creature* creature, int max) {
@@ -678,8 +657,7 @@ Body::DamageResult Body::takeDamage(const Attack& attack, Creature* creature, do
   PROFILE;
   bleed(creature, damage);
   auto factory = creature->getGame()->getContentFactory();
-  if (auto part = getBodyPart(attack.level, creature->isAffected(LastingEffect::FLYING),
-      creature->isAffected(LastingEffect::COLLAPSED)))
+  if (auto part = getBodyPart(factory))
     if (isPartDamaged(*part, damage, factory)) {
       youHit(creature, *part, attack, factory);
       if (injureBodyPart(creature, *part,

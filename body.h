@@ -129,7 +129,7 @@ class Body {
 
   private:
   friend class Test;
-  optional<BodyPart> getBodyPart(AttackLevel attack, bool flying, bool collapsed) const;
+  optional<BodyPart> getBodyPart(const ContentFactory*) const;
   BodyPart armOrWing() const;
   void clearInjured(BodyPart);
   void clearLost(BodyPart);
