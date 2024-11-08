@@ -299,6 +299,9 @@ optional<BodyPart> Body::getBodyPart(const ContentFactory* factory) const {
   for (auto part : Random.permutation(allowed))
     if (numGood(part))
       return part;
+  for (auto part : Random.permutation<BodyPart>())
+    if (numGood(part))
+      return part;
   return none;
 }
 
@@ -728,7 +731,7 @@ double Body::getBodyPartHealth() const {
     gone += injuredBodyParts[part] + lostBodyParts[part];
     total += bodyParts[part] + lostBodyParts[part];
   }
-  return 1 - double(gone) / double(total);
+  return 1 - min<double>(20, gone) / min<double>(20, total);
 }
 
 void Body::updateViewObject(ViewObject& obj, const ContentFactory* factory) const {
