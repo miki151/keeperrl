@@ -291,9 +291,10 @@ optional<BodyPart> Body::getAnyGoodBodyPart() const {
 
 optional<BodyPart> Body::getBodyPart(const ContentFactory* factory) const {
   vector<BodyPart> allowed {BodyPart::LEG, BodyPart::ARM, BodyPart::WING};
-  if (getBodyPartHealth() < 0.4 || !factory->bodyMaterials.at(material).losingHeadsMeansDeath)
+  const auto health = hasAnyHealth(factory) ? getHealth() : getBodyPartHealth();
+  if (health < 0.4 || !factory->bodyMaterials.at(material).losingHeadsMeansDeath)
     allowed.push_back(BodyPart::HEAD);
-  if (allowed.empty() || getBodyPartHealth() < 0.4)
+  if (allowed.empty() || health < 0.4)
     allowed.push_back(BodyPart::TORSO);
   for (auto part : Random.permutation(allowed))
     if (numGood(part))
