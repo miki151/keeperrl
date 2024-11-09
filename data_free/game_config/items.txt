@@ -397,6 +397,13 @@ SPELL_HEAD("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, "automaton_spell", "a
     }
     equipmentGroup = "adamantine equipment"
   }
+# Not used anymore, but keep to stop mods from crashing
+Def InferniteEffect()
+  Filter And { Not LastingEffect FIRE_RESISTANT Not LastingEffect FIRE_IMMUNITY } {
+  CreatureMessage {"are burnt by the infernite" "is burnt by the infernite"}
+  Bleed 0.01 "infernite"
+}
+End
 "InferniteSword" inherit "AdaSword"
   {
     viewId = { "infernite_sword" }
