@@ -1,0 +1,4 @@
+#pragma once
+
+#define BUILD_VERSION "@GIT_HASH@"
+#define BUILD_DATE "@BUILD_DATE@"

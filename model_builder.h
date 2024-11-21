@@ -17,7 +17,7 @@ class ExternalEnemies;
 struct EnemyEvent;
 class Tutorial;
 class FilePath;
-class CreatureList;
+struct CreatureList;
 class GameConfig;
 class ContentFactory;
 struct LevelConnection;
