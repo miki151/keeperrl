@@ -2747,7 +2747,9 @@ bool Creature::canNavigateTo(Position pos) const {
 CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags flags) {
   PROFILE;
   CHECK(pos.isSameLevel(position));
-  if (flags.stepOnTile && !pos.canEnterEmpty(this))
+  auto movementType = getMovementType();
+  if (flags.stepOnTile && !pos.canEnterEmpty(movementType) &&
+      (!flags.destroy || !pos.getBestDestroyAction(movementType)))
     return CreatureAction();
   if (!away && !canNavigateToOrNeighbor(pos))
     return CreatureAction();
@@ -2774,8 +2776,8 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
           return CreatureAction();
       } else {
         INFO << "Trying to destroy";
-        if (!pos2.canEnterEmpty(this) && flags.destroy) {
-          if (auto destroyAction = pos2.getBestDestroyAction(getMovementType()))
+        if (!pos2.canEnterEmpty(movementType) && flags.destroy) {
+          if (auto destroyAction = pos2.getBestDestroyAction(movementType))
             if (auto action = destroy(getPosition().getDir(pos2), *destroyAction)) {
               INFO << "Destroying";
               return action.append([path = *currentPath](Creature* c) { c->shortestPath = path; });
