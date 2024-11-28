@@ -131,11 +131,16 @@ optional<T> MainLoop::loadFromFile(const FilePath& filename) {
 }
 
 void MainLoop::saveGame(PGame& game, const FilePath& path) {
-  CompressedOutput out(path.getPath());
-  string name = game->getGameDisplayName();
-  SavedGameInfo savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods());
-  out.getArchive() << saveVersion << name << savedInfo;
-  out.getArchive() << game;
+  FilePath tmpPath = path.withSuffix(".tmp");
+  {
+    CompressedOutput out(tmpPath.getPath());
+    string name = game->getGameDisplayName();
+    SavedGameInfo savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods());
+    out.getArchive() << saveVersion << name << savedInfo;
+    out.getArchive() << game;
+  }
+  tmpPath.copyTo(path);
+  tmpPath.erase();
 }
 
 struct RetiredModelInfo {
