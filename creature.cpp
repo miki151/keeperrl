@@ -1112,7 +1112,7 @@ bool Creature::addPermanentEffect(BuffId id, int count, bool msg, const ContentF
   if (!factory)
     factory = getGame()->getContentFactory();
   auto& info = factory->buffs.at(id);
-  if (++buffPermanentCount[id] == 1) {
+  if (++buffPermanentCount[id] == 1 || info.stacks) {
     if (msg && info.addedMessage)
       applyMessage(*info.addedMessage, this);
     if (info.startEffect)
@@ -1126,8 +1126,9 @@ bool Creature::removePermanentEffect(BuffId id, int count, bool msg, const Conte
   if (!factory)
     factory = getGame()->getContentFactory();
   auto& info = factory->buffs.at(id);
-  if (--buffPermanentCount[id] <= 0) {
-    buffPermanentCount.erase(id);
+  if (--buffPermanentCount[id] <= 0 || info.stacks) {
+    if (buffPermanentCount[id] <= 0)
+      buffPermanentCount.erase(id);
     if (msg && info.removedMessage)
       applyMessage(*info.removedMessage, this);
     if (info.endEffect)
@@ -2955,7 +2956,7 @@ vector<AdjectiveInfo> Creature::getLastingEffectAdjectives(const ContentFactory*
     if (info.hiddenPredicate && info.hiddenPredicate->apply(this, nullptr))
       continue;
     if (info.consideredBad == bad)
-      ret.push_back({ capitalFirst(info.adjective), info.description, none, 1 });
+      ret.push_back({ capitalFirst(info.adjective), info.description, none, info.stacks ? buff.second : 1 });
   }
   if (time) {
     for (LastingEffect effect : ENUM_ALL(LastingEffect))
