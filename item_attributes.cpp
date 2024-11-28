@@ -28,7 +28,16 @@ template <class Archive>
 void ItemAttributes::serializeImpl(Archive& ar, const unsigned int version) {
   ar(NAMED(name), NAMED(viewId), OPTION(description), NAMED(weight), OPTION(itemClass), NAMED(plural), NAMED(blindName));
   ar(NAMED(artifactName), NAMED(resourceId), OPTION(burnTime), OPTION(price), OPTION(noArticle), NAMED(equipmentSlot), OPTION(equipedAbility));
-  ar(OPTION(applyTime), NAMED(ownedEffect), OPTION(maxUpgrades), OPTION(fragile), NAMED(effect), OPTION(uses), OPTION(usedUpMsg));
+  ar(OPTION(applyTime));
+  if (version >= 2)
+    ar(OPTION(ownedEffect));
+  else {
+    optional<LastingOrBuff> SERIAL(tmp);
+    ar(tmp);
+    if (tmp)
+      ownedEffect.push_back(*tmp);
+  }
+  ar(OPTION(maxUpgrades), OPTION(fragile), NAMED(effect), OPTION(uses), OPTION(usedUpMsg));
   ar(OPTION(displayUses), OPTION(modifiers), NAMED(shortName), OPTION(equipedEffect), NAMED(upgradeInfo), OPTION(effectDescription));
   ar(NAMED(applyMsgFirstPerson), NAMED(applyMsgThirdPerson), NAMED(applySound), OPTION(weaponInfo), OPTION(applyVerb));
   ar(OPTION(prefixes), OPTION(suffixes), OPTION(genPrefixes), NAMED(ingredientType), OPTION(variationChance), OPTION(wishedCount));

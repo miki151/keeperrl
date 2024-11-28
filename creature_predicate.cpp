@@ -506,7 +506,7 @@ bool CreaturePredicate::apply(Position pos, const Creature* attacker) const {
   return visit<bool>([&](const auto& p) { return Impl::apply(p, pos, attacker); });
 }
 
-bool CreaturePredicate::apply(Creature* c, const Creature* attacker) const {
+bool CreaturePredicate::apply(const Creature* c, const Creature* attacker) const {
   return visit<bool>([&](const auto& p) { return applyToCreature1(p, c, attacker, 1); });
 }
 

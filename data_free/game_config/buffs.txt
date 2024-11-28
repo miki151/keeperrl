@@ -105,6 +105,24 @@ End
   color = ColorId RED
 }
 
+"INFERNITE_EFFECT" {
+  name = "burning infernite"
+  description = "Creature is being burnt by carrying an infernite item."
+  addedMessage = "are being" "is being" "burnt by the infernite"
+  removedMessage = "are no longer being" "is no longer being" "burnt by the infernite"
+  adjective = "being burnt by infernite"
+  tickEffect = Filter And { Not LastingEffect FIRE_RESISTANT Not LastingEffect FIRE_IMMUNITY } {
+    CreatureMessage {"are burnt by the infernite" "is burnt by the infernite"}
+    Bleed 0.01 "infernite"
+  }
+  hiddenPredicate = Or { LastingEffect FIRE_RESISTANT LastingEffect FIRE_IMMUNITY }
+  consideredBad = true
+  canAbsorb = false
+  price = 2
+  fx = DEBUFF_RED
+  color = ColorId RED
+}
+
 "SPELL_DAMAGE" {
   name = "spell damage"
   adjective = "deals magical damage"

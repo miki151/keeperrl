@@ -97,6 +97,5 @@ LevelMakerResult getUpLevel(RandomGen& random, ContentFactory* contentFactory,
         }
   auto res = chooseResourceCounts(random, contentFactory->resources, -depth);
   auto maker = LevelMaker::upLevel(pos, biomeInfo, enemies.transform([](auto e) {return e.settlement; }), res);
-  auto size = pos.getModel()->getGroundLevel()->getBounds().getSize();
   return LevelMakerResult { std::move(maker), std::move(enemies)};
 }

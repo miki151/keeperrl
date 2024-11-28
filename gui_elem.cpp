@@ -1881,7 +1881,7 @@ SGuiElem GuiFactory::margin(SGuiElem top, SGuiElem rest, int width, MarginType t
 }
 
 SGuiElem GuiFactory::marginAuto(SGuiElem top, SGuiElem rest, MarginType type) {
-  int width;
+  int width = 0;
   switch (type) {
     case MarginType::LEFT:
     case MarginType::RIGHT: width = *top->getPreferredWidth(); break;
@@ -2946,6 +2946,8 @@ SGuiElem GuiFactory::conditional(function<int()> f, vector<SGuiElem> elem) {
   return SGuiElem(new Conditional(std::move(elem), [f](GuiElem*) { return f(); }));
 }
 
+namespace {
+
 class ConditionalStopKeys : public Conditional {
   public:
   using Conditional::Conditional;
@@ -2957,6 +2959,7 @@ class ConditionalStopKeys : public Conditional {
       return false;
   }
 };
+}
 
 SGuiElem GuiFactory::conditionalStopKeys(SGuiElem elem, function<bool()> f) {
   return SGuiElem(new ConditionalStopKeys(std::move(elem), [f](GuiElem*) { return f(); }));

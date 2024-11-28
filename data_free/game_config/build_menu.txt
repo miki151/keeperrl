@@ -453,6 +453,13 @@ TRAINING("_DWARF", "_dwarf")
 
     { Furniture {{ "PRISON_DOOR" }        "IRON" 30 }              "Prison door"            "Prison"
         "Used to secure prison." none { TechId "slavery" } }
+
+    { Furniture {{ "TORTURE_TABLE" } "IRON" 15 }                   "Torture table"     "Prison"
+        "Can be used to torture prisoners. Free population slot required for torturing."
+        none { TechId "slavery" }}
+
+    { Furniture {{ "GALLOWS" }       "WOOD"  20 }                  "Gallows"           "Prison"
+        "For hanging prisoners." none { TechId "slavery" }}
   }
 
   "orders"

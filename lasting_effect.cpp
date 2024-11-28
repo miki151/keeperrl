@@ -752,12 +752,6 @@ bool LastingEffects::inheritsFromSteed(LastingEffect e) {
 }
 
 double LastingEffects::modifyCreatureDefense(const Creature* c, LastingEffect e, double defense, AttrType damageAttr) {
-  auto multiplyFor = [&](AttrType attr, double m) {
-    if (damageAttr == attr)
-      return defense * m;
-    else
-      return defense;
-  };
   double baseMultiplier = 1.3;
   switch (e) {
     case LastingEffect::CAPTURE_RESISTANCE:

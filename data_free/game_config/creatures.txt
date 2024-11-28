@@ -5344,6 +5344,12 @@ End
   }
 "LEYAK" inherit "TENGU"
   {
+    attr = append {
+      ACID_DAMAGE 40
+    }
+    permanentEffects = {
+      FLYING 1
+    }
     viewId = { "leyak" }
     name = {
       name = "leyak"

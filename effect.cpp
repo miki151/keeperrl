@@ -1595,6 +1595,13 @@ static bool apply(const Effects::Chain& chain, Position pos, Creature* attacker)
   return res;
 }
 
+static bool applyToCreaturePreference(const Effects::Chain& chain, Creature* c, Creature* attacker) {
+  bool res = false;
+  for (auto& e : chain.effects)
+    res |= e.applyToCreature(c, attacker);
+  return res;
+}
+
 static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Chain& c) {
   for (auto& e : c.effects)
     if (auto t = e.getMinionEquipmentType())

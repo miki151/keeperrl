@@ -50,8 +50,9 @@ struct BuffInfo {
   FXVariantName SERIAL(fx) = FXVariantName::BUFF_RED;
   optional<pair<AttrType, AttrType>> SERIAL(modifyDamageAttr);
   optional<SpecialAttr> SERIAL(specialAttr);
+  optional<CreaturePredicate> SERIAL(hiddenPredicate);
   template <class Archive>
   void serialize(Archive& ar1, const unsigned int);
 };
 
-CEREAL_CLASS_VERSION(BuffInfo, 1)
+CEREAL_CLASS_VERSION(BuffInfo, 2)

@@ -20,6 +20,8 @@ else
 	sh ./linux_make.sh
 fi
 
+rm -Rf ~/sdk/tools/ContentBuilder/content/common/data/
+rm -Rf ~/sdk/tools/ContentBuilder/content/common/data_free/
 cp -R -L data ~/sdk/tools/ContentBuilder/content/common/
 cp -R data_free ~/sdk/tools/ContentBuilder/content/common/
 cd ~/sdk/tools/ContentBuilder/

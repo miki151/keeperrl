@@ -228,7 +228,7 @@ class Position;
 struct CreaturePredicate : CreaturePredicates::CreaturePredicate {
   using CreaturePredicates::CreaturePredicate::CreaturePredicate;
   bool apply(Position, const Creature* attacker) const;
-  bool apply(Creature*, const Creature* attacker) const;
+  bool apply(const Creature*, const Creature* attacker) const;
   string getName(const ContentFactory*) const;
   string getNameInternal(const ContentFactory*, bool negated = false) const;
 };

@@ -15,6 +15,8 @@
 
 #pragma once
 
+
+
 #ifndef RELEASE
 #if __has_cpp_attribute(nodiscard)
 #define NODISCARD [[nodiscard]]

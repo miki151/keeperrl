@@ -32,6 +32,8 @@ void BuffInfo::serialize(Archive& ar, const unsigned int version) {
   ar(NAMED(modifyDamageAttr), OPTION(inheritsFromSteed), OPTION(canWishFor), OPTION(canAbsorb), OPTION(combatConsumable), OPTION(fx), OPTION(defenseMultiplier), OPTION(defenseMultiplierAttr), NAMED(hatedGroupName), NAMED(name), OPTION(addedMessage), OPTION(removedMessage), NAMED(startEffect), NAMED(tickEffect), NAMED(endEffect), OPTION(stacks), OPTION(consideredBad), NAMED(description), OPTION(price), NAMED(color), NAMED(adjective), OPTION(efficiencyMultiplier));
   if (version >= 1)
     ar(OPTION(specialAttr));
+  if (version >= 2)
+    ar(OPTION(hiddenPredicate));
 }
 
 SERIALIZABLE(BuffInfo)

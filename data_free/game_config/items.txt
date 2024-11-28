@@ -397,11 +397,12 @@ SPELL_HEAD("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, "automaton_spell", "a
     }
     equipmentGroup = "adamantine equipment"
   }
+# Not used anymore, but keep to stop mods from crashing
 Def InferniteEffect()
   Filter And { Not LastingEffect FIRE_RESISTANT Not LastingEffect FIRE_IMMUNITY } {
-    CreatureMessage {"are burnt by the infernite" "is burnt by the infernite"}
-    Bleed 0.01 "infernite"
-  }
+  CreatureMessage {"are burnt by the infernite" "is burnt by the infernite"}
+  Bleed 0.01 "infernite"
+}
 End
 "InferniteSword" inherit "AdaSword"
   {
@@ -414,9 +415,8 @@ End
     }
     price = 200
     craftingCost = "INFERNITE" 20
-    carriedTickEffect = InferniteEffect()
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
-    ownedEffect = LIGHT_SOURCE
+    ownedEffect = { LIGHT_SOURCE INFERNITE_EFFECT }
     equipedEffect = {FIRE_DAMAGE}
     equipmentGroup = "infernite equipment"
   }
@@ -495,9 +495,8 @@ End
     }
     price = 1500
     craftingCost = "INFERNITE" 50
-    carriedTickEffect = InferniteEffect()
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
-    ownedEffect = LIGHT_SOURCE
+    ownedEffect = { LIGHT_SOURCE INFERNITE_EFFECT }
     equipedEffect = {FIRE_DAMAGE}
     equipmentGroup = "infernite equipment"
   }
@@ -552,9 +551,8 @@ End
     }
     price = 1000
     craftingCost = "INFERNITE" 40
-    carriedTickEffect = InferniteEffect()
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
-    ownedEffect = LIGHT_SOURCE
+    ownedEffect = { LIGHT_SOURCE INFERNITE_EFFECT }
     equipedEffect = {FIRE_DAMAGE}
     equipmentGroup = "infernite equipment"
   }
@@ -578,7 +576,7 @@ End
     craftingCost = "INFERNITE" 100
     maxUpgrades = 10
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
-    ownedEffect = LIGHT_SOURCE
+    ownedEffect = { LIGHT_SOURCE INFERNITE_EFFECT }
     storageIds = {"weapons" "equipment"}
     equipedEffect = {FIRE_DAMAGE}
     equipmentGroup = "infernite equipment"

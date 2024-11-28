@@ -142,7 +142,7 @@ CostInfo TaskMap::removeTask(Task* task) {
   }
   if (auto c = creatureByTask.getMaybe(task)) {
     CHECK(taskByCreature.getMaybe(*c));
-     taskByCreature.erase(*c);
+    taskByCreature.erase(*c);
     creatureByTask.erase(task);
   }
   CHECK(taskByCreature.getSize() == creatureByTask.getSize());
