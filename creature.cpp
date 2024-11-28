@@ -1072,7 +1072,7 @@ bool Creature::addEffect(BuffId id, TimeInterval time, GlobalTime global, const 
       if (msg && info.addedMessage)
         applyMessage(*info.addedMessage, this);
       if (info.startEffect)
-        info.startEffect->applyToCreature(this, this);
+        info.startEffect->applyToCreature(this, info.consideredBad ? lastAttacker : this);
       return true;
     }
   }
@@ -1095,7 +1095,7 @@ bool Creature::removeBuff(int index, bool msg) {
     if (msg && info.removedMessage)
       applyMessage(*info.removedMessage, this);
     if (info.endEffect)
-      info.endEffect->applyToCreature(this, this);
+      info.endEffect->applyToCreature(this, info.consideredBad ? lastAttacker : this);
     return true;
   }
   return false;
@@ -1112,7 +1112,7 @@ bool Creature::addPermanentEffect(BuffId id, int count, bool msg, const ContentF
   if (!factory)
     factory = getGame()->getContentFactory();
   auto& info = factory->buffs.at(id);
-  if (++buffPermanentCount[id] == 1) {
+  if (++buffPermanentCount[id] == 1 || info.stacks) {
     if (msg && info.addedMessage)
       applyMessage(*info.addedMessage, this);
     if (info.startEffect)
@@ -1126,8 +1126,9 @@ bool Creature::removePermanentEffect(BuffId id, int count, bool msg, const Conte
   if (!factory)
     factory = getGame()->getContentFactory();
   auto& info = factory->buffs.at(id);
-  if (--buffPermanentCount[id] <= 0) {
-    buffPermanentCount.erase(id);
+  if (--buffPermanentCount[id] <= 0 || info.stacks) {
+    if (buffPermanentCount[id] <= 0)
+      buffPermanentCount.erase(id);
     if (msg && info.removedMessage)
       applyMessage(*info.removedMessage, this);
     if (info.endEffect)
@@ -1459,7 +1460,7 @@ bool Creature::processBuffs() {
       auto buff = buffsCopy[index];
       auto& info = factory->buffs.at(buff.first);
       if (info.tickEffect)
-        info.tickEffect->applyToCreature(this, this);
+        info.tickEffect->applyToCreature(this, info.consideredBad ? lastAttacker : this);
       if (buff.second < time)
         removeBuff(index, true);
       if (isDead())
@@ -1471,7 +1472,7 @@ bool Creature::processBuffs() {
     for (auto& buff : buffPermanentCount) {
       auto& info = factory->buffs.at(buff.first);
       if (info.tickEffect)
-        info.tickEffect->applyToCreature(this, this);
+        info.tickEffect->applyToCreature(this, info.consideredBad ? lastAttacker : this);
       if (isDead())
         return true;
     }
@@ -2747,7 +2748,9 @@ bool Creature::canNavigateTo(Position pos) const {
 CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags flags) {
   PROFILE;
   CHECK(pos.isSameLevel(position));
-  if (flags.stepOnTile && !pos.canEnterEmpty(this))
+  auto movementType = getMovementType();
+  if (flags.stepOnTile && !pos.canEnterEmpty(movementType) &&
+      (!flags.destroy || !pos.getBestDestroyAction(movementType)))
     return CreatureAction();
   if (!away && !canNavigateToOrNeighbor(pos))
     return CreatureAction();
@@ -2774,8 +2777,8 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
           return CreatureAction();
       } else {
         INFO << "Trying to destroy";
-        if (!pos2.canEnterEmpty(this) && flags.destroy) {
-          if (auto destroyAction = pos2.getBestDestroyAction(getMovementType()))
+        if (!pos2.canEnterEmpty(movementType) && flags.destroy) {
+          if (auto destroyAction = pos2.getBestDestroyAction(movementType))
             if (auto action = destroy(getPosition().getDir(pos2), *destroyAction)) {
               INFO << "Destroying";
               return action.append([path = *currentPath](Creature* c) { c->shortestPath = path; });
@@ -2953,7 +2956,7 @@ vector<AdjectiveInfo> Creature::getLastingEffectAdjectives(const ContentFactory*
     if (info.hiddenPredicate && info.hiddenPredicate->apply(this, nullptr))
       continue;
     if (info.consideredBad == bad)
-      ret.push_back({ capitalFirst(info.adjective), info.description, none, 1 });
+      ret.push_back({ capitalFirst(info.adjective), info.description, none, info.stacks ? buff.second : 1 });
   }
   if (time) {
     for (LastingEffect effect : ENUM_ALL(LastingEffect))
