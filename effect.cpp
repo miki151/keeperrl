@@ -613,9 +613,10 @@ static string getDescription(const Effects::Banish&, const ContentFactory*) {
 }
 
 static Collective* getCollective(Creature* c) {
-  for (auto col : NOTNULL(c->getGame())->getCollectives())
-    if (col->getCreatures().contains(c))
-      return col;
+  if (auto game = c->getGame())
+    for (auto col : game->getCollectives())
+      if (col->getCreatures().contains(c))
+        return col;
   return nullptr;
 }
 
