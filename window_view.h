@@ -23,7 +23,10 @@
 #include "gui_builder.h"
 #include "clock.h"
 #include "sound.h"
-#include "steam_input.h"
+
+#ifdef USE_STEAMWORKSE
+#  include "steam_input.h"
+#endif
 
 class SoundLibrary;
 class ViewIndex;

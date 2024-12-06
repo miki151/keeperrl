@@ -3,7 +3,10 @@
 #include "gui_elem.h"
 #include "pretty_archive.h"
 #include "pretty_printing.h"
-#include "steam_input.h"
+
+#ifdef USE_STEAMWORKS
+#  include "steam_input.h"
+#endif
 
 KeybindingMap::KeybindingMap(const FilePath& defaults, const FilePath& user)
     : defaultsPath(defaults), userPath(user) {
@@ -172,11 +175,14 @@ optional<string> KeybindingMap::getText(Keybinding key) {
 
 SGuiElem KeybindingMap::getGlyph(SGuiElem label, GuiFactory* f, optional<ControllerKey> key, optional<string> alternative) {
   SGuiElem add;
+#ifdef USE_STEAMWORKS
   auto steamInput = f->getSteamInput();
   if (steamInput && !steamInput->controllers.empty()) {
     if (key)
       add = f->steamInputGlyph(*key);
-  } else if (alternative)
+  } else
+#endif
+         if (alternative)
     add = f->label("[" + *alternative + "]");
   if (add)
     label = f->getListBuilder()

@@ -60,8 +60,8 @@
 #include "collective.h"
 
 #ifdef USE_STEAMWORKS
-#include "steam_ugc.h"
-#include "steam_client.h"
+#  include "steam_ugc.h"
+#  include "steam_client.h"
 #endif
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& paidDataPath,

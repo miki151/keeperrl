@@ -42,7 +42,10 @@
 #include "target_type.h"
 #include "keybinding_map.h"
 #include "mouse_button_id.h"
-#include "steam_input.h"
+
+#ifdef USE_STEAMWORKS
+#  include "steam_input.h"
+#endif
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -616,8 +619,12 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
   addReturnDialog<optional<Vec2>>(returnQueue, [=] ()-> optional<Vec2> {
   rebuildGui();
   refreshScreen();
+#ifdef USE_STEAMWORKS
   renderer.getSteamInput()->setGameActionLayer(MySteamInput::GameActionLayer::TURNED_BASED);
   bool useController = !gui.getSteamInput()->controllers.empty();
+#else
+  bool useController = false;
+#endif
   do {
     Event event;
     if (renderer.getDiscreteJoyPos(ControllerJoy::WALKING) != Vec2(0, 0))
@@ -702,8 +709,10 @@ View::TargetResult WindowView::chooseTarget(Vec2 playerPos, TargetType targetTyp
   refreshScreen();
   guiBuilder.disableClickActions = true;
   optional<Vec2> controllerPos;
+#ifdef USE_STEAMWORKS
   if (!gui.getSteamInput()->controllers.empty())
     controllerPos = playerPos;
+#endif
   do {
     auto pos = controllerPos ? controllerPos : mapGui->projectOnMap(renderer.getMousePos());
     Event event;
