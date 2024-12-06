@@ -82,6 +82,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "world_maps";
     case GameConfigId::ACHIEVEMENTS:
       return "achievements";
+    case GameConfigId::TRANSLATIONS:
+      return "translations";
   }
 }
 

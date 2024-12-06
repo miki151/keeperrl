@@ -65,6 +65,7 @@
 #include "steam_base.h"
 #include "steam_client.h"
 #include "steam_user.h"
+#include "translations.h"
 #endif
 
 #ifndef DATA_DIR
@@ -444,7 +445,12 @@ static int keeperMain(po::parser& commandLineFlags) {
   });
   showLogoSplash(renderer, freeDataPath.file("images/succubi.png"), splashDone);
   loadThread.join();
-  GuiFactory guiFactory(renderer, &clock, &options, soundLibrary, freeDataPath.subdirectory("images"));
+  Translations translations;
+  GameConfig gameConfig({freeDataPath.subdirectory("game_config")});
+  if (auto error = gameConfig.readObject(translations, GameConfigId::TRANSLATIONS, nullptr))
+    USER_FATAL << *error;
+  options.setChoices(OptionId::LANGUAGE, translations.getLanguages());
+  GuiFactory guiFactory(renderer, &clock, &options, &translations, soundLibrary, freeDataPath.subdirectory("images"));
   TileSet tileSet(paidDataPath.subdirectory("images"), modsDir, freeDataPath.subdirectory("ui"));
   renderer.setTileSet(&tileSet);
   unique_ptr<fx::FXManager> fxManager;

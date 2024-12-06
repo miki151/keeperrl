@@ -58,7 +58,8 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::SINGLE_THREAD, 0},
   {OptionId::UNLOCK_ALL, 0},
   {OptionId::EXP_INCREASE, 1},
-  {OptionId::DPI_AWARE, 0}
+  {OptionId::DPI_AWARE, 0},
+  {OptionId::LANGUAGE, 0}
 };
 
 const map<OptionId, string> names {
@@ -99,6 +100,7 @@ const map<OptionId, string> names {
   {OptionId::UNLOCK_ALL, "Unlock all hidden gameplay features"},
   {OptionId::EXP_INCREASE, "Enemy difficulty curve"},
   {OptionId::DPI_AWARE, "Override Windows DPI scaling"},
+  {OptionId::LANGUAGE, "Language"},
 };
 
 const map<OptionId, string> hints {
@@ -127,6 +129,7 @@ const map<OptionId, string> hints {
 
 const map<OptionSet, vector<OptionId>> optionSets {
   {OptionSet::GENERAL, {
+      OptionId::LANGUAGE,
       OptionId::HINTS,
       OptionId::ASCII,
       OptionId::MUSIC,
@@ -362,6 +365,7 @@ string Options::getValueString(OptionId id) {
       return combine(*value.getValueMaybe<vector<string>>(), true);
     case OptionId::ENDLESS_ENEMIES:
     case OptionId::EXP_INCREASE:
+    case OptionId::LANGUAGE:
     case OptionId::ENEMY_AGGRESSION:
       return choices[id][(*value.getValueMaybe<int>() + choices[id].size()) % choices[id].size()];
     case OptionId::FPS_LIMIT:
@@ -449,6 +453,23 @@ void Options::handleIntInterval(OptionId option, ScriptedUIDataElems::Record& da
       }}});
 }
 
+void Options::handleStringList(OptionId option, ScriptedUIDataElems::Record& data, bool& wasSet) {
+  auto value = getIntValue(option);
+  data.elems.insert({"value", getValueString(option)});
+  data.elems.insert({"increase", ScriptedUIDataElems::Callback{
+      [this, &wasSet, option, value] {
+        this->setValue(option, (value + 1) % choices[option].size());
+        wasSet = true;
+        return true;
+      }}});
+  data.elems.insert({"decrease", ScriptedUIDataElems::Callback{
+      [this, &wasSet, option, value] {
+        this->setValue(option, (value + choices[option].size() - 1) % choices[option].size());
+        wasSet = true;
+        return true;
+      }}});
+}
+
 void Options::handleSliding(OptionId option, ScriptedUIDataElems::Record& data, bool& wasSet) {
   auto range = *getIntRange(option);
   auto value = getIntValue(option);
@@ -513,6 +534,8 @@ void Options::handle(View* view, const ContentFactory* factory, OptionSet set, i
         else
           handleSliding(option, optionData, wasSet);
       }
+      else if (!choices[option].empty())
+        handleStringList(option, optionData, wasSet);
       options.push_back(std::move(optionData));
     }
     ScriptedUIDataElems::List keybindings;

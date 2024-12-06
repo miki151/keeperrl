@@ -60,6 +60,7 @@
 #include "world_map_info.h"
 #include "achievement_id.h"
 #include "achievement_info.h"
+#include "translations.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const vector<string>& s, vector<string> filename, KeyVerifier* keyVerifier) {
@@ -125,3 +126,4 @@ ADD_IMP(vector<pair<PrimaryId<AchievementId>, AchievementInfo>>)
 ADD_IMP(vector<pair<PrimaryId<Keybinding>, KeybindingInfo>>)
 ADD_IMP(HashMap<Keybinding, SDL::SDL_Keysym>)
 ADD_IMP(vector<WorldMapInfo>)
+ADD_IMP(Translations)

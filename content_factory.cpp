@@ -24,6 +24,7 @@
 #include "tile_gas_info.h"
 #include "promotion_info.h"
 #include "buff_info.h"
+#include "translations.h"
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int version) {
@@ -43,27 +44,6 @@ void ContentFactory::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(ContentFactory)
-
-template <typename Key, typename Value>
-map<Key, Value> convertKeys(const map<PrimaryId<Key>, Value>& m) {
-  map<Key, Value> ret;
-  for (auto& elem : m)
-    ret.insert(make_pair(Key(elem.first), std::move(elem.second)));
-  return ret;
-}
-
-template <typename Key, typename Value>
-vector<pair<Key, Value>> convertKeys(const vector<pair<PrimaryId<Key>, Value>>& v) {
-  return v.transform([](auto& elem) { return make_pair(Key(std::move(elem.first)), std::move(elem.second)); });
-}
-
-template <typename Key, typename Value>
-HashMap<Key, Value> convertKeysHash(const map<PrimaryId<Key>, Value>& m) {
-  HashMap<Key, Value> ret;
-  for (auto& elem : m)
-    ret.insert(make_pair(Key(elem.first), std::move(elem.second)));
-  return ret;
-}
 
 static bool isZLevel(const vector<ZLevelInfo>& levels, int depth) {
   for (auto& l : levels)
@@ -349,6 +329,9 @@ optional<string> ContentFactory::readZLevels(const GameConfig* config, KeyVerifi
 
 optional<string> ContentFactory::readData(const GameConfig* config, const vector<string>& modNames) {
   KeyVerifier keyVerifier;
+  Translations translationsTmp;
+  if (auto error = config->readObject(translationsTmp, GameConfigId::TRANSLATIONS, &keyVerifier))
+    return *error;
   vector<PrimaryId<StorageId>> storageIds;
   if (auto error = config->readObject(storageIds, GameConfigId::STORAGE_IDS, &keyVerifier))
     return *error;

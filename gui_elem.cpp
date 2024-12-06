@@ -32,6 +32,8 @@
 #include "steam_input.h"
 #include "sound_library.h"
 #include "sdl.h"
+#include "t_string.h"
+#include "translations.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -193,8 +195,8 @@ class ButtonKey : public ButtonElem {
   bool capture;
 };
 
-GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o, SoundLibrary* s, const DirectoryPath& freeImages)
-    : clock(c), soundLibrary(s), renderer(r), options(o), imagesPath(freeImages) {
+GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o, Translations* t, SoundLibrary* s, const DirectoryPath& freeImages)
+    : clock(c), soundLibrary(s), renderer(r), options(o), translations(t), imagesPath(freeImages) {
 }
 
 GuiFactory::~GuiFactory() {}
@@ -3327,6 +3329,10 @@ SGuiElem GuiFactory::darken() {
   return stack(
       stopMouseMovement(),
       rectangle(Color{0, 0, 0, 150}));
+}
+
+string GuiFactory::translate(const TString& s) {
+  return translations->get(options->getStringValue(OptionId::LANGUAGE), s);
 }
 
 void GuiFactory::propagateScrollEvent(const vector<SGuiElem>& guiElems) {

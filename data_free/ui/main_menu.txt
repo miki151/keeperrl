@@ -67,17 +67,17 @@ Position(SCREEN, {
       Height 25 {}
       Height 55 TextureFit("logo4small")
       Height 25 {}
-      Using "play" MenuButton("Play")
+      Using "play" MenuButton(PLAY)
       Height Spacing {}
-      Using "settings" MenuButton("Settings")
+      Using "settings" MenuButton(SETTINGS)
       Height Spacing {}
-      Using "highscores" MenuButton("Highscores")
+      Using "highscores" MenuButton(HIGHSCORES)
       Height Spacing {}
-      Using "achievements" MenuButton("Achievements")
+      Using "achievements" MenuButton(ACHIEVEMENTS)
       Height Spacing {}
-      Using "credits" MenuButton("Credits")
+      Using "credits" MenuButton(CREDITS)
       Height Spacing {}
-      Using "quit" MenuButton("Quit")
+      Using "quit" MenuButton(QUIT)
       Stretch {}
       BottomLinks()
       Height 15 {}

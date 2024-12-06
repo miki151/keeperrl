@@ -26,11 +26,13 @@
 #include "steam_input.h"
 
 class ViewObject;
+class TString;
 class Clock;
 class Options;
 class ScrollPosition;
 class KeybindingMap;
 class SoundLibrary;
+class Translations;
 struct ScriptedUI;
 struct ScriptedUIData;
 struct ScriptedUIState;
@@ -68,7 +70,7 @@ class GuiElem {
 
 class GuiFactory {
   public:
-  GuiFactory(Renderer&, Clock*, Options*, SoundLibrary*, const DirectoryPath& freeImages);
+  GuiFactory(Renderer&, Clock*, Options*, Translations*, SoundLibrary*, const DirectoryPath& freeImages);
   void loadImages();
   ~GuiFactory();
 
@@ -77,6 +79,7 @@ class GuiFactory {
   DragContainer& getDragContainer();
   void propagateEvent(const Event&, const vector<SGuiElem>&);
   void propagateScrollEvent(const vector<SGuiElem>&);
+  string translate(const TString&);
 
   static bool isShift(const SDL::SDL_Keysym&);
   static bool isAlt(const SDL::SDL_Keysym&);
@@ -357,6 +360,7 @@ class GuiFactory {
   vector<Texture> iconTextures;
   Renderer& renderer;
   Options* options;
+  Translations* translations;
   DragContainer dragContainer;
   DirectoryPath imagesPath;
   optional<milliseconds> lastJoyScrollUpdate;

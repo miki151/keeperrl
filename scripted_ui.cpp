@@ -13,6 +13,7 @@
 #include "keybinding.h"
 #include "keybinding_map.h"
 #include "sound_library.h"
+#include "t_string.h"
 
 namespace EnumsDetail {
 enum class TextureFlip;
@@ -273,11 +274,11 @@ struct BlockKeyEvents : ScriptedUIInterface {
 REGISTER_SCRIPTED_UI(BlockKeyEvents);
 
 struct Label : ScriptedUIInterface {
-  Label(optional<string> text = none, int size = Renderer::textSize(), Color color = Color::WHITE)
+  Label(optional<TString> text = none, int size = Renderer::textSize(), Color color = Color::WHITE)
       : text(std::move(text)), size(size), color(color) {}
-  string getText(const ScriptedUIData& data) const {
+  string getText(const ScriptedUIData& data, ScriptedContext& context) const {
     if (text)
-      return *text;
+      return context.factory->translate(*text);
     if (auto label = data.getReferenceMaybe<ScriptedUIDataElems::Label>())
       return label->data();
     else
@@ -285,14 +286,14 @@ struct Label : ScriptedUIInterface {
   }
 
   void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
-    context.renderer->drawText(font, size, color, area.topLeft(), getText(data));
+    context.renderer->drawText(font, size, color, area.topLeft(), getText(data, context));
   }
 
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
-    return Vec2(context.renderer->getTextLength(getText(data), size, font), 20);
+    return Vec2(context.renderer->getTextLength(getText(data, context), size, font), 20);
   }
 
-  optional<string> SERIAL(text);
+  optional<TString> SERIAL(text);
   int SERIAL(size) = Renderer::textSize();
   Color SERIAL(color) = Color::WHITE;
   FontId SERIAL(font) = FontId::TEXT_FONT;
@@ -375,7 +376,7 @@ struct Container : ScriptedUIInterface {
   vector<SubElemInfo> getError(const string& s) const {
     static map<string, ScriptedUI> errors;
     if (!errors.count(s))
-      errors[s] = ScriptedUI{make_unique<Label>(s)};
+      errors[s] = ScriptedUI{make_unique<Label>(TString(s))};
     return {SubElemInfo{errors.at(s), ScriptedUIData{}, Rectangle()}};
   }
 };

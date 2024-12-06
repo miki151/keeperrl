@@ -1,0 +1,17 @@
+"English" {
+  "PLAY" "Play"
+  "SETTINGS" "Settings"
+  "HIGHSCORES" "Highscores"
+  "ACHIEVEMENTS" "Achievements"
+  "CREDITS" "Credits"
+  "QUIT" "Quit"
+}
+
+"Polish" {
+  "PLAY" "Graj"
+  "SETTINGS" "Ustawienia"
+  "HIGHSCORES" "Najlepsze wyniki"
+  "ACHIEVEMENTS" "Osiągnięcia"
+  "CREDITS" "Napisy końcowe"
+  "QUIT" "Wyjście"
+}

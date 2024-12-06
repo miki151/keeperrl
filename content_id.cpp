@@ -27,6 +27,7 @@
 #include "achievement_id.h"
 #include "villain_group.h"
 #include "key_verifier.h"
+#include "t_string.h"
 
 static const char* staticsInitialized = nullptr;
 
@@ -234,4 +235,5 @@ INST(BodyMaterialId)
 INST(Keybinding)
 INST(AchievementId)
 INST(VillainGroup)
+INST(TStringId)
 #undef INST
