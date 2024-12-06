@@ -5332,12 +5332,12 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
   Color textColor(209, 181, 130);
   auto lines = WL(getListBuilder, legendLineHeight);
   if (auto& info = gameInfo.currentLevel) {
-    auto getButton = [&](bool enabled, string label, UserInput inputId) {
+    auto getButton = [&](bool enabled, string label, UserInput inputId, int margin) {
       auto ret = WL(preferredSize, legendLineHeight, legendLineHeight, WL(stack,
           WL(margins, WL(rectangle, Color(56, 36, 0), Color(57, 41, 0)), 2),
-          WL(centerHoriz, WL(topMargin, -2, WL(mouseHighlight2,
-              WL(label, label, 24, enabled ? Color::YELLOW : Color::DARK_GRAY),
-              WL(label, label, 24, enabled ? textColor : Color::DARK_GRAY))))
+          WL(centerHoriz, WL(topMargin, margin, WL(mouseHighlight2,
+              WL(labelUnicode, label, enabled ? Color::YELLOW : Color::DARK_GRAY, 22),
+              WL(labelUnicode, label, enabled ? textColor : Color::DARK_GRAY, 22))))
       ));
       if (enabled)
         ret = WL(stack,
@@ -5348,13 +5348,13 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
     auto line = WL(getListBuilder);
     if (!info->zLevels.empty())
       line.addElemAuto(WL(stack,
-          getButton(info->levelDepth > 0, "<", UserInput{UserInputId::SCROLL_STAIRS, -1 }),
+          getButton(info->levelDepth > 0, u8"⮝", UserInput{UserInputId::SCROLL_STAIRS, -1 }, 3),
           WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, -1}), Keybinding("SCROLL_Z_UP"))
       ));
     line.addMiddleElem(WL(topMargin, 3, drawZLevelButton(*info, textColor)));
     if (!info->zLevels.empty())
       line.addBackElemAuto(WL(stack,
-          getButton(info->levelDepth < info->zLevels.size() - 1, ">", UserInput{UserInputId::SCROLL_STAIRS, 1}),
+          getButton(info->levelDepth < info->zLevels.size() - 1, u8"⮟", UserInput{UserInputId::SCROLL_STAIRS, 1}, 1),
           WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, 1}), Keybinding("SCROLL_Z_DOWN"))
       ));
     lines.addElem(WL(stack,
