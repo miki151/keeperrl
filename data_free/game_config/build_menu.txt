@@ -345,6 +345,9 @@ TRAINING("_DWARF", "_dwarf")
     { Furniture {{ "ENCHANTED_WORKSHOP" }   "WOOD" 15 }                      "Workshop"          "Crafting"
         "Produces improved leather and wooden equipment. Must be placed near an enchanted pool."}
 
+    { Furniture {{ "WORKSHOP_TOOL_STAND" }   "WOOD" 5 }                      "Workshop tool stand"     "Crafting"
+        "Boosts workshop crafting speed by 20% in adjacent tiles."}
+
     { Furniture {{ "FORGE"  }      "IRON" 20 }                      "Forge"             "Crafting"
         "Produces weapons and armor made of iron and other metals."    none { TechId "iron working" }}
 
@@ -406,6 +409,8 @@ TRAINING("_DWARF", "_dwarf")
   {
     { Furniture {{ "MORGUE_TABLE" } "WOOD" 10 }                     "Morgue table"     "Crafting"
         "Produces animated bodies."                           "WORKSHOPS" { TechId "necromancy" } true }
+    { Furniture {{ "MORGUE_INSTRUMENT_TABLE" } "WOOD" 5 }                     "Morgue instrument bench" "Crafting"
+        "Boosts morgue crafting speed by 20% in adjacent tiles." none { TechId "necromancy" } }
   }
   "furnace"
   {

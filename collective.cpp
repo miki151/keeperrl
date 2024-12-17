@@ -1613,8 +1613,14 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
       if (auto workshop = getReferenceMaybe(workshops->types, *workshopType)) {
         auto& workshopInfo = contentFactory->workshopInfo.at(*workshopType);
         auto craftingSkill = c->getAttr(workshopInfo.attr);
+        double speedBoost = 1.0;
+        for (auto next : pos.first.neighbors8())
+          if (auto f = next.getFurniture(FurnitureLayer::MIDDLE))
+            for (auto& boost : f->workshopSpeedBoost)
+              if (boost.type == *workshopType)
+                speedBoost = max(speedBoost, boost.multiplier);
         auto item = workshop->addWork(this, efficiency * double(craftingSkill) * 0.02
-            * LastingEffects::getCraftingSpeed(c), craftingSkill, workshopInfo.prefix);
+            * LastingEffects::getCraftingSpeed(c) * speedBoost, craftingSkill, workshopInfo.prefix);
         if (item) {
           if (item->getClass() == ItemClass::WEAPON)
             getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);

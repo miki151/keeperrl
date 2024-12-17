@@ -83,6 +83,19 @@ TRAINING("_DWARF", "_dwarf")
   viewId = { "enchanted_workshop" }
   usagePredicate = Not Area 1 Not FurnitureType "ENCHANTED_WATER"
 }
+"WORKSHOP_TOOL_STAND"
+{
+  name = "workshop tool stand"
+  viewId = { "workshop_tool_stand" }
+  blockMovement = true
+  canHideHere = true
+  fire = 50
+  strength = 80
+  workshopSpeedBoost = {
+    1.2 "WORKSHOP"
+    1.2 "ENCHANTED_WORKSHOP"
+  }
+}
 "FORGE"
 {
   name = "forge"
@@ -166,6 +179,17 @@ TRAINING("_DWARF", "_dwarf")
   strength = 80
   requiresLight = true
   usageFX = EMBALMENT
+}
+"MORGUE_INSTRUMENT_TABLE"
+{
+  name = "morgue instrument bench"
+  viewId = { "morgue_instrument_table" }
+  blockMovement = true
+  canHideHere = true
+  strength = 80
+  workshopSpeedBoost = {
+    1.2 "MORGUE"
+  }
 }
 "POETRY_TABLE" inherit "JEWELLER"
 {

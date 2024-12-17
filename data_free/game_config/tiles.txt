@@ -734,6 +734,7 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
   roundShadow = true }
 { viewId = "morgue_table" symbol = "=" color = ColorId RED
   roundShadow = true }
+{ viewId = "morgue_instrument_table" symbol = "=" color = ColorId LIGHT_GRAY }
 { viewId = "phylactery" symbol = "⚱️" color = ColorId YELLOW
   isSymbolFont = true roundShadow = true }
 { viewId = "phylactery_active" symbol = "⚱️" color = ColorId PURPLE
@@ -826,6 +827,8 @@ BOOKCASES("_human")
 { viewId = "workshop" symbol = "&" color = ColorId LIGHT_BROWN
   roundShadow = true }
 { viewId = "enchanted_workshop" symbol = "&" color = ColorId PURPLE
+  roundShadow = true }
+{ viewId = "workshop_tool_stand" symbol = "=" color = ColorId LIGHT_BROWN
   roundShadow = true }
 { viewId = "jeweller" symbol = "&" color = ColorId YELLOW
   roundShadow = true }
