@@ -546,6 +546,8 @@ TRAINING("_DWARF", "_dwarf")
 
     { Furniture {{ "FOUNTAIN" }      "STONE" 30 }                  "Fountain"          "Installations" }
 
+    { Furniture {{ "CORPSE_DISPLAY1" "CORPSE_DISPLAY2" }      "CORPSE" 1 } "Gruesome corpse display"  "Installations" }
+
     { Furniture {{ "WHIPPING_POST" } "WOOD"  20 }                  "Whipping post"     "Installations"
         "A place to whip your minions if they need a morale boost." }
   }

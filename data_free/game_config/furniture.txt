@@ -943,6 +943,20 @@ Def BedHeal() Heal { FLESH 0.005 } End
   onBuilt = SAINT_STATUE
   viewId = { "stone_saint_statue" }
 }
+"CORPSE_DISPLAY1"
+{
+  name = "gruesome corpse display"
+  viewId = { "corpse_display1" }
+  blockMovement = true
+  canHideHere = true
+  luxury = 0.3
+  strength = 10
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+}
+"CORPSE_DISPLAY2" inherit "CORPSE_DISPLAY1"
+{
+  viewId = { "corpse_display2" }
+}
 "ADOXIE_STATUE_TEMPLE"
 {
   name = "statue of Evil God Adoxie"

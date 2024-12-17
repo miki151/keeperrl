@@ -747,6 +747,10 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
   isSymbolFont = true roundShadow = true }
 { viewId = "notice_board" symbol = "|" color = ColorId BROWN
   roundShadow = true }
+{ viewId = "corpse_display1" symbol = "T" color = ColorId RED
+  isSymbolFont = true roundShadow = true }
+{ viewId = "corpse_display2" symbol = "T" color = ColorId RED
+  isSymbolFont = true roundShadow = true }
 Def TRAINING(SUF)
 { viewId = "training_wood" + SUF symbol = "‡" color = ColorId BROWN
   isSymbolFont = true roundShadow = true }
