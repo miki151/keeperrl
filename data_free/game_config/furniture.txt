@@ -76,7 +76,6 @@ TRAINING("_DWARF", "_dwarf")
   requiresLight = true
   usageFX = WORKSHOP
   usageSound = {"WORKSHOP_USAGE" 0.2}
-  usagePredicate = Area 1 Not FurnitureType "ENCHANTED_WATER"
 }
 "ENCHANTED_WORKSHOP" inherit "WORKSHOP"
 {
@@ -96,7 +95,6 @@ TRAINING("_DWARF", "_dwarf")
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   usageFX = FORGE
   usageSound = {"FORGE_USAGE" 0.2}
-  usagePredicate = Area 1 Not FurnitureType "MAGMA"
 }
 "LAVA_FORGE" inherit "FORGE"
 {
@@ -117,7 +115,6 @@ TRAINING("_DWARF", "_dwarf")
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   usageFX = LABORATORY
   usageSound = {"LABORATORY_USAGE" 0.2}
-  usagePredicate = Area 1 Not FurnitureType "ENCHANTED_WATER"
 }
 "ENCHANTED_LABORATORY" inherit "LABORATORY"
 {
@@ -147,7 +144,6 @@ TRAINING("_DWARF", "_dwarf")
   strength = 40
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
-  usagePredicate = Area 1 Not FurnitureType "MAGMA"
   usageFX = JEWELLER
 }
 "LAVA_JEWELLER" inherit "JEWELLER"
