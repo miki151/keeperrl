@@ -37,6 +37,16 @@ microseconds Clock::getRealMicros() {
   return duration_cast<microseconds>(high_resolution_clock::now().time_since_epoch());
 }
 
+int Clock::getCurrentMonth() {
+  time_t t = time(NULL);
+  return localtime(&t)->tm_mon + 1;
+}
+
+int Clock::getCurrentDayOfMonth() {
+  time_t t = time(NULL);
+  return localtime(&t)->tm_mday;
+}
+
 steady_clock::time_point Clock::getCurrent() {
   return steady_clock::time_point(steady_clock::now() - initTime);
 }

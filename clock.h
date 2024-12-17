@@ -12,6 +12,8 @@ class Clock {
   bool isPaused();
   static milliseconds getRealMillis();
   static microseconds getRealMicros();
+  static int getCurrentMonth();
+  static int getCurrentDayOfMonth();
 
   private:
   steady_clock::time_point getCurrent();

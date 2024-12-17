@@ -6,6 +6,7 @@
 #include "game_config.h"
 #include "tile_info.h"
 #include "scripted_ui.h"
+#include "clock.h"
 
 void TileSet::addTile(string id, Tile tile) {
   tiles.insert(make_pair(ViewId(id.data()).getInternalId(), std::move(tile)));
@@ -334,6 +335,16 @@ static int getNumFrames(const vector<FilePath>& files, int tileWidth) {
   return ret;
 }
 
+static string getSantaSprite(const string& sprite) {
+  vector<vector<const char*>> viewIds {{ "keeper1", "keeper2", "keeper3", "keeper4", "imp"},
+        {"santa_keeper1", "santa_keeper2", "santa_keeper3", "santa_keeper4", "santa_imp" }};
+  for (int column : Range(2))
+    for (int i : All(viewIds[column]))
+      if (sprite == viewIds[column][i])
+        return viewIds[1 - column][i];
+  return sprite;
+}
+
 bool TileSet::loadTilesFromDir(const DirectoryPath& path, Vec2 size, bool overwrite) {
   if (!path.exists())
     return false;
@@ -380,8 +391,12 @@ bool TileSet::loadTilesFromDir(const DirectoryPath& path, Vec2 size, bool overwr
       }
     }
   texturesTmp.push_back({image, addedPositions});
-  for (auto& pos : addedPositions)
-    tileCoords[pos.first].push_back({size, pos.second, nullptr});
+  int currentDay = Clock::getCurrentDayOfMonth();
+  bool isChristmas = Clock::getCurrentMonth() == 12 && currentDay >= 17 && currentDay <= 26;
+  for (auto& pos : addedPositions) {
+    auto spriteName = isChristmas ? getSantaSprite(pos.first) : pos.first;
+    tileCoords[spriteName].push_back({size, pos.second, nullptr});
+  }
   return true;
 }
 
