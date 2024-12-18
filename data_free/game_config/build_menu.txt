@@ -366,6 +366,8 @@ TRAINING("_DWARF", "_dwarf")
     { Furniture {{ "ENCHANTED_LABORATORY" } "STONE" 10 }                     "Enchanted laboratory"        "Crafting"
         "Produces magical potions used to mutate your minions. Must be placed near an enchanted pool."
                     none { TechId "alchemy" }}
+    { Furniture {{ "MORTAR_AND_PESTLE" }   "STONE" 5 }               "Mortar and pestle"     "Crafting"
+        "Boosts laboratory crafting speed by 20% in adjacent tiles." none { TechId "alchemy" } }
   }
 
   "embalming"

@@ -583,6 +583,8 @@ Connections("map_swamp")
   isSymbolFont = true roundShadow = true }
 { viewId = "enchanted_cauldron" symbol = "ω" color = ColorId PURPLE
   isSymbolFont = true roundShadow = true }
+{ viewId = "mortar_and_pestle" symbol = "=" color = ColorId LIGHT_GRAY
+  roundShadow = true }
 { viewId = "cauldron_tar" symbol = "ω" color = ColorId GRAY
   isSymbolFont = true roundShadow = true }
 { "robe" "[" ColorId LIGHT_BROWN }
