@@ -180,6 +180,18 @@ TRAINING("_DWARF", "_dwarf")
   upgrade = "JEWELLER"
   fire = none
 }
+"JEWELLER_POLISHING_WHEEL"
+{
+  name = "jewellery polishing wheel"
+  viewId = { "jeweller_polishing_wheel" }
+  blockMovement = true
+  canHideHere = true
+  strength = 80
+  workshopSpeedBoost = {
+    1.2 "JEWELER"
+    1.2 "LAVA_JEWELER"
+  }
+}
 "MORGUE_TABLE"
 {
   name = "morgue table"

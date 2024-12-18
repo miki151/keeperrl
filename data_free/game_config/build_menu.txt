@@ -355,7 +355,7 @@ TRAINING("_DWARF", "_dwarf")
         "Produces improved weapons and armor. Must be placed next to lava."    none { TechId "iron working" }}
 
     { Furniture {{ "FORGE_QUENCHING_BUCKET" }   "WOOD" 5 }               "Forge quenching bucket"     "Crafting"
-        "Boosts forge crafting speed by 20% in adjacent tiles."}
+        "Boosts forge crafting speed by 20% in adjacent tiles." none { TechId "iron working" } }
   }
 
   "laboratory"
@@ -378,6 +378,8 @@ TRAINING("_DWARF", "_dwarf")
   {
     { Furniture {{ "JEWELLER" }   "WOOD" 12 }                      "Jeweller"          "Crafting"
         "Produces magical rings and amulets." none { TechId "luxury" }}
+    { Furniture {{ "JEWELLER_POLISHING_WHEEL" }   "STONE" 5 }      "Polishing wheel" "Crafting"
+        "Boosts jewellery crafting speed by 20% in adjacent tiles." none { TechId "luxury" }}
   }
 
   "jeweller"
@@ -387,7 +389,8 @@ TRAINING("_DWARF", "_dwarf")
 
     { Furniture {{ "LAVA_JEWELLER" }   "STONE" 12 }                      "Magma jeweller"          "Crafting"
         "Produces glyphs used to improve weapons and armor. Must be placed next to lava." none { TechId "jewellery" }}
-  }
+    { Furniture {{ "JEWELLER_POLISHING_WHEEL" }   "STONE" 5 }      "Jewellery polishing wheel" "Crafting"
+        "Boosts jewellery crafting speed by 20% in adjacent tiles." none { TechId "jewellery" }}  }
   "poetry"
   {
     { Furniture {{ "POETRY_TABLE" } "WOOD" 12 }                    "Poetry table"       "Crafting"
