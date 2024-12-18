@@ -16,6 +16,7 @@
   }
   zLevelGroups = { "basic" "evil" }
   initialTech = { "sorcery" }
+  startingBase = dontAddTerritory {4 4} "special_tree"
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "beds"
       "dining table" "stable" "coffins" "pigsty"

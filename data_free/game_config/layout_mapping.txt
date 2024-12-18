@@ -77,6 +77,7 @@
   "ghost_spawn" Place "GHOST_SPAWN"
   "gargoyle" Place "GARGOYLE_TRAP"
   "workshop" Place "WORKSHOP"
+  "special_tree" Place "SPECIAL_TREE"
 }
 
 "z_level_hell" inherit "default" append {

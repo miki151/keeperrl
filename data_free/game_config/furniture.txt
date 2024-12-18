@@ -116,6 +116,18 @@ TRAINING("_DWARF", "_dwarf")
   usagePredicate = Not Area 1 Not FurnitureType "MAGMA"
   upgrade = "FORGE"
 }
+"FORGE_QUENCHING_BUCKET"
+{
+  name = "forge quenching bucket"
+  viewId = { "forge_quenching_bucket" }
+  blockMovement = true
+  canHideHere = true
+  strength = 80
+  workshopSpeedBoost = {
+    1.2 "FORGE"
+    1.2 "LAVA_FORGE"
+  }
+}
 "LABORATORY"
 {
   name = "laboratory"
@@ -1065,6 +1077,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
 "DECID_TREE" inherit "CANIF_TREE"
 {
   viewId = { "decid_tree" }
+}
+"SPECIAL_TREE" inherit "CANIF_TREE"
+{
+  viewId = { "special_tree" }
 }
 "TREE_SNOW" inherit "CANIF_TREE"
 {

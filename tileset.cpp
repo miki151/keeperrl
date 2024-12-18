@@ -336,8 +336,8 @@ static int getNumFrames(const vector<FilePath>& files, int tileWidth) {
 }
 
 static string getSantaSprite(const string& sprite) {
-  vector<vector<const char*>> viewIds {{ "keeper1", "keeper2", "keeper3", "keeper4", "imp"},
-        {"santa_keeper1", "santa_keeper2", "santa_keeper3", "santa_keeper4", "santa_imp" }};
+  vector<vector<const char*>> viewIds {{ "keeper1", "keeper2", "keeper3", "keeper4", "imp", "special_tree"},
+        {"santa_keeper1", "santa_keeper2", "santa_keeper3", "santa_keeper4", "santa_imp", "xmas_tree" }};
   for (int column : Range(2))
     for (int i : All(viewIds[column]))
       if (sprite == viewIds[column][i])

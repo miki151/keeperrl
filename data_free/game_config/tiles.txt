@@ -658,6 +658,8 @@ Connections("map_swamp")
   moveUp = true animated = true }
 { viewId = "decid_tree" symbol = "🜍" color = ColorId DARK_GREEN
   isSymbolFont = true roundShadow = true }
+{ viewId = "special_tree" symbol = "🜍" color = ColorId DARK_GREEN
+  isSymbolFont = true roundShadow = true }
 { viewId = "canif_tree" symbol = "♣" color = ColorId DARK_GREEN
   isSymbolFont = true roundShadow = true }
 { viewId = "tree_snow" symbol = "🜍" color = ColorId LIGHT_GRAY
@@ -827,6 +829,8 @@ BOOKCASES("_human")
 { viewId = "forge" symbol = "&" color = ColorId LIGHT_BLUE
   roundShadow = true }
 { viewId = "lava_forge" symbol = "&" color = ColorId LIGHT_RED
+  roundShadow = true }
+{ viewId = "forge_quenching_bucket" symbol = "o" color = ColorId LIGHT_BLUE
   roundShadow = true }
 { viewId = "workshop" symbol = "&" color = ColorId LIGHT_BROWN
   roundShadow = true }

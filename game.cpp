@@ -112,7 +112,7 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
   model->addCreature(std::move(avatarInfo.playerCreature));
   auto& keeperInfo = avatarInfo.creatureInfo;
- auto builder = CollectiveBuilder(CollectiveConfig::keeper(
+  auto builder = CollectiveBuilder(CollectiveConfig::keeper(
           TimeInterval(keeperInfo.immigrantInterval), keeperInfo.maxPopulation, keeperInfo.populationString,
           keeperInfo.prisoners, ConquerCondition::KILL_LEADER, keeperInfo.requireQuartersForExp),
       keeperRef->getTribeId(), "keeper collective")
@@ -122,8 +122,9 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
     builder.setLocationName(*avatarInfo.chosenBaseName);
   if (avatarInfo.creatureInfo.startingBase) {
     builder.setLevel(level);
-    builder.addArea(level->getLandingSquares(StairKey::keeperSpawn())
-        .transform([](auto& pos){ return pos.getCoord(); }));
+    if (avatarInfo.creatureInfo.startingBase->addTerritory)
+      builder.addArea(level->getLandingSquares(StairKey::keeperSpawn())
+          .transform([](auto& pos){ return pos.getCoord(); }));
   }
   model->addCollective(builder.build(contentFactory.get()));
   playerCollective = model->getCollectives().back();

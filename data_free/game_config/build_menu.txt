@@ -353,6 +353,9 @@ TRAINING("_DWARF", "_dwarf")
 
     { Furniture {{ "LAVA_FORGE" }      "IRON" 20 }               "Magma forge"    "Crafting"
         "Produces improved weapons and armor. Must be placed next to lava."    none { TechId "iron working" }}
+
+    { Furniture {{ "FORGE_QUENCHING_BUCKET" }   "WOOD" 5 }               "Forge quenching bucket"     "Crafting"
+        "Boosts forge crafting speed by 20% in adjacent tiles."}
   }
 
   "laboratory"

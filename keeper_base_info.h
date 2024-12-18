@@ -9,16 +9,19 @@ struct KeeperBaseInfo {
   optional<RandomLayoutId> SERIAL(layout);
   Vec2 SERIAL(size);
   bool SERIAL(insideMountain) = false;
+  bool SERIAL(addTerritory) = true;
 
   template <typename Archive>
   void serialize(Archive& ar, unsigned int version) {
     ar(size, layout);
-    if (version == 1)
+    if (version >= 1)
       ar(insideMountain);
+    if (version >= 2)
+      ar(addTerritory);
   }
 
   void serialize(PrettyInputArchive&, unsigned int);
 };
 
-CEREAL_CLASS_VERSION(KeeperBaseInfo, 1)
+CEREAL_CLASS_VERSION(KeeperBaseInfo, 2)
 
