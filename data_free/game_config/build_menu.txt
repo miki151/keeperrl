@@ -345,7 +345,7 @@ TRAINING("_DWARF", "_dwarf")
     { Furniture {{ "ENCHANTED_WORKSHOP" }   "WOOD" 15 }                      "Workshop"          "Crafting"
         "Produces improved leather and wooden equipment. Must be placed near an enchanted pool."}
 
-    { Furniture {{ "WORKSHOP_TOOL_STAND" }   "WOOD" 5 }                      "Workshop tool stand"     "Crafting"
+    { Furniture {{ "WORKSHOP_TOOL_STAND" }   "WOOD" 5 }                      "Tool stand"     "Crafting"
         "Boosts workshop crafting speed by 20% in adjacent tiles."}
 
     { Furniture {{ "FORGE"  }      "IRON" 20 }                      "Forge"             "Crafting"
@@ -354,7 +354,7 @@ TRAINING("_DWARF", "_dwarf")
     { Furniture {{ "LAVA_FORGE" }      "IRON" 20 }               "Magma forge"    "Crafting"
         "Produces improved weapons and armor. Must be placed next to lava."    none { TechId "iron working" }}
 
-    { Furniture {{ "FORGE_QUENCHING_BUCKET" }   "WOOD" 5 }               "Forge quenching bucket"     "Crafting"
+    { Furniture {{ "FORGE_QUENCHING_BUCKET" }   "WOOD" 5 }               "Quenching bucket"     "Crafting"
         "Boosts forge crafting speed by 20% in adjacent tiles." none { TechId "iron working" } }
   }
 
@@ -400,6 +400,8 @@ TRAINING("_DWARF", "_dwarf")
   {
     { Furniture {{ "SCRIPTORIUM" } "WOOD" 12 }                    "Scriptorium"       "Crafting"
         "Allows writing liturgical books to be used during Mass."}
+    { Furniture {{ "SCRIPTORIUM_HOLY_TOKEN" }   "WOOD" 5 }               "Holy token"     "Crafting"
+        "Boosts scriptorium crafting speed by 20% in adjacent tiles." }
   }
   "distillery"
   {
@@ -415,7 +417,7 @@ TRAINING("_DWARF", "_dwarf")
   {
     { Furniture {{ "MORGUE_TABLE" } "WOOD" 10 }                     "Morgue table"     "Crafting"
         "Produces animated bodies."                           "WORKSHOPS" { TechId "necromancy" } true }
-    { Furniture {{ "MORGUE_INSTRUMENT_TABLE" } "WOOD" 5 }                     "Morgue instrument bench" "Crafting"
+    { Furniture {{ "MORGUE_INSTRUMENT_TABLE" } "WOOD" 5 }                     "Instrument bench" "Crafting"
         "Boosts morgue crafting speed by 20% in adjacent tiles." none { TechId "necromancy" } }
   }
   "furnace"

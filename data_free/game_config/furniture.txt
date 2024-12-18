@@ -85,7 +85,7 @@ TRAINING("_DWARF", "_dwarf")
 }
 "WORKSHOP_TOOL_STAND"
 {
-  name = "workshop tool stand"
+  name = "tool stand"
   viewId = { "workshop_tool_stand" }
   blockMovement = true
   canHideHere = true
@@ -118,7 +118,7 @@ TRAINING("_DWARF", "_dwarf")
 }
 "FORGE_QUENCHING_BUCKET"
 {
-  name = "forge quenching bucket"
+  name = "quenching bucket"
   viewId = { "forge_quenching_bucket" }
   blockMovement = true
   canHideHere = true
@@ -206,7 +206,7 @@ TRAINING("_DWARF", "_dwarf")
 }
 "MORGUE_INSTRUMENT_TABLE"
 {
-  name = "morgue instrument bench"
+  name = "instrument bench"
   viewId = { "morgue_instrument_table" }
   blockMovement = true
   canHideHere = true
@@ -335,7 +335,18 @@ BOOKCASES("_HUMAN", "_human")
   viewId = { "scriptorium" }
   usageFX = none
 }
-
+"SCRIPTORIUM_HOLY_TOKEN"
+{
+  name = "holy token"
+  viewId = { "scriptorium_holy_token" }
+  blockMovement = true
+  canHideHere = true
+  strength = 80
+  fire = 30
+  workshopSpeedBoost = {
+    1.2 "SCRIPTORIUM"
+  }
+}
 "ROSTRUM_WOOD"
 {
   name = "wooden rostrum"

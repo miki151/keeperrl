@@ -820,6 +820,8 @@ BOOKCASES("_human")
   isSymbolFont = true roundShadow = true }
 { viewId = "scriptorium" symbol = "&" color = ColorId DARK_BROWN
   isSymbolFont = true roundShadow = true }
+{ viewId = "scriptorium_holy_token" symbol = "I" color = ColorId LIGHT_BROWN
+  roundShadow = true }
 { viewId = "demon_shrine" symbol = "Ω" color = ColorId PURPLE
   isSymbolFont = true roundShadow = true }
 { viewId = "angel_shrine" symbol = "Ω" color = ColorId WHITE
