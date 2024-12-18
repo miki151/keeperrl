@@ -2146,6 +2146,10 @@ End
 {
   viewId = { "wood_floor4" }
 }
+"FLOOR_WOOD3" inherit "FLOOR_WOOD1"
+{
+  viewId = { "wood_floor3" }
+}
 "FLOOR_STONE1"
 {
   name = "floor"
