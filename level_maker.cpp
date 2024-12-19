@@ -2885,8 +2885,10 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
               contentFactory.layoutMapping.at(LayoutMappingId("default")), *keeperTribe),
           std::move(startingPosMaker)
       );
-      predicate = keeperInfo->insideMountain ? (Predicate::type(FurnitureType("MOUNTAIN2")) || Predicate::type(FurnitureType("MOUNTAIN")))
-          : Predicate::canEnter({MovementTrait::WALK});
+      if (keeperInfo->insideMountain)
+        predicate = Predicate::type(FurnitureType("MOUNTAIN2")) || Predicate::type(FurnitureType("MOUNTAIN"));
+      else if (keeperInfo->addTerritory)
+        predicate = Predicate::canEnter({MovementTrait::WALK});
       size = keeperInfo->size;
     }
     startingPos = startingPosMaker.get();
