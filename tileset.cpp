@@ -391,8 +391,7 @@ bool TileSet::loadTilesFromDir(const DirectoryPath& path, Vec2 size, bool overwr
       }
     }
   texturesTmp.push_back({image, addedPositions});
-  int currentDay = Clock::getCurrentDayOfMonth();
-  bool isChristmas = Clock::getCurrentMonth() == 12 && currentDay >= 17 && currentDay <= 26;
+  bool isChristmas = Clock::isChristmas();
   for (auto& pos : addedPositions) {
     auto spriteName = isChristmas ? getSantaSprite(pos.first) : pos.first;
     tileCoords[spriteName].push_back({size, pos.second, nullptr});

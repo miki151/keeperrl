@@ -120,7 +120,7 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
       .addCreature(keeperRef, keeperInfo.minionTraits);
   if (avatarInfo.chosenBaseName)
     builder.setLocationName(*avatarInfo.chosenBaseName);
-  if (avatarInfo.creatureInfo.startingBase) {
+  if (avatarInfo.creatureInfo.startingBase && avatarInfo.creatureInfo.startingBase->isActive()) {
     builder.setLevel(level);
     if (avatarInfo.creatureInfo.startingBase->addTerritory)
       builder.addArea(level->getLandingSquares(StairKey::keeperSpawn())

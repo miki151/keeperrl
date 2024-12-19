@@ -53,6 +53,7 @@
 #include "collective_name.h"
 #include "position.h"
 #include "keeper_base_info.h"
+#include "clock.h"
 
 namespace {
 
@@ -2879,7 +2880,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
         Predicate::attrib(SquareAttrib::HILL) && Predicate::canEnter({MovementTrait::WALK}),
         Predicate::attrib(SquareAttrib::MOUNTAIN), 1, 8);
     Vec2 size(4, 4);
-    if (keeperInfo) {
+    if (keeperInfo && keeperInfo->isActive()) {
           startingPosMaker = make_unique<MakerQueue>(
           make_unique<RandomLayoutMaker>(contentFactory.randomLayouts.at(*keeperInfo->layout), *keeperInfo->layout,
               contentFactory.layoutMapping.at(LayoutMappingId("default")), *keeperTribe),

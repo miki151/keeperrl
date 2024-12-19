@@ -37,14 +37,11 @@ microseconds Clock::getRealMicros() {
   return duration_cast<microseconds>(high_resolution_clock::now().time_since_epoch());
 }
 
-int Clock::getCurrentMonth() {
+bool Clock::isChristmas() {
   time_t t = time(NULL);
-  return localtime(&t)->tm_mon + 1;
-}
-
-int Clock::getCurrentDayOfMonth() {
-  time_t t = time(NULL);
-  return localtime(&t)->tm_mday;
+  int day = localtime(&t)->tm_mday;
+  int month = localtime(&t)->tm_mon + 1;
+  return month == 12 && (day >= 19 && day <= 26);
 }
 
 steady_clock::time_point Clock::getCurrent() {

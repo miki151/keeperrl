@@ -10,6 +10,9 @@ struct KeeperBaseInfo {
   Vec2 SERIAL(size);
   bool SERIAL(insideMountain) = false;
   bool SERIAL(addTerritory) = true;
+  bool SERIAL(christmasSpecial) = false;
+
+  bool isActive();
 
   template <typename Archive>
   void serialize(Archive& ar, unsigned int version) {
@@ -17,7 +20,7 @@ struct KeeperBaseInfo {
     if (version >= 1)
       ar(insideMountain);
     if (version >= 2)
-      ar(addTerritory);
+      ar(addTerritory, christmasSpecial);
   }
 
   void serialize(PrettyInputArchive&, unsigned int);
