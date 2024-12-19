@@ -2150,18 +2150,26 @@ End
 "FLOOR_WOOD1"
 {
   name = "floor"
-  viewId = { "wood_floor2" }
+  viewId = { "wood_floor1" }
   fire = 50
   luxury = 0.1
   layer = FLOOR
 }
 "FLOOR_WOOD2" inherit "FLOOR_WOOD1"
 {
-  viewId = { "wood_floor4" }
+  viewId = { "wood_floor2" }
 }
 "FLOOR_WOOD3" inherit "FLOOR_WOOD1"
 {
   viewId = { "wood_floor3" }
+}
+"FLOOR_WOOD4" inherit "FLOOR_WOOD1"
+{
+  viewId = { "wood_floor4" }
+}
+"FLOOR_WOOD5" inherit "FLOOR_WOOD1"
+{
+  viewId = { "wood_floor5" }
 }
 "FLOOR_STONE1"
 {
@@ -2177,6 +2185,10 @@ End
 "FLOOR_STONE3" inherit "FLOOR_STONE1"
 {
   viewId = { "stone_floor3" }
+}
+"FLOOR_STONE4" inherit "FLOOR_STONE1"
+{
+  viewId = { "stone_floor4" }
 }
 "FLOOR_STONE5" inherit "FLOOR_STONE1"
 {
