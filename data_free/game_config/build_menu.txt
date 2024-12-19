@@ -120,28 +120,19 @@ End
     { Furniture {{ "FLOOR_WOOD4" }                "WOOD" 2 }       "Wooden"            "Floors" }
     { Furniture {{ "FLOOR_WOOD5" }                "WOOD" 2 }       "Wooden"            "Floors" }
     { Furniture {{ "FLOOR_STONE1" }               "STONE" 2 }      "Stone"             "Floors" }
-    { Furniture {{ "FLOOR_STONE4" }               "STONE" 2 }      "Stone"             "Floors" }
-    { Furniture {{ "FLOOR_STONE5" }               "STONE" 2 }      "Stone"             "Floors" }
-    { Furniture {{ "FLOOR_CARPET1" }              "GOLD" 2 }       "Carpet"            "Floors" }
-    { Furniture {{ "FLOOR_CARPET4" }              "GOLD" 2 }       "Carpet"            "Floors" }
-    { DestroyLayers {FLOOR}                                    "Remove floor"      "Floors" }
-  }
-
-  "floors_dwarf"
-  {
-    { Furniture {{ "FLOOR_WOOD1" }                "WOOD" 2 }       "Wooden"            "Floors"
-        "" "FLOORS" {} true BUILD_FLOOR}
-    { Furniture {{ "FLOOR_WOOD2" }                "WOOD" 2 }       "Wooden"            "Floors" }
-    { Furniture {{ "FLOOR_WOOD3" }                "WOOD" 2 }       "Wooden"            "Floors" }
-    { Furniture {{ "FLOOR_WOOD4" }                "WOOD" 2 }       "Wooden"            "Floors" }
-    { Furniture {{ "FLOOR_WOOD5" }                "WOOD" 2 }       "Wooden"            "Floors" }
     { Furniture {{ "FLOOR_STONE2" }               "STONE" 2 }      "Stone"             "Floors" }
     { Furniture {{ "FLOOR_STONE3" }               "STONE" 2 }      "Stone"             "Floors" }
     { Furniture {{ "FLOOR_STONE4" }               "STONE" 2 }      "Stone"             "Floors" }
+    { Furniture {{ "FLOOR_STONE5" }               "STONE" 2 }      "Stone"             "Floors" }
     { Furniture {{ "FLOOR_CARPET1" }              "GOLD" 2 }       "Carpet"            "Floors" }
+    { Furniture {{ "FLOOR_CARPET2" }              "GOLD" 2 }       "Carpet"            "Floors" }
+    { Furniture {{ "FLOOR_CARPET3" }              "GOLD" 2 }       "Carpet"            "Floors" }
     { Furniture {{ "FLOOR_CARPET4" }              "GOLD" 2 }       "Carpet"            "Floors" }
+    { Furniture {{ "FLOOR_CARPET5" }              "GOLD" 2 }       "Carpet"            "Floors" }
     { DestroyLayers {FLOOR}                                    "Remove floor"      "Floors" }
   }
+
+  "floors_dwarf" inherit "floors" append {} #legacy
 
   "storage"
   {

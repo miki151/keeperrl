@@ -2213,6 +2213,10 @@ End
 {
   viewId = { "carpet_floor4" }
 }
+"FLOOR_CARPET5" inherit "FLOOR_CARPET1"
+{
+  viewId = { "carpet_floor5" }
+}
 "CARPET4_GROUND" inherit "FLOOR_CARPET4"
 {
   layer = GROUND
