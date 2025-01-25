@@ -2,8 +2,14 @@
 #include "file_path.h"
 #include "debug.h"
 #include "util.h"
-#include <sys/types.h>
-#include <sys/stat.h>
+
+#ifndef _MSC_VER
+# include <sys/types.h>
+# include <sys/stat.h>
+#else
+# define WIN32_LEAN_AND_MEAN
+# include <Windows.h>
+#endif
 
 FilePath FilePath::fromFullPath(const std::string& path) {
   return FilePath(split(path, {'/'}).back(), path);
@@ -28,7 +34,13 @@ time_t FilePath::getModificationTime() const {
 }
 
 bool FilePath::exists() const {
-#ifdef WINDOWS
+#ifdef _MSC_VER
+  auto attribs = GetFileAttributesA(fullPath.c_str());
+  if(attribs == INVALID_FILE_ATTRIBUTES)
+    return false;
+  else
+    return (attribs & FILE_ATTRIBUTE_DIRECTORY) == 0;
+#elif defined(WINDOWS)
   struct _stat buf;
   _stat(fullPath.c_str(), &buf);
   return S_ISREG(buf.st_mode);

@@ -31,7 +31,7 @@ class LevelGenException {
 };
 
 class FilePath;
-class CreatureList;
+struct CreatureList;
 class TribeId;
 class ContentFactory;;
 struct BiomeInfo;
