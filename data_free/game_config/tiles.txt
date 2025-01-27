@@ -583,6 +583,8 @@ Connections("map_swamp")
   isSymbolFont = true roundShadow = true }
 { viewId = "enchanted_cauldron" symbol = "ω" color = ColorId PURPLE
   isSymbolFont = true roundShadow = true }
+{ viewId = "mortar_and_pestle" symbol = "=" color = ColorId LIGHT_GRAY
+  roundShadow = true }
 { viewId = "cauldron_tar" symbol = "ω" color = ColorId GRAY
   isSymbolFont = true roundShadow = true }
 { "robe" "[" ColorId LIGHT_BROWN }
@@ -657,6 +659,8 @@ Connections("map_swamp")
 { viewId = "standing_torch" symbol = "*" color = ColorId YELLOW
   moveUp = true animated = true }
 { viewId = "decid_tree" symbol = "🜍" color = ColorId DARK_GREEN
+  isSymbolFont = true roundShadow = true }
+{ viewId = "special_tree" symbol = "🜍" color = ColorId DARK_GREEN
   isSymbolFont = true roundShadow = true }
 { viewId = "canif_tree" symbol = "♣" color = ColorId DARK_GREEN
   isSymbolFont = true roundShadow = true }
@@ -734,6 +738,7 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
   roundShadow = true }
 { viewId = "morgue_table" symbol = "=" color = ColorId RED
   roundShadow = true }
+{ viewId = "morgue_instrument_table" symbol = "=" color = ColorId LIGHT_GRAY }
 { viewId = "phylactery" symbol = "⚱️" color = ColorId YELLOW
   isSymbolFont = true roundShadow = true }
 { viewId = "phylactery_active" symbol = "⚱️" color = ColorId PURPLE
@@ -746,6 +751,10 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
   isSymbolFont = true roundShadow = true }
 { viewId = "notice_board" symbol = "|" color = ColorId BROWN
   roundShadow = true }
+{ viewId = "corpse_display1" symbol = "T" color = ColorId RED
+  isSymbolFont = true roundShadow = true }
+{ viewId = "corpse_display2" symbol = "T" color = ColorId RED
+  isSymbolFont = true roundShadow = true }
 Def TRAINING(SUF)
 { viewId = "training_wood" + SUF symbol = "‡" color = ColorId BROWN
   isSymbolFont = true roundShadow = true }
@@ -813,6 +822,8 @@ BOOKCASES("_human")
   isSymbolFont = true roundShadow = true }
 { viewId = "scriptorium" symbol = "&" color = ColorId DARK_BROWN
   isSymbolFont = true roundShadow = true }
+{ viewId = "scriptorium_holy_token" symbol = "I" color = ColorId LIGHT_BROWN
+  roundShadow = true }
 { viewId = "demon_shrine" symbol = "Ω" color = ColorId PURPLE
   isSymbolFont = true roundShadow = true }
 { viewId = "angel_shrine" symbol = "Ω" color = ColorId WHITE
@@ -823,13 +834,19 @@ BOOKCASES("_human")
   roundShadow = true }
 { viewId = "lava_forge" symbol = "&" color = ColorId LIGHT_RED
   roundShadow = true }
+{ viewId = "forge_quenching_bucket" symbol = "o" color = ColorId LIGHT_BLUE
+  roundShadow = true }
 { viewId = "workshop" symbol = "&" color = ColorId LIGHT_BROWN
   roundShadow = true }
 { viewId = "enchanted_workshop" symbol = "&" color = ColorId PURPLE
   roundShadow = true }
+{ viewId = "workshop_tool_stand" symbol = "=" color = ColorId LIGHT_BROWN
+  roundShadow = true }
 { viewId = "jeweller" symbol = "&" color = ColorId YELLOW
   roundShadow = true }
 { viewId = "lava_jeweller" symbol = "&" color = ColorId LIGHT_GRAY
+  roundShadow = true }
+{ viewId = "jeweller_polishing_wheel" symbol = "O" color = ColorId GRAY
   roundShadow = true }
 { viewId = "dining_table" symbol = "&" color = ColorId LIGHT_BLUE
   roundShadow = true }

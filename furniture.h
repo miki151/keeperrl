@@ -22,6 +22,7 @@
 #include "achievement_id.h"
 #include "sound.h"
 #include "t_string.h"
+#include "workshop_type.h"
 
 class TribeId;
 class Creature;
@@ -182,6 +183,13 @@ class Furniture {
   ~Furniture();
 
   optional<FurnitureTickType> SERIAL(tickType);
+  struct WorkshopBoost {
+    double SERIAL(multiplier);
+    WorkshopType (type);
+    SERIALIZE_ALL(multiplier, type);
+  };
+
+  vector<WorkshopBoost> SERIAL(workshopSpeedBoost);
 
   private:
   heap_optional<ViewObject> SERIAL(viewObject);
@@ -279,4 +287,4 @@ class Furniture {
 
 static_assert(std::is_nothrow_move_constructible<Furniture>::value, "T should be noexcept MoveConstructible");
 
-CEREAL_CLASS_VERSION(Furniture, 1)
+CEREAL_CLASS_VERSION(Furniture, 2)

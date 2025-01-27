@@ -59,6 +59,8 @@ void Furniture::serializeImpl(Archive& ar, const unsigned version) {
   ar(OPTION(walkIntoSound), OPTION(destroySound));
   if (version >= 1)
     ar(NAMED(otherStairs));
+  if (version >= 2)
+    ar(OPTION(workshopSpeedBoost));
 }
 
 template <class Archive>
