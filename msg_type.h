@@ -4,9 +4,9 @@
 
 RICH_ENUM(
   MsgType,
-  FEEL, // better
+  FEEL, // deprectated
   COLLAPSE,
-  FALL,
+  FALL, // deprecated
   FALL_ASLEEP,
   PANIC,
   RAGE,
@@ -17,7 +17,7 @@ RICH_ENUM(
   DIE, //
   TELE_APPEAR,
   TELE_DISAPPEAR,
-  ATTACK_SURPRISE,
+  ATTACK_SURPRISE, // deprectated
   CAN_SEE_HIDING,
   HIT,
   TOUCH,
@@ -35,18 +35,18 @@ RICH_ENUM(
   TURN_INVISIBLE,
   TURN_VISIBLE,
   ENTER_PORTAL,
-  HAPPENS_TO,
+  HAPPENS_TO, // deprecated
   BURN,
   DROWN,
-  SET_UP_TRAP,
+  SET_UP_TRAP, // deprecated
   DECAPITATE,
-  TURN,
+  TURN, // deprecated
   BECOME,
-  KILLED_BY,
+  KILLED_BY, // deprecated
   BREAK_FREE,
-  MISS_ATTACK,
-  PRAY,
-  SACRIFICE,
+  MISS_ATTACK, //deprecated
+  PRAY, // deprecated
+  SACRIFICE, // deprecated
   COPULATE,
   CONSUME
 );

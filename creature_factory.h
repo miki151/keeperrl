@@ -49,10 +49,10 @@ class CreatureFactory {
   PCreature getGhost(Creature*);
   static PCreature getIllusion(Creature*);
 
-  static CreatureAttributes getKrakenAttributes(ViewId, const char* name);
+  static CreatureAttributes getKrakenAttributes(ViewId, const TString& name);
   ViewIdList getViewId(CreatureId) const;
-  string getName(CreatureId) const;
-  string getNamePlural(CreatureId) const;
+  TString getName(CreatureId) const;
+  TString getNamePlural(CreatureId) const;
   const Gender& getGender(CreatureId);
   vector<CreatureId> getAllCreatures() const;
 

@@ -1,43 +1,197 @@
-"alchemy"                  { "Build a laboratory and produce basic potions." }
-"incendiary alchemy"       { "Produce incendiary potions." { "alchemy"} }
-"advanced alchemy"         { "Produce more powerful potions."                               {"alchemy"} }
-"embalming"                { "Build a laboratory and concoct basic balsams for bodies." }
-"advanced embalming"       { "Produce more powerful balsams for bodies."                    {"embalming"} }
-"master embalming"         { "Produce the most powerful balsams for bodies."                {"advanced embalming"} }
-"necromancy"               { "Build a morgue and raise undead." }
-"advanced necromancy"      { "Raise more powerful undead."                                  {"necromancy"} }
-"master necromancy"        { "Raise the most powerful undead."                              {"advanced necromancy"} }
-"alchemical conversion"    { "Convert resources to and from gold."                          {"alchemy"} }
-"humanoid mutation"        { "Breed new, very powerful humanoid species."                   {"alchemy"} }
-"beast mutation"           { "Breed new, very powerful beast species."                      {"alchemy"} }
-"chicken breeding"         { "Build a chicken coop to feed your minions." }
-"pig breeding"             { "Build a pigsty to feed your minions."                         {"chicken breeding"} }
-"cow breeding"             { "Build a cow pen to feed your minions."                        {"pig breeding"} }
-"iron working"             { "Build a forge and produce metal weapons and armor." }
-"jewellery"                { "Build a jeweler room and produce magical rings and amulets."  {"iron working" }}
-"distillation"             { "Beer is for dwarves. Build a distillery and make rat moonshine for your minions."}
-"two-handed weapons"       { "Produce war hammers and battle axes."                         {"iron working" }}
-"traps"                    { "Produce traps in the workshop." }
-"advanced traps"           { "Produce more advanced traps and mechanisms." { "traps"} }
-"archery"                  { "Produce bows and arrows." }
-"sorcery"                  { "Learn basic spells." }
-"advanced sorcery"         { "Learn more advanced spells."                                  {"sorcery"}}
-"magical weapons"          { "Produce melee weapons that deal magical damage"               {"advanced sorcery"}}
-"master sorcery"           { "Learn the most powerful spells."                              {"advanced sorcery"}}
-"demonology"               { "Build demon shrines and attract demons."                      {"advanced sorcery"}}
-"worship"                  { "Build angel shrines and attract angels."}
-"automatons"               { "Build mechanical creatures that work and fight for you."}
-"automated crafting"       { "Build crafting and repair automaton arms to automate your production and repair." {"automatons"}}
-"advanced automatons"      { "Build advanced mechanical creatures that work and fight for you." {"automatons"}}
-"automaton brains"         { "Build automatons that behave like humanoids."                 {"advanced automatons"}}
-"aerodynamics"             { "Build flying automatons."                                     {"advanced automatons"}}
-"explosives"               { "Build exploding automatons."                                  {"advanced automatons"}}
-"luxury"                   { "Allow your minions to reflect the Lord's glory." }
-"small temptations"        { "Permit a little indulgence to stay closer to the flock."   {}}
-"big temptations"          { "Truly understand temptation to be able to preach against it."   {"small temptations"}}
-"slavery"                  { "Acquire more obedient hands to tend your flock."            {}}
-"dark crafts"              { "Become more familiar with the tools that evil employs."      {"luxury"}}
-"advanced theology"        { "Research more advanced liturgies to ask the Lord for favors." }
-"expert theology"          { "Research extremely advanced liturgies to ask the Lord for favors." {"advanced theology"}}
-"worship of Adoxie"        { "Acknowledge dark powers to strengthen your faith and protect your minions from their influence."
-    {"dark crafts"}}
+"alchemy" {
+  name = ALCHEMY_TECH_NAME
+  description = "Build a laboratory and produce basic potions."
+}
+"incendiary alchemy" {
+  name = INCENDIARY_ALCHEMY_TECH_NAME
+  description = "Produce incendiary potions."
+  prerequisites = { "alchemy"}
+}
+"advanced alchemy" {
+  name = ADVANCED_ALCHEMY_TECH_NAME
+  description = "Produce more powerful potions."
+  prerequisites = {"alchemy"}
+}
+"embalming" {
+  name = EMBALMING_TECH_NAME
+  description = "Build a laboratory and concoct basic balsams for bodies."
+}
+"advanced embalming" {
+  name = ADVANCED_EMBALMING_TECH_NAME
+  description = "Produce more powerful balsams for bodies."
+  prerequisites = {"embalming"}
+}
+"master embalming" {
+  name = MASTER_EMBALMING_TECH_NAME
+  description = "Produce the most powerful balsams for bodies."
+  prerequisites = {"advanced embalming"}
+}
+"necromancy" {
+  name = NECROMANCY_TECH_NAME
+  description = "Build a morgue and raise undead."
+}
+"advanced necromancy" {
+  name = ADVANCED_NECROMANCY_TECH_NAME
+  description = "Raise more powerful undead."
+  prerequisites = {"necromancy"}
+}
+"master necromancy" {
+  name = MASTER_NECROMANCY_TECH_NAME
+  description = "Raise the most powerful undead."
+  prerequisites = {"advanced necromancy"}
+}
+"alchemical conversion" {
+  name = ALCHEMICAL_CONVERSION_TECH_NAME
+  description = "Convert resources to and from gold."
+  prerequisites = {"alchemy"}
+}
+"humanoid mutation" {
+  name = HUMANOID_MUTATION_TECH_NAME
+  description = "Breed new, very powerful humanoid species."
+  prerequisites = {"alchemy"}
+}
+"beast mutation" {
+  name = BEAST_MUTATION_TECH_NAME
+  description = "Breed new, very powerful beast species."
+  prerequisites = {"alchemy"}
+}
+"chicken breeding" {
+  name = CHICKEN_BREEDING_TECH_NAME
+  description = "Build a chicken coop to feed your minions."
+}
+"pig breeding" {
+  name = PIG_BREEDING_TECH_NAME
+  description = "Build a pigsty to feed your minions."
+  prerequisites = {"chicken breeding"}
+}
+"cow breeding" {
+  name = COW_BREEDING_TECH_NAME
+  description = "Build a cow pen to feed your minions."
+  prerequisites = {"pig breeding"}
+}
+"iron working" {
+  name = IRON_WORKING_TECH_NAME
+  description = "Build a forge and produce metal weapons and armor."
+}
+"jewellery" {
+  name = JEWELLERY_TECH_NAME
+  description = "Build a jeweler room and produce magical rings and amulets."
+  prerequisites = {"iron working"}
+}
+"distillation" {
+  name = DISTILLATION_TECH_NAME
+  description = "Beer is for dwarves. Build a distillery and make rat moonshine for your minions."
+}
+"two-handed weapons" {
+  name = TWO_HANDED_WEAPONS_TECH_NAME
+  description = "Produce war hammers and battle axes."
+  prerequisites = {"iron working"}
+}
+"traps" {
+  name = TRAPS_TECH_NAME
+  description = "Produce traps in the workshop."
+}
+"advanced traps" {
+  name = ADVANCED_TRAPS_TECH_NAME
+  description = "Produce more advanced traps and mechanisms."
+  prerequisites = { "traps"}
+}
+"archery" {
+  name = ARCHERY_TECH_NAME
+  description = "Produce bows and arrows."
+}
+"sorcery" {
+  name = SORCERY_TECH_NAME
+  description = "Learn basic spells."
+}
+"advanced sorcery" {
+  name = ADVANCED_SORCERY_TECH_NAME
+  description = "Learn more advanced spells."
+  prerequisites = {"sorcery"}
+}
+"magical weapons" {
+  name = MAGICAL_WEAPONS_TECH_NAME
+  description = "Produce melee weapons that deal magical damage"
+  prerequisites = {"advanced sorcery"}
+}
+"master sorcery" {
+  name = MASTER_SORCERY_TECH_NAME
+  description = "Learn the most powerful spells."
+  prerequisites = {"advanced sorcery"}
+}
+"demonology" {
+  name = DEMONOLOGY_TECH_NAME
+  description = "Build demon shrines and attract demons."
+  prerequisites = {"advanced sorcery"}
+}
+"worship" {
+  name = WORSHIP_TECH_NAME
+  description = "Build angel shrines and attract angels."
+}
+"automatons" {
+  name = AUTOMATONS_TECH_NAME
+  description = "Build mechanical creatures that work and fight for you."
+}
+"automated crafting" {
+  name = AUTOMATED_CRAFTING_TECH_NAME
+  description = "Build crafting and repair automaton arms to automate your production and repair."
+  prerequisites = {"automatons"}
+}
+"advanced automatons" {
+  name = ADVANCED_AUTOMATONS_TECH_NAME
+  description = "Build advanced mechanical creatures that work and fight for you."
+  prerequisites = {"automatons"}
+}
+"automaton brains" {
+  name = AUTOMATON_BRAINS_TECH_NAME
+  description = "Build automatons that behave like humanoids."
+  prerequisites = {"advanced automatons"}
+}
+"aerodynamics" {
+  name = AERODYNAMICS_TECH_NAME
+  description = "Build flying automatons."
+  prerequisites = {"advanced automatons"}
+}
+"explosives" {
+  name = EXPLOSIVES_TECH_NAME
+  description = "Build exploding automatons."
+  prerequisites = {"advanced automatons"}
+}
+"luxury" {
+  name = LUXURY_TECH_NAME
+  description = "Allow your minions to reflect the Lord's glory." 
+}
+"small temptations" {
+  name = SMALL_TEMPTATIONS_TECH_NAME
+  description = "Permit a little indulgence to stay closer to the flock."
+  prerequisites = {}
+}
+"big temptations" {
+  name = BIG_TEMPTATIONS_TECH_NAME
+  description = "Truly understand temptation to be able to preach against it."
+  prerequisites = {"small temptations"}
+}
+"slavery" {
+  name = SLAVERY_TECH_NAME
+  description = "Acquire more obedient hands to tend your flock."
+  prerequisites = {}
+}
+"dark crafts" {
+  name = DARK_CRAFTS_TECH_NAME
+  description = "Become more familiar with the tools that evil employs."
+  prerequisites = {"luxury"}
+}
+"advanced theology" {
+  name = ADVANCED_THEOLOGY_TECH_NAME
+  description = "Research more advanced liturgies to ask the Lord for favors."
+}
+"expert theology" {
+  name = EXPERT_THEOLOGY_TECH_NAME
+  description = "Research extremely advanced liturgies to ask the Lord for favors."
+  prerequisites = {"advanced theology"}
+}
+"worship of Adoxie" {
+  name = WORSHIP_OF_ADOXIE_TECH_NAME
+  description = "Acknowledge dark powers to strengthen your faith and protect your minions from their influence."
+  prerequisites = {"dark crafts"}
+}

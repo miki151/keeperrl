@@ -6,7 +6,7 @@
 
 struct SpellSchool {
   AttrType SERIAL(expType);
-  optional<string> SERIAL(name);
+  optional<TString> SERIAL(name);
   vector<pair<SpellId, int>> SERIAL(spells);
   SERIALIZATION_DECL(SpellSchool)
   void serialize(PrettyInputArchive& ar1, const unsigned int);

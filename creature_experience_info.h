@@ -3,6 +3,7 @@
 #include "util.h"
 #include "attr_type.h"
 #include "view_id.h"
+#include "t_string.h"
 
 class ContentFactory;
 
@@ -10,10 +11,10 @@ struct CreatureExperienceInfo {
   struct TrainingInfo {
     AttrType HASH(attr);
     ViewId HASH(viewId);
-    string HASH(name);
+    TString HASH(name);
     double HASH(level);
     int HASH(limit);
-    optional<string> HASH(warning);
+    optional<TString> HASH(warning);
     HASH_ALL(attr, viewId, name, level, limit, warning)
   };
   vector<TrainingInfo> HASH(training);

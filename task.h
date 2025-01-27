@@ -53,7 +53,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   virtual bool isBogus() const;
   virtual bool canTransfer();
   virtual void cancel() {}
-  virtual string getDescription() const = 0;
+  virtual TString getDescription() const = 0;
   bool canPerform(const Creature* c, const MovementType&) const;
   bool canPerform(const Creature* c) const;
   virtual bool canPerformByAnyone() const;

@@ -26,14 +26,14 @@ SERIALIZATION_CONSTRUCTOR_IMPL(AttractionInfo);
 AttractionInfo::AttractionInfo(int cl,  AttractionType a)
   : amountClaimed(cl), types({a}) {}
 
-string AttractionInfo::getAttractionName(const ContentFactory* contentFactory, const AttractionType& attraction,
+TString AttractionInfo::getAttractionName(const ContentFactory* contentFactory, const AttractionType& attraction,
     int count) {
   return attraction.match(
-      [&](FurnitureType type)->string {
+      [&](FurnitureType type)->TString {
         return contentFactory->furniture.getData(type).getName();
       },
-      [&](ItemIndex index)->string {
-        return getName(index, count);
+      [&](ItemIndex index)->TString {
+        return *getName(index, count);
       }
   );
 }

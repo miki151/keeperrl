@@ -86,10 +86,10 @@ void Highscores::present(View* view, optional<Score> lastAdded) const {
     auto scores = fillScores(lastAdded, localScores);
     for (auto& score : scores) {
       ScriptedUIDataElems::Record elemData;
-      elemData.elems["score"] = score.score;
-      elemData.elems["text"] = score.text;
+      elemData.elems["score"] = TString(score.score);
+      elemData.elems["text"] = TString(score.text);
       if (score.highlight)
-        elemData.elems["highlight"] = "xyz"_s;
+        elemData.elems["highlight"] = TString("xyz"_s);
       list.push_back(std::move(elemData));
     }
     main.elems["list"] = std::move(list);

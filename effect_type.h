@@ -69,7 +69,7 @@ struct DestroyWalls {
 struct Enhance {
   EnhanceType SERIAL(type);
   int SERIAL(amount);
-  const char* typeAsString() const;
+  const char* typeAsString(const char* weapon, const char* armor) const;
   const char* amountAs(const char* positive, const char* negative) const;
   SERIALIZE_ALL(type, amount)
 };
@@ -152,7 +152,7 @@ struct FixedDamage {
 struct IncreaseAttr {
   AttrType SERIAL(attr);
   int SERIAL(amount);
-  const char* get(const char* ifIncrease, const char* ifDecrease) const;
+  TStringId get(TStringId ifIncrease, TStringId ifDecrease) const;
   SERIALIZE_ALL(attr, amount)
 };
 struct AddExperience {
@@ -252,8 +252,8 @@ struct UnseenMessage {
   SERIALIZE_ALL(priority, text)
 };
 struct CreatureMessage {
-  string SERIAL(secondPerson);
-  string SERIAL(thirdPerson);
+  TString SERIAL(secondPerson);
+  TString SERIAL(thirdPerson);
   MessagePriority SERIAL(priority) = MessagePriority::NORMAL;
   SERIALIZE_ALL(NAMED(secondPerson), NAMED(thirdPerson), OPTION(priority))
 };
@@ -311,14 +311,14 @@ struct Fx {
 };
 struct Description : GenericModifierEffect {
   Description() {}
-  Description(string text, Effect e) : GenericModifierEffect{std::move(e)}, text(std::move(text)) {}
-  string SERIAL(text);
+  Description(TString text, Effect e) : GenericModifierEffect{std::move(e)}, text(std::move(text)) {}
+  TString SERIAL(text);
   SERIALIZE_ALL(text, SUBCLASS(GenericModifierEffect))
 };
 struct Name : GenericModifierEffect {
   Name() {}
-  Name(string text, Effect e) : GenericModifierEffect{std::move(e)}, text(std::move(text)) {}
-  string SERIAL(text);
+  Name(TString text, Effect e) : GenericModifierEffect{std::move(e)}, text(std::move(text)) {}
+  TString SERIAL(text);
   SERIALIZE_ALL(text, SUBCLASS(GenericModifierEffect))
 };
 struct AI : GenericModifierEffect {
@@ -336,7 +336,7 @@ struct RemoveMinionTrait {
   SERIALIZE_ALL(trait)
 };
 struct CollectiveMessage {
-  string SERIAL(msg);
+  TString SERIAL(msg);
   SERIALIZE_ALL(msg)
 };
 struct RemoveFurniture {
@@ -372,7 +372,7 @@ struct Polymorph {
   SERIALIZE_ALL(into, timeout)
 };
 struct SetCreatureName {
-  string SERIAL(value);
+  TString SERIAL(value);
   SERIALIZE_ALL(value)
 };
 struct SetViewId {

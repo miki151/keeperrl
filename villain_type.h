@@ -12,5 +12,7 @@ RICH_ENUM(VillainType,
   RETIRED
 );
 
-extern const char* getName(VillainType);
+class TStringId;
+
+extern TStringId getName(VillainType);
 extern bool blocksInfluence(VillainType);

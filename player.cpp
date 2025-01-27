@@ -161,7 +161,7 @@ void Player::pickUpItemAction(int numStack, bool multi) {
   if (numStack < stacks.size()) {
     vector<Item*> items = stacks[numStack];
     if (multi && items.size() > 1) {
-      auto num = getView()->getNumber("Pick up how many " + items[0]->getName(true) + "?",
+      auto num = getView()->getNumber(TSentence("PICK_UP_HOW_MANY", items[0]->getName(true)),
           Range(1, items.size()), 1);
       if (!num)
         return;
@@ -174,8 +174,8 @@ void Player::pickUpItemAction(int numStack, bool multi) {
 bool Player::tryToPerform(CreatureAction action) {
   if (action)
     action.perform(creature);
-  else
-    privateMessage(action.getFailedReason());
+  else if (auto reason = action.getFailedReason())
+    privateMessage(std::move(*reason));
   return !!action;
 }
 
@@ -184,8 +184,8 @@ void Player::applyItem(vector<Item*> items) {
   if (items[0]->getApplyTime() > 1_visible) {
     for (const Creature* c : creature->getVisibleEnemies())
       if (creature->getPosition().dist8(c->getPosition()).value_or(3) < 3) {
-        if (!getView()->yesOrNoPrompt("Applying " + items[0]->getAName() + " takes " +
-            toString(items[0]->getApplyTime()) + " turns. Are you sure you want to continue?"))
+        if (!getView()->yesOrNoPrompt(TSentence("APPLYING_ITEM_TAKES_X_TURNS", items[0]->getAName(),
+            toString(items[0]->getApplyTime()))))
           return;
         else
           break;
@@ -194,11 +194,11 @@ void Player::applyItem(vector<Item*> items) {
   tryToPerform(creature->applyItem(items[0]));
 }
 
-optional<Vec2> Player::chooseDirection(const string& s) {
+optional<Vec2> Player::chooseDirection(const TString& s) {
   return getView()->chooseDirection(creature->getPosition().getCoord(), s);
 }
 
-Player::TargetResult Player::chooseTarget(Table<PassableInfo> passable, TargetType type, const string& s,
+Player::TargetResult Player::chooseTarget(Table<PassableInfo> passable, TargetType type, const TString& s,
     optional<Keybinding> keybinding) {
   return getView()->chooseTarget(creature->getPosition().getCoord(), type, std::move(passable), s, keybinding).visit(
       [&](auto e) -> TargetResult { return e; },
@@ -220,10 +220,10 @@ void Player::throwItem(Item* item, optional<Position> target) {
         else if (pos.getCreature())
           passable[v] = PassableInfo::STOPS_HERE;
       }
-      target = chooseTarget(std::move(passable), TargetType::TRAJECTORY, "Which direction do you want to throw?", none)
+      target = chooseTarget(std::move(passable), TargetType::TRAJECTORY, TStringId("WHICH_DIRECTION_THROW"), none)
           .getValueMaybe<Position>();
-    } else
-      privateMessage(testAction.getFailedReason());
+    } else if (auto reason = testAction.getFailedReason())
+      privateMessage(*reason);
     if (!target)
       return;
   }
@@ -261,7 +261,7 @@ void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds1, ItemAct
   switch (action) {
     case ItemAction::DROP: tryToPerform(creature->drop(items)); break;
     case ItemAction::DROP_MULTI:
-      if (auto num = getView()->getNumber("Drop how many " + items[0]->getName(true) + "?",
+      if (auto num = getView()->getNumber(TSentence("DROP_HOW_MANY", items[0]->getName(true)),
           Range(1, items.size()), 1))
         tryToPerform(creature->drop(items.getPrefix(*num)));
       break;
@@ -280,8 +280,8 @@ void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds1, ItemAct
       break;
     }
     case ItemAction::NAME:
-      if (auto name = getView()->getText("Enter a name for " + items[0]->getTheName(),
-          items[0]->getArtifactName().value_or(""), 14))
+      if (auto name = getView()->getText(TSentence("ENTER_A_NAME_FOR", items[0]->getTheName()),
+          ""_s, 14))
         items[0]->setArtifactName(*name);
       break;
     default: FATAL << "Unhandled item action " << int(action);
@@ -298,7 +298,7 @@ bool Player::interruptedByEnemy() {
         combatIntent->time > lastEnemyInterruption.value_or(GlobalTime(-1)) &&
         combatIntent->time > getGame()->getGlobalTime() - 5_visible) {
       lastEnemyInterruption = combatIntent->time;
-      privateMessage("You are being attacked by " + combatIntent->attacker->getName().a());
+      privateMessage(TSentence("YOU_ARE_BEING_ATTACKED_BY", combatIntent->attacker->getName().a()));
       return true;
     }
   return false;
@@ -337,8 +337,8 @@ void Player::payForItemAction(const vector<Item*>& items) {
   }();
   if (canPayFor == 0)
     privateMessage("You don't have enough gold to pay.");
-  else if (canPayFor == items.size() || getView()->yesOrNoPrompt("You only have enough gold for " +
-      toString(canPayFor) + " " + items[0]->getName(canPayFor > 1, creature) + ". Still pay?"))
+  else if (canPayFor == items.size() || getView()->yesOrNoPrompt(TSentence("YOU_ONLY_HAVE_ENOUGH_FOR",
+      toString(canPayFor), items[0]->getName(canPayFor > 1, creature))))
     tryToPerform(creature->payFor(items.getPrefix(canPayFor)));
 }
 
@@ -350,7 +350,7 @@ void Player::payForAllItemsAction() {
     else
       for (Creature* c : creature->getDebt().getCreditors(creature)) {
         auto debt = creature->getDebt().getAmountOwed(c);
-        if (getView()->yesOrNoPrompt("Give " + c->getName().title() + " " + toString(debt) + " gold?"))
+        if (getView()->yesOrNoPrompt(TSentence("GIVE_GOLD_TO", c->getName().title(), toString(debt))))
           tryToPerform(creature->give(c, creature->getGold(debt)));
       }
   }
@@ -359,7 +359,7 @@ void Player::payForAllItemsAction() {
 void Player::giveAction(vector<Item*> items) {
   PROFILE;
   if (items.size() > 1) {
-    if (auto num = getView()->getNumber("Give how many " + items[0]->getName(true) + "?", Range(1, items.size()), 1))
+    if (auto num = getView()->getNumber(TSentence("GIVE_HOW_MANY", items[0]->getName(true)), Range(1, items.size()), 1))
       items = items.getPrefix(*num);
     else
       return;
@@ -368,10 +368,10 @@ void Player::giveAction(vector<Item*> items) {
   for (Position pos : creature->getPosition().neighbors8())
     if (Creature* c = pos.getCreature())
       creatures.push_back(c);
-  if (creatures.size() == 1 && getView()->yesOrNoPrompt("Give " + items[0]->getTheName(items.size() > 1) +
-        " to " + creatures[0]->getName().the() + "?"))
+  if (creatures.size() == 1 && getView()->yesOrNoPrompt(TSentence("GIVE_ITEM_TO", items[0]->getTheName(items.size() > 1),
+        creatures[0]->getName().the())))
     tryToPerform(creature->give(creatures[0], items));
-  else if (auto dir = chooseDirection("Give whom?"))
+  else if (auto dir = chooseDirection(TStringId("GIVE_WHOM")))
     if (Creature* whom = creature->getPosition().plus(*dir).getCreature())
       tryToPerform(creature->give(whom, items));
 }
@@ -387,7 +387,7 @@ void Player::chatAction(optional<Vec2> dir) {
   } else
   if (creatures.size() > 1 || dir) {
     if (!dir)
-      dir = chooseDirection("Which direction?");
+      dir = chooseDirection(TStringId("WHICH_DIRECTION"));
     if (!dir)
       return;
     if (Creature* c = creature->getPosition().plus(*dir).getCreature())
@@ -405,7 +405,7 @@ void Player::mountAction() {
     tryToPerform(creature->mount(creatures[0]));
   } else
   if (creatures.size() > 1) {
-    auto dir = chooseDirection("Which direction?");
+    auto dir = chooseDirection(TStringId("WHICH_DIRECTION"));
     if (!dir)
       return;
     if (Creature* c = creature->getPosition().plus(*dir).getCreature())
@@ -428,7 +428,7 @@ void Player::fireAction() {
           passable[v] = PassableInfo::STOPS_HERE;
       }
       auto res = chooseTarget(std::move(passable), spell->isEndOnly() ? TargetType::POSITION : TargetType::TRAJECTORY,
-          "Which direction?", Keybinding("FIRE_PROJECTILE"));
+          TStringId("WHICH_DIRECTION"), Keybinding("FIRE_PROJECTILE"));
       if (res.contains<none_t>())
         break;
       if (auto pos = res.getValueMaybe<Position>()) {
@@ -449,8 +449,8 @@ void Player::tryToCast(const Spell* spell, Position target) {
     }
     optional<int> res = 0;
     if (friendlyFireWarningCooldown.value_or(-10000_global) < getGame()->getGlobalTime())
-      res = getView()->multiChoice("This move might harm your allies and make them hostile. Continue?", {
-          "Yes", "No", "Yes, and don't ask for another 50 turns"
+      res = getView()->multiChoice(TStringId("MOVE_MAY_HARM_ALLIES"), {
+          TStringId("YES"), TStringId("NO"), TStringId("YES_AND_DONT_ASK_FOR_50_TURNS")
       });
     if (res == 2)
       friendlyFireWarningCooldown = getGame()->getGlobalTime() + 50_visible;
@@ -478,7 +478,7 @@ void Player::spellAction(int id) {
           passable[v] = PassableInfo::STOPS_HERE;
       }
       if (auto target = chooseTarget(std::move(passable), spell->isEndOnly() ? TargetType::POSITION : TargetType::TRAJECTORY,
-          "Which direction?", none).getValueMaybe<Position>())
+          TStringId("WHICH_DIRECTION"), none).getValueMaybe<Position>())
         tryToCast(spell, *target);
     }
   }
@@ -544,7 +544,7 @@ void Player::creatureClickAction(Position pos, bool extended) {
   if (auto clicked = pos.getCreature()) {
     auto commands = getOtherCreatureCommands(clicked);
     if (extended) {
-      auto commandsText = commands.transform([](auto& command) -> string { return getText(command.name); });
+      auto commandsText = commands.transform([](auto& command) -> TString { return getText(command.name); });
       if (auto index = getView()->chooseAtMouse(commandsText))
         commands[*index].perform(this);
     }
@@ -611,7 +611,7 @@ vector<Player::CommandInfo> Player::getCommands() const {
 #ifndef RELEASE
     {PlayerInfo::CommandInfo{"Wait multiple turns", none, "", true},
       [] (Player* player) {
-        if (auto num = player->getView()->getNumber("Wait how many turns?", Range(1, 2000), 30))
+        if (auto num = player->getView()->getNumber(TStringId("WAIT_HOW_MANY_TURNS"), Range(1, 2000), 30))
           for (int i : Range(*num))
             player->tryToPerform(player->creature->wait());
       }, false},
@@ -639,16 +639,16 @@ void Player::updateSquareMemory(Position pos) {
 
 bool Player::canTravel() const {
   if (!creature->getPosition().getLevel()->canTranfer) {
-    getView()->presentText("Sorry", "You don't know how to leave this area.");
+    getView()->presentText(none, TStringId("YOU_DONT_KNOW_HOW_TO_LEAVE"));
     return false;
   }
   auto team = getTeam();
   for (auto& c : team) {
     if (c->isAffected(LastingEffect::POISON)) {
       if (team.size() == 1)
-        getView()->presentText("Sorry", "You can't travel while being poisoned.");
+        getView()->presentText(none, TStringId("YOU_CANT_TRAVEL_WHILE_POISONED"));
       else
-        getView()->presentText("Sorry", c->getName().the() + " can't travel while being poisoned.");
+        getView()->presentText(none, TSentence("CANT_TRAVEL_WHILE_POISONED", c->getName().the()));
       return false;
     }
     Creature* attacker = nullptr;
@@ -663,12 +663,12 @@ bool Player::canTravel() const {
       if (closest->getPosition().dist8(creature->getPosition()).value_or(4) < 4)
         tryAttacker(closest);
     if (attacker) {
-      getView()->presentText("Sorry", "You can't travel while being attacked by " + attacker->getName().a() + ".");
+      getView()->presentText(none, TSentence("CANT_TRAVEL_WHILE_BEING_ATTACKED_BY", attacker->getName().a()));
       return false;
     }
     for (auto item : c->getEquipment().getItems())
       if (item->getShopkeeper(c)) {
-        getView()->presentText("Sorry", "You can't travel while carrying unpaid items.");
+        getView()->presentText(none, TStringId("CANT_TRAVEL_WHILE_CARRYING_UNPAID"));
         return false;
       }
   }
@@ -706,7 +706,6 @@ void Player::makeMove() {
   if (target && action.getId() == UserInputId::IDLE)
     targetAction();
   else {
-    INFO << "Action " << int(action.getId());
     bool wasJustTravelling = !!target;
     if (action.getId() != UserInputId::IDLE) {
       if (action.getId() != UserInputId::REFRESH) {
@@ -749,7 +748,7 @@ void Player::makeMove() {
         case UserInputId::APPLY_EFFECT: {
           Effect effect;
           if (auto error = PrettyPrinting::parseObject(effect, action.get<string>()))
-            getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
+            getView()->presentText(none, "Couldn't parse \"" + action.get<string>() + "\": " + *error);
           else
             effect.apply(creature->getPosition(), creature);
           break;
@@ -757,16 +756,16 @@ void Player::makeMove() {
         case UserInputId::CREATE_ITEM: {
           ItemType item;
           if (auto error = PrettyPrinting::parseObject(item, action.get<string>()))
-            getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
+            getView()->presentText(none, "Couldn't parse \"" + action.get<string>() + "\": " + *error);
           else
-            if (auto cnt = getView()->getNumber("Enter number of items", Range(1, 1000), 1))
+            if (auto cnt = getView()->getNumber("Enter number of items"_s, Range(1, 1000), 1))
               creature->take(item/*.setPrefixChance(1)*/.get(*cnt, getGame()->getContentFactory()));
           break;
         }
         case UserInputId::SUMMON_ENEMY: {
           CreatureId id;
           if (auto error = PrettyPrinting::parseObject(id, action.get<string>()))
-            getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
+            getView()->presentText(none, "Couldn't parse \"" + action.get<string>() + "\": " + *error);
           else {
             auto factory = CreatureGroup::singleType(TribeId::getMonster(), id);
             Effect::summon(creature->getPosition(), factory, 1, 1000_visible,
@@ -872,8 +871,8 @@ void Player::transferAction() {
     for (auto col : to->getCollectives())
       if (!!col->getName() && col->getControl()->considerVillainAmbush(creatures)) {
         view->updateView(this, false);
-        game->addAnalytics("ambushed", col->getName()->full);
-        getView()->windowedMessage({col->getName()->viewId}, "You have been ambushed!");
+        game->addAnalytics("ambushed", col->getName()->full.data());
+        getView()->windowedMessage({col->getName()->viewId}, TStringId("YOU_HAVE_BEEN_AMBUSHED"));
         break;
       }
   }
@@ -883,19 +882,19 @@ void Player::showHistory() {
   PlayerMessage::presentMessages(getView(), messageBuffer->history);
 }
 
-static string getForceMovementQuestion(Position pos, const Creature* creature) {
+static optional<TString> getForceMovementQuestion(Position pos, const Creature* creature) {
   if (pos.canEnterEmpty(creature))
-    return "";
+    return none;
   else if (pos.isBurning())
-    return "Walking into fire or adjacent tiles is going harm you. Continue?";
+    return TString(TStringId("WALKING_INTO_FIRE_WARNING"));
   else if (pos.canEnterEmpty(MovementTrait::SWIM))
-    return "The water is very deep, are you sure?";
+    return TString(TStringId("WATER_VERY_DEEP_WARNING"));
   else if (pos.sunlightBurns() && creature->getMovementType().isSunlightVulnerable())
-    return "Walk into the sunlight?";
+    return TString(TStringId("SUNLIGHT_WARNING"));
   else if (pos.isTribeForbidden(creature->getTribeId()))
-    return "Walk into the forbidden zone?";
+    return TString(TStringId("FOBIDDEN_ZONE_WARNING"));
   else
-    return "Walk into the " + pos.getName() + "?";
+    return TString(TSentence("WALKING_INTO_X_WARNING", pos.getName()));
 }
 
 void Player::moveAction(Vec2 dir) {
@@ -906,9 +905,9 @@ void Player::moveAction(Vec2 dir) {
   if (tryToPerform(creature->move(dir)))
     return;
   if (auto action = creature->forceMove(dir)) {
-    string nextQuestion = getForceMovementQuestion(dirPos, creature);
-    string hereQuestion = getForceMovementQuestion(creature->getPosition(), creature);
-    if (hereQuestion == nextQuestion || getView()->yesOrNoPrompt(nextQuestion, none, true))
+    auto nextQuestion = getForceMovementQuestion(dirPos, creature);
+    auto hereQuestion = getForceMovementQuestion(creature->getPosition(), creature);
+    if (hereQuestion == nextQuestion || getView()->yesOrNoPrompt(*nextQuestion, none, true))
       action.perform(creature);
     return;
   }
@@ -932,19 +931,15 @@ bool Player::isPlayer() const {
 
 void Player::privateMessage(const PlayerMessage& message) {
   if (View* view = getView()) {
-    if (message.getText().size() < 2)
-      return;
-    if (auto title = message.getAnnouncementTitle())
-      view->presentText(*title, message.getText());
-    else {
-      messageBuffer->history.push_back(message);
-      auto& messages = messageBuffer->current;
-      if (!messages.empty() && messages.back().getFreshness() < 1)
-        messages.clear();
-      messages.emplace_back(message);
-      if (message.getPriority() == MessagePriority::CRITICAL)
-        view->presentText("Important!", message.getText());
-    }
+//    if (message.getText().size() < 2)
+//      return;
+    messageBuffer->history.push_back(message);
+    auto& messages = messageBuffer->current;
+    if (!messages.empty() && messages.back().getFreshness() < 1)
+      messages.clear();
+    messages.emplace_back(message);
+    if (message.getPriority() == MessagePriority::CRITICAL)
+      view->presentText(none, message.getText(view));
   }
 }
 
@@ -1028,7 +1023,7 @@ static double getScore(string target, string candidate) {
 
 struct WishedItemInfo {
   variant<ItemType, CreatureId> type;
-  string name;
+  TString name;
   Range count;
 };
 
@@ -1051,12 +1046,12 @@ static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
     if (LastingEffects::canWishFor(effect)) {
       ret.push_back(WishedItemInfo {
         ItemType(ItemTypes::Ring{effect}),
-        "ring of " + LastingEffects::getName(effect),
+        TSentence("RING_OF", LastingEffects::getName(effect)),
         Range(1, 2)
       });
       ret.push_back(WishedItemInfo {
         ItemType(ItemTypes::Amulet{effect}),
-        "amulet of " + LastingEffects::getName(effect),
+        TSentence("AMULET_OF", LastingEffects::getName(effect)),
         Range(1, 2)
       });
     }
@@ -1064,12 +1059,12 @@ static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
     if (buff.second.canWishFor) {
       ret.push_back(WishedItemInfo {
         ItemType(ItemTypes::Ring{buff.first}),
-        "ring of " + buff.second.name,
+        TSentence("RING_OF", buff.second.name),
         Range(1, 2)
       });
       ret.push_back(WishedItemInfo {
         ItemType(ItemTypes::Amulet{buff.first}),
-        "amulet of " + buff.second.name,
+        TSentence("AMULET_OF", buff.second.name),
         Range(1, 2)
       });
     }
@@ -1077,17 +1072,17 @@ static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
   for (auto& effect : allEffects) {
     ret.push_back(WishedItemInfo {
       ItemType(ItemTypes::Scroll{effect}),
-      "scroll of " + effect.getName(factory),
+      TSentence("SCROLL_OF", effect.getName(factory)),
       Range(1, 2)
     });
     ret.push_back(WishedItemInfo {
       ItemType(ItemTypes::Potion{effect}),
-      "potion of " + effect.getName(factory),
+      TSentence("POTION_OF", effect.getName(factory)),
       Range(1, 2)
     });
     ret.push_back(WishedItemInfo {
       ItemType(ItemTypes::Mushroom{effect}),
-      "mushroom of " + effect.getName(factory),
+      TSentence("MUSHROOM_OF", effect.getName(factory)),
       Range(1, 2)
     });
   }
@@ -1095,14 +1090,13 @@ static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
   return ret;
 }
 
-void Player::grantWish(const string& message) {
+void Player::grantWish(TString message) {
   if (auto text = getView()->getText(message, "", 40)) {
     int count = 1;
     optional<variant<ItemType, CreatureId>> wishType;
     double bestScore = 0;
     for (auto& elem : getWishedItems(getGame()->getContentFactory())) {
-      double score = getScore(*text, elem.name);
-      std::cout << elem.name << " score " << score << std::endl;
+      double score = getScore(*text, getView()->translate(elem.name));
       if (score > bestScore || !wishType) {
         bestScore = score;
         wishType = elem.type;
@@ -1113,15 +1107,15 @@ void Player::grantWish(const string& message) {
         [&](ItemType itemType) {
           auto items = itemType.get(count, getGame()->getContentFactory());
           auto name = items[0]->getPluralAName(items.size());
-          getGame()->addAnalytics("wishItem", *text + ":" + name);
-          creature->verb("receive", "receives", name);
+          getGame()->addAnalytics("wishItem", *text + ":" + getView()->translate(name));
+          creature->verb(TStringId("RECEIVE"), TStringId("RECEIVES"), TString(name));
           creature->getEquipment().addItems(std::move(items), creature);
         },
         [&](CreatureId id) {
           auto res = Effect::summon(creature, id, 1, 100_visible);
           if (!res.empty()) {
             getGame()->addAnalytics("wishCreature", *text + ":" + res[0]->identify());
-            res[0]->message(res[0]->getName().a() + " is summoned"_s);
+            creature->verb(TStringId("YOU_HAVE_SUMMONED"), TStringId("HAS_SUMMONED"), res[0]->getName().a());
           }
         }
     );
@@ -1200,7 +1194,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
       index.insert(ViewObject(ViewId("unknown_monster"), ViewLayer::CREATURE));
   }
   if (unknownLocations->contains(position))
-    index.insert(ViewObject(ViewId("unknown_monster"), ViewLayer::TORCH2, "Surprise"));
+    index.insert(ViewObject(ViewId("unknown_monster"), ViewLayer::TORCH2, TStringId("SURPRISE")));
   if (position != creature->getPosition() && creature->isAffected(LastingEffect::HALLU))
     for (auto& object : index.getAllObjects())
       object.setId(shuffleViewId(object.getViewIdList()));
@@ -1232,7 +1226,7 @@ void Player::onKilled(Creature* attacker) {
   unsubscribe();
   getView()->updateView(this, false);
   auto game = getGame();
-  if (game->getPlayerCreatures().size() == 1 && getView()->yesOrNoPrompt("Display message history?",
+  if (game->getPlayerCreatures().size() == 1 && getView()->yesOrNoPrompt(TStringId("DISPLAY_MESSAGE_HISTORY_PROMPT"),
       ViewIdList{ViewId("grave")}, false,
       "yes_or_no_below"))
     showHistory();
@@ -1317,7 +1311,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.lyingItems.clear();
   if (auto usageType = getUsableUsageType()) {
     auto furniture = creature->getPosition().getFurniture(FurnitureLayer::MIDDLE);
-    string question = FurnitureUsage::getUsageQuestion(*usageType, furniture->getName());
+    auto question = FurnitureUsage::getUsageQuestion(*usageType, furniture->getName());
     ViewId questionViewId = ViewId("empty");
     if (auto& obj = furniture->getViewObject())
       questionViewId = obj->id();
@@ -1335,11 +1329,11 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
     tutorial->refreshInfo(getGame(), gameInfo.tutorial);
 }
 
-ItemInfo Player::getFurnitureUsageInfo(const string& question, ViewId viewId) const {
+ItemInfo Player::getFurnitureUsageInfo(const TString& question, ViewId viewId) const {
   return CONSTRUCT(ItemInfo,
     c.name = question;
     c.fullName = c.name;
-    c.description = {"Click to " + c.name};
+    c.description = {TSentence("CLICK_TO", c.name)};
     c.number = 1;
     c.viewId = {viewId};);
 }

@@ -9,10 +9,12 @@ RICH_ENUM(SunlightState,
 
 #include "game_time.h"
 
+class TStringId;
+
 class SunlightInfo {
   public:
-  const char* getText() const;
-  static const char* getText(SunlightState);
+  TStringId getText() const;
+  static TStringId getText(SunlightState);
   void update(GlobalTime currentTime);
   SunlightState getState() const;
   double getLightAmount() const;

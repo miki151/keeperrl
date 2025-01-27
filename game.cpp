@@ -490,14 +490,14 @@ void Game::exitAction() {
   ScriptedUIState state;
   auto data = ScriptedUIDataElems::Record{};
   data.elems["save"] = ScriptedUIDataElems::Callback{[this]{
-    if (getView()->yesOrNoPrompt("Do you want save and exit the game?")) {
+    if (getView()->yesOrNoPrompt(TStringId("SAVE_AND_EXIT_CONFIRM"))) {
       setExitInfo(GameSaveType::KEEPER);
       return true;
     }
     return false;
   }};
   data.elems["abandon"] = ScriptedUIDataElems::Callback{[this] {
-    if (getView()->yesOrNoPrompt("Do you want to abandon your game? This is permanent and the save file will be removed!")) {
+    if (getView()->yesOrNoPrompt(TStringId("ABANDON_GAME_CONFIRM"))) {
       addAnalytics("gameAbandoned", "");
       setExitInfo(ExitAndQuit());
       return true;
@@ -610,7 +610,7 @@ const SunlightInfo& Game::getSunlightInfo() const {
   return sunlightInfo;
 }
 
-string Game::getGameDisplayName() const {
+TString Game::getGameDisplayName() const {
   return gameDisplayName;
 }
 
@@ -649,19 +649,17 @@ WarlordInfoWithReference Game::getWarlordInfo() {
   };
 }
 
-void Game::conquered(const string& title, int numKills, int points) {
-  string text= "You have conquered this land. You killed " + toString(numKills) +
-      " enemies and scored " + toString(points) +
-      " points. Thank you for playing KeeperRL!\n \n";
-  for (string stat : statistics->getText())
-    text += stat + "\n";
-  view->presentText("Victory", text);
+void Game::conquered(const TString& title, int numKills, int points) {
+  TString text = combineSentences(concat(
+    {TSentence("YOU_HAVE_CONQUERED_THIS_LAND", toString(numKills), toString(points))},
+    statistics->getText()));
+  view->presentText(TString(TStringId("VICTORY")), text);
   Highscores::Score score = CONSTRUCT(Highscores::Score,
         c.worldName = getWorldName();
         c.points = points;
         c.gameId = getGameIdentifier();
-        c.playerName = title;
-        c.gameResult = "achieved world domination";
+        c.playerName = view->translate(title);
+        c.gameResult = view->translate(TStringId("ACHIEVED_WORLD_DOMINATION"));
         c.gameWon = true;
         c.turns = getGlobalTime().getVisibleInt();
         c.campaignType = campaign->getType();
@@ -670,26 +668,26 @@ void Game::conquered(const string& title, int numKills, int points) {
   highscores->present(view, score);
 }
 
-void Game::retired(const string& title, int numKills, int points) {
+void Game::retired(const TString& title, int numKills, int points) {
   int turns = getGlobalTime().getVisibleInt();
   int dungeonTurns =
       (getPlayerCollective()->getLocalTime() - initialModelUpdate).getVisibleInt();
-  string text = "You have survived in this land for " + toString(turns) + " turns. You killed " +
-      toString(numKills) + " enemies.\n";
+  vector<TString> text = {
+    TSentence("YOU_HAVE_SURVIVED", toString(turns), toString(numKills))
+  };
   if (dungeonTurns > 0) {
-    text += toString(dungeonTurns) + " turns defending the base.\n";
-    text += toString(turns - dungeonTurns) + " turns spent adventuring and attacking.\n";
+    text.push_back(TSentence("TURNS_DEFENDING_THE_BASE", toString(dungeonTurns)));
+    text.push_back(TSentence("TURNS_SPENT_ATTACKING", toString(turns - dungeonTurns)));
   }
-  text += " Thank you for playing KeeperRL!\n \n";
-  for (string stat : statistics->getText())
-    text += stat + "\n";
-  view->presentText("Survived", text);
+  text.push_back(TStringId("THANK_YOU_FOR_PLAYING"));
+  text.append(statistics->getText());
+  view->presentText(TString(TStringId("SURVIVED")), combineWithNewLine(text));
   Highscores::Score score = CONSTRUCT(Highscores::Score,
         c.worldName = getWorldName();
         c.points = points;
         c.gameId = getGameIdentifier();
-        c.playerName = title;
-        c.gameResult = "retired";
+        c.playerName = view->translate(title);
+        c.gameResult = view->translate(TStringId("RETIRED_GAME_RESULT"));
         c.gameWon = false;
         c.turns = turns;
         c.campaignType = campaign->getType();
@@ -702,27 +700,29 @@ bool Game::isGameOver() const {
   return !!exitInfo;
 }
 
-void Game::gameOver(const Creature* creature, int numKills, const string& enemiesString, int points) {
+void Game::gameOver(const Creature* creature, int numKills, int points) {
   int turns = getGlobalTime().getVisibleInt();
   int dungeonTurns = (getPlayerCollective()->getLocalTime() - initialModelUpdate).getVisibleInt();
-  string text = "And so dies " + creature->getName().title();
+  vector<TString> text = {
+    TSentence("AND_SO_DIES", creature->getName().title())
+  };
   if (auto reason = creature->getDeathReason()) {
-    text += ", " + *reason;
+    text[0] = TSentence("AND_SO_DIES_OF_REASON", creature->getName().title(), *reason);
   }
-  text += ". You killed " + toString(numKills) + " " + enemiesString + " and scored " + toString(points) + " points.\n";
+  text.push_back(TSentence("YOU_KILLED_AND_SCORED", toString(numKills), toString(points)));
   if (dungeonTurns > 0) {
-    text += toString(dungeonTurns) + " turns defending the base.\n";
-    text += toString(turns - dungeonTurns) + " turns spent adventuring and attacking.\n";
+    text.push_back(TSentence("TURNS_DEFENDING_THE_BASE", toString(dungeonTurns)));
+    text.push_back(TSentence("TURNS_SPENT_ATTACKING", toString(turns - dungeonTurns)));
   }
-  for (string stat : statistics->getText())
-    text += stat + "\n";
-  view->presentTextBelow("Game over", text);
+  text.append(statistics->getText());
+  view->presentTextBelow(TString(TStringId("GAME_OVER")), combineWithNewLine(text));
   Highscores::Score score = CONSTRUCT(Highscores::Score,
         c.worldName = getWorldName();
         c.points = points;
         c.gameId = getGameIdentifier();
-        c.playerName = creature->getName().firstOrBare();
-        c.gameResult = creature->getDeathReason().value_or("");
+        c.playerName = view->translate(creature->getName().firstOrBare());
+        if (auto reason = creature->getDeathReason())
+          c.gameResult = view->translate(*reason);
         c.gameWon = false;
         c.turns = turns;
         c.campaignType = campaign->getType();
@@ -801,7 +801,7 @@ SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
           << EnumInfo<VillainType>::getString(retiredInfo->villainType);
     }
     auto name = col->getName()->shortened.value_or("???"_s);
-    return SavedGameInfo{minions, retiredInfo, std::move(name), getSaveProgressCount(), std::move(spriteMods)};
+    return SavedGameInfo{minions, retiredInfo, ""_s, getSaveProgressCount(), std::move(spriteMods)};
   } else {
     vector<Creature*> allCreatures;
     for (auto player : players)
@@ -812,7 +812,7 @@ SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
     return SavedGameInfo{
         allCreatures.transform([&](auto c) { return SavedGameInfo::MinionInfo::get(factory, c); }),
         none,
-        players[0]->getName().bare(),
+        string(players[0]->getName().bare().data()),
         getSaveProgressCount(),
         std::move(spriteMods)};
   }
@@ -839,7 +839,7 @@ void Game::achieve(AchievementId id) const {
     unlocks->achieve(id);
     if (!steamAchievements) {
       auto& info = contentFactory->achievements.at(id);
-      view->windowedMessage(info.viewId, "Achievement unlocked: " + info.name);
+      view->windowedMessage(info.viewId, TSentence("ACHIEVEMENT_UNLOCKED", info.name));
     }
   }
 }
@@ -863,7 +863,7 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
   view->refreshView();
   t.join();
   if (error) {
-    view->presentText("", *error);
+    view->presentText(none, *error);
     return;
   }
   auto data = ScriptedUIDataElems::Record{};
@@ -872,8 +872,8 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
   for (auto message : messages) {
     list.push_back(ScriptedUIDataElems::Record{
       {
-        {"author", message.author},
-        {"text", "\"" + message.text + "\""}
+        {"author", TString(message.author)},
+        {"text", TString("\"" + message.text + "\"")}
       }
     });
   }
@@ -881,12 +881,12 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
   bool wrote = false;
   data.elems["write_something"] = ScriptedUIDataElems::Callback{
       [this, c, boardId, gameId] {
-        if (auto text = view->getText("Enter message", "", 80)) {
+        if (auto text = view->getText(TStringId("ENTER_MESSAGE"), "", 80)) {
           if (text->size() >= 2) {
-            if (!fileSharing->uploadBoardMessage(gameId, boardId, c->getName().title(), *text))
-              view->presentText("", "Please enable online features in the settings.");
+            if (!fileSharing->uploadBoardMessage(gameId, boardId, view->translate(c->getName().title()), *text))
+              view->presentText(none, TStringId("ENABLE_ONLINE_SETTING"));
           } else
-            view->presentText("", "The message was too short.");
+            view->presentText(none, TStringId("BOARD_MESSAG_TOO_SHORT"));
         }
         return true;
       }

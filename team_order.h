@@ -7,7 +7,8 @@ RICH_ENUM(TeamOrder,
     FLEE
 );
 
-extern const char* getName(TeamOrder);
-extern const char* getDescription(TeamOrder);
+class TStringId;
+extern TStringId getName(TeamOrder);
+extern TStringId getDescription(TeamOrder);
 extern Keybinding getKeybinding(TeamOrder);
 extern bool conflict(TeamOrder, TeamOrder);

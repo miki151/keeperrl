@@ -6,6 +6,7 @@
 #include "view_index.h"
 #include "pretty_archive.h"
 #include "keybinding.h"
+#include "t_string.h"
 
 struct ScriptedUIData;
 
@@ -15,7 +16,7 @@ struct SDL_Keysym;
 
 namespace ScriptedUIDataElems {
 
-using Label = string;
+using Label = TString;
 struct Callback {
   function<bool()> fun;
   template <class Archive> void serialize(Archive& ar1, const unsigned int) {

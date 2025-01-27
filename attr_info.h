@@ -5,18 +5,19 @@
 #include "view_id.h"
 #include "fx_info.h"
 #include "effect.h"
+#include "t_string.h"
 
 struct AttrInfo {
-  string SERIAL(name);
+  TString SERIAL(name);
   ViewId SERIAL(viewId);
-  string SERIAL(adjective);
+  TString SERIAL(adjective);
   int SERIAL(absorptionCap);
   int SERIAL(modifierVariation) = 1;
   int SERIAL(wishedItemIncrease) = 5;
   bool SERIAL(isAttackAttr) = false;
   optional<FXInfo> SERIAL(meleeFX);
-  string SERIAL(help);
-  optional<string> SERIAL(bodyPartInjury);
+  TString SERIAL(help);
+  optional<TString> SERIAL(bodyPartInjury);
   optional<Effect> SERIAL(onAttackedEffect);
   SERIALIZE_ALL(NAMED(bodyPartInjury), NAMED(name), NAMED(viewId), NAMED(adjective), NAMED(absorptionCap), OPTION(modifierVariation), OPTION(wishedItemIncrease), OPTION(isAttackAttr), NAMED(meleeFX), NAMED(help), NAMED(onAttackedEffect))
 };

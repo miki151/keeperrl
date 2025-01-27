@@ -19,6 +19,8 @@
 #include "serialization.h"
 #include "util.h"
 
+class TStringId;
+
 RICH_ENUM2(
     std::uint8_t,
     Gender,
@@ -27,9 +29,9 @@ RICH_ENUM2(
     IT
 );
 
-const char* he(Gender);
-const char* his(Gender);
-const char* him(Gender);
-const char* get(Gender, const char* male, const char* female, const char* it);
-const char* getName(Gender);
-const char* himself(Gender);
+TStringId he(Gender);
+TStringId his(Gender);
+TStringId him(Gender);
+TStringId get(Gender, TStringId male, TStringId female, TStringId it);
+TStringId getName(Gender);
+TStringId himself(Gender);

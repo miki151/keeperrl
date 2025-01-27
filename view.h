@@ -136,34 +136,34 @@ class View {
   virtual bool travelInterrupt() = 0;
 
   /** Lets the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
-  virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) = 0;
+  virtual optional<Vec2> chooseDirection(Vec2 playerPos, const TString& message) = 0;
 
   using TargetResult = variant<none_t, Vec2, Keybinding>;
   /** Lets the player choose a target position. Returns none if the player cancelled the choice.*/
   virtual TargetResult chooseTarget(Vec2 playerPos, TargetType, Table<PassableInfo> passable,
-      const string& message, optional<Keybinding> cycleKey) = 0;
+      const TString& message, optional<Keybinding> cycleKey) = 0;
 
   /** Asks the player a yer-or-no question.*/
-  bool yesOrNoPrompt(const string& message, optional<ViewIdList> = none, bool defaultNo = false,
+  bool yesOrNoPrompt(const TString& message, optional<ViewIdList> = none, bool defaultNo = false,
       ScriptedUIId = "yes_or_no");
-  optional<int> multiChoice(const string& message, const vector<string>&);
+  optional<int> multiChoice(const TString& message, const vector<TString>&);
 
-  void windowedMessage(ViewIdList, const string& message);
+  void windowedMessage(ViewIdList, const TString& message);
 
   /** Draws a window with some text. The text is formatted to fit the window.*/
-  void presentText(const string& title, const string& text);
-  void presentTextBelow(const string& title, const string& text);
+  void presentText(const optional<TString>& title, const TString& text);
+  void presentTextBelow(const optional<TString>& title, const TString& text);
 
   virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&, ScriptedUIState&) = 0;
   void scriptedUI(ScriptedUIId, const ScriptedUIData&);
 
   /** Lets the player choose a number. Returns none if the player cancelled the choice.*/
-  virtual optional<int> getNumber(const string& title, Range range, int initial) = 0;
+  virtual optional<int> getNumber(const TString& title, Range range, int initial) = 0;
 
   /** Lets the player input a string. Returns none if the player cancelled the choice.*/
-  virtual optional<string> getText(const string& title, const string& value, int maxLength) = 0;
+  virtual optional<string> getText(const TString& title, const string& value, int maxLength) = 0;
 
-  virtual optional<int> chooseAtMouse(const vector<string>& elems) = 0;
+  virtual optional<int> chooseAtMouse(const vector<TString>& elems) = 0;
 
   virtual void dungeonScreenshot(Vec2 size) = 0;
 
@@ -188,7 +188,6 @@ class View {
   };
 
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) = 0;
-  virtual vector<int> prepareWarlordGame(RetiredGames&, const vector<PlayerInfo>&, int maxTeam, int maxDungeons) = 0;
 
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<PlayerInfo>&,
       const string& cancelText) = 0;
@@ -229,4 +228,6 @@ class View {
   virtual void logMessage(const string&) = 0;
 
   virtual bool zoomUIAvailable() const = 0;
+
+  virtual string translate(const TString&) const = 0;
 };

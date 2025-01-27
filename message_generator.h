@@ -6,16 +6,17 @@
 #include "owner_pointer.h"
 
 class PlayerMessage;
+class TString;
 
 class MessageGenerator {
   public:
   enum Type { SECOND_PERSON, THIRD_PERSON, BOULDER, KRAKEN, NONE };
   MessageGenerator(Type);
-  void add(const Creature*, MsgType, const string&);
-  void add(const Creature*, const string&);
+  void add(const Creature*, MsgType, TString);
+  void add(const Creature*, MsgType);
   void addThirdPerson(const Creature*, const PlayerMessage&);
   void addSecondPerson(const Creature*, const PlayerMessage&);
-  string getEnemyName(const Creature*);
+  TString getEnemyName(const Creature*);
 
   SERIALIZATION_DECL(MessageGenerator)
 

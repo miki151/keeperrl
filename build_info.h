@@ -73,9 +73,9 @@ struct BuildInfo {
   bool canSelectRectangle() const;
 
   BuildInfoTypes::BuildType SERIAL(type);
-  string SERIAL(name);
-  string SERIAL(groupName);
-  string SERIAL(help);
+  TString SERIAL(name);
+  TString SERIAL(groupName);
+  TString SERIAL(help);
   optional<Keybinding> SERIAL(key) = none;
   vector<Requirement> SERIAL(requirements);
   bool SERIAL(hotkeyOpensGroup) = false;
@@ -94,7 +94,7 @@ struct BuildInfo {
     serializeImpl(ar1, v);
     ar1(endInput());
     if (groupName.empty())
-      ar1.error("Group name for \"" + name + "\" is empty.");
+      ar1.error("Group name for \""_s + name.data() + "\" is empty.");
   }
 };
 

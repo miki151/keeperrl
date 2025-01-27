@@ -7,6 +7,7 @@
 #include "cost_info.h"
 #include "villain_group.h"
 #include "keeper_base_info.h"
+#include "t_string.h"
 
 class SpecialTrait;
 
@@ -37,7 +38,7 @@ struct KeeperCreatureInfo {
   vector<VillainGroup> SERIAL(villainGroups);
   bool SERIAL(requireQuartersForExp) = true;
   optional<KeeperBaseInfo> SERIAL(startingBase) = none;
-  string SERIAL(baseName);
+  TString SERIAL(baseName);
   bool SERIAL(enemyAggression) = true;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);

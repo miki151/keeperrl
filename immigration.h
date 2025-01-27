@@ -59,7 +59,7 @@ class Immigration : public OwnedObject<Immigration> {
 
   void accept(int id, bool withMessage = true);
   void rejectIfNonPersistent(int id);
-  vector<string> getMissingRequirements(const Available&) const;
+  vector<TString> getMissingRequirements(const Available&) const;
   const vector<ImmigrantInfo>& getImmigrants() const;
 
   void setAutoState(int index, optional<ImmigrantAutoState>);
@@ -77,14 +77,14 @@ class Immigration : public OwnedObject<Immigration> {
   Collective* SERIAL(collective) = nullptr;
   map<int, EntitySet<Creature>> SERIAL(generated);
   double getImmigrantChance(const Group& info) const;
-  vector<string> getMissingAttractions(const ImmigrantInfo&) const;
+  vector<TString> getMissingAttractions(const ImmigrantInfo&) const;
   int SERIAL(idCnt) = 0;
   TimeInterval SERIAL(candidateTimeout);
   void occupyAttraction(const Creature*, const AttractionInfo&);
   void occupyRequirements(const Creature*, int immigrantIndex, int groupSize);
   double getRequirementMultiplier(const Group&) const;
-  vector<string> getMissingRequirements(const Group&) const;
-  optional<string> getMissingRequirement(const ImmigrantRequirement&, const Group&) const;
+  vector<TString> getMissingRequirements(const Group&) const;
+  optional<TString> getMissingRequirement(const ImmigrantRequirement&, const Group&) const;
   void considerPersistentImmigrants(const vector<ImmigrantInfo>&);
   CostInfo calculateCost(int index, const ExponentialCost&) const;
   bool SERIAL(initialized) = false;

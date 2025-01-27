@@ -25,7 +25,9 @@ RICH_ENUM(BodySize,
   HUGE
 );
 
-const char* getName(BodySize);
+class TStringId;
+class TString;
+TStringId getName(BodySize);
 
 class Body {
   public:
@@ -81,7 +83,7 @@ class Body {
   bool canPush(const Body& other);
   bool canPerformRituals(const ContentFactory*) const;
   bool canBeCaptured(const ContentFactory*) const;
-  vector<PItem> getCorpseItems(const string& name, UniqueEntity<Creature>::Id, bool instantlyRotten,
+  vector<PItem> getCorpseItems(const TString&, UniqueEntity<Creature>::Id, bool instantlyRotten,
       const ContentFactory* factory, Game*) const;
   vector<AttackLevel> getAttackLevels() const;
   BodySize getSize() const;
@@ -104,14 +106,14 @@ class Body {
   bool hasAnyHealth(const ContentFactory*) const;
   FurnitureType getDiningFurniture() const;
 
-  const char* getDeathDescription(const ContentFactory*) const;
+  const TString& getDeathDescription(const ContentFactory*) const;
 
-  void consumeBodyParts(Creature*, Body& other, vector<string>& adjectives);
+  void consumeBodyParts(Creature*, Body& other, vector<TString>& adjectives);
 
   BodyMaterialId getMaterial() const;
   bool isHumanoid() const;
   bool canPickUpItems() const;
-  string getDescription(const ContentFactory*) const;
+  TString getDescription(const ContentFactory*) const;
   void updateViewObject(ViewObject&, const ContentFactory*) const;
   int getCarryLimit() const;
   void bleed(Creature*, double amount);
@@ -138,8 +140,7 @@ class Body {
   void decreaseHealth(double amount);
   bool isPartDamaged(BodyPart, double damage, const ContentFactory*) const;
   bool isCritical(BodyPart, const ContentFactory*) const;
-  PItem getBodyPartItem(const string& creatureName, BodyPart, const ContentFactory*) const;
-  string getMaterialAndSizeAdjectives(const ContentFactory*) const;
+  PItem getBodyPartItem(const TString& creatureName, BodyPart, const ContentFactory*) const;
   bool SERIAL(xhumanoid) = false;
   bool SERIAL(xCanPickUpItems) = false;
   Size SERIAL(size) = Size::LARGE;

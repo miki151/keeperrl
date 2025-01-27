@@ -58,82 +58,82 @@ void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAt
   );
 }
 
-vector<string> getEffectDescription(const ContentFactory* factory, const ItemPrefix& prefix) {
-  return prefix.visit<vector<string>>(
+vector<TString> getEffectDescription(const ContentFactory* factory, const ItemPrefix& prefix) {
+  return prefix.visit<vector<TString>>(
       [&](const ItemPrefixes::Prefix& a) {
         return ::getEffectDescription(factory, *a.prefix);
       },
       [&](const ItemPrefixes::Suffix& a) {
         return ::getEffectDescription(factory, *a.prefix);
       },
-      [&](LastingOrBuff effect) -> vector<string> {
-        return {"grants " + getName(effect, factory)};
+      [&](LastingOrBuff effect) -> vector<TString> {
+        return {TSentence("GRANTS_BUFF", getName(effect, factory))};
       },
-      [&](const ItemPrefixes::AttackerEffect& e) -> vector<string> {
-        return {"attacker affected by: " + e.effect.getName(factory)};
+      [&](const ItemPrefixes::AttackerEffect& e) -> vector<TString> {
+        return {TSentence("ATTACKER_AFFECTED_BY", e.effect.getName(factory))};
       },
-      [&](const ItemPrefixes::VictimEffect& e) -> vector<string> {
-        return {"victim affected by: " + e.effect.getName(factory) + " (" + toPercentage(e.chance) + " chance)"};
+      [&](const ItemPrefixes::VictimEffect& e) -> vector<TString> {
+        return {TSentence("VICTIM_AFFECTED_BY", e.effect.getName(factory), toPercentage(e.chance))};
       },
-      [&](ItemPrefixes::ItemAttrBonus bonus) -> vector<string> {
-        return {"+"_s + toString(bonus.value) + " " + factory->attrInfo.at(bonus.attr).name};
+      [&](ItemPrefixes::ItemAttrBonus bonus) -> vector<TString> {
+        return {TSentence("PLUS_MINUS_ATTR", "+"_s + toString(bonus.value), factory->attrInfo.at(bonus.attr).name)};
       },
-      [&](const ItemPrefixes::JoinPrefixes& join) -> vector<string> {
-        vector<string> ret;
+      [&](const ItemPrefixes::JoinPrefixes& join) -> vector<TString> {
+        vector<TString> ret;
         for (auto& e : join.prefixes)
           ret.append(getEffectDescription(factory, e));
         return ret;
       },
-      [&](const SpellId& id) -> vector<string> {
-        return {"grants "_s + id.data() + " ability"};
+      [&](const SpellId& id) -> vector<TString> {
+        return {TSentence("GRANTS_ABILITY", factory->getCreatures().getSpell(id)->getName(factory))};
       },
-      [&](const ItemPrefixes::Scale& e) -> vector<string> {
-        return {"item attributes are improved by " + toString(e.value)};
+      [&](const ItemPrefixes::Scale& e) -> vector<TString> {
+        return {TSentence("ITEM_ATTR_IMPROVED_BY", toString(e.value))};
       },
-      [&](const SpecialAttr& a) -> vector<string> {
-        return {toStringWithSign(a.value) + " " + factory->attrInfo.at(a.attr).name + " " +
-            a.predicate.getName(factory)};
+      [&](const SpecialAttr& a) -> vector<TString> {
+        return {TSentence("SPECIAL_ATTR_VALUE", {toStringWithSign(a.value), factory->attrInfo.at(a.attr).name,
+            a.predicate.getName(factory)})};
       },
-      [&](const ItemPrefixes::AssembledCreatureEffect& effect) -> vector<string> {
+      [&](const ItemPrefixes::AssembledCreatureEffect& effect) -> vector<TString> {
         return {effect.getDescription(factory)};
       }
   );
 }
 
-optional<string> getItemName(const ContentFactory* factory, const ItemPrefix& prefix) {
-  return prefix.visit<optional<string>>(
-      [&](LastingOrBuff effect) {
-        return "of " + getName(effect, factory);
+optional<TString> getItemName(const ContentFactory* factory, const ItemPrefix& prefix) {
+  return prefix.visit<optional<TString>>(
+      [&](LastingOrBuff effect) -> TString {
+        return TSentence("OF_SUFFIX", getName(effect, factory));
       },
-      [&](const ItemPrefixes::AttackerEffect& e) {
-        return "of " + e.effect.getName(factory);
+      [&](const ItemPrefixes::AttackerEffect& e) -> TString {
+        return TSentence("OF_SUFFIX", e.effect.getName(factory));
       },
-      [&](const ItemPrefixes::VictimEffect& e) {
-        return "of " + e.effect.getName(factory);
+      [&](const ItemPrefixes::VictimEffect& e) -> TString {
+        return TSentence("OF_SUFFIX", e.effect.getName(factory));
       },
-      [&](ItemPrefixes::ItemAttrBonus bonus) {
-        return "of " + factory->attrInfo.at(bonus.attr).name;
+      [&](ItemPrefixes::ItemAttrBonus bonus) -> TString {
+        return TSentence("OF_SUFFIX", factory->attrInfo.at(bonus.attr).name);
       },
       [&](const ItemPrefixes::JoinPrefixes& join) {
         return getItemName(factory, join.prefixes.back());
       },
-      [&](const SpellId& id) -> string {
-        return "of "_s + factory->getCreatures().getSpell(id)->getName(factory);
+      [&](const SpellId& id) -> TString {
+        return TSentence("OF_SUFFIX", factory->getCreatures().getSpell(id)->getName(factory));
       },
-      [&](const SpecialAttr& a) -> string {
+      [&](const SpecialAttr& a) -> TString {
         return a.predicate.getName(factory);
       },
-      [&](const auto&) -> optional<string> {
+      [&](const auto&) -> optional<TString> {
         return none;
       },
-      [&](const ItemPrefixes::AssembledCreatureEffect& effect) -> string {
-        return "with " + effect.getName(factory);
+      [&](const ItemPrefixes::AssembledCreatureEffect& effect) -> TString {
+        return TSentence("WITH_SUFFIX", effect.getName(factory));
       }
   );
 }
 
-string getGlyphName(const ContentFactory* factory, const ItemPrefix& prefix) {
-  return prefix.visit<string>(
+TString getGlyphName(const ContentFactory* factory, const ItemPrefix& prefix) {
+  return prefix.visit<TString>(
       [&](const ItemPrefixes::Prefix& a) {
         return ::getGlyphName(factory, *a.prefix);
       },
@@ -147,7 +147,8 @@ string getGlyphName(const ContentFactory* factory, const ItemPrefix& prefix) {
         return *::getItemName(factory, prefix);
       },
       [&](ItemPrefixes::ItemAttrBonus bonus) {
-        return "of +"_s + toString(bonus.value) + " " + factory->attrInfo.at(bonus.attr).name;
+        return TSentence("OF_SUFFIX", TSentence("PLUS_MINUS_ATTR", "+" + toString(bonus.value),
+            factory->attrInfo.at(bonus.attr).name));
       },
       [&](const ItemPrefixes::JoinPrefixes& join) {
         return getGlyphName(factory, join.prefixes.back());

@@ -123,7 +123,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual const vector<Vec2>& getUnknownLocations(const Level*) const override;
   virtual optional<Vec2> getSelectionSize() const override;
   virtual vector<vector<Vec2>> getPathTo(UniqueEntity<Creature>::Id, Vec2) const override;
-  virtual vector<vector<Vec2>> getGroupPathTo(const string&, Vec2) const override;
+  virtual vector<vector<Vec2>> getGroupPathTo(const TString&, Vec2) const override;
   virtual vector<vector<Vec2>> getTeamPathTo(TeamId, Vec2) const override;
   virtual vector<Vec2> getHighlightedPathTo(Vec2) const override;
   virtual CreatureView::PlacementInfo canPlaceItem(Vec2, int) const override;
@@ -132,7 +132,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   // from CollectiveControl
   virtual void addAttack(const CollectiveAttack&) override;
   virtual void addMessage(const PlayerMessage&) override;
-  virtual void addWindowMessage(ViewIdList, const string&) override;
+  virtual void addWindowMessage(ViewIdList, const TString&) override;
   virtual void onMemberKilledOrStunned(Creature* victim, const Creature* killer) override;
   virtual void onConquered(Creature* victim, Creature* killer) override;
   virtual void onMemberAdded(Creature*) override;
@@ -172,7 +172,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void handleSelection(Position, const BuildInfoTypes::BuildType&, bool dryRun);
   vector<CollectiveInfo::Button> fillButtons() const;
   VillageInfo::Village getVillageInfo(const Collective* enemy) const;
-  string getTriggerLabel(const AttackTrigger&) const;
+  TString getTriggerLabel(const AttackTrigger&) const;
   void fillWorkshopInfo(CollectiveInfo&) const;
   vector<CollectiveInfo::QueuedItemInfo> getQueuedWorkshopItems() const;
   vector<CollectiveInfo::QueuedItemInfo> getFurnaceQueue() const;
@@ -194,9 +194,9 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void minionTaskAction(const TaskActionInfo&);
   void equipmentGroupAction(const EquipmentGroupAction&);
   void minionAIAction(const AIActionInfo&);
-  void minionDragAndDrop(Vec2 pos, variant<string, UniqueEntity<Creature>::Id>);
+  void minionDragAndDrop(Vec2 pos, variant<TString, UniqueEntity<Creature>::Id>);
   void fillMinions(CollectiveInfo&) const;
-  vector<Creature*> getMinionGroup(const string& groupName) const;
+  vector<Creature*> getMinionGroup(const TString& groupName) const;
   vector<PlayerInfo> getPlayerInfos(vector<Creature*>) const;
   void sortMinionsForUI(vector<Creature*>&) const;
   vector<CollectiveInfo::CreatureGroup> getCreatureGroups(const vector<Creature*>&) const;
@@ -230,10 +230,10 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   GlobalTime SERIAL(nextKeeperWarning) = GlobalTime(-1000);
   struct ChosenCreatureInfo {
     UniqueEntity<Creature>::Id id;
-    string group;
+    TString group;
   };
   optional<ChosenCreatureInfo> chosenCreature;
-  void setChosenCreature(optional<UniqueEntity<Creature>::Id>, string group);
+  void setChosenCreature(optional<UniqueEntity<Creature>::Id>, TString group);
   struct ChosenWorkshopInfo {
     int resourceIndex;
     WorkshopType type;
@@ -244,7 +244,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void setChosenTeam(optional<TeamId>, optional<UniqueEntity<Creature>::Id> = none);
   optional<TeamId> chosenTeam;
   void clearChosenInfo();
-  string getMinionName(CreatureId) const;
   vector<PlayerMessage> SERIAL(messages);
   vector<PlayerMessage> SERIAL(messageHistory);
   vector<CollectiveAttack> SERIAL(newAttacks);
@@ -274,7 +273,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   ViewIdList getMinionGroupViewId(Creature*) const;
   SUnknownLocations SERIAL(unknownLocations);
   optional<LocalTime> lastWarningDismiss;
-  set<pair<UniqueEntity<Collective>::Id, string>> SERIAL(dismissedVillageInfos);
+  set<pair<UniqueEntity<Collective>::Id, TStringId>> SERIAL(dismissedVillageInfos);
   void considerTransferingLostMinions();
   vector<PItem> retrievePillageItems(Collective*, vector<Item*> items);
   TribeAlignment SERIAL(tribeAlignment);

@@ -1,21 +1,22 @@
 #include "team_order.h"
 #include "keybinding.h"
+#include "t_string.h"
 
-const char* getName(TeamOrder order) {
+TStringId getName(TeamOrder order) {
   switch (order) {
     case TeamOrder::FLEE:
-      return "Don't chase";
+      return TStringId("DONT_CHASE_TEAM_ORDER");
     case TeamOrder::STAND_GROUND:
-      return "Stop";
+      return TStringId("STOP_TEAM_ORDER");
   }
 }
 
-const char* getDescription(TeamOrder order) {
+TStringId getDescription(TeamOrder order) {
   switch (order) {
     case TeamOrder::FLEE:
-      return "Team members won't move toward enemies, and only fight those that are adjacent.";
+      return TStringId("DONT_CHASE_TEAM_ORDER_DESCRIPTION");
     case TeamOrder::STAND_GROUND:
-      return "Team members will stand in place, and won't follow the leader.";
+      return TStringId("STOP_TEAM_ORDER_DESCRIPTION");
   }
 }
 

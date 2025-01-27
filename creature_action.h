@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util.h"
+#include "t_string.h"
 
 class Creature;
 
@@ -10,18 +11,19 @@ class NODISCARD CreatureAction {
 
   CreatureAction(const Creature*, ActionFun);
   CreatureAction(ActionFun);
-  CreatureAction(const string& failedReason = "");
+  CreatureAction();
+  CreatureAction(TString failedReason);
   CreatureAction prepend(ActionFun);
   CreatureAction append(ActionFun);
   CreatureAction prepend(CreatureAction);
   CreatureAction append(CreatureAction);
   void perform(Creature*);
-  string getFailedReason() const;
+  const optional<TString>& getFailedReason() const;
   explicit operator bool() const;
 
   private:
   ActionFun action;
-  string failedMessage;
+  optional<TString> failedMessage;
   const Creature* performer = nullptr;
 };
 

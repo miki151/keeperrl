@@ -30,11 +30,11 @@ CreatureInfo::CreatureInfo(const Creature* c)
       bestAttack(c->getBestAttack(c->getGame()->getContentFactory())) {
 }
 
-string PlayerInfo::getFirstName() const {
+TString PlayerInfo::getFirstName() const {
   if (!firstName.empty())
     return firstName;
   else
-    return capitalFirst(name);
+    return TSentence("CAPITAL_FIRST", name);
 }
 
 ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature* c, const ContentFactory* factory) {
@@ -90,7 +90,7 @@ ItemInfo ItemInfo::get(const Creature* creature, const vector<Item*>& stack, con
     c.name = stack[0]->getShortName(factory, creature, stack.size() > 1);
     c.fullName = stack[0]->getNameAndModifiers(factory, false, creature);
     c.description = (creature && creature->isAffected(LastingEffect::BLIND))
-        ? vector<string>() : stack[0]->getDescription(factory);
+        ? vector<TString>() : stack[0]->getDescription(factory);
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().getViewIdList();
     c.viewIdModifiers = stack[0]->getViewObject().getAllModifiers();
@@ -111,14 +111,14 @@ static vector<ItemInfo> fillIntrinsicAttacks(const Creature* c, const ContentFac
   auto& intrinsicAttacks = c->getBody().getIntrinsicAttacks();
   for (auto part : ENUM_ALL(BodyPart))
     for (auto& attack : intrinsicAttacks[part]) {
-      CHECK(!!attack.item) << "Intrinsic attacks not initialized for " << c->getName().bare() << " "
+      CHECK(!!attack.item) << "Intrinsic attacks not initialized for " << c->getName().bare().data() << " "
           << EnumInfo<BodyPart>::getString(part);
       ret.push_back(ItemInfo::get(c, {attack.item.get()}, factory));
       auto& item = ret.back();
       item.weight.reset();
       if (!c->getBody().numGood(part)) {
         item.unavailable = true;
-        item.unavailableReason = "No functional body part: "_s + getName(part);
+        item.unavailableReason = TSentence("NO_FUNCTIONAL_BODY_PART", getName(part));
         item.actions.clear();
       } else {
         item.intrinsicAttackState = attack.active ? ItemInfo::ACTIVE : ItemInfo::INACTIVE;
@@ -131,9 +131,9 @@ static vector<ItemInfo> fillIntrinsicAttacks(const Creature* c, const ContentFac
 
 static vector<ItemInfo> getItemInfos(const Creature* c, const vector<Item*>& items, const ContentFactory* factory) {
   PROFILE;
-  map<string, vector<Item*> > stacks = groupBy<Item*, string>(items,
+  map<TString, vector<Item*> > stacks = groupBy<Item*, TString>(items,
       [&] (Item* const& item) {
-          return item->getNameAndModifiers(factory, false, c) + (c->getEquipment().isEquipped(item) ? "(e)" : ""); });
+          return item->getNameAndModifiers(factory, false, c); });
   vector<ItemInfo> ret;
   for (auto elem : stacks)
     ret.push_back(ItemInfo::get(c, elem.second, factory));
@@ -143,7 +143,7 @@ static vector<ItemInfo> getItemInfos(const Creature* c, const vector<Item*>& ite
 SpellSchoolInfo fillSpellSchool(const Creature* c, SpellSchoolId id, const ContentFactory* factory) {
   SpellSchoolInfo ret;
   auto& spellSchool = factory->getCreatures().getSpellSchools().at(id);
-  ret.name = spellSchool.name.value_or(id.data());
+  ret.name = spellSchool.name.value_or(TString(string(id.data())));
   ret.experienceType = factory->attrInfo.at(spellSchool.expType).name;
   for (auto& id : spellSchool.spells) {
     auto spell = factory->getCreatures().getSpell(id.first);
@@ -166,7 +166,7 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory)
   firstName = c->getName().firstOrBare();
   name = c->getName().bare();
   title = c->getName().title();
-  description = capitalFirst(c->getAttributes().getDescription(contentFactory));
+  description = TSentence("CAPITAL_FIRST", c->getAttributes().getDescription(contentFactory));
   viewId = c->getViewIdWithWeapon();
   positionHash = c->getPosition().getHash();
   creatureId = c->getUniqueId();
@@ -180,7 +180,7 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory)
   aiType = c->getAttributes().getAIType();
   effects.clear();
   for (auto& adj : c->getBadAdjectives(contentFactory))
-    effects.push_back({adj.getText(), adj.help, true});
+   effects.push_back({adj.getText(), adj.help, true});
   for (auto& adj : c->getGoodAdjectives(contentFactory)) {
     effects.push_back({adj.getText(), adj.help, false});
   }
@@ -222,7 +222,7 @@ vector<AttributeInfo> AttributeInfo::fromCreature(const ContentFactory* contentF
     auto& info = contentFactory->attrInfo.at(attr);
     auto rawAttr = c->getRawAttr(attr, c->getCombatExperience(true, true));
     ret.push_back(AttributeInfo {
-        capitalFirst(info.name),
+        TSentence("CAPITAL_FIRST", info.name),
         info.viewId,
         rawAttr,
         c->getAttrBonus(attr, rawAttr, true),

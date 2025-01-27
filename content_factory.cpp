@@ -148,7 +148,7 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
       for (auto& requirement : info.requirements)
         if (auto tech = requirement.getReferenceMaybe<TechId>())
           if (!keeperInfo.second.technology.contains(*tech))
-            return "Technology prerequisite \""_s + tech->data() + "\" of build item \"" + info.name + "\" is not available "
+            return "Technology prerequisite \""_s + tech->data() + "\" of build item \"" + info.name.data() + "\" is not available "
                 + " for keeper " + keeperInfo.first;
     WorkshopArray merged;
     for (auto& group : keeperInfo.second.workshopGroups)
@@ -162,7 +162,7 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
     for (auto& elem : merged)
       for (auto& item : elem.second)
         if (item.tech && !technology.techs.count(*item.tech))
-          return "Technology prerequisite \""_s + item.tech->data() + "\" of workshop item \"" + item.item.get(this)->getName()
+          return "Technology prerequisite \""_s + item.tech->data() + "\" of workshop item \"" + item.item.get(this)->getName().data()
               + "\" is not available " + " for keeper " + keeperInfo.first;
     for (auto elem : keeperInfo.second.immigrantGroups)
       if (!immigrantsData.count(elem))
@@ -329,9 +329,6 @@ optional<string> ContentFactory::readZLevels(const GameConfig* config, KeyVerifi
 
 optional<string> ContentFactory::readData(const GameConfig* config, const vector<string>& modNames) {
   KeyVerifier keyVerifier;
-  Translations translationsTmp;
-  if (auto error = config->readObject(translationsTmp, GameConfigId::TRANSLATIONS, &keyVerifier))
-    return *error;
   vector<PrimaryId<StorageId>> storageIds;
   if (auto error = config->readObject(storageIds, GameConfigId::STORAGE_IDS, &keyVerifier))
     return *error;

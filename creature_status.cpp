@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "creature_status.h"
 #include "color.h"
+#include "t_string.h"
 
 Color getColor(CreatureStatus status) {
   switch (status) {
@@ -15,29 +16,29 @@ Color getColor(CreatureStatus status) {
   }
 }
 
-const char* getName(CreatureStatus status) {
+TStringId getName(CreatureStatus status) {
   switch (status) {
     case CreatureStatus::PRISONER:
-      return "Prisoner";
+      return TStringId("PRISONER_STATUS");
     case CreatureStatus::CIVILIAN:
-      return "Civilian";
+      return TStringId("CIVILIAN_STATUS");
     case CreatureStatus::LEADER:
-      return "Tribe leader";
+      return TStringId("TRIBE_LEADER_STATUS");
     case CreatureStatus::FIGHTER:
-      return "Fighter";
+      return TStringId("FIGHTER_STATUS");
   }
 }
 
-optional<const char*> getDescription(CreatureStatus status) {
+optional<TStringId> getDescription(CreatureStatus status) {
   switch (status) {
     case CreatureStatus::PRISONER:
-      return "Captured from a hostile tribe";
+      return TStringId("PRISONER_STATUS_DESCRIPTION");
     case CreatureStatus::CIVILIAN:
       return none;
     case CreatureStatus::LEADER:
-      return "Killing will stop immigration";
+      return TStringId("TRIBE_LEADER_STATUS_DESCRIPTION");
     case CreatureStatus::FIGHTER:
-      return "Must be killed to conquer tribe";
+      return TStringId("FIGHTER_STATUS_DESCRIPTION");
   }
 }
 

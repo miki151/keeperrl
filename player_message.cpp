@@ -3,40 +3,42 @@
 #include "view.h"
 #include "scripted_ui_data.h"
 #include "scripted_ui.h"
+#include "gui_elem.h"
 
-PlayerMessage::PlayerMessage(const string& t, MessagePriority p) : text(makeSentence(t)), priority(p), freshness(1) {}
+PlayerMessage::PlayerMessage(const string& t, MessagePriority p) : text(makeSentence(std::move(t))), priority(p),
+    freshness(1) {}
 PlayerMessage::PlayerMessage(const char* t, MessagePriority p) : text(makeSentence(t)), priority(p), freshness(1) {}
+PlayerMessage::PlayerMessage(const TString& t, MessagePriority p)
+    : localizedText(TSentence("MAKE_SENTENCE", std::move(t))), priority(p),
+    freshness(1) {}
 
-PlayerMessage::PlayerMessage(const string& title, const string& t) : text(t), priority(MessagePriority::NORMAL), 
-    announcementTitle(title) {}
+PlayerMessage::PlayerMessage(const TSentence& s, MessagePriority p) : PlayerMessage(TString(std::move(s)), p) {
+}
 
-PlayerMessage PlayerMessage::announcement(const string& title, const string& text) {
-  return PlayerMessage(title, text);
+PlayerMessage::PlayerMessage(const TStringId& s, MessagePriority p) : PlayerMessage(TString(std::move(s)), p) {
 }
 
 void PlayerMessage::presentMessages(View* view, const vector<PlayerMessage>& messages) {
   auto list = ScriptedUIDataElems::List {};
   for (int i : All(messages))
     list.push_back(ScriptedUIDataElems::Record {{
-      {EnumInfo<MessagePriority>::getString(messages[i].priority), messages[i].text}
+      {EnumInfo<MessagePriority>::getString(messages[i].priority), TString(messages[i].getText(view))}
     }});
   if (messages.empty())
     list.push_back(ScriptedUIDataElems::Record {{
-      {"NORMAL", "<No messages yet>"_s}
+      {"NORMAL", TString(TStringId("NO_MESSAGES_YET"))}
     }});
   ScriptedUIState state;
   state.scrollPos[0].set(10000000, milliseconds{0});
   view->scriptedUI("message_history", list, state);
 }
 
-optional<string> PlayerMessage::getAnnouncementTitle() const {
-  return announcementTitle;
+string PlayerMessage::getText(View* view) const {
+  return localizedText ? view->translate(*localizedText) : text;
 }
 
-string PlayerMessage::getText() const {
-  if (isClickable())
-    return text.substr(0, text.size() - 1);
-  return text;
+string PlayerMessage::getText(GuiFactory* view) const {
+  return localizedText ? view->translate(*localizedText) : text;
 }
 
 double PlayerMessage::getFreshness() const {
@@ -77,5 +79,12 @@ int PlayerMessage::getHash() const {
   return combineHash(text, priority, freshness);
 }
 
-SERIALIZE_DEF(PlayerMessage, SUBCLASS(UniqueEntity), text, priority, freshness, announcementTitle, position, creature)
+template <class Archive>
+void PlayerMessage::serialize(Archive& ar, const unsigned int version) {
+  ar(SUBCLASS(UniqueEntity), text, priority, freshness, announcementTitle, position, creature);
+  if (version >= 1)
+    ar(localizedText);
+}
+
+SERIALIZABLE(PlayerMessage);
 SERIALIZATION_CONSTRUCTOR_IMPL(PlayerMessage);

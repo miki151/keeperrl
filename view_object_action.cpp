@@ -1,41 +1,42 @@
 #include "stdafx.h"
 #include "view_object_action.h"
+#include "t_string.h"
 
-const char* getText(ViewObjectAction action) {
+TStringId getText(ViewObjectAction action) {
   switch (action) {
     case ViewObjectAction::PET:
-      return "pet";
+      return TStringId("PET_ACTION");
     case ViewObjectAction::MOUNT:
-      return "mount";
+      return TStringId("MOUNT_ACTION");
     case ViewObjectAction::DISMOUNT:
-      return "dismount";
+      return TStringId("DISMOUNT_ACTION");
     case ViewObjectAction::CHAT:
-      return "chat";
+      return TStringId("CHAT_ACTION");
     case ViewObjectAction::PUSH:
-      return "push";
+      return TStringId("PUSH_ACTION");
     case ViewObjectAction::ATTACK:
-      return "attack";
+      return TStringId("ATTACK_ACTION");
     case ViewObjectAction::MOVE_NOW:
-      return "move now";
+      return TStringId("MOVE_NOW_ACTION");
     case ViewObjectAction::LOCK_DOOR:
-      return "lock door";
+      return TStringId("LOCK_DOOR_ACTION");
     case ViewObjectAction::SKIP_TURN:
-      return "skip turn";
+      return TStringId("SKIP_TURN_ACTION");
     case ViewObjectAction::ADD_TO_TEAM:
-      return "add to team";
+      return TStringId("ADD_TO_TEAM_ACTION");
     case ViewObjectAction::UNLOCK_DOOR:
-      return "unlock door";
+      return TStringId("UNLOCK_DOOR_ACTION");
     case ViewObjectAction::ORDER_CAPTURE:
-      return "order capture";
+      return TStringId("ORDER_CAPTURE_ACTION");
     case ViewObjectAction::SWAP_POSITION:
-      return "swap position";
+      return TStringId("SWAP_POSITION_ACTION");
     case ViewObjectAction::SWITCH_LEADER:
-      return "switch leader";
+      return TStringId("SWITCH_LEADER_ACTION");
     case ViewObjectAction::WRITE_ON_BOARD:
-      return "write on board";
+      return TStringId("WRITE_ON_BOARD_ACTION");
     case ViewObjectAction::REMOVE_FROM_TEAM:
-      return "remove from team";
+      return TStringId("REMOVE_FROM_TEAM_ACTION");
     case ViewObjectAction::CANCEL_CAPTURE_ORDER:
-      return "cancel capture order";
+      return TStringId("CANCEL_CAPTURE_ORDER_ACTION");
   }
 }

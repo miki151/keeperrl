@@ -5,11 +5,13 @@
 
 void applyMessage(const BuffMessageInfo& msg, const Creature* c) {
   msg.visit(
-    [c](const YouMessage& msg) {
+    [&](const YouMessage& msg) {
       c->you(msg.type, msg.message);
     },
-    [c](const VerbMessage& msg) {
-      c->verb(msg.secondPerson, msg.thirdPerson, msg.message);
+    [&](const VerbMessage& msg) {
+      if (auto s1 = msg.secondPerson.text.getReferenceMaybe<TSentence>())
+        if (auto s2 = msg.thirdPerson.text.getReferenceMaybe<TSentence>())
+          c->verb(s1->id, s2->id, msg.message);
     }
   );
 }

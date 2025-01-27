@@ -3,13 +3,14 @@
 #include "util.h"
 #include "enum_variant.h"
 #include "unique_entity.h"
+#include "t_string.h"
 
 using CreatureUniqueId = UniqueEntity<Creature>::Id;
 
 #define VARIANT_TYPES_LIST\
   X(CreatureUniqueId, 0)\
   X(TeamId, 1)\
-  X(string, 2)
+  X(TString, 2)
 
 #define VARIANT_NAME DragContent
 

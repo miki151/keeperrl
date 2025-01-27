@@ -10,11 +10,11 @@
 SERIALIZE_DEF(CollectiveAttack, attacker, ransom, creatures, attackerName, attackTasks, attackerViewId)
 SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveAttack);
 
-static string generateAttackerName(const Collective* attacker) {
+static TString generateAttackerName(const Collective* attacker) {
   if (auto& name = attacker->getName())
     return name->full;
   else
-    return "an unnamed attacker";
+    return TStringId("UNNAMED_ATTACKER");
 }
 
 static ViewIdList getAttackViewId(const Collective* col, const vector<Creature*>& attackers) {
@@ -37,7 +37,7 @@ Collective* CollectiveAttack::getAttacker() const {
   return attacker;
 }
 
-const string& CollectiveAttack::getAttackerName() const {
+const TString& CollectiveAttack::getAttackerName() const {
   return attackerName;
 }
 

@@ -3,15 +3,16 @@
 #include "util.h"
 
 class Sound;
+class TStringId;
 
 class DestroyAction {
   public:
   enum class Type;
   DestroyAction(Type);
-  const char* getVerbSecondPerson() const;
-  const char* getVerbThirdPerson() const;
-  const char* getIsDestroyed() const;
-  const char* getSoundText() const;
+  TStringId getVerbSecondPerson() const;
+  TStringId getVerbThirdPerson() const;
+  TStringId getIsDestroyed() const;
+  optional<TStringId> getSoundText() const;
   optional<Sound> getSound() const;
   Type getType() const;
   bool canDestroyFriendly() const;

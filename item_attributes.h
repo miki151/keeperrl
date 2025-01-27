@@ -36,6 +36,7 @@
 #include "cost_info.h"
 #include "lasting_or_buff.h"
 #include "assembled_minion.h"
+#include "t_string.h"
 
 #define ITATTR(X) make_shared<ItemAttributes>([&](ItemAttributes& i) { X })
 
@@ -55,14 +56,14 @@ class ItemAttributes {
   ViewId SERIAL(viewId);
   optional<ViewId> SERIAL(equipedViewId);
   vector<ViewId> SERIAL(partIds);
-  string SERIAL(name);
-  string SERIAL(description);
-  optional<string> SERIAL(shortName);
+  TString SERIAL(name);
+  TString SERIAL(description);
+  optional<TString> SERIAL(shortName);
   double SERIAL(weight);
   ItemClass SERIAL(itemClass) = ItemClass::OTHER;
-  optional<string> SERIAL(plural);
-  optional<string> SERIAL(blindName);
-  optional<string> SERIAL(artifactName);
+  optional<TString> SERIAL(plural);
+  optional<TString> SERIAL(blindName);
+  optional<TString> SERIAL(artifactName);
   optional<CollectiveResourceId> SERIAL(resourceId);
   int SERIAL(burnTime) = 0;
   int SERIAL(price) = 0;
@@ -81,17 +82,17 @@ class ItemAttributes {
   vector<LastingOrBuff> SERIAL(equipedEffect);
   optional<CompanionInfo> SERIAL(equipedCompanion);
   vector<LastingOrBuff> SERIAL(ownedEffect);
-  optional<string> SERIAL(applyMsgFirstPerson);
-  optional<string> SERIAL(applyMsgThirdPerson);
-  pair<string, string> SERIAL(applyVerb) = {"apply", "applies"};
+  optional<TString> SERIAL(applyMsgFirstPerson);
+  optional<TString> SERIAL(applyMsgThirdPerson);
+  pair<TString, TString> SERIAL(applyVerb) = {TStringId("YOU_APPLY"), TStringId("APPLIES")};
   optional<StatId> SERIAL(producedStat);
   bool SERIAL(effectAppliedWhenThrown) = false;
   optional<CreaturePredicate> SERIAL(applyPredicate);
   optional<SoundId> SERIAL(applySound);
   WeaponInfo SERIAL(weaponInfo);
   vector<pair<int, ItemPrefix>> SERIAL(genPrefixes);
-  vector<string> SERIAL(prefixes);
-  vector<string> SERIAL(suffixes);
+  vector<TString> SERIAL(prefixes);
+  vector<TString> SERIAL(suffixes);
   optional<ItemUpgradeInfo> SERIAL(upgradeInfo);
   int SERIAL(maxUpgrades) = 3;
   vector<ItemUpgradeType> SERIAL(upgradeType);
@@ -102,9 +103,9 @@ class ItemAttributes {
   vector<StorageId> SERIAL(storageIds);
   optional<Effect> SERIAL(carriedTickEffect);
   CostInfo SERIAL(craftingCost) = CostInfo::noCost();
-  optional<string> SERIAL(equipmentGroup);
+  optional<TString> SERIAL(equipmentGroup);
   CreaturePredicate SERIAL(autoEquipPredicate) = CreaturePredicates::And{};
-  string SERIAL(equipWarning) = "This item may potentially hurt your minion. Continue?";
+  TString SERIAL(equipWarning) = TStringId("ITEM_MAY_HURT_MINION");
 };
 
 static_assert(std::is_nothrow_move_constructible<ItemAttributes>::value, "T should be noexcept MoveConstructible");

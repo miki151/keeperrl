@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "view_id.h"
+#include "t_string.h"
 
 class CollectiveAttack {
   public:
@@ -10,7 +11,7 @@ class CollectiveAttack {
   CollectiveAttack(vector<const Task*> attackTasks, const string& name, ViewIdList, const vector<Creature*>&);
 
   Collective* getAttacker() const;
-  const string& getAttackerName() const;
+  const TString& getAttackerName() const;
   ViewIdList getAttackerViewId() const;
   const vector<Creature*>& getCreatures() const;
   optional<int> getRansom() const;
@@ -24,7 +25,7 @@ class CollectiveAttack {
   optional<int> SERIAL(ransom);
   vector<Creature*> SERIAL(creatures);
   Collective* SERIAL(attacker) = nullptr;
-  string SERIAL(attackerName);
+  TString SERIAL(attackerName);
   ViewIdList SERIAL(attackerViewId);
   vector<WeakPointer<const Task>> SERIAL(attackTasks);
 };

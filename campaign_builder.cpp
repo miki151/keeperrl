@@ -385,17 +385,18 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* content
           return none;
         case CampaignActionId::CONFIRM:
           if (!retired || retired->getNumActive() > 0 || retired->getAllGames().empty() ||
-              view->yesOrNoPrompt("The imps are going to be sad if you don't add any retired dungeons. Continue?")) {
+              view->yesOrNoPrompt(TStringId("CONFIRM_NO_RETIRED_DUNGEONS"))) {
             string gameIdentifier;
-            string gameDisplayName;
+            TSentence gameDisplayName;
             if (avatarInfo.chosenBaseName) {
-              string name = avatarInfo.playerCreature->getName().firstOrBare();
+              auto name = avatarInfo.playerCreature->getName().firstOrBare();
               gameIdentifier = *avatarInfo.chosenBaseName + "_" + campaign.worldName + getNewIdSuffix();
-              gameDisplayName = capitalFirst(avatarInfo.playerCreature->getName().plural()) + " of " + *avatarInfo.chosenBaseName;
+              gameDisplayName = TSentence("CAPITAL_FIRST", TSentence("OF",
+                  avatarInfo.playerCreature->getName().plural(), *avatarInfo.chosenBaseName));
             } else {
-              string name = avatarInfo.playerCreature->getName().firstOrBare();
+              string name = *avatarInfo.playerCreature->getName().first();
               gameIdentifier = name + "_" + campaign.worldName + getNewIdSuffix();
-              gameDisplayName = name + " of " + campaign.worldName;
+              gameDisplayName = TSentence("OF", name, campaign.worldName);
             }
             gameIdentifier = stripFilename(std::move(gameIdentifier));
             auto aggressionLevel = avatarInfo.creatureInfo.enemyAggression
@@ -414,7 +415,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* content
 
 CampaignSetup CampaignBuilder::getEmptyCampaign() {
   Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::QUICK_MAP, "", 1);
-  return CampaignSetup{ret, "", "", {}, none, EnemyAggressionLevel::MODERATE};
+  return CampaignSetup{ret, "", TString(), {}, none, EnemyAggressionLevel::MODERATE};
 }
 
 CampaignSetup CampaignBuilder::getWarlordCampaign(const vector<RetiredGames::RetiredGame>& games,

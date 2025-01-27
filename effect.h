@@ -44,8 +44,8 @@ class Effect {
 
   bool apply(Position, Creature* attacker = nullptr) const;
   bool applyToCreature(Creature*, Creature* attacker = nullptr) const;
-  string getName(const ContentFactory*) const;
-  string getDescription(const ContentFactory*) const;
+  TString getName(const ContentFactory*) const;
+  TString getDescription(const ContentFactory*) const;
   optional<MinionEquipmentType> getMinionEquipmentType() const;
   bool canAutoAssignMinionEquipment() const;
   bool isOffensive() const;
@@ -62,8 +62,6 @@ class Effect {
   static vector<Creature*> summon(Position, CreatureGroup&, int num, optional<TimeInterval> ttl, TimeInterval delay = 0_visible);
   static vector<Creature*> summonCreatures(Position, vector<PCreature>, TimeInterval delay = 0_visible);
   static vector<Effect> getWishedForEffects(const ContentFactory*);
-  static void enhanceWeapon(Creature*, int mod, const string& msg);
-  static void enhanceArmor(Creature*, int mod, const string& msg);
   static optional<Position> getSummonAwayPosition(Creature*);
 
   HeapAllocated<EffectType> SERIAL(effect);

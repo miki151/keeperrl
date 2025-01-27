@@ -150,7 +150,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   Body& getBody();
   bool isDead() const;
   void clearInfoForRetiring();
-  optional<string> getDeathReason() const;
+  optional<TString> getDeathReason() const;
   GlobalTime getDeathTime() const;
   struct KillInfo {
     Creature::Id SERIAL(creature);
@@ -158,7 +158,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
     SERIALIZE_ALL(creature, viewId)
   };
   const vector<KillInfo>& getKills() const;
-  const vector<string>& getKillTitles() const;
+  const vector<TString>& getKillTitles() const;
 
   MovementType getMovementType() const;
   MovementType getMovementType(Game*) const;
@@ -166,8 +166,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   int getDifficultyPoints() const;
 
-  string getPluralTheName(Item* item, int num) const;
-  string getPluralAName(Item* item, int num) const;
+  TString getPluralTheName(Item* item, int num) const;
+  TString getPluralAName(Item* item, int num) const;
   CreatureAction move(Position, optional<Position> nextPosIntent = none) const;
   CreatureAction move(Vec2) const;
   CreatureAction forceMove(Position) const;
@@ -180,11 +180,11 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void drop(vector<PItem> item);
   CreatureAction attack(Creature*) const;
   int getDefaultWeaponDamage() const;
-  CreatureAction execute(Creature*, const char* verbSecond, const char* verbThird) const;
+  CreatureAction execute(Creature*, TStringId verbSecond, TStringId verbThird) const;
   CreatureAction applyItem(Item* item) const;
   CreatureAction equip(Item* item, const ContentFactory* = nullptr) const;
   CreatureAction unequip(Item* item, const ContentFactory* = nullptr) const;
-  bool canEquipIfEmptySlot(const Item* item, string* reason = nullptr) const;
+  bool canEquipIfEmptySlot(const Item* item, TString* reason = nullptr) const;
   bool canEquip(const Item* item) const;
   CreatureAction throwItem(Item*, Position target, bool isFriendlyAI) const;
   optional<int> getThrowDistance(const Item*) const;
@@ -208,7 +208,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void forceDismount(Vec2 dir);
   void tryToDismount();
   bool isSteedGoodSize(Creature* whom) const;
-  vector<string> getSteedSizes() const;
+  vector<TString> getSteedSizes() const;
   CreatureAction mount(Creature* whom) const;
   Creature* getSteed() const;
   Creature* getRider() const;
@@ -248,16 +248,18 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void dieWithAttacker(Creature* attacker, DropType = DropType::EVERYTHING);
   void dieWithLastAttacker(DropType = DropType::EVERYTHING);
   void dieNoReason(DropType = DropType::EVERYTHING);
-  void dieWithReason(const string& reason, DropType = DropType::EVERYTHING);
+  void dieWithReason(TString reason, DropType = DropType::EVERYTHING);
 
   void setHeld(Creature* holding);
   Creature* getHoldingCreature() const;
 
   bool isPlayer() const;
 
-  void you(MsgType type, const string& param = "") const;
-  void you(const string& param) const;
-  void verb(const string& second, const string& third, const string& param = "",
+  void you(MsgType type, TString param) const;
+  void you(MsgType type) const;
+  void verb(TStringId second, TStringId third, MessagePriority = MessagePriority::NORMAL) const;
+  void verb(TStringId second, TStringId third, TString param, MessagePriority = MessagePriority::NORMAL) const;
+  void verb(TStringId second, TStringId third, TString param1, TString param2,
       MessagePriority = MessagePriority::NORMAL) const;
   void secondPerson(const PlayerMessage&) const;
   void thirdPerson(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
@@ -304,7 +306,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<AdjectiveInfo> getBadAdjectives(const ContentFactory*) const;
 
   vector<string> popPersonalEvents();
-  void addPersonalEvent(const string&);
+  void addPersonalEvent(TString);
   struct CombatIntentInfo {
     enum class Type { ATTACK, CHASE, RETREAT } SERIAL(type);
     bool isHostile() const;
@@ -395,13 +397,13 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<GlobalTime> SERIAL(deathTime);
   bool SERIAL(hidden) = false;
   Creature* lastAttacker = nullptr;
-  optional<string> SERIAL(deathReason);
+  optional<TString> SERIAL(deathReason);
   optional<Position> SERIAL(nextPosIntent);
   EntitySet<Creature> SERIAL(unknownAttackers);
   EntityMap<Creature, GlobalTime> SERIAL(privateEnemies);
   optional<Creature::Id> SERIAL(holding);
   vector<PController> SERIAL(controllerStack);
-  vector<string> SERIAL(killTitles);
+  vector<TString> SERIAL(killTitles);
   vector<KillInfo> SERIAL(kills);
   mutable int SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;
@@ -470,11 +472,11 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 };
 
 struct AdjectiveInfo {
-  string name;
-  string help;
+  TString name;
+  TString help;
   optional<int> timeout;
   int count;
-  string getText() const;
+  TString getText() const;
 };
 
 #ifndef PARSE_GAME

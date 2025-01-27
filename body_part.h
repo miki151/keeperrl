@@ -11,4 +11,7 @@ RICH_ENUM(BodyPart,
   BACK
 );
 
-extern const char* getName(BodyPart);
+class TString;
+extern TString getName(BodyPart);
+extern TString getPlural(BodyPart);
+extern TString getPluralText(BodyPart, int num);

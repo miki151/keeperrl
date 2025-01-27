@@ -329,7 +329,7 @@ void MapGui::onMouseRelease(Vec2 v) {
             inputQueue.push(UserInput(UserInputId::CREATURE_DRAG_DROP,
                CreatureDropInfo{layout->projectOnMap(getBounds(), getScreenPos(), v), id}));
           },
-          [&](const string& group) {
+          [&](const TString& group) {
             inputQueue.push(UserInput(UserInputId::CREATURE_GROUP_DRAG_ON_MAP,
                CreatureGroupDropInfo{layout->projectOnMap(getBounds(), getScreenPos(), v), group}));
           },
@@ -1495,7 +1495,7 @@ void MapGui::updateShortestPaths(CreatureView* view, Renderer& renderer, Vec2 ti
     if (auto draggedContent = guiFactory->getDragContainer().getElement())
       draggedContent->visit<void>(
           [&](UniqueEntity<Creature>::Id id) { shortestPath = view->getPathTo(id, *pos); },
-          [&](const string& group) { shortestPath = view->getGroupPathTo(group, *pos); },
+          [&](const TString& group) { shortestPath = view->getGroupPathTo(group, *pos); },
           [&](TeamId team) { shortestPath = view->getTeamPathTo(team, *pos); }
       );
   }

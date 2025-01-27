@@ -7,8 +7,10 @@ CreatureAction::CreatureAction(const Creature* c, ActionFun f) : action(f), perf
 CreatureAction::CreatureAction(CreatureAction::ActionFun f) : action(f) {
 }
 
-CreatureAction::CreatureAction(const string& msg)
-    : action(nullptr), failedMessage(msg) {
+CreatureAction::CreatureAction(TString msg) : action(nullptr), failedMessage(msg) {
+}
+
+CreatureAction::CreatureAction() : action(nullptr) {
 }
 
 void CreatureAction::perform(Creature* c) {
@@ -41,7 +43,7 @@ CreatureAction CreatureAction::append(ActionFun f) {
   return *this;
 }
 
-string CreatureAction::getFailedReason() const {
+const optional<TString>& CreatureAction::getFailedReason() const {
   return failedMessage;
 }
 

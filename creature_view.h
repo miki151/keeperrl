@@ -47,7 +47,7 @@ class CreatureView {
   virtual const vector<Vec2>& getUnknownLocations(const Level*) const = 0;
   virtual optional<Vec2> getSelectionSize() const { return none; }
   virtual vector<vector<Vec2>> getPathTo(UniqueEntity<Creature>::Id, Vec2) const { return {}; }
-  virtual vector<vector<Vec2>> getGroupPathTo(const string& group, Vec2) const { return {}; }
+  virtual vector<vector<Vec2>> getGroupPathTo(const TString& group, Vec2) const { return {}; }
   virtual vector<vector<Vec2>> getTeamPathTo(TeamId, Vec2) const { return {}; }
   virtual vector<Vec2> getHighlightedPathTo(Vec2) const { return {}; }
   virtual vector<vector<Vec2>> getPermanentPaths() const { return {}; }
@@ -61,7 +61,7 @@ class CreatureView {
   struct QuartersInfo {
     HashSet<Vec2> positions;
     optional<ViewIdList> viewId;
-    optional<string> name;
+    optional<TString> name;
     double luxury;
   };
   virtual optional<QuartersInfo> getQuarters(Vec2) const { return none; }

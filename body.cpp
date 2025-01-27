@@ -205,8 +205,8 @@ FurnitureType Body::getDiningFurniture() const {
     return FurnitureType("HAYPILE");
 }
 
-const char* Body::getDeathDescription(const ContentFactory* factory) const {
-  return factory->bodyMaterials.at(material).deathDescription.data();
+const TString& Body::getDeathDescription(const ContentFactory* factory) const {
+  return factory->bodyMaterials.at(material).deathDescription;
 }
 
 bool Body::hasHealth(HealthType type, const ContentFactory* factory) const {
@@ -327,8 +327,9 @@ bool Body::healBodyParts(Creature* creature, int max) {
     if (int count = numInjured(part)) {
       result = true;
       count = min(max, count);
-      creature->you(MsgType::YOUR,
-          string(getName(part)) + (count > 1 ? "s are" : " is") + " in better shape");
+      creature->you(MsgType::YOUR, count > 1
+          ? TSentence("BODY_PART_IS_IN_BETTER_SHAPE", getName(part))
+          : TSentence("BODY_PARTS_ARE_IN_BETTER_SHAPE", getPlural(part)));
       clearInjured(part, count);
       updateEffects(part, count);
       max -= count;
@@ -338,7 +339,9 @@ bool Body::healBodyParts(Creature* creature, int max) {
     if (int count = numLost(part)) {
       result = true;
       count = min(max, count);
-      creature->you(MsgType::YOUR, string(getName(part)) + (count > 1 ? "s grow back!" : " grows back!"));
+      creature->you(MsgType::YOUR, count > 1
+          ? TSentence("BODY_PART_GROWS_BACK", getName(part))
+          : TSentence("BODY_PARTS_GROW_BACK", getPlural(part)));
       clearLost(part, count);
       updateEffects(part, count);
       max -= count;
@@ -359,7 +362,7 @@ static void setBodyPartUpgrade(Item* item, BodyPart part, Effect upgrade, const 
 }
 
 static Effect getDefaultBodyPartUpgrade() {
-  return Effect(Effects::Description("Increase either damage or defense by 1", Effect(Effects::ChooseRandom({
+  return Effect(Effects::Description(TStringId("INCREASE_DAMAGE_OR_DEFENSE_BY_ONE"), Effect(Effects::ChooseRandom({
       Effect(Effects::IncreaseAttr{AttrType("DAMAGE"), 1}),
       Effect(Effects::IncreaseAttr{AttrType("DEFENSE"), 1})
   }))));
@@ -409,7 +412,7 @@ bool Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
 }
 
 template <typename T>
-void consumeBodyAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj) {
+void consumeBodyAttr(T& mine, const T& his, vector<TString>& adjectives, const TString& adj) {
   if (mine < his) {
     mine = his;
     if (!adj.empty())
@@ -422,33 +425,38 @@ void Body::addBodyPart(BodyPart parts, int count) {
   bodyParts[parts] += count;
 }
 
-void Body::consumeBodyParts(Creature* c, Body& other, vector<string>& adjectives) {
+void Body::consumeBodyParts(Creature* c, Body& other, vector<TString>& adjectives) {
   auto factory = c->getGame()->getContentFactory();
   for (BodyPart part : ENUM_ALL(BodyPart)) {
     int cnt = other.bodyParts[part] - bodyParts[part];
     if (cnt > 0) {
-      string what = getPlural(getName(part), cnt);
-      c->verb("grow", "grows", what);
-      c->addPersonalEvent(c->getName().the() + " grows "_s + what);
+      if (cnt > 1) {
+        auto what = getPlural(part);
+        c->verb(TStringId("YOU_GROW_LIMBS"), TStringId("GROWS_LIMBS"), what);
+        c->addPersonalEvent(TSentence("GROWS_LIMBS", c->getName().the(), what));
+      } else {
+        auto what = getName(part);
+        c->verb(TStringId("YOU_GROW_LIMB"), TStringId("GROWS_LIMB"), what);
+        c->addPersonalEvent(TSentence("GROWS_LIMB", c->getName().the(), what));
+      }
       bodyParts[part] = other.bodyParts[part];
     }
     if (!other.intrinsicAttacks[part].empty())
       intrinsicAttacks[part].clear();
     for (auto& attack : other.intrinsicAttacks[part]) {
-      c->verb("develop", "develops",  "a " + attack.item->getNameAndModifiers(factory) +
-          " attack");
-      c->addPersonalEvent(c->getName().the() + " develops a " + attack.item->getNameAndModifiers(factory) + " attack");
+      c->verb(TStringId("YOU_DEVELOP_ATTACK"), TStringId("DEVELOPS_ATTACK"),  attack.item->getNameAndModifiers(factory));
+      c->addPersonalEvent(TSentence("DEVELOPS_ATTACK", c->getName().the(), attack.item->getNameAndModifiers(factory)));
       intrinsicAttacks[part].push_back(std::move(attack));
     }
     other.intrinsicAttacks[part].clear();
   }
   if (other.isHumanoid() && !isHumanoid() && numBodyParts(BodyPart::ARM) >= 2 &&
       numBodyParts(BodyPart::LEG) >= 2 && numBodyParts(BodyPart::HEAD) >= 1) {
-    c->you(MsgType::BECOME, "a humanoid");
-    c->addPersonalEvent(c->getName().the() + " turns into a humanoid");
+    c->you(MsgType::BECOME, TStringId("HUMANOID"));
+    c->addPersonalEvent(TSentence("BECOMES", c->getName().the(), TStringId("HUMANOID")));
     xhumanoid = true;
   }
-  consumeBodyAttr(size, other.size, adjectives, "larger");
+  consumeBodyAttr(size, other.size, adjectives, TStringId("LARGER"));
 }
 
 BodyMaterialId Body::getMaterial() const {
@@ -471,47 +479,48 @@ bool Body::injureBodyPart(BodyPart part, const ContentFactory* factory) {
   return isCritical(part, factory);
 }
 
-const char* getName(Body::Size s) {
+TStringId getName(Body::Size s) {
   switch (s) {
-    case Body::Size::SMALL: return "small";
-    case Body::Size::MEDIUM: return "medium";
-    case Body::Size::LARGE: return "large";
-    case Body::Size::HUGE: return "huge";
+    case Body::Size::SMALL: return TStringId("BODY_SIZE_SMALL");
+    case Body::Size::MEDIUM: return TStringId("BODY_SIZE_MEDIUM");
+    case Body::Size::LARGE: return TStringId("BODY_SIZE_LARGE");
+    case Body::Size::HUGE: return TStringId("BODY_SIZE_HUGE");
   }
 }
 
-string Body::getMaterialAndSizeAdjectives(const ContentFactory* factory) const {
-  return string(getName(size)) + " and made of " + factory->bodyMaterials.at(material).name;
-}
-
-string Body::getDescription(const ContentFactory* factory) const {
-  vector<string> ret;
+TString Body::getDescription(const ContentFactory* factory) const {
+  vector<TString> ret;
   bool anyLimbs = false;
   vector<BodyPart> listParts = {BodyPart::ARM, BodyPart::LEG, BodyPart::WING};
   for (BodyPart part : listParts)
     if (int num = numBodyParts(part)) {
-      ret.push_back(getPluralText(getName(part), num));
+      ret.push_back(getPluralText(part, num));
       anyLimbs = true;
     }
   if (xhumanoid) {
     bool noArms = numBodyParts(BodyPart::ARM) == 0;
     bool noLegs = numBodyParts(BodyPart::LEG) == 0;
     if (noArms && noLegs)
-      ret.push_back("no limbs");
+      ret.push_back(TStringId("NO_LIMBS"));
     else if (noArms)
-      ret.push_back("no arms");
+      ret.push_back(TStringId("NO_ARMS"));
     else if (noLegs)
-      ret.push_back("no legs");
+      ret.push_back(TStringId("NO_LEGS"));
   }
   else if (!anyLimbs)
-    ret.push_back("no limbs");
+    ret.push_back(TStringId("NO_LIMBS"));
   auto numHeads = numBodyParts(BodyPart::HEAD);
   if (numHeads == 0)
-    ret.push_back("no "_s + getName(BodyPart::HEAD));
+    ret.push_back(TStringId("NO_HEAD"));
   else if (numHeads > 1)
-    ret.push_back(getPluralText(getName(BodyPart::HEAD), numHeads));
-  string limbDescription = ret.size() > 0 ? " with " + combine(ret) : "";
-  return getMaterialAndSizeAdjectives(factory) + limbDescription + ".";
+    ret.push_back(getPluralText(BodyPart::HEAD, numHeads));
+  if (ret.empty())
+    return TSentence("BODY_SIZE_AND_MATERIAL", getName(size), factory->bodyMaterials.at(material).name);
+  else
+    return TSentence("BODY_SIZE_AND_MATERIAL_AND_LIMBS", {
+      getName(size),
+      factory->bodyMaterials.at(material).name,
+      combineWithAnd(ret)});
 }
 
 bool Body::isHumanoid() const {
@@ -531,7 +540,7 @@ static int numCorpseItems(Body::Size size) {
   }
 }
 
-PItem Body::getBodyPartItem(const string& name, BodyPart part, const ContentFactory* factory) const {
+PItem Body::getBodyPartItem(const TString& name, BodyPart part, const ContentFactory* factory) const {
   if (material == BodyMaterialId("FLESH") || material == BodyMaterialId("UNDEAD_FLESH"))
     return ItemType::severedLimb(name, part, weight / 8, isFarmAnimal() ? ItemClass::FOOD : ItemClass::CORPSE, factory);
   if (auto& t = factory->bodyMaterials.at(material).bodyPartItem)
@@ -552,12 +561,12 @@ static bool bodyPartCanBeDropped(BodyPart part) {
   }
 }
 
-vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool instantlyRotten, const ContentFactory* factory,
+vector<PItem> Body::getCorpseItems(const TString& name, Creature::Id id, bool instantlyRotten, const ContentFactory* factory,
     Game* game) const {
   vector<PItem> ret = [&] {
     if (material == BodyMaterialId("FLESH") || material == BodyMaterialId("UNDEAD_FLESH"))
       return makeVec(
-          ItemType::corpse(name + " corpse", name + " skeleton", weight, factory, instantlyRotten,
+          ItemType::corpse(TSentence("CORPSE_ITEM", name), TSentence("SKELETON_ITEM", name), weight, factory, instantlyRotten,
             minionFood ? ItemClass::FOOD : ItemClass::CORPSE,
             CorpseInfo {id, !corpseIngredientType && canBeRevived && material != BodyMaterialId("UNDEAD_FLESH"),
                 numBodyParts(BodyPart::HEAD) > 0, false},
@@ -587,76 +596,187 @@ void Body::affectPosition(Position position) {
 
 static void youHit(const Creature* c, BodyPart part, const Attack& attack, const ContentFactory* factory) {
   if (auto& elem = factory->attrInfo.at(attack.damageType).bodyPartInjury)
-    c->you(MsgType::YOUR, getName(part) + " "_s + *elem + "!");
+    c->verb(TStringId("YOUR_BODY_PART_IS"), TStringId("HIS_BODY_PART_IS"), getName(part), *elem);
   else
     switch (part) {
       case BodyPart::BACK:
           switch (attack.type) {
-            case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the back!"); break;
-            case AttackType::BITE: c->you(MsgType::ARE, "bitten in the neck!"); break;
-            case AttackType::CUT: c->you(MsgType::YOUR, "throat is cut!"); break;
-            case AttackType::CRUSH: c->you(MsgType::YOUR, "spine is crushed!"); break;
-            case AttackType::HIT: c->you(MsgType::YOUR, "neck is broken!"); break;
-            case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the "_s +
-                                       Random.choose("back"_s, "neck"_s)); break;
-            case AttackType::SPELL: c->you(MsgType::ARE, "ripped to pieces!"); break;
+            case AttackType::SHOOT:
+              c->verb(TStringId("YOU_ARE_SHOT_IN_THE"), TStringId("IS_SHOT_IN_THE"),
+                  TString(TStringId("BACK_BODY_PART")));
+              break;
+            case AttackType::BITE:
+              c->verb(TStringId("YOU_ARE_BITTEN_IN_THE_NECK"), TStringId("IS_BITTEN_IN_THE_NECK"));
+              break;
+            case AttackType::CUT:
+              c->verb(TStringId("YOUR_THROAT_IS_SLIT"), TStringId("HIS_THROAT_IS_SLIT"));
+              break;
+            case AttackType::CRUSH:
+              c->verb(TStringId("YOUR_BODY_PART_IS_CRUSHED"), TStringId("HIS_BODY_PART_IS_CRUSHED"),
+                  TString(TStringId("SPINE_BODY_PART")));
+              break;
+            case AttackType::HIT:
+              c->verb(TStringId("YOUR_BODY_PART_IS_BROKEN"), TStringId("HIS_BODY_PART_IS_BROKEN"),
+                  TString(TStringId("NECK_BODY_PART")));
+              break;
+            case AttackType::STAB:
+              c->verb(TStringId("YOU_ARE_STABBED_IN_THE"), TStringId("IS_STABBED_IN_THE"),
+                  TString(TStringId("BACK_BODY_PART")));
+              break;
+            case AttackType::SPELL:
+              c->verb(TStringId("YOU_ARE_RIPPED_TO_PIECES"), TStringId("IS_RIPPED_TO_PIECES"));
+              break;
           }
           break;
       case BodyPart::HEAD:
           switch (attack.type) {
-            case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the " +
-                                        Random.choose("eye"_s, "neck"_s, "forehead"_s) + "!"); break;
-            case AttackType::BITE: c->you(MsgType::YOUR, "head is bitten off!"); break;
-            case AttackType::CUT: c->you(MsgType::YOUR, "head is chopped off!"); break;
-            case AttackType::CRUSH: c->you(MsgType::YOUR, "skull is shattered!"); break;
-            case AttackType::HIT: c->you(MsgType::YOUR, "neck is broken!"); break;
-            case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the eye!"); break;
-            case AttackType::SPELL: c->you(MsgType::YOUR, "head is ripped to pieces!"); break;
+            case AttackType::SHOOT:
+              c->verb(TStringId("YOU_ARE_SHOT_IN_THE"), TStringId("IS_SHOT_IN_THE"),
+                  Random.choose(TString(TStringId("EYE_BODY_PART")), TString(TStringId("NECK_BODY_PART")),
+                  TString(TStringId("NECK_BODY_PART")))
+              );
+              break;
+            case AttackType::BITE:
+              c->verb(TStringId("YOUR_BODY_PART_IS_BITTEN_OFF"), TStringId("HIS_BODY_PART_IS_BITTEN_OFF"),
+                  TString(TStringId("HEAD_BODY_PART")));
+              break;
+            case AttackType::CUT:
+              c->verb(TStringId("YOUR_BODY_PART_IS_CHOPPED_OFF"), TStringId("HIS_BODY_PART_IS_CHOPPED_OFF"),
+                  TString(TStringId("HEAD_BODY_PART")));
+              break;
+            case AttackType::CRUSH:
+              c->verb(TStringId("YOUR_SKULL_IS_SHATTERED"), TStringId("HIS_SKULL_IS_SHATTERED"));
+              break;
+            case AttackType::HIT:
+              c->verb(TStringId("YOUR_BODY_PART_IS_BROKEN"), TStringId("HIS_BODY_PART_IS_BROKEN"),
+                  TString(TStringId("NECK_BODY_PART")));
+              break;
+            case AttackType::STAB:
+              c->verb(TStringId("YOU_ARE_STABBED_IN_THE"), TStringId("IS_STABBED_IN_THE"), TString(TStringId("EYE_BODY_PART")));
+              break;
+            case AttackType::SPELL:
+              c->verb(TStringId("YOUR_BODY_PART_IS_RIPPED_TO_PIECES"), TStringId("HIS_BODY_PART_IS_RIPPED_TO_PIECES"),
+                  TString(TStringId("HEAD_BODY_PART")));
+              break;
           }
           break;
       case BodyPart::TORSO:
           switch (attack.type) {
-            case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the heart!"); break;
-            case AttackType::BITE: c->you(MsgType::YOUR, "internal organs are ripped out!"); break;
-            case AttackType::CUT: c->you(MsgType::ARE, "cut in half!"); break;
-            case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the " +
-                                       Random.choose("stomach"_s, "heart"_s) + "!"); break;
-            case AttackType::CRUSH: c->you(MsgType::YOUR, "ribs and internal organs are crushed!"); break;
-            case AttackType::HIT: c->you(MsgType::YOUR, "stomach receives a deadly blow!"); break;
-            case AttackType::SPELL: c->you(MsgType::ARE, "ripped to pieces!"); break;
+            case AttackType::SHOOT:
+              c->verb(TStringId("YOU_ARE_SHOT_IN_THE"), TStringId("IS_SHOT_IN_THE"), TString(TStringId("HEART")));
+              break;
+            case AttackType::BITE:
+              c->verb(TStringId("YOUR_INTERNAL_ORGANS_ARE_RIPPED_OUT"), TStringId("HIS_INTERNAL_ORGANS_ARE_RIPPED_OUT"));
+              break;
+            case AttackType::CUT:
+              c->verb(TStringId("YOU_ARE_CUT_IN_HALF"), TStringId("IS_CUT_IN_HALF"));
+              break;
+            case AttackType::STAB:
+              c->verb(TStringId("YOU_ARE_STABBED_IN_THE"), TStringId("IS_STABBED_IN_THE"),
+                  Random.choose(TString(TStringId("STOMACH")), TString(TStringId("HEART"))));
+              break;
+            case AttackType::CRUSH:
+              c->verb(TStringId("YOUR_INTERNAL_ORGANS_ARE_CRUSHED"), TStringId("HIS_INTERNAL_ORGANS_ARE_CRUSHED"));
+              break;
+            case AttackType::HIT:
+              c->verb(TStringId("YOUR_STOMACH_RECEIVES_A_DEADLY_BLOW"), TStringId("HIS_STOMACH_RECEIVES_A_DEADLY_BLOW"));
+              break;
+            case AttackType::SPELL:
+              c->verb(TStringId("YOU_ARE_RIPPED_TO_PIECES"), TStringId("IS_RIPPED_TO_PIECES"));
+              break;
           }
           break;
       case BodyPart::ARM:
           switch (attack.type) {
-            case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the arm!"); break;
-            case AttackType::BITE: c->you(MsgType::YOUR, "arm is bitten off!"); break;
-            case AttackType::CUT: c->you(MsgType::YOUR, "arm is chopped off!"); break;
-            case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the arm!"); break;
-            case AttackType::CRUSH: c->you(MsgType::YOUR, "arm is smashed!"); break;
-            case AttackType::HIT: c->you(MsgType::YOUR, "arm is broken!"); break;
-            case AttackType::SPELL: c->you(MsgType::YOUR, "arm is ripped to pieces!"); break;
+            case AttackType::SHOOT:
+              c->verb(TStringId("YOU_ARE_SHOT_IN_THE"), TStringId("IS_SHOT_IN_THE"), TString(TStringId("ARM_BODY_PART")));
+              break;
+            case AttackType::BITE:
+              c->verb(TStringId("YOUR_BODY_PART_IS_BITTEN_OFF"), TStringId("HIS_BODY_PART_IS_BITTEN_OFF"),
+                  TString(TStringId("ARM_BODY_PART")));
+              break;
+            case AttackType::CUT:
+              c->verb(TStringId("YOUR_BODY_PART_IS_CHOPPED_OFF"), TStringId("HIS_BODY_PART_IS_CHOPPED_OFF"),
+                  TString(TStringId("ARM_BODY_PART")));
+              break;
+            case AttackType::STAB:
+              c->verb(TStringId("YOU_ARE_STABBED_IN_THE"), TStringId("IS_STABBED_IN_THE"),
+                  TString(TStringId("ARM_BODY_PART")));
+              break;
+            case AttackType::CRUSH:
+              c->verb(TStringId("YOUR_BODY_PART_IS_CRUSHED"), TStringId("HIS_BODY_PART_IS_CRUSHED"),
+                  TString(TStringId("ARM_BODY_PART")));
+              break;
+            case AttackType::HIT:
+              c->verb(TStringId("YOUR_BODY_PART_IS_BROKEN"), TStringId("HIS_BODY_PART_IS_BROKEN"),
+                  TString(TStringId("ARM_BODY_PART")));
+              break;
+            case AttackType::SPELL:
+              c->verb(TStringId("YOUR_BODY_PART_IS_RIPPED_TO_PIECES"), TStringId("HIS_BODY_PART_IS_RIPPED_TO_PIECES"),
+                  TString(TStringId("ARM_BODY_PART")));
+              break;
           }
           break;
       case BodyPart::WING:
           switch (attack.type) {
-            case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the wing!"); break;
-            case AttackType::BITE: c->you(MsgType::YOUR, "wing is bitten off!"); break;
-            case AttackType::CUT: c->you(MsgType::YOUR, "wing is chopped off!"); break;
-            case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the wing!"); break;
-            case AttackType::CRUSH: c->you(MsgType::YOUR, "wing is smashed!"); break;
-            case AttackType::HIT: c->you(MsgType::YOUR, "wing is broken!"); break;
-            case AttackType::SPELL: c->you(MsgType::YOUR, "wing is ripped to pieces!"); break;
+            case AttackType::SHOOT:
+              c->verb(TStringId("YOU_ARE_SHOT_IN_THE"), TStringId("IS_SHOT_IN_THE"), TString(TStringId("WING_BODY_PART")));
+              break;
+            case AttackType::BITE:
+              c->verb(TStringId("YOUR_BODY_PART_IS_BITTEN_OFF"), TStringId("HIS_BODY_PART_IS_BITTEN_OFF"),
+                  TString(TStringId("WING_BODY_PART")));
+              break;
+            case AttackType::CUT:
+              c->verb(TStringId("YOUR_BODY_PART_IS_CHOPPED_OFF"), TStringId("HIS_BODY_PART_IS_CHOPPED_OFF"),
+                  TString(TStringId("WING_BODY_PART")));
+              break;
+            case AttackType::STAB:
+              c->verb(TStringId("YOU_ARE_STABBED_IN_THE"), TStringId("IS_STABBED_IN_THE"),
+                  TString(TStringId("WING_BODY_PART")));
+              break;
+            case AttackType::CRUSH:
+              c->verb(TStringId("YOUR_BODY_PART_IS_CRUSHED"), TStringId("HIS_BODY_PART_IS_CRUSHED"),
+                  TString(TStringId("WING_BODY_PART")));
+              break;
+            case AttackType::HIT:
+              c->verb(TStringId("YOUR_BODY_PART_IS_BROKEN"), TStringId("HIS_BODY_PART_IS_BROKEN"),
+                  TString(TStringId("WING_BODY_PART")));
+              break;
+            case AttackType::SPELL:
+              c->verb(TStringId("YOUR_BODY_PART_IS_RIPPED_TO_PIECES"), TStringId("HIS_BODY_PART_IS_RIPPED_TO_PIECES"),
+                  TString(TStringId("WING_BODY_PART")));
+              break;
           }
           break;
       case BodyPart::LEG:
           switch (attack.type) {
-            case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the leg!"); break;
-            case AttackType::BITE: c->you(MsgType::YOUR, "leg is bitten off!"); break;
-            case AttackType::CUT: c->you(MsgType::YOUR, "leg is cut off!"); break;
-            case AttackType::STAB: c->you(MsgType::YOUR, "stabbed in the leg!"); break;
-            case AttackType::CRUSH: c->you(MsgType::YOUR, "knee is crushed!"); break;
-            case AttackType::HIT: c->you(MsgType::YOUR, "leg is broken!"); break;
-            case AttackType::SPELL: c->you(MsgType::YOUR, "leg is ripped to pieces!"); break;
+            case AttackType::SHOOT:
+              c->verb(TStringId("YOU_ARE_SHOT_IN_THE"), TStringId("IS_SHOT_IN_THE"), TString(TStringId("LEG_BODY_PART")));
+              break;
+            case AttackType::BITE:
+              c->verb(TStringId("YOUR_BODY_PART_IS_BITTEN_OFF"), TStringId("HIS_BODY_PART_IS_BITTEN_OFF"),
+                  TString(TStringId("LEG_BODY_PART")));
+              break;
+            case AttackType::CUT:
+              c->verb(TStringId("YOUR_BODY_PART_IS_CHOPPED_OFF"), TStringId("HIS_BODY_PART_IS_CHOPPED_OFF"),
+                  TString(TStringId("LEG_BODY_PART")));
+              break;
+            case AttackType::STAB:
+              c->verb(TStringId("YOU_ARE_STABBED_IN_THE"), TStringId("IS_STABBED_IN_THE"),
+                  TString(TStringId("LEG_BODY_PART")));
+              break;
+            case AttackType::CRUSH:
+              c->verb(TStringId("YOUR_BODY_PART_IS_CRUSHED"), TStringId("HIS_BODY_PART_IS_CRUSHED"),
+                  TString(TStringId("LEG_BODY_PART")));
+              break;
+            case AttackType::HIT:
+              c->verb(TStringId("YOUR_BODY_PART_IS_BROKEN"), TStringId("HIS_BODY_PART_IS_BROKEN"),
+                  TString(TStringId("LEG_BODY_PART")));
+              break;
+            case AttackType::SPELL:
+              c->verb(TStringId("YOUR_BODY_PART_IS_RIPPED_TO_PIECES"), TStringId("HIS_BODY_PART_IS_RIPPED_TO_PIECES"),
+                  TString(TStringId("LEG_BODY_PART")));
+              break;
           }
           break;
       }
@@ -671,7 +791,7 @@ Body::DamageResult Body::takeDamage(const Attack& attack, Creature* creature, do
       youHit(creature, *part, attack, factory);
       if (injureBodyPart(creature, *part,
           contains({AttackType::CUT, AttackType::BITE}, attack.type) && bodyPartCanBeDropped(*part))) {
-        creature->you(MsgType::DIE, "");
+        creature->you(MsgType::DIE);
         creature->dieWithAttacker(attack.attacker);
         return Body::KILLED;
       }
@@ -682,19 +802,19 @@ Body::DamageResult Body::takeDamage(const Attack& attack, Creature* creature, do
       return Body::HURT;
     }
   if (health <= 0) {
-    creature->you(MsgType::ARE, "critically wounded");
-    creature->you(MsgType::DIE, "");
+    creature->verb(TStringId("YOU_ARE_CRITICALLY_WOUNDED"), TStringId("IS_CRITICALLY_WOUNDED"));
+    creature->you(MsgType::DIE);
     creature->dieWithAttacker(attack.attacker);
     return Body::KILLED;
   } else
   if (health < 0.5) {
-    creature->you(MsgType::ARE, "critically wounded");
+    creature->verb(TStringId("YOU_ARE_CRITICALLY_WOUNDED"), TStringId("IS_CRITICALLY_WOUNDED"));
     return Body::HURT;
   } else {
     if (hasAnyHealth(factory))
-      creature->you(MsgType::ARE, "wounded");
+      creature->verb(TStringId("YOU_ARE_WOUNDED"), TStringId("IS_WOUNDED"));
     else if (attack.effect.empty()) {
-      creature->you(MsgType::ARE, "not hurt");
+      creature->verb(TStringId("YOU_ARE_NOT_HURT"), TStringId("IS_NOT_HURT"));
       return Body::NOT_HURT;
     }
     return Body::HURT;
@@ -703,13 +823,13 @@ Body::DamageResult Body::takeDamage(const Attack& attack, Creature* creature, do
 
 void Body::getBadAdjectives(vector<AdjectiveInfo>& ret) const {
   if (health < 1)
-    ret.push_back({"Wounded", ""});
+    ret.push_back({TStringId("WOUNDED"), ""_s});
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (int num = numInjured(part))
-      ret.push_back({getPlural(string("Injured ") + getName(part), num), ""});
+      ret.push_back({TSentence("INJURED_BODY_PART", getPluralText(part, num)), ""_s});
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (int num = numLost(part))
-      ret.push_back({getPlural(string("Lost ") + getName(part), num), ""});
+      ret.push_back({TSentence("LOST_BODY_PART", getPluralText(part, num)), ""_s});
 }
 
 BodySize Body::getSize() const {
@@ -718,7 +838,7 @@ BodySize Body::getSize() const {
 
 bool Body::tick(const Creature* c) {
   if (fallsApartDueToLostBodyParts(c->getGame()->getContentFactory())) {
-    c->you(MsgType::FALL, "apart");
+    c->verb(TStringId("YOU_FALL_APART"), TStringId("FALLS_APART"));
     return true;
   }
   return false;

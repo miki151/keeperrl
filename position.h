@@ -22,6 +22,7 @@ class Vision;
 class Sectors;
 class ContentFactory;
 struct FurnitureEffectInfo;
+class TString;
 
 class Position {
   public:
@@ -40,7 +41,7 @@ class Position {
   Creature* getCreature() const;
   void removeCreature();
   void putCreature(Creature*);
-  string getName() const;
+  TString getName() const;
   Position withCoord(Vec2 newCoord) const;
   Vec2 getCoord() const;
   Level* getLevel() const;

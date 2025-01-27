@@ -11,214 +11,201 @@ SERIALIZATION_CONSTRUCTOR_IMPL(MessageGenerator)
 MessageGenerator::MessageGenerator(MessageGenerator::Type t) : type(t) {
 }
 
-static string addName(const string& s, const string& n) {
-  if (n.size() > 0)
-    return s + " " + n;
-  else
-    return s;
-}
-
-static void addThird(const Creature* c, MsgType type, const string& param) {
-  string msg, unseenMsg;
+static void addThird(const Creature* c, MsgType type, vector<TString> param) {
+  optional<TSentence> unseenMsg;
   auto game = c->getGame();
   if (!game)
     return;
   auto factory = game->getContentFactory();
-  switch (type) {
-    case MsgType::ARE: msg = c->getName().the() + " is " + param; break;
-    case MsgType::YOUR: msg = c->getName().the() + "'s " + param; break;
-    case MsgType::FEEL: msg = c->getName().the() + " looks " + param; break;
-    case MsgType::FALL_ASLEEP: msg = (c->getName().the() + " falls asleep") +
-                               (param.size() > 0 ? " on the " + param : ".");
-                               unseenMsg = "You hear snoring."; break;
-    case MsgType::WAKE_UP: msg = c->getName().the() + " wakes up."; break;
-    case MsgType::DIE:
-      if (c->isAffected(LastingEffect::FROZEN))
-        msg = c->getName().the() + " shatters into a thousand pieces!";
-      else
-        msg = c->getName().the() + " is " +
-          c->getAttributes().getDeathDescription(factory) + "!";
-      break;
-    case MsgType::TELE_APPEAR: msg = c->getName().the() + " appears out of nowhere!"; break;
-    case MsgType::TELE_DISAPPEAR: msg = c->getName().the() + " suddenly disappears!"; break;
-    case MsgType::DIE_OF: msg = c->getName().the() +
-                          " dies" + (param.empty() ? string(".") : " of " + param); break;
-    case MsgType::MISS_ATTACK: msg = c->getName().the() + addName(" misses", param); break;
-    case MsgType::MISS_THROWN_ITEM: msg = param + " misses " + c->getName().the(); break;
-    case MsgType::MISS_THROWN_ITEM_PLURAL: msg = param + " miss " + c->getName().the(); break;
-    case MsgType::HIT_THROWN_ITEM: msg = param + " hits " + c->getName().the(); break;
-    case MsgType::HIT_THROWN_ITEM_PLURAL: msg = param + " hit " + c->getName().the(); break;
-    case MsgType::ITEM_CRASHES: msg = param + " crashes on " + c->getName().the(); break;
-    case MsgType::ITEM_CRASHES_PLURAL: msg = param + " crash on " + c->getName().the(); break;
-    case MsgType::GET_HIT_NODAMAGE: msg = "The attack is harmless."; break;
-    case MsgType::COLLAPSE: msg = c->getName().the() + " collapses."; break;
-    case MsgType::FALL: msg = c->getName().the() + " falls " + param; break;
-    case MsgType::TRIGGER_TRAP: msg = c->getName().the() + " triggers something."; break;
-    case MsgType::DISARM_TRAP: msg = c->getName().the() + " disarms a " + param; break;
-    case MsgType::PANIC: msg = c->getName().the() + " panics."; break;
-    case MsgType::RAGE: msg = c->getName().the() + " is enraged."; break;
-    case MsgType::CRAWL: msg = c->getName().the() + " is crawling"; break;
-    case MsgType::STAND_UP: msg = c->getName().the() + " is back on " +
-                            his(c->getAttributes().getGender()) + " feet";
-                            break;
-    case MsgType::TURN_INVISIBLE: msg = c->getName().the() + " disappears!"; break;
-    case MsgType::TURN_VISIBLE: msg = c->getName().the() + " appears out of nowhere!"; break;
-    case MsgType::ENTER_PORTAL: msg = c->getName().the() + " disappears in the portal."; break;
-    case MsgType::HAPPENS_TO: msg = param + " " + c->getName().the(); break;
-    case MsgType::BURN: msg = c->getName().the() + " burns in the " + param; unseenMsg = "You hear a horrible scream"; break;
-    case MsgType::DROWN: msg = c->getName().the() + " drowns in the " + param; unseenMsg = "You hear a loud splash" ;break;
-    case MsgType::SET_UP_TRAP: msg = c->getName().the() + " sets up the trap"; break;
-    case MsgType::KILLED_BY: msg = c->getName().the() + " is "+
-        c->getAttributes().getDeathDescription(factory) + " by " + param; break;
-    case MsgType::TURN: msg = c->getName().the() + " turns " + param; break;
-    case MsgType::BECOME: msg = c->getName().the() + " becomes " + param; break;
-    case MsgType::COPULATE: msg = c->getName().the() + " copulates " + param; break;
-    case MsgType::CONSUME: msg = c->getName().the() + " absorbs " + param; break;
-    case MsgType::BREAK_FREE:
-        if (param.empty())
-          msg = c->getName().the() + " breaks free";
+  auto msg = [&] () -> optional<TSentence> {
+    param.push_front(c->getName().the());
+    switch (type) {
+      case MsgType::ARE: return TSentence("IS", param);
+      case MsgType::YOUR: return TSentence("HIS", param);
+      case MsgType::FALL_ASLEEP:
+        unseenMsg = TSentence("YOU_HEAR_SNORING");
+        if (!param.empty())
+          return TSentence("FALLS_ASLEEP_IN", param);
         else
-          msg = c->getName().the() + " breaks free from " + param;
-        break;
-    case MsgType::PRAY: msg = c->getName().the() + " prays to " + param; break;
-    case MsgType::SACRIFICE: msg = c->getName().the() + " makes a sacrifice to " + param; break;
-    default: break;
-  }
-  if (!msg.empty()) {
-    c->message(msg);
-    c->getPosition().unseenMessage(unseenMsg);
-  }
+          return TSentence("FALLS_ASLEEP");
+      case MsgType::WAKE_UP: return TSentence("WAKES_UP", param);
+      case MsgType::DIE:
+        if (c->isAffected(LastingEffect::FROZEN))
+          return TSentence("SHATTERS", param);
+        else
+          return TSentence("IS_KILLED", concat(param, {c->getAttributes().getDeathDescription(factory)}));
+      case MsgType::TELE_APPEAR: return TSentence("APPEARS");
+      case MsgType::TELE_DISAPPEAR: return TSentence("DISAPPEARS");
+      case MsgType::DIE_OF: return TSentence("DIES_OF", param);
+      case MsgType::MISS_THROWN_ITEM: return TSentence("ITEM_MISSES", param);
+      case MsgType::MISS_THROWN_ITEM_PLURAL: return TSentence("ITEMS_MISS", param);
+      case MsgType::HIT_THROWN_ITEM: return TSentence("ITEM_HITS", param);
+      case MsgType::HIT_THROWN_ITEM_PLURAL: return TSentence("ITEMS_HIT", param);
+      case MsgType::ITEM_CRASHES: return TSentence("ITEM_CRASHES_ON", param);
+      case MsgType::ITEM_CRASHES_PLURAL: return TSentence("ITEMS_CRASH_ON", param);
+      case MsgType::GET_HIT_NODAMAGE: return TSentence("ATTACK_IS_HARMLESS");
+      case MsgType::COLLAPSE: return TSentence("COLLAPSES");
+      case MsgType::TRIGGER_TRAP: return TSentence("TRIGGERS_SOMETHING");
+      case MsgType::DISARM_TRAP: return TSentence("DISARMS", param);
+      case MsgType::PANIC: return TSentence("PANICS");
+      case MsgType::RAGE: return TSentence("RAGES");
+      case MsgType::CRAWL: return TSentence("IS_CRAWLING");
+      case MsgType::STAND_UP: return TSentence("IS_NO_LONGER_CRAWLING",
+          concat(param, {TString(his(c->getAttributes().getGender()))}));
+      case MsgType::TURN_INVISIBLE: return TSentence("IS_INVISIBLE");
+      case MsgType::TURN_VISIBLE: return TSentence("IS_NO_LONGER_INVISIBLE");
+      case MsgType::ENTER_PORTAL: return TSentence("ENTERS_PORTAL");
+      case MsgType::BURN:
+        unseenMsg = TSentence("YOU_HEAR_SOMEONE_BURNING");
+        return TSentence("BURNS_IN", param);
+      case MsgType::DROWN:
+        unseenMsg = TSentence("YOU_HEAR_SOMEONE_DROWNING");
+        return TSentence("DROWNS_IN", param);
+      case MsgType::KILLED_BY: return TSentence("IS_KILLED_BY",
+          concat(param, {c->getAttributes().getDeathDescription(factory)}));
+      case MsgType::BECOME: return TSentence("BECOMES", param);
+      case MsgType::COPULATE: return TSentence("COPULATES", param);
+      case MsgType::CONSUME: return TSentence("ABSORBS", param);
+      case MsgType::BREAK_FREE:
+          if (param.empty())
+            return TSentence("BREAKS_FREE");
+          else
+            return TSentence("BREAKS_FREE_FROM", param);
+      default: return none;
+    }
+  }();
+  if (msg)
+    c->message(*msg);
+  if (unseenMsg)
+    c->getPosition().unseenMessage(*unseenMsg);
 }
 
-static void addThird(const Creature* c, const string& param) {
-  c->message(c->getName().the() + " " + param);
-}
-
-static void addSecond(const Creature* c, const string& param) {
-  c->secondPerson("You " + param);
-}
-
-static void addSecond(const Creature* c, MsgType type, const string& param) {
+static void addSecond(const Creature* c, MsgType type, vector<TString> param) {
   PROFILE;
-  string msg;
-  switch (type) {
-    case MsgType::ARE: msg = "You are " + param; break;
-    case MsgType::YOUR: msg = "Your " + param; break;
-    case MsgType::FEEL: msg = "You feel " + param; break;
-    case MsgType::WAKE_UP: msg = "You wake up."; break;
-    case MsgType::FALL: msg = "You fall " + param; break;
-    case MsgType::FALL_ASLEEP: msg = "You fall asleep" + (param.size() > 0 ? " on the " + param : "."); break;
-    case MsgType::DIE:
-      if (c->isAffected(LastingEffect::FROZEN))
-        c->secondPerson("You shatter into a thousand pieces!!");
-      else
-        c->secondPerson("You die!!");
-      break;
-    case MsgType::TELE_DISAPPEAR: msg = "You are standing somewhere else!"; break;
-    case MsgType::DIE_OF: msg = "You die" + (param.empty() ? string(".") : " of " + param); break;
-    case MsgType::MISS_ATTACK: msg = "You miss " + param; break;
-    case MsgType::MISS_THROWN_ITEM: msg = param + " misses you"; break;
-    case MsgType::MISS_THROWN_ITEM_PLURAL: msg = param + " miss you"; break;
-    case MsgType::HIT_THROWN_ITEM: msg = param + " hits you"; break;
-    case MsgType::HIT_THROWN_ITEM_PLURAL: msg = param + " hit you"; break;
-    case MsgType::ITEM_CRASHES: msg = param + " crashes on you."; break;
-    case MsgType::ITEM_CRASHES_PLURAL: msg = param + " crash on you."; break;
-    case MsgType::GET_HIT_NODAMAGE: msg = "The attack is harmless."; break;
-    case MsgType::COLLAPSE: msg = "You collapse."; break;
-    case MsgType::TRIGGER_TRAP: msg = "You trigger something."; break;
-    case MsgType::DISARM_TRAP: msg = "You disarm the " + param; break;
-    case MsgType::ATTACK_SURPRISE: msg = "You sneak attack " + param; break;
-    case MsgType::PANIC:
-          msg = !c->isAffected(LastingEffect::HALLU) ? "You are suddenly very afraid" : "You freak out completely"; break;
-    case MsgType::RAGE:
-          msg = !c->isAffected(LastingEffect::HALLU) ?"You are suddenly very angry" : "This will be a very long trip."; break;
-    case MsgType::CRAWL: msg = "You are crawling"; break;
-    case MsgType::STAND_UP: msg = "You are back on your feet"; break;
-    case MsgType::CAN_SEE_HIDING: msg = param + " can see you hiding"; break;
-    case MsgType::TURN_INVISIBLE: msg = "You can see through yourself!"; break;
-    case MsgType::TURN_VISIBLE: msg = "You are no longer invisible"; break;
-    case MsgType::ENTER_PORTAL: msg = "You enter the portal"; break;
-    case MsgType::HAPPENS_TO: msg = param + " you."; break;
-    case MsgType::BURN: msg = "You burn in the " + param; break;
-    case MsgType::DROWN: msg = "You drown in the " + param; break;
-    case MsgType::SET_UP_TRAP: msg = "You set up the trap"; break;
-    case MsgType::KILLED_BY: msg = "You are killed by " + param; break;
-    case MsgType::TURN: msg = "You turn " + param; break;
-    case MsgType::BECOME: msg = "You become " + param; break;
-    case MsgType::BREAK_FREE:
-        if (param.empty())
-          msg = "You break free";
+  auto msg = [&] () -> optional<TSentence> {
+    auto factory = c->getGame()->getContentFactory();
+    switch (type) {
+      case MsgType::ARE: return TSentence("YOU_ARE", param);
+      case MsgType::YOUR: return TSentence("YOUR", param);
+      case MsgType::WAKE_UP: return TSentence("YOU_WAKE_UP");
+      case MsgType::FALL_ASLEEP:
+        if (!param.empty())
+          return TSentence("YOU_FALL_ASLEEP_IN", param);
         else
-          msg = "You break free from " + param;
-        break;
-    case MsgType::PRAY: msg = "You pray to " + param; break;
-    case MsgType::COPULATE: msg = "You copulate " + param; break;
-    case MsgType::CONSUME: msg = "You absorb " + param; break;
-    case MsgType::SACRIFICE: msg = "You make a sacrifice to " + param; break;
-    default: break;
-  }
-  c->message(PlayerMessage(msg, MessagePriority::HIGH));
+          return TSentence("YOU_FALL_ASLEEP");
+      case MsgType::DIE:
+        if (c->isAffected(LastingEffect::FROZEN))
+          return TSentence("YOU_SHATTER");
+        else
+          return TSentence("YOU_DIE");
+      case MsgType::TELE_DISAPPEAR: return TSentence("YOU_ARE_STANDING_SOMEWHERE_ELSE");
+      case MsgType::DIE_OF: return TSentence("YOU_DIE_OF", param);
+      case MsgType::MISS_THROWN_ITEM: return TSentence("ITEM_MISSES_YOU", param);
+      case MsgType::MISS_THROWN_ITEM_PLURAL: return TSentence("ITEMS_MISS_YOU", param);
+      case MsgType::HIT_THROWN_ITEM: return TSentence("ITEM_HITS_YOU", param);
+      case MsgType::HIT_THROWN_ITEM_PLURAL: return TSentence("ITEMS_HIT_YOU", param);
+      case MsgType::ITEM_CRASHES: return TSentence("ITEM_CRASHES_ON_YOU", param);
+      case MsgType::ITEM_CRASHES_PLURAL: return TSentence("ITEMS_CRASH_ON_YOU", param);
+      case MsgType::GET_HIT_NODAMAGE: return TSentence("ATTACK_ON_YOU_IS_HARMLESS");
+      case MsgType::COLLAPSE: return TSentence("YOU_COLLAPSE");
+      case MsgType::TRIGGER_TRAP: return TSentence("YOU_TRIGGER_SOMETHING");
+      case MsgType::DISARM_TRAP: return TSentence("YOU_DISARM", param);
+      case MsgType::PANIC:
+        return !c->isAffected(LastingEffect::HALLU) ? TSentence("YOU_AFRAID") : TSentence("YOU_FREAK_OUT");
+      case MsgType::RAGE:
+        return !c->isAffected(LastingEffect::HALLU) ? TSentence("YOU_ANGRY") : TSentence("YOU_ANGRY_HALLU");
+      case MsgType::CRAWL: return TSentence("YOU_CRAWLING");
+      case MsgType::STAND_UP: return TSentence("YOU_NO_LONGER_CRAWLING");
+      case MsgType::CAN_SEE_HIDING: return TSentence("CAN_SEE_YOU_HIDING", param);
+      case MsgType::TURN_INVISIBLE: return TSentence("YOU_INVISIBLE");
+      case MsgType::TURN_VISIBLE: return TSentence("YOU_NO_LONGER_INVISIBLE");
+      case MsgType::ENTER_PORTAL: return TSentence("YOU_ENTER_PORTAL");
+      case MsgType::BURN: return TSentence("YOU_BURN_IN", param);
+      case MsgType::DROWN: return TSentence("YOU_DROWN_IN", param);
+      case MsgType::KILLED_BY: return TSentence("YOU_KILLED_BY",
+          concat(param, {c->getAttributes().getDeathDescription(factory)}));
+      case MsgType::BECOME: return TSentence("YOU_BECOME", param);
+      case MsgType::BREAK_FREE: return TSentence("YOU_BREAK_FREE");
+      case MsgType::COPULATE: return TSentence("YOU_COPULATE", param);
+      case MsgType::CONSUME: return TSentence("YOU_ABSORB", param);
+      default:
+        return none;
+    }
+  }();
+  if (msg)
+    c->message(PlayerMessage(*msg, MessagePriority::HIGH));
 }
 
-static void addBoulder(const Creature* c, MsgType type, const string& param) {
-  string msg, unseenMsg;
+static void addBoulder(const Creature* c, MsgType type, vector<TString> param) {
+  optional<TSentence> msg, unseenMsg;
+  param.push_front(c->getName().the());
   switch (type) {
-    case MsgType::BURN: msg = c->getName().the() + " burns in the " + param; break;
-    case MsgType::DROWN: msg = c->getName().the() + " falls into the " + param;
-                         unseenMsg = "You hear a loud splash"; break;
-    case MsgType::KILLED_BY: msg = c->getName().the() + " is destroyed by " + param; break;
-    case MsgType::ENTER_PORTAL: msg = c->getName().the() + " disappears in the portal."; break;
-    default: break;
+    case MsgType::BURN:
+      msg = TSentence("BURNS_IN", param);
+      break;
+    case MsgType::DROWN:
+      unseenMsg = TSentence("YOU_HEAR_A_LOUD_SPLASH");
+      msg = TSentence("DROWNS_IN", param);
+      break;
+    case MsgType::KILLED_BY:
+      msg = TSentence("IS_DESTROYED_BY", param);
+      break;
+    default:
+      break;
   }
-  if (!msg.empty()) {
-    c->message(msg);
-    c->getPosition().unseenMessage(unseenMsg);
-  }
+  if (msg)
+    c->message(*msg);
+  if (unseenMsg)
+    c->getPosition().unseenMessage(*unseenMsg);
 }
 
-static void addKraken(const Creature* c, MsgType type, const string& param) {
-  string msg;
+static void addKraken(const Creature* c, MsgType type, vector<TString> param) {
   switch (type) {
     case MsgType::KILLED_BY:
-      msg = param + "cuts the kraken's tentacle";
+      c->message(TSentence("CUTS_TENTACLE", param));
       break;
     case MsgType::DIE:
     case MsgType::DIE_OF:
-      break;;
+      break;
     default:
       addThird(c, type, param);
       break;
   }
-  if (!msg.empty())
-    c->message(msg);
 }
 
-void MessageGenerator::add(const Creature* c, MsgType msg, const string& param) {
+void MessageGenerator::add(const Creature* c, MsgType msg, TString param) {
+  vector<TString> params {param};
   switch (type) {
     case SECOND_PERSON:
-      addSecond(c, msg, param);
+      addSecond(c, msg, params);
       break;
     case THIRD_PERSON:
-      addThird(c, msg, param);
+      addThird(c, msg, params);
       break;
     case BOULDER:
-      addBoulder(c, msg, param);
+      addBoulder(c, msg, params);
       break;
     case KRAKEN:
-      addKraken(c, msg, param);
+      addKraken(c, msg, params);
       break;
     default:
       break;
   }
 }
 
-void MessageGenerator::add(const Creature* c, const string& param) {
+void MessageGenerator::add(const Creature* c, MsgType msg) {
   switch (type) {
     case SECOND_PERSON:
-      addSecond(c, param);
+      addSecond(c, msg, {});
       break;
     case THIRD_PERSON:
-      addThird(c, param);
+      addThird(c, msg, {});
+      break;
+    case BOULDER:
+      addBoulder(c, msg, {});
+      break;
+    case KRAKEN:
+      addKraken(c, msg, {});
       break;
     default:
       break;
@@ -235,9 +222,9 @@ void MessageGenerator::addSecondPerson(const Creature* c, const PlayerMessage& m
     c->message(msg);
 }
 
-string MessageGenerator::getEnemyName(const Creature* c) {
+TString MessageGenerator::getEnemyName(const Creature* c) {
   if (type == SECOND_PERSON)
-    return "you";
+    return "you"_s;
   else
     return c->getName().the();
 }

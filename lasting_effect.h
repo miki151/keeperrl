@@ -69,6 +69,7 @@ RICH_ENUM(
 
 struct Color;
 class ContentFactory;
+class TString;
 
 class LastingEffects {
   public:
@@ -80,14 +81,14 @@ class LastingEffects {
   static int getAttrBonus(const Creature*, AttrType);
   static void afterCreatureDamage(Creature*, LastingEffect);
   static bool tick(Creature*, LastingEffect);
-  static optional<string> getGoodAdjective(LastingEffect);
-  static optional<string> getBadAdjective(LastingEffect);
+  static optional<TString> getGoodAdjective(LastingEffect);
+  static optional<TString> getBadAdjective(LastingEffect);
   static bool isConsideredBad(LastingEffect);
-  static string getAdjective(LastingEffect);
+  static TString getAdjective(LastingEffect);
   static double modifyCreatureDefense(const Creature*, LastingEffect, double damage, AttrType damageAttr);
   static void onAllyKilled(Creature*);
-  static string getName(LastingEffect);
-  static string getDescription(LastingEffect);
+  static TString getName(LastingEffect);
+  static TString getDescription(LastingEffect);
   static bool canSee(const Creature*, const Creature*, GlobalTime);
   static bool modifyIsEnemyResult(const Creature*, const Creature*, GlobalTime, bool);
   static int getPrice(LastingEffect);

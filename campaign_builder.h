@@ -3,6 +3,7 @@
 #include "campaign.h"
 #include "biome_id.h"
 #include "retired_games.h"
+#include "t_string.h"
 
 struct CampaignSetup;
 struct VillainCounts;
@@ -47,7 +48,7 @@ class CampaignBuilder {
 struct CampaignSetup {
   Campaign campaign;
   string gameIdentifier;
-  string gameDisplayName;
+  TString gameDisplayName;
   vector<string> introMessages;
   optional<ExternalEnemiesType> externalEnemies;
   EnemyAggressionLevel enemyAggressionLevel;

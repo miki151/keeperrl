@@ -10,5 +10,6 @@ RICH_ENUM(ItemIndex,
   RUNE
 );
 
-extern const char* getName(ItemIndex, int count = 1);
+class TStringId;
+extern optional<TStringId> getName(ItemIndex, int count = 1);
 extern bool hasIndex(ItemIndex, const Item*);

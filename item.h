@@ -53,17 +53,16 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
 
   bool isDiscarded();
 
-  string getName(bool plural = false, const Creature* owner = nullptr) const;
-  string getTheName(bool plural = false, const Creature* owner = nullptr) const;
-  string getAName(bool plural = false, const Creature* owner = nullptr) const;
-  string getNameAndModifiers(const ContentFactory*, bool plural = false, const Creature* owner = nullptr) const;
-  const optional<string>& getArtifactName() const;
-  void setArtifactName(const string&);
-  string getShortName(const ContentFactory*, const Creature* owner = nullptr, bool plural = false) const;
-  string getPluralName(int count) const;
-  string getPluralTheName(int count) const;
-  string getPluralAName(int count) const;
-  string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
+  TString getName(bool plural = false, const Creature* owner = nullptr) const;
+  TString getTheName(bool plural = false, const Creature* owner = nullptr) const;
+  TString getAName(bool plural = false, const Creature* owner = nullptr) const;
+  TString getNameAndModifiers(const ContentFactory*, bool plural = false, const Creature* owner = nullptr) const;
+  const optional<TString>& getArtifactName() const;
+  void setArtifactName(const TString&);
+  TString getShortName(const ContentFactory*, const Creature* owner = nullptr, bool plural = false) const;
+  TString getPluralName(int count) const;
+  TString getPluralTheName(int count) const;
+  TString getPluralAName(int count) const;
 
   const optional<Effect>& getEffect() const;
   const optional<AssembledMinion>& getAssembledMinion() const;
@@ -74,7 +73,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
 
   ItemClass getClass() const;
   const vector<StorageId>& getStorageIds() const;
-  const optional<string>& getEquipmentGroup() const;
+  const optional<TString>& getEquipmentGroup() const;
   ViewId getEquipedViewId() const;
 
   CostInfo getCraftingCost() const;
@@ -105,8 +104,8 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   void applyPrefix(const ItemPrefix&, const ContentFactory*);
   void setTimeout(GlobalTime);
 
-  string getApplyMsgThirdPerson(const Creature* owner) const;
-  string getApplyMsgFirstPerson(const Creature* owner) const;
+  TString getApplyMsgThirdPerson(const Creature* owner) const;
+  TString getApplyMsgFirstPerson(const Creature* owner) const;
   optional<StatId> getProducedStat() const;
   const vector<LastingOrBuff>& getEquipedEffects() const;
   void onEquip(Creature*, bool msg = true, const ContentFactory* = nullptr);
@@ -122,20 +121,20 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
 
   TimeInterval getApplyTime() const;
   double getWeight() const;
-  vector<string> getDescription(const ContentFactory*) const;
-  void setDescription(string);
+  vector<TString> getDescription(const ContentFactory*) const;
+  void setDescription(TString);
 
   CreaturePredicate getAutoEquipPredicate() const;
-  const string& getEquipWarning() const;
+  const TString& getEquipWarning() const;
   bool hasOwnedEffect(LastingEffect) const;
 
   const WeaponInfo& getWeaponInfo() const;
-  void getAttackMsg(const Creature*, const string& enemyName) const;
+  void getAttackMsg(const Creature*, TString enemyName) const;
 
   static ItemPredicate classPredicate(ItemClass);
   static ItemPredicate equipmentSlotPredicate(EquipmentSlot);
   static ItemPredicate classPredicate(vector<ItemClass>);
-  static ItemPredicate namePredicate(const string& name);
+  static ItemPredicate sameItemPredicate(const Item*);
 
   static vector<vector<Item*>> stackItems(const ContentFactory*, vector<Item*>,
       function<string(const Item*)> addSuffix = [](const Item*) { return ""; });
@@ -146,20 +145,20 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
 
   protected:
   virtual void specialTick(Position) {}
-  void setName(const string& name);
+  void setName(const TString& name);
   bool SERIAL(discarded) = false;
   virtual void applySpecial(Creature*);
 
   private:
-  string getModifiers(const ContentFactory*, bool shorten = false) const;
-  string getVisibleName(bool plural) const;
-  string getBlindName(bool plural) const;
+  TString getModifiers(const ContentFactory*, bool shorten = false) const;
+  TString getVisibleName(bool plural) const;
+  TString getBlindName(bool plural) const;
   SItemAttributes SERIAL(attributes);
   optional<UniqueEntity<Creature>::Id> SERIAL(shopkeeper);
   HeapAllocated<Fire> SERIAL(fire);
   bool SERIAL(canEquipCache);
   ItemClass SERIAL(classCache);
-  string getSuffix() const;
+  TString getSuffix() const;
   optional<GlobalTime> SERIAL(timeout);
   vector<ItemAbility> SERIAL(abilityInfo);
   void updateAbility(const ContentFactory*);

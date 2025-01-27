@@ -21,6 +21,7 @@
 #include "item_counts.h"
 
 class ViewObject;
+class TStringId;
 
 RICH_ENUM(HighlightType,
   DIG,
@@ -53,7 +54,7 @@ RICH_ENUM(HighlightType,
   TILE_BELOW
 );
 
-extern const char* getDescription(HighlightType);
+extern optional<TStringId> getDescription(HighlightType);
 ViewId getViewId(HighlightType, bool active);
 
 class ViewIndex {

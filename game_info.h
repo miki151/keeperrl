@@ -31,8 +31,8 @@ struct CreatureInfo {
   CreatureInfo(const Creature*);
   ViewIdList HASH(viewId);
   UniqueEntity<Creature>::Id HASH(uniqueId);
-  string HASH(name);
-  string HASH(stackName);
+  TString HASH(name);
+  TString HASH(stackName);
   BestAttack HASH(bestAttack);
   HASH_ALL(viewId, uniqueId, name, stackName, bestAttack)
 };
@@ -42,9 +42,9 @@ static_assert(std::is_nothrow_move_constructible<CreatureInfo>::value, "T should
 struct ItemInfo {
   static ItemInfo get(const Creature*, const vector<Item*>&, const ContentFactory*);
   bool representsSteed() const;
-  string HASH(name);
-  string HASH(fullName);
-  vector<string> HASH(description);
+  TString HASH(name);
+  TString HASH(fullName);
+  vector<TString> HASH(description);
   int HASH(number);
   ViewIdList HASH(viewId);
   EnumSet<ViewObjectModifier> HASH(viewIdModifiers);
@@ -57,7 +57,7 @@ struct ItemInfo {
   enum IntrinsicAttackState { ACTIVE, INACTIVE };
   optional<IntrinsicAttackState> HASH(intrinsicAttackState);
   bool HASH(intrinsicExtraAttack);
-  string HASH(unavailableReason);
+  TString HASH(unavailableReason);
   optional<EquipmentSlot> HASH(slot);
   optional<pair<CreatureInfo, int>> HASH(owner);
   enum Type {EQUIPMENT, CONSUMABLE, OTHER} HASH(type);
@@ -72,11 +72,11 @@ static_assert(std::is_nothrow_move_constructible<ItemInfo>::value, "T should be 
 
 struct AttributeInfo {
   static vector<AttributeInfo> fromCreature(const ContentFactory*, const Creature*);
-  string HASH(name);
+  TString HASH(name);
   ViewId HASH(viewId);
   int HASH(value);
   int HASH(bonus);
-  string HASH(help);
+  TString HASH(help);
   HASH_ALL(name, viewId, value, bonus, help)
 };
 
@@ -84,25 +84,25 @@ struct AvatarLevelInfo {
   int HASH(level);
   double HASH(progress);
   ViewIdList HASH(viewId);
-  string HASH(title);
+  TString HASH(title);
   int HASH(numAvailable);
   HASH_ALL(level, progress, viewId, title, numAvailable)
 };
 
 struct SpellInfo {
-  string HASH(name);
+  TString HASH(name);
   string HASH(symbol);
   optional<int> HASH(level);
   bool HASH(available) = true;
-  vector<string> HASH(help);
+  vector<TString> HASH(help);
   optional<TimeInterval> HASH(timeout);
   bool HASH(highlighted);
   HASH_ALL(name, symbol, help, timeout, available, level, highlighted)
 };
 
 struct SpellSchoolInfo {
-  string HASH(name);
-  string HASH(experienceType);
+  TString HASH(name);
+  TString HASH(experienceType);
   vector<SpellInfo> HASH(spells);
   HASH_ALL(name, experienceType, spells)
 };
@@ -110,19 +110,19 @@ struct SpellSchoolInfo {
 class PlayerInfo {
   public:
   PlayerInfo(const Creature*, const ContentFactory*);
-  string getFirstName() const;
+  TString getFirstName() const;
   vector<AttributeInfo> HASH(attributes);
   BestAttack HASH(bestAttack);
-  string HASH(firstName);
-  string HASH(name);
-  string HASH(groupName);
-  string HASH(title);
+  TString HASH(firstName);
+  TString HASH(name);
+  TString HASH(groupName);
+  TString HASH(title);
   CreatureExperienceInfo HASH(experienceInfo);
-  string description;
+  TString description;
   int HASH(positionHash);
   struct Effect {
-    string HASH(name);
-    string HASH(help);
+    TString HASH(name);
+    TString HASH(help);
     bool HASH(bad);
     HASH_ALL(name, help, bad)
   };
@@ -169,7 +169,7 @@ class PlayerInfo {
   vector<TeamMemberAction> HASH(teamMemberActions);
   optional<double> HASH(carryLimit);
   vector<ViewIdList> HASH(kills);
-  vector<string> HASH(killTitles);
+  vector<TString> HASH(killTitles);
   bool HASH(canExitControlMode);
   struct EquipmentGroupInfo {
     ViewId HASH(viewId);
@@ -182,7 +182,7 @@ class PlayerInfo {
 };
 
 struct ImmigrantCreatureInfo {
-  string HASH(name);
+  TString HASH(name);
   ViewIdList HASH(viewId);
   vector<AttributeInfo> HASH(attributes);
   vector<string> HASH(spellSchools);
@@ -201,10 +201,10 @@ ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature*, const ContentFac
 struct ImmigrantDataInfo {
   ImmigrantDataInfo();
   STRUCT_DECLARATIONS(ImmigrantDataInfo)
-  vector<string> HASH(requirements);
-  vector<string> HASH(info);
+  vector<TString> HASH(requirements);
+  vector<TString> HASH(info);
   struct SpecialTraitInfo {
-    string HASH(label);
+    TString HASH(label);
     bool HASH(bad);
     HASH_ALL(label, bad)
   };
@@ -233,13 +233,13 @@ class CollectiveInfo {
   string HASH(warning);
   struct Button {
     ViewId HASH(viewId);
-    string HASH(name);
+    TString HASH(name);
     optional<pair<ViewId, int>> HASH(cost);
-    string HASH(count);
+    TString HASH(count);
     enum { ACTIVE, GRAY_CLICKABLE, INACTIVE} HASH(state);
-    string HASH(help);
+    TString HASH(help);
     optional<Keybinding> HASH(key);
-    string HASH(groupName);
+    TString HASH(groupName);
     bool HASH(hotkeyOpensGroup);
     optional<TutorialHighlight> HASH(tutorialHighlight);
     bool HASH(isBuilding);
@@ -253,7 +253,7 @@ class CollectiveInfo {
   vector<CreatureInfo> HASH(minions);
   struct CreatureGroup {
     UniqueEntity<Creature>::Id HASH(creatureId);
-    string HASH(name);
+    TString HASH(name);
     ViewIdList HASH(viewId);
     int HASH(count);
     bool HASH(highlight);
@@ -277,27 +277,27 @@ class CollectiveInfo {
     optional<ImmigrantCreatureInfo> HASH(creatureInfo);
     struct UpgradeInfo {
       ViewId HASH(viewId);
-      string HASH(name);
+      TString HASH(name);
       int HASH(used);
       int HASH(count);
-      vector<string> HASH(description);
+      vector<TString> HASH(description);
       HASH_ALL(viewId, name, used, count, description)
     };
     vector<UpgradeInfo> HASH(upgrades);
-    pair<string, int> HASH(maxUpgrades);
+    pair<TString, int> HASH(maxUpgrades);
     int HASH(itemIndex);
     HASH_ALL(productionState, paid, itemInfo, creatureInfo, upgrades, maxUpgrades, itemIndex)
   };
   struct OptionInfo {
     ItemInfo HASH(itemInfo);
     optional<ImmigrantCreatureInfo> HASH(creatureInfo);
-    pair<string, int> HASH(maxUpgrades);
+    pair<TString, int> HASH(maxUpgrades);
     HASH_ALL(itemInfo, creatureInfo, maxUpgrades)
   };
   struct ChosenWorkshopInfo {
     vector<ViewId> HASH(resourceTabs);
     int HASH(chosenTab);
-    string HASH(tabName);
+    TString HASH(tabName);
     vector<OptionInfo> HASH(options);
     vector<QueuedItemInfo> HASH(queued);
     int HASH(index);
@@ -311,17 +311,18 @@ class CollectiveInfo {
   struct LibraryInfo {
     struct TechInfo {
       string HASH(description);
+      TString HASH(name);
       TechId HASH(id);
       struct UnlockInfo {
         ViewIdList HASH(viewId);
-        string HASH(name);
-        string HASH(type);
+        TString HASH(name);
+        TString HASH(type);
         HASH_ALL(viewId, name, type)
       };
       vector<UnlockInfo> HASH(unlocks);
       bool HASH(active);
       optional<TutorialHighlight> HASH(tutorialHighlight);
-      HASH_ALL(description, id, active, unlocks, tutorialHighlight)
+      HASH_ALL(description, name, id, active, unlocks, tutorialHighlight)
     };
     int HASH(currentProgress);
     int HASH(totalProgress);
@@ -333,13 +334,13 @@ class CollectiveInfo {
   LibraryInfo HASH(libraryInfo);
   struct PromotionOption {
     ViewId HASH(viewId);
-    string HASH(name);
-    string HASH(description);
+    TString HASH(name);
+    TString HASH(description);
     HASH_ALL(viewId, name, description);
   };
   struct MinionPromotionInfo {
     ViewIdList HASH(viewId);
-    string HASH(name);
+    TString HASH(name);
     UniqueEntity<Creature>::Id HASH(id);
     vector<PromotionOption> HASH(promotions);
     vector<PromotionOption> HASH(options);
@@ -351,7 +352,7 @@ class CollectiveInfo {
   struct Resource {
     ViewId HASH(viewId);
     int HASH(count);
-    string HASH(name);
+    TString HASH(name);
     optional<TutorialHighlight> HASH(tutorialHighlight);
     HASH_ALL(viewId, count, name, tutorialHighlight)
   };
@@ -371,7 +372,7 @@ class CollectiveInfo {
   int HASH(payoutTimeRemaining);
 
   struct Task {
-    string HASH(name);
+    TString HASH(name);
     optional<UniqueEntity<Creature>::Id> HASH(creature);
     bool HASH(priority);
     HASH_ALL(name, creature, priority)
@@ -397,15 +398,15 @@ class CollectiveInfo {
 class VillageInfo {
   public:
   struct Village {
-    optional<string> HASH(name);
-    string HASH(tribeName);
+    optional<TString> HASH(name);
+    TString HASH(tribeName);
     ViewIdList HASH(viewId);
     VillainType HASH(type);
     enum Access { ACTIVE, INACTIVE, LOCATION, NO_LOCATION };
     Access HASH(access);
     bool HASH(isConquered);
     struct TriggerInfo {
-      string HASH(name);
+      TString HASH(name);
       double HASH(value);
       HASH_ALL(name, value)
     };
@@ -417,14 +418,14 @@ class VillageInfo {
   };
   int HASH(numMainVillains);
   int HASH(numConqueredMainVillains);
-  set<pair<UniqueEntity<Collective>::Id, string>> HASH(dismissedInfos);
+  set<pair<UniqueEntity<Collective>::Id, TStringId>> HASH(dismissedInfos);
   vector<Village> HASH(villages);
   HASH_ALL(villages, numMainVillains, numConqueredMainVillains, dismissedInfos)
 };
 
 class GameSunlightInfo {
   public:
-  string HASH(description);
+  TString HASH(description);
   TimeInterval HASH(timeRemaining);
   HASH_ALL(description, timeRemaining)
 };

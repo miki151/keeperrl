@@ -34,6 +34,7 @@
 #include "sdl.h"
 #include "t_string.h"
 #include "translations.h"
+#include "game_config.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -195,8 +196,8 @@ class ButtonKey : public ButtonElem {
   bool capture;
 };
 
-GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o, Translations* t, SoundLibrary* s, const DirectoryPath& freeImages)
-    : clock(c), soundLibrary(s), renderer(r), options(o), translations(t), imagesPath(freeImages) {
+GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o, Translations* t, SoundLibrary* s, const DirectoryPath& freeDataPath)
+    : clock(c), soundLibrary(s), renderer(r), options(o), translations(t), freeDataPath(freeDataPath) {
 }
 
 GuiFactory::~GuiFactory() {}
@@ -651,7 +652,8 @@ SGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFli
         }));
 }
 
-SGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
+SGuiElem GuiFactory::label(const TString& ts, Color c, char hotkey) {
+  auto s = translate(ts);
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           //r.setScissor(bounds);
@@ -726,11 +728,13 @@ class LabelMultiLine : public GuiElem {
   int lineHeight;
 };
 
-SGuiElem GuiFactory::labelMultiLine(const string& s, int lineHeight, int size, Color c) {
+SGuiElem GuiFactory::labelMultiLine(const TString& ts, int lineHeight, int size, Color c) {
+  auto s = translate(ts);
   return SGuiElem(new LabelMultiLine(s, lineHeight, size, c));
 }
 
-SGuiElem GuiFactory::labelMultiLineWidth(const string& s, int lineHeight, int width, int size, Color c, char delim) {
+SGuiElem GuiFactory::labelMultiLineWidth(const TString& ts, int lineHeight, int width, int size, Color c, char delim) {
+  auto s = translate(ts);
   auto lines = getListBuilder(lineHeight);
   for (auto& line : ::breakText(renderer, s, width, size, delim))
     lines.addElem(label(line, size, c));
@@ -748,13 +752,13 @@ static void lighten(Color& c) {
   c.b = min(255, fun(c.b));
 }
 
-SGuiElem GuiFactory::labelHighlight(const string& s, Color c, char hotkey) {
+SGuiElem GuiFactory::labelHighlight(const TString& s, Color c, char hotkey) {
   auto highlighted = c;
   lighten(highlighted);
   return mouseHighlight2(label(s, highlighted, hotkey), label(s, c, hotkey));
 }
 
-SGuiElem GuiFactory::buttonLabel(const string& s, function<void()> f, bool matchTextWidth, bool centerHorizontally, bool unicode) {
+SGuiElem GuiFactory::buttonLabel(const TString& s, function<void()> f, bool matchTextWidth, bool centerHorizontally, bool unicode) {
   return buttonLabel(s, button(std::move(f)), matchTextWidth, centerHorizontally, unicode);
 }
 
@@ -774,13 +778,13 @@ SGuiElem GuiFactory::buttonLabelFocusable(SGuiElem content, function<void(Rectan
   );
 }
 
-SGuiElem GuiFactory::buttonLabelFocusable(const string& text, function<void()> callback, function<bool()> focused,
+SGuiElem GuiFactory::buttonLabelFocusable(const TString& text, function<void()> callback, function<bool()> focused,
     bool matchTextWidth, bool centerHorizontally, bool unicode) {
   return buttonLabelFocusable(unicode ? labelUnicode(text) : label(text), callback, focused,
           matchTextWidth, centerHorizontally);
 }
 
-SGuiElem GuiFactory::buttonLabelFocusable(const string& text, function<void(Rectangle)> callback, function<bool()> focused,
+SGuiElem GuiFactory::buttonLabelFocusable(const TString& text, function<void(Rectangle)> callback, function<bool()> focused,
     bool matchTextWidth, bool centerHorizontally, bool unicode) {
   return stack(
       buttonLabelFocusableImpl(unicode ? labelUnicode(text) : label(text), buttonRect(callback), focused,
@@ -809,7 +813,7 @@ SGuiElem GuiFactory::buttonLabelFocusableImpl(SGuiElem content, SGuiElem button,
   return stack(ret, std::move(content));
 }
 
-SGuiElem GuiFactory::buttonLabelBlink(const string& s, function<void()> f, function<bool()> focused,
+SGuiElem GuiFactory::buttonLabelBlink(const TString& s, function<void()> f, function<bool()> focused,
     bool matchTextWidth, bool centerHorizontally) {
   auto ret = margins(stack(
         mouseHighlight2(standardButtonHighlight(),
@@ -828,7 +832,7 @@ SGuiElem GuiFactory::buttonLabelBlink(const string& s, function<void()> f, funct
       conditionalStopKeys(keyHandler(f, Keybinding("MENU_SELECT"), SoundId("BUTTON_CLICK")), focused));
 }
 
-SGuiElem GuiFactory::buttonLabel(const string& s, SGuiElem button, bool matchTextWidth, bool centerHorizontally, bool unicode) {
+SGuiElem GuiFactory::buttonLabel(const TString& s, SGuiElem button, bool matchTextWidth, bool centerHorizontally, bool unicode) {
   auto text = unicode ? labelUnicode(s) : label(s);
   if (centerHorizontally)
     text = centerHoriz(std::move(text));
@@ -845,7 +849,7 @@ SGuiElem GuiFactory::standardButton(SGuiElem content, SGuiElem button, bool matc
   return stack(ret, std::move(content));
 }
 
-SGuiElem GuiFactory::buttonLabelWithMargin(const string& s, function<bool()> focused) {
+SGuiElem GuiFactory::buttonLabelWithMargin(const TString& s, function<bool()> focused) {
   auto ret = mouseHighlight2(
       stack(
           standardButtonHighlight(),
@@ -857,7 +861,7 @@ SGuiElem GuiFactory::buttonLabelWithMargin(const string& s, function<bool()> foc
   return ret;
 }
 
-SGuiElem GuiFactory::buttonLabelSelected(const string& s, function<void()> f, bool matchTextWidth, bool centerHorizontally) {
+SGuiElem GuiFactory::buttonLabelSelected(const TString& s, function<void()> f, bool matchTextWidth, bool centerHorizontally) {
   auto text = label(s, Color::WHITE);
   if (centerHorizontally)
     text = centerHoriz(text);
@@ -870,11 +874,11 @@ SGuiElem GuiFactory::buttonLabelSelected(const string& s, function<void()> f, bo
       -7, -5, -7, 3),
       std::move(text));
   if (matchTextWidth)
-    ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
+    ret = setWidth(renderer.getTextLength(translate(s)) + 1, std::move(ret));
   return ret;
 }
 
-SGuiElem GuiFactory::buttonLabelSelectedFocusable(const string& s, function<void()> f, function<bool()> focused,
+SGuiElem GuiFactory::buttonLabelSelectedFocusable(const TString& s, function<void()> f, function<bool()> focused,
     bool matchTextWidth, bool centerHorizontally) {
   auto text = label(s, Color::WHITE);
   if (centerHorizontally)
@@ -888,11 +892,11 @@ SGuiElem GuiFactory::buttonLabelSelectedFocusable(const string& s, function<void
       -7, -5, -7, 3),
       std::move(text));
   if (matchTextWidth)
-    ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
+    ret = setWidth(renderer.getTextLength(translate(s)) + 1, std::move(ret));
   return ret;
 }
 
-SGuiElem GuiFactory::buttonLabelInactive(const string& s, bool matchTextWidth, bool centerHorizontally) {
+SGuiElem GuiFactory::buttonLabelInactive(const TString& s, bool matchTextWidth, bool centerHorizontally) {
   auto text = label(s, Color::GRAY);
   if (centerHorizontally)
     text = centerHoriz(text);
@@ -900,7 +904,7 @@ SGuiElem GuiFactory::buttonLabelInactive(const string& s, bool matchTextWidth, b
       margins(standardButton(), -7, -5, -7, 3),
       std::move(text));
   if (matchTextWidth)
-    ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
+    ret = setWidth(renderer.getTextLength(translate(s)) + 1, std::move(ret));
   return ret;
 }
 
@@ -943,7 +947,8 @@ static Color blinkingColor(Color c1, Color c2, milliseconds time) {
   return Color(c1.r * c + c2.r * (1 - c), c1.g * c + c2.g * (1 - c), c1.b * c + c2.b * (1 - c));
 }
 
-SGuiElem GuiFactory::labelHighlightBlink(const string& s, Color c1, Color c2, char hotkey) {
+SGuiElem GuiFactory::labelHighlightBlink(const TString& ts, Color c1, Color c2, char hotkey) {
+  auto s = translate(ts);
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           Color c = blinkingColor(c1, c2, clock->getRealMillis());
@@ -956,7 +961,8 @@ SGuiElem GuiFactory::labelHighlightBlink(const string& s, Color c1, Color c2, ch
         }, renderer.getTextSize(s)));
 }
 
-SGuiElem GuiFactory::label(const string& s, function<Color()> colorFun, char hotkey) {
+SGuiElem GuiFactory::label(const TString& ts, function<Color()> colorFun, char hotkey) {
+  auto s = translate(ts);
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           auto color = colorFun();
@@ -965,23 +971,26 @@ SGuiElem GuiFactory::label(const string& s, function<Color()> colorFun, char hot
         }, renderer.getTextSize(s)));
 }
 
-SGuiElem GuiFactory::labelFun(function<string()> textFun, function<Color()> colorFun) {
+SGuiElem GuiFactory::labelFun(function<TString()> textFun, function<Color()> colorFun) {
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(1, 2), textFun());
-          r.drawText(colorFun(), bounds.topLeft(), textFun());
+          auto s = translate(textFun());
+          r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(1, 2), s);
+          r.drawText(colorFun(), bounds.topLeft(), s);
         }));
 }
 
-SGuiElem GuiFactory::labelFun(function<string()> textFun, Color color) {
+SGuiElem GuiFactory::labelFun(function<TString()> textFun, Color color) {
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(1, 2), textFun());
-          r.drawText(color, bounds.topLeft(), textFun());
+          auto s = translate(textFun());
+          r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(1, 2), s);
+          r.drawText(color, bounds.topLeft(), s);
         }));
 }
 
-SGuiElem GuiFactory::label(const string& s, int size, Color c) {
+SGuiElem GuiFactory::label(const TString& ts, int size, Color c) {
+  auto s = translate(ts);
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(1, 2), s, Renderer::NONE, size);
@@ -1002,7 +1011,8 @@ static Vec2 getTextPos(Rectangle bounds, Renderer::CenterType center) {
   }
 }
 
-SGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const string& s, int size, Color c) {
+SGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const TString& ts, int size, Color c) {
+  auto s = translate(ts);
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           Vec2 pos = getTextPos(bounds, center);
@@ -1011,18 +1021,20 @@ SGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const string& s,
         }, renderer.getTextSize(s, size)));
 }
 
-SGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const string& s, Color c) {
+SGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const TString& s, Color c) {
   return centeredLabel(center, s, Renderer::textSize(), c);
 }
 
-SGuiElem GuiFactory::labelUnicode(const string& s, Color color, int size, FontId fontId) {
+SGuiElem GuiFactory::labelUnicode(const TString& ts, Color color, int size, FontId fontId) {
+  auto s = translate(ts);
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(fontId, size, color, bounds.topLeft(), s);
   }, renderer.getTextSize(s, size, fontId)));
 }
 
-SGuiElem GuiFactory::labelUnicodeHighlight(const string& s, Color color, int size, FontId fontId) {
+SGuiElem GuiFactory::labelUnicodeHighlight(const TString& ts, Color color, int size, FontId fontId) {
+  auto s = translate(ts);
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           Color c = color;
@@ -1038,35 +1050,6 @@ SGuiElem GuiFactory::crossOutText(Color color) {
       r.drawFilledRectangle(pos.translate(Vec2(1, 2)), Color::BLACK.transparency(100));
       r.drawFilledRectangle(pos, color);
   }));
-}
-
-class MainMenuLabel : public GuiElem {
-  public:
-  MainMenuLabel(Renderer& r, const string& s, Color c, double vPad) : text(s), color(c), vPadding(vPad), renderer(r) {}
-
-  int getSize() {
-    return (0.9 - 2 * vPadding) * getBounds().height();
-  }
-
-  virtual void render(Renderer& renderer) override {
-    double height = getBounds().top() + vPadding * getBounds().height();
-    int size = getSize();
-    renderer.drawText(color, Vec2(getBounds().middle().x, height - size / 11), text, Renderer::HOR, size);
-  }
-
-  virtual optional<int> getPreferredWidth() override {
-    return renderer.getTextLength(text, getSize());
-  }
-
-  private:
-  string text;
-  Color color;
-  double vPadding;
-  Renderer& renderer;
-};
-
-SGuiElem GuiFactory::mainMenuLabel(const string& s, double vPadding, Color c) {
-  return SGuiElem(new MainMenuLabel(renderer, s, c, vPadding));
 }
 
 class GuiLayout : public GuiElem {
@@ -2552,7 +2535,7 @@ const static Vec2 tooltipOffset = Vec2(10, 10);
 
 class Tooltip : public GuiElem {
   public:
-  Tooltip(const vector<string>& t, SGuiElem bg, Clock* c, milliseconds d) : text(t), background(std::move(bg)),
+  Tooltip(vector<string> t, SGuiElem bg, Clock* c, milliseconds d) : text(t), background(std::move(bg)),
       lastTimeOut(c->getRealMillis()), clock(c), delay(d) {
   }
 
@@ -2594,10 +2577,11 @@ class Tooltip : public GuiElem {
   milliseconds delay;
 };
 
-SGuiElem GuiFactory::tooltip(const vector<string>& v, milliseconds delayMilli) {
+SGuiElem GuiFactory::tooltip(const vector<TString>& v, milliseconds delayMilli) {
   if (v.empty() || (v.size() == 1 && v[0].empty()))
     return empty();
-  return SGuiElem(new Tooltip(v, stack(background(background1), miniBorder()), clock, delayMilli));
+  auto tv = v.transform([&](auto& s) { return translate(s); });
+  return SGuiElem(new Tooltip(std::move(tv), stack(background(background1), miniBorder()), clock, delayMilli));
 }
 namespace {
 class ScrollArea : public GuiElem {
@@ -2851,6 +2835,7 @@ Texture& GuiFactory::get(TexId id) {
 
 void GuiFactory::loadImages() {
   iconTextures.clear();
+  auto imagesPath = freeDataPath.subdirectory("images");
   textures[TexId::SCROLLBAR] = Texture(imagesPath.file("ui/scrollbar.png"));
   textures[TexId::SCROLL_BUTTON] = Texture(imagesPath.file("ui/scrollmark.png"));
   textures[TexId::BACKGROUND_PATTERN] = Texture(imagesPath.file("window_bg.png"));
@@ -3318,13 +3303,6 @@ SGuiElem GuiFactory::sprite(Texture& t, Alignment a, Color c) {
   return sprite(t, a, false, false, Vec2(0, 0), c);
 }
 
-SGuiElem GuiFactory::mainMenuLabelBg(const string& s, double vPadding, Color color) {
-  return stack(
-      marginFit(empty(), sprite(get(TexId::MENU_ITEM), Alignment::CENTER_STRETCHED),
-          0.12, BOTTOM),
-      mainMenuLabel(s, vPadding, color));
-}
-
 SGuiElem GuiFactory::darken() {
   return stack(
       stopMouseMovement(),
@@ -3333,6 +3311,16 @@ SGuiElem GuiFactory::darken() {
 
 string GuiFactory::translate(const TString& s) {
   return translations->get(options->getStringValue(OptionId::LANGUAGE), s);
+}
+
+string GuiFactory::translate(const TSentence& s) {
+  return translations->get(options->getStringValue(OptionId::LANGUAGE), s);
+}
+
+void GuiFactory::reloadTranslations() {
+  GameConfig gameConfig({freeDataPath.subdirectory("game_config")});
+  while (auto error = gameConfig.readObject(*translations, GameConfigId::TRANSLATIONS, nullptr))
+    USER_INFO << *error;
 }
 
 void GuiFactory::propagateScrollEvent(const vector<SGuiElem>& guiElems) {

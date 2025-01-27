@@ -148,7 +148,7 @@ CostInfo TaskMap::removeTask(Task* task) {
   CHECK(taskByCreature.getSize() == creatureByTask.getSize());
   if (auto pos = positionMap.getMaybe(task)) {
     CHECK(reversePositions.count(*pos)) << "Task position not found: " <<
-        task->getDescription() << " " << pos->getCoord();
+        task->getDescription().data() << " " << pos->getCoord();
     reversePositions.at(*pos).removeElement(task);
     positionMap.erase(task);
   }
@@ -248,7 +248,7 @@ vector<Task*> TaskMap::getTasks(MinionActivity a) const {
 
 Task* TaskMap::addTaskFor(PTask task, Creature* c) {
   auto previousTask = getTask(c);
-  CHECK(!previousTask) << c->getName().bare() << " already has a task " << previousTask->getDescription();
+  CHECK(!previousTask) << c->getName().bare().data() << " already has a task " << previousTask->getDescription().data();
   CHECK(!taskByCreature.getMaybe(c));
   CHECK(!creatureByTask.getMaybe(task.get()));
   taskByCreature.set(c, task.get());

@@ -86,6 +86,6 @@ class ItemPrefix : public ItemPrefixes::ItemPrefix {
 
 class ItemAttributes;
 extern void applyPrefix(const ContentFactory*, const ItemPrefix&, ItemAttributes&);
-extern optional<string> getItemName(const ContentFactory*, const ItemPrefix&);
-extern string getGlyphName(const ContentFactory*, const ItemPrefix&);
-extern vector<string> getEffectDescription(const ContentFactory*, const ItemPrefix&);
+extern optional<TString> getItemName(const ContentFactory*, const ItemPrefix&);
+extern TString getGlyphName(const ContentFactory*, const ItemPrefix&);
+extern vector<TString> getEffectDescription(const ContentFactory*, const ItemPrefix&);

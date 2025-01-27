@@ -111,7 +111,7 @@ Creature::~Creature() {
 vector<vector<Creature*>> Creature::stack(const vector<Creature*>& creatures, function<string(Creature*)> addSuffix) {
   map<string, vector<Creature*>> stacks;
   for (Creature* c : creatures)
-    stacks[c->getName().stack() + addSuffix(c)].push_back(c);
+    stacks[c->getName().stack().data() + addSuffix(c)].push_back(c);
   return getValues(stacks);
 }
 
@@ -228,7 +228,8 @@ pair<CreatureAttributes, SpellMap> Creature::setAttributes(CreatureAttributes at
   for (auto effect : ENUM_ALL(LastingEffect))
     if (!LastingEffects::affects(this, effect, factory))
       removeEffect(effect, true);
-  getName().setFirst(firstName);
+  if (firstName)
+    getName().setFirst(*firstName);
   for (auto& b : attributes->permanentBuffs)
     addPermanentEffect(b, 1, false);
   attributes->permanentBuffs.clear();
@@ -252,13 +253,13 @@ TimeInterval Creature::calculateSpellCooldown(Range cooldown) const {
 
 CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
   if (spell->getType() == SpellType::SPELL && isAffected(LastingEffect::MAGIC_CANCELLATION))
-    return CreatureAction("You can't cast spells while under the effect of "
-        + LastingEffects::getName(LastingEffect::MAGIC_CANCELLATION) + ".");
+    return CreatureAction(TSentence("CANT_CAST_SPELLS_BECAUSE_OF",
+        LastingEffects::getName(LastingEffect::MAGIC_CANCELLATION)));
   auto verb = spell->getType() == SpellType::SPELL ? "cast this spell" : "use this ability";
   if (!isReady(spell))
-    return CreatureAction("You can't "_s + verb + " yet.");
+    return CreatureAction();
   if (target == position && !spell->canTargetSelf())
-    return CreatureAction("You can't "_s + verb + " at yourself.");
+    return CreatureAction();
   return CreatureAction(this, [=] (Creature* c) {
     if (auto sound = spell->getSound())
       c->position.addSound(*sound);
@@ -338,11 +339,11 @@ void Creature::clearInfoForRetiring() {
     steed->clearInfoForRetiring();
 }
 
-optional<string> Creature::getDeathReason() const {
+optional<TString> Creature::getDeathReason() const {
   if (deathReason)
     return deathReason;
   if (lastAttacker)
-    return "killed by " + lastAttacker->getName().a();
+    return TString(TSentence("KILLED_BY", lastAttacker->getName().a()));
   return none;
 }
 
@@ -350,7 +351,7 @@ const vector<Creature::KillInfo>& Creature::getKills() const {
   return kills;
 }
 
-const vector<string>& Creature::getKillTitles() const {
+const vector<TString>& Creature::getKillTitles() const {
   return killTitles;
 }
 
@@ -456,10 +457,10 @@ static Creature::SpeedModifier getSpeedModifier(const Creature* c) {
 CreatureAction Creature::move(Position pos, optional<Position> nextPos) const {
   PROFILE;
   if (isAffected(LastingEffect::IMMOBILE) || !!getRider())
-    return CreatureAction("");
+    return CreatureAction();
   Vec2 direction = getPosition().getDir(pos);
   if (getHoldingCreature())
-    return CreatureAction("You can't break free!");
+    return CreatureAction(TSentence("YOU_CANT_BREAK_FREE"));
   if (direction.length8() != 1)
     return CreatureAction();
   if (!position.canMoveCreature(direction)) {
@@ -471,10 +472,9 @@ CreatureAction Creature::move(Position pos, optional<Position> nextPos) const {
   }
   return CreatureAction(this, [=](Creature* self) {
     PROFILE;
-    INFO << getName().the() << " moving " << direction;
+//    INFO << getName().the() << " moving " << direction;
     if (LastingEffects::restrictedMovement(this)) {
-      secondPerson("You can't move!");
-      thirdPerson(getName().the() + " can't move!");
+      verb(TStringId("YOU_CANT_MOVE"), TStringId("CANT_MOVE"));
       self->spendTime();
       return;
     }
@@ -540,17 +540,27 @@ void Creature::takeItems(vector<PItem> items, Creature* from) {
     game->addEvent(EventInfo::ItemsOwned{this, ref});
 }
 
-void Creature::you(MsgType type, const string& param) const {
-  getController()->getMessageGenerator().add(this, type, param);
+void Creature::you(MsgType type, TString param) const {
+  getController()->getMessageGenerator().add(this, type, std::move(param));
 }
 
-void Creature::you(const string& param) const {
-  getController()->getMessageGenerator().add(this, param);
+void Creature::you(MsgType type) const {
+  getController()->getMessageGenerator().add(this, type);
 }
 
-void Creature::verb(const string& second, const string& third, const string& param, MessagePriority priority) const {
-  secondPerson(PlayerMessage("You "_s + second + (param.empty() ? "" : " " + param), priority));
-  thirdPerson(PlayerMessage(getName().the() + " " + third + (param.empty() ? "" : " " + param), priority));
+void Creature::verb(TStringId second, TStringId third, TString param, MessagePriority priority) const {
+  secondPerson(PlayerMessage(TSentence(second, param), MessagePriority::HIGH));
+  thirdPerson(PlayerMessage(TSentence(third, getName().the(), param)));
+}
+
+void Creature::verb(TStringId second, TStringId third, TString param1, TString param2, MessagePriority priority) const {
+  secondPerson(PlayerMessage(TSentence(second, param1, param2), MessagePriority::HIGH));
+  thirdPerson(PlayerMessage(TSentence(third, {getName().the(), param1, param2})));
+}
+
+void Creature::verb(TStringId second, TStringId third, MessagePriority priority) const {
+  secondPerson(PlayerMessage(TSentence(second), priority));
+  thirdPerson(PlayerMessage(TSentence(third, getName().the()), priority));
 }
 
 void Creature::secondPerson(const PlayerMessage& message) const {
@@ -601,7 +611,7 @@ void Creature::makeMove() {
 CreatureAction Creature::wait() {
   return CreatureAction([=](Creature* self) {
     self->nextPosIntent = none;
-    INFO << self->getName().the() << " waiting";
+//    INFO << self->getName().the() << " waiting";
     bool keepHiding = self->hidden;
     self->spendTime();
     self->hidden = keepHiding;
@@ -662,18 +672,18 @@ vector<Item*> Creature::getPickUpOptions() const {
     return getPosition().getItems();
 }
 
-string Creature::getPluralTheName(Item* item, int num) const {
+TString Creature::getPluralTheName(Item* item, int num) const {
   if (num == 1)
     return item->getTheName(false, this);
   else
-    return toString(num) + " " + item->getTheName(true, this);
+    return TSentence("PLURAL_ITEMS_THE", item->getTheName(true, this), TString(toString(num)));
 }
 
-string Creature::getPluralAName(Item* item, int num) const {
+TString Creature::getPluralAName(Item* item, int num) const {
   if (num == 1)
     return item->getAName(false, this);
   else
-    return toString(num) + " " + item->getAName(true, this);
+    return TSentence("PLURAL_ITEMS_A", item->getAName(true, this), TString(toString(num)));
 }
 
 bool Creature::canCarryMoreWeight(double weight) const {
@@ -701,20 +711,17 @@ int Creature::canCarry(const vector<Item*>& items) const {
 
 CreatureAction Creature::pickUp(const vector<Item*>& itemsAll) const {
   if (!getBody().canPickUpItems())
-    return CreatureAction("You can't pick up anything!");
+    return CreatureAction(TSentence("YOU_CANT_PICK_UP_ANYTHING"));
   auto items = itemsAll.getPrefix(canCarry(itemsAll));
   if (items.empty())
-    return CreatureAction("You are carrying too much to pick this up.");
+    return CreatureAction(TSentence("YOU_ARE_CARRYING_TOO_MUCH"));
   return CreatureAction(this, [=](Creature* self) {
-    INFO << getName().the() << " pickup ";
-    for (auto stack : stackItems(items)) {
-      thirdPerson(getName().the() + " picks up " + getPluralAName(stack[0], stack.size()));
-      secondPerson("You pick up " + getPluralTheName(stack[0], stack.size()));
-    }
+    for (auto stack : stackItems(items))
+      verb(TStringId("YOU_PICK_UP"), TStringId("PICKS_UP"), getPluralAName(stack[0], stack.size()));
     self->equipment->addItems(self->getPosition().removeItems(items), self);
     if (!isAffected(LastingEffect::NO_CARRY_LIMIT) &&
         equipment->getTotalWeight() > getBody().getCarryLimit())
-      you(MsgType::ARE, "overloaded");
+      you(MsgType::ARE, TStringId("OVERLOADED"));
     getGame()->addEvent(EventInfo::ItemsPickedUp{self, items});
     //self->spendTime();
   });
@@ -723,17 +730,16 @@ CreatureAction Creature::pickUp(const vector<Item*>& itemsAll) const {
 vector<vector<Item*>> Creature::stackItems(vector<Item*> items) const {
   PROFILE;
   auto factory = getGame()->getContentFactory();
-  map<string, vector<Item*> > stacks = groupBy<Item*, string>(items,
+  map<TString, vector<Item*> > stacks = groupBy<Item*, TString>(items,
       [this, factory] (Item* const& item) { return item->getNameAndModifiers(factory, false, this); });
   return getValues(stacks);
 }
 
 CreatureAction Creature::drop(const vector<Item*>& items) const {
   return CreatureAction(this, [=](Creature* self) {
-    INFO << getName().the() << " drop";
+//    INFO << getName().the() << " drop";
     for (auto stack : stackItems(items)) {
-      thirdPerson(getName().the() + " drops " + getPluralAName(stack[0], stack.size()));
-      secondPerson("You drop " + getPluralTheName(stack[0], stack.size()));
+      verb(TStringId("YOU_DROP"), TStringId("DROPS"), getPluralAName(stack[0], stack.size()));
     }
     getGame()->addEvent(EventInfo::ItemsDropped{self, items});
     self->getPosition().dropItems(self->equipment->removeItems(items, self));
@@ -745,39 +751,39 @@ void Creature::drop(vector<PItem> items) {
   getPosition().dropItems(std::move(items));
 }
 
-bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
+bool Creature::canEquipIfEmptySlot(const Item* item, TString* reason) const {
   PROFILE;
-  auto setReason = [reason] (string s) {
+  auto setReason = [reason] (TSentence s) {
     if (reason)
       *reason = std::move(s);
   };
   if (!getBody().isHumanoid()) {
-    setReason("Only humanoids can equip items!");
+    setReason("ONLY_HUMANOIDS_CAN_EQUIP_ITEMS");
     return false;
   }
   if (!attributes->canEquip()) {
-    setReason("You can't equip items!");
+    setReason("YOU_CANT_EQUIP_ITEMS");
     return false;
   }
   if (getBody().numGood(BodyPart::ARM) == 0) {
-    setReason("You have no healthy arms!");
+    setReason("YOU_HAVE_NO_HEALTHY_ARMS");
     return false;
   }
   if (getBody().numGood(BodyPart::ARM) == 1 && item->getWeaponInfo().twoHanded) {
-    setReason("You need two hands to wield " + item->getAName() + "!");
+    setReason(TSentence("YOU_NEED_TO_HANDS_TO_WIELD",item->getAName()));
     return false;
   }
   if (!item->canEquip()) {
-    setReason("This item can't be equipped");
+    setReason("THIS_ITEM_CANT_BE_EQUIPED");
     return false;
   }
   if (item->getModifier(AttrType("RANGED_DAMAGE")) > 0 && item->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON &&
       getAttr(AttrType("RANGED_DAMAGE"), false) == 0 && !attributes->getMaxExpLevel().count(AttrType("RANGED_DAMAGE"))) {
-    setReason("You are not skilled in archery");
+    setReason("YOU_ARE_NOT_SKILLED_IN_ARCHERY");
     return false;
   }
   if (equipment->getMaxItems(item->getEquipmentSlot(), this) == 0) {
-    setReason("You lack a required body part to equip this type of item");
+    setReason("YOU_LACK_REQUIRED_BODY_PART");
     return false;
   }
   return true;
@@ -788,16 +794,14 @@ bool Creature::canEquip(const Item* item) const {
 }
 
 CreatureAction Creature::equip(Item* item, const ContentFactory* factory) const {
-  string reason;
+  TString reason;
   if (!canEquipIfEmptySlot(item, &reason))
     return CreatureAction(reason);
   if (equipment->getSlotItems(item->getEquipmentSlot()).contains(item))
     return CreatureAction();
   EquipmentSlot slot = item->getEquipmentSlot();
   auto ret = CreatureAction(this, [=](Creature* self) {
-    INFO << getName().the() << " equip " << item->getName();
-    secondPerson("You equip " + item->getTheName(false, self));
-    thirdPerson(getName().the() + " equips " + item->getAName());
+    verb(TStringId("YOU_EQUIP"), TStringId("EQUIPS"), item->getTheName(false, self));
     self->equipment->equip(item, slot, self, factory ? factory : getGame()->getContentFactory());
     if (auto game = getGame())
       game->addEvent(EventInfo::ItemsOwned{self, {item}});
@@ -822,19 +826,18 @@ CreatureAction Creature::equip(Item* item, const ContentFactory* factory) const 
 
 CreatureAction Creature::unequip(Item* item, const ContentFactory* factory) const {
   if (!equipment->isEquipped(item))
-    return CreatureAction("This item is not equipped.");
+    return CreatureAction();
   if (!getBody().isHumanoid())
-    return CreatureAction("You can't remove this item!");
+    return CreatureAction(TSentence("YOU_CANT_REMOVE_THIS_ITEM"));
   if (getBody().numGood(BodyPart::ARM) == 0)
-    return CreatureAction("You have no healthy arms!");
+    return CreatureAction(TSentence("YOU_HAVE_NO_HEALTHY_ARMS"));
   return CreatureAction(this, [=](Creature* self) {
-    INFO << getName().the() << " unequip";
+//    INFO << getName().the() << " unequip";
     CHECK(equipment->isEquipped(item)) << "Item not equipped.";
     EquipmentSlot slot = item->getEquipmentSlot();
-    secondPerson("You " + string(slot == EquipmentSlot::WEAPON ? " sheathe " : " remove ") +
+    verb(slot == EquipmentSlot::WEAPON ? TStringId("YOU_SHEATHE") : TStringId("YOU_REMOVE"),
+        slot == EquipmentSlot::WEAPON ? TStringId("SHEATHES") : TStringId("REMOVES"),
         item->getTheName(false, this));
-    thirdPerson(getName().the() + (slot == EquipmentSlot::WEAPON ? " sheathes " : " removes ") +
-        item->getAName());
     self->equipment->unequip(item, self, factory);
     //self->spendTime();
   });
@@ -844,13 +847,13 @@ CreatureAction Creature::push(Creature* other) {
   Vec2 goDir = position.getDir(other->position);
   if (!goDir.isCardinal8() || !other->position.plus(goDir).canEnter(
       other->getMovementType()))
-    return CreatureAction("You can't push " + other->getName().the());
+    return CreatureAction(TSentence("YOU_CANT_PUSH", other->getName().the()));
   if (!getBody().canPush(other->getBody()) &&
       !other->isAffected(LastingEffect::IMMOBILE) &&
       !other->isAffected(LastingEffect::TURNED_OFF)) // everyone can push immobile and turned off creatures
-    return CreatureAction("You are too small to push " + other->getName().the());
+    return CreatureAction(TSentence("YOU_ARE_TOO_SMALL_TO_PUSH", other->getName().the()));
   return CreatureAction(this, [=](Creature* self) {
-    self->verb("push", "pushes", other->getName().the());
+    self->verb(TStringId("YOU_PUSH"), TStringId("PUSHES"), other->getName().the());
     other->displace(goDir);
     if (auto m = self->move(goDir))
       m.perform(self);
@@ -863,11 +866,11 @@ CreatureAction Creature::applySquare(Position pos, FurnitureLayer layer) const {
     if (furniture->canUse(this))
       return CreatureAction(this, [=](Creature* self) {
         self->nextPosIntent = none;
-        INFO << getName().the() << " applying " << getPosition().getName();
+//        INFO << getName().the() << " applying " << getPosition().getName();
         auto originalPos = getPosition();
         auto usageTime = furniture->getUsageTime();
         furniture->use(pos, self);
-        CHECK(!getRider()) << "Steed " << identify() << " applying " << furniture->getName();
+        CHECK(!getRider()) << "Steed " << identify() << " applying " << furniture->getName().data();
         auto movementInfo = *self->spendTime(usageTime);
         if (pos != getPosition() && getPosition() == originalPos)
           self->addMovementInfo(movementInfo
@@ -882,12 +885,11 @@ CreatureAction Creature::applySquare(Position pos, FurnitureLayer layer) const {
 CreatureAction Creature::hide() const {
   PROFILE;
   if (!isAffected(BuffId("AMBUSH_SKILL")))
-    return CreatureAction("You don't have this skill.");
+    return CreatureAction(TSentence("YOU_DONT_HAVE_THIS_SKILL"));
   if (auto furniture = getPosition().getFurniture(FurnitureLayer::MIDDLE))
     if (furniture->canHide())
       return CreatureAction(this, [=](Creature* self) {
-        secondPerson("You hide behind the " + furniture->getName());
-        thirdPerson(getName().the() + " hides behind the " + furniture->getName());
+        verb(TStringId("YOU_HIDE_BEHIND_THE"), TStringId("HIDES_BEHIND_THE"), furniture->getName());
         self->knownHiding.clear();
         self->modViewObject().setModifier(ViewObject::Modifier::HIDDEN);
         for (Creature* other : getLevel()->getAllCreatures())
@@ -899,15 +901,14 @@ CreatureAction Creature::hide() const {
         self->spendTime();
         self->hidden = true;
       });
-  return CreatureAction("You can't hide here.");
+  return CreatureAction(TSentence("YOU_CANT_HIDE_HERE"));
 }
 
 CreatureAction Creature::chatTo(Creature* other) const {
   CHECK(other);
   if (other->getPosition().dist8(getPosition()).value_or(2) <= 1 && getBody().isHumanoid())
     return CreatureAction(this, [=](Creature* self) {
-        secondPerson("You chat with " + other->getName().the());
-        thirdPerson(getName().the() + " chats with " + other->getName().the());
+        verb(TStringId("YOU_CHAT_WITH"), TStringId("CHATS_WITH"), other->getName().the());
         other->getAttributes().chatReaction(other, self);
         self->spendTime();
     });
@@ -920,8 +921,7 @@ CreatureAction Creature::pet(Creature* other) const {
   if (other->getPosition().dist8(getPosition()).value_or(2) <= 1 && other->getAttributes().getPetReaction(other) &&
       isFriend(other) && getBody().isHumanoid())
     return CreatureAction(this, [=](Creature* self) {
-        secondPerson("You pet " + other->getName().the());
-        thirdPerson(getName().the() + " pets " + other->getName().the());
+        verb(TStringId("YOU_PET"), TStringId("PETS"), other->getName().the());
         self->message(*other->getAttributes().getPetReaction(other));
         self->spendTime();
     });
@@ -1262,8 +1262,8 @@ void Creature::updateCombatExperience(Creature* victim) {
     combatExperience += expIncrease;
     int newLevel = combatExperience;
     if (curLevel != newLevel) {
-      you(MsgType::ARE, "more experienced");
-      addPersonalEvent(getName().a() + " reaches experience level " + toString(newLevel));
+      you(MsgType::ARE, TSentence("MORE_EXPERIENCED"));
+      addPersonalEvent(TSentence("REACHES_EXP_LEVEL", getName().a(), TString(toString(newLevel))));
       position.addSound(getLevelUpSound(this));
       addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::YELLOW));
     }
@@ -1283,13 +1283,13 @@ void Creature::onKilledOrCaptured(Creature* victim) {
   if (!victim->getBody().isFarmAnimal() && !victim->getAttributes().getIllusionViewObject()) {
     updateCombatExperience(victim);
     int difficulty = victim->getDifficultyPoints();
-    CHECK(difficulty >= 0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
+    CHECK(difficulty >= 0 && difficulty < 100000) << difficulty << " " << victim->getName().bare().data();
     points += difficulty;
     kills.push_back(KillInfo{victim->getUniqueId(), victim->getViewObject().getViewIdList()});
     if (victim->getStatus().contains(CreatureStatus::LEADER) && getBody().hasBrain(getGame()->getContentFactory())) {
       auto victimName = victim->getName();
       victimName.setKillTitle(none);
-      auto title = capitalFirst(victimName.bare()) + " Slayer";
+      TString title = TSentence("KILL_TITLE", victimName.name);
       if (!killTitles.contains(title)) {
         attributes->getName().setKillTitle(title);
         killTitles.push_back(title);
@@ -1493,7 +1493,7 @@ static vector<Creature*> summonPersonal(Creature* c, CreatureId id, optional<int
     spirit->getAttributes().setCanJoinCollective(false);
     spirit->getBody().setCanBeCaptured(false);
     if (!position)
-      c->verb("have", "has", "summoned " + spirit->getName().a());
+      c->verb(TStringId("YOU_HAVE_SUMMONED"), TStringId("HAS_SUMMONED"), spirit->getName().a());
   }
   return spirits;
 }
@@ -1587,7 +1587,12 @@ void Creature::dropUnsupportedEquipment() {
   for (auto slot : ENUM_ALL(EquipmentSlot)) {
     auto& items = equipment->getSlotItems(slot);
     for (int i : Range(equipment->getMaxItems(slot, this), items.size())) {
-      verb("drop your", "drops "_s + his(attributes->getGender()), items.back()->getName());
+      secondPerson(TSentence("YOU_DROP", items.back()->getName()));
+      thirdPerson(TSentence("DROPS", {
+              getName().the(),
+              TSentence(his(attributes->getGender())),
+              items.back()->getName()
+          }));
       position.dropItem(equipment->removeItem(items.back(), this));
     }
   }
@@ -1595,14 +1600,19 @@ void Creature::dropUnsupportedEquipment() {
 
 void Creature::dropWeapon() {
   for (auto weapon : equipment->getSlotItems(EquipmentSlot::WEAPON)) {
-    verb("drop your", "drops "_s + his(attributes->getGender()), weapon->getName());
+    secondPerson(TSentence("YOU_DROP", weapon->getName()));
+    thirdPerson(TSentence("DROPS", {
+            getName().the(),
+            TSentence(his(attributes->getGender())),
+            weapon->getName()
+        }));
     position.dropItem(equipment->removeItem(weapon, this));
     break;
   }
 }
 
 
-CreatureAction Creature::execute(Creature* c, const char* verbSecond, const char* verbThird) const {
+CreatureAction Creature::execute(Creature* c, TStringId verbSecond, TStringId verbThird) const {
   if (c->getPosition().dist8(getPosition()).value_or(2) > 1)
     return CreatureAction();
   return CreatureAction(this, [=] (Creature* self) {
@@ -1640,10 +1650,9 @@ CreatureAction Creature::attack(Creature* other) const {
     return CreatureAction();
   auto weapons = getRandomWeapons();
   if (weapons.empty())
-    return CreatureAction("No available weapon or intrinsic attack");
+    return CreatureAction();
   auto ret = CreatureAction(this, [=] (Creature* self) {
     other->addCombatIntent(self, CombatIntentInfo::Type::ATTACK);
-    INFO << getName().the() << " attacking " << other->getName().the();
     bool wasDamaged = false;
     for (auto weapon : weapons) {
       auto weaponInfo = weapon.first->getWeaponInfo();
@@ -1657,9 +1666,9 @@ CreatureAction Creature::attack(Creature* other) const {
         if (Random.chance(e.chance))
           victimEffects.push_back(e.effect);
       Attack attack(self, attackLevel, weaponInfo.attackType, damage, damageAttr, std::move(victimEffects));
-      string enemyName = other->getController()->getMessageGenerator().getEnemyName(other);
+      auto enemyName = other->getController()->getMessageGenerator().getEnemyName(other);
       if (!canSee(other))
-        enemyName = "something";
+        enemyName = TStringId("SOMETHING");
       weapon.first->getAttackMsg(this, enemyName);
       getGame()->addEvent(EventInfo::CreatureAttacked{other, self, damageAttr});
       wasDamaged |= other->takeDamage(attack);
@@ -1731,7 +1740,7 @@ bool Creature::captureDamage(double damage, Creature* attacker) {
   if (getBody().getHealth() <= 0) {
     if (attributes->isInstantPrisoner()) {
       setTribe(attacker->getTribeId());
-      you(MsgType::ARE, "captured");
+      verb(TStringId("YOU_CAPTURED"), TStringId("IS_CAPTURED"));
     } else {
       addEffect(LastingEffect::STUNNED, 300_visible);
       if (steed)
@@ -1825,17 +1834,18 @@ bool Creature::takeDamage(const Attack& attack) {
   return returnValue;
 }
 
-string AdjectiveInfo::getText() const {
-  auto ret = name;
+TString AdjectiveInfo::getText() const {
+  auto ret = TSentence("ADJECTIVE_INFO", name);
   if (timeout)
-    ret += "[" + toString(*timeout) + "]";
+    ret.params.push_back("[" + toString(*timeout) + "]");
   if (count > 1)
-    ret += "(x" + toString(count) + ")";
+    ret.params.push_back("(x" + toString(count) + ")");
+  ret.optionalParams = true;
   return ret;
 }
 
-static vector<string> extractNames(const vector<AdjectiveInfo>& adjectives) {
-  return adjectives.transform([] (const AdjectiveInfo& e) -> string { return e.getText(); });
+static vector<TString> extractNames(const vector<AdjectiveInfo>& adjectives) {
+  return adjectives.transform([] (const AdjectiveInfo& e) -> TString { return e.getText(); });
 }
 
 void Creature::updateViewObjectFlanking() {
@@ -1867,8 +1877,8 @@ void Creature::updateViewObject(const ContentFactory* factory) {
   object.setModifier(ViewObject::Modifier::TURNED_OFF, isAffected(LastingEffect::TURNED_OFF));
   object.setModifier(ViewObject::Modifier::HIDDEN, hidden);
   object.getCreatureStatus() = getStatus();
-  object.setGoodAdjectives(combine(extractNames(getGoodAdjectives(factory)), true));
-  object.setBadAdjectives(combine(extractNames(getBadAdjectives(factory)), true));
+  object.setGoodAdjectives(combineWithCommas(extractNames(getGoodAdjectives(factory))));
+  object.setBadAdjectives(combineWithCommas(extractNames(getBadAdjectives(factory))));
   getBody().updateViewObject(object, factory);
   object.setModifier(ViewObject::Modifier::CAPTURE_BAR, capture);
   object.setDescription(getName().title());
@@ -1892,35 +1902,12 @@ void Creature::updateViewObject(const ContentFactory* factory) {
     object.weaponViewId = none;
 }
 
-string attrStr(bool strong, bool agile, bool fast) {
-  vector<string> good;
-  vector<string> bad;
-  if (strong)
-    good.push_back("strong");
-  else
-    bad.push_back("weak");
-  if (agile)
-    good.push_back("agile");
-  else
-    bad.push_back("clumsy");
-  if (fast)
-    good.push_back("fast");
-  else
-    bad.push_back("slow");
-  string p1 = combine(good);
-  string p2 = combine(bad);
-  if (p1.size() > 0 && p2.size() > 0)
-    p1.append(", but ");
-  p1.append(p2);
-  return p1;
-}
-
 bool Creature::heal(double amount) {
   PROFILE;
   if (getBody().heal(this, amount)) {
     if (!capture)
       you(MsgType::ARE, getBody().hasHealth(HealthType::FLESH, getGame()->getContentFactory())
-          ? "fully healed" : "fully materialized");
+          ? TSentence("FULLY_HEALED") : TSentence("FULLY_MATERIALIZED"));
     lastAttacker = nullptr;
     return true;
   }
@@ -1953,9 +1940,9 @@ void Creature::take(PItem item, const ContentFactory* factory) {
     action.perform(this);
 }
 
-void Creature::dieWithReason(const string& reason, DropType drops) {
-  CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().value_or("");
-  deathReason = reason;
+void Creature::dieWithReason(TString reason, DropType drops) {
+  CHECK(!isDead()) << getName().bare().data() << " is already dead. ";// << getDeathReason().data();
+  deathReason = std::move(reason);
   dieNoReason(drops);
 }
 
@@ -1994,7 +1981,7 @@ void Creature::tryToDestroyLastingEffect(LastingEffect effect) {
   removeEffect(effect, false);
   for (auto item : copyOf(equipment->getAllEquipped()))
     if (item->getEquipedEffects().contains(effect)) {
-      you(MsgType::YOUR, item->getName() + " crumbles to dust");
+      verb(TStringId("YOUR_ITEM_CRUMBLES"), TStringId("HIS_ITEM_CRUMBLES"), item->getName());
       equipment->removeItem(item, this);
       return;
     }
@@ -2005,9 +1992,8 @@ void Creature::tryToDestroyLastingEffect(LastingEffect effect) {
 bool Creature::considerSavingLife(DropType drops, const Creature* attacker) {
   if (drops != DropType::NOTHING && isAffected(LastingEffect::LIFE_SAVED)) {
     message("But wait!");
-    secondPerson(PlayerMessage("You have escaped death!", MessagePriority::HIGH));
-    thirdPerson(PlayerMessage(getName().the() + " has escaped death!", MessagePriority::HIGH));
-    if (attacker && attacker->getName().bare() == "Death") {
+    verb(TStringId("YOU_ESCAPE_DEATH"), TStringId("ESCAPES_DEATH"));
+    if (attacker && attacker->getName().bare() == TStringId("DEATH")) {
       if (auto target = findInaccessiblePos(position))
         position.moveCreature(*target, true);
       getGame()->achieve(AchievementId("tricked_death"));
@@ -2028,8 +2014,7 @@ bool Creature::considerSavingLife(DropType drops, const Creature* attacker) {
 bool Creature::considerPhylactery(DropType drops, const Creature* attacker) {
   if (phylactery) {
     message("But wait!");
-    secondPerson(PlayerMessage("You have escaped death!", MessagePriority::HIGH));
-    thirdPerson(PlayerMessage(getName().the() + " has escaped death!", MessagePriority::HIGH));
+    verb(TStringId("YOU_ESCAPE_DEATH"), TStringId("ESCAPES_DEATH"));
     heal();
     removeEffect(BuffId("BLEEDING"), false);
     getBody().healBodyParts(this, 1000);
@@ -2047,7 +2032,7 @@ bool Creature::considerPhylactery(DropType drops, const Creature* attacker) {
 }
 
 bool Creature::considerPhylacteryOrSavingLife(DropType drops, const Creature* attacker) {
-  if (attacker && attacker->getName().bare() == "Death")
+  if (attacker && attacker->getName().bare() == TStringId("DEATH"))
     return considerSavingLife(drops, attacker) || considerPhylactery(drops, attacker);
   else
     return considerPhylactery(drops, attacker) || considerSavingLife(drops, attacker);
@@ -2061,7 +2046,6 @@ Creature* Creature::getRider() const {
 
 void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
   auto oldPos = position;
-  CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().value_or("");
   if (considerPhylacteryOrSavingLife(drops, attacker))
     return;
   if (isAffected(LastingEffect::FROZEN) && drops == DropType::EVERYTHING)
@@ -2071,7 +2055,6 @@ void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
   if (attacker)
     attacker = attacker->getsCreditForKills();
   lastAttacker = attacker;
-  INFO << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
   if (drops == DropType::EVERYTHING || drops == DropType::ONLY_INVENTORY)
     for (PItem& item : equipment->removeAllItems(this))
       position.dropItem(std::move(item));
@@ -2127,16 +2110,14 @@ CreatureAction Creature::flyAway() const {
   if (!isAffected(LastingEffect::FLYING) || getPosition().isCovered())
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
-    INFO << getName().the() << " fly away";
-    thirdPerson(getName().the() + " flies away.");
+    thirdPerson(TSentence("FLIES_AWAY", getName().the()));
     self->dieNoReason(Creature::DropType::NOTHING);
   });
 }
 
 CreatureAction Creature::disappear() const {
   return CreatureAction(this, [=](Creature* self) {
-    INFO << getName().the() << " disappears";
-    thirdPerson(getName().the() + " disappears.");
+    thirdPerson(TSentence("DISAPPEARS", getName().the()));
     self->dieNoReason(Creature::DropType::NOTHING);
   });
 }
@@ -2151,11 +2132,10 @@ CreatureAction Creature::torture(Creature* other) const {
   if (!LastingEffects::restrictedMovement(other) || other->getPosition().dist8(getPosition()) != 1)
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
-    thirdPerson(getName().the() + " tortures " + other->getName().the());
-    secondPerson("You torture " + other->getName().the());
+    thirdPerson(TSentence("TORTURES", getName().the(), other->getName().the()));
     if (Random.roll(4)) {
-      other->thirdPerson(other->getName().the() + " screams!");
-      other->getPosition().unseenMessage("You hear a horrible scream");
+      other->thirdPerson(TSentence("SCREAMS", other->getName().the()));
+      other->getPosition().unseenMessage(PlayerMessage(TStringId("YOU_HEAR_HORRIBLE_SCREAM")));
       position.addSound(getTortureSound(other).setVolume(0.3).setPitch(other->getBody().getDeathSoundPitch()));
     }
     auto dir = position.getDir(other->position);
@@ -2199,10 +2179,11 @@ void Creature::increaseExpLevel(AttrType type, double increase) {
   getAttributes().increaseExpLevel(type, increase);
   int newLevel = (int)getAttributes().getExpLevel(type);
   if (curLevel != newLevel) {
-    you(MsgType::ARE, "more skilled");
+    you(MsgType::ARE, TStringId("MORE_SKILLED"));
     if (auto game = getGame())
-      addPersonalEvent(getName().a() + " reaches " + game->getContentFactory()->attrInfo.at(type).name +
-          " training level " + toString(newLevel));
+      addPersonalEvent(TSentence("REACHES_TRAINING_LEVEL", {getName().a(),
+          game->getContentFactory()->attrInfo.at(type).name,
+          TString(toString(newLevel))}));
     spellMap->onExpLevelReached(this, type, newLevel);
     position.addSound(getLevelUpSound(this));
     addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::YELLOW));
@@ -2230,14 +2211,12 @@ BestAttack Creature::getBestAttackWithExp(const ContentFactory* factory, int com
 
 CreatureAction Creature::give(Creature* whom, vector<Item*> items) const {
   if (!getBody().isHumanoid() || !whom->canTakeItems(items))
-    return CreatureAction(whom->getName().the() + (items.size() == 1 ? " can't take this item."
-        : " can't take these items."));
+    return CreatureAction(TSentence(items.size() == 1 ? "CANT_TAKE_THIS_ITEM" : "CANT_TAKE_THESE_ITEMS",
+        whom->getName().the()));
   return CreatureAction(this, [=](Creature* self) {
     for (auto stack : stackItems(items)) {
-      thirdPerson(getName().the() + " gives " + whom->getController()->getMessageGenerator().getEnemyName(whom) + " "
-          + getPluralAName(stack[0], (int) stack.size()));
-      secondPerson("You give " + getPluralTheName(stack[0], (int) stack.size()) + " to " +
-          whom->getName().title());
+      verb(TStringId("YOU_GIVE_ITEM_TO"), TStringId("GIVES_ITEMS_TO"),
+          getPluralTheName(stack[0], (int) stack.size()), whom->getName().title());
     }
     whom->takeItems(self->equipment->removeItems(items, self), self);
     self->spendTime();
@@ -2285,7 +2264,7 @@ CreatureAction Creature::whip(const Position& pos, double animChance) const {
   if (pos.dist8(position).value_or(2) > 1 || !whipped)
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
-    thirdPerson(PlayerMessage(getName().the() + " whips " + whipped->getName().the()));
+    thirdPerson(TSentence("WHIPS", getName().the(), whipped->getName().the()));
     auto moveInfo = *self->spendTime();
     if (Random.chance(animChance)) {
       position.addSound(SoundId("WHIP"));
@@ -2295,7 +2274,7 @@ CreatureAction Creature::whip(const Position& pos, double animChance) const {
           .setVictim(whipped->getUniqueId()));
     }
     if (Random.roll(5)) {
-      whipped->thirdPerson(whipped->getName().the() + " screams!");
+      whipped->thirdPerson(TSentence("SCREAMS", whipped->getName().the()));
       whipped->getPosition().unseenMessage("You hear a horrible scream!");
     }
     if (Random.roll(20))
@@ -2315,8 +2294,7 @@ CreatureAction Creature::construct(Vec2 direction, FurnitureType type) const {
 
 CreatureAction Creature::eat(Item* item) const {
   return CreatureAction(this, [=](Creature* self) {
-    thirdPerson(getName().the() + " eats " + item->getAName());
-    secondPerson("You eat " + item->getAName());
+    verb(TStringId("YOU_EAT"), TStringId("EATS"), item->getAName());
     self->addEffect(LastingEffect::SATIATED, 500_visible);
     self->getPosition().removeItem(item);
     self->spendTime(3_visible);
@@ -2326,10 +2304,10 @@ CreatureAction Creature::eat(Item* item) const {
 void Creature::destroyImpl(Vec2 direction, const DestroyAction& action) {
   auto pos = getPosition().plus(direction);
   if (auto furniture = pos.modFurniture(FurnitureLayer::MIDDLE)) {
-    string name = furniture->getName();
-    secondPerson("You "_s + action.getVerbSecondPerson() + " the " + name);
-    thirdPerson(getName().the() + " " + action.getVerbThirdPerson() + " the " + name);
-    pos.unseenMessage(action.getSoundText());
+    auto name = furniture->getName();
+    verb(action.getVerbSecondPerson(), action.getVerbThirdPerson(), name);
+    if (auto s = action.getSoundText())
+      pos.unseenMessage(*s);
     furniture->tryToDestroyBy(pos, this, action);
   }
 }
@@ -2374,12 +2352,12 @@ CreatureAction Creature::mount(Creature* whom) const {
     self->position.moveCreature(dir);
     auto timeSpent = 1_visible;
     self->addMovementInfo(self->spendTime(timeSpent, getSpeedModifier(self))->setDirection(dir));
-    self->verb("mount", "mounts", whom->getName().the());
+    self->verb(TStringId("YOU_MOUNT"), TStringId("MOUNTS"), TString(whom->getName().the()));
   });
 }
 
-vector<string> Creature::getSteedSizes() const {
-  vector<string> ret;
+vector<TString> Creature::getSteedSizes() const {
+  vector<TString> ret;
   auto mySize = getBody().getSize();
   ret.push_back(::getName(mySize));
   if (mySize == BodySize::LARGE)
@@ -2409,7 +2387,7 @@ void Creature::tryToDismount() {
   CHECK(!!steed);
   for (auto v : position.neighbors8(Random))
     if (v.canEnter(getSelfMovementType(getGame(), false))) {
-      verb("fall off", "falls off", steed->getName().the());
+      verb(TStringId("YOU_FALL_OFF"), TStringId("FALLS_OFF"), TString(steed->getName().the()));
       forceDismount(position.getDir(v));
       return;
     }
@@ -2422,7 +2400,7 @@ CreatureAction Creature::dismount() const {
     if (v.canEnter(getSelfMovementType(getGame(), false)))
       return CreatureAction(this, [=](Creature* self) {
         auto dir = position.getDir(v);
-        self->verb("dismount", "dismounts", steed->getName().the());
+        self->verb(TStringId("YOU_DISMOUNT"), TStringId("DISMOUNTS"), TString(steed->getName().the()));
         self->forceDismount(dir);
         auto timeSpent = 1_visible;
         self->addMovementInfo(self->spendTime(timeSpent, getSpeedModifier(self))->setDirection(dir));
@@ -2450,8 +2428,7 @@ CreatureAction Creature::copulate(Vec2 direction) const {
   if (!other || !canCopulateWith(other))
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
-      INFO << getName().bare() << " copulate with " << other->getName().bare();
-      you(MsgType::COPULATE, "with " + other->getName().the());
+      you(MsgType::COPULATE, other->getName().the());
       getGame()->addEvent(EventInfo::FX{self->position, {FXName::LOVE}, self->position.getDir(other->position)});
       auto movementInfo = *self->spendTime(2_visible);
       self->addMovementInfo(movementInfo
@@ -2461,9 +2438,9 @@ CreatureAction Creature::copulate(Vec2 direction) const {
     });
 }
 
-void Creature::addPersonalEvent(const string& s) {
+void Creature::addPersonalEvent(TString s) {
   if (Model* m = position.getModel())
-    m->addEvent(EventInfo::CreatureEvent{this, s});
+    m->addEvent(EventInfo::CreatureEvent{this, std::move(s)});
 }
 
 CreatureAction Creature::consume(Creature* other) const {
@@ -2471,7 +2448,7 @@ CreatureAction Creature::consume(Creature* other) const {
     return CreatureAction();
   return CreatureAction(this, [=] (Creature* self) {
     auto factory = getGame()->getContentFactory();
-    vector<string> adjectives;
+    vector<TString> adjectives;
     for (auto& buff : other->buffPermanentCount) {
       auto& info = factory->buffs.at(buff.first);
       if (info.canAbsorb) {
@@ -2482,8 +2459,8 @@ CreatureAction Creature::consume(Creature* other) const {
     other->dieWithAttacker(self, Creature::DropType::ONLY_INVENTORY);
     self->attributes->consume(self, *other->attributes);
     if (!adjectives.empty()) {
-      self->you(MsgType::BECOME, combine(adjectives));
-      self->addPersonalEvent(getName().the() + " becomes " + combine(adjectives));
+      self->you(MsgType::BECOME, combineWithAnd(adjectives));
+      self->addPersonalEvent(TSentence("BECOMES", concat({getName().the()}, combineWithAnd(adjectives))));
     }
     self->spendTime(2_visible);
   });
@@ -2531,16 +2508,16 @@ Item* Creature::getFirstWeapon() const {
 
 CreatureAction Creature::applyItem(Item* item) const {
   if (!item->canApply() || !getBody().canPickUpItems())
-    return CreatureAction("You can't apply this item");
+    return CreatureAction();
   if (getBody().numGood(BodyPart::ARM) == 0)
-    return CreatureAction("You have no healthy arms!");
+    return CreatureAction(TStringId("YOU_HAVE_NO_HEALTHY_ARMS"));
   if (auto& pred = item->getApplyPredicate())
     if (!pred->apply(position, nullptr))
-      return CreatureAction("You can't use this item");
+      return CreatureAction(TStringId("YOU_CANT_USE_THIS_ITEM"));
   return CreatureAction(this, [=] (Creature* self) {
       auto time = item->getApplyTime();
-      secondPerson("You " + item->getApplyMsgFirstPerson(self));
-      thirdPerson(getName().the() + " " + item->getApplyMsgThirdPerson(self));
+      secondPerson(item->getApplyMsgFirstPerson(self));
+      thirdPerson(item->getApplyMsgThirdPerson(self));
       item->apply(self);
       if (!isDead()) {
         if (item->isDiscarded())
@@ -2566,16 +2543,15 @@ CreatureAction Creature::throwItem(Item* item, Position target, bool isFriendlyA
   if (target == position)
     return CreatureAction();
   if (!getBody().numGood(BodyPart::ARM) || !getBody().isHumanoid())
-    return CreatureAction("You can't throw anything!");
+    return CreatureAction(TStringId("YOU_CANT_THROW_ANYTHING"));
   auto dist = getThrowDistance(item);
   if (!dist)
-    return CreatureAction(item->getTheName() + " is too heavy!");
+    return CreatureAction(TSentence("ITEM_TOO_HEAVY", item->getTheName()));
   int damage = getAttr(AttrType("RANGED_DAMAGE")) + item->getModifier(AttrType("RANGED_DAMAGE"));
   return CreatureAction(this, [=](Creature* self) {
     Attack attack(isFriendlyAI ? nullptr : self, Random.choose(getBody().getAttackLevels()),
         item->getWeaponInfo().attackType, damage, AttrType("DAMAGE"));
-    secondPerson("You throw " + item->getAName(false, this));
-    thirdPerson(getName().the() + " throws " + item->getAName());
+    verb(TStringId("YOU_THROW"), TStringId("THROWS"), item->getAName(false, this));
     self->getPosition().throwItem(makeVec(self->equipment->removeItem(item, self)), attack, *dist, target, getVision().getId());
     self->spendTime();
   });
@@ -2912,27 +2888,27 @@ void Creature::setGlobalTime(GlobalTime t) {
 
 vector<AdjectiveInfo> Creature::getSpecialAttrAdjectives(const ContentFactory* factory, bool good) const {
   vector<AdjectiveInfo> ret;
-  auto withTip = [](string s) {
+  auto withTip = [](TString s) {
     return AdjectiveInfo{s, s};
   };
   for (auto& elems : attributes->specialAttr)
     for (auto& elem : elems.second)
       if ((elem.first > 0) == good)
-        ret.push_back(withTip(
-            toStringWithSign(elem.first) + " " + factory->attrInfo.at(elems.first).name + " " + 
-                elem.second.getName(factory)));
+        ret.push_back(withTip(TSentence("SPECIAL_ATTR_ADJECTIVE", {toStringWithSign(elem.first),
+             factory->attrInfo.at(elems.first).name,
+             elem.second.getName(factory)})));
   for (auto& item : equipment->getAllEquipped())
     for (auto& elem : item->getSpecialModifiers())
       if ((elem.second.first > 0) == good)
-        ret.push_back(withTip(
-            toStringWithSign(elem.second.first) + " " + factory->attrInfo.at(elem.first).name + " " +
-                elem.second.second.getName(factory)));
+        ret.push_back(withTip(TSentence("SPECIAL_ATTR_ADJECTIVE", {toStringWithSign(elem.second.first),
+             factory->attrInfo.at(elem.first).name,
+             elem.second.second.getName(factory)})));
   return ret;
 }
 
 vector<AdjectiveInfo> Creature::getLastingEffectAdjectives(const ContentFactory* factory, bool bad) const {
   vector<AdjectiveInfo> ret;
-  HashMap<string, int> added;
+  HashMap<TString, int> added;
   auto time = getGlobalTime();
   for (auto& buff : buffs) {
     auto& info = factory->buffs.at(buff.first);
@@ -2945,7 +2921,7 @@ vector<AdjectiveInfo> Creature::getLastingEffectAdjectives(const ContentFactory*
           ret[*index].timeout = min(*ret[*index].timeout, (buff.second - *time).getVisibleInt());
       } else {
         added[info.adjective] = ret.size();
-        ret.push_back({ capitalFirst(info.adjective), info.description, none, 1 });
+        ret.push_back({ TSentence("CAPITAL_FIRST", info.adjective), info.description, none, 1 });
         if (time)
           ret.back().timeout = (buff.second - *time).getVisibleInt();
       }
@@ -2956,7 +2932,7 @@ vector<AdjectiveInfo> Creature::getLastingEffectAdjectives(const ContentFactory*
     if (info.hiddenPredicate && info.hiddenPredicate->apply(this, nullptr))
       continue;
     if (info.consideredBad == bad)
-      ret.push_back({ capitalFirst(info.adjective), info.description, none, info.stacks ? buff.second : 1 });
+      ret.push_back({ TSentence("CAPITAL_FIRST", info.adjective), info.description, none, info.stacks ? buff.second : 1 });
   }
   if (time) {
     for (LastingEffect effect : ENUM_ALL(LastingEffect))
@@ -2981,12 +2957,10 @@ vector<AdjectiveInfo> Creature::getGoodAdjectives(const ContentFactory* factory)
   PROFILE;
   vector<AdjectiveInfo> ret;
   if (getPhylactery())
-    ret.push_back({"Bound to a phylactery",
-        "The creature will respawn at its phylactery when it is killed"});
+    ret.push_back({TStringId("BOUND_TO_A_PHYLACTERY"), TStringId("BOUND_TO_A_PHYLACTERY_DESCRIPTION")});
   ret.append(getLastingEffectAdjectives(factory, false));
   if (getBody().isUndead(factory))
-    ret.push_back({"Undead",
-        "Undead creatures don't take regular damage and need to be killed by chopping up or using fire."});
+    ret.push_back({TStringId("UNDEAD"), TStringId("UNDEAD_DAMAGE_EXPLANATION")});
   append(ret, getSpecialAttrAdjectives(factory, true));
   return ret;
 }
@@ -3071,7 +3045,7 @@ bool Creature::addButcheringEvent(const string& villageName) {
     butcherInfo = ButcherInfo {villageName, 1};
   }
   else if (++butcherInfo->kills >= 5) {
-    attributes->getName().setKillTitle("butcher of " + villageName);
+    attributes->getName().setKillTitle(TString(TSentence("BUTCHER_TITLE", TString(villageName))));
     return true;
   }
   return false;

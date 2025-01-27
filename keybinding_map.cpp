@@ -4,6 +4,7 @@
 #include "pretty_archive.h"
 #include "pretty_printing.h"
 #include "steam_input.h"
+#include "t_string.h"
 
 KeybindingMap::KeybindingMap(const FilePath& defaults, const FilePath& user)
     : defaultsPath(defaults), userPath(user) {
@@ -147,37 +148,38 @@ static const map<string, SDL::SDL_Keycode> keycodes {
   {"ENTER", SDL::SDLK_RETURN},
 };
 
-string KeybindingMap::getText(SDL::SDL_Keysym sym, string delimiter) {
-  static unordered_map<SDL::SDL_Keycode, string> keys = [] {
-    unordered_map<SDL::SDL_Keycode, string> ret;
+TString KeybindingMap::getText(SDL::SDL_Keysym sym, string delimiter) {
+  static unordered_map<SDL::SDL_Keycode, TString> keys = [] {
+    unordered_map<SDL::SDL_Keycode, TString> ret;
     for (auto& elem : keycodes)
       ret[elem.second] = elem.first;
     return ret;
   }();
-  string ret = keys.at(sym.sym);
+  TString ret = keys.at(sym.sym);
   if (sym.mod & SDL::KMOD_LCTRL)
-    ret = "Ctrl" + delimiter + ret;
+    ret = TSentence("KEY_MODIFIER", string("Ctrl"), ret);
   if (sym.mod & SDL::KMOD_LSHIFT)
-    ret = "Shift" + delimiter + ret;
+    ret = TSentence("KEY_MODIFIER", string("Shift"), ret);
   if (sym.mod & SDL::KMOD_LALT)
-    ret = "Alt" + delimiter + ret;
+    ret = TSentence("KEY_MODIFIER", string("Alt"), ret);
   return ret;
 }
 
-optional<string> KeybindingMap::getText(Keybinding key) {
+optional<TString> KeybindingMap::getText(Keybinding key) {
   if (auto ks = getReferenceMaybe(bindings, key))
     return getText(*ks);
   return none;
 }
 
-SGuiElem KeybindingMap::getGlyph(SGuiElem label, GuiFactory* f, optional<ControllerKey> key, optional<string> alternative) {
+SGuiElem KeybindingMap::getGlyph(SGuiElem label, GuiFactory* f, optional<ControllerKey> key,
+    optional<TString> alternative) {
   SGuiElem add;
   auto steamInput = f->getSteamInput();
   if (steamInput && !steamInput->controllers.empty()) {
     if (key)
       add = f->steamInputGlyph(*key);
   } else if (alternative)
-    add = f->label("[" + *alternative + "]");
+    add = f->label(TSentence("GLYPH_LABEL", *alternative));
   if (add)
     label = f->getListBuilder()
         .addElemAuto(std::move(label))
@@ -188,7 +190,7 @@ SGuiElem KeybindingMap::getGlyph(SGuiElem label, GuiFactory* f, optional<Control
 }
 
 SGuiElem KeybindingMap::getGlyph(SGuiElem label, GuiFactory* f, Keybinding key) {
-  optional<string> alternative;
+  optional<TString> alternative;
   if (auto k = getReferenceMaybe(bindings, key))
     alternative = getText(*k);
   return getGlyph(std::move(label), f, getControllerMapping(key), std::move(alternative));
@@ -200,7 +202,7 @@ void KeybindingMap::save() {
     out << elem.first.data() << " ";
     if (defaults.count(elem.first))
       out << "modify ";
-    out << getText(elem.second, " ") << endl;
+    out << getText(elem.second, " ").data() << endl;
   }
 }
 

@@ -22,25 +22,22 @@ class DummyView : public View {
   virtual void resetCenter() override {}
   virtual UserInput getAction() override { return UserInputId::IDLE; }
   virtual bool travelInterrupt() override { return false; }
-  virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override {
+  virtual optional<Vec2> chooseDirection(Vec2 playerPos, const TString& message) override {
     return none;
   }
   virtual TargetResult chooseTarget(Vec2 playerPos, TargetType, Table<PassableInfo> passable,
-      const string& message, optional<Keybinding> cycleKey) override {
+      const TString& message, optional<Keybinding> cycleKey) override {
     return none;
   }
-  virtual optional<int> getNumber(const string& title, Range range, int initial) override {
+  virtual optional<int> getNumber(const TString& title, Range range, int initial) override {
     return none;
   }
-  virtual optional<string> getText(const string& title, const string& value, int maxLength) override {
+  virtual optional<string> getText(const TString& title, const string& value, int maxLength) override {
     return none;
   }
   virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&, ScriptedUIState&) override {}
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) override {
     return CampaignActionId::CANCEL;
-  }
-  virtual vector<int> prepareWarlordGame(RetiredGames&, const vector<PlayerInfo>&, int maxTeam, int maxDungeons) override {
-    return vector<int>();
   }
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string&, const vector<PlayerInfo>&,
       const string& cancelText) override {
@@ -52,7 +49,7 @@ class DummyView : public View {
   virtual optional<Vec2> chooseSite(const string& message, const Campaign&, Vec2 current) override {
     return none;
   }
-  virtual optional<int> chooseAtMouse(const vector<string>& elems) override {
+  virtual optional<int> chooseAtMouse(const vector<TString>& elems) override {
     return none;
   }
   virtual void presentWorldmap(const Campaign&, Vec2 current) override {}
@@ -71,5 +68,8 @@ class DummyView : public View {
   }
   virtual bool zoomUIAvailable() const override {
     return false;
+  }
+  virtual string translate(const TString&) const override {
+    return "";
   }
 };

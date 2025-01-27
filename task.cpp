@@ -128,8 +128,9 @@ class Construction : public Task {
     return !position.canConstruct(furnitureType);
   }
 
-  virtual string getDescription() const override {
-    return "Build " + position.getGame()->getContentFactory()->furniture.getData(furnitureType).getName() + " at " + toString(position);
+  virtual TString getDescription() const override {
+    return TSentence("BUILD_FURNITURE_TASK", position.getGame()->getContentFactory()->furniture.getData(furnitureType).getName(),
+      toString(position));
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -171,7 +172,7 @@ class Destruction : public Task {
   public:
   Destruction(WTaskCallback c, Position pos, const Furniture* furniture, DestroyAction action, PositionMatching* m)
       : Task(true), position(pos), callback(c), destroyAction(action),
-        description(action.getVerbSecondPerson() + " "_s + furniture->getName() + " at " + toString(position)),
+        description(action.getVerbSecondPerson(), furniture->getName(), toString(position)),
         furnitureType(furniture->getType()), matching(m) {
     if (matching)
       matching->addTarget(position);
@@ -193,7 +194,7 @@ class Destruction : public Task {
     return callback->isConstructionReachable(position) && (!matching || matching->getMatch(position));
   }
 
-  virtual string getDescription() const override {
+  virtual TString getDescription() const override {
     return description;
   }
 
@@ -242,7 +243,7 @@ class Destruction : public Task {
   Position SERIAL(position);
   WTaskCallback SERIAL(callback) = nullptr;
   DestroyAction SERIAL(destroyAction);
-  string SERIAL(description);
+  TSentence SERIAL(description);
   FurnitureType SERIAL(furnitureType);
   PositionMatching* SERIAL(matching) = nullptr;
 };
@@ -260,8 +261,8 @@ class EquipItem : public Task {
   EquipItem(Item* item) : item(item->getUniqueId()), itemName(item->getName()) {
   }
 
-  virtual string getDescription() const override {
-    return "Equip " + itemName;
+  virtual TString getDescription() const override {
+    return TSentence("EQUIP_ITEM_TASK", itemName);
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -279,7 +280,7 @@ class EquipItem : public Task {
 
   private:
   UniqueEntity<Item>::Id SERIAL(item);
-  string SERIAL(itemName);
+  TString SERIAL(itemName);
 };
 
 }
@@ -335,7 +336,7 @@ class GoToAnd : public Task {
     return TaskPerformResult::NOT_NOW;
   }
 
-  virtual string getDescription() const override {
+  virtual TString getDescription() const override {
     return task->getDescription();
   }
 
@@ -440,7 +441,7 @@ class ApplySquare : public Task {
     }
   }
 
-  virtual string getDescription() const override {
+  virtual TString getDescription() const override {
     return "Apply square " + (position ? toString(position->first) : "");
   }
 
@@ -509,8 +510,8 @@ class ArcheryRange : public Task {
     return NoMove;
   }
 
-  virtual string getDescription() const override {
-    return "Shoot at ..";
+  virtual TString getDescription() const override {
+    return TStringId("ARCHERY_RANGE_TASK");
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), callback, targets, shootInfo)
@@ -567,17 +568,17 @@ class Kill : public Task {
 
   CreatureAction getAction(Creature* c) {
     switch (type) {
-      case ATTACK: return c->execute(creature.get(), "execute", "executes");
-      case DISASSEMBLE: return c->execute(creature.get(), "disassemble", "disassembles");
+      case ATTACK: return c->execute(creature.get(), TStringId("YOU_EXECUTE"), TStringId("EXECUTES"));
+      case DISASSEMBLE: return c->execute(creature.get(), TStringId("YOU_DISASSEMBLE"), TStringId("DISASSEMBLES"));
       case TORTURE: return c->torture(creature.get());
     }
   }
 
-  virtual string getDescription() const override {
+  virtual TString getDescription() const override {
     switch (type) {
-      case ATTACK: return "Kill " + creature->getName().bare();
-      case TORTURE: return "Torture " + creature->getName().bare();
-      case DISASSEMBLE: return "Disassemble " + creature->getName().bare();
+      case ATTACK: return TSentence("KILL_TASK", creature->getName().bare());
+      case TORTURE: return TSentence("TORTURE_TASK", creature->getName().bare());
+      case DISASSEMBLE: return TSentence("DISASSEMBLE_TASK", creature->getName().bare());
     }
   }
 
@@ -629,8 +630,8 @@ class Disappear : public Task {
     return c->disappear();
   }
 
-  virtual string getDescription() const override {
-    return "Disappear";
+  virtual TString getDescription() const override {
+    return TStringId("DISAPPEAR_TASK");
   }
 
   SERIALIZE_ALL(SUBCLASS(Task))
@@ -684,9 +685,9 @@ class Chain : public Task {
     return tasks[current]->getMove(c);
   }
 
-  virtual string getDescription() const override {
+  virtual TString getDescription() const override {
     if (current >= tasks.size())
-      return "Chain: done";
+      return TStringId("IDLE_TASK");
     return tasks[current]->getDescription();
   }
 
@@ -731,7 +732,7 @@ class Explore : public Task {
     return NoMove;
   }
 
-  virtual string getDescription() const override {
+  virtual TString getDescription() const override {
     return "Explore " + toString(position);
   }
 
@@ -771,8 +772,8 @@ class AbuseMinion : public Task {
     }
   }
 
-  virtual string getDescription() const override {
-    return "Abuse " + target->getName().bare();
+  virtual TString getDescription() const override {
+    return TSentence("ABUSE_TASK", target->getName().bare());
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), collective, target)
@@ -810,8 +811,8 @@ class AttackCreatures : public Task {
     return nullptr;
   }
 
-  virtual string getDescription() const override {
-    return "Attack someone";
+  virtual TString getDescription() const override {
+    return TStringId("ATTACK_CREATURES_TASK");
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), creatures)
@@ -893,8 +894,8 @@ class CampAndSpawnTask : public Task {
     return c->wait();
   }
 
-  virtual string getDescription() const override {
-    return "Camp and spawn";
+  virtual TString getDescription() const override {
+    return TStringId("CAMP_AND_SPAWN_TASK");
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), target, spawns, campPos, attackCountdown, attackTeam, numAttacks)
@@ -946,8 +947,8 @@ class KillFighters : public Task {
     return c->moveTowards(*moveTarget);
   }
 
-  virtual string getDescription() const override {
-    return "Kill " + toString(numCreatures) + " minions of " + collective->getName()->full;
+  virtual TString getDescription() const override {
+    return TString();
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), collective, numCreatures, targets)
@@ -975,8 +976,8 @@ class ConsumeItem : public Task {
         c->getEquipment().removeItems(c->getEquipment().getItems().filter(items.containsPredicate()), c); });
   }
 
-  virtual string getDescription() const override {
-    return "Consume item";
+  virtual TString getDescription() const override {
+    return TStringId("CONSUME_ITEM_TASK");
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), items, callback)
@@ -1020,8 +1021,8 @@ class Copulate : public Task {
       return c->moveTowards(target->getPosition());
   }
 
-  virtual string getDescription() const override {
-    return "Copulate with " + target->getName().bare();
+  virtual TString getDescription() const override {
+    return TSentence("COPULATE_TASK", target->getName().bare());
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), target, numTurns, callback)
@@ -1059,8 +1060,8 @@ class Consume : public Task {
       return c->moveTowards(target->getPosition());
   }
 
-  virtual string getDescription() const override {
-    return "Absorb " + target->getName().bare();
+  virtual TString getDescription() const override {
+    return TSentence("ABSORB_TASK", target->getName().bare());
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), target)
@@ -1133,11 +1134,11 @@ class Eat : public Task {
     return NoMove;
   }
 
-  virtual string getDescription() const override {
+  virtual TString getDescription() const override {
     if (position)
-      return "Eat at " + toString(*position);
+      return TSentence("EAT_AT_TASK", toString(*position));
     else
-      return "Eat";
+      return TStringId("EAT_TASK");
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), position, positions, rejectedPosition)
@@ -1178,7 +1179,7 @@ class GoTo : public Task {
     return target;
   }
 
-  virtual string getDescription() const override {
+  virtual TString getDescription() const override {
     return "Go to " + toString(target);
   }
 
@@ -1216,8 +1217,8 @@ class Dance : public Task {
     return NoMove;
   }
 
-  virtual string getDescription() const override {
-    return "Dance";
+  virtual TString getDescription() const override {
+    return TStringId("DANCE_TASK");
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), collective)
@@ -1265,7 +1266,7 @@ class StayIn : public Task {
     return NoMove;
   }
 
-  virtual string getDescription() const override {
+  virtual TString getDescription() const override {
     return "Go to " + toString(currentTarget);
   }
 
@@ -1292,8 +1293,8 @@ class Idle : public Task {
     return c->wait();
   }
 
-  virtual string getDescription() const override {
-    return "Idle";
+  virtual TString getDescription() const override {
+    return TStringId("IDLE_TASK");
   }
 
   SERIALIZE_ALL(SUBCLASS(Task))
@@ -1317,7 +1318,7 @@ class AlwaysDone : public Task {
     return task->getMove(c);
   }
 
-  virtual string getDescription() const override {
+  virtual TString getDescription() const override {
     return task->getDescription();
   }
 
@@ -1379,8 +1380,8 @@ class Follow : public Task {
     }
   }
 
-  virtual string getDescription() const override {
-    return "Follow " + target->getName().bare();
+  virtual TString getDescription() const override {
+    return TSentence("FOLLOW_TASK", target->getName().bare());
   }
 
   WeakPointer<Creature> SERIAL(target);
@@ -1412,8 +1413,8 @@ class TransferTo : public Task {
       return c->moveTowards(*target);
   }
 
-  virtual string getDescription() const override {
-    return "Go to site";
+  virtual TString getDescription() const override {
+    return TStringId("TRANSFER_TASK");
   }
 
   template <class Archive>
@@ -1477,7 +1478,7 @@ class GoToAndWait : public Task {
     }
   }
 
-  virtual string getDescription() const override {
+  virtual TString getDescription() const override {
     return "Go to and wait " + toString(position);
   }
 
@@ -1511,7 +1512,7 @@ class WaitTask : public Task {
     return c->wait();
   }
 
-  virtual string getDescription() const override {
+  virtual TString getDescription() const override {
     return "Wait for " + toString(waitTime) + " turns";
   }
 
@@ -1548,8 +1549,8 @@ class Whipping : public Task {
       return c->whip(whipped->getPosition(), 0.3);
   }
 
-  virtual string getDescription() const override {
-    return "Whipping " + whipped->getName().a();
+  virtual TString getDescription() const override {
+    return TSentence("WHIPPING_TASK", whipped->getName().a());
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), position, whipped)
@@ -1574,8 +1575,8 @@ class DropItemsAnywhere : public Task {
     return c->drop(c->getEquipment().getItems().filter(items.containsPredicate())).append([=] (Creature*) { setDone(); });
   }
 
-  virtual string getDescription() const override {
-    return "Drop items anywhere";
+  virtual TString getDescription() const override {
+    return TStringId("DROP_ITEMS_ANYWHERE_TASK");
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), items)
@@ -1599,8 +1600,8 @@ class DropItems : public Task {
   DropItems(EntitySet<Item> items, vector<Position> positions)
       : items(std::move(items)), positions(std::move(positions)) {}
 
-  virtual string getDescription() const override {
-    return "Drop items";
+  virtual TString getDescription() const override {
+    return TStringId("DROP_ITEMS_TASK");
   }
 
   optional<Position> chooseTarget(Creature* c) const {
@@ -1708,7 +1709,7 @@ class PickUpItem : public Task {
       return storage;
   }
 
-  virtual string getDescription() const override {
+  virtual TString getDescription() const override {
     return "Pick up item " + toString(position);
   }
 
@@ -1811,8 +1812,8 @@ class Spider : public Task {
       return c->moveTowards(*attackPosition, NavigationFlags().requireStepOnTile());
   }
 
-  virtual string getDescription() const override {
-    return "Spider";
+  virtual TString getDescription() const override {
+    return TStringId("SPIDER_TASK");
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), origin, webPositions, attackPosition)
@@ -1857,8 +1858,8 @@ class WithTeam : public Task {
       return task->getMove(c);
   }
 
-  virtual string getDescription() const override {
-    return "Team task: " + task->getDescription();
+  virtual TString getDescription() const override {
+    return TSentence("TEAM_TASK", task->getDescription());
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), collective, teamId, task)
@@ -1897,8 +1898,8 @@ class AllianceTask : public Task {
     return task->getMove(c);
   }
 
-  virtual string getDescription() const override {
-    return "Team task: " + task->getDescription();
+  virtual TString getDescription() const override {
+    return TSentence("TEAM_TASK", task->getDescription());
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), allies, targetArea, task)
@@ -1982,8 +1983,8 @@ class DuelTask : public Task {
     return attackTask->getMove(c);
   }
 
-  virtual string getDescription() const override {
-     return "Duel task: " + attackTask->getDescription();
+  virtual TString getDescription() const override {
+     return TSentence("DUEL_TASK", attackTask->getDescription());
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), target, attacker, team, attackTask, duelState, targetArea, maxShowTime)

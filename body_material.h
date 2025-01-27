@@ -5,9 +5,10 @@
 #include "item_type.h"
 #include "health_type.h"
 #include "lasting_or_buff.h"
+#include "t_string.h"
 
 struct BodyMaterial {
-  string SERIAL(name);
+  TString SERIAL(name);
   HashSet<LastingOrBuff> SERIAL(intrinsicallyAffected);
   HashSet<LastingOrBuff> SERIAL(immuneTo);
   bool SERIAL(killedByBoulder) = true;
@@ -17,7 +18,7 @@ struct BodyMaterial {
   bool SERIAL(undead) = false;
   bool SERIAL(canLoseBodyParts) = true;
   bool SERIAL(losingHeadsMeansDeath) = false;
-  string SERIAL(deathDescription);
+  TString SERIAL(deathDescription);
   optional<HealthType> SERIAL(healthType);
   optional<ItemType> SERIAL(bodyPartItem);
   SERIALIZE_ALL(OPTION(losingHeadsMeansDeath), OPTION(canLoseBodyParts), NAMED(name), OPTION(intrinsicallyAffected), OPTION(immuneTo), OPTION(killedByBoulder), OPTION(canCopulate), OPTION(hasBrain), OPTION(flamable), OPTION(undead), NAMED(deathDescription), OPTION(healthType), NAMED(bodyPartItem))

@@ -2337,7 +2337,7 @@ Def Boulder(Id) {
   layer = GROUND
   waterDepth = 100
   entryType = Water
-  droppedItems = { "sinks" "sink" "You hear a splash." }
+  droppedItems = { ITEM_SINKS ITEMS_SINK "You hear a splash." }
   defaultBridge = "BRIDGE"
   summonedElement = "WATER_ELEMENTAL"
   freezeTo = "ICE"
@@ -2388,7 +2388,7 @@ Def Boulder(Id) {
   viewId = { "magma" }
   layer = GROUND
   entryType = Magma
-  droppedItems = { "burns" "burn" }
+  droppedItems = { ITEM_BURNS ITEMS_BURN }
   lightEmission = 8.2
   defaultBridge = "STONE_BRIDGE"
   summonedElement = "FIRE_ELEMENTAL"

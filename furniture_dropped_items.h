@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util.h"
+#include "t_string.h"
 
 class Position;
 class Furniture;
@@ -8,8 +9,8 @@ class Furniture;
 class FurnitureDroppedItems {
   public:
   struct Water {
-    string SERIAL(verbSingle);
-    string SERIAL(verbPlural);
+    TString SERIAL(verbSingle);
+    TString SERIAL(verbPlural);
     optional<string> SERIAL(unseenMessage);
     SERIALIZE_ALL(NAMED(verbSingle), NAMED(verbPlural), NAMED(unseenMessage))
   };

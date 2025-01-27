@@ -142,14 +142,14 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool isActivityGoodAssumingHaveTasks(Creature*, MinionActivity, bool ignoreTaskLock = false);
 
   using GroupLockedActivities = EnumSet<MinionActivity>;
-  bool isActivityGroupLocked(const string& group, MinionActivity activity) const;
-  void flipGroupLockedActivities(const string& group, GroupLockedActivities);
+  bool isActivityGroupLocked(const TString& group, MinionActivity activity) const;
+  void flipGroupLockedActivities(const TString& group, GroupLockedActivities);
   bool isActivityGroupLocked(const Creature*, MinionActivity activity) const;
 
   vector<Item*> getAllItems(bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
   vector<pair<Position, vector<Item*>>> getStoredItems(ItemIndex, vector<StorageId>) const;
-  bool canUseEquipmentGroup(const Creature*, const string& group);
+  bool canUseEquipmentGroup(const Creature*, const TString& group);
 
   bool canAddFurniture(Position, FurnitureType) const;
   void addFurniture(Position, FurnitureType, const CostInfo&, bool noCredit);
@@ -203,8 +203,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   vector<Creature*> getConsumptionTargets(Creature* consumer) const;
   void onRansomPaid();
   void onExternalEnemyKilled(const string& name);
-  void addRecordedEvent(string);
-  const unordered_set<string>& getRecordedEvents() const;
+  void addRecordedEvent(TString);
+  const HashSet<TString>& getRecordedEvents() const;
 
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
@@ -235,8 +235,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
     Position SERIAL(position);
     SERIALIZE_ALL(finishTime, position)
   };
-  string getMinionGroupName(const Creature*) const;
-  vector<string> getAutomatonGroupNames(const Creature*) const;
+  TString getMinionGroupName(const Creature*) const;
+  vector<TString> getAutomatonGroupNames(const Creature*) const;
   const optional<AlarmInfo>& getAlarmInfo() const;
 
   double getRebellionProbability() const;
@@ -244,7 +244,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   // From Task::Callback
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
 
-  unordered_map<string, unordered_set<string>> SERIAL(lockedEquipmentGroups);
+  HashMap<TString, HashSet<TString>> SERIAL(lockedEquipmentGroups);
   EntityMap<Creature, EnumSet<MinionTrait>> SERIAL(stunnedMinions);
   LocalTime lastMass = -10000_local;
 
@@ -336,9 +336,9 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void updateBorderTiles();
   bool updatedBorderTiles = false;
   HeapAllocated<MinionActivities> SERIAL(minionActivities);
-  unordered_set<string> SERIAL(recordedEvents);
-  unordered_set<string> SERIAL(allRecordedEvents);
-  unordered_map<string, GroupLockedActivities> SERIAL(groupLockedAcitivities);
+  HashSet<TString> SERIAL(recordedEvents);
+  HashSet<TString> SERIAL(allRecordedEvents);
+  HashMap<TString, GroupLockedActivities> SERIAL(groupLockedAcitivities);
   EntityMap<Creature, Creature*> SERIAL(steedAssignments);
   bool SERIAL(attackedByPlayer) = false;
   void updateGuardTasks();

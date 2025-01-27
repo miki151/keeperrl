@@ -17,6 +17,7 @@
 
 #include "enums.h"
 #include "util.h"
+#include "t_string.h"
 
 class Creature;
 class MapMemory;
@@ -44,7 +45,7 @@ class Controller : public OwnedObject<Controller> {
 
   virtual void makeMove() = 0;
   virtual void sleeping() {}
-  virtual void grantWish(const string& message) { }
+  virtual void grantWish(TString message) { }
   virtual void setDragTask(PTask) {}
   virtual Task* getDragTask() const { return nullptr; }
 

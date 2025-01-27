@@ -180,12 +180,10 @@ void ContentId<T>::serialize(PrettyInputArchive& ar1, const unsigned int) {\
     string s;\
     ar1(s);\
     id = getId(s.data());\
-    ar1.keyVerifier.verifyContentId<T>(ar1.positionToString(ar1.getCurrentPosition()), s);\
   } else {\
     auto s = ar1.peek();\
     ar1.eatMaybe(s);\
     id = getId(s.data());\
-    ar1.keyVerifier.verifyContentId<T>(ar1.positionToString(ar1.getCurrentPosition()), s);\
   }\
 } \
 template<> template<>\

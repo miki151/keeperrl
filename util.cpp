@@ -853,15 +853,6 @@ string combineSentences(const vector<string>& v) {
   return ret;
 }
 
-string addAParticle(const string& s) {
-  if (isupper(s[0]))
-    return s;
-  if (contains({'a', 'e', 'u', 'i', 'o'}, s[0]))
-    return string("an ") + s;
-  else
-    return string("a ") + s;
-}
-
 string capitalFirst(string s) {
   if (!s.empty() && islower(s[0]))
     s[0] = toupper(s[0]);
@@ -906,55 +897,6 @@ string getPlural(const string& a, const string&b, int num) {
     return "1 " + a;
   else
     return toString(num) + " " + b;
-}
-
-string getPlural(const string& a, int num) {
-  if (num == 1)
-    return "1 " + a;
-  else
-    return toString(num) + " " + makePlural(a);
-}
-
-string makePlural(const string& s) {
-  if (s.empty())
-    return "";
-  if (s.back() == 'y')
-    return s.substr(0, s.size() - 1) + "ies";
-  if (endsWith(s, "ph"))
-    return s + "s";
-  if (s.back() == 'h')
-    return s + "es";
-  if (s.back() == 's')
-    return s;
-  if (endsWith(s, "shelf"))
-    return s.substr(0, s.size() - 5) + "shelves";
-  return s + "s";
-}
-
-static string toText(int num) {
-  switch (num) {
-    case 0: return "zero";
-    case 1: return "one";
-    case 2: return "two";
-    case 3: return "three";
-    case 4: return "four";
-    case 5: return "five";
-    case 6: return "six";
-    case 7: return "seven";
-    case 8: return "eight";
-    case 9: return "nine";
-    case 10: return "ten";
-    case 11: return "eleven";
-    case 12: return "twelve";
-    default: return toString(num);
-  }
-}
-
-string getPluralText(const string& a, int num) {
-  if (num == 1)
-    return "a " + a;
-  else
-    return toText(num) + " " + a + "s";
 }
 
 Semaphore::Semaphore(int v) : value(v) {}

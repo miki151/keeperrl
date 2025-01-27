@@ -56,7 +56,7 @@ SERIALIZABLE(Item)
 SERIALIZATION_CONSTRUCTOR_IMPL(Item)
 
 Item::Item(SItemAttributes attr, const ContentFactory* factory)
-    : Renderable(ViewObject(attr->viewId, ViewLayer::ITEM, capitalFirst(attr->name))),
+    : Renderable(ViewObject(attr->viewId, ViewLayer::ITEM, TSentence("CAPITAL_FIRST", attr->name))),
       attributes(attr), fire(attr->burnTime), canEquipCache(!!attributes->equipmentSlot),
       classCache(attributes->itemClass) {
   if (!attributes->prefixes.empty())
@@ -123,16 +123,16 @@ ItemPredicate Item::classPredicate(vector<ItemClass> cl) {
   return [cl](const Item* item) { return cl.contains(item->getClass()); };
 }
 
-ItemPredicate Item::namePredicate(const string& name) {
+ItemPredicate Item::sameItemPredicate(const Item* item) {
   PROFILE;
-  return [name](const Item* item) { return item->getName() == name; };
+  return [item](const Item* other) { return item->attributes->name == other->attributes->name; };
 }
 
 vector<vector<Item*>> Item::stackItems(const ContentFactory* f, vector<Item*> items,
     function<string(const Item*)> suffix) {
   PROFILE;
-  map<string, vector<Item*>> stacks = groupBy<Item*, string>(items, [suffix, f](const Item* item) {
-        return item->getNameAndModifiers(f) + suffix(item) + toString(item->getViewObject().id().getColor());
+  map<TString, vector<Item*>> stacks = groupBy<Item*, TString>(items, [suffix, f](const Item* item) {
+        return TSentence("BLABLA", { item->getNameAndModifiers(f), suffix(item),  toString(item->getViewObject().id().getColor())});
       });
   vector<vector<Item*>> ret;
   for (auto& elem : stacks)
@@ -177,10 +177,10 @@ void Item::onUnequip(Creature* c, bool msg, const ContentFactory* factory) {
 
 void Item::fireDamage(Position position) {
   bool burning = fire->isBurning();
-  string noBurningName = getTheName();
+  auto noBurningName = getTheName();
   fire->set();
   if (!burning && fire->isBurning()) {
-    position.globalMessage(noBurningName + " catches fire");
+    position.globalMessage(TSentence("ITEM_CATCHES_FIRE", noBurningName));
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, min(1.0, double(fire->getBurnState()) / 50));
   }
 }
@@ -204,14 +204,14 @@ void Item::tick(Position position, bool carried) {
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, min(1.0, double(fire->getBurnState()) / 50));
     fire->tick();
     if (!fire->isBurning()) {
-      position.globalMessage(getTheName() + " burns out");
+      position.globalMessage(TSentence("ITEM_BURNS_OUT", getTheName()));
       discarded = true;
     }
   }
   specialTick(position);
   if (timeout) {
     if (position.getGame()->getGlobalTime() >= *timeout) {
-      position.globalMessage(getTheName() + " disappears!");
+      position.globalMessage(TSentence("ITEM_DISAPPEARS", getTheName()));
       discarded = true;
     }
   }
@@ -231,11 +231,13 @@ void Item::setTimeout(GlobalTime t) {
 
 void Item::onHitSquareMessage(Position pos, const Attack& attack, int numItems) {
   if (attributes->fragile) {
-    pos.globalMessage(getPluralTheNameAndVerb(numItems, "crashes", "crash") + " on the " + pos.getName());
+    pos.globalMessage(TSentence(numItems > 1 ? "ITEMS_CRASH_ON_THE" : "ITEM_CRASHES_ON_THE", pos.getName(),
+        getPluralTheName(numItems)));
     pos.unseenMessage("You hear a crash");
     discarded = true;
   } else
-    pos.globalMessage(getPluralTheNameAndVerb(numItems, "hits", "hit") + " the " + pos.getName());
+    pos.globalMessage(TSentence(numItems > 1 ? "ITEMS_HIT_THE" : "ITEM_HITS_THE", pos.getName(),
+        getPluralTheName(numItems)));
   if (attributes->ownedEffect.contains(LastingEffect::LIGHT_SOURCE))
     pos.fireDamage(20, attack.attacker);
   if (attributes->effect && effectAppliedWhenThrown())
@@ -278,34 +280,35 @@ double Item::getWeight() const {
   return attributes->weight;
 }
 
-void Item::setDescription(string s) {
+void Item::setDescription(TString s) {
   attributes->description = std::move(s);
 }
 
-vector<string> Item::getDescription(const ContentFactory* factory) const {
-  vector<string> ret;
+vector<TString> Item::getDescription(const ContentFactory* factory) const {
+  vector<TString> ret;
   if (!attributes->description.empty())
     ret.push_back(attributes->description);
   if (attributes->effectDescription)
     if (auto& effect = attributes->effect) {
-      ret.push_back("Usage effect: " + effect->getName(factory));
+      ret.push_back(TSentence("USAGE_EFFECT", effect->getName(factory)));
       ret.push_back(effect->getDescription(factory));
     }
   for (auto& effect : getWeaponInfo().victimEffect)
-    ret.push_back("Victim affected by: " + effect.effect.getName(factory) + " (" + toPercentage(effect.chance) + " chance)");
+    ret.push_back(TSentence("VICTIM_AFFECTED_BY", effect.effect.getName(factory), toPercentage(effect.chance)));
   for (auto& effect : getWeaponInfo().attackerEffect)
-    ret.push_back("Attacker affected by: " + effect.getName(factory));
+    ret.push_back(TSentence("VICTIM_AFFECTED_BY", effect.getName(factory)));
   for (auto& effect : attributes->equipedEffect) {
-    ret.push_back("Effect when equipped: " + ::getName(effect, factory));
+    ret.push_back(TSentence("EFFEC_WHEN_EQUIPED", ::getName(effect, factory)));
     ret.push_back(::getDescription(effect, factory));
   }
   if (auto& info = attributes->upgradeInfo)
     ret.append(info->getDescription(factory));
   for (auto& info : abilityInfo)
-    ret.push_back("Grants ability: "_s + info.spell.getName(factory));
+    ret.push_back(TSentence("GRANTS_ABILITY", info.spell.getName(factory)));
   for (auto& elem : attributes->specialAttr)
-    ret.push_back(toStringWithSign(elem.second.first) + " " + factory->attrInfo.at(elem.first).name + " " +
-        elem.second.second.getName(factory));
+    ret.push_back(TSentence("SPECIAL_ATTR_VALUE", {toStringWithSign(elem.second.first),
+        factory->attrInfo.at(elem.first).name,
+        elem.second.second.getName(factory)}));
   return ret;
 }
 
@@ -317,7 +320,7 @@ CreaturePredicate Item::getAutoEquipPredicate() const {
   return attributes->autoEquipPredicate;
 }
 
-const string& Item::getEquipWarning() const {
+const TString& Item::getEquipWarning() const {
   return attributes->equipWarning;
 }
 
@@ -333,7 +336,7 @@ const vector<StorageId>& Item::getStorageIds() const {
   return attributes->storageIds;
 }
 
-const optional<string>& Item::getEquipmentGroup() const {
+const optional<TString>& Item::getEquipmentGroup() const {
   return attributes->equipmentGroup;
 }
 
@@ -418,27 +421,35 @@ void Item::applySpecial(Creature* c) {
   if (attributes->uses > -1 && --attributes->uses == 0) {
     discarded = true;
     if (attributes->usedUpMsg)
-      c->privateMessage(getTheName() + " is used up.");
+      c->privateMessage(TSentence("ITEM_USED_UP", getTheName()));
   }
   if (attributes->effect)
     attributes->effect->apply(c->getPosition(), c);
 }
 
-string Item::getApplyMsgThirdPerson(const Creature* owner) const {
+TString Item::getApplyMsgThirdPerson(const Creature* owner) const {
   if (attributes->applyMsgThirdPerson)
     return *attributes->applyMsgThirdPerson;
   switch (getClass()) {
-    case ItemClass::FOOD: return "eats " + getAName(false, owner);
-    default: return attributes->applyVerb.second + " " + getAName(false, owner);
+    case ItemClass::FOOD: return TSentence("EATS", owner->getName().the(), getAName(false, owner));
+    default:
+      if (auto id = attributes->applyVerb.second.text.getValueMaybe<TSentence>())
+        return TSentence(id->id, owner->getName().the(), getAName(false, owner));
+      else
+        return TString();
   }
 }
 
-string Item::getApplyMsgFirstPerson(const Creature* owner) const {
+TString Item::getApplyMsgFirstPerson(const Creature* owner) const {
   if (attributes->applyMsgFirstPerson)
     return *attributes->applyMsgFirstPerson;
   switch (getClass()) {
-    case ItemClass::FOOD: return "eat " + getAName(false, owner);
-    default: return attributes->applyVerb.first + " " + getAName(false, owner);
+    case ItemClass::FOOD: return TSentence("YOU_EAT", getAName(false, owner));
+    default:
+      if (auto id = attributes->applyVerb.first.text.getValueMaybe<TSentence>())
+        return TSentence(id->id, getAName(false, owner));
+      else
+        return TString();
   }
 }
 
@@ -446,7 +457,7 @@ optional<StatId> Item::getProducedStat() const {
   return attributes->producedStat;
 }
 
-void Item::setName(const string& n) {
+void Item::setName(const TString& n) {
   attributes->name = n;
 }
 
@@ -462,79 +473,74 @@ Creature* Item::getShopkeeper(const Creature* owner) const {
   return nullptr;
 }
 
-string Item::getName(bool plural, const Creature* owner) const {
+TString Item::getName(bool plural, const Creature* owner) const {
   PROFILE;
-  string suff;
+  vector<TString> suffixes;;
   if (fire->isBurning())
-    suff.append(" (burning)");
+    suffixes.push_back(TStringId("ITEM_BURNING"));
   if (owner && getShopkeeper(owner))
-    suff += " (" + toString(getPrice()) + (plural ? " gold each)" : " gold)");
+    suffixes.push_back(TSentence("ITEM_PRICE", TString(toString(getPrice()))));
   if (owner && owner->isAffected(LastingEffect::BLIND))
     return getBlindName(plural);
-  return getVisibleName(plural) + suff;
+  if (suffixes.empty())
+    return getVisibleName(plural);
+  else
+    return TSentence("ITEM_NAME_WITH_SUFFIXES", getVisibleName(plural), TSentence("ITEM_SUFFIXES", std::move(suffixes)));
 }
 
-string Item::getAName(bool getPlural, const Creature* owner) const {
+TString Item::getAName(bool getPlural, const Creature* owner) const {
   PROFILE;
   if (attributes->noArticle || getPlural)
     return getName(getPlural, owner);
   else
-    return addAParticle(getName(getPlural, owner));
+    return TSentence("A_ARTICLE", getName(getPlural, owner));
 }
 
-string Item::getTheName(bool getPlural, const Creature* owner) const {
+TString Item::getTheName(bool getPlural, const Creature* owner) const {
   PROFILE;
-  string the = (attributes->noArticle || getPlural) ? "" : "the ";
-  return the + getName(getPlural, owner);
+  if (attributes->noArticle || getPlural)
+    return getName(getPlural, owner);
+  else
+    return TSentence("THE_ARTICLE", getName(getPlural, owner));
 }
 
-string Item::getPluralName(int count) const {
+TString Item::getPluralName(int count) const {
   PROFILE;
   if (count > 1)
-    return toString(count) + " " + getName(true);
+    return TSentence("ITEM_COUNT", getName(true), toString(count));
   else
     return getName(false);
 }
 
-string Item::getPluralTheName(int count) const {
+TString Item::getPluralTheName(int count) const {
   if (count > 1)
-    return toString(count) + " " + getTheName(true);
+    return TSentence("ITEM_COUNT", getName(true), toString(count));
   else
     return getTheName(false);
 }
 
-string Item::getPluralAName(int count) const {
+TString Item::getPluralAName(int count) const {
   if (count > 1)
-    return toString(count) + " " + getTheName(true);
+    return TSentence("ITEM_COUNT", getName(true), toString(count));
   else
     return getAName(false);
 }
 
-string Item::getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const {
-  return getPluralTheName(count) + " " + (count > 1 ? verbPlural : verbSingle);
-}
-
-static void appendWithSpace(string& s, const string& suf) {
-  if (!s.empty() && !suf.empty())
-    s += " ";
-  s += suf;
-}
-
-string Item::getVisibleName(bool getPlural) const {
-  string ret;
+TString Item::getVisibleName(bool getPlural) const {
+  TString ret;
   if (!getPlural)
     ret = attributes->name;
   else {
     if (attributes->plural)
       ret = *attributes->plural;
-    else if (attributes->name.back() != 's')
-      ret = attributes->name + "s";
     else
-      ret = attributes->name;
+      ret = TSentence("MAKE_PLURAL", attributes->name);
   }
   if (!attributes->prefixes.empty())
-    ret = attributes->prefixes.back() + " " + ret;
-  appendWithSpace(ret, getSuffix());
+    ret = TSentence("ITEM_PREFIX", std::move(ret), attributes->prefixes.back());
+  auto suffix = getSuffix();
+  if (!suffix.empty())
+    ret = TSentence("ITEM_SUFFIX", std::move(ret), std::move(suffix));
   return ret;
 }
 
@@ -545,26 +551,26 @@ static string withSign(int a) {
     return toString(a);
 }
 
-const optional<string>& Item::getArtifactName() const {
+const optional<TString>& Item::getArtifactName() const {
   return attributes->artifactName;
 }
 
-void Item::setArtifactName(const string& s) {
+void Item::setArtifactName(const TString& s) {
   attributes->artifactName = s;
 }
 
-string Item::getSuffix() const {
-  string artStr;
+TString Item::getSuffix() const {
+  vector<TString> artStr;
   if (!attributes->suffixes.empty())
-    artStr += attributes->suffixes.back();
+    artStr.push_back(attributes->suffixes.back());
   if (attributes->artifactName)
-    appendWithSpace(artStr, "named " + *attributes->artifactName);
+    artStr.push_back(TSentence("ITEM_NAMED", *attributes->artifactName));
   if (fire->isBurning())
-    appendWithSpace(artStr, "(burning)");
-  return artStr;
+    artStr.push_back(TStringId("BURNING_PARENS"));
+  return combineWithSpace(std::move(artStr));
 }
 
-string Item::getModifiers(const ContentFactory* factory, bool shorten) const {
+TString Item::getModifiers(const ContentFactory* factory, bool shorten) const {
   HashSet<AttrType> printAttr;
   if (!shorten) {
     for (auto attr : attributes->modifiers)
@@ -591,49 +597,52 @@ string Item::getModifiers(const ContentFactory* factory, bool shorten) const {
         break;
       default: break;
     }
-  vector<string> attrStrings;
-  for (auto attr : printAttr)
-    attrStrings.push_back(withSign(getValueMaybe(attributes->modifiers, attr).value_or(0)) +
-        (shorten ? "" : " " + factory->attrInfo.at(attr).name));
-  string attrString = combine(attrStrings, true);
-  if (!attrString.empty())
-    attrString = "(" + attrString + ")";
+  vector<TString> attrStrings;
+  for (auto attr : printAttr) {
+    auto valueString = withSign(getValueMaybe(attributes->modifiers, attr).value_or(0));
+    if (shorten)
+      attrStrings.push_back(std::move(valueString));
+    else
+      attrStrings.push_back(TSentence("PLUS_MINUS_ATTR", std::move(valueString), factory->attrInfo.at(attr).name));
+  }
+  auto attrString = combineWithCommas(attrStrings);
+  if (!attrStrings.empty())
+    attrString = TSentence("PARENTHESES", std::move(attrString));
   if (attributes->uses > -1 && attributes->displayUses)
-    appendWithSpace(attrString, "(" + toString(attributes->uses) + " uses left)");
+    attrString = TSentence("USES_LEFT", std::move(attrString), toString(attributes->uses));
   return attrString;
 }
 
-string Item::getShortName(const ContentFactory* factory, const Creature* owner, bool plural) const {
+TString Item::getShortName(const ContentFactory* factory, const Creature* owner, bool plural) const {
   PROFILE;
   if (owner && owner->isAffected(LastingEffect::BLIND) && attributes->blindName)
     return getBlindName(plural);
   if (attributes->artifactName)
-    return *attributes->artifactName + " " + getModifiers(factory, true);
-  string name;
+    return combineWithSpace({*attributes->artifactName, getModifiers(factory, true)});
+  TString name;
   if (!attributes->suffixes.empty())
     name = attributes->suffixes.back();
   else if (!attributes->prefixes.empty())
     name = attributes->prefixes.back();
   else if (attributes->shortName) {
     name = *attributes->shortName;
-    appendWithSpace(name, getSuffix());
+    auto suffix = getSuffix();
+    if (!suffix.empty())
+      name = TSentence("ITEM_SUFFIX", std::move(name), std::move(suffix));
   } else
     name = getVisibleName(plural);
-  appendWithSpace(name, getModifiers(factory, true));
-  return name;
+  return combineWithSpace({std::move(name), getModifiers(factory, true)});
 }
 
-string Item::getNameAndModifiers(const ContentFactory* factory, bool getPlural, const Creature* owner) const {
+TString Item::getNameAndModifiers(const ContentFactory* factory, bool getPlural, const Creature* owner) const {
   PROFILE;
-  auto ret = getName(getPlural, owner);
-  appendWithSpace(ret, getModifiers(factory));
-  return ret;
+  return combineWithSpace({getName(getPlural, owner), getModifiers(factory)});
 }
 
-string Item::getBlindName(bool plural) const {
+TString Item::getBlindName(bool plural) const {
   PROFILE;
   if (attributes->blindName)
-    return *attributes->blindName + (plural ? "s" : "");
+    return *attributes->blindName;
   else
     return getName(plural);
 }
@@ -688,48 +697,46 @@ optional<CorpseInfo> Item::getCorpseInfo() const {
   return none;
 }
 
-void Item::getAttackMsg(const Creature* c, const string& enemyName) const {
+void Item::getAttackMsg(const Creature* c, TString enemyName) const {
   auto weaponInfo = getWeaponInfo();
-  auto swingMsg = [&] (const char* verb) {
+  auto swingMsg = [&] (TStringId verb1, TStringId verb2) {
     if (!weaponInfo.itselfMessage) {
-      c->secondPerson("You "_s + verb + " your " + getName() + " at " + enemyName);
-      c->thirdPerson(c->getName().the() + " " + verb + "s " + his(c->getAttributes().getGender()) + " " + getName() + " at " + enemyName);
+      c->secondPerson(TSentence(verb1, TString(getName()), enemyName));
+      c->thirdPerson(TSentence(verb2, {TSentence(his(c->getAttributes().getGender())), getName(), enemyName}));
     } else {
-      c->secondPerson("You "_s + verb + " yourself at " + enemyName);
-      c->thirdPerson(c->getName().the() + " " + verb + "s " + himself(c->getAttributes().getGender()) + " at " + enemyName);
+      c->verb(TStringId("THRUST_YOURSELF"), TStringId("THRUSTS_ITSELF"), TString(enemyName));
     }
   };
-  auto biteMsg = [&] (const char* verb2, const char* verb3) {
-    c->secondPerson("You "_s + verb2 + " " + enemyName);
-    c->thirdPerson(c->getName().the() + " " + verb3 + " " + enemyName);
+  auto biteMsg = [&] (TStringId verb1, TStringId verb2) {
+    c->verb(verb1, verb2, TString(enemyName));
   };
   switch (weaponInfo.attackMsg) {
     case AttackMsg::SWING:
-      swingMsg("swing");
+      swingMsg(TStringId("SWING"), TStringId("SWINGS"));
       break;
     case AttackMsg::THRUST:
-      swingMsg("thrust");
+      swingMsg(TStringId("THRUST"), TStringId("THRUSTS"));
       break;
     case AttackMsg::WAVE:
-      swingMsg("wave");
+      swingMsg(TStringId("WAVE"), TStringId("WAVES"));
       break;
     case AttackMsg::KICK:
-      biteMsg("kick", "kicks");
+      biteMsg(TStringId("KICK"), TStringId("KICKS"));
       break;
     case AttackMsg::BITE:
-      biteMsg("bite", "bites");
+      biteMsg(TStringId("BITE"), TStringId("BITES"));
       break;
     case AttackMsg::TOUCH:
-      biteMsg("touch", "touches");
+      biteMsg(TStringId("TOUCH"), TStringId("TOUCHES"));
       break;
     case AttackMsg::CLAW:
-      biteMsg("claw", "claws");
+      biteMsg(TStringId("CLAW"), TStringId("CLAWS"));
       break;
     case AttackMsg::SPELL:
-      biteMsg("curse", "curses");
+      biteMsg(TStringId("CURSE"), TStringId("CURSES"));
       break;
     case AttackMsg::PUNCH:
-      biteMsg("punch", "punches");
+      biteMsg(TStringId("PUNCH"), TStringId("PUNCHES"));
       break;
   }
 }

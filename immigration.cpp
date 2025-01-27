@@ -30,6 +30,7 @@
 #include "item.h"
 #include "effect_type.h"
 #include "storage_id.h"
+#include "t_string.h"
 
 template <class Archive>
 void Immigration::serialize(Archive& ar, const unsigned int) {
@@ -86,15 +87,15 @@ static auto visitAttraction(const Immigration& immigration, const AttractionInfo
   return visit(value, max(0, value - occupation));
 }
 
-vector<string> Immigration::getMissingRequirements(const Available& available) const {
+vector<TString> Immigration::getMissingRequirements(const Available& available) const {
   PROFILE
-  vector<string> ret = getMissingRequirements(Group {available.immigrantIndex, (int)available.getCreatures().size()});
+  vector<TString> ret = getMissingRequirements(Group {available.immigrantIndex, (int)available.getCreatures().size()});
   int groupSize = available.getCreatures().size();
   if (!available.getInfo().getTraits().contains(MinionTrait::NO_LIMIT) &&
       collective->getPopulationSize() >= collective->getMaxPopulation())
-    ret.push_back("Exceeds population limit");
+    ret.push_back(TStringId("EXCEEDS_POP_LIMIT"));
   if (ret.empty() && available.getSpawnPositions().size() < groupSize)
-    ret.push_back("Not enough room to spawn.");
+    ret.push_back(TStringId("NO_ROOM_TO_SPAWN"));
   return ret;
 }
 
@@ -111,100 +112,105 @@ optional<ImmigrantAutoState> Immigration::getAutoState(int index) const {
   return getValueMaybe(autoState, index);
 }
 
-optional<string> Immigration::getMissingRequirement(const ImmigrantRequirement& requirement, const Group& group) const {
+optional<TString> Immigration::getMissingRequirement(const ImmigrantRequirement& requirement, const Group& group) const {
   PROFILE;
   auto& immigrantInfo = immigrants[group.immigrantIndex];
+  auto game = collective->getGame();
+  auto contentFactory = game->getContentFactory();
   auto visitor = makeVisitor(
-      [&](const AttractionInfo& attraction) -> optional<string> {
+      [&](const AttractionInfo& attraction) -> optional<TString> {
         return visitAttraction(*this, attraction,
-            [&](int total, int available) -> optional<string> {
+            [&](int total, int available) -> optional<TString> {
               int required = attraction.amountClaimed * group.count - available;
               if (required > 0) {
-                const char* extra = total > 0 ? "more " : "";
-                return "Requires " + toString(required) + " " + extra +
-                    combineWithOr(attraction.types.transform([&](const AttractionType& type) {
-                      return AttractionInfo::getAttractionName(collective->getGame()->getContentFactory(), type, required); }));
+                auto list = combineWithOr(attraction.types.transform([&](const AttractionType& type) {
+                    return AttractionInfo::getAttractionName(contentFactory, type, required); }));
+                if (total > 0)
+                  return TString(TSentence("REQUIRES_MORE_ATTRACTIONS", toString(required), std::move(list)));
+                else
+                  return TString(TSentence("REQUIRES_ATTRACTIONS", toString(required), std::move(list)));
               } else
                 return none;
             });
       },
-      [&](const TechId& techId) -> optional<string> {
+      [&](const TechId& techId) -> optional<TString> {
         if (!collective->getTechnology().researched.count(techId))
-          return "Missing technology: "_s + techId.data();
+          return TString(TSentence("REQUIRES_TECHNOLOGY",
+              collective->getTechnology().getName(techId)));
         else
           return none;
       },
-      [&](const SunlightState& state) -> optional<string> {
-        if (state != collective->getGame()->getSunlightInfo().getState())
-          return "Immigrant won't join during the "_s + collective->getGame()->getSunlightInfo().getText();
+      [&](const SunlightState& state) -> optional<TString> {
+        if (state != game->getSunlightInfo().getState())
+          return TString(TSentence("IMMIGRANT_WONT_JOIN_DURING", game->getSunlightInfo().getText()));
         else
           return none;
       },
-      [&](const CostInfo& cost) -> optional<string> {
+      [&](const CostInfo& cost) -> optional<TString> {
         if (!collective->hasResource(cost * group.count))
-          return "Not enough " + collective->getResourceInfo(cost.id).name;
+          return TString(TSentence("REQUIRES_RESOURCE", collective->getResourceInfo(cost.id).name));
         else
           return none;
       },
-      [&](const ExponentialCost& cost) -> optional<string> {
+      [&](const ExponentialCost& cost) -> optional<TString> {
         if (!collective->hasResource(calculateCost(group.immigrantIndex, cost) * group.count))
-          return "Not enough " + collective->getResourceInfo(cost.base.id).name;
+          return TString(TSentence("REQUIRES_RESOURCE", collective->getResourceInfo(cost.base.id).name));
         else
           return none;
       },
-      [&](const FurnitureType& type) -> optional<string> {
+      [&](const FurnitureType& type) -> optional<TString> {
         if (collective->getConstructions().getBuiltCount(type) == 0)
-          return "Requires " + collective->getGame()->getContentFactory()->furniture.getData(type).getName();
+          return TString(TSentence("REQUIRES_FURNITURE", contentFactory->furniture.getData(type).getName()));
         else
           return none;
       },
-      [&](const MinTurnRequirement& type) -> optional<string> {
+      [&](const MinTurnRequirement& type) -> optional<TString> {
         if (collective->getGlobalTime() < type.turn)
-          return "Not available until turn " + toString(type.turn);
+          return TString(TSentence("NOT_AVAILABLE_UNTIL_TURN", toString(type.turn)));
         else
           return none;
       },
-      [&](const Pregnancy&) -> optional<string> {
+      [&](const Pregnancy&) -> optional<TString> {
         for (Creature* c : collective->getCreatures())
           if (c->isAffected(LastingEffect::PREGNANT))
             return none;
-        return "Requires a pregnant succubus"_s;
+        return TString(TStringId("REQUIRES_PREGNANT_SUCCUBUS"));
       },
-      [&](const RecruitmentInfo& info) -> optional<string> {
-        auto cols = info.findEnemy(collective->getGame());
+      [&](const RecruitmentInfo& info) -> optional<TString> {
+        auto cols = info.findEnemy(game);
         if (cols.empty())
-          return "Ally doesn't exist"_s;
-        optional<string> result;
+          return TString(TStringId("ALLY_DOESNT_EXIST"));
+        optional<TString> result;
         for (auto col : cols) {
           if (!collective->isKnownVillainLocation(col))
-            result = "Ally hasn't been discovered"_s;
+            result = TString(TStringId("REQUIRES_ALLY_DISCOVERED"));
           else if (info.getAvailableRecruits(collective, immigrantInfo.getNonRandomId(0)).empty())
-            result = "Ally doesn't have recruits available at this moment"_s;
+            result = TString(TStringId("REQUIRES_ALLY_HAVE_RECRUITS"));
           else
             return none;
         }
         return result;
       },
-      [&](const TutorialRequirement& t) -> optional<string> {
-        if ((int) collective->getGame()->getPlayerControl()->getTutorial()->getState() < (int) t.state)
-          return "Tutorial not there yet"_s;
+      [&](const TutorialRequirement& t) -> optional<TString> {
+        if ((int) game->getPlayerControl()->getTutorial()->getState() < (int) t.state)
+          return TString(TStringId("TUTORIAL_NOT_THERE"));
         else
           return none;
       },
-      [&](const NegateRequirement& t) -> optional<string> {
+      [&](const NegateRequirement& t) -> optional<TString> {
         if (getMissingRequirement(*t.r, group))
           return none;
         else
-          return "Not available"_s;
+          return TString(TStringId("NOT_AVAILABLE"));
       },
-      [&](const ImmigrantFlag& t) -> optional<string> {
+      [&](const ImmigrantFlag& t) -> optional<TString> {
         if (collective->getGame()->effectFlags.count(t.value))
           return none;
         else
-          return "Requires " + t.value;
+          return TString(TStringId("REQUIRES_UNLOCKING"));
       }
   );
-  return requirement.visit<optional<string>>(visitor);
+  return requirement.visit<optional<TString>>(visitor);
 }
 
 bool Immigration::suppliesRecruits(const Collective* col) const {
@@ -217,9 +223,9 @@ bool Immigration::suppliesRecruits(const Collective* col) const {
   return false;
 }
 
-vector<string> Immigration::getMissingRequirements(const Group& group) const {
+vector<TString> Immigration::getMissingRequirements(const Group& group) const {
   PROFILE;
-  vector<string> ret;
+  vector<TString> ret;
   auto& immigrantInfo = immigrants[group.immigrantIndex];
   for (auto& requirement : immigrantInfo.requirements)
     if (auto req = getMissingRequirement(requirement.type, group))
@@ -336,7 +342,7 @@ static vector<Position> pickSpawnPositions(const vector<Creature*>& creatures, c
         break;
       }
     if (!mySpawnPos) {
-      INFO << "Couldn't spawn immigrant " << c->getName().bare();
+//      INFO << "Couldn't spawn immigrant " << c->getName().bare();
       return {};
     } else
       spawnPos.push_back(*mySpawnPos);

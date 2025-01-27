@@ -2,85 +2,77 @@
 #include "creature_name.h"
 #include "util.h"
 #include "name_generator.h"
+#include "t_string.h"
 
-CreatureName::CreatureName(const string& n) : name(n), pluralName(name + "s") {
+CreatureName::CreatureName(const TString& n) : name(n) {
   CHECK(!name.empty());
 }
 
-CreatureName::CreatureName(const char* n) : CreatureName(string(n)) {
-}
-
-CreatureName::CreatureName(const string& n, const string& p) : name(n), pluralName(p) {
+CreatureName::CreatureName(const TString& n, const TString& p) : name(n), pluralName(p) {
   CHECK(!name.empty());
   CHECK(!pluralName.empty());
 }
 
 const char* CreatureName::identify() const {
-  return name.c_str();
+  return name.text.visit(
+    [](const TSentence& elem) { return elem.id.data(); },
+    [](const string& elem) { return elem.data(); }
+  );
 }
 
-string CreatureName::bare() const {
+TString CreatureName::bare() const {
   if (fullTitle && firstName)
     return title();
   else
     return name;
 }
 
-string CreatureName::the() const {
+TString CreatureName::the() const {
   if (fullTitle)
     return title();
   else
-    return "the " + name;
+    return TSentence("THE_ARTICLE", name);
 }
 
-string CreatureName::a() const {
+TString CreatureName::a() const {
   if (fullTitle)
     return title();
   else
-    return addAParticle(name);
+    return TSentence("A_ARTICLE", name);
 }
 
-string CreatureName::plural() const {
+TString CreatureName::plural() const {
   return pluralName;
 }
 
-string CreatureName::groupOf(int count) const {
-  if (count == 1)
-    return name;
-  else
-    return groupName + " of " + toString(count) + " " + plural();
+TString CreatureName::getGroupName() const {
+  return groupName;
 }
 
-string CreatureName::title() const {
-  if (firstName) {
+TString CreatureName::title() const {
+  if (firstName)
+    return TSentence("CREATURE_TITLE", TString(*firstName), killTitle ? *killTitle : name);
+  else {
     if (killTitle)
-      return *firstName + " the " + *killTitle;
+      return TSentence("CREATURE_TITLE", TSentence("CAPITAL_FIRST", bare()), *killTitle);
     else
-      return *firstName + " the " + name;
-  } else {
-    if (killTitle)
-      return capitalFirst(bare()) + " the " + *killTitle;
-    else
-      return capitalFirst(bare());
+      return bare();
   }
 }
 
-string CreatureName::aOrTitle() const {
-  if (firstName) {
+TString CreatureName::aOrTitle() const {
+  if (firstName)
+    return TSentence("CREATURE_TITLE", TString(*firstName), killTitle ? *killTitle : name);
+  else {
     if (killTitle)
-      return *firstName + " the " + *killTitle;
+      return TSentence("CREATURE_TITLE", TSentence("CAPITAL_FIRST", bare()), *killTitle);
     else
-      return *firstName + " the " + name;
-  } else {
-    if (killTitle)
-      return capitalFirst(bare()) + " the " + *killTitle;
-    else
-      return a();
+      return bare();
   }
 }
 
 void CreatureName::setFirst(optional<string> s) {
-  firstName = std::move(s);
+  firstName = s;
 }
 
 void CreatureName::generateFirst(NameGenerator* generator) {
@@ -92,35 +84,27 @@ optional<NameGeneratorId> CreatureName::getNameGenerator() const {
   return firstNameGen;
 }
 
-void CreatureName::setStack(const string& s) {
+void CreatureName::setStack(const TString& s) {
   stackName = s;
 }
 
-void CreatureName::setGroup(const string& s) {
-  groupName = s;
-}
-
-void CreatureName::setBare(const std::string& s) {
+void CreatureName::setBare(const TString& s) {
   name = s;
 }
 
-void CreatureName::addBarePrefix(const string& p) {
-  if (!stackName)
-    stackName = name;
-  name = p + " " + name;
+void CreatureName::addBarePrefix(const TString& p) {
+  prefix = std::move(p);
 }
 
-void CreatureName::addBareSuffix(const string& p) {
-  if (!stackName)
-    stackName = name;
-  name = name + " " + p;
+void CreatureName::addBareSuffix(const TString& p) {
+  suffix = std::move(p);
 }
 
-const optional<string>& CreatureName::stackOnly() const {
+const optional<TString>& CreatureName::stackOnly() const {
   return stackName;
 }
 
-const string& CreatureName::stack() const {
+const TString& CreatureName::stack() const {
   if (stackName)
     return *stackName;
   else
@@ -131,15 +115,18 @@ const optional<string>& CreatureName::first() const {
   return firstName;
 }
 
-string CreatureName::firstOrBare() const {
-  return firstName.value_or(capitalFirst(bare()));
+TString CreatureName::firstOrBare() const {
+  if (firstName)
+    return TString(*firstName);
+  else
+    return TSentence("CAPITAL_FIRST", bare());
 }
 
 void CreatureName::useFullTitle(bool b) {
   fullTitle = b;
 }
 
-void CreatureName::setKillTitle(optional<string> t) {
+void CreatureName::setKillTitle(optional<TString> t) {
   killTitle = std::move(t);
 }
 
@@ -157,6 +144,6 @@ template<>
 void CreatureName::serialize(PrettyInputArchive& ar1, unsigned) {
   ar1(NAMED(name), OPTION(pluralName), NAMED(stackName), NAMED(firstNameGen), NAMED(firstName), OPTION(groupName), OPTION(fullTitle), endInput());
   if (pluralName.empty())
-    pluralName = name + "s";
+    pluralName = TSentence("MAKE_PLURAL", name);
 }
 

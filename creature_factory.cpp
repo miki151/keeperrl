@@ -74,7 +74,7 @@ class BoulderController : public Monster {
       } else {
         health -= c->getBody().getBoulderDamage();
         if (health <= 0) {
-          nextPos.globalMessage(creature->getName().the() + " crashes on " + c->getName().the());
+          nextPos.globalMessage(TSentence("OBJECT_CRASHES_ON", creature->getName().the(), c->getName().the()));
           nextPos.unseenMessage("You hear a crash");
           creature->dieNoReason();
           //c->takeDamage(Attack(creature, AttackLevel::MIDDLE, AttackType::HIT, 1000, AttrType("DAMAGE")));
@@ -96,7 +96,7 @@ class BoulderController : public Monster {
     if (auto action = creature->move(direction))
       action.perform(creature);
     else {
-      nextPos.globalMessage(creature->getName().the() + " crashes on the " + nextPos.getName());
+      nextPos.globalMessage(TSentence("OBJECT_CRASHES_ON", creature->getName().the(), nextPos.getName()));
       nextPos.unseenMessage("You hear a crash");
       creature->dieNoReason();
       return;
@@ -131,7 +131,7 @@ PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
             c.body->setDeathSound(none);
             c.permanentEffects[LastingEffect::BLIND] = 1;
             c.boulder = true;
-            c.name = "boulder";
+            c.name = TString(TStringId("BOULDER"));
             ), SpellMap{});
   ret->setController(makeOwner<BoulderController>(ret.get(), direction));
   return ret;
@@ -146,7 +146,7 @@ PCreature CreatureFactory::getAnimatedItem(const ContentFactory* factory, PItem 
                 c.attr[attr.first] = item->getModifier(attr.first) + attrBonus;
             c.body = Body::nonHumanoid(BodyMaterialId("SPIRIT"), Body::Size::SMALL);
             c.body->setDeathSound(none);
-            c.name = "animated " + item->getName();
+            c.name = TString(TSentence("ANIMATED_OBJECT", item->getName()));
             c.gender = Gender::IT;
             auto weaponInfo = item->getWeaponInfo();
             weaponInfo.itselfMessage = true;
@@ -187,12 +187,13 @@ PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
             c.body->setMinPushSize(Body::Size::LARGE);
             c.permanentEffects[LastingEffect::BLIND] = 1;
             c.boulder = true;
-            c.name = "boulder";), SpellMap{});
+            c.name = TString(TStringId("BOULDER"));
+  ), SpellMap{});
   ret->setController(makeOwner<SokobanController>(ret.get()));
   return ret;
 }
 
-CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const char* name) {
+CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const TString& name) {
   return CATTR(
       c.viewId = id;
       c.body = Body::nonHumanoid(Body::Size::LARGE);
@@ -258,15 +259,15 @@ ViewIdList CreatureFactory::getViewId(CreatureId id) const {
   return {ViewId("knight")};
 }
 
-string CreatureFactory::getName(CreatureId id) const {
+TString CreatureFactory::getName(CreatureId id) const {
   if (auto a = getReferenceMaybe(attributes, id))
     return a->name.bare();
   if (auto p = getReferenceMaybe(getSpecialParams(), id))
     return getSpeciesName(p->humanoid, p->large, p->living, p->wings);
-  return "knight";
+  return TStringId("KNIGHT_NAME");
 }
 
-string CreatureFactory::getNamePlural(CreatureId id) const {
+TString CreatureFactory::getNamePlural(CreatureId id) const {
   return attributes.at(id).name.plural();
 }
 
@@ -352,14 +353,14 @@ class KrakenController : public Monster {
 
   void pullEnemy(Creature* held) {
     if (Random.roll(3)) {
-      held->you(MsgType::HAPPENS_TO, creature->getName().the() + " pulls");
+      held->verb(TStringId("ENEMY_PULLS_YOU"), TStringId("ENEMY_PULLS_CREATURE"), creature->getName().the());
       if (father) {
         held->setHeld(father->creature);
         Vec2 pullDir = held->getPosition().getDir(creature->getPosition());
         creature->dieNoReason(Creature::DropType::NOTHING);
         held->displace(pullDir);
       } else {
-        held->you(MsgType::ARE, "eaten by " + creature->getName().the());
+        held->verb(TStringId("YOU_ARE_EATEN_BY"), TStringId("IS_EATEN_BY"), creature->getName().the());
         held->dieNoReason();
       }
     }
@@ -390,7 +391,8 @@ class KrakenController : public Monster {
     auto pos = c->getPosition();
     Vec2 v = creature->getPosition().getDir(pos);
     if (v.length8() == 1) {
-      c->you(MsgType::HAPPENS_TO, creature->getName().the() + " swings itself around");
+      c->verb(TStringId("ENEMY_SWINGS_ITSELF_AROUND_YOU"), TStringId("ENEMY_SWINGS_ITSELF_AROUND_CREATURE"),
+          creature->getName().the());
       c->setHeld(creature);
     } else if (length < maxKrakenLength && Random.roll(2)) {
       pair<Vec2, Vec2> dirs = v.approxL1();
@@ -406,7 +408,7 @@ class KrakenController : public Monster {
         ViewId viewId = creature->getPosition().plus(move).canEnter({MovementTrait::SWIM})
           ? ViewId("kraken_water") : ViewId("kraken_land");
         auto spawn = makeOwner<Creature>(creature->getTribeId(),
-            CreatureFactory::getKrakenAttributes(viewId, "kraken tentacle"), SpellMap{});
+            CreatureFactory::getKrakenAttributes(viewId, TStringId("KRAKEN_TENTACLE")), SpellMap{});
         spawn->setController(makeOwner<KrakenController>(spawn.get(), getThis().dynamicCast<KrakenController>(),
             length + 1));
         spawns.push_back(spawn.get());
@@ -485,7 +487,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
         creatures.push_back(c->getUniqueId());
         if (!prevCreatures.contains(c) && !thieves.contains(c) && !creature->isEnemy(c)) {
           if (!debtors.contains(c))
-            c->secondPerson("\"Welcome to " + creature->getName().firstOrBare() + "'s shop!\"");
+            c->secondPerson(TSentence("WELCOME_TO_SHOP", creature->getName().firstOrBare()));
           else {
             c->secondPerson("\"Pay your debt or... !\"");
             thiefCount.erase(c);
@@ -613,7 +615,7 @@ class IllusionController : public DoNothingController {
 };
 
 PCreature CreatureFactory::getIllusion(Creature* creature) {
-  ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Illusion");
+  ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, TStringId("ILLUSION"));
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
   auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), CATTR(
           c.viewId = ViewId("rock"); //overriden anyway
@@ -744,13 +746,13 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
           c.spellSchools = LIST(SpellSchoolId("mage"));
         }
         if (p.humanoid) {
-          c.chatReactionFriendly = "\"I am the mighty " + name + "\"";
-          c.chatReactionHostile = "\"I am the mighty " + name + ". Die!\"";
+          c.chatReactionFriendly = TString(TSentence("SPECIAL_HUMANOID_CHAT_REACTION", name));
+          c.chatReactionFriendly = TString(TSentence("SPECIAL_HUMANOID_HOSTILE_CHAT_REACTION", name));
         } else {
-          c.chatReactionFriendly = c.chatReactionHostile = c.petReaction = "snarls."_s;
+          c.chatReactionFriendly = c.chatReactionHostile = c.petReaction = TString(TStringId("SNARLS"));
         }
-        c.name = name;
-        c.name.setStack(p.humanoid ? "legendary humanoid" : "legendary beast");
+        c.name = TString(name);
+        c.name.setStack(p.humanoid ? TStringId("LEGENDARY_HUMANOID") : TStringId("LEGENDARY_BEAST"));
         c.name.setFirst(nameGenerator->getNext(NameGeneratorId("DEMON")));
         if (!p.humanoid) {
           c.body->setBodyParts(getSpecialBeastBody(p.large, p.living, p.wings));
@@ -795,7 +797,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       ret->name.generateFirst(&*nameGenerator);
       return std::move(*ret);
     } else if (id == "KRAKEN") {
-      auto ret = getKrakenAttributes(ViewId("kraken_head"), "kraken");
+      auto ret = getKrakenAttributes(ViewId("kraken_head"), TStringId("KRAKEN"));
       ret.killedAchievement = AchievementId("killed_kraken");
       return ret;
     }
@@ -867,7 +869,7 @@ PCreature CreatureFactory::getSpirit(TribeId tribe, MonsterAIFactory aiFactory) 
   ret->getAttributes().getName().setFirst(none);
   ret->getAttributes().getName().useFullTitle(false);
   ret->modViewObject().setId(orig->getViewObject().id());
-  ret->getName().addBareSuffix("spirit");
+  ret->getName().addBareSuffix(TStringId("SPIRIT"));
   return ret;
 }
 
@@ -903,7 +905,7 @@ const Spell* CreatureFactory::getSpell(SpellId id) const {
 }
 
 PCreature CreatureFactory::getGhost(Creature* creature) {
-  ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Ghost");
+  ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, TStringId("GHOST"));
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
   auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), getAttributesFromId(CreatureId("LOST_SOUL")), SpellMap{});
   ret->setController(Monster::getFactory(MonsterAIFactory::monster()).get(ret.get()));
@@ -966,7 +968,7 @@ PCreature CreatureFactory::getHumanForTests() {
       c.attr[AttrType("DEFENSE")] = 12;
       c.attr[AttrType("RANGED_DAMAGE")] = 12;
       c.body = Body::humanoid(Body::Size::LARGE);
-      c.name = "wizard";
+      c.name = TString(TStringId("WIZARD"));
       c.viewIdUpgrades = LIST(ViewId("keeper2"), ViewId("keeper3"), ViewId("keeper4"));
       c.name.setFirst("keeper"_s);
       c.name.useFullTitle();

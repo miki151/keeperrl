@@ -97,7 +97,7 @@ WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(param
     options(params.options), clock(params.clock), guiBuilder(renderer, gui, clock, params.options, {
         [this](UserInput input) { inputQueue.push(input);},
         [this]() { refreshScreen(false);},
-        [this](const string& s) { presentText("", s); },
+        [this](const TString& s) { presentText(TString(), s); },
         }), zoomUI(-1),
     soundLibrary(params.soundLibrary), bugreportSharing(params.bugreportSharing), bugreportDir(params.bugreportDir),
     installId(params.installId), debugOptions(params.debugOptions) {}
@@ -207,7 +207,7 @@ void WindowView::reset() {
   soundQueue.clear();
 }
 
-void WindowView::getSmallSplash(const ProgressMeter* meter, const string& text, function<void()> cancelFun) {
+void WindowView::getSmallSplash(const ProgressMeter* meter, const TString& text, function<void()> cancelFun) {
   auto elems = ScriptedUIDataElems::Record {{
     {"text", text},
     {"barCallback", ScriptedUIDataElems::DynamicWidthCallback { [meter] {
@@ -609,7 +609,7 @@ void WindowView::refreshScreen(bool flipBuffer) {
     renderer.drawAndClearBuffer();
 }
 
-optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message) {
+optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const TString& message) {
   TempClockPause pause(clock);
   gameInfo.messageBuffer = makeVec(PlayerMessage(message));
   SyncQueue<optional<Vec2>> returnQueue;
@@ -693,7 +693,7 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
 }
 
 View::TargetResult WindowView::chooseTarget(Vec2 playerPos, TargetType targetType, Table<PassableInfo> passable,
-      const string& message, optional<Keybinding> cycleKey) {
+      const TString& message, optional<Keybinding> cycleKey) {
   TempClockPause pause(clock);
   gameInfo.messageBuffer = makeVec(PlayerMessage(message));
   SyncQueue<TargetResult> returnQueue;
@@ -801,11 +801,11 @@ View::TargetResult WindowView::chooseTarget(Vec2 playerPos, TargetType targetTyp
   return returnQueue.pop();
 }
 
-optional<int> WindowView::getNumber(const string& title, Range range, int initial) {
+optional<int> WindowView::getNumber(const TString& title, Range range, int initial) {
   return guiBuilder.getNumber(title, renderer.getSize() / 2 - Vec2(225, 0), range, initial);
 }
 
-optional<string> WindowView::getText(const string& title, const string& value, int maxLength) {
+optional<string> WindowView::getText(const TString& title, const string& value, int maxLength) {
   TempClockPause pause(clock);
   SyncQueue<optional<string>> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawTextInput(returnQueue, title, value, maxLength));
@@ -829,50 +829,6 @@ void WindowView::presentWorldmap(const Campaign& campaign, Vec2 current) {
 CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, CampaignMenuState& state) {
   SyncQueue<CampaignAction> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, state));
-}
-
-vector<int> WindowView::prepareWarlordGame(RetiredGames& games, const vector<PlayerInfo>& minions,
-    int maxTeam, int maxDungeons) {
-  string searchString;
-  vector<int> chosen;
-  /*for (int i : Range(maxCount))
-    chosen.push_back(i);*/
-  int page = 0;
-  while (1) {
-    if (page == 0) {
-      SyncQueue<variant<int, bool>> queue;
-      sort(chosen.begin(), chosen.end());
-      auto res = getBlockingGui(queue,
-          guiBuilder.drawWarlordMinionsMenu(queue, minions, chosen, maxTeam));
-      if (auto value = res.getValueMaybe<bool>()) {
-        if (*value) {
-          ++page;
-          continue;
-        } else
-          return vector<int>();
-      } else
-      if (auto value = res.getValueMaybe<int>()) {
-        if (chosen.contains(*value))
-          chosen.removeElement(*value);
-        else if (chosen.size() < maxTeam)
-          chosen.push_back(*value);
-      }
-    } else {
-      SyncQueue<variant<string, bool, none_t>> queue;
-      auto res = getBlockingGui(queue,
-          guiBuilder.drawRetiredDungeonMenu(queue, games, searchString, maxDungeons));
-      if (auto value = res.getValueMaybe<bool>()) {
-        if (*value)
-          return chosen;
-        else {
-          --page;
-          continue;
-        }
-      } else
-      if (auto value = res.getValueMaybe<string>())
-        searchString = *value;
-    }
-  }
 }
 
 optional<UniqueEntity<Creature>::Id> WindowView::chooseCreature(const string& title,
@@ -1000,6 +956,10 @@ bool WindowView::zoomUIAvailable() const {
       && renderer.getWindowSize().y >= 2 * renderer.getMinResolution().y;
 }
 
+string WindowView::translate(const TString& s) const {
+  return gui.translate(s);
+}
+
 bool WindowView::considerBugReportEvent(const Event& event) {
   if (event.type == SDL::SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT &&
       Vec2(event.button.x, event.button.y).inRectangle(getBugReportPos(renderer))) {
@@ -1046,7 +1006,7 @@ bool WindowView::considerBugReportEvent(const Event& event) {
       refreshView();
       t.join();
       if (result)
-        presentText("Error", "There was an error while sending the bug report: " + *result);
+        presentText(TString(TStringId("ERROR")), TSentence("ERROR_SENDING_BUG_REPORT", *result));
       if (savefile)
         remove(savefile->getPath());
       if (screenshot)
@@ -1136,6 +1096,7 @@ void WindowView::keyboardActionAlways(const SDL_Keysym& key) {
       if (fxRenderer)
         fxRenderer->loadTextures();
       gui.loadImages();
+      gui.reloadTranslations();
       break;
 #endif
     default:
@@ -1149,15 +1110,15 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
   if (debugOptions)
     switch (key.sym) {
       case SDL::SDLK_F10:
-        if (auto input = getText("Enter effect", "", 100))
+        if (auto input = getText(string("Enter effect"), "", 100))
           inputQueue.push({UserInputId::APPLY_EFFECT, *input});
         break;
       case SDL::SDLK_F11:
-        if (auto input = getText("Enter item type", "", 100))
+        if (auto input = getText(string("Enter item type"), "", 100))
           inputQueue.push({UserInputId::CREATE_ITEM, *input});
         break;
       case SDL::SDLK_F12:
-        if (auto input = getText("Enter creature id", "", 100))
+        if (auto input = getText(string("Enter creature id"), "", 100))
           inputQueue.push({UserInputId::SUMMON_ENEMY, *input});
         break;
       case SDL::SDLK_F9:
@@ -1204,7 +1165,7 @@ double WindowView::getGameSpeed() {
   }
 }
 
-optional<int> WindowView::chooseAtMouse(const vector<string>& elems) {
+optional<int> WindowView::chooseAtMouse(const vector<TString>& elems) {
   return guiBuilder.chooseAtMouse(elems);
 }
 

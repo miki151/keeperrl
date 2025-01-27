@@ -135,22 +135,22 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
   if (msg)
     switch (effect) {
       case LastingEffect::FLYING:
-        c->you(MsgType::ARE, "flying!");
+        c->verb(TStringId("YOU_ARE_FLYING"), TStringId("IS_FLYING"));
         break;
       case LastingEffect::COLLAPSED:
         c->you(MsgType::COLLAPSE);
         break;
       case LastingEffect::PREGNANT:
-        c->you(MsgType::ARE, "pregnant!");
+        c->you(MsgType::ARE, TStringId("PREGNANT"));
         break;
       case LastingEffect::STUNNED:
-        c->you(MsgType::ARE, "knocked out");
+        c->you(MsgType::ARE, TStringId("KNOCKED_OUT"));
         break;
       case LastingEffect::PANIC:
-        c->you(MsgType::PANIC, "");
+        c->you(MsgType::PANIC);
         break;
       case LastingEffect::RAGE:
-        c->you(MsgType::RAGE, "");
+        c->you(MsgType::RAGE);
         break;
       case LastingEffect::HALLU:
         if (!c->isAffected(LastingEffect::BLIND))
@@ -159,155 +159,143 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
           c->privateMessage("You feel as if a party has started without you.");
         break;
       case LastingEffect::BLIND:
-        c->you(MsgType::ARE, "blind!");
+        c->you(MsgType::ARE, TStringId("BLIND"));
         break;
       case LastingEffect::INVISIBLE:
         if (!c->isAffected(LastingEffect::BLIND))
-          c->you(MsgType::TURN_INVISIBLE, "");
+          c->you(MsgType::TURN_INVISIBLE);
         else
           c->privateMessage("You feel like a child again.");
         break;
       case LastingEffect::POISON:
-        c->you(MsgType::ARE, "poisoned");
+        c->you(MsgType::ARE, TStringId("POISONED"));
         break;
       case LastingEffect::SPEED:
-        c->you(MsgType::ARE, "moving faster");
+        c->you(MsgType::ARE, TStringId("FASTER"));
         break;
       case LastingEffect::SLOWED:
-        c->you(MsgType::ARE, "moving more slowly");
+        c->you(MsgType::ARE, TStringId("SLOWER"));
         break;
       case LastingEffect::SLEEP_RESISTANT:
-        c->you(MsgType::ARE, "now sleep resistant");
+        c->you(MsgType::ARE, TStringId("SLEEP_RESISTANT"));
         break;
       case LastingEffect::TIED_UP:
-        c->you(MsgType::ARE, "tied up");
+        c->you(MsgType::ARE, TStringId("TIED_UP"));
         break;
       case LastingEffect::ENTANGLED:
-        c->you(MsgType::ARE, "entangled in a web");
+        c->you(MsgType::ARE, TStringId("ENTANGLED"));
         break;
       case LastingEffect::SLEEP:
-        c->you(MsgType::FALL_ASLEEP, "");
+        c->you(MsgType::FALL_ASLEEP);
         break;
       case LastingEffect::POISON_RESISTANT:
-        c->you(MsgType::ARE, "now poison resistant");
+        c->you(MsgType::ARE, TStringId("POISON_RESISTANT"));
         break;
       case LastingEffect::INSANITY:
-        c->you(MsgType::BECOME, "insane");
+        c->you(MsgType::BECOME, TStringId("INSANE"));
         break;
       case LastingEffect::PEACEFULNESS:
-        c->you(MsgType::BECOME, "peaceful");
+        c->you(MsgType::BECOME, TStringId("PEACEFUL"));
         break;
       case LastingEffect::CAPTURE_RESISTANCE:
-        c->you(MsgType::ARE, "now resistant to capturing");
+        c->you(MsgType::ARE, TStringId("RESISTANT_TO_CAPTURE"));
         break;
       case LastingEffect::ELF_VISION:
-        c->you("can see through trees");
+        c->verb(TStringId("YOU_CAN_SEE_THRU_TREES"), TStringId("CAN_SEE_THRU_TREES"));
         break;
       case LastingEffect::ARCHER_VISION:
-        c->you("can see through arrowslits");
+        c->verb(TStringId("YOU_CAN_SEE_THRU_ARROWSLITS"), TStringId("CAN_SEE_THRU_ARROWSLITS"));
         break;
       case LastingEffect::NIGHT_VISION:
-        c->you("can see in the dark");
+        c->verb(TStringId("YOU_CAN_SEE_IN_THE_DARK"), TStringId("CAN_SEE_IN_THE_DARK"));
         break;
       case LastingEffect::WARNING:
-        c->you(MsgType::FEEL, "more aware of danger");
+        c->verb(TStringId("YOU_ARE_AWARE_OF_DANGER"), TStringId("IS_AWARE_OF_DANGER"));
         break;
       case LastingEffect::TELEPATHY:
-        c->you(MsgType::ARE, "telepathic");
+        c->you(MsgType::ARE, TStringId("TELEPATHIC"));
         break;
       case LastingEffect::SUNLIGHT_VULNERABLE:
-        c->you(MsgType::ARE, "vulnerable to sunlight");
+        c->you(MsgType::ARE, TStringId("VULNERABLE_TO_SUNLIGHT"));
         break;
       case LastingEffect::SATIATED:
-        c->you(MsgType::ARE, "satiated");
+        c->you(MsgType::ARE, TStringId("SATIATED"));
         break;
       case LastingEffect::RESTED:
-        c->you(MsgType::ARE, "well rested");
-        break;
-      case LastingEffect::SUMMONED:
-        c->you(MsgType::YOUR, "days are numbered");
+        c->you(MsgType::ARE, TStringId("WELL_RESTED"));
         break;
       case LastingEffect::FAST_TRAINING:
-        c->you(MsgType::FEEL, "like working out");
+        c->verb(TStringId("YOU_FEEL_LIKE_WORKING_OUT"), TStringId("FEELS_LIKE_WORKING_OUT"));
         break;
       case LastingEffect::FAST_CRAFTING:
-        c->you(MsgType::FEEL, "like doing some work");
+        c->verb(TStringId("YOU_FEEL_LIKE_DOING_SOME_WORK"), TStringId("FEELS_LIKE_DOING_SOME_WORK"));
         break;
       case LastingEffect::SLOW_TRAINING:
-        c->you(MsgType::FEEL, "lazy");
-        break;
       case LastingEffect::SLOW_CRAFTING:
-        c->you(MsgType::FEEL, "lazy");
+        c->verb(TStringId("YOU_FEEL_LAZY"), TStringId("FEELS_LAZY"));
         break;
       case LastingEffect::ENTERTAINER:
-        c->you(MsgType::FEEL, "like cracking a joke");
+        c->verb(TStringId("YOU_FEEL_LIKE_CRACKING_A_JOKE"), TStringId("FEELS_LIKE_CRACKING_A_JOKE"));
         break;
       case LastingEffect::BAD_BREATH:
-        c->you(MsgType::YOUR, "breath stinks!");
+        c->verb(TStringId("YOUR_BREATH_STINKS"), TStringId("HIS_BREATH_STINKS"));
         break;
       case LastingEffect::MAGIC_CANCELLATION:
-        c->you(MsgType::ARE, "unable to cast any spells!");
+        c->verb(TStringId("YOU_ARE_UNABLE_TO_CAST_SPELLS"), TStringId("IS_UNABLE_TO_CAST_SPELLS"));
         break;
       case LastingEffect::ON_FIRE:
-        c->you(MsgType::ARE, "on fire!");
+        c->verb(TStringId("YOU_BURNING"), TStringId("IS_BURNING"));
         break;
       case LastingEffect::FROZEN:
-        c->you(MsgType::ARE, "frozen!");
+        c->you(MsgType::ARE, TStringId("FROZEN"));
         break;
       case LastingEffect::PLAGUE:
-        c->you(MsgType::ARE, "infected by plague!");
+        c->you(MsgType::ARE, TStringId("INFECTED"));
         break;
       case LastingEffect::PLAGUE_RESISTANT:
-        c->you(MsgType::ARE, "resistant to plague");
-        break;
-      case LastingEffect::DISAPPEAR_DURING_DAY:
-        c->you(MsgType::YOUR, "hours are numbered");
+        c->you(MsgType::ARE, TStringId("RESISTANT_TO_PLAGUE"));
         break;
       case LastingEffect::NO_CARRY_LIMIT:
-        c->you(MsgType::YOUR, "carrying capacity increases");
+        c->verb(TStringId("YOUR_CARRY_CAPACITY_INCREASES"), TStringId("HIS_CARRY_CAPACITY_INCREASES"));
         break;
       case LastingEffect::SPYING:
-        c->secondPerson("You put on your sunglasses"_s);
-        c->thirdPerson(c->getName().the() + " puts on " + his(c->getAttributes().getGender()) + " sunglasses"_s);
+        c->verb(TStringId("YOU_PUT_ON_SUNGLASSES"), TStringId("PUTS_ON_SUNGLASSES"), TString(his(c->getAttributes().getGender())));
         break;
       case LastingEffect::IMMOBILE:
-        c->you("can't move anymore");
+        c->verb(TStringId("YOU_CANT_MOVE_ANYMORE"), TStringId("CANT_MOVE_ANYMORE"));
         break;
       case LastingEffect::LIFE_SAVED:
-        c->you(MsgType::YOUR, "life will be saved");
+        c->verb(TStringId("YOUR_LIFE_WILL_BE_SAVED"), TStringId("HIS_LIFE_WILL_BE_SAVED"));
         break;
       case LastingEffect::UNSTABLE:
-        c->you(MsgType::FEEL, "mentally unstable");
+        c->verb(TStringId("YOU_ARE_MENTALLY_UNSTABLE"), TStringId("IS_MENTALLY_UNSTABLE"));
         break;
       case LastingEffect::OIL:
-        c->you(MsgType::ARE, "covered in oil!");
+        c->you(MsgType::ARE, TStringId("COVERED_IN_OIL"));
         break;
       case LastingEffect::SWARMER:
-        c->verb("feel", "feels", "like swarming someone");
+        c->verb(TStringId("YOU_ARE_SWARMER"), TStringId("IS_SWARMER"));
         break;
       case LastingEffect::PSYCHIATRY:
-        c->you(MsgType::BECOME, "more understanding");
+        c->you(MsgType::BECOME, TStringId("MORE_UNDERSTANDING"));
         break;
       case LastingEffect::TURNED_OFF:
-        c->you(MsgType::ARE, "turned off");
+        c->verb(TStringId("YOU_ARE_TURNED_OFF"), TStringId("IS_TURNED_OFF"));
         break;
       case LastingEffect::DRUNK:
-        c->you(MsgType::ARE, "drunk!");
+        c->you(MsgType::ARE, TStringId("DRUNK"));
         break;
       case LastingEffect::NO_FRIENDLY_FIRE:
-        c->you(MsgType::YOUR, "projectiles won't hit allies");
+        c->you(MsgType::YOUR, TStringId("PROJECTILES_WONT_HIT_ALLIES"));
         break;
       case LastingEffect::AGGRAVATES:
-        c->verb("aggravate", "aggravates", "enemies");
+        c->verb(TStringId("YOU_AGGRAVATE_ENEMIES"), TStringId("AGGRAVATES_ENEMIES"));
         break;
       case LastingEffect::CAN_DANCE:
-        c->you(MsgType::FEEL, "like a dancing fool");
-        break;
-      case LastingEffect::STEED:
-        c->you(MsgType::FEEL, "tacked up");
+        c->verb(TStringId("YOU_FEEL_LIKE_A_DANCING_FOOL"), TStringId("LOOKS_LIKE_A_DANCING_FOOL"));
         break;
       case LastingEffect::RIDER:
-        c->verb("spin", "spins", his(c->getAttributes().getGender()) + " spurs"_s);
+        c->verb(TStringId("YOU_SPIN_YOUR_SPURS"), TStringId("SPINS_HIS_SPURS"), TString(his(c->getAttributes().getGender())));
         break;
       default:
         break;
@@ -343,24 +331,20 @@ void LastingEffects::onRemoved(Creature* c, LastingEffect effect, bool msg) {
   switch (effect) {
     case LastingEffect::PLAGUE:
       if (msg)
-        c->you(MsgType::ARE, "cured from plague!");
+        c->you(MsgType::ARE, TStringId("CURED_FROM_PLAGUE"));
       break;
     case LastingEffect::POISON:
       if (msg)
-        c->you(MsgType::ARE, "cured from poisoning");
+        c->you(MsgType::ARE, TStringId("CURED_FROM_POISONING"));
       break;
     case LastingEffect::SLEEP:
       c->getAttributes().increaseBaseAttr(AttrType("DEFENSE"), 10);
       if (msg)
-        c->you(MsgType::WAKE_UP, "");
-      break;
-    case LastingEffect::STUNNED:
-      if (msg)
-        c->you(MsgType::ARE, "no longer unconscious");
+        c->you(MsgType::WAKE_UP);
       break;
     case LastingEffect::ON_FIRE:
       if (msg)
-        c->you(MsgType::YOUR, "flames are extinguished");
+        c->verb(TStringId("YOU_ARE_EXTINGUISHED"), TStringId("IS_EXTINGUISHED"));
       c->getPosition().removeCreatureLight(false);
       break;
     default:
@@ -426,151 +410,150 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
   if (msg)
     switch (effect) {
       case LastingEffect::SLOWED:
-        c->you(MsgType::ARE, "moving faster again");
+        c->verb(TStringId("YOU_ARE_MOVING_FASTER_AGAIN"), TStringId("IS_MOVING_FASTER_AGAIN"));
         break;
       case LastingEffect::SLEEP:
-        c->you(MsgType::WAKE_UP, "");
+        c->you(MsgType::WAKE_UP);
         break;
       case LastingEffect::SPEED:
-        c->you(MsgType::ARE, "moving more slowly again");
+        c->verb(TStringId("YOU_ARE_MOVING_SLOW_AGAIN"), TStringId("IS_MOVING_SLOW_AGAIN"));
         break;
       case LastingEffect::PANIC:
       case LastingEffect::RAGE:
       case LastingEffect::HALLU:
-        c->you(MsgType::YOUR, "mind is clear again");
+        c->verb(TStringId("YOU_ARE_NO_LONGER_HALLU"), TStringId("IS_NO_LONGER_HALLU"));
         break;
       case LastingEffect::ENTANGLED:
-        c->you(MsgType::BREAK_FREE, "the web");
+        c->you(MsgType::BREAK_FREE);
         break;
       case LastingEffect::TIED_UP:
-        c->you(MsgType::BREAK_FREE, "");
+        c->you(MsgType::BREAK_FREE);
         break;
       case LastingEffect::BLIND:
-        c->you("can see again");
+        c->verb(TStringId("YOU_ARE_NO_LONGER_BLIND"), TStringId("IS_NO_LONGER_BLIND"));
         break;
       case LastingEffect::INVISIBLE:
-        c->you(MsgType::TURN_VISIBLE, "");
+        c->you(MsgType::TURN_VISIBLE);
         break;
       case LastingEffect::SLEEP_RESISTANT:
-        c->you(MsgType::ARE, "no longer sleep resistant");
+        c->verb(TStringId("YOU_ARE_NO_LONGER_SLEEP_RESISTANT"), TStringId("IS_NO_LONGER_SLEEP_RESISTANT"));
         break;
       case LastingEffect::POISON:
-        c->you(MsgType::ARE, "no longer poisoned");
+        c->verb(TStringId("YOU_ARE_NO_LONGER_POISONED"), TStringId("IS_NO_LONGER_POISONED"));
         break;
       case LastingEffect::PLAGUE:
-        c->you(MsgType::YOUR, "plague infection subsides");
+        c->verb(TStringId("YOUR_INFECTION_SUBSIDES"), TStringId("HIS_INFECTION_SUBSIDES"));
         break;
       case LastingEffect::PLAGUE_RESISTANT:
-        c->you(MsgType::ARE, "no longer plague resistant");
+        c->verb(TStringId("YOU_ARE_NO_LONGER_PLAGUE_RESISTANT"), TStringId("IS_NO_LONGER_PLAGUE_RESISTANT"));
         break;
       case LastingEffect::POISON_RESISTANT:
-        c->you(MsgType::ARE, "no longer poison resistant");
+        c->verb(TStringId("YOU_ARE_NO_LONGER_POISON_RESISTANT"), TStringId("IS_NO_LONGER_POISON_RESISTANT"));
         break;
       case LastingEffect::FLYING:
-        c->you(MsgType::FALL, "on the " + c->getPosition().getName());
+        c->verb(TStringId("YOU_FALL_ON_THE"), TStringId("FALLS_ON_THE"), c->getPosition().getName());
         break;
       case LastingEffect::COLLAPSED:
         c->you(MsgType::STAND_UP);
         break;
       case LastingEffect::INSANITY:
-        c->you(MsgType::BECOME, "sane again");
+        c->verb(TStringId("YOU_REGAIN_SANITY"), TStringId("REGAINS_SANITY"));
         break;
       case LastingEffect::PEACEFULNESS:
-        c->you(MsgType::BECOME, "less peaceful");
+        c->verb(TStringId("YOU_ARE_LESS_PEACEFUL"), TStringId("IS_LESS_PEACEFUL"));
         break;
       case LastingEffect::CAPTURE_RESISTANCE:
-        c->you(MsgType::FEEL, "less resistant to capturing");
+        c->verb(TStringId("YOU_ARE_LESS_RESISTANT_TO_CAPTURING"), TStringId("IS_LESS_RESISTANT_TO_CAPTURING"));
         break;
       case LastingEffect::ELF_VISION:
-        c->you("can't see through trees anymore");
+        c->verb(TStringId("YOU_CANT_SEE_THRU_TREES"), TStringId("CANT_SEE_THRU_TREES"));
         break;
       case LastingEffect::ARCHER_VISION:
-        c->you("can't see through arrowslits anymore");
+        c->verb(TStringId("YOU_CANT_SEE_THRU_ARROWSLITS"), TStringId("CANT_SEE_THRU_ARROWSLITS"));
         break;
       case LastingEffect::NIGHT_VISION:
-        c->you("can't see in the dark anymore");
+        c->verb(TStringId("YOU_CANT_SEE_IN_THE_DARK"), TStringId("CANT_SEE_IN_THE_DARK"));
         break;
       case LastingEffect::WARNING:
-        c->you(MsgType::FEEL, "less aware of danger");
+        c->verb(TStringId("YOU_ARE_LESS_AWARE_OF_DANGER"), TStringId("IS_LESS_AWARE_OF_DANGER"));
         break;
       case LastingEffect::TELEPATHY:
-        c->you(MsgType::ARE, "no longer telepathic");
+        c->verb(TStringId("YOU_ARE_NO_LONGER_TELEPATHIC"), TStringId("IS_NO_LONGER_TELEPATHIC"));
         break;
       case LastingEffect::SUNLIGHT_VULNERABLE:
-        c->you(MsgType::ARE, "no longer vulnerable to sunlight");
+        c->verb(TStringId("YOU_ARE_NO_LONGER_VULNERABLE_TO_SUNLIGHT"), TStringId("IS_NO_LONGER_VULNERABLE_TO_SUNLIGHT"));
         break;
       case LastingEffect::SATIATED:
-        c->you(MsgType::ARE, "no longer satiated");
+        c->verb(TStringId("YOU_ARE_NO_LONGER_SATIATED"), TStringId("IS_NO_LONGER_SATIATED"));
         break;
       case LastingEffect::RESTED:
-        c->you(MsgType::ARE, "no longer rested");
+        c->verb(TStringId("YOU_ARE_NO_LONGER_RESTED"), TStringId("IS_NO_LONGER_RESTED"));
         break;
       case LastingEffect::ENTERTAINER:
-        c->you(MsgType::ARE, "no longer funny");
+        c->verb(TStringId("YOU_ARE_NO_LONGER_FUNNY"), TStringId("IS_NO_LONGER_FUNNY"));
         break;
       case LastingEffect::BAD_BREATH:
-        c->verb("smell", "smells", "like flowers again");
+        c->verb(TStringId("YOUR_BREATH_IS_FRESH_AGAIN"), TStringId("HIS_BREATH_IS_FRESH_AGAIN"));
         break;
       case LastingEffect::MAGIC_CANCELLATION:
-        c->verb("can", "can", "cast spells again");
+        c->verb(TStringId("YOU_CAN_CAST_SPELLS_AGAIN"), TStringId("CAN_CAST_SPELLS_AGAIN"));
         break;
       case LastingEffect::ON_FIRE:
         if (factory && c->getBody().burnsIntrinsically(factory))
-          c->verb("burn", "burns", "to death");
+          c->verb(TStringId("YOU_BURN_TO_DEATH"), TStringId("BURNS_TO_DEATH"));
         else
-          c->verb("stop", "stops", "burning");
+          c->verb(TStringId("YOU_STOP_BURNING"), TStringId("STOPS_BURNING"));
         break;
       case LastingEffect::FROZEN:
-        c->verb("thaw", "thaws");
+        c->verb(TStringId("YOU_ARE_NO_LONGER_FROZEN"), TStringId("IS_NO_LONGER_FROZEN"));
         break;
       case LastingEffect::DISAPPEAR_DURING_DAY:
         break;
       case LastingEffect::NO_CARRY_LIMIT:
-        c->you(MsgType::YOUR, "carrying capacity decreases");
+        c->verb(TStringId("YOUR_CARRY_CAPACITY_IS_LIMITED_AGAIN"), TStringId("HIS_CARRY_CAPACITY_IS_LIMITED_AGAIN"));
         break;
       case LastingEffect::SPYING:
-        c->secondPerson("You remove your sunglasses"_s);
-        c->thirdPerson(c->getName().the() + " removes " + his(c->getAttributes().getGender()) + " sunglasses"_s);
+        c->verb(TStringId("YOU_REMOVE_SUNGLASSES"), TStringId("REMOVES_SUNGLASSES"), TString(his(c->getAttributes().getGender())));
         break;
       case LastingEffect::LIFE_SAVED:
-        c->you(MsgType::YOUR, "life will no longer be saved");
+        c->verb(TStringId("YOUR_LIFE_WILL_NO_LONGER_BE_SAVED"), TStringId("HIS_LIFE_WILL_NO_LONGER_BE_SAVED"));
         break;
       case LastingEffect::UNSTABLE:
-        c->you(MsgType::FEEL, "mentally stable again");
+        c->verb(TStringId("YOU_ARE_MENTALLY_STABLE_AGAIN"), TStringId("IS_MENTALLY_STABLE_AGAIN"));
         break;
       case LastingEffect::OIL:
-        c->you(MsgType::ARE, "no longer covered in oil");
+        c->verb(TStringId("YOU_ARE_NO_LONGER_COVERED_IN_OIL"), TStringId("IS_NO_LONGER_COVERED_IN_OIL"));
         break;
       case LastingEffect::SWARMER:
-        c->verb("no longer feel", "no longer feels", "like swarming someone");
+        c->verb(TStringId("YOU_ARE_NO_LONGER_SWARMER"), TStringId("IS_NO_LONGER_SWARMER"));
         break;
       case LastingEffect::PSYCHIATRY:
-        c->you(MsgType::BECOME, "less understanding");
+        c->you(MsgType::BECOME, TStringId("LESS_UNDERSTANDING"));
         break;
       case LastingEffect::TURNED_OFF:
-        c->you(MsgType::ARE, "turned on");
+        c->verb(TStringId("YOU_ARE_TURNED_ON"), TStringId("IS_TURNED_ON"));
         break;
       case LastingEffect::DRUNK:
-        c->verb("sober", "sobers", "up");
+        c->verb(TStringId("YOU_SOBER_UP"), TStringId("SOBERS_UP"));
         break;
       case LastingEffect::NO_FRIENDLY_FIRE:
-        c->you(MsgType::YOUR, "projectiles will hit allies");
+        c->you(MsgType::YOUR, TStringId("PROJECTILES_WILL_HIT_ALLIES"));
         break;
       case LastingEffect::POLYMORPHED:
-        c->verb("return to your", "returns to "_s + his(c->getAttributes().getGender()), "previous form");
+        c->verb(TStringId("YOU_RETURN_TO_YOUR_PREVIOUS_FORM"), TStringId("RETURNS_TO_YOUR_PREVIOUS_FORM"));
         c->addFX({FXName::SPAWN});
         break;
       case LastingEffect::AGGRAVATES:
-        c->verb("no longer aggravate", "no longer aggravates", "enemies");
+        c->verb(TStringId("YOU_NO_LONGER_AGGRAVATE_ENEMIES"), TStringId("NO_LONGER_AGGRAVATES_ENEMIES"));
         break;
       case LastingEffect::CAN_DANCE:
-        c->you(MsgType::YOUR, "legs have the same length again");
+//        c->you(MsgType::YOUR, "legs have the same length again");
         break;
       case LastingEffect::STEED:
-        c->verb("no longer feel", "no longer feels", "tacked up");
+//        c->verb("no longer feel", "no longer feels", "tacked up");
         break;
       case LastingEffect::RIDER:
-        c->you(MsgType::YOUR, "spurs stop spinning");
+        c->verb(TStringId("YOUR_SPURS_STOP_SPINNING"), TStringId("HIS_SPURS_STOP_SPINNING"));
         break;
       default:
         break;
@@ -612,81 +595,81 @@ int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
 
 namespace {
   struct Adjective {
-    string name;
+    TString name;
     bool bad;
   };
   Adjective operator "" _bad(const char* n, size_t) {\
-    return {n, true};
+    return {TStringId(n), true};
   }
 
   Adjective operator "" _good(const char* n, size_t) {\
-    return {n, false};
+    return {TStringId(n), false};
   }
 }
 
 static Adjective getAdjective(LastingEffect effect) {
   switch (effect) {
-    case LastingEffect::INVISIBLE: return "Invisible"_good;
-    case LastingEffect::RAGE: return "Enraged"_good;
-    case LastingEffect::HALLU: return "Hallucinating"_good;
-    case LastingEffect::SLEEP_RESISTANT: return "Sleep resistant"_good;
-    case LastingEffect::SPEED: return "Speed bonus"_good;
-    case LastingEffect::POISON_RESISTANT: return "Poison resistant"_good;
-    case LastingEffect::PLAGUE_RESISTANT: return "Plague resistant"_good;
-    case LastingEffect::FLYING: return "Flying"_good;
-    case LastingEffect::LIGHT_SOURCE: return "Source of light"_good;
-    case LastingEffect::DARKNESS_SOURCE: return "Source of darkness"_good;
-    case LastingEffect::PREGNANT: return "Pregnant"_good;
-    case LastingEffect::CAPTURE_RESISTANCE: return "Resistant to capturing"_good;
-    case LastingEffect::ELF_VISION: return "Can see through trees"_good;
-    case LastingEffect::ARCHER_VISION: return "Can see through arrowslits"_good;
-    case LastingEffect::NIGHT_VISION: return "Can see in the dark"_good;
-    case LastingEffect::WARNING: return "Aware of danger"_good;
-    case LastingEffect::TELEPATHY: return "Telepathic"_good;
-    case LastingEffect::SATIATED: return "Satiated"_good;
-    case LastingEffect::RESTED: return "Rested"_good;
-    case LastingEffect::FAST_CRAFTING: return "Fast craftsman"_good;
-    case LastingEffect::FAST_TRAINING: return "Fast trainee"_good;
-    case LastingEffect::ENTERTAINER: return "Entertainer"_good;
-    case LastingEffect::NO_CARRY_LIMIT: return "Infinite carrying capacity"_good;
-    case LastingEffect::SPYING: return "Spy"_good;
-    case LastingEffect::LIFE_SAVED: return "Life will be saved"_good;
-    case LastingEffect::SWARMER: return "Swarmer"_good;
-    case LastingEffect::PSYCHIATRY: return "Psychiatrist"_good;
-    case LastingEffect::DRUNK: return "Drunk"_good;
-    case LastingEffect::NO_FRIENDLY_FIRE: return "Arrows bypass allies"_good;
-    case LastingEffect::POLYMORPHED: return "Polymorphed"_good;
-    case LastingEffect::CAN_DANCE: return "Has rhythm"_good;
-    case LastingEffect::STEED: return "Steed"_good;
-    case LastingEffect::RIDER: return "Rider"_good;
+    case LastingEffect::INVISIBLE: return "BUFF_ADJECTIVE_INVISIBLE"_good;
+    case LastingEffect::RAGE: return "BUFF_ADJECTIVE_RAGE"_good;
+    case LastingEffect::HALLU: return "BUFF_ADJECTIVE_HALLU"_good;
+    case LastingEffect::SLEEP_RESISTANT: return "BUFF_ADJECTIVE_SLEEP_RESISTANT"_good;
+    case LastingEffect::SPEED: return "BUFF_ADJECTIVE_SPEED"_good;
+    case LastingEffect::POISON_RESISTANT: return "BUFF_ADJECTIVE_POISON_RESISTANT"_good;
+    case LastingEffect::PLAGUE_RESISTANT: return "BUFF_ADJECTIVE_PLAGUE_RESISTANT"_good;
+    case LastingEffect::FLYING: return "BUFF_ADJECTIVE_FLYING"_good;
+    case LastingEffect::LIGHT_SOURCE: return "BUFF_ADJECTIVE_LIGHT_SOURCE"_good;
+    case LastingEffect::DARKNESS_SOURCE: return "BUFF_ADJECTIVE_DARKNESS_SOURCE"_good;
+    case LastingEffect::PREGNANT: return "BUFF_ADJECTIVE_PREGNANT"_good;
+    case LastingEffect::CAPTURE_RESISTANCE: return "BUFF_ADJECTIVE_CAPTURE_RESISTANCE"_good;
+    case LastingEffect::ELF_VISION: return "BUFF_ADJECTIVE_ELF_VISION"_good;
+    case LastingEffect::ARCHER_VISION: return "BUFF_ADJECTIVE_ARCHER_VISION"_good;
+    case LastingEffect::NIGHT_VISION: return "BUFF_ADJECTIVE_NIGHT_VISION"_good;
+    case LastingEffect::WARNING: return "BUFF_ADJECTIVE_WARNING"_good;
+    case LastingEffect::TELEPATHY: return "BUFF_ADJECTIVE_TELEPATHY"_good;
+    case LastingEffect::SATIATED: return "BUFF_ADJECTIVE_SATIATED"_good;
+    case LastingEffect::RESTED: return "BUFF_ADJECTIVE_RESTED"_good;
+    case LastingEffect::FAST_CRAFTING: return "BUFF_ADJECTIVE_FAST_CRAFTING"_good;
+    case LastingEffect::FAST_TRAINING: return "BUFF_ADJECTIVE_FAST_TRAINING"_good;
+    case LastingEffect::ENTERTAINER: return "BUFF_ADJECTIVE_ENTERTAINER"_good;
+    case LastingEffect::NO_CARRY_LIMIT: return "BUFF_ADJECTIVE_NO_CARRY_LIMIT"_good;
+    case LastingEffect::SPYING: return "BUFF_ADJECTIVE_SPYING"_good;
+    case LastingEffect::LIFE_SAVED: return "BUFF_ADJECTIVE_LIFE_SAVED"_good;
+    case LastingEffect::SWARMER: return "BUFF_ADJECTIVE_SWARMER"_good;
+    case LastingEffect::PSYCHIATRY: return "BUFF_ADJECTIVE_PSYCHIATRY"_good;
+    case LastingEffect::DRUNK: return "BUFF_ADJECTIVE_DRUNK"_good;
+    case LastingEffect::NO_FRIENDLY_FIRE: return "BUFF_ADJECTIVE_NO_FRIENDLY_FIRE"_good;
+    case LastingEffect::POLYMORPHED: return "BUFF_ADJECTIVE_POLYMORPHED"_good;
+    case LastingEffect::CAN_DANCE: return "BUFF_ADJECTIVE_CAN_DANCE"_good;
+    case LastingEffect::STEED: return "BUFF_ADJECTIVE_STEED"_good;
+    case LastingEffect::RIDER: return "BUFF_ADJECTIVE_RIDER"_good;
 
-    case LastingEffect::PANIC: return "Panic"_bad;
-    case LastingEffect::PEACEFULNESS: return "Peaceful"_bad;
-    case LastingEffect::POISON: return "Poisoned"_bad;
-    case LastingEffect::PLAGUE: return "Infected with plague"_bad;
-    case LastingEffect::SLEEP: return "Sleeping"_bad;
-    case LastingEffect::ENTANGLED: return "Entangled"_bad;
-    case LastingEffect::TIED_UP: return "Tied up"_bad;
-    case LastingEffect::IMMOBILE: return "Immobile"_bad;
-    case LastingEffect::SLOWED: return "Slowed"_bad;
-    case LastingEffect::INSANITY: return "Insane"_bad;
-    case LastingEffect::BLIND: return "Blind"_bad;
-    case LastingEffect::STUNNED: return "Unconscious"_bad;
-    case LastingEffect::COLLAPSED: return "Collapsed"_bad;
-    case LastingEffect::SUNLIGHT_VULNERABLE: return "Vulnerable to sunlight"_bad;
-    case LastingEffect::SUMMONED: return "Time to live"_bad;
-    case LastingEffect::SLOW_CRAFTING: return "Slow craftsman"_bad;
-    case LastingEffect::SLOW_TRAINING: return "Slow trainee"_bad;
-    case LastingEffect::BAD_BREATH: return "Smelly breath"_bad;
-    case LastingEffect::ON_FIRE: return "On fire"_bad;
-    case LastingEffect::FROZEN: return "Frozen"_bad;
-    case LastingEffect::MAGIC_CANCELLATION: return "Cancelled"_bad;
-    case LastingEffect::DISAPPEAR_DURING_DAY: return "Disappears at dawn"_bad;
-    case LastingEffect::UNSTABLE: return "Mentally unstable"_bad;
-    case LastingEffect::OIL: return "Covered in oil"_bad;
-    case LastingEffect::TURNED_OFF: return "Turned off"_bad;
-    case LastingEffect::AGGRAVATES: return "Aggravates enemies"_bad;
-    case LastingEffect::LOCKED_POSITION: return "Disabled position swap"_bad;
+    case LastingEffect::PANIC: return "BUFF_ADJECTIVE_PANIC"_bad;
+    case LastingEffect::PEACEFULNESS: return "BUFF_ADJECTIVE_PEACEFULNESS"_bad;
+    case LastingEffect::POISON: return "BUFF_ADJECTIVE_POISON"_bad;
+    case LastingEffect::PLAGUE: return "BUFF_ADJECTIVE_PLAGUE"_bad;
+    case LastingEffect::SLEEP: return "BUFF_ADJECTIVE_SLEEP"_bad;
+    case LastingEffect::ENTANGLED: return "BUFF_ADJECTIVE_ENTANGLED"_bad;
+    case LastingEffect::TIED_UP: return "BUFF_ADJECTIVE_TIED_UP"_bad;
+    case LastingEffect::IMMOBILE: return "BUFF_ADJECTIVE_IMMOBILE"_bad;
+    case LastingEffect::SLOWED: return "BUFF_ADJECTIVE_SLOWED"_bad;
+    case LastingEffect::INSANITY: return "BUFF_ADJECTIVE_INSANITY"_bad;
+    case LastingEffect::BLIND: return "BUFF_ADJECTIVE_BLIND"_bad;
+    case LastingEffect::STUNNED: return "BUFF_ADJECTIVE_STUNNED"_bad;
+    case LastingEffect::COLLAPSED: return "BUFF_ADJECTIVE_COLLAPSED"_bad;
+    case LastingEffect::SUNLIGHT_VULNERABLE: return "BUFF_ADJECTIVE_SUNLIGHT_VULNERABLE"_bad;
+    case LastingEffect::SUMMONED: return "BUFF_ADJECTIVE_SUMMONED"_bad;
+    case LastingEffect::SLOW_CRAFTING: return "BUFF_ADJECTIVE_SLOW_CRAFTING"_bad;
+    case LastingEffect::SLOW_TRAINING: return "BUFF_ADJECTIVE_SLOW_TRAINING"_bad;
+    case LastingEffect::BAD_BREATH: return "BUFF_ADJECTIVE_BAD_BREATH"_bad;
+    case LastingEffect::ON_FIRE: return "BUFF_ADJECTIVE_ON_FIRE"_bad;
+    case LastingEffect::FROZEN: return "BUFF_ADJECTIVE_FROZEN"_bad;
+    case LastingEffect::MAGIC_CANCELLATION: return "BUFF_ADJECTIVE_MAGIC_CANCELLATION"_bad;
+    case LastingEffect::DISAPPEAR_DURING_DAY: return "BUFF_ADJECTIVE_DISAPPEAR_DURING_DAY"_bad;
+    case LastingEffect::UNSTABLE: return "BUFF_ADJECTIVE_UNSTABLE"_bad;
+    case LastingEffect::OIL: return "BUFF_ADJECTIVE_OIL"_bad;
+    case LastingEffect::TURNED_OFF: return "BUFF_ADJECTIVE_TURNED_OFF"_bad;
+    case LastingEffect::AGGRAVATES: return "BUFF_ADJECTIVE_AGGRAVATES"_bad;
+    case LastingEffect::LOCKED_POSITION: return "BUFF_ADJECTIVE_LOCKED_POSITION"_bad;
   }
 }
 
@@ -694,18 +677,18 @@ bool LastingEffects::isConsideredBad(LastingEffect effect) {
   return ::getAdjective(effect).bad;
 }
 
-string LastingEffects::getAdjective(LastingEffect effect) {
+TString LastingEffects::getAdjective(LastingEffect effect) {
   return ::getAdjective(effect).name;
 }
 
-optional<string> LastingEffects::getGoodAdjective(LastingEffect effect) {
+optional<TString> LastingEffects::getGoodAdjective(LastingEffect effect) {
   auto adjective = ::getAdjective(effect);
   if (!adjective.bad)
     return adjective.name;
   return none;
 }
 
-optional<std::string> LastingEffects::getBadAdjective(LastingEffect effect) {
+optional<TString> LastingEffects::getBadAdjective(LastingEffect effect) {
   auto adjective = ::getAdjective(effect);
   if (adjective.bad)
     return adjective.name;
@@ -766,7 +749,7 @@ double LastingEffects::modifyCreatureDefense(const Creature* c, LastingEffect e,
 
 void LastingEffects::onAllyKilled(Creature* c) {
   if (Random.chance(0.05) && c->isAffected(LastingEffect::UNSTABLE)) {
-    c->verb("have", "has", "gone berskerk!");
+    c->verb(TStringId("HAVE_GONE_BERSERK"), TStringId("HAS_GONE_BERSERK"));
     c->addEffect(LastingEffect::INSANITY, 100_visible);
   }
 }
@@ -807,7 +790,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
         return false;
       };
       if (enemy && isTriggered()) {
-        c->you(MsgType::YOUR, "identity is uncovered!");
+        c->verb(TStringId("YOUR_IDENTITY_IS_UNCOVERED"), TStringId("HIS_IDENTITY_IS_UNCOVERED"));
         if (c->hasAlternativeViewId())
           c->setAlternativeViewId(none);
       } else {
@@ -820,10 +803,9 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
     }
     case LastingEffect::ON_FIRE:
       c->getBody().bleed(c, 0.03);
-      c->secondPerson(PlayerMessage("You are burning alive!", MessagePriority::HIGH));
-      c->thirdPerson(PlayerMessage(c->getName().the() + " is burning alive.", MessagePriority::NORMAL));
+      c->verb(TStringId("YOU_ARE_BURNING"), TStringId("IS_BURNING"));
       if (c->getBody().getHealth() <= 0) {
-        c->verb("burn", "burns", "to death");
+        c->verb(TStringId("YOU_BURN_TO_DEATH"), TStringId("BURNS_TO_DEATH"));
         c->dieWithLastAttacker();
         return true;
       }
@@ -842,11 +824,10 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
           if (c->getBody().getHealth() > 0.5 || canDie) {
             if (Random.roll(10)) {
               c->getBody().bleed(c, 0.03);
-              c->secondPerson(PlayerMessage("You suffer from plague.", MessagePriority::HIGH));
-              c->thirdPerson(PlayerMessage(c->getName().the() + " suffers from plague.", MessagePriority::HIGH));
+              c->verb(TStringId("YOU_SUFFER_PLAGUE"), TStringId("SUFFERS_PLAGUE"));
               if (c->getBody().getHealth() <= 0) {
-                c->you(MsgType::DIE_OF, "plague");
-                c->dieWithReason("plague");
+                c->verb(TStringId("YOU_DIE_OF_PLAGUE"), TStringId("DIES_OF_PLAGUE"));
+                c->dieWithReason(TStringId("PLAGUE"));
                 return true;
               }
             }
@@ -857,10 +838,9 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
     case LastingEffect::POISON:
       if (!c->isAffected(LastingEffect::FROZEN)) {
         c->getBody().bleed(c, 0.03);
-        c->secondPerson(PlayerMessage("You suffer from poisoning.", MessagePriority::HIGH));
-        c->thirdPerson(PlayerMessage(c->getName().the() + " suffers from poisoning.", MessagePriority::HIGH));
+        c->verb(TStringId("YOU_SUFFER_POISONING"), TStringId("SUFFERS_POISONING"), MessagePriority::HIGH);
         if (c->getBody().getHealth() <= 0) {
-          c->you(MsgType::DIE_OF, "poisoning");
+          c->verb(TStringId("YOU_DIE_OF_POISONING"), TStringId("DIES_OF_POISONING"));
           c->dieWithLastAttacker();
           return true;
         }
@@ -898,10 +878,10 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
     }
     case LastingEffect::SUNLIGHT_VULNERABLE:
       if (c->getPosition().sunlightBurns() && !c->isAffected(LastingEffect::FROZEN)) {
-        c->you(MsgType::ARE, "burnt by the sun");
+        c->verb(TStringId("YOU_ARE_BURNT_BY_THE_SUN"), TStringId("IS_BURNT_BY_THE_SUN"));
         if (Random.roll(10)) {
-          c->you(MsgType::YOUR, "body crumbles to dust");
-          c->dieWithReason("killed by sunlight", Creature::DropType::ONLY_INVENTORY);
+          c->verb(TStringId("YOUR_BODY_CRUMBLES_TO_DUST"), TStringId("HIS_BODY_CRUMBLES_TO_DUST"));
+          c->dieWithReason(TStringId("KILLED_BY_SUNLIGHT"), Creature::DropType::ONLY_INVENTORY);
           return true;
         }
       }
@@ -926,18 +906,20 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
             break;
           }
         if (hatedGroup)
-          jokeText.append(" about "_s + *factory->buffs.at(*hatedGroup).hatedGroupName);
-        c->verb("crack", "cracks", jokeText);
+          c->verb(TStringId("CRACK_A_JOKE_ABOUT"), TStringId("CRACKS_A_JOKE_ABOUT"),
+              TString(*factory->buffs.at(*hatedGroup).hatedGroupName));
+        else
+          c->verb(TStringId("CRACK_A_JOKE"), TStringId("CRACKS_A_JOKE"));
         for (auto other : others)
           if (other != c && !other->isAffected(LastingEffect::SLEEP)) {
             if (hatedGroup && *hatedGroup == other->getAttributes().getHatedByEffect()) {
-              other->you(MsgType::ARE, "offended");
+              c->verb(TStringId("ARE_OFFENDED"), TStringId("IS_OFFENDED"));
               other->addEffect(BuffId("DEF_DEBUFF"), 100_visible);
             } else if (other->getBody().hasBrain(factory)) {
-              other->verb("laugh", "laughs");
+              c->verb(TStringId("LAUGH"), TStringId("LAUGHS"));
               other->addEffect(BuffId("HIGH_MORALE"), 100_visible);
             } else
-              other->verb("don't", "doesn't", "laugh");
+            c->verb(TStringId("DONT_LAUGH"), TStringId("DOESNT_LAUGH"));
           }
       }
       break;
@@ -947,7 +929,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
         for (auto pos : c->getPosition().getRectangle(Rectangle::centered(7)))
           if (auto other = pos.getCreature())
             if (Random.roll(5)) {
-              other->verb("cover your", "covers "_s + his(other->getAttributes().getGender()), "nose");
+              c->verb(TStringId("YOU_COVER_YOUR_NOSE"), TStringId("COVERS_HIS_NOSE"), TString(his(other->getAttributes().getGender())));
               other->addEffect(BuffId("DEF_DEBUFF"), 10_visible);
             }
       }
@@ -962,134 +944,133 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
   return false;
 }
 
-string LastingEffects::getName(LastingEffect type) {
+TString LastingEffects::getName(LastingEffect type) {
   switch (type) {
-    case LastingEffect::PREGNANT: return "pregnant";
-    case LastingEffect::SLOWED: return "slowness";
-    case LastingEffect::SPEED: return "speed";
-    case LastingEffect::BLIND: return "blindness";
-    case LastingEffect::INVISIBLE: return "invisibility";
-    case LastingEffect::POISON: return "poison";
-    case LastingEffect::PLAGUE: return "plague";
-    case LastingEffect::POISON_RESISTANT: return "poison resistance";
-    case LastingEffect::PLAGUE_RESISTANT: return "plague resistance";
-    case LastingEffect::FLYING: return "levitation";
-    case LastingEffect::COLLAPSED: return "collapse";
-    case LastingEffect::PANIC: return "panic";
-    case LastingEffect::RAGE: return "rage";
-    case LastingEffect::HALLU: return "magic";
-    case LastingEffect::SLEEP_RESISTANT: return "sleep resistance";
-    case LastingEffect::SLEEP: return "sleep";
-    case LastingEffect::IMMOBILE: return "immobility";
+    case LastingEffect::PREGNANT: return TStringId("BUFF_PREGNANT");
+    case LastingEffect::SLOWED: return TStringId("BUFF_SLOWED");
+    case LastingEffect::SPEED: return TStringId("BUFF_SPEED");
+    case LastingEffect::BLIND: return TStringId("BUFF_BLIND");
+    case LastingEffect::INVISIBLE: return TStringId("BUFF_INVISIBLE");
+    case LastingEffect::POISON: return TStringId("BUFF_POISON");
+    case LastingEffect::PLAGUE: return TStringId("BUFF_PLAGUE");
+    case LastingEffect::POISON_RESISTANT: return TStringId("BUFF_POISON_RESISTANT");
+    case LastingEffect::PLAGUE_RESISTANT: return TStringId("BUFF_PLAGUE_RESISTANT");
+    case LastingEffect::FLYING: return TStringId("BUFF_FLYING");
+    case LastingEffect::COLLAPSED: return TStringId("BUFF_COLLAPSED");
+    case LastingEffect::PANIC: return TStringId("BUFF_PANIC");
+    case LastingEffect::RAGE: return TStringId("BUFF_RAGE");
+    case LastingEffect::HALLU: return TStringId("BUFF_HALLU");
+    case LastingEffect::SLEEP_RESISTANT: return TStringId("BUFF_SLEEP_RESISTANT");
+    case LastingEffect::SLEEP: return TStringId("BUFF_SLEEP");
+    case LastingEffect::IMMOBILE: return TStringId("BUFF_IMMOBILE");
     case LastingEffect::TIED_UP:
-    case LastingEffect::ENTANGLED: return "web";
-    case LastingEffect::STUNNED: return "stunning";
-    case LastingEffect::INSANITY: return "insanity";
-    case LastingEffect::PEACEFULNESS: return "love";
-    case LastingEffect::CAPTURE_RESISTANCE: return "capture resistance";
-    case LastingEffect::LIGHT_SOURCE: return "light";
-    case LastingEffect::DARKNESS_SOURCE: return "darkness";
-    case LastingEffect::NIGHT_VISION: return "night vision";
-    case LastingEffect::ELF_VISION: return "elf vision";
-    case LastingEffect::ARCHER_VISION: return "arrowslit vision";
-    case LastingEffect::WARNING: return "warning";
-    case LastingEffect::TELEPATHY: return "telepathy";
-    case LastingEffect::SUNLIGHT_VULNERABLE: return "sunlight vulnerability";
-    case LastingEffect::SATIATED: return "satiety";
-    case LastingEffect::RESTED: return "wakefulness";
-    case LastingEffect::SUMMONED: return "time to live";
-    case LastingEffect::FAST_CRAFTING: return "fast crafting";
-    case LastingEffect::FAST_TRAINING: return "fast training";
-    case LastingEffect::SLOW_CRAFTING: return "slow crafting";
-    case LastingEffect::SLOW_TRAINING: return "slow training";
-    case LastingEffect::ENTERTAINER: return "entertainment";
-    case LastingEffect::BAD_BREATH: return "smelly breath";
-    case LastingEffect::ON_FIRE: return "combustion";
-    case LastingEffect::FROZEN: return "freezing";
-    case LastingEffect::MAGIC_CANCELLATION: return "magic cancellation";
-    case LastingEffect::DISAPPEAR_DURING_DAY: return "night life";
-    case LastingEffect::NO_CARRY_LIMIT: return "infinite carrying capacity";
-    case LastingEffect::SPYING: return "spying";
-    case LastingEffect::LIFE_SAVED: return "life saving";
-    case LastingEffect::UNSTABLE: return "mental instability";
-    case LastingEffect::OIL: return "oil";
-    case LastingEffect::SWARMER: return "swarming";
-    case LastingEffect::PSYCHIATRY: return "psychiatry";
-    case LastingEffect::TURNED_OFF: return "power off";
-    case LastingEffect::DRUNK: return "booze";
-    case LastingEffect::NO_FRIENDLY_FIRE: return "no friendly fire";
-    case LastingEffect::POLYMORPHED: return "polymorphed";
-    case LastingEffect::AGGRAVATES: return "aggravation";
-    case LastingEffect::CAN_DANCE: return "dancing";
-    case LastingEffect::STEED: return "mounting";
-    case LastingEffect::RIDER: return "riding";
-    case LastingEffect::LOCKED_POSITION: return "disabled position swap";
+    case LastingEffect::ENTANGLED: return TStringId("BUFF_ENTANGLED");
+    case LastingEffect::STUNNED: return TStringId("BUFF_STUNNED");
+    case LastingEffect::INSANITY: return TStringId("BUFF_INSANITY");
+    case LastingEffect::PEACEFULNESS: return TStringId("BUFF_PEACEFULNESS");
+    case LastingEffect::CAPTURE_RESISTANCE: return TStringId("BUFF_CAPTURE_RESISTANCE");
+    case LastingEffect::LIGHT_SOURCE: return TStringId("BUFF_LIGHT_SOURCE");
+    case LastingEffect::DARKNESS_SOURCE: return TStringId("BUFF_DARKNESS_SOURCE");
+    case LastingEffect::NIGHT_VISION: return TStringId("BUFF_NIGHT_VISION");
+    case LastingEffect::ELF_VISION: return TStringId("BUFF_ELF_VISION");
+    case LastingEffect::ARCHER_VISION: return TStringId("BUFF_ARCHER_VISION");
+    case LastingEffect::WARNING: return TStringId("BUFF_WARNING");
+    case LastingEffect::TELEPATHY: return TStringId("BUFF_TELEPATHY");
+    case LastingEffect::SUNLIGHT_VULNERABLE: return TStringId("BUFF_SUNLIGHT_VULNERABLE");
+    case LastingEffect::SATIATED: return TStringId("BUFF_SATIATED");
+    case LastingEffect::RESTED: return TStringId("BUFF_RESTED");
+    case LastingEffect::SUMMONED: return TStringId("BUFF_SUMMONED");
+    case LastingEffect::FAST_CRAFTING: return TStringId("BUFF_FAST_CRAFTING");
+    case LastingEffect::FAST_TRAINING: return TStringId("BUFF_FAST_TRAINING");
+    case LastingEffect::SLOW_CRAFTING: return TStringId("BUFF_SLOW_CRAFTING");
+    case LastingEffect::SLOW_TRAINING: return TStringId("BUFF_SLOW_TRAINING");
+    case LastingEffect::ENTERTAINER: return TStringId("BUFF_ENTERTAINER");
+    case LastingEffect::BAD_BREATH: return TStringId("BUFF_BAD_BREATH");
+    case LastingEffect::ON_FIRE: return TStringId("BUFF_ON_FIRE");
+    case LastingEffect::FROZEN: return TStringId("BUFF_FROZEN");
+    case LastingEffect::MAGIC_CANCELLATION: return TStringId("BUFF_MAGIC_CANCELLATION");
+    case LastingEffect::DISAPPEAR_DURING_DAY: return TStringId("BUFF_DISAPPEAR_DURING_DAY");
+    case LastingEffect::NO_CARRY_LIMIT: return TStringId("BUFF_NO_CARRY_LIMIT");
+    case LastingEffect::SPYING: return TStringId("BUFF_SPYING");
+    case LastingEffect::LIFE_SAVED: return TStringId("BUFF_LIFE_SAVED");
+    case LastingEffect::UNSTABLE: return TStringId("BUFF_UNSTABLE");
+    case LastingEffect::OIL: return TStringId("BUFF_OIL");
+    case LastingEffect::SWARMER: return TStringId("BUFF_SWARMER");
+    case LastingEffect::PSYCHIATRY: return TStringId("BUFF_PSYCHIATRY");
+    case LastingEffect::TURNED_OFF: return TStringId("BUFF_TURNED_OFF");
+    case LastingEffect::DRUNK: return TStringId("BUFF_DRUNK");
+    case LastingEffect::NO_FRIENDLY_FIRE: return TStringId("BUFF_NO_FRIENDLY_FIRE");
+    case LastingEffect::POLYMORPHED: return TStringId("BUFF_POLYMORPHED");
+    case LastingEffect::AGGRAVATES: return TStringId("BUFF_AGGRAVATES");
+    case LastingEffect::CAN_DANCE: return TStringId("BUFF_CAN_DANCE");
+    case LastingEffect::STEED: return TStringId("BUFF_STEED");
+    case LastingEffect::RIDER: return TStringId("BUFF_RIDER");
+    case LastingEffect::LOCKED_POSITION: return TStringId("BUFF_LOCKED_POSITION");
   }
 }
 
-string LastingEffects::getDescription(LastingEffect type) {
+TString LastingEffects::getDescription(LastingEffect type) {
   switch (type) {
-    case LastingEffect::PREGNANT: return "This is no dream! This is really happening!";
-    case LastingEffect::SLOWED: return "Causes unnaturally slow movement.";
-    case LastingEffect::SPEED: return "Grants an extra move every turn.";
-    case LastingEffect::BLIND: return "Causes blindness";
-    case LastingEffect::INVISIBLE: return "Makes you invisible to enemies.";
-    case LastingEffect::PLAGUE: return "Decreases health every turn when it's above 50%. "
-                                       "A small percent of creatures can die, others don't suffer from health loss.";
-    case LastingEffect::PLAGUE_RESISTANT: return "Protects from plague infection.";
-    case LastingEffect::POISON: return "Decreases health every turn by a little bit.";
-    case LastingEffect::POISON_RESISTANT: return "Gives poison resistance.";
-    case LastingEffect::FLYING: return "Causes levitation.";
-    case LastingEffect::COLLAPSED: return "Moving across tiles takes three times longer.";
-    case LastingEffect::PANIC: return "Increases defense and lowers damage.";
-    case LastingEffect::RAGE: return "Increases damage and lowers defense.";
-    case LastingEffect::HALLU: return "Causes hallucinations.";
-    case LastingEffect::SLEEP_RESISTANT: return "Prevents being put to sleep.";
-    case LastingEffect::SLEEP: return "Puts to sleep.";
-    case LastingEffect::IMMOBILE: return "Creature does not move.";
-    case LastingEffect::TIED_UP:
-    case LastingEffect::ENTANGLED: return "web";
-    case LastingEffect::STUNNED: return "Allows enslaving as a prisoner, otherwise creature will die.";
-    case LastingEffect::INSANITY: return "Makes the target hostile to every creature.";
-    case LastingEffect::PEACEFULNESS: return "Makes the target friendly to every creature.";
-    case LastingEffect::CAPTURE_RESISTANCE: return "Increases defense by 30% when capture order is placed.";
-    case LastingEffect::DARKNESS_SOURCE: return "Causes the closest vicinity to become dark. Protects undead from sunlight.";
-    case LastingEffect::LIGHT_SOURCE: return "Casts light on the closest surroundings.";
-    case LastingEffect::NIGHT_VISION: return "Gives vision in the dark at full distance.";
-    case LastingEffect::ELF_VISION: return "Allows to see and shoot through trees.";
-    case LastingEffect::ARCHER_VISION: return "Allows to see and shoot through arrowslits.";
-    case LastingEffect::WARNING: return "Warns about dangerous enemies and traps.";
-    case LastingEffect::TELEPATHY: return "Allows you to detect other creatures with brains.";
-    case LastingEffect::SUNLIGHT_VULNERABLE: return "Sunlight makes your body crumble to dust.";
-    case LastingEffect::SATIATED: return "Increases morale and improves defense by +1.";
-    case LastingEffect::RESTED: return "Increases morale and improves defense by +1.";
-    case LastingEffect::SUMMONED: return "Will disappear after the given number of turns.";
-    case LastingEffect::FAST_CRAFTING: return "Increases crafting speed.";
-    case LastingEffect::FAST_TRAINING: return "Increases training and studying speed.";
-    case LastingEffect::SLOW_CRAFTING: return "Decreases crafting speed.";
-    case LastingEffect::SLOW_TRAINING: return "Decreases training and studying speed.";
-    case LastingEffect::ENTERTAINER: return "Makes jokes, increasing morale of nearby creatures.";
-    case LastingEffect::BAD_BREATH: return "Decreases morale of all nearby creatures.";
-    case LastingEffect::ON_FIRE: return "The creature is burning alive.";
-    case LastingEffect::FROZEN: return "The creature is frozen and cannot move.";
-    case LastingEffect::MAGIC_CANCELLATION: return "Prevents from casting any spells.";
-    case LastingEffect::DISAPPEAR_DURING_DAY: return "This creature is only active at night and disappears at dawn.";
-    case LastingEffect::NO_CARRY_LIMIT: return "The creature can carry items without any weight limit.";
-    case LastingEffect::SPYING: return "The creature can infiltrate enemy lines.";
-    case LastingEffect::LIFE_SAVED: return "Prevents the death of the creature.";
-    case LastingEffect::UNSTABLE: return "Creature may become insane after witnessing the death of an ally.";
-    case LastingEffect::OIL: return "Creature is covered in oil and may be set on fire.";
-    case LastingEffect::SWARMER: return "Grants damage and defense bonus for every other swarmer in vicinity.";
-    case LastingEffect::PSYCHIATRY: return "Creature won't be attacked by insane creatures.";
-    case LastingEffect::TURNED_OFF: return "Creature requires more automaton engines built.";
-    case LastingEffect::DRUNK: return "Compromises fighting abilities.";
-    case LastingEffect::NO_FRIENDLY_FIRE: return "Arrows and other projectiles bypass allies and only hit enemies.";
-    case LastingEffect::POLYMORPHED: return "Creature will revert to original form.";
-    case LastingEffect::AGGRAVATES: return "Makes enemies more aggressive and more likely to attack the base.";
-    case LastingEffect::CAN_DANCE: return "Can dance all night long.";
-    case LastingEffect::STEED: return "Can carry a rider.";
-    case LastingEffect::RIDER: return "Can ride a steed.";
-    case LastingEffect::LOCKED_POSITION: return "Creatures can't swap position with this automaton.";
+    case LastingEffect::PREGNANT: return TStringId("BUFF_DESC_PREGNANT");
+    case LastingEffect::SLOWED: return TStringId("BUFF_DESC_SLOWED");
+    case LastingEffect::SPEED: return TStringId("BUFF_DESC_SPEED");
+    case LastingEffect::BLIND: return TStringId("BUFF_DESC_BLIND");
+    case LastingEffect::INVISIBLE: return TStringId("BUFF_DESC_INVISIBLE");
+    case LastingEffect::PLAGUE: return TStringId("BUFF_DESC_PLAGUE");
+    case LastingEffect::PLAGUE_RESISTANT: return TStringId("BUFF_DESC_PLAGUE_RESISTANT");
+    case LastingEffect::POISON: return TStringId("BUFF_DESC_POISON");
+    case LastingEffect::POISON_RESISTANT: return TStringId("BUFF_DESC_POISON_RESISTANT");
+    case LastingEffect::FLYING: return TStringId("BUFF_DESC_FLYING");
+    case LastingEffect::COLLAPSED: return TStringId("BUFF_DESC_COLLAPSED");
+    case LastingEffect::PANIC: return TStringId("BUFF_DESC_PANIC");
+    case LastingEffect::RAGE: return TStringId("BUFF_DESC_RAGE");
+    case LastingEffect::HALLU: return TStringId("BUFF_DESC_HALLU");
+    case LastingEffect::SLEEP_RESISTANT: return TStringId("BUFF_DESC_SLEEP_RESISTANT");
+    case LastingEffect::SLEEP: return TStringId("BUFF_DESC_SLEEP");
+    case LastingEffect::IMMOBILE: return TStringId("BUFF_DESC_IMMOBILE");
+    case LastingEffect::TIED_UP: return TStringId("BUFF_DESC_TIED_UP");
+    case LastingEffect::ENTANGLED: return TStringId("BUFF_DESC_ENTANGLED");
+    case LastingEffect::STUNNED: return TStringId("BUFF_DESC_STUNNED");
+    case LastingEffect::INSANITY: return TStringId("BUFF_DESC_INSANITY");
+    case LastingEffect::PEACEFULNESS: return TStringId("BUFF_DESC_PEACEFULNESS");
+    case LastingEffect::CAPTURE_RESISTANCE: return TStringId("BUFF_DESC_CAPTURE_RESISTANCE");
+    case LastingEffect::DARKNESS_SOURCE: return TStringId("BUFF_DESC_DARKNESS_SOURCE");
+    case LastingEffect::LIGHT_SOURCE: return TStringId("BUFF_DESC_LIGHT_SOURCE");
+    case LastingEffect::NIGHT_VISION: return TStringId("BUFF_DESC_NIGHT_VISION");
+    case LastingEffect::ELF_VISION: return TStringId("BUFF_DESC_ELF_VISION");
+    case LastingEffect::ARCHER_VISION: return TStringId("BUFF_DESC_ARCHER_VISION");
+    case LastingEffect::WARNING: return TStringId("BUFF_DESC_WARNING");
+    case LastingEffect::TELEPATHY: return TStringId("BUFF_DESC_TELEPATHY");
+    case LastingEffect::SUNLIGHT_VULNERABLE: return TStringId("BUFF_DESC_SUNLIGHT_VULNERABLE");
+    case LastingEffect::SATIATED: return TStringId("BUFF_DESC_SATIATED");
+    case LastingEffect::RESTED: return TStringId("BUFF_DESC_RESTED");
+    case LastingEffect::SUMMONED: return TStringId("BUFF_DESC_SUMMONED");
+    case LastingEffect::FAST_CRAFTING: return TStringId("BUFF_DESC_FAST_CRAFTING");
+    case LastingEffect::FAST_TRAINING: return TStringId("BUFF_DESC_FAST_TRAINING");
+    case LastingEffect::SLOW_CRAFTING: return TStringId("BUFF_DESC_SLOW_CRAFTING");
+    case LastingEffect::SLOW_TRAINING: return TStringId("BUFF_DESC_SLOW_TRAINING");
+    case LastingEffect::ENTERTAINER: return TStringId("BUFF_DESC_ENTERTAINER");
+    case LastingEffect::BAD_BREATH: return TStringId("BUFF_DESC_BAD_BREATH");
+    case LastingEffect::ON_FIRE: return TStringId("BUFF_DESC_ON_FIRE");
+    case LastingEffect::FROZEN: return TStringId("BUFF_DESC_FROZEN");
+    case LastingEffect::MAGIC_CANCELLATION: return TStringId("BUFF_DESC_MAGIC_CANCELLATION");
+    case LastingEffect::DISAPPEAR_DURING_DAY: return TStringId("BUFF_DESC_DISAPPEAR_DURING_DAY");
+    case LastingEffect::NO_CARRY_LIMIT: return TStringId("BUFF_DESC_NO_CARRY_LIMIT");
+    case LastingEffect::SPYING: return TStringId("BUFF_DESC_SPYING");
+    case LastingEffect::LIFE_SAVED: return TStringId("BUFF_DESC_LIFE_SAVED");
+    case LastingEffect::UNSTABLE: return TStringId("BUFF_DESC_UNSTABLE");
+    case LastingEffect::OIL: return TStringId("BUFF_DESC_OIL");
+    case LastingEffect::SWARMER: return TStringId("BUFF_DESC_SWARMER");
+    case LastingEffect::PSYCHIATRY: return TStringId("BUFF_DESC_PSYCHIATRY");
+    case LastingEffect::TURNED_OFF: return TStringId("BUFF_DESC_TURNED_OFF");
+    case LastingEffect::DRUNK: return TStringId("BUFF_DESC_DRUNK");
+    case LastingEffect::NO_FRIENDLY_FIRE: return TStringId("BUFF_DESC_NO_FRIENDLY_FIRE");
+    case LastingEffect::POLYMORPHED: return TStringId("BUFF_DESC_POLYMORPHED");
+    case LastingEffect::AGGRAVATES: return TStringId("BUFF_DESC_AGGRAVATES");
+    case LastingEffect::CAN_DANCE: return TStringId("BUFF_DESC_CAN_DANCE");
+    case LastingEffect::STEED: return TStringId("BUFF_DESC_STEED");
+    case LastingEffect::RIDER: return TStringId("BUFF_DESC_RIDER");
+   case LastingEffect::LOCKED_POSITION: return TStringId("BUFF_DESC_LOCKED_POSITION");
   }
 }
 

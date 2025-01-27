@@ -9,14 +9,14 @@
 #include "item_upgrade_info.h"
 #include "item_type.h"
 #include "effect_type.h"
+#include "t_string.h"
 
-
-const char* getName(ItemIndex index, int count) {
+optional<TStringId> getName(ItemIndex index, int count) {
   switch (index) {
-    case ItemIndex::RANGED_WEAPON: return count == 1 ? "ranged weapon" : "ranged weapons";
+    case ItemIndex::RANGED_WEAPON: return count == 1 ? TStringId("RANGED_WEAPON") : TStringId("RANGED_WEAPONS");
     default: FATAL << "Unimplemented";
   }
-  return "";
+  return none;
 }
 
 bool hasIndex(ItemIndex index, const Item* item) {

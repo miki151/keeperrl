@@ -20,7 +20,7 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
   virtual void onMemberAdded(Creature*) {}
   virtual void onConquered(Creature* victim, Creature* killer) {}
   virtual void addMessage(const PlayerMessage&) {}
-  virtual void addWindowMessage(ViewIdList, const string&) {}
+  virtual void addWindowMessage(ViewIdList, const TString&) {}
   virtual void addAttack(const CollectiveAttack&) {}
   virtual void onConstructed(Position, FurnitureType) {}
   virtual void onClaimedSquare(Position) {}

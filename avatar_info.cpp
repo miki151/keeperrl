@@ -66,9 +66,9 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
   while (true) {
     auto keeperList = ScriptedUIDataElems::List {};
     auto genderList = ScriptedUIDataElems::List {};
-    unordered_set<string> addedBases;
-    string baseDescription;
-    string genderDescription;
+    HashSet<TString> addedBases;
+    TString baseDescription;
+    TString genderDescription;
     function<bool()> reloadFirstName;
     auto nameOption = OptionId::PLAYER_NAME;
     auto getKeeperName = [&nameOption, &keeperName, options] () -> optional<string> {
@@ -104,9 +104,9 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
             return true;
           }};
         else
-          data.elems["locked"] = "blabla"_s;
+          data.elems["locked"] = TString("blabla"_s);
         if (baseName == keeperCreatureInfos[keeperBase].second.baseName) {
-          data.elems["selected"] = "blabla"_s;
+          data.elems["selected"] = TString("blabla"_s);
           nameOption = !keeperCreatureInfos[i].second.baseNameGen ? OptionId::PLAYER_NAME : OptionId::SETTLEMENT_NAME;
         }
         keeperList.push_back(std::move(data));
@@ -128,11 +128,11 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
           } else
             data.elems["view_id"] = vector<ViewId>(1, ViewId("unknown_monster", Color::GRAY));
           if (gender == genderIndex && i == keeperBase) {
-            data.elems["selected"] = "blabla"_s;
+            data.elems["selected"] = TString("blabla"_s);
             baseDescription = keeperCreatureInfos[i].second.description;
-            genderDescription = keeperCreatureInfos[i].second.noLeader
-                ? capitalFirst(keeper->getName().plural())
-                : capitalFirst(keeper->getName().identify()) + ", " + getName(keeper->getAttributes().getGender());
+            genderDescription = TSentence("CAPITAL_FIRST", keeperCreatureInfos[i].second.noLeader
+                ? keeper->getName().plural()
+                : TString(string(keeper->getName().identify())));
             reloadFirstName = [&keeperName, options, nameOption, newName = getFirstName(keeper, i)] {
               keeperName = newName;
               options->setValue(nameOption, string());
@@ -205,8 +205,8 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
         keeper = std::move(keeperCreatures[keeperBase][genderIndex]);
         auto& creatureInfo = keeperCreatureInfos[keeperBase].second;
         if (!creatureInfo.noLeader) {
-          if (creatureInfo.baseName != "Adventurer") {
-            keeper->getName().setBare("Keeper");
+          if (creatureInfo.baseName != TStringId("ADVENTURER")) {
+            keeper->getName().setBare(TStringId("KEEPER"));
             keeper->getName().useFullTitle();
           }
           keeper->getName().setFirst(getKeeperName());
@@ -219,11 +219,11 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
       }}},
     }};
     if (auto name = getKeeperName()) {
-      data.elems[nameOption == OptionId::SETTLEMENT_NAME ? "settlement_name" : "first_name"] = *name;
+      data.elems[nameOption == OptionId::SETTLEMENT_NAME ? "settlement_name" : "first_name"] = TString(*name);
       data.elems["reload_first_name"] = ScriptedUIDataElems::Callback{std::move(reloadFirstName)};
       data.elems["edit_first_name"] = ScriptedUIDataElems::Callback{[name, options, view, nameOption] {
           if (auto text = view->getText(
-              nameOption == OptionId::SETTLEMENT_NAME ? "Enter settlement name:" : "Enter first name:",
+              nameOption == OptionId::SETTLEMENT_NAME ? TStringId("ENTER_SETTLEMENT_NAME") : TStringId("ENTER_FIRST_NAME"),
               *name, 16))
             options->setValue(nameOption, *text);
           return true;
@@ -245,7 +245,7 @@ AvatarInfo getQuickGameAvatar(View* view, const KeeperCreatureInfo& myKeeper,
   AvatarInfo ret;
   ret.playerCreature = creatureFactory->fromId(myKeeper.creatureId[0], TribeId::getDarkKeeper());
   if (!myKeeper.noLeader)
-    ret.playerCreature->getName().setBare("Keeper");
+    ret.playerCreature->getName().setBare(TStringId("KEEPER"));
   ret.playerCreature->getName().setFirst("Jollibrond"_s);
   ret.creatureInfo = std::move(myKeeper);
   ret.tribeAlignment = TribeAlignment::EVIL;

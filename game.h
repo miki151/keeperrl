@@ -7,6 +7,7 @@
 #include "position.h"
 #include "exit_info.h"
 #include "game_time.h"
+#include "t_string.h"
 
 class Options;
 class Highscores;
@@ -61,7 +62,7 @@ class Game : public OwnedObject<Game> {
   Position getTransferPos(Model* from, Model* to) const;
   string getGameIdentifier() const;
   string getGameOrRetiredIdentifier(Position) const;
-  string getGameDisplayName() const;
+  TString getGameDisplayName() const;
   MusicType getCurrentMusic() const;
   void setCurrentMusic(MusicType);
   void setDefaultMusic();
@@ -84,9 +85,9 @@ class Game : public OwnedObject<Game> {
   const string& getWorldName() const;
   bool gameWon() const;
 
-  void gameOver(const Creature* player, int numKills, const string& enemiesString, int points);
-  void conquered(const string& title, int numKills, int points);
-  void retired(const string& title, int numKills, int points);
+  void gameOver(const Creature* player, int numKills, int points);
+  void conquered(const TString& title, int numKills, int points);
+  void retired(const TString& title, int numKills, int points);
 
   bool isGameOver() const;
   bool isTurnBased();
@@ -144,7 +145,7 @@ class Game : public OwnedObject<Game> {
   Tribe::Map SERIAL(tribes);
   optional<int> SERIAL(lastTick);
   string SERIAL(gameIdentifier);
-  string SERIAL(gameDisplayName);
+  TString SERIAL(gameDisplayName);
   map<VillainType, vector<Collective*>> SERIAL(villainsByType);
   vector<Collective*> SERIAL(collectives);
   MusicType SERIAL(musicType);

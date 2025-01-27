@@ -4,11 +4,12 @@
 #include "attr_type.h"
 #include "item_prefix.h"
 #include "resource_id.h"
+#include "t_string.h"
 
 struct WorkshopInfo {
   FurnitureType SERIAL(furniture);
-  string SERIAL(name);
-  string SERIAL(verb) = "produces";
+  TString SERIAL(name);
+  TString SERIAL(verb) = TStringId("PRODUCES_VERB");
   AttrType SERIAL(attr);
   HashMap<CollectiveResourceId, int> SERIAL(minAttr);
   int getMinAttrFor(CollectiveResourceId id) const {

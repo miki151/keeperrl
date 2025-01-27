@@ -2,8 +2,8 @@
   name = "super bonus"
   adjective = "amazing"
   description = "Super"
-  addedMessage = ARE "super"
-  removedMessage = ARE "no longer super"
+  addedMessage = ARE SUPER
+  removedMessage = ARE NO_LONGER_SUPER
   startEffect = IncreaseAttr DAMAGE 30
   endEffect = IncreaseAttr DAMAGE -30
   tickEffect = Heal {FLESH 0.01}
@@ -91,7 +91,7 @@ End
 "BLEEDING" {
   name = "bleeding"
   description = "Causes loss of health points over time."
-  addedMessage = "start" "starts" "bleeding"
+  addedMessage = YOU_START STARTS BLEEDING
   removedMessage = YOUR "bleeding stops"
   adjective = "bleeding"
   tickEffect = Filter Not LastingEffect FROZEN {

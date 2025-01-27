@@ -29,6 +29,7 @@
 #include "view_object_action.h"
 #include "view_id.h"
 #include "color.h"
+#include "t_string.h"
 
 RICH_ENUM(ViewObjectAttribute, HEALTH, WATER_DEPTH, LUXURY, FLANKED_MOD, BURNING, EFFICIENCY);
 
@@ -36,7 +37,7 @@ class ViewObject {
   public:
   typedef ViewObjectModifier Modifier;
   typedef ViewObjectAttribute Attribute;
-  ViewObject(ViewId id, ViewLayer l, const string& description);
+  ViewObject(ViewId id, ViewLayer l, const TString& description);
   ViewObject(ViewId id, ViewLayer l);
 
   ViewObject& setModifier(Modifier, bool state = true);
@@ -57,7 +58,7 @@ class ViewObject {
   void setCreatureAttributes(CreatureAttributes);
   const optional<CreatureAttributes>& getCreatureAttributes() const;
 
-  const char* getDescription() const;
+  const TString& getDescription() const;
 
   ViewLayer layer() const;
   void setLayer(ViewLayer);
@@ -66,12 +67,12 @@ class ViewObject {
   void setId(ViewIdList);
   void setColorVariant(Color);
 
-  void setGoodAdjectives(const string&);
-  void setBadAdjectives(const string&);
-  const string& getGoodAdjectives() const;
-  const string& getBadAdjectives() const;
+  void setGoodAdjectives(TString);
+  void setBadAdjectives(TString);
+  const TString& getGoodAdjectives() const;
+  const TString& getBadAdjectives() const;
 
-  void setDescription(const string&);
+  void setDescription(const TString&);
 
   void addMovementInfo(MovementInfo, GenericId);
   void clearMovementInfo();
@@ -100,11 +101,11 @@ class ViewObject {
   EnumMap<Attribute, float> SERIAL(attributes);
   ViewId SERIAL(resource_id);
   ViewLayer SERIAL(viewLayer);
-  string SERIAL(description);
+  TString SERIAL(description);
   optional<Dir> SERIAL(attachmentDir);
   GenericId SERIAL(genericId) = 0;
-  string SERIAL(goodAdjectives);
-  string SERIAL(badAdjectives);
+  TString SERIAL(goodAdjectives);
+  TString SERIAL(badAdjectives);
   optional<CreatureAttributes> SERIAL(creatureAttributes);
   optional<ViewObjectAction> SERIAL(clickAction);
   EnumSet<ViewObjectAction> SERIAL(extendedActions);

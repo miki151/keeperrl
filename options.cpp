@@ -432,7 +432,7 @@ void Options::handleIntInterval(OptionId option, ScriptedUIDataElems::Record& da
   auto value = getIntValue(option);
   auto interval = *getIntInterval(option);
   auto range = *getIntRange(option);
-  data.elems.insert({"value", value > 0 ? getValueString(option) : "off"});
+  data.elems.insert({"value", TString(value > 0 ? getValueString(option) : "off"_s)});
   data.elems.insert({"increase", ScriptedUIDataElems::Callback{
       [this, &wasSet, option, value, interval, range] {
         auto newVal = value + interval;
@@ -455,7 +455,7 @@ void Options::handleIntInterval(OptionId option, ScriptedUIDataElems::Record& da
 
 void Options::handleStringList(OptionId option, ScriptedUIDataElems::Record& data, bool& wasSet) {
   auto value = getIntValue(option);
-  data.elems.insert({"value", getValueString(option)});
+  data.elems.insert({"value", TString(getValueString(option))});
   data.elems.insert({"increase", ScriptedUIDataElems::Callback{
       [this, &wasSet, option, value] {
         this->setValue(option, (value + 1) % choices[option].size());
@@ -507,7 +507,7 @@ static optional<SDL::SDL_Keysym> captureKey(View* view, const string& text) {
       return true;
     }
   };
-  main.elems["text"] = text;
+  main.elems["text"] = TString(text);
   view->scriptedUI("key_capture", main, state);
   return ret;
 }
@@ -541,8 +541,8 @@ void Options::handle(View* view, const ContentFactory* factory, OptionSet set, i
     ScriptedUIDataElems::List keybindings;
     for (auto& key : factory->keybindings) {
       auto r = ScriptedUIDataElems::Record{{
-          {"label", key.second.name},
-          {"key", ScriptedUIDataElems::Label{keybindingMap->getText(key.first).value_or("")}},
+          {"label", TString(key.second.name)},
+          {"key", ScriptedUIDataElems::Label{keybindingMap->getText(key.first).value_or(TString())}},
           {"clicked", ScriptedUIDataElems::Callback { [&wasSet, key, view, this] {
             auto captured = captureKey(view, key.second.name);
             if (captured && captured->sym != SDL::SDLK_ESCAPE)
@@ -570,7 +570,7 @@ void Options::handle(View* view, const ContentFactory* factory, OptionSet set, i
     if (keybindingsTab) {
       main.elems["keybindings"] = std::move(keybindings);
       main.elems["reset_keys"] = ScriptedUIDataElems::Callback {[this, &wasSet, view] {
-        if (view->yesOrNoPrompt("Are you sure you want to restore default keybindings?"))
+        if (view->yesOrNoPrompt(TStringId("RESTORE_KEYBINDINGS_CONFIRM")))
           keybindingMap->reset();
         wasSet = true;
         return true;

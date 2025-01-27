@@ -30,10 +30,12 @@ RICH_ENUM(StatId,
   POTION_PRODUCED
 );
 
+class TString;
+
 class Statistics {
   public:
   void add(StatId);
-  vector<string> getText() const;
+  vector<TString> getText() const;
   void clear();
 
   template <class Archive>

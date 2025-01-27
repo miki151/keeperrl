@@ -3,6 +3,7 @@
 #include "enums.h"
 #include "util.h"
 #include "minion_trait.h"
+#include "t_string.h"
 
 class Tribe;
 class TribeId;
@@ -22,7 +23,7 @@ class CollectiveBuilder {
   CollectiveBuilder& addCreature(Creature*, EnumSet<MinionTrait>);
   CollectiveBuilder& addArea(const vector<Vec2>&);
   CollectiveBuilder& setLocationName(const string&);
-  CollectiveBuilder& setRaceName(const string&);
+  CollectiveBuilder& setRaceName(const TString&);
   CollectiveBuilder& setDiscoverable();
   TribeId getTribe();
   void setCentralPoint(Vec2);
@@ -48,6 +49,6 @@ class CollectiveBuilder {
   vector<Vec2> squares;
   optional<Vec2> centralPoint;
   optional<string> locationName;
-  optional<string> raceName;
+  optional<TString> raceName;
   bool discoverable = false;
 };

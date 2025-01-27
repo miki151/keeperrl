@@ -54,10 +54,10 @@ bool Spell::canTargetSelf() const {
   return targetSelf || range == 0;
 }
 
-vector<string> Spell::getDescription(const Creature* c, const ContentFactory* f) const {
-    vector<string> description = {effect->getDescription(f), "Cooldown: " + (c
+vector<TString> Spell::getDescription(const Creature* c, const ContentFactory* f) const {
+    vector<TString> description = {effect->getDescription(f), TSentence("SPELL_COOLDOWN", (c
         ? toString(c->calculateSpellCooldown(cooldown))
-        : toString(cooldown))
+        : toString(cooldown)))
         };
   if (getRange() > 0)
     description.push_back("Range: " + toString(getRange()));
@@ -66,7 +66,9 @@ vector<string> Spell::getDescription(const Creature* c, const ContentFactory* f)
 
 void Spell::addMessage(Creature* c) const {
   if (!message.first.empty())
-    c->verb(message.first, message.second);
+    if (message.first.text.contains<TSentence>())
+      c->verb(message.first.text.getValueMaybe<TSentence>()->id,
+          message.second.text.getValueMaybe<TSentence>()->id);
 }
 
 void Spell::apply(Creature* c, Position target) const {
@@ -126,7 +128,7 @@ SpellId Spell::getId() const {
   return id;
 }
 
-string Spell::getName(const ContentFactory* f) const {
+TString Spell::getName(const ContentFactory* f) const {
   return effect->getName(f);
 }
 

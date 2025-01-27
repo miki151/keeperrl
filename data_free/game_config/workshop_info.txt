@@ -13,7 +13,7 @@
 "FORGE" {
   furniture = "FORGE"
   name = "forge"
-  verb = "forges"
+  verb = FORGES_VERB
   attr = "FORGE"
   minAttr = {
     IRON 1
@@ -32,7 +32,7 @@
 "LABORATORY" {
   furniture = "LABORATORY"
   name = "laboratory"
-  verb = "concocts"
+  verb = CONCOCTS_VERB
   attr = "LABORATORY"
 }
 
@@ -57,13 +57,13 @@
 "MORGUE" {
   furniture = "MORGUE_TABLE"
   name = "morgue"
-  verb = "raises"
+  verb = RAISES_VERB
   attr = "MORGUE"
 }
 
 "SCRIPTORIUM" {
   furniture = "SCRIPTORIUM"
   name = "scriptorium"
-  verb = "writes"
+  verb = WRITES_VERB
   attr = "DIVINITY"
 }

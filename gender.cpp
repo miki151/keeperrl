@@ -15,20 +15,21 @@
 
 #include "stdafx.h"
 #include "gender.h"
+#include "t_string.h"
 
-const char* he(Gender g) {
-  return get(g, "he", "she", "it");
+TStringId he(Gender g) {
+  return get(g, TStringId("HE"), TStringId("SHE"), TStringId("IT"));
 }
 
-const char* his(Gender g) {
-  return get(g, "his", "her", "its");
+TStringId his(Gender g) {
+  return get(g, TStringId("HIS"), TStringId("HER"), TStringId("ITS"));
 }
 
-const char* him(Gender g) {
-  return get(g, "him", "her", "it");
+TStringId him(Gender g) {
+  return get(g, TStringId("HIM"), TStringId("HER"), TStringId("IT"));
 }
 
-const char *get(Gender g, const char* male, const char* female, const char* it) {
+TStringId get(Gender g, TStringId male, TStringId female, TStringId it) {
   switch (g) {
     case Gender::MALE:
       return male;
@@ -39,9 +40,10 @@ const char *get(Gender g, const char* male, const char* female, const char* it) 
   }
 }
 
-const char* getName(Gender g) {
-  return get(g, "male", "female", "genderless");
+TStringId getName(Gender g) {
+  return get(g, TStringId("MALE"), TStringId("FEMALE"), TStringId("GENDERLESS"));
 }
-const char* himself(Gender g) {
-  return get(g, "himself", "herself", "itself");
+
+TStringId himself(Gender g) {
+  return get(g, TStringId("HIMSELF"), TStringId("HERSELF"), TStringId("ITSELF"));
 }

@@ -5,10 +5,8 @@
 #include "view_object.h"
 #include "content_factory.h"
 
-static string getItemName(const ContentFactory* factory, Item* item, bool plural) {
+static TString getItemName(const ContentFactory* factory, Item* item, bool plural) {
   auto name = item->getName(plural);
-  if (name.size() > 30)
-    return item->getShortName(factory, nullptr, plural);
   return name;
 }
 
@@ -20,7 +18,7 @@ WorkshopItem WorkshopItemCfg::get(WorkshopType type, const ContentFactory* facto
   auto& workshopInfo = factory->workshopInfo.at(type);
   if (auto& prefix = workshopInfo.prefix)
     elem->applyPrefix(*prefix, factory);
-  vector<string> description;
+  vector<TString> description;
   if (elem->getNameAndModifiers(factory) != elem->getName())
     description.push_back(elem->getNameAndModifiers(factory));
   description.append(elem->getDescription(factory));

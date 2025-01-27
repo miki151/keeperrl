@@ -18,48 +18,47 @@
 #include "view_index.h"
 #include "view_object.h"
 
-const char* getDescription(HighlightType type) {
+optional<TStringId> getDescription(HighlightType type) {
   switch (type) {
     case HighlightType::STORAGE_EQUIPMENT:
-      return "Equipment storage";
+      return TStringId("EQUIPMENT_STORAGE_HIGHLIGHT");
     case HighlightType::STORAGE_RESOURCES:
-      return "Resource storage";
+      return TStringId("RESOURCE_STORAGE_HIGHLIGHT");
      case HighlightType::LEISURE:
-       return "Minion leisure zone";
+       return TStringId("MINION_LEISURE_ZONE_HIGHLIGHT");
      case HighlightType::FETCH_ITEMS:
-       return "Fetching items";
+       return TStringId("FETCHING_ITEMS_HIGHLIGHT");
      case HighlightType::PERMANENT_FETCH_ITEMS:
-       return "Persistent item fetching zone";
+       return TStringId("PERSISTENT_ITEM_FETCHING_ZONE_HIGHLIGHT");
      case HighlightType::GUARD_ZONE1:
-       return "Guard area 1";
+       return TStringId("GUARD_ZONE1_HIGHLIGHT");
      case HighlightType::GUARD_ZONE2:
-       return "Guard area 2";
+       return TStringId("GUARD_ZONE2_HIGHLIGHT");
      case HighlightType::GUARD_ZONE3:
-       return "Guard area 3";
+       return TStringId("GUARD_ZONE3_HIGHLIGHT");
      case HighlightType::FORBIDDEN_ZONE:
-       return "Forbidden zone";
+       return TStringId("FORBIDDEN_ZONE_HIGHLIGHT");
      case HighlightType::ALLIED_TOTEM:
-       return "Allied magical field";
+       return TStringId("ALLIED_MAGICAL_FIELD_HIGHLIGHT");
      case HighlightType::HOSTILE_TOTEM:
-       return "Hostile magical field";
+       return TStringId("HOSTILE_MAGICAL_FIELD_HIGHLIGHT");
      case HighlightType::CUT_TREE:
-       return "Tree cutting task";
+       return TStringId("TREE_CUTTING_TASK_HIGHLIGHT");
      case HighlightType::DIG:
-       return "Digging task";
+       return TStringId("DIGGING_TASK_HIGHLIGHT");
      case HighlightType::INSUFFICIENT_LIGHT:
-       return "Insufficient light";
+       return TStringId("INSUFFICIENT_LIGHT_HIGHLIGHT");
      case HighlightType::PRISON_NOT_CLOSED:
-       return "Prison must be separated from the outdoors and from all staircases using prison bars or prison door";
+       return TStringId("PRISON_MUST_BE_SEPARATE_HIGHLIGHT");
      case HighlightType::PIGSTY_NOT_CLOSED:
-       return "Animal pen must be separated from the outdoors and from all staircases using animal fence";
+       return TStringId("ANIMAL_PEN_MUST_BE_SEPARATE_HIGHLIGHT");
      case HighlightType::TORTURE_UNAVAILABLE:
-       return "Torture unavailable due to population limit";
+       return TStringId("TORTURE_UNAVAILABLE_HIGHLIGHT");
      case HighlightType::PRIORITY_TASK:
-       return "Priority task";
+       return TStringId("PRIORITY_TASK_HIGHLIGHT");
     default:
-      break;
+      return none;
   }
-  return nullptr;
 }
 
 ViewId getViewId(HighlightType id, bool active) {

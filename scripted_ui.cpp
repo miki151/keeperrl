@@ -205,7 +205,7 @@ struct KeybindingHandler : ScriptedUIInterface {
 REGISTER_SCRIPTED_UI(KeybindingHandler);
 
 struct RenderKeybinding : ScriptedUIInterface {
-  variant<Texture*, string> getKeybindingGlyph(GuiFactory* f, Keybinding binding) const {
+  variant<Texture*, TString> getKeybindingGlyph(GuiFactory* f, Keybinding binding) const {
     auto steamInput = f->getSteamInput();
     if (steamInput && !steamInput->controllers.empty()) {
       if (auto key = KeybindingMap::getControllerMapping(binding))
@@ -214,14 +214,14 @@ struct RenderKeybinding : ScriptedUIInterface {
     }
     if (!controllerOnly)
       if (auto k = f->getKeybindingMap()->getText(binding))
-        return "[" + *k + "]";
-    return ""_s;
+        return TString(TSentence("SQUARE_BRACKETS", *k));
+    return TString();
   }
 
   void render(const ScriptedUIData&, ScriptedContext& context, Rectangle area) const override {
     getKeybindingGlyph(context.factory, key).visit(
-        [&](const string& text) {
-          context.renderer->drawText(Color::WHITE, area.topLeft(), text);
+        [&](const TString& text) {
+          context.renderer->drawText(Color::WHITE, area.topLeft(), context.factory->translate(text));
         },
         [&](Texture* texture) {
           context.renderer->drawSprite(area.topLeft(), Vec2(0, 0), texture->getSize(), *texture, Vec2(24, 24));
@@ -231,8 +231,8 @@ struct RenderKeybinding : ScriptedUIInterface {
 
   Vec2 getSize(const ScriptedUIData&, ScriptedContext& context) const override {
     return getKeybindingGlyph(context.factory, key).visit(
-        [&](const string& text) {
-          return Vec2(context.renderer->getTextLength(text), 20);
+        [&](const TString& text) {
+          return Vec2(context.renderer->getTextLength(context.factory->translate(text)), 20);
         },
         [&](Texture* texture) {
           return Vec2(24, 24);
@@ -280,7 +280,7 @@ struct Label : ScriptedUIInterface {
     if (text)
       return context.factory->translate(*text);
     if (auto label = data.getReferenceMaybe<ScriptedUIDataElems::Label>())
-      return label->data();
+      return context.factory->translate(*label);
     else
       return "not a label";
   }

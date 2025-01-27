@@ -24,6 +24,7 @@
 #include "team_member_action.h"
 #include "tech_id.h"
 #include "player_info_action.h"
+#include "t_string.h"
 
 class PlayerMessage;
 
@@ -111,7 +112,7 @@ struct CreatureDropInfo {
 
 struct CreatureGroupDropInfo {
   Vec2 pos;
-  string group;
+  TString group;
 };
 
 struct TeamDropInfo {
@@ -131,7 +132,7 @@ struct TeamCreatureInfo {
 
 struct TeamGroupInfo {
   TeamId team;
-  string group;
+  TString group;
 };
 
 struct InventoryItemInfo {
@@ -149,14 +150,14 @@ struct TaskActionInfo {
   optional<MinionActivity> switchTo;
   EnumSet<MinionActivity> lock;
   EnumSet<MinionActivity> lockGroup;
-  string groupName;
+  TString groupName;
 };
 
 struct AIActionInfo {
   UniqueEntity<Creature>::Id creature;
   AIType switchTo;
   bool override;
-  string groupName;
+  TString groupName;
 };
 
 struct EquipmentActionInfo {
@@ -173,7 +174,7 @@ struct TeamMemberActionInfo {
 
 struct DismissVillageInfo {
   UniqueEntity<Collective>::Id collectiveId;
-  string infoText;
+  TStringId infoText;
 };
 
 struct WorkshopUpgradeInfo {
@@ -194,7 +195,7 @@ struct PromotionActionInfo {
 };
 
 struct EquipmentGroupAction {
-  string group;
+  TString group;
   unordered_set<string> flip;
 };
 
@@ -206,7 +207,7 @@ struct MinionActionInfo {
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, TeamGroupInfo, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, CreatureDropInfo, CreatureGroupDropInfo, TeamDropInfo,
-    string, TechId, TeamMemberActionInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo,
+    TString, string, TechId, TeamMemberActionInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo,
     WorkshopCountInfo, AIActionInfo, PromotionActionInfo, EquipmentGroupAction, MinionActionInfo),
         ASSIGN(BuildingClickInfo,
             UserInputId::RECT_SELECTION,
@@ -277,12 +278,14 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, 
             UserInputId::TEAM_MEMBER_ACTION),
         ASSIGN(DismissVillageInfo,
             UserInputId::DISMISS_VILLAGE_INFO),
+        ASSIGN(TString,
+            UserInputId::CREATE_TEAM_FROM_GROUP,
+            UserInputId::CREATURE_GROUP_BUTTON
+        ),
         ASSIGN(string,
             UserInputId::CREATE_ITEM,
-            UserInputId::APPLY_EFFECT,
-            UserInputId::CREATE_TEAM_FROM_GROUP,
-            UserInputId::CREATURE_GROUP_BUTTON,
-            UserInputId::SUMMON_ENEMY
+            UserInputId::SUMMON_ENEMY,
+            UserInputId::APPLY_EFFECT
         ),
         ASSIGN(TechId,
             UserInputId::LIBRARY_ADD

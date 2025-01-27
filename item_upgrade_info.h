@@ -17,9 +17,10 @@ const char* getItemTypeName(ItemUpgradeType);
 
 class ItemPrefix;
 class ContentFactory;
+class TString;
 
 struct ItemUpgradeInfo {
-  vector<string> getDescription(const ContentFactory*) const;
+  vector<TString> getDescription(const ContentFactory*) const;
   ItemUpgradeType SERIAL(type);
   HeapAllocated<ItemPrefix> SERIAL(prefix);
   optional<pair<string, double>> SERIAL(diminishModifier);

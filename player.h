@@ -79,7 +79,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual bool isPlayer() const override;
   virtual void privateMessage(const PlayerMessage& message) override;
   virtual MessageGenerator& getMessageGenerator() const override;
-  virtual void grantWish(const string& message) override;
+  virtual void grantWish(TString) override;
 
   // overridden by subclasses
   struct CommandInfo {
@@ -101,9 +101,9 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   };
   virtual vector<OtherCreatureCommand> getOtherCreatureCommands(Creature*) const;
 
-  optional<Vec2> chooseDirection(const string& question);
+  optional<Vec2> chooseDirection(const TString& question);
   using TargetResult = variant<none_t, Position, Keybinding>;
-  TargetResult chooseTarget(Table<PassableInfo> passable, TargetType, const string& message,
+  TargetResult chooseTarget(Table<PassableInfo> passable, TargetType, const TString& message,
     optional<Keybinding>);
 
   SMapMemory SERIAL(levelMemory);
@@ -149,7 +149,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   Vec2 SERIAL(travelDir);
   optional<Position> SERIAL(target);
   void retireMessages();
-  ItemInfo getFurnitureUsageInfo(const string& question, ViewId viewId) const;
+  ItemInfo getFurnitureUsageInfo(const TString& question, ViewId viewId) const;
   optional<FurnitureUsageType> getUsableUsageType() const;
   STutorial SERIAL(tutorial);
   virtual vector<TeamMemberAction> getTeamMemberActions(const Creature*) const;

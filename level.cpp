@@ -185,7 +185,7 @@ void Level::putCreature(Vec2 position, Creature* c) {
   creatures.push_back(c);
   creatureIds.insert(c);
   CHECK(getSafeSquare(position)->getCreature() == nullptr)
-      << "Square occupied by " << getSafeSquare(position)->getCreature()->getName().bare();
+      << "Square occupied by " << getSafeSquare(position)->getCreature()->getName().bare().data();
   placeCreature(c, position);
 }
 
@@ -402,7 +402,7 @@ void Level::changeLevel(StairKey key, Creature* c) {
         eraseCreature(c, oldPos);
         putCreature(oldPos, other);
         otherLevel->putCreature(otherPos.getCoord(), c);
-        c->secondPerson("You switch levels with " + other->getName().a());
+        c->secondPerson(TSentence("YOU_SWITCH_LEVELS_WITH", other->getName().a()));
       }
     }
   }
@@ -513,7 +513,7 @@ void Level::placeCreature(Creature* creature, Vec2 pos) {
   if (prevPos.getLevel() == this)
     forEachEffect(prevPos.getCoord(), creature->getTribeId(), [&] (LastingOrBuff) {++numEffectsPrev;});
   if (numEffects > numEffectsPrev)
-    creature->verb("feel", "feels", "the presence of a magical field");
+    creature->verb(TStringId("YOU_FEEL_THE_PRESENCE_OF_A_MAGICAL_FIELD"), TStringId("FEELS_THE_PRESENCE_OF_A_MAGICAL_FIELD"));
   creature->updateViewObjectFlanking();
   for (auto v : position.neighbors8())
     if (auto c = v.getCreature())

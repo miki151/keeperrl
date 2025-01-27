@@ -1,15 +1,15 @@
 #include "stdafx.h"
 #include "sunlight_info.h"
+#include "t_string.h"
 
-
-const char* SunlightInfo::getText() const {
+TStringId SunlightInfo::getText() const {
   return getText(state);
 }
 
-const char* SunlightInfo::getText(SunlightState state) {
+TStringId SunlightInfo::getText(SunlightState state) {
   switch (state) {
-    case SunlightState::NIGHT: return "night";
-    case SunlightState::DAY: return "day";
+    case SunlightState::NIGHT: return TStringId("NIGHT");
+    case SunlightState::DAY: return TStringId("DAY");
   }
 }
 

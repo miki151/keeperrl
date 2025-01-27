@@ -17,6 +17,7 @@
 
 #include "util.h"
 #include "name_generator_id.h"
+#include "t_string.h"
 
 class NameGenerator;
 
@@ -24,41 +25,42 @@ constexpr int maxFirstNameLength = 15;
 
 class CreatureName {
   public:
-  CreatureName(const string& name);
-  CreatureName(const string& name, const string& plural);
-  CreatureName(const char* name);
+  CreatureName(const TString& name);
+  CreatureName(const TString& name, const TString& plural);
   void setFirst(optional<string>);
   void generateFirst(NameGenerator*);
   optional<NameGeneratorId> getNameGenerator() const;
-  void setStack(const string&);
-  void setGroup(const string&);
-  void setBare(const string&);
-  void addBarePrefix(const string&);
-  void addBareSuffix(const string&);
+  void setStack(const TString&);
+  void setBare(const TString&);
+  void addBarePrefix(const TString&);
+  void addBareSuffix(const TString&);
   void useFullTitle(bool = true);
-  void setKillTitle(optional<string>);
-  const string& stack() const;
+  void setKillTitle(optional<TString>);
+  const TString& stack() const;
   const char* identify() const;
-  const optional<string>& stackOnly() const;
+  const optional<TString>& stackOnly() const;
   const optional<string>& first() const;
-  string firstOrBare() const;
-  string bare() const;
-  string the() const;
-  string a() const;
-  string plural() const;
-  string groupOf(int) const;
-  string title() const;
-  string aOrTitle() const;
+  TString firstOrBare() const;
+  TString bare() const;
+  TString the() const;
+  TString a() const;
+  TString plural() const;
+  TString getGroupName() const;
+  TString title() const;
+  TString aOrTitle() const;
 
   SERIALIZATION_DECL(CreatureName)
 
+  TString SERIAL(name);
+
   private:
-  string SERIAL(name);
-  string SERIAL(pluralName);
-  optional<string> SERIAL(stackName);
+  optional<TString> SERIAL(prefix);
+  optional<TString> SERIAL(suffix);
+  TString SERIAL(pluralName);
+  optional<TString> SERIAL(stackName);
   optional<string> SERIAL(firstName);
-  optional<string> SERIAL(killTitle);
+  optional<TString> SERIAL(killTitle);
   optional<NameGeneratorId> SERIAL(firstNameGen);
-  string SERIAL(groupName) = "group";
+  TString SERIAL(groupName) = TStringId("GROUP");
   bool SERIAL(fullTitle) = false;
 };

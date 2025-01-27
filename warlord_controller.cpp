@@ -42,22 +42,9 @@ class WarlordController : public Player, public EventListener<WarlordController>
             team->removeElementMaybe(info.victim);
         },
         [&](const ConqueredEnemy& info) {
-          if (info.collective->getVillainType() == VillainType::MAIN) {
-            if (auto& name = info.collective->getName())
-              privateMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
-                    MessagePriority::CRITICAL));
-          }
         },
         [&](const WonGame&) {
-          if (creature == creature->getGame()->getPlayerCreatures()[0]) {
-            int points = 0;
-            int kills = 0;
-            for (auto c : originalTeam) {
-              points += c->getPoints();
-              kills += c->getKills().size();
-            }
-            getGame()->conquered(creature->getName().firstOrBare(), kills, points);
-          }
+
         },
         [](auto&) {}
     );
@@ -85,7 +72,7 @@ class WarlordController : public Player, public EventListener<WarlordController>
       for (auto c : *team)
         teamInfos.push_back(PlayerInfo(c, getGame()->getContentFactory()));
       if (teamInfos.empty()) {
-        getGame()->gameOver(creature, creature->getKills().size(), "monsters", creature->getPoints());
+        getGame()->gameOver(creature, creature->getKills().size(), creature->getPoints());
         return;
       }
       optional<Creature::Id> newLeader;

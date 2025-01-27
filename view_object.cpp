@@ -24,21 +24,14 @@ SERIALIZATION_CONSTRUCTOR_IMPL(ViewObject);
 
 constexpr float noAttributeValue = -1234;
 
-static const char* getDefaultDescription(const ViewId& id) {
-  if (id == ViewId("unknown_monster"))
-    return "Unknown creature";
-  else
-    return "";
-}
-
-ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d)
+ViewObject::ViewObject(ViewId id, ViewLayer l, const TString& d)
     : resource_id(id), viewLayer(l), description(d) {
   for (auto a : ENUM_ALL(Attribute))
     attributes[a] = noAttributeValue;
 }
 
 ViewObject::ViewObject(ViewId id, ViewLayer l)
-    : resource_id(id), viewLayer(l), description(getDefaultDescription(id)) {
+    : resource_id(id), viewLayer(l) {
   for (auto a : ENUM_ALL(Attribute))
     attributes[a] = noAttributeValue;
 }
@@ -194,12 +187,12 @@ const optional<ViewObject::CreatureAttributes>& ViewObject::getCreatureAttribute
   return creatureAttributes;
 }
 
-void ViewObject::setDescription(const string& s) {
+void ViewObject::setDescription(const TString& s) {
   description = s;
 }
 
-const char* ViewObject::getDescription() const {
-  return description.c_str();
+const TString& ViewObject::getDescription() const {
+  return description;
 }
 
 ViewObject&  ViewObject::setAttachmentDir(Dir dir) {
@@ -233,19 +226,19 @@ void ViewObject::setColorVariant(Color color) {
   resource_id = ViewId(resource_id.data(), color);
 }
 
-void ViewObject::setGoodAdjectives(const string& v) {
-  goodAdjectives = v;
+void ViewObject::setGoodAdjectives(TString v) {
+  goodAdjectives = std::move(v);
 }
 
-void ViewObject::setBadAdjectives(const string& v) {
-  badAdjectives = v;
+void ViewObject::setBadAdjectives(TString v) {
+  badAdjectives = std::move(v);
 }
 
-const string& ViewObject::getGoodAdjectives() const {
+const TString& ViewObject::getGoodAdjectives() const {
   return goodAdjectives;
 }
 
-const string& ViewObject::getBadAdjectives() const {
+const TString& ViewObject::getBadAdjectives() const {
   return badAdjectives;
 }
 

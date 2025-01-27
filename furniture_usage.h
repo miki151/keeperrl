@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "effect.h"
+#include "t_string.h"
 
 class Position;
 class Furniture;
@@ -20,7 +21,7 @@ RICH_ENUM(
 );
 
 struct UsageEffect {
-  string SERIAL(usageVerb);
+  TString SERIAL(usageVerb);
   Effect SERIAL(effect);
   SERIALIZE_ALL(usageVerb, effect)
 };
@@ -31,5 +32,5 @@ class FurnitureUsage {
   public:
   static void handle(FurnitureUsageType, Position, const Furniture*, Creature*);
   static bool canHandle(FurnitureUsageType, const Creature*);
-  static string getUsageQuestion(FurnitureUsageType, string furnitureName);
+  static TString getUsageQuestion(FurnitureUsageType, TString furnitureName);
 };

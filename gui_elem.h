@@ -27,6 +27,7 @@
 
 class ViewObject;
 class TString;
+class TSentence;
 class Clock;
 class Options;
 class ScrollPosition;
@@ -70,7 +71,7 @@ class GuiElem {
 
 class GuiFactory {
   public:
-  GuiFactory(Renderer&, Clock*, Options*, Translations*, SoundLibrary*, const DirectoryPath& freeImages);
+  GuiFactory(Renderer&, Clock*, Options*, Translations*, SoundLibrary*, const DirectoryPath& freeDataPath);
   void loadImages();
   ~GuiFactory();
 
@@ -80,6 +81,8 @@ class GuiFactory {
   void propagateEvent(const Event&, const vector<SGuiElem>&);
   void propagateScrollEvent(const vector<SGuiElem>&);
   string translate(const TString&);
+  string translate(const TSentence&);
+  void reloadTranslations();
 
   static bool isShift(const SDL::SDL_Keysym&);
   static bool isAlt(const SDL::SDL_Keysym&);
@@ -169,48 +172,48 @@ class GuiFactory {
   SGuiElem topMargin(int size, SGuiElem content);
   SGuiElem bottomMargin(int size, SGuiElem content);
   SGuiElem progressBar(Color, double state);
-  SGuiElem label(const string&, Color = Color::WHITE, char hotkey = 0);
+  SGuiElem label(const TString&, Color = Color::WHITE, char hotkey = 0);
   SGuiElem standardButton();
   SGuiElem standardButton(SGuiElem content, SGuiElem button, bool matchTextWidth = true);
   SGuiElem standardButtonHighlight();
-  SGuiElem buttonLabel(const string&, SGuiElem button, bool matchTextWidth = true,
+  SGuiElem buttonLabel(const TString&, SGuiElem button, bool matchTextWidth = true,
       bool centerHorizontally = false, bool unicode = false);
-  SGuiElem buttonLabel(const string&, function<void()> button, bool matchTextWidth = true,
+  SGuiElem buttonLabel(const TString&, function<void()> button, bool matchTextWidth = true,
       bool centerHorizontally = false, bool unicode = false);
 
   SGuiElem buttonLabelFocusable(SGuiElem content, function<void()> button, function<bool()> focused,
       bool matchTextWidth = true, bool centerHorizontally = false);
   SGuiElem buttonLabelFocusable(SGuiElem content, function<void(Rectangle)> button, function<bool()> focused,
       bool matchTextWidth = true, bool centerHorizontally = false);
-  SGuiElem buttonLabelFocusable(const string&, function<void()> button, function<bool()> focused,
+  SGuiElem buttonLabelFocusable(const TString&, function<void()> button, function<bool()> focused,
       bool matchTextWidth = true, bool centerHorizontally = false, bool unicode = false);
-  SGuiElem buttonLabelFocusable(const string&, function<void(Rectangle)> button, function<bool()> focused,
+  SGuiElem buttonLabelFocusable(const TString&, function<void(Rectangle)> button, function<bool()> focused,
       bool matchTextWidth = true, bool centerHorizontally = false, bool unicode = false);
-  SGuiElem buttonLabelBlink(const string&, function<void()> button, function<bool()> focused = []{return false;},
+  SGuiElem buttonLabelBlink(const TString&, function<void()> button, function<bool()> focused = []{return false;},
       bool matchTextWidth = true, bool centerHorizontally = false);
-  SGuiElem buttonLabelWithMargin(const string&, function<bool()> focused);
-  SGuiElem buttonLabelSelected(const string&, function<void()> button, bool matchTextWidth = true,
+  SGuiElem buttonLabelWithMargin(const TString&, function<bool()> focused);
+  SGuiElem buttonLabelSelected(const TString&, function<void()> button, bool matchTextWidth = true,
       bool centerHorizontally = false);
-  SGuiElem buttonLabelSelectedFocusable(const string&, function<void()> button, function<bool()> focused,
+  SGuiElem buttonLabelSelectedFocusable(const TString&, function<void()> button, function<bool()> focused,
       bool matchTextWidth = true, bool centerHorizontally = false);
-  SGuiElem buttonLabelInactive(const string&, bool matchTextWidth = true, bool centerText = false);
-  SGuiElem labelHighlight(const string&, Color = Color::WHITE, char hotkey = 0);
-  SGuiElem labelHighlightBlink(const string& s, Color, Color, char hotkey = 0);
-  SGuiElem label(const string&, int size, Color = Color::WHITE);
-  SGuiElem label(const string&, function<Color()>, char hotkey = 0);
-  SGuiElem labelFun(function<string()>, function<Color()>);
-  SGuiElem labelFun(function<string()>, Color = Color::WHITE);
-  SGuiElem labelMultiLine(const string&, int lineHeight, int size = Renderer::textSize(),
+  SGuiElem buttonLabelInactive(const TString&, bool matchTextWidth = true, bool centerText = false);
+  SGuiElem labelHighlight(const TString&, Color = Color::WHITE, char hotkey = 0);
+  SGuiElem labelHighlightBlink(const TString& s, Color, Color, char hotkey = 0);
+  SGuiElem label(const TString&, int size, Color = Color::WHITE);
+  SGuiElem label(const TString&, function<Color()>, char hotkey = 0);
+  SGuiElem labelFun(function<TString()>, function<Color()>);
+  SGuiElem labelFun(function<TString()>, Color = Color::WHITE);
+  SGuiElem labelMultiLine(const TString&, int lineHeight, int size = Renderer::textSize(),
       Color = Color::WHITE);
-  SGuiElem labelMultiLineWidth(const string&, int lineHeight, int width, int size = Renderer::textSize(),
+  SGuiElem labelMultiLineWidth(const TString&, int lineHeight, int width, int size = Renderer::textSize(),
       Color = Color::WHITE, char delim = ' ');
-  SGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = Color::WHITE);
-  SGuiElem centeredLabel(Renderer::CenterType, const string&, Color = Color::WHITE);
-  SGuiElem mainMenuLabel(const string&, double vPadding, Color = Color::MAIN_MENU_ON);
-  SGuiElem mainMenuLabelBg(const string&, double vPadding, Color = Color::MAIN_MENU_OFF);
-  SGuiElem labelUnicode(const string&, Color = Color::WHITE, int size = Renderer::textSize(),
+  SGuiElem centeredLabel(Renderer::CenterType, const TString&, int size, Color = Color::WHITE);
+  SGuiElem centeredLabel(Renderer::CenterType, const TString&, Color = Color::WHITE);
+  SGuiElem mainMenuLabel(const TString&, double vPadding, Color = Color::MAIN_MENU_ON);
+  SGuiElem mainMenuLabelBg(const TString&, double vPadding, Color = Color::MAIN_MENU_OFF);
+  SGuiElem labelUnicode(const TString&, Color = Color::WHITE, int size = Renderer::textSize(),
       FontId = FontId::SYMBOL_FONT);
-  SGuiElem labelUnicodeHighlight(const string&, Color color = Color::WHITE, int size = Renderer::textSize(),
+  SGuiElem labelUnicodeHighlight(const TString&, Color color = Color::WHITE, int size = Renderer::textSize(),
       FontId = FontId::SYMBOL_FONT);
   SGuiElem crossOutText(Color);
   SGuiElem viewObject(const ViewObject&, double scale = 1, Color = Color::WHITE);
@@ -251,7 +254,7 @@ class GuiFactory {
   enum class Alignment { TOP, LEFT, BOTTOM, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, CENTER,
       TOP_CENTER, LEFT_CENTER, BOTTOM_CENTER, RIGHT_CENTER, VERTICAL_CENTER, LEFT_STRETCHED, RIGHT_STRETCHED,
       CENTER_STRETCHED};
-  SGuiElem tooltip(const vector<string>&, milliseconds delay = milliseconds{700});
+  SGuiElem tooltip(const vector<TString>&, milliseconds delay = milliseconds{700});
   typedef function<Vec2(const Rectangle&)> PositionFun;
   SGuiElem tooltip2(SGuiElem, PositionFun);
   SGuiElem darken();
@@ -362,6 +365,6 @@ class GuiFactory {
   Options* options;
   Translations* translations;
   DragContainer dragContainer;
-  DirectoryPath imagesPath;
+  DirectoryPath freeDataPath;
   optional<milliseconds> lastJoyScrollUpdate;
 };

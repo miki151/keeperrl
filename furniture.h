@@ -21,6 +21,7 @@
 #include "creature_predicate.h"
 #include "achievement_id.h"
 #include "sound.h"
+#include "t_string.h"
 
 class TribeId;
 class Creature;
@@ -72,8 +73,8 @@ class Furniture {
   Furniture& operator =(const Furniture&);
   const heap_optional<ViewObject>& getViewObject() const;
   heap_optional<ViewObject>& getViewObject();
-  const string& getName(int count = 1) const;
-  void setName(const string&);
+  const TString& getName(int count = 1) const;
+  void setName(const TString&);
   FurnitureType getType() const;
   bool isVisibleTo(const Creature*) const;
   const MovementSet& getMovementSet() const;
@@ -184,8 +185,8 @@ class Furniture {
 
   private:
   heap_optional<ViewObject> SERIAL(viewObject);
-  string SERIAL(name);
-  string SERIAL(pluralName);
+  TString SERIAL(name);
+  TString SERIAL(pluralName);
   FurnitureType SERIAL(type);
   FurnitureLayer SERIAL(layer) = FurnitureLayer::MIDDLE;
   HeapAllocated<MovementSet> SERIAL(movementSet);

@@ -37,7 +37,7 @@ static vector<PlayerInfo> getBestiary(ContentFactory* f) {
   for (auto& id : f->getCreatures().getAllCreatures()) {
     auto c = f->getCreatures().fromId(id, TribeId::getMonster());
     ret.push_back(PlayerInfo(c.get(), f));
-    ret.back().name = c->getName().groupOf(1);
+    ret.back().name = c->getName().name;
   }
   return ret;
 }

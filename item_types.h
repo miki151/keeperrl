@@ -11,6 +11,7 @@
 #include "creature_id.h"
 #include "minion_trait.h"
 #include "lasting_or_buff.h"
+#include "t_string.h"
 
 
 #define ITEM_TYPE_INTERFACE\
@@ -26,7 +27,7 @@ class ItemType;
 namespace ItemTypes {
 struct Intrinsic {
   ViewId SERIAL(viewId);
-  string SERIAL(name);
+  TString SERIAL(name);
   int SERIAL(damage);
   WeaponInfo SERIAL(weaponInfo);
   SERIALIZE_ALL(viewId, name, damage, weaponInfo)
@@ -81,7 +82,7 @@ SIMPLE_ITEM(FireScroll);
 SIMPLE_ITEM(Poem);
 SIMPLE_ITEM(Corpse);
 struct EventPoem {
-  string SERIAL(eventName);
+  TString SERIAL(eventName);
   SERIALIZE_ALL(eventName)
   ITEM_TYPE_INTERFACE;
 };

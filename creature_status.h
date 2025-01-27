@@ -10,8 +10,9 @@ RICH_ENUM(CreatureStatus,
 );
 
 class Color;
+class TStringId;
 
 extern Color getColor(CreatureStatus);
-extern optional<const char*> getDescription(CreatureStatus);
-extern const char* getName(CreatureStatus);
+extern optional<TStringId> getDescription(CreatureStatus);
+extern TStringId getName(CreatureStatus);
 extern EnumSet<CreatureStatus> getDisplayedOnMinions();

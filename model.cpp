@@ -104,11 +104,11 @@ void Model::updateSunlightMovement() {
 void Model::checkCreatureConsistency() {
   EntitySet<Creature> tmp;
   for (Creature* c : timeQueue->getAllCreatures()) {
-    CHECK(!tmp.contains(c)) << c->getName().bare();
+    CHECK(!tmp.contains(c)) << c->getName().bare().data();
     tmp.insert(c);
   }
   for (PCreature& c : deadCreatures) {
-    CHECK(!tmp.contains(c.get())) << c->getName().bare();
+    CHECK(!tmp.contains(c.get())) << c->getName().bare().data();
     tmp.insert(c.get());
   }
 }
@@ -116,23 +116,22 @@ void Model::checkCreatureConsistency() {
 bool Model::update(double totalTime) {
   currentTime = totalTime;
   if (Creature* creature = timeQueue->getNextCreature(totalTime)) {
-    CHECK(creature->getLevel() != nullptr) << "Creature misplaced before processing: " << creature->getName().bare() <<
+    CHECK(creature->getLevel() != nullptr) << "Creature misplaced before processing: " << creature->getName().bare().data() <<
         ". Any idea why this happened?";
     if (creature->isDead()) {
       checkCreatureConsistency();
-      FATAL << "Dead: " << creature->getName().bare();
+      FATAL << "Dead: " << creature->getName().bare().data();
     }
     while (totalTime > lastTick.getDouble()) {
       lastTick += 1_visible;
       tick(lastTick);
     }
-    CHECK(creature->getLevel() != nullptr) << "Creature misplaced before moving: " << creature->getName().bare() <<
+    CHECK(creature->getLevel() != nullptr) << "Creature misplaced before moving: " << creature->getName().bare().data() <<
         ". Any idea why this happened?";
     if (!creature->isDead()) {
-      INFO << "Turn " << totalTime << " " << creature->getName().bare() << " moving now";
       creature->makeMove();
     }
-    CHECK(creature->getLevel() != nullptr) << "Creature misplaced after moving: " << creature->getName().bare() <<
+    CHECK(creature->getLevel() != nullptr) << "Creature misplaced after moving: " << creature->getName().bare().data() <<
         ". Any idea why this happened?";
     if (!creature->isDead() && creature->getLevel()->getModel() == this)
       CHECK(creature->getPosition().getCreature() == creature);

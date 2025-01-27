@@ -7,17 +7,18 @@
 #include "fx_variant_name.h"
 #include "color.h"
 #include "special_attr.h"
+#include "t_string.h"
 
 struct YouMessage {
   MsgType SERIAL(type);
-  string SERIAL(message);
+  TString SERIAL(message);
   SERIALIZE_ALL(type, message)
 };
 
 struct VerbMessage {
-  string SERIAL(secondPerson);
-  string SERIAL(thirdPerson);
-  string SERIAL(message);
+  TString SERIAL(secondPerson);
+  TString SERIAL(thirdPerson);
+  TString SERIAL(message);
   SERIALIZE_ALL(secondPerson, thirdPerson, message)
 };
 
@@ -27,14 +28,14 @@ void applyMessage(const BuffMessageInfo&, const Creature*);
 void serialize(PrettyInputArchive&, BuffMessageInfo&, const unsigned int);
 
 struct BuffInfo {
-  string SERIAL(name);
+  TString SERIAL(name);
   optional<BuffMessageInfo> SERIAL(addedMessage);
   optional<BuffMessageInfo> SERIAL(removedMessage);
   optional<Effect> SERIAL(startEffect);
   optional<Effect> SERIAL(tickEffect);
   optional<Effect> SERIAL(endEffect);
-  string SERIAL(description);
-  string SERIAL(adjective);
+  TString SERIAL(description);
+  TString SERIAL(adjective);
   bool SERIAL(consideredBad) = false;
   bool SERIAL(combatConsumable) = false;
   bool SERIAL(stacks) = false;
@@ -44,7 +45,7 @@ struct BuffInfo {
   optional<double> SERIAL(efficiencyMultiplier);
   int SERIAL(price) = 50;
   Color SERIAL(color);
-  optional<string> SERIAL(hatedGroupName);
+  optional<TString> SERIAL(hatedGroupName);
   double SERIAL(defenseMultiplier) = 1.0;
   optional<AttrType> SERIAL(defenseMultiplierAttr);
   FXVariantName SERIAL(fx) = FXVariantName::BUFF_RED;

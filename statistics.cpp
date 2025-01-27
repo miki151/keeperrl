@@ -15,6 +15,7 @@
 
 #include "stdafx.h"
 #include "statistics.h"
+#include "t_string.h"
 
 SERIALIZE_DEF(Statistics, count)
 
@@ -27,24 +28,25 @@ void Statistics::clear() {
     count[id] = 0;
 }
 
-vector<pair<StatId, string>> text {
-  {StatId::DEATH, "deaths"}, 
-  {StatId::INNOCENT_KILLED, "cold blooded murders"}, 
-  {StatId::CHOPPED_HEAD, "chopped heads" },
-  {StatId::CHOPPED_LIMB, "chopped limbs" },
-  {StatId::SPELL_CAST, "spells cast" },
-  {StatId::SCROLL_READ, "scrolls read" },
-  {StatId::WEAPON_PRODUCED, "weapons produced" },
-  {StatId::ARMOR_PRODUCED, "pieces of armor produced" },
-  {StatId::POTION_PRODUCED, "potions produced" },
+static TStringId getName(StatId id) {
+  switch (id) {
+    case StatId::DEATH: return TStringId("DEATHS");
+    case StatId::INNOCENT_KILLED: return TStringId("COLD_BLOODED_MURDERS");
+    case StatId::CHOPPED_HEAD: return TStringId("CHOPPED_HEADS");
+    case StatId::CHOPPED_LIMB: return TStringId("CHOPPED_LIMBS");
+    case StatId::SPELL_CAST: return TStringId("SPELLS_CAST");
+    case StatId::SCROLL_READ: return TStringId("SCROLLS_READ");
+    case StatId::WEAPON_PRODUCED: return TStringId("WEAPONS_PRODUCED");
+    case StatId::ARMOR_PRODUCED: return TStringId("PIECES_OF_ARMOR_PRODUCED");
+    case StatId::POTION_PRODUCED: return TStringId("POTIONS_PRODUCED");
+  }
+}
 
-};
-
-vector<string> Statistics::getText() const {
-  vector<string> ret;
-  for (auto elem : text) {
-    if (int n = count[elem.first])
-      ret.emplace_back(toString(n) + " " + elem.second);
+vector<TString> Statistics::getText() const {
+  vector<TString> ret;
+  for (auto id : ENUM_ALL(StatId)) {
+    if (int n = count[id])
+      ret.emplace_back(TSentence(getName(id), toString(n)));
   }
   return ret;
 }

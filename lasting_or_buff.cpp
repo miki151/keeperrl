@@ -7,7 +7,7 @@
 #include "game.h"
 #include "creature_attributes.h"
 
-string getName(const LastingOrBuff& l, const ContentFactory* f) {
+TString getName(const LastingOrBuff& l, const ContentFactory* f) {
   return l.visit(
     [](LastingEffect e) {
       return LastingEffects::getName(e);
@@ -18,7 +18,7 @@ string getName(const LastingOrBuff& l, const ContentFactory* f) {
   );
 }
 
-string getDescription(const LastingOrBuff& l, const ContentFactory* f) {
+TString getDescription(const LastingOrBuff& l, const ContentFactory* f) {
   return l.visit(
     [](LastingEffect e) {
       return LastingEffects::getDescription(e);
@@ -29,7 +29,7 @@ string getDescription(const LastingOrBuff& l, const ContentFactory* f) {
   );
 }
 
-string getAdjective(const LastingOrBuff& l, const ContentFactory* f) {
+TString getAdjective(const LastingOrBuff& l, const ContentFactory* f) {
   return l.visit(
     [](LastingEffect e) {
       return LastingEffects::getAdjective(e);

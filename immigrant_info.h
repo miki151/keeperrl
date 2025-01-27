@@ -26,7 +26,7 @@ struct AttractionInfo {
 
   SERIALIZATION_DECL(AttractionInfo)
 
-  static string getAttractionName(const ContentFactory*, const AttractionType&, int count);
+  static TString getAttractionName(const ContentFactory*, const AttractionType&, int count);
 
   int SERIAL(amountClaimed) = 0;
   vector<AttractionType> SERIAL(types);

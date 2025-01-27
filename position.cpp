@@ -432,12 +432,12 @@ void Position::addSound(const Sound& sound1) const {
   }
 }
 
-string Position::getName() const {
+TString Position::getName() const {
   PROFILE;
   for (auto layer : ENUM_ALL_REVERSE(FurnitureLayer))
     if (auto furniture = getFurniture(layer))
       return furniture->getName();
-  return "";
+  return TString();
 }
 
 void Position::getViewIndex(ViewIndex& index, const Creature* viewer) const {

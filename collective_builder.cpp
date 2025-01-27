@@ -32,7 +32,7 @@ CollectiveBuilder& CollectiveBuilder::setLocationName(const string& n) {
   return *this;
 }
 
-CollectiveBuilder& CollectiveBuilder::setRaceName(const string& n) {
+CollectiveBuilder& CollectiveBuilder::setRaceName(const TString& n) {
   raceName = n;
   return *this;
 }
@@ -70,18 +70,18 @@ optional<CollectiveName> CollectiveBuilder::generateName() const {
     auto leader = creatures[0].creature;
     ret.viewId = leader->getViewIdWithWeapon();
     if (locationName && raceName)
-      ret.full = capitalFirst(*raceName) + " of " + *locationName;
+      ret.full = TSentence("CAPITAL_FIRST", TSentence("RACE_OF_LOCATION", *raceName, *locationName));
     else if (!!leader->getName().first())
       ret.full = leader->getName().title();
     else if (raceName)
-      ret.full = capitalFirst(*raceName);
+      ret.full = TSentence("CAPITAL_FIRST", *raceName);
     else
       ret.full = leader->getName().title();
     if (locationName) {
-      ret.shortened = *locationName;
+      ret.shortened = TString(*locationName);
       ret.location = *locationName;
     } else if (auto leaderName = leader->getName().first())
-      ret.shortened = *leaderName;
+      ret.shortened = TString(*leaderName);
     else
       ret.shortened = leader->getName().bare();
     if (raceName)
@@ -95,7 +95,7 @@ optional<CollectiveName> CollectiveBuilder::generateName() const {
 
 PCollective CollectiveBuilder::build(const ContentFactory* contentFactory) const {
   auto name = generateName();
-  CHECK(model || level) << EnumInfo<TribeId::KeyType>::getString(tribe->getKey()) << " " << (name ? name->full : "no name");
+  CHECK(model || level) << EnumInfo<TribeId::KeyType>::getString(tribe->getKey()) << " " << (name ? name->full.data() : "no name");
   auto c = Collective::create(!!model ? model : level->getModel(), *tribe, std::move(name), discoverable, contentFactory);
   c->init(std::move(*config));
   c->setControl(CollectiveControl::idle(c.get()));

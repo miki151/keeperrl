@@ -6,6 +6,7 @@
 
 class ContentFactory;
 class ItemTypeVariant;
+class TString;
 
 namespace ItemPrefixes {
 class VictimEffect;
@@ -20,10 +21,10 @@ class ItemType {
   static ItemType fangs(int damage);
   static ItemType fangs(int damage, ItemPrefixes::VictimEffect);
   static ItemType spellHit(int damage);
-  static PItem corpse(const string& name, const string& rottenName, double weight, const ContentFactory* f,
+  static PItem corpse(const TString& name, const TString& rottenName, double weight, const ContentFactory* f,
       bool instantlyRotten = false, ItemClass = ItemClass::CORPSE,
       CorpseInfo corpseInfo = {UniqueEntity<Creature>::Id(), false, false, false}, optional<string> ingredient = none);
-  static PItem severedLimb(const string& creatureName, BodyPart, double weight, ItemClass, const ContentFactory*);
+  static PItem severedLimb(const TString& creatureName, BodyPart, double weight, ItemClass, const ContentFactory*);
 
   ItemType(const ItemTypeVariant&);
   ItemType();

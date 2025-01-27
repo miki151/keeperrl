@@ -24,14 +24,14 @@ void FurnitureEntry::handle(Furniture* f, Creature* c) {
       [&](Sokoban) {
         if (c->getAttributes().isBoulder()) {
           Position pos = c->getPosition();
-          pos.globalMessage(c->getName().the() + " fills the " + f->getName());
+          pos.globalMessage(TSentence("OBJECT_FILLS_HOLE", c->getName().the(), f->getName()));
           pos.removeFurniture(f);
           c->dieNoReason(Creature::DropType::NOTHING);
         } else {
           if (!c->isAffected(LastingEffect::FLYING))
-            c->you(MsgType::FALL, "into the " + f->getName() + "!");
+            c->verb(TStringId("YOU_FALL_INTO"), TStringId("FALLS_INTO"), f->getName());
           else
-            c->you(MsgType::ARE, "sucked into the " + f->getName() + "!");
+            c->verb(TStringId("YOU_ARE_SUCKED_INTO"), TStringId("IS_SUCKED_INTO"), f->getName());
           auto level = c->getPosition().getLevel();
           level->changeLevel(level->getAllStairKeys().getOnlyElement(), c);
         }
@@ -43,11 +43,11 @@ void FurnitureEntry::handle(Furniture* f, Creature* c) {
             auto layer = f->getLayer();
             if (type.invisible || !c->isAffected(BuffId("DISARM_TRAPS_SKILL"))) {
               if (!type.invisible)
-                c->you(MsgType::TRIGGER_TRAP, "");
+                c->you(MsgType::TRIGGER_TRAP);
               type.effect.apply(position, f->getCreator());
             } else {
               game->addEvent(EventInfo::TrapDisarmed{position, f->getType(), c});
-              c->you(MsgType::DISARM_TRAP, type.effect.getName(c->getGame()->getContentFactory()) + " trap");
+              c->you(MsgType::DISARM_TRAP, f->getName());
             }
             if (position.getFurniture(layer) == f) // f might have been removed by the TrapTrigger effect or something else
               position.removeFurniture(f);
@@ -61,11 +61,11 @@ void FurnitureEntry::handle(Furniture* f, Creature* c) {
         if (!f->getMovementSet().canEnter(realMovement) &&
             c->getPosition().getModel()->getAllCreatures().contains(c)) {
           if (auto holding = c->getHoldingCreature()) {
-            c->you(MsgType::ARE, "drowned by " + holding->getName().the());
+            c->verb(TStringId("YOU_ARE_DROWNED_BY"), TStringId("IS_DROWNED_BY"), holding->getName().the());
             c->dieWithAttacker(holding, Creature::DropType::ONLY_INVENTORY);
           } else {
             c->you(MsgType::DROWN, f->getName());
-            c->dieWithReason("drowned", Creature::DropType::ONLY_INVENTORY);
+            c->dieWithReason(TStringId("DROWNED_DEATH_REASON"), Creature::DropType::ONLY_INVENTORY);
           }
         }
       },
@@ -75,9 +75,9 @@ void FurnitureEntry::handle(Furniture* f, Creature* c) {
         // Workaround to not kill creatures that are being landed as it causes a crash
         if (!f->getMovementSet().canEnter(realMovement) &&
             c->getPosition().getModel()->getAllCreatures().contains(c)) {
-          c->verb("scream!", "screams!");
+          c->verb(TStringId("SCREAM"), TStringId("SCREAMS"));
           c->you(MsgType::BURN, f->getName());
-          c->dieWithReason("burned to death", Creature::DropType::ONLY_INVENTORY);
+          c->dieWithReason(TStringId("BURNED_DEATH_REASON"), Creature::DropType::ONLY_INVENTORY);
         }
       },
       [&](const Effect& effect) {

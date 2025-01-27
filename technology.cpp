@@ -41,6 +41,10 @@ vector<TechId> Technology::getNextTechs() const {
 
 Technology::Technology(map<TechId, Technology::TechDefinition> m) : techs(std::move(m)) {}
 
+TString Technology::getName(TechId id) const {
+  return techs.at(id).name.value_or(string(id.data()));
+}
+
 vector<TechId> Technology::getNextTechs(set<TechId> from) const {
   vector<TechId> ret;
   for (auto& tech : techs)
@@ -72,3 +76,15 @@ const vector<TechId> Technology::getAllowed(const TechId& tech) const {
       ret.push_back(other.first);
   return ret;
 }
+
+#include "pretty_archive.h"
+
+template <class Archive>
+void Technology::TechDefinition::serialize(Archive& ar, const unsigned int version) {
+  ar(NAMED(description), OPTION(prerequisites));
+  if (version >= 1)
+    ar(OPTION(name));
+}
+
+SERIALIZABLE(Technology::TechDefinition)
+template void Technology::TechDefinition::serialize(PrettyInputArchive&, unsigned);

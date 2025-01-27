@@ -339,15 +339,15 @@ Collective::CurrentActivity Collective::getCurrentActivity(const Creature* c) co
       .value_or(CurrentActivity{MinionActivity::IDLE, getLocalTime() - 1_visible});
 }
 
-string Collective::getMinionGroupName(const Creature* c) const {
+TString Collective::getMinionGroupName(const Creature* c) const {
   if (hasTrait(c, MinionTrait::PRISONER)) {
-    return "prisoner";
+    return TStringId("PRISONER");
   } else
     return c->getName().stack();
 }
 
-vector<string> Collective::getAutomatonGroupNames(const Creature* c) const {
-  vector<string> ret;
+vector<TString> Collective::getAutomatonGroupNames(const Creature* c) const {
+  vector<TString> ret;
   for (auto& part : c->getAutomatonParts())
     if (!part.minionGroup.empty() && !ret.contains(part.minionGroup))
       ret.push_back(part.minionGroup);
@@ -390,14 +390,14 @@ bool Collective::isActivityGroupLocked(const Creature* c, MinionActivity activit
   return ret;
 }
 
-bool Collective::isActivityGroupLocked(const string& group, MinionActivity activity) const {
+bool Collective::isActivityGroupLocked(const TString& group, MinionActivity activity) const {
   auto ret = MinionActivityMap::isActivityAutoGroupLocked(activity);
   if (auto res = getValueMaybe(groupLockedAcitivities, group))
     ret ^= res->contains(activity);
   return ret;
 }
 
-void Collective::flipGroupLockedActivities(const string& group, GroupLockedActivities a) {
+void Collective::flipGroupLockedActivities(const TString& group, GroupLockedActivities a) {
   if (auto v = getReferenceMaybe(groupLockedAcitivities, group))
     *v = v->ex_or(a);
   else
@@ -479,11 +479,14 @@ vector<Position> Collective::getEnemyPositions() const {
 
 void Collective::addNewCreatureMessage(const vector<Creature*>& immigrants) {
   if (immigrants.size() == 1)
-    control->addMessage(PlayerMessage(immigrants[0]->getName().a() + " joins your forces.")
+    control->addMessage(PlayerMessage(TSentence("JOINS_YOUR_FORCES", immigrants[0]->getName().a()))
         .setCreature(immigrants[0]->getUniqueId()));
   else {
-    control->addMessage(PlayerMessage("A " + immigrants[0]->getName().groupOf(immigrants.size()) +
-          " joins your forces.").setCreature(immigrants[0]->getUniqueId()));
+    control->addMessage(PlayerMessage(TSentence("GROUP_JOINS_YOUR_FORCES", {
+        immigrants[0]->getName().getGroupName(),
+        toString(immigrants.size()),
+        immigrants[0]->getName().plural()}))
+        .setCreature(immigrants[0]->getUniqueId()));
   }
 }
 
@@ -662,7 +665,7 @@ void Collective::tick() {
 
 void Collective::autoAssignSteeds() {
   for (auto c : getCreatures())
-    if (!canUseEquipmentGroup(c, "steeds"))
+    if (!canUseEquipmentGroup(c, TStringId("STEEDS")))
       setSteed(c, nullptr);
   vector<Creature*> freeSteeds = getCreatures().filter(
       [this] (auto c) { return c->isAffected(LastingEffect::STEED) && !getSteedOrRider(c);});
@@ -670,7 +673,7 @@ void Collective::autoAssignSteeds() {
   sort(freeSteeds.begin(), freeSteeds.end(), [&](auto c1, auto c2) {
       return c1->getBestAttack(factory).value < c2->getBestAttack(factory).value; });
   auto minions = getCreatures().filter([this] (auto c) {
-    return c->isAffected(LastingEffect::RIDER) && !getSteedOrRider(c) && canUseEquipmentGroup(c, "steeds");
+    return c->isAffected(LastingEffect::RIDER) && !getSteedOrRider(c) && canUseEquipmentGroup(c, TStringId("STEEDS"));
   });
   sort(minions.begin(), minions.end(), [&](auto c1, auto c2) {
       auto leader1 = hasTrait(c1, MinionTrait::LEADER);
@@ -781,11 +784,11 @@ void Collective::onEvent(const GameEvent& event) {
         auto victim = info.victim;
         if (getCreatures().contains(victim)) {
           if (Random.roll(30)) {
-            addRecordedEvent("the torturing of " + victim->getName().aOrTitle());
+            addRecordedEvent(TSentence("THE_TORTURING_OF", victim->getName().aOrTitle()));
             if (victim->getUniqueId().getGenericId() % 2 == 0) {
-              victim->dieWithReason("killed by torture");
+              victim->dieWithReason(TStringId("KILLED_BY_TORTURE"));
             } else {
-              control->addMessage("A prisoner is converted to your side");
+              control->addMessage(TStringId("A_PRISONER_IS_CONVERTED"));
               removeTrait(victim, MinionTrait::PRISONER);
               removeTrait(victim, MinionTrait::WORKER);
               removeTrait(victim, MinionTrait::NO_LIMIT);
@@ -799,17 +802,17 @@ void Collective::onEvent(const GameEvent& event) {
       },
       [&](const CreatureStunned& info) {
         auto victim = info.victim;
-        addRecordedEvent("the capturing of " + victim->getName().aOrTitle());
+        addRecordedEvent(TSentence("THE_CAPTURING_OF", victim->getName().aOrTitle()));
         if (getCreatures().contains(victim)) {
           stunnedMinions.set(victim, getAllTraits(info.victim));
-          control->addMessage(PlayerMessage(info.victim->getName().aOrTitle() + " has been captured by the enemy",
+          control->addMessage(PlayerMessage(TSentence("HAS_BEEN_CAPTURED_BY_ENEMY", info.victim->getName().aOrTitle()),
               MessagePriority::HIGH));
           if (info.attacker && creatureConsideredPlayer(info.attacker))
             attackedByPlayer = true;
           bool fighterStunned = needsToBeKilledToConquer(victim);
           removeTrait(victim, MinionTrait::FIGHTER);
           removeTrait(victim, MinionTrait::LEADER);
-          control->addMessage(PlayerMessage(victim->getName().a() + " is unconsious.")
+          control->addMessage(PlayerMessage(TSentence("IS_UNCONCIOUS", victim->getName().a()))
               .setPosition(victim->getPosition()));
           control->onMemberKilledOrStunned(info.victim, info.attacker);
           for (auto team : teams->getContaining(victim))
@@ -821,8 +824,8 @@ void Collective::onEvent(const GameEvent& event) {
         }
       },
       [&](const TrapDisarmed& info) {
-        control->addMessage(PlayerMessage(info.creature->getName().a() +
-            " disarms a " + getGame()->getContentFactory()->furniture.getData(info.type).getName(),
+        control->addMessage(PlayerMessage(TSentence("DISARMS", info.creature->getName().a(),
+            getGame()->getContentFactory()->furniture.getData(info.type).getName()),
             MessagePriority::HIGH).setPosition(info.pos));
       },
       [&](const MovementChanged& info) {
@@ -842,24 +845,26 @@ void Collective::onEvent(const GameEvent& event) {
 
 void Collective::onMinionKilled(Creature* victim, Creature* killer) {
   if (killer)
-    addRecordedEvent("the slaying of " + victim->getName().aOrTitle() + " by " + killer->getName().a());
+    addRecordedEvent(TSentence("THE_SLAYING_OF", victim->getName().aOrTitle(), killer->getName().a()));
   else
-    addRecordedEvent("the death of " + victim->getName().aOrTitle());
+    addRecordedEvent(TSentence("THE_DEATH_OF", victim->getName().aOrTitle()));
   if (killer && creatureConsideredPlayer(killer))
     attackedByPlayer = true;
   auto factory = getGame()->getContentFactory();
-  string deathDescription = victim->getAttributes().getDeathDescription(factory);
   control->onMemberKilledOrStunned(victim, killer);
   if (hasTrait(victim, MinionTrait::PRISONER) && killer && getCreatures().contains(killer))
     returnResource({ResourceId("PRISONER_HEAD"), 1});
   if (!hasTrait(victim, MinionTrait::FARM_ANIMAL) && !hasTrait(victim, MinionTrait::SUMMONED)) {
+    auto& deathDescription = victim->getAttributes().getDeathDescription(factory);
     decreaseMoraleForKill(killer, victim);
     if (killer)
-      control->addMessage(PlayerMessage(victim->getName().a() + " is " + deathDescription + " by " + killer->getName().a(),
+      control->addMessage(PlayerMessage(TSentence("IS_KILLED_BY", {
+          victim->getName().a(), deathDescription, killer->getName().a()} ),
             MessagePriority::HIGH).setPosition(victim->getPosition()));
     else
-      control->addMessage(PlayerMessage(victim->getName().a() + " is " + deathDescription + ".", MessagePriority::HIGH)
-          .setPosition(victim->getPosition()));
+      control->addMessage(PlayerMessage(TSentence("IS_KILLED",
+          victim->getName().a(), deathDescription),
+            MessagePriority::HIGH).setPosition(victim->getPosition()));
   }
   if (hasTrait(victim, MinionTrait::FIGHTER) || hasTrait(victim, MinionTrait::LEADER))
     for (auto other : getCreatures(MinionTrait::FIGHTER))
@@ -880,16 +885,17 @@ void Collective::onMinionKilled(Creature* victim, Creature* killer) {
 }
 
 void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
-  string deathDescription = victim->getAttributes().getDeathDescription(getGame()->getContentFactory());
+  auto& deathDescription = victim->getAttributes().getDeathDescription(getGame()->getContentFactory());
   if (victim->getTribe() != getTribe()) {
     if (victim->getStatus().contains(CreatureStatus::LEADER))
-      addRecordedEvent("the slaying of " + victim->getName().aOrTitle());
+      addRecordedEvent(TSentence("THE_SLAYING_OF", victim->getName().aOrTitle(), killer->getName().a()));
     addMoraleForKill(killer, victim);
     kills.insert(victim);
     int difficulty = victim->getDifficultyPoints();
-    CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
+//    CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
     points += difficulty;
-    control->addMessage(PlayerMessage(victim->getName().a() + " is " + deathDescription + " by " + killer->getName().a())
+    control->addMessage(PlayerMessage(TSentence("IS_KILLED_BY", {
+          victim->getName().a(), deathDescription, killer->getName().a()} ))
         .setPosition(victim->getPosition()));
     if (victim->getStatus().contains(CreatureStatus::CIVILIAN)) {
       auto victimCollective = [&]() -> optional<string> {
@@ -1035,7 +1041,7 @@ void Collective::takeResource(const CostInfo& cost) {
           return;
       }
     }
-  FATAL << "Not enough " << getResourceInfo(cost.id).name << " missing " << num << " of " << cost.value;
+  FATAL << "Not enough " << getResourceInfo(cost.id).name.data() << " missing " << num << " of " << cost.value;
 }
 
 void Collective::returnResource(const CostInfo& amount) {
@@ -1060,7 +1066,7 @@ bool Collective::usesEquipment(const Creature* c) const {
     && !hasTrait(c, MinionTrait::PRISONER);
 }
 
-bool Collective::canUseEquipmentGroup(const Creature* c, const string& group) {
+bool Collective::canUseEquipmentGroup(const Creature* c, const TString& group) {
   for (auto& g : concat({getMinionGroupName(c)}, getAutomatonGroupNames(c)))
     if (!lockedEquipmentGroups.count(g) || !lockedEquipmentGroups.at(g).count(group))
       return true;
@@ -1117,11 +1123,9 @@ bool Collective::isKnownVillain(const Collective* col) const {
 void Collective::addKnownVillainLocation(const Collective* col) {
   knownVillainLocations.insert(col);
   if (immigration->suppliesRecruits(col))
-    control->addWindowMessage(ViewIdList{col->getName()->viewId},
-        "You have discovered " + col->getName()->full + "! Recruits are now available in the immigration UI.");
+    control->addWindowMessage(ViewIdList{col->getName()->viewId}, TSentence("RECRUITS_AVAILABLE", col->getName()->full));
   if (col->hasTradeItems() && !getTribe()->isEnemy(col->getTribe()))
-    control->addWindowMessage(ViewIdList{col->getName()->viewId},
-        "You have discovered " + col->getName()->full + "! Trading is now available in the villain UI.");
+    control->addWindowMessage(ViewIdList{col->getName()->viewId}, TSentence("TRADING_AVAILABLE", col->getName()->full));
 }
 
 bool Collective::isKnownVillainLocation(const Collective* col) const {
@@ -1474,7 +1478,7 @@ bool Collective::addKnownTile(Position pos) {
 void Collective::summonDemon(Creature* c) {
   auto id = Random.choose(CreatureId("SPECIAL_BLGN"), CreatureId("SPECIAL_BLGW"), CreatureId("SPECIAL_HLGN"), CreatureId("SPECIAL_HLGW"));
   Effect::summon(c, id, 1, 500_visible);
-  auto message = PlayerMessage(c->getName().the() + " has summoned a friendly demon!", MessagePriority::CRITICAL);
+  auto message = PlayerMessage(TSentence("HAS_SUMMONED_DEMON", c->getName().the()), MessagePriority::CRITICAL);
   c->thirdPerson(message);
   control->addMessage(message);
   getGame()->addAnalytics("milestone", "poetryDemon");
@@ -1533,7 +1537,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
         poem = ItemType(ItemTypes::EventPoem{event}).get(contentFactory);
         demon = false;
       }
-      control->addMessage(c->getName().a() + " writes " + poem->getAName());
+      control->addMessage(TSentence("WRITES_A", c->getName().a(), poem->getAName()));
       c->getPosition().dropItem(std::move(poem));
       if (demon)
         summonDemon(c);
@@ -1545,23 +1549,24 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
          furniture->getType() == FurnitureType("PAINTING_W"))) {
       bool demon = Random.roll(500);
       if (!recordedEvents.empty()|| demon) {
-        string name = "painting depicting " + [&] {
+        TString name = TSentence("PAINTING_DEPICTING", [&]() -> TString {
           if (demon) {
             summonDemon(c);
-            return "a demon"_s;
+            return TStringId("A_DEMON");
           } else {
             auto event = Random.choose(recordedEvents);
             recordedEvents.erase(event);
             return event;
           }
-        }();
+        }());
         auto viewId = string(furniture->getViewObject()->id().data());
         auto f = pos.first.modFurniture(furniture->getLayer());
         f->getViewObject()->setId(ViewId(("painting" + viewId.substr(viewId.size() - 2)).data()));
         f->setName(name);
         if (!demon) {
-          c->thirdPerson("makes a " + name);
-          control->addMessage(c->getName().a() + " makes a " + name);
+          auto sentence = TSentence("MAKES_A", c->getName().a(), name);
+          c->thirdPerson(sentence);
+          control->addMessage(sentence);
         }
         return;
       }
@@ -1622,9 +1627,9 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
             getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
           if (auto stat = item->getProducedStat())
             getGame()->getStatistics().add(*stat);
-          control->addMessage(c->getName().a() + " " + workshopInfo.verb + " " + item->getAName());
-          if (item->getName() == "devotional medal" && !recordedEvents.empty())
-            item->setDescription("Depicts " + Random.choose(recordedEvents));
+          control->addMessage(TSentence("MINION_PRODUCES", {c->getName().a(), workshopInfo.verb, item->getAName()}));
+          if (item->getName() == TStringId("DEVOTIONAL_MEDAL") && !recordedEvents.empty())
+            item->setDescription(TSentence("DEPICTS", Random.choose(recordedEvents)));
           if (auto& minion = item->getAssembledMinion())
             minion->assemble(this, item.get(), pos.first);
           else
@@ -1693,11 +1698,11 @@ void Collective::onExternalEnemyKilled(const std::string& name) {
   dungeonLevel.onKilledWave();
 }
 
-const unordered_set<string>& Collective::getRecordedEvents() const {
+const HashSet<TString>& Collective::getRecordedEvents() const {
   return recordedEvents;
 }
 
-void Collective::addRecordedEvent(string s) {
+void Collective::addRecordedEvent(TString s) {
   if (!allRecordedEvents.count(s)) {
     allRecordedEvents.insert(s);
     recordedEvents.insert(std::move(s));
@@ -1706,10 +1711,10 @@ void Collective::addRecordedEvent(string s) {
 
 void Collective::onCopulated(Creature* who, Creature* with) {
   PROFILE;
-  control->addMessage(who->getName().a() + " makes love to " + with->getName().a());
+  control->addMessage(TSentence("COPULATEES", who->getName().a(), with->getName().a()));
   who->getAttributes().copulationClientEffect.apply(with->getPosition(), who);
   who->getAttributes().copulationEffect.apply(who->getPosition());
-  addRecordedEvent("a sex act between " + who->getName().a() + " and " + with->getName().a());
+  addRecordedEvent(TSentence("A_SEX_ACT_BETWEEN", who->getName().a(), with->getName().a()));
 }
 
 MinionEquipment& Collective::getMinionEquipment() {

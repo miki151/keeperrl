@@ -450,7 +450,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   if (auto error = gameConfig.readObject(translations, GameConfigId::TRANSLATIONS, nullptr))
     USER_FATAL << *error;
   options.setChoices(OptionId::LANGUAGE, translations.getLanguages());
-  GuiFactory guiFactory(renderer, &clock, &options, &translations, soundLibrary, freeDataPath.subdirectory("images"));
+  GuiFactory guiFactory(renderer, &clock, &options, &translations, soundLibrary, freeDataPath);
   TileSet tileSet(paidDataPath.subdirectory("images"), modsDir, freeDataPath.subdirectory("ui"));
   renderer.setTileSet(&tileSet);
   unique_ptr<fx::FXManager> fxManager;

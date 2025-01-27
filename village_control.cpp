@@ -322,7 +322,7 @@ void VillageControl::considerCancellingAttack() {
             ));
           collective->getTeams().setTeamOrder(team, TeamOrder::FLEE, true);
           if (auto& name = collective->getName())
-            enemyCollective->addRecordedEvent("resisting the attack of " + name->full);
+            enemyCollective->addRecordedEvent(TSentence("RESISTING_THE_ATTACK_OF", name->full));
           cancelledAttacks.insert(team);
         }
       }

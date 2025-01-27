@@ -149,12 +149,11 @@ PPlayerControl PlayerControl::create(Collective* col, vector<string> introText, 
 PlayerControl::~PlayerControl() {
 }
 
-static string getPopulationIncreaseDescription(const Furniture::PopulationInfo& info, const string& populationString) {
-  auto ret = "Increases " + populationString + " limit by " + toString(info.increase);
-  if (auto limit = info.limit)
-    ret += ", up to " + toString(*limit);
-  ret += ".";
-  return ret;
+static TString getPopulationIncreaseDescription(const Furniture::PopulationInfo& info, const TString& populationString) {
+  if (info.limit)
+    return TSentence("INCREASES_POP_LIMIT_BY_UP_TO", {populationString, toString(info.increase), toString(*info.limit)});
+  else
+    return TSentence("INCREASES_POP_LIMIT_BY", populationString, toString(info.increase));
 }
 
 void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const KeeperCreatureInfo& keeperCreatureInfo) {
@@ -167,19 +166,22 @@ void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const
       for (auto type : furniture->types) {
         double luxury = factory->furniture.getData(type).getLuxury();
         if (luxury > 0) {
-          info.help += " Increases luxury by " + toString(luxury) + ".";
+          info.help = TSentence("COMBINE_SENTENCES", std::move(info.help),
+              TSentence("INCREASES_LUXURY_BY", toString(luxury)));
           break;
         }
       }
       auto increase = factory->furniture.getData(furniture->types[0]).getPopulationIncrease();
       if (increase.increase > 0) {
-        info.help += " " + getPopulationIncreaseDescription(increase, keeperCreatureInfo.populationString);
+        info.help = TSentence("COMBINE_SENTENCES", std::move(info.help),
+            getPopulationIncreaseDescription(increase, keeperCreatureInfo.populationString));
         if (increase.limit)
           const_cast<optional<int>&>(furniture->limit) = int(*increase.limit / increase.increase);
       }
       auto& maxTraining = factory->furniture.getData(furniture->types[0]).getMaxTraining();
       for (auto& elem : maxTraining)
-        info.help += " Adds up to " + toString(elem.second) + " " + factory->attrInfo.at(elem.first).name + " levels.";
+        info.help = TSentence("COMBINE_SENTENCES", std::move(info.help),
+            TSentence("ADDS_TRAINING_LEVELS", toString(elem.second), factory->attrInfo.at(elem.first).name));
     }
 }
 
@@ -322,8 +324,8 @@ static ScriptedUIDataElems::Record getCreatureRecord(const ContentFactory* facto
   return ScriptedUIDataElems::Record {{
       {"view_id", creature->getViewObject().getViewIdList()},
       {"attack_view_id", ViewIdList{bestAttack.viewId}},
-      {"attack_value", toString(bestAttack.value)},
-      {"name", capitalFirst(creature->getName().aOrTitle())},
+      {"attack_value", TString(toString(bestAttack.value))},
+      {"name", TString(TSentence("CAPITAL_FIRST", creature->getName().aOrTitle()))},
   }};
 }
 
@@ -407,7 +409,7 @@ void PlayerControl::render(View* view) {
   if (!tutorial && !introText.empty() && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     view->updateView(this, false);
     for (auto& msg : introText)
-      view->presentText("", msg);
+      view->presentText(none, msg);
     introText.clear();
   }
 }
@@ -561,8 +563,8 @@ static ViewId getSlotViewId(EquipmentSlot slot) {
 
 static ItemInfo getEmptySlotItem(EquipmentSlot slot, bool locked) {
   return CONSTRUCT(ItemInfo,
-    c.name = "";
-    c.fullName = "";
+    c.name = ""_s;
+    c.fullName = ""_s;
     c.slot = slot;
     c.number = 1;
     c.viewId = {getSlotViewId(slot)};
@@ -595,8 +597,8 @@ void PlayerControl::fillPromotions(Creature* creature, CollectiveInfo& info) con
 
 static ItemInfo getEmptySteedItemInfo(const ContentFactory* factory) {
   return CONSTRUCT(ItemInfo,
-    c.name = "";
-    c.fullName = "";
+    c.name = ""_s;
+    c.fullName = ""_s;
     c.viewId = {ViewId("horse")};
     c.actions = {ItemAction::REPLACE_STEED};
   );
@@ -605,7 +607,10 @@ static ItemInfo getEmptySteedItemInfo(const ContentFactory* factory) {
 static ItemInfo getSteedItemInfo(const ContentFactory* factory, const Creature* rider, const Creature* steed,
     bool currentlyRiding) {
   return CONSTRUCT(ItemInfo,
-    c.name = steed->getName().bare() + (rider->getFirstCompanion() == steed ? " (companion)" : "");
+    if (rider->getFirstCompanion() == steed)
+      c.name = TSentence("ITEM_INFO_NAME_COMPANION_STEED", steed->getName().bare());
+    else
+      c.name = steed->getName().bare();
     c.fullName = steed->getName().aOrTitle();
     c.viewId = steed->getViewObject().getViewIdList();
     c.equiped = currentlyRiding;
@@ -679,13 +684,12 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
 static ScriptedUIDataElems::Record getItemRecord(const ContentFactory* factory, const vector<Item*> itemStack) {
   auto elem = ScriptedUIDataElems::Record{};
   elem.elems["view_id"] = itemStack[0]->getViewObject().getViewIdList();
-  string label;
+  TString label = itemStack[0]->getShortName(factory, nullptr, itemStack.size() > 1);
   if (itemStack.size() > 1)
-    label = toString(itemStack.size()) + " ";
-  label += itemStack[0]->getShortName(factory, nullptr, itemStack.size() > 1);
-  elem.elems["name"] = capitalFirst(std::move(label));
+    label = TSentence("MULTIPLE_ITEMS", toString(itemStack.size()), std::move(label));
+  elem.elems["name"] = TString(TSentence("CAPITAL_FIRST", std::move(label)));
   auto tooltipElems = ScriptedUIDataElems::List {
-    capitalFirst(itemStack[0]->getNameAndModifiers(factory))
+    TString(TSentence("CAPITAL_FIRST", itemStack[0]->getNameAndModifiers(factory)))
   };
   for (auto& elem : itemStack[0]->getDescription(factory))
     tooltipElems.push_back(elem);
@@ -696,7 +700,7 @@ static ScriptedUIDataElems::Record getItemRecord(const ContentFactory* factory, 
 static ScriptedUIDataElems::Record getItemOwnerRecord(const ContentFactory* factory, const Creature* creature,
     int count) {
   auto ret = getCreatureRecord(factory, creature);
-  ret.elems["count"] = toString(count);
+  ret.elems["count"] = TString(toString(count));
   return ret;
 }
 
@@ -720,15 +724,15 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
   vector<vector<Item*>> usedStacks = Item::stackItems(factory, usedItems,
       [&](const Item* it) {
         const Creature* c = getCreature(*collective->getMinionEquipment().getOwner(it));
-        return c->getName().bare() + toString<int>(c->getBestAttack(factory).value);});
+        return c->getName().bare().data() + toString<int>(c->getBestAttack(factory).value);});
   auto data = ScriptedUIDataElems::Record{};
-  data.elems["title"] = "Available items:"_s;
-  data.elems["is_equipment_choice"] = "blabla"_s;
+  data.elems["title"] = TString(TStringId("AVAILABLE_ITEMS_TITLE"));
+  data.elems["is_equipment_choice"] = TString("blabla"_s);
   auto itemsList = ScriptedUIDataElems::List{};
   Item* ret = nullptr;
   for (Item* it : currentItems) {
     auto r = getItemRecord(factory, {it});
-    r.elems["equiped"] = "blabla"_s;
+    r.elems["equiped"] = TString("blabla"_s);
     r.elems["callback"] = ScriptedUIDataElems::Callback {
         [it, &ret] { ret = it; return true; }
     };
@@ -758,13 +762,14 @@ static ScriptedUIDataElems::Record getSteedItemRecord(const ContentFactory* fact
     const Creature* rider) {
   auto elem = ScriptedUIDataElems::Record{};
   elem.elems["view_id"] = steed->getViewObject().getViewIdList();
-  if (steed == rider->getFirstCompanion())
-    elem.elems["name"] = capitalFirst(steed->getName().bare()) + " (companion)"_s;
+  if (rider->getFirstCompanion() == steed)
+    elem.elems["name"] = TString(TSentence("ITEM_INFO_NAME_COMPANION_STEED",
+        TSentence("CAPITAL_FIRST", steed->getName().bare())));
   else
-    elem.elems["name"] = capitalFirst(steed->getName().bare());
+     elem.elems["name"] = TString(TSentence("CAPITAL_FIRST", steed->getName().bare()));
   elem.elems["tooltip"] = ScriptedUIDataElems::List {
-    capitalFirst(steed->getName().aOrTitle()),
-    capitalFirst(steed->getAttributes().getDescription(factory))
+    TString(TSentence("CAPITAL_FIRST", steed->getName().aOrTitle())),
+    TString(TSentence("CAPITAL_FIRST", steed->getAttributes().getDescription(factory)))
   };
   return elem;
 }
@@ -787,11 +792,11 @@ Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSt
   vector<vector<Creature*>> usedStacks = Creature::stack(usedItems,
       [&](Creature* it) {
         const Creature* c = collective->getSteedOrRider(it);
-        return c->getName().bare() + toString<int>(c->getBestAttack(factory).value);
+        return c->getName().bare().data() + toString<int>(c->getBestAttack(factory).value);
       });
   auto data = ScriptedUIDataElems::Record{};
-  data.elems["title"] = "Available steeds (" + combine(creature->getSteedSizes()) + "):"_s;
-  data.elems["is_equipment_choice"] = "blabla"_s;
+  data.elems["title"] = TString(TSentence("AVAILABLE_STEEDS", combineWithAnd(creature->getSteedSizes())));
+  data.elems["is_equipment_choice"] = TString("blabla"_s);
   auto itemsList = ScriptedUIDataElems::List{};
   Creature* ret = nullptr;
   for (auto& stack : concat(Creature::stack(availableItems), usedStacks)) {
@@ -826,13 +831,6 @@ optional<pair<ViewId, int>> PlayerControl::getCostObj(const optional<CostInfo>& 
     return getCostObj(*cost);
   else
     return none;
-}
-
-string PlayerControl::getMinionName(CreatureId id) const {
-  static map<CreatureId, string> names;
-  if (!names.count(id))
-    names[id] = getGame()->getContentFactory()->getCreatures().fromId(id, TribeId::getMonster())->getName().bare();
-  return names.at(id);
 }
 
 ViewId PlayerControl::getViewId(const BuildInfoTypes::BuildType& info) const {
@@ -892,7 +890,7 @@ vector<Button> PlayerControl::fillButtons() const {
     button.type.visit<void>(
         [&](const BuildInfoTypes::Furniture& elem) {
           PROFILE_BLOCK("Furniture")
-          string description;
+          TString description;
           if (elem.cost.value > 0) {
             int num = 0;
             for (auto type : elem.types)
@@ -910,7 +908,8 @@ vector<Button> PlayerControl::fillButtons() const {
             return res / elem.cost.value;
           }();
           if (!collective->getResourceInfo(elem.cost.id).viewId && availableNow)
-            description += " (" + toString(availableNow) + " available)";
+            description = combineSentences(std::move(description),
+                TSentence("BUILDINGS_COUNT_AVAILABLE", toString(availableNow)));
           buttons.push_back(Button{getViewId(button.type), button.name,
               getCostObj(elem.cost),
               description,
@@ -919,14 +918,14 @@ vector<Button> PlayerControl::fillButtons() const {
           },
         [&](const auto&) {
           PROFILE;
-          buttons.push_back({this->getViewId(button.type), button.name, none, "", CollectiveInfo::Button::ACTIVE});
+          buttons.push_back({this->getViewId(button.type), button.name, none, ""_s, CollectiveInfo::Button::ACTIVE});
         }
     );
-    vector<string> unmetReqText;
+    vector<TString> unmetReqText;
     for (auto& req : button.requirements) {
       PROFILE_BLOCK("Requirement")
       if (!BuildInfo::meetsRequirement(collective, req)) {
-        unmetReqText.push_back("Requires " + BuildInfo::getRequirementText(req) + ".");
+        unmetReqText.push_back(TSentence("BUILDING_REQUIRES", BuildInfo::getRequirementText(req)));
         buttons.back().state = CollectiveInfo::Button::INACTIVE;
       }
     }
@@ -943,47 +942,47 @@ vector<Button> PlayerControl::fillButtons() const {
   return buttons;
 }
 
-string PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
-  return trigger.visit<string>(
+TString PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
+  return trigger.visit<TString>(
       [&](const Timer&) {
-        return "evil";
+        return TStringId("YOUR_EVIL_TRIGGER");
       },
       [&](const RoomTrigger& t) {
         auto myCount = collective->getConstructions().getBuiltCount(t.type);
         return getGame()->getContentFactory()->furniture.getData(t.type).getName(myCount);
       },
       [&](const Power&) {
-        return "your power";
+        return TStringId("YOUR_POWER_TRIGGER");
       },
       [&](const FinishOff&) {
-        return "finishing you off";
+        return TStringId("FINISHING_YOU_TRIGGER");
       },
       [&](const SelfVictims&) {
-        return "killed tribe members";
+        return TStringId("KILLED_MEMBERS_TRIGGER");
       },
       [&](const EnemyPopulation&) {
-        return "population";
+        return TStringId("POPULATION_TRIGGER");
       },
       [&](const Resource& r) {
         return collective->getResourceInfo(r.resource).name;
       },
       [&](const StolenItems&) {
-        return "item theft";
+        return TStringId("THEFT_TRIGGER");
       },
       [&](const MiningInProximity&) {
-        return "breach of territory";
+        return TStringId("BREACH_TRIGGER");
       },
       [&](const Proximity&) {
-        return "proximity";
+        return TStringId("PROXIMITY_TRIGGER");
       },
       [&](const NumConquered&) {
-        return "aggression";
+        return TStringId("PROXIMITY_TRIGGER");
       },
       [&](Immediate) {
-        return "just doesn't like you";
+        return TStringId("IMMEDIATE_TRIGGER");
       },
       [&](AggravatingMinions) {
-        return "aggravated by minions";
+        return TStringId("AGGRAVATED_TRIGGER");
       }
   );
 }
@@ -1050,14 +1049,14 @@ void PlayerControl::handleTrading(Collective* ally) {
       return;
     bool chosen = false;
     auto data = ScriptedUIDataElems::Record{};
-    data.elems["title"] = "Trade with " + ally->getName()->full;
-    data.elems["budget"] = toString(budget);
-    data.elems["is_trade_or_pillage"] = "blabla"_s;
+    data.elems["title"] = TString(TSentence("TRADE_WITH", ally->getName()->full));
+    data.elems["budget"] = TString(toString(budget));
+    data.elems["is_trade_or_pillage"] = TString("blabla"_s);
     auto elems = ScriptedUIDataElems::List{};
     for (int i : All(options)) {
       auto& option = options[i];
       auto elem = getItemRecord(factory, option.items);
-      elem.elems["price"] = toString(option.items[0]->getPrice());
+      elem.elems["price"] = TString(toString(option.items[0]->getPrice()));
       if (!option.storage.empty() && option.items[0]->getPrice() <= budget)
         elem.elems["callback"] = ScriptedUIDataElems::Callback { [option, ally, &budget, &chosen, this] {
           CHECK(!option.storage.empty());
@@ -1123,8 +1122,8 @@ void PlayerControl::handlePillage(Collective* col) {
       return;
     auto data = ScriptedUIDataElems::Record{};
     bool chosen = false;
-    data.elems["title"] = "Pillage " + col->getName()->full;
-    data.elems["is_trade_or_pillage"] = "blabla"_s;
+    data.elems["title"] = TString(TSentence("PILLAGE", col->getName()->full));
+    data.elems["is_trade_or_pillage"] = TString("blabla"_s);
     data.elems["choose_all"] = ScriptedUIDataElems::Callback { [&] {
       for (auto& elem : options)
         if (!elem.storage.empty())
@@ -1150,7 +1149,7 @@ void PlayerControl::handlePillage(Collective* col) {
     if (!chosen)
       break;
     if (auto& name = col->getName())
-      collective->addRecordedEvent("the pillaging of " + name->full);
+      collective->addRecordedEvent(TSentence("THE_PILLAGING_OF", name->full));
   }
 }
 
@@ -1167,7 +1166,7 @@ ViewIdList PlayerControl::getMinionGroupViewId(Creature* c) const {
     return c->getViewObject().getViewIdList();
 }
 
-vector<Creature*> PlayerControl::getMinionGroup(const string& groupName) const {
+vector<Creature*> PlayerControl::getMinionGroup(const TString& groupName) const {
   return getCreatures().filter([&](auto c) {
     return collective->getMinionGroupName(c) == groupName || collective->getAutomatonGroupNames(c).contains(groupName);
   });
@@ -1204,8 +1203,8 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
     if (c->getUniqueId() == chosenCreature->id) {
       for (auto& elem : minionInfo.experienceInfo.training)
         if (auto requiredDummy = collective->getMissingTrainingFurniture(c, elem.attr))
-          elem.warning = "Requires " + getGame()->getContentFactory()->furniture.getData(*requiredDummy).getName() +
-              " to train further.";
+          elem.warning = TString(TSentence("REQUIRES_TO_TRAIN_FURTHER",
+              getGame()->getContentFactory()->furniture.getData(*requiredDummy).getName()));
       for (MinionActivity t : ENUM_ALL(MinionActivity))
         if (c->getAttributes().getMinionActivities().isAvailable(collective, c, t, true)) {
           minionInfo.minionTasks.push_back({t,
@@ -1243,7 +1242,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
 }
 
 vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(const vector<Creature*>& v) const {
-  map<string, CollectiveInfo::CreatureGroup> groups;
+  map<TString, CollectiveInfo::CreatureGroup> groups;
   for (Creature* c : v) {
     auto groupName = collective->getMinionGroupName(c);
     auto viewId = getMinionGroupViewId(c);
@@ -1257,7 +1256,7 @@ vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(const vec
 }
 
 vector<CollectiveInfo::CreatureGroup> PlayerControl::getAutomatonGroups(const vector<Creature*>& v) const {
-  map<string, CollectiveInfo::CreatureGroup> groups;
+  map<TString, CollectiveInfo::CreatureGroup> groups;
   for (Creature* c : v)
     for (auto& groupName : collective->getAutomatonGroupNames(c)) {
       auto viewId = getMinionGroupViewId(c);
@@ -1291,7 +1290,7 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
 ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option, int queuedCount) const {
   return CONSTRUCT(ItemInfo,
       c.number = queuedCount;
-      c.name = c.number == 1 ? option.name : toString(c.number) + " " + option.pluralName;
+      c.name = c.number == 1 ? option.name : TSentence("ITEM_COUNT", option.pluralName, toString(c.number));
       c.viewId = option.viewId;
       c.price = getCostObj(option.cost * queuedCount);
       if (option.techId && !collective->getTechnology().researched.count(*option.techId)) {
@@ -1315,22 +1314,24 @@ void PlayerControl::acquireTech(TechId tech) {
 
 void PlayerControl::fillTechUnlocks(CollectiveInfo::LibraryInfo::TechInfo& techInfo) const {
   auto tech = techInfo.id;
-  for (auto& t2 : collective->getTechnology().getAllowed(tech))
-    techInfo.unlocks.push_back({{ViewId("book")}, t2.data(), "technology"});
+  auto technology = collective->getTechnology();
+  for (auto& t2 : technology.getAllowed(tech))
+    techInfo.unlocks.push_back({{ViewId("book")}, technology.techs.at(t2).name.value_or(string(t2.data())),
+        TStringId("TECHNOLOGY_LABEL")});
   for (auto& elem : buildInfo)
     for (auto& r : elem.requirements)
       if (r == tech)
-        techInfo.unlocks.push_back({{getViewId(elem.type)}, elem.name, "constructions"});
+        techInfo.unlocks.push_back({{getViewId(elem.type)}, elem.name, TStringId("CONSTRUCTIONS_LABEL")});
   for (auto& workshop : collective->getWorkshops().types)
     for (auto& option : workshop.second.getOptions())
       if (!option.hideFromTech && option.techId == tech)
-        techInfo.unlocks.push_back({{option.viewId}, option.name, "crafted items"});
+        techInfo.unlocks.push_back({{option.viewId}, option.name, TStringId("CRAFTED_ITEMS_LABEL")});
   auto& creatureFactory = getGame()->getContentFactory()->getCreatures();
   for (auto& immigrant : collective->getImmigration().getImmigrants())
     for (auto& req : immigrant.requirements)
       if (req.type.getValueMaybe<TechId>() == tech) {
         techInfo.unlocks.push_back({creatureFactory.getViewId(immigrant.getId(0)),
-            creatureFactory.getName(immigrant.getId(0)), "immigrants"});
+            creatureFactory.getName(immigrant.getId(0)), TStringId("IMMIGRANTS_LABEL")});
       }
 }
 
@@ -1347,6 +1348,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
     info.available.emplace_back();
     auto& techInfo = info.available.back();
     techInfo.id = tech;
+    techInfo.name = technology.getName(tech);
     techInfo.description = technology.techs.at(tech).description;
     techInfo.active = !info.warning && dungeonLevel.numResearchAvailable() > 0;
     fillTechUnlocks(techInfo);
@@ -1430,7 +1432,7 @@ vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getFurnaceQueue() const {
   for (auto& item : collective->getFurnace().getQueued()) {
         auto itemInfo = getItemInfo(getGame()->getContentFactory(), {item.item.get()}, false, false, false);
         itemInfo.price = getCostObj(collective->getFurnace().getRecycledAmount(item.item.get()));
-    ret.push_back(CollectiveInfo::QueuedItemInfo{item.state, true, std::move(itemInfo), none, {}, {"", 0}, i});
+    ret.push_back(CollectiveInfo::QueuedItemInfo{item.state, true, std::move(itemInfo), none, {}, {""_s, 0}, i});
     ++i;
   }
   return ret;
@@ -1454,7 +1456,7 @@ vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions(int resourceIndex) 
             if (item->getIngredientType() == option.requireIngredient) {
               auto it = itemInfo;
               it.ingredient = getItemInfo(getGame()->getContentFactory(), {item}, false, false, false);
-              it.description.push_back("Crafted from " + item->getAName());
+              it.description.push_back(TSentence("CRAFTED_FROM", item->getAName()));
               ret.push_back({it, i, make_pair(item, pos), none,
                   make_pair(!option.upgradeType.empty() ? getItemTypeName(option.upgradeType[0]) : "", option.maxUpgrades)});
             }
@@ -1473,9 +1475,9 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
   CollectiveInfo::QueuedItemInfo ret {item.state,
         item.paid && (!item.item.requiresUpgrades || !item.runes.empty()),
         getWorkshopItem(item.item, cnt), getImmigrantCreatureInfo(contentFactory, item.item.type),
-        {}, {"", 0}, itemIndex};
+        {}, {""_s, 0}, itemIndex};
   if (!item.paid)
-    ret.itemInfo.description.push_back("Cannot afford item");
+    ret.itemInfo.description.push_back(TStringId("CANNOT_AFFORD_ITEM"));
   auto addItem = [this, &ret] (const ItemUpgradeInfo& info, const Item* it, bool used) {
     auto viewId = it->getViewObject().id();
     auto name = it->getName();
@@ -1497,11 +1499,11 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
       addItem(*upgradeInfo, it.get(), true);
     else {
       ret.itemInfo.ingredient = getItemInfo(getGame()->getContentFactory(), {it.get()}, false, false, false);
-      ret.itemInfo.description.push_back("Crafted from " + it->getAName());
+      ret.itemInfo.description.push_back(TSentence("CRAFTED_FROM", it->getAName()));
     }
   }
   if (item.runes.empty() && item.item.requiresUpgrades)
-    ret.itemInfo.unavailableReason = "Item cannot be crafted without applied upgrades.";
+    ret.itemInfo.unavailableReason = TStringId("ITEM_REQUIRES_UPGRADES");
   ret.itemInfo.actions = {ItemAction::REMOVE};
   ret.maxUpgrades = !item.item.upgradeType.empty() ? make_pair(getItemTypeName(item.item.upgradeType[0]), item.item.maxUpgrades)
       : make_pair(""_s, 0);
@@ -1511,7 +1513,7 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
 static bool runesEqual(const vector<PItem>& v1, const vector<PItem>& v2) {
   if (v1.size() != v2.size())
     return false;
-  HashSet<pair<string, ViewId>> elems;
+  HashSet<pair<TString, ViewId>> elems;
   for (auto& elem : v1)
     elems.insert(make_pair(elem->getName(), elem->getViewObject().id()));
   for (auto& elem : v2)
@@ -1549,9 +1551,9 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
         {},
         chosenWorkshop->resourceIndex,
-        "",
+        ""_s,
         getFurnaceOptions().transform([](auto& option) {
-            return CollectiveInfo::OptionInfo{option.itemInfo, none, {"", 0}}; }),
+            return CollectiveInfo::OptionInfo{option.itemInfo, none, {""_s, 0}}; }),
         getFurnaceQueue(),
         index,
         "To be smelted:",
@@ -1565,7 +1567,7 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
     auto resourceTabs = getResourceTabs(workshop);
     auto resourceViewIds = resourceTabs
         .transform([&](auto id) { return collective->getResourceInfo(id).viewId.value_or(ViewId("grave")); });
-    string tabName;
+    TString tabName;
     if (!resourceTabs.empty())
       tabName = collective->getResourceInfo(resourceTabs[chosenWorkshop->resourceIndex]).name;
     auto& workshopInfo = factory->workshopInfo.at(chosenWorkshop->type);
@@ -1593,7 +1595,7 @@ void PlayerControl::acceptPrisoner(int index) {
     if (victim->getBody().isHumanoid())
       victim->getAttributes().increaseBaseAttr(AttrType("DIGGING"), 15);
     collective->takePrisoner(victim);
-    addMessage(PlayerMessage("You enslave " + victim->getName().a()).setPosition(victim->getPosition()));
+    addMessage(PlayerMessage(TSentence("YOU_ENSLAVE", victim->getName().a())).setPosition(victim->getPosition()));
     getGame()->achieve(AchievementId("captured_prisoner"));
     for (auto& elem : copyOf(stunnedCreatures))
       if (elem.first == victim)
@@ -1648,14 +1650,13 @@ vector<ImmigrantDataInfo> PlayerControl::getUnrealizedPromotionsImmigrantData() 
       ret.back().requirements.push_back("Creature requires more luxurious quarters to achieve full potential"_s);
       auto req = getRequiredLuxury(c->getCombatExperience(false, false));
       if (req == 0)
-        ret.back().requirements.push_back("Requires personal quarters.");
+        ret.back().requirements.push_back(TStringId("REQUIRES_PERSONAL_QUARTERS"));
       else {
         auto cur = collective->getZones().getQuartersLuxury(c->getUniqueId());
         if (!cur)
-          ret.back().requirements.push_back("Requires personal quarters with total luxury: " + getLuxuryString(req));
+          ret.back().requirements.push_back(TSentence("REQUIRES_PERSONAL_QUARTERS_WITH_LUXURY", getLuxuryString(req)));
         else
-          ret.back().requirements.push_back("Requires more luxury in quarters: " + getLuxuryString(req - *cur) +
-              " (" + getLuxuryString(req) + " in total)");
+          ret.back().requirements.push_back(TSentence("REQUIRES_MORE_LUXURY", getLuxuryString(req - *cur), getLuxuryString(req)));
       }
       ret.back().creature = getImmigrantCreatureInfo(c, contentFactory);
       ret.back().id = -123456;
@@ -1690,21 +1691,21 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
     const int numPrisoners = collective->getCreatures(MinionTrait::PRISONER)
         .filter([&](auto other) {  return CollectiveConfig::getPrisonBedType(other) == prisonBedType; })
         .size();
-    vector<string> requirements;
+    vector<TString> requirements;
     const auto prisonSize = getPrisonSize(prisonBedType);
     const int missingSize = numPrisoners + 1 - prisonSize;
     if (missingSize > 0) {
       if (prisonSize == 0)
-        requirements.push_back("Requires a "_s + getName(prisonBedType));
+        requirements.push_back(TSentence("REQUIRES_A", getName(prisonBedType)));
       else
-        requirements.push_back("Requires " + getPlural("more "_s + getName(prisonBedType), missingSize));
+        requirements.push_back(TSentence("REQUIRES_X_MORE", getPlural(prisonBedType), toString(missingSize)));
     }
     if (stack.collective)
-      requirements.push_back("Requires conquering " + stack.collective->getName()->full);
+      requirements.push_back(TSentence("REQUIRES_CONQUERING", stack.collective->getName()->full));
     ret.emplace_back();
     ret.back().requirements = requirements;
     ret.back().creature = getImmigrantCreatureInfo(c, contentFactory);
-    ret.back().creature.name += " (prisoner)";
+    ret.back().creature.name = TSentence("PRISONER_FROM_NAME",  std::move(ret.back().creature.name));
     ret.back().count = stack.creatures.size() == 1 ? none : optional<int>(stack.creatures.size());
     ret.back().timeLeft = c->getTimeRemaining(LastingEffect::STUNNED);
     ret.back().id = index;
@@ -1717,14 +1718,14 @@ vector<ImmigrantDataInfo> PlayerControl::getNecromancerImmigrationHelp() const {
   vector<ImmigrantDataInfo> ret;
   ret.push_back(ImmigrantDataInfo());
   ret.back().creature = ImmigrantCreatureInfo {
-    "Build a morgue table to craft undead.",
+    TStringId("BUILD_MORGUE_HINT"),
     {ViewId("morgue_table")},
     {},
     {},
     {}
   };
   ret.back().id = -1000;
-  ret.back().info = {"You can upgrade your minions while crafting them by using balsams made in the laboratory."};
+  ret.back().info = {TStringId("BALSAMS_UPGRADE_HINT")};
   return ret;
 }
 
@@ -1732,38 +1733,40 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
   using TraitInfo = ImmigrantDataInfo::SpecialTraitInfo;
   return trait.visit<ImmigrantDataInfo::SpecialTraitInfo>(
       [&] (const ExtraTraining& t) {
-        return TraitInfo{"Extra "_s + factory->attrInfo.at(t.type).name + " training potential", false};
+        return TraitInfo{TSentence("EXTRA_TRAINING_POTENTIAL", factory->attrInfo.at(t.type).name), false};
       },
       [&] (const CompanionInfo& t) {
-        return TraitInfo{capitalFirst(factory->getCreatures().getName(t.creatures[0])) + " companion", false};
+        return TraitInfo{TSentence("IMMIGRANT_COMPANION",
+          TSentence("CAPITAL_FIRST", factory->getCreatures().getName(t.creatures[0]))), false};
       },
       [&] (const AttrBonus& t) {
-        return TraitInfo{toStringWithSign(t.increase) + " " + factory->attrInfo.at(t.attr).name, t.increase <= 0};
+        return TraitInfo{TSentence("IMMIGRANT_ATTR_BONUS", toStringWithSign(t.increase), factory->attrInfo.at(t.attr).name), t.increase <= 0};
       },
       [&] (const SpecialAttr& t) {
-        return TraitInfo{toStringWithSign(t.value) + " " + factory->attrInfo.at(t.attr).name + " " +
-            t.predicate.getName(factory),
+        return TraitInfo{
+            TSentence("IMMIGRANT_SPECIAL_ATTR_BONUS", {toStringWithSign(t.value), factory->attrInfo.at(t.attr).name,
+                t.predicate.getName(factory)}),
             t.value < 0};
       },
       [&] (const Lasting& effect) {
         auto adj = getAdjective(effect.effect, factory);
         if (effect.time)
-          return TraitInfo{"Temporary trait: "_s + adj + " (" + toString(*effect.time) + " turns)",
+          return TraitInfo{TSentence("TEMPORARY_TRAIT", adj, toString(*effect.time)),
               isConsideredBad(effect.effect, factory)};
         else
-          return TraitInfo{"Permanent trait: "_s + adj, isConsideredBad(effect.effect, factory)};
+          return TraitInfo{TSentence("PERMANENT_TRAIT", adj), isConsideredBad(effect.effect, factory)};
       },
       [&] (WorkshopType type) {
-        return TraitInfo{"Legendary craftsman at: " + factory->workshopInfo.at(type).name, false};
+        return TraitInfo{TSentence("LEGENDARY_CRAFTSMAN_AT", factory->workshopInfo.at(type).name), false};
       },
       [&] (ExtraBodyPart part) {
         if (part.count == 1)
-          return TraitInfo{"Extra "_s + getName(part.part), false};
+          return TraitInfo{TSentence("EXTRA_BODY_PART", getName(part.part)), false};
         else
-          return TraitInfo{toString(part.count) + " extra "_s + getName(part.part) + "s", false};
+          return TraitInfo{TSentence("EXTRA_BODY_PARTS", toString(part.count), getPlural(part.part)), false};
       },
       [&] (const ExtraIntrinsicAttack& a) {
-        return TraitInfo{capitalFirst(a.item.get(factory)->getName()), false};
+        return TraitInfo{TSentence("CAPITAL_FIRST", a.item.get(factory)->getName()), false};
       },
       [&] (const OneOfTraits&) -> TraitInfo {
         FATAL << "Can't draw traits alternative";
@@ -1790,7 +1793,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
     optional<TimeInterval> timeRemaining;
     if (auto time = candidate.getEndTime())
       timeRemaining = *time - getGame()->getGlobalTime();
-    vector<string> infoLines;
+    vector<TString> infoLines;
     Creature* c = candidate.getCreatures()[0];
     candidate.getInfo().visitRequirements(makeVisitor(
         [&](const Pregnancy&) {
@@ -1805,19 +1808,16 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
         },
         [&](const RecruitmentInfo& info) {
           auto recruits = info.getAvailableRecruits(collective, candidate.getInfo().getNonRandomId(0));
-          infoLines.push_back(toString(recruits.size()) + " recruits available");
+          infoLines.push_back(TSentence("RECRUITS_AVAILABLE", toString(recruits.size())));
           c = recruits[0];
         },
         [&](const auto&) {}
     ));
-    string name = count > 1 ? c->getName().groupOf(count) : c->getName().title();
-    if (auto& s = c->getName().stackOnly())
-      name += " (" + *s + ")";
     if (count > 1)
-      infoLines.push_back("The entire group takes up one population spot");
+      infoLines.push_back(TStringId("GROUP_TAKES_ONE_POP"));
     for (auto trait : candidate.getInfo().getTraits())
       if (auto desc = getImmigrantDescription(trait))
-        infoLines.push_back(desc);
+        infoLines.push_back(*desc);
     info.immigration.push_back(ImmigrantDataInfo());
     info.immigration.back().requirements = immigration.getMissingRequirements(candidate);
     info.immigration.back().info = infoLines;
@@ -1855,50 +1855,51 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
     auto creatureId = elem->getNonRandomId(0);
     Creature* c = getStats(creatureId);
     optional<pair<ViewId, int>> costObj;
-    vector<string> requirements;
-    vector<string> infoLines;
+    vector<TString> requirements;
+    vector<TString> infoLines;
+    auto game = collective->getGame();
     elem->visitRequirements(makeVisitor(
         [&](const AttractionInfo& attraction) {
           int required = attraction.amountClaimed;
           if (required > 0)
-            requirements.push_back("Requires " + toString(required) + " " +
+            requirements.push_back(TSentence("REQUIRES_ATTRACTIONS", toString(required),
                 combineWithOr(attraction.types.transform([&](const AttractionType& type) {
-                  return AttractionInfo::getAttractionName(contentFactory, type, required); })));
+                  return AttractionInfo::getAttractionName(contentFactory, type, required); }))));
         },
         [&](const TechId& techId) {
-          requirements.push_back("Requires technology: "_s + techId.data());
+          requirements.push_back(TSentence("MISSING_TECHNOLOGY", collective->getTechnology().getName(techId)));
         },
         [&](const ImmigrantFlag& f) {
-          requirements.push_back("Requires " + f.value);
+          requirements.push_back(TStringId("REQUIRES_UNLOCKING"));
         },
         [&](const SunlightState& state) {
-          requirements.push_back("Will only join during the "_s + SunlightInfo::getText(state));
+          requirements.push_back(TSentence("IMMIGRANT_WONT_JOIN_DURING", game->getSunlightInfo().getText()));
         },
         [&](const FurnitureType& type) {
-          requirements.push_back("Requires at least one " + contentFactory->furniture.getData(type).getName());
+          requirements.push_back(TSentence("REQUIRES_FURNITURE", contentFactory->furniture.getData(type).getName()));
         },
         [&](const CostInfo& cost) {
           costObj = getCostObj(cost);
           if (!costObj && cost.id == ResourceId("DEMON_PIETY"))
-            requirements.push_back("Requires " + collective->getResourceInfo(cost.id).name);
+            requirements.push_back(TSentence("REQUIRES_RESOURCE", collective->getResourceInfo(cost.id).name));
         },
         [&](const ExponentialCost& cost) {
           auto& resourceInfo = collective->getResourceInfo(cost.base.id);
           if (resourceInfo.viewId)
             costObj = make_pair(*resourceInfo.viewId, (int) cost.base.value);
-          infoLines.push_back("Cost doubles for every " + toString(cost.numToDoubleCost) + " "
-              + c->getName().plural());
+          infoLines.push_back(TSentence("COST_DOUBLES_FOR_EVERY", toString(cost.numToDoubleCost),
+              c->getName().plural()));
           if (cost.numFree > 0)
-            infoLines.push_back("First " + toString(cost.numFree) + " " + c->getName().plural() + " are free");
+            infoLines.push_back(TSentence("FIRST_X_ARE_FREE", toString(cost.numFree), c->getName().plural()));
         },
         [&](const Pregnancy&) {
-          requirements.push_back("Requires a pregnant minion");
+          requirements.push_back(TStringId("REQUIRES_PREGNANT_SUCCUBUS"));
         },
         [&](const RecruitmentInfo& info) {
           if (!info.findEnemy(getGame()).empty())
-            requirements.push_back("Ally must be discovered and have recruits available");
+            requirements.push_back(TStringId("REQUIRES_ALLY_DISCOVERED_AND_HAVE_RECRUITS"));
           else
-            requirements.push_back("Recruit is not available in this game");
+            requirements.push_back(TStringId("ALLY_DOESNT_EXIST"));
         },
         [&](const TutorialRequirement&) {
         },
@@ -1911,7 +1912,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
       infoLines.push_back("Limited to " + toString(*limit) + " creatures");
     for (auto trait : elem->getTraits())
       if (auto desc = getImmigrantDescription(trait))
-        infoLines.push_back(desc);
+        infoLines.push_back(*desc);
     info.allImmigration.push_back(ImmigrantDataInfo());
     info.allImmigration.back().requirements = requirements;
     info.allImmigration.back().info = infoLines;
@@ -1922,10 +1923,12 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
   }
   if (collective->getConfig().canCapturePrisoners()) {
     info.allImmigration.push_back(ImmigrantDataInfo());
-    info.allImmigration.back().requirements = {"Requires 2 prison tiles", "Requires knocking out a hostile creature"};
-    info.allImmigration.back().info = {"Supplies your imp force", "Can be converted to your side using torture"};
+    info.allImmigration.back().requirements = {TStringId("REQUIRES_TWO_PRISON_TILES"),
+        TStringId("REQUIRES_KNOCKING_OUT_ENEMY")};
+    info.allImmigration.back().info = {TStringId("CONTRIBUTES_TO_WORK_FORCE"),
+        TStringId("CAN_BE_CONVERTED")};
     info.allImmigration.back().creature = ImmigrantCreatureInfo {
-        "prisoner",
+        TStringId("PRISONER"),
         {ViewId("prisoner")},
         {}
     };
@@ -2051,7 +2054,8 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     optional<UniqueEntity<Creature>::Id> creature;
     if (auto c = collective->getTaskMap().getOwner(task))
       creature = c->getUniqueId();
-    info.taskMap.push_back(CollectiveInfo::Task{task->getDescription(), creature, collective->getTaskMap().isPriorityTask(task)});
+    info.taskMap.push_back(CollectiveInfo::Task{task->getDescription(), creature,
+        collective->getTaskMap().isPriorityTask(task)});
     if (info.taskMap.size() > 200)
       break;
   }
@@ -2103,7 +2107,7 @@ void PlayerControl::updateMinionVisibility(const Creature* c) {
   }
 }
 
-void PlayerControl::addWindowMessage(ViewIdList viewId, const string& message) {
+void PlayerControl::addWindowMessage(ViewIdList viewId, const TString& message) {
   getView()->windowedMessage(viewId, message);
 }
 
@@ -2123,8 +2127,8 @@ void PlayerControl::onEvent(const GameEvent& event) {
           return;
         if (col->isDiscoverable() && info.byPlayer) {
           if (auto& name = col->getName()) {
-            collective->addRecordedEvent("the conquering of " + name->full);
-            addWindowMessage(ViewIdList{name->viewId}, "The tribe of " + name->full + " is destroyed.");
+            collective->addRecordedEvent(TSentence("THE_CONQUERING_OF", name->full));
+            addWindowMessage(ViewIdList{name->viewId}, TSentence("TRIBE_OF_IS_DESTROYED", name->full));
           } else
             addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
           collective->getDungeonLevel().onKilledVillain(col->getVillainType());
@@ -2164,14 +2168,12 @@ void PlayerControl::onEvent(const GameEvent& event) {
         if (getCreatures().contains(info.creature))
           for (auto item : info.items)
             if (!equipment.isOwner(item, info.creature) && !equipment.tryToOwn(info.creature, item))
-              getView()->presentText("",
-                  item->getTheName() + " won't be permanently assigned to creature because the equipment slot is locked.");
+              getView()->presentText(none, TSentence("ITEM_WONT_BE_ASSIGNED_BECAUSE_SLOT_LOCKED", item->getTheName()));
       },
       [&](const WonGame&) {
         getGame()->conquered(*collective->getName()->shortened, collective->getKills().getSize(),
             (int) collective->getDangerLevel() + collective->getPoints());
-        getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
-          "Other players will be able to invade it. To do this, press Escape and choose \'retire\'.");
+        getView()->presentText(none, TStringId("RETIRE_WHEN_READY"));
         getGame()->achieve(AchievementId("won_keeper"));
         auto& leaders = collective->getLeaders();
         if (leaders.size() == 1 && leaders[0]->getBody().getHealth() <= 0.05)
@@ -2187,18 +2189,17 @@ void PlayerControl::onEvent(const GameEvent& event) {
       },
       [&](const TechbookRead& info) {
         auto tech = info.technology;
-        vector<TechId> nextTechs = collective->getTechnology().getNextTechs();
-        if (!collective->getTechnology().researched.count(tech)) {
+        auto& technology = collective->getTechnology();
+        vector<TechId> nextTechs = technology.getNextTechs();
+        if (!technology.researched.count(tech)) {
           if (!nextTechs.contains(tech))
-            getView()->presentText("Information", "The tome describes the knowledge of "_s + tech.data()
-                + ", but you do not comprehend it.");
+            getView()->presentText(none, TSentence("TOME_CANT_BE_USED", technology.getName(tech)));
           else {
-            getView()->presentText("Information", "You have acquired the knowledge of "_s + tech.data());
+            getView()->presentText(none, TSentence("TOME_ACQUIRED", technology.getName(tech)));
             collective->acquireTech(tech, false);
           }
         } else {
-          getView()->presentText("Information", "The tome describes the knowledge of "_s + tech.data()
-              + ", which you already possess.");
+          getView()->presentText(none, TSentence("TOME_ALREADY_KNOWN", technology.getName(tech)));
         }
       },
       [&](const CreatureStunned& info) {
@@ -2272,7 +2273,7 @@ void PlayerControl::updateKnownLocations(const Position& pos) {
           collective->addKnownVillainLocation(col);
           if (col->isDiscoverable())
             if (auto& name = col->getName())
-              addMessage(PlayerMessage("Your minions discover the location of " + name->full,
+              addMessage(PlayerMessage(TSentence("MINIONS_DISCOVER_LOCATION", name->full),
                   MessagePriority::HIGH).setPosition(pos));
         }
       }
@@ -2419,7 +2420,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         index.insert(std::move(obj));
       }
   if (unknownLocations->contains(position))
-    index.insert(ViewObject(ViewId("unknown_monster"), ViewLayer::TORCH2, "Surprise"));
+    index.insert(ViewObject(ViewId("unknown_monster"), ViewLayer::TORCH2, TStringId("SURPRISE")));
 }
 
 Vec2 PlayerControl::getScrollCoord() const {
@@ -2541,10 +2542,10 @@ optional<TeamId> PlayerControl::getChosenTeam() const {
     return none;
 }
 
-void PlayerControl::setChosenCreature(optional<UniqueEntity<Creature>::Id> id, string group) {
+void PlayerControl::setChosenCreature(optional<UniqueEntity<Creature>::Id> id, TString group) {
   clearChosenInfo();
   if (id)
-    chosenCreature = ChosenCreatureInfo{*id, group};
+    chosenCreature = ChosenCreatureInfo{*id, std::move(group)};
   else
     chosenCreature = none;
 }
@@ -2553,7 +2554,7 @@ void PlayerControl::setChosenTeam(optional<TeamId> team, optional<UniqueEntity<C
   clearChosenInfo();
   chosenTeam = team;
   if (creature)
-    chosenCreature = ChosenCreatureInfo{ *creature, ""};
+    chosenCreature = ChosenCreatureInfo{ *creature, ""_s};
   else
     chosenCreature = none;
 }
@@ -2583,7 +2584,7 @@ void PlayerControl::setChosenWorkshop(optional<ChosenWorkshopInfo> info) {
   refreshHighlights();
 }
 
-void PlayerControl::minionDragAndDrop(Vec2 v, variant<string, UniqueEntity<Creature>::Id> who) {
+void PlayerControl::minionDragAndDrop(Vec2 v, variant<TString, UniqueEntity<Creature>::Id> who) {
   PROFILE;
   Position pos(v, getCurrentLevel());
   auto handle = [&] (Creature* c) {
@@ -2610,7 +2611,7 @@ void PlayerControl::minionDragAndDrop(Vec2 v, variant<string, UniqueEntity<Creat
     collective->setTask(c, std::move(task));
   };
   who.visit(
-      [&](const string& group) {
+      [&](const TString& group) {
         for (auto c : getMinionGroup(group))
           handle(c);
       },
@@ -2627,10 +2628,7 @@ void PlayerControl::takeScreenshot() {
 }
 
 void PlayerControl::handleBanishing(Creature* c) {
-  auto message = c->isAutomaton()
-      ? "Do you want to disassemble " + c->getName().the() + "?"
-      : "Do you want to banish " + c->getName().the() + " forever? "
-          "Banishing has a negative impact on morale of other minions.";
+  auto message = TSentence(c->isAutomaton() ? "CONFIRM_DISASSEMBLE" : "CONFIRM_BANISH", c->getName().the());
   if (getView()->yesOrNoPrompt(message)) {
     vector<Creature*> like = getMinionGroup(chosenCreature->group);
     sortMinionsForUI(like);
@@ -2671,7 +2669,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::CREATE_TEAM_FROM_GROUP: {
       optional<TeamId> team;
-      for (Creature* c : getMinionGroup(input.get<string>()))
+      for (Creature* c : getMinionGroup(input.get<TString>()))
         if (canControlInTeam(c)) {
           if (!team)
             team = getTeams().create({c});
@@ -2793,8 +2791,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
         auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
         if (info.itemIndex < workshop.getQueued().size()) {
           auto& item = workshop.getQueued()[info.itemIndex];
-          vector<pair<string, ViewId>> allItems;
-          auto getIndex = [&] (string name, ViewId viewId) {
+          vector<pair<TString, ViewId>> allItems;
+          auto getIndex = [&] (TString name, ViewId viewId) {
             for (int index : All(allItems))
               if (allItems[index] == make_pair(name, viewId))
                 return index;
@@ -2855,7 +2853,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       acquireTech(input.get<TechId>());
       break;
     case UserInputId::CREATURE_GROUP_BUTTON: {
-      auto group = input.get<string>();
+      auto group = input.get<TString>();
       auto creatures = getMinionGroup(group);
       if (!creatures.empty() &&
           (!chosenCreature || getChosenTeam() || !getCreature(chosenCreature->id) || chosenCreature->group != group)) {
@@ -2925,7 +2923,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
             setChosenTeam(none);
             break;
           case PlayerInfo::Action::RENAME:
-            if (auto name = getView()->getText("Rename minion", c->getName().first().value_or(""), maxFirstNameLength))
+            if (auto name = getView()->getText(TStringId("RENAME_MINION"), c->getName().first().value_or(""), maxFirstNameLength))
               c->getName().setFirst(*name);
             break;
           case PlayerInfo::Action::CONSUME:
@@ -3196,10 +3194,10 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
     },
     [&](const BuildInfoTypes::PlaceItem&) {
       ItemType item;
-      if (auto num = getView()->getNumber("Enter amount", Range(1, 10000), 1))
-        if (auto input = getView()->getText("Enter item type", "", 100)) {
+      if (auto num = getView()->getNumber(TStringId("ENTER_AMOUNT"), Range(1, 10000), 1))
+        if (auto input = getView()->getText(TStringId("ENTER_ITEM_TYPE"), "", 100)) {
           if (auto error = PrettyPrinting::parseObject(item, *input))
-            getView()->presentText("Sorry", "Couldn't parse \"" + *input + "\": " + *error);
+            getView()->presentText(TString("Sorry"_s), "Couldn't parse \"" + *input + "\": " + *error);
           else {
             position.dropItems(item.get(*num, getGame()->getContentFactory()));
           }
@@ -3283,7 +3281,7 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
         if (NOTNULL(position.getFurniture(FurnitureLayer::GROUND))->getViewObject()->id() == ViewId("keeper_floor")) {
           auto& obj = position.modFurniture(FurnitureLayer::GROUND)->getViewObject();
           obj->setId(ViewId("floor"));
-          obj->setDescription("Floor");
+          obj->setDescription(TStringId("FLOOR"));
           position.setNeedsRenderAndMemoryUpdate(true);
           updateSquareMemory(position);
         }
@@ -3394,9 +3392,9 @@ void PlayerControl::onSquareClick(Position pos) {
     for (auto c : creatures) {
       minions.push_back(PlayerInfo(c, getGame()->getContentFactory()));
       if (!hasQuarters(c))
-        minions.back().description = "No quarters assigned yet";
+        minions.back().description = TStringId("NO_QUARTERS_ASSIGNED_YET");
       else
-        minions.back().description.clear();
+        minions.back().description = TString();
     }
     if (auto id = getView()->chooseCreature("Assign these quarters to:", minions, "Cancel"))
       if (auto c = getCreature(*id))
@@ -3417,7 +3415,7 @@ optional<PlayerControl::QuartersInfo> PlayerControl::getQuarters(Vec2 pos) const
         luxury += pos.getTotalLuxuryPlusWalls();
       }
     optional<ViewIdList> viewId;
-    optional<string> name;
+    optional<TString> name;
     if (info->id)
       if (auto c = getCreature(*info->id)) {
         viewId = c->getViewObject().getViewIdList();
@@ -3479,7 +3477,7 @@ vector<vector<Vec2>> PlayerControl::getPathTo(UniqueEntity<Creature>::Id id, Vec
   return {};
 }
 
-vector<vector<Vec2>> PlayerControl::getGroupPathTo(const string& group, Vec2 v) const {
+vector<vector<Vec2>> PlayerControl::getGroupPathTo(const TString& group, Vec2 v) const {
   vector<vector<Vec2>> ret;
   auto level = getCurrentLevel();
   for (auto c : getMinionGroup(group))
@@ -3570,11 +3568,11 @@ void PlayerControl::checkKeeperDanger() {
     if (collective->hasTrait(c, MinionTrait::LEADER))
       return;
   for (auto keeper : collective->getLeaders()) {
-    auto prompt = [&] (const string& reason) {
+    auto prompt = [&] (TSentence reason) {
+      reason.params.push_back(collective->getLeaders().size() > 1 ? keeper->getName().a() : TStringId("THE_KEEPER"));
       auto res = getView()->multiChoice(
-          (collective->getLeaders().size() > 1 ? capitalFirst(keeper->getName().a()) : "The Keeper")
-              + " " + reason + ".",
-          {"Take control", "Dismiss for 200 turns", "Dismiss and don't show this message again"});
+          TSentence("CAPITAL_FIRST", std::move(reason)),
+          {TStringId("TAKE_CONTROL"), TStringId("DISMISS_FOR_200_TURNS"), TStringId("DISMISS_AND_DONT_ASK_AGAIN")});
       if (res == 0)
         controlSingle(keeper);
       else if (res == 2)
@@ -3587,14 +3585,14 @@ void PlayerControl::checkKeeperDanger() {
         nextKeeperWarning < collective->getGlobalTime()) {
       if (auto lastCombatIntent = keeper->getLastCombatIntent())
         if (lastCombatIntent->isHostile() && lastCombatIntent->time > getGame()->getGlobalTime() - 5_visible)
-          return prompt("is engaged in a fight with " + lastCombatIntent->attacker->getName().a());
+          return prompt(TSentence("IS_ENGAGED_IN_A_FIGHT_WITH", lastCombatIntent->attacker->getName().a()));
       if (keeper->isAffected(LastingEffect::POISON))
-        return prompt("is suffering from poisoning");
+        return prompt(TSentence("IS_SUFFERING_FROM_POISONING"));
       else if (keeper->isAffected(BuffId("BLEEDING")))
-        return prompt("is bleeding");
+        return prompt(TSentence("IS_BLEEDING"));
       else if (keeper->getBody().isWounded() &&
           leaderWoundedTime.getOrElse(keeper, -100_local) > getModel()->getLocalTime() - 10_visible)
-        return prompt("is wounded");
+        return prompt(TSentence("IS_WOUNDED"));
     }
   }
 }
@@ -3657,7 +3655,7 @@ void PlayerControl::update(bool currentlyActive) {
                 && c->getPosition().isSameLevel(controlled->getPosition())
                 && !collective->hasTrait(c, MinionTrait::SUMMONED)) {
               addToCurrentTeam(c);
-              controlled->privateMessage(PlayerMessage(c->getName().a() + " joins your team.",
+              controlled->privateMessage(PlayerMessage(TSentence("JOINS_YOUR_TEAM", c->getName().a()),
                   MessagePriority::HIGH));
               break;
             }
@@ -3717,10 +3715,13 @@ void PlayerControl::considerAllianceAttack() {
       return true;
     }();
     if (message) {
-      string allianceName = combine(allianceAttack->transform([](auto col) { return col->getName()->race; }));
-      collective->addRecordedEvent("the last alliance of " + allianceName);
+      vector<TString> races;
+      for (auto& col : *allianceAttack)
+        if (!races.contains(col->getName()->race))
+          races.push_back(col->getName()->race);
+      collective->addRecordedEvent(TSentence("THE_LAST_ALLIANCE_OF", combineWithAnd(races)));
       auto data = ScriptedUIDataElems::Record{};
-      data.elems["message"] = "The tribes of " + allianceName + " have formed an alliance against you.";
+      data.elems["message"] = TString(TSentence("TRIBES_HAVE_FORMED_ALLIANCE", races));
       data.elems["view_id"] = ViewIdList{allianceAttack->front()->getName()->viewId};
       getView()->scriptedUI("alliance_message", data);
       allianceAttack = none;
@@ -3736,16 +3737,17 @@ void PlayerControl::considerNewAttacks() {
       setScrollPos(attack.getCreatures()[0]->getPosition().plus(Vec2(0, 5)));
       getView()->refreshView();
       if (attack.getRansom() && collective->hasResource({ResourceId("GOLD"), *attack.getRansom()})) {
-        if (getView()->yesOrNoPrompt(capitalFirst(attack.getAttackerName()) + " demand " +
-            toString(attack.getRansom()) + " gold for not attacking. Agree?", attack.getAttackerViewId(), true)) {
+        if (getView()->yesOrNoPrompt(TSentence("DEMAND_GOLD",
+            TSentence("CAPITAL_FIRST", attack.getAttackerName()), toString(attack.getRansom())),
+            attack.getAttackerViewId(), true)) {
           collective->takeResource({ResourceId("GOLD"), *attack.getRansom()});
           attacker->onRansomPaid();
           auto name = attacker->getName();
-          getGame()->addAnalytics("ransom_paid", name ? name->full : "unknown");
+          getGame()->addAnalytics("ransom_paid", name ? name->full.data() : "unknown");
           break;
         }
       } else
-        addWindowMessage(attack.getAttackerViewId(), "You are under attack by " + attack.getAttackerName() + "!");
+        addWindowMessage(attack.getAttackerViewId(), TSentence("YOU_ARE_UNDER_ATTACK_BY", attack.getAttackerName()));
       getGame()->setCurrentMusic(MusicType::BATTLE);
       if (attacker)
         collective->addKnownVillain(attacker);
@@ -3827,8 +3829,7 @@ void PlayerControl::onConquered(Creature* victim, Creature* killer) {
   if (killer)
     if (auto& a = killer->getAttributes().killedByAchievement)
       game->achieve(*a);
-  game->gameOver(victim, collective->getKills().getSize(), "enemies",
-      collective->getDangerLevel() + collective->getPoints());
+  game->gameOver(victim, collective->getKills().getSize(), collective->getDangerLevel() + collective->getPoints());
   if (!collective->getTerritory().isEmpty())
     for (auto col : game->getCollectives())
       if (col != collective && col->getCreatures().contains(killer) && col->getConfig().xCanEnemyRetire() &&
@@ -3902,7 +3903,7 @@ static void considerAddingKeeperFloor(Position pos) {
   if (NOTNULL(pos.getFurniture(FurnitureLayer::GROUND))->getViewObject()->id() == ViewId("floor")) {
     auto& obj = pos.modFurniture(FurnitureLayer::GROUND)->getViewObject();
     obj->setId(ViewId("keeper_floor"));
-    obj->setDescription("Claimed floor");
+    obj->setDescription(TStringId("CLAIMED_FLOOR"));
   }
 }
 
@@ -3921,8 +3922,7 @@ CollectiveControl::DuelAnswer PlayerControl::acceptDuel(Creature* attacker) {
   }();
   if (!notified)
     return DuelAnswer::UNKNOWN;
-  if (getView()->yesOrNoPrompt(capitalFirst(attacker->getName().aOrTitle()) +
-      " challenges you to a duel. Do you accept?")) {
+  if (getView()->yesOrNoPrompt(TSentence("CAPITAL_FIRST", TSentence("CHALLENGES_YOU_TO_A_DUEL", attacker->getName().aOrTitle())))) {
     controlSingle(collective->getLeaders()[0]);
     return DuelAnswer::ACCEPT;
   }

@@ -15,9 +15,15 @@ FurnitureDroppedItems::FurnitureDroppedItems(FurnitureDroppedItems::DropData d) 
 
 vector<PItem> FurnitureDroppedItems::handle(Position pos, const Furniture* f, vector<PItem> items) const {
   for (auto& stack : Item::stackItems(pos.getGame()->getContentFactory(), getWeakPointers(items))) {
-    PlayerMessage message(stack[0]->getPluralTheNameAndVerb(stack.size(),
-        dropData.verbSingle, dropData.verbPlural) + " in the " + f->getName());
-    pos.globalMessage(message);
+    (stack.size() == 1 ? dropData.verbSingle : dropData.verbPlural).text.visit(
+      [&](const string& s) {
+      },
+      [&](TSentence s) {
+        s.params.push_back(stack[0]->getPluralTheName(stack.size()));
+        s.params.push_back(f->getName());
+        pos.globalMessage(std::move(s));
+      }
+    );
     if (dropData.unseenMessage)
       pos.unseenMessage(*dropData.unseenMessage);
   }

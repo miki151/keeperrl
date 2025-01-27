@@ -156,8 +156,8 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
       if (auto game = pos.getGame()) {
         auto fMod = pos.modFurniture(f->getLayer());
         auto namegen = game->getContentFactory()->getCreatures().getNameGenerator();
-        fMod->setName(fMod->getName() + " of Saint " + namegen->getNext(
-            NameGeneratorId(Random.choose(makeVec<const char*>("FIRST_MALE", "FIRST_FEMALE")))));
+        fMod->setName(TSentence("STATUE_OF_SAINT", fMod->getName(), namegen->getNext(
+            NameGeneratorId(Random.choose(makeVec<const char*>("FIRST_MALE", "FIRST_FEMALE"))))));
       }
       break;
     }

@@ -7,6 +7,7 @@
 #include "furniture_type.h"
 #include "tech_id.h"
 #include "attr_type.h"
+#include "t_string.h"
 
 class Model;
 class Technology;
@@ -109,7 +110,7 @@ namespace EventInfo {
 
   struct CreatureEvent {
     Creature* creature = nullptr;
-    string message;
+    TString message;
   };
 
   struct ItemStolen {

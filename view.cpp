@@ -49,27 +49,27 @@ void View::doWithSplash(const string& text, int totalProgress,
   }
 }
 
-void View::presentText(const string& title, const string& text) {
+void View::presentText(const optional<TString>& title, const TString& text) {
   auto data = ScriptedUIDataElems::Record {{
     {"text", std::move(text)}
   }};
-  if (!title.empty())
-    data.elems["title"] = title;
+  if (!!title)
+    data.elems["title"] = *title;
   ScriptedUIState state;
   scriptedUI("present_text", data, state);
 }
 
-void View::presentTextBelow(const string& title, const string& text) {
+void View::presentTextBelow(const optional<TString>& title, const TString& text) {
   auto data = ScriptedUIDataElems::Record {{
     {"text", std::move(text)}
   }};
-  if (!title.empty())
-    data.elems["title"] = title;
+  if (!!title)
+    data.elems["title"] = *title;
   ScriptedUIState state;
   scriptedUI("present_text_below", data, state);
 }
 
-optional<int> View::multiChoice(const string& message, const vector<string>& elems) {
+optional<int> View::multiChoice(const TString& message, const vector<TString>& elems) {
   optional<int> ret;
   auto list = ScriptedUIDataElems::List {};
   for (int i : All(elems))
@@ -89,7 +89,7 @@ optional<int> View::multiChoice(const string& message, const vector<string>& ele
   return ret;
 }
 
-bool View::yesOrNoPrompt(const string& message, optional<ViewIdList> viewId, bool defaultNo, ScriptedUIId id) {
+bool View::yesOrNoPrompt(const TString& message, optional<ViewIdList> viewId, bool defaultNo, ScriptedUIId id) {
   bool ret = false;
   auto data = ScriptedUIDataElems::Record {{
     {"callback"_s, ScriptedUIDataElems::Callback{[&ret] { ret = true; return true; }}},
@@ -107,7 +107,7 @@ void View::scriptedUI(ScriptedUIId id, const ScriptedUIData& data) {
   scriptedUI(id, data, state);
 }
 
-void View::windowedMessage(ViewIdList id, const string& message) {
+void View::windowedMessage(ViewIdList id, const TString& message) {
   ScriptedUIState state;
   auto data = ScriptedUIDataElems::Record{};
   data.elems["message"] = message;

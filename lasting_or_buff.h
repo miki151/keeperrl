@@ -9,13 +9,13 @@ class TimeInterval;
 class ContentFactory;
 class Creature;
 struct Color;
-
+class TString;
 
 using LastingOrBuff = variant<LastingEffect, BuffId>;
 
-string getName(const LastingOrBuff&, const ContentFactory*);
-string getDescription(const LastingOrBuff&, const ContentFactory*);
-string getAdjective(const LastingOrBuff&, const ContentFactory*);
+TString getName(const LastingOrBuff&, const ContentFactory*);
+TString getDescription(const LastingOrBuff&, const ContentFactory*);
+TString getAdjective(const LastingOrBuff&, const ContentFactory*);
 int getPrice(const LastingOrBuff&, const ContentFactory*);
 bool addEffect(const LastingOrBuff&, Creature*, optional<TimeInterval> duration, bool msg = true);
 bool addEffect(const LastingOrBuff&, Creature*, optional<TimeInterval> duration, GlobalTime, const ContentFactory*);

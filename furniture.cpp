@@ -92,16 +92,16 @@ void Furniture::updateViewObject() {
   }
 }
 
-const string& Furniture::getName(int count) const {
+const TString& Furniture::getName(int count) const {
   if (count > 1)
     return pluralName;
   else
     return name;
 }
 
-void Furniture::setName(const string& n) {
+void Furniture::setName(const TString& n) {
   name = n;
-  viewObject->setDescription(capitalFirst(name));
+  viewObject->setDescription(TSentence("CAPITAL_FIRST", name));
 }
 
 FurnitureType Furniture::getType() const {
@@ -142,7 +142,7 @@ const vector<StorageId>& Furniture::getStorageId() const {
 
 void Furniture::destroy(Position pos, const DestroyAction& action, Creature* destroyedBy) {
   if (!destroyedEffect)
-    pos.globalMessage("The " + name + " " + action.getIsDestroyed());
+    pos.globalMessage(TSentence(action.getIsDestroyed(), name));
   if (itemDrop)
     pos.dropItems(itemDrop->random(pos.getGame()->getContentFactory(), pos.getModelDifficulty()));
   if (destroyFX)
@@ -245,17 +245,12 @@ void Furniture::updateFire(Position pos, FurnitureLayer supposedLayer) {
     {
       auto otherF = pos.getFurniture(layer);
       auto otherFMod = pos.modFurniture(layer);
-      CHECK(otherF == this)
-          << EnumInfo<FurnitureLayer>::getString(layer) << " "
-          << EnumInfo<FurnitureLayer>::getString(supposedLayer) << " "
-          << getName()
-          << " " << (otherF ? (otherF->getName() + " " + EnumInfo<FurnitureLayer>::getString(otherF->getLayer())): "null"_s)
-          << " " << (otherFMod ? (otherFMod->getName() + " " + EnumInfo<FurnitureLayer>::getString(otherFMod->getLayer())): "null"_s);
+      CHECK(otherF == this);
     }
     auto burnState = fire->getBurnState();
     if (viewObject)
       viewObject->setAttribute(ViewObject::Attribute::BURNING, min(1.0, double(burnState) / 50));
-    INFO << getName() << " burning ";
+//    INFO << getName() << " burning ";
     for (Position v : pos.neighbors8())
       v.fireDamage(burnState / 5, nullptr);
     pos.fireDamage(burnState, nullptr);
@@ -263,10 +258,10 @@ void Furniture::updateFire(Position pos, FurnitureLayer supposedLayer) {
     if (fire->isBurntOut()) {
       switch (burnsDownMessage) {
         case BurnsDownMessage::BURNS_DOWN:
-          pos.globalMessage("The " + getName() + " burns down");
+          pos.globalMessage(TSentence("FURNITURE_BURNS_DOWN", getName()));
           break;
         case BurnsDownMessage::STOPS_BURNING:
-          pos.globalMessage("The " + getName() + " stops burning");
+          pos.globalMessage(TSentence("FURNITURE_STOPS_BURNING", getName()));
           break;
       }
       pos.updateMovementDueToFire();
@@ -363,20 +358,16 @@ void Furniture::onConstructedBy(Position pos, Creature* c) {
     if (constructMessage)
       switch (*constructMessage) {
         case ConstructMessage::BUILD:
-          c->thirdPerson(c->getName().the() + " builds " + addAParticle(getName()));
-          c->secondPerson("You build " + addAParticle(getName()));
+          c->verb(TStringId("YOU_BUILD"), TStringId("HE_BUILDS"), getName());
           break;
         case ConstructMessage::FILL_UP:
-          c->thirdPerson(c->getName().the() + " fills up the tunnel");
-          c->secondPerson("You fill up the tunnel");
+          c->verb(TStringId("YOU_FILL_UP_TUNNEL"), TStringId("HE_FILLS_UP_TUNNEL"));
           break;
         case ConstructMessage::REINFORCE:
-          c->thirdPerson(c->getName().the() + " reinforces the wall");
-          c->secondPerson("You reinforce the wall");
+          c->verb(TStringId("YOU_REINFORCE_THE_WALL"), TStringId("HE_REINFORCES_THE_WALL"));
           break;
         case ConstructMessage::SET_UP:
-          c->thirdPerson(c->getName().the() + " sets up " + addAParticle(getName()));
-          c->secondPerson("You set up " + addAParticle(getName()));
+          c->verb(TStringId("YOU_SET_UP"), TStringId("HE_SETS_UP"), getName());
           break;
       }
   }
@@ -483,8 +474,7 @@ void Furniture::spreadBlood(Position pos) {
   if (!!bloodCountdown) {
     bloodCountdown = none;
     viewObject->setModifier(ViewObjectModifier::BLOODY);
-    name = "bloody " + name;
-    viewObject->setDescription(capitalFirst(name));
+    setName(TStringId("BLOODY_WATER"));
     for (auto v : pos.neighbors4())
       if (auto f = v.getFurniture(layer))
         if (!!f->bloodCountdown) {
@@ -601,7 +591,7 @@ bool Furniture::canDestroy(const Position& pos, const MovementType& movement, co
 
 bool Furniture::acidDamage(Position pos) {
   if (dissolveTo) {
-    pos.globalMessage("The " + getName() + " is dissolved");
+    pos.globalMessage(TSentence("FURNITURE_DISSOLVES", getName()));
     PFurniture replace = pos.getGame()->getContentFactory()->furniture.getFurniture(*dissolveTo, getTribe());
     pos.removeFurniture(this, std::move(replace));
     return true;
@@ -615,7 +605,7 @@ bool Furniture::acidDamage(Position pos) {
 
 bool Furniture::fireDamage(Position pos, bool withMessage) {
   if (meltInfo) {
-    pos.globalMessage("The " + getName() + " melts");
+    pos.globalMessage(TSentence("FURNITURE_MELTS", getName()));
     PFurniture replace;
     if (meltInfo->meltTo)
       replace = pos.getGame()->getContentFactory()->furniture.getFurniture(*meltInfo->meltTo, getTribe());
@@ -627,7 +617,7 @@ bool Furniture::fireDamage(Position pos, bool withMessage) {
     fire->set();
     if (!burning && fire->isBurning()) {
       if (withMessage)
-        pos.globalMessage("The " + getName() + " catches fire");
+        pos.globalMessage(TSentence("FURNITURE_CATCHES_FIRE", getName()));
       if (viewObject)
         viewObject->setAttribute(ViewObject::Attribute::BURNING, 0.3);
       pos.updateMovementDueToFire();
@@ -641,7 +631,7 @@ bool Furniture::fireDamage(Position pos, bool withMessage) {
 
 bool Furniture::iceDamage(Position pos) {
   if (freezeTo) {
-    pos.globalMessage("The " + getName() + " freezes");
+    pos.globalMessage(TSentence("FURNITURE_FREEZES", getName()));
     pos.removeFurniture(this, pos.getGame()->getContentFactory()->furniture.getFurniture(*freezeTo, getTribe()));
     return true;
   }
@@ -725,7 +715,7 @@ void Furniture::serialize(PrettyInputArchive& ar1, unsigned int v) {
     for (auto& elem : *strength2)
       setDestroyable(elem.first, elem.second);
   if (viewId)
-    viewObject = ViewObject(*viewId, viewLayer.value_or(getViewLayer(layer)), capitalFirst(getName()));
+    viewObject = ViewObject(*viewId, viewLayer.value_or(getViewLayer(layer)), TSentence("CAPITAL_FIRST", getName()));
   if (attachmentDir)
     viewObject->setAttachmentDir(*attachmentDir);
   if (waterDepth)
@@ -735,5 +725,5 @@ void Furniture::serialize(PrettyInputArchive& ar1, unsigned int v) {
   if (blockAllVision.value)
     blockVision = EnumSet<VisionId>::fullSet();
   if (pluralName.empty())
-    pluralName = makePlural(name);
+    pluralName = TStringId((name.data() + "_PLURAL"_s).data());
 }

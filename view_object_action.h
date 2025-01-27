@@ -23,4 +23,5 @@ RICH_ENUM2(std::uint8_t,
     MOVE_NOW
 );
 
-const char* getText(ViewObjectAction);
+class TStringId;
+TStringId getText(ViewObjectAction);

@@ -131,12 +131,14 @@ AIType CreatureAttributes::getAIType() const {
   return aiType;
 }
 
-string CreatureAttributes::getDeathDescription(const ContentFactory* factory) const {
-  return deathDescription.value_or(body->getDeathDescription(factory));
+const TString& CreatureAttributes::getDeathDescription(const ContentFactory* factory) const {
+  if (!!deathDescription)
+    return *deathDescription;
+  return body->getDeathDescription(factory);
 }
 
-void CreatureAttributes::setDeathDescription(string c) {
-  deathDescription = c;
+void CreatureAttributes::setDeathDescription(TString c) {
+  deathDescription = std::move(c);
 }
 
 const Gender& CreatureAttributes::getGender() const {
@@ -209,7 +211,7 @@ optional<SoundId> CreatureAttributes::getAttackSound(AttackType type, bool damag
     return none;
 }
 
-string CreatureAttributes::getDescription(const ContentFactory* factory) const {
+TString CreatureAttributes::getDescription(const ContentFactory* factory) const {
   return body->getDescription(factory);
 }
 
@@ -223,28 +225,32 @@ void CreatureAttributes::add(BodyPart p, int count, const ContentFactory* factor
       ++permanentEffects[effect];
 }
 
-optional<string> CreatureAttributes::getPetReaction(const Creature* me) const {
-  if (!petReaction)
-    return none;
-  if (petReaction->front() == '\"')
-    return *petReaction;
-  else
-    return me->getName().the() + " " + *petReaction;
+static TString getVerbalReaction(const TString& reaction, const Creature* me) {
+  return reaction.text.visit(
+    [&](const string& s) -> TString {
+      if (s.front() == '\"')
+        return s;
+      else
+        return me->getName().the().data() + " "_s + s;
+    },
+    [&](TSentence s) -> TString {
+      s.params.push_back(me->getName().the());
+      return s;
+    }
+  );
+}
+
+optional<TString> CreatureAttributes::getPetReaction(const Creature* me) const {
+  if (petReaction)
+    return getVerbalReaction(*petReaction, me);
+  return none;
 }
 
 void CreatureAttributes::chatReaction(Creature* me, Creature* other) {
-  if (me->isEnemy(other) && chatReactionHostile) {
-    if (chatReactionHostile->front() == '\"')
-      other->privateMessage(*chatReactionHostile);
-    else
-      other->privateMessage(me->getName().the() + " " + *chatReactionHostile);
-  }
-  if (!me->isEnemy(other) && chatReactionFriendly) {
-    if (chatReactionFriendly->front() == '\"')
-      other->privateMessage(*chatReactionFriendly);
-    else
-      other->privateMessage(me->getName().the() + " " + *chatReactionFriendly);
-  }
+  if (me->isEnemy(other) && chatReactionHostile)
+    other->privateMessage(getVerbalReaction(*chatReactionHostile, me));
+  if (!me->isEnemy(other) && chatReactionFriendly)
+    other->privateMessage(getVerbalReaction(*chatReactionFriendly, me));
   if (chatEffect)
     chatEffect->apply(other->getPosition(), me);
 }
@@ -285,7 +291,7 @@ static bool consumeProb() {
 }
 
 template <typename T>
-void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj, const int& cap) {
+void consumeAttr(T& mine, const T& his, vector<TString>& adjectives, const TString& adj, const int& cap) {
   int hisCapped = (his > cap) ? cap : his;
   if (consumeProb() && mine < hisCapped) {
     mine = hisCapped;
@@ -294,16 +300,16 @@ void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string
   }
 }
 
-void consumeAttr(Gender& mine, const Gender& his, vector<string>& adjectives) {
+void consumeAttr(Gender& mine, const Gender& his, vector<TString>& adjectives) {
   if (consumeProb() && mine != his) {
     mine = his;
-    adjectives.emplace_back(get(mine, "more masculine", "more feminine", "more neuter"));
+    adjectives.emplace_back(get(mine, TStringId("MORE_MASCULINE"), TStringId("MORE_FEMININE"), TStringId("MORE_NEUTER")));
   }
 }
 
 
 template <typename T>
-void consumeAttr(heap_optional<T>& mine, const heap_optional<T>& his, vector<string>& adjectives, const string& adj) {
+void consumeAttr(heap_optional<T>& mine, const heap_optional<T>& his, vector<TString>& adjectives, const string& adj) {
   if (consumeProb() && !mine && his) {
     mine = *his;
     if (!adj.empty())
@@ -320,20 +326,19 @@ void CreatureAttributes::consumeEffects(Creature* self, const EnumMap<LastingEff
 }
 
 void CreatureAttributes::consume(Creature* self, CreatureAttributes& other) {
-  INFO << name.bare() << " consume " << other.name.bare();
   self->you(MsgType::CONSUME, other.name.the());
-  self->addPersonalEvent(self->getName().a() + " absorbs " + other.name.a());
-  vector<string> adjectives;
+  self->addPersonalEvent(TSentence("ABSORBS", self->getName().a(), other.name.a()));
+  vector<TString> adjectives;
   body->consumeBodyParts(self, other.getBody(), adjectives);
   auto factory = self->getGame()->getContentFactory();
   for (auto& t: factory->attrInfo)
     consumeAttr(attr[t.first], other.attr[t.first], adjectives,
-      "more " + t.second.adjective, t.second.absorptionCap);
+      TSentence("MORE_ADJECTIVE", t.second.adjective), t.second.absorptionCap);
   consumeAttr(passiveAttack, other.passiveAttack, adjectives, "");
   consumeAttr(gender, other.gender, adjectives);
   if (!adjectives.empty()) {
-    self->you(MsgType::BECOME, combine(adjectives));
-    self->addPersonalEvent(getName().the() + " becomes " + combine(adjectives));
+    self->you(MsgType::BECOME, combineWithAnd(adjectives));
+    self->addPersonalEvent(TSentence("BECOMES", getName().the(), combineWithAnd(adjectives)));
   }
   consumeEffects(self, other.permanentEffects);
 }

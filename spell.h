@@ -21,6 +21,7 @@
 #include "view_id.h"
 #include "fx_info.h"
 #include "keybinding.h"
+#include "t_string.h"
 
 class Effect;
 class Position;
@@ -39,7 +40,7 @@ class Spell {
   const string& getSymbol() const;
   const Effect& getEffect() const;
   Range getCooldown() const;
-  vector<string> getDescription(const Creature*, const ContentFactory*) const;
+  vector<TString> getDescription(const Creature*, const ContentFactory*) const;
   void addMessage(Creature*) const;
   optional<SoundId> getSound() const;
   bool canTargetSelf() const;
@@ -48,7 +49,7 @@ class Spell {
   bool isEndOnly() const;
   void setSpellId(SpellId);
   SpellId getId() const;
-  string getName(const ContentFactory*) const;
+  TString getName(const ContentFactory*) const;
   optional<SpellId> getUpgrade() const;
   void getAIMove(const Creature*, MoveInfo&) const;
   bool isBlockedBy(const Creature* c, Position pos) const;
@@ -65,7 +66,7 @@ class Spell {
   string SERIAL(symbol);
   HeapAllocated<Effect> SERIAL(effect);
   Range SERIAL(cooldown);
-  pair<string, string> SERIAL(message) = {"cast a spell"_s, "casts a spell"_s};
+  pair<TString, TString> SERIAL(message) = {TStringId("YOU_CAST_SPELL"), TStringId("CASTS_SPELL")};
   optional<SoundId> SERIAL(sound);
   int SERIAL(range) = 0;
   optional<FXInfo> SERIAL(fx);

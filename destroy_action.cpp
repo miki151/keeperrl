@@ -10,47 +10,47 @@ SERIALIZATION_CONSTRUCTOR_IMPL(DestroyAction)
 DestroyAction::DestroyAction(Type t) : type(t) {
 }
 
-const char* DestroyAction::getVerbSecondPerson() const {
+TStringId DestroyAction::getVerbSecondPerson() const {
   switch (type) {
-    case Type::BOULDER: return "destroy";
-    case Type::BASH: return "bash";
-    case Type::CUT: return "cut";
-    case Type::HOSTILE_DIG:
-    case Type::DIG: return "dig into";
-    case Type::FILL: return "fill";
+  case Type::BASH: return TStringId("YOU_BASH_FURNITURE");
+  case Type::BOULDER: return TStringId("YOU_DESTROY_FURNITURE");
+  case Type::CUT: return TStringId("YOU_CUT_FURNITURE");
+  case Type::HOSTILE_DIG:
+  case Type::DIG: return TStringId("YOU_DIG_INTO_FURNITURE");
+  case Type::FILL: return TStringId("YOU_FILL_FURNITURE");
   }
 }
 
-const char* DestroyAction::getVerbThirdPerson() const {
+TStringId DestroyAction::getVerbThirdPerson() const {
   switch (type) {
-    case Type::BASH: return "bashes";
-    case Type::BOULDER: return "destroys";
-    case Type::CUT: return "cuts";
+    case Type::BASH: return TStringId("BASHES_FURNITURE");
+    case Type::BOULDER: return TStringId("DESTROYS_FURNITURE");
+    case Type::CUT: return TStringId("CUTS_FURNITURE");
     case Type::HOSTILE_DIG:
-    case Type::DIG: return "digs into";
-    case Type::FILL: return "fills";
+    case Type::DIG: return TStringId("DIGS_INTO_FURNITURE");
+    case Type::FILL: return TStringId("FILLS_FURNITURE");
   }
 }
 
-const char*DestroyAction::getIsDestroyed() const {
+TStringId DestroyAction::getIsDestroyed() const {
   switch (type) {
     case Type::BASH:
-    case Type::BOULDER: return "is destroyed";
-    case Type::CUT: return "falls";
+    case Type::BOULDER: return TStringId("FURNITURE_IS_DESTROYED");
+    case Type::CUT: return TStringId("FURNITURE_FALLS");
     case Type::HOSTILE_DIG:
-    case Type::DIG: return "is dug out";
-    case Type::FILL: return "is filled";
+    case Type::DIG: return TStringId("FURNITURE_IS_DUG_OUT");
+    case Type::FILL: return TStringId("FURNITURE_IS_FILLED");;
   }
 }
 
-const char* DestroyAction::getSoundText() const {
+optional<TStringId> DestroyAction::getSoundText() const {
   switch (type) {
-    case Type::BASH: return "BANG!";
+    case Type::BASH: return TStringId("FURNITURE_BANG");
     case Type::BOULDER:
-    case Type::CUT: return "CRASH!";
+    case Type::CUT: return TStringId("FURNITURE_CRASH");;
     case Type::HOSTILE_DIG:
     case Type::FILL:
-    case Type::DIG: return "";
+    case Type::DIG: return none;
   }
 }
 

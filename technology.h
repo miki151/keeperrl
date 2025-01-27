@@ -18,13 +18,16 @@
 #include "util.h"
 #include "enums.h"
 #include "tech_id.h"
+#include "t_string.h"
 
 class Technology {
   public:
   struct TechDefinition {
     string SERIAL(description);
     vector<TechId> SERIAL(prerequisites);
-    SERIALIZE_ALL(NAMED(description), OPTION(prerequisites))
+    optional<TString> SERIAL(name);
+    template <class Archive>
+    void serialize(Archive&, const unsigned int);
   };
   Technology(map<TechId, TechDefinition>);
   Technology() {}
@@ -32,8 +35,10 @@ class Technology {
   vector<TechId> getNextTechs() const;
   const vector<TechId> getAllowed(const TechId&) const;
   vector<TechId> getSorted() const;
+  TString getName(TechId) const;
   map<TechId, TechDefinition> SERIAL(techs);
   set<TechId> SERIAL(researched);
   SERIALIZE_ALL(NAMED(techs), OPTION(researched))
 };
 
+CEREAL_CLASS_VERSION(Technology::TechDefinition, 1)

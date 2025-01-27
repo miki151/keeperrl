@@ -96,7 +96,7 @@ struct SettlementInfo {
   optional<string> SERIAL(locationName);
   optional<NameGeneratorId> SERIAL(locationNameGen);
   TribeId SERIAL(tribe);
-  optional<string> SERIAL(race);
+  optional<TString> SERIAL(race);
   vector<StairKey> downStairs;
   vector<StairKey> upStairs;
   vector<StockpileInfo> SERIAL(stockpiles);

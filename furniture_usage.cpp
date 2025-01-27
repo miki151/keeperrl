@@ -46,7 +46,7 @@ struct ChestInfo {
 };
 
 static void usePortal(Position pos, Creature* c) {
-  c->you(MsgType::ENTER_PORTAL, "");
+  c->you(MsgType::ENTER_PORTAL);
   if (auto otherPos = pos.getOtherPortal()) {
     if (otherPos->isSameLevel(pos)) {
       for (auto f : otherPos->getFurniture())
@@ -115,14 +115,14 @@ bool FurnitureUsage::canHandle(FurnitureUsageType type, const Creature* c) {
   return true;
 }
 
-string FurnitureUsage::getUsageQuestion(FurnitureUsageType type, string furnitureName) {
+TString FurnitureUsage::getUsageQuestion(FurnitureUsageType type, TString furnitureName) {
   return type.visit(
-      [&] (BuiltinUsageId id) {
+      [&] (BuiltinUsageId id) -> TString {
         switch (id) {
-          case BuiltinUsageId::KEEPER_BOARD: return "view " + furnitureName;
-          case BuiltinUsageId::PORTAL: return "enter " + furnitureName;
+          case BuiltinUsageId::KEEPER_BOARD: return TSentence("VIEW_MESSAGE_BOARD", furnitureName);
+          case BuiltinUsageId::PORTAL: return TSentence("ENTER_PORTAL", furnitureName);
           default:
-            return "use " + furnitureName;
+            return TSentence("USE_FURNITURE", furnitureName);
         }
       },
       [&](const UsageEffect& e) {

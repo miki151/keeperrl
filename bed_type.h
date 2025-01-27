@@ -11,4 +11,6 @@ RICH_ENUM(
     STABLE
 );
 
-const char* getName(BedType);
+class TStringId;
+TStringId getName(BedType);
+TStringId getPlural(BedType);

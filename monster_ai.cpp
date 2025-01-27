@@ -193,7 +193,7 @@ class EffectsAI : public Behaviour {
           if (auto effect = item->getEffect())
             if (!effect->isOffensive() || !creature->getVisibleEnemies().empty()) {
               {
-                auto name = "Apply item " + item->getName();
+                auto name = "Apply item ";// + item->getName();
                 PROFILE_BLOCK(name.data());
               auto value = effect->shouldAIApply(creature, creature->getPosition());
               if (value > 0)
@@ -201,12 +201,12 @@ class EffectsAI : public Behaviour {
                   tryMove(ret, value, std::move(move));
               }
               {
-              auto name = "Give item " + item->getName();
+              auto name = "Give item ";// + item->getName();
               PROFILE_BLOCK(name.data());
               for (Position pos : creature->getPosition().neighbors8())
                 if (Creature* c = pos.getCreature())
                   if (creature->isFriend(c) && effect->shouldAIApply(c, c->getPosition()) > 0 &&
-                      c->getEquipment().getItems().filter(Item::namePredicate(item->getName())).empty())
+                      c->getEquipment().getItems().filter(Item::sameItemPredicate(item)).empty())
                     if (auto action = creature->give(c, {item}))
                       tryMove(ret, 1, action);
               }
@@ -626,7 +626,7 @@ class Fighter : public Behaviour {
         return move;
     if (other->getAttributes().isBoulder())
       return NoMove;
-    INFO << creature->getName().bare() << " enemy " << other->getName().bare();
+//    INFO << creature->getName().bare() << " enemy " << other->getName().bare();
     auto myPosition = creature->getPosition();
     Vec2 enemyDir = myPosition.getDir(other->getPosition());
     auto distance = enemyDir.length8();

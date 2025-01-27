@@ -19,4 +19,5 @@ RICH_ENUM(
   NO_LEISURE_ZONE
 );
 
-extern const char* /*can be null*/ getImmigrantDescription(MinionTrait);
+class TStringId;
+optional<TStringId> getImmigrantDescription(MinionTrait);

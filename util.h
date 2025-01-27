@@ -1358,8 +1358,6 @@ std::ostream& operator<<(std::ostream& d, const Table<T>& container){
   return d;
 }
 
-string addAParticle(const string& s);
-
 string capitalFirst(string s);
 string noCapitalFirst(string s);
 vector<string> makeSentences(string s);
@@ -1370,11 +1368,6 @@ string lowercase(string s);
 
 string combine(const vector<string>& adj, bool commasOnly = false);
 string combine(const vector<string>& adj, const string& delimiter);
-
-string getPlural(const string& singular, const string& plural, int num);
-string getPlural(const string&, int num);
-string getPluralText(const string&, int num);
-string makePlural(const string&);
 
 template<class T, class U>
 vector<T> asVector(const U& u) {

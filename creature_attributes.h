@@ -76,8 +76,8 @@ class CreatureAttributes {
   void setBaseAttr(AttrType, int);
   void setAIType(AIType);
   AIType getAIType() const;
-  string getDeathDescription(const ContentFactory*) const;
-  void setDeathDescription(string);
+  const TString& getDeathDescription(const ContentFactory*) const;
+  void setDeathDescription(TString);
   const Gender& getGender() const;
   double getExpLevel(AttrType) const;
   const HashMap<AttrType, double>& getExpLevel() const;
@@ -94,8 +94,8 @@ class CreatureAttributes {
   heap_optional<ViewObject>& getIllusionViewObject();
   bool canEquip() const;
   void chatReaction(Creature* me, Creature* other);
-  optional<string> getPetReaction(const Creature* me) const;
-  string getDescription(const ContentFactory*) const;
+  optional<TString> getPetReaction(const Creature* me) const;
+  TString getDescription(const ContentFactory*) const;
   void add(BodyPart, int count, const ContentFactory*);
   bool isAffected(LastingEffect, GlobalTime) const;
   bool isAffectedPermanently(LastingEffect) const;
@@ -145,7 +145,7 @@ class CreatureAttributes {
   Effect SERIAL(copulationEffect) = Effect(Effects::Filter(CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::PREGNANT)}),
     Effect(Effects::Chance(0.5, Effect(Effects::Chain{{
       Effect(Effects::Lasting { 500_visible, LastingEffect::PREGNANT }),
-      Effect(Effects::CollectiveMessage { "A minion becomes pregnant" })
+      Effect(Effects::CollectiveMessage { TStringId("A_MINION_BECOMES_PREGNANT") })
     }})))));
 
   private:
@@ -154,8 +154,8 @@ class CreatureAttributes {
   CreatureName SERIAL(name);
   HashMap<AttrType, int> SERIAL(attr);
   HeapAllocated<Body> SERIAL(body);
-  optional<string> SERIAL(chatReactionFriendly);
-  optional<string> SERIAL(chatReactionHostile);
+  optional<TString> SERIAL(chatReactionFriendly);
+  optional<TString> SERIAL(chatReactionHostile);
   heap_optional<Effect> SERIAL(chatEffect);
   heap_optional<Effect> SERIAL(passiveAttack);
   Gender SERIAL(gender) = Gender::MALE;
@@ -173,9 +173,9 @@ class CreatureAttributes {
   HashMap<AttrType, int> SERIAL(maxLevelIncrease);
   bool SERIAL(noAttackSound) = false;
   optional<CreatureId> SERIAL(creatureId);
-  optional<string> SERIAL(deathDescription);
+  optional<TString> SERIAL(deathDescription);
   bool SERIAL(canJoinCollective) = true;
-  optional<string> SERIAL(petReaction);
+  optional<TString> SERIAL(petReaction);
   optional<BuffId> SERIAL(hatedByEffect);
   bool SERIAL(instantPrisoner) = false;
   void initializeLastingEffects();

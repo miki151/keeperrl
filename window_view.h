@@ -65,17 +65,17 @@ class WindowView: public View {
   virtual void updateView(CreatureView*, bool noRefresh) override;
   virtual void setScrollPos(Position) override;
   virtual void resetCenter() override;
-  virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override;
+  virtual optional<Vec2> chooseDirection(Vec2 playerPos, const TString& message) override;
   virtual TargetResult chooseTarget(Vec2 playerPos, TargetType, Table<PassableInfo> passable,
-      const string& message, optional<Keybinding> cycleKey) override;
+      const TString& message, optional<Keybinding> cycleKey) override;
   virtual void animateObject(Vec2 begin, Vec2 end, optional<ViewId> object, optional<FXInfo> fx) override;
   virtual void animation(Vec2 pos, AnimationId, Dir orientation) override;
   virtual void animation(const FXSpawnInfo&) override;
   virtual double getGameSpeed() override;
-  virtual optional<int> chooseAtMouse(const vector<string>& elems) override;
+  virtual optional<int> chooseAtMouse(const vector<TString>& elems) override;
 
-  virtual optional<int> getNumber(const string& title, Range range, int initial) override;
-  virtual optional<string> getText(const string& title, const string& value, int maxLength) override;
+  virtual optional<int> getNumber(const TString& title, Range range, int initial) override;
+  virtual optional<string> getText(const TString& title, const string& value, int maxLength) override;
   virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&, ScriptedUIState&) override;
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
@@ -88,7 +88,6 @@ class WindowView: public View {
   virtual optional<Vec2> chooseSite(const string& message, const Campaign&, Vec2 current) override;
   virtual void presentWorldmap(const Campaign&, Vec2 current) override;
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) override;
-  virtual vector<int> prepareWarlordGame(RetiredGames&, const vector<PlayerInfo>&, int maxTeam, int maxDungeons) override;
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<PlayerInfo>&,
       const string& cancelText) override;
   virtual bool creatureInfo(const string& title, bool prompt, const vector<PlayerInfo>&) override;
@@ -96,6 +95,7 @@ class WindowView: public View {
   virtual void setBugReportSaveCallback(BugReportSaveCallback) override;
   virtual void dungeonScreenshot(Vec2 size) override;
   virtual bool zoomUIAvailable() const override;
+  virtual string translate(const TString&) const override;
 
   private:
 
@@ -117,7 +117,7 @@ class WindowView: public View {
 
   void refreshScreen(bool flipBuffer = true);
   void drawAndClearBuffer();
-  void getSmallSplash(const ProgressMeter*, const string& text, function<void()> cancelFun);
+  void getSmallSplash(const ProgressMeter*, const TString& text, function<void()> cancelFun);
 
   void zoom(int dir);
   void resize(int width, int height);

@@ -5,6 +5,7 @@
 #include "item_upgrade_info.h"
 #include "view_id.h"
 #include "tech_id.h"
+#include "t_string.h"
 
 struct WorkshopItem;
 
@@ -26,11 +27,11 @@ static_assert(std::is_nothrow_move_constructible<WorkshopItemCfg>::value, "T sho
 
 struct WorkshopItem {
   ItemType SERIAL(type);
-  string SERIAL(name);
-  string SERIAL(pluralName);
+  TString SERIAL(name);
+  TString SERIAL(pluralName);
   ViewIdList SERIAL(viewId);
   CostInfo SERIAL(cost);
-  vector<string> SERIAL(description);
+  vector<TString> SERIAL(description);
   double SERIAL(workNeeded);
   optional<TechId> SERIAL(techId);
   optional<TutorialHighlight> SERIAL(tutorialHighlight);

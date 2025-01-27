@@ -132,11 +132,11 @@ vector<Creature*> Effect::summon(Position pos, CreatureGroup& factory, int num, 
   return ret;
 }
 
-static bool enhanceArmor(Creature* c, int mod, const string& msg) {
+static bool enhanceArmor(Creature* c, int mod, TStringId verb1, TStringId verb2) {
   for (EquipmentSlot slot : Random.permutation(getKeys(Equipment::slotTitles)))
     for (Item* item : c->getEquipment().getSlotItems(slot))
       if (item->getClass() == ItemClass::ARMOR) {
-        c->you(MsgType::YOUR, item->getName() + " " + msg);
+        c->verb(verb1, verb2, item->getName());
         if (item->getModifier(AttrType("DEFENSE")) > 0 || mod > 0)
           item->addModifier(AttrType("DEFENSE"), mod);
         return true;
@@ -144,9 +144,9 @@ static bool enhanceArmor(Creature* c, int mod, const string& msg) {
   return false;
 }
 
-static bool enhanceWeapon(Creature* c, int mod, const string& msg) {
+static bool enhanceWeapon(Creature* c, int mod, TStringId verb1, TStringId verb2) {
   if (auto item = c->getFirstWeapon()) {
-    c->you(MsgType::YOUR, item->getName() + " " + msg);
+    c->verb(verb1, verb2, item->getName());
     item->addModifier(item->getWeaponInfo().meleeAttackAttr, mod);
     return true;
   }
@@ -221,9 +221,9 @@ static bool applyToCreature(const Effects::Escape& e, Creature* c, Creature*) {
     return false;
   }
   CHECK(!good.empty());
-  c->you(MsgType::TELE_DISAPPEAR, "");
+  c->you(MsgType::TELE_DISAPPEAR);
   c->getPosition().moveCreature(Random.choose(good), true);
-  c->you(MsgType::TELE_APPEAR, "");
+  c->you(MsgType::TELE_APPEAR);
   return true;
 }
 
@@ -231,38 +231,38 @@ static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Escap
   return MinionEquipmentType::COMBAT_ITEM;
 }
 
-static string getName(const Effects::Escape&, const ContentFactory*) {
-  return "escape";
+static TString getName(const Effects::Escape&, const ContentFactory*) {
+  return TStringId("ESCAPE_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::Escape&, const ContentFactory*) {
-  return "Teleports to a safer location close by.";
+static TString getDescription(const Effects::Escape&, const ContentFactory*) {
+  return TStringId("ESCAPE_EFFECT_DESCRIPTION");
 }
 
-static string getName(const Effects::Teleport&, const ContentFactory*) {
-  return "teleport";
+static TString getName(const Effects::Teleport&, const ContentFactory*) {
+  return TStringId("TELEPORT_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::Teleport&, const ContentFactory*) {
-  return "Teleport to any location that's close by.";
+static TString getDescription(const Effects::Teleport&, const ContentFactory*) {
+  return TStringId("TELEPORT_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::Teleport&, Position pos, Creature* attacker) {
   if (attacker->getPosition().canMoveCreature(pos)) {
-    attacker->you(MsgType::TELE_DISAPPEAR, "");
+    attacker->you(MsgType::TELE_DISAPPEAR);
     attacker->getPosition().moveCreature(pos, true);
-    attacker->you(MsgType::TELE_APPEAR, "");
+    attacker->you(MsgType::TELE_APPEAR);
     return true;
   }
   return false;
 }
 
-static string getName(const Effects::SetPhylactery&, const ContentFactory*) {
-  return "phylactery";
+static TString getName(const Effects::SetPhylactery&, const ContentFactory*) {
+  return TStringId("PHYLACTERY_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::SetPhylactery&, const ContentFactory*) {
-  return "";
+static TString getDescription(const Effects::SetPhylactery&, const ContentFactory*) {
+  return TStringId("PHYLACTERY_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::SetPhylactery&, Position pos, Creature* attacker) {
@@ -274,12 +274,13 @@ static bool apply(const Effects::SetPhylactery&, Position pos, Creature* attacke
   return false;
 }
 
-static string getName(const Effects::AddTechnology& t, const ContentFactory* f) {
-  return t.data();
+static TString getName(const Effects::AddTechnology& t, const ContentFactory* f) {
+  return f->technology.techs.at(t).name.value_or(TString(string(t.data())));
 }
 
-static string getDescription(const Effects::AddTechnology& t, const ContentFactory*) {
-  return "Provides "_s + t.data();
+static TString getDescription(const Effects::AddTechnology& t, const ContentFactory* f) {
+  auto name = f->technology.techs.at(t).name.value_or(TString(string(t.data())));
+  return TSentence("TECH_EFFECT_DESCRIPTION", std::move(name));
 }
 
 static bool apply(const Effects::AddTechnology& t, Position pos, Creature* attacker) {
@@ -287,12 +288,12 @@ static bool apply(const Effects::AddTechnology& t, Position pos, Creature* attac
   return true;
 }
 
-static string getName(const Effects::Jump&, const ContentFactory*) {
-  return "jumping";
+static TString getName(const Effects::Jump&, const ContentFactory*) {
+  return TStringId("JUMP_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::Jump&, const ContentFactory*) {
-  return "Jump!";
+static TString getDescription(const Effects::Jump&, const ContentFactory*) {
+  return TStringId("JUMP_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::Jump&, Position pos, Creature* attacker) {
@@ -352,31 +353,28 @@ static Color getColor(const Effects::Lasting& e, const ContentFactory* f) {
   return getColor(e.lastingEffect, f);
 }
 
-static string getName(const Effects::Lasting& e, const ContentFactory* f) {
+static TString getName(const Effects::Lasting& e, const ContentFactory* f) {
   return getName(e.lastingEffect, f);
 }
 
-static string getDescription(const Effects::Lasting& e, const ContentFactory* f) {
+static TString getDescription(const Effects::Lasting& e, const ContentFactory* f) {
   auto ret = getDescription(e.lastingEffect, f);
-  if (ret.back() == '.')
-    ret.pop_back();
   auto duration = !!e.duration
       ? *e.duration
       : LastingEffects::getDuration(*e.lastingEffect.getValueMaybe<LastingEffect>());
-  ret += " for " + toString(duration) + " turns.";
-  return ret;
+  return TSentence("BUFF_EFFECT_DESCRIPTION", std::move(ret), toString(duration));
 }
 
 static bool applyToCreature(const Effects::RemoveLasting& e, Creature* c, Creature*) {
   return removeEffect(e.lastingEffect, c);
 }
 
-static string getName(const Effects::RemoveLasting& e, const ContentFactory* f) {
-  return "remove " + getName(e.lastingEffect, f);
+static TString getName(const Effects::RemoveLasting& e, const ContentFactory* f) {
+  return TSentence("REMOVE_BUFF_NAME", getName(e.lastingEffect, f));
 }
 
-static string getDescription(const Effects::RemoveLasting& e, const ContentFactory* f) {
-  return "Removes/cures from effect: " + getName(e.lastingEffect, f);
+static TString getDescription(const Effects::RemoveLasting& e, const ContentFactory* f) {
+  return TSentence("REMOVE_BUFF_DESCRIPTION", getName(e.lastingEffect, f));
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::RemoveLasting& e, const Creature* victim, bool isEnemy) {
@@ -387,28 +385,31 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::RemoveLasting& e, c
 
 static bool applyToCreature(const Effects::IncreaseAttr& e, Creature* c, Creature*) {
   if (auto game = c->getGame())
-    c->you(MsgType::YOUR, game->getContentFactory()->attrInfo.at(e.attr).name + e.get(" improves", " wanes"));
+    c->verb(e.get(TStringId("YOUR_ATTR_IMPROVES"), TStringId("YOUR_ATTR_WANES")),
+        e.get(TStringId("HIS_ATTR_IMPROVES"), TStringId("HIS_ATTR_WANES")),
+        game->getContentFactory()->attrInfo.at(e.attr).name);
   c->getAttributes().increaseBaseAttr(e.attr, e.amount);
   return true;
 }
 
-static string getName(const Effects::IncreaseAttr& e, const ContentFactory* f) {
-  return f->attrInfo.at(e.attr).name + e.get(" boost", " loss");
+static TString getName(const Effects::IncreaseAttr& e, const ContentFactory* f) {
+  return TSentence(e.get(TStringId("ATTR_BOOST_NAME"), TStringId("ATTR_LOSS_NAME")), f->attrInfo.at(e.attr).name);
 }
 
 static void scale(Effects::IncreaseAttr& e, double value, const ContentFactory* f) {
   e.amount *= value;
 }
 
-static string getDescription(const Effects::IncreaseAttr& e, const ContentFactory* f) {
-  return e.get("Increases", "Decreases") + " "_s + f->attrInfo.at(e.attr).name + " by " + toString(abs(e.amount));
+static TString getDescription(const Effects::IncreaseAttr& e, const ContentFactory* f) {
+  return TSentence(e.get(TStringId("ATTR_BOOST_DESCRIPTION"), TStringId("ATTR_LOSS_DESCRIPTION")),
+      f->attrInfo.at(e.attr).name, toString(abs(e.amount)));
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::IncreaseAttr& e, const Creature* victim, bool isEnemy) {
   return e.amount;
 }
 
-const char* Effects::IncreaseAttr::get(const char* ifIncrease, const char* ifDecrease) const {
+TStringId Effects::IncreaseAttr::get(TStringId ifIncrease, TStringId ifDecrease) const {
   if (amount > 0)
     return ifIncrease;
   else
@@ -417,16 +418,16 @@ const char* Effects::IncreaseAttr::get(const char* ifIncrease, const char* ifDec
 
 static bool applyToCreature(const Effects::AddExperience& e, Creature* c, Creature* attacker) {
   c->setCombatExperience(c->getCombatExperience(false, false) + e.amount);
-  c->you(MsgType::ARE, "more experienced");
+  c->you(MsgType::ARE, TStringId("MORE_EXPERIENCED"));
   return true;
 }
 
-static string getName(const Effects::AddExperience& e, const ContentFactory*) {
-  return "experience";
+static TString getName(const Effects::AddExperience& e, const ContentFactory*) {
+  return TStringId("ADD_EXPERIENCE_NAME");
 }
 
-static string getDescription(const Effects::AddExperience& e, const ContentFactory*) {
-  return "Increases creature's combat experience";
+static TString getDescription(const Effects::AddExperience& e, const ContentFactory*) {
+  return TStringId("ADD_EXPERIENCE_DESCRIPTION");
 }
 
 static const char* get(const Effects::SpecialAttr& a, const char* ifIncrease, const char* ifDecrease) {
@@ -438,22 +439,24 @@ static const char* get(const Effects::SpecialAttr& a, const char* ifIncrease, co
 
 static bool applyToCreature(const Effects::SpecialAttr& e, Creature* c, Creature*) {
   auto factory = c->getGame()->getContentFactory();
-  c->you(MsgType::YOUR, factory->attrInfo.at(e.attr).name + " "
-      + e.predicate.getName(factory) + get(e, " improves", " wanes"));
+  c->verb(TStringId(get(e, "YOUR_SPECIAL_ATTR_IMPROVES", "YOUR_SPECIAL_ATTR_WANES")),
+      TStringId(get(e, "HIS_SPECIAL_ATTR_IMPROVES", "HIS_SPECIAL_ATTR_WANES")),
+      factory->attrInfo.at(e.attr).name, e.predicate.getName(factory));
   c->getAttributes().specialAttr[e.attr].push_back(make_pair(e.value, e.predicate));
   return true;
 }
 
-static string getName(const Effects::SpecialAttr& e, const ContentFactory* f) {
-  return f->attrInfo.at(e.attr).name + get(e, " boost", " loss") + " " + e.predicate.getName(f);
+static TString getName(const Effects::SpecialAttr& e, const ContentFactory* f) {
+  return TSentence(TStringId(get(e, "SPECIAL_ATTR_BOOST_NAME", "SPECIAL_ATTR_LOSS_NAME")),
+      f->attrInfo.at(e.attr).name, e.predicate.getName(f));
 }
 
-static string getDescription(const Effects::SpecialAttr& e, const ContentFactory* f) {
-  return get(e, "Increases", "Decreases") + " "_s + f->attrInfo.at(e.attr).name
-      + " " + e.predicate.getName(f) + " by " + toString(abs(e.value));
+static TString getDescription(const Effects::SpecialAttr& e, const ContentFactory* f) {
+  return TSentence(TStringId(get(e, "SPECIAL_ATTR_BOOST_DESCRIPTION", "SPECIAL_ATTR_LOSS_DESCRIPTION")),
+      f->attrInfo.at(e.attr).name, e.predicate.getName(f));
 }
 
-static string get(const Effects::IncreaseMaxLevel& e, string inc, string dec) {
+static const char* get(const Effects::IncreaseMaxLevel& e, const char* inc, const char* dec) {
   if (e.value > 0)
     return inc;
   return dec;
@@ -461,18 +464,20 @@ static string get(const Effects::IncreaseMaxLevel& e, string inc, string dec) {
 
 static bool applyToCreature(const Effects::IncreaseMaxLevel& e, Creature* c, Creature*) {
   auto f = c->getGame()->getContentFactory();
-  c->you(MsgType::YOUR, f->attrInfo.at(e.type).name + get(e, " training limit increases", " training limit decreases"));
+  c->verb(TStringId(get(e, "YOUR_TRAINING_LIMIT_IMPROVES", "YOUR_TRAINING_LIMIT_WANES")),
+      TStringId(get(e, "HIS_TRAINING_LIMIT_IMPROVES", "HIS_TRAINING_LIMIT_WANES")),
+      f->attrInfo.at(e.type).name);
   c->getAttributes().increaseMaxExpLevel(e.type, e.value);
   return true;
 }
 
-static string getName(const Effects::IncreaseMaxLevel& e, const ContentFactory* f) {
-  return f->attrInfo.at(e.type).name + " training limit"_s;
+static TString getName(const Effects::IncreaseMaxLevel& e, const ContentFactory* f) {
+  return TSentence("TRAINING_LIMIT_EFFECT_NAME", f->attrInfo.at(e.type).name);
 }
 
-static string getDescription(const Effects::IncreaseMaxLevel& e, const ContentFactory* f) {
-  return get(e, "Increases", "Decreases") + " "_s + f->attrInfo.at(e.type).name + " training limit by " +
-      toString(std::fabs(e.value));
+static TString getDescription(const Effects::IncreaseMaxLevel& e, const ContentFactory* f) {
+  return TSentence(TStringId(get(e, "TRAINING_LIMIT_BUFF_DESCRIPTION", "TRAINING_LIMIT_DEBUFF_DESCRIPTION")),
+      f->attrInfo.at(e.type).name, toString(std::fabs(e.value)));
 }
 
 static bool applyToCreature(const Effects::IncreaseLevel& e, Creature* c, Creature*) {
@@ -480,12 +485,13 @@ static bool applyToCreature(const Effects::IncreaseLevel& e, Creature* c, Creatu
   return true;
 }
 
-static string getName(const Effects::IncreaseLevel& e, const ContentFactory* f) {
-  return f->attrInfo.at(e.type).name + " training"_s;
+static TString getName(const Effects::IncreaseLevel& e, const ContentFactory* f) {
+  return TSentence("TRAINING_EFFECT_NAME", f->attrInfo.at(e.type).name);
 }
 
-static string getDescription(const Effects::IncreaseLevel& e, const ContentFactory* f) {
-  return "Trains " + " "_s + f->attrInfo.at(e.type).name + " by " + toString(std::fabs(e.value));
+static TString getDescription(const Effects::IncreaseLevel& e, const ContentFactory* f) {
+  return TSentence(TStringId("TRAINING_EFFECT_DESCRIPTION"),
+      f->attrInfo.at(e.type).name, toString(std::fabs(e.value)));
 }
 
 static bool applyToCreature(const Effects::AddCompanion& e, Creature* c, Creature*) {
@@ -493,12 +499,12 @@ static bool applyToCreature(const Effects::AddCompanion& e, Creature* c, Creatur
   return true;
 }
 
-static string getName(const Effects::AddCompanion& e, const ContentFactory*) {
-  return "companion";
+static TString getName(const Effects::AddCompanion& e, const ContentFactory*) {
+  return TStringId("COMPANION_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::AddCompanion& e, const ContentFactory* f) {
-  return "Grants a permanent " + f->getCreatures().getName(e.creatures[0]) + " companion";
+static TString getDescription(const Effects::AddCompanion& e, const ContentFactory* f) {
+  return TSentence("COMPANION_EFFECT_DESCRIPTION", f->getCreatures().getName(e.creatures[0]));
 }
 
 static bool applyToCreature(const Effects::Permanent& e, Creature* c, Creature*) {
@@ -515,13 +521,12 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::Permanent& e, const
   return shouldAIApply(e.lastingEffect, isEnemy, victim);
 }
 
-static string getName(const Effects::Permanent& e, const ContentFactory* f) {
-  return "permanent " + getName(e.lastingEffect, f);
+static TString getName(const Effects::Permanent& e, const ContentFactory* f) {
+  return TSentence("PERMANENT_LASTING_NAME", getName(e.lastingEffect, f));
 }
 
-static string getDescription(const Effects::Permanent& e, const ContentFactory* f) {
-  string desc = getDescription(e.lastingEffect, f);
-  return desc.substr(0, desc.size() - 1) + " permanently.";
+static TString getDescription(const Effects::Permanent& e, const ContentFactory* f) {
+  return TSentence("PERMANENT_LASTING_DESCRIPTION", getName(e.lastingEffect, f));
 }
 
 static Color getColor(const Effects::Permanent& e, const ContentFactory* f) {
@@ -532,13 +537,12 @@ static bool applyToCreature(const Effects::RemovePermanent& e, Creature* c, Crea
   return removePermanentEffect(e.lastingEffect, c);
 }
 
-static string getName(const Effects::RemovePermanent& e, const ContentFactory* f) {
-  return "remove permanent " + getName(e.lastingEffect, f);
+static TString getName(const Effects::RemovePermanent& e, const ContentFactory* f) {
+  return TSentence("REMOVE_PERMANENT_LASTING_NAME", getName(e.lastingEffect, f));
 }
 
-static string getDescription(const Effects::RemovePermanent& e, const ContentFactory* f) {
-  string desc = getDescription(e.lastingEffect, f);
-  return "Removes/cures from " + desc.substr(0, desc.size() - 1) + " permanently.";
+static TString getDescription(const Effects::RemovePermanent& e, const ContentFactory* f) {
+  return TSentence("REMOVE_PERMANENT_LASTING_DESCRIPTION", getName(e.lastingEffect, f));
 }
 
 static bool applyToCreature(const Effects::Alarm& e, Creature* c, Creature*) {
@@ -546,16 +550,16 @@ static bool applyToCreature(const Effects::Alarm& e, Creature* c, Creature*) {
   return true;
 }
 
-static string getName(const Effects::Alarm&, const ContentFactory*) {
-  return "alarm";
+static TString getName(const Effects::Alarm&, const ContentFactory*) {
+  return TStringId("ALARM_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::Alarm&, const ContentFactory*) {
-  return "Alarm!";
+static TString getDescription(const Effects::Alarm&, const ContentFactory*) {
+  return TStringId("ALARM_EFFECT_DESCRIPTION");
 }
 
-static string getName(const Effects::Acid&, const ContentFactory*) {
-  return "acid";
+static TString getName(const Effects::Acid&, const ContentFactory*) {
+  return TStringId("ACID_EFFECT_NAME");
 }
 
 static bool isOffensive(const Effects::Acid&) {
@@ -566,8 +570,8 @@ static int getPrice(const Effects::Acid&, const ContentFactory*) {
   return 8;
 }
 
-static string getDescription(const Effects::Acid&, const ContentFactory*) {
-  return "Causes acid damage to skin and equipment.";
+static TString getDescription(const Effects::Acid&, const ContentFactory*) {
+  return TStringId("ACID_EFFECT_DESCRIPTION");
 }
 
 static Color getColor(const Effects::Acid&, const ContentFactory* f) {
@@ -586,30 +590,30 @@ static bool isConsideredHostile(const Effects::Acid&, const Creature* victim) {
   return !victim->isAffected(BuffId("ACID_RESISTANT"));
 }
 
-static string getName(const Effects::EatCorpse&, const ContentFactory*) {
-  return "eat corpse";
+static TString getName(const Effects::EatCorpse&, const ContentFactory*) {
+  return TStringId("EAT_CORPSE_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::EatCorpse&, const ContentFactory*) {
-  return "Creature will feast on a corpse.";
+static TString getDescription(const Effects::EatCorpse&, const ContentFactory*) {
+  return TStringId("EAT_CORPSE_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::EatCorpse& a, Position pos, Creature* attacker) {
   for (auto& item : pos.getItems())
     if (auto info = item->getCorpseInfo()) {
       auto it = pos.removeItem(item);
-      attacker->verb("eat", "eats", it->getTheName());
+      attacker->verb(TStringId("YOU_EAT"), TStringId("EATS"), TString(it->getTheName()));
       return true;
     }
   return false;
 }
 
-static string getName(const Effects::Banish&, const ContentFactory*) {
-  return "banish";
+static TString getName(const Effects::Banish&, const ContentFactory*) {
+  return TStringId("BANISH_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::Banish&, const ContentFactory*) {
-  return "Creature will leave its village forever.";
+static TString getDescription(const Effects::Banish&, const ContentFactory*) {
+  return TStringId("BANISH_EFFECT_DESCRIPTION");
 }
 
 static Collective* getCollective(Creature* c) {
@@ -674,26 +678,26 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::Summon&, const Crea
   return isConsideredInDanger(victim) ? 1 : 0;
 }
 
-static string getName(const Effects::Summon& e, const ContentFactory* f) {
-  if (e.count.getEnd() > 2)
-    return "summon " + f->getCreatures().getNamePlural(e.creature);
-  else
-    return "summon " + f->getCreatures().getName(e.creature);
+static TString getName(const Effects::Summon& e, const ContentFactory* f) {
+  return TSentence("SUMMON_EFFECT_NAME", e.count.getEnd() > 2
+      ? f->getCreatures().getNamePlural(e.creature)
+      : f->getCreatures().getName(e.creature));
 }
 
 static bool isOffensive(const Effects::Summon&) {
   return true;
 }
 
-static string getDescription(const Effects::Summon& e, const ContentFactory* f) {
+static TString getDescription(const Effects::Summon& e, const ContentFactory* f) {
   if (e.count.getEnd() > 2) {
     if (e.count.getLength() == 1)
-      return "Summons " + toString(e.count.getStart()) + " " + f->getCreatures().getNamePlural(e.creature);
+      return TSentence("SUMMON_MULTIPLE_EFFECT_DESCRIPTION", f->getCreatures().getNamePlural(e.creature),
+          toString(e.count.getStart()));
     else
-      return "Summons " + toString(e.count.getStart()) + " to " + toString(e.count.getEnd() - 1) + " "
-          + f->getCreatures().getNamePlural(e.creature);
+      return TSentence("SUMMON_RANGE_EFFECT_DESCRIPTION", {f->getCreatures().getNamePlural(e.creature),
+          toString(e.count.getStart()), toString(e.count.getEnd() - 1)});
   } else
-    return "Summons a " + f->getCreatures().getName(e.creature);
+    return TSentence("SUMMON_SINGLE_EFFECT_DESCRIPTION", f->getCreatures().getName(e.creature));
 }
 
 static bool applyToCreature(const Effects::AddAutomatonPart& e, Creature* c, Creature*) {
@@ -701,24 +705,28 @@ static bool applyToCreature(const Effects::AddAutomatonPart& e, Creature* c, Cre
   return true;
 }
 
-static string getName(const Effects::AddAutomatonPart& e, const ContentFactory* f) {
-  return "attach automaton part";
+static TString getName(const Effects::AddAutomatonPart& e, const ContentFactory* f) {
+  return TStringId("AUTOMATON_PART_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::AddAutomatonPart& e, const ContentFactory* f) {
-  return "Attaches an automaton part to the creature.";
+static TString getDescription(const Effects::AddAutomatonPart& e, const ContentFactory* f) {
+  return TStringId("AUTOMATON_PART_EFFECT_DESCRIPTION");
 }
 
-static string getName(const Effects::SummonEnemy& e, const ContentFactory* f) {
-  return "summon hostile " + f->getCreatures().getName(e.creature);
+static TString getName(const Effects::SummonEnemy& e, const ContentFactory* f) {
+  return TSentence("SUMMON_HOSTILE_EFFECT_NAME", f->getCreatures().getName(e.creature));
 }
 
-static string getDescription(const Effects::SummonEnemy& e, const ContentFactory* f) {
-  if (e.count.getEnd() > 2)
-    return "Summons " + toString(e.count.getStart()) + " to " + toString(e.count.getEnd() - 1) + " hostile " +
-        getName(e, f);
-  else
-    return "Summons a hostile " + getName(e, f);
+static TString getDescription(const Effects::SummonEnemy& e, const ContentFactory* f) {
+  if (e.count.getEnd() > 2) {
+    if (e.count.getLength() == 1)
+      return TSentence("SUMMON_HOSTILE_MULTIPLE_EFFECT_DESCRIPTION", f->getCreatures().getNamePlural(e.creature),
+          toString(e.count.getStart()));
+    else
+      return TSentence("SUMMON_HOSTILE_RANGE_EFFECT_DESCRIPTION", {f->getCreatures().getNamePlural(e.creature),
+          toString(e.count.getStart()), toString(e.count.getEnd() - 1)});
+  } else
+    return TSentence("SUMMON_HOSTILE_SINGLE_EFFECT_DESCRIPTION", f->getCreatures().getName(e.creature));
 }
 
 static bool apply(const Effects::SummonEnemy& summon, Position pos, Creature*) {
@@ -739,16 +747,16 @@ static bool applyToCreature(const Effects::SummonElement&, Creature* c, Creature
   return ::summon(c, id, Range(1, 2), false, 100_visible);
 }
 
-static string getName(const Effects::SummonElement&, const ContentFactory*) {
-  return "summon element";
+static TString getName(const Effects::SummonElement&, const ContentFactory*) {
+  return TStringId("SUMMON_ELEMENT_EFFECT_NAME");
 }
 
 static bool isOffensive(const Effects::SummonElement&) {
   return true;
 }
 
-static string getDescription(const Effects::SummonElement&, const ContentFactory*) {
-  return "Summons an element or spirit from the surroundings.";
+static TString getDescription(const Effects::SummonElement&, const ContentFactory*) {
+  return TStringId("SUMMON_ELEMENT_EFFECT_DESCRIPTION");
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::SummonElement&, const Creature* victim, bool isEnemy) {
@@ -762,16 +770,16 @@ static bool applyToCreature(const Effects::Deception&, Creature* c, Creature*) {
   return !Effect::summonCreatures(c->getPosition(), std::move(creatures)).empty();
 }
 
-static string getName(const Effects::Deception&, const ContentFactory*) {
-  return "deception";
+static TString getName(const Effects::Deception&, const ContentFactory*) {
+  return TStringId("DECEPTION_EFFECT_NAME");
 }
 
 static bool isOffensive(const Effects::Deception&) {
   return true;
 }
 
-static string getDescription(const Effects::Deception&, const ContentFactory*) {
-  return "Creates multiple illusions of the spellcaster to confuse the enemy.";
+static TString getDescription(const Effects::Deception&, const ContentFactory*) {
+  return TStringId("DECEPTION_EFFECT_DESCRIPTION");
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Deception&, const Creature* victim, bool isEnemy) {
@@ -802,7 +810,7 @@ static void airBlast(Creature* attacker, Position origin, Position position, Pos
         break;
     if (target) {
       c->displace(c->getPosition().getDir(*target));
-      c->you(MsgType::ARE, "thrown back");
+      c->you(MsgType::ARE, TStringId("THROWN_BACK"));
     }
     c->addEffect(LastingEffect::COLLAPSED, 2_visible);
   }
@@ -825,24 +833,24 @@ static bool applyToCreature(const Effects::CircularBlast&, Creature* c, Creature
   return true;
 }
 
-static string getName(const Effects::CircularBlast&, const ContentFactory*) {
-  return "air blast";
+static TString getName(const Effects::CircularBlast&, const ContentFactory*) {
+  return TStringId("CIRCULAR_BLAST_EFFECT_NAME");
 }
 
 static bool isOffensive(const Effects::CircularBlast&) {
   return true;
 }
 
-static string getDescription(const Effects::CircularBlast&, const ContentFactory*) {
-  return "Creates a circular blast of air that throws back creatures and items.";
+static TString getDescription(const Effects::CircularBlast&, const ContentFactory*) {
+  return TStringId("CIRCULAR_BLAST_EFFECT_DESCRIPTION");
 }
 
-const char* Effects::Enhance::typeAsString() const {
+const char* Effects::Enhance::typeAsString(const char* weapon, const char* armor) const {
   switch (type) {
     case EnhanceType::WEAPON:
-      return "weapon";
+      return weapon;
     case EnhanceType::ARMOR:
-      return "armor";
+      return armor;
   }
 }
 
@@ -853,25 +861,29 @@ const char* Effects::Enhance::amountAs(const char* positive, const char* negativ
 static bool applyToCreature(const Effects::Enhance& e, Creature* c, Creature*) {
   switch (e.type) {
     case Effects::EnhanceType::WEAPON:
-      return enhanceWeapon(c, e.amount, e.amountAs("is improved", "degrades"));
+      return enhanceWeapon(c, e.amount, TStringId(e.amountAs("YOUR_WEAPON_IS_IMPROVED", "YOUR_WEAPON_DEGRADES")),
+          TStringId(e.amountAs("HIS_WEAPON_IS_IMPROVED", "HIS_WEAPON_DEGRADES")));
     case Effects::EnhanceType::ARMOR:
-      return enhanceArmor(c, e.amount, e.amountAs("is improved", "degrades"));
+      return enhanceArmor(c, e.amount, TStringId(e.amountAs("YOUR_ARMOR_IS_IMPROVED", "YOUR_ARMOR_DEGRADES")),
+          TStringId(e.amountAs("HIS_ARMOR_IS_IMPROVED", "HIS_ARMOR_DEGRADES")));
   }
 }
 
-static string getName(const Effects::Enhance& e, const ContentFactory*) {
-  return e.typeAsString() + " "_s + e.amountAs("enchantment", "degradation");
+static TString getName(const Effects::Enhance& e, const ContentFactory*) {
+  return TStringId(e.typeAsString(e.amountAs("WEAPON_ENCHANTMENT_NAME", "WEAPON_DEGRADATION_NAME"),
+      e.amountAs("ARMOR_ENCHANTMENT_NAME", "ARMOR_DEGRADATION_NAME")));
 }
 
-static string getDescription(const Effects::Enhance& e, const ContentFactory*) {
-  return e.amountAs("Increases", "Decreases") + " "_s + e.typeAsString() + " capability"_s;
+static TString getDescription(const Effects::Enhance& e, const ContentFactory*) {
+  return TStringId(e.typeAsString(e.amountAs("WEAPON_ENCHANTMENT_DESCRIPTION", "WEAPON_DEGRADATION_DESCRIPTION"),
+      e.amountAs("ARMOR_ENCHANTMENT_DESCRIPTION", "ARMOR_DEGRADATION_DESCRIPTION")));
 }
 
 static bool applyToCreature(const Effects::DestroyEquipment&, Creature* c, Creature*) {
   auto equipped = c->getEquipment().getAllEquipped();
   if (!equipped.empty()) {
     Item* dest = Random.choose(equipped);
-    c->you(MsgType::YOUR, dest->getName() + " crumbles to dust.");
+    c->verb(TStringId("YOUR_ITEM_CRUMBLES"), TStringId("HIS_ITEM_CRUMBLES"), dest->getName());
     c->steal({dest});
     return true;
   }
@@ -886,24 +898,24 @@ static bool isConsideredHostile(const Effects::DestroyEquipment&, const Creature
   return true;
 }
 
-static string getName(const Effects::DestroyEquipment&, const ContentFactory*) {
-  return "equipment destruction";
+static TString getName(const Effects::DestroyEquipment&, const ContentFactory*) {
+  return TStringId("EQUIPMENT_DESTRUCTION_EFFECT_NAME");
 }
 
 static bool isOffensive(const Effects::DestroyEquipment&) {
   return true;
 }
 
-static string getDescription(const Effects::DestroyEquipment&, const ContentFactory*) {
-  return "Destroys a random piece of equipment.";
+static TString getDescription(const Effects::DestroyEquipment&, const ContentFactory*) {
+  return TStringId("EQUIPMENT_DESTRUCTION_EFFECT_DESCRIPTION");
 }
 
-static string getName(const Effects::DestroyWalls&, const ContentFactory*) {
-  return "destruction";
+static TString getName(const Effects::DestroyWalls&, const ContentFactory*) {
+  return TStringId("DESTROY_WALLS_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::DestroyWalls&, const ContentFactory*) {
-  return "Destroys terrain and objects.";
+static TString getDescription(const Effects::DestroyWalls&, const ContentFactory*) {
+  return TStringId("DESTROY_WALLS_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::DestroyWalls& m, Position pos, Creature* attacker) {
@@ -916,12 +928,12 @@ static bool apply(const Effects::DestroyWalls& m, Position pos, Creature* attack
   return res;
 }
 
-static string getName(const Effects::RemoveFurniture& e, const ContentFactory* c) {
-  return "remove " + c->furniture.getData(e.type).getName();
+static TString getName(const Effects::RemoveFurniture& e, const ContentFactory* c) {
+  return TSentence("REMOVE_FURNITURE_EFFECT_NAME", c->furniture.getData(e.type).getName());
 }
 
-static string getDescription(const Effects::RemoveFurniture& e, const ContentFactory* c) {
-  return "Removes " + c->furniture.getData(e.type).getName();
+static TString getDescription(const Effects::RemoveFurniture& e, const ContentFactory* c) {
+  return TSentence("REMOVE_FURNITURE_EFFECT_DESCRIPTION", c->furniture.getData(e.type).getName());
 }
 
 static bool apply(const Effects::RemoveFurniture& e, Position pos, Creature*) {
@@ -961,16 +973,16 @@ static bool isConsideredHostile(const Effects::Bleed&, const Creature* victim) {
   return true;
 }
 
-static string getName(const Effects::Bleed&, const ContentFactory*) {
-  return "bleeding";
+static TString getName(const Effects::Bleed&, const ContentFactory*) {
+  return TStringId("BLEEDING_EFFECT_NAME");
 }
 
 static bool isOffensive(const Effects::Bleed&) {
   return true;
 }
 
-static string getDescription(const Effects::Bleed&, const ContentFactory*) {
-  return "Causes bleeding.";
+static TString getDescription(const Effects::Bleed&, const ContentFactory*) {
+  return TStringId("BLEEDING_EFFECT_DESCRIPTION");
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Bleed& e, const Creature* victim, bool isEnemy) {
@@ -990,17 +1002,17 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::Heal& e, const Crea
   return 0;
 }
 
-static string getName(const Effects::Heal& e, const ContentFactory*) {
+static TString getName(const Effects::Heal& e, const ContentFactory*) {
   switch (e.healthType) {
-    case HealthType::FLESH: return "healing";
-    case HealthType::SPIRIT: return "materialization";
+    case HealthType::FLESH: return TStringId("HEALING_EFFECT_NAME");
+    case HealthType::SPIRIT: return TStringId("MATERIALIZATION_EFFECT_NAME");
   }
 }
 
-static string getDescription(const Effects::Heal& e, const ContentFactory*) {
+static TString getDescription(const Effects::Heal& e, const ContentFactory*) {
   switch (e.healthType) {
-    case HealthType::FLESH: return "Fully restores health.";
-    case HealthType::SPIRIT: return "Fully re-materializes a spirit.";
+    case HealthType::FLESH: return TStringId("HEALING_EFFECT_DESCRIPTION");
+    case HealthType::SPIRIT: return TStringId("MATERIALIZATION_EFFECT_DESCRIPTION");
   }
 }
 
@@ -1011,8 +1023,8 @@ static Color getColor(const Effects::Heal& e, const ContentFactory* f) {
   }
 }
 
-static string getName(const Effects::SetFurnitureOnFire&, const ContentFactory*) {
-  return "set on fire";
+static TString getName(const Effects::SetFurnitureOnFire&, const ContentFactory*) {
+  return TStringId("SET_FURNITURE_ON_FIRE_EFFECT_NAME");
 }
 
 static bool isOffensive(const Effects::SetFurnitureOnFire&) {
@@ -1023,8 +1035,8 @@ static int getPrice(const Effects::SetFurnitureOnFire&, const ContentFactory*) {
   return 12;
 }
 
-static string getDescription(const Effects::SetFurnitureOnFire&, const ContentFactory*) {
-  return "Sets objects on fire";
+static TString getDescription(const Effects::SetFurnitureOnFire&, const ContentFactory*) {
+  return TStringId("SET_FURNITURE_ON_FIRE_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::SetFurnitureOnFire& a, Position pos, Creature* attacker) {
@@ -1035,12 +1047,12 @@ static bool apply(const Effects::SetFurnitureOnFire& a, Position pos, Creature* 
   return ret;
 }
 
-static string getName(const Effects::ClaimTile&, const ContentFactory*) {
-  return "claim tile";
+static TString getName(const Effects::ClaimTile&, const ContentFactory*) {
+  return TStringId("CLAIM_TILE_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::ClaimTile&, const ContentFactory*) {
-  return "Claims the tile as the player's territory";
+static TString getDescription(const Effects::ClaimTile&, const ContentFactory*) {
+  return TStringId("CLAIM_TILE_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::ClaimTile& a, Position pos, Creature* attacker) {
@@ -1052,8 +1064,8 @@ static bool apply(const Effects::ClaimTile& a, Position pos, Creature* attacker)
   return false;
 }
 
-static string getName(const Effects::Fire&, const ContentFactory*) {
-  return "fire";
+static TString getName(const Effects::Fire&, const ContentFactory*) {
+  return TStringId("FIRE_EFFECT_NAME");
 }
 
 static bool isOffensive(const Effects::Fire&) {
@@ -1064,8 +1076,8 @@ static int getPrice(const Effects::Fire&, const ContentFactory*) {
   return 12;
 }
 
-static string getDescription(const Effects::Fire&, const ContentFactory*) {
-  return "Burns!";
+static TString getDescription(const Effects::Fire&, const ContentFactory*) {
+  return TStringId("FIRE_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::Fire& a, Position pos, Creature* attacker) {
@@ -1087,16 +1099,16 @@ static bool isConsideredHostile(const Effects::Fire&, const Creature* victim) {
   return !victim->isAffected(BuffId("FIRE_IMMUNITY"));
 }
 
-static string getName(const Effects::Ice&, const ContentFactory*) {
-  return "ice";
+static TString getName(const Effects::Ice&, const ContentFactory*) {
+  return TStringId("ICE_EFFECT_NAME");
 }
 
 static bool isOffensive(const Effects::Ice&) {
   return true;
 }
 
-static string getDescription(const Effects::Ice&, const ContentFactory*) {
-  return "Freezes water and causes cold damage";
+static TString getDescription(const Effects::Ice&, const ContentFactory*) {
+  return TStringId("ICE_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::Ice& a, Position pos, Creature* attacker) {
@@ -1113,16 +1125,16 @@ static bool isConsideredHostile(const Effects::Ice&, const Creature* victim) {
   return !victim->isAffected(BuffId("COLD_IMMUNITY"));
 }
 
-static string getName(const Effects::ReviveCorpse&, const ContentFactory*) {
-  return "revive corpse";
+static TString getName(const Effects::ReviveCorpse&, const ContentFactory*) {
+  return TStringId("REVIVE_CORPSE_EFFECT_NAME");
 }
 
 static bool isOffensive(const Effects::ReviveCorpse&) {
   return true;
 }
 
-static string getDescription(const Effects::ReviveCorpse&, const ContentFactory*) {
-  return "Brings a dead corpse back alive as a servant";
+static TString getDescription(const Effects::ReviveCorpse&, const ContentFactory*) {
+  return TStringId("REVIVE_CORPSE_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::ReviveCorpse& effect, Position pos, Creature* attacker) {
@@ -1136,19 +1148,19 @@ static bool apply(const Effects::ReviveCorpse& effect, Position pos, Creature* a
               if (!summoned.empty()) {
                 for (auto& c : summoned) {
                   c->getName().addBarePrefix(dead->getName().bare());
-                  attacker->message("You have revived " + c->getName().a());
+                  attacker->verb(TStringId("YOU_HAVE_REVIVED"), TStringId("HAS_REVIVED"), c->getName().a());
                 }
                 pos.removeItems({item});
                 return true;
               }
             }
-            attacker->message("The spell failed");
+            attacker->message(TSentence("THE_SPELL_FAILED"));
             return false;
           }
   return false;
 }
 
-static string getName(const Effects::EmitGas& m, const ContentFactory* f) {
+static TString getName(const Effects::EmitGas& m, const ContentFactory* f) {
   return f->tileGasTypes.at(m.type).name;
 }
 
@@ -1160,9 +1172,9 @@ static Color getColor(const Effects::EmitGas& e, const ContentFactory* f) {
   return f->tileGasTypes.at(e.type).color;
 }
 
-static string getDescription(const Effects::EmitGas& m, const ContentFactory* f) {
+static TString getDescription(const Effects::EmitGas& m, const ContentFactory* f) {
   if (auto info = getReferenceMaybe(f->tileGasTypes, m.type))
-    return "Emits " + info->name;
+    return TSentence("EMIT_GAS_DESCRIPTION", info->name);
   else {
     string out;
     for (auto& elem : f->tileGasTypes)
@@ -1175,8 +1187,8 @@ static string getDescription(const Effects::EmitGas& m, const ContentFactory* f)
 static bool apply(const Effects::EmitGas& m, Position pos, Creature*) {
   pos.addGas(m.type, m.amount);
   auto& info = pos.getGame()->getContentFactory()->tileGasTypes.at(m.type);
-  pos.globalMessage("A " + info.name + " cloud is released");
-  pos.unseenMessage("You hear a hissing sound");
+  pos.globalMessage(TSentence("GAS_RELEASED", info.name));
+  pos.unseenMessage(TStringId("GAS_RELEASED_UNSEEN"));
   return true;
 }
 
@@ -1192,12 +1204,12 @@ static EffectAIIntent shouldAIApply(const Effects::EmitGas& e, const Creature* c
   return effect ? effect->shouldAIApply(caster, pos) : 0;
 }
 
-static string getName(const Effects::PlaceFurniture& e, const ContentFactory* c) {
+static TString getName(const Effects::PlaceFurniture& e, const ContentFactory* c) {
   return c->furniture.getData(e.furniture).getName();
 }
 
-static string getDescription(const Effects::PlaceFurniture& e, const ContentFactory* c) {
-  return "Creates a " + getName(e, c);
+static TString getDescription(const Effects::PlaceFurniture& e, const ContentFactory* c) {
+  return TSentence("CREATE_FURNITURE_DESCRIPTION", getName(e, c));
 }
 
 static bool apply(const Effects::PlaceFurniture& summon, Position pos, Creature* attacker) {
@@ -1216,12 +1228,12 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::PlaceFurniture& f, 
       isConsideredInDanger(victim) ? 1 : 0;
 }
 
-static string getName(const Effects::ModifyFurniture& e, const ContentFactory* c) {
+static TString getName(const Effects::ModifyFurniture& e, const ContentFactory* c) {
   return c->furniture.getData(e.furniture).getName();
 }
 
-static string getDescription(const Effects::ModifyFurniture& e, const ContentFactory* c) {
-  return "Creates a " + getName(e, c);
+static TString getDescription(const Effects::ModifyFurniture& e, const ContentFactory* c) {
+  return TSentence("CREATE_FURNITURE_DESCRIPTION", getName(e, c));
 }
 
 static bool apply(const Effects::ModifyFurniture& summon, Position pos, Creature*) {
@@ -1242,12 +1254,12 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::ModifyFurniture& f,
       isConsideredInDanger(victim) ? 1 : 0;
 }
 
-static string getName(const Effects::DropItems&, const ContentFactory* c) {
-  return "create items";
+static TString getName(const Effects::DropItems&, const ContentFactory* c) {
+  return TSentence("CREATE_ITEMS_NAME");
 }
 
-static string getDescription(const Effects::DropItems&, const ContentFactory* c) {
-  return "Creates items";
+static TString getDescription(const Effects::DropItems&, const ContentFactory* c) {
+  return TSentence("CREATE_ITEMS_DESCRIPTION");
 }
 
 static bool apply(const Effects::DropItems& effect, Position pos, Creature*) {
@@ -1255,12 +1267,12 @@ static bool apply(const Effects::DropItems& effect, Position pos, Creature*) {
   return true;
 }
 
-static string getName(const Effects::DropItemList&, const ContentFactory* c) {
-  return "create items";
+static TString getName(const Effects::DropItemList&, const ContentFactory* c) {
+  return TSentence("CREATE_ITEMS_NAME");
 }
 
-static string getDescription(const Effects::DropItemList&, const ContentFactory* c) {
-  return "Creates items";
+static TString getDescription(const Effects::DropItemList&, const ContentFactory* c) {
+  return TSentence("CREATE_ITEMS_DESCRIPTION");
 }
 
 static bool apply(const Effects::DropItemList& listId, Position pos, Creature*) {
@@ -1300,7 +1312,7 @@ static bool isConsideredHostile(const Effects::Damage&, const Creature*) {
   return true;
 }
 
-static string getName(const Effects::Damage& e, const ContentFactory* f) {
+static TString getName(const Effects::Damage& e, const ContentFactory* f) {
   return f->attrInfo.at(e.attr).name;
 }
 
@@ -1308,8 +1320,8 @@ static bool isOffensive(const Effects::Damage&) {
   return true;
 }
 
-static string getDescription(const Effects::Damage& e, const ContentFactory* f) {
-  return "Causes " + f->attrInfo.at(e.attr).name;
+static TString getDescription(const Effects::Damage& e, const ContentFactory* f) {
+  return TSentence("DAMAGE_EFFECT_DESCRIPTION", f->attrInfo.at(e.attr).name);
 }
 
 template <>
@@ -1324,56 +1336,56 @@ static bool applyToCreature(const Effects::FixedDamage& e, Creature* c, Creature
   return result;
 }
 
-static string getName(const Effects::FixedDamage& e, const ContentFactory* f) {
-  return toString(e.value) + " " + f->attrInfo.at(e.attr).name;
+static TString getName(const Effects::FixedDamage& e, const ContentFactory* f) {
+  return TSentence("FIXED_DAMAGE_EFFECT_NAME", f->attrInfo.at(e.attr).name, toString(e.value));
 }
 
 static bool isOffensive(const Effects::FixedDamage&) {
   return true;
 }
 
-static string getDescription(const Effects::FixedDamage& e, const ContentFactory* f) {
-  return "Causes " + toString(e.value) + " " + f->attrInfo.at(e.attr).name;
+static TString getDescription(const Effects::FixedDamage& e, const ContentFactory* f) {
+  return TSentence("FIXED_DAMAGE_EFFECT_DESCRIPTION", f->attrInfo.at(e.attr).name, toString(e.value));
 }
 
 static bool applyToCreature(const Effects::InjureBodyPart& e, Creature* c, Creature* attacker) {
   if (c->getBody().injureBodyPart(c, e.part, false)) {
-    c->you(MsgType::DIE, "");
+    c->you(MsgType::DIE);
     c->dieWithAttacker(attacker);
   }
   return false;
 }
 
-static string getName(const Effects::InjureBodyPart& e, const ContentFactory*) {
-  return "injure "_s + ::getName(e.part);
+static TString getName(const Effects::InjureBodyPart& e, const ContentFactory*) {
+  return TSentence("INJURE_BODY_PART_EFFECT_NAME", ::getName(e.part));
 }
 
 static bool isOffensive(const Effects::InjureBodyPart&) {
   return true;
 }
 
-static string getDescription(const Effects::InjureBodyPart& e, const ContentFactory*) {
-  return "Injures "_s + ::getName(e.part);
+static TString getDescription(const Effects::InjureBodyPart& e, const ContentFactory*) {
+  return TSentence("INJURE_BODY_PART_EFFECT_DESCRIPTION", ::getName(e.part));
 }
 
 static bool applyToCreature(const Effects::LoseBodyPart& e, Creature* c, Creature* attacker) {
   if (c->getBody().injureBodyPart(c, e.part, true)) {
-    c->you(MsgType::DIE, "");
+    c->you(MsgType::DIE);
     c->dieWithAttacker(attacker);
   }
   return false;
 }
 
-static string getName(const Effects::LoseBodyPart& e, const ContentFactory*) {
-  return "lose "_s + ::getName(e.part);
+static TString getName(const Effects::LoseBodyPart& e, const ContentFactory*) {
+  return TSentence("LOSE_BODY_PART_EFFECT_NAME", ::getName(e.part));
 }
 
 static bool isOffensive(const Effects::LoseBodyPart&) {
   return true;
 }
 
-static string getDescription(const Effects::LoseBodyPart& e, const ContentFactory*) {
-  return "Causes you to lose a "_s + ::getName(e.part);
+static TString getDescription(const Effects::LoseBodyPart& e, const ContentFactory*) {
+  return TSentence("LOSE_BODY_PART_EFFECT_DESCRIPTION", ::getName(e.part));
 }
 
 static bool applyToCreature(const Effects::AddBodyPart& p, Creature* c, Creature* attacker) {
@@ -1385,12 +1397,18 @@ static bool applyToCreature(const Effects::AddBodyPart& p, Creature* c, Creature
   return true;
 }
 
-static string getName(const Effects::AddBodyPart& e, const ContentFactory*) {
-  return "extra "_s + (e.count > 1 ? makePlural(::getName(e.part)) : string(::getName(e.part)));
+static TString getName(const Effects::AddBodyPart& e, const ContentFactory*) {
+  if (e.count > 1)
+    return TSentence("EXTRA_BODY_PARTS_EFFECT_NAME", ::getPlural(e.part));
+  else
+    return TSentence("EXTRA_BODY_PART_EFFECT_NAME", ::getName(e.part));
 }
 
-static string getDescription(const Effects::AddBodyPart& e, const ContentFactory*) {
-  return "Adds "_s + getPlural(::getName(e.part), e.count);
+static TString getDescription(const Effects::AddBodyPart& e, const ContentFactory*) {
+  if (e.count > 1)
+    return TSentence("EXTRA_BODY_PARTS_EFFECT_DESCRIPTION", ::getPlural(e.part));
+  else
+    return TSentence("EXTRA_BODY_PART_EFFECT_DESCRIPTION", ::getName(e.part));
 }
 
 static bool applyToCreature(const Effects::AddIntrinsicAttack& p, Creature* c, Creature* attacker) {
@@ -1399,12 +1417,12 @@ static bool applyToCreature(const Effects::AddIntrinsicAttack& p, Creature* c, C
   return true;
 }
 
-static string getName(const Effects::AddIntrinsicAttack& e, const ContentFactory*) {
-  return "extra "_s + ::getName(e.part) + " attack";
+static TString getName(const Effects::AddIntrinsicAttack& e, const ContentFactory*) {
+  return TSentence("ADD_INTRINSIC_ATTACK_EFFECT_NAME", ::getName(e.part));
 }
 
-static string getDescription(const Effects::AddIntrinsicAttack& e, const ContentFactory*) {
-  return "Adds an extra "_s + ::getName(e.part) + " attack";
+static TString getDescription(const Effects::AddIntrinsicAttack& e, const ContentFactory*) {
+  return TSentence("ADD_INTRINSIC_ATTACK_EFFECT_DESCRIPTION", ::getName(e.part));
 }
 
 static bool applyToCreature(const Effects::MakeHumanoid&, Creature* c, Creature*) {
@@ -1413,24 +1431,24 @@ static bool applyToCreature(const Effects::MakeHumanoid&, Creature* c, Creature*
   return ret;
 }
 
-static string getName(const Effects::MakeHumanoid&, const ContentFactory*) {
-  return "turn into a humanoid";
+static TString getName(const Effects::MakeHumanoid&, const ContentFactory*) {
+  return TSentence("MAKE_HUMANOID_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::MakeHumanoid&, const ContentFactory*) {
-  return "Turns creature into a humanoid";
+static TString getDescription(const Effects::MakeHumanoid&, const ContentFactory*) {
+  return TSentence("MAKE_HUMANOID_EFFECT_DESCRIPTION");
 }
 
 static bool applyToCreature(const Effects::RegrowBodyPart& e, Creature* c, Creature*) {
   return c->getBody().healBodyParts(c, e.maxCount);
 }
 
-static string getName(const Effects::RegrowBodyPart&, const ContentFactory*) {
-  return "regrow lost body parts";
+static TString getName(const Effects::RegrowBodyPart&, const ContentFactory*) {
+  return TSentence("REGROW_BODY_PART_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::RegrowBodyPart&, const ContentFactory*) {
-  return "Causes lost body parts to regrow.";
+static TString getDescription(const Effects::RegrowBodyPart&, const ContentFactory*) {
+  return TSentence("REGROW_BODY_PART_EFFECT_DESCRIPTION");
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::RegrowBodyPart&, const Creature* victim, bool isEnemy) {
@@ -1440,8 +1458,12 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::RegrowBodyPart&, co
   return 0;
 }
 
-static string getDescription(const Effects::Area& e, const ContentFactory* factory) {
-  return "Area effect of radius " + toString(e.radius) + ": " + noCapitalFirst(e.effect->getDescription(factory));
+static TString getDescription(const Effects::Area& e, const ContentFactory* factory) {
+  return TSentence("AREA_EFFECT_DESCRIPTION", toString(e.radius), e.effect->getDescription(factory));
+}
+
+static TString getName(const Effects::Area& e, const ContentFactory* factory) {
+  return TSentence("AREA_EFFECT_NAME", e.effect->getName(factory));
 }
 
 static bool apply(const Effects::Area& area, Position pos, Creature* attacker) {
@@ -1469,12 +1491,12 @@ static EffectAIIntent shouldAIApply(const Effects::Area& a, const Creature* cast
   return considerArea(caster, pos.getRectangle(Rectangle::centered(a.radius)), *a.effect);
 }
 
-static string getName(const Effects::CustomArea& e, const ContentFactory* f) {
-  return "custom area " + e.effect->getName(f);
+static TString getName(const Effects::CustomArea& e, const ContentFactory* f) {
+  return TSentence("CUSTOM_AREA_EFFECT_NAME", e.effect->getName(f));
 }
 
-static string getDescription(const Effects::CustomArea& e, const ContentFactory* factory) {
-  return "Custom area effect: " + noCapitalFirst(e.effect->getDescription(factory));
+static TString getDescription(const Effects::CustomArea& e, const ContentFactory* factory) {
+  return TSentence("CUSTOM_AREA_EFFECT_DESCRIPTION", e.effect->getDescription(factory));
 }
 
 static Vec2 rotate(Vec2 v, Vec2 r) {
@@ -1504,7 +1526,7 @@ static bool apply(const Effects::CustomArea& area, Position pos, Creature* attac
 
 static bool applyToCreature(const Effects::Suicide& e, Creature* c, Creature* attacker) {
   if (!c->isAffected(BuffId("INVULNERABLE"))) {
-    c->you(e.message, "");
+    c->you(e.message);
     c->dieWithAttacker(attacker);
     return true;
   }
@@ -1523,18 +1545,17 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::Suicide&, const Cre
   return isEnemy ? 1 : -1;
 }
 
-static string getName(const Effects::Suicide&, const ContentFactory*) {
-  return "suicide";
+static TString getName(const Effects::Suicide&, const ContentFactory*) {
+  return TSentence("SUICIDE_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::Suicide&, const ContentFactory*) {
-  return "Causes the *attacker* to die.";
+static TString getDescription(const Effects::Suicide&, const ContentFactory*) {
+  return TSentence("SUICIDE_EFFECT_DESCRIPTION");
 }
 
 static bool applyToCreature(const Effects::Wish&, Creature* c, Creature* attacker) {
   c->getController()->grantWish(
-      (attacker ? attacker->getName().the() + " grants you a wish." : "You are granted a wish.") +
-      " What do you wish for?");
+      (attacker ? TSentence("GRANTS_YOU_A_WISH", attacker->getName().the()) : TSentence("YOU_ARE_GRANTED_A_WISH")));
   return true;
 }
 
@@ -1546,47 +1567,24 @@ static EffectAIIntent shouldAIApply(const Effects::Wish&, const Creature* caster
     return -1;
 }
 
-static string getName(const Effects::Wish&, const ContentFactory*) {
-  return "wishing";
+static TString getName(const Effects::Wish&, const ContentFactory*) {
+  return TSentence("WISH_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::Wish&, const ContentFactory*) {
-  return "Gives you one wish.";
+static TString getDescription(const Effects::Wish&, const ContentFactory*) {
+  return TSentence("WISH_EFFECT_DESCRIPTION");
 }
 
-static string combineNames(const ContentFactory* f, const vector<Effect>& effects) {
-  if (effects.empty())
-    return "";
-  string ret;
-  for (auto& e : effects)
-    ret += e.getName(f) + ", ";
-  ret.pop_back();
-  ret.pop_back();
-  return ret;
+static TString combineNames(const ContentFactory* f, const vector<Effect>& effects) {
+  return combineWithCommas(effects.transform([f](auto& e) { return e.getName(f); }));
 }
 
-static string combineDescriptions(const ContentFactory* f, const vector<Effect>& effects) {
-  if (effects.empty())
-    return "";
-  string ret;
-  for (auto& e : effects) {
-    auto desc = e.getDescription(f);
-    if (!ret.empty())
-      desc = noCapitalFirst(std::move(desc));
-    ret += std::move(desc);
-    ret += ", ";
-  }
-  ret.pop_back();
-  ret.pop_back();
-  return ret;
-}
-
-static string getName(const Effects::Chain& e, const ContentFactory* f) {
+static TString getName(const Effects::Chain& e, const ContentFactory* f) {
   return combineNames(f, e.effects);
 }
 
-static string getDescription(const Effects::Chain& e, const ContentFactory* f) {
-  return combineDescriptions(f, e.effects);
+static TString getDescription(const Effects::Chain& e, const ContentFactory* f) {
+  return TString();
 }
 
 static bool apply(const Effects::Chain& chain, Position pos, Creature* attacker) {
@@ -1653,12 +1651,12 @@ static bool apply(const Effects::ChainUntilFail& chain, Position pos, Creature* 
   return res;
 }
 
-static string getName(const Effects::FirstSuccessful& e, const ContentFactory* f) {
-  return "try: " + combineNames(f, e.effects);
+static TString getName(const Effects::FirstSuccessful& e, const ContentFactory* f) {
+  return combineNames(f, e.effects);
 }
 
-static string getDescription(const Effects::FirstSuccessful& e, const ContentFactory* f) {
-  return "First successful: " + combineDescriptions(f, e.effects);
+static TString getDescription(const Effects::FirstSuccessful& e, const ContentFactory* f) {
+  return TString();
 }
 
 static bool apply(const Effects::FirstSuccessful& chain, Position pos, Creature* attacker) {
@@ -1668,11 +1666,11 @@ static bool apply(const Effects::FirstSuccessful& chain, Position pos, Creature*
   return false;
 }
 
-static string getName(const Effects::ChooseRandom& e, const ContentFactory* f) {
+static TString getName(const Effects::ChooseRandom& e, const ContentFactory* f) {
   return e.effects[0].getName(f);
 }
 
-static string getDescription(const Effects::ChooseRandom& e, const ContentFactory* f) {
+static TString getDescription(const Effects::ChooseRandom& e, const ContentFactory* f) {
   return e.effects[0].getDescription(f);
 }
 
@@ -1680,11 +1678,11 @@ static bool apply(const Effects::ChooseRandom& r, Position pos, Creature* attack
   return r.effects[Random.get(r.effects.size())].apply(pos, attacker);
 }
 
-static string getName(const Effects::ChooseRandomUntilSuccessful& e, const ContentFactory* f) {
+static TString getName(const Effects::ChooseRandomUntilSuccessful& e, const ContentFactory* f) {
   return e.effects[0].getName(f);
 }
 
-static string getDescription(const Effects::ChooseRandomUntilSuccessful& e, const ContentFactory* f) {
+static TString getDescription(const Effects::ChooseRandomUntilSuccessful& e, const ContentFactory* f) {
   return e.effects[0].getDescription(f);
 }
 
@@ -1695,11 +1693,11 @@ static bool apply(const Effects::ChooseRandomUntilSuccessful& r, Position pos, C
   return false;
 }
 
-static string getName(const Effects::Message&, const ContentFactory*) {
-  return "message";
+static TString getName(const Effects::Message&, const ContentFactory*) {
+  return TStringId("MESSAGE_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::Message& e, const ContentFactory*) {
+static TString getDescription(const Effects::Message& e, const ContentFactory*) {
   return e.text;
 }
 
@@ -1708,11 +1706,11 @@ static bool apply(const Effects::Message& msg, Position pos, Creature*) {
   return true;
 }
 
-static string getName(const Effects::UnseenMessage&, const ContentFactory*) {
-  return "message";
+static TString getName(const Effects::UnseenMessage&, const ContentFactory*) {
+  return TStringId("MESSAGE_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::UnseenMessage& e, const ContentFactory*) {
+static TString getDescription(const Effects::UnseenMessage& e, const ContentFactory*) {
   return e.text;
 }
 
@@ -1721,25 +1719,27 @@ static bool apply(const Effects::UnseenMessage& msg, Position pos, Creature*) {
   return true;
 }
 
-static string getName(const Effects::CreatureMessage&, const ContentFactory*) {
-  return "message";
+static TString getName(const Effects::CreatureMessage&, const ContentFactory*) {
+  return TStringId("MESSAGE_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::CreatureMessage&, const ContentFactory*) {
-  return "Custom message";
+static TString getDescription(const Effects::CreatureMessage&, const ContentFactory*) {
+  return TString();
 }
 
 static bool applyToCreature(const Effects::CreatureMessage& e, Creature* c, Creature*) {
-  c->verb(e.secondPerson, e.thirdPerson, "", e.priority);
+  if (e.secondPerson.text.contains<TSentence>())
+    c->verb(e.secondPerson.text.getReferenceMaybe<TSentence>()->id,
+        e.thirdPerson.text.getReferenceMaybe<TSentence>()->id, e.priority);
   return true;
 }
 
-static string getName(const Effects::PlayerMessage&, const ContentFactory*) {
-  return "message";
+static TString getName(const Effects::PlayerMessage&, const ContentFactory*) {
+  return TStringId("MESSAGE_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::PlayerMessage&, const ContentFactory*) {
-  return "Custom message";
+static TString getDescription(const Effects::PlayerMessage&, const ContentFactory*) {
+  return TString();
 }
 
 static bool applyToCreature(const Effects::PlayerMessage& e, Creature* c, Creature*) {
@@ -1753,12 +1753,12 @@ static bool applyToCreature(const Effects::GrantAbility& e, Creature* c, Creatur
   return ret;
 }
 
-static string getName(const Effects::GrantAbility& e, const ContentFactory* f) {
-  return "grant "_s + f->getCreatures().getSpell(e.id)->getName(f);
+static TString getName(const Effects::GrantAbility& e, const ContentFactory* f) {
+  return TSentence("GRANT_ABILITY_EFFECT_NAME", f->getCreatures().getSpell(e.id)->getName(f));
 }
 
-static string getDescription(const Effects::GrantAbility& e, const ContentFactory* f) {
-  return "Grants ability: "_s + f->getCreatures().getSpell(e.id)->getName(f);
+static TString getDescription(const Effects::GrantAbility& e, const ContentFactory* f) {
+  return TSentence("GRANT_ABILITY_EFFECT_DESCRIPTION", f->getCreatures().getSpell(e.id)->getName(f));
 }
 
 static bool applyToCreature(const Effects::AddSpellSchool& id, Creature* c, Creature*) {
@@ -1773,12 +1773,14 @@ static bool applyToCreature(const Effects::AddSpellSchool& id, Creature* c, Crea
   return false;
 }
 
-static string getName(const Effects::AddSpellSchool& id, const ContentFactory* f) {
-  return "grant "_s + id.data() + " spell school";
+static TString getName(const Effects::AddSpellSchool& id, const ContentFactory* f) {
+  auto name = f->getCreatures().getSpellSchools().at(id).name.value_or(TString(string(id.data())));
+  return TSentence("SPELL_SCHOOL_EFFECT_NAME", std::move(name));
 }
 
-static string getDescription(const Effects::AddSpellSchool& id, const ContentFactory* f) {
-  return "Grants spell school: "_s + id.data();
+static TString getDescription(const Effects::AddSpellSchool& id, const ContentFactory* f) {
+  auto name = f->getCreatures().getSpellSchools().at(id).name.value_or(TString(string(id.data())));
+  return TSentence("SPELL_SCHOOL_EFFECT_DESCRIPTION", std::move(name));
 }
 
 static bool applyToCreature(const Effects::Polymorph& e, Creature* c, Creature*) {
@@ -1803,18 +1805,20 @@ static bool applyToCreature(const Effects::Polymorph& e, Creature* c, Creature*)
     for (auto& elem : c->specialTraits)
       applySpecialTrait(*c->getGlobalTime(), elem, c, c->getGame()->getContentFactory());
   }
-  c->secondPerson("You turn into " + c->getName().a() + "!");
-  c->thirdPerson(origName + " turns into " + c->getName().a() + "!");
+  c->verb(TStringId("YOU_POLYMORPH_INTO"), TStringId("POLYMORPHS_INTO"), c->getName().a());
   summonFX(c->getPosition());
   return true;
 }
 
-static string getName(const Effects::Polymorph& e, const ContentFactory* f) {
-  return !!e.timeout ? "temporary polymorph" : "permanent polymorph";
+static TString getName(const Effects::Polymorph& e, const ContentFactory* f) {
+  return !!e.timeout ? TStringId("TEMPORARY_POLYMORPH_EFFECT_NAME") : TStringId("PERMANENT_POLYMORPH_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::Polymorph& e, const ContentFactory* f) {
-  return "Polymorphs into a " + (e.into ? f->getCreatures().getName(*e.into) : "random creature"_s);
+static TString getDescription(const Effects::Polymorph& e, const ContentFactory* f) {
+  if (e.into)
+    return TSentence("POLYMORPH_INTO_EFFECT_DESCRIPTION", f->getCreatures().getName(*e.into));
+  else
+    return TStringId("RANDOM_POLYMORPH_EFFECT_DESCRIPTION");
 }
 
 static bool applyToCreature(const Effects::SetCreatureName& e, Creature* c, Creature*) {
@@ -1822,12 +1826,12 @@ static bool applyToCreature(const Effects::SetCreatureName& e, Creature* c, Crea
   return true;
 }
 
-static string getName(const Effects::SetCreatureName& e, const ContentFactory* f) {
-  return "change name";
+static TString getName(const Effects::SetCreatureName& e, const ContentFactory* f) {
+  return TStringId("CHANGE_NAME_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::SetCreatureName& e, const ContentFactory* f) {
-  return "Changes creature's name to \"" + e.value + "\"";
+static TString getDescription(const Effects::SetCreatureName& e, const ContentFactory* f) {
+  return TSentence("CHANGE_NAME_EFFECT_DESCRIPTION", e.value);
 }
 
 static bool applyToCreature(const Effects::SetViewId& e, Creature* c, Creature*) {
@@ -1835,12 +1839,12 @@ static bool applyToCreature(const Effects::SetViewId& e, Creature* c, Creature*)
   return true;
 }
 
-static string getName(const Effects::SetViewId& e, const ContentFactory* f) {
-  return "set sprite";
+static TString getName(const Effects::SetViewId& e, const ContentFactory* f) {
+  return TStringId("CHANGE_SPRITE_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::SetViewId& e, const ContentFactory* f) {
-  return "Changes creature's sprite";
+static TString getDescription(const Effects::SetViewId& e, const ContentFactory* f) {
+  return TStringId("CHANGE_SPRITE_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::UI& e, Position pos, Creature*) {
@@ -1852,12 +1856,12 @@ static bool apply(const Effects::UI& e, Position pos, Creature*) {
   return true;
 }
 
-static string getName(const Effects::UI& e, const ContentFactory* f) {
-  return "UI";
+static TString getName(const Effects::UI& e, const ContentFactory* f) {
+  return TStringId("UI_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::UI& e, const ContentFactory* f) {
-  return "Displays a UI";
+static TString getDescription(const Effects::UI& e, const ContentFactory* f) {
+  return TStringId("UI_EFFECT_DESCRIPTION");
 }
 
 static bool applyToCreature(const Effects::RemoveAbility& e, Creature* c, Creature*) {
@@ -1866,19 +1870,19 @@ static bool applyToCreature(const Effects::RemoveAbility& e, Creature* c, Creatu
   return ret;
 }
 
-static string getName(const Effects::RemoveAbility& e, const ContentFactory* f) {
-  return "remove "_s + f->getCreatures().getSpell(e.id)->getName(f);
+static TString getName(const Effects::RemoveAbility& e, const ContentFactory* f) {
+  return TSentence("REMOVE_ABILITY_EFFECT_NAME", f->getCreatures().getSpell(e.id)->getName(f));
 }
 
-static string getDescription(const Effects::RemoveAbility& e, const ContentFactory* f) {
-  return "Removes ability: "_s + f->getCreatures().getSpell(e.id)->getName(f);
+static TString getDescription(const Effects::RemoveAbility& e, const ContentFactory* f) {
+  return TSentence("REMOVE_ABILITY_EFFECT_DESCRIPTION", f->getCreatures().getSpell(e.id)->getName(f));
 }
 
-static string getName(const Effects::Caster& e, const ContentFactory* f) {
+static TString getName(const Effects::Caster& e, const ContentFactory* f) {
   return e.effect->getName(f);
 }
 
-static string getDescription(const Effects::Caster& e, const ContentFactory* f) {
+static TString getDescription(const Effects::Caster& e, const ContentFactory* f) {
   return e.effect->getDescription(f);
 }
 
@@ -1897,11 +1901,11 @@ static bool applyToCreature(const Effects::ApplyToSteed& e, Creature* c, Creatur
   return e.effect->applyToCreature(c, attacker);
 }
 
-static string getName(const Effects::GenericModifierEffect& e, const ContentFactory* f) {
+static TString getName(const Effects::GenericModifierEffect& e, const ContentFactory* f) {
   return e.effect->getName(f);
 }
 
-static string getDescription(const Effects::GenericModifierEffect& e, const ContentFactory* f) {
+static TString getDescription(const Effects::GenericModifierEffect& e, const ContentFactory* f) {
   return e.effect->getDescription(f);
 }
 
@@ -1945,8 +1949,8 @@ static Color getColor(const Effects::GenericModifierEffect& e, const ContentFact
   return e.effect->getColor(f);
 }
 
-static string getDescription(const Effects::Chance& e, const ContentFactory* f) {
-  return e.effect->getDescription(f) + " (" + toString(int(e.value * 100)) + "% chance)";
+static TString getDescription(const Effects::Chance& e, const ContentFactory* f) {
+  return TSentence("CHANCE_EFFECT_DESCRIPTION", e.effect->getDescription(f));
 }
 
 static bool apply(const Effects::Chance& e, Position pos, Creature* attacker) {
@@ -1976,32 +1980,32 @@ static bool applyToCreature(const Effects::DoubleTrouble&, Creature* c, Creature
   }
 }
 
-static string getName(const Effects::DoubleTrouble&, const ContentFactory*) {
-  return "double trouble";
+static TString getName(const Effects::DoubleTrouble&, const ContentFactory*) {
+  return TStringId("DOUBLE_TROUBLE_EFFECT_NAME");
 }
 
 static bool isOffensive(const Effects::DoubleTrouble&) {
   return true;
 }
 
-static string getDescription(const Effects::DoubleTrouble&, const ContentFactory*) {
-  return "Creates a twin copy ally.";
+static TString getDescription(const Effects::DoubleTrouble&, const ContentFactory*) {
+  return TStringId("DOUBLE_TROUBLE_EFFECT_DESCRIPTION");
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::DoubleTrouble&, const Creature* victim, bool isEnemy) {
   return isConsideredInDanger(victim) ? 1 : 0;
 }
 
-static string getName(const Effects::Blast&, const ContentFactory*) {
-  return "air blast";
+static TString getName(const Effects::Blast&, const ContentFactory*) {
+  return TStringId("AIR_BLAST_EFFECT_NAME");
 }
 
 static bool isOffensive(const Effects::Blast&) {
   return true;
 }
 
-static string getDescription(const Effects::Blast&, const ContentFactory*) {
-  return "Creates a directed blast of air that throws back creatures and items.";
+static TString getDescription(const Effects::Blast&, const ContentFactory*) {
+  return TStringId("AIR_BLAST_EFFECT_DESCRIPTION");
 }
 
 static optional<FXInfo> getProjectileFX(const Effects::Blast&) {
@@ -2028,16 +2032,16 @@ static bool apply(const Effects::Blast&, Position pos, Creature* attacker) {
   return true;
 }
 
-static string getName(const Effects::DirectedBlast&, const ContentFactory*) {
-  return "air blast";
+static TString getName(const Effects::DirectedBlast&, const ContentFactory*) {
+  return TStringId("DIRECTED_BLAST_EFFECT_NAME");
 }
 
 static bool isOffensive(const Effects::DirectedBlast&) {
   return true;
 }
 
-static string getDescription(const Effects::DirectedBlast&, const ContentFactory*) {
-  return "Creates a directed blast of air that throws back creatures and items.";
+static TString getDescription(const Effects::DirectedBlast&, const ContentFactory*) {
+  return TStringId("DIRECTED_BLAST_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::DirectedBlast& b, Position pos, Creature*) {
@@ -2074,16 +2078,16 @@ static bool pullCreature(Creature* victim, const vector<Position>& trajectory) {
   return false;
 }
 
-static string getName(const Effects::Pull&, const ContentFactory*) {
-  return "pull";
+static TString getName(const Effects::Pull&, const ContentFactory*) {
+  return TStringId("PULL_EFFECT_NAME");
 }
 
 static bool isOffensive(const Effects::Pull&) {
   return true;
 }
 
-static string getDescription(const Effects::Pull&, const ContentFactory*) {
-  return "Pulls a creature towards the spellcaster.";
+static TString getDescription(const Effects::Pull&, const ContentFactory*) {
+  return TStringId("PULL_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::Pull&, Position pos, Creature* attacker) {
@@ -2105,23 +2109,23 @@ static bool applyToCreature(const Effects::Shove&, Creature* c, Creature* attack
   auto dir = origin.getDir(c->getPosition());
   if (dir.length8() == 1 && c->getPosition().canMoveCreature(dir)) {
     c->displace(dir);
-    c->you(MsgType::ARE, "thrown back");
+    c->you(MsgType::ARE, TStringId("THROWN_BACK"));
     c->addEffect(LastingEffect::COLLAPSED, 2_visible);
     return true;
   }
   return false;
 }
 
-static string getName(const Effects::Shove&, const ContentFactory*) {
-  return "shove";
+static TString getName(const Effects::Shove&, const ContentFactory*) {
+  return TStringId("SHOVE_EFFECT_NAME");
 }
 
 static bool isOffensive(const Effects::Shove&) {
   return true;
 }
 
-static string getDescription(const Effects::Shove&, const ContentFactory*) {
-  return "Push back a creature.";
+static TString getDescription(const Effects::Shove&, const ContentFactory*) {
+  return TStringId("SHOVE_EFFECT_DESCRIPTION");
 }
 
 static bool applyToCreature(const Effects::SwapPosition&, Creature* c, Creature* attacker) {
@@ -2129,39 +2133,39 @@ static bool applyToCreature(const Effects::SwapPosition&, Creature* c, Creature*
   auto origin = attacker->getPosition();
   auto dir = origin.getDir(c->getPosition());
   if (dir.length8() != 1) {
-    attacker->privateMessage("You can't swap position with " + c->getName().the());
+    attacker->privateMessage(TSentence("YOU_CANT_SWAP_POSITION_WITH", c->getName().the()));
     return false;
   } else if (attacker->canSwapPositionWithEnemy(c)) {
     attacker->swapPosition(dir, false);
-    attacker->verb("swap", "swaps", "positions with " + c->getName().the());
+    attacker->verb(TStringId("YOU_SWAP_POSITION"), TStringId("SWAPS_POSITION"), TString(c->getName().the()));
     return true;
   } else {
-    attacker->privateMessage(c->getName().the() + " resists");
+    attacker->privateMessage(TSentence("RESISTS_SWAP_POSITION", c->getName().the()));
     return false;
   }
 }
 
-static string getName(const Effects::SwapPosition&, const ContentFactory*) {
-  return "swap position";
+static TString getName(const Effects::SwapPosition&, const ContentFactory*) {
+  return TStringId("SWAP_POSITION_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::SwapPosition&, const ContentFactory*) {
-  return "Swap positions with an enemy.";
+static TString getDescription(const Effects::SwapPosition&, const ContentFactory*) {
+  return TStringId("SWAP_POSITION_EFFECT_DESCRIPTION");
 }
 
-static string getName(const Effects::TriggerTrap&, const ContentFactory*) {
-  return "trigger trap";
+static TString getName(const Effects::TriggerTrap&, const ContentFactory*) {
+  return TStringId("TRIGGER_TRAP_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::TriggerTrap&, const ContentFactory*) {
-  return "Triggers a trap if present.";
+static TString getDescription(const Effects::TriggerTrap&, const ContentFactory*) {
+  return TStringId("TRIGGER_TRAP_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::TriggerTrap&, Position pos, Creature* attacker) {
   for (auto furniture : pos.getFurniture())
     if (auto& entry = furniture->getEntryType())
       if (auto trapInfo = entry->entryData.getReferenceMaybe<FurnitureEntry::Trap>()) {
-        pos.globalMessage("A " + trapInfo->effect.getName(pos.getGame()->getContentFactory()) + " trap is triggered");
+        pos.globalMessage(TSentence("A_TRAP_IS_TRIGGERED",trapInfo->effect.getName(pos.getGame()->getContentFactory())));
         auto effect = trapInfo->effect;
         pos.removeFurniture(furniture);
         effect.apply(pos, attacker);
@@ -2170,25 +2174,26 @@ static bool apply(const Effects::TriggerTrap&, Position pos, Creature* attacker)
   return false;
 }
 
-static const char* getAnimatedItemsName(const Effects::AnimateItems& m) {
+static TString getName(const Effects::AnimateItems& m, const ContentFactory*) {
   switch (m.type) {
     case Effects::AnimatedItemType::CORPSE:
-      return "corpse";
+      return TStringId("ANIMATE_CORPSES_EFFECT_NAME");
     case Effects::AnimatedItemType::WEAPON:
-      return "weapon";
+      return TStringId("ANIMATE_WEAPONS_EFFECT_NAME");
   }
-}
-
-static string getName(const Effects::AnimateItems& m, const ContentFactory*) {
-  return "animate "_s + getAnimatedItemsName(m) + "s";
 }
 
 static bool isOffensive(const Effects::AnimateItems&) {
   return true;
 }
 
-static string getDescription(const Effects::AnimateItems& e, const ContentFactory*) {
-  return "Animates up to " + getPlural(getAnimatedItemsName(e), e.maxCount) + " from the surroundings";
+static TString getDescription(const Effects::AnimateItems& e, const ContentFactory*) {
+  switch (e.type) {
+    case Effects::AnimatedItemType::CORPSE:
+      return TSentence("ANIMATE_CORPSES_EFFECT_DESCRIPTION", toString(e.maxCount));
+    case Effects::AnimatedItemType::WEAPON:
+      return TSentence("ANIMATE_WEAPONS_EFFECT_DESCRIPTION", toString(e.maxCount));
+  }
 }
 
 static vector<Item*> getItemsToAnimate(const Effects::AnimateItems& m, Position pos) {
@@ -2233,16 +2238,16 @@ static EffectAIIntent shouldAIApply(const Effects::AnimateItems& m, const Creatu
   return 0;
 }
 
-static string getName(const Effects::Audience&, const ContentFactory*) {
-  return "audience";
+static TString getName(const Effects::Audience&, const ContentFactory*) {
+  return TStringId("AUDIENCE_EFFECT_NAME");
 }
 
 static bool isOffensive(const Effects::Audience&) {
   return true;
 }
 
-static string getDescription(const Effects::Audience&, const ContentFactory*) {
-  return "Summons all fighters defending the territory that the creature is in";
+static TString getDescription(const Effects::Audience&, const ContentFactory*) {
+  return TStringId("AUDIENCE_EFFECT_DESCRIPTION");
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Audience&, const Creature* victim, bool isEnemy) {
@@ -2286,8 +2291,9 @@ static bool apply(const Effects::Audience& a, Position pos, Creature* attacker) 
       wasTeleported |= tryTeleporting(pos, enemy, a.maxDistance);
   if (wasTeleported) {
     if (attacker)
-      attacker->privateMessage(PlayerMessage("Thy audience hath been summoned"_s +
-          get(attacker->getAttributes().getGender(), ", Sire", ", Dame", ""), MessagePriority::HIGH));
+      attacker->privateMessage(PlayerMessage(TSentence("AUDIENCE_SUMMONED",
+          get(attacker->getAttributes().getGender(), TStringId("SIRE"), TStringId("DAME"), TStringId("SIRE"))),
+              MessagePriority::HIGH));
     else
       pos.globalMessage(PlayerMessage("The audience has been summoned"_s, MessagePriority::HIGH));
     return true;
@@ -2296,16 +2302,16 @@ static bool apply(const Effects::Audience& a, Position pos, Creature* attacker) 
   return false;
 }
 
-static string getName(const Effects::SummonMinions&, const ContentFactory*) {
-  return "summon minions";
+static TString getName(const Effects::SummonMinions&, const ContentFactory*) {
+  return TStringId("SUMMON_MINIONS_EFFECT_NAME");
 }
 
 static bool isOffensive(const Effects::SummonMinions&) {
   return true;
 }
 
-static string getDescription(const Effects::SummonMinions&, const ContentFactory*) {
-  return "Summons all fighter minions.";
+static TString getDescription(const Effects::SummonMinions&, const ContentFactory*) {
+  return TStringId("SUMMON_MINIONS_EFFECT_DESCRIPTION");
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::SummonMinions&, const Creature* victim, bool isEnemy) {
@@ -2325,12 +2331,12 @@ static bool applyToCreature(const Effects::SummonMinions& a, Creature* c, Creatu
   return success;
 }
 
-static string getName(const Effects::SoundEffect&, const ContentFactory*) {
-  return "sound effect";
+static TString getName(const Effects::SoundEffect&, const ContentFactory*) {
+  return TStringId("SOUND_EFFECT_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::SoundEffect&, const ContentFactory*) {
-  return "Makes a real sound";
+static TString getDescription(const Effects::SoundEffect&, const ContentFactory*) {
+  return TStringId("SOUND_EFFECT_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::SoundEffect& e, Position pos, Creature*) {
@@ -2344,20 +2350,20 @@ static bool applyToCreature(const Effects::ColorVariant& e, Creature* c, Creatur
   return true;
 }
 
-static string getName(const Effects::ColorVariant&, const ContentFactory*) {
-  return "color change";
+static TString getName(const Effects::ColorVariant&, const ContentFactory*) {
+  return TStringId("COLOR_VARIANT_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::ColorVariant&, const ContentFactory*) {
-  return "Changes the color variant of a creature";
+static TString getDescription(const Effects::ColorVariant&, const ContentFactory*) {
+  return TStringId("COLOR_VARIANT_EFFECT_DESCRIPTION");
 }
 
-static string getName(const Effects::Fx&, const ContentFactory*) {
-  return "visual effect";
+static TString getName(const Effects::Fx&, const ContentFactory*) {
+  return TStringId("VISUAL_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::Fx&, const ContentFactory*) {
-  return "Just a visual effect";
+static TString getDescription(const Effects::Fx&, const ContentFactory*) {
+  return TStringId("VISUAL_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::Fx& fx, Position pos, Creature*) {
@@ -2366,12 +2372,12 @@ static bool apply(const Effects::Fx& fx, Position pos, Creature*) {
   return true;
 }
 
-static string getName(const Effects::SetFlag& e, const ContentFactory*) {
-  return e.name;
+static TString getName(const Effects::SetFlag& e, const ContentFactory*) {
+  return TStringId("SET_FLAG_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::SetFlag& e, const ContentFactory*) {
-  return "Sets " + e.name + " to " + (e.value ? "true" : "false");
+static TString getDescription(const Effects::SetFlag& e, const ContentFactory*) {
+  return TStringId("SET_FLAG_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::SetFlag& e, Position pos, Creature*) {
@@ -2390,12 +2396,12 @@ static bool apply(const Effects::SetFlag& e, Position pos, Creature*) {
   return false;
 }
 
-static string getName(const Effects::SetCreatureFlag& e, const ContentFactory*) {
-  return e.name;
+static TString getName(const Effects::SetCreatureFlag& e, const ContentFactory*) {
+  return TStringId("SET_FLAG_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::SetCreatureFlag& e, const ContentFactory*) {
-  return "Sets " + e.name + " to " + (e.value ? "true" : "false");
+static TString getDescription(const Effects::SetCreatureFlag& e, const ContentFactory*) {
+  return TStringId("SET_FLAG_EFFECT_DESCRIPTION");
 }
 
 static bool applyToCreature(const Effects::SetCreatureFlag& e, Creature* c, Creature*) {
@@ -2412,12 +2418,12 @@ static bool applyToCreature(const Effects::SetCreatureFlag& e, Creature* c, Crea
   return false;
 }
 
-static string getName(const Effects::Unlock& e, const ContentFactory*) {
-  return e.id;
+static TString getName(const Effects::Unlock& e, const ContentFactory*) {
+  return TStringId("UNLOCK_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::Unlock& e, const ContentFactory*) {
-  return "Unlocks " + e.id;
+static TString getDescription(const Effects::Unlock& e, const ContentFactory*) {
+  return TStringId("UNLOCK_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::Unlock& e, Position pos, Creature*) {
@@ -2426,12 +2432,12 @@ static bool apply(const Effects::Unlock& e, Position pos, Creature*) {
   return true;
 }
 
-static string getName(const Effects::Achievement& e, const ContentFactory* f) {
-  return f->achievements.at(e).name;
+static TString getName(const Effects::Achievement& e, const ContentFactory* f) {
+  return TStringId("ACHIEVEMENT_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::Achievement& e, const ContentFactory* f) {
-  return f->achievements.at(e).description;
+static TString getDescription(const Effects::Achievement& e, const ContentFactory* f) {
+  return TStringId("ACHIEVEMENT_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::Achievement& e, Position pos, Creature*) {
@@ -2440,12 +2446,12 @@ static bool apply(const Effects::Achievement& e, Position pos, Creature*) {
   return true;
 }
 
-static string getName(const Effects::Analytics& e, const ContentFactory*) {
-  return "";
+static TString getName(const Effects::Analytics& e, const ContentFactory*) {
+  return TStringId("ANALYTICS_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::Analytics& e, const ContentFactory*) {
-  return "";
+static TString getDescription(const Effects::Analytics& e, const ContentFactory*) {
+  return TStringId("ANALYTICS_EFFECT_DESCRIPTION");
 }
 
 static bool apply(const Effects::Analytics& e, Position pos, Creature*) {
@@ -2454,12 +2460,12 @@ static bool apply(const Effects::Analytics& e, Position pos, Creature*) {
   return false;
 }
 
-static string getName(const Effects::Stairs&, const ContentFactory*) {
-  return "stairs";
+static TString getName(const Effects::Stairs&, const ContentFactory*) {
+  return TStringId("STAIRS_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::Stairs&, const ContentFactory*) {
-  return "Use the stairs";
+static TString getDescription(const Effects::Stairs&, const ContentFactory*) {
+  return TStringId("STAIRS_EFFECT_DESCRIPTION");
 }
 
 static bool applyToCreature(const Effects::Stairs&, Creature* c, Creature* attacker) {
@@ -2472,12 +2478,12 @@ static bool applyToCreature(const Effects::Stairs&, Creature* c, Creature* attac
   }
 }
 
-static string getName(const Effects::AllCreatures& e, const ContentFactory* f) {
-  return e.effect->getName(f) + " (all creatures)";
+static TString getName(const Effects::AllCreatures& e, const ContentFactory* f) {
+  return e.effect->getName(f);
 }
 
-static string getDescription(const Effects::AllCreatures& e, const ContentFactory* f) {
-  return e.effect->getDescription(f) + " (applied to all creatures on the map)";
+static TString getDescription(const Effects::AllCreatures& e, const ContentFactory* f) {
+  return e.effect->getDescription(f);
 }
 
 static bool applyToCreature(const Effects::AllCreatures& e, Creature* c, Creature* attacker) {
@@ -2487,12 +2493,12 @@ static bool applyToCreature(const Effects::AllCreatures& e, Creature* c, Creatur
   return res;
 }
 
-static string getName(const Effects::AddMinionTrait& trait, const ContentFactory*) {
-  return "make " + toLower(EnumInfo<MinionTrait>::getString(trait));
+static TString getName(const Effects::AddMinionTrait& trait, const ContentFactory*) {
+  return TStringId("MINION_TRAIT_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::AddMinionTrait& trait, const ContentFactory*) {
-  return "Makes the creature a " + toLower(EnumInfo<MinionTrait>::getString(trait));
+static TString getDescription(const Effects::AddMinionTrait& trait, const ContentFactory*) {
+return TStringId("MINION_TRAIT_EFFECT_NAME");
 }
 
 static bool applyToCreature(const Effects::AddMinionTrait& trait, Creature* c, Creature* attacker) {
@@ -2501,12 +2507,12 @@ static bool applyToCreature(const Effects::AddMinionTrait& trait, Creature* c, C
   return false;
 }
 
-static string getName(const Effects::RemoveMinionTrait& e, const ContentFactory*) {
-  return "remove " + toLower(EnumInfo<MinionTrait>::getString(e.trait)) + " trait";
+static TString getName(const Effects::RemoveMinionTrait& e, const ContentFactory*) {
+  return TStringId("REMOVE_MINION_TRAIT_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::RemoveMinionTrait& e, const ContentFactory*) {
-  return "Makes the creature not be a " + toLower(EnumInfo<MinionTrait>::getString(e.trait));
+static TString getDescription(const Effects::RemoveMinionTrait& e, const ContentFactory*) {
+  return TStringId("REMOVE_MINION_TRAIT_EFFECT_NAME");
 }
 
 static bool applyToCreature(const Effects::RemoveMinionTrait& e, Creature* c, Creature* attacker) {
@@ -2515,12 +2521,12 @@ static bool applyToCreature(const Effects::RemoveMinionTrait& e, Creature* c, Cr
   return false;
 }
 
-static string getName(const Effects::SetMinionActivity& activity, const ContentFactory*) {
-  return toLower(EnumInfo<MinionActivity>::getString(activity));
+static TString getName(const Effects::SetMinionActivity& activity, const ContentFactory*) {
+  return TStringId("MINION_ACTIVITY_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::SetMinionActivity& activity, const ContentFactory*) {
-  return "Sets minion's actitity to " + toLower(EnumInfo<MinionActivity>::getString(activity));
+static TString getDescription(const Effects::SetMinionActivity& activity, const ContentFactory*) {
+  return TStringId("MINION_ACTIVITY_EFFECT_DESCRIPTION");
 }
 
 static bool applyToCreature(const Effects::SetMinionActivity& activity, Creature* c, Creature* attacker) {
@@ -2531,12 +2537,12 @@ static bool applyToCreature(const Effects::SetMinionActivity& activity, Creature
   return false;
 }
 
-static string getName(const Effects::CollectiveMessage& msg, const ContentFactory*) {
-  return "message";
+static TString getName(const Effects::CollectiveMessage& msg, const ContentFactory*) {
+  return TStringId("MESSAGE_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::CollectiveMessage& msg, const ContentFactory*) {
-  return "Adds a global message: \"" + msg.msg + "\"";
+static TString getDescription(const Effects::CollectiveMessage& msg, const ContentFactory*) {
+  return msg.msg;
 }
 
 static bool applyToCreature(const Effects::CollectiveMessage& msg, Creature* c, Creature* attacker) {
@@ -2547,12 +2553,12 @@ static bool applyToCreature(const Effects::CollectiveMessage& msg, Creature* c, 
   return false;
 }
 
-static string getName(const Effects::TakeItems& e, const ContentFactory*) {
-  return "take " + e.ingredient;
+static TString getName(const Effects::TakeItems& e, const ContentFactory*) {
+  return TStringId("TAKE_ITEMS_EFFECT_NAME");
 }
 
-static string getDescription(const Effects::TakeItems& e, const ContentFactory*) {
-  return "Takes " + e.ingredient;
+static TString getDescription(const Effects::TakeItems& e, const ContentFactory*) {
+  return TStringId("TAKE_ITEMS_EFFECT_DESCRIPTION");
 }
 
 static bool applyToCreature(const Effects::TakeItems& e, Creature* c, Creature* attacker) {
@@ -2597,12 +2603,12 @@ static EffectAIIntent shouldAIApply(const Effects::Filter& e, const Creature* ca
   return 0;
 }
 
-static string getName(const Effects::Filter& e, const ContentFactory* f) {
-  return e.effect->getName(f) + " (" + e.predicate.getName(f) + ")";
+static TString getName(const Effects::Filter& e, const ContentFactory* f) {
+  return e.effect->getName(f);
 }
 
-static string getDescription(const Effects::Filter& e, const ContentFactory* f) {
-  return e.effect->getDescription(f) + " (applied only to " + e.predicate.getName(f) + ")";
+static TString getDescription(const Effects::Filter& e, const ContentFactory* f) {
+  return e.effect->getDescription(f);
 }
 
 static bool apply(const Effects::ReturnFalse& e, Position pos, Creature* attacker) {
@@ -2610,11 +2616,11 @@ static bool apply(const Effects::ReturnFalse& e, Position pos, Creature* attacke
   return false;
 }
 
-static string getDescription(const Effects::Description& e, const ContentFactory*) {
+static TString getDescription(const Effects::Description& e, const ContentFactory*) {
   return e.text;
 }
 
-static string getName(const Effects::Name& e, const ContentFactory*) {
+static TString getName(const Effects::Name& e, const ContentFactory*) {
   return e.text;
 }
 
@@ -2705,12 +2711,12 @@ bool Effect::applyToCreature(Creature* c, Creature* attacker) const {
   return effect->visit<bool>([&](const auto& e) { return ::applyToCreature1(e, c, attacker, 1); });
 }
 
-string Effect::getName(const ContentFactory* f) const {
-  return effect->visit<string>([&](const auto& elem) { return ::getName(elem, f); });
+TString Effect::getName(const ContentFactory* f) const {
+  return effect->visit<TString>([&](const auto& elem) { return ::getName(elem, f); });
 }
 
-string Effect::getDescription(const ContentFactory* f) const {
-  return effect->visit<string>([&](const auto& elem) { return ::getDescription(elem, f); });
+TString Effect::getDescription(const ContentFactory* f) const {
+  return effect->visit<TString>([&](const auto& elem) { return ::getDescription(elem, f); });
 }
 
 /* Unimplemented: Teleport, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr, IncreaseSkill, IncreaseWorkshopSkill

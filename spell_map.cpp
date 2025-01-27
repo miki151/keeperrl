@@ -116,15 +116,17 @@ void SpellMap::onExpLevelReached(Creature* c, AttrType type, int level) {
     auto factory = game->getContentFactory();
     for (auto& elem : elems) {
       if (level == elem.level && elem.expType == type) {
-        string spellName = elem.spell.getName(factory);
+        auto spellName = elem.spell.getName(factory);
         auto upgrade = elem.spell.getUpgrade();
+        auto his = ::his(c->getAttributes().getGender());
         if (upgrade && !!getInfo(*upgrade)) {
-          string his = ::his(c->getAttributes().getGender());
-          c->addPersonalEvent(c->getName().a() + " improves " + his + " " + spellType + " of " + upgrade->data());
-          c->verb("improve", "improves", his + " " + spellType + " of " + upgrade->data());
+          c->addPersonalEvent(TSentence("IMPROVES", { c->getName().a(), his, TString(spellType), TString(spellName)}));
+          c->secondPerson(TSentence("YOU_IMPROVE", TString(spellType), TString(spellName)));
+          c->thirdPerson(TSentence("IMPROVES", { c->getName().the(), his, TString(spellType), TString(spellName)}));
         } else {
-          c->addPersonalEvent(c->getName().a() + " learns the " + spellType + " of " + spellName);
-          c->verb("learn", "learns", "the " + spellType + " of " + spellName);
+          c->addPersonalEvent(TSentence("LEARNS", { c->getName().a(), TString(spellType), TString(spellName)}));
+          c->secondPerson(TSentence("YOU_LEARN", TString(spellType), TString(spellName)));
+          c->thirdPerson(TSentence("LEARNS", { c->getName().the(), TString(spellType), TString(spellName)}));
         }
       }
     }

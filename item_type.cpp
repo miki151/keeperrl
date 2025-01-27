@@ -31,27 +31,27 @@
 STRUCT_IMPL(ItemType)
 
 ItemType ItemType::legs(int damage) {
-  return ItemType(ItemTypes::Intrinsic{ViewId("leg_attack"), "legs", damage,
+  return ItemType(ItemTypes::Intrinsic{ViewId("leg_attack"), TStringId("LEGS"), damage,
         WeaponInfo{false, AttackType::HIT, AttrType("DAMAGE"), {}, {}, AttackMsg::KICK}});
 }
 
 ItemType ItemType::claws(int damage) {
-  return ItemType(ItemTypes::Intrinsic{ViewId("claws_attack"), "claws", damage,
+  return ItemType(ItemTypes::Intrinsic{ViewId("claws_attack"), TStringId("CLAWS"), damage,
         WeaponInfo{false, AttackType::HIT, AttrType("DAMAGE"), {}, {}, AttackMsg::CLAW}});
 }
 
 ItemType ItemType::beak(int damage) {
-  return ItemType(ItemTypes::Intrinsic{ViewId("beak_attack"), "beak", damage,
+  return ItemType(ItemTypes::Intrinsic{ViewId("beak_attack"), TStringId("BEAK"), damage,
         WeaponInfo{false, AttackType::HIT, AttrType("DAMAGE"), {}, {}, AttackMsg::BITE}});
 }
 
 ItemType ItemType::fists(int damage) {
-  return ItemType(ItemTypes::Intrinsic{ViewId("fist_attack"), "fists", damage,
+  return ItemType(ItemTypes::Intrinsic{ViewId("fist_attack"), TStringId("FISTS"), damage,
         WeaponInfo{false, AttackType::HIT, AttrType("DAMAGE"), {}, {}, AttackMsg::SWING}});
 }
 
 static ItemType fangsBase(int damage, vector<ItemPrefixes::VictimEffect> effect) {
-  return ItemType(ItemTypes::Intrinsic{ViewId("bite_attack"), "fangs", damage,
+  return ItemType(ItemTypes::Intrinsic{ViewId("bite_attack"), TStringId("FANGS"), damage,
       WeaponInfo{false, AttackType::BITE, AttrType("DAMAGE"), std::move(effect), {}, AttackMsg::BITE}});
 }
 
@@ -64,7 +64,7 @@ ItemType ItemType::fangs(int damage, ItemPrefixes::VictimEffect effect) {
 }
 
 ItemType ItemType::spellHit(int damage) {
-  return ItemType(ItemTypes::Intrinsic{ViewId("fist_attack"), "spell", damage,
+  return ItemType(ItemTypes::Intrinsic{ViewId("fist_attack"), TStringId("SPELL"), damage,
       WeaponInfo{false, AttackType::HIT, AttrType("SPELL_DAMAGE"), {}, {}, AttackMsg::SPELL}});
 }
 
@@ -106,7 +106,7 @@ class FireScrollItem : public Item {
 
 class Corpse : public Item {
   public:
-  Corpse(const ViewObject& obj2, SItemAttributes attr, const string& rottenN,
+  Corpse(const ViewObject& obj2, SItemAttributes attr, const TString& rottenN,
       TimeInterval rottingT, CorpseInfo info, bool instantlyRotten, const ContentFactory* f) :
       Item(attr, f),
       object2(obj2),
@@ -141,7 +141,7 @@ class Corpse : public Item {
             MonsterAIFactory::scavengerBird());
         if (v.canEnter(vulture.get())) {
           v.addCreature(std::move(vulture));
-          v.globalMessage("A vulture lands near " + getTheName());
+          v.globalMessage(TSentence("VULTURE_LANDS_NEAR", getTheName()));
           *rottenTime -= 40_visible;
           break;
         }
@@ -161,11 +161,11 @@ class Corpse : public Item {
   bool SERIAL(rotten) = false;
   optional<GlobalTime> SERIAL(rottenTime);
   TimeInterval SERIAL(rottingTime);
-  string SERIAL(rottenName);
+  TString SERIAL(rottenName);
   CorpseInfo SERIAL(corpseInfo);
 };
 
-static PItem corpse(SItemAttributes attr, const string& rottenName, const ContentFactory* f,
+static PItem corpse(SItemAttributes attr, const TString& rottenName, const ContentFactory* f,
     bool instantlyRotten, CorpseInfo corpseInfo) {
   const auto rotTime = 300_visible;
   return makeOwner<Corpse>(
@@ -178,25 +178,25 @@ static PItem corpse(SItemAttributes attr, const string& rottenName, const Conten
         f);
 }
 
-static string getBodyPartBone(BodyPart part) {
+static TString getBodyPartBone(BodyPart part) {
   switch (part) {
-    case BodyPart::HEAD: return "skull";
-    default: return "bone";
+    case BodyPart::HEAD: return TStringId("SKULL");
+    default: return TStringId("BONE");
   }
 }
 
-static string getBodyPartName(const string& creatureName, BodyPart part) {
-  return creatureName + " " + getName(part);
+static TString getBodyPartName(const TString& creatureName, BodyPart part) {
+  return TSentence("BODY_PART_OF", creatureName, getName(part));
 }
 
-PItem ItemType::severedLimb(const string& creatureName, BodyPart part, double weight, ItemClass itemClass,
+PItem ItemType::severedLimb(const TString& creatureName, BodyPart part, double weight, ItemClass itemClass,
     const ContentFactory* factory) {
-  return corpse(getBodyPartName(creatureName, part), creatureName + " " + getBodyPartBone(part),
+  return corpse(getBodyPartName(creatureName, part), TSentence("BODY_PART_OF", creatureName, getBodyPartBone(part)),
         weight / 8, factory, false, itemClass);
 
 }
 
-static SItemAttributes getCorpseAttr(const string& name, ItemClass itemClass, double weight, bool isResource,
+static SItemAttributes getCorpseAttr(const TString& name, ItemClass itemClass, double weight, bool isResource,
     optional<string> ingredient) {
   return ITATTR(
     i.viewId = ViewId("body_part");
@@ -211,7 +211,7 @@ static SItemAttributes getCorpseAttr(const string& name, ItemClass itemClass, do
   );
 }
 
-PItem ItemType::corpse(const string& name, const string& rottenName, double weight, const ContentFactory* f,
+PItem ItemType::corpse(const TString& name, const TString& rottenName, double weight, const ContentFactory* f,
     bool instantlyRotten, ItemClass itemClass, CorpseInfo corpseInfo, optional<string> ingredient) {
   return ::corpse(getCorpseAttr(name, itemClass, weight, corpseInfo.canBeRevived, ingredient),
       rottenName, f, instantlyRotten, corpseInfo);
@@ -225,13 +225,13 @@ class PotionItem : public Item {
     heat += 0.3;
 //    INFO << getName() << " heat " << heat;
     if (heat >= 1.0) {
-      position.globalMessage(getAName() + " boils and explodes!");
+      position.globalMessage(TSentence("BOILS_AND_EXPLODES", getAName()));
       discarded = true;
     }
   }
 
   virtual void iceDamage(Position position) override {
-    position.globalMessage(getAName() + " freezes and explodes!");
+    position.globalMessage(TSentence("FREEZES_AND_EXPLODES", getAName()));
     discarded = true;
   }
 
@@ -268,7 +268,7 @@ PItem ItemType::get(const ContentFactory* factory) const {
       mod = max(1, mod + Random.get(-var, var + 1));
   }
   if (attributes->ingredientType && attributes->description.empty())
-    attributes->description = "Special crafting ingredient";
+    attributes->description = TStringId("SPECIAL_CRAFTING_INGREDIENT");
   return type->visit<PItem>(
       [&](const ItemTypes::FireScroll&) {
         return makeOwner<FireScrollItem>(std::move(attributes), factory);
@@ -277,7 +277,7 @@ PItem ItemType::get(const ContentFactory* factory) const {
         return makeOwner<PotionItem>(std::move(attributes), factory);
       },
       [&](const ItemTypes::Corpse&) {
-        return ::corpse(attributes, "skeleton", factory, false, CorpseInfo{UniqueEntity<Creature>::Id(), false, false, false});
+        return ::corpse(attributes, TStringId("SKELETON"), factory, false, CorpseInfo{UniqueEntity<Creature>::Id(), false, false, false});
       },
       [&](const auto&) {
         return makeOwner<Item>(std::move(attributes), factory);
@@ -313,25 +313,28 @@ vector<PItem> ItemType::get(int num, const ContentFactory* factory) const {
   return ret;
 }
 
-static string getRandomPoemType() {
-  return Random.choose(makeVec<string>("poem", "haiku", "sonnet", "limerick"));
+static TString getRandomPoemType() {
+  return Random.choose(makeVec<TString>(TStringId("POEM"), TStringId("HAIKU"), TStringId("SONNET"),
+      TStringId("LIMERICK")));
 }
 
-static string getRandomPoem() {
-  return Random.choose(makeVec<string>("bad", "obscene", "vulgar")) + " " + getRandomPoemType();
+static TString getRandomPoem() {
+  return TSentence("POEM_WITH_TYPE",
+      Random.choose(makeVec<TStringId>(TStringId("BAD_POEM_TYPE"), TStringId("OBSCENE"), TStringId("VULGAR"))),
+      getRandomPoemType());
 }
 
 SItemAttributes ItemTypes::Corpse::getAttributes(const ContentFactory*) const {
-  return getCorpseAttr("corpse", ItemClass::CORPSE, 100, true, none);
+  return getCorpseAttr(TStringId("CORPSE"), ItemClass::CORPSE, 100, true, none);
 }
 
 SItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory* f) const {
   return ITATTR(
       i.viewId = ViewId("scroll");
       i.name = getRandomPoem();
-      i.blindName = "scroll"_s;
+      i.blindName = TString(TStringId("SCROLL_ITEM"));
       i.weight = 0.1;
-      i.applyVerb = make_pair("read", "reads");
+      i.applyVerb = make_pair(TStringId("YOU_READ"), TStringId("HE_READS"));
       i.effect = Effect(Effects::Area{10,
           Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::Lasting{30_visible, BuffId("DEF_DEBUFF")})))});
       i.price = i.effect->getPrice(f);
@@ -346,10 +349,10 @@ SItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory* f) con
   return ITATTR(
       i.viewId = ViewId("scroll");
       i.shortName = getRandomPoemType();
-      i.name = *i.shortName + " about " + eventName;
-      i.blindName = "scroll"_s;
+      i.name = TSentence("POEM_ABOUT", *i.shortName, eventName);
+      i.blindName = TString(TStringId("SCROLL_ITEM"));
       i.weight = 0.1;
-      i.applyVerb = make_pair("read", "reads");
+      i.applyVerb = make_pair(TStringId("YOU_READ"), TStringId("HE_READS"));
       i.effect = Effect(Effects::Area{10,
           Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::Lasting{30_visible, BuffId("DEF_DEBUFF")})))});
       i.price = i.effect->getPrice(f);
@@ -357,7 +360,7 @@ SItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory* f) con
       i.uses = 1;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
       i.storageIds = LIST(StorageId("scrolls"), StorageId("equipment"));
-      i.equipmentGroup = "consumables"_s;
+      i.equipmentGroup = TString(TStringId("CONSUMABLES"));
   );
 }
 
@@ -382,9 +385,9 @@ SItemAttributes ItemTypes::Intrinsic::getAttributes(const ContentFactory* factor
       i.viewId = viewId;
       i.name = name;
       for (auto& effect : weaponInfo.attackerEffect)
-        i.suffixes.push_back("of " + effect.getName(factory));
+        i.suffixes.push_back(TSentence("OF_SUFFIX", effect.getName(factory)));
       for (auto& effect : weaponInfo.victimEffect)
-        i.suffixes.push_back("of " + effect.effect.getName(factory));
+        i.suffixes.push_back(TSentence("OF_SUFFIX", effect.effect.getName(factory)));
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 0.3;
@@ -400,13 +403,13 @@ SItemAttributes ItemTypes::Ring::getAttributes(const ContentFactory* f) const {
       i.viewId = ViewId("ring", getColor(lastingEffect, f));
       i.shortName = getName(lastingEffect, f);
       i.equipedEffect.push_back(lastingEffect);
-      i.name = "ring of " + *i.shortName;
-      i.plural = "rings of " + *i.shortName;
+      i.name = TSentence("RING_OF", *i.shortName);
+      i.plural = TString(TSentence("RINGS_OF", *i.shortName));
       i.weight = 0.05;
       i.equipmentSlot = EquipmentSlot::RINGS;
       i.price = 40;
       i.storageIds = LIST(StorageId("jewellery"), StorageId("equipment"));
-      i.equipmentGroup = "jewellery"_s;
+      i.equipmentGroup = TString(TSentence("JEWELLERY_GROUP"));
   );
 }
 
@@ -415,13 +418,13 @@ SItemAttributes ItemTypes::Amulet::getAttributes(const ContentFactory* f) const 
       i.viewId = getAmuletViewId(lastingEffect);
       i.shortName = getName(lastingEffect, f);
       i.equipedEffect.push_back(lastingEffect);
-      i.name = "amulet of " + *i.shortName;
-      i.plural = "amulets of " + *i.shortName;
+      i.name = TSentence("AMULET_OF", *i.shortName);
+      i.plural = TString(TSentence("AMULETS_OF", *i.shortName));
       i.equipmentSlot = EquipmentSlot::AMULET;
       i.price = 5 * getPrice(lastingEffect, f);
       i.weight = 0.3;
       i.storageIds = LIST(StorageId("jewellery"), StorageId("equipment"));
-      i.equipmentGroup = "jewellery"_s;
+      i.equipmentGroup = TString(TSentence("JEWELLERY_GROUP"));
   );
 }
 
@@ -437,16 +440,16 @@ SItemAttributes CustomItemId::getAttributes(const ContentFactory* factory) const
   }
 }
 
-static SItemAttributes getPotionAttr(const ContentFactory* factory, Effect effect, double scale, const char* prefix,
+static SItemAttributes getPotionAttr(const ContentFactory* factory, Effect effect, double scale, TString prefix,
     const char* viewId) {
   effect.scale(scale, factory);
   return ITATTR(
       i.viewId = ViewId(viewId, effect.getColor(factory));
       i.shortName = effect.getName(factory);
-      i.name = prefix + "potion of "_s + *i.shortName;
-      i.plural = prefix + "potions of "_s + *i.shortName;
-      i.blindName = "potion"_s;
-      i.applyVerb = make_pair("drink", "drinks");
+      i.name =  TSentence("POTION_OF", prefix, *i.shortName);
+      i.plural = TString(TSentence("POTIONS_OF", prefix, *i.shortName));
+      i.blindName = TString(TStringId("POTION"));
+      i.applyVerb = make_pair(TStringId("YOU_DRINK"), TStringId("DRINKS"));
       i.fragile = true;
       i.weight = 0.3;
       i.effect = effect;
@@ -456,16 +459,16 @@ static SItemAttributes getPotionAttr(const ContentFactory* factory, Effect effec
       i.uses = 1;
       i.producedStat = StatId::POTION_PRODUCED;
       i.storageIds = LIST(StorageId("potions"), StorageId("equipment"));
-      i.equipmentGroup = "consumables"_s;
+      i.equipmentGroup = TString(TSentence("CONSUMABLES_GROUP"));
   );
 }
 
 SItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory* factory) const {
-  return getPotionAttr(factory, effect, 1, "", "potion1");
+  return getPotionAttr(factory, effect, 1, ""_s, "potion1");
 }
 
 SItemAttributes ItemTypes::Potion2::getAttributes(const ContentFactory* factory) const {
-  return getPotionAttr(factory, effect, 2, "concentrated ", "potion3");
+  return getPotionAttr(factory, effect, 2, TStringId("CONCENTRATED"), "potion3");
 }
 
 SItemAttributes ItemTypes::PrefixChance::getAttributes(const ContentFactory* factory) const {
@@ -509,19 +512,20 @@ SItemAttributes ItemTypes::Mushroom::getAttributes(const ContentFactory* factory
   return ITATTR(
       i.viewId = getMushroomViewId(effect);
       i.shortName = effect.getName(factory);
-      i.name = *i.shortName + " mushroom";
-      i.blindName = "mushroom"_s;
+      i.name = TSentence("MUSHROOM_OF", *i.shortName);
+      i.plural = TString(TSentence("MUSHROOMS_OF", *i.shortName));
+      i.blindName = TString(TStringId("MUSHROOM"));
       i.itemClass= ItemClass::FOOD;
       i.weight = 0.1;
       i.effect = effect;
       i.price = i.effect->getPrice(factory);
       i.uses = 1;
       i.storageIds = {StorageId("equipment")};
-      i.equipmentGroup = "consumables"_s;
+      i.equipmentGroup = TString(TSentence("CONSUMABLES_GROUP"));
   );
 }
 
-static ViewId getRuneViewId(const string& name) {
+static ViewId getRuneViewId(const TString& name) {
   int h = int(combineHash(name));
   const static vector<Color> colors = {Color::RED, Color::YELLOW, Color::ORANGE, Color::BLUE, Color::LIGHT_BLUE,
       Color::PURPLE, Color::PINK, Color::RED, Color::ORANGE, Color::GREEN, Color::LIGHT_GREEN};
@@ -533,9 +537,9 @@ SItemAttributes ItemTypes::Glyph::getAttributes(const ContentFactory* factory) c
       i.shortName = getGlyphName(factory, *rune.prefix);
       i.viewId = getRuneViewId(*i.shortName);
       i.upgradeInfo = rune;
-      i.name = "glyph " + *i.shortName;
-      i.plural= "glyphs "  + *i.shortName;
-      i.blindName = "glyph"_s;
+      i.name = TSentence("GLYPH", *i.shortName);
+      i.plural= TString(TSentence("GLYPHS", *i.shortName));
+      i.blindName = TString(TStringId("GLYPH_BLIND"));
       i.itemClass = ItemClass::OTHER;
       i.weight = 0.1;
       i.price = 100;
@@ -544,7 +548,7 @@ SItemAttributes ItemTypes::Glyph::getAttributes(const ContentFactory* factory) c
   );
 }
 
-static ViewId getBalsamViewId(const string& name) {
+static ViewId getBalsamViewId(const TString& name) {
   int h = int(combineHash(name));
   const static vector<Color> colors = {Color::RED, Color::YELLOW, Color::ORANGE, Color::BLUE, Color::LIGHT_BLUE,
       Color::PURPLE, Color::PINK, Color::RED, Color::ORANGE, Color::GREEN, Color::LIGHT_GREEN};
@@ -556,9 +560,9 @@ SItemAttributes ItemTypes::Balsam::getAttributes(const ContentFactory* factory) 
       i.shortName = effect.getName(factory);
       i.viewId = getBalsamViewId(*i.shortName);
       i.upgradeInfo = ItemUpgradeInfo LIST(ItemUpgradeType::BALSAM, effect);
-      i.name = "balsam of " + *i.shortName;
-      i.plural= "balsams of "  + *i.shortName;
-      i.blindName = "balsam"_s;
+      i.name = TSentence("BALSAM_OF", *i.shortName);
+      i.plural= TString(TSentence("BALSAMS_OF", *i.shortName));
+      i.blindName = TString(TStringId("BALSAM"));
       i.weight = 0.5;
       i.price = 100;
       i.uses = 1;
@@ -570,10 +574,10 @@ SItemAttributes ItemTypes::Scroll::getAttributes(const ContentFactory* factory) 
   return ITATTR(
       i.viewId = ViewId("scroll");
       i.shortName = effect.getName(factory);
-      i.name = "scroll of " + *i.shortName;
-      i.plural= "scrolls of "  + *i.shortName;
-      i.blindName = "scroll"_s;
-      i.applyVerb = make_pair("read", "reads");
+      i.name = TSentence("SCROLL_OF", *i.shortName);
+      i.plural= TString(TSentence("SCROLLS_OF", *i.shortName));
+      i.blindName = TString(TStringId("SCROLL"));
+      i.applyVerb = make_pair(TStringId("YOU_READ"), TStringId("HE_READS"));
       i.weight = 0.1;
       i.effect = effect;
       i.price = i.effect->getPrice(factory);
@@ -581,19 +585,19 @@ SItemAttributes ItemTypes::Scroll::getAttributes(const ContentFactory* factory) 
       i.uses = 1;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
       i.storageIds = LIST(StorageId("scrolls"), StorageId("equipment"));
-      i.equipmentGroup = "consumables"_s;
+      i.equipmentGroup = TString(TSentence("CONSUMABLES_GROUP"));
   );
 }
 
 SItemAttributes ItemTypes::FireScroll::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("scroll");
-      i.name = "scroll of fire";
-      i.plural= "scrolls of fire"_s;
-      i.shortName = "fire"_s;
-      i.description = "Sets itself on fire.";
-      i.blindName = "scroll"_s;
-      i.applyVerb = make_pair("read", "reads");
+      i.name = TStringId("SCROLL_OF_FIRE");
+      i.plural = TString(TStringId("SCROLLS_OF_FIRE"));
+      i.shortName = TString(TStringId("FIRE"));
+      i.description = TString(TStringId("FIRE_SCROLL_DESCRIPTION"));
+      i.blindName = TString(TStringId("SCROLL"));
+      i.applyVerb = make_pair(TStringId("YOU_READ"), TStringId("HE_READS"));
       i.weight = 0.1;
       i.price = 15;
       i.burnTime = 10;
@@ -602,16 +606,16 @@ SItemAttributes ItemTypes::FireScroll::getAttributes(const ContentFactory*) cons
       i.effectDescription = false;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
       i.storageIds = {StorageId("equipment")};
-      i.equipmentGroup = "consumables"_s;
+      i.equipmentGroup = TString(TSentence("CONSUMABLES_GROUP"));
   );
 }
 
-SItemAttributes ItemTypes::TechBook::getAttributes(const ContentFactory*) const {
+SItemAttributes ItemTypes::TechBook::getAttributes(const ContentFactory* f) const {
   return ITATTR(
       i.viewId = ViewId("book");
-      i.shortName = string(techId.data());
-      i.name = "book of " + *i.shortName;
-      i.plural = "books of " + *i.shortName;
+      i.shortName = f->technology.getName(techId);
+      i.name = TSentence("BOOK_OF", *i.shortName);
+      i.plural = TString(TSentence("BOOKS_OF", *i.shortName));
       i.weight = 1;
       i.applyTime = 3_visible;
       i.effect = Effect(techId);

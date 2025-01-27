@@ -3,28 +3,29 @@
 #include "item_prefix.h"
 #include "lasting_effect.h"
 #include "attr_type.h"
+#include "t_string.h"
 
-static const char* getTargetName(ItemUpgradeType type) {
+static TString getTargetName(ItemUpgradeType type) {
   switch (type) {
     case ItemUpgradeType::ARMOR:
-      return "armor";
+      return TStringId("ARMOR_UPGRADE_TYPE");
     case ItemUpgradeType::WEAPON:
-      return "weapons";
+      return TStringId("WEAPONS_UPGRADE_TYPE");
     case ItemUpgradeType::RANGED_WEAPON:
-      return "ranged weapons";
+      return TStringId("RANGED_WEAPONS_UPGRADE_TYPE");
     case ItemUpgradeType::BALSAM:
-      return "bodies";
+      return TStringId("BODIES_UPGRADE_TYPE");
     case ItemUpgradeType::BODY_PART:
-      return "undead kings";
+      return TStringId("UNDEAD_KINGS_UPGRADE_TYPE");
     case ItemUpgradeType::AUTOMATONS_LOWER:
     case ItemUpgradeType::AUTOMATONS_UPPER:
-      return "automatons";
+      return TStringId("ABOMINATIONS_UPGRADE_TYPE");
   }
 }
 
-vector<string> ItemUpgradeInfo::getDescription(const ContentFactory* factory) const {
+vector<TString> ItemUpgradeInfo::getDescription(const ContentFactory* factory) const {
   PROFILE;
-  vector<string> ret { "Crafting upgrade for "_s + getTargetName(type) + ":" };
+  vector<TString> ret { TSentence("CRAFTING_UPDATE_FOR", getTargetName(type)) };
   ret.append(getEffectDescription(factory, *prefix));
   return ret;
 }
