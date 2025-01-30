@@ -13,7 +13,7 @@
   0.1
   false
   Filter Not LastingEffect POISON_RESISTANT {
-    CreatureMessage { "are poisoned by the gas" "is poisoned by the gas"}
+    CreatureMessage { TILE_GAS_TYPES_POISON_GAS_SECONDPERSON TILE_GAS_TYPES_POISON_GAS_THIRDPERSON}
     Bleed 0.02 "poison gas"
   }
 }
@@ -38,8 +38,7 @@
   false
   Filter BodyMaterial FLESH {
     Chance 0.2 Lasting PANIC
-    Chance 0.1 CreatureMessage {"scream in terror" "screams in terror"}
+    Chance 0.1 CreatureMessage {TILE_GAS_TYPES_BLACK_MASS_SMOKE_SECONDPERSON TILE_GAS_TYPES_BLACK_MASS_SMOKE_THIRDPERSON}
     #Lasting 10 DEF_DEBUFF
   }
 }
-

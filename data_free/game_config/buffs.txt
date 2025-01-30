@@ -1,7 +1,7 @@
 "SUPER_BONUS" {
-  name = "super bonus"
-  adjective = "amazing"
-  description = "Super"
+  name = BUFFS_SUPER_BONUS_NAME
+  adjective = BUFFS_SUPER_BONUS_ADJECTIVE
+  description = BUFFS_SUPER_BONUS_DESCRIPTION
   addedMessage = ARE SUPER
   removedMessage = ARE NO_LONGER_SUPER
   startEffect = IncreaseAttr DAMAGE 30
@@ -13,11 +13,11 @@
 }
 
 "LEADERSHIP" {
-  name = "leadership"
-  adjective = "leader"
-  description = "Creature's combat experience will be granted to the entire team."
-  addedMessage = "feel in command of your" "feels in command of the" "team"
-  removedMessage = "feel like you" "feels like they" "are no longer in command"
+  name = BUFFS_LEADERSHIP_NAME
+  adjective = BUFFS_LEADERSHIP_ADJECTIVE
+  description = BUFFS_LEADERSHIP_DESCRIPTION
+  addedMessage = BUFFS_LEADERSHIP_ADDEDMESSAGE BUFFS_LEADERSHIP_ADDEDMESSAGE1 BUFFS_LEADERSHIP_ADDEDMESSAGE2
+  removedMessage = BUFFS_LEADERSHIP_REMOVEDMESSAGE BUFFS_LEADERSHIP_REMOVEDMESSAGE1 BUFFS_LEADERSHIP_REMOVEDMESSAGE2
   canWishFor = true
   color = ColorId PURPLE
 }
@@ -64,11 +64,11 @@ End
 "DEF_DEBUFF" ATTR_DEBUFF(DEFENSE, "defense", 3, 20)
 
 "HIGH_MORALE" {
-  name = "high morale"
-  adjective = "happy"
-  description = "Makes creatures more efficient in training and work"
-  addedMessage = YOUR "spirits are lifted"
-  removedMessage = YOUR "mood goes back to normal"
+  name = BUFFS_HIGH_MORALE_NAME
+  adjective = BUFFS_HIGH_MORALE_ADJECTIVE
+  description = BUFFS_HIGH_MORALE_DESCRIPTION
+  addedMessage = YOUR BUFFS_HIGH_MORALE_ADDEDMESSAGE
+  removedMessage = YOUR BUFFS_HIGH_MORALE_REMOVEDMESSAGE
   efficiencyMultiplier = 1.3
   fx = BUFF_BLUE
   color = ColorId BLUE
@@ -76,11 +76,11 @@ End
 }
 
 "REGENERATION" {
-  name = "regeneration"
-  description = "Recovers a little bit of health every turn."
-  addedMessage = ARE "regenerating"
-  removedMessage = ARE "no longer regenerating"
-  adjective = "regenerating"
+  name = BUFFS_REGENERATION_NAME
+  description = BUFFS_REGENERATION_DESCRIPTION
+  addedMessage = ARE BUFFS_REGENERATION_ADDEDMESSAGE
+  removedMessage = ARE BUFFS_REGENERATION_REMOVEDMESSAGE
+  adjective = BUFFS_REGENERATION_ADJECTIVE
   tickEffect = Filter Not LastingEffect FROZEN Heal { FLESH 0.03 }
   combatConsumable = true
   price = 12
@@ -89,13 +89,13 @@ End
 }
 
 "BLEEDING" {
-  name = "bleeding"
-  description = "Causes loss of health points over time."
+  name = BUFFS_BLEEDING_NAME
+  description = BUFFS_BLEEDING_DESCRIPTION
   addedMessage = YOU_START STARTS BLEEDING
-  removedMessage = YOUR "bleeding stops"
-  adjective = "bleeding"
+  removedMessage = YOUR BUFFS_BLEEDING_REMOVEDMESSAGE
+  adjective = BUFFS_BLEEDING_ADJECTIVE
   tickEffect = Filter Not LastingEffect FROZEN {
-    CreatureMessage { "are bleeding" "is bleeding" HIGH }
+    CreatureMessage { BUFFS_BLEEDING_SECONDPERSON BUFFS_BLEEDING_THIRDPERSON HIGH }
     Bleed 0.03 "bleeding"
   }
   consideredBad = true
@@ -106,13 +106,13 @@ End
 }
 
 "INFERNITE_EFFECT" {
-  name = "burning infernite"
-  description = "Creature is being burnt by carrying an infernite item."
-  addedMessage = "are being" "is being" "burnt by the infernite"
-  removedMessage = "are no longer being" "is no longer being" "burnt by the infernite"
-  adjective = "being burnt by infernite"
+  name = BUFFS_INFERNITE_EFFECT_NAME
+  description = BUFFS_INFERNITE_EFFECT_DESCRIPTION
+  addedMessage = BUFFS_INFERNITE_EFFECT_ADDEDMESSAGE BUFFS_INFERNITE_EFFECT_ADDEDMESSAGE1 BUFFS_INFERNITE_EFFECT_ADDEDMESSAGE2
+  removedMessage = BUFFS_INFERNITE_EFFECT_REMOVEDMESSAGE BUFFS_INFERNITE_EFFECT_REMOVEDMESSAGE1 BUFFS_INFERNITE_EFFECT_REMOVEDMESSAGE2
+  adjective = BUFFS_INFERNITE_EFFECT_ADJECTIVE
   tickEffect = Filter And { Not LastingEffect FIRE_RESISTANT Not LastingEffect FIRE_IMMUNITY } {
-    CreatureMessage {"are burnt by the infernite" "is burnt by the infernite"}
+    CreatureMessage {BUFFS_INFERNITE_EFFECT_SECONDPERSON BUFFS_INFERNITE_EFFECT_THIRDPERSON}
     Bleed 0.01 "infernite"
   }
   hiddenPredicate = Or { LastingEffect FIRE_RESISTANT LastingEffect FIRE_IMMUNITY }
@@ -124,11 +124,11 @@ End
 }
 
 "SPELL_DAMAGE" {
-  name = "spell damage"
-  adjective = "deals magical damage"
-  description = "All dealt melee damage is transformed into magical damage."
-  addedMessage = "deal" "deals" "magical damage"
-  removedMessage = "no longer deal" "no longer deals" "magical damage"
+  name = BUFFS_SPELL_DAMAGE_NAME
+  adjective = BUFFS_SPELL_DAMAGE_ADJECTIVE
+  description = BUFFS_SPELL_DAMAGE_DESCRIPTION
+  addedMessage = BUFFS_SPELL_DAMAGE_ADDEDMESSAGE BUFFS_SPELL_DAMAGE_ADDEDMESSAGE1 BUFFS_SPELL_DAMAGE_ADDEDMESSAGE2
+  removedMessage = BUFFS_SPELL_DAMAGE_REMOVEDMESSAGE BUFFS_SPELL_DAMAGE_REMOVEDMESSAGE1 BUFFS_SPELL_DAMAGE_REMOVEDMESSAGE2
   fx = BUFF_PURPLE
   color = ColorId PURPLE
   price = 50
@@ -136,11 +136,11 @@ End
 }
 
 "FIRE_DAMAGE" {
-  name = "fire damage"
-  adjective = "deals fire damage"
-  description = "All dealt melee damage is transformed into fire damage."
-  addedMessage = "deal" "deals" "fire damage"
-  removedMessage = "no longer deal" "no longer deals" "fire damage"
+  name = BUFFS_FIRE_DAMAGE_NAME
+  adjective = BUFFS_FIRE_DAMAGE_ADJECTIVE
+  description = BUFFS_FIRE_DAMAGE_DESCRIPTION
+  addedMessage = BUFFS_FIRE_DAMAGE_ADDEDMESSAGE BUFFS_FIRE_DAMAGE_ADDEDMESSAGE1 BUFFS_FIRE_DAMAGE_ADDEDMESSAGE2
+  removedMessage = BUFFS_FIRE_DAMAGE_REMOVEDMESSAGE BUFFS_FIRE_DAMAGE_REMOVEDMESSAGE1 BUFFS_FIRE_DAMAGE_REMOVEDMESSAGE2
   fx = BUFF_RED
   color = ColorId RED
   price = 50
@@ -148,11 +148,11 @@ End
 }
 
 "KINGS_CHARGE" {
-  name = "king's charge"
-  adjective = "king's charge"
-  description = "Gives a +15 damage bonus"
-  addedMessage = "feel ready to die for your king" "seems ready to die for their king" ""
-  removedMessage = "no longer feel ready to die for your king" "no longer seems ready to die for their king" ""  
+  name = BUFFS_KINGS_CHARGE_NAME
+  adjective = BUFFS_KINGS_CHARGE_ADJECTIVE
+  description = BUFFS_KINGS_CHARGE_DESCRIPTION
+  addedMessage = BUFFS_KINGS_CHARGE_ADDEDMESSAGE BUFFS_KINGS_CHARGE_ADDEDMESSAGE1 ""
+  removedMessage = BUFFS_KINGS_CHARGE_REMOVEDMESSAGE BUFFS_KINGS_CHARGE_REMOVEDMESSAGE1 ""  
   startEffect = IncreaseAttr DAMAGE 15
   endEffect = IncreaseAttr DAMAGE -15
   combatConsumable = true
@@ -226,11 +226,11 @@ End
 "HATE_LIZARDMEN" HATE("lizardmen")
 
 "INVULNERABLE" {
-  name = "invulnerability"
-  adjective = "invulnerable"
-  description = "Creature is immune to all types of damage."
-  addedMessage = ARE "invulnerable"
-  removedMessage = ARE "no longer invulnerable"
+  name = BUFFS_INVULNERABLE_NAME
+  adjective = BUFFS_INVULNERABLE_ADJECTIVE
+  description = BUFFS_INVULNERABLE_DESCRIPTION
+  addedMessage = ARE BUFFS_INVULNERABLE_ADDEDMESSAGE
+  removedMessage = ARE BUFFS_INVULNERABLE_REMOVEDMESSAGE
   color = ColorId WHITE
   fx = BUFF_WHITE
   defenseMultiplier = 1000
@@ -352,8 +352,8 @@ Def DIVINE_EFFECT(LENGTH1, LENGTH2, LENGTH3, EFFECT_NAME, MESSAGE)
 End
 
 "PREACHING" {
-  name = "Hold Mass"
-  adjective = "Holding Mass"
+  name = BUFFS_PREACHING_NAME
+  adjective = BUFFS_PREACHING_ADJECTIVE
   description = ""
   color = ColorId PURPLE
   endEffect = Filter Or { FurnitureType "ROSTRUM_WOOD" FurnitureType "ROSTRUM_IRON" FurnitureType "ROSTRUM_GOLD" } {
@@ -483,36 +483,36 @@ End
 }
 
 "SINNED" {
-  name = "venial sin"
-  adjective = "venial sinner"
-  description = "The creature has sinned and is seeking forgiveness."
+  name = BUFFS_SINNED_NAME
+  adjective = BUFFS_SINNED_ADJECTIVE
+  description = BUFFS_SINNED_DESCRIPTION
   color = ColorId BROWN
   fx = DEBUFF_BROWN
   consideredBad = true
 }
 
 "MORTAL_SINNED" {
-  name = "mortal sin"
-  adjective = "mortal sinner"
-  description = "The creature has mortally sinned and is seeking forgiveness."
+  name = BUFFS_MORTAL_SINNED_NAME
+  adjective = BUFFS_MORTAL_SINNED_ADJECTIVE
+  description = BUFFS_MORTAL_SINNED_DESCRIPTION
   color = ColorId BLACK
   fx = DEBUFF_BLACK
   consideredBad = true
 }
 
 "WILL_BANISH" {
-  name = "summon"
-  adjective = "armed help"
-  description = "The creature was sent for a limited time as an answer to prayers."
+  name = BUFFS_WILL_BANISH_NAME
+  adjective = BUFFS_WILL_BANISH_ADJECTIVE
+  description = BUFFS_WILL_BANISH_DESCRIPTION
   color = ColorId WHITE
   fx = BUFF_WHITE
   endEffect = Banish
 }
 
 "WELL_FED" {
-  name = "feeding"
-  adjective = "well fed"
-  description = "The creature is well fed and receives a +1 spell damage and defense bonuses."
+  name = BUFFS_WELL_FED_NAME
+  adjective = BUFFS_WELL_FED_ADJECTIVE
+  description = BUFFS_WELL_FED_DESCRIPTION
   color = ColorId BROWN
   fx = BUFF_BROWN
   startEffect = {

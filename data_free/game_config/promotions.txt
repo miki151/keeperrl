@@ -1,14 +1,14 @@
 "dwarf" {
-    "melee fighter" {"sword"}
-        Description "Increases max melee training level by 3."
+    PROMOTIONS {"sword"}
+        Description PROMOTIONS_ID
         {
           IncreaseMaxLevel DAMAGE 3
           Filter Gender MALE SetViewId {"dwarf_fighter"}
           Filter Gender FEMALE SetViewId {"dwarf_fighter_f"}
         }
 
-    "archer" {"bow"}
-        Description "Increases max archery training level by 3, adds 14 ranged damage when applied for the first time."
+    PROMOTIONS_ID1 {"bow"}
+        Description PROMOTIONS_ID2
         {
           Filter Not CreatureFlag "is_archer" IncreaseAttr RANGED_DAMAGE 14
           SetCreatureFlag "is_archer" true
@@ -19,8 +19,8 @@
           Filter Gender FEMALE SetViewId {"dwarf_crossbowman_f"}
         }
 
-    "spellcaster" {"archwood_staff"}
-        Description "Increases max spell training level by 3, adds 14 spell damage when applied for the first time."
+    PROMOTIONS_ID3 {"archwood_staff"}
+        Description PROMOTIONS_ID4
         {
           Filter Not CreatureFlag "is_spellcaster" IncreaseAttr SPELL_DAMAGE 14
           SetCreatureFlag "is_spellcaster" true
@@ -30,8 +30,8 @@
           Filter Gender FEMALE SetViewId {"dwarf_mage_f"}
         }
 
-    "artisan" {"forge"}
-        Description "Increases crafting attributes for all workshops by 8"
+    PROMOTIONS_ID5 {"forge"}
+        Description PROMOTIONS_ID6
         {
           IncreaseAttr "WORKSHOP" 8
           IncreaseAttr "FORGE" 8
@@ -44,25 +44,25 @@
 }
 
 "melee_adventurer" {
-    "melee fighter" {"sword"}
-        Description "Increases damage training by 1."
+    PROMOTIONS_ID7 {"sword"}
+        Description PROMOTIONS_ID8
         IncreaseLevel DAMAGE 1
 }
 
 "ranged_adventurer" {
-    "archer" {"bow"}
-        Description "Increases ranged damage training by 1."
+    PROMOTIONS_ID1 {"bow"}
+        Description PROMOTIONS_ID9
         IncreaseLevel RANGED_DAMAGE 1
 }
 
 "spell_adventurer" {
-    "spellcaster" {"archwood_staff"}
-        Description "Increases spell damage training by 1."
+    PROMOTIONS_ID3 {"archwood_staff"}
+        Description PROMOTIONS_ID10
         IncreaseLevel SPELL_DAMAGE 1
 }
 
 "knight" {
-    "knighthood" { "sword" }
-        Description "Promotes to a knight."
+    PROMOTIONS_ID11 { "sword" }
+        Description PROMOTIONS_ID12
         Polymorph "KNIGHT_PLAYER" none
 }

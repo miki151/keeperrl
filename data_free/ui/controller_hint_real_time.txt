@@ -5,36 +5,36 @@ ExitButtonsWithEnter()
 Position(BOTTOM_CENTERED, Width 800 MiniWindow({
   Fill(Rgb 0 0 0 200)
   Vertical {
-    Label("When playing in the real-time mode, use:")
+    Label(TEXT22)
     Height 5 {}
-    Label("1. The right touchpad to move the mouse cursor.")
+    Label(TEXT23)
     Height 5 {}
-    Label("2. The right trigger to place items on the map.")
+    Label(TEXT24)
     Height 5 {}
-    Label("3. The left touchpad to access various submenus, such as buildings or technology.")
+    Label(TEXT25)
     Height 5 {}
-    Label("4. [Y] to pause or unpause the game.")
+    Label(TEXT26)
     Height 5 {}
-    Label("5. [B] to open the Z-levels list.")
+    Label(TEXT27)
     Height 5 {}
     Horizontal {
-      Label("6. [")
-      Label(text = "☰" font = SYMBOL_FONT)
-      Label("] to access the menu.")
+      Label(TEXT28)
+      Label(text = TEXT29 font = SYMBOL_FONT)
+      Label(TEXT30)
     }
     Height 5 {}
     Horizontal {
-      Label("7. [")
+      Label(TEXT31)
       {
-        Label(text = "◻" font = SYMBOL_FONT)
-        MarginLeft(-4, Label(text = "▗" font = SYMBOL_FONT))
+        Label(text = TEXT32 font = SYMBOL_FONT)
+        MarginLeft(-4, Label(text = TEXT33 font = SYMBOL_FONT))
       }
-      Label("] to open the world map.")
+      Label(TEXT34)
     }
     Height 5 {}
     Position(MIDDLE, Texture("deck_real_time"))
     Height 5 {}
-    Label(size = 14 text = "For an exhaustive list of controls or to apply changes, see controller settings after pressing the [Steam] button.")
+    Label(size = 14 text = TEXT35)
   }
 }))
 }

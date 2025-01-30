@@ -8,13 +8,13 @@
       Using "title" Label()
       Stretch {}
       Using "range_dec" StandardButtonNotFocusable(Horizontal {
-        Label("0.1x")
+        Label(TEXT46)
         Width 5 {}
         KeybindingHandler("SCROLL_Z_DOWN")
         RenderKeybinding("SCROLL_Z_DOWN", true)
       })
       Using "range_inc" StandardButtonNotFocusable(Horizontal {
-        Label("10x")
+        Label(TEXT47)
         Width 5 {}
         KeybindingHandler("SCROLL_Z_UP")
         RenderKeybinding("SCROLL_Z_UP", true)
@@ -23,16 +23,16 @@
     Height 5 {}
     Horizontal {
       Stretch {}
-      Label("[")
+      Label(TEXT48)
       Using "range_begin" Label()
-      Label("-")
+      Label(TEXT49)
       Using "range_end" Label()
-      Label("]")
+      Label(TEXT50)
     }
     Height 10 {}
     Horizontal {
       Using "decrease" StandardButtonNotFocusable(Horizontal {
-        Label("<")
+        Label(TEXT51)
         Width 5 {}
         KeybindingHandler("MENU_LEFT")
         RenderKeybinding("MENU_LEFT", true)
@@ -41,7 +41,7 @@
       Stretch Using "slider" Sliding()
       Width 5 {}
       Using "increase" StandardButtonNotFocusable(Horizontal {
-        Label(">")
+        Label(TEXT52)
         Width 5 {}
         KeybindingHandler("MENU_RIGHT")
         RenderKeybinding("MENU_RIGHT", true)
@@ -55,14 +55,14 @@
     Height 10 {}
     Position(MIDDLE, Horizontal {
       Using "confirm" StandardButtonNotFocusable(Horizontal {
-        Label("Confirm")
+        Label(TEXT13)
         Width 5 {}
         KeybindingHandler("MENU_SELECT")
         RenderKeybinding("MENU_SELECT", true)
       })
       Width 5 {}
       Using "EXIT" StandardButtonNotFocusable(Horizontal {
-        Label("Cancel")
+        Label(TEXT2)
         Width 5 {}
         KeybindingHandler("EXIT_MENU")
         RenderKeybinding("EXIT_MENU", true)

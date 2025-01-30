@@ -21,15 +21,15 @@ Def LineHighlight() MarginLeft(-7, MarginRight(-10, NewHighlight())) End
       Height 10 {}
       If "options"
         Position(MIDDLE, Horizontal {
-          Width TopButtonWidth() StandardButtonActivated(Label("General"))
+          Width TopButtonWidth() StandardButtonActivated(Label(TEXT54))
           Width 15 {}
-          Using "set_keys" Width TopButtonWidth() StandardButton(Label("Keybindings"))
+          Using "set_keys" Width TopButtonWidth() StandardButton(Label(TEXT55))
         })
       If "keybindings"
         Position(MIDDLE, Horizontal {
-          Using "set_options" Width TopButtonWidth() StandardButton(Label("General"))
+          Using "set_options" Width TopButtonWidth() StandardButton(Label(TEXT54))
           Width 15 {}
-          Width TopButtonWidth() StandardButtonActivated(Label("Keybindings"))
+          Width TopButtonWidth() StandardButtonActivated(Label(TEXT55))
         })
       Height 10 {}
       Stretch Scrolling(Margins(15, MarginRight(10, {
@@ -49,9 +49,9 @@ Def LineHighlight() MarginLeft(-7, MarginRight(-10, NewHighlight())) End
                   Using "sliderData"
                     Width 120 Height 30 Sliding()
                   Height 25 Horizontal{
-                    Using "decrease" StandardButton(Label("<"))
+                    Using "decrease" StandardButton(Label(TEXT51))
                     Using "value" Width 55 Position(MIDDLE, Label())
-                    Using "increase" StandardButton(Label(">"))
+                    Using "increase" StandardButton(Label(TEXT52))
                   }
                 }
               }
@@ -65,9 +65,8 @@ Def LineHighlight() MarginLeft(-7, MarginRight(-10, NewHighlight())) End
           })
       })))
       Height 10 {}
-      Using "reset_keys" Position(MIDDLE, StandardButton(Label("Restore defaults")))
+      Using "reset_keys" Position(MIDDLE, StandardButton(Label(TEXT56)))
       Height 10 {}
     }
   })
 }
-

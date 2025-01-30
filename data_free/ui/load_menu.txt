@@ -38,7 +38,7 @@ End
         Using "games" Scrolling(MarginRight(10, List(VERTICAL, SavedGameContent())))
       Stretch {}
       Height 15 {}
-      Position(MIDDLE, Width 150 Using "new" StandardButton(Height 20 Label("Start new game")))
+      Position(MIDDLE, Width 150 Using "new" StandardButton(Height 20 Label(TEXT43)))
     }
   })
 }

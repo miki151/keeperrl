@@ -3,7 +3,7 @@
 
 "1_dark_mage"
 {
-  baseName = "Classic"
+  baseName = KEEPER_CREATURES_BASENAME
   creatureId = { "KEEPER_MAGE" "KEEPER_MAGE_F" }
   tribeAlignment = EVIL
   villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
@@ -36,7 +36,7 @@
 }
 "3_white_knight"
 {
-  baseName = "Castle"
+  baseName = KEEPER_CREATURES_BASENAME1
   creatureId = { "KEEPER_KNIGHT_WHITE" "KEEPER_KNIGHT_WHITE_F" }
   tribeAlignment = LAWFUL
   villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
@@ -59,7 +59,7 @@
 }
 "3_zchurch"
 {
-  baseName = "Corrupted church"
+  baseName = KEEPER_CREATURES_BASENAME2
   creatureId = { "KEEPER_BISHOP" }
   tribeAlignment = LAWFUL
   villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
@@ -86,7 +86,7 @@
 }
 "4_necromancer"
 {
-  baseName = "Undead"
+  baseName = KEEPER_CREATURES_BASENAME3
   creatureId = { "NECROMANCER" "NECROMANCER_F" }
   tribeAlignment = EVIL
   villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
@@ -112,7 +112,7 @@
 }
 "5_gnomes"
 {
-  baseName = "Automatons"
+  baseName = KEEPER_CREATURES_BASENAME4
   creatureId = { "GNOME" }
   tribeAlignment = LAWFUL
   villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
@@ -140,7 +140,7 @@
 }
 "6_dwarves"
 {
-  baseName = "Colony"
+  baseName = KEEPER_CREATURES_BASENAME5
   creatureId = { "DWARF_PLAYER" }
   tribeAlignment = LAWFUL
   villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
@@ -168,7 +168,7 @@
 }
 "7_goblins"
 {
-  baseName = "Greenskins"
+  baseName = KEEPER_CREATURES_BASENAME6
   creatureId = { "GOBLIN_KEEPER" }
   tribeAlignment = EVIL
   villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
@@ -191,7 +191,7 @@
 }
 "8_zombies"
 {
-  baseName = "Zombies"
+  baseName = KEEPER_CREATURES_BASENAME7
   creatureId = { "ZOMBIE_WORKER" }
   specialTraits = { Lasting {SWARMER} }
   tribeAlignment = EVIL
@@ -217,7 +217,7 @@
 }
 "9_cyclops"
 {
-  baseName = "Hermit"
+  baseName = KEEPER_CREATURES_BASENAME8
   creatureId = { "CYCLOPS_PLAYER" }
   tribeAlignment = EVIL
   villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
@@ -243,7 +243,7 @@
 
 "91_dark_mage_adventurer"
 {
-  baseName = "Adventurer"
+  baseName = KEEPER_CREATURES_BASENAME9
   creatureId = { "ADVENTURER_MAGE" "ADVENTURER_MAGE_F" }
   tribeAlignment = EVIL
   description = "Roam the land in search of adventures and loot!"
@@ -277,7 +277,7 @@
 
 "94_adoxie_adventurer"
 {
-  baseName = "Adventurer"
+  baseName = KEEPER_CREATURES_BASENAME9
   creatureId = { "ADOXIE_ADVENTURER" }
   tribeAlignment = EVIL
   description = "Play as the Evil God Adoxie, and wipe the floor with silly mortals."

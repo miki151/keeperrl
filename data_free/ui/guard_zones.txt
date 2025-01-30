@@ -3,7 +3,7 @@ Def P(Text) Paragraph(500, Text) End
 
 MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,  
   Vertical {
-    Horizontal{ViewId(1, {"guard_post"}) Width 10 {} Label("Using guard zones")}
+    Horizontal{ViewId(1, {"guard_post"}) Width 10 {} Label(TEXT42)}
     Height 30 {}
     P("Setting up guard zones allows you to place your minions in chosen spots to watch for potential invaders.")
     Height 15 {}
@@ -21,4 +21,3 @@ MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,
     Height 15 {}
   }
 ))))
-

@@ -3,7 +3,7 @@ Def P(Text) Paragraph(500, Text) End
 
 MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,  
   Vertical {
-    Horizontal{ViewId(1, {"prisoner"}) Width 10 {} Label("Capturing prisoners")}
+    Horizontal{ViewId(1, {"prisoner"}) Width 10 {} Label(TEXT53)}
     Height 30 {}
     P("Want to supplement your workforce or convert enemies to fight on your side? You can do that by capturing enemy creatures.")
     Height 15 {}

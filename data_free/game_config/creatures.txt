@@ -10,7 +10,7 @@
     viewIdUpgrades = { { "keeper2" } { "keeper3" } { "keeper4" } }
     name = {
       # The name gets changed appropriately to 'Keeper'
-      name = "wizard"
+      name = CREATURE_ATTRIBUTES_KEEPER_MAGE_NAME
       # Definitions in name_generator.h
       firstNameGen = "FIRST_MALE"
       # Creature is always referred to as [FirstName] the [Creature name]
@@ -90,7 +90,7 @@ End
     # ViewId upgrades of Keepers are applied every 5 tech level increases
     viewIdUpgrades = { { "necromancer2" } { "necromancer3" } { "necromancer4" } }
     name = append {
-      name = "necromancer"
+      name = CREATURE_ATTRIBUTES_KEEPER_MAGE_NAME1
     }
     spellSchools = { "zombie mage" }
     maxLevelIncrease = {
@@ -127,7 +127,7 @@ End
       type = Humanoid LARGE
     }
     name = {
-      name = "knight"
+      name = CREATURE_ATTRIBUTES_KEEPER_KNIGHT_NAME
       firstNameGen = "FIRST_MALE"
       fullTitle = true
     }
@@ -161,7 +161,7 @@ End
     viewId = { "keeper_knight_f1" }
     gender = FEMALE
     name = {
-      name = "knight"
+      name = CREATURE_ATTRIBUTES_KEEPER_KNIGHT_NAME
       firstNameGen = "FIRST_FEMALE"
       fullTitle = true
     }
@@ -190,7 +190,7 @@ End
       type = Humanoid LARGE
     }
     name = {
-      name = "knight"
+      name = CREATURE_ATTRIBUTES_KEEPER_KNIGHT_WHITE_NAME
       firstNameGen = "FIRST_MALE"
       fullTitle = true
     }
@@ -225,7 +225,7 @@ End
     viewId = { "duke_f1" }
     gender = FEMALE
     name = {
-      name = "knight"
+      name = CREATURE_ATTRIBUTES_KEEPER_KNIGHT_WHITE_NAME
       firstNameGen = "FIRST_FEMALE"
       fullTitle = true
      }
@@ -252,7 +252,7 @@ End
       type = Humanoid LARGE
     }
     name = {
-      name = "bishop"
+      name = CREATURE_ATTRIBUTES_KEEPER_BISHOP_NAME
       firstNameGen = "FIRST_MALE"
       fullTitle = true
     }
@@ -281,7 +281,7 @@ End
   {
     viewId = { "mother_superior1" }
     name = {
-      name = "mother superior"
+      name = CREATURE_ATTRIBUTES_KEEPER_BISHOP_NAME1
       firstNameGen = "FIRST_FEMALE"
       fullTitle = true
     }
@@ -340,13 +340,13 @@ End
       creatures = { "SPIRIT" }}
     }
     spells = { "advanced healing" "heal spirit" }
-    chatReactionFriendly = "\"mhhhhhrrrr!\""
-    chatReactionHostile = "\"mhhhhhrrrr!\""
-    petReaction = "neighs"
+    chatReactionFriendly = CREATURE_ATTRIBUTES_UNICORN_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_UNICORN_CHATREACTIONHOSTILE
+    petReaction = CREATURE_ATTRIBUTES_UNICORN_PETREACTION
     name = {
-      name = "unicorn"
+      name = CREATURE_ATTRIBUTES_UNICORN_NAME
       firstNameGen = "DEITY"
-      groupName = "herd"
+      groupName = CREATURE_ATTRIBUTES_UNICORN_GROUPNAME
     }
   }
 "UNICORN_LEADER" inherit "UNICORN"
@@ -365,13 +365,13 @@ End
     body = {
       type = Humanoid LARGE
     }
-    chatReactionFriendly = "curses all law enforcement"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_BANDIT_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_BANDIT_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       DAMAGE 3
     }
     name = {
-      name = "bandit"
+      name = CREATURE_ATTRIBUTES_BANDIT_NAME
     }
     deathEffect = Filter Not Flag "key_dropped" {
       SetFlag "key_dropped" true
@@ -395,13 +395,13 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "talks about sewers"
-    chatReactionHostile = "talks about sewers"
+    chatReactionFriendly = CREATURE_ATTRIBUTES_RAT_SOLDIER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_RAT_SOLDIER_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       DAMAGE 2
     }
     name = {
-      name = "rat soldier"
+      name = CREATURE_ATTRIBUTES_RAT_SOLDIER_NAME
     }
     inventory = {
       { "Club"}
@@ -421,13 +421,13 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "talks about sewers"
-    chatReactionHostile = "talks about sewers"
+    chatReactionFriendly = CREATURE_ATTRIBUTES_RAT_LADY_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_RAT_LADY_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       DAMAGE 1
     }
     name = {
-      name = "rat woman"
+      name = CREATURE_ATTRIBUTES_RAT_LADY_NAME
     }
   }
 "RAT_KING"
@@ -440,13 +440,13 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "talks about sewers"
-    chatReactionHostile = "talks about sewers"
+    chatReactionFriendly = CREATURE_ATTRIBUTES_RAT_KING_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_RAT_KING_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       DAMAGE 3
     }
     name = {
-      name = "rat king"
+      name = CREATURE_ATTRIBUTES_RAT_KING_NAME
     }
     inventory = {
       { "Sword"}
@@ -466,7 +466,7 @@ End
       type = NonHumanoid LARGE
       material = SPIRIT
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "fist_attack" } "spell" 1 {
+        TORSO {{{ Intrinsic { "fist_attack" } CREATURE_ATTRIBUTES_SPIRIT_ID 1 {
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}}
       }
     }
@@ -474,10 +474,10 @@ End
       FLYING 1
       MAGIC_VULNERABILITY 1
     }
-    chatReactionFriendly = "\"Wouuuouuu!!!\""
-    chatReactionHostile = "\"Wouuuouuu!!!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_SPIRIT_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_SPIRIT_CHATREACTIONHOSTILE
     name = {
-      name = "ancient spirit"
+      name = CREATURE_ATTRIBUTES_SPIRIT_NAME
     }
     hatedByEffect = HATE_DEMONS
   }
@@ -493,7 +493,7 @@ End
       material = SPIRIT
       canCapture = true
       intrinsicAttacks = {
-        ARM {{{ Intrinsic { "fist_attack" } "spell" 1 {
+        ARM {{{ Intrinsic { "fist_attack" } CREATURE_ATTRIBUTES_DJINN_ID 1 {
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}}
       }
     }
@@ -501,7 +501,7 @@ End
       FLYING 1
     }
     name = {
-      name = "djinn"
+      name = CREATURE_ATTRIBUTES_DJINN_NAME
     }
     spells = { "grant wish" }
     instantPrisoner = true
@@ -518,13 +518,13 @@ End
       type = Humanoid LARGE
       material = SPIRIT
       intrinsicAttacks = {
-        ARM {{{ Intrinsic { "fist_attack" } "spell" 1 {
+        ARM {{{ Intrinsic { "fist_attack" } CREATURE_ATTRIBUTES_DEVIL_ID 1 {
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}}
       }
     }
     permanentEffects = { FIRE_IMMUNITY 1 } 
     name = {
-      name = "devil"
+      name = CREATURE_ATTRIBUTES_DEVIL_NAME
     }
     hatedByEffect = HATE_DEMONS
   }
@@ -536,7 +536,7 @@ End
     }
     deathEffect = {
       Filter Not Unlocked "adoxie" DropItems { "AdoxieScrollVault" } {1}
-      DropItems {Scroll Name "amok" Area 20 Chain { IncreaseAttr DEFENSE -20 IncreaseAttr DAMAGE 20 }} {1}
+      DropItems {Scroll Name CREATURE_ATTRIBUTES_DEVIL_TYPE Area 20 Chain { IncreaseAttr DEFENSE -20 IncreaseAttr DAMAGE 20 }} {1}
     }
   }
 "SATAN" inherit "DEVIL"
@@ -554,7 +554,7 @@ End
       }
     }
     name = {
-      name = "Diabolo"
+      name = CREATURE_ATTRIBUTES_DEVIL_NAME1
       fullTitle = true
     }
     inventory = {
@@ -569,7 +569,7 @@ End
       material = SPIRIT
       deathSound = none
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "touch_attack" } "touch" 0 {
+        TORSO {{{ Intrinsic { "touch_attack" } CREATURE_ATTRIBUTES_LOST_SOUL_ID 0 {
             attackType = HIT
             attackMsg = TOUCH
             victimEffect = { 0.2 Lasting INSANITY}
@@ -584,10 +584,10 @@ End
     permanentEffects = {
       FLYING 1
     }
-    chatReactionFriendly = "\"Wouuuouuu!!!\""
-    chatReactionHostile = "\"Wouuuouuu!!!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_LOST_SOUL_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_LOST_SOUL_CHATREACTIONHOSTILE
     name = {
-      name = "ghost"
+      name = CREATURE_ATTRIBUTES_LOST_SOUL_NAME
     }
     hatedByEffect = HATE_DEMONS
   }
@@ -598,7 +598,7 @@ End
       material = SPIRIT
       deathSound = none
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "touch_attack" } "touch" 0 {
+        TORSO {{{ Intrinsic { "touch_attack" } CREATURE_ATTRIBUTES_WRAITH_ID 0 {
             attackType = HIT
             attackMsg = TOUCH } }}}
       }
@@ -612,10 +612,10 @@ End
     permanentEffects = {
       FLYING 1
     }
-    chatReactionFriendly = "\"Wouuuouuu!!!\""
-    chatReactionHostile = "\"Wouuuouuu!!!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_WRAITH_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_WRAITH_CHATREACTIONHOSTILE
     name = {
-      name = "wraith"
+      name = CREATURE_ATTRIBUTES_WRAITH_NAME
     }
     hatedByEffect = HATE_DEMONS
   }
@@ -630,7 +630,7 @@ End
       type = Humanoid LARGE
       material = SPIRIT
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "touch_attack" } "touch" 0 {
+        TORSO {{{ Intrinsic { "touch_attack" } CREATURE_ATTRIBUTES_SUCCUBUS_ID 0 {
             attackType = HIT
             attackMsg = TOUCH
             victimEffect = {1.0 Lasting PEACEFULNESS} } }}}
@@ -645,8 +645,8 @@ End
     gender = FEMALE
     aiType = RANGED
     name = {
-      name = "succubus"
-      pluralName = "succubi"
+      name = CREATURE_ATTRIBUTES_SUCCUBUS_NAME
+      pluralName = CREATURE_ATTRIBUTES_SUCCUBUS_PLURALNAME
     }
     hatedByEffect = HATE_DEMONS
   }
@@ -666,8 +666,8 @@ End
     aiType = RANGED
     spells = { "bolster" "rally" }
     name = {
-      name = "galeam"
-        pluralName = "galea"
+      name = CREATURE_ATTRIBUTES_GALEAM_NAME
+        pluralName = CREATURE_ATTRIBUTES_GALEAM_PLURALNAME
     }
   }
 "CHERUB"
@@ -687,7 +687,7 @@ End
     permanentEffects = { SPEED 1 }
     aiType = RANGED
     name = {
-      name = "cherub"
+      name = CREATURE_ATTRIBUTES_CHERUB_NAME
     }
     inventory = {
       { "Bow"}
@@ -704,7 +704,7 @@ End
       type = HumanoidLike LARGE
       material = ICE
       intrinsicAttacks = {
-        ARM {{{ Intrinsic { "fist_attack" } "fists" 10 {
+        ARM {{{ Intrinsic { "fist_attack" } CREATURE_ATTRIBUTES_ICE_DEMON_ID 10 {
             attackType = HIT
             attackMsg = SWING
             meleeAttackAttr = COLD_DAMAGE
@@ -712,7 +712,7 @@ End
       }
     }
     name = {
-      name = "ice demon"
+      name = CREATURE_ATTRIBUTES_ICE_DEMON_NAME
     }
     hatedByEffect = HATE_DEMONS
   }
@@ -731,7 +731,7 @@ End
       CONSUMPTION_SKILL 1
     }
     name = {
-      name = "doppelganger"
+      name = CREATURE_ATTRIBUTES_DOPPLEGANGER_NAME
     }
     hatedByEffect = HATE_DEMONS
   }
@@ -748,7 +748,7 @@ End
     }
     spells = { "shapeshift" }
     name = {
-      name = "shapeshifter"
+      name = CREATURE_ATTRIBUTES_SHAPESHIFTER_NAME
     }
     hatedByEffect = HATE_DEMONS
   }
@@ -766,14 +766,14 @@ End
       droppedPartUpgrade = IncreaseAttr DEFENSE 2
     }
     name = {
-      name = "witch"
-      pluralName = "witches"
+      name = CREATURE_ATTRIBUTES_WITCH_NAME
+      pluralName = CREATURE_ATTRIBUTES_WITCH_PLURALNAME
       firstName = "Cornelia"
     }
     aiType = RANGED
     gender = FEMALE
-    chatReactionFriendly = "curses all humans"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_WITCH_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_WITCH_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       SPELL_DAMAGE 4
     }
@@ -807,16 +807,16 @@ End
       type = Humanoid LARGE
     }
     name = {
-      name = "witchman"
-      pluralName = "witchmen"
+      name = CREATURE_ATTRIBUTES_WITCHMAN_NAME
+      pluralName = CREATURE_ATTRIBUTES_WITCHMAN_PLURALNAME
       firstNameGen = "FIRST_MALE"
     }
     permanentEffects = {
       MAGIC_RESISTANCE 1
       RIDER 1
     }
-    chatReactionFriendly = "curses all monsters"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_WITCHMAN_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_WITCHMAN_CHATREACTIONHOSTILE
     hatedByEffect = HATE_HUMANS
     inventory = {
       { "Sword"}
@@ -847,8 +847,8 @@ End
       RANGED_RESISTANCE 1
     }
     name = {
-      name = "cyclops"
-      pluralName = "cyclopes"
+      name = CREATURE_ATTRIBUTES_CYCLOPS_NAME
+      pluralName = CREATURE_ATTRIBUTES_CYCLOPS_PLURALNAME
       firstNameGen = "CYCLOPS"
     }
     maxLevelIncrease = {
@@ -887,8 +887,8 @@ End
       droppedPartUpgrade = IncreaseAttr DEFENSE 5
     }
     name = {
-      name = "cyclops"
-      pluralName = "cyclopes"
+      name = CREATURE_ATTRIBUTES_CYCLOPS_PLAYER_NAME
+      pluralName = CREATURE_ATTRIBUTES_CYCLOPS_PLAYER_PLURALNAME
       firstNameGen = "CYCLOPS"
     }
     maxLevelIncrease = {
@@ -912,7 +912,7 @@ End
       STEED 1
     }
     name = {
-      name = "yeti"
+      name = CREATURE_ATTRIBUTES_YETI_NAME
     }
     maxLevelIncrease = {
       DAMAGE 10
@@ -941,12 +941,12 @@ End
       SPELL_DAMAGE 1
     }
     spells = { "directed blast" }
-    chatReactionFriendly = "\"Kneel before us!\""
-    chatReactionHostile = "\"Face your death!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_DEMON_DWELLER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_DEMON_DWELLER_CHATREACTIONHOSTILE
     name = {
-      name = "demon dweller"
+      name = CREATURE_ATTRIBUTES_DEMON_DWELLER_NAME
       firstNameGen = "DEMON"
-      groupName = "pack"
+      groupName = CREATURE_ATTRIBUTES_DEMON_DWELLER_GROUPNAME
     }
     maxLevelIncrease = {
       DAMAGE 4
@@ -973,12 +973,12 @@ End
       SPELL_DAMAGE 1
     }
     spells = { "directed blast" }
-    chatReactionFriendly = "\"Kneel before us!\""
-    chatReactionHostile = "\"Face your death!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_DEMON_LORD_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_DEMON_LORD_CHATREACTIONHOSTILE
     name = {
-      name = "Demon Lord"
+      name = CREATURE_ATTRIBUTES_DEMON_LORD_NAME
       firstNameGen = "DEMON"
-      groupName = "pack"
+      groupName = CREATURE_ATTRIBUTES_DEMON_LORD_GROUPNAME
     }
     maxLevelIncrease = {
       DAMAGE 7
@@ -1011,7 +1011,7 @@ End
       DAMAGE 5
     }
     name = {
-      name = "minotaur"
+      name = CREATURE_ATTRIBUTES_MINOTAUR_NAME
     }
     inventory = {
       { "BattleAxe"}
@@ -1034,7 +1034,7 @@ End
     }
     aiType = RANGED
     name = {
-      name = "soft monster"
+      name = CREATURE_ATTRIBUTES_SOFT_MONSTER_NAME
     }
   }
 "HYDRA"
@@ -1048,7 +1048,7 @@ End
       type = NonHumanoid LARGE
       weight = 400
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 8 {
+        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_HYDRA_ID 8 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.3 Lasting POISON} } }}}
@@ -1071,7 +1071,7 @@ End
       SWIMMING_SKILL 1
     }
     name = {
-      name = "hydra"
+      name = CREATURE_ATTRIBUTES_HYDRA_NAME
     }
   }
 "SHELOB"
@@ -1090,7 +1090,7 @@ End
       weight = 400
       deathSound = none
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "bite_attack" } "fangs" 8 {
+        TORSO {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_SHELOB_ID 8 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.3 Lasting POISON} } }}}
@@ -1104,7 +1104,7 @@ End
     }
     gender = FEMALE
     name = {
-      name = "giant spider"
+      name = CREATURE_ATTRIBUTES_SHELOB_NAME
     }
   }
 "GREEN_DRAGON"
@@ -1121,7 +1121,7 @@ End
         WING 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 12 {
+        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_GREEN_DRAGON_ID 12 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.3 Lasting POISON} } }}}
@@ -1137,8 +1137,8 @@ End
       REGENERATION 1
     }
     name = {
-      name = "green dragon"
-      stackName = "dragon"
+      name = CREATURE_ATTRIBUTES_GREEN_DRAGON_NAME
+      stackName = CREATURE_ATTRIBUTES_GREEN_DRAGON_STACKNAME
       firstNameGen = "DRAGON"
     }
     spells = { "healing" "deception" "haste" "cure poison" "poison breath" "dragon greeting" }
@@ -1167,7 +1167,7 @@ End
         WING 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 12 {
+        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_KIRIN_ID 12 {
             attackType = BITE
             attackMsg = BITE
             meleeAttackAttr = SPELL_DAMAGE
@@ -1181,7 +1181,7 @@ End
       STEED 1
     }
     name = {
-      name = "ki-rin"
+      name = CREATURE_ATTRIBUTES_KIRIN_NAME
     }
     spells = { "group healing" "magic missile" "mass defense bonus" "mass damage bonus" }
     killedAchievement = "killed_kirin"
@@ -1200,7 +1200,7 @@ End
         ARM 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 7 {
+        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_RED_NAGA_ID 7 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.5 Fire{25}} } }}}
@@ -1211,7 +1211,7 @@ End
       RANGED_VULNERABILITY 1
     }
     name = {
-      name = "red naga"
+      name = CREATURE_ATTRIBUTES_RED_NAGA_NAME
     }
     hatedByEffect = HATE_DRAGONS
   }
@@ -1230,7 +1230,7 @@ End
         WING 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 15 {
+        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_RED_DRAGON_ID 15 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.5 Fire{30}} } }}}
@@ -1247,9 +1247,9 @@ End
       REGENERATION 1
     }
     name = {
-      name = "red dragon"
+      name = CREATURE_ATTRIBUTES_RED_DRAGON_NAME
       firstNameGen = "DRAGON"
-      stackName = "dragon"
+      stackName = CREATURE_ATTRIBUTES_RED_DRAGON_STACKNAME
     }
     spells = { "healing" "deception" "haste" "cure poison" "fire breath" "fire trap" "dragon greeting" }
     hatedByEffect = HATE_DRAGONS
@@ -1278,7 +1278,7 @@ End
         ARM 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 7 {
+        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_BLACK_NAGA_ID 7 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.5 Lasting BLIND} } }}}
@@ -1289,7 +1289,7 @@ End
       TELEPATHY 1
     }
     name = {
-      name = "black naga"
+      name = CREATURE_ATTRIBUTES_BLACK_NAGA_NAME
     }
     hatedByEffect = HATE_DRAGONS
   }
@@ -1307,7 +1307,7 @@ End
         WING 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 15 {
+        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_BLACK_DRAGON_ID 15 {
             attackType = BITE
             attackMsg = BITE } }}}
       }
@@ -1324,9 +1324,9 @@ End
       REGENERATION 1
     }
     name = {
-      name = "black dragon"
+      name = CREATURE_ATTRIBUTES_BLACK_DRAGON_NAME
       firstNameGen = "DRAGON"
-      stackName = "dragon"
+      stackName = CREATURE_ATTRIBUTES_BLACK_DRAGON_STACKNAME
     }
     spells = { "healing" "haste" "cure poison" "black dragon blindness" "dragon greeting"}
     hatedByEffect = HATE_DRAGONS
@@ -1357,7 +1357,7 @@ End
         ARM 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 7 {
+        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_WHITE_NAGA_ID 7 {
             attackType = BITE
             attackMsg = BITE
             meleeAttackAttr = COLD_DAMAGE
@@ -1369,7 +1369,7 @@ End
       RANGED_VULNERABILITY 1
     }
     name = {
-      name = "white naga"
+      name = CREATURE_ATTRIBUTES_WHITE_NAGA_NAME
     }
     hatedByEffect = HATE_DRAGONS
   }
@@ -1388,7 +1388,7 @@ End
         WING 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 15 {
+        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_WHITE_DRAGON_ID 15 {
             attackType = BITE
             attackMsg = BITE } }}}
       }
@@ -1403,9 +1403,9 @@ End
       REGENERATION 1
     }
     name = {
-      name = "white dragon"
+      name = CREATURE_ATTRIBUTES_WHITE_DRAGON_NAME
       firstNameGen = "DRAGON"
-      stackName = "dragon"
+      stackName = CREATURE_ATTRIBUTES_WHITE_DRAGON_STACKNAME
     }
     spells = { "healing" "haste" "cure poison" "ice cone" "dragon greeting"}
     hatedByEffect = HATE_DRAGONS
@@ -1434,7 +1434,7 @@ End
         ARM 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 7 {
+        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_YELLOW_NAGA_ID 7 {
             attackType = BITE
             attackMsg = BITE
             meleeAttackAttr = ACID_DAMAGE } }}}
@@ -1445,7 +1445,7 @@ End
       RANGED_VULNERABILITY 1
     }
     name = {
-      name = "yellow naga"
+      name = CREATURE_ATTRIBUTES_YELLOW_NAGA_NAME
     }
     hatedByEffect = HATE_DRAGONS
   }
@@ -1464,7 +1464,7 @@ End
         WING 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 15 {
+        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_YELLOW_DRAGON_ID 15 {
             attackType = BITE
             attackMsg = BITE } }}}
       }
@@ -1479,9 +1479,9 @@ End
       REGENERATION 1
     }
     name = {
-      name = "yellow dragon"
+      name = CREATURE_ATTRIBUTES_YELLOW_DRAGON_NAME
       firstNameGen = "DRAGON"
-      stackName = "dragon"
+      stackName = CREATURE_ATTRIBUTES_YELLOW_DRAGON_STACKNAME
     }
     spells = { "healing" "haste" "cure poison" "acid stream" "dragon greeting"}
     hatedByEffect = HATE_DRAGONS
@@ -1511,7 +1511,7 @@ End
         WING 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 15 {
+        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_BONE_DRAGON_ID 15 {
             attackType = BITE
             attackMsg = BITE } }}}
       }
@@ -1521,8 +1521,8 @@ End
       STEED 1
     }
     name = {
-      name = "bone dragon"
-      stackName = "dragon"
+      name = CREATURE_ATTRIBUTES_BONE_DRAGON_NAME
+      stackName = CREATURE_ATTRIBUTES_BONE_DRAGON_STACKNAME
     }
     spells = { "black smoke breath" "animate corpses"}
     hatedByEffect = HATE_DRAGONS
@@ -1544,7 +1544,7 @@ End
       }
       material = FIRE
       intrinsicAttacks = {
-        ARM {{{ Intrinsic { "fist_attack" } "spell" 1 {
+        ARM {{{ Intrinsic { "fist_attack" } CREATURE_ATTRIBUTES_BALROG_ID 1 {
             attackType = HIT
             meleeAttackAttr = SPELL_DAMAGE
             attackMsg = SPELL
@@ -1560,7 +1560,7 @@ End
       { "BalrogsWhip"}
     }
     name = {
-      name = "fire demon"
+      name = CREATURE_ATTRIBUTES_BALROG_NAME
     }
     spells = { "heal spirit" "deception" "haste" "fire trap" }
     killedAchievement = "killed_balrog"
@@ -1583,13 +1583,13 @@ End
     maxLevelIncrease = {
       DAMAGE 12
     }
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_KNIGHT_PLAYER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_KNIGHT_PLAYER_CHATREACTIONHOSTILE
     permanentEffects = {
       RIDER 1
     }
     name = {
-      name = "knight"
+      name = CREATURE_ATTRIBUTES_KNIGHT_PLAYER_NAME
       firstNameGen = "FIRST_MALE"
     }
     hatedByEffect = HATE_HUMANS
@@ -1611,13 +1611,13 @@ End
     maxLevelIncrease = {
       DAMAGE 7
     }
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_SQUIRE_PLAYER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_SQUIRE_PLAYER_CHATREACTIONHOSTILE
     permanentEffects = {
       RIDER 1
     }
     name = {
-      name = "squire"
+      name = CREATURE_ATTRIBUTES_SQUIRE_PLAYER_NAME
       firstNameGen = "FIRST_MALE"
     }
     promotionGroup = "knight"
@@ -1647,11 +1647,11 @@ End
       DAMAGE 12
       DIVINITY 3
     }
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_ARMED_BROTHER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_ARMED_BROTHER_CHATREACTIONHOSTILE
     spellSchools = { "prayers" }
     name = {
-      name = "armed brother"
+      name = CREATURE_ATTRIBUTES_ARMED_BROTHER_NAME
       firstNameGen = "FIRST_MALE"
     }
     hatedByEffect = HATE_HUMANS
@@ -1661,7 +1661,7 @@ End
     viewId = { "nun_mage" }
     gender = FEMALE
     name = {
-      name = "warrior nun"
+      name = CREATURE_ATTRIBUTES_ARMED_BROTHER_NAME1
       firstNameGen = "FIRST_FEMALE"
     }
   }
@@ -1680,10 +1680,10 @@ End
     }
     aiType = RANGED
     spells = { "chicken" }
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_JESTER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_JESTER_CHATREACTIONHOSTILE
     name = {
-      name = "jester"
+      name = CREATURE_ATTRIBUTES_JESTER_NAME
       firstNameGen = "FIRST_MALE"
     }
     hatedByEffect = HATE_HUMANS
@@ -1703,8 +1703,8 @@ End
       ARCHER_VISION 1
       RIDER 1
     }
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_ARCHER_PLAYER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_ARCHER_PLAYER_CHATREACTIONHOSTILE
     spellSchools = { "archer" }
     maxLevelIncrease = {
       DAMAGE 4
@@ -1712,7 +1712,7 @@ End
     }
     aiType = RANGED
     name = {
-      name = "archer"
+      name = CREATURE_ATTRIBUTES_ARCHER_PLAYER_NAME
       firstNameGen = "FIRST_MALE"
     }
     hatedByEffect = HATE_HUMANS
@@ -1728,14 +1728,14 @@ End
     body = {
       type = Humanoid LARGE
     }
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_PRIEST_PLAYER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_PRIEST_PLAYER_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       SPELL_DAMAGE 7
     }
     aiType = RANGED
     name = {
-      name = "priest"
+      name = CREATURE_ATTRIBUTES_PRIEST_PLAYER_NAME
       firstNameGen = "FIRST_MALE"
     }
     spellSchools = { "spiritualist" }
@@ -1753,7 +1753,7 @@ End
       LABORATORY 20
     }
     name = {
-      name = "cleric"
+      name = CREATURE_ATTRIBUTES_PRIEST_PLAYER_NAME1
       firstNameGen = "FIRST_MALE"
     }
   }
@@ -1787,11 +1787,11 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "talks about crafting"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_ARTISAN_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_ARTISAN_CHATREACTIONHOSTILE
     aiType = RANGED
     name = {
-      name = "artisan"
+      name = CREATURE_ATTRIBUTES_ARTISAN_NAME
       firstNameGen = "FIRST_MALE"
     }
   }
@@ -1814,21 +1814,21 @@ End
     type = Humanoid LARGE
   }
   gender = FEMALE
-  chatReactionFriendly = "curses all dungeons"
-  chatReactionHostile = "\"Heeelp!\""
+  chatReactionFriendly = CREATURE_ATTRIBUTES_PROSTITUTE_CHATREACTIONFRIENDLY
+  chatReactionHostile = CREATURE_ATTRIBUTES_PROSTITUTE_CHATREACTIONHOSTILE
   permanentEffects = {
     COPULATION_SKILL 1
   }
   copulationClientEffect = {
     Filter Not LastingEffect MORTAL_SINNED Permanent MORTAL_SINNED
     Lasting 200 HIGH_MORALE
-    CollectiveMessage "A minion has committed a mortal sin."
+    CollectiveMessage CREATURE_ATTRIBUTES_PROSTITUTE_COPULATIONCLIENTEFFECT
   }
   copulationEffect = {
   }
   aiType = RANGED
   name = {
-    name = "courtesan"
+    name = CREATURE_ATTRIBUTES_PROSTITUTE_NAME
   }
   hatedByEffect = HATE_HUMANS
 }
@@ -1837,7 +1837,7 @@ End
   viewId = { "gigolo" }
   gender = MALE
   name = {
-    name = "gigolo"
+    name = CREATURE_ATTRIBUTES_PROSTITUTE_NAME1
   }
 }
 "PESEANT"
@@ -1854,8 +1854,8 @@ End
     body = {
       type = Humanoid LARGE
     }
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Heeelp!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_PESEANT_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_PESEANT_CHATREACTIONHOSTILE
     permanentEffects = {
       CROPS_SKILL 1
       DISTILLATION_SKILL 1
@@ -1863,7 +1863,7 @@ End
     }
     aiType = RANGED
     name = {
-      name = "peasant"
+      name = CREATURE_ATTRIBUTES_PESEANT_NAME
     }
     hatedByEffect = HATE_HUMANS
   }
@@ -1888,7 +1888,7 @@ End
       DIVINITY 2
     }
     name = {
-      name = "acolyte"
+      name = CREATURE_ATTRIBUTES_PESEANT_NAME1
     }
     permanentEffects = {
       DISTILLATION_SKILL 1
@@ -1901,7 +1901,7 @@ End
       FEMALE { "nomad_woman" }
     }
     name = {
-      name = "nomad"
+      name = CREATURE_ATTRIBUTES_PESEANT_NAME2
     }
     permanentEffects = {}
   }
@@ -1913,7 +1913,7 @@ End
     }
     permanentEffects = {}
     name = {
-      name = "eskimo"
+      name = CREATURE_ATTRIBUTES_PESEANT_NAME3
     }
   }
 "NATIVE" inherit "PESEANT"
@@ -1924,7 +1924,7 @@ End
     }
     permanentEffects = {}
     name = {
-      name = "native"
+      name = CREATURE_ATTRIBUTES_PESEANT_NAME4
     }
   }
 "KNIGHT"
@@ -1944,10 +1944,10 @@ End
       MELEE_RESISTANCE 1
       RIDER 1
     }
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_KNIGHT_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_KNIGHT_CHATREACTIONHOSTILE
     name = {
-      name = "knight"
+      name = CREATURE_ATTRIBUTES_KNIGHT_NAME
     }
     hatedByEffect = HATE_HUMANS
     inventory = {
@@ -1964,7 +1964,7 @@ End
     viewId = { "teuton" }
     spells = { "healing" }
     name = {
-      name = "Teutonic Knight"
+      name = CREATURE_ATTRIBUTES_KNIGHT_NAME1
       firstNameGen = "GERMANIC"
     }
   }
@@ -1972,7 +1972,7 @@ End
   {
     viewId = { "teuton_boss" }
     name = {
-      name = "Teutonic Grand Master"
+      name = CREATURE_ATTRIBUTES_TEUTON_NAME
       fullTitle = true
       firstNameGen = "GERMANIC"
     }
@@ -1987,20 +1987,20 @@ End
   {
     viewId = { "templar" }
     name = {
-      name = "Templar"
+      name = CREATURE_ATTRIBUTES_KNIGHT_NAME2
     }
   }
 "FRIAR" inherit "CLERIC"
   {
     viewId = { "friar" }
     name = {
-      name = "friar"
+      name = CREATURE_ATTRIBUTES_CLERIC_NAME
     }
   }
 "FATHER_OBLIVION" inherit "FRIAR"
   {
     name = {
-      name = "Father O'Blivion"
+      name = CREATURE_ATTRIBUTES_FRIAR_NAME
       fullTitle = true
     }
   }
@@ -2019,13 +2019,13 @@ End
       MELEE_RESISTANCE 1
       RIDER 1
     }
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_DUKE_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_DUKE_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       DAMAGE 3
     }
     name = {
-      name = "Duke"
+      name = CREATURE_ATTRIBUTES_DUKE_NAME
       firstNameGen = "FIRST_MALE"
       fullTitle = true
     }
@@ -2056,13 +2056,13 @@ End
       NO_FRIENDLY_FIRE 1
       RIDER 1
     }
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_ARCHER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_ARCHER_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       RANGED_DAMAGE 4
     }
     name = {
-      name = "archer"
+      name = CREATURE_ATTRIBUTES_ARCHER_NAME
     }
     aiType = RANGED
     hatedByEffect = HATE_HUMANS
@@ -2091,14 +2091,14 @@ End
       MAGIC_RESISTANCE 1
       NO_FRIENDLY_FIRE 1
     }
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_PRIEST_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_PRIEST_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       SPELL_DAMAGE 2
     }
     aiType = RANGED
     name = {
-      name = "priest"
+      name = CREATURE_ATTRIBUTES_PRIEST_NAME
     }
     spells = { "advanced healing" "haste" "defense bonus" "directed blast" "magic missile" }
     hatedByEffect = HATE_HUMANS
@@ -2115,10 +2115,10 @@ End
       DAMAGE 60
       DEFENSE 60
     }
-    chatReactionFriendly = "\"Steal a rock and I'll chop your head off!\""
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_KNIGHT_CHATREACTIONFRIENDLY1
+    chatReactionHostile = CREATURE_ATTRIBUTES_KNIGHT_CHATREACTIONHOSTILE
     name = {
-      name = "guard"
+      name = CREATURE_ATTRIBUTES_KNIGHT_NAME3
     }
     inventory = {
       { "Spear" }
@@ -2139,10 +2139,10 @@ End
     maxLevelIncrease = {
       DAMAGE 5
     }
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_WARRIOR_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_WARRIOR_CHATREACTIONHOSTILE
     name = {
-      name = "warrior"
+      name = CREATURE_ATTRIBUTES_WARRIOR_NAME
     }
     spells = { "berserker" }
     hatedByEffect = HATE_HUMANS
@@ -2167,8 +2167,8 @@ End
     permanentEffects = {
       MAGIC_RESISTANCE 1
     }
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_SHAMAN_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_SHAMAN_CHATREACTIONHOSTILE
     aiType = RANGED
     companions = {{count = 7 spawnAway = false statsBase = SPELL_DAMAGE summonFreq = 0.05 creatures = { "SPIRIT" }}}
     spells = { "advanced healing" "defense bonus" "directed blast" "heal spirit" }
@@ -2176,7 +2176,7 @@ End
       SPELL_DAMAGE 5
     }
     name = {
-      name = "shaman"
+      name = CREATURE_ATTRIBUTES_SHAMAN_NAME
     }
     hatedByEffect = HATE_HUMANS
     inventory = {
@@ -2196,7 +2196,7 @@ End
   {
     viewId = { "thief" }
     name = {
-      name = "thief"
+      name = CREATURE_ATTRIBUTES_WARRIOR_NAME1
     }
     permanentEffects = append {
       RIDER 1
@@ -2219,7 +2219,7 @@ End
    }
    viewId = { "thief_leader" }
    name = {
-     name = "thief leader"
+     name = CREATURE_ATTRIBUTES_THIEF_NAME
    }
   }
 "SORCERER"
@@ -2239,13 +2239,13 @@ End
       NO_FRIENDLY_FIRE 1
     }
     aiType = RANGED
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_SORCERER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_SORCERER_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       SPELL_DAMAGE 2
     }
     name = {
-      name = "sorcerer"
+      name = CREATURE_ATTRIBUTES_SORCERER_NAME
     }
     spells = { "advanced healing" "haste" "defense bonus" "directed blast" "magic missile" "animate weapons" }
     hatedByEffect = HATE_HUMANS
@@ -2260,15 +2260,15 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "\"plaaaaay!\""
-    chatReactionHostile = "\"Heeelp!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CHILD_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_CHILD_CHATREACTIONHOSTILE
     permanentEffects = {
       CROPS_SKILL 1
       RIDER 1
     }
     name = {
-      name = "child"
-      pluralName = "children"
+      name = CREATURE_ATTRIBUTES_CHILD_NAME
+      pluralName = CREATURE_ATTRIBUTES_CHILD_PLURALNAME
     }
     hatedByEffect = HATE_HUMANS
     noCopulation = true
@@ -2308,12 +2308,12 @@ End
       IMMOBILE 1
       BLIND 1
     }
-    chatReactionFriendly = "\"Put me out of my misery PLEASE!\""
-    chatReactionHostile = "\"End my torture!\""
-    deathDescription = "dead, released from unthinkable agony"
+    chatReactionFriendly = CREATURE_ATTRIBUTES_SPIDER_FOOD_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_SPIDER_FOOD_CHATREACTIONHOSTILE
+    deathDescription = CREATURE_ATTRIBUTES_SPIDER_FOOD_DEATHDESCRIPTION
     name = {
-      name = "child"
-      pluralName = "children"
+      name = CREATURE_ATTRIBUTES_SPIDER_FOOD_NAME
+      pluralName = CREATURE_ATTRIBUTES_SPIDER_FOOD_PLURALNAME
     }
     hatedByEffect = HATE_HUMANS
   }
@@ -2327,11 +2327,11 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "\"Trick or treat!\""
-    chatReactionHostile = "\"Trick or treat!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_HALLOWEEN_KID_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_HALLOWEEN_KID_CHATREACTIONHOSTILE
     name = {
-      name = "child"
-      pluralName = "children"
+      name = CREATURE_ATTRIBUTES_HALLOWEEN_KID_NAME
+      pluralName = CREATURE_ATTRIBUTES_HALLOWEEN_KID_PLURALNAME
     }
     hatedByEffect = HATE_HUMANS
     inventory = {
@@ -2355,7 +2355,7 @@ End
       SLOWED 1
     }
     name = {
-      name = "clay golem"
+      name = CREATURE_ATTRIBUTES_CLAY_GOLEM_NAME
     }
   }
 "STONE_GOLEM"
@@ -2374,7 +2374,7 @@ End
       SLOWED 1
     }
     name = {
-      name = "stone golem"
+      name = CREATURE_ATTRIBUTES_STONE_GOLEM_NAME
     }
   }
 "GARGOYLE"
@@ -2393,7 +2393,7 @@ End
       SLOWED 1
     }
     name = {
-      name = "gargoyle"
+      name = CREATURE_ATTRIBUTES_GARGOYLE_NAME
     }
   }
 "IRON_GOLEM"
@@ -2412,7 +2412,7 @@ End
       SLOWED 1
     }
     name = {
-      name = "iron golem"
+      name = CREATURE_ATTRIBUTES_IRON_GOLEM_NAME
     }
   }
 "LAVA_GOLEM"
@@ -2427,7 +2427,7 @@ End
       type = HumanoidLike LARGE
       material = LAVA
       intrinsicAttacks = {
-        ARM {{{ Intrinsic { "fist_attack" } "fists" 10 {
+        ARM {{{ Intrinsic { "fist_attack" } CREATURE_ATTRIBUTES_LAVA_GOLEM_ID 10 {
             attackType = HIT
             attackMsg = SWING
             victimEffect = {0.3 Fire{30}} } }}}
@@ -2438,7 +2438,7 @@ End
       SLOWED 1
     }
     name = {
-      name = "lava golem"
+      name = CREATURE_ATTRIBUTES_LAVA_GOLEM_NAME
     }
   }
 "ADA_GOLEM"
@@ -2459,7 +2459,7 @@ End
       MAGIC_VULNERABILITY 1
     }
     name = {
-      name = "adamantine golem"
+      name = CREATURE_ATTRIBUTES_ADA_GOLEM_NAME
     }
   }
 "AUTOMATON"
@@ -2477,7 +2477,7 @@ End
       material = IRON
     }
     name = {
-      name = "automaton"
+      name = CREATURE_ATTRIBUTES_AUTOMATON_NAME
     }
   }
 "AUTOMATON_CORPUS_WOOD"
@@ -2499,7 +2499,7 @@ End
       IMMOBILE 1
     }
     name = {
-      name = "wooden automaton"
+      name = CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_WOOD_NAME
     }
   }
 "HELICOPTER"
@@ -2523,7 +2523,7 @@ End
       SPEED 1
     }
     name = {
-      name = "helicopterum"
+      name = CREATURE_ATTRIBUTES_HELICOPTER_NAME
     }
   }
 "AUTOMATON_WORKER_WOOD" inherit "AUTOMATON_CORPUS_WOOD"
@@ -2541,7 +2541,7 @@ End
     }
     permanentEffects = append { SPEED 1 }
     name = {
-      name = "light wooden automaton"
+      name = CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_WOOD_NAME1
     }
   }
 
@@ -2555,7 +2555,7 @@ End
       material = IRON
     }
     name = {
-      name = "iron automaton"
+      name = CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_WOOD_NAME2
     }
   }
 "AUTOMATON_WORKER_IRON" inherit "AUTOMATON_CORPUS_IRON"
@@ -2573,7 +2573,7 @@ End
     }
     permanentEffects = append { SLOWED 1 }
     name = {
-      name = "heavy iron automaton"
+      name = CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_IRON_NAME
     }
   }
 "LIGHT_AUTOMATON_CORPUS_IRON" inherit "AUTOMATON_CORPUS_IRON"
@@ -2584,7 +2584,7 @@ End
     }
     permanentEffects = append { SPEED 1 }
     name = {
-      name = "light iron automaton"
+      name = CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_IRON_NAME1
     }
   }
 "AUTOMATON_CORPUS_ADA" inherit "AUTOMATON_CORPUS_WOOD"
@@ -2597,7 +2597,7 @@ End
       material = ADA
     }
     name = {
-      name = "adamantine automaton"
+      name = CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_WOOD_NAME3
     }
   }
 "AUTOMATON_WORKER_ADA" inherit "AUTOMATON_CORPUS_ADA"
@@ -2615,7 +2615,7 @@ End
     }
     permanentEffects = append { SLOWED 1 }
     name = {
-      name = "heavy adamantine automaton"
+      name = CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_ADA_NAME
     }
   }
 "LIGHT_AUTOMATON_CORPUS_ADA" inherit "AUTOMATON_CORPUS_ADA"
@@ -2626,7 +2626,7 @@ End
     }
     permanentEffects = append { SPEED 1 }
     name = {
-      name = "light adamantine automaton"
+      name = CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_ADA_NAME1
     }
   }
 "AUTOMATON_CORPUS_INFERNITE" inherit "AUTOMATON_CORPUS_WOOD"
@@ -2640,7 +2640,7 @@ End
       material = INFERNITE
     }
     name = {
-      name = "infernite automaton"
+      name = CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_WOOD_NAME4
     }
   }
 "HEAVY_AUTOMATON_CORPUS_INFERNITE" inherit "AUTOMATON_CORPUS_INFERNITE"
@@ -2651,7 +2651,7 @@ End
     }
     permanentEffects = append { SLOWED 1 }
     name = {
-      name = "heavy infernite automaton"
+      name = CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_INFERNITE_NAME
     }
   }
 "LIGHT_AUTOMATON_CORPUS_INFERNITE" inherit "AUTOMATON_CORPUS_INFERNITE"
@@ -2662,7 +2662,7 @@ End
     }
     permanentEffects = append { SPEED 1 }
     name = {
-      name = "light infernite automaton"
+      name = CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_INFERNITE_NAME1
     }
   }
 "AUTOMATON_CORPUS_ADOXIUM" inherit "AUTOMATON_CORPUS_WOOD"
@@ -2676,7 +2676,7 @@ End
       material = ADOXIUM
     }
     name = {
-      name = "adoxium automaton"
+      name = CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_WOOD_NAME5
     }
   }
 "HEAVY_AUTOMATON_CORPUS_ADOXIUM" inherit "AUTOMATON_CORPUS_ADOXIUM"
@@ -2687,7 +2687,7 @@ End
     }
     permanentEffects = append { SLOWED 1 }
     name = {
-      name = "heavy adoxium automaton"
+      name = CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_ADOXIUM_NAME
     }
   }
 "LIGHT_AUTOMATON_CORPUS_ADOXIUM" inherit "AUTOMATON_CORPUS_ADOXIUM"
@@ -2698,7 +2698,7 @@ End
     }
     permanentEffects = append { SPEED 1 }
     name = {
-      name = "light adoxium automaton"
+      name = CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_ADOXIUM_NAME1
     }
   }
 "ZOMBIE"
@@ -2724,7 +2724,7 @@ End
       DAMAGE 3
     }
     name = {
-      name = "zombie"
+      name = CREATURE_ATTRIBUTES_ZOMBIE_NAME
     }
     hatedByEffect = HATE_UNDEAD
   }
@@ -2753,15 +2753,15 @@ End
       intrinsicAttacks = {
         HEAD {{
           isExtraAttack = true
-          itemType = { Intrinsic { "bite_attack" } "fangs" 5 {
+          itemType = { Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_VAMPIRE_ID 5 {
             attackType = BITE
             attackMsg = BITE
             attackerEffect = { RegrowBodyPart 1 }
             victimEffect = { 0.1 Lasting 50 BLEEDING  } } }}}
       }
     }
-    chatReactionFriendly = "\"All men be cursed!\""
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_VAMPIRE_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_VAMPIRE_CHATREACTIONHOSTILE
     permanentEffects = {
       NIGHT_VISION 1
       RANGED_RESISTANCE 1
@@ -2773,7 +2773,7 @@ End
     }
 #    spellSchools = { "illusion" "vampire" }
     name = {
-      name = "vampire warrior"
+      name = CREATURE_ATTRIBUTES_VAMPIRE_NAME
       firstNameGen = "VAMPIRE"
     }
     hatedByEffect = HATE_UNDEAD
@@ -2798,15 +2798,15 @@ End
       intrinsicAttacks = {
         HEAD {{
           isExtraAttack = true
-          itemType = { Intrinsic { "bite_attack" } "fangs" 5 {
+          itemType = { Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_VAMPIRE_BRUTE_ID 5 {
             attackType = BITE
             attackMsg = BITE
             attackerEffect = { RegrowBodyPart 1 }
             victimEffect = { 0.1 Lasting 50 BLEEDING  } } }}}
       }
     }
-    chatReactionFriendly = "\"All men be cursed!\""
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_VAMPIRE_BRUTE_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_VAMPIRE_BRUTE_CHATREACTIONHOSTILE
     permanentEffects = {
       NIGHT_VISION 1
       RANGED_RESISTANCE 1
@@ -2815,7 +2815,7 @@ End
       DAMAGE 3
     }
     name = {
-      name = "vampire brute"
+      name = CREATURE_ATTRIBUTES_VAMPIRE_BRUTE_NAME
     }
     hatedByEffect = HATE_UNDEAD
   }
@@ -2828,7 +2828,7 @@ End
       SPELL_DAMAGE 27 
     }
     name = {
-      name = "vampire noble"
+      name = CREATURE_ATTRIBUTES_VAMPIRE_NAME1
       firstNameGen = "VAMPIRE"
     }
     maxLevelIncrease = {
@@ -2844,8 +2844,8 @@ End
     }
     aiType = RANGED
     spellSchools = { "zombie mage" "illusion" }
-    chatReactionFriendly = "\"There are times when you simply cannot refuse a drink!\""
-    chatReactionHostile = "\"There are times when you simply cannot refuse a drink!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_VAMPIRE_CHATREACTIONFRIENDLY1
+    chatReactionHostile = CREATURE_ATTRIBUTES_VAMPIRE_CHATREACTIONHOSTILE1
     inventory = {
       { "Robe"}
       { "WoodenStaff"}
@@ -2873,8 +2873,8 @@ End
       DAMAGE 55
     }
     name = {
-      name = "mummy"
-      pluralName = "mummies"
+      name = CREATURE_ATTRIBUTES_MUMMY_NAME
+      pluralName = CREATURE_ATTRIBUTES_MUMMY_PLURALNAME
     }
     hatedByEffect = HATE_UNDEAD
   }
@@ -2892,8 +2892,8 @@ End
       SPELL_DAMAGE 12
     }
     aiType = RANGED
-    chatReactionFriendly = "curses all elves"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_SHAMAN_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_GOBLIN_SHAMAN_CHATREACTIONHOSTILE
     spellSchools = {}
     spells = { "heal spirit" }
     companions = {{count = 4 spawnAway = false statsBase = SPELL_DAMAGE summonFreq = 0.02 creatures = { "SPIRIT" }}}
@@ -2901,7 +2901,7 @@ End
       DISTILLATION_SKILL 1
     }
     name = {
-      name = "goblin shaman"
+      name = CREATURE_ATTRIBUTES_GOBLIN_SHAMAN_NAME
       firstNameGen = "ORC"
     }
     hatedByEffect = HATE_GREENSKINS
@@ -2929,8 +2929,8 @@ End
       RANGED_DAMAGE 7
     }
     name = {
-      name = "harpy"
-      pluralName = "harpies"
+      name = CREATURE_ATTRIBUTES_HARPY_NAME
+      pluralName = CREATURE_ATTRIBUTES_HARPY_PLURALNAME
       firstNameGen = "ORC"
     }
     hatedByEffect = HATE_GREENSKINS
@@ -2952,10 +2952,10 @@ End
       SWIMMING_SKILL 1
     }
     aiType = RANGED
-    chatReactionFriendly = "talks about digging"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_KOBOLD_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_KOBOLD_CHATREACTIONHOSTILE
     name = {
-      name = "kobold"
+      name = CREATURE_ATTRIBUTES_KOBOLD_NAME
     }
     inventory = {
       { "Spear"}
@@ -2980,10 +2980,10 @@ End
     permanentEffects = {
       DISTILLATION_SKILL 1
     }
-    chatReactionFriendly = "talks about digging"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GNOME_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_GNOME_CHATREACTIONHOSTILE
     name = {
-      name = "gnome"
+      name = CREATURE_ATTRIBUTES_GNOME_NAME
     }
     spells = { "repair automaton" }
   }
@@ -2999,10 +2999,10 @@ End
       type = Humanoid MEDIUM
     }
     aiType = RANGED
-    chatReactionFriendly = "talks about digging"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GNOME_CHIEF_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_GNOME_CHIEF_CHATREACTIONHOSTILE
     name = {
-      name = "gnome chief"
+      name = CREATURE_ATTRIBUTES_GNOME_CHIEF_NAME
     }
     inventory = {
       { "Sword"}
@@ -3023,14 +3023,14 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "talks about crafting"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_ARTIFICER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_GOBLIN_ARTIFICER_CHATREACTIONHOSTILE
     permanentEffects = {
       DISARM_TRAPS_SKILL 1
     }
     aiType = RANGED
     name = {
-      name = "goblin artificer"
+      name = CREATURE_ATTRIBUTES_GOBLIN_ARTIFICER_NAME
       firstNameGen = "ORC"
     }
     hatedByEffect = HATE_GREENSKINS
@@ -3062,14 +3062,14 @@ End
     aiType = RANGED
     noChase = true
     cantEquip = true
-    chatReactionFriendly = "talks about digging"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_IMP_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_IMP_CHATREACTIONHOSTILE
     permanentEffects = {
       RIDER 1
       NO_CARRY_LIMIT 1
     }
     name = {
-      name = "imp"
+      name = CREATURE_ATTRIBUTES_IMP_NAME
     }
   }
 "CHICKEN"
@@ -3090,7 +3090,7 @@ End
       SPEED 1
     }
     name = {
-      name = "chicken"
+      name = CREATURE_ATTRIBUTES_CHICKEN_NAME
     }
   }
 "DWARF"
@@ -3111,8 +3111,8 @@ End
       weight = 90
     }
     name = {
-      name = "dwarf"
-      pluralName = "dwarves"
+      name = CREATURE_ATTRIBUTES_DWARF_NAME
+      pluralName = CREATURE_ATTRIBUTES_DWARF_PLURALNAME
       firstNameGen = "DWARF"
     }
     maxLevelIncrease = {
@@ -3122,8 +3122,8 @@ End
       MAGIC_VULNERABILITY 1
       UNSTABLE 1
     }
-    chatReactionFriendly = "curses all orcs"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_DWARF_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_DWARF_CHATREACTIONHOSTILE
     hatedByEffect = HATE_DWARVES
     inventory = {
       { type = "Sword" }
@@ -3196,15 +3196,15 @@ End
     }
     aiType = RANGED
     name = {
-      name = "dwarf"
-      pluralName = "dwarves"
+      name = CREATURE_ATTRIBUTES_DWARF_FEMALE_NAME
+      pluralName = CREATURE_ATTRIBUTES_DWARF_FEMALE_PLURALNAME
       firstNameGen = "DWARF"
     }
     permanentEffects = {
       MAGIC_VULNERABILITY 1
     }
-    chatReactionFriendly = "curses all orcs"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_DWARF_FEMALE_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_DWARF_FEMALE_CHATREACTIONHOSTILE
     gender = FEMALE
     hatedByEffect = HATE_DWARVES
   }
@@ -3221,7 +3221,7 @@ End
       DAMAGE 10
     }
     name = {
-      name = "dwarf baron"
+      name = CREATURE_ATTRIBUTES_DWARF_NAME1
       firstNameGen = "DWARF"
     }
     body = append {
@@ -3243,7 +3243,7 @@ End
   {
     viewId = { "dwarf_blacksmith" }
     name = append {
-      name = "dwarf blacksmith"
+      name = CREATURE_ATTRIBUTES_DWARF_NAME2
     }
     aiType = RANGED
     attr = append {
@@ -3264,7 +3264,7 @@ End
       intrinsicAttacks = {
         HEAD {{
           isExtraAttack = true
-          itemType = { Intrinsic { "bite_attack" } "fangs" 5 {
+          itemType = { Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_LIZARDMAN_ID 5 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.1 Lasting POISON} } }}}
@@ -3277,11 +3277,11 @@ End
     maxLevelIncrease = {
       DAMAGE 5
     }
-    chatReactionFriendly = "curses all humans"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_LIZARDMAN_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_LIZARDMAN_CHATREACTIONHOSTILE
     name = {
-      name = "lizardman"
-      pluralName = "lizardmen"
+      name = CREATURE_ATTRIBUTES_LIZARDMAN_NAME
+      pluralName = CREATURE_ATTRIBUTES_LIZARDMAN_PLURALNAME
     }
     inventory = {
       { "LeatherArmor"}
@@ -3303,7 +3303,7 @@ End
       DAMAGE 10
     }
     name = {
-      name = "lizardman chief"
+      name = CREATURE_ATTRIBUTES_LIZARDMAN_NAME1
     }
     inventory = {
       { "LeatherArmor"}
@@ -3326,16 +3326,16 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "curses all dwarves"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_ELF_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_ELF_CHATREACTIONHOSTILE
     spells = { "healing" }
     aiType = RANGED
     permanentEffects = {
       ELF_VISION 1
     }
     name = {
-      name = "elf"
-      pluralName = "elves"
+      name = CREATURE_ATTRIBUTES_ELF_NAME
+      pluralName = CREATURE_ATTRIBUTES_ELF_PLURALNAME
     }
     hatedByEffect = HATE_ELVES
   }
@@ -3351,8 +3351,8 @@ End
       type = Humanoid MEDIUM
     }
     aiType = RANGED
-    chatReactionFriendly = "curses all dwarves"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_ELF_ARCHER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_ELF_ARCHER_CHATREACTIONHOSTILE
     permanentEffects = {
       MAGIC_RESISTANCE 1
       ELF_VISION 1
@@ -3363,7 +3363,7 @@ End
       RANGED_DAMAGE 3
     }
     name = {
-      name = "elven archer"
+      name = CREATURE_ATTRIBUTES_ELF_ARCHER_NAME
     }
     hatedByEffect = HATE_ELVES
     inventory = {
@@ -3384,15 +3384,15 @@ End
       type = Humanoid SMALL
     }
     aiType = RANGED
-    chatReactionFriendly = "curses all dwarves"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_ELF_CHILD_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_ELF_CHILD_CHATREACTIONHOSTILE
     permanentEffects = {
       MAGIC_RESISTANCE 1
       ELF_VISION 1
     }
     name = {
-      name = "elf child"
-      pluralName = "elf children"
+      name = CREATURE_ATTRIBUTES_ELF_CHILD_NAME
+      pluralName = CREATURE_ATTRIBUTES_ELF_CHILD_PLURALNAME
     }
     hatedByEffect = HATE_ELVES
     noCopulation = true
@@ -3411,8 +3411,8 @@ End
       type = Humanoid MEDIUM
       droppedPartUpgrade = Permanent MAGIC_RESISTANCE
     }
-    chatReactionFriendly = "curses all dwarves"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_ELF_LORD_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_ELF_LORD_CHATREACTIONHOSTILE
     permanentEffects = {
       MAGIC_RESISTANCE 1
       ELF_VISION 1
@@ -3425,7 +3425,7 @@ End
       DAMAGE 4
     }
     name = {
-      name = "elf lord"
+      name = CREATURE_ATTRIBUTES_ELF_LORD_NAME
     }
     hatedByEffect = HATE_ELVES
     inventory = {
@@ -3458,8 +3458,8 @@ End
       type = Humanoid MEDIUM
     }
     aiType = RANGED
-    chatReactionFriendly = "curses all dwarves"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_DARK_ELF_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_DARK_ELF_CHATREACTIONHOSTILE
     permanentEffects = {
       MAGIC_RESISTANCE 1
       SWIMMING_SKILL 1
@@ -3468,8 +3468,8 @@ End
     }
     spells = { "healing" }
     name = {
-      name = "dark elf"
-      pluralName = "dark elves"
+      name = CREATURE_ATTRIBUTES_DARK_ELF_NAME
+      pluralName = CREATURE_ATTRIBUTES_DARK_ELF_PLURALNAME
     }
     hatedByEffect = HATE_ELVES
   }
@@ -3485,8 +3485,8 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "curses all dwarves"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_DARK_ELF_WARRIOR_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_DARK_ELF_WARRIOR_CHATREACTIONHOSTILE
     permanentEffects = {
       MAGIC_RESISTANCE 1
       NIGHT_VISION 1
@@ -3498,8 +3498,8 @@ End
       SPELL_DAMAGE 5
     }
     name = {
-      name = "dark elf"
-      pluralName = "dark elves"
+      name = CREATURE_ATTRIBUTES_DARK_ELF_WARRIOR_NAME
+      pluralName = CREATURE_ATTRIBUTES_DARK_ELF_WARRIOR_PLURALNAME
     }
     hatedByEffect = HATE_ELVES
     inventory = {
@@ -3524,11 +3524,11 @@ End
       MAGIC_RESISTANCE 1
       NIGHT_VISION 1
     }
-    chatReactionFriendly = "curses all dwarves"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_DARK_ELF_CHILD_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_DARK_ELF_CHILD_CHATREACTIONHOSTILE
     name = {
-      name = "dark elf child"
-      pluralName = "dark elf children"
+      name = CREATURE_ATTRIBUTES_DARK_ELF_CHILD_NAME
+      pluralName = CREATURE_ATTRIBUTES_DARK_ELF_CHILD_PLURALNAME
     }
     hatedByEffect = HATE_ELVES
     noCopulation = true
@@ -3546,8 +3546,8 @@ End
       type = Humanoid MEDIUM
       droppedPartUpgrade = IncreaseAttr DEFENSE 7
     }
-    chatReactionFriendly = "curses all dwarves"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_DARK_ELF_LORD_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_DARK_ELF_LORD_CHATREACTIONHOSTILE
     permanentEffects = {
       MAGIC_RESISTANCE 1
       NIGHT_VISION 1
@@ -3558,7 +3558,7 @@ End
     }
     spells = { "advanced healing" "haste" "defense bonus" "damage bonus" "directed blast" }
     name = {
-      name = "dark elf lord"
+      name = CREATURE_ATTRIBUTES_DARK_ELF_LORD_NAME
     }
     hatedByEffect = HATE_ELVES
     inventory = {
@@ -3592,14 +3592,14 @@ End
       ELF_VISION 1
       NO_FRIENDLY_FIRE 1
     }
-    chatReactionFriendly = "curses all humans"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_DRIAD_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_DRIAD_CHATREACTIONHOSTILE
     spells = { "healing" }
     maxLevelIncrease = {
       RANGED_DAMAGE 4
     }
     name = {
-      name = "dryad"
+      name = CREATURE_ATTRIBUTES_DRIAD_NAME
     }
     inventory = {
       { "Bow"}
@@ -3628,9 +3628,9 @@ End
       SWIMMING_SKILL 1
     }
     noChase = true
-    petReaction = "neighs"
+    petReaction = CREATURE_ATTRIBUTES_HORSE_PETREACTION
     name = {
-      name = "horse"
+      name = CREATURE_ATTRIBUTES_HORSE_NAME
     }
   }
 "HORSE_CAN_TRAIN" inherit "HORSE"
@@ -3640,7 +3640,7 @@ End
       DEFENSE 24
     }
     afterKilledSomeone = {
-      ApplyToSteed CreatureMessage { "are more experienced" "is more experienced"}
+      ApplyToSteed CreatureMessage { CREATURE_ATTRIBUTES_HORSE_SECONDPERSON CREATURE_ATTRIBUTES_HORSE_THIRDPERSON}
       ApplyToSteed Filter Kills 3 Polymorph "WARHORSE" none
     }
   }
@@ -3652,16 +3652,16 @@ End
       DEFENSE 36
     }
     name = {
-      name = "warhorse"
+      name = CREATURE_ATTRIBUTES_HORSE_NAME1
     }
     spells = { "warhorse_haste" }
   }
 "CAMEL" inherit "HORSE"
   {
     viewId = { "camel" }
-    petReaction = "growls"
+    petReaction = CREATURE_ATTRIBUTES_HORSE_PETREACTION1
     name = {
-      name = "camel"
+      name = CREATURE_ATTRIBUTES_HORSE_NAME2
     }
   }
 "COW"
@@ -3679,10 +3679,10 @@ End
       ambientSound = 0.01 {"COW_AMBIENT" 0.2}
     }
     noChase = true
-    chatReactionFriendly = "\"my name is Cow\""
-    petReaction = "\"Mooooooooooooooooooooooooooo!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_COW_CHATREACTIONFRIENDLY
+    petReaction = CREATURE_ATTRIBUTES_COW_PETREACTION
     name = {
-      name = "cow"
+      name = CREATURE_ATTRIBUTES_COW_NAME
     }
   }
 "DONKEY"
@@ -3699,7 +3699,7 @@ End
     }
     noChase = true
     name = {
-      name = "donkey"
+      name = CREATURE_ATTRIBUTES_DONKEY_NAME
     }
   }
 "DONKEY_STEED" inherit "DONKEY"
@@ -3728,7 +3728,7 @@ End
     }
     noChase = true
     name = {
-      name = "pig"
+      name = CREATURE_ATTRIBUTES_PIG_NAME
     }
     killedByAchievement = "killed_by_pig"
   }
@@ -3746,10 +3746,10 @@ End
       deathSound = "DYING_GOAT"
       ambientSound = 0.01 {"GOAT_AMBIENT" 0.2}
     }
-    petReaction = "\"Meh-eh-eh!\""
+    petReaction = CREATURE_ATTRIBUTES_GOAT_PETREACTION
     noChase = true
     name = {
-      name = "goat"
+      name = CREATURE_ATTRIBUTES_GOAT_NAME
     }
   }
 "GOAT_STEED" inherit "GOAT"
@@ -3771,7 +3771,7 @@ End
       weight = 10
     }
     name = {
-      name = "jackal"
+      name = CREATURE_ATTRIBUTES_JACKAL_NAME
     }
   }
 "DEER"
@@ -3792,8 +3792,8 @@ End
     }
     noChase = true
     name = {
-      name = "deer"
-      pluralName = "deer"
+      name = CREATURE_ATTRIBUTES_DEER_NAME
+      pluralName = CREATURE_ATTRIBUTES_DEER_PLURALNAME
     }
   }
 "ELF_LORD_DEER" inherit "DEER"
@@ -3817,7 +3817,7 @@ End
     }
     noChase = true
     name = {
-      name = "boar"
+      name = CREATURE_ATTRIBUTES_BOAR_NAME
     }
   }
 "FOX"
@@ -3834,8 +3834,8 @@ End
     }
     noChase = true
     name = {
-      name = "fox"
-      pluralName = "foxes"
+      name = CREATURE_ATTRIBUTES_FOX_NAME
+      pluralName = CREATURE_ATTRIBUTES_FOX_PLURALNAME
     }
   }
 "POLAR_FOX" inherit "FOX"
@@ -3855,7 +3855,7 @@ End
     }
     noChase = true
     name = {
-      name = "kangaroo"
+      name = CREATURE_ATTRIBUTES_KANGAROO_NAME
     }
   }
 "CAVE_BEAR"
@@ -3869,7 +3869,7 @@ End
       type = FourLegged LARGE
       weight = 250
       intrinsicAttacks = {
-        LEG {{{ Intrinsic { "claws_attack" } "claws" 10 { attackType = HIT attackMsg = CLAW } }}}
+        LEG {{{ Intrinsic { "claws_attack" } CREATURE_ATTRIBUTES_CAVE_BEAR_ID 10 { attackType = HIT attackMsg = CLAW } }}}
       }
     }
     permanentEffects = {
@@ -3877,7 +3877,7 @@ End
       STEED 1
     }
     name = {
-      name = "brown bear"
+      name = CREATURE_ATTRIBUTES_CAVE_BEAR_NAME
     }
   }
 "POLAR_BEAR" inherit "CAVE_BEAR"
@@ -3885,7 +3885,7 @@ End
     viewId = { "polar_bear" }
     permanentEffects = {}
     name = {
-      name = "polar bear"
+      name = CREATURE_ATTRIBUTES_CAVE_BEAR_NAME1
     }
   }
 "RAT"
@@ -3907,7 +3907,7 @@ End
     }
     noChase = true
     name = {
-      name = "rat"
+      name = CREATURE_ATTRIBUTES_RAT_NAME
     }
   }
 "BLACK_RAT" inherit "RAT"
@@ -3917,7 +3917,7 @@ End
       PLAGUE 1
     }
     name = {
-      name = "black rat"
+      name = CREATURE_ATTRIBUTES_RAT_NAME1
     }
   }
 "SPIDER"
@@ -3936,14 +3936,14 @@ End
       weight = 0.3
       deathSound = none
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "bite_attack" } "fangs" 1 {
+        TORSO {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_SPIDER_ID 1 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.1 Lasting POISON} } }}}
       }
     }
     name = {
-      name = "spider"
+      name = CREATURE_ATTRIBUTES_SPIDER_NAME
     }
   }
 "FLY"
@@ -3967,8 +3967,8 @@ End
     aiType = RANGED
     noChase = true
     name = {
-      name = "fly"
-      pluralName = "flies"
+      name = CREATURE_ATTRIBUTES_FLY_NAME
+      pluralName = CREATURE_ATTRIBUTES_FLY_PLURALNAME
     }
   }
 "ANT_WORKER"
@@ -3990,7 +3990,7 @@ End
       deathSound = none
     }
     name = {
-      name = "giant ant"
+      name = CREATURE_ATTRIBUTES_ANT_WORKER_NAME
     }
   }
 "ANT_SOLDIER"
@@ -4011,14 +4011,14 @@ End
       }
       deathSound = none
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 6 {
+        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_ANT_SOLDIER_ID 6 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.1 Lasting POISON} } }}}
       }
     }
     name = {
-      name = "giant ant soldier"
+      name = CREATURE_ATTRIBUTES_ANT_SOLDIER_NAME
     }
   }
 "ANT_QUEEN"
@@ -4039,7 +4039,7 @@ End
       }
       deathSound = none
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 12 {
+        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_ANT_QUEEN_ID 12 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {1.0 Lasting POISON} } }}}
@@ -4048,7 +4048,7 @@ End
     }
     gender = FEMALE
     name = {
-      name = "ant queen"
+      name = CREATURE_ATTRIBUTES_ANT_QUEEN_NAME
     }
   }
 "SNAKE"
@@ -4067,7 +4067,7 @@ End
       }
       deathSound = none
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 1 {
+        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_SNAKE_ID 1 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.3 Lasting POISON} } }}}
@@ -4077,7 +4077,7 @@ End
       SWIMMING_SKILL 1
     }
     name = {
-      name = "snake"
+      name = CREATURE_ATTRIBUTES_SNAKE_NAME
     }
   }
 "RAVEN"
@@ -4101,8 +4101,8 @@ End
       STEED 1
     }
     name = {
-      name = "raven"
-      groupName = "flock"
+      name = CREATURE_ATTRIBUTES_RAVEN_NAME
+      groupName = CREATURE_ATTRIBUTES_RAVEN_GROUPNAME
     }
   }
 "VULTURE"
@@ -4121,7 +4121,7 @@ End
     noChase = true
     aiType = RANGED
     name = {
-      name = "vulture"
+      name = CREATURE_ATTRIBUTES_VULTURE_NAME
     }
   }
 "WOLF"
@@ -4135,8 +4135,8 @@ End
       type = FourLegged MEDIUM
       weight = 35
       intrinsicAttacks = {
-        LEG  {{itemType = { Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
-        HEAD {{itemType = { Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
+        LEG  {{itemType = { Intrinsic { "claws_attack" } CREATURE_ATTRIBUTES_WOLF_ID 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
+        HEAD {{itemType = { Intrinsic { "bite_attack" }  CREATURE_ATTRIBUTES_WOLF_ID1 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
       }
       deathSound = "DOG_DEATH"
       ambientSound = 0.01 {"WOLF_AMBIENT" 0.2}
@@ -4147,10 +4147,10 @@ End
       STEED 1
     }
     name = {
-      name = "wolf"
-      pluralName = "wolves"
+      name = CREATURE_ATTRIBUTES_WOLF_NAME
+      pluralName = CREATURE_ATTRIBUTES_WOLF_PLURALNAME
       firstNameGen = "DOG"
-      groupName = "pack"
+      groupName = CREATURE_ATTRIBUTES_WOLF_GROUPNAME
     }
   }
 "SKELETON_WOLF"
@@ -4165,8 +4165,8 @@ End
       weight = 35
       material = BONE
       intrinsicAttacks = {
-        LEG  {{itemType = { Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
-        HEAD {{itemType = { Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
+        LEG  {{itemType = { Intrinsic { "claws_attack" } CREATURE_ATTRIBUTES_SKELETON_WOLF_ID 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
+        HEAD {{itemType = { Intrinsic { "bite_attack" }  CREATURE_ATTRIBUTES_SKELETON_WOLF_ID1 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
       }
     }
     permanentEffects = {
@@ -4176,10 +4176,10 @@ End
       SPEED 1
     }
     name = {
-      name = "skeleton wolf"
-      pluralName = "skeleton wolves"
+      name = CREATURE_ATTRIBUTES_SKELETON_WOLF_NAME
+      pluralName = CREATURE_ATTRIBUTES_SKELETON_WOLF_PLURALNAME
       firstNameGen = "DOG"
-      groupName = "pack"
+      groupName = CREATURE_ATTRIBUTES_SKELETON_WOLF_GROUPNAME
     }
   }
 "FERAL_CHILD"
@@ -4193,8 +4193,8 @@ End
       type = Humanoid MEDIUM
       weight = 35
       intrinsicAttacks = {
-        LEG  {{itemType = { Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
-        HEAD {{itemType = { Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
+        LEG  {{itemType = { Intrinsic { "claws_attack" } CREATURE_ATTRIBUTES_FERAL_CHILD_ID 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
+        HEAD {{itemType = { Intrinsic { "bite_attack" }  CREATURE_ATTRIBUTES_FERAL_CHILD_ID1 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
       }
     }
     maxLevelIncrease = {
@@ -4206,10 +4206,10 @@ End
       REGENERATION 1
     }
     name = {
-      name = "feral child"
-      pluralName = "feral children"
+      name = CREATURE_ATTRIBUTES_FERAL_CHILD_NAME
+      pluralName = CREATURE_ATTRIBUTES_FERAL_CHILD_PLURALNAME
       firstNameGen = "DOG"
-      groupName = "pack"
+      groupName = CREATURE_ATTRIBUTES_FERAL_CHILD_GROUPNAME
     }
     noCopulation = true
   }
@@ -4223,8 +4223,8 @@ End
     body = {
       type = Humanoid LARGE
       intrinsicAttacks = {
-        LEG  {{ itemType = { Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW }} isExtraAttack = true }}
-        HEAD {{ itemType = { Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE }} isExtraAttack = true }}
+        LEG  {{ itemType = { Intrinsic { "claws_attack" } CREATURE_ATTRIBUTES_WEREWOLF_ID 8 { attackType = HIT attackMsg = CLAW }} isExtraAttack = true }}
+        HEAD {{ itemType = { Intrinsic { "bite_attack" }  CREATURE_ATTRIBUTES_WEREWOLF_ID1 7 { attackType = BITE attackMsg = BITE }} isExtraAttack = true }}
       }
     }
     permanentEffects = {
@@ -4238,8 +4238,8 @@ End
       DAMAGE 12
     }
     name = {
-      name = "werewolf"
-      pluralName = "werewolves"
+      name = CREATURE_ATTRIBUTES_WEREWOLF_NAME
+      pluralName = CREATURE_ATTRIBUTES_WEREWOLF_PLURALNAME
       firstNameGen = "DOG"
     }
   }
@@ -4253,7 +4253,7 @@ End
     body = {
       type = FourLegged MEDIUM
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" }  "fangs" 4 { attackType = BITE attackMsg = BITE } }}}
+        HEAD {{{ Intrinsic { "bite_attack" }  CREATURE_ATTRIBUTES_DOG_ID 4 { attackType = BITE attackMsg = BITE } }}}
       }
       weight = 25
       ambientSound = 0.01 {"DOG_AMBIENT" 0.2}
@@ -4261,11 +4261,11 @@ End
     }
     aiType = RANGED
     name = {
-      name = "dog"
-      groupName = "pack"
+      name = CREATURE_ATTRIBUTES_DOG_NAME
+      groupName = CREATURE_ATTRIBUTES_DOG_GROUPNAME
       firstNameGen = "DOG"
     }
-    petReaction = "\"WOOF!\""
+    petReaction = CREATURE_ATTRIBUTES_DOG_PETREACTION
   }
 "HUSKY" inherit "DOG"
   {
@@ -4301,10 +4301,10 @@ End
       summonFreq = 0.1
       creatures = { "FIRE_ELEMENTAL" "AIR_ELEMENTAL" "WATER_ELEMENTAL" "EARTH_ELEMENTAL" }
     }}
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_ELEMENTALIST_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_ELEMENTALIST_CHATREACTIONHOSTILE
     name = {
-      name = "elementalist"
+      name = CREATURE_ATTRIBUTES_ELEMENTALIST_NAME
       firstNameGen = "FIRST_FEMALE"
     }
     hatedByEffect = HATE_HUMANS
@@ -4322,7 +4322,7 @@ End
       material = FIRE
       deathSound = none
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "fist_attack" }  "fists" 5 {
+        TORSO {{{ Intrinsic { "fist_attack" }  CREATURE_ATTRIBUTES_FIRE_ELEMENTAL_ID 5 {
             attackType = HIT attackMsg = SWING meleeAttackAttr = FIRE_DAMAGE } }}}
       }
     }
@@ -4334,7 +4334,7 @@ End
       FLYING 1
     }
     name = {
-      name = "fire elemental"
+      name = CREATURE_ATTRIBUTES_FIRE_ELEMENTAL_NAME
     }
     gender = IT
   }
@@ -4346,7 +4346,7 @@ End
       material = SPIRIT
       deathSound = none
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "fist_attack" }  "fists" 5 { attackType = HIT attackMsg = SWING} }}}
+        TORSO {{{ Intrinsic { "fist_attack" }  CREATURE_ATTRIBUTES_AIR_ELEMENTAL_ID 5 { attackType = HIT attackMsg = SWING} }}}
       }
     }
     attr = {
@@ -4359,7 +4359,7 @@ End
     }
     spells = { "circular blast" }
     name = {
-      name = "air elemental"
+      name = CREATURE_ATTRIBUTES_AIR_ELEMENTAL_NAME
     }
     gender = IT
   }
@@ -4380,7 +4380,7 @@ End
       RANGED_RESISTANCE 1
     }
     name = {
-      name = "earth elemental"
+      name = CREATURE_ATTRIBUTES_EARTH_ELEMENTAL_NAME
     }
     gender = IT
   }
@@ -4402,7 +4402,7 @@ End
       SWIMMING_SKILL 1
     }
     name = {
-      name = "water elemental"
+      name = CREATURE_ATTRIBUTES_WATER_ELEMENTAL_NAME
     }
     gender = IT
   }
@@ -4424,10 +4424,10 @@ End
       SLOWED 1
       STEED 1
     }
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_ENT_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_ENT_CHATREACTIONHOSTILE
     name = {
-      name = "tree spirit"
+      name = CREATURE_ATTRIBUTES_ENT_NAME
     }
     gender = IT
   }
@@ -4450,10 +4450,10 @@ End
         WING 2
       }
    }
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_ANGEL_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_ANGEL_CHATREACTIONHOSTILE
     name = {
-      name = "angel"
+      name = CREATURE_ATTRIBUTES_ANGEL_NAME
     }
     canJoinCollective = false
     inventory = {
@@ -4467,7 +4467,7 @@ End
       type = Bird SMALL
       weight = 1
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 3 { attackType = BITE attackMsg = BITE } }}}
+        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_BAT_ID 3 { attackType = BITE attackMsg = BITE } }}}
       }
     }
     attr = {
@@ -4483,7 +4483,7 @@ End
       STEED 1
     }
     name = {
-      name = "bat"
+      name = CREATURE_ATTRIBUTES_BAT_NAME
     }
   }
 "FLYING_CARPET"
@@ -4504,7 +4504,7 @@ End
       SPEED 1
     }
     name = {
-      name = "flying carpet"
+      name = CREATURE_ATTRIBUTES_FLYING_CARPET_NAME
     }
   }
 "DEATH"
@@ -4520,7 +4520,7 @@ End
       noHealth = true
       fallsApart = false
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "fist_attack" } "scythe" 1 {
+        TORSO {{{ Intrinsic { "fist_attack" } CREATURE_ATTRIBUTES_DEATH_ID 1 {
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SWING } }}}
       }
     }
@@ -4529,10 +4529,10 @@ End
       FLYING 1
       INVULNERABLE 1
     }
-    chatReactionFriendly = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\""
-    chatReactionHostile = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_DEATH_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_DEATH_CHATREACTIONHOSTILE
     name = {
-      name = "Death"
+      name = CREATURE_ATTRIBUTES_DEATH_NAME
       fullTitle = true
     }
     deathEffect = Analytics "creatureKilled" "death"
@@ -4549,10 +4549,10 @@ End
       DAMAGE 17
       DEFENSE 20
     }
-    chatReactionFriendly = "complains about high import tax"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_SHOPKEEPER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_SHOPKEEPER_CHATREACTIONHOSTILE
     name = {
-      name = "shopkeeper"
+      name = CREATURE_ATTRIBUTES_SHOPKEEPER_NAME
       firstNameGen = "FIRST_MALE"
     }
     inventory = {
@@ -4597,13 +4597,13 @@ End
       FLYING 1
     }
     name = {
-      name = "Evil God Adoxie"
-      pluralName = "gods"
+      name = CREATURE_ATTRIBUTES_ADOXIE_HEAD_NAME
+      pluralName = CREATURE_ATTRIBUTES_ADOXIE_HEAD_PLURALNAME
       fullTitle = true
     }
-    chatReactionFriendly = "\"Gaze upon my magnificence and tremble, mortal!\""
-    chatReactionHostile = "\"How dare you defy a GOD!\""
-    deathDescription = "vanquished. May he never rise again"
+    chatReactionFriendly = CREATURE_ATTRIBUTES_ADOXIE_HEAD_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_ADOXIE_HEAD_CHATREACTIONHOSTILE
+    deathDescription = CREATURE_ATTRIBUTES_ADOXIE_HEAD_DEATHDESCRIPTION
     gender = IT
     deathEffect = {
       Analytics "creatureKilled" "adoxie"
@@ -4634,7 +4634,7 @@ End
         TORSO 1
       }
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "fist_attack" } "spell" 1 {
+        TORSO {{{ Intrinsic { "fist_attack" } CREATURE_ATTRIBUTES_ADOXIE_HEAD_ID 1 {
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}}
       }
       material = SPIRIT_WITH_BRAIN
@@ -4659,7 +4659,7 @@ End
         TORSO 1
       }
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "leg_attack" } "foot" 1 {
+        TORSO {{{ Intrinsic { "leg_attack" } CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_ID 1 {
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = KICK } }}}
       }
     }
@@ -4675,19 +4675,19 @@ End
       FLYING 1
     }
     name = {
-      name = "Adoxie's Left Foot"
-      pluralName = "Feet"
+      name = CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_NAME
+      pluralName = CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_PLURALNAME
       fullTitle = true
     }
-    deathDescription = "destroyed"
+    deathDescription = CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_DEATHDESCRIPTION
     killedByAchievement = "killed_by_adoxie"
   }
 "ADOXIE_FOOT_RIGHT" inherit "ADOXIE_FOOT_LEFT"
   {
     viewId = { "adoxie_foot_right" }
     name = {
-      name = "Adoxie's Right Foot"
-      pluralName = "Feet"
+      name = CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_NAME1
+      pluralName = CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_PLURALNAME
       fullTitle = true
     }
   }
@@ -4718,13 +4718,13 @@ End
     viewId = { "adoxie_hand_left" }
     body = append {
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "leg_attack" } "foot" 1 {
+        TORSO {{{ Intrinsic { "leg_attack" } CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_ID 1 {
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = PUNCH } }}}
       }
     }
     name = {
-      name = "Adoxie's Left Hand"
-      pluralName = "Hands"
+      name = CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_NAME2
+      pluralName = CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_PLURALNAME1
       fullTitle = true
     }
   }
@@ -4732,8 +4732,8 @@ End
   {
     viewId = { "adoxie_hand_right" }
     name = {
-      name = "Adoxie's Right Hand"
-      pluralName = "Hands"
+      name = CREATURE_ATTRIBUTES_ADOXIE_LEFT_HAND_NAME
+      pluralName = CREATURE_ATTRIBUTES_ADOXIE_LEFT_HAND_PLURALNAME
       fullTitle = true
     }
   }
@@ -4741,7 +4741,7 @@ End
   {
     viewId = { "adoxie_priest" }
     name = {
-      name = "high priest of Adoxie"
+      name = CREATURE_ATTRIBUTES_ADOXIE_PRIEST_NAME
     }
     body = {
       type = Humanoid LARGE
@@ -4778,7 +4778,7 @@ End
       material = UNDEAD_FLESH
     }
     name = {
-      name = "zombie king"
+      name = CREATURE_ATTRIBUTES_ABOMINATION_NAME
     }
     gender = IT
   }
@@ -4808,11 +4808,11 @@ End
       Analytics "milestone" "goblinsUnlocked"
       UnlockMessage("The Goblin Keeper has been unlocked!", "goblin_keeper4")
     }
-    chatReactionFriendly = "talks about lavish dinners"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_KING_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_GOBLIN_KING_CHATREACTIONHOSTILE
     aiType = RANGED
     name = {
-      name = "goblin king"
+      name = CREATURE_ATTRIBUTES_GOBLIN_KING_NAME
       firstNameGen = "ORC"
     }
     hatedByEffect = HATE_GREENSKINS
@@ -4832,11 +4832,11 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "talks about lavish dinners"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_KEEPER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_GOBLIN_KEEPER_CHATREACTIONHOSTILE
     aiType = RANGED
     name = {
-      name = "goblin"
+      name = CREATURE_ATTRIBUTES_GOBLIN_KEEPER_NAME
       firstNameGen = "ORC"
     }
     hatedByEffect = HATE_GREENSKINS
@@ -4856,13 +4856,13 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "talks about digging"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_WORKER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_GOBLIN_WORKER_CHATREACTIONHOSTILE
     hatedByEffect = HATE_GREENSKINS
     gender = MALE
     aiType = RANGED
     name = {
-      name = "goblin worker"
+      name = CREATURE_ATTRIBUTES_GOBLIN_WORKER_NAME
       firstNameGen = "ORC"
     }
   }
@@ -4876,13 +4876,13 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "talks about makeup and lovemaking"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_MATRON_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_GOBLIN_MATRON_CHATREACTIONHOSTILE
     hatedByEffect = HATE_GREENSKINS
     gender = FEMALE
     aiType = RANGED
     name = {
-      name = "goblin matron"
+      name = CREATURE_ATTRIBUTES_GOBLIN_MATRON_NAME
       firstNameGen = "ORC"
     }
     permanentEffects = {
@@ -4903,10 +4903,10 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "talks about sword fighting"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_WARRIOR_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_GOBLIN_WARRIOR_CHATREACTIONHOSTILE
     name = {
-      name = "goblin warrior"
+      name = CREATURE_ATTRIBUTES_GOBLIN_WARRIOR_NAME
       firstNameGen = "ORC"
     }
     permanentEffects = {
@@ -4943,11 +4943,11 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "talks about priestly service"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_PRIEST_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_GOBLIN_PRIEST_CHATREACTIONHOSTILE
     aiType = RANGED
     name = {
-      name = "goblin priest"
+      name = CREATURE_ATTRIBUTES_GOBLIN_PRIEST_NAME
       firstNameGen = "ORC"
     }
     maxLevelIncrease = {
@@ -4969,11 +4969,11 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "talks about black magic"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_WIZARD_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_GOBLIN_WIZARD_CHATREACTIONHOSTILE
     aiType = RANGED
     name = {
-      name = "goblin wizard"
+      name = CREATURE_ATTRIBUTES_GOBLIN_WIZARD_NAME
       firstNameGen = "ORC"
     }
     maxLevelIncrease = {
@@ -5009,7 +5009,7 @@ End
       DEFENSE 12
     }
     name = {
-      name = "goblin guard"
+      name = CREATURE_ATTRIBUTES_GOBLIN_WARRIOR_NAME1
       firstNameGen = "ORC"
     }
   }
@@ -5036,11 +5036,11 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "talks about bows and arrows"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_ARCHER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_GOBLIN_ARCHER_CHATREACTIONHOSTILE
     aiType = RANGED
     name = {
-      name = "goblin archer"
+      name = CREATURE_ATTRIBUTES_GOBLIN_ARCHER_NAME
       firstNameGen = "ORC"
     }
     spellSchools = { "archer" }
@@ -5071,7 +5071,7 @@ End
       type = Humanoid MEDIUM
       deathSound = "SPELL_AIR_BLAST"
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "touch_attack" } "self destruct" 1 {
+        TORSO {{{ Intrinsic { "touch_attack" } CREATURE_ATTRIBUTES_GOBLIN_KABOOMER_ID 1 {
           attackType = HIT
           meleeAttackAttr = FIRE_DAMAGE
           attackMsg = THRUST
@@ -5080,10 +5080,10 @@ End
           attackerEffect = {CircularBlast Area 1 Fire{30} Suicide DIE} } }}}
       }
     }
-    chatReactionFriendly = "talks about explosives"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_KABOOMER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_GOBLIN_KABOOMER_CHATREACTIONHOSTILE
     name = {
-      name = "goblin kaboomer"
+      name = CREATURE_ATTRIBUTES_GOBLIN_KABOOMER_NAME
       firstNameGen = "ORC"
     }
     hatedByEffect = HATE_GREENSKINS
@@ -5102,11 +5102,11 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "talks about chickens"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_CHICKENMANCER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_GOBLIN_CHICKENMANCER_CHATREACTIONHOSTILE
     aiType = RANGED
     name = {
-      name = "goblin chickenmancer"
+      name = CREATURE_ATTRIBUTES_GOBLIN_CHICKENMANCER_NAME
       firstNameGen = "ORC"
     }
     maxLevelIncrease = {
@@ -5129,7 +5129,7 @@ End
       SLOWED 1
     }
     name = {
-      name = "troll"
+      name = CREATURE_ATTRIBUTES_GOBLIN_WARRIOR_NAME2
       firstNameGen = "ORC"
     }
     maxLevelIncrease = {
@@ -5160,7 +5160,7 @@ End
     }
     maxLevelIncrease = {}
     name = {
-      name = "zombie artisan"
+      name = CREATURE_ATTRIBUTES_ZOMBIE_NAME1
     }
   }
 "ZOMBIE_MAGE" inherit "ZOMBIE"
@@ -5176,7 +5176,7 @@ End
     }
     spellSchools = { "zombie mage" }
     name = {
-      name = "zombie mage"
+      name = CREATURE_ATTRIBUTES_ZOMBIE_NAME2
     }
     hatedByEffect = HATE_UNDEAD
   }
@@ -5195,7 +5195,7 @@ End
       DAMAGE 7
     }
     name = {
-      name = "skeleton warrior"
+      name = CREATURE_ATTRIBUTES_SKELETON_WARRIOR_NAME
     }
     permanentEffects = {
       RIDER 1
@@ -5218,7 +5218,7 @@ End
       RANGED_DAMAGE 7
     }
     name = {
-      name = "skeleton archer"
+      name = CREATURE_ATTRIBUTES_SKELETON_ARCHER_NAME
     }
     hatedByEffect = HATE_UNDEAD
   }
@@ -5231,7 +5231,7 @@ End
       material = BONE
     }
     name = {
-      name = "skeleton king"
+      name = CREATURE_ATTRIBUTES_ABOMINATION_PLAYER_NAME
     }
     attr = {
       DAMAGE 10
@@ -5251,8 +5251,8 @@ End
       material = UNDEAD_FLESH
       weight = 35
       intrinsicAttacks = {
-        LEG  {{itemType = { Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
-        HEAD {{itemType = { Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
+        LEG  {{itemType = { Intrinsic { "claws_attack" } CREATURE_ATTRIBUTES_SLASHER_ID 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
+        HEAD {{itemType = { Intrinsic { "bite_attack" }  CREATURE_ATTRIBUTES_SLASHER_ID1 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
       }
     }
     permanentEffects = {
@@ -5261,7 +5261,7 @@ End
       STEED 1
     }
     name = {
-      name = "slasher"
+      name = CREATURE_ATTRIBUTES_SLASHER_NAME
     }
   }
 "JUGGERNAUT"
@@ -5277,7 +5277,7 @@ End
       weight = 400
     }
     name = {
-      name = "juggernaut"
+      name = CREATURE_ATTRIBUTES_JUGGERNAUT_NAME
     }
     maxLevelIncrease = {
       DAMAGE 12
@@ -5301,12 +5301,12 @@ End
       type = HumanoidLike LARGE
       material = SPIRIT
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "fist_attack" } "spell" 1 {
+        TORSO {{{ Intrinsic { "fist_attack" } CREATURE_ATTRIBUTES_TENGU_ID 1 {
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}}
       }
     }
     name = {
-      name = "tengu"
+      name = CREATURE_ATTRIBUTES_TENGU_NAME
     }
     spells = {
       "tengu teleport"
@@ -5316,7 +5316,7 @@ End
   {
     viewId = { "shaitan" }
     name = {
-      name = "shaitan"
+      name = CREATURE_ATTRIBUTES_TENGU_NAME1
     }
     spells = {
       "shaitan insanity"
@@ -5326,7 +5326,7 @@ End
   {
     viewId = { "banshee" }
     name = {
-      name = "banshee"
+      name = CREATURE_ATTRIBUTES_TENGU_NAME2
     }
     spells = {
       "banshee scream"
@@ -5336,7 +5336,7 @@ End
   {
     viewId = { "vetala" }
     name = {
-      name = "vetala"
+      name = CREATURE_ATTRIBUTES_TENGU_NAME3
     }
     spells = {
       "vetala animate corpses"
@@ -5352,7 +5352,7 @@ End
     }
     viewId = { "leyak" }
     name = {
-      name = "leyak"
+      name = CREATURE_ATTRIBUTES_TENGU_NAME4
     }
     spells = {
       "leyak acid"
@@ -5362,7 +5362,7 @@ End
   {
     viewId = { "baku" }
     name = {
-      name = "baku"
+      name = CREATURE_ATTRIBUTES_TENGU_NAME5
     }
     specialAttr = {
       SPELL_DAMAGE { 40 LastingEffect SLEEP }
@@ -5373,7 +5373,7 @@ End
   {
     viewId = { "rakshasa" }
     name = {
-      name = "rakshasa"
+      name = CREATURE_ATTRIBUTES_TENGU_NAME6
     }
     specialAttr = {
       SPELL_DAMAGE { 40 HatedBy HATE_HUMANS }
@@ -5384,7 +5384,7 @@ End
   {
     viewId = { "ghoul" }
     name = {
-      name = "ghoul"
+      name = CREATURE_ATTRIBUTES_TENGU_NAME7
     }
     spells = {
       "ghoul corpse feast"
@@ -5394,11 +5394,11 @@ End
   {
     viewId = { "suanggi" }
     name = {
-      name = "suanggi"
+      name = CREATURE_ATTRIBUTES_TENGU_NAME8
     }
     body = append {
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "fist_attack" } "spell" 1 {
+        TORSO {{{ Intrinsic { "fist_attack" } CREATURE_ATTRIBUTES_TENGU_ID 1 {
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL victimEffect = { 1.0 Lasting PLAGUE} } }}}
       }
     }
@@ -5419,13 +5419,13 @@ End
     body = {
       type = Humanoid LARGE
     }
-    chatReactionFriendly = "curses all elves"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_ORC_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_ORC_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       DAMAGE 7
     }
     name = {
-      name = "orc"
+      name = CREATURE_ATTRIBUTES_ORC_NAME
       firstNameGen = "ORC"
     }
     hatedByEffect = HATE_GREENSKINS
@@ -5447,15 +5447,15 @@ End
       type = Humanoid LARGE
     }
     aiType = RANGED
-    chatReactionFriendly = "curses all elves"
-    chatReactionHostile = "\"Die!\""
+    chatReactionFriendly = CREATURE_ATTRIBUTES_ORC_MAGE_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_ORC_MAGE_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       DAMAGE 4
       SPELL_DAMAGE 7
     }
     spellSchools = { "mage" }
     name = {
-      name = "orc mage"
+      name = CREATURE_ATTRIBUTES_ORC_MAGE_NAME
       firstNameGen = "ORC"
     }
     hatedByEffect = HATE_GREENSKINS
@@ -5489,7 +5489,7 @@ End
       DISTILLATION_SKILL 1
     }
     name = {
-      name = "orc shaman"
+      name = CREATURE_ATTRIBUTES_ORC_MAGE_NAME1
       firstNameGen = "ORC"
     }
   }
@@ -5502,7 +5502,7 @@ End
     }
     spells = { "healing" }
     name = {
-      name = "orc healer"
+      name = CREATURE_ATTRIBUTES_ORC_MAGE_NAME2
       firstNameGen = "ORC"
     }
   }
@@ -5521,7 +5521,7 @@ End
       weight = 140
     }
     name = {
-      name = "ogre"
+      name = CREATURE_ATTRIBUTES_OGRE_NAME
       firstNameGen = "ORC"
     }
     permanentEffects = {

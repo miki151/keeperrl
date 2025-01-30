@@ -29,7 +29,7 @@ End
           Using "subscribed" ModList("Subscribed:")
           Using "online" ModList("Online:")
           Height 10 {}
-          MarginLeft(18, MarginRight(18, Using "create_new" StandardButtonNotFocusable(Label("Create new mod"))))
+          MarginLeft(18, MarginRight(18, Using "create_new" StandardButtonNotFocusable(Label(TEXT44))))
       })
       Width 30 {}
       Using "selected_mod" Vertical {
@@ -47,7 +47,7 @@ End
           Using "Download" KeybindingButton("Download", MENU_SELECT)
           Using "Update" StandardButtonNotFocusable(Label("Update"))
           Using "Upload" StandardButtonNotFocusable(Label("Upload"))
-          Using "show_workshop" StandardButtonNotFocusable(Label("Show in Steam Workshop"))
+          Using "show_workshop" StandardButtonNotFocusable(Label(TEXT45))
         }
       }
     }

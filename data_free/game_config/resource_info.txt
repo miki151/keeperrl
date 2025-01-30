@@ -4,13 +4,13 @@
 
 # ResourceId        name             viewId (if visible in UI)   tutorialHighlight
 
-"GOLD"           {  "gold"           { "gold" } }
-"WOOD"           {  "wood"           { "wood_plank" }            WOOD_RESOURCE }
-"STONE"          {  "granite"        { "rock" } }
-"IRON"           {  "iron"           { "iron_rock" } }
-"ADA"            {  "adamantium"     { "ada_ore" } }
-"ADOXIUM"        {  "adoxium"        { "adoxium_rock" } }
-"INFERNITE"      {  "infernite"      { "infernite_rock" } }
-"CORPSE"         {  "corpses"        { "body_part" } }
-"PRISONER_HEAD"  {  "prisoner heads" }
-"DEMON_PIETY"    {  "rituals" }
+"GOLD"           {  RESOURCE_INFO_GOLD_NAME           { "gold" } }
+"WOOD"           {  RESOURCE_INFO_WOOD_NAME           { "wood_plank" }            WOOD_RESOURCE }
+"STONE"          {  RESOURCE_INFO_STONE_NAME        { "rock" } }
+"IRON"           {  RESOURCE_INFO_IRON_NAME           { "iron_rock" } }
+"ADA"            {  RESOURCE_INFO_ADA_NAME     { "ada_ore" } }
+"ADOXIUM"        {  RESOURCE_INFO_ADOXIUM_NAME        { "adoxium_rock" } }
+"INFERNITE"      {  RESOURCE_INFO_INFERNITE_NAME      { "infernite_rock" } }
+"CORPSE"         {  RESOURCE_INFO_CORPSE_NAME        { "body_part" } }
+"PRISONER_HEAD"  {  RESOURCE_INFO_PRISONER_HEAD_NAME }
+"DEMON_PIETY"    {  RESOURCE_INFO_DEMON_PIETY_NAME }

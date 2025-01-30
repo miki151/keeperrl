@@ -87,15 +87,15 @@ Position(SCREEN, {
     Position(BOTTOM_CENTERED, Width 750 MiniWindow({
       Fill(Rgb 0 0 0 200)
       Vertical {
-        Label("When navigating various menus, use:")
+        Label(TEXT15)
         Height 5 {}
-        Label("1. The D-pad to move the focus in a chosen direction.")
+        Label(TEXT16)
         Height 5 {}
-        Label("2. The [A] button to confirm the current selection.")
+        Label(TEXT17)
         Height 5 {}
-        Label("3. The [B] button to go back or close the current dialog.")
+        Label(TEXT18)
         Height 5 {}
-        Label("4. The right joystick to scroll pages that don't fit the screen.")
+        Label(TEXT19)
         Height 5 {}
         Position(MIDDLE, Texture("deck_menu"))
       }

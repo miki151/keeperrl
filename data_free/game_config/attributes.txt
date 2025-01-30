@@ -1,164 +1,164 @@
 
 "DAMAGE" {
-  name = "damage"
+  name = ATTR_INFO_DAMAGE_NAME
   viewId = { "damage_icon" }
-  adjective = "dangerous"
+  adjective = ATTR_INFO_DAMAGE_ADJECTIVE
   absorptionCap = 25
   isAttackAttr = true
-  help = "Base damage value of melee attacks."
+  help = ATTR_INFO_DAMAGE_HELP
 }
 
 "SPELL_DAMAGE" {
-  name = "spell damage"
+  name = ATTR_INFO_SPELL_DAMAGE_NAME
   viewId = { "spell_damage_icon" }
-  adjective = "powerful"
+  adjective = ATTR_INFO_SPELL_DAMAGE_ADJECTIVE
   absorptionCap = 25
   isAttackAttr = true
   meleeFX = {MAGIC_MISSILE_SPLASH}
-  help = "Base damage value of magic attacks."
+  help = ATTR_INFO_SPELL_DAMAGE_HELP
 }
 
 "RANGED_DAMAGE" {
-  name = "ranged damage"
+  name = ATTR_INFO_RANGED_DAMAGE_NAME
   viewId = { "ranged_damage_icon" }
-  adjective = "accurate"
+  adjective = ATTR_INFO_RANGED_DAMAGE_ADJECTIVE
   absorptionCap = 25
   isAttackAttr = true
-  help = "Base damage value of ranged attacks."
+  help = ATTR_INFO_RANGED_DAMAGE_HELP
 }
 
 "FIRE_DAMAGE" {
-  name = "fire damage"
+  name = ATTR_INFO_FIRE_DAMAGE_NAME
   viewId = { "fire_damage_icon" }
-  adjective = "aflame"
+  adjective = ATTR_INFO_FIRE_DAMAGE_ADJECTIVE
   absorptionCap = 25
-  bodyPartInjury = "is incinerated"
+  bodyPartInjury = ATTR_INFO_FIRE_DAMAGE_BODYPARTINJURY
   isAttackAttr = true
   meleeFX = {FIREBALL_SPLASH}
   onAttackedEffect = Lasting ON_FIRE
-  help = "Base damage value of fire attacks."
+  help = ATTR_INFO_FIRE_DAMAGE_HELP
 }
 
 "ACID_DAMAGE" {
-  name = "acid damage"
+  name = ATTR_INFO_ACID_DAMAGE_NAME
   viewId = { "acid_damage_icon" }
-  adjective = "acidic"
+  adjective = ATTR_INFO_ACID_DAMAGE_ADJECTIVE
   absorptionCap = 25
-  bodyPartInjury = "is dissolved"
+  bodyPartInjury = ATTR_INFO_ACID_DAMAGE_BODYPARTINJURY
   isAttackAttr = true
   meleeFX = {WATER_SPLASH ColorId YELLOW}
-  help = "Base damage value of acid attacks."
+  help = ATTR_INFO_ACID_DAMAGE_HELP
 }
 
 "COLD_DAMAGE" {
-  name = "cold damage"
+  name = ATTR_INFO_COLD_DAMAGE_NAME
   viewId = { "cold_damage_icon" }
-  adjective = "chilly"
+  adjective = ATTR_INFO_COLD_DAMAGE_ADJECTIVE
   absorptionCap = 25
-  bodyPartInjury = "is frozen and breaks off"
+  bodyPartInjury = ATTR_INFO_COLD_DAMAGE_BODYPARTINJURY
   isAttackAttr = true
   meleeFX = {WATER_SPLASH ColorId LIGHT_BLUE}
-  help = "Base damage value of cold attacks."
+  help = ATTR_INFO_COLD_DAMAGE_HELP
 }
 
 "DEFENSE" {
-  name = "defense"
+  name = ATTR_INFO_DEFENSE_NAME
   viewId = { "defense_icon" }
-  adjective = "protected"
+  adjective = ATTR_INFO_DEFENSE_ADJECTIVE
   absorptionCap = 25
-  help = "Affects if and how much damage is taken in combat."
+  help = ATTR_INFO_DEFENSE_HELP
 }
 
 "PARRY" {
-  name = "parry"
+  name = ATTR_INFO_PARRY_NAME
   viewId = { "parry_icon" }
-  adjective = "evasive"
+  adjective = ATTR_INFO_PARRY_ADJECTIVE
   absorptionCap = 3
   modifierVariation = 0
   wishedItemIncrease = 2
-  help = "Prevents defense penalty from being surrounded."
+  help = ATTR_INFO_PARRY_HELP
 }
 
 "SPELL_SPEED" {
-  name = "spell speed"
+  name = ATTR_INFO_SPELL_SPEED_NAME
   viewId = { "spell_speed_icon" }
-  adjective = "quickhanded"
+  adjective = ATTR_INFO_SPELL_SPEED_ADJECTIVE
   absorptionCap = 25
-  help = "Affects spell cooldown times."
+  help = ATTR_INFO_SPELL_SPEED_HELP
 }
 
 "DIGGING" {
-  name = "digging"
+  name = ATTR_INFO_DIGGING_NAME
   viewId = { "dig_icon" }
-  adjective = "burrowing"
+  adjective = ATTR_INFO_DIGGING_ADJECTIVE
   absorptionCap = 25
   modifierVariation = 5
   wishedItemIncrease = 5
-  help = "Allows digging into the ground."
+  help = ATTR_INFO_DIGGING_HELP
 }
 
 "MULTI_WEAPON" {
-  name = "multi-weapon skill"
+  name = ATTR_INFO_MULTI_WEAPON_NAME
   viewId = { "multi_weapon_icon" }
-  adjective = "ambidextrous"
+  adjective = ATTR_INFO_MULTI_WEAPON_ADJECTIVE
   absorptionCap = 25
-  help = "Allows using multiple weapons in a single attack. The attribute value defines the damage multiplier for subsequent attacks."
+  help = ATTR_INFO_MULTI_WEAPON_HELP
 }
 
 "FURNACE" {
-  name = "furnace"
+  name = ATTR_INFO_FURNACE_NAME
   viewId = { "furnace" }
-  adjective = "charred"
+  adjective = ATTR_INFO_FURNACE_ADJECTIVE
   absorptionCap = 25
-  help = "Defines the creature's skill at working at the furnace."
+  help = ATTR_INFO_FURNACE_HELP
 }
 
 "WORKSHOP" {
-  name = "workshop"
+  name = ATTR_INFO_WORKSHOP_NAME
   viewId = { "workshop" }
-  adjective = "inventive"
+  adjective = ATTR_INFO_WORKSHOP_ADJECTIVE
   absorptionCap = 25
-  help = "Defines the creature's skill at working at the workshop."
+  help = ATTR_INFO_WORKSHOP_HELP
 }
 
 "FORGE" {
-  name = "forge"
+  name = ATTR_INFO_FORGE_NAME
   viewId = { "forge" }
-  adjective = "metallic"
+  adjective = ATTR_INFO_FORGE_ADJECTIVE
   absorptionCap = 25
-  help = "Defines the creature's skill at working at the forge."
+  help = ATTR_INFO_FORGE_HELP
 }
 
 "LABORATORY" {
-  name = "laboratory"
+  name = ATTR_INFO_LABORATORY_NAME
   viewId = { "cauldron" }
-  adjective = "chemically active"
+  adjective = ATTR_INFO_LABORATORY_ADJECTIVE
   absorptionCap = 25
-  help = "Defines the creature's skill at working at the laboratory."
+  help = ATTR_INFO_LABORATORY_HELP
 }
 
 "JEWELER" {
-  name = "jeweler"
+  name = ATTR_INFO_JEWELER_NAME
   viewId = { "jeweller" }
-  adjective = "golden"
+  adjective = ATTR_INFO_JEWELER_ADJECTIVE
   absorptionCap = 25
-  help = "Defines the creature's skill at working at the jeweler."
+  help = ATTR_INFO_JEWELER_HELP
 }
 
 "MORGUE" {
-  name = "morgue"
+  name = ATTR_INFO_MORGUE_NAME
   viewId = { "morgue_table" }
-  adjective = "rotten"
+  adjective = ATTR_INFO_MORGUE_ADJECTIVE
   absorptionCap = 25
-  help = "Defines the creature's skill at working at the morgue table."
+  help = ATTR_INFO_MORGUE_HELP
 }
 
 "DIVINITY" {
-  name = "divinity"
+  name = ATTR_INFO_DIVINITY_NAME
   viewId = { "divinity_icon" }
-  adjective = "divine"
+  adjective = ATTR_INFO_DIVINITY_ADJECTIVE
   absorptionCap = 25
   isAttackAttr = true
   meleeFX = {MAGIC_MISSILE_SPLASH}
-  help = "Caps the creature's praying abilities."
+  help = ATTR_INFO_DIVINITY_HELP
 }

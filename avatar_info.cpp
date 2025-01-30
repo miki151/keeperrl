@@ -132,7 +132,7 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
             baseDescription = keeperCreatureInfos[i].second.description;
             genderDescription = TSentence("CAPITAL_FIRST", keeperCreatureInfos[i].second.noLeader
                 ? keeper->getName().plural()
-                : TString(string(keeper->getName().identify())));
+                : keeper->getName().name);
             reloadFirstName = [&keeperName, options, nameOption, newName = getFirstName(keeper, i)] {
               keeperName = newName;
               options->setValue(nameOption, string());

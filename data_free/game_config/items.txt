@@ -1,9 +1,9 @@
 "AutomatonItem"
   {
     viewId = { "trap_item" }
-    name = "automaton"
-    applyMsgFirstPerson = "assemble the automaton"
-    applyMsgThirdPerson = "assembles an automaton"
+    name = ITEMS_AUTOMATONITEM_NAME
+    applyMsgFirstPerson = ITEMS_AUTOMATONITEM_APPLYMSGFIRSTPERSON
+    applyMsgThirdPerson = ITEMS_AUTOMATONITEM_APPLYMSGTHIRDPERSON
     applySound = "TRAP_ARMING"
     weight = 30
     applyTime = 3
@@ -251,15 +251,15 @@ SPELL_HEAD("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, "automaton_spell", "a
 "KaboomHead"
   {
     viewId = { "kaboom_head" }
-    name = "kaboom head"
-    shortName = "kaboom head"
+    name = ITEMS_KABOOMHEAD_NAME
+    shortName = ITEMS_KABOOMHEAD_SHORTNAME
     weight = 4
     craftingCost = IRON 15
     upgradeInfo = { AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "kaboom head"
-      Description "Explodes, destroying the equiped automaton and killing the target. Aggravates enemies."
+      Name ITEMS_KABOOMHEAD_PREFIX
+      Description ITEMS_KABOOMHEAD_PREFIX1
       {
-        AddBodyPart HEAD 1 { Intrinsic { "touch_attack" } "self destruct" 1 {
+        AddBodyPart HEAD 1 { Intrinsic { "touch_attack" } ITEMS_KABOOMHEAD_ID 1 {
           attackType = HIT
           meleeAttackAttr = FIRE_DAMAGE
           attackMsg = THRUST
@@ -278,8 +278,8 @@ SPELL_HEAD("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, "automaton_spell", "a
   {
     viewId = { "knife" }
     equipedViewId = { "knife_v" }
-    name = "knife"
-    plural = "knives"
+    name = ITEMS_KNIFE_NAME
+    plural = ITEMS_KNIFE_PLURAL
     itemClass = WEAPON
     equipmentSlot = WEAPON
     weight = 0.3
@@ -295,24 +295,24 @@ SPELL_HEAD("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, "automaton_spell", "a
       1 VictimEffect 0.1 Lasting POISON
     }
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = "basic equipment"
+    equipmentGroup = ITEMS_KNIFE_EQUIPMENTGROUP
   }
 "AssassinsKnife" inherit "Knife"
   {
-    name = "assassin's knife"
-    plural = "assassin's knives"
+    name = ITEMS_KNIFE_NAME1
+    plural = ITEMS_KNIFE_PLURAL1
     price = 500
     equipedEffect = {AMBUSH_SKILL}
     specialAttr = {
       DAMAGE 30 Name "against tribe leaders when hidden" And { CreatureStatus LEADER Attacker Hidden }
     }
-    equipmentGroup = "artifact equipment"
+    equipmentGroup = ITEMS_KNIFE_EQUIPMENTGROUP1
   }
 "UnicornHorn"
   {
     viewId = { "knife" }
-    name = "horn"
-    plural = "horn"
+    name = ITEMS_UNICORNHORN_NAME
+    plural = ITEMS_UNICORNHORN_PLURAL
     itemClass = WEAPON
     equipmentSlot = WEAPON
     weight = 0.3
@@ -331,7 +331,7 @@ SPELL_HEAD("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, "automaton_spell", "a
   {
     viewId = { "spear" }
     equipedViewId = { "spear_v" }
-    name = "spear"
+    name = ITEMS_SPEAR_NAME
     itemClass = WEAPON
     equipmentSlot = WEAPON
     weight = 1.5
@@ -347,13 +347,13 @@ SPELL_HEAD("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, "automaton_spell", "a
       DAMAGE 15 Rider
     }
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = "basic equipment"
+    equipmentGroup = ITEMS_SPEAR_EQUIPMENTGROUP
   }
 "Sword"
   {
     viewId = { "sword" }
     equipedViewId = { "sword_v" }
-    name = "sword"
+    name = ITEMS_SWORD_NAME
     itemClass = WEAPON
     equipmentSlot = WEAPON
     weight = 1.5
@@ -376,14 +376,14 @@ SPELL_HEAD("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, "automaton_spell", "a
     }
     maxUpgrades = 1
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = "iron equipment"
+    equipmentGroup = ITEMS_SWORD_EQUIPMENTGROUP
   }
 "AdaSword" inherit "Sword"
   {
     viewId = { "sword" Rgb 148 189 189 255 }
     equipedViewId = { "sword_v" Rgb 148 189 189 255 }
-    name = "adamantine sword"
-    shortName = "adamantine"
+    name = ITEMS_SWORD_NAME1
+    shortName = ITEMS_SWORD_SHORTNAME
     modifiers = {
       DAMAGE 20
     }
@@ -395,7 +395,7 @@ SPELL_HEAD("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, "automaton_spell", "a
       1 VictimEffect 0.2 Lasting POISON
       1 LastingEffect RAGE
     }
-    equipmentGroup = "adamantine equipment"
+    equipmentGroup = ITEMS_SWORD_EQUIPMENTGROUP1
   }
 # Not used anymore, but keep to stop mods from crashing
 Def InferniteEffect()
@@ -408,8 +408,8 @@ End
   {
     viewId = { "infernite_sword" }
     equipedViewId = { "infernite_sword_v" }
-    name = "infernite sword"
-    shortName = "infernite"
+    name = ITEMS_ADASWORD_NAME
+    shortName = ITEMS_ADASWORD_SHORTNAME
     modifiers = {
       DAMAGE 30
     }
@@ -418,13 +418,13 @@ End
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
     ownedEffect = { LIGHT_SOURCE INFERNITE_EFFECT }
     equipedEffect = {FIRE_DAMAGE}
-    equipmentGroup = "infernite equipment"
+    equipmentGroup = ITEMS_ADASWORD_EQUIPMENTGROUP
   }
 "ElvenSword"
   {
     viewId = { "sword" ColorId LIGHT_GREEN }
     equipedViewId = { "sword_v" ColorId LIGHT_GREEN }
-    name = "elven sword"
+    name = ITEMS_ELVENSWORD_NAME
     itemClass = WEAPON
     equipmentSlot = WEAPON
     weight = 1
@@ -440,13 +440,13 @@ End
       1 SpecialAttr DAMAGE 10 HatedBy HATE_UNDEAD
     }
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = "iron equipment"
+    equipmentGroup = ITEMS_ELVENSWORD_EQUIPMENTGROUP
   }
 "BattleAxe"
   {
     viewId = { "battle_axe" }
     equipedViewId = { "battle_axe_v" }
-    name = "battle axe"
+    name = ITEMS_BATTLEAXE_NAME
     itemClass = WEAPON
     equipmentSlot = WEAPON
     weight = 8
@@ -465,14 +465,14 @@ End
     }
     maxUpgrades = 1
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = "iron equipment"
+    equipmentGroup = ITEMS_BATTLEAXE_EQUIPMENTGROUP
   }
 "AdaBattleAxe" inherit "BattleAxe"
   {
     viewId = { "battle_axe" Rgb 148 189 189 255 }
     equipedViewId = { "battle_axe_v" Rgb 148 189 189 255 }
-    shortName = "adamantine"
-    name = "adamantine battle axe"
+    shortName = ITEMS_BATTLEAXE_SHORTNAME
+    name = ITEMS_BATTLEAXE_NAME1
     modifiers = {
       DAMAGE 40
     }
@@ -482,14 +482,14 @@ End
       1 VictimEffect 0.5 Lasting 50 BLEEDING
     }
     maxUpgrades = 2
-    equipmentGroup = "adamantine equipment"
+    equipmentGroup = ITEMS_BATTLEAXE_EQUIPMENTGROUP1
   }
 "InferniteBattleAxe" inherit "AdaBattleAxe"
   {
     viewId = { "infernite_battle_axe" }
     equipedViewId = { "infernite_battle_axe_v" }
-    shortName = "infernite"
-    name = "infernite battle axe"
+    shortName = ITEMS_ADABATTLEAXE_SHORTNAME
+    name = ITEMS_ADABATTLEAXE_NAME
     modifiers = {
       DAMAGE 60
     }
@@ -498,13 +498,13 @@ End
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
     ownedEffect = { LIGHT_SOURCE INFERNITE_EFFECT }
     equipedEffect = {FIRE_DAMAGE}
-    equipmentGroup = "infernite equipment"
+    equipmentGroup = ITEMS_ADABATTLEAXE_EQUIPMENTGROUP
   }
 "WarHammer"
   {
     viewId = { "war_hammer" }
     equipedViewId = { "war_hammer_v" }
-    name = "war hammer"
+    name = ITEMS_WARHAMMER_NAME
     itemClass = WEAPON
     equipmentSlot = WEAPON
     weight = 8
@@ -522,13 +522,13 @@ End
     }
     maxUpgrades = 1
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = "iron equipment"
+    equipmentGroup = ITEMS_WARHAMMER_EQUIPMENTGROUP
   }
 "AdaWarHammer" inherit "WarHammer"
   {
     viewId = { "war_hammer" Rgb 148 189 189 255 }
     equipedViewId = { "war_hammer_v" Rgb 148 189 189 255 }
-    name = "adamantine war hammer"
+    name = ITEMS_WARHAMMER_NAME1
     modifiers = {
       DAMAGE 35
     }
@@ -538,14 +538,14 @@ End
       1 VictimEffect 0.5 Lasting COLLAPSED
     }
     maxUpgrades = 2
-    equipmentGroup = "adamantine equipment"
+    equipmentGroup = ITEMS_WARHAMMER_EQUIPMENTGROUP1
   }
 "InferniteWarHammer" inherit "AdaWarHammer"
   {
     viewId = { "infernite_war_hammer" }
     equipedViewId = { "infernite_war_hammer_v" }
-    shortName = "infernite"
-    name = "infernite war hammer"
+    shortName = ITEMS_ADAWARHAMMER_SHORTNAME
+    name = ITEMS_ADAWARHAMMER_NAME
     modifiers = {
       DAMAGE 55
     }
@@ -554,14 +554,14 @@ End
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
     ownedEffect = { LIGHT_SOURCE INFERNITE_EFFECT }
     equipedEffect = {FIRE_DAMAGE}
-    equipmentGroup = "infernite equipment"
+    equipmentGroup = ITEMS_ADAWARHAMMER_EQUIPMENTGROUP
   }
 "InferniteTrident"
   {
     viewId = { "infernite_trident" }
     equipedViewId = { "infernite_trident_v" }
-    shortName = "infernite"
-    name = "infernite trident"
+    shortName = ITEMS_INFERNITETRIDENT_SHORTNAME
+    name = ITEMS_INFERNITETRIDENT_NAME
     itemClass = WEAPON
     equipmentSlot = WEAPON
     weight = 8
@@ -579,13 +579,13 @@ End
     ownedEffect = { LIGHT_SOURCE INFERNITE_EFFECT }
     storageIds = {"weapons" "equipment"}
     equipedEffect = {FIRE_DAMAGE}
-    equipmentGroup = "infernite equipment"
+    equipmentGroup = ITEMS_INFERNITETRIDENT_EQUIPMENTGROUP
   }
 "Club"
   {
     viewId = { "club" }
     equipedViewId = { "club_v" }
-    name = "club"
+    name = ITEMS_CLUB_NAME
     itemClass = WEAPON
     equipmentSlot = WEAPON
     weight = 2
@@ -598,13 +598,13 @@ End
     }
     maxUpgrades = 0
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = "basic equipment"
+    equipmentGroup = ITEMS_CLUB_EQUIPMENTGROUP
   }
 "HeavyClub"
   {
     viewId = { "heavy_club" }
     equipedViewId = { "heavy_club_v" }
-    name = "heavy club"
+    name = ITEMS_HEAVYCLUB_NAME
     itemClass = WEAPON
     equipmentSlot = WEAPON
     weight = 8
@@ -618,13 +618,13 @@ End
     }
     maxUpgrades = 0
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = "basic equipment"
+    equipmentGroup = ITEMS_HEAVYCLUB_EQUIPMENTGROUP
   }
 "WoodenStaff"
   {
     viewId = { "wooden_staff" }
     equipedViewId = { "wooden_staff_v" }
-    name = "wooden staff"
+    name = ITEMS_WOODENSTAFF_NAME
     itemClass = WEAPON
     equipmentSlot = WEAPON
     weight = 1.5
@@ -642,13 +642,13 @@ End
     }
     maxUpgrades = 1
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = "basic equipment"
+    equipmentGroup = ITEMS_WOODENSTAFF_EQUIPMENTGROUP
   }
 "ArchwoodStaff" inherit "WoodenStaff"
   {
     viewId = { "archwood_staff" }
     equipedViewId = { "archwood_staff_v" }
-    name = "archwood staff"
+    name = ITEMS_WOODENSTAFF_NAME1
     modifiers = {
       SPELL_DAMAGE 24
       SPELL_SPEED 24
@@ -663,13 +663,13 @@ End
       }
     }
     maxUpgrades = 2
-    equipmentGroup = "artifact equipment"
+    equipmentGroup = ITEMS_WOODENSTAFF_EQUIPMENTGROUP1
   }
 "AdoxiumStaff"
   {
     viewId = { "adoxium_staff" }
     equipedViewId = { "adoxium_staff_v" }
-    name = "adoxium staff"
+    name = ITEMS_ADOXIUMSTAFF_NAME
     itemClass = WEAPON
     equipmentSlot = WEAPON
     modifiers = {
@@ -691,13 +691,13 @@ End
     }
     maxUpgrades = 5
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = "adoxium equipment"
+    equipmentGroup = ITEMS_ADOXIUMSTAFF_EQUIPMENTGROUP
   }
 "ElvenStaff" inherit "WoodenStaff"
   {
     viewId = { "elven_staff" }
     equipedViewId = { "elven_staff_v" }
-    name = "elven staff"
+    name = ITEMS_WOODENSTAFF_NAME2
     modifiers = {
       SPELL_SPEED 20
     }
@@ -706,7 +706,7 @@ End
   {
     viewId = { "sceptre" }
     equipedViewId = { "sceptre_v" }
-    name = "sceptre"
+    name = ITEMS_SCEPTRE_NAME
     itemClass = WEAPON
     equipmentSlot = WEAPON
     weight = 20
@@ -719,13 +719,13 @@ End
     }
     equipedAbility = { "kings charge" }
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = "artifact equipment"
+    equipmentGroup = ITEMS_SCEPTRE_EQUIPMENTGROUP
   }
 "WoodenCrozier"
   {
     viewId = { "crozier_wood" }
     equipedViewId = { "crozier_wood_v" }
-    name = "wooden crozier"
+    name = ITEMS_WOODENCROZIER_NAME
     itemClass = WEAPON
     equipmentSlot = WEAPON
     weight = 10
@@ -739,13 +739,13 @@ End
     }
     equipedAbility = { "holy missile" }
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = "basic equipment"
+    equipmentGroup = ITEMS_WOODENCROZIER_EQUIPMENTGROUP
   }
 "IronCrozier"
   {
     viewId = { "crozier_iron" }
     equipedViewId = { "crozier_iron_v" }
-    name = "iron crozier"
+    name = ITEMS_IRONCROZIER_NAME
     itemClass = WEAPON
     equipmentSlot = WEAPON
     weight = 15
@@ -761,13 +761,13 @@ End
     }
     equipedAbility = { "advanced holy missile" }
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = "iron equipment"
+    equipmentGroup = ITEMS_IRONCROZIER_EQUIPMENTGROUP
   }
 "AdoxiumCrozier"
   {
     viewId = { "crozier_adoxium" }
     equipedViewId = { "crozier_adoxium_v" }
-    name = "adoxium crozier"
+    name = ITEMS_ADOXIUMCROZIER_NAME
     itemClass = WEAPON
     equipmentSlot = WEAPON
     weight = 6
@@ -783,12 +783,12 @@ End
     }
     equipedAbility = { "expert holy missile" }
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = "adoxium equipment"
+    equipmentGroup = ITEMS_ADOXIUMCROZIER_EQUIPMENTGROUP
   }
 "Bow"
   {
     viewId = { "bow" }
-    name = "short bow"
+    name = ITEMS_BOW_NAME
     itemClass = RANGED_WEAPON
     equipmentSlot = RANGED_WEAPON
     equipedAbility = {"shoot arrow"}
@@ -802,7 +802,7 @@ End
     price = 12
     maxUpgrades = 1
     storageIds = {"bows" "weapons" "equipment"}
-    equipmentGroup = "ranged weapons"
+    equipmentGroup = ITEMS_BOW_EQUIPMENTGROUP
   }
 "ElvenBow" inherit "Bow"
   {
@@ -810,7 +810,7 @@ End
     modifiers = {
       RANGED_DAMAGE 16
     }
-    name = "silver elven bow"
+    name = ITEMS_BOW_NAME1
     price = 100
   }
 "ArchwoodBow" inherit "Bow"
@@ -819,14 +819,14 @@ End
     modifiers = {
       RANGED_DAMAGE 25
     }
-    name = "archwood bow"
+    name = ITEMS_BOW_NAME2
     maxUpgrades = 3
     price = 1000
   }
 "Crossbow"
   {
     viewId = { "crossbow" }
-    name = "crossbow"
+    name = ITEMS_CROSSBOW_NAME
     itemClass = RANGED_WEAPON
     equipmentSlot = RANGED_WEAPON
     equipedAbility = {"shoot bolt"}
@@ -840,7 +840,7 @@ End
     price = 90
     maxUpgrades = 1
     storageIds = {"bows" "weapons" "equipment"}
-    equipmentGroup = "ranged weapons"
+    equipmentGroup = ITEMS_CROSSBOW_EQUIPMENTGROUP
   }
 "ArchwoodCrossbow" inherit "Crossbow"
   {
@@ -848,7 +848,7 @@ End
     modifiers = {
       RANGED_DAMAGE 32
     }
-    name = "archwood crossbow"
+    name = ITEMS_CROSSBOW_NAME1
     maxUpgrades = 3
     price = 1000
   }
@@ -857,16 +857,16 @@ End
     viewId = { "hand_torch" }
     weight = 1
     ownedEffect = LIGHT_SOURCE
-    name = "hand torch"
-    plural = "hand torches"
+    name = ITEMS_TORCH_NAME
+    plural = ITEMS_TORCH_PLURAL
     price = 2
     storageIds = {"equipment"}
-    equipmentGroup = "light emitting equipment"
+    equipmentGroup = ITEMS_TORCH_EQUIPMENTGROUP
   }
 "Robe"
   {
     viewId = { "robe" }
-    name = "robe"
+    name = ITEMS_ROBE_NAME
     itemClass = ARMOR
     equipmentSlot = BODY_ARMOR
     weight = 2
@@ -878,13 +878,13 @@ End
       1 LastingEffect MAGIC_RESISTANCE
     }
     storageIds = {"armor" "equipment"}
-    equipmentGroup = "basic equipment"
+    equipmentGroup = ITEMS_ROBE_EQUIPMENTGROUP
   }
 "HalloweenCostume"
   {
     viewId = { "halloween_costume" }
-    name = "halloween costume"
-    shortName = "halloween costume"
+    name = ITEMS_HALLOWEENCOSTUME_NAME
+    shortName = ITEMS_HALLOWEENCOSTUME_SHORTNAME
     itemClass = ARMOR
     equipmentSlot = BODY_ARMOR
     weight = 1
@@ -897,10 +897,10 @@ End
 "BagOfCandies"
   {
     viewId = { "bag_of_candy" }
-    shortName = "candies"
-    name = "bag of candies"
-    blindName = "bag"
-    description = "Really, just a bag of candies."
+    shortName = ITEMS_BAGOFCANDIES_SHORTNAME
+    name = ITEMS_BAGOFCANDIES_NAME
+    blindName = ITEMS_BAGOFCANDIES_BLINDNAME
+    description = ITEMS_BAGOFCANDIES_DESCRIPTION
     itemClass = FOOD
     weight = 0.1
     modifiers = {
@@ -913,9 +913,9 @@ End
 "LeatherGloves"
   {
     viewId = { "leather_gloves" }
-    shortName = "gloves"
-    name = "pair of leather gloves"
-    plural = "pairs of leather gloves"
+    shortName = ITEMS_LEATHERGLOVES_SHORTNAME
+    name = ITEMS_LEATHERGLOVES_NAME
+    plural = ITEMS_LEATHERGLOVES_PLURAL
     itemClass = ARMOR
     equipmentSlot = GLOVES
     weight = 0.3
@@ -925,14 +925,14 @@ End
     }
     maxUpgrades = 0
     storageIds = {"armor" "equipment"}
-    equipmentGroup = "basic equipment"
+    equipmentGroup = ITEMS_LEATHERGLOVES_EQUIPMENTGROUP
   }
 "IronGloves"
   {
     viewId = { "iron_gloves" }
-    shortName = "gloves"
-    name = "pair of iron gloves"
-    plural = "pairs of iron gloves"
+    shortName = ITEMS_IRONGLOVES_SHORTNAME
+    name = ITEMS_IRONGLOVES_NAME
+    plural = ITEMS_IRONGLOVES_PLURAL
     itemClass = ARMOR
     equipmentSlot = GLOVES
     weight = 1
@@ -947,14 +947,14 @@ End
     }
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
-    equipmentGroup = "iron equipment"
+    equipmentGroup = ITEMS_IRONGLOVES_EQUIPMENTGROUP
   }
 "AdaGloves"
   {
     viewId = { "ada_gloves" }
-    shortName = "gloves"
-    name = "pair of adamantine gloves"
-    plural = "pairs of adamantine gloves"
+    shortName = ITEMS_ADAGLOVES_SHORTNAME
+    name = ITEMS_ADAGLOVES_NAME
+    plural = ITEMS_ADAGLOVES_PLURAL
     itemClass = ARMOR
     equipmentSlot = GLOVES
     weight = 0.7
@@ -969,26 +969,26 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
-    equipmentGroup = "adamantine equipment"
+    equipmentGroup = ITEMS_ADAGLOVES_EQUIPMENTGROUP
   }
 "AdoxiumGloves" inherit "AdaGloves"
   {
     viewId = { "iron_gloves" ColorId PINK }
-    name = "pair of adoxium gloves"
-    plural = "pairs of adoxium gloves"
+    name = ITEMS_ADAGLOVES_NAME1
+    plural = ITEMS_ADAGLOVES_PLURAL1
     price = 250
     craftingCost = "ADOXIUM" 2
     modifiers = {
       DEFENSE 10
       SPELL_SPEED 10
     }
-    equipmentGroup = "adoxium equipment"
+    equipmentGroup = ITEMS_ADAGLOVES_EQUIPMENTGROUP1
   }
 "LeatherArmor"
   {
     viewId = { "leather_armor" }
-    shortName = "armor"
-    name = "leather armor"
+    shortName = ITEMS_LEATHERARMOR_SHORTNAME
+    name = ITEMS_LEATHERARMOR_NAME
     itemClass = ARMOR
     equipmentSlot = BODY_ARMOR
     weight = 7
@@ -1001,13 +1001,13 @@ End
     }
     maxUpgrades = 0
     storageIds = {"armor" "equipment"}
-    equipmentGroup = "basic equipment"
+    equipmentGroup = ITEMS_LEATHERARMOR_EQUIPMENTGROUP
   }
 "LeatherHelm"
   {
     viewId = { "leather_helm" }
-    shortName = "helm"
-    name = "leather helm"
+    shortName = ITEMS_LEATHERHELM_SHORTNAME
+    name = ITEMS_LEATHERHELM_NAME
     itemClass = ARMOR
     equipmentSlot = HELMET
     weight = 1.5
@@ -1022,13 +1022,13 @@ End
     }
     maxUpgrades = 0
     storageIds = {"armor" "equipment"}
-    equipmentGroup = "basic equipment"
+    equipmentGroup = ITEMS_LEATHERHELM_EQUIPMENTGROUP
   }
 "WoodenShield"
   {
     viewId = { "wooden_shield" }
-    shortName = "wooden"
-    name = "wooden shield"
+    shortName = ITEMS_WOODENSHIELD_SHORTNAME
+    name = ITEMS_WOODENSHIELD_NAME
     itemClass = ARMOR
     equipmentSlot = SHIELD
     weight = 2
@@ -1038,13 +1038,13 @@ End
     }
     maxUpgrades = 0
     storageIds = {"armor" "equipment"}
-    equipmentGroup = "basic equipment"
+    equipmentGroup = ITEMS_WOODENSHIELD_EQUIPMENTGROUP
   }
 "IronShield"
   {
     viewId = { "wooden_shield" Rgb 189 189 189 255 }
-    shortName = "iron"
-    name = "iron shield"
+    shortName = ITEMS_IRONSHIELD_SHORTNAME
+    name = ITEMS_IRONSHIELD_NAME
     itemClass = ARMOR
     equipmentSlot = SHIELD
     weight = 2
@@ -1056,13 +1056,13 @@ End
     }
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
-    equipmentGroup = "iron equipment"
+    equipmentGroup = ITEMS_IRONSHIELD_EQUIPMENTGROUP
   }
 "AdaShield"
   {
     viewId = { "wooden_shield" Rgb 148 189 189 255 }
-    shortName = "adamantine"
-    name = "adamantine shield"
+    shortName = ITEMS_ADASHIELD_SHORTNAME
+    name = ITEMS_ADASHIELD_NAME
     itemClass = ARMOR
     equipmentSlot = SHIELD
     weight = 1.5
@@ -1074,13 +1074,13 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
-    equipmentGroup = "adamantine equipment"
+    equipmentGroup = ITEMS_ADASHIELD_EQUIPMENTGROUP
   }
 "ChainArmor"
   {
     viewId = { "chain_armor" }
-    shortName = "armor"
-    name = "chain armor"
+    shortName = ITEMS_CHAINARMOR_SHORTNAME
+    name = ITEMS_CHAINARMOR_NAME
     itemClass = ARMOR
     equipmentSlot = BODY_ARMOR
     weight = 15
@@ -1094,12 +1094,12 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
-    equipmentGroup = "iron equipment"
+    equipmentGroup = ITEMS_CHAINARMOR_EQUIPMENTGROUP
   }
 "RedDragonScales"
   {
     viewId = { "dragon_scales" ColorId RED }
-    name = "red dragon scales"
+    name = ITEMS_REDDRAGONSCALES_NAME
     itemClass = OTHER
     weight = 5
     price = 100
@@ -1109,8 +1109,8 @@ End
 "RedDragonArmor" inherit "LeatherArmor"
   {
     viewId = { "chain_armor" Rgb 156 58 68 255 }
-    shortName = "red dragon"
-    name = "red dragon scale armor"
+    shortName = ITEMS_LEATHERARMOR_SHORTNAME1
+    name = ITEMS_LEATHERARMOR_NAME1
     weight = 10
     price = 250
     modifiers = {
@@ -1119,12 +1119,12 @@ End
     }
     equipedEffect = {FIRE_RESISTANT}
     maxUpgrades = 2
-    equipmentGroup = "artifact equipment"
+    equipmentGroup = ITEMS_LEATHERARMOR_EQUIPMENTGROUP1
   }
 "BlackDragonScales"
   {
     viewId = { "dragon_scales" Rgb 80 80 80 255 }
-    name = "black dragon scales"
+    name = ITEMS_BLACKDRAGONSCALES_NAME
     itemClass = OTHER
     weight = 5
     price = 100
@@ -1134,8 +1134,8 @@ End
 "BlackDragonArmor" inherit "LeatherArmor"
   {
     viewId = { "chain_armor" Rgb 80 80 80 255 }
-    shortName = "black dragon"
-    name = "black dragon scale armor"
+    shortName = ITEMS_LEATHERARMOR_SHORTNAME2
+    name = ITEMS_LEATHERARMOR_NAME2
     weight = 10
     price = 250
     modifiers = {
@@ -1144,12 +1144,12 @@ End
     }
     equipedEffect = {DARKNESS_SOURCE TELEPATHY}
     maxUpgrades = 2
-    equipmentGroup = "artifact equipment"
+    equipmentGroup = ITEMS_LEATHERARMOR_EQUIPMENTGROUP1
   }
 "WhiteDragonScales"
   {
     viewId = { "dragon_scales" Rgb 254 254 254 255 }
-    name = "white dragon scales"
+    name = ITEMS_WHITEDRAGONSCALES_NAME
     itemClass = OTHER
     weight = 5
     price = 100
@@ -1159,8 +1159,8 @@ End
 "WhiteDragonArmor" inherit "LeatherArmor"
   {
     viewId = { "chain_armor" Rgb 254 254 254 255 }
-    shortName = "white dragon"
-    name = "white dragon scale armor"
+    shortName = ITEMS_LEATHERARMOR_SHORTNAME3
+    name = ITEMS_LEATHERARMOR_NAME3
     weight = 10
     price = 250
     modifiers = {
@@ -1169,12 +1169,12 @@ End
     }
     equipedEffect = {COLD_RESISTANT}
     maxUpgrades = 2
-    equipmentGroup = "artifact equipment"
+    equipmentGroup = ITEMS_LEATHERARMOR_EQUIPMENTGROUP1
   }
 "YellowDragonScales"
   {
     viewId = { "dragon_scales" Rgb 254 254 10 255 }
-    name = "yellow dragon scales"
+    name = ITEMS_YELLOWDRAGONSCALES_NAME
     itemClass = OTHER
     weight = 5
     price = 100
@@ -1184,8 +1184,8 @@ End
 "YellowDragonArmor" inherit "LeatherArmor"
   {
     viewId = { "chain_armor" Rgb 254 254 10 255 }
-    shortName = "yellow dragon"
-    name = "yellow dragon scale armor"
+    shortName = ITEMS_LEATHERARMOR_SHORTNAME4
+    name = ITEMS_LEATHERARMOR_NAME4
     weight = 10
     price = 250
     modifiers = {
@@ -1195,12 +1195,12 @@ End
     }
     equipedAbility = {"acid stream"}
     maxUpgrades = 2
-    equipmentGroup = "artifact equipment"
+    equipmentGroup = ITEMS_LEATHERARMOR_EQUIPMENTGROUP1
   }
 "GreenDragonScales"
   {
     viewId = { "dragon_scales" }
-    name = "green dragon scales"
+    name = ITEMS_GREENDRAGONSCALES_NAME
     itemClass = OTHER
     weight = 5
     price = 100
@@ -1210,8 +1210,8 @@ End
 "GreenDragonArmor" inherit "LeatherArmor"
   {
     viewId = { "chain_armor" Rgb 151 162 81 255 }
-    shortName = "green dragon"
-    name = "green dragon scale armor"
+    shortName = ITEMS_LEATHERARMOR_SHORTNAME5
+    name = ITEMS_LEATHERARMOR_NAME5
     weight = 10
     price = 250
     modifiers = {
@@ -1220,13 +1220,13 @@ End
     }
     equipedEffect = {POISON_RESISTANT}
     maxUpgrades = 2
-    equipmentGroup = "artifact equipment"
+    equipmentGroup = ITEMS_LEATHERARMOR_EQUIPMENTGROUP1
   }
 "AdaArmor"
   {
     viewId = { "ada_armor" }
-    shortName = "armor"
-    name = "adamantine armor"
+    shortName = ITEMS_ADAARMOR_SHORTNAME
+    name = ITEMS_ADAARMOR_NAME
     itemClass = ARMOR
     equipmentSlot = BODY_ARMOR
     weight = 13
@@ -1240,25 +1240,25 @@ End
     }
     maxUpgrades = 4
     storageIds = {"armor" "equipment"}
-    equipmentGroup = "adamantine equipment"
+    equipmentGroup = ITEMS_ADAARMOR_EQUIPMENTGROUP
   }
 "AdoxiumArmor" inherit "AdaArmor"
   {
     viewId = { "chain_armor" ColorId PINK }
-    name = "adoxium armor"
+    name = ITEMS_ADAARMOR_NAME1
     price = 1600
     craftingCost = "ADOXIUM" 40
     modifiers = {
       DEFENSE 35
       SPELL_SPEED 45
     }
-    equipmentGroup = "adoxium equipment"
+    equipmentGroup = ITEMS_ADAARMOR_EQUIPMENTGROUP1
   }
 "IronHelm"
   {
     viewId = { "iron_helm" }
-    shortName = "helm"
-    name = "iron helm"
+    shortName = ITEMS_IRONHELM_SHORTNAME
+    name = ITEMS_IRONHELM_NAME
     itemClass = ARMOR
     equipmentSlot = HELMET
     weight = 4
@@ -1274,13 +1274,13 @@ End
     }
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
-    equipmentGroup = "iron equipment"
+    equipmentGroup = ITEMS_IRONHELM_EQUIPMENTGROUP
   }
 "Archwood"
   {
     viewId = { "archwood" }
-    name = "branch of archwood"
-    plural = "branches of archwood"
+    name = ITEMS_ARCHWOOD_NAME
+    plural = ITEMS_ARCHWOOD_PLURAL
     itemClass = OTHER
     weight = 15
     price = 200
@@ -1290,7 +1290,7 @@ End
 "HydraTongue"
   {
     viewId = { "tongue" }
-    name = "hydra tongue"
+    name = ITEMS_HYDRATONGUE_NAME
     itemClass = OTHER
     weight = 15
     price = 100
@@ -1300,7 +1300,7 @@ End
 "ZombieBrain"
   {
     viewId = { "brain" }
-    name = "zombie brain"
+    name = ITEMS_ZOMBIEBRAIN_NAME
     itemClass = OTHER
     weight = 2
     price = 20
@@ -1310,7 +1310,7 @@ End
 "CyclopsBrain"
   {
     viewId = { "brain" }
-    name = "cyclops brain"
+    name = ITEMS_CYCLOPSBRAIN_NAME
     itemClass = OTHER
     weight = 5
     price = 50
@@ -1320,8 +1320,8 @@ End
 "CyclopsTesticles"
   {
     viewId = { "nuts" }
-    shortName = "cyclops"
-    name = "cyclops testicles"
+    shortName = ITEMS_CYCLOPSTESTICLES_SHORTNAME
+    name = ITEMS_CYCLOPSTESTICLES_NAME
     itemClass = OTHER
     weight = 5
     price = 50
@@ -1331,8 +1331,8 @@ End
 "ProphetRemains"
   {
     viewId = { "prophet_remains" }
-    shortName = "prophet Ynnuf Yrewosbe"
-    name = "mummified remains of ancient prophet Ynnuf Yrewosbe"
+    shortName = ITEMS_PROPHETREMAINS_SHORTNAME
+    name = ITEMS_PROPHETREMAINS_NAME
     itemClass = OTHER
     weight = 5
     price = 50
@@ -1342,18 +1342,18 @@ End
 "ProphetSoup"
   {
     viewId = { "potion4" }
-    shortName = "prophet soup"
-    name = "soup made of mummified prophet remains"
-    plural = "soups"
-    blindName = "soup"
-    applyVerb = "drink" "drinks"
+    shortName = ITEMS_PROPHETSOUP_SHORTNAME
+    name = ITEMS_PROPHETSOUP_NAME
+    plural = ITEMS_PROPHETSOUP_PLURAL
+    blindName = ITEMS_PROPHETSOUP_BLINDNAME
+    applyVerb = ITEMS_PROPHETSOUP_APPLYVERB ITEMS_PROPHETSOUP_APPLYVERB1
     fragile = true
     weight = 0.3
     effect = NoAutoAssign EquipmentType COMBAT_ITEM AI And {} -1 1 AI And {} 0 1
-        Name "Increases experience"
-        Description "Increases creature's combat experience" {
+        Name ITEMS_PROPHETSOUP_EFFECT
+        Description ITEMS_PROPHETSOUP_EFFECT1 {
       AddExperience 20
-      CreatureMessage { "have very bad stomach cramps" "has very bad stomach cramps" }
+      CreatureMessage { ITEMS_PROPHETSOUP_SECONDPERSON ITEMS_PROPHETSOUP_THIRDPERSON }
     }
     price = 10
     burnTime = 1
@@ -1364,19 +1364,19 @@ End
 "CyclopsHelm" inherit "LeatherHelm"
   {
     viewId = { "cyclops_helm" }
-    shortName = "cyclops"
-    name = "cyclops testicles helmet"
-    plural = "cyclops testicles helmet"
+    shortName = ITEMS_LEATHERHELM_SHORTNAME1
+    name = ITEMS_LEATHERHELM_NAME1
+    plural = ITEMS_LEATHERHELM_PLURAL
     modifiers = {
       DEFENSE 5
     }
     equipedEffect = {ENTERTAINER}
     maxUpgrades = 3
-    equipmentGroup = "artifact equipment"
+    equipmentGroup = ITEMS_LEATHERHELM_EQUIPMENTGROUP1
   }
 "AdoxieEye"
   {
-    name = "Adoxie's eye"
+    name = ITEMS_ADOXIEEYE_NAME
     viewId = { "adoxie_eye" }
     upgradeInfo = { ARMOR SpellId "double trouble" }
     weight = 2
@@ -1386,7 +1386,7 @@ End
 "BalrogsWhip"
   {
     viewId = { "balrogs_whip" }
-    name = "fiery whip"
+    name = ITEMS_BALROGSWHIP_NAME
     equipmentSlot = RANGED_WEAPON
     equipedAbility = {"balrogs whip"}
     weight = 1
@@ -1395,17 +1395,17 @@ End
     }
     price = 12000
     storageIds = {"bows" "weapons" "equipment"}
-    equipmentGroup = "artifact equipment"
+    equipmentGroup = ITEMS_BALROGSWHIP_EQUIPMENTGROUP
   }
 "AdoxieScroll"
   {
-    name = "religious pamphlet"
+    name = ITEMS_ADOXIESCROLL_NAME
     viewId = { "scroll" }
     weight = 1
     price = 1
-    applyVerb = "read" "reads"
+    applyVerb = ITEMS_ADOXIESCROLL_APPLYVERB ITEMS_ADOXIESCROLL_APPLYVERB1
     applyPredicate = Not LastingEffect BLIND
-    effect = Description "Just a cheap pamphlet" Message NORMAL "It predicts the coming of the Evil God Adoxie"
+    effect = Description ITEMS_ADOXIESCROLL_EFFECT Message NORMAL "It predicts the coming of the Evil God Adoxie"
     storageIds = {"scrolls" "equipment"}
   }
 
@@ -1415,7 +1415,7 @@ End
 
 "AdoxieScrollVault" inherit "AdoxieScroll"
   {
-    effect = Description "Just a cheap pamphlet" Name "message" {
+    effect = Description ITEMS_ADOXIESCROLL_EFFECT Name ITEMS_ADOXIESCROLL_EFFECT1 {
       Message NORMAL "It predicts the coming of the Evil God Adoxie. You feel like this time it is real."
       Unlock "adoxie"
       Analytics "milestone" "adoxieUnlocked"
@@ -1425,14 +1425,14 @@ End
 
 "ZombieScroll"
   {
-    name = "rotten scroll"
+    name = ITEMS_ZOMBIESCROLL_NAME
     viewId = { "scroll" }
     weight = 1
     price = 1
     uses = 1
-    applyVerb = "read" "reads"
+    applyVerb = ITEMS_ZOMBIESCROLL_APPLYVERB ITEMS_ZOMBIESCROLL_APPLYVERB1
     applyPredicate = Not LastingEffect BLIND
-    effect = Description "" Name "?" {
+    effect = Description "" Name ITEMS_ZOMBIESCROLL_EFFECT {
       Message NORMAL "The scroll falls apart before you manage to read it"
       Message NORMAL "An image of an unlocking door appears in your mind"
       Unlock "zombies"
@@ -1443,13 +1443,13 @@ End
   }
 "CyclopsScroll"
   {
-    name = "strange scroll"
+    name = ITEMS_CYCLOPSSCROLL_NAME
     viewId = { "scroll" }
-    applyVerb = "read" "reads"
+    applyVerb = ITEMS_CYCLOPSSCROLL_APPLYVERB ITEMS_CYCLOPSSCROLL_APPLYVERB1
     applyPredicate = Not LastingEffect BLIND
     weight = 1
     price = 1
-    effect = Description "" Name "?" {
+    effect = Description "" Name ITEMS_CYCLOPSSCROLL_EFFECT {
       Filter Or{ LastingEffect INSANITY LastingEffect HALLU } {
         Message NORMAL "The strange symbols and arrows describe a door that has been unlocked"
         Unlock "cyclops"
@@ -1466,8 +1466,8 @@ End
 "AdaHelm"
   {
     viewId = { "ada_helm" }
-    shortName = "helm"
-    name = "adamantine helm"
+    shortName = ITEMS_ADAHELM_SHORTNAME
+    name = ITEMS_ADAHELM_NAME
     itemClass = ARMOR
     equipmentSlot = HELMET
     weight = 3
@@ -1482,24 +1482,24 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
-    equipmentGroup = "adamantine equipment"
+    equipmentGroup = ITEMS_ADAHELM_EQUIPMENTGROUP
   }
 "AdoxiumHelm" inherit "AdaHelm"
   {
     viewId = { "iron_helm" ColorId PINK }
-    name = "adoxium helm"
+    name = ITEMS_ADAHELM_NAME1
     modifiers = {
       DEFENSE 10
       SPELL_SPEED 25
     }
     price = 400
     craftingCost = "ADOXIUM" 16
-    equipmentGroup = "adoxium equipment"
+    equipmentGroup = ITEMS_ADAHELM_EQUIPMENTGROUP1
   }
 "Cornuthaum1"
   {
     viewId = { "cornuthaum1" }
-    name = "cornuthaum"
+    name = ITEMS_CORNUTHAUM1_NAME
     itemClass = ARMOR
     equipmentSlot = HELMET
     weight = 1
@@ -1510,14 +1510,14 @@ End
       SPELL_SPEED 5
     }
     autoEquipPredicate = AttributeAtLeast "SPELL_DAMAGE" 1
-    equipWarning = "Cornuthaums are only useful for spellcasters. Continue?"
+    equipWarning = ITEMS_CORNUTHAUM1_EQUIPWARNING
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
   }
 "Cornuthaum2" inherit "Cornuthaum1"
   {
     viewId = { "cornuthaum2" }
-    name = "ornate cornuthaum"
+    name = ITEMS_CORNUTHAUM1_NAME1
     price = 50
     craftingCost = "GOLD" 20
     modifiers = {
@@ -1530,7 +1530,7 @@ End
 "Cornuthaum3" inherit "Cornuthaum1"
   {
     viewId = { "cornuthaum3" }
-    name = "sumptuous cornuthaum"
+    name = ITEMS_CORNUTHAUM1_NAME2
     price = 70
     craftingCost = "GOLD" 40
     modifiers = {
@@ -1543,9 +1543,9 @@ End
 "LeatherBoots"
   {
     viewId = { "leather_boots" }
-    shortName = "boots"
-    name = "pair of leather boots"
-    plural = "pairs of leather boots"
+    shortName = ITEMS_LEATHERBOOTS_SHORTNAME
+    name = ITEMS_LEATHERBOOTS_NAME
+    plural = ITEMS_LEATHERBOOTS_PLURAL
     itemClass = ARMOR
     equipmentSlot = BOOTS
     weight = 2
@@ -1560,14 +1560,14 @@ End
     }
     maxUpgrades = 0
     storageIds = {"armor" "equipment"}
-    equipmentGroup = "basic equipment"
+    equipmentGroup = ITEMS_LEATHERBOOTS_EQUIPMENTGROUP
   }
 "IronBoots"
   {
     viewId = { "iron_boots" }
-    shortName = "boots"
-    name = "pair of iron boots"
-    plural = "pairs of iron boots"
+    shortName = ITEMS_IRONBOOTS_SHORTNAME
+    name = ITEMS_IRONBOOTS_NAME
+    plural = ITEMS_IRONBOOTS_PLURAL
     itemClass = ARMOR
     equipmentSlot = BOOTS
     weight = 4
@@ -1583,14 +1583,14 @@ End
     }
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
-    equipmentGroup = "iron equipment"
+    equipmentGroup = ITEMS_IRONBOOTS_EQUIPMENTGROUP
   }
 "AdaBoots"
   {
     viewId = { "ada_boots" }
-    shortName = "boots"
-    name = "pair of adamantine boots"
-    plural = "pairs of admantine boots"
+    shortName = ITEMS_ADABOOTS_SHORTNAME
+    name = ITEMS_ADABOOTS_NAME
+    plural = ITEMS_ADABOOTS_PLURAL
     itemClass = ARMOR
     equipmentSlot = BOOTS
     weight = 3
@@ -1604,25 +1604,25 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
-    equipmentGroup = "adamantine equipment"
+    equipmentGroup = ITEMS_ADABOOTS_EQUIPMENTGROUP
   }
 "AdoxiumBoots" inherit "AdaBoots"
   {
     viewId = { "iron_boots" ColorId PINK }
-    name = "pair of adoxium boots"
-    plural = "pairs of adoxium boots"
+    name = ITEMS_ADABOOTS_NAME1
+    plural = ITEMS_ADABOOTS_PLURAL1
     price = 500
     craftingCost = "ADOXIUM" 24
     modifiers = {
       DEFENSE 10
       SPELL_SPEED 10
     }
-    equipmentGroup = "adoxium equipment"
+    equipmentGroup = ITEMS_ADABOOTS_EQUIPMENTGROUP1
   }
 "DevilHooves"
   {
     viewId = { "devil_hooves" }
-    name = "devil's hooves"
+    name = ITEMS_DEVILHOOVES_NAME
     itemClass = OTHER
     weight = 5
     price = 100
@@ -1632,9 +1632,9 @@ End
 "DevilBoots"
   {
     viewId = { "iron_boots" Rgb 206 58 68 255 }
-    shortName = "devil"
-    name = "pair of devil boots"
-    plural = "pairs of devil boots"
+    shortName = ITEMS_DEVILBOOTS_SHORTNAME
+    name = ITEMS_DEVILBOOTS_NAME
+    plural = ITEMS_DEVILBOOTS_PLURAL
     itemClass = ARMOR
     equipmentSlot = BOOTS
     weight = 4
@@ -1645,12 +1645,12 @@ End
     equipedEffect = {FLYING SPELL_DAMAGE}
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
-    equipmentGroup = "artifact equipment"
+    equipmentGroup = ITEMS_DEVILBOOTS_EQUIPMENTGROUP
   }
 "DevilHorns"
   {
     viewId = { "devil_horns" }
-    name = "devil's horns"
+    name = ITEMS_DEVILHORNS_NAME
     itemClass = OTHER
     weight = 5
     price = 100
@@ -1660,10 +1660,10 @@ End
 "DefenseAmulet"
   {
     viewId = { "amulet3" }
-    shortName = "defense"
-    name = "amulet of defense"
-    plural = "amulets of defense"
-    description = "Increases the toughness of your skin and flesh, making you harder to wound."
+    shortName = ITEMS_DEFENSEAMULET_SHORTNAME
+    name = ITEMS_DEFENSEAMULET_NAME
+    plural = ITEMS_DEFENSEAMULET_PLURAL
+    description = ITEMS_DEFENSEAMULET_DESCRIPTION
     equipmentSlot = AMULET
     price = 60
     modifiers = {
@@ -1671,7 +1671,7 @@ End
     }
     weight = 0.3
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = "jewellery"
+    equipmentGroup = ITEMS_DEFENSEAMULET_EQUIPMENTGROUP
   }
 "DefenseAmulet10" inherit "DefenseAmulet"
   {
@@ -1682,9 +1682,9 @@ End
 "FirstAidKit"
   {
     viewId = { "first_aid" }
-    name = "first aid kit"
+    name = ITEMS_FIRSTAIDKIT_NAME
     weight = 0.5
-    description = "Heals your wounds, but requires a few turns to apply."
+    description = ITEMS_FIRSTAIDKIT_DESCRIPTION
     applyTime = 3
     uses = 3
     usedUpMsg = true
@@ -1692,23 +1692,23 @@ End
     price = 2
     effect = Heal { FLESH }
     storageIds = {"equipment"}
-    equipmentGroup = "consumables"
+    equipmentGroup = ITEMS_FIRSTAIDKIT_EQUIPMENTGROUP
   }
 "MagicLamp"
   {
     viewId = { "lamp" }
-    name = "oil lamp"
-    applyMsgFirstPerson = "rub the lamp"
-    applyMsgThirdPerson = "rubs the lamp"
+    name = ITEMS_MAGICLAMP_NAME
+    applyMsgFirstPerson = ITEMS_MAGICLAMP_APPLYMSGFIRSTPERSON
+    applyMsgThirdPerson = ITEMS_MAGICLAMP_APPLYMSGTHIRDPERSON
     weight = 1
-    description = "Just an oil lamp"
+    description = ITEMS_MAGICLAMP_DESCRIPTION
     uses = 1
     price = 1000
     effect = SummonEnemy "DJINN" {1} none
     effectDescription = false
     ownedEffect = LIGHT_SOURCE
     storageIds = {"equipment"}
-    equipmentGroup = "light emitting equipment"
+    equipmentGroup = ITEMS_MAGICLAMP_EQUIPMENTGROUP
   }
 Def PROTECTION_RING(CreatureType, Predicate, Value)
   {
@@ -1737,7 +1737,7 @@ End
 "InvisibilityRing"
   {
     viewId = { "gold_ring" }
-    name = "gold ring"
+    name = ITEMS_INVISIBILITYRING_NAME
     equipedCompanion = {count = 9 statsBase = "DEFENSE" summonFreq = 0.4 creatures = { "WRAITH" } hostile = true}
     equipedEffect = {INVISIBLE}
     weight = 0.05
@@ -1745,19 +1745,19 @@ End
     price = 50
     autoEquipPredicate = Or {}
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = "jewellery"
+    equipmentGroup = ITEMS_INVISIBILITYRING_EQUIPMENTGROUP
   }
 "JumpRing"
   {
     viewId = { "ring" ColorId PINK }
-    name = "ring of jumping"
-    shortName = "jumping"
+    name = ITEMS_JUMPRING_NAME
+    shortName = ITEMS_JUMPRING_SHORTNAME
     equipedAbility = {"jump"}
     weight = 0.05
     equipmentSlot = RINGS
     price = 50
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = "jewellery"
+    equipmentGroup = ITEMS_JUMPRING_EQUIPMENTGROUP
   }
 Def TAMING_RING(Creature, Count, Name, Price, Freq)
   {
@@ -1841,7 +1841,7 @@ End
 "Rock"
   {
     viewId = { "rock" }
-    name = "rock"
+    name = ITEMS_ROCK_NAME
     itemClass = OTHER
     price = 0
     resourceId = "STONE"
@@ -1851,13 +1851,13 @@ End
   }
 "BlackMarketKey"
   {
-    name = "key"
+    name = ITEMS_BLACKMARKETKEY_NAME
     viewId = { "black_market_key" }
-    applyMsgFirstPerson = "try to use the key"
-    applyMsgThirdPerson = "tries to use the key"
+    applyMsgFirstPerson = ITEMS_BLACKMARKETKEY_APPLYMSGFIRSTPERSON
+    applyMsgThirdPerson = ITEMS_BLACKMARKETKEY_APPLYMSGTHIRDPERSON
     weight = 0.1
-    description = "A key with a strange crystal."
-    effect = Name "Unknown" Description "" FirstSuccessful { 
+    description = ITEMS_BLACKMARKETKEY_DESCRIPTION
+    effect = Name ITEMS_BLACKMARKETKEY_EFFECT Description "" FirstSuccessful { 
       Area 2 ChainUntilFail {
         RemoveFurniture "INACTIVE_PORTAL"
         {
@@ -1878,7 +1878,7 @@ End
 "IronOre"
   {
     viewId = { "iron_rock" }
-    name = "iron ore"
+    name = ITEMS_IRONORE_NAME
     itemClass = OTHER
     price = 0
     resourceId = "IRON"
@@ -1888,7 +1888,7 @@ End
 "AdaOre"
   {
     viewId = { "ada_ore" }
-    name = "adamantine ore"
+    name = ITEMS_ADAORE_NAME
     itemClass = OTHER
     price = 2
     resourceId = "ADA"
@@ -1898,7 +1898,7 @@ End
 "AdoxiumOre"
   {
     viewId = { "adoxium_rock" }
-    name = "adoxium ore"
+    name = ITEMS_ADOXIUMORE_NAME
     itemClass = OTHER
     price = 4
     resourceId = "ADOXIUM"
@@ -1908,7 +1908,7 @@ End
 "InferniteOre"
   {
     viewId = { "infernite_rock" }
-    name = "infernite ore"
+    name = ITEMS_INFERNITEORE_NAME
     itemClass = OTHER
     price = 4
     resourceId = "INFERNITE"
@@ -1922,7 +1922,7 @@ End
 "WoodPlank"
   {
     viewId = { "wood_plank" }
-    name = "wood plank"
+    name = ITEMS_WOODPLANK_NAME
     itemClass = OTHER
     price = 0
     resourceId = "WOOD"
@@ -1932,7 +1932,7 @@ End
 "Bone"
   {
     viewId = { "bone" }
-    name = "bone"
+    name = ITEMS_BONE_NAME
     itemClass = CORPSE
     price = 0
     weight = 5
@@ -1941,7 +1941,7 @@ End
 "Skeleton"
   {
     viewId = { "bone" }
-    name = "skeleton"
+    name = ITEMS_SKELETON_NAME
     itemClass = CORPSE
     price = 0
     weight = 50
@@ -1951,7 +1951,7 @@ End
 "WizardCorpse"
   {
     viewId = { "bone" }
-    name = "wizard corpse"
+    name = ITEMS_WIZARDCORPSE_NAME
     itemClass = CORPSE
     price = 0
     weight = 50
@@ -1960,17 +1960,17 @@ End
   }
 "GnomeCorpse" inherit "WizardCorpse"
   {
-    name = "gnome corpse"
+    name = ITEMS_WIZARDCORPSE_NAME1
   }
 "FrozenRemains" inherit "Skeleton"
   {
     viewId = { "frozen_remains" }
-    name = "frozen remains"
+    name = ITEMS_SKELETON_NAME1
   }
 "GoldPiece"
   {
     viewId = { "gold" }
-    name = "gold piece"
+    name = ITEMS_GOLDPIECE_NAME
     itemClass = GOLD
     price = 1
     resourceId = "GOLD"
@@ -1981,14 +1981,14 @@ End
 "Moonshine"
   {
     viewId = { "potion1" Rgb 0 0 0 0 }
-    shortName = "moonshine"
-    name = "potion of moonshine"
-    plural = "potions of moonshine"
-    blindName = "potion"
-    applyVerb = "drink" "drinks"
+    shortName = ITEMS_MOONSHINE_SHORTNAME
+    name = ITEMS_MOONSHINE_NAME
+    plural = ITEMS_MOONSHINE_PLURAL
+    blindName = ITEMS_MOONSHINE_BLINDNAME
+    applyVerb = ITEMS_MOONSHINE_APPLYVERB ITEMS_MOONSHINE_APPLYVERB1
     fragile = true
     weight = 0.3
-    effect = Description "Increases morale, but makes minions drunk" {
+    effect = Description ITEMS_MOONSHINE_EFFECT {
       Lasting 150 HIGH_MORALE
       Lasting DRUNK
       AI And {} -1 0 Filter Not MaxLevelBelow "DIVINITY" 1 Lasting 500 SINNED
@@ -2002,13 +2002,13 @@ End
 "PrayerBookProtection"
   {
     viewId = { "book" }
-    shortName = "protection"
-    name = "liturgical book for protection"
-    blindName = "book"
-    applyVerb = "read" "reads"
+    shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME
+    name = ITEMS_PRAYERBOOKPROTECTION_NAME
+    blindName = ITEMS_PRAYERBOOKPROTECTION_BLINDNAME
+    applyVerb = ITEMS_PRAYERBOOKPROTECTION_APPLYVERB ITEMS_PRAYERBOOKPROTECTION_APPLYVERB1
     weight = 2
-    description = "Contains prayers to be recited during Mass."
-    effect = Name "None" Message NORMAL "Mass will be held with the intention of protecting minions from attacks."
+    description = ITEMS_PRAYERBOOKPROTECTION_DESCRIPTION
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of protecting minions from attacks."
     equipmentSlot = PRAYER_BOOK
     price = 10
     burnTime = 1
@@ -2017,59 +2017,59 @@ End
   }
 "PrayerBookStrength" inherit "PrayerBookProtection"
   {
-    shortName = "strength"
-    name = "liturgical book for strength"
+    shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME1
+    name = ITEMS_PRAYERBOOKPROTECTION_NAME1
     ingredientType = "strength_prayer"
-    effect = Name "None" Message NORMAL "Mass will be held with the intention of giving minions strength in battles."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of giving minions strength in battles."
   }
 "PrayerBookRangedResistance" inherit "PrayerBookProtection"
   {
-    shortName = "protection from arrows"
-    name = "liturgical book for protection from arrows"
+    shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME2
+    name = ITEMS_PRAYERBOOKPROTECTION_NAME2
     ingredientType = "ranged_resistance_prayer"
-    effect = Name "None" Message NORMAL "Mass will be held with the intention of protecting minions from arrows."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of protecting minions from arrows."
   }
 "PrayerBookDigging" inherit "PrayerBookProtection"
   {
-    shortName = "digging"
-    name = "liturgical book for digging"
+    shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME3
+    name = ITEMS_PRAYERBOOKPROTECTION_NAME3
     ingredientType = "digging_prayer"
-    effect = Name "None" Message NORMAL "Mass will be held with the intention of giving minions more strength in digging."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of giving minions more strength in digging."
   }
 "PrayerBookFastTraining" inherit "PrayerBookProtection"
   {
-    shortName = "fast training"
-    name = "liturgical book for fast training"
+    shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME4
+    name = ITEMS_PRAYERBOOKPROTECTION_NAME4
     ingredientType = "training_prayer"
-    effect = Name "None" Message NORMAL "Mass will be held with the intention of minions training at a faster pace."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of minions training at a faster pace."
   }
 "PrayerBookFastCrafting" inherit "PrayerBookProtection"
   {
-    shortName = "fast crafting"
-    name = "liturgical book for fast crafting"
+    shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME5
+    name = ITEMS_PRAYERBOOKPROTECTION_NAME5
     ingredientType = "crafting_prayer"
-    effect = Name "None" Message NORMAL "Mass will be held with the intention of minions crafting at a faster pace."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of minions crafting at a faster pace."
   }
 "PrayerBookFireResistance" inherit "PrayerBookProtection"
   {
-    shortName = "protection from fire"
-    name = "liturgical book for protection from fire"
+    shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME6
+    name = ITEMS_PRAYERBOOKPROTECTION_NAME6
     ingredientType = "fire_resistance_prayer"
-    effect = Name "None" Message NORMAL "Mass will be held with the intention of protecting minions from fire."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of protecting minions from fire."
   }
 "PrayerBookPoisonResistance" inherit "PrayerBookProtection"
   {
-    shortName = "protection from poison"
-    name = "liturgical book for protection from poison"
+    shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME7
+    name = ITEMS_PRAYERBOOKPROTECTION_NAME7
     ingredientType = "poison_resistance_prayer"
-    effect = Name "None" Message NORMAL "Mass will be held with the intention of protecting minions from poison."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of protecting minions from poison."
   }
 "PrayerBookRegeneration" inherit "PrayerBookProtection"
   {
-    shortName = "regeneration"
-    name = "liturgical book for regenerating wounds"
+    shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME8
+    name = ITEMS_PRAYERBOOKPROTECTION_NAME8
     ingredientType = "regeneration_prayer"
-    effect = Name "None" Message NORMAL "Mass will be held with the intention of giving minions the ability to regenerate wounds."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of giving minions the ability to regenerate wounds."
   }
 Def PROTECTION_BOOK(NAME, LOWER, PLURAL)
 "PrayerBook" + NAME + "Resistance" inherit "PrayerBookProtection"
@@ -2089,65 +2089,65 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
 
 "PrayerBookArmedHelpStrong" inherit "PrayerBookProtection"
   {
-    shortName = "stronger armed help"
-    name = "liturgical book for stronger armed help"
+    shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME9
+    name = ITEMS_PRAYERBOOKPROTECTION_NAME9
     ingredientType = "teuton_prayer"
-    effect = Name "None" Message NORMAL "Mass will be held with the intention of summoning stronger armed help."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of summoning stronger armed help."
   }
 
 "PrayerBookArmedHelp" inherit "PrayerBookProtection"
   {
-    shortName = "armed help"
-    name = "liturgical book for armed help"
+    shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME10
+    name = ITEMS_PRAYERBOOKPROTECTION_NAME10
     ingredientType = "squire_prayer"
-    effect = Name "None" Message NORMAL "Mass will be held with the intention of summoning armed help."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of summoning armed help."
   }
 
 "PrayerBookWorkers" inherit "PrayerBookProtection"
   {
-    shortName = "workforce"
-    name = "liturgical book for summoning workforce"
+    shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME11
+    name = ITEMS_PRAYERBOOKPROTECTION_NAME11
     ingredientType = "workers_prayer"
-    effect = Name "None" Message NORMAL "Mass will be held with the intention of summoning more workforce."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of summoning more workforce."
   }
 
 "PrayerBookMeleeTraining" inherit "PrayerBookProtection"
   {
-    shortName = "melee training"
-    name = "liturgical book for melee training potential"
+    shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME12
+    name = ITEMS_PRAYERBOOKPROTECTION_NAME12
     ingredientType = "melee_prayer"
-    effect = Name "None" Message NORMAL "Mass will be held with the intention of increasing minions' melee training potential."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of increasing minions' melee training potential."
   }
 
 "PrayerBookDivinityTraining" inherit "PrayerBookProtection"
   {
-    shortName = "divinity training"
-    name = "liturgical book for divinity training potential"
+    shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME13
+    name = ITEMS_PRAYERBOOKPROTECTION_NAME13
     ingredientType = "divinity_prayer"
-    effect = Name "None" Message NORMAL "Mass will be held with the intention of increasing minions' divinity training potential."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of increasing minions' divinity training potential."
   }
 
 "PrayerBookGuardian" inherit "PrayerBookProtection"
   {
-    shortName = "guardian"
-    name = "liturgical book for a guardian angel"
+    shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME14
+    name = ITEMS_PRAYERBOOKPROTECTION_NAME14
     ingredientType = "guardian_prayer"
-    effect = Name "None" Message NORMAL "Mass will be held with the intention of summoning a guardian angel for every minion."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of summoning a guardian angel for every minion."
   }
 "PrayerBookAdoxie" inherit "PrayerBookProtection"
   {
     viewId = { "adoxie_book" }
-    shortName = "Adoxie"
-    name = "liturgical book of the Evil God Adoxie"
+    shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME15
+    name = ITEMS_PRAYERBOOKPROTECTION_NAME15
     ingredientType = "adoxie_prayer"
-    effect = Name "None" Message NORMAL "Mass will be held in the name of the Evil God Adoxie."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held in the name of the Evil God Adoxie."
   }
 "DivinityAmulet"
   {
     viewId = { "amulet4" }
-    shortName = "crucifix"
-    name = "crucifix necklace"
-    description = "Makes the owner more holy and divine."
+    shortName = ITEMS_DIVINITYAMULET_SHORTNAME
+    name = ITEMS_DIVINITYAMULET_NAME
+    description = ITEMS_DIVINITYAMULET_DESCRIPTION
     equipmentSlot = AMULET
     price = 60
     modifiers = {
@@ -2156,14 +2156,14 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     equipedEffect = { "MAGIC_RESISTANCE" }
     weight = 0.3
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = "jewellery"
+    equipmentGroup = ITEMS_DIVINITYAMULET_EQUIPMENTGROUP
   }
 "RosaryRing"
   {
     viewId = { "ring" ColorId WHITE }
-    shortName = "rosary"
-    name = "rosary ring"
-    description = "Increases the owner's proficiency in reciting prayers."
+    shortName = ITEMS_ROSARYRING_SHORTNAME
+    name = ITEMS_ROSARYRING_NAME
+    description = ITEMS_ROSARYRING_DESCRIPTION
     equipmentSlot = RINGS
     price = 30
     modifiers = {
@@ -2171,26 +2171,26 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     }
     weight = 0.1
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = "jewellery"
+    equipmentGroup = ITEMS_ROSARYRING_EQUIPMENTGROUP
   }
 "BishopRing"
   {
     viewId = { "ring" ColorId PURPLE }
-    shortName = "bishop"
-    name = "bishop ring"
-    description = "Grants the Bishop the ability to summon his congregation. May not be used by other minions."
+    shortName = ITEMS_BISHOPRING_SHORTNAME
+    name = ITEMS_BISHOPRING_NAME
+    description = ITEMS_BISHOPRING_DESCRIPTION
     equipmentSlot = RINGS
     price = 150
     equipedAbility = { "bishop audience" }
     weight = 0.1
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = "jewellery"
+    equipmentGroup = ITEMS_BISHOPRING_EQUIPMENTGROUP
   }
 "DevotionalMedal"
   {
     viewId = { "devotional_medal" }
-    name = "devotional medal"
-    description = "Depicts an important religious event."
+    name = ITEMS_DEVOTIONALMEDAL_NAME
+    description = ITEMS_DEVOTIONALMEDAL_DESCRIPTION
     equipmentSlot = DEVOTIONAL_ITEMS
     price = 5
     modifiers = {
@@ -2198,26 +2198,26 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     }
     weight = 0.1
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = "jewellery"
+    equipmentGroup = ITEMS_DEVOTIONALMEDAL_EQUIPMENTGROUP
   }
 "AdoxieAmulet"
   {
     viewId = { "amulet6" }
-    shortName = "Adoxie"
-    name = "amulet of The Evil God Adoxie"
+    shortName = ITEMS_ADOXIEAMULET_SHORTNAME
+    name = ITEMS_ADOXIEAMULET_NAME
     equipmentSlot = AMULET
     price = 600
     equipedAbility = { "animate corpses" }
     weight = 0.3
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = "jewellery"
+    equipmentGroup = ITEMS_ADOXIEAMULET_EQUIPMENTGROUP
   }
 "AdoxieRing"
   {
     viewId = { "adoxie_ring" }
-    shortName = "Adoxie"
-    name = "ring of The Evil God Adoxie"
-    description = "Increases the owner's proficiency in reciting prayers."
+    shortName = ITEMS_ADOXIERING_SHORTNAME
+    name = ITEMS_ADOXIERING_NAME
+    description = ITEMS_ADOXIERING_DESCRIPTION
     equipmentSlot = RINGS
     price = 300
     modifiers = {
@@ -2225,5 +2225,5 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     }
     weight = 0.1
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = "jewellery"
+    equipmentGroup = ITEMS_ADOXIERING_EQUIPMENTGROUP
   }

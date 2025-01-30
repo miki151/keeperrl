@@ -131,7 +131,7 @@ append {
       {item = {Potion OneTimeBoost() Permanent POISON_RESISTANT} work = 20 cost = "GOLD" 80
           requireIngredient = "hydra_tongue" }
       {item = {"ProphetSoup"} work = 20 requireIngredient = "prophet_remains" }
-      {item = {Potion Name "mass insanity" Area 20 Lasting INSANITY}
+      {item = {Potion Name WORKSHOPS_MENU_TYPE Area 20 Lasting INSANITY}
           work = 50 cost = "GOLD" 666 requireIngredient = "devil_horns" }
       {{"GoldPiece"}                           1        "IRON" 3      "alchemical conversion"}
       {{"WoodPlank"}                           1        "GOLD" 1      "alchemical conversion"}
@@ -142,23 +142,23 @@ append {
 
   "ENCHANTED_LABORATORY"
   {
-      {{Potion OneTimeBoost() Name "iron arms" Permanent IRON_ARMS }      20       "GOLD" 100}
-      {{Potion OneTimeBoost() Name "thick skin" Permanent THICK_SKIN }     20       "GOLD" 100}
-      {{Potion OneTimeBoost() Name "stable hand" Permanent STABLE_HAND }    20       "GOLD" 100}
-      {{Potion OneTimeBoost() Name "piercing voice" Permanent PIERCING_VOICE }  20       "GOLD" 100}
-      {{Potion OneTimeBoost() Name "venomous fangs"
-          Description "Makes the victim grow a pair of venomous fangs"
-          AddIntrinsicAttack HEAD { Intrinsic { "bite_attack" } "fangs" 5 {
+      {{Potion OneTimeBoost() Name WORKSHOPS_MENU_TYPE1 Permanent IRON_ARMS }      20       "GOLD" 100}
+      {{Potion OneTimeBoost() Name WORKSHOPS_MENU_TYPE2 Permanent THICK_SKIN }     20       "GOLD" 100}
+      {{Potion OneTimeBoost() Name WORKSHOPS_MENU_TYPE3 Permanent STABLE_HAND }    20       "GOLD" 100}
+      {{Potion OneTimeBoost() Name WORKSHOPS_MENU_TYPE4 Permanent PIERCING_VOICE }  20       "GOLD" 100}
+      {{Potion OneTimeBoost() Name WORKSHOPS_MENU_TYPE5
+          Description WORKSHOPS_MENU_TYPE6
+          AddIntrinsicAttack HEAD { Intrinsic { "bite_attack" } WORKSHOPS_MENU_ID 5 {
           attackType = BITE
           attackMsg = BITE
           victimEffect = {0.2 Lasting POISON} } } }            50       "GOLD" 100}
-      {{Potion OneTimeBoost() Name "horns"
-          Description "Makes the victim grow a pair of horns"
-          AddIntrinsicAttack HEAD { Intrinsic { "horn_attack" } "horns" 5 {
+      {{Potion OneTimeBoost() Name WORKSHOPS_MENU_TYPE7
+          Description WORKSHOPS_MENU_TYPE8
+          AddIntrinsicAttack HEAD { Intrinsic { "horn_attack" } WORKSHOPS_MENU_ID1 5 {
           attackType = STAB
           attackMsg = THRUST } } }            50       "GOLD" 100}
-      {{Potion EquipmentType COMBAT_ITEM Name "keeper polymorph"
-          Description "Permanently polymorphs a Keeper into a random creature"
+      {{Potion EquipmentType COMBAT_ITEM Name WORKSHOPS_MENU_TYPE9
+          Description WORKSHOPS_MENU_TYPE10
           Filter CreatureStatus LEADER Polymorph none none}              50       "GOLD" 1000}
   }
 
@@ -264,7 +264,7 @@ End
   "LABORATORY"
   {
       {{Potion Fire{25}} 4 "GOLD" 5}
-      {{Potion Name "more fire" Area 1 Fire{20}} 8 "GOLD" 10}
+      {{Potion Name WORKSHOPS_MENU_TYPE11 Area 1 Fire{20}} 8 "GOLD" 10}
       {{Potion Lasting OIL} 4 "GOLD" 15}
   }
 }
@@ -315,26 +315,26 @@ End
       {{Balsam IncreaseMaxLevel DAMAGE        3}                  4 "GOLD" 3 "embalming"}
       {{Balsam IncreaseMaxLevel SPELL_DAMAGE  3}                  4 "GOLD" 3 "embalming"}
       {{Balsam IncreaseMaxLevel RANGED_DAMAGE 3}                  4 "GOLD" 3 "embalming"}
-      {{Balsam Name "lesser damage bonus"        IncreaseAttr DAMAGE        3}   4 "GOLD" 3 "embalming"}
-      {{Balsam Name "lesser defense bonus"       IncreaseAttr DEFENSE       3}   4 "GOLD" 3 "embalming"}
-      {{Balsam Name "lesser ranged damage bonus" IncreaseAttr RANGED_DAMAGE 3}   4 "GOLD" 3 "embalming"}
-      {{Balsam Name "lesser spell damage bonus"  IncreaseAttr  SPELL_DAMAGE 3}   4 "GOLD" 3 "embalming"}
+      {{Balsam Name WORKSHOPS_MENU_TYPE12        IncreaseAttr DAMAGE        3}   4 "GOLD" 3 "embalming"}
+      {{Balsam Name WORKSHOPS_MENU_TYPE13       IncreaseAttr DEFENSE       3}   4 "GOLD" 3 "embalming"}
+      {{Balsam Name WORKSHOPS_MENU_TYPE14 IncreaseAttr RANGED_DAMAGE 3}   4 "GOLD" 3 "embalming"}
+      {{Balsam Name WORKSHOPS_MENU_TYPE15  IncreaseAttr  SPELL_DAMAGE 3}   4 "GOLD" 3 "embalming"}
       {{Balsam SpecialAttr DEFENSE    5  InTerritory}             4 "GOLD" 3 "embalming"}
       {{Balsam Permanent DARKNESS_SOURCE}   4 "GOLD" 5 "advanced embalming"}
-      {{Balsam Name "Limited life, damage boost" Description "Life limited to 2000 turns, +10 damage."
+      {{Balsam Name WORKSHOPS_MENU_TYPE16 Description WORKSHOPS_MENU_TYPE17
           { Lasting 2000 SUMMONED  IncreaseAttr DAMAGE 10 }}        8 "GOLD" 5 "advanced embalming"}
-      {{Balsam Name "Limited life, defense boost" Description "Life limited to 2000 turns, +10 defense."
+      {{Balsam Name WORKSHOPS_MENU_TYPE18 Description WORKSHOPS_MENU_TYPE19
           { Lasting 2000 SUMMONED  IncreaseAttr DEFENSE 10 }}       8 "GOLD" 5 "advanced embalming"}
-      {{Balsam Name "Limited life, ranged damage boost" Description "Life limited to 2000 turns, +10 ranged damage."
+      {{Balsam Name WORKSHOPS_MENU_TYPE20 Description WORKSHOPS_MENU_TYPE21
           { Lasting 2000 SUMMONED  IncreaseAttr RANGED_DAMAGE 10 }} 8 "GOLD" 5 "advanced embalming"}
-      {{Balsam Name "Limited life, spell damage boost" Description "Life limited to 2000 turns, +10 spell damage."
+      {{Balsam Name WORKSHOPS_MENU_TYPE22 Description WORKSHOPS_MENU_TYPE23
           { Lasting 2000 SUMMONED  IncreaseAttr SPELL_DAMAGE 10 }}  8 "GOLD" 5 "advanced embalming"}
       {{Balsam Permanent FAST_CRAFTING}                           8 "GOLD" 5 "advanced embalming"}
       {{Balsam Permanent FAST_TRAINING}                           8 "GOLD" 5 "advanced embalming"}
-      {{Balsam Name "greater damage bonus"        IncreaseAttr DAMAGE        5} 8 "GOLD" 5 "advanced embalming"}
-      {{Balsam Name "greater defense bonus"       IncreaseAttr DEFENSE       5} 8 "GOLD" 5 "advanced embalming"}
-      {{Balsam Name "greater ranged damage bonus" IncreaseAttr RANGED_DAMAGE 5} 8 "GOLD" 5 "advanced embalming"}
-      {{Balsam Name "greater spell damage bonus"  IncreaseAttr  SPELL_DAMAGE 5} 8 "GOLD" 5 "advanced embalming"}
+      {{Balsam Name WORKSHOPS_MENU_TYPE24        IncreaseAttr DAMAGE        5} 8 "GOLD" 5 "advanced embalming"}
+      {{Balsam Name WORKSHOPS_MENU_TYPE25       IncreaseAttr DEFENSE       5} 8 "GOLD" 5 "advanced embalming"}
+      {{Balsam Name WORKSHOPS_MENU_TYPE26 IncreaseAttr RANGED_DAMAGE 5} 8 "GOLD" 5 "advanced embalming"}
+      {{Balsam Name WORKSHOPS_MENU_TYPE27  IncreaseAttr  SPELL_DAMAGE 5} 8 "GOLD" 5 "advanced embalming"}
       {{Balsam IncreaseAttr "MORGUE" 25}                            8 "GOLD" 5 "advanced embalming"}
       {{Balsam IncreaseAttr "LABORATORY" 25}                        8 "GOLD" 5 "advanced embalming"}
       {{Balsam IncreaseAttr "FORGE" 25}                             8 "GOLD" 5 "advanced embalming"}
@@ -420,4 +420,3 @@ End
 
 
 # Add more groups here, remember that you need to add your new group to your keeper in keeper_creatures.txt
-

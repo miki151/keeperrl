@@ -5,15 +5,15 @@
   Window(
     Vertical {
       Position(MIDDLE, MarginLeft(40, MarginRight(40,
-          Label("The following assigned items conflict with the chosen item. Remove them from equipment?" ))))
+          Label(TEXT12 ))))
       Height 10 {}
       Using "items" List(VERTICAL,
         MarginLeft(40, Horizontal{ Using "view_id" ViewId(1) Using "item" Label() }))
       Height 35 {}
       Position(MIDDLE, Horizontal {
-        Using "callback" StandardButton(Label("Confirm"))
+        Using "callback" StandardButton(Label(TEXT13))
         Width 30 {}
-        Using "EXIT" StandardButton(Label("Cancel"))
+        Using "EXIT" StandardButton(Label(TEXT2))
       })
     }
   )

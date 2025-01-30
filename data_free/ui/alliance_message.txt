@@ -7,7 +7,7 @@
       Vertical {
         Using "message" Label()
         Height 10 {}
-        Label("In a final, desperate attack, they unite and seek to rid these lands of you forever.")
+        Label(TEXT4)
       }
     )))
   })))

@@ -4,7 +4,7 @@ Def P(Text) Paragraph(500, Text) End
 MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,  
   Vertical {
     Height 5 {}
-    Horizontal{ViewId(1, {"horse"}) Width 10 {} Label("Using steeds")}
+    Horizontal{ViewId(1, {"horse"}) Width 10 {} Label(TEXT20)}
     Height 30 {}
     P("Riding steeds can enhance your minions' fighting abilities, let them gain speed or navigate over inaccessible terrain.")
     Height 15 {}
@@ -25,4 +25,3 @@ MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,
     Position(MIDDLE, Texture("steeds4"))
   }
 ))))
-

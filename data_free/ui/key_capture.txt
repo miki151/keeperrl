@@ -4,7 +4,7 @@
   ExitButtons()
   MiniWindow(Margins(10, {
     Vertical {
-      Label("Enter key for:")
+      Label(TEXT14)
       Height 20 {}
       Using "text" Label()
     }

@@ -30,7 +30,7 @@ End
         Horizontal {
           Width 300 Height 290 Vertical {
             Horizontal {
-              Label("Choose base type:")
+              Label(TEXT5)
               Width 5{}
               RenderKeybinding("MENU_UP", true)
               Width 5{}
@@ -41,7 +41,7 @@ End
           }
           Stretch Vertical {
             Horizontal {
-              Label("Choose your Keeper character:")
+              Label(TEXT6)
               Width 5{}
               RenderKeybinding("MENU_LEFT", true)
               Width 5{}
@@ -55,8 +55,8 @@ End
             Using "gender_description" Label()
             Height 5 {}
             Height 27 Horizontal {
-              Using "first_name" MarginTop(1, Label("First name: "))
-              Using "settlement_name" MarginTop(1, Label("Settlement name: "))
+              Using "first_name" MarginTop(1, Label(TEXT7))
+              Using "settlement_name" MarginTop(1, Label(TEXT8))
               If "edit_first_name"
                 Width 300{
                   Frame(ColorId LIGHT_GRAY)
@@ -65,7 +65,7 @@ End
                   MarginTop(2, MarginRight(5, MarginLeft(5, Using "settlement_name" Label())))
                   Using "edit_first_name" Button()
                 }
-              Using "reload_first_name" StandardButtonNotFocusable(Label(text = "🔄", font = SYMBOL_FONT))
+              Using "reload_first_name" StandardButtonNotFocusable(Label(text = TEXT9, font = SYMBOL_FONT))
             }
             Height 30 {}
             Using "base_description" Paragraph(width = 450, color = ColorId LIGHT_GRAY)
@@ -78,8 +78,8 @@ End
     })
     MarginTop(-3,
     Position(MIDDLE, Horizontal {
-      Width 265 Using "tutorial_callback" StandardButtonNotFocusable(Label("Tutorial"))
-      Width 265 Using "change_mod" StandardButtonNotFocusable(Label("Mods"))
+      Width 265 Using "tutorial_callback" StandardButtonNotFocusable(Label(TEXT10))
+      Width 265 Using "change_mod" StandardButtonNotFocusable(Label(TEXT11))
       Width 265 Using "go_back" KeybindingButton("Go back", EXIT_MENU)
     }))
   }

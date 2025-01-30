@@ -1,6 +1,6 @@
 "WORKSHOP" {
   furniture = "WORKSHOP"
-  name = "workshop"
+  name = WORKSHOP_INFO_WORKSHOP_NAME
   attr = "WORKSHOP"
 }
 
@@ -12,7 +12,7 @@
 
 "FORGE" {
   furniture = "FORGE"
-  name = "forge"
+  name = WORKSHOP_INFO_FORGE_NAME
   verb = FORGES_VERB
   attr = "FORGE"
   minAttr = {
@@ -31,20 +31,20 @@
 
 "LABORATORY" {
   furniture = "LABORATORY"
-  name = "laboratory"
+  name = WORKSHOP_INFO_LABORATORY_NAME
   verb = CONCOCTS_VERB
   attr = "LABORATORY"
 }
 
 "ENCHANTED_LABORATORY" inherit "LABORATORY" {
   furniture = "ENCHANTED_LABORATORY"
-  name = "enchanted laboratory"
+  name = WORKSHOP_INFO_LABORATORY_NAME1
   hideFromTech = true
 }
 
 "JEWELER" {
   furniture = "JEWELLER"
-  name = "jeweler"
+  name = WORKSHOP_INFO_JEWELER_NAME
   attr = "JEWELER"
 }
 
@@ -56,14 +56,14 @@
 
 "MORGUE" {
   furniture = "MORGUE_TABLE"
-  name = "morgue"
+  name = WORKSHOP_INFO_MORGUE_NAME
   verb = RAISES_VERB
   attr = "MORGUE"
 }
 
 "SCRIPTORIUM" {
   furniture = "SCRIPTORIUM"
-  name = "scriptorium"
+  name = WORKSHOP_INFO_SCRIPTORIUM_NAME
   verb = WRITES_VERB
   attr = "DIVINITY"
 }

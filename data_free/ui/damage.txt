@@ -3,7 +3,7 @@ Def P(Text) Paragraph(500, Text) End
 
 MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,
   Vertical {
-    Horizontal{ViewId(1, {"sword"}) Width 10 {} Label("Damage calculation")}
+    Horizontal{ViewId(1, {"sword"}) Width 10 {} Label(TEXT41)}
     Height 30 {}
     P("The amount of damage a creature takes in combat is dependent on its defense value, the value of the attack and certain modifiers. Different attack types use different attribute values as their base: most melee combat uses the damage attribute, ranged attacks use ranged damage, and magical attacks use spell damage.")
     Height 15 {}
@@ -27,4 +27,3 @@ MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,
     Height 15 {}
   }
 ))))
-

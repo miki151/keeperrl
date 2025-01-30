@@ -28,7 +28,7 @@ End
         }
       }
     }
-    race = "humans"
+    race = ENEMIES_TUTORIAL_VILLAGE_RACE
     stockpiles = {
       { "gold" 50 "TREASURE_CHEST" }
     }
@@ -54,7 +54,7 @@ End
       }
     }
     tribe = MONSTER
-    race = "unicorns"
+    race = ENEMIES_UNICORN_HERD_RACE
   }
   config = {
     immigrantInterval = 200
@@ -77,7 +77,7 @@ End
       leader = {{"KIRIN"}}
     }
     tribe = MONSTER
-    race = "ki-rin"
+    race = ENEMIES_KIRIN_RACE
   }
   config = {
     prisoners = true
@@ -101,7 +101,7 @@ End
     dontConnectCave = true
     surroundWithResources = 5
     tribe = ANT
-    race = "ants"
+    race = ENEMIES_ANTS_CLOSED_RACE
   }
   config = {
     immigrantInterval = 500
@@ -140,7 +140,7 @@ End
       }
     }
     tribe = ANT
-    race = "ants"
+    race = ENEMIES_ANTS_CLOSED_SMALL_RACE
     dontConnectCave = true
     closeToPlayer = true
     surroundWithResources = 6
@@ -157,7 +157,7 @@ End
       }
     }
     tribe = ANT
-    race = "black rats"
+    race = ENEMIES_BLACK_RATS_RACE
   }
   discoverable = false
   createOnBones = 1.0 { "DWARVES" }
@@ -179,7 +179,7 @@ End
     }
     surroundWithResources = 5
     tribe = ANT
-    race = "ants"
+    race = ENEMIES_ANTS_CLOSED_RACE
   }
   createOnBones = 0.1 { "DWARVES" }
 }
@@ -194,7 +194,7 @@ End
       }
     }
     tribe = ANT
-    race = "adamantine golems"
+    race = ENEMIES_ADA_GOLEMS_RACE
     dontConnectCave = true
     surroundWithResources = 3
     extraResources = "ADAMANTIUM_ORE"
@@ -236,7 +236,7 @@ End
       }
     }
     locationNameGen = "TOWN"
-    race = "greenskins"
+    race = ENEMIES_GOBLIN_VILLAGE_RACE
     furniture = "roomFurniture"
     outsideFeatures = "villageOutside"
   }
@@ -268,7 +268,7 @@ End
     type = RandomLayout { "castle_empty" { 16 16 } "default"}
     tribe = MONSTER
     locationName = "Darkshrine Town"
-    race = "ghosts"
+    race = ENEMIES_DEMON_DEN_ENTRY_RACE
     furniture = "dungeonOutside"
   }
   config = {
@@ -288,7 +288,7 @@ End
       }
     }
     locationName = "Darkshrine"
-    race = "demons"
+    race = ENEMIES_DEMON_DEN_RACE
     furniture = "dungeonOutside"
     outsideFeatures = "dungeonOutside"
 #    stockpiles = {{ "gold" 400 "TREASURE_CHEST" }}
@@ -350,7 +350,7 @@ End
       }
     }
     locationNameGen = "TOWN"
-    race = "humans"
+    race = ENEMIES_VILLAGE_RACE
     shopItems = {{8 16} "armory" }
     furniture = "roomFurniture"
   }
@@ -374,7 +374,7 @@ End
       }
     }
     locationNameGen = "TOWN"
-    race = "humans"
+    race = ENEMIES_WARRIORS_RACE
     stockpiles = {{ "gold" 160 "TREASURE_CHEST" }}
     furniture = "roomFurniture"
     outsideFeatures = "castleOutside"
@@ -443,7 +443,7 @@ End
       }
     }
     locationNameGen = "TOWN"
-    race = "humans"
+    race = ENEMIES_KNIGHTS_RACE
     stockpiles = {{ "gold" 140 "TREASURE_CHEST" }}
     shopItems = {{8 16} "villageShop" }
     furniture = "castleFurniture"
@@ -516,7 +516,7 @@ End
       }
     }
     locationNameGen = "TOWN"
-    race = "Teutonic Knights"
+    race = ENEMIES_TEUTONS_RACE
     stockpiles = {{ "gold" 140 "TREASURE_CHEST" }}
     furniture = "castleFurniture"
     outsideFeatures = "castleOutside"
@@ -702,7 +702,7 @@ End
       leader = { { "MINOTAUR" } }
     }
     locationName = "maze"
-    race = "monsters"
+    race = ENEMIES_MINOTAUR_RACE
     furniture = "roomFurniture"
   }
 }
@@ -718,7 +718,7 @@ End
         all = { 1 "FIRE_ELEMENTAL" }
       }
     }
-    race = "dragon"
+    race = ENEMIES_RED_DRAGON_RACE
     tribe = MONSTER
   }
   config = {
@@ -754,7 +754,7 @@ End
     inhabitants = {
       leader = { { "BLACK_DRAGON" } }
     }
-    race = "dragon"
+    race = ENEMIES_RED_DRAGON_RACE
     tribe = MONSTER
     shopItems = {{16 20} "dragonCave" }
   }
@@ -769,7 +769,7 @@ End
       leader = { { "GREEN_DRAGON" } }
     }
     tribe = MONSTER
-    race = "dragon"
+    race = ENEMIES_GREEN_DRAGON_RACE
     shopItems = {{16 20} "dragonCave" }
   }
   config = {
@@ -815,7 +815,7 @@ End
       }
     }
     locationNameGen = "TOWN"
-    race = "dwarves"
+    race = ENEMIES_DWARVES_RACE
     stockpiles = {{ "gold" 200 "TREASURE_CHEST"} {"minerals" 120 }}
     shopItems = {{8 16} "dwarfShop" }
     outsideFeatures = "dungeonOutside"
@@ -878,7 +878,7 @@ End
     }
     locationNameGen = "TOWN"
     tribe = ELF
-    race = "elves"
+    race = ENEMIES_ELVES_RACE
     stockpiles = {{ "gold" 100 "TREASURE_CHEST"}}
     furniture = "roomFurniture"
   }
@@ -1244,7 +1244,7 @@ End
       }
     }
     tribe = BANDIT
-    race = "wolves"
+    race = ENEMIES_WOLF_DEN_RACE
   }
   config = {
     immigrantInterval = 1000
@@ -1276,7 +1276,7 @@ End
       }
     }
     tribe = MONSTER
-    race = "bats"
+    race = ENEMIES_BAT_DEN_RACE
   }
   config = {
     immigrantInterval = 1000
@@ -1298,7 +1298,7 @@ End
       leader = { { "CAVE_BEAR" } }
     }
     tribe = MONSTER
-    race = "cave bear"
+    race = ENEMIES_CAVE_BEAR_DEN_RACE
   }
   config = {
     leaderAsFighter = true
@@ -1321,7 +1321,7 @@ End
       }
     }
     tribe = BANDIT
-    race = "bandits"
+    race = ENEMIES_NO_AGGRO_BANDITS_RACE
   }
   config = {
     immigrantInterval = 1000
@@ -1370,7 +1370,7 @@ End
       }
     }
     tribe = BANDIT
-    race = "goblins"
+    race = ENEMIES_GOBLIN_CAVE_RACE
   }
   config = {
     immigrantInterval = 1000
@@ -1427,7 +1427,7 @@ End
       }
     }
     tribe = BANDIT
-    race = "goblins"
+    race = ENEMIES_GOBLINS_Z_LEVEL_RACE
   }
   config = {
     prisoners = true
@@ -1461,7 +1461,7 @@ End
         all = { 1 "DARK_ELF" }
       }
     }
-    race = "dark elves"
+    race = ENEMIES_DARK_ELF_CAVE_RACE
     stockpiles = {{ "minerals" 60 }}
     outsideFeatures = "dungeonOutside"
     furniture = "roomFurniture"
@@ -1499,7 +1499,7 @@ End
         all = { 1 "DARK_ELF" }
       }
     }
-    race = "dark elves"
+    race = ENEMIES_DARK_ELVES_Z_LEVEL_RACE
   }
   config = {
     prisoners = true
@@ -1529,7 +1529,7 @@ End
         all = { 1 "DWARF_FEMALE" }
       }
     }
-    race = "dwarves"
+    race = ENEMIES_NO_AGGRO_DWARF_CAVE_RACE
     stockpiles = {{ "minerals" 60}}
     outsideFeatures = "dungeonOutside"
     furniture = "roomFurniture"
@@ -1567,7 +1567,7 @@ End
         all = { 1 "DWARF_FEMALE" }
       }
     }
-    race = "dwarves"
+    race = ENEMIES_DWARVES_Z_LEVEL_RACE
   }
   config = {
     prisoners = true
@@ -1595,7 +1595,7 @@ End
         all = { 1 "LIZARDMAN" }
       }
     }
-    race = "lizardmen"
+    race = ENEMIES_LIZARDMEN_SMALL_RACE
     furniture = "roomFurniture"
     outsideFeatures = "villageOutside"
   }
@@ -1617,7 +1617,7 @@ End
       }
     }
     locationNameGen = "TOWN"
-    race = "lizardmen"
+    race = ENEMIES_LIZARDMEN_RACE
     shopItems = {{8 16} "goodMushrooms" }
     furniture = "roomFurniture"
     outsideFeatures = "villageOutside"
@@ -1676,7 +1676,7 @@ End
       }
     }
     locationNameGen = "TOWN"
-    race = "dark elves"
+    race = ENEMIES_DARK_ELVES_ALLY_RACE
     outsideFeatures = "dungeonOutside"
     furniture = "roomFurniture"
   }
@@ -1726,7 +1726,7 @@ End
       }
     }
     locationNameGen = "TOWN"
-    race = "dark elves"
+    race = ENEMIES_DARK_ELVES_ALLY_RACE
     outsideFeatures = "dungeonOutside"
     furniture = "roomFurniture"
   }
@@ -1742,7 +1742,7 @@ End
         all = { 1 "DARK_ELF_WARRIOR" }
       }
     }
-    race = "dark elves"
+    race = ENEMIES_DARK_ELVES_ENTRY_RACE
     outsideFeatures = "dungeonOutside"
     furniture = "roomFurniture"
   }
@@ -1823,7 +1823,7 @@ End
   settlement = {
     type = Builtin TOWER "BLACK_MARKET"
     tribe = GNOME
-    race = "the Black Market"
+    race = ENEMIES_BLACK_MARKET_RACE
     furniture = "dungeonOutside"
     shopItems = {
         {10 15} "blackMarketAmulet"
@@ -1907,7 +1907,7 @@ End
       }
     }
     locationNameGen = "TOWN"
-    race = "gnomes"
+    race = ENEMIES_GNOMES_RACE
     shopItems = {{10 18} "gnomeShop" }
     outsideFeatures = "dungeonOutside"
     furniture = "roomFurniture"
@@ -1932,7 +1932,7 @@ End
         all = { 1 "GNOME" }
       }
     }
-    race = "gnomes"
+    race = ENEMIES_GNOMES_ENTRY_RACE
     outsideFeatures = "dungeonOutside"
     furniture = "roomFurniture"
   }
@@ -1995,7 +1995,7 @@ End
       }
     }
     tribe = MONSTER
-    race = "tree spirits"
+    race = ENEMIES_ENTS_RACE
   }
   config = {
     immigrantInterval = 300
@@ -2023,7 +2023,7 @@ End
       }
     }
     tribe = MONSTER
-    race = "dryads"
+    race = ENEMIES_DRIADS_RACE
   }
   config = {
     immigrantInterval = 300
@@ -2054,7 +2054,7 @@ End
         }
       }
     }
-    race = "giant spider"
+    race = ENEMIES_SHELOB_RACE
   }
   config = {
    leaderAsFighter = true
@@ -2069,7 +2069,7 @@ End
     inhabitants = {
       leader = { { "CYCLOPS" } }
     }
-    race = "cyclops"
+    race = ENEMIES_CYCLOPS_RACE
     tribe = HOSTILE
     shopItems = {{16 20} "cyclopsCave" }
   }
@@ -2094,7 +2094,7 @@ End
     inhabitants = {
       leader = { { "YETI" } }
     }
-    race = "yeti"
+    race = ENEMIES_YETI_RACE
     tribe = HOSTILE
   }
   config = {
@@ -2109,7 +2109,7 @@ End
     inhabitants = {
       leader = { { "HYDRA" } }
     }
-    race = "hydra"
+    race = ENEMIES_HYDRA_RACE
     tribe = HOSTILE
   }
   config = {
@@ -2126,7 +2126,7 @@ End
     inhabitants = {
       leader = { { "KRAKEN" } }
     }
-    race = "kraken"
+    race = ENEMIES_KRAKEN_RACE
     tribe = MONSTER
   }
   config = {
@@ -2147,7 +2147,7 @@ End
     }
     locationName = "cemetery"
     tribe = MONSTER
-    race = "undead"
+    race = ENEMIES_CEMETERY_RACE
   }
   levelConnection = {
     topLevel = ExtraEnemy { "CEMETERY_ENTRY" }
@@ -2169,7 +2169,7 @@ End
       }
     }
     locationName = "cemetery"
-    race = "undead"
+    race = ENEMIES_CEMETERY_ENTRY_RACE
     tribe = MONSTER
     furniture = "graves"
   }
@@ -2291,7 +2291,7 @@ End
     inhabitants = {
       leader = { { "WITCH" } }
     }
-    race = "witch"
+    race = ENEMIES_WITCH_RACE
     furniture = "witchInside"
   }
 }
@@ -2327,7 +2327,7 @@ End
   settlement = {
     type = Builtin TEMPLE "BRICK"
     tribe = HUMAN
-    race = "altar"
+    race = ENEMIES_TEMPLE_RACE
     inhabitants = {
       leader = { { "PRIEST" } }
     }
@@ -2340,7 +2340,7 @@ End
   settlement = {
     type = Builtin TEMPLE "WOOD"
     tribe = DARK_KEEPER
-    race = "altar"
+    race = ENEMIES_EVIL_TEMPLE_RACE
     inhabitants = {
       leader = {
         id = {"GOBLIN_WIZARD"}
@@ -2356,7 +2356,7 @@ End
   settlement = {
     type = RandomLayout { "adoxie_feet_entry" { 5 5 } "adoxie_feet_entry"}
     tribe = MONSTER
-    race = "altar of Evil God Adoxie"
+    race = ENEMIES_ADOXIE_FEET_ENTRY_RACE
   }
 }
 "ADOXIE_FEET"
@@ -2365,7 +2365,7 @@ End
   settlement = {
     type = RandomLayout { "adoxie_feet_under" { 17 17 } "adoxie_feet"}
     tribe = HUMAN
-    race = "altar of Evil God Adoxie"
+    race = ENEMIES_ADOXIE_FEET_RACE
     stockpiles = {{ "gold" 160 "TREASURE_CHEST" }}
   }
   discoverable = false
@@ -2382,7 +2382,7 @@ End
   settlement = {
     type = Builtin COTTAGE "RUINS"
     tribe = MONSTER
-    race = "ruins"
+    race = ENEMIES_RUINS_RACE
     dontBuildRoad = true
     closeToPlayer = true
   }
@@ -2430,7 +2430,7 @@ End
         }
       }
     }
-    race = "humans"
+    race = ENEMIES_HUMAN_COTTAGE_RACE
     furniture = "roomFurniture"
   }
   config = {
@@ -2559,7 +2559,7 @@ End
         }
       }
     }
-    race = "humans"
+    race = ENEMIES_NATIVE_VILLAGE_RACE
   }
 }
 "THIEVES"
@@ -2578,7 +2578,7 @@ End
       steeds = { all = { 1 "CAMEL" } }
     }
     locationNameGen = "TOWN"
-    race = "thieves"
+    race = ENEMIES_THIEVES_RACE
     stockpiles = {{ "gold" 160 "TREASURE_CHEST" }}
     furniture = "roomFurniture"
     outsideFeatures = "bleedingTotem"
@@ -2623,7 +2623,7 @@ End
     type = Builtin CAVE "SANDSTONE"
     tribe = MONSTER
     locationName = "maze"
-    race = "monsters"
+    race = ENEMIES_DJINN_RACE
     shopItems = { 1 "magicLamp" }
   }
 }
@@ -2649,7 +2649,7 @@ End
         }
       }
     }
-    race = "elves"
+    race = ENEMIES_ELVEN_COTTAGE_RACE
     furniture = "roomFurniture"
   }
   config = {
@@ -2668,7 +2668,7 @@ End
         all = { 1 "LIZARDMAN" }
       }
     }
-    race = "lizardmen"
+    race = ENEMIES_LIZARDMEN_COTTAGE_RACE
     furniture = "roomFurniture"
   }
   createOnBones = 1.0 { "ELVEN_COTTAGE" }
@@ -2687,7 +2687,7 @@ End
         all = { 1 "KOBOLD" }
       }
     }
-    race = "kobolds"
+    race = ENEMIES_KOBOLD_CAVE_RACE
     stockpiles = {{ "minerals" 60 }}
   }
   config = {
@@ -2805,7 +2805,7 @@ End
       }
     }
     locationNameGen = "TOWN"
-    race = "dark mage"
+    race = ENEMIES_DARK_MAGE_RACE
     stockpiles = {{ "gold" 200 "TREASURE_CHEST"} {"minerals" 120 }}
     outsideFeatures = "dungeonOutside"
     furniture = "roomFurniture"
@@ -2860,7 +2860,7 @@ End
       }
     }
     locationNameGen = "TOWN"
-    race = "greenskins"
+    race = ENEMIES_ORC_VILLAGE_RACE
     furniture = "roomFurniture"
     outsideFeatures = "villageOutside"
   }
@@ -2895,7 +2895,7 @@ End
       }
     }
     tribe = BANDIT
-    race = "orcs"
+    race = ENEMIES_ORC_CAVE_RACE
   }
   config = {
     immigrantInterval = 1000
@@ -2950,4 +2950,3 @@ End
     }
   }
 }
-
