@@ -1756,8 +1756,7 @@ End
 Def TAMING_RING(Creature, Count, Name, Price, Freq)
   {
     viewId = { "ring" ColorId WHITE }
-    name = "ring of " + Name + " taming"
-    shortName = Name
+    name = Name
     equipedCompanion = {
       count = Count
       summonFreq = Freq
@@ -1771,10 +1770,10 @@ Def TAMING_RING(Creature, Count, Name, Price, Freq)
     equipmentGroup = "jewellery"
   }
 End
-"SpiderRing" TAMING_RING("SPIDER", 5, "spider", 1, 0.01)
-"DragonRing" TAMING_RING("RED_DRAGON" "WHITE_DRAGON" "YELLOW_DRAGON" "GREEN_DRAGON", 1, "dragon", 500, 0.001)
-"HorseRing" TAMING_RING("HORSE_CAN_TRAIN", 1, "horse", 100, 0.005)
-"BatRing" TAMING_RING("BAT", 5, "bat", 5, 0.01)
+"SpiderRing" TAMING_RING("SPIDER", 5, "ring of spider taming", 1, 0.01)
+"DragonRing" TAMING_RING("RED_DRAGON" "WHITE_DRAGON" "YELLOW_DRAGON" "GREEN_DRAGON", 1, "ring of dragon taming", 500, 0.001)
+"HorseRing" TAMING_RING("HORSE_CAN_TRAIN", 1, "ring of horse taming", 100, 0.005)
+"BatRing" TAMING_RING("BAT", 5, "ring of bat taming", 5, 0.01)
 Def DAMAGE_RING(VALUE)
   {
     viewId = { "ring" ColorId BLUE }
