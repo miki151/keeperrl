@@ -12,11 +12,11 @@
     effect = SummonEnemy "AUTOMATON" {1} 100
     storageIds = {"automaton_parts" "equipment"}
   }
-Def HUMANOID_HEAD(Suffix, Color, Adjective, ResourceId, Defense)
+Def HUMANOID_HEAD(Suffix, Color, FullName, ResourceId, Defense)
 "HumanoidHead" + Suffix
   {
     viewId = { "automaton_head" Rgb Color 255 }
-    name = Adjective + " humanoid head"
+    name = FullName
     shortName = "humanoid head"
     modifiers = {
       DEFENSE Defense
@@ -24,7 +24,7 @@ Def HUMANOID_HEAD(Suffix, Color, Adjective, ResourceId, Defense)
     weight = 4
     craftingCost = ResourceId 5
     upgradeInfo = { AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "an " + Adjective + " humanoid head"
+      Name FullName
       Description "Allows using equipment."
       {
         MakeHumanoid
@@ -88,19 +88,18 @@ Spell + "Head" + Suffix
     storageIds = {"automaton_parts" "equipment"}
   }
 End
-Def LEGS(Suffix, Color, Adjective, ResourceId, Defense)
+Def LEGS(Suffix, Color, FullName, ResourceId, Defense)
 "AutomatonLegs" + Suffix
   {
     viewId = { "automaton_legs" Rgb Color 255 }
-    name = "pair of " + Adjective + " legs"
-    shortName = Adjective + " legs"
+    name = FullName
     modifiers = {
       DEFENSE Defense
     }
     weight = 8
     craftingCost = ResourceId 5
     upgradeInfo = { AUTOMATONS_LOWER AssembledCreatureEffect
-      Name Adjective + " legs"
+      Name FullName
       Description "Adds mobility. Second pair grants the \"jump\" ability."
       {
         AddBodyPart LEG 2 none
@@ -115,12 +114,11 @@ Def LEGS(Suffix, Color, Adjective, ResourceId, Defense)
     storageIds = {"automaton_parts" "equipment"}
   }
 End
-Def ARMS(Suffix, Color, Adjective, ResourceId, Damage, Attr)
+Def ARMS(Suffix, Color, FullName, ResourceId, Damage, Attr)
 "AutomatonArms" + Suffix
   {
     viewId = { "automaton_arms" Rgb Color 255 }
-    name = "pair of " + Adjective + " arms"
-    shortName = Adjective + " arms"
+    name = FullName
     modifiers = {
       Attr Damage
     }
@@ -130,7 +128,7 @@ Def ARMS(Suffix, Color, Adjective, ResourceId, Damage, Attr)
       type = AUTOMATONS_UPPER
       diminishModifier = "arms" 0.5
       prefix = AssembledCreatureEffect
-        Name Adjective + " arms"
+        Name FullName
         Description "Grants a melee attack."
         {
           AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 {
@@ -144,19 +142,18 @@ Def ARMS(Suffix, Color, Adjective, ResourceId, Damage, Attr)
     storageIds = {"automaton_parts" "equipment"}
   }
 End
-Def DRILL(Suffix, Color, Adjective, ResourceId, Digging)
+Def DRILL(Suffix, Color, FullName, ResourceId, Digging)
 "AutomatonDrill" + Suffix
   {
     viewId = { "automaton_drill" Rgb Color 255 }
-    name = Adjective + " drill"
-    shortName = Adjective + " drill"
+    name = FullName
     modifiers = {
       DIGGING Digging
     }
     weight = 6
     craftingCost = ResourceId 5
     upgradeInfo = { AUTOMATONS_UPPER AssembledCreatureEffect
-      Name "an " + Adjective + " drill"
+      Name FullName
       Description "A drill for automatons. Enables performing all worker tasks."
       {
         AddMinionTrait WORKER
@@ -167,11 +164,11 @@ Def DRILL(Suffix, Color, Adjective, ResourceId, Digging)
     storageIds = {"automaton_parts" "equipment"}
   }
 End
-Def CRAFTING_ARMS(Suffix, Color, Adjective, ResourceId, Skill)
+Def CRAFTING_ARMS(Suffix, Color, FullName, ResourceId, Skill)
 "AutomatonCrafting" + Suffix
   {
     viewId = { "automaton_crafting" Rgb Color 255 }
-    name = Adjective + " crafting arms"
+    name = FullName
     modifiers = {
       WORKSHOP Skill
       FORGE Skill
@@ -183,26 +180,25 @@ Def CRAFTING_ARMS(Suffix, Color, Adjective, ResourceId, Skill)
     upgradeInfo = {
       type = AUTOMATONS_UPPER
       prefix = AssembledCreatureEffect
-        Name Adjective + " crafting arms"
+        Name FullName
         Description "Grants the automaton the ability to craft."
         AddAutomatonPart 1 "crafting" { "installed_crafting" Rgb Color 255 }
     }
     storageIds = {"automaton_parts" "equipment"}
   }
 End
-Def REPAIR_ARMS(Suffix, Color, Adjective, ResourceId, Defense)
+Def REPAIR_ARMS(Suffix, Color, FullName, ResourceId, Defense)
 "RepairAutomatonArms" + Suffix
   {
     viewId = { "automaton_repair" Rgb Color 255 }
-    name = "pair of " + Adjective + " repair arms"
-    shortName = "repair arms"
+    name = FullName
     modifiers = {
       DEFENSE Defense
     }
     weight = 6
     craftingCost = ResourceId 5
     upgradeInfo = { AUTOMATONS_UPPER AssembledCreatureEffect
-      Name Adjective + " repair arms"
+      Name FullName
       Description "Grants the ability to repair other automatons."
       {
         GrantAbility "repair automaton"
@@ -214,37 +210,37 @@ Def REPAIR_ARMS(Suffix, Color, Adjective, ResourceId, Defense)
   }
 End
 
-HUMANOID_HEAD("Wood", 180 140 55, "wooden", WOOD, 2)
+HUMANOID_HEAD("Wood", 180 140 55, "wooden humanoid head", WOOD, 2)
 RANGED_HEAD("Wood", 180 140 55, "wooden arrow shooting head", WOOD, 2, 12, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
-LEGS("Wood", 180 140 55, "wooden", WOOD, 2)
-ARMS("Wood", 180 140 55, "wooden", WOOD, 11, DAMAGE)
-DRILL("Wood", 180 140 55, "wooden", WOOD, 10)
-CRAFTING_ARMS("Wood", 180 140 55, "wooden", WOOD, 10)
-HUMANOID_HEAD("Iron", 140 148 148, "iron", IRON, 4)
+LEGS("Wood", 180 140 55, "wooden legs", WOOD, 2)
+ARMS("Wood", 180 140 55, "wooden arms", WOOD, 11, DAMAGE)
+DRILL("Wood", 180 140 55, "wooden drill", WOOD, 10)
+CRAFTING_ARMS("Wood", 180 140 55, "wooden crafting arms", WOOD, 10)
+HUMANOID_HEAD("Iron", 140 148 148, "iron humanoid head", IRON, 4)
 RANGED_HEAD("Iron", 140 148 148, "iron arrow shooting head", IRON, 4, 15, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
 RANGED_HEAD("Iron", 140 148 148, "iron fire breathing head", IRON, 5, 15, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
 SPELL_HEAD("Iron", 140 148 148, "iron oil spitting head", IRON, 5, "automaton_oil", "oil breath", "Oil", "oil spitting")
 RANGED_HEAD("Iron", 140 148 148, "iron acid spitting head", IRON, 5, 15, "Acid", "acid", "acid spitting", "acid stream", "ACID_DAMAGE")
-LEGS("Iron", 140 148 148, "iron", IRON, 5)
-ARMS("Iron", 140 148 148, "iron", IRON, 16, DAMAGE)
-DRILL("Iron", 140 148 148, "iron", IRON, 15)
-CRAFTING_ARMS("Iron", 140 148 148, "iron", IRON, 17)
-REPAIR_ARMS("Iron", 140 148 148, "iron", IRON, 5)
-HUMANOID_HEAD("Ada", 148 189 189, "admantine", ADA, 6)
+LEGS("Iron", 140 148 148, "iron legs", IRON, 5)
+ARMS("Iron", 140 148 148, "iron arms", IRON, 16, DAMAGE)
+DRILL("Iron", 140 148 148, "iron drill", IRON, 15)
+CRAFTING_ARMS("Iron", 140 148 148, "iron crafting arms", IRON, 17)
+REPAIR_ARMS("Iron", 140 148 148, "iron repair arms", IRON, 5)
+HUMANOID_HEAD("Ada", 148 189 189, "admantine humanoid head", ADA, 6)
 RANGED_HEAD("Ada", 148 189 189, "adamantine arrow shooting head", ADA, 6, 20, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
 RANGED_HEAD("Ada", 148 189 189, "adamantine fire breathing head", ADA, 8, 20, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
 SPELL_HEAD("Ada", 148 189 189, "adamantine oil spitting head", ADA, 8, "automaton_oil", "oil breath", "Oil", "oil spitting")
 RANGED_HEAD("Ada", 148 189 189, "adamantine acid spitting head", ADA, 8, 20, "Acid", "acid", "acid spitting", "acid stream", "ACID_DAMAGE")
-LEGS("Ada", 148 189 189, "adamantine", ADA, 8)
-ARMS("Ada", 148 189 189, "adamantine", ADA, 24, DAMAGE)
-DRILL("Ada", 148 189 189, "adamantine", ADA, 20)
-CRAFTING_ARMS("Ada", 148 189 189, "adamantine", ADA, 27)
-REPAIR_ARMS("Ada", 148 189 189, "adamantine", ADA, 8)
-ARMS("Infernite", 220 148 148, "infernite", INFERNITE, 38, FIRE_DAMAGE)
-ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 38, SPELL_DAMAGE)
-LEGS("Infernite", 220 148 148, "infernite", INFERNITE, 18)
+LEGS("Ada", 148 189 189, "adamantine legs", ADA, 8)
+ARMS("Ada", 148 189 189, "adamantine arms", ADA, 24, DAMAGE)
+DRILL("Ada", 148 189 189, "adamantine drill", ADA, 20)
+CRAFTING_ARMS("Ada", 148 189 189, "adamantine crafting arms", ADA, 27)
+REPAIR_ARMS("Ada", 148 189 189, "adamantine repair arms", ADA, 8)
+ARMS("Infernite", 220 148 148, "infernite arms", INFERNITE, 38, FIRE_DAMAGE)
+ARMS("Adoxium", 220 148 220, "adoxium arms", ADOXIUM, 38, SPELL_DAMAGE)
+LEGS("Infernite", 220 148 148, "infernite legs", INFERNITE, 18)
 RANGED_HEAD("Infernite", 220 148 148, "infernite fire breathing head", INFERNITE, 18, 48, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
-LEGS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18)
+LEGS("Adoxium", 220 148 220, "adoxium legs", ADOXIUM, 18)
 SPELL_HEAD("Adoxium", 220 148 220, "adoxium invisibilty head", ADOXIUM, 18, "automaton_spell", "automaton invisibility", "Invisibility", "invisibility")
 SPELL_HEAD("Adoxium", 220 148 220, "adoxium teleport head", ADOXIUM, 18, "automaton_spell", "automaton teleport", "Teleport", "teleport")
 
