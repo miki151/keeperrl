@@ -41,7 +41,6 @@ Spell + "Head" + Suffix
   {
     viewId = { "automaton_" + SpellShort Rgb Color 255 }
     name = FullName
-    shortName = SpellLower
     modifiers = {
       DEFENSE Defense
       Attr Damage
@@ -69,7 +68,6 @@ Spell + "Head" + Suffix
   {
     viewId = { ViewId Rgb Color 255 }
     name = FullName
-    shortName = SpellLower
     modifiers = {
       DEFENSE Defense
     }
