@@ -36,11 +36,11 @@ Def HUMANOID_HEAD(Suffix, Color, Adjective, ResourceId, Defense)
     storageIds = {"automaton_parts" "equipment"}
   }
 End
-Def RANGED_HEAD(Suffix, Color, Adjective, ResourceId, Defense, Damage, Spell, SpellShort, SpellLower, SpellId, Attr)
+Def RANGED_HEAD(Suffix, Color, FullName, ResourceId, Defense, Damage, Spell, SpellShort, SpellLower, SpellId, Attr)
 Spell + "Head" + Suffix
   {
     viewId = { "automaton_" + SpellShort Rgb Color 255 }
-    name = Adjective + " " + SpellLower + " head"
+    name = FullName
     shortName = SpellLower
     modifiers = {
       DEFENSE Defense
@@ -52,7 +52,7 @@ Spell + "Head" + Suffix
       type = AUTOMATONS_UPPER
       diminishModifier = Spell 0.5
       prefix = AssembledCreatureEffect
-        Name Adjective + " head"
+        Name FullName
         Description "Grants the \"" + SpellId + "\" ability."
         {
           AddBodyPart HEAD 1 none
@@ -64,11 +64,11 @@ Spell + "Head" + Suffix
     storageIds = {"automaton_parts" "equipment"}
   }
 End
-Def SPELL_HEAD(Suffix, Color, Adjective, ResourceId, Defense, ViewId, SpellId, Spell, SpellLower)
+Def SPELL_HEAD(Suffix, Color, FullName, ResourceId, Defense, ViewId, SpellId, Spell, SpellLower)
 Spell + "Head" + Suffix
   {
     viewId = { ViewId Rgb Color 255 }
-    name = Adjective + " " + SpellLower + " head"
+    name = FullName
     shortName = SpellLower
     modifiers = {
       DEFENSE Defense
@@ -76,7 +76,7 @@ Spell + "Head" + Suffix
     weight = 4
     craftingCost = ResourceId 5
     upgradeInfo = { AUTOMATONS_UPPER AssembledCreatureEffect
-      Name Adjective + " " + SpellLower + " head"
+      Name FullName
       Description "Grants the \"" + SpellLower + "\" ability."
       {
         AddBodyPart HEAD 1 none
@@ -215,26 +215,26 @@ Def REPAIR_ARMS(Suffix, Color, Adjective, ResourceId, Defense)
 End
 
 HUMANOID_HEAD("Wood", 180 140 55, "wooden", WOOD, 2)
-RANGED_HEAD("Wood", 180 140 55, "wooden", WOOD, 2, 12, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
+RANGED_HEAD("Wood", 180 140 55, "wooden arrow shooting head", WOOD, 2, 12, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
 LEGS("Wood", 180 140 55, "wooden", WOOD, 2)
 ARMS("Wood", 180 140 55, "wooden", WOOD, 11, DAMAGE)
 DRILL("Wood", 180 140 55, "wooden", WOOD, 10)
 CRAFTING_ARMS("Wood", 180 140 55, "wooden", WOOD, 10)
 HUMANOID_HEAD("Iron", 140 148 148, "iron", IRON, 4)
-RANGED_HEAD("Iron", 140 148 148, "iron", IRON, 4, 15, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
-RANGED_HEAD("Iron", 140 148 148, "iron", IRON, 5, 15, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
-SPELL_HEAD("Iron", 140 148 148, "iron", IRON, 5, "automaton_oil", "oil breath", "Oil", "oil spitting")
-RANGED_HEAD("Iron", 140 148 148, "iron", IRON, 5, 15, "Acid", "acid", "acid spitting", "acid stream", "ACID_DAMAGE")
+RANGED_HEAD("Iron", 140 148 148, "iron arrow shooting head", IRON, 4, 15, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
+RANGED_HEAD("Iron", 140 148 148, "iron fire breathing head", IRON, 5, 15, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
+SPELL_HEAD("Iron", 140 148 148, "iron oil spitting head", IRON, 5, "automaton_oil", "oil breath", "Oil", "oil spitting")
+RANGED_HEAD("Iron", 140 148 148, "iron acid spitting head", IRON, 5, 15, "Acid", "acid", "acid spitting", "acid stream", "ACID_DAMAGE")
 LEGS("Iron", 140 148 148, "iron", IRON, 5)
 ARMS("Iron", 140 148 148, "iron", IRON, 16, DAMAGE)
 DRILL("Iron", 140 148 148, "iron", IRON, 15)
 CRAFTING_ARMS("Iron", 140 148 148, "iron", IRON, 17)
 REPAIR_ARMS("Iron", 140 148 148, "iron", IRON, 5)
 HUMANOID_HEAD("Ada", 148 189 189, "admantine", ADA, 6)
-RANGED_HEAD("Ada", 148 189 189, "adamantine", ADA, 6, 20, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
-RANGED_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, 20, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
-SPELL_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, "automaton_oil", "oil breath", "Oil", "oil spitting")
-RANGED_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, 20, "Acid", "acid", "acid spitting", "acid stream", "ACID_DAMAGE")
+RANGED_HEAD("Ada", 148 189 189, "adamantine arrow shooting head", ADA, 6, 20, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
+RANGED_HEAD("Ada", 148 189 189, "adamantine fire breathing head", ADA, 8, 20, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
+SPELL_HEAD("Ada", 148 189 189, "adamantine oil spitting head", ADA, 8, "automaton_oil", "oil breath", "Oil", "oil spitting")
+RANGED_HEAD("Ada", 148 189 189, "adamantine acid spitting head", ADA, 8, 20, "Acid", "acid", "acid spitting", "acid stream", "ACID_DAMAGE")
 LEGS("Ada", 148 189 189, "adamantine", ADA, 8)
 ARMS("Ada", 148 189 189, "adamantine", ADA, 24, DAMAGE)
 DRILL("Ada", 148 189 189, "adamantine", ADA, 20)
@@ -243,10 +243,10 @@ REPAIR_ARMS("Ada", 148 189 189, "adamantine", ADA, 8)
 ARMS("Infernite", 220 148 148, "infernite", INFERNITE, 38, FIRE_DAMAGE)
 ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 38, SPELL_DAMAGE)
 LEGS("Infernite", 220 148 148, "infernite", INFERNITE, 18)
-RANGED_HEAD("Infernite", 220 148 148, "infernite", INFERNITE, 18, 48, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
+RANGED_HEAD("Infernite", 220 148 148, "infernite fire breathing head", INFERNITE, 18, 48, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
 LEGS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18)
-SPELL_HEAD("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, "automaton_spell", "automaton invisibility", "Invisibility", "invisibility")
-SPELL_HEAD("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, "automaton_spell", "automaton teleport", "Teleport", "teleport")
+SPELL_HEAD("Adoxium", 220 148 220, "adoxium invisibilty head", ADOXIUM, 18, "automaton_spell", "automaton invisibility", "Invisibility", "invisibility")
+SPELL_HEAD("Adoxium", 220 148 220, "adoxium teleport head", ADOXIUM, 18, "automaton_spell", "automaton teleport", "Teleport", "teleport")
 
 "KaboomHead"
   {
