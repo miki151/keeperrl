@@ -1,4 +1,4 @@
-"mage" "MAGE_SPELL_SCHOOL_NAME" SPELL_DAMAGE
+"mage" MAGE_SPELL_SCHOOL_NAME SPELL_DAMAGE
 {
   "directed blast" 1
   "escape" 2
@@ -14,7 +14,7 @@
   "expert magic missile" 11
   "invisibility" 12
 }
-"healer" "HEALER_SPELL_SCHOOL_NAME" SPELL_DAMAGE
+"healer" HEALER_SPELL_SCHOOL_NAME SPELL_DAMAGE
 {
   "advanced healing" 1
   "expert healing" 2
@@ -24,13 +24,13 @@
   "poison resistance" 6
   "group healing" 7
 }
-"spiritualist" "SPIRITUALIST_SPELL_SCHOOL_NAME" SPELL_DAMAGE
+"spiritualist" SPIRITUALIST_SPELL_SCHOOL_NAME SPELL_DAMAGE
 {
   "heal spirit" 1
   "advanced heal spirit" 4
   "heal spirit group" 7
 }
-"fire" "FIRE_SPELL_SCHOOL_NAME" SPELL_DAMAGE
+"fire" FIRE_SPELL_SCHOOL_NAME SPELL_DAMAGE
 {
   "fire elemental" 1
   "advanced fire elemental" 2
@@ -38,7 +38,7 @@
   "firewall" 5
   "fire trap" 7
 }
-"illusion" "ILLUSION_SPELL_SCHOOL_NAME" SPELL_DAMAGE
+"illusion" ILLUSION_SPELL_SCHOOL_NAME SPELL_DAMAGE
 {
   "deception" 1
   "panic" 2
@@ -48,20 +48,20 @@
   "advanced invisibility" 6
   "blink" 7
 }
-"fighter" "FIGHTER_SPELL_SCHOOL_NAME" DAMAGE
+"fighter" FIGHTER_SPELL_SCHOOL_NAME DAMAGE
 {
   "shove" 4
   "swap positions" 7
 }
-"archer" "ARCHER_SPELL_SCHOOL_NAME" RANGED_DAMAGE
+"archer" ARCHER_SPELL_SCHOOL_NAME RANGED_DAMAGE
 {
   "bypass allies" 7
 }
-"vampire" "VAMPIRE_SPELL_SCHOOL_NAME" SPELL_DAMAGE
+"vampire" VAMPIRE_SPELL_SCHOOL_NAME SPELL_DAMAGE
 {
   "ennoblement" 7
 }
-"chickenmancy" "CHICKENMANCY_SPELL_SCHOOL_NAME" SPELL_DAMAGE
+"chickenmancy" CHICKENMANCY_SPELL_SCHOOL_NAME SPELL_DAMAGE
 {
   "summon chicken" 1
   "summon more chickens" 3
@@ -69,7 +69,7 @@
   "advanced chickenmorph" 7
   "chickengeddon" 10
 }
-"dwarf" "DWARF_SPELL_SCHOOL_NAME" SPELL_DAMAGE
+"dwarf" DWARF_SPELL_SCHOOL_NAME SPELL_DAMAGE
 {
   "defense bonus" 1
   "healing" 2
@@ -84,7 +84,7 @@
   "mass damage bonus" 11
   "group healing" 12
 }
-"zombie mage" "ZOMBIE_MAGE_SPELL_SCHOOL_NAME" SPELL_DAMAGE
+"zombie mage" ZOMBIE_MAGE_SPELL_SCHOOL_NAME SPELL_DAMAGE
 {
   "summon flies" 1
   "advanced defense bonus" 2
@@ -95,7 +95,7 @@
   "mass damage bonus" 7
   "advanced animate corpses" 8
 }
-"prayers" "PRAYERS_SPELL_SCHOOL_NAME" DIVINITY
+"prayers" PRAYERS_SPELL_SCHOOL_NAME DIVINITY
 {
   "healing prayer" 1
   "protection prayer" 2
