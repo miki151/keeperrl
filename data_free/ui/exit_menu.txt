@@ -26,15 +26,14 @@ End
   FocusKeysHorizontal()
   Window(
     Horizontal {
-      Using "save" IconButton("portal", "Save and exit")
+      Using "save" IconButton("portal", TEXT57)
       Width 20 {}
-      Using "options" IconButton("gnome", "Settings")
+      Using "options" IconButton("gnome", TEXT58)
       Width 20 {}
-      Using "retire" IconButton("throne", "Retire")
-      Using "retire_inactive" IconButtonInactive("throne", "Retire")
+      Using "retire" IconButton("throne", TEXT59)
+      Using "retire_inactive" IconButtonInactive("throne", TEXT59)
       Width 20 {}
-      Using "abandon" IconButton("grave", "Abandon game")
+      Using "abandon" IconButton("grave", TEXT60)
     }
   )
 }
-

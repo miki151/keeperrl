@@ -6,20 +6,20 @@ Def SavedGameContent() Vertical {
     {
       Horizontal {
         Vertical {
-          Horizontal { Using "label" Label() Using "warlord" Label(" (retired)") }
+          Horizontal { Using "label" Label() Using "warlord" Label(TEXT104) }
           Using "date" Label(none, 14, ColorId GRAY)
           Using "viewIds" List(HORIZONTAL, ViewId(1))
         }
         Stretch {}
         Position(TOP_RIGHT, {
-          Using "load" StandardButton(Label("Load game"))
-          Using "warlord" StandardButton(Label("Play as a warlord"))
+          Using "load" StandardButton(Label(TEXT105))
+          Using "warlord" StandardButton(Label(TEXT106))
         })
       }
     }
     MarginRight(2, Using "erase" Position(BOTTOM_RIGHT, Height 20 Width 45 {
         Button()
-        StandardButton(Label("erase", 16, Rgb 200 100 100 255))
+        StandardButton(Label(TEXT107, 16, Rgb 200 100 100 255))
     }))
   }
   Position(BOTTOM_STRETCHED, Height 10 Texture(HORI_BAR_MINI2))

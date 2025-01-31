@@ -36,20 +36,20 @@ Def BottomLinks()
     Fill(Rgb 0 0 0 200)
     Margins(10, {
       Vertical {
-        LinkButton("keeper4", "News", "https://keeperrl.com/category/News")
+        LinkButton("keeper4", TEXT108, "https://keeperrl.com/category/News")
         Height 10 {}
-        LinkButton("elementalist", "Wiki", "http://keeperrl.com/wiki")
+        LinkButton("elementalist", TEXT109, "http://keeperrl.com/wiki")
         Height 10 {}
-        LinkButton("jester", "Discord", "https://discordapp.com/invite/XZfCCs5")
+        LinkButton("jester", TEXT110, "https://discordapp.com/invite/XZfCCs5")
         Height 10 {}
-        LinkButton("gnome", "Github", "https://github.com/miki151/keeperrl")
+        LinkButton("gnome", TEXT111, "https://github.com/miki151/keeperrl")
         Height 10 {}
         Horizontal {
-          Label("Install id: ", 14, TextColor())
+          Label(TEXT112, 14, TextColor())
           Using "install_id" Label(none, 14, TextColor())
         }
         Horizontal {
-          Label("Build: ", 14, TextColor())
+          Label(TEXT113, 14, TextColor())
           Using "version" Label(none, 14, TextColor())
         }
       }

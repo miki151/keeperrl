@@ -68,23 +68,23 @@
 
 Def Stairs()
   {
-    { Furniture {{ "UP_STAIRS" }                  }              "Up stairs"       "Stairs"
-      "Build to reach higher z-levels." }
+    { Furniture {{ "UP_STAIRS" }                  }              BUILD_MENU_NAME138       BUILD_MENU_GROUPNAME15
+      BUILD_MENU_HELP94 }
 
-    { Furniture {{ "DOWN_STAIRS" }                }              "Down stairs"       "Stairs"
-      "Build to reach deeper z-levels." }
+    { Furniture {{ "DOWN_STAIRS" }                }              BUILD_MENU_NAME139       BUILD_MENU_GROUPNAME15
+      BUILD_MENU_HELP95 }
 
-    { Furniture {{ "UP_STAIRS_CASTLE" }   "STONE" 10        }              "Up stairs"       "Stairs"
-      "Build to reach higher z-levels." }
+    { Furniture {{ "UP_STAIRS_CASTLE" }   "STONE" 10        }              BUILD_MENU_NAME138       BUILD_MENU_GROUPNAME15
+      BUILD_MENU_HELP94 }
 
-    { Furniture {{ "DOWN_STAIRS_CASTLE" }  "STONE" 10       }              "Down stairs"       "Stairs"
-      "Build to reach deeper z-levels." }
+    { Furniture {{ "DOWN_STAIRS_CASTLE" }  "STONE" 10       }              BUILD_MENU_NAME139       BUILD_MENU_GROUPNAME15
+      BUILD_MENU_HELP95 }
 
-    { Furniture {{ "UP_STAIRS_CARPET" }   "GOLD" 10        }              "Up stairs"       "Stairs"
-      "Build to reach higher z-levels." }
+    { Furniture {{ "UP_STAIRS_CARPET" }   "GOLD" 10        }              BUILD_MENU_NAME138       BUILD_MENU_GROUPNAME15
+      BUILD_MENU_HELP94 }
 
-    { Furniture {{ "DOWN_STAIRS_CARPET" }  "GOLD" 10       }              "Down stairs"       "Stairs"
-      "Build to reach deeper z-levels." }
+    { Furniture {{ "DOWN_STAIRS_CARPET" }  "GOLD" 10       }              BUILD_MENU_NAME139       BUILD_MENU_GROUPNAME15
+      BUILD_MENU_HELP95 }
   }
 End
 
@@ -197,14 +197,14 @@ End
 Def LIBRARY(SUF1, SUF2)
   "library" + SUF2
   {
-    { Furniture {{ "BOOKCASE_WOOD" + SUF1 }   "WOOD" 15 }                 "Wooden bookcase"   "Library"
-        "Train your minions' magical powers here." "BOOKCASES"     {TechId "sorcery"} true BUILD_LIBRARY }
+    { Furniture {{ "BOOKCASE_WOOD" + SUF1 }   "WOOD" 15 }                 BUILD_MENU_NAME140   BUILD_MENU_GROUPNAME16
+        BUILD_MENU_HELP96 "BOOKCASES"     {TechId "sorcery"} true BUILD_LIBRARY }
 
-    { Furniture {{ "BOOKCASE_IRON" + SUF1 }   "IRON" 15 }                 "Iron bookcase"     "Library"
-        "Train your minions' magical powers here." none          {TechId "advanced sorcery"} }
+    { Furniture {{ "BOOKCASE_IRON" + SUF1 }   "IRON" 15 }                 BUILD_MENU_NAME141     BUILD_MENU_GROUPNAME16
+        BUILD_MENU_HELP96 none          {TechId "advanced sorcery"} }
 
-    { Furniture {{ "BOOKCASE_GOLD" + SUF1 }   "GOLD" 15 }                 "Golden bookcase"   "Library"
-        "Train your minions' magical powers here." none           {TechId "master sorcery"}}
+    { Furniture {{ "BOOKCASE_GOLD" + SUF1 }   "GOLD" 15 }                 BUILD_MENU_NAME142   BUILD_MENU_GROUPNAME16
+        BUILD_MENU_HELP96 none           {TechId "master sorcery"}}
   }
 End
 
@@ -316,17 +316,17 @@ End
 Def TRAINING(SUF1, SUF2)
   "training_dummies" + SUF2
   {
-    { Furniture {{ "TRAINING_WOOD" + SUF1 } "WOOD" 12 }                   "Wooden dummy"      "Training room"
-        "Train your minions' melee skills here." "TRAINING_DUMMIES" {} true  TRAINING_ROOM}
-    { Furniture {{ "TRAINING_IRON" + SUF1 } "IRON" 12 }                   "Iron dummy"        "Training room"
-        "Train your minions' melee skills here."   none { TechId "iron working" } }
-    { Furniture {{ "TRAINING_ADA" + SUF1 }  "ADA"  12 }                   "Adamantine dummy"  "Training room"
-        "Train your minions' melee skills here."   none { TechId "iron working" }}
+    { Furniture {{ "TRAINING_WOOD" + SUF1 } "WOOD" 12 }                   BUILD_MENU_NAME143      BUILD_MENU_GROUPNAME17
+        BUILD_MENU_HELP97 "TRAINING_DUMMIES" {} true  TRAINING_ROOM}
+    { Furniture {{ "TRAINING_IRON" + SUF1 } "IRON" 12 }                   BUILD_MENU_NAME144        BUILD_MENU_GROUPNAME17
+        BUILD_MENU_HELP97   none { TechId "iron working" } }
+    { Furniture {{ "TRAINING_ADA" + SUF1 }  "ADA"  12 }                   BUILD_MENU_NAME145  BUILD_MENU_GROUPNAME17
+        BUILD_MENU_HELP97   none { TechId "iron working" }}
   }
   "training" + SUF2 inherit "training_dummies" + SUF2 append
   {
-    { Furniture {{ "ARCHERY_RANGE" } "WOOD" 12 }                   "Archery target"    "Training room"
-        "Train your minions' archery skills here." none { TechId "archery" }}
+    { Furniture {{ "ARCHERY_RANGE" } "WOOD" 12 }                   BUILD_MENU_NAME146    BUILD_MENU_GROUPNAME17
+        BUILD_MENU_HELP98 none { TechId "archery" }}
   }
 End
 

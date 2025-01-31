@@ -4806,7 +4806,7 @@ End
     deathEffect = Filter Not Unlocked "goblins" {
       Unlock "goblins"
       Analytics "milestone" "goblinsUnlocked"
-      UnlockMessage("The Goblin Keeper has been unlocked!", "goblin_keeper4")
+      UnlockMessage(CREATURE_ATTRIBUTES_GOBLIN_KING_DEATHEFFECT, "goblin_keeper4")
     }
     chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_KING_CHATREACTIONFRIENDLY
     chatReactionHostile = CREATURE_ATTRIBUTES_GOBLIN_KING_CHATREACTIONHOSTILE

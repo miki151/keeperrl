@@ -17,7 +17,7 @@ Def HUMANOID_HEAD(Suffix, Color, FullName, ResourceId, Defense)
   {
     viewId = { "automaton_head" Rgb Color 255 }
     name = FullName
-    shortName = "humanoid head"
+    shortName = ITEMS_HUMANOIDHEADWOOD_SHORTNAME
     modifiers = {
       DEFENSE Defense
     }
@@ -25,7 +25,7 @@ Def HUMANOID_HEAD(Suffix, Color, FullName, ResourceId, Defense)
     craftingCost = ResourceId 5
     upgradeInfo = { AUTOMATONS_UPPER AssembledCreatureEffect
       Name FullName
-      Description "Allows using equipment."
+      Description ITEMS_HUMANOIDHEADWOOD_PREFIX
       {
         MakeHumanoid
         AddBodyPart HEAD 1 none
@@ -98,7 +98,7 @@ Def LEGS(Suffix, Color, FullName, ResourceId, Defense)
     craftingCost = ResourceId 5
     upgradeInfo = { AUTOMATONS_LOWER AssembledCreatureEffect
       Name FullName
-      Description "Adds mobility. Second pair grants the \"jump\" ability."
+      Description ITEMS_AUTOMATONLEGSWOOD_PREFIX
       {
         AddBodyPart LEG 2 none
         FirstSuccessful {
@@ -127,9 +127,9 @@ Def ARMS(Suffix, Color, FullName, ResourceId, Damage, Attr)
       diminishModifier = "arms" 0.5
       prefix = AssembledCreatureEffect
         Name FullName
-        Description "Grants a melee attack."
+        Description ITEMS_AUTOMATONARMSWOOD_PREFIX
         {
-          AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 {
+          AddBodyPart ARM 2 { Intrinsic { "fist_attack" } ITEMS_AUTOMATONARMSWOOD_ID 4 {
             attackMsg = SWING
             meleeAttackAttr = Attr
           } }
@@ -152,7 +152,7 @@ Def DRILL(Suffix, Color, FullName, ResourceId, Digging)
     craftingCost = ResourceId 5
     upgradeInfo = { AUTOMATONS_UPPER AssembledCreatureEffect
       Name FullName
-      Description "A drill for automatons. Enables performing all worker tasks."
+      Description ITEMS_AUTOMATONDRILLWOOD_PREFIX
       {
         AddMinionTrait WORKER
         AddBodyPart ARM 2 none
@@ -179,7 +179,7 @@ Def CRAFTING_ARMS(Suffix, Color, FullName, ResourceId, Skill)
       type = AUTOMATONS_UPPER
       prefix = AssembledCreatureEffect
         Name FullName
-        Description "Grants the automaton the ability to craft."
+        Description ITEMS_AUTOMATONCRAFTINGWOOD_PREFIX
         AddAutomatonPart 1 "crafting" { "installed_crafting" Rgb Color 255 }
     }
     storageIds = {"automaton_parts" "equipment"}
@@ -197,7 +197,7 @@ Def REPAIR_ARMS(Suffix, Color, FullName, ResourceId, Defense)
     craftingCost = ResourceId 5
     upgradeInfo = { AUTOMATONS_UPPER AssembledCreatureEffect
       Name FullName
-      Description "Grants the ability to repair other automatons."
+      Description ITEMS_REPAIRAUTOMATONARMSIRON_PREFIX
       {
         GrantAbility "repair automaton"
         AddBodyPart ARM 2 none
@@ -208,39 +208,39 @@ Def REPAIR_ARMS(Suffix, Color, FullName, ResourceId, Defense)
   }
 End
 
-HUMANOID_HEAD("Wood", 180 140 55, "wooden humanoid head", WOOD, 2)
-RANGED_HEAD("Wood", 180 140 55, "wooden arrow shooting head", WOOD, 2, 12, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
-LEGS("Wood", 180 140 55, "wooden legs", WOOD, 2)
-ARMS("Wood", 180 140 55, "wooden arms", WOOD, 11, DAMAGE)
-DRILL("Wood", 180 140 55, "wooden drill", WOOD, 10)
-CRAFTING_ARMS("Wood", 180 140 55, "wooden crafting arms", WOOD, 10)
-HUMANOID_HEAD("Iron", 140 148 148, "iron humanoid head", IRON, 4)
-RANGED_HEAD("Iron", 140 148 148, "iron arrow shooting head", IRON, 4, 15, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
-RANGED_HEAD("Iron", 140 148 148, "iron fire breathing head", IRON, 5, 15, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
-SPELL_HEAD("Iron", 140 148 148, "iron oil spitting head", IRON, 5, "automaton_oil", "oil breath", "Oil", "oil spitting")
-RANGED_HEAD("Iron", 140 148 148, "iron acid spitting head", IRON, 5, 15, "Acid", "acid", "acid spitting", "acid stream", "ACID_DAMAGE")
-LEGS("Iron", 140 148 148, "iron legs", IRON, 5)
-ARMS("Iron", 140 148 148, "iron arms", IRON, 16, DAMAGE)
-DRILL("Iron", 140 148 148, "iron drill", IRON, 15)
-CRAFTING_ARMS("Iron", 140 148 148, "iron crafting arms", IRON, 17)
-REPAIR_ARMS("Iron", 140 148 148, "iron repair arms", IRON, 5)
-HUMANOID_HEAD("Ada", 148 189 189, "admantine humanoid head", ADA, 6)
-RANGED_HEAD("Ada", 148 189 189, "adamantine arrow shooting head", ADA, 6, 20, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
-RANGED_HEAD("Ada", 148 189 189, "adamantine fire breathing head", ADA, 8, 20, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
-SPELL_HEAD("Ada", 148 189 189, "adamantine oil spitting head", ADA, 8, "automaton_oil", "oil breath", "Oil", "oil spitting")
-RANGED_HEAD("Ada", 148 189 189, "adamantine acid spitting head", ADA, 8, 20, "Acid", "acid", "acid spitting", "acid stream", "ACID_DAMAGE")
-LEGS("Ada", 148 189 189, "adamantine legs", ADA, 8)
-ARMS("Ada", 148 189 189, "adamantine arms", ADA, 24, DAMAGE)
-DRILL("Ada", 148 189 189, "adamantine drill", ADA, 20)
-CRAFTING_ARMS("Ada", 148 189 189, "adamantine crafting arms", ADA, 27)
-REPAIR_ARMS("Ada", 148 189 189, "adamantine repair arms", ADA, 8)
-ARMS("Infernite", 220 148 148, "infernite arms", INFERNITE, 38, FIRE_DAMAGE)
-ARMS("Adoxium", 220 148 220, "adoxium arms", ADOXIUM, 38, SPELL_DAMAGE)
-LEGS("Infernite", 220 148 148, "infernite legs", INFERNITE, 18)
-RANGED_HEAD("Infernite", 220 148 148, "infernite fire breathing head", INFERNITE, 18, 48, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
-LEGS("Adoxium", 220 148 220, "adoxium legs", ADOXIUM, 18)
-SPELL_HEAD("Adoxium", 220 148 220, "adoxium invisibilty head", ADOXIUM, 18, "automaton_spell", "automaton invisibility", "Invisibility", "invisibility")
-SPELL_HEAD("Adoxium", 220 148 220, "adoxium teleport head", ADOXIUM, 18, "automaton_spell", "automaton teleport", "Teleport", "teleport")
+HUMANOID_HEAD("Wood", 180 140 55, ITEMS_HUMANOIDHEADWOOD_NAME, WOOD, 2)
+RANGED_HEAD("Wood", 180 140 55, ITEMS_ARCHERHEADWOOD_NAME, WOOD, 2, 12, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
+LEGS("Wood", 180 140 55, ITEMS_AUTOMATONLEGSWOOD_NAME, WOOD, 2)
+ARMS("Wood", 180 140 55, ITEMS_AUTOMATONARMSWOOD_NAME, WOOD, 11, DAMAGE)
+DRILL("Wood", 180 140 55, ITEMS_AUTOMATONDRILLWOOD_NAME, WOOD, 10)
+CRAFTING_ARMS("Wood", 180 140 55, ITEMS_AUTOMATONCRAFTINGWOOD_NAME, WOOD, 10)
+HUMANOID_HEAD("Iron", 140 148 148, ITEMS_HUMANOIDHEADIRON_NAME, IRON, 4)
+RANGED_HEAD("Iron", 140 148 148, ITEMS_ARCHERHEADIRON_NAME, IRON, 4, 15, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
+RANGED_HEAD("Iron", 140 148 148, ITEMS_FIREHEADIRON_NAME, IRON, 5, 15, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
+SPELL_HEAD("Iron", 140 148 148, ITEMS_OILHEADIRON_NAME, IRON, 5, "automaton_oil", "oil breath", "Oil", "oil spitting")
+RANGED_HEAD("Iron", 140 148 148, ITEMS_ACIDHEADIRON_NAME, IRON, 5, 15, "Acid", "acid", "acid spitting", "acid stream", "ACID_DAMAGE")
+LEGS("Iron", 140 148 148, ITEMS_AUTOMATONLEGSIRON_NAME, IRON, 5)
+ARMS("Iron", 140 148 148, ITEMS_AUTOMATONARMSIRON_NAME, IRON, 16, DAMAGE)
+DRILL("Iron", 140 148 148, ITEMS_AUTOMATONDRILLIRON_NAME, IRON, 15)
+CRAFTING_ARMS("Iron", 140 148 148, ITEMS_AUTOMATONCRAFTINGIRON_NAME, IRON, 17)
+REPAIR_ARMS("Iron", 140 148 148, ITEMS_REPAIRAUTOMATONARMSIRON_NAME, IRON, 5)
+HUMANOID_HEAD("Ada", 148 189 189, ITEMS_HUMANOIDHEADADA_NAME, ADA, 6)
+RANGED_HEAD("Ada", 148 189 189, ITEMS_ARCHERHEADADA_NAME, ADA, 6, 20, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
+RANGED_HEAD("Ada", 148 189 189, ITEMS_FIREHEADADA_NAME, ADA, 8, 20, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
+SPELL_HEAD("Ada", 148 189 189, ITEMS_OILHEADADA_NAME, ADA, 8, "automaton_oil", "oil breath", "Oil", "oil spitting")
+RANGED_HEAD("Ada", 148 189 189, ITEMS_ACIDHEADADA_NAME, ADA, 8, 20, "Acid", "acid", "acid spitting", "acid stream", "ACID_DAMAGE")
+LEGS("Ada", 148 189 189, ITEMS_AUTOMATONLEGSADA_NAME, ADA, 8)
+ARMS("Ada", 148 189 189, ITEMS_AUTOMATONARMSADA_NAME, ADA, 24, DAMAGE)
+DRILL("Ada", 148 189 189, ITEMS_AUTOMATONDRILLADA_NAME, ADA, 20)
+CRAFTING_ARMS("Ada", 148 189 189, ITEMS_AUTOMATONCRAFTINGADA_NAME, ADA, 27)
+REPAIR_ARMS("Ada", 148 189 189, ITEMS_REPAIRAUTOMATONARMSADA_NAME, ADA, 8)
+ARMS("Infernite", 220 148 148, ITEMS_AUTOMATONARMSINFERNITE_NAME, INFERNITE, 38, FIRE_DAMAGE)
+ARMS("Adoxium", 220 148 220, ITEMS_AUTOMATONARMSADOXIUM_NAME, ADOXIUM, 38, SPELL_DAMAGE)
+LEGS("Infernite", 220 148 148, ITEMS_AUTOMATONLEGSINFERNITE_NAME, INFERNITE, 18)
+RANGED_HEAD("Infernite", 220 148 148, ITEMS_FIREHEADINFERNITE_NAME, INFERNITE, 18, 48, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
+LEGS("Adoxium", 220 148 220, ITEMS_AUTOMATONLEGSADOXIUM_NAME, ADOXIUM, 18)
+SPELL_HEAD("Adoxium", 220 148 220, ITEMS_INVISIBILITYHEADADOXIUM_NAME, ADOXIUM, 18, "automaton_spell", "automaton invisibility", "Invisibility", "invisibility")
+SPELL_HEAD("Adoxium", 220 148 220, ITEMS_TELEPORTHEADADOXIUM_NAME, ADOXIUM, 18, "automaton_spell", "automaton teleport", "Teleport", "teleport")
 
 "KaboomHead"
   {
@@ -1413,7 +1413,7 @@ End
       Message NORMAL "It predicts the coming of the Evil God Adoxie. You feel like this time it is real."
       Unlock "adoxie"
       Analytics "milestone" "adoxieUnlocked"
-      UnlockMessage("The Adoxie adventurer has been unlocked!", "adoxie_head")
+      UnlockMessage(ITEMS_ADOXIESCROLL_EFFECT2, "adoxie_head")
     }
   }
 
@@ -1431,7 +1431,7 @@ End
       Message NORMAL "An image of an unlocking door appears in your mind"
       Unlock "zombies"
       Analytics "milestone" "zombiesUnlocked"
-      UnlockMessage("The Zombie faction has been unlocked!", "zombie")
+      UnlockMessage(ITEMS_ZOMBIESCROLL_EFFECT1, "zombie")
     }
     storageIds = {"scrolls" "equipment"}
   }
@@ -1448,7 +1448,7 @@ End
         Message NORMAL "The strange symbols and arrows describe a door that has been unlocked"
         Unlock "cyclops"
         Analytics "milestone" "cyclopsUnlocked"
-        UnlockMessage("The Cyclops faction has been unlocked!", "cyclops")
+        UnlockMessage(ITEMS_CYCLOPSSCROLL_EFFECT1, "cyclops")
       }
       Filter Not Or{ LastingEffect INSANITY LastingEffect HALLU } {
         Message NORMAL "It contains strange symbols and arrows"
@@ -1716,7 +1716,7 @@ Def PROTECTION_RING(CreatureType, Predicate, Value)
     equipmentSlot = RINGS
     price = 60
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = "jewellery"
+    equipmentGroup = ITEMS_UNDEADPROTECTIONRING5_EQUIPMENTGROUP
   }
 End
 "UndeadProtectionRing5" PROTECTION_RING("undead", BodyMaterial "UNDEAD_FLESH", 5)
@@ -1767,20 +1767,20 @@ Def TAMING_RING(Creature, Count, Name, Price, Freq)
     equipmentSlot = RINGS
     price = Price
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = "jewellery"
+    equipmentGroup = ITEMS_SPIDERRING_EQUIPMENTGROUP
   }
 End
-"SpiderRing" TAMING_RING("SPIDER", 5, "ring of spider taming", 1, 0.01)
-"DragonRing" TAMING_RING("RED_DRAGON" "WHITE_DRAGON" "YELLOW_DRAGON" "GREEN_DRAGON", 1, "ring of dragon taming", 500, 0.001)
-"HorseRing" TAMING_RING("HORSE_CAN_TRAIN", 1, "ring of horse taming", 100, 0.005)
-"BatRing" TAMING_RING("BAT", 5, "ring of bat taming", 5, 0.01)
+"SpiderRing" TAMING_RING("SPIDER", 5, ITEMS_SPIDERRING_NAME, 1, 0.01)
+"DragonRing" TAMING_RING("RED_DRAGON" "WHITE_DRAGON" "YELLOW_DRAGON" "GREEN_DRAGON", 1, ITEMS_DRAGONRING_NAME, 500, 0.001)
+"HorseRing" TAMING_RING("HORSE_CAN_TRAIN", 1, ITEMS_HORSERING_NAME, 100, 0.005)
+"BatRing" TAMING_RING("BAT", 5, ITEMS_BATRING_NAME, 5, 0.01)
 Def DAMAGE_RING(VALUE)
   {
     viewId = { "ring" ColorId BLUE }
-    shortName = "damage"
-    name = "ring of damage"
-    plural = "rings of damage"
-    description = "Increases the force of your physical attacks, making you deal more damage in combat."
+    shortName = ITEMS_DAMAGERING3_SHORTNAME
+    name = ITEMS_DAMAGERING3_NAME
+    plural = ITEMS_DAMAGERING3_PLURAL
+    description = ITEMS_DAMAGERING3_DESCRIPTION
     equipmentSlot = RINGS
     price = 60
     modifiers = {
@@ -1788,7 +1788,7 @@ Def DAMAGE_RING(VALUE)
     }
     weight = 0.3
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = "jewellery"
+    equipmentGroup = ITEMS_DAMAGERING3_EQUIPMENTGROUP
   }
 End
 "DamageRing3" DAMAGE_RING(3)
@@ -1796,10 +1796,10 @@ End
 Def SPELL_DAMAGE_RING(VALUE)
   {
     viewId = { "ring" ColorId GREEN }
-    shortName = "spell damage"
-    name = "ring of spell damage"
-    plural = "rings of spell damage"
-    description = "Increases the force of your spell attacks, making you deal more damage in combat."
+    shortName = ITEMS_SPELLDAMAGERING3_SHORTNAME
+    name = ITEMS_SPELLDAMAGERING3_NAME
+    plural = ITEMS_SPELLDAMAGERING3_PLURAL
+    description = ITEMS_SPELLDAMAGERING3_DESCRIPTION
     equipmentSlot = RINGS
     price = 60
     modifiers = {
@@ -1807,7 +1807,7 @@ Def SPELL_DAMAGE_RING(VALUE)
     }
     weight = 0.3
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = "jewellery"
+    equipmentGroup = ITEMS_SPELLDAMAGERING3_EQUIPMENTGROUP
   }
 End
 "SpellDamageRing3" SPELL_DAMAGE_RING(3)
@@ -1815,10 +1815,10 @@ End
 Def RANGED_DAMAGE_RING(VALUE)
   {
     viewId = { "ring" ColorId YELLOW }
-    shortName = "ranged damage"
-    name = "ring of ranged damage"
-    plural = "rings of ranged damage"
-    description = "Increases the precision of your ranged attacks, making you deal more damage in combat."
+    shortName = ITEMS_RANGEDDAMAGERING3_SHORTNAME
+    name = ITEMS_RANGEDDAMAGERING3_NAME
+    plural = ITEMS_RANGEDDAMAGERING3_PLURAL
+    description = ITEMS_RANGEDDAMAGERING3_DESCRIPTION
     equipmentSlot = RINGS
     price = 60
     modifiers = {
@@ -1826,7 +1826,7 @@ Def RANGED_DAMAGE_RING(VALUE)
     }
     weight = 0.3
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = "jewellery"
+    equipmentGroup = ITEMS_RANGEDDAMAGERING3_EQUIPMENTGROUP
   }
 End
 "RangedDamageRing3" RANGED_DAMAGE_RING(3)
@@ -2070,7 +2070,7 @@ Def PROTECTION_BOOK(NAME, LOWER, PLURAL)
     shortName = "protection from " + PLURAL
     name = "liturgical book for protection from " + PLURAL
     ingredientType = LOWER + "_resistance_prayer"
-    effect = Name "None" Message NORMAL "Mass will be held with the intention of protecting minions from " + PLURAL + "."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT1 Message NORMAL "Mass will be held with the intention of protecting minions from " + PLURAL + "."
   }
 End
 PROTECTION_BOOK("Dragon", "dragon", "dragons")

@@ -10,8 +10,8 @@ Def ItemsWindow()
           ViewId(1, {"gold"})
           Label()
         }
-        Using "is_equipment_choice" Label("Owners:")
-        Using "choose_all" StandardButton(Label("Choose all"))
+        Using "is_equipment_choice" Label(TEXT121)
+        Using "choose_all" StandardButton(Label(TEXT122))
       }
       Height 10 {}
       Using "elems" List(VERTICAL,
@@ -19,7 +19,7 @@ Def ItemsWindow()
           Using "callback" Focusable NewHighlight()
           Using "callback" Button()
           Using "tooltip" GetTooltip(List(VERTICAL, Height 30 Label()))
-          If "equiped" Using "tooltip" GetTooltip(Vertical { List(VERTICAL, Height 30 Label()) Label("Equiped.")})
+          If "equiped" Using "tooltip" GetTooltip(Vertical { List(VERTICAL, Height 30 Label()) Label(TEXT123)})
           Position(MIDDLE_STRETCHED_X, Horizontal {
             Using "view_id" ViewId()
             Width 5 {}

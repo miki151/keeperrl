@@ -123,8 +123,8 @@ append {
       {{Potion Lasting 20   MAGIC_VULNERABILITY}  6        "GOLD" 40      "advanced alchemy"}
       {{Potion Lasting INVISIBLE}            6        "GOLD" 20      "advanced alchemy"}
       {{Potion Heal { SPIRIT }}              4        "GOLD" 20      "advanced alchemy"}
-      {{GasPotion("FOG", "Releases a fog cloud")} 4   "GOLD" 10      "advanced alchemy"}
-      {{GasPotion("POISON_GAS", "Releases a cloud of poison gas")} 4   "GOLD" 30    "advanced alchemy"}
+      {{GasPotion("FOG", WORKSHOPS_MENU_TYPE28)} 4   "GOLD" 10      "advanced alchemy"}
+      {{GasPotion("POISON_GAS", WORKSHOPS_MENU_TYPE29)} 4   "GOLD" 30    "advanced alchemy"}
       {item = {Potion OneTimeBoost() IncreaseAttr DEFENSE 5} work = 20 cost = "GOLD" 100
           requireIngredient = "cyclops_brain" }
       {item = {Potion Lasting PLAGUE} work = 5 cost = "GOLD" 10 requireIngredient = "zombie_brain" }

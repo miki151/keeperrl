@@ -1,5 +1,5 @@
 Def FogPotion() 
-Potion Description "Releases a fog cloud" Area 1 EmitGas "FOG" 1
+Potion Description ITEM_LISTS_VILLAGESHOP_TYPE Area 1 EmitGas "FOG" 1
 End
 
 "villageShop"

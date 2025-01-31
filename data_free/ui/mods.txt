@@ -4,7 +4,7 @@ Def ModLabel()
   Height 25 {
     Using "choose" { Focusable {} BlockMouseEvents({MOVED}) }
     Using "selected" NewHighlight()
-    Using "active" MarginLeft(-18, Label(text = "✓", font = SYMBOL_FONT, color = ColorId GREEN))
+    Using "active" MarginLeft(-18, Label(text = TEXT115, font = SYMBOL_FONT, color = ColorId GREEN))
     Using "name" Scissor Label()
     Using "choose" Button()
   }
@@ -25,9 +25,9 @@ End
   WindowNoMargin(Width 900 Height 700 MarginTop(15, MarginBottom(15, {
     Horizontal {
       Width 300 Scrolling(0, Vertical {
-          Using "local" ModList("Downloaded:")
-          Using "subscribed" ModList("Subscribed:")
-          Using "online" ModList("Online:")
+          Using "local" ModList(TEXT114)
+          Using "subscribed" ModList(TEXT116)
+          Using "online" ModList(TEXT117)
           Height 10 {}
           MarginLeft(18, MarginRight(18, Using "create_new" StandardButtonNotFocusable(Label(TEXT44))))
       })
@@ -42,9 +42,9 @@ End
         Height 15 {}
         Stretch Using "description" Scrolling(1, MarginRight(30, Paragraph(520)))
         Horizontal {
-          Using "Activate" KeybindingButton("Activate", MENU_SELECT)
-          Using "Deactivate" KeybindingButton("Deactivate", MENU_SELECT)
-          Using "Download" KeybindingButton("Download", MENU_SELECT)
+          Using "Activate" KeybindingButton(TEXT118, MENU_SELECT)
+          Using "Deactivate" KeybindingButton(TEXT119, MENU_SELECT)
+          Using "Download" KeybindingButton(TEXT120, MENU_SELECT)
           Using "Update" StandardButtonNotFocusable(Label("Update"))
           Using "Upload" StandardButtonNotFocusable(Label("Upload"))
           Using "show_workshop" StandardButtonNotFocusable(Label(TEXT45))

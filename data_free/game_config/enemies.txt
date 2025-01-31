@@ -599,7 +599,7 @@ Def STABLE(Tribe, Mount1, Mount2, Creature1, Creature2)
   settlement = {
     type = RandomLayout { "stable" { 13 13 } "default"}
     tribe = Tribe
-    race = "stable"
+    race = ENEMIES_HUMAN_STABLE_RACE
     locationNameGen = TOWN
     inhabitants = {
       fighters = {

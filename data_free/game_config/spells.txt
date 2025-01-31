@@ -137,10 +137,10 @@ End
 Def TryMagicMissile()
   TryNoFriendlyFire(
     {
-      CreatureMessage {"are hit by the missile" "is hit by the missile"}
+      CreatureMessage {SPELLS_MAGIC_MISSILE_SECONDPERSON SPELLS_MAGIC_MISSILE_THIRDPERSON}
       Damage SPELL_DAMAGE SPELL
     },
-    CreatureMessage {"are spared by the missile" "is spared by the missile"}
+    CreatureMessage {SPELLS_MAGIC_MISSILE_SECONDPERSON1 SPELLS_MAGIC_MISSILE_THIRDPERSON1}
   )
 End
 
@@ -646,8 +646,8 @@ SpellName
 }
 End
 
-OneTimeAbility("ennoblement", "Reaches the status of a vampire lord.", { SetViewId {"vampire_lord"} SetCreatureName SPELLS_ENNOBLEMENT_ID }, "🧛")
-OneTimeAbility("bypass allies", "All ranged attacks will bypass allies.", Permanent NO_FRIENDLY_FIRE, "🎯")
+OneTimeAbility(SPELLS_ENNOBLEMENT_EFFECT, SPELLS_ENNOBLEMENT_EFFECT1, { SetViewId {"vampire_lord"} SetCreatureName SPELLS_ENNOBLEMENT_ID }, "🧛")
+OneTimeAbility(SPELLS_BYPASS_ALLIES_EFFECT, SPELLS_BYPASS_ALLIES_EFFECT1, Permanent NO_FRIENDLY_FIRE, "🎯")
 
 
 Def AnyCreature() Health 0 1 End
@@ -895,10 +895,10 @@ Def NoEffect() Unlock "nothing" End
 Def TryHolyMissile()
   TryNoFriendlyFire(
     {
-      CreatureMessage {"are hit by the missile" "is hit by the missile"}
+      CreatureMessage {SPELLS_MAGIC_MISSILE_SECONDPERSON SPELLS_MAGIC_MISSILE_THIRDPERSON}
       Damage DIVINITY SPELL
     },
-    CreatureMessage {"are spared by the missile" "is spared by the missile"}
+    CreatureMessage {SPELLS_MAGIC_MISSILE_SECONDPERSON1 SPELLS_MAGIC_MISSILE_THIRDPERSON1}
   )
 End
 

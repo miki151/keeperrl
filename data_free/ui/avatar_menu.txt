@@ -3,7 +3,7 @@ Def KeeperButton() {
   Using "selected" MarginTop(-1, MarginBottom(-4, NewHighlight()))
   If "select_callback" MarginTop(2, MarginBottom(2, Using "base_name" Label()))
   MarginTop(2, MarginBottom(2, If "locked" Using "base_name" Label(color = ColorId LIGHT_GRAY)))
-  If "locked" GetTooltip(Label("This base can be unlocked by solving a puzzle or finding a secret while playing the game. You can also unlock all content in the settings."))
+  If "locked" GetTooltip(Label(TEXT125))
   Using "select_callback" Button()
 }
 End
@@ -73,14 +73,14 @@ End
         }
         Height 20 {}
         Stretch {}
-        Position(MIDDLE, Using "start_game" Width 265 KeybindingButton("Start new game", MENU_SELECT))
+        Position(MIDDLE, Using "start_game" Width 265 KeybindingButton(TEXT126, MENU_SELECT))
       }
     })
     MarginTop(-3,
     Position(MIDDLE, Horizontal {
       Width 265 Using "tutorial_callback" StandardButtonNotFocusable(Label(TEXT10))
       Width 265 Using "change_mod" StandardButtonNotFocusable(Label(TEXT11))
-      Width 265 Using "go_back" KeybindingButton("Go back", EXIT_MENU)
+      Width 265 Using "go_back" KeybindingButton(TEXT127, EXIT_MENU)
     }))
   }
 }
