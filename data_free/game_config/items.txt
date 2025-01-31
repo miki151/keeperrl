@@ -289,7 +289,7 @@ SPELL_HEAD("Adoxium", 220 148 220, ITEMS_TELEPORTHEADADOXIUM_NAME, ADOXIUM, 18, 
       1 VictimEffect 0.1 Lasting POISON
     }
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = ITEMS_KNIFE_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
   }
 "AssassinsKnife" inherit "Knife"
   {
@@ -300,7 +300,7 @@ SPELL_HEAD("Adoxium", 220 148 220, ITEMS_TELEPORTHEADADOXIUM_NAME, ADOXIUM, 18, 
     specialAttr = {
       DAMAGE 30 Name "against tribe leaders when hidden" And { CreatureStatus LEADER Attacker Hidden }
     }
-    equipmentGroup = ITEMS_KNIFE_EQUIPMENTGROUP1
+    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
   }
 "UnicornHorn"
   {
@@ -341,7 +341,7 @@ SPELL_HEAD("Adoxium", 220 148 220, ITEMS_TELEPORTHEADADOXIUM_NAME, ADOXIUM, 18, 
       DAMAGE 15 Rider
     }
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = ITEMS_SPEAR_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_BASIC_EQUIPMENT
   }
 "Sword"
   {
@@ -370,7 +370,7 @@ SPELL_HEAD("Adoxium", 220 148 220, ITEMS_TELEPORTHEADADOXIUM_NAME, ADOXIUM, 18, 
     }
     maxUpgrades = 1
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = ITEMS_SWORD_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_ADAMANTINE_EQUIPMENT
   }
 "AdaSword" inherit "Sword"
   {
@@ -389,7 +389,7 @@ SPELL_HEAD("Adoxium", 220 148 220, ITEMS_TELEPORTHEADADOXIUM_NAME, ADOXIUM, 18, 
       1 VictimEffect 0.2 Lasting POISON
       1 LastingEffect RAGE
     }
-    equipmentGroup = ITEMS_SWORD_EQUIPMENTGROUP1
+    equipmentGroup = EQUIPMENT_GROUP_ADAMANTINE_EQUIPMENT
   }
 # Not used anymore, but keep to stop mods from crashing
 Def InferniteEffect()
@@ -412,7 +412,7 @@ End
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
     ownedEffect = { LIGHT_SOURCE INFERNITE_EFFECT }
     equipedEffect = {FIRE_DAMAGE}
-    equipmentGroup = ITEMS_ADASWORD_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_INFERNITE_EQUIPMENT
   }
 "ElvenSword"
   {
@@ -434,7 +434,7 @@ End
       1 SpecialAttr DAMAGE 10 HatedBy HATE_UNDEAD
     }
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = ITEMS_ELVENSWORD_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_IRON_EQUIPMENT
   }
 "BattleAxe"
   {
@@ -459,7 +459,7 @@ End
     }
     maxUpgrades = 1
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = ITEMS_BATTLEAXE_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_ADAMANTINE_EQUIPMENT
   }
 "AdaBattleAxe" inherit "BattleAxe"
   {
@@ -476,7 +476,7 @@ End
       1 VictimEffect 0.5 Lasting 50 BLEEDING
     }
     maxUpgrades = 2
-    equipmentGroup = ITEMS_BATTLEAXE_EQUIPMENTGROUP1
+    equipmentGroup = EQUIPMENT_GROUP_ADAMANTINE_EQUIPMENT
   }
 "InferniteBattleAxe" inherit "AdaBattleAxe"
   {
@@ -492,7 +492,7 @@ End
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
     ownedEffect = { LIGHT_SOURCE INFERNITE_EFFECT }
     equipedEffect = {FIRE_DAMAGE}
-    equipmentGroup = ITEMS_ADABATTLEAXE_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_INFERNITE_EQUIPMENT
   }
 "WarHammer"
   {
@@ -516,7 +516,7 @@ End
     }
     maxUpgrades = 1
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = ITEMS_WARHAMMER_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_ADAMANTINE_EQUIPMENT
   }
 "AdaWarHammer" inherit "WarHammer"
   {
@@ -532,7 +532,7 @@ End
       1 VictimEffect 0.5 Lasting COLLAPSED
     }
     maxUpgrades = 2
-    equipmentGroup = ITEMS_WARHAMMER_EQUIPMENTGROUP1
+    equipmentGroup = EQUIPMENT_GROUP_ADAMANTINE_EQUIPMENT
   }
 "InferniteWarHammer" inherit "AdaWarHammer"
   {
@@ -548,7 +548,7 @@ End
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
     ownedEffect = { LIGHT_SOURCE INFERNITE_EFFECT }
     equipedEffect = {FIRE_DAMAGE}
-    equipmentGroup = ITEMS_ADAWARHAMMER_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_INFERNITE_EQUIPMENT
   }
 "InferniteTrident"
   {
@@ -573,7 +573,7 @@ End
     ownedEffect = { LIGHT_SOURCE INFERNITE_EFFECT }
     storageIds = {"weapons" "equipment"}
     equipedEffect = {FIRE_DAMAGE}
-    equipmentGroup = ITEMS_INFERNITETRIDENT_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_INFERNITE_EQUIPMENT
   }
 "Club"
   {
@@ -592,7 +592,7 @@ End
     }
     maxUpgrades = 0
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = ITEMS_CLUB_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_BASIC_EQUIPMENT
   }
 "HeavyClub"
   {
@@ -612,7 +612,7 @@ End
     }
     maxUpgrades = 0
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = ITEMS_HEAVYCLUB_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_BASIC_EQUIPMENT
   }
 "WoodenStaff"
   {
@@ -636,7 +636,7 @@ End
     }
     maxUpgrades = 1
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = ITEMS_WOODENSTAFF_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
   }
 "ArchwoodStaff" inherit "WoodenStaff"
   {
@@ -657,7 +657,7 @@ End
       }
     }
     maxUpgrades = 2
-    equipmentGroup = ITEMS_WOODENSTAFF_EQUIPMENTGROUP1
+    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
   }
 "AdoxiumStaff"
   {
@@ -685,7 +685,7 @@ End
     }
     maxUpgrades = 5
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = ITEMS_ADOXIUMSTAFF_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_ADOXIUM_EQUIPMENT
   }
 "ElvenStaff" inherit "WoodenStaff"
   {
@@ -713,7 +713,7 @@ End
     }
     equipedAbility = { "kings charge" }
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = ITEMS_SCEPTRE_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
   }
 "WoodenCrozier"
   {
@@ -733,7 +733,7 @@ End
     }
     equipedAbility = { "holy missile" }
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = ITEMS_WOODENCROZIER_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_BASIC_EQUIPMENT
   }
 "IronCrozier"
   {
@@ -755,7 +755,7 @@ End
     }
     equipedAbility = { "advanced holy missile" }
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = ITEMS_IRONCROZIER_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_IRON_EQUIPMENT
   }
 "AdoxiumCrozier"
   {
@@ -777,7 +777,7 @@ End
     }
     equipedAbility = { "expert holy missile" }
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = ITEMS_ADOXIUMCROZIER_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_ADOXIUM_EQUIPMENT
   }
 "Bow"
   {
@@ -796,7 +796,7 @@ End
     price = 12
     maxUpgrades = 1
     storageIds = {"bows" "weapons" "equipment"}
-    equipmentGroup = ITEMS_BOW_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_RANGED_WEAPONS
   }
 "ElvenBow" inherit "Bow"
   {
@@ -834,7 +834,7 @@ End
     price = 90
     maxUpgrades = 1
     storageIds = {"bows" "weapons" "equipment"}
-    equipmentGroup = ITEMS_CROSSBOW_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_RANGED_WEAPONS
   }
 "ArchwoodCrossbow" inherit "Crossbow"
   {
@@ -855,7 +855,7 @@ End
     plural = ITEMS_TORCH_PLURAL
     price = 2
     storageIds = {"equipment"}
-    equipmentGroup = ITEMS_TORCH_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_LIGHT_EMITTING_EQUIPMENT
   }
 "Robe"
   {
@@ -872,7 +872,7 @@ End
       1 LastingEffect MAGIC_RESISTANCE
     }
     storageIds = {"armor" "equipment"}
-    equipmentGroup = ITEMS_ROBE_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_BASIC_EQUIPMENT
   }
 "HalloweenCostume"
   {
@@ -919,7 +919,7 @@ End
     }
     maxUpgrades = 0
     storageIds = {"armor" "equipment"}
-    equipmentGroup = ITEMS_LEATHERGLOVES_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_BASIC_EQUIPMENT
   }
 "IronGloves"
   {
@@ -941,7 +941,7 @@ End
     }
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
-    equipmentGroup = ITEMS_IRONGLOVES_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_IRON_EQUIPMENT
   }
 "AdaGloves"
   {
@@ -963,7 +963,7 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
-    equipmentGroup = ITEMS_ADAGLOVES_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_ADOXIUM_EQUIPMENT
   }
 "AdoxiumGloves" inherit "AdaGloves"
   {
@@ -976,7 +976,7 @@ End
       DEFENSE 10
       SPELL_SPEED 10
     }
-    equipmentGroup = ITEMS_ADAGLOVES_EQUIPMENTGROUP1
+    equipmentGroup = EQUIPMENT_GROUP_ADOXIUM_EQUIPMENT
   }
 "LeatherArmor"
   {
@@ -995,7 +995,7 @@ End
     }
     maxUpgrades = 0
     storageIds = {"armor" "equipment"}
-    equipmentGroup = ITEMS_LEATHERARMOR_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
   }
 "LeatherHelm"
   {
@@ -1016,7 +1016,7 @@ End
     }
     maxUpgrades = 0
     storageIds = {"armor" "equipment"}
-    equipmentGroup = ITEMS_LEATHERHELM_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
   }
 "WoodenShield"
   {
@@ -1032,7 +1032,7 @@ End
     }
     maxUpgrades = 0
     storageIds = {"armor" "equipment"}
-    equipmentGroup = ITEMS_WOODENSHIELD_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_BASIC_EQUIPMENT
   }
 "IronShield"
   {
@@ -1050,7 +1050,7 @@ End
     }
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
-    equipmentGroup = ITEMS_IRONSHIELD_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_IRON_EQUIPMENT
   }
 "AdaShield"
   {
@@ -1068,7 +1068,7 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
-    equipmentGroup = ITEMS_ADASHIELD_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_ADAMANTINE_EQUIPMENT
   }
 "ChainArmor"
   {
@@ -1088,7 +1088,7 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
-    equipmentGroup = ITEMS_CHAINARMOR_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_IRON_EQUIPMENT
   }
 "RedDragonScales"
   {
@@ -1113,7 +1113,7 @@ End
     }
     equipedEffect = {FIRE_RESISTANT}
     maxUpgrades = 2
-    equipmentGroup = ITEMS_LEATHERARMOR_EQUIPMENTGROUP1
+    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
   }
 "BlackDragonScales"
   {
@@ -1138,7 +1138,7 @@ End
     }
     equipedEffect = {DARKNESS_SOURCE TELEPATHY}
     maxUpgrades = 2
-    equipmentGroup = ITEMS_LEATHERARMOR_EQUIPMENTGROUP1
+    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
   }
 "WhiteDragonScales"
   {
@@ -1163,7 +1163,7 @@ End
     }
     equipedEffect = {COLD_RESISTANT}
     maxUpgrades = 2
-    equipmentGroup = ITEMS_LEATHERARMOR_EQUIPMENTGROUP1
+    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
   }
 "YellowDragonScales"
   {
@@ -1189,7 +1189,7 @@ End
     }
     equipedAbility = {"acid stream"}
     maxUpgrades = 2
-    equipmentGroup = ITEMS_LEATHERARMOR_EQUIPMENTGROUP1
+    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
   }
 "GreenDragonScales"
   {
@@ -1214,7 +1214,7 @@ End
     }
     equipedEffect = {POISON_RESISTANT}
     maxUpgrades = 2
-    equipmentGroup = ITEMS_LEATHERARMOR_EQUIPMENTGROUP1
+    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
   }
 "AdaArmor"
   {
@@ -1234,7 +1234,7 @@ End
     }
     maxUpgrades = 4
     storageIds = {"armor" "equipment"}
-    equipmentGroup = ITEMS_ADAARMOR_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_ADOXIUM_EQUIPMENT
   }
 "AdoxiumArmor" inherit "AdaArmor"
   {
@@ -1246,7 +1246,7 @@ End
       DEFENSE 35
       SPELL_SPEED 45
     }
-    equipmentGroup = ITEMS_ADAARMOR_EQUIPMENTGROUP1
+    equipmentGroup = EQUIPMENT_GROUP_ADOXIUM_EQUIPMENT
   }
 "IronHelm"
   {
@@ -1268,7 +1268,7 @@ End
     }
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
-    equipmentGroup = ITEMS_IRONHELM_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_IRON_EQUIPMENT
   }
 "Archwood"
   {
@@ -1366,7 +1366,7 @@ End
     }
     equipedEffect = {ENTERTAINER}
     maxUpgrades = 3
-    equipmentGroup = ITEMS_LEATHERHELM_EQUIPMENTGROUP1
+    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
   }
 "AdoxieEye"
   {
@@ -1389,7 +1389,7 @@ End
     }
     price = 12000
     storageIds = {"bows" "weapons" "equipment"}
-    equipmentGroup = ITEMS_BALROGSWHIP_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
   }
 "AdoxieScroll"
   {
@@ -1476,7 +1476,7 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
-    equipmentGroup = ITEMS_ADAHELM_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_ADOXIUM_EQUIPMENT
   }
 "AdoxiumHelm" inherit "AdaHelm"
   {
@@ -1488,7 +1488,7 @@ End
     }
     price = 400
     craftingCost = "ADOXIUM" 16
-    equipmentGroup = ITEMS_ADAHELM_EQUIPMENTGROUP1
+    equipmentGroup = EQUIPMENT_GROUP_ADOXIUM_EQUIPMENT
   }
 "Cornuthaum1"
   {
@@ -1554,7 +1554,7 @@ End
     }
     maxUpgrades = 0
     storageIds = {"armor" "equipment"}
-    equipmentGroup = ITEMS_LEATHERBOOTS_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_BASIC_EQUIPMENT
   }
 "IronBoots"
   {
@@ -1577,7 +1577,7 @@ End
     }
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
-    equipmentGroup = ITEMS_IRONBOOTS_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_IRON_EQUIPMENT
   }
 "AdaBoots"
   {
@@ -1598,7 +1598,7 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
-    equipmentGroup = ITEMS_ADABOOTS_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_ADOXIUM_EQUIPMENT
   }
 "AdoxiumBoots" inherit "AdaBoots"
   {
@@ -1611,7 +1611,7 @@ End
       DEFENSE 10
       SPELL_SPEED 10
     }
-    equipmentGroup = ITEMS_ADABOOTS_EQUIPMENTGROUP1
+    equipmentGroup = EQUIPMENT_GROUP_ADOXIUM_EQUIPMENT
   }
 "DevilHooves"
   {
@@ -1639,7 +1639,7 @@ End
     equipedEffect = {FLYING SPELL_DAMAGE}
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
-    equipmentGroup = ITEMS_DEVILBOOTS_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
   }
 "DevilHorns"
   {
@@ -1665,7 +1665,7 @@ End
     }
     weight = 0.3
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = ITEMS_DEFENSEAMULET_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_JEWELLERY
   }
 "DefenseAmulet10" inherit "DefenseAmulet"
   {
@@ -1686,7 +1686,7 @@ End
     price = 2
     effect = Heal { FLESH }
     storageIds = {"equipment"}
-    equipmentGroup = ITEMS_FIRSTAIDKIT_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_CONSUMABLES
   }
 "MagicLamp"
   {
@@ -1702,7 +1702,7 @@ End
     effectDescription = false
     ownedEffect = LIGHT_SOURCE
     storageIds = {"equipment"}
-    equipmentGroup = ITEMS_MAGICLAMP_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_LIGHT_EMITTING_EQUIPMENT
   }
 Def PROTECTION_RING(CreatureType, Predicate, Value)
   {
@@ -1716,7 +1716,7 @@ Def PROTECTION_RING(CreatureType, Predicate, Value)
     equipmentSlot = RINGS
     price = 60
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = ITEMS_UNDEADPROTECTIONRING5_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_JEWELLERY
   }
 End
 "UndeadProtectionRing5" PROTECTION_RING("undead", BodyMaterial "UNDEAD_FLESH", 5)
@@ -1739,7 +1739,7 @@ End
     price = 50
     autoEquipPredicate = Or {}
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = ITEMS_INVISIBILITYRING_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_JEWELLERY
   }
 "JumpRing"
   {
@@ -1751,7 +1751,7 @@ End
     equipmentSlot = RINGS
     price = 50
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = ITEMS_JUMPRING_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_JEWELLERY
   }
 Def TAMING_RING(Creature, Count, Name, Price, Freq)
   {
@@ -1767,7 +1767,7 @@ Def TAMING_RING(Creature, Count, Name, Price, Freq)
     equipmentSlot = RINGS
     price = Price
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = ITEMS_SPIDERRING_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_JEWELLERY
   }
 End
 "SpiderRing" TAMING_RING("SPIDER", 5, ITEMS_SPIDERRING_NAME, 1, 0.01)
@@ -1788,7 +1788,7 @@ Def DAMAGE_RING(VALUE)
     }
     weight = 0.3
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = ITEMS_DAMAGERING3_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_JEWELLERY
   }
 End
 "DamageRing3" DAMAGE_RING(3)
@@ -1807,7 +1807,7 @@ Def SPELL_DAMAGE_RING(VALUE)
     }
     weight = 0.3
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = ITEMS_SPELLDAMAGERING3_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_JEWELLERY
   }
 End
 "SpellDamageRing3" SPELL_DAMAGE_RING(3)
@@ -1826,7 +1826,7 @@ Def RANGED_DAMAGE_RING(VALUE)
     }
     weight = 0.3
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = ITEMS_RANGEDDAMAGERING3_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_JEWELLERY
   }
 End
 "RangedDamageRing3" RANGED_DAMAGE_RING(3)
@@ -2149,7 +2149,7 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     equipedEffect = { "MAGIC_RESISTANCE" }
     weight = 0.3
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = ITEMS_DIVINITYAMULET_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_JEWELLERY
   }
 "RosaryRing"
   {
@@ -2164,7 +2164,7 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     }
     weight = 0.1
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = ITEMS_ROSARYRING_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_JEWELLERY
   }
 "BishopRing"
   {
@@ -2177,7 +2177,7 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     equipedAbility = { "bishop audience" }
     weight = 0.1
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = ITEMS_BISHOPRING_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_JEWELLERY
   }
 "DevotionalMedal"
   {
@@ -2191,7 +2191,7 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     }
     weight = 0.1
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = ITEMS_DEVOTIONALMEDAL_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_JEWELLERY
   }
 "AdoxieAmulet"
   {
@@ -2203,7 +2203,7 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     equipedAbility = { "animate corpses" }
     weight = 0.3
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = ITEMS_ADOXIEAMULET_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_JEWELLERY
   }
 "AdoxieRing"
   {
@@ -2218,5 +2218,5 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     }
     weight = 0.1
     storageIds = {"jewellery" "equipment"}
-    equipmentGroup = ITEMS_ADOXIERING_EQUIPMENTGROUP
+    equipmentGroup = EQUIPMENT_GROUP_JEWELLERY
   }
