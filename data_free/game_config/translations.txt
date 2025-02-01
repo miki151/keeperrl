@@ -3766,4 +3766,7 @@
   "TECHNOLOGY_ADVANCED_THEOLOGY_DESCRIPTION" "Research more advanced liturgies to ask the Lord for favors."
   "TECHNOLOGY_EXPERT_THEOLOGY_DESCRIPTION" "Research extremely advanced liturgies to ask the Lord for favors."
   "TECHNOLOGY_WORSHIP_OF_ADOXIE_DESCRIPTION" "Acknowledge dark powers to strengthen your faith and protect your minions from their influence."
+  "WORLD_MAP_STYLE" "World map style: {1}"
+  "WORLD_MAPS" "Inland"
+  "WORLD_MAPS1" "Islands"
 }

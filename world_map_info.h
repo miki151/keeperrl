@@ -2,10 +2,10 @@
 
 #include "util.h"
 #include "random_layout_id.h"
-
+#include "t_string.h"
 
 struct WorldMapInfo {
-  string SERIAL(name);
+  TString SERIAL(name);
   RandomLayoutId SERIAL(layout);
   SERIALIZE_ALL(name, layout)
 };

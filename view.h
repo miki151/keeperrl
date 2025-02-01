@@ -183,7 +183,7 @@ class View {
     vector<OptionId> options;
     string introText;
     string currentBiome;
-    vector<string> worldMapNames;
+    vector<TString> worldMapNames;
     int currentWorldMap;
   };
 

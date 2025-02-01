@@ -5014,7 +5014,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   auto rightLines = WL(getListBuilder, getStandardLineHeight());
   int optionMargin = 50;
   centerLines.addElem(WL(centerHoriz,
-       WL(label, "World map style: "_s + campaignOptions.worldMapNames[campaignOptions.currentWorldMap])));
+       WL(label, TSentence("WORLD_MAP_STYLE", campaignOptions.worldMapNames[campaignOptions.currentWorldMap]))));
   rightLines.addElem(WL(leftMargin, -55, drawGameModeButton(queue, campaignOptions, menuState)));
   centerLines.addSpace(10);
   auto helpFocusedFun = [&menuState]{return menuState.index == CampaignMenuElems::Help{};};
