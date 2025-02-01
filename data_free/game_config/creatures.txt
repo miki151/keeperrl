@@ -1338,7 +1338,7 @@ End
       { type = Glyph { ARMOR ItemAttrBonus DEFENSE 3 } chance = 0.3 }
       { type = Glyph { WEAPON ItemAttrBonus DAMAGE 3 } chance = 0.3 }
       { type = Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 } chance = 0.3 }
-      { type = Glyph { WEAPON SpecialAttr DAMAGE 5 Name "at night" Night } chance = 0.3 }
+      { type = Glyph { WEAPON SpecialAttr DAMAGE 5 Name CREATURE_ATTRIBUTES_BLACK_DRAGON_PREFIX Night } chance = 0.3 }
     }
     killedAchievement = "killed_black_dragon"
     steedAchievement = "rode_dragon"
@@ -3104,7 +3104,7 @@ End
       FURNACE 15
     }
     specialAttr = {
-      DEFENSE { -7 Name "when outdoors" Not Indoors }
+      DEFENSE { -7 Name CREATURE_ATTRIBUTES_DWARF_SPECIALATTR Not Indoors }
     }
     body = {
       type = Humanoid MEDIUM
@@ -3188,7 +3188,7 @@ End
       FORGE 25
     }
     specialAttr = {
-      DEFENSE { -7 Name "when outdoors" Not Indoors }
+      DEFENSE { -7 Name CREATURE_ATTRIBUTES_DWARF_FEMALE_SPECIALATTR Not Indoors }
     }
     body = {
       type = Humanoid MEDIUM

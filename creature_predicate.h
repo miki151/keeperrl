@@ -9,6 +9,7 @@
 #include "body_material_id.h"
 #include "attr_type.h"
 #include "tile_gas_type.h"
+#include "t_string.h"
 
 #define SIMPLE_PREDICATE(Name) \
   struct Name { \
@@ -61,7 +62,7 @@ struct Attacker {
 };
 
 struct Name {
-  string SERIAL(name);
+  TString SERIAL(name);
   HeapAllocated<CreaturePredicate> SERIAL(pred);
   SERIALIZE_ALL(name, pred)
 };

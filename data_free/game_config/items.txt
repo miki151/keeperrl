@@ -298,7 +298,7 @@ SPELL_HEAD("Adoxium", 220 148 220, ITEMS_TELEPORTHEADADOXIUM_NAME, ADOXIUM, 18, 
     price = 500
     equipedEffect = {AMBUSH_SKILL}
     specialAttr = {
-      DAMAGE 30 Name "against tribe leaders when hidden" And { CreatureStatus LEADER Attacker Hidden }
+      DAMAGE 30 Name ITEMS_KNIFE_SPECIALATTR And { CreatureStatus LEADER Attacker Hidden }
     }
     equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
   }
