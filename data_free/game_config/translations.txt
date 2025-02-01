@@ -3721,4 +3721,7 @@
   "KEEPER_CREATURES_DESCRIPTION8" "Build a dungeon as a lone cyclops."
   "KEEPER_CREATURES_DESCRIPTION9" "Roam the land in search of adventures and loot!"
   "KEEPER_CREATURES_DESCRIPTION10" "Play as the Evil God Adoxie, and wipe the floor with silly mortals."
+  "TILE_GAS_TYPES_POISON_GAS_THIRDPERSON1" "poison gas"
+  "BUFFS_BLEEDING_PRIORITY" "bleeding"
+  "BUFFS_INFERNITE_EFFECT_THIRDPERSON1" "infernite"
 }

@@ -14,7 +14,7 @@
   false
   Filter Not LastingEffect POISON_RESISTANT {
     CreatureMessage { TILE_GAS_TYPES_POISON_GAS_SECONDPERSON TILE_GAS_TYPES_POISON_GAS_THIRDPERSON}
-    Bleed 0.02 "poison gas"
+    Bleed 0.02 TILE_GAS_TYPES_POISON_GAS_THIRDPERSON1
   }
 }
 

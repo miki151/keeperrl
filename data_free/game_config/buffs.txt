@@ -96,7 +96,7 @@ End
   adjective = BUFFS_BLEEDING_ADJECTIVE
   tickEffect = Filter Not LastingEffect FROZEN {
     CreatureMessage { BUFFS_BLEEDING_SECONDPERSON BUFFS_BLEEDING_THIRDPERSON HIGH }
-    Bleed 0.03 "bleeding"
+    Bleed 0.03 BUFFS_BLEEDING_PRIORITY
   }
   consideredBad = true
   canAbsorb = false
@@ -113,7 +113,7 @@ End
   adjective = BUFFS_INFERNITE_EFFECT_ADJECTIVE
   tickEffect = Filter And { Not LastingEffect FIRE_RESISTANT Not LastingEffect FIRE_IMMUNITY } {
     CreatureMessage {BUFFS_INFERNITE_EFFECT_SECONDPERSON BUFFS_INFERNITE_EFFECT_THIRDPERSON}
-    Bleed 0.01 "infernite"
+    Bleed 0.01 BUFFS_INFERNITE_EFFECT_THIRDPERSON1
   }
   hiddenPredicate = Or { LastingEffect FIRE_RESISTANT LastingEffect FIRE_IMMUNITY }
   consideredBad = true
