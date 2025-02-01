@@ -309,7 +309,7 @@ class CollectiveInfo {
   optional<ChosenWorkshopInfo> HASH(chosenWorkshop);
   struct LibraryInfo {
     struct TechInfo {
-      string HASH(description);
+      TString HASH(description);
       TString HASH(name);
       TechId HASH(id);
       struct UnlockInfo {

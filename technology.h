@@ -23,7 +23,7 @@
 class Technology {
   public:
   struct TechDefinition {
-    string SERIAL(description);
+    TString SERIAL(description);
     vector<TechId> SERIAL(prerequisites);
     optional<TString> SERIAL(name);
     template <class Archive>

@@ -396,7 +396,7 @@ struct NoAutoAssign : GenericModifierEffect {
 };
 struct Bleed {
   double SERIAL(amount);
-  string SERIAL(deathReason);
+  TString SERIAL(deathReason);
   SERIALIZE_ALL(amount, deathReason)
 };
 struct Price : GenericModifierEffect {
