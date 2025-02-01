@@ -6,7 +6,7 @@
 
 "ENCHANTED_WORKSHOP" inherit "WORKSHOP" {
   furniture = "ENCHANTED_WORKSHOP"
-  prefix = Prefix "enchanted" Scale 1.5
+  prefix = Prefix WORKSHOP_INFO_WORKSHOP_PREFIX Scale 1.5
   hideFromTech = true
 }
 
@@ -25,7 +25,7 @@
 
 "LAVA_FORGE" inherit "FORGE" {
   furniture = "LAVA_FORGE"
-  prefix = Prefix "fine" Scale 1.4
+  prefix = Prefix WORKSHOP_INFO_FORGE_PREFIX Scale 1.4
   hideFromTech = true
 }
 

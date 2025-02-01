@@ -371,7 +371,7 @@ SItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory* factor
       i.partIds = allIds.getSubsequence(1);
       i.partIds.append(partIds);
       i.assembledMinion = AssembledMinion LIST(creature, traits);
-      i.name = itemName;
+      i.name = factory->getCreatures().getName(creature);
       i.weight = 1;
       i.uses = 1;
       i.maxUpgrades = maxUpgrades;

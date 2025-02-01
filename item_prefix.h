@@ -7,6 +7,7 @@
 #include "lasting_effect.h"
 #include "special_attr.h"
 #include "attr_type.h"
+#include "t_string.h"
 
 class ItemPrefix;
 
@@ -40,13 +41,13 @@ struct Scale {
 };
 
 struct Prefix {
-  string SERIAL(value);
+  TString SERIAL(value);
   HeapAllocated<ItemPrefix> SERIAL(prefix);
   COMPARE_ALL(value, prefix)
 };
 
 struct Suffix {
-  string SERIAL(value);
+  TString SERIAL(value);
   HeapAllocated<ItemPrefix> SERIAL(prefix);
   COMPARE_ALL(value, prefix)
 };
