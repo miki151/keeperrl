@@ -1,197 +1,197 @@
 "alchemy" {
   name = ALCHEMY_TECH_NAME
-  description = "Build a laboratory and produce basic potions."
+  description = TECHNOLOGY_ALCHEMY_DESCRIPTION
 }
 "incendiary alchemy" {
   name = INCENDIARY_ALCHEMY_TECH_NAME
-  description = "Produce incendiary potions."
+  description = TECHNOLOGY_INCENDIARY_ALCHEMY_DESCRIPTION
   prerequisites = { "alchemy"}
 }
 "advanced alchemy" {
   name = ADVANCED_ALCHEMY_TECH_NAME
-  description = "Produce more powerful potions."
+  description = TECHNOLOGY_ADVANCED_ALCHEMY_DESCRIPTION
   prerequisites = {"alchemy"}
 }
 "embalming" {
   name = EMBALMING_TECH_NAME
-  description = "Build a laboratory and concoct basic balsams for bodies."
+  description = TECHNOLOGY_EMBALMING_DESCRIPTION
 }
 "advanced embalming" {
   name = ADVANCED_EMBALMING_TECH_NAME
-  description = "Produce more powerful balsams for bodies."
+  description = TECHNOLOGY_ADVANCED_EMBALMING_DESCRIPTION
   prerequisites = {"embalming"}
 }
 "master embalming" {
   name = MASTER_EMBALMING_TECH_NAME
-  description = "Produce the most powerful balsams for bodies."
+  description = TECHNOLOGY_MASTER_EMBALMING_DESCRIPTION
   prerequisites = {"advanced embalming"}
 }
 "necromancy" {
   name = NECROMANCY_TECH_NAME
-  description = "Build a morgue and raise undead."
+  description = TECHNOLOGY_NECROMANCY_DESCRIPTION
 }
 "advanced necromancy" {
   name = ADVANCED_NECROMANCY_TECH_NAME
-  description = "Raise more powerful undead."
+  description = TECHNOLOGY_ADVANCED_NECROMANCY_DESCRIPTION
   prerequisites = {"necromancy"}
 }
 "master necromancy" {
   name = MASTER_NECROMANCY_TECH_NAME
-  description = "Raise the most powerful undead."
+  description = TECHNOLOGY_MASTER_NECROMANCY_DESCRIPTION
   prerequisites = {"advanced necromancy"}
 }
 "alchemical conversion" {
   name = ALCHEMICAL_CONVERSION_TECH_NAME
-  description = "Convert resources to and from gold."
+  description = TECHNOLOGY_ALCHEMICAL_CONVERSION_DESCRIPTION
   prerequisites = {"alchemy"}
 }
 "humanoid mutation" {
   name = HUMANOID_MUTATION_TECH_NAME
-  description = "Breed new, very powerful humanoid species."
+  description = TECHNOLOGY_HUMANOID_MUTATION_DESCRIPTION
   prerequisites = {"alchemy"}
 }
 "beast mutation" {
   name = BEAST_MUTATION_TECH_NAME
-  description = "Breed new, very powerful beast species."
+  description = TECHNOLOGY_BEAST_MUTATION_DESCRIPTION
   prerequisites = {"alchemy"}
 }
 "chicken breeding" {
   name = CHICKEN_BREEDING_TECH_NAME
-  description = "Build a chicken coop to feed your minions."
+  description = TECHNOLOGY_CHICKEN_BREEDING_DESCRIPTION
 }
 "pig breeding" {
   name = PIG_BREEDING_TECH_NAME
-  description = "Build a pigsty to feed your minions."
+  description = TECHNOLOGY_PIG_BREEDING_DESCRIPTION
   prerequisites = {"chicken breeding"}
 }
 "cow breeding" {
   name = COW_BREEDING_TECH_NAME
-  description = "Build a cow pen to feed your minions."
+  description = TECHNOLOGY_COW_BREEDING_DESCRIPTION
   prerequisites = {"pig breeding"}
 }
 "iron working" {
   name = IRON_WORKING_TECH_NAME
-  description = "Build a forge and produce metal weapons and armor."
+  description = TECHNOLOGY_IRON_WORKING_DESCRIPTION
 }
 "jewellery" {
   name = JEWELLERY_TECH_NAME
-  description = "Build a jeweler room and produce magical rings and amulets."
+  description = TECHNOLOGY_JEWELLERY_DESCRIPTION
   prerequisites = {"iron working"}
 }
 "distillation" {
   name = DISTILLATION_TECH_NAME
-  description = "Beer is for dwarves. Build a distillery and make rat moonshine for your minions."
+  description = TECHNOLOGY_DISTILLATION_DESCRIPTION
 }
 "two-handed weapons" {
   name = TWO_HANDED_WEAPONS_TECH_NAME
-  description = "Produce war hammers and battle axes."
+  description = TECHNOLOGY_TWO-HANDED_WEAPONS_DESCRIPTION
   prerequisites = {"iron working"}
 }
 "traps" {
   name = TRAPS_TECH_NAME
-  description = "Produce traps in the workshop."
+  description = TECHNOLOGY_TRAPS_DESCRIPTION
 }
 "advanced traps" {
   name = ADVANCED_TRAPS_TECH_NAME
-  description = "Produce more advanced traps and mechanisms."
+  description = TECHNOLOGY_ADVANCED_TRAPS_DESCRIPTION
   prerequisites = { "traps"}
 }
 "archery" {
   name = ARCHERY_TECH_NAME
-  description = "Produce bows and arrows."
+  description = TECHNOLOGY_ARCHERY_DESCRIPTION
 }
 "sorcery" {
   name = SORCERY_TECH_NAME
-  description = "Learn basic spells."
+  description = TECHNOLOGY_SORCERY_DESCRIPTION
 }
 "advanced sorcery" {
   name = ADVANCED_SORCERY_TECH_NAME
-  description = "Learn more advanced spells."
+  description = TECHNOLOGY_ADVANCED_SORCERY_DESCRIPTION
   prerequisites = {"sorcery"}
 }
 "magical weapons" {
   name = MAGICAL_WEAPONS_TECH_NAME
-  description = "Produce melee weapons that deal magical damage"
+  description = TECHNOLOGY_MAGICAL_WEAPONS_DESCRIPTION
   prerequisites = {"advanced sorcery"}
 }
 "master sorcery" {
   name = MASTER_SORCERY_TECH_NAME
-  description = "Learn the most powerful spells."
+  description = TECHNOLOGY_MASTER_SORCERY_DESCRIPTION
   prerequisites = {"advanced sorcery"}
 }
 "demonology" {
   name = DEMONOLOGY_TECH_NAME
-  description = "Build demon shrines and attract demons."
+  description = TECHNOLOGY_DEMONOLOGY_DESCRIPTION
   prerequisites = {"advanced sorcery"}
 }
 "worship" {
   name = WORSHIP_TECH_NAME
-  description = "Build angel shrines and attract angels."
+  description = TECHNOLOGY_WORSHIP_DESCRIPTION
 }
 "automatons" {
   name = AUTOMATONS_TECH_NAME
-  description = "Build mechanical creatures that work and fight for you."
+  description = TECHNOLOGY_AUTOMATONS_DESCRIPTION
 }
 "automated crafting" {
   name = AUTOMATED_CRAFTING_TECH_NAME
-  description = "Build crafting and repair automaton arms to automate your production and repair."
+  description = TECHNOLOGY_AUTOMATED_CRAFTING_DESCRIPTION
   prerequisites = {"automatons"}
 }
 "advanced automatons" {
   name = ADVANCED_AUTOMATONS_TECH_NAME
-  description = "Build advanced mechanical creatures that work and fight for you."
+  description = TECHNOLOGY_ADVANCED_AUTOMATONS_DESCRIPTION
   prerequisites = {"automatons"}
 }
 "automaton brains" {
   name = AUTOMATON_BRAINS_TECH_NAME
-  description = "Build automatons that behave like humanoids."
+  description = TECHNOLOGY_AUTOMATON_BRAINS_DESCRIPTION
   prerequisites = {"advanced automatons"}
 }
 "aerodynamics" {
   name = AERODYNAMICS_TECH_NAME
-  description = "Build flying automatons."
+  description = TECHNOLOGY_AERODYNAMICS_DESCRIPTION
   prerequisites = {"advanced automatons"}
 }
 "explosives" {
   name = EXPLOSIVES_TECH_NAME
-  description = "Build exploding automatons."
+  description = TECHNOLOGY_EXPLOSIVES_DESCRIPTION
   prerequisites = {"advanced automatons"}
 }
 "luxury" {
   name = LUXURY_TECH_NAME
-  description = "Allow your minions to reflect the Lord's glory." 
+  description = TECHNOLOGY_LUXURY_DESCRIPTION 
 }
 "small temptations" {
   name = SMALL_TEMPTATIONS_TECH_NAME
-  description = "Permit a little indulgence to stay closer to the flock."
+  description = TECHNOLOGY_SMALL_TEMPTATIONS_DESCRIPTION
   prerequisites = {}
 }
 "big temptations" {
   name = BIG_TEMPTATIONS_TECH_NAME
-  description = "Truly understand temptation to be able to preach against it."
+  description = TECHNOLOGY_BIG_TEMPTATIONS_DESCRIPTION
   prerequisites = {"small temptations"}
 }
 "slavery" {
   name = SLAVERY_TECH_NAME
-  description = "Acquire more obedient hands to tend your flock."
+  description = TECHNOLOGY_SLAVERY_DESCRIPTION
   prerequisites = {}
 }
 "dark crafts" {
   name = DARK_CRAFTS_TECH_NAME
-  description = "Become more familiar with the tools that evil employs."
+  description = TECHNOLOGY_DARK_CRAFTS_DESCRIPTION
   prerequisites = {"luxury"}
 }
 "advanced theology" {
   name = ADVANCED_THEOLOGY_TECH_NAME
-  description = "Research more advanced liturgies to ask the Lord for favors."
+  description = TECHNOLOGY_ADVANCED_THEOLOGY_DESCRIPTION
 }
 "expert theology" {
   name = EXPERT_THEOLOGY_TECH_NAME
-  description = "Research extremely advanced liturgies to ask the Lord for favors."
+  description = TECHNOLOGY_EXPERT_THEOLOGY_DESCRIPTION
   prerequisites = {"advanced theology"}
 }
 "worship of Adoxie" {
   name = WORSHIP_OF_ADOXIE_TECH_NAME
-  description = "Acknowledge dark powers to strengthen your faith and protect your minions from their influence."
+  description = TECHNOLOGY_WORSHIP_OF_ADOXIE_DESCRIPTION
   prerequisites = {"dark crafts"}
 }
