@@ -305,26 +305,26 @@ REGISTER_SCRIPTED_UI(Label);
 struct Paragraph : ScriptedUIInterface {
   Paragraph() {}
 
-  string getText(const ScriptedUIData& data) const {
+  string getText(const ScriptedUIData& data, ScriptedContext& context) const {
     if (text)
       return *text;
     if (auto label = data.getReferenceMaybe<ScriptedUIDataElems::Label>())
-      return label->data();
+      return context.factory->translate(*label);
     else
       return "not a label";
   }
 
   void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
-    for (auto line : Iter(context.factory->breakText(getText(data), width, size)))
+    for (auto line : Iter(context.factory->breakText(getText(data, context), width, size)))
       context.renderer->drawText(font, size, color, area.topLeft() + Vec2(0, line.index() * size), *line);
   }
 
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
-    auto text = getText(data);
+    auto text = getText(data, context);
     auto getSize = [&] {
       if (auto elem = getValueMaybe(context.state.paragraphSizeCache, text))
         return *elem;
-      auto ret = context.factory->breakText(getText(data), width, size).size();
+      auto ret = context.factory->breakText(text, width, size).size();
       context.state.paragraphSizeCache[text] = ret;
       return ret;
     };

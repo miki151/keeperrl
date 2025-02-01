@@ -555,8 +555,8 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo, int width) {
   const int space = 55;
   bottomLine.addSpace(space);
   bottomLine.addElem(WL(labelFun, [&info] {
-      return capitalFirst(info.populationString) + ": " + toString(info.minionCount) + " / " +
-        toString(info.minionLimit); }), 150);
+      return TSentence("MINIONS_HEADER", {TSentence("CAPITAL_FIRST", info.populationString), toString(info.minionCount),
+        toString(info.minionLimit)}); }), 150);
   bottomLine.addSpace(space);
   bottomLine.addElem(getTurnInfoGui(gameInfo.time), 50);
   bottomLine.addSpace(space);
@@ -2287,7 +2287,8 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
 SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minionIndexDummy,
     const optional<TutorialInfo>& tutorial) {
   auto list = WL(getListBuilder, legendLineHeight);
-  list.addElem(WL(label, info.monsterHeader, Color::WHITE));
+  list.addElem(WL(label, TSentence("MINIONS_HEADER", {TSentence("CAPITAL_FIRST", info.populationString),
+        toString(info.minionCount), toString(info.minionLimit)}), Color::WHITE));
   int buttonCnt = 0;
   auto groupChosen = isGroupChosen(info);
   auto addGroup = [&] (const CollectiveInfo::CreatureGroup& elem) {

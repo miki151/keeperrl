@@ -25,7 +25,7 @@
       "traps"
   }
   workshopGroups = { "basic" "bows" }
-  description = "Build and manage your dream dungeon, defend against raids, and attack your enemies. Be about as evil as a boogieman can be!"
+  description = KEEPER_CREATURES_DESCRIPTION
 # Special traits example, all traits are added
 #   specialTraits = { LastingEffect SPEED ExtraTraining MELEE 5 }
 }
@@ -55,7 +55,7 @@
       "furnace" "prison" "orders" "throne_human" "angel_shrine" "installations"
   }
   workshopGroups = { "basic" "bows" }
-  description = "Play as a not-so-evil human race. Recruit knights, priests and angelic beings!"
+  description = KEEPER_CREATURES_DESCRIPTION1
 }
 "3_zchurch"
 {
@@ -77,7 +77,7 @@
       "furnace" "prison_church" "orders" "installations" "saint_statues"
   }
   workshopGroups = { "church" "holy_weapons" "scriptorium" }
-  description = "Build a church, hold Masses for your congregation and try not to give in to temptations."
+  description = KEEPER_CREATURES_DESCRIPTION2
 }
 "3_zmother" inherit "3_zchurch"
 {
@@ -103,7 +103,7 @@
       "phylactery" "installations_no_heads" "magical_installations"
   }
   workshopGroups = { "morgue" "basic_without_lab" "bows" }
-  description = "Craft hordes of undead from the corpses of fallen enemies. "
+  description = KEEPER_CREATURES_DESCRIPTION3
   credit = { "CORPSE" 20 }
   maxPopulation = 1
   flags = { "abomination_upgrades" }
@@ -130,10 +130,10 @@
       "laboratory" "distillery" "furnace" "automatons" "orders" "installations" "traps" "gnome_traps"
   }
   workshopGroups = { "gnomes" "basic" "crossbows" }
-  description = "Seize the means of production and engineer traps, automatons and other contraptions. Recommended for advanced players."
+  description = KEEPER_CREATURES_DESCRIPTION4
   minionTraits = { LEADER WORKER NO_LIMIT }
   maxPopulation = 0
-  populationString = "automatons"
+  populationString = KEEPER_CREATURES_POPULATIONSTRING
   noLeader = true
   prisoners = false
   requireQuartersForExp = false
@@ -159,10 +159,10 @@
       "installations"
   }
   workshopGroups = { "basic" "crossbows" }
-  description = "Play as a group of twelve dwarves that you can specialize to your liking. This faction has no immigration so dig around carefully!"
+  description = KEEPER_CREATURES_DESCRIPTION5
   minionTraits = { LEADER WORKER FIGHTER }
   maxPopulation = 12
-  populationString = "dwarves"
+  populationString = KEEPER_CREATURES_POPULATIONSTRING1
   noLeader = true
   prisoners = false
 }
@@ -186,7 +186,7 @@
       "orders" "throne" "installations" "minion_statues" "traps"
   }
   workshopGroups = { "basic" "bows" }
-  description = "Play as a Goblin Keeper, and seek the legendary goblin matrons. This faction was originally created by RighteousSinner and Soft Monster for the Bonus Mod."
+  description = KEEPER_CREATURES_DESCRIPTION6
   unlock = "goblins"
 }
 "8_zombies"
@@ -206,10 +206,10 @@
       "orders" "installations"
   }
   workshopGroups = { }
-  description = "Enjoy some brains for dinner!"
+  description = KEEPER_CREATURES_DESCRIPTION7
   minionTraits = { LEADER WORKER NO_LIMIT }
   maxPopulation = 1000
-  populationString = "zombies"
+  populationString = KEEPER_CREATURES_POPULATIONSTRING2
   noLeader = true
   prisoners = false
   immigrantInterval = 40
@@ -234,7 +234,7 @@
       "throne" "installations" "traps"
   }
   workshopGroups = { "basic" "crossbows" }
-  description = "Build a dungeon as a lone cyclops."
+  description = KEEPER_CREATURES_DESCRIPTION8
   minionTraits = { LEADER WORKER FIGHTER }
   maxPopulation = 1
   prisoners = false
@@ -246,7 +246,7 @@
   baseName = KEEPER_CREATURES_BASENAME9
   creatureId = { "ADVENTURER_MAGE" "ADVENTURER_MAGE_F" }
   tribeAlignment = EVIL
-  description = "Roam the land in search of adventures and loot!"
+  description = KEEPER_CREATURES_DESCRIPTION9
   villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {}
   technology = {}
@@ -280,7 +280,7 @@
   baseName = KEEPER_CREATURES_BASENAME9
   creatureId = { "ADOXIE_ADVENTURER" }
   tribeAlignment = EVIL
-  description = "Play as the Evil God Adoxie, and wipe the floor with silly mortals."
+  description = KEEPER_CREATURES_DESCRIPTION10
   villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {}
   technology = {}

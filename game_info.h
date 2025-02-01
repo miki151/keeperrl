@@ -246,10 +246,9 @@ class CollectiveInfo {
     HASH_ALL(viewId, name, cost, count, state, help, key, groupName, hotkeyOpensGroup, tutorialHighlight, isBuilding)
   };
   vector<Button> HASH(buildings);
-  string HASH(populationString);
+  TString HASH(populationString);
   int HASH(minionCount);
   int HASH(minionLimit);
-  string HASH(monsterHeader);
   vector<CreatureInfo> HASH(minions);
   struct CreatureGroup {
     UniqueEntity<Creature>::Id HASH(creatureId);
@@ -392,7 +391,7 @@ class CollectiveInfo {
     HIGH,
   };
   optional<RebellionChance> HASH(rebellionChance);
-  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, nextWave, chosenWorkshop, immigration, allImmigration, libraryInfo, minionPromotions, availablePromotions, rebellionChance, avatarLevelInfo, populationString)
+  HASH_ALL(warning, buildings, minionCount, minionLimit, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, nextWave, chosenWorkshop, immigration, allImmigration, libraryInfo, minionPromotions, availablePromotions, rebellionChance, avatarLevelInfo, populationString)
 };
 
 class VillageInfo {

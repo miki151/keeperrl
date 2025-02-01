@@ -107,7 +107,7 @@ CollectiveConfig::CollectiveConfig(TimeInterval interval, CollectiveType t, int 
 }
 
 CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation,
-    string populationString, bool prisoners, ConquerCondition conquerCondition, bool requireQuartersForExp) {
+    TString populationString, bool prisoners, ConquerCondition conquerCondition, bool requireQuartersForExp) {
   auto ret = CollectiveConfig(immigrantInterval, KEEPER, maxPopulation, conquerCondition);
   ret.populationString = populationString;
   ret.prisoners = prisoners;
@@ -183,7 +183,7 @@ int CollectiveConfig::getMaxPopulation() const {
   return maxPopulation;
 }
 
-const string& CollectiveConfig::getPopulationString() const {
+const TString& CollectiveConfig::getPopulationString() const {
   return populationString;
 }
 

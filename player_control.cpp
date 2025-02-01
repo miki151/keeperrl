@@ -2029,7 +2029,6 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   for (auto c : collective->getCreatures())
     if (c->getAttributes().promotionGroup)
       fillPromotions(c, info);
-  info.monsterHeader = info.populationString + ": " + toString(info.minionCount) + " / " + toString(info.minionLimit);
   fillDungeonLevel(info.avatarLevelInfo);
   fillResources(info);
   info.warning = "";

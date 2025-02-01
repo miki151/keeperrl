@@ -22,13 +22,13 @@ struct KeeperCreatureInfo {
   vector<string> SERIAL(buildingGroups);
   vector<string> SERIAL(workshopGroups);
   vector<string> SERIAL(zLevelGroups);
-  string SERIAL(description);
+  TString SERIAL(description);
   vector<SpecialTrait> SERIAL(specialTraits);
   optional<NameGeneratorId> SERIAL(baseNameGen);
   EnumSet<MinionTrait> SERIAL(minionTraits) = {MinionTrait::LEADER};
   int SERIAL(maxPopulation) = 10;
   int SERIAL(immigrantInterval) = 140;
-  string SERIAL(populationString) = "population";
+  TString SERIAL(populationString) = TStringId("POPULATION");
   bool SERIAL(noLeader) = false;
   bool SERIAL(prisoners) = true;
   vector<string> SERIAL(endlessEnemyGroups) = {"basic"};
