@@ -558,7 +558,7 @@ End
   range = 10
   effect = Name SPELLS_DRAGON_GREETING_EFFECT Description SPELLS_DRAGON_GREETING_EFFECT1
     Filter And { Attacker InTerritory LastingEffect INVISIBLE } AI And{} 0 1 {
-      PlayerMessage CRITICAL "Well thief! I smell you and I feel your air. I hear your breath. Come along!"
+      PlayerMessage CRITICAL SPELLS_DRAGON_GREETING_EFFECT2
       Analytics "milestone" "dragonGreeting"
     }
   cooldown = 100000

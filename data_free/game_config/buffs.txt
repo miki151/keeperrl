@@ -443,7 +443,7 @@ End
           ChainUntilFail {
             Area 20 Filter And { Enemy Not CreatureStatus CIVILIAN } {
               Polymorph "CHICKEN" 500
-              PlayerMessage CRITICAL "An ancient, terrible evil reshapes your body and causes you to grow a beak."
+              PlayerMessage CRITICAL BUFFS_PREACHING_ID4
               Filter IsPlayer Achievement "polymorphed_into_chicken"
             }
             MassMessage(BUFFS_PREACHING_ID1)

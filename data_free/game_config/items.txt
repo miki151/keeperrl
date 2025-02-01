@@ -1399,7 +1399,7 @@ End
     price = 1
     applyVerb = ITEMS_ADOXIESCROLL_APPLYVERB ITEMS_ADOXIESCROLL_APPLYVERB1
     applyPredicate = Not LastingEffect BLIND
-    effect = Description ITEMS_ADOXIESCROLL_EFFECT Message NORMAL "It predicts the coming of the Evil God Adoxie"
+    effect = Description ITEMS_ADOXIESCROLL_EFFECT Message NORMAL ITEMS_ADOXIESCROLL_EFFECT3
     storageIds = {"scrolls" "equipment"}
   }
 
@@ -1410,7 +1410,7 @@ End
 "AdoxieScrollVault" inherit "AdoxieScroll"
   {
     effect = Description ITEMS_ADOXIESCROLL_EFFECT Name ITEMS_ADOXIESCROLL_EFFECT1 {
-      Message NORMAL "It predicts the coming of the Evil God Adoxie. You feel like this time it is real."
+      Message NORMAL ITEMS_ADOXIESCROLL_EFFECT4
       Unlock "adoxie"
       Analytics "milestone" "adoxieUnlocked"
       UnlockMessage(ITEMS_ADOXIESCROLL_EFFECT2, "adoxie_head")
@@ -1427,8 +1427,8 @@ End
     applyVerb = ITEMS_ZOMBIESCROLL_APPLYVERB ITEMS_ZOMBIESCROLL_APPLYVERB1
     applyPredicate = Not LastingEffect BLIND
     effect = Description "" Name ITEMS_ZOMBIESCROLL_EFFECT {
-      Message NORMAL "The scroll falls apart before you manage to read it"
-      Message NORMAL "An image of an unlocking door appears in your mind"
+      Message NORMAL ITEMS_ZOMBIESCROLL_EFFECT2
+      Message NORMAL ITEMS_ZOMBIESCROLL_EFFECT3
       Unlock "zombies"
       Analytics "milestone" "zombiesUnlocked"
       UnlockMessage(ITEMS_ZOMBIESCROLL_EFFECT1, "zombie")
@@ -1445,14 +1445,14 @@ End
     price = 1
     effect = Description "" Name ITEMS_CYCLOPSSCROLL_EFFECT {
       Filter Or{ LastingEffect INSANITY LastingEffect HALLU } {
-        Message NORMAL "The strange symbols and arrows describe a door that has been unlocked"
+        Message NORMAL ITEMS_CYCLOPSSCROLL_EFFECT2
         Unlock "cyclops"
         Analytics "milestone" "cyclopsUnlocked"
         UnlockMessage(ITEMS_CYCLOPSSCROLL_EFFECT1, "cyclops")
       }
       Filter Not Or{ LastingEffect INSANITY LastingEffect HALLU } {
-        Message NORMAL "It contains strange symbols and arrows"
-        Message NORMAL "They don't seem to make any sense"
+        Message NORMAL ITEMS_CYCLOPSSCROLL_ID
+        Message NORMAL ITEMS_CYCLOPSSCROLL_ID1
       }
     }
     storageIds = {"scrolls" "equipment"}
@@ -1855,16 +1855,16 @@ End
         RemoveFurniture "INACTIVE_PORTAL"
         {
           Fx { TELEPORT_OUT }
-          Message NORMAL "The portal is activated!"
+          Message NORMAL ITEMS_BLACKMARKETKEY_NAME1
           PlaceFurniture "PORTAL_STAIRS"
           Analytics "milestone" "blackMarketPortal"
         }
       }
       Area 2 Filter Or { FurnitureType "ADOXIE_STATUE_VAULT" FurnitureType "ADOXIE_STATUE_TEMPLE" } {
-        Message NORMAL "The statue blinks!"
+        Message NORMAL ITEMS_BLACKMARKETKEY_NAME2
         Analytics "milestone" "adoxieStatueBlink"
       }
-      Message NORMAL "Nothing happens."
+      Message NORMAL ITEMS_BLACKMARKETKEY_NAME3
     }
     storageIds = {"jewellery" "equipment"}
   }
@@ -2001,7 +2001,7 @@ End
     applyVerb = ITEMS_PRAYERBOOKPROTECTION_APPLYVERB ITEMS_PRAYERBOOKPROTECTION_APPLYVERB1
     weight = 2
     description = ITEMS_PRAYERBOOKPROTECTION_DESCRIPTION
-    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of protecting minions from attacks."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL ITEMS_PRAYERBOOKPROTECTION_EFFECT2
     equipmentSlot = PRAYER_BOOK
     price = 10
     burnTime = 1
@@ -2013,56 +2013,56 @@ End
     shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME1
     name = ITEMS_PRAYERBOOKPROTECTION_NAME1
     ingredientType = "strength_prayer"
-    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of giving minions strength in battles."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL ITEMS_PRAYERBOOKPROTECTION_EFFECT3
   }
 "PrayerBookRangedResistance" inherit "PrayerBookProtection"
   {
     shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME2
     name = ITEMS_PRAYERBOOKPROTECTION_NAME2
     ingredientType = "ranged_resistance_prayer"
-    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of protecting minions from arrows."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL ITEMS_PRAYERBOOKPROTECTION_EFFECT4
   }
 "PrayerBookDigging" inherit "PrayerBookProtection"
   {
     shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME3
     name = ITEMS_PRAYERBOOKPROTECTION_NAME3
     ingredientType = "digging_prayer"
-    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of giving minions more strength in digging."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL ITEMS_PRAYERBOOKPROTECTION_EFFECT5
   }
 "PrayerBookFastTraining" inherit "PrayerBookProtection"
   {
     shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME4
     name = ITEMS_PRAYERBOOKPROTECTION_NAME4
     ingredientType = "training_prayer"
-    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of minions training at a faster pace."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL ITEMS_PRAYERBOOKPROTECTION_EFFECT6
   }
 "PrayerBookFastCrafting" inherit "PrayerBookProtection"
   {
     shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME5
     name = ITEMS_PRAYERBOOKPROTECTION_NAME5
     ingredientType = "crafting_prayer"
-    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of minions crafting at a faster pace."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL ITEMS_PRAYERBOOKPROTECTION_EFFECT7
   }
 "PrayerBookFireResistance" inherit "PrayerBookProtection"
   {
     shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME6
     name = ITEMS_PRAYERBOOKPROTECTION_NAME6
     ingredientType = "fire_resistance_prayer"
-    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of protecting minions from fire."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL ITEMS_PRAYERBOOKPROTECTION_EFFECT8
   }
 "PrayerBookPoisonResistance" inherit "PrayerBookProtection"
   {
     shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME7
     name = ITEMS_PRAYERBOOKPROTECTION_NAME7
     ingredientType = "poison_resistance_prayer"
-    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of protecting minions from poison."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL ITEMS_PRAYERBOOKPROTECTION_EFFECT9
   }
 "PrayerBookRegeneration" inherit "PrayerBookProtection"
   {
     shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME8
     name = ITEMS_PRAYERBOOKPROTECTION_NAME8
     ingredientType = "regeneration_prayer"
-    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of giving minions the ability to regenerate wounds."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL ITEMS_PRAYERBOOKPROTECTION_EFFECT10
   }
 Def PROTECTION_BOOK(NAME, LOWER, PLURAL)
 "PrayerBook" + NAME + "Resistance" inherit "PrayerBookProtection"
@@ -2085,7 +2085,7 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME9
     name = ITEMS_PRAYERBOOKPROTECTION_NAME9
     ingredientType = "teuton_prayer"
-    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of summoning stronger armed help."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL ITEMS_PRAYERBOOKPROTECTION_EFFECT11
   }
 
 "PrayerBookArmedHelp" inherit "PrayerBookProtection"
@@ -2093,7 +2093,7 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME10
     name = ITEMS_PRAYERBOOKPROTECTION_NAME10
     ingredientType = "squire_prayer"
-    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of summoning armed help."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL ITEMS_PRAYERBOOKPROTECTION_EFFECT12
   }
 
 "PrayerBookWorkers" inherit "PrayerBookProtection"
@@ -2101,7 +2101,7 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME11
     name = ITEMS_PRAYERBOOKPROTECTION_NAME11
     ingredientType = "workers_prayer"
-    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of summoning more workforce."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL ITEMS_PRAYERBOOKPROTECTION_EFFECT13
   }
 
 "PrayerBookMeleeTraining" inherit "PrayerBookProtection"
@@ -2109,7 +2109,7 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME12
     name = ITEMS_PRAYERBOOKPROTECTION_NAME12
     ingredientType = "melee_prayer"
-    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of increasing minions' melee training potential."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL ITEMS_PRAYERBOOKPROTECTION_EFFECT14
   }
 
 "PrayerBookDivinityTraining" inherit "PrayerBookProtection"
@@ -2117,7 +2117,7 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME13
     name = ITEMS_PRAYERBOOKPROTECTION_NAME13
     ingredientType = "divinity_prayer"
-    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of increasing minions' divinity training potential."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL ITEMS_PRAYERBOOKPROTECTION_EFFECT15
   }
 
 "PrayerBookGuardian" inherit "PrayerBookProtection"
@@ -2125,7 +2125,7 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME14
     name = ITEMS_PRAYERBOOKPROTECTION_NAME14
     ingredientType = "guardian_prayer"
-    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held with the intention of summoning a guardian angel for every minion."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL ITEMS_PRAYERBOOKPROTECTION_EFFECT16
   }
 "PrayerBookAdoxie" inherit "PrayerBookProtection"
   {
@@ -2133,7 +2133,7 @@ PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
     shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME15
     name = ITEMS_PRAYERBOOKPROTECTION_NAME15
     ingredientType = "adoxie_prayer"
-    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL "Mass will be held in the name of the Evil God Adoxie."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL ITEMS_PRAYERBOOKPROTECTION_EFFECT17
   }
 "DivinityAmulet"
   {

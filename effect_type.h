@@ -242,12 +242,12 @@ struct ChainUntilFail : Chain {
 struct ChooseRandomUntilSuccessful : Chain {
 };
 struct Message {
-  string SERIAL(text);
+  TString SERIAL(text);
   MessagePriority SERIAL(priority);
   SERIALIZE_ALL(priority, text)
 };
 struct UnseenMessage {
-  string SERIAL(text);
+  TString SERIAL(text);
   MessagePriority SERIAL(priority);
   SERIALIZE_ALL(priority, text)
 };
@@ -258,7 +258,7 @@ struct CreatureMessage {
   SERIALIZE_ALL(NAMED(secondPerson), NAMED(thirdPerson), OPTION(priority))
 };
 struct PlayerMessage {
-  string SERIAL(text);
+  TString SERIAL(text);
   MessagePriority SERIAL(priority);
   SERIALIZE_ALL(priority, text)
 };
