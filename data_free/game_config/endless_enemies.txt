@@ -7,7 +7,7 @@
       combatExperience = -2
     }
     KillLeader
-    "a curious bandit"
+    EXTERNAL_ENEMIES_NAME
     { 1 10000 }
     1
   }
@@ -18,7 +18,7 @@
       combatExperience = 1
     }
     KillLeader
-    "a lizardman scout"
+    EXTERNAL_ENEMIES_NAME1
     { 1 10000 }
     1
   }
@@ -28,7 +28,7 @@
       count = { 3 5 }
     }
     KillLeader
-    "an ant patrol"
+    EXTERNAL_ENEMIES_NAME2
     { 1 5000 }
     2
   }
@@ -39,7 +39,7 @@
       combatExperience = 2
     }
     KillLeader
-    "a nest of lizardmen"
+    EXTERNAL_ENEMIES_NAME3
     { 6000 15000 }
     5
   }
@@ -50,7 +50,7 @@
       combatExperience = 9
     }
     KillLeader
-    "a gang of bandits"
+    EXTERNAL_ENEMIES_NAME4
     { 8000 20000 }
     10
   }
@@ -60,7 +60,7 @@
       count = { 3 5 }
     }
     KillLeader
-    "an ant soldier patrol"
+    EXTERNAL_ENEMIES_NAME5
     { 5000 10000 }
     1
   }
@@ -71,7 +71,7 @@
       combatExperience = 3
     }
     KillLeader
-    "an alchemist's clay golems"
+    EXTERNAL_ENEMIES_NAME6
     { 3000 10000 }
     1
   }
@@ -82,7 +82,7 @@
       combatExperience = 3
     }
     KillLeader
-    "an alchemist's stone golems"
+    EXTERNAL_ENEMIES_NAME7
     { 5000 12000 }
     2
   }
@@ -93,7 +93,7 @@
       combatExperience = 5
     }
     KillLeader
-    "an ant soldier patrol"
+    EXTERNAL_ENEMIES_NAME5
     { 6000 12000 }
     2
   }
@@ -105,7 +105,7 @@
       combatExperience = 6
     }
     KillLeader
-    "an army of ants"
+    EXTERNAL_ENEMIES_NAME8
     { 10000 15000 }
     3
   }
@@ -116,7 +116,7 @@
       combatExperience = 3
     }
     KillLeader
-    "a group of ents"
+    EXTERNAL_ENEMIES_NAME9
     { 7000 12000 }
     2
   }
@@ -126,7 +126,7 @@
       count = { 4 8 }
     }
     KillLeader
-    "a band of dwarves"
+    EXTERNAL_ENEMIES_NAME10
     { 7000 15000 }
     3
   }
@@ -137,7 +137,7 @@
       combatExperience = 2
     }
     KillLeader
-    "an alchemist's iron golems"
+    EXTERNAL_ENEMIES_NAME11
     { 9000 15000 }
     3
   }
@@ -149,7 +149,7 @@
       inventory = { { Scroll Area 1 DestroyWalls DIG } }
     }
     KillLeader
-    "a dwarf tribe"
+    EXTERNAL_ENEMIES_NAME12
     { 12000 25000 }
     10
   }
@@ -159,7 +159,7 @@
       count = { 4 8 }
     }
     KillLeader
-    "a patrol of archers"
+    EXTERNAL_ENEMIES_NAME13
     { 6000 12000 }
     3
   }
@@ -169,7 +169,7 @@
       count = { 1 }
     }
     KillLeader
-    "a lonely knight"
+    EXTERNAL_ENEMIES_NAME14
     { 10000 16000 }
     3
   }
@@ -180,7 +180,7 @@
       combatExperience = 6
     }
     KillLeader
-    "a group of warriors"
+    EXTERNAL_ENEMIES_NAME15
     { 6000 12000 }
     3
   }
@@ -193,7 +193,7 @@
       inventory = { { Scroll Area 1 DestroyWalls DIG } }
     }
     KillLeader
-    "an army of warriors"
+    EXTERNAL_ENEMIES_NAME16
     { 18000 100000 }
     100
   }
@@ -210,7 +210,7 @@
       inventory = { { Scroll Area 1 DestroyWalls DIG } }
     }
     KillLeader
-    "an army of knights"
+    EXTERNAL_ENEMIES_NAME17
     { 20000 100000 }
     100
   }
@@ -220,7 +220,7 @@
       count = { 1 }
     }
     KillLeader
-    "a cyclops"
+    EXTERNAL_ENEMIES_NAME18
     { 6000 20000 }
     4
   }
@@ -231,7 +231,7 @@
       combatExperience = 20
     }
     KillLeader
-    "a witchman"
+    EXTERNAL_ENEMIES_NAME19
     { 15000 40000 }
     5
   }
@@ -242,7 +242,7 @@
       combatExperience = 20
     }
     KillLeader
-    "a minotaur"
+    EXTERNAL_ENEMIES_NAME20
     { 15000 100000 }
     100
   }
@@ -260,7 +260,7 @@
       }
       count = { 5 }
     }
-    "an elementalist"
+    EXTERNAL_ENEMIES_NAME21
     { 8000 14000 }
     1
   }
@@ -271,7 +271,7 @@
       combatExperience = 10
     }
     KillLeader
-    "a green dragon"
+    EXTERNAL_ENEMIES_NAME22
     { 15000 40000 }
     100
   }
@@ -282,7 +282,7 @@
       combatExperience = 18
     }
     KillLeader
-    "a red dragon"
+    EXTERNAL_ENEMIES_NAME23
     { 19000 100000 }
     100
   }
@@ -293,7 +293,7 @@
       combatExperience = 28
     }
     KillLeader
-    "a black dragon"
+    EXTERNAL_ENEMIES_NAME24
     { 30000 100000 }
     100
   }
@@ -304,7 +304,7 @@
       combatExperience = 25
     }
     KillLeader
-    "a pack of trolls"
+    EXTERNAL_ENEMIES_NAME25
     { 15000 50000 }
     100
   }
