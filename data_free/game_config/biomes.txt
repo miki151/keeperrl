@@ -78,7 +78,7 @@
     { id = "KRAKEN" probability = 0.3 }
   }
   viewId = { "grass" }
-  name = "grassland"
+  name = BIOMES_GRASSLAND_NAME
 }
 "FOREST" inherit "GRASSLAND"
 {
@@ -127,7 +127,7 @@
     { id = "WITCH" probability = 0.2 }
   }
   viewId = { "decid_tree" }
-  name = "forest"
+  name = BIOMES_GRASSLAND_NAME1
 }
 "MOUNTAIN" inherit "GRASSLAND"
 {
@@ -172,7 +172,7 @@
     { id = "CORPSES" probability = 0.2 }
   }
   viewId = { "map_mountains1" }
-  name = "mountains"
+  name = BIOMES_GRASSLAND_NAME2
 }
 "SNOW"
 {
@@ -231,7 +231,7 @@
     { id = "WOLF_DEN" }
   }
   viewId = { "snowman" }
-  name = "winter"
+  name = BIOMES_SNOW_NAME
 }
 "DESERT"
 {
@@ -289,7 +289,7 @@
     { id = "BANDITS" }
   }
   viewId = { "cactus1" }
-  name = "desert"
+  name = BIOMES_DESERT_NAME
 }
 "OUTBACK"
 {
@@ -327,7 +327,7 @@
     }
   }
   viewId = { "termite_mound" }
-  name = "outback"
+  name = BIOMES_OUTBACK_NAME
 }
 
 "SWAMP"
@@ -395,6 +395,5 @@
     { id = "WITCH" }
   }
   viewId = { "grass" }
-  name = "swamp"
+  name = BIOMES_SWAMP_NAME
 }
-

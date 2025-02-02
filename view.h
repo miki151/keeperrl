@@ -182,7 +182,7 @@ class View {
     optional<RetiredGames&> retired;
     vector<OptionId> options;
     string introText;
-    string currentBiome;
+    TString currentBiome;
     vector<TString> worldMapNames;
     int currentWorldMap;
   };

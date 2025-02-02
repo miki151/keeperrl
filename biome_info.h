@@ -8,6 +8,7 @@
 #include "creature_list.h"
 #include "enemy_id.h"
 #include "view_id.h"
+#include "t_string.h"
 
 struct MountainInfo {
   int SERIAL(numMountainLevels) = 10;
@@ -60,7 +61,7 @@ struct BiomeInfo {
   optional<MusicType> SERIAL(overrideMusic);
   int SERIAL(sightRange) = 100;
   ViewId SERIAL(viewId);
-  string SERIAL(name);
+  TString SERIAL(name);
   SERIALIZE_ALL(NAMED(overrideWaterType), OPTION(sandType), NAMED(lakes), OPTION(items), OPTION(itemCount), NAMED(mountains), OPTION(forests), OPTION(wildlife), OPTION(darkKeeperEnemies), OPTION(whiteKeeperEnemies), OPTION(darkKeeperBaseEnemies), OPTION(whiteKeeperBaseEnemies), NAMED(overrideMusic), OPTION(sightRange), OPTION(mountainEnemies), NAMED(viewId), NAMED(name))
 };
 

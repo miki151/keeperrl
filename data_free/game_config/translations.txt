@@ -3982,4 +3982,11 @@
   "EXTERNAL_ENEMIES_NAME23" "a red dragon"
   "EXTERNAL_ENEMIES_NAME24" "a black dragon"
   "EXTERNAL_ENEMIES_NAME25" "a pack of trolls"
+  "BIOMES_GRASSLAND_NAME" "grassland"
+  "BIOMES_GRASSLAND_NAME1" "forest"
+  "BIOMES_GRASSLAND_NAME2" "mountains"
+  "BIOMES_SNOW_NAME" "winter"
+  "BIOMES_DESERT_NAME" "desert"
+  "BIOMES_OUTBACK_NAME" "outback"
+  "BIOMES_SWAMP_NAME" "swamp"
 }
