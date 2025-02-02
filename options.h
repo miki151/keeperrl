@@ -17,6 +17,7 @@
 
 #include "util.h"
 #include "file_path.h"
+#include "t_string.h"
 
 RICH_ENUM(OptionId,
   HINTS,
@@ -89,7 +90,7 @@ class Options {
   bool hasVectorStringValue(OptionId, const string&);
   void addVectorStringValue(OptionId, const string&);
   void removeVectorStringValue(OptionId, const string&);
-  const string& getName(OptionId);
+  TString getName(OptionId);
   string getValueString(OptionId);
   void setValue(OptionId, Value);
   int getIntValue(OptionId);
@@ -101,7 +102,7 @@ class Options {
   void addTrigger(OptionId, Trigger trigger);
   void setChoices(OptionId, const vector<string>&);
   bool hasChoices(OptionId) const;
-  optional<string> getHint(OptionId);
+  optional<TString> getHint(OptionId);
   KeybindingMap* getKeybindingMap();
 
   private:

@@ -62,70 +62,72 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::LANGUAGE, 0}
 };
 
-const map<OptionId, string> names {
-  {OptionId::HINTS, "In-game hints"},
-  {OptionId::ASCII, "Unicode graphics"},
-  {OptionId::MUSIC, "Music volume"},
-  {OptionId::SOUND, "SFX volume"},
-  {OptionId::KEEP_SAVEFILES, "Keep save files"},
-  {OptionId::SHOW_MAP, "Show map"},
-  {OptionId::FULLSCREEN, "Fullscreen"},
-  {OptionId::VSYNC, "Vertical Sync"},
-  {OptionId::FPS_LIMIT, "Framerate limit"},
-  {OptionId::ZOOM_UI, "Zoom in UI"},
-  {OptionId::DISABLE_MOUSE_WHEEL, "Disable mouse wheel scrolling"},
-  {OptionId::DISABLE_CURSOR, "Disable pretty mouse cursor"},
-  {OptionId::ONLINE, "Online features"},
-  {OptionId::GAME_EVENTS, "Anonymous statistics"},
-  {OptionId::AUTOSAVE2, "Number of turns between autosaves"},
-  {OptionId::SUGGEST_TUTORIAL, ""},
-  {OptionId::CONTROLLER_HINT_MAIN_MENU, ""},
-  {OptionId::CONTROLLER_HINT_REAL_TIME, ""},
-  {OptionId::CONTROLLER_HINT_TURN_BASED, ""},
-  {OptionId::STARTING_RESOURCE, "Resource bonus"},
-  {OptionId::START_WITH_NIGHT, "Start with night"},
-  {OptionId::PLAYER_NAME, "Name"},
-  {OptionId::SETTLEMENT_NAME, "Settlement name"},
-  {OptionId::MAIN_VILLAINS, "Main villains"},
-  {OptionId::RETIRED_VILLAINS, "Retired villains"},
-  {OptionId::LESSER_VILLAINS, "Lesser villains"},
-  {OptionId::MINOR_VILLAINS, "Minor villains"},
-  {OptionId::ALLIES, "Allies"},
-  {OptionId::CURRENT_MOD2, "Current mod"},
-  {OptionId::ENDLESS_ENEMIES, "Start endless enemy waves"},
-  {OptionId::ENEMY_AGGRESSION, "Enemy aggression"},
-  {OptionId::KEEPER_WARNING, "Keeper danger warning"},
-  {OptionId::KEEPER_WARNING_TIMEOUT, "Keeper danger timeout"},
-  {OptionId::SINGLE_THREAD, "Use a single thread for loading operations"},
-  {OptionId::UNLOCK_ALL, "Unlock all hidden gameplay features"},
-  {OptionId::EXP_INCREASE, "Enemy difficulty curve"},
-  {OptionId::DPI_AWARE, "Override Windows DPI scaling"},
-  {OptionId::LANGUAGE, "Language"},
+static TString getName(OptionId id) {
+  switch (id) {
+    case OptionId::HINTS: return TStringId("HINTS_OPTION_NAME");
+    case OptionId::ASCII: return TStringId("ASCII_OPTION_NAME");
+    case OptionId::MUSIC: return TStringId("MUSIC_OPTION_NAME");
+    case OptionId::SOUND: return TStringId("SOUND_OPTION_NAME");
+    case OptionId::KEEP_SAVEFILES: return TStringId("KEEP_SAVEFILES_OPTION_NAME");
+    case OptionId::SHOW_MAP: return TStringId("SHOW_MAP_OPTION_NAME");
+    case OptionId::FULLSCREEN: return TStringId("FULLSCREEN_OPTION_NAME");
+    case OptionId::VSYNC: return TStringId("VSYNC_OPTION_NAME");
+    case OptionId::FPS_LIMIT: return TStringId("FPS_LIMIT_OPTION_NAME");
+    case OptionId::ZOOM_UI: return TStringId("ZOOM_UI_OPTION_NAME");
+    case OptionId::DISABLE_MOUSE_WHEEL: return TStringId("DISABLE_MOUSE_WHEEL_OPTION_NAME");
+    case OptionId::DISABLE_CURSOR: return TStringId("DISABLE_CURSOR_OPTION_NAME");
+    case OptionId::ONLINE: return TStringId("ONLINE_OPTION_NAME");
+    case OptionId::GAME_EVENTS: return TStringId("GAME_EVENTS_OPTION_NAME");
+    case OptionId::AUTOSAVE2: return TStringId("AUTOSAVE2_OPTION_NAME");
+    case OptionId::SUGGEST_TUTORIAL: return TStringId("SUGGEST_TUTORIAL_OPTION_NAME");
+    case OptionId::CONTROLLER_HINT_MAIN_MENU: return TStringId("CONTROLLER_HINT_MAIN_MENU_OPTION_NAME");
+    case OptionId::CONTROLLER_HINT_REAL_TIME: return TStringId("CONTROLLER_HINT_REAL_TIME_OPTION_NAME");
+    case OptionId::CONTROLLER_HINT_TURN_BASED: return TStringId("CONTROLLER_HINT_TURN_BASED_OPTION_NAME");
+    case OptionId::STARTING_RESOURCE: return TStringId("STARTING_RESOURCE_OPTION_NAME");
+    case OptionId::START_WITH_NIGHT: return TStringId("START_WITH_NIGHT_OPTION_NAME");
+    case OptionId::PLAYER_NAME: return TStringId("PLAYER_NAME_OPTION_NAME");
+    case OptionId::SETTLEMENT_NAME: return TStringId("SETTLEMENT_NAME_OPTION_NAME");
+    case OptionId::MAIN_VILLAINS: return TStringId("MAIN_VILLAINS_OPTION_NAME");
+    case OptionId::RETIRED_VILLAINS: return TStringId("RETIRED_VILLAINS_OPTION_NAME");
+    case OptionId::LESSER_VILLAINS: return TStringId("LESSER_VILLAINS_OPTION_NAME");
+    case OptionId::MINOR_VILLAINS: return TStringId("MINOR_VILLAINS_OPTION_NAME");
+    case OptionId::ALLIES: return TStringId("ALLIES_OPTION_NAME");
+    case OptionId::CURRENT_MOD2: return TStringId("CURRENT_MOD2_OPTION_NAME");
+    case OptionId::ENDLESS_ENEMIES: return TStringId("ENDLESS_ENEMIES_OPTION_NAME");
+    case OptionId::ENEMY_AGGRESSION: return TStringId("ENEMY_AGGRESSION_OPTION_NAME");
+    case OptionId::KEEPER_WARNING: return TStringId("KEEPER_WARNING_OPTION_NAME");
+    case OptionId::KEEPER_WARNING_TIMEOUT: return TStringId("KEEPER_WARNING_TIMEOUT_OPTION_NAME");
+    case OptionId::SINGLE_THREAD: return TStringId("SINGLE_THREAD_OPTION_NAME");
+    case OptionId::UNLOCK_ALL: return TStringId("UNLOCK_ALL_OPTION_NAME");
+    case OptionId::EXP_INCREASE: return TStringId("EXP_INCREASE_OPTION_NAME");
+    case OptionId::DPI_AWARE: return TStringId("DPI_AWARE_OPTION_NAME");
+    case OptionId::LANGUAGE: return TStringId("LANGUAGE_OPTION_NAME");
+  }
 };
 
-const map<OptionId, string> hints {
-  {OptionId::HINTS, "Display some extra helpful information during the game."},
-  {OptionId::ASCII, "Switch to old school roguelike graphics."},
-  {OptionId::KEEP_SAVEFILES, "Don't remove the save file when a game is loaded."},
-  {OptionId::FULLSCREEN, "Switch between fullscreen and windowed mode."},
-  {OptionId::VSYNC, "Limits frame rate to your monitor's refresh rate. Turning off may fix frame rate issues."},
-  {OptionId::FPS_LIMIT, "Limits frame rate. Lower framerate keeps GPU cooler."},
-  {OptionId::ZOOM_UI, "All UI and graphics are zoomed in. "
-      "Use if you have a large resolution screen and things appear too small."},
-  {OptionId::ONLINE, "Enable online features, like dungeon sharing and highscores."},
-  {OptionId::GAME_EVENTS, "Enable sending anonymous statistics to the developer."},
-  {OptionId::AUTOSAVE2, "Autosave the game every X number turns. "
-    "The save file will be used to recover in case of a crash."},
-  {OptionId::ENDLESS_ENEMIES, "Turn on recurrent enemy waves that attack your dungeon."},
-  {OptionId::ENEMY_AGGRESSION, "The chance of your dungeon being attacked by enemies"},
-  {OptionId::KEEPER_WARNING, "Display a pop up window whenever your Keeper is in danger"},
-  {OptionId::KEEPER_WARNING_TIMEOUT, "Number of turns before a new \"Keeper in danger\" warning is shown"},
-  {OptionId::SINGLE_THREAD, "Please try this option if you're experiencing slow saving, loading, or map generation. "
-        "Note: this will make the game unresponsive during the operation."},
-  {OptionId::UNLOCK_ALL, "Unlocks all player characters and gameplay features that are normally unlocked by finding secrets in the game."},
-  {OptionId::EXP_INCREASE, "Defines the increase in experience for every lesser and main villain as you travel further away from your home site."},
-  {OptionId::DPI_AWARE, "If you find the game blurry, this setting might help. Requires restarting the game. "},
-};
+static optional<TStringId> getHint(OptionId id) {
+  switch (id) {
+    case OptionId::HINTS: return TStringId("HINTS_OPTION_DESCRIPTION");
+    case OptionId::ASCII: return TStringId("ASCII_OPTION_DESCRIPTION");
+    case OptionId::KEEP_SAVEFILES: return TStringId("KEEP_SAVEFILES_OPTION_DESCRIPTION");
+    case OptionId::FULLSCREEN: return TStringId("FULLSCREEN_OPTION_DESCRIPTION");
+    case OptionId::VSYNC: return TStringId("VSYNC_OPTION_DESCRIPTION");
+    case OptionId::FPS_LIMIT: return TStringId("FPS_LIMIT_OPTION_DESCRIPTION");
+    case OptionId::ZOOM_UI: return TStringId("ZOOM_UI_OPTION_DESCRIPTION");
+    case OptionId::ONLINE: return TStringId("ONLINE_OPTION_DESCRIPTION");
+    case OptionId::GAME_EVENTS: return TStringId("GAME_EVENTS_OPTION_DESCRIPTION");
+    case OptionId::AUTOSAVE2: return TStringId("AUTOSAVE2_OPTION_DESCRIPTION");
+    case OptionId::ENDLESS_ENEMIES: return TStringId("ENDLESS_ENEMIES_OPTION_DESCRIPTION");
+    case OptionId::ENEMY_AGGRESSION: return TStringId("ENEMY_AGGRESSION_OPTION_DESCRIPTION");
+    case OptionId::KEEPER_WARNING: return TStringId("KEEPER_WARNING_OPTION_DESCRIPTION");
+    case OptionId::KEEPER_WARNING_TIMEOUT: return TStringId("KEEPER_WARNING_TIMEOUT_OPTION_DESCRIPTION");
+    case OptionId::SINGLE_THREAD: return TStringId("SINGLE_THREAD_OPTION_DESCRIPTION");
+    case OptionId::UNLOCK_ALL: return TStringId("UNLOCK_ALL_OPTION_DESCRIPTION");
+    case OptionId::EXP_INCREASE: return TStringId("EXP_INCREASE_OPTION_DESCRIPTION");
+    case OptionId::DPI_AWARE: return TStringId("DPI_AWARE_OPTION_DESCRIPTION");
+    default: return none;
+  }
+}
 
 const map<OptionSet, vector<OptionId>> optionSets {
   {OptionSet::GENERAL, {
@@ -174,8 +176,8 @@ void Options::addTrigger(OptionId id, Trigger trigger) {
   triggers[id] = trigger;
 }
 
-const string& Options::getName(OptionId id) {
-  return names.at(id);
+TString Options::getName(OptionId id) {
+  return ::getName(id);
 }
 
 vector<OptionId> Options::getOptions(OptionSet set) {
@@ -411,8 +413,10 @@ bool Options::hasChoices(OptionId id) const {
   return !choices[id].empty();
 }
 
-optional<string> Options::getHint(OptionId id) {
-  return getValueMaybe(hints, id);
+optional<TString> Options::getHint(OptionId id) {
+  if (auto res = ::getHint(id))
+    return TString(*res);
+  return none;
 }
 
 void Options::handleBoolean(OptionId option, ScriptedUIDataElems::Record& data, bool& wasSet) {
@@ -523,9 +527,9 @@ void Options::handle(View* view, const ContentFactory* factory, OptionSet set, i
     ScriptedUIDataElems::List options;
     bool wasSet = false;
     for (OptionId option : optionSet) {
-      auto optionData = ScriptedUIDataElems::Record{{{"name", ScriptedUIDataElems::Label{names.at(option)}}}};
-      if (hints.count(option))
-        optionData.elems.insert({"tooltip", ScriptedUIDataElems::Label{hints.at(option)}});
+      auto optionData = ScriptedUIDataElems::Record{{{"name", ScriptedUIDataElems::Label{getName(option)}}}};
+      if (auto hint = getHint(option))
+        optionData.elems.insert({"tooltip", ScriptedUIDataElems::Label{*hint}});
       if (isBoolean(option))
         handleBoolean(option, optionData, wasSet);
       else if (getIntRange(option)) {

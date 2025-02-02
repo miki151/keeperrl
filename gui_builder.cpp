@@ -4774,18 +4774,18 @@ SGuiElem GuiBuilder::drawBoolOptionElem(OptionId id, string name) {
 }
 
 SGuiElem GuiBuilder::drawOptionElem(OptionId id, function<void()> onChanged, function<bool()> focused) {
-  string name = options->getName(id);
+  auto name = options->getName(id);
   SGuiElem ret;
   auto limits = options->getLimits(id);
   int value = options->getIntValue(id);
   auto changeFun = [=] (int v) { options->setValue(id, value + v); onChanged();};
   ret = WL(getListBuilder)
-      .addElem(WL(labelFun, [=]{ return name + ": " + options->getValueString(id); }), renderer.getTextLength(name) + 20)
+      .addElem(WL(labelFun, [=]{ return TSentence("OPTION_NAME_AND_VALUE", name, options->getValueString(id)); }), renderer.getTextLength(gui.translate(name)) + 20)
       .addBackElemAuto(drawPlusMinus(changeFun,
           value < limits->getEnd() - 1, value > limits->getStart(), options->hasChoices(id)))
       .buildHorizontalList();
   return WL(stack,
-      WL(tooltip, {options->getHint(id).value_or("")}),
+      WL(tooltip, {options->getHint(id).value_or(TString())}),
       WL(conditionalStopKeys, WL(stack,
           WL(margins, WL(uiHighlight), -4, -4, -15, 4),
           WL(keyHandler, [=] { if (value < limits->getEnd() - 1) changeFun(1); }, Keybinding("MENU_RIGHT"), true),
