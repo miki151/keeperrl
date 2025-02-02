@@ -4647,7 +4647,7 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
           elem.push_back(WL(viewObject, ViewId("campaign_defeated"), iconScale));
         if (auto desc = sites[x][y].getDwellerName())
           if (!c.isDefeated(pos) && getHighlightColor(*sites[pos].getVillainType())) {
-            auto width = renderer.getTextLength(*desc, 12, FontId::MAP_FONT);
+            auto width = renderer.getTextLength(gui.translate(*desc), 12, FontId::MAP_FONT);
             elem.push_back(WL(translate,
                 WL(labelUnicode, *desc, Color::WHITE, 12, FontId::MAP_FONT),
             labelPlacer.getLabelPosition(Vec2(x, y), width), Vec2(width + 6, 18), GuiFactory::TranslateCorner::CENTER));

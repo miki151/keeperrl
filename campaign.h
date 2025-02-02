@@ -6,6 +6,7 @@
 #include "enemy_id.h"
 #include "tribe.h"
 #include "biome_id.h"
+#include "t_string.h"
 
 class View;
 class ProgressMeter;
@@ -26,9 +27,8 @@ class Campaign {
   struct VillainInfo {
     ViewId SERIAL(dwellingId);
     EnemyId SERIAL(enemyId);
-    string SERIAL(name);
+    TString SERIAL(name);
     bool SERIAL(alwaysPresent) = false;
-    string getDescription() const;
     bool isEnemy() const;
     VillainType SERIAL(type);
     SERIALIZE_ALL(NAMED(dwellingId), NAMED(enemyId), NAMED(name), NAMED(type), OPTION(alwaysPresent))
@@ -56,8 +56,8 @@ class Campaign {
     bool isEmpty() const;
     bool SERIAL(blocked) = false;
     optional<ViewIdList> getDwellingViewId() const;
-    optional<string> getDwellerDescription() const;
-    optional<string> getDwellerName() const;
+    optional<TString> getDwellerDescription() const;
+    optional<TString> getDwellerName() const;
     optional<VillainType> getVillainType() const;
     SERIALIZE_ALL(viewId, biome, dweller, blocked, inhabitants)
   };

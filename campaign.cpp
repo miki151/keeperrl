@@ -92,18 +92,6 @@ bool Campaign::VillainInfo::isEnemy() const {
   return type != VillainType::ALLY;
 }
 
-string Campaign::VillainInfo::getDescription() const {
-  switch (type) {
-    case VillainType::ALLY: return "ally";
-    case VillainType::MAIN: return "main villain";
-    case VillainType::LESSER: return "lesser villain";
-    case VillainType::PLAYER: return "player";
-    case VillainType::RETIRED: return "retired player";
-    case VillainType::MINOR:
-    case VillainType::NONE: return "";
-  }
-}
-
 void Campaign::updateInhabitants(ContentFactory* factory) {
   for (auto pos : sites.getBounds()) {
     auto& site = sites[pos];
@@ -151,25 +139,24 @@ bool Campaign::SiteInfo::isEmpty() const {
   return !dweller;
 }
 
-optional<string> Campaign::SiteInfo::getDwellerDescription() const {
+optional<TString> Campaign::SiteInfo::getDwellerDescription() const {
   if (dweller)
     return dweller->match(
-        [](const VillainInfo& info) {
-          auto desc = info.getDescription();
-          return info.name + (desc.empty() ? ""_s : " (" + desc + ")");
+        [](const VillainInfo& info) ->TString {
+          return TSentence("VILLAIN_NAME_AND_DESCRIPTION", info.name, getName(info.type));
         },
-        [](const RetiredInfo& info) { return info.gameInfo.name + " (retired player)" ;},
-        [](const KeeperInfo&)->string { return "This is your home site"; });
+        [](const RetiredInfo& info) ->TString  { return TSentence("RETIRED_PLAYER_DESCRIPTION", info.gameInfo.name) ;},
+        [](const KeeperInfo&) ->TString { return TStringId("PLAYER_SITE_DESCRIPTION"); });
   else
     return none;
 }
 
-optional<string> Campaign::SiteInfo::getDwellerName() const {
+optional<TString> Campaign::SiteInfo::getDwellerName() const {
   if (dweller)
     return dweller->match(
-        [](const VillainInfo& info) { return info.name; },
-        [](const RetiredInfo& info) { return info.gameInfo.name;},
-        [](const KeeperInfo&)->string { return "Home site"; });
+        [](const VillainInfo& info) -> TString { return info.name; },
+        [](const RetiredInfo& info) -> TString { return info.gameInfo.name;},
+        [](const KeeperInfo&) -> TString { return TStringId("PLAYER_SITE_NAME"); });
   else
     return none;
 }

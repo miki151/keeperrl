@@ -1,85 +1,85 @@
 COTTAGES {
-  {{"map_unknown"} "SOKOBAN" "Unknown" MINOR}
-  {{"map_unknown"} "WIZARD_TOWER" "Unknown" MINOR}
-  {{"map_unknown"} "ADOXIE_VAULT" "Unknown" MINOR}
-  {{"map_unknown"} "ADOXIE_FEET" "Unknown" MINOR}
-  {{"map_house2"} "COTTAGE_BANDITS" "Cottage" MINOR}
-  {{"map_house1"} "LIZARDMEN_COTTAGE" "Cottage" MINOR}
-  {{"map_house2"} "WITCH" "Cottage" MINOR}
-  {{"map_shop1"} "ARMOR_SHOP" "Shop" MINOR}
-  {{"map_shop1"} "POTION_SHOP" "Shop" MINOR}
-  {{"map_shop1"} "JEWELER_SHOP" "Shop" MINOR}
-  {{"map_blacksmith1"} "HUMAN_BLACKSMITH" "Blacksmith" MINOR}
-  {{"map_blacksmith1"} "GOBLIN_BLACKSMITH" "Blacksmith" MINOR}
-  {{"map_stable1"} "HUMAN_STABLE" "Stable" MINOR}
-  {{"map_stable1"} "THIEF_STABLE" "Stable" MINOR}
-  {{"map_white_dragon"} "YETI" "Cave" MINOR}
-  {{"map_house2"} "KNIFE_COTTAGE" "Cottage" MINOR}
-  {{"map_dungeon2"} "WOLF_DEN" "Cave" MINOR}
+  {{"map_unknown"} "SOKOBAN" CAMPAIGN_VILLAINS_COTTAGES_NAME MINOR}
+  {{"map_unknown"} "WIZARD_TOWER" CAMPAIGN_VILLAINS_COTTAGES_NAME MINOR}
+  {{"map_unknown"} "ADOXIE_VAULT" CAMPAIGN_VILLAINS_COTTAGES_NAME MINOR}
+  {{"map_unknown"} "ADOXIE_FEET" CAMPAIGN_VILLAINS_COTTAGES_NAME MINOR}
+  {{"map_house2"} "COTTAGE_BANDITS" CAMPAIGN_VILLAINS_COTTAGES_NAME1 MINOR}
+  {{"map_house1"} "LIZARDMEN_COTTAGE" CAMPAIGN_VILLAINS_COTTAGES_NAME1 MINOR}
+  {{"map_house2"} "WITCH" CAMPAIGN_VILLAINS_COTTAGES_NAME1 MINOR}
+  {{"map_shop1"} "ARMOR_SHOP" CAMPAIGN_VILLAINS_COTTAGES_NAME2 MINOR}
+  {{"map_shop1"} "POTION_SHOP" CAMPAIGN_VILLAINS_COTTAGES_NAME2 MINOR}
+  {{"map_shop1"} "JEWELER_SHOP" CAMPAIGN_VILLAINS_COTTAGES_NAME2 MINOR}
+  {{"map_blacksmith1"} "HUMAN_BLACKSMITH" CAMPAIGN_VILLAINS_COTTAGES_NAME3 MINOR}
+  {{"map_blacksmith1"} "GOBLIN_BLACKSMITH" CAMPAIGN_VILLAINS_COTTAGES_NAME3 MINOR}
+  {{"map_stable1"} "HUMAN_STABLE" CAMPAIGN_VILLAINS_COTTAGES_NAME4 MINOR}
+  {{"map_stable1"} "THIEF_STABLE" CAMPAIGN_VILLAINS_COTTAGES_NAME4 MINOR}
+  {{"map_white_dragon"} "YETI" CAMPAIGN_VILLAINS_COTTAGES_NAME5 MINOR}
+  {{"map_house2"} "KNIFE_COTTAGE" CAMPAIGN_VILLAINS_COTTAGES_NAME1 MINOR}
+  {{"map_dungeon2"} "WOLF_DEN" CAMPAIGN_VILLAINS_COTTAGES_NAME5 MINOR}
 }
 
 EVIL_COTTAGES inherit COTTAGES append {
-  {{"map_house2"} "HUMAN_COTTAGE" "Cottage" MINOR}
-  {{"map_house_snow1"} "ESKIMO_COTTAGE" "Cottage" MINOR}
-  {{"map_house1"} "NOMAD_COTTAGE" "Cottage" MINOR}
-  {{"map_house_elf"} "ELVEN_COTTAGE" "Cottage" MINOR}
-  {{"map_dungeon2"} "DWARF_CAVE" "Cave" MINOR}
-  {{"map_dungeon1"} "GOBLIN_CAVE_ALLY" "Cave" MINOR}
-  {{"map_dungeon1"} "HARPY_CAVE" "Cave" MINOR}
+  {{"map_house2"} "HUMAN_COTTAGE" CAMPAIGN_VILLAINS_COTTAGES_NAME1 MINOR}
+  {{"map_house_snow1"} "ESKIMO_COTTAGE" CAMPAIGN_VILLAINS_COTTAGES_NAME1 MINOR}
+  {{"map_house1"} "NOMAD_COTTAGE" CAMPAIGN_VILLAINS_COTTAGES_NAME1 MINOR}
+  {{"map_house_elf"} "ELVEN_COTTAGE" CAMPAIGN_VILLAINS_COTTAGES_NAME1 MINOR}
+  {{"map_dungeon2"} "DWARF_CAVE" CAMPAIGN_VILLAINS_COTTAGES_NAME5 MINOR}
+  {{"map_dungeon1"} "GOBLIN_CAVE_ALLY" CAMPAIGN_VILLAINS_COTTAGES_NAME5 MINOR}
+  {{"map_dungeon1"} "HARPY_CAVE" CAMPAIGN_VILLAINS_COTTAGES_NAME5 MINOR}
 }
 
 LAWFUL_COTTAGES inherit COTTAGES append {
-  {{"map_dungeon2"} "DARK_ELF_CAVE" "Cave" MINOR}
+  {{"map_dungeon2"} "DARK_ELF_CAVE" CAMPAIGN_VILLAINS_COTTAGES_NAME5 MINOR}
 }
 
 EVIL_KEEPER {
     # Line goes like this:
     # ViewId EnemyId Villain-name Villain-type [always present on campaign map (false by default)]
-    {{"map_castle1"} "KNIGHTS" "Knights" MAIN}
-    {{"map_house_elf"} "ELVES" "Elves" MAIN}
-    {{"map_dwarves"} "DWARVES" "Dwarves" MAIN}
-    {{"map_dragon"} "RED_DRAGON" "Red dragon" MAIN}
-    {{"map_white_dragon"} "WHITE_DRAGON" "White dragon" MAIN}
-    {{"map_tower1"} "ELEMENTALIST" "Elementalist" MAIN}
-    {{"map_green_dragon"} "GREEN_DRAGON" "Green dragon" MAIN}
-    {{"map_house1"} "LIZARDMEN" "Lizardmen" MAIN}
-    {{"map_warriors"} "WARRIORS" "Warriors" MAIN}
-    {{"map_thieves"} "THIEVES" "Thieves" MAIN}
-    {{"map_castle1"} "DEMON_DEN" "Demon den" MAIN}
-    {{"map_adoxie"} "MAIN_DUNGEON" "Adoxie priest" MAIN true}
+    {{"map_castle1"} "KNIGHTS" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME MAIN}
+    {{"map_house_elf"} "ELVES" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME1 MAIN}
+    {{"map_dwarves"} "DWARVES" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME2 MAIN}
+    {{"map_dragon"} "RED_DRAGON" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME3 MAIN}
+    {{"map_white_dragon"} "WHITE_DRAGON" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME4 MAIN}
+    {{"map_tower1"} "ELEMENTALIST" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME5 MAIN}
+    {{"map_green_dragon"} "GREEN_DRAGON" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME6 MAIN}
+    {{"map_house1"} "LIZARDMEN" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME7 MAIN}
+    {{"map_warriors"} "WARRIORS" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME8 MAIN}
+    {{"map_thieves"} "THIEVES" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME9 MAIN}
+    {{"map_castle1"} "DEMON_DEN" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME10 MAIN}
+    {{"map_adoxie"} "MAIN_DUNGEON" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME11 MAIN true}
 
-    {{"map_ents"} "ENTS" "Tree spirits" LESSER}
-    {{"map_house_elf"} "DRIADS" "Dryads" LESSER}
-    {{"map_dungeon1"} "CYCLOPS" "Cyclops" LESSER}
-    {{"map_ants"} "SHELOB" "Giant spider" LESSER}
-    {{"map_hydra"} "HYDRA" "Hydra" LESSER}
-    {{"map_house_elf"} "UNICORN_HERD" "Unicorn herd" LESSER}
-    {{"map_ants"} "ANTS_OPEN" "Ants" LESSER}
-    {{"map_grave1"} "CEMETERY" "Zombies" LESSER}
-    {{"map_guard_house1"} "GUARD_POST" "Guard post" LESSER}
+    {{"map_ents"} "ENTS" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME12 LESSER}
+    {{"map_house_elf"} "DRIADS" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME13 LESSER}
+    {{"map_dungeon1"} "CYCLOPS" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME14 LESSER}
+    {{"map_ants"} "SHELOB" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME15 LESSER}
+    {{"map_hydra"} "HYDRA" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME16 LESSER}
+    {{"map_house_elf"} "UNICORN_HERD" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME17 LESSER}
+    {{"map_ants"} "ANTS_OPEN" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME18 LESSER}
+    {{"map_grave1"} "CEMETERY" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME19 LESSER}
+    {{"map_guard_house1"} "GUARD_POST" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME20 LESSER}
 
-    {{"map_dungeon1"} "DARK_ELVES_ALLY" "Dark elves" ALLY}
-    {{"map_dungeon1"} "GNOMES" "Gnomes" ALLY}
+    {{"map_dungeon1"} "DARK_ELVES_ALLY" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME21 ALLY}
+    {{"map_dungeon1"} "GNOMES" CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME22 ALLY}
 }
 
 LAWFUL_KEEPER {
-    {{"map_dragon"} "RED_DRAGON" "Red dragon" MAIN}
-    {{"map_green_dragon"} "GREEN_DRAGON" "Green dragon" MAIN}
-    {{"map_white_dragon"} "WHITE_DRAGON" "White dragon" MAIN}
-    {{"map_dungeon1"} "DARK_ELVES_ENEMY" "Dark elves" MAIN}
-    {{"map_house1"} "GOBLIN_VILLAGE" "Goblin town" MAIN}
-    {{"map_castle1"} "DEMON_DEN" "Demon den" MAIN}
-    {{"map_house1"} "LIZARDMEN" "Lizardmen" MAIN}
+    {{"map_dragon"} "RED_DRAGON" CAMPAIGN_VILLAINS_LAWFUL_KEEPER_NAME MAIN}
+    {{"map_green_dragon"} "GREEN_DRAGON" CAMPAIGN_VILLAINS_LAWFUL_KEEPER_NAME1 MAIN}
+    {{"map_white_dragon"} "WHITE_DRAGON" CAMPAIGN_VILLAINS_LAWFUL_KEEPER_NAME2 MAIN}
+    {{"map_dungeon1"} "DARK_ELVES_ENEMY" CAMPAIGN_VILLAINS_LAWFUL_KEEPER_NAME3 MAIN}
+    {{"map_house1"} "GOBLIN_VILLAGE" CAMPAIGN_VILLAINS_LAWFUL_KEEPER_NAME4 MAIN}
+    {{"map_castle1"} "DEMON_DEN" CAMPAIGN_VILLAINS_LAWFUL_KEEPER_NAME5 MAIN}
+    {{"map_house1"} "LIZARDMEN" CAMPAIGN_VILLAINS_LAWFUL_KEEPER_NAME6 MAIN}
 
-    {{"map_ants"} "SHELOB" "Giant spider" LESSER}
-    {{"map_dungeon1"} "CYCLOPS" "Cyclops" LESSER}
-    {{"map_hydra"} "HYDRA" "Hydra" LESSER}
-    {{"map_grave1"} "CEMETERY" "Zombies" LESSER}
-    {{"map_dungeon1"} "GOBLIN_CAVE" "Goblins" LESSER}
-    {{"map_dungeon1"} "HARPY_CAVE" "Harpies" LESSER}
-    {{"map_ants"} "ANTS_OPEN" "Ants" LESSER}
-    {{"map_adoxie"} "MAIN_DUNGEON" "Adoxie priest" MAIN true}
+    {{"map_ants"} "SHELOB" CAMPAIGN_VILLAINS_LAWFUL_KEEPER_NAME7 LESSER}
+    {{"map_dungeon1"} "CYCLOPS" CAMPAIGN_VILLAINS_LAWFUL_KEEPER_NAME8 LESSER}
+    {{"map_hydra"} "HYDRA" CAMPAIGN_VILLAINS_LAWFUL_KEEPER_NAME9 LESSER}
+    {{"map_grave1"} "CEMETERY" CAMPAIGN_VILLAINS_LAWFUL_KEEPER_NAME10 LESSER}
+    {{"map_dungeon1"} "GOBLIN_CAVE" CAMPAIGN_VILLAINS_LAWFUL_KEEPER_NAME11 LESSER}
+    {{"map_dungeon1"} "HARPY_CAVE" CAMPAIGN_VILLAINS_LAWFUL_KEEPER_NAME12 LESSER}
+    {{"map_ants"} "ANTS_OPEN" CAMPAIGN_VILLAINS_LAWFUL_KEEPER_NAME13 LESSER}
+    {{"map_adoxie"} "MAIN_DUNGEON" CAMPAIGN_VILLAINS_LAWFUL_KEEPER_NAME14 MAIN true}
 
-    {{"map_dwarves"} "DWARVES" "Dwarves" ALLY}
-    {{"map_castle1"} "TEUTONS" "Teutonic Knights" ALLY}
+    {{"map_dwarves"} "DWARVES" CAMPAIGN_VILLAINS_LAWFUL_KEEPER_NAME15 ALLY}
+    {{"map_castle1"} "TEUTONS" CAMPAIGN_VILLAINS_LAWFUL_KEEPER_NAME16 ALLY}
 }
