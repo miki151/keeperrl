@@ -28,7 +28,7 @@ CollectiveAttack::CollectiveAttack(vector<const Task*> attackTasks, Collective* 
       attackerViewId(getAttackViewId(att, c)),
       attackTasks(attackTasks.transform([](auto elem) { return elem->getThis(); })) {}
 
-CollectiveAttack::CollectiveAttack(vector<const Task*> attackTasks, const string& name, ViewIdList id, const vector<Creature*>& c)
+CollectiveAttack::CollectiveAttack(vector<const Task*> attackTasks, const TString& name, ViewIdList id, const vector<Creature*>& c)
     : creatures(c), attackerName(name), attackerViewId(id),
       attackTasks(attackTasks.transform([](auto elem) { return elem->getThis(); })) {}
 

@@ -108,14 +108,3 @@ void EnemyFactory::updateCreateOnBones(EnemyInfo& info) const {
 vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
   return externalEnemies;
 }
-
-vector<ExternalEnemy> EnemyFactory::getHalloweenKids() {
-  return {
-    ExternalEnemy{
-        CreatureList(random.get(3, 6), CreatureId("HALLOWEEN_KID")),
-        HalloweenKids{},
-        "kids...?",
-        Range(0, 10000),
-        1
-    }};
-}

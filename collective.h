@@ -202,7 +202,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   vector<Creature*> getConsumptionTargets(Creature* consumer) const;
   void onRansomPaid();
-  void onExternalEnemyKilled(const string& name);
+  void onExternalEnemyKilled(const TString& name);
   void addRecordedEvent(TString);
   const HashSet<TString>& getRecordedEvents() const;
 

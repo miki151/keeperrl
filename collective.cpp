@@ -1698,8 +1698,8 @@ void Collective::onRansomPaid() {
   control->onRansomPaid();
 }
 
-void Collective::onExternalEnemyKilled(const std::string& name) {
-  control->addMessage(PlayerMessage("You resisted the attack of " + name + ".",
+void Collective::onExternalEnemyKilled(const TString& name) {
+  control->addMessage(PlayerMessage(TSentence("YOU_RESISTED_THE_ATTACK_OF", name),
       MessagePriority::CRITICAL));
   dungeonLevel.onKilledWave();
 }

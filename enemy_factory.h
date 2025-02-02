@@ -20,7 +20,6 @@ class EnemyFactory {
   EnemyFactory(EnemyFactory&&) = default;
   EnemyInfo get(EnemyId) const;
   vector<ExternalEnemy> getExternalEnemies() const;
-  vector<ExternalEnemy> getHalloweenKids();
   vector<EnemyId> getAllIds() const;
 
   private:

@@ -380,7 +380,7 @@ class CollectiveInfo {
 
   struct NextWave {
     ViewIdList HASH(viewId);
-    string HASH(attacker);
+    TString HASH(attacker);
     TimeInterval HASH(numTurns);
     HASH_ALL(viewId, attacker, numTurns)
   };

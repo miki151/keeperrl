@@ -8,7 +8,7 @@ class CollectiveAttack {
   public:
   CollectiveAttack(vector<const Task*> attackTasks, Collective* attacker, const vector<Creature*>&,
       optional<int> ransom = none);
-  CollectiveAttack(vector<const Task*> attackTasks, const string& name, ViewIdList, const vector<Creature*>&);
+  CollectiveAttack(vector<const Task*> attackTasks, const TString& name, ViewIdList, const vector<Creature*>&);
 
   Collective* getAttacker() const;
   const TString& getAttackerName() const;

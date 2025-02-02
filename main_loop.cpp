@@ -1171,7 +1171,7 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
       .getExternalEnemies(), ExternalEnemiesType::FROM_START);
   for (int turn : Range(100000))
     if (auto wave = enemies.popNextWave(LocalTime(turn))) {
-      std::cerr << "Turn " << turn << ": " << wave->enemy.name << "\n";
+      std::cerr << "Turn " << turn << ": " << wave->enemy.name.data() << "\n";
       int totalWins = 0;
       for (auto& allyInfo : allies) {
         //std::cerr << allyInfo.getSummary(&contentFactory.getCreatures()) << ": ";
@@ -1179,7 +1179,7 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
         totalWins += numWins;
       }
       std::cerr << totalWins << " wins\n";
-      std::cout << "Turn " << turn << ": " << wave->enemy.name << ": " << totalWins << "\n";
+      std::cout << "Turn " << turn << ": " << wave->enemy.name.data() << ": " << totalWins << "\n";
     }
 }
 

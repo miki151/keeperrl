@@ -10,7 +10,7 @@
 struct ExternalEnemy {
   CreatureList SERIAL(creatures);
   AttackBehaviour SERIAL(behaviour);
-  string SERIAL(name);
+  TString SERIAL(name);
   Range SERIAL(attackTime);
   int SERIAL(maxOccurences) = 1;
   SERIALIZE_ALL(NAMED(creatures), NAMED(behaviour), NAMED(name), NAMED(attackTime), OPTION(maxOccurences))
@@ -31,7 +31,7 @@ class ExternalEnemies {
   ExternalEnemies(RandomGen&, CreatureFactory*, vector<ExternalEnemy>, ExternalEnemiesType);
   void update(Level*, LocalTime);
   struct CurrentWave {
-    string SERIAL(name);
+    TString SERIAL(name);
     vector<Creature*> SERIAL(attackers);
     SERIALIZE_ALL(name, attackers)
   };

@@ -2067,7 +2067,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
         auto name = nextWave->enemy.name;
         auto viewId = nextWave->viewId;
         if (index % 6 == 5) {
-          name = "Unknown";
+          name = TStringId("ENEMY_WAVE_NAME_UNKNOWN");
           viewId = {ViewId("unknown_monster")};
         }
         if (!dismissedNextWaves.count(index) && countDown < maxEnemyCountdown)
