@@ -19,6 +19,7 @@
 #include "util.h"
 #include "view_layer.h"
 #include "item_counts.h"
+#include "t_string.h"
 
 class ViewObject;
 class TStringId;
@@ -79,7 +80,7 @@ class ViewIndex {
   const vector<ViewObject>& getAllObjects() const;
 
   void setHighlight(HighlightType, bool = true);
-  void addGasAmount(string name, Color);
+  void addGasAmount(TString name, Color);
   void setNightAmount(double);
 
   bool isHighlight(HighlightType) const;
@@ -87,7 +88,7 @@ class ViewIndex {
 
   struct TileGasInfo {
     Color SERIAL(color);
-    string SERIAL(name);
+    TString SERIAL(name);
     SERIALIZE_ALL(color, name)
   };
   const vector<TileGasInfo>& getGasAmounts() const;

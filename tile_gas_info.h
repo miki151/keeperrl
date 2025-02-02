@@ -4,9 +4,10 @@
 
 #include "color.h"
 #include "effect.h"
+#include "t_string.h"
 
 struct TileGasInfo {
-  string SERIAL(name);
+  TString SERIAL(name);
   Color SERIAL(color);
   double SERIAL(decrease);
   double SERIAL(spread);

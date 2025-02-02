@@ -1,5 +1,5 @@
 "FOG" {
-  "fog"
+  TILE_GAS_TYPES_FOG_NAME
   ColorId WHITE
   0.95
   0.0
@@ -7,7 +7,7 @@
 }
 
 "POISON_GAS" {
-  "poison gas"
+  TILE_GAS_TYPES_POISON_GAS_NAME
   ColorId GREEN
   0.98
   0.1
@@ -19,7 +19,7 @@
 }
 
 "BLACK_SMOKE" {
-  "black smoke"
+  TILE_GAS_TYPES_BLACK_SMOKE_NAME
   ColorId BLACK
   0.95
   0.0
@@ -31,7 +31,7 @@
 }
 
 "BLACK_MASS_SMOKE" {
-  "black smoke"
+  TILE_GAS_TYPES_BLACK_MASS_SMOKE_NAME
   ColorId BLACK
   0.95
   0.05
