@@ -579,12 +579,12 @@ vector<Player::CommandInfo> Player::getCommands() const {
         if (!!creature->mount(c))
           canMount = true;
   return {
-    {PlayerInfo::CommandInfo{"Fire ranged weapon or spell", Keybinding("FIRE_PROJECTILE"), "", true},
+    {PlayerInfo::CommandInfo{TStringId("FIRE_RANGED_WEAPON_OR_SPELL"), Keybinding("FIRE_PROJECTILE"), TString(), true},
       [] (Player* player) { player->fireAction(); }, false},
-    {PlayerInfo::CommandInfo{"Skip turn", Keybinding("SKIP_TURN"), "Skip this turn.", true},
+    {PlayerInfo::CommandInfo{TStringId("SKIP_TURN_ACTION"), Keybinding("SKIP_TURN"), TString(), true},
       [] (Player* player) { player->tryToPerform(player->creature->wait()); }, false},
-    {PlayerInfo::CommandInfo{"Wait", Keybinding("WAIT"),
-        "Wait until all other team members make their moves (doesn't skip turn).",
+    {PlayerInfo::CommandInfo{TStringId("WAIT_COMMAND_NAME"), Keybinding("WAIT"),
+        TStringId("WAIT_COMMAND_DESCRIPTION"),
         getGame()->getPlayerCreatures().size() > 1},
       [] (Player* player) {
           player->getModel()->getTimeQueue().postponeMove(player->creature);
@@ -592,24 +592,26 @@ vector<Player::CommandInfo> Player::getCommands() const {
     /*{PlayerInfo::CommandInfo{"Travel", 't', "Travel to another site.", !getGame()->isSingleModel()},
       [] (Player* player) { player->getGame()->transferAction(player->getTeam()); }, false},*/
     creature->getSteed()
-      ? Player::CommandInfo{PlayerInfo::CommandInfo{"Dismount", Keybinding("MOUNT"), "Dismount your steed.", true},
+      ? Player::CommandInfo{PlayerInfo::CommandInfo{TStringId("DISMOUNT_COMMAND_NAME"), Keybinding("MOUNT"),
+          TStringId("DISMOUNT_COMMAND_DESCRIPTION"), true},
             [] (Player* player) { player->tryToPerform(player->creature->dismount()); }, false}
-      : Player::CommandInfo{PlayerInfo::CommandInfo{"Mount", Keybinding("MOUNT"), "Mount a steed.", canMount},
+      : Player::CommandInfo{PlayerInfo::CommandInfo{TStringId("MOUNT_ACTION"), Keybinding("MOUNT"),
+          TStringId("DISMOUNT_COMMAND_DESCRIPTION"), canMount},
             [] (Player* player) { player->mountAction(); }, false},
-    Player::CommandInfo{PlayerInfo::CommandInfo{"Chat", Keybinding("CHAT"), "Chat with someone.", canChat},
+    Player::CommandInfo{PlayerInfo::CommandInfo{TStringId("CHAT_ACTION"), Keybinding("CHAT"), TStringId("CHAT_COMMAND_DESCRIPTION"), canChat},
       [] (Player* player) { player->chatAction(); }, false},
-    {PlayerInfo::CommandInfo{"Hide", Keybinding("HIDE"), "Hide behind or under a terrain feature or piece of furniture.",
+    {PlayerInfo::CommandInfo{TStringId("HIDE_COMMAND_NAME"), Keybinding("HIDE"), TStringId("HIDE_COMMAND_DESCRIPTION"),
         !!creature->hide()},
       [] (Player* player) { player->hideAction(); }, false},
     /*{PlayerInfo::CommandInfo{"Pay for all items", 'p', "Pay debt to a shopkeeper.", true},
       [] (Player* player) { player->payForAllItemsAction();}, false},*/
-    {PlayerInfo::CommandInfo{"Drop everything", Keybinding("DROP_EVERYTHING"),
-        "Drop all items in possession.", !creature->getEquipment().isEmpty()},
+    {PlayerInfo::CommandInfo{TStringId("DROP_EVERYTHING_COMMAND_NAME"), Keybinding("DROP_EVERYTHING"),
+        TStringId("DROP_EVERYTHING_COMMAND_DESCRIPTION"), !creature->getEquipment().isEmpty()},
       [] (Player* player) { auto c = player->creature; player->tryToPerform(c->drop(c->getEquipment().getItems())); }, false},
-    {PlayerInfo::CommandInfo{"Message history", Keybinding("MESSAGE_HISTORY"), "Show message history.", true},
+    {PlayerInfo::CommandInfo{TStringId("MESSAGE_HISTORY"), Keybinding("MESSAGE_HISTORY"), TStringId("SHOW_MESSAGE_HISTORY"), true},
       [] (Player* player) { player->showHistory(); }, false},
 #ifndef RELEASE
-    {PlayerInfo::CommandInfo{"Wait multiple turns", none, "", true},
+    {PlayerInfo::CommandInfo{"Wait multiple turns"_s, none, TString(), true},
       [] (Player* player) {
         if (auto num = player->getView()->getNumber(TStringId("WAIT_HOW_MANY_TURNS"), Range(1, 2000), 30))
           for (int i : Range(*num))

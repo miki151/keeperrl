@@ -135,9 +135,9 @@ class PlayerInfo {
   int HASH(debt);
   vector<PlayerInfo> HASH(teamInfos);
   struct CommandInfo {
-    string HASH(name);
+    TString HASH(name);
     optional<Keybinding> HASH(keybinding);
-    string HASH(description);
+    TString HASH(description);
     bool HASH(active);
     bool HASH(tutorialHighlight) = false;
     HASH_ALL(name, keybinding, description, active, tutorialHighlight)
