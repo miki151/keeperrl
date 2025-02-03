@@ -360,51 +360,51 @@ End
     SetMinionActivity IDLE
     FirstSuccessful {
       Filter EquipedIngredient "protection_prayer" DIVINE_EFFECT(400, 600, 800, "DIVINE_PROTECTION",
-          "Minions have been blessed with a temporary +5 defense bonus.")
+          BUFFS_PREACHING_ENDEFFECT)
       Filter EquipedIngredient "strength_prayer" DIVINE_EFFECT(400, 600, 800, "DIVINE_STRENGTH",
-          "Minions have been blessed with a temporary +5 damage bonus.")
+          BUFFS_PREACHING_ID5)
       Filter EquipedIngredient "digging_prayer" DIVINE_EFFECT(1200, 1600, 2000, "DIVINE_DIGGING",
-          "Minions have been blessed with a temporary +15 digging bonus.")
+          BUFFS_PREACHING_ID6)
       Filter EquipedIngredient "training_prayer" DIVINE_EFFECT(1200, 1600, 2000, FAST_TRAINING,
-          "Minions have been blessed with temporarily faster training.")
+          BUFFS_PREACHING_ID7)
       Filter EquipedIngredient "crafting_prayer" DIVINE_EFFECT(1200, 1600, 2000, FAST_CRAFTING,
-          "Minions have been blessed with temporarily faster crafting.")
+          BUFFS_PREACHING_ID8)
       Filter EquipedIngredient "ranged_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "RANGED_RESISTANCE",
-          "Minions have been blessed with temporary resistance to ranged attacks.")
+          BUFFS_PREACHING_ID9)
       Filter EquipedIngredient "regeneration_prayer" DIVINE_EFFECT(400, 600, 800, "REGENERATION",
-          "Minions have been blessed with a temporary ability to regenerate wounds.")
+          BUFFS_PREACHING_ID10)
       Filter EquipedIngredient "fire_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "FIRE_RESISTANT",
-          "Minions have been blessed with temporary resistance to fire attacks.")
+          BUFFS_PREACHING_ID11)
       Filter EquipedIngredient "poison_resistance_prayer" DIVINE_EFFECT(400, 600, 800, POISON_RESISTANT,
-          "Minions have been blessed with temporary resistance to poison.")
+          BUFFS_PREACHING_ID12)
       Filter EquipedIngredient "dragon_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "DRAGON_RESISTANCE",
-          "Minions have been blessed with temporary resistance to dragon attacks.")
+          BUFFS_PREACHING_ID13)
       Filter EquipedIngredient "demon_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "DEMON_RESISTANCE",
-          "Minions have been blessed with temporary resistance to demon attacks.")
+          BUFFS_PREACHING_ID14)
       Filter EquipedIngredient "undead_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "UNDEAD_RESISTANCE",
-          "Minions have been blessed with temporary resistance to undead attacks.")
+          BUFFS_PREACHING_ID15)
       Filter EquipedIngredient "lizardmen_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "LIZARDMEN_RESISTANCE",
-          "Minions have been blessed with temporary resistance to lizardmen attacks.")
+          BUFFS_PREACHING_ID16)
       Filter EquipedIngredient "elf_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "ELF_RESISTANCE",
-          "Minions have been blessed with temporary resistance to elf attacks.")
+          BUFFS_PREACHING_ID17)
       Filter EquipedIngredient "greenskin_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "GREENSKIN_RESISTANCE",
-          "Minions have been blessed with temporary resistance to greenskin attacks.")
+          BUFFS_PREACHING_ID18)
       Filter EquipedIngredient "melee_prayer" DIVINE_SPELL(IncreaseMaxLevel "DAMAGE" 1,
-          "Minions have been blessed with increased melee training limits.")
+          BUFFS_PREACHING_ID19)
       Filter EquipedIngredient "divinity_prayer" DIVINE_SPELL(IncreaseMaxLevel "DIVINITY" 1,
-          "Minions have been blessed with increased divinity training limits.")
+          BUFFS_PREACHING_ID20)
       Filter EquipedIngredient "guardian_prayer" DIVINE_SPELL(
           Filter CreatureStatus FIGHTER Summon "ANGEL" 1 400,
           Filter CreatureStatus FIGHTER Summon "ANGEL" 1 600,
           Filter CreatureStatus FIGHTER Summon "ANGEL" 1 800,
-          "Minions have been blessed with guardian angels.")
+          BUFFS_PREACHING_ID21)
       Filter EquipedIngredient "teuton_prayer" {
         SummonAway "TEMPLAR" 1 1600  {FIGHTER NO_LIMIT}
         DIVINE_SPELL(
             Chance 0.3 SummonAway "TEMPLAR" 1 1000 {FIGHTER NO_LIMIT},
             Chance 0.4 SummonAway "TEMPLAR" 1 1300 {FIGHTER NO_LIMIT},
             Chance 0.5 SummonAway "TEMPLAR" 1 1600 {FIGHTER NO_LIMIT},
-            "Your prayers for summoning stronger armed help have been answered.")
+            BUFFS_PREACHING_ID22)
       }
       Filter EquipedIngredient "squire_prayer" {
         Filter CreatureId "KEEPER_BISHOP" {
@@ -413,7 +413,7 @@ End
               Chance 0.3 SummonAway "WARRIOR_NUN" 1 1000 {FIGHTER NO_LIMIT},
               Chance 0.4 SummonAway "WARRIOR_NUN" 1 1300 {FIGHTER NO_LIMIT},
               Chance 0.5 SummonAway "WARRIOR_NUN" 1 1600 {FIGHTER NO_LIMIT},
-              "Your prayers for summoning armed help have been answered.")
+              BUFFS_PREACHING_ID23)
         }
         Filter CreatureId "MOTHER_SUPERIOR" {
           SummonAway "ARMED_BROTHER" 1 1600 {FIGHTER NO_LIMIT}
@@ -421,7 +421,7 @@ End
               Chance 0.3 SummonAway "ARMED_BROTHER" 1 1000 {FIGHTER NO_LIMIT},
               Chance 0.4 SummonAway "ARMED_BROTHER" 1 1300 {FIGHTER NO_LIMIT},
               Chance 0.5 SummonAway "ARMED_BROTHER" 1 1600 {FIGHTER NO_LIMIT},
-              "Your prayers for summoning armed help have been answered.")
+              BUFFS_PREACHING_ID23)
         }
       }
       Filter EquipedIngredient "workers_prayer" {
@@ -430,7 +430,7 @@ End
             Chance 0.3 SummonAway "PESEANT_PLAYER" 1 1000 {WORKER NO_LIMIT NO_EQUIPMENT},
             Chance 0.4 SummonAway "PESEANT_PLAYER" 1 1300 {WORKER NO_LIMIT NO_EQUIPMENT},
             Chance 0.5 SummonAway "PESEANT_PLAYER" 1 1600 {WORKER NO_LIMIT NO_EQUIPMENT},
-            "Your prayers for summoning more workforce have been answered.")
+            BUFFS_PREACHING_ID24)
       }
       Filter And { Flag "adoxie_dead" EquipedIngredient "adoxie_prayer" } {
         MassMessage(BUFFS_PREACHING_ID)
