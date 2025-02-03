@@ -168,7 +168,7 @@ class Game : public OwnedObject<Game> {
   void considerRetiredLoadedEvent(Vec2 coord);
   optional<ExitInfo> updateInput();
   void increaseTime(double diff);
-  void spawnKeeper(AvatarInfo, vector<string> introText);
+  void spawnKeeper(AvatarInfo, vector<TString> introText);
   HeapAllocated<ContentFactory> SERIAL(contentFactory);
   void updateSunlightMovement();
   string SERIAL(avatarId);

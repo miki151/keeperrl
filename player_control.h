@@ -61,7 +61,7 @@ namespace BuildInfoTypes {
 
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
-  static PPlayerControl create(Collective* col, vector<string> introText, TribeAlignment);
+  static PPlayerControl create(Collective* col, vector<TString> introText, TribeAlignment);
   ~PlayerControl() override;
 
   void processInput(View* view, UserInput);
@@ -219,7 +219,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   PController createMinionController(Creature*);
 
   mutable SMapMemory SERIAL(memory);
-  vector<string> SERIAL(introText);
+  vector<TString> SERIAL(introText);
   struct SelectionInfo {
     Vec2 corner1;
     Vec2 corner2;

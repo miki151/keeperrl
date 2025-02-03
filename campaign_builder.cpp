@@ -261,7 +261,7 @@ static bool autoConfirm(CampaignType type) {
   }
 }
 
-const vector<string>& CampaignBuilder::getIntroMessages(CampaignType type) const {
+const vector<TString>& CampaignBuilder::getIntroMessages(CampaignType type) const {
   return gameIntros;
 }
 

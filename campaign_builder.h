@@ -13,7 +13,7 @@ struct AvatarInfo;
 class ContentFactory;
 
 using VillainsTuple = map<VillainGroup, vector<Campaign::VillainInfo>>;
-using GameIntros = vector<string>;
+using GameIntros = vector<TString>;
 
 class CampaignBuilder {
   public:
@@ -41,7 +41,7 @@ class CampaignBuilder {
   vector<Campaign::VillainInfo> getVillains(const vector<VillainGroup>&, VillainType);
   bool placeVillains(const ContentFactory*, Campaign&, const VillainCounts&, const optional<RetiredGames>&,
       const vector<VillainGroup>&);
-  const vector<string>& getIntroMessages(CampaignType) const;
+  const vector<TString>& getIntroMessages(CampaignType) const;
   void setCountLimits(const CampaignInfo&);
 };
 
@@ -49,7 +49,7 @@ struct CampaignSetup {
   Campaign campaign;
   string gameIdentifier;
   TString gameDisplayName;
-  vector<string> introMessages;
+  vector<TString> introMessages;
   optional<ExternalEnemiesType> externalEnemies;
   EnemyAggressionLevel enemyAggressionLevel;
 };

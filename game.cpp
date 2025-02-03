@@ -105,7 +105,7 @@ void Game::addCollective(Collective* col) {
   }
 }
 
-void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
+void Game::spawnKeeper(AvatarInfo avatarInfo, vector<TString> introText) {
   auto model = getMainModel().get();
   Level* level = model->getGroundLevel();
   Creature* keeperRef = avatarInfo.playerCreature.get();

@@ -139,7 +139,7 @@ PlayerControl::PlayerControl(Private, Collective* col, TribeAlignment alignment)
         addToMemory(pos);
 }
 
-PPlayerControl PlayerControl::create(Collective* col, vector<string> introText, TribeAlignment alignment) {
+PPlayerControl PlayerControl::create(Collective* col, vector<TString> introText, TribeAlignment alignment) {
   auto ret = makeOwner<PlayerControl>(Private{}, col, alignment);
   ret->subscribeTo(col->getModel());
   ret->introText = introText;
