@@ -33,7 +33,6 @@ class CampaignBuilder {
   const AvatarInfo& avatarInfo;
   vector<OptionId> getCampaignOptions(CampaignType) const;
   vector<OptionId> getPrimaryOptions() const;
-  const char* getIntroText() const;
   void setPlayerPos(Campaign&, Vec2, ViewIdList, ContentFactory*);
   vector<CampaignType> getAvailableTypes() const;
   bool placeVillains(const ContentFactory*, Campaign&, Table<bool>&, vector<Campaign::SiteInfo::Dweller>, int count,

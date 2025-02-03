@@ -62,18 +62,6 @@ vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
   };
 }
 
-const char* CampaignBuilder::getIntroText() const {
-  return
-    "Welcome to the campaign mode! "
-    "The world, which you see below, is made up of smaller maps. You will build your base on one of them. "
-    "There are hostile and friendly tribes around you. You have to conquer all villains marked as \"main\" "
-    "to win the game."
-    "You can travel to other sites by creating a team and using the travel command.\n\n"
-    "The highlighted tribes are in your influence zone, which means that you can currently interact with them "
-    "(trade, recruit, attack or be attacked). "
-    "As you conquer more enemies, your influence zone will increase.\n\n";
-}
-
 void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewIdList playerViewId, ContentFactory* f) {
   campaign.sites[campaign.playerPos].dweller.reset();
   campaign.playerPos = pos;
@@ -347,7 +335,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* content
               campaign,
               (retired && type == CampaignType::FREE_PLAY) ? optional<RetiredGames&>(*retired) : none,
               getCampaignOptions(type),
-              getIntroText(),
+              TStringId("CAMPAIGN_HELP_TEXT"),
               contentFactory->biomeInfo.at(*campaign.getSites()[campaign.getPlayerPos()].biome).name,
               contentFactory->worldMaps.transform([](auto& elem) { return elem.name; }),
               worldMapIndex

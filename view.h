@@ -181,7 +181,7 @@ class View {
     const Campaign& campaign;
     optional<RetiredGames&> retired;
     vector<OptionId> options;
-    string introText;
+    TString introText;
     TString currentBiome;
     vector<TString> worldMapNames;
     int currentWorldMap;

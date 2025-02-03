@@ -4160,4 +4160,8 @@
   "DWARF_SPELL_SCHOOL_NAME" "dwarf"
   "ZOMBIE_MAGE_SPELL_SCHOOL_NAME" "zombie mage"
   "PRAYERS_SPELL_SCHOOL_NAME" "prayers"
+  "CAMPAIGN_HELP_TEXT" "Welcome to the campaign mode! The world, which you see below, is made up of smaller maps. You will build your base on one of them. There are hostile and friendly tribes around you. You have to conquer all villains marked as \"main\" to win the game. You can travel to other sites by creating a team and using the travel command.
+
+
+The highlighted tribes are in your influence zone, which means that you can currently interact with them (trade, recruit, attack or be attacked). As you conquer more enemies, your influence zone will increase."
 }
