@@ -7,7 +7,7 @@
 #include "item_prefix.h"
 
 struct AutomatonPart {
-  string SERIAL(minionGroup);
+  TString SERIAL(minionGroup);
   int SERIAL(layer);
   ViewId SERIAL(installedId);
   SERIALIZE_ALL(layer, minionGroup, installedId)

@@ -29,7 +29,7 @@ Def HUMANOID_HEAD(Suffix, Color, FullName, ResourceId, Defense)
       {
         MakeHumanoid
         AddBodyPart HEAD 1 none
-        AddAutomatonPart 2 "humanoid" { "installed_head" Rgb Color 255 }
+        AddAutomatonPart 2 ITEMS_HUMANOIDHEADWOOD_PREFIX1 { "installed_head" Rgb Color 255 }
       }
     }
     upgradeType = {ARMOR}
@@ -52,11 +52,11 @@ Spell + "Head" + Suffix
       diminishModifier = Spell 0.5
       prefix = AssembledCreatureEffect
         Name FullName
-        Description "Grants the \"" + SpellId + "\" ability."
+        Description AUTOMATON_RANGED_HEAD_DESCRIPTION(SpellLower)
         {
           AddBodyPart HEAD 1 none
           GrantAbility SpellId
-          AddAutomatonPart 2 SpellShort { "installed_" + SpellShort Rgb Color 255 }
+          AddAutomatonPart 2 SpellLower { "installed_" + SpellShort Rgb Color 255 }
         }
     }
     upgradeType = {ARMOR}
@@ -75,7 +75,7 @@ Spell + "Head" + Suffix
     craftingCost = ResourceId 5
     upgradeInfo = { AUTOMATONS_UPPER AssembledCreatureEffect
       Name FullName
-      Description "Grants the \"" + SpellLower + "\" ability."
+      Description AUTOMATON_RANGED_HEAD_DESCRIPTION(SpellLower)
       {
         AddBodyPart HEAD 1 none
         GrantAbility SpellId
@@ -133,7 +133,7 @@ Def ARMS(Suffix, Color, FullName, ResourceId, Damage, Attr)
             attackMsg = SWING
             meleeAttackAttr = Attr
           } }
-          AddAutomatonPart 1 "melee" { "installed_arms" Rgb Color 255 }
+          AddAutomatonPart 1 ITEMS_AUTOMATONARMSWOOD_MELEEATTACKATTR { "installed_arms" Rgb Color 255 }
         }
     }
     upgradeType = {WEAPON}
@@ -156,7 +156,7 @@ Def DRILL(Suffix, Color, FullName, ResourceId, Digging)
       {
         AddMinionTrait WORKER
         AddBodyPart ARM 2 none
-        AddAutomatonPart 1 "drill" { "installed_drill" Rgb Color 255 }
+        AddAutomatonPart 1 ITEMS_AUTOMATONDRILLWOOD_PREFIX1 { "installed_drill" Rgb Color 255 }
       }
     }
     storageIds = {"automaton_parts" "equipment"}
@@ -180,7 +180,7 @@ Def CRAFTING_ARMS(Suffix, Color, FullName, ResourceId, Skill)
       prefix = AssembledCreatureEffect
         Name FullName
         Description ITEMS_AUTOMATONCRAFTINGWOOD_PREFIX
-        AddAutomatonPart 1 "crafting" { "installed_crafting" Rgb Color 255 }
+        AddAutomatonPart 1 ITEMS_AUTOMATONCRAFTINGWOOD_PREFIX1 { "installed_crafting" Rgb Color 255 }
     }
     storageIds = {"automaton_parts" "equipment"}
   }
@@ -201,7 +201,7 @@ Def REPAIR_ARMS(Suffix, Color, FullName, ResourceId, Defense)
       {
         GrantAbility "repair automaton"
         AddBodyPart ARM 2 none
-        AddAutomatonPart 1 "repair" { "installed_repair" Rgb Color 255 }
+        AddAutomatonPart 1 ITEMS_REPAIRAUTOMATONARMSIRON_PREFIX1 { "installed_repair" Rgb Color 255 }
       }
     }
     storageIds = {"automaton_parts" "equipment"}
@@ -209,26 +209,26 @@ Def REPAIR_ARMS(Suffix, Color, FullName, ResourceId, Defense)
 End
 
 HUMANOID_HEAD("Wood", 180 140 55, ITEMS_HUMANOIDHEADWOOD_NAME, WOOD, 2)
-RANGED_HEAD("Wood", 180 140 55, ITEMS_ARCHERHEADWOOD_NAME, WOOD, 2, 12, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
+RANGED_HEAD("Wood", 180 140 55, ITEMS_ARCHERHEADWOOD_NAME, WOOD, 2, 12, "Archer", "arrow", ITEMS_ARCHERHEADWOOD_PREFIX, "shoot arrow", "RANGED_DAMAGE")
 LEGS("Wood", 180 140 55, ITEMS_AUTOMATONLEGSWOOD_NAME, WOOD, 2)
 ARMS("Wood", 180 140 55, ITEMS_AUTOMATONARMSWOOD_NAME, WOOD, 11, DAMAGE)
 DRILL("Wood", 180 140 55, ITEMS_AUTOMATONDRILLWOOD_NAME, WOOD, 10)
 CRAFTING_ARMS("Wood", 180 140 55, ITEMS_AUTOMATONCRAFTINGWOOD_NAME, WOOD, 10)
 HUMANOID_HEAD("Iron", 140 148 148, ITEMS_HUMANOIDHEADIRON_NAME, IRON, 4)
-RANGED_HEAD("Iron", 140 148 148, ITEMS_ARCHERHEADIRON_NAME, IRON, 4, 15, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
-RANGED_HEAD("Iron", 140 148 148, ITEMS_FIREHEADIRON_NAME, IRON, 5, 15, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
-SPELL_HEAD("Iron", 140 148 148, ITEMS_OILHEADIRON_NAME, IRON, 5, "automaton_oil", "oil breath", "Oil", "oil spitting")
-RANGED_HEAD("Iron", 140 148 148, ITEMS_ACIDHEADIRON_NAME, IRON, 5, 15, "Acid", "acid", "acid spitting", "acid stream", "ACID_DAMAGE")
+RANGED_HEAD("Iron", 140 148 148, ITEMS_ARCHERHEADIRON_NAME, IRON, 4, 15, "Archer", "arrow", ITEMS_ARCHERHEADIRON_PREFIX, "shoot arrow", "RANGED_DAMAGE")
+RANGED_HEAD("Iron", 140 148 148, ITEMS_FIREHEADIRON_NAME, IRON, 5, 15, "Fire", "fire", ITEMS_FIREHEADIRON_PREFIX, "fire breath", "FIRE_DAMAGE")
+SPELL_HEAD("Iron", 140 148 148, ITEMS_OILHEADIRON_NAME, IRON, 5, "automaton_oil", "oil breath", "Oil", ITEMS_OILHEADIRON_PREFIX)
+RANGED_HEAD("Iron", 140 148 148, ITEMS_ACIDHEADIRON_NAME, IRON, 5, 15, "Acid", "acid", ITEMS_ACIDHEADIRON_PREFIX, "acid stream", "ACID_DAMAGE")
 LEGS("Iron", 140 148 148, ITEMS_AUTOMATONLEGSIRON_NAME, IRON, 5)
 ARMS("Iron", 140 148 148, ITEMS_AUTOMATONARMSIRON_NAME, IRON, 16, DAMAGE)
 DRILL("Iron", 140 148 148, ITEMS_AUTOMATONDRILLIRON_NAME, IRON, 15)
 CRAFTING_ARMS("Iron", 140 148 148, ITEMS_AUTOMATONCRAFTINGIRON_NAME, IRON, 17)
 REPAIR_ARMS("Iron", 140 148 148, ITEMS_REPAIRAUTOMATONARMSIRON_NAME, IRON, 5)
 HUMANOID_HEAD("Ada", 148 189 189, ITEMS_HUMANOIDHEADADA_NAME, ADA, 6)
-RANGED_HEAD("Ada", 148 189 189, ITEMS_ARCHERHEADADA_NAME, ADA, 6, 20, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
-RANGED_HEAD("Ada", 148 189 189, ITEMS_FIREHEADADA_NAME, ADA, 8, 20, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
-SPELL_HEAD("Ada", 148 189 189, ITEMS_OILHEADADA_NAME, ADA, 8, "automaton_oil", "oil breath", "Oil", "oil spitting")
-RANGED_HEAD("Ada", 148 189 189, ITEMS_ACIDHEADADA_NAME, ADA, 8, 20, "Acid", "acid", "acid spitting", "acid stream", "ACID_DAMAGE")
+RANGED_HEAD("Ada", 148 189 189, ITEMS_ARCHERHEADADA_NAME, ADA, 6, 20, "Archer", "arrow", ITEMS_ARCHERHEADADA_PREFIX, "shoot arrow", "RANGED_DAMAGE")
+RANGED_HEAD("Ada", 148 189 189, ITEMS_FIREHEADADA_NAME, ADA, 8, 20, "Fire", "fire", ITEMS_FIREHEADADA_PREFIX, "fire breath", "FIRE_DAMAGE")
+SPELL_HEAD("Ada", 148 189 189, ITEMS_OILHEADADA_NAME, ADA, 8, "automaton_oil", "oil breath", "Oil", ITEMS_OILHEADADA_PREFIX)
+RANGED_HEAD("Ada", 148 189 189, ITEMS_ACIDHEADADA_NAME, ADA, 8, 20, "Acid", "acid", ITEMS_ACIDHEADADA_PREFIX, "acid stream", "ACID_DAMAGE")
 LEGS("Ada", 148 189 189, ITEMS_AUTOMATONLEGSADA_NAME, ADA, 8)
 ARMS("Ada", 148 189 189, ITEMS_AUTOMATONARMSADA_NAME, ADA, 24, DAMAGE)
 DRILL("Ada", 148 189 189, ITEMS_AUTOMATONDRILLADA_NAME, ADA, 20)
@@ -237,10 +237,10 @@ REPAIR_ARMS("Ada", 148 189 189, ITEMS_REPAIRAUTOMATONARMSADA_NAME, ADA, 8)
 ARMS("Infernite", 220 148 148, ITEMS_AUTOMATONARMSINFERNITE_NAME, INFERNITE, 38, FIRE_DAMAGE)
 ARMS("Adoxium", 220 148 220, ITEMS_AUTOMATONARMSADOXIUM_NAME, ADOXIUM, 38, SPELL_DAMAGE)
 LEGS("Infernite", 220 148 148, ITEMS_AUTOMATONLEGSINFERNITE_NAME, INFERNITE, 18)
-RANGED_HEAD("Infernite", 220 148 148, ITEMS_FIREHEADINFERNITE_NAME, INFERNITE, 18, 48, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
+RANGED_HEAD("Infernite", 220 148 148, ITEMS_FIREHEADINFERNITE_NAME, INFERNITE, 18, 48, "Fire", "fire", ITEMS_FIREHEADINFERNITE_PREFIX, "fire breath", "FIRE_DAMAGE")
 LEGS("Adoxium", 220 148 220, ITEMS_AUTOMATONLEGSADOXIUM_NAME, ADOXIUM, 18)
-SPELL_HEAD("Adoxium", 220 148 220, ITEMS_INVISIBILITYHEADADOXIUM_NAME, ADOXIUM, 18, "automaton_spell", "automaton invisibility", "Invisibility", "invisibility")
-SPELL_HEAD("Adoxium", 220 148 220, ITEMS_TELEPORTHEADADOXIUM_NAME, ADOXIUM, 18, "automaton_spell", "automaton teleport", "Teleport", "teleport")
+SPELL_HEAD("Adoxium", 220 148 220, ITEMS_INVISIBILITYHEADADOXIUM_NAME, ADOXIUM, 18, "automaton_spell", "automaton invisibility", "Invisibility", ITEMS_INVISIBILITYHEADADOXIUM_PREFIX)
+SPELL_HEAD("Adoxium", 220 148 220, ITEMS_TELEPORTHEADADOXIUM_NAME, ADOXIUM, 18, "automaton_spell", "automaton teleport", "Teleport", ITEMS_TELEPORTHEADADOXIUM_PREFIX)
 
 "KaboomHead"
   {
@@ -260,7 +260,7 @@ SPELL_HEAD("Adoxium", 220 148 220, ITEMS_TELEPORTHEADADOXIUM_NAME, ADOXIUM, 18, 
           itselfMessage = true
           victimEffect = {1.0 Suicide DIE}
           attackerEffect = {CircularBlast Area 1 Fire{30} Suicide DIE}}}
-        AddAutomatonPart 2 "kaboom" { "installed_kaboom_head" }
+        AddAutomatonPart 2 ITEMS_KABOOMHEAD_AMOUNT { "installed_kaboom_head" }
         Permanent AGGRAVATES
       }
     }
