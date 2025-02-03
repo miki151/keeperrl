@@ -25,7 +25,7 @@
 Def ATTR_BUFF(Attr, AttrName, Name, Amount, Adjective, Price) {
   name = Name
   adjective = Adjective
-  description = "Gives a +" + Amount + " " + AttrName + " bonus."
+  description = ATTR_BUFF_DESCRIPTION(Amount, AttrName)
   startEffect = IncreaseAttr Attr Amount
   endEffect = IncreaseAttr Attr -Amount
   combatConsumable = true
@@ -38,19 +38,19 @@ End
 "DAM_BONUS" ATTR_BUFF(DAMAGE, "damage", "damage", 3, BUFFS_DAM_BONUS_ADJECTIVE, 20)
 "DEF_BONUS" ATTR_BUFF(DEFENSE, "defense", "defense", 3, BUFFS_DEF_BONUS_ADJECTIVE, 20)
 
-"THICK_SKIN" ATTR_BUFF(DEFENSE, "defense", "thick skin", 10, "thick skin", 200)
-"IRON_ARMS" ATTR_BUFF(DAMAGE, "damage", "iron arms", 10, "iron arms", 200)
-"STABLE_HAND" ATTR_BUFF(RANGED_DAMAGE, "ranged damage", "stable hand", 10, "stable hand", 200)
-"PIERCING_VOICE" ATTR_BUFF(SPELL_DAMAGE, "spell damage", "piercing voice", 10, "piercing voice", 200)
+"THICK_SKIN" ATTR_BUFF(DEFENSE, BUFFS_THICK_SKIN_DESCRIPTION, "thick skin", 10, "thick skin", 200)
+"IRON_ARMS" ATTR_BUFF(DAMAGE, BUFFS_IRON_ARMS_DESCRIPTION, "iron arms", 10, "iron arms", 200)
+"STABLE_HAND" ATTR_BUFF(RANGED_DAMAGE, BUFFS_STABLE_HAND_DESCRIPTION, "stable hand", 10, "stable hand", 200)
+"PIERCING_VOICE" ATTR_BUFF(SPELL_DAMAGE, BUFFS_PIERCING_VOICE_DESCRIPTION, "piercing voice", 10, "piercing voice", 200)
 
-"DIVINE_PROTECTION" ATTR_BUFF(DEFENSE, "defense", BUFFS_DIVINE_PROTECTION_NAME, 5, BUFFS_DIVINE_PROTECTION_ADJECTIVE, 400)
-"DIVINE_STRENGTH" ATTR_BUFF(DAMAGE, "damage", BUFFS_DIVINE_STRENGTH_NAME, 5, BUFFS_DIVINE_STRENGTH_ADJECTIVE, 400)
-"DIVINE_DIGGING" ATTR_BUFF(DIGGING, "digging", BUFFS_DIVINE_DIGGING_NAME, 15, BUFFS_DIVINE_DIGGING_ADJECTIVE, 200)
+"DIVINE_PROTECTION" ATTR_BUFF(DEFENSE, BUFFS_DIVINE_PROTECTION_DESCRIPTION, BUFFS_DIVINE_PROTECTION_NAME, 5, BUFFS_DIVINE_PROTECTION_ADJECTIVE, 400)
+"DIVINE_STRENGTH" ATTR_BUFF(DAMAGE, BUFFS_DIVINE_STRENGTH_DESCRIPTION, BUFFS_DIVINE_STRENGTH_NAME, 5, BUFFS_DIVINE_STRENGTH_ADJECTIVE, 400)
+"DIVINE_DIGGING" ATTR_BUFF(DIGGING, BUFFS_DIVINE_DIGGING_DESCRIPTION, BUFFS_DIVINE_DIGGING_NAME, 15, BUFFS_DIVINE_DIGGING_ADJECTIVE, 200)
 
 Def ATTR_DEBUFF(Attr, Name, Amount, Price) {
-  name = Name + " debuff"
-  adjective = Name + " debuff"
-  description = "Gives a -" + Amount + " " + Name + " penalty. "
+  name = ATTR_DEBUFF_NAME(Name)
+  adjective = ATTR_DEBUFF_NAME(Name)
+  description = ATTR_DEBUFF_DESCRIPTION(Amount, Name)
   startEffect = IncreaseAttr Attr -Amount
   endEffect = IncreaseAttr Attr Amount
   combatConsumable = true
@@ -61,7 +61,7 @@ Def ATTR_DEBUFF(Attr, Name, Amount, Price) {
 }
 End
 
-"DEF_DEBUFF" ATTR_DEBUFF(DEFENSE, "defense", 3, 20)
+"DEF_DEBUFF" ATTR_DEBUFF(DEFENSE, BUFFS_DEF_DEBUFF_NAME, 3, 20)
 
 "HIGH_MORALE" {
   name = BUFFS_HIGH_MORALE_NAME
