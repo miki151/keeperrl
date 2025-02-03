@@ -665,7 +665,7 @@ void Collective::tick() {
 
 void Collective::autoAssignSteeds() {
   for (auto c : getCreatures())
-    if (!canUseEquipmentGroup(c, TStringId("STEEDS")))
+    if (!canUseEquipmentGroup(c, TStringId("STEEDS_EQUIPMENT_GROUP")))
       setSteed(c, nullptr);
   vector<Creature*> freeSteeds = getCreatures().filter(
       [this] (auto c) { return c->isAffected(LastingEffect::STEED) && !getSteedOrRider(c);});
@@ -673,7 +673,8 @@ void Collective::autoAssignSteeds() {
   sort(freeSteeds.begin(), freeSteeds.end(), [&](auto c1, auto c2) {
       return c1->getBestAttack(factory).value < c2->getBestAttack(factory).value; });
   auto minions = getCreatures().filter([this] (auto c) {
-    return c->isAffected(LastingEffect::RIDER) && !getSteedOrRider(c) && canUseEquipmentGroup(c, TStringId("STEEDS"));
+    return c->isAffected(LastingEffect::RIDER) && !getSteedOrRider(c) &&
+        canUseEquipmentGroup(c, TStringId("STEEDS_EQUIPMENT_GROUP"));
   });
   sort(minions.begin(), minions.end(), [&](auto c1, auto c2) {
       auto leader1 = hasTrait(c1, MinionTrait::LEADER);

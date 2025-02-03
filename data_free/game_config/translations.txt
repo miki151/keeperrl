@@ -635,7 +635,7 @@
   "IS_NO_LONGER_CRAWLING" "{1} is back on {2} feet."
   "YOU_NO_LONGER_CRAWLING" "You are back on your feet."
   "START_WITH_TUTORIAL_PROMPT" "Would you like to start with the tutorial?"
-  "STEEDS" "steeds"
+  "STEEDS_EQUIPMENT_GROUP" "steeds"
   "STOP_TEAM_ORDER_DESCRIPTION" "Team members will stand in place, and won't follow the leader."
   "STOP_TEAM_ORDER" "Stop"
   "SUFFERS_PLAGUE" "{1} suffers from plague."

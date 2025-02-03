@@ -1,11 +1,11 @@
-"basic equipment" {"club"}
-"iron equipment" {"sword"}
-"adamantine equipment" {"sword" Rgb 148 189 189 255 }
-"infernite equipment" {"infernite_sword"}
-"adoxium equipment" {"adoxium_staff"}
-"artifact equipment" {"cyclops_helm"}
-"ranged weapons" {"bow"}
-"jewellery" {"amulet1"}
-"consumables" {"first_aid"}
-"light emitting equipment" {"hand_torch"}
-"steeds" {"horse"}
+EQUIPMENT_GROUP_ADAMANTINE_EQUIPMENT {"sword" Rgb 148 189 189 255 }
+EQUIPMENT_GROUP_ADOXIUM_EQUIPMENT {"adoxium_staff"}
+EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT {"cyclops_helm"}
+EQUIPMENT_GROUP_BASIC_EQUIPMENT {"club"}
+EQUIPMENT_GROUP_CONSUMABLES {"first_aid"}
+EQUIPMENT_GROUP_INFERNITE_EQUIPMENT {"infernite_sword"}
+EQUIPMENT_GROUP_IRON_EQUIPMENT {"sword"}
+EQUIPMENT_GROUP_JEWELLERY {"amulet1"}
+EQUIPMENT_GROUP_LIGHT_EMITTING_EQUIPMENT {"hand_torch"}
+EQUIPMENT_GROUP_RANGED_WEAPONS {"bow"}
+STEEDS_EQUIPMENT_GROUP {"horse"}

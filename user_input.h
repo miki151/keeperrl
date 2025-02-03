@@ -196,7 +196,7 @@ struct PromotionActionInfo {
 
 struct EquipmentGroupAction {
   TString group;
-  unordered_set<string> flip;
+  HashSet<TString> flip;
 };
 
 struct MinionActionInfo {

@@ -173,7 +173,7 @@ class PlayerInfo {
   bool HASH(canExitControlMode);
   struct EquipmentGroupInfo {
     ViewId HASH(viewId);
-    string HASH(name);
+    TString HASH(name);
     bool HASH(locked);
     HASH_ALL(viewId, name, locked);
   };
