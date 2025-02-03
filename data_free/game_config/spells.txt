@@ -147,7 +147,7 @@ End
 "magic missile"
 {
   symbol = "⥇"
-  effect = MinDistanceFromStrongEnemy(2) Name SPELLS_MAGIC_MISSILE_EFFECT Description "Shoots a magic missile"
+  effect = MinDistanceFromStrongEnemy(2) Name SPELLS_MAGIC_MISSILE_EFFECT Description SPELLS_MAGIC_MISSILE_EFFECT2
       TryMagicMissile()
   fx = {MAGIC_MISSILE}
   range = 4
@@ -158,7 +158,7 @@ End
 {
   upgrade = "magic missile"
   symbol = "⥇"
-  effect = MinDistanceFromStrongEnemy(2) Name SPELLS_ADVANCED_MAGIC_MISSILE_EFFECT Description "Shoots a magic missile"
+  effect = MinDistanceFromStrongEnemy(2) Name SPELLS_ADVANCED_MAGIC_MISSILE_EFFECT Description SPELLS_ADVANCED_MAGIC_MISSILE_EFFECT2
       TryMagicMissile()
   fx = {MAGIC_MISSILE}
   range = 8
@@ -169,7 +169,7 @@ End
 {
   upgrade = "advanced magic missile"
   symbol = "⥇"
-  effect = MinDistanceFromStrongEnemy(2) Name SPELLS_EXPERT_MAGIC_MISSILE_EFFECT Description "Shoots a magic missile"
+  effect = MinDistanceFromStrongEnemy(2) Name SPELLS_EXPERT_MAGIC_MISSILE_EFFECT Description SPELLS_EXPERT_MAGIC_MISSILE_EFFECT2
       TryMagicMissile()
   fx = {MAGIC_MISSILE}
   range = 12
@@ -655,7 +655,7 @@ Def NoEffect() Unlock "nothing" End
 "shoot arrow"
 {
   symbol = "↣"
-  effect = MinDistanceFromStrongEnemy(4) Name SPELLS_SHOOT_ARROW_EFFECT Description "Shoots an arrow"
+  effect = MinDistanceFromStrongEnemy(4) Name SPELLS_SHOOT_ARROW_EFFECT Description SPELLS_SHOOT_ARROW_EFFECT1
       TryNoFriendlyFire(
         {
           CreatureMessage { SPELLS_SHOOT_ARROW_SECONDPERSON SPELLS_SHOOT_ARROW_THIRDPERSON}
@@ -673,7 +673,7 @@ Def NoEffect() Unlock "nothing" End
 "shoot bolt"
 {
   symbol = "⇾"
-  effect = MinDistanceFromStrongEnemy(4) Name SPELLS_SHOOT_BOLT_EFFECT Description "Shoots a bolt"
+  effect = MinDistanceFromStrongEnemy(4) Name SPELLS_SHOOT_BOLT_EFFECT Description SPELLS_SHOOT_BOLT_EFFECT1
       TryNoFriendlyFire(
         {
           CreatureMessage { SPELLS_SHOOT_BOLT_SECONDPERSON SPELLS_SHOOT_BOLT_THIRDPERSON}
@@ -903,21 +903,21 @@ End
 
 "holy missile" inherit "magic missile"
 {
-  effect = MinDistanceFromStrongEnemy(2) Name SPELLS_MAGIC_MISSILE_EFFECT1 Description "Shoots a holy missile"
+  effect = MinDistanceFromStrongEnemy(2) Name SPELLS_MAGIC_MISSILE_EFFECT1 Description SPELLS_MAGIC_MISSILE_EFFECT3
       TryHolyMissile()
   type = ABILITY
 }
 "advanced holy missile" inherit "advanced magic missile"
 {
   upgrade = "holy missile"
-  effect = MinDistanceFromStrongEnemy(2) Name SPELLS_ADVANCED_MAGIC_MISSILE_EFFECT1 Description "Shoots a holy missile"
+  effect = MinDistanceFromStrongEnemy(2) Name SPELLS_ADVANCED_MAGIC_MISSILE_EFFECT1 Description SPELLS_ADVANCED_MAGIC_MISSILE_EFFECT3
       TryHolyMissile()
   type = ABILITY
 }
 "expert holy missile" inherit "expert magic missile"
 {
   upgrade = "advanced holy missile"
-  effect = MinDistanceFromStrongEnemy(2) Name SPELLS_EXPERT_MAGIC_MISSILE_EFFECT1 Description "Shoots a holy missile"
+  effect = MinDistanceFromStrongEnemy(2) Name SPELLS_EXPERT_MAGIC_MISSILE_EFFECT1 Description SPELLS_EXPERT_MAGIC_MISSILE_EFFECT3
       TryHolyMissile()
   type = ABILITY
 }

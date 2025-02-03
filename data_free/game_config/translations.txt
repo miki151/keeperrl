@@ -4128,4 +4128,12 @@
   "BUFFS_STABLE_HAND_ADJECTIVE" "stable hand"
   "BUFFS_PIERCING_VOICE_NAME" "piercing voice"
   "BUFFS_PIERCING_VOICE_ADJECTIVE" "piercing voice"
+  "SPELLS_MAGIC_MISSILE_EFFECT2" "Shoots a magic missile"
+  "SPELLS_ADVANCED_MAGIC_MISSILE_EFFECT2" "Shoots a magic missile"
+  "SPELLS_EXPERT_MAGIC_MISSILE_EFFECT2" "Shoots a magic missile"
+  "SPELLS_MAGIC_MISSILE_EFFECT3" "Shoots a holy missile"
+  "SPELLS_ADVANCED_MAGIC_MISSILE_EFFECT3" "Shoots a holy missile"
+  "SPELLS_EXPERT_MAGIC_MISSILE_EFFECT3" "Shoots a holy missile"
+  "SPELLS_SHOOT_ARROW_EFFECT1" "Shoots an arrow"
+  "SPELLS_SHOOT_BOLT_EFFECT1" "Shoots a bolt"
 }
