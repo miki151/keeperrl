@@ -33,5 +33,4 @@ class Tutorial {
   vector<Vec2> getHighlightedSquaresLow(const Game*) const;
   void onNewState(const Game*);
   Vec2 SERIAL(entrance);
-  optional<string> getWarning(const Game*) const;
 };

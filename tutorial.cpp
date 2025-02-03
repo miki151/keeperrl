@@ -268,27 +268,9 @@ Tutorial::Tutorial() : state(State::WELCOME) {
 
 }
 
-optional<string> Tutorial::getWarning(const Game* game) const {
-  switch (state) {
-    case State::CONTROL_TEAM:
-    case State::CONTROL_MODE_MOVEMENT:
-    case State::DISCOVER_VILLAGE:
-    case State::KILL_VILLAGE:
-    case State::LOOT_VILLAGE:
-    case State::LEAVE_CONTROL:
-      return none;
-    default:
-      /*if (!game->getPlayerCreatures().empty())
-        return "Press [U] to leave control mode."_s;
-      else*/
-        return none;
-  }
-}
-
 void Tutorial::refreshInfo(const Game* game, optional<TutorialInfo>& info) const {
   info = TutorialInfo {
       state,
-      getWarning(game),
       canContinue(game),
       (int) state > 0,
       getHighlights(game),

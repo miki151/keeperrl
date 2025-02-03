@@ -2031,7 +2031,6 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
       fillPromotions(c, info);
   fillDungeonLevel(info.avatarLevelInfo);
   fillResources(info);
-  info.warning = "";
   gameInfo.time = collective->getGame()->getGlobalTime();
   gameInfo.modifiedSquares = gameInfo.totalSquares = 0;
   gameInfo.modifiedSquares += getCurrentLevel()->getNumGeneratedSquares();

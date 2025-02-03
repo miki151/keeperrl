@@ -185,7 +185,7 @@ struct ImmigrantCreatureInfo {
   TString HASH(name);
   ViewIdList HASH(viewId);
   vector<AttributeInfo> HASH(attributes);
-  vector<string> HASH(spellSchools);
+  vector<TString> HASH(spellSchools);
   struct TrainingInfo {
     AttrType HASH(expType);
     int HASH(limit);
@@ -230,7 +230,6 @@ class CollectiveInfo {
   CollectiveInfo(CollectiveInfo&&) = default;
   CollectiveInfo& operator = (CollectiveInfo&&) = default;
   CollectiveInfo& operator = (const CollectiveInfo&) = delete;
-  string HASH(warning);
   struct Button {
     ViewId HASH(viewId);
     TString HASH(name);
@@ -391,7 +390,7 @@ class CollectiveInfo {
     HIGH,
   };
   optional<RebellionChance> HASH(rebellionChance);
-  HASH_ALL(warning, buildings, minionCount, minionLimit, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, nextWave, chosenWorkshop, immigration, allImmigration, libraryInfo, minionPromotions, availablePromotions, rebellionChance, avatarLevelInfo, populationString)
+  HASH_ALL(buildings, minionCount, minionLimit, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, nextWave, chosenWorkshop, immigration, allImmigration, libraryInfo, minionPromotions, availablePromotions, rebellionChance, avatarLevelInfo, populationString)
 };
 
 class VillageInfo {
@@ -432,13 +431,12 @@ class GameSunlightInfo {
 class TutorialInfo {
   public:
   TutorialState HASH(state);
-  optional<string> HASH(warning);
   bool HASH(canContinue);
   bool HASH(canGoBack);
   EnumSet<TutorialHighlight> HASH(highlights);
   vector<Vec2> HASH(highlightedSquaresHigh);
   vector<Vec2> HASH(highlightedSquaresLow);
-  HASH_ALL(state, warning, canContinue, canGoBack, highlights, highlightedSquaresHigh, highlightedSquaresLow)
+  HASH_ALL(state, canContinue, canGoBack, highlights, highlightedSquaresHigh, highlightedSquaresLow)
 };
 
 struct CurrentLevelInfo {

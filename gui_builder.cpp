@@ -830,11 +830,8 @@ SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
   auto backButton = WL(setHeight, legendLineHeight, WL(buttonLabel, TStringId("TUTORIAL_GO_BACK"),
       getButtonCallback(UserInputId::TUTORIAL_GO_BACK)));
   SGuiElem warning;
-  if (info.warning)
-    warning = WL(label, *info.warning, Color::RED);
-  else
-    warning = WL(label, TSentence("PRESS_TO_UNPAUSE", string(hasController() ? "[Y]" : "[Space]")),
-        [this]{ return clock->isPaused() ? Color::RED : Color::TRANSPARENT;});
+  warning = WL(label, TSentence("PRESS_TO_UNPAUSE", string(hasController() ? "[Y]" : "[Space]")),
+      [this]{ return clock->isPaused() ? Color::RED : Color::TRANSPARENT;});
   return WL(preferredSize, 520, 290, WL(stack, WL(darken), WL(rectangleBorder, Color::GRAY),
       WL(margins, WL(stack,
         WL(labelMultiLine, getMessage(info.state, hasController()), legendLineHeight),
@@ -1451,7 +1448,7 @@ SGuiElem GuiBuilder::drawImmigrantCreature(const ImmigrantCreatureInfo& creature
   if (!creature.spellSchools.empty())
     lines.addElem(WL(getListBuilder)
         .addElemAuto(WL(label, TStringId("SPELL_SCHOOLS_LABEL"), Color::YELLOW))
-        .addElemAuto(WL(label, combine(creature.spellSchools, true)))
+        .addElemAuto(WL(label, combineWithCommas(creature.spellSchools)))
         .buildHorizontalList());
   return lines.buildVerticalList();
 }

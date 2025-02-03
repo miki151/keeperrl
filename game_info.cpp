@@ -21,6 +21,7 @@
 #include "special_trait.h"
 #include "automaton_part.h"
 #include "container_range.h"
+#include "spell_school.h"
 
 CreatureInfo::CreatureInfo(const Creature* c)
     : viewId(c->getViewObject().getViewIdList()),
@@ -47,7 +48,9 @@ ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature* c, const ContentF
     c->getName().bare(),
     c->getViewObject().getViewIdList(),
     AttributeInfo::fromCreature(factory, c),
-    c->getAttributes().getSpellSchools().transform([](auto id) -> string { return id.data(); }),
+    c->getAttributes().getSpellSchools().transform([&](auto id) -> TString {
+      return factory->getCreatures().getSpellSchools().at(id).name.value_or(string(id.data()));
+    }),
     std::move(limits)
   };
 }
