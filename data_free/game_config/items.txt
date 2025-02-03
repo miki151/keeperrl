@@ -1707,10 +1707,10 @@ End
 Def PROTECTION_RING(CreatureType, Predicate, Value)
   {
     viewId = { "ring" ColorId WHITE }
-    name = "ring of protection from " + CreatureType
-    shortName = "from " + CreatureType
+    name = PROTECTION_RING_NAME(CreatureType)
+    shortName = PROTECTION_RING_SHORT_NAME(CreatureType)
     specialAttr = {
-      DEFENSE Value Name "against " + CreatureType Attacker Predicate
+      DEFENSE Value Name AGAINST(CreatureType) Attacker Predicate
     }
     weight = 0.05
     equipmentSlot = RINGS
@@ -1719,15 +1719,15 @@ Def PROTECTION_RING(CreatureType, Predicate, Value)
     equipmentGroup = EQUIPMENT_GROUP_JEWELLERY
   }
 End
-"UndeadProtectionRing5" PROTECTION_RING("undead", BodyMaterial "UNDEAD_FLESH", 5)
-"ElfProtectionRing5" PROTECTION_RING("elves", HatedBy "HATE_ELVES", 5)
-"DwarfProtectionRing5" PROTECTION_RING("dwarves", HatedBy "HATE_DWARVES", 5)
-"GreenskinProtectionRing5" PROTECTION_RING("dwarves", HatedBy "HATE_GREENSKINS", 5)
-"UndeadProtectionRing15" PROTECTION_RING("undead", BodyMaterial "UNDEAD_FLESH", 15)
-"ElfProtectionRing15" PROTECTION_RING("elves", HatedBy "HATE_ELVES", 15)
-"DwarfProtectionRing15" PROTECTION_RING("dwarves", HatedBy "HATE_DWARVES", 15)
-"GreenskinProtectionRing15" PROTECTION_RING("dwarves", HatedBy "HATE_GREENSKINS", 15)
-"DragonProtectionRing15" PROTECTION_RING("dragons", HatedBy "HATE_DRAGONS", 15)
+"UndeadProtectionRing5" PROTECTION_RING(ITEMS_UNDEADPROTECTIONRING5_NAME, BodyMaterial "UNDEAD_FLESH", 5)
+"ElfProtectionRing5" PROTECTION_RING(ITEMS_ELFPROTECTIONRING5_NAME, HatedBy "HATE_ELVES", 5)
+"DwarfProtectionRing5" PROTECTION_RING(ITEMS_DWARFPROTECTIONRING5_NAME, HatedBy "HATE_DWARVES", 5)
+"GreenskinProtectionRing5" PROTECTION_RING(ITEMS_GREENSKINPROTECTIONRING5_NAME, HatedBy "HATE_GREENSKINS", 5)
+"UndeadProtectionRing15" PROTECTION_RING(ITEMS_UNDEADPROTECTIONRING15_NAME, BodyMaterial "UNDEAD_FLESH", 15)
+"ElfProtectionRing15" PROTECTION_RING(ITEMS_ELFPROTECTIONRING15_NAME, HatedBy "HATE_ELVES", 15)
+"DwarfProtectionRing15" PROTECTION_RING(ITEMS_DWARFPROTECTIONRING15_NAME, HatedBy "HATE_DWARVES", 15)
+"GreenskinProtectionRing15" PROTECTION_RING(ITEMS_GREENSKINPROTECTIONRING15_NAME, HatedBy "HATE_GREENSKINS", 15)
+"DragonProtectionRing15" PROTECTION_RING(ITEMS_DRAGONPROTECTIONRING15_NAME, HatedBy "HATE_DRAGONS", 15)
 "InvisibilityRing"
   {
     viewId = { "gold_ring" }
@@ -2067,18 +2067,18 @@ End
 Def PROTECTION_BOOK(NAME, LOWER, PLURAL)
 "PrayerBook" + NAME + "Resistance" inherit "PrayerBookProtection"
   {
-    shortName = "protection from " + PLURAL
-    name = "liturgical book for protection from " + PLURAL
+    shortName = PROTECTION_MASS_SHORT_NAME(PLURAL)
+    name = PROTECTION_MASS_NAME(PLURAL)
     ingredientType = LOWER + "_resistance_prayer"
-    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT1 Message NORMAL "Mass will be held with the intention of protecting minions from " + PLURAL + "."
+    effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT1 Message NORMAL PROTECTION_MASS_DESCRIPTION(PLURAL)
   }
 End
-PROTECTION_BOOK("Dragon", "dragon", "dragons")
-PROTECTION_BOOK("Demon", "demon", "demons")
-PROTECTION_BOOK("Undead", "undead", "the undead")
+PROTECTION_BOOK("Dragon", "dragon", ITEMS_PRAYERBOOKPROTECTION_SHORTNAME16)
+PROTECTION_BOOK("Demon", "demon", ITEMS_PRAYERBOOKPROTECTION_SHORTNAME17)
+PROTECTION_BOOK("Undead", "undead", ITEMS_PRAYERBOOKPROTECTION_SHORTNAME18)
 PROTECTION_BOOK("Lizardmen", "lizardmen", "lizardmen")
-PROTECTION_BOOK("Elf", "elf", "elves")
-PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
+PROTECTION_BOOK("Elf", "elf", ITEMS_PRAYERBOOKPROTECTION_SHORTNAME19)
+PROTECTION_BOOK("Greenskin", "greenskin", ITEMS_PRAYERBOOKPROTECTION_SHORTNAME20)
 
 "PrayerBookArmedHelpStrong" inherit "PrayerBookProtection"
   {
