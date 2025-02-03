@@ -436,7 +436,7 @@ TRAINING("_DWARF", "_dwarf")
 
   "prison"
   {
-    { Furniture {{ "PRISON" }        "IRON" 15 }                   "Prison"            "Prison"
+    { Furniture {{ "PRISON" }        "IRON" 15 }                   BUILD_MENU_NAME147            BUILD_MENU_GROUPNAME18
         BUILD_MENU_HELP60 "PRISON" {} true}
 
     { Furniture {{ "PRISON_BARS" }        "IRON" 5 }               BUILD_MENU_NAME92            BUILD_MENU_GROUPNAME11
@@ -457,7 +457,7 @@ TRAINING("_DWARF", "_dwarf")
 
   "prison_church"
   {
-    { Furniture {{ "PRISON" }        "IRON" 15 }                   "Prison"            "Prison"
+    { Furniture {{ "PRISON" }        "IRON" 15 }                   BUILD_MENU_NAME147            BUILD_MENU_GROUPNAME18
         BUILD_MENU_HELP60 "PRISON" { TechId "slavery" } true}
 
     { Furniture {{ "PRISON_BARS" }        "IRON" 5 }               BUILD_MENU_NAME92            BUILD_MENU_GROUPNAME11

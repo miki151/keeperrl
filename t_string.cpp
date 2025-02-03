@@ -119,6 +119,7 @@ void TString::serialize(PrettyInputArchive& ar) {
     ar(s);
     int numPos = 0;
     if (exportStrings && !s.empty()) {
+      bool success = false;
       for (auto& pos : ar.getCurrentPosition())
         if (pos.line > -1) {
           auto lines = readStrings(ar.filenames[pos.filename].data());
@@ -131,10 +132,13 @@ void TString::serialize(PrettyInputArchive& ar) {
                 (*exportStrings) << "\"" << uniqueId.first << "\"" << " " << toSearch << "\n";
               lines[pos.line - 1].replace(*findIndex, toSearch.size(), uniqueId.first);
               saveFile(ar.filenames[pos.filename].data(), lines);
+              success = true;
               break;
             }
           }
         }
+      if (!success)
+        std::cout << "Unexported string:" << s << std::endl;
     }
     *this = std::move(s);
   } else {

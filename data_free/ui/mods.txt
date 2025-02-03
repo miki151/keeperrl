@@ -45,8 +45,8 @@ End
           Using "Activate" KeybindingButton(TEXT118, MENU_SELECT)
           Using "Deactivate" KeybindingButton(TEXT119, MENU_SELECT)
           Using "Download" KeybindingButton(TEXT120, MENU_SELECT)
-          Using "Update" StandardButtonNotFocusable(Label("Update"))
-          Using "Upload" StandardButtonNotFocusable(Label("Upload"))
+          Using "Update" StandardButtonNotFocusable(Label(UPDATE_BUTTON))
+          Using "Upload" StandardButtonNotFocusable(Label(UPLOAD_BUTTON))
           Using "show_workshop" StandardButtonNotFocusable(Label(TEXT45))
         }
       }
