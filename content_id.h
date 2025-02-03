@@ -25,6 +25,8 @@ class ContentId {
   InternalId getInternalId() const;
   SERIALIZATION_DECL(ContentId)
 
+  static bool existsId(const char* text);
+
   private:
   friend PrimaryId<T>;
   InternalId id;

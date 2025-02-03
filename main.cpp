@@ -148,6 +148,7 @@ static po::parser getCommandLineFlags() {
   flags["quick_game"].description("Skip main menu and load the last save file or start a single map game");
   flags["new_game"].type(po::string).description("Skip main menu and start a single map game");
   flags["max_turns"].type(po::i32).description("Quit the game after a given max number of turns");
+  flags["export_translatable_strings"].type(po::string).description("This experimental option will try to to replace translatable strings in game files with translation ids.");
 #endif
   return flags;
 }
@@ -179,6 +180,11 @@ int main(int argc, char* argv[]) {
   setInitializedStatics();
   if (flags["console"].was_set())
     attachConsole();
+  ofstream stringsOut;
+  if (flags["export_translatable_strings"].was_set()) {
+    stringsOut.open(flags["export_translatable_strings"].get().string);
+    TString::enableExportingStrings(&stringsOut);
+  }
   return keeperMain(flags);
 }
 

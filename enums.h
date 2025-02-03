@@ -102,6 +102,7 @@ enum class StatId;
 enum class CollectiveTab;
 enum class ControllerJoy;
 enum class DuelState;
+enum class GameConfigId;
 
 struct TileGasType;
 struct FXInfo;

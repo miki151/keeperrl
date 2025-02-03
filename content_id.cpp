@@ -44,8 +44,20 @@ vector<string>& ContentId<T>::getAllIds() {
 }
 
 template <typename T>
-int ContentId<T>::getId(const char* text) {
+static unordered_map<string, int>& getIdMap() {
   static unordered_map<string, int> ids;
+  return ids;
+}
+
+template <typename T>
+bool ContentId<T>::existsId(const char* text) {
+  auto& ids = getIdMap<T>();
+  return ids.count(text);
+}
+
+template <typename T>
+int ContentId<T>::getId(const char* text) {
+  auto& ids = getIdMap<T>();
   static int generatedId = 0;
   if (auto ret = getReferenceMaybe(ids, text))
     return *ret;
@@ -192,6 +204,7 @@ void PrimaryId<T>::serialize(PrettyInputArchive& ar1, const unsigned int) {\
   ar1(cid);\
   if (!ar1.inheritingKey) \
     ar1.keyVerifier.addKey<T>(cid.data());\
+  ar1.lastPrimaryId = string(cid.data());\
   *this = cid;\
 }
 

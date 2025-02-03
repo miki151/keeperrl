@@ -11,7 +11,7 @@ class KeyVerifier;
 class PrettyPrinting {
   public:
   template<typename T>
-  static optional<string> parseObject(T& object, const vector<string>&, vector<string> filename = {}, KeyVerifier* keyVerifier = nullptr);
+  static optional<string> parseObject(T& object, const vector<string>&, vector<string> filename = {}, KeyVerifier* keyVerifier = nullptr, optional<GameConfigId> gameConfigId = none);
 
   template<typename T>
   static optional<string> parseObject(T& object, const string& text) {
@@ -19,7 +19,7 @@ class PrettyPrinting {
   }
 
   template<typename T>
-  static optional<string> parseObject(T& object, vector<FilePath> paths, KeyVerifier* keyVerifier) {
+  static optional<string> parseObject(T& object, vector<FilePath> paths, KeyVerifier* keyVerifier, optional<GameConfigId> gameConfigId = none) {
     vector<string> allContent;
     vector<string> pathStrings;
     for (auto& path : paths) {
@@ -29,6 +29,6 @@ class PrettyPrinting {
       else
         return "Couldn't open file: "_s + path.getPath();
     }
-    return PrettyPrinting::parseObject<T>(object, allContent, pathStrings, keyVerifier);
+    return PrettyPrinting::parseObject<T>(object, allContent, pathStrings, keyVerifier, gameConfigId);
   }
 };

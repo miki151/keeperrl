@@ -59,6 +59,11 @@ class TString {
   bool operator < (const TString&) const;
 
   variant<TSentence, string> text;
+
+  static void enableExportingStrings(ostream*);
+
+  private:
+  static ostream* exportStrings;
 };
 
 TString combineWithCommas(vector<TString>);

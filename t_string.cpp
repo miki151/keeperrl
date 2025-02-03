@@ -1,5 +1,6 @@
 #include "t_string.h"
 #include "pretty_archive.h"
+#include "game_config.h"
 
 
 TString::TString(string s) : text(std::move(s)) {}
@@ -34,16 +35,121 @@ bool TString::empty() const {
   );
 }
 
+static vector<string> readStrings(const char* filename) {
+  ifstream in(filename);
+  char buf[10000];
+  vector<string> ret;
+  while (in.good()) {
+    in.getline(buf, sizeof(buf));
+    ret.push_back(buf);
+  }
+  while (ret.back().empty())
+    ret.pop_back();
+  return ret;
+}
+
+static pair<string, bool> getUniqueId(PrettyInputArchive& ar, string value) {
+  static unordered_map<string, string> transIds;
+  string id;
+  if (ar.gameConfigId)
+    id = EnumInfo<GameConfigId>::getString(*ar.gameConfigId);
+  if (ar.lastPrimaryId) {
+    if (!id.empty())
+      id += "_";
+    id += toUpper(*ar.lastPrimaryId);
+  }
+  if (ar.lastNamedField) {
+    if (!id.empty())
+      id += "_";
+    id += toUpper(*ar.lastNamedField);
+  }
+  for (auto& c : id)
+    if (c == ' ')
+      c = '_';
+  for (int i : Range(1000)) {
+    string newId = id + (i == 0 ? "" : toString(i));
+    if (getReferenceMaybe(transIds, newId) == value)
+      return make_pair(std::move(newId), false);
+    if (!TStringId::existsId(newId.data()) && !transIds.count(newId)) {
+      transIds[newId] = value;
+      return make_pair(std::move(newId), true);
+    }
+  }
+  fail();
+}
+
+static void saveFile(const char* path, const vector<string> lines) {
+  ofstream out(path);
+  for (auto& line : lines)
+    out << line << "\n";
+}
+
+static optional<int> getIndex(const string& s, const string& line, int tryColumn) {
+  if (tryColumn < line.size() && line.substr(tryColumn, s.size()) == s)
+    return tryColumn;
+  int index = line.find(s);
+  if (index == string::npos)
+    return none;
+  if (line.find(s, index + 1) != string::npos)
+    return none;
+  return index;
+}
+
+static string addQuotes(const string& s) {
+  string ret = s;
+  for (int i = 0; i < ret.size(); ++i)
+    if (ret[i] == '"') {
+      ret.insert(i, "\\");
+      ++i;
+    }
+  return "\"" + ret + "\"";
+}
+
+void TString::enableExportingStrings(ostream* s) {
+  exportStrings = s;
+}
+
+ostream* TString::exportStrings = nullptr;;
+
 template <>
 void TString::serialize(PrettyInputArchive& ar) {
-  if (ar.peek()[0] == '"') {
+  auto firstChar = ar.peek()[0];
+  if (firstChar == '"' || isdigit(firstChar)) {
     string s;
     ar(s);
+    int numPos = 0;
+    if (exportStrings && !s.empty()) {
+      for (auto& pos : ar.getCurrentPosition())
+        if (pos.line > -1) {
+          auto lines = readStrings(ar.filenames[pos.filename].data());
+          if (pos.line <= lines.size()) {
+            auto toSearch = addQuotes(s);
+            auto findIndex = getIndex(toSearch, lines[pos.line - 1], pos.column);
+            if (findIndex) {
+              auto uniqueId = getUniqueId(ar, toSearch);
+              if (uniqueId.second)
+                (*exportStrings) << "\"" << uniqueId.first << "\"" << " " << toSearch << "\n";
+              lines[pos.line - 1].replace(*findIndex, toSearch.size(), uniqueId.first);
+              saveFile(ar.filenames[pos.filename].data(), lines);
+              break;
+            }
+          }
+        }
+    }
     *this = std::move(s);
   } else {
     TStringId id;
+    vector<TString> params;
     ar(id);
-    *this = std::move(id);
+    if (ar.eatMaybe("(")) {
+      while (!ar.eatMaybe(")")) {
+        TString s;
+        ar(s);
+        params.push_back(std::move(s));
+        ar.eatMaybe(",");
+      }
+    }
+    *this = TSentence(id, std::move(params));
   }
 }
 
@@ -82,6 +188,10 @@ TString toText(int num) {
     case 12: return TStringId("TWELVE");
     default: return toString(num);
   }
+}
+
+TString capitalFirst(TString s) {
+  return TSentence("CAPITAL_FIRST", std::move(s));
 }
 
 TString combineWithAnd(vector<TString> v) {

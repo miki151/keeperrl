@@ -118,6 +118,10 @@ class PrettyInputArchive {
     KeyVerifier& keyVerifier;
     bool inheritingKey = false;
 
+    optional<string> lastPrimaryId;
+    optional<string> lastNamedField;
+    optional<GameConfigId> gameConfigId;
+
     using is_loading = std::true_type;
     using is_saving = std::false_type;
 

@@ -61,11 +61,13 @@
 #include "achievement_id.h"
 #include "achievement_info.h"
 #include "translations.h"
+#include "game_config.h"
 
 template <typename T>
-optional<string> PrettyPrinting::parseObject(T& object, const vector<string>& s, vector<string> filename, KeyVerifier* keyVerifier) {
+optional<string> PrettyPrinting::parseObject(T& object, const vector<string>& s, vector<string> filename, KeyVerifier* keyVerifier, optional<GameConfigId> id) {
   try {
     PrettyInputArchive input(s, filename, keyVerifier);
+    input.gameConfigId = id;
     input(object);
     return none;
   } catch (PrettyException ex) {
@@ -75,7 +77,7 @@ optional<string> PrettyPrinting::parseObject(T& object, const vector<string>& s,
 
 #define ADD_IMP(...) \
 template \
-optional<string> PrettyPrinting::parseObject<__VA_ARGS__>(__VA_ARGS__&, const vector<string>&, vector<string>, KeyVerifier*);
+optional<string> PrettyPrinting::parseObject<__VA_ARGS__>(__VA_ARGS__&, const vector<string>&, vector<string>, KeyVerifier*, optional<GameConfigId>);
 
 ADD_IMP(Effect)
 ADD_IMP(ItemType)

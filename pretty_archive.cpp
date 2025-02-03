@@ -394,6 +394,7 @@ void prettyEpilogue(PrettyInputArchive& ar1) {
           if (ar1.isCloseBracket(bracket))
             break;
           processed.insert(loader.name);
+          ar1.lastNamedField = loader.name;
           loader.load(true);
           ar1.eatMaybe(",");
         }
@@ -403,6 +404,7 @@ void prettyEpilogue(PrettyInputArchive& ar1) {
       bool found = false;
       for (auto& loader : loaders)
         if (loader.name == name) {
+          ar1.lastNamedField = loader.name;
           if (processed.count(name))
             ar1.error("Value defined twice: \"" + name + "\"");
           processed.insert(name);

@@ -7,7 +7,7 @@
 
 constexpr auto gameConfigSubdir = "mods";
 
-enum class GameConfigId {
+RICH_ENUM(GameConfigId,
   CAMPAIGN_VILLAINS,
   KEEPER_CREATURES,
   BUILD_MENU,
@@ -48,7 +48,7 @@ enum class GameConfigId {
   WORLD_MAPS,
   ACHIEVEMENTS,
   TRANSLATIONS
-};
+);
 
 class GameConfig {
   public:
@@ -62,7 +62,7 @@ class GameConfig {
       if (path.exists())
         paths.push_back(std::move(path));
     }
-    return PrettyPrinting::parseObject<T>(object, paths, keyVerifier);
+    return PrettyPrinting::parseObject<T>(object, paths, keyVerifier, id);
   }
 
   static const char* getConfigName(GameConfigId);
