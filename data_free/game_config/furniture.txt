@@ -2443,7 +2443,7 @@ Def Boulder(Id) {
   layer = GROUND
   waterDepth = 100
   entryType = Water
-  droppedItems = { ITEM_SINKS ITEMS_SINK "You hear a splash." }
+  droppedItems = { ITEM_SINKS ITEMS_SINK FURNITURE_WATER_UNSEENMESSAGE }
   defaultBridge = "BRIDGE"
   summonedElement = "WATER_ELEMENTAL"
   freezeTo = "ICE"

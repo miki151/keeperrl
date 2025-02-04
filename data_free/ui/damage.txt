@@ -5,25 +5,25 @@ MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,
   Vertical {
     Horizontal{ViewId(1, {"sword"}) Width 10 {} Label(TEXT41)}
     Height 30 {}
-    P("The amount of damage a creature takes in combat is dependent on its defense value, the value of the attack and certain modifiers. Different attack types use different attribute values as their base: most melee combat uses the damage attribute, ranged attacks use ranged damage, and magical attacks use spell damage.")
+    P(TEXT143)
     Height 15 {}
     Position(MIDDLE, Texture("damage1"))
     Height 15 {}
-    P("Once we know the attack value, we can apply special attack bonuses, for example some creatures have a higher attack when drunk or against certain enemies, such as undead. These bonuses are always listed in the creature's description.")
+    P(TEXT144)
     Height 15 {}
-    P("The victim uses the defense attribute as its base defense value, and we similarly apply any special defense bonuses the creature has. After that we multiply or divide the value by 1.3 if the creature is resistant or vulnerable to the attack type. For example with magic resistance, your defense is 30% higher against magical attacks.")
+    P(TEXT145)
     Height 15 {}
-    P("We also calculate a flanking multiplier based on by how many enemies a creature is surrounded by. For each enemy the final defense value is divided by 1.07. This is countered by the parry attribute, which is increased by shields.")
+    P(TEXT146)
     Height 15 {}
     Position(MIDDLE, Texture("damage2"))
     Height 15 {}
-    P("Having the final attack and defense values, we divide them by each other, and apply a damage curve that finally tells us how much health the victim loses.")
+    P(TEXT147)
     Height 15 {}
     Position(MIDDLE, Texture("damage3"))
     Height 15 {}
-    P("As you can see, you'll lose all your health if the attack is 2.2 stronger than your defense, 12% if they're equal, and the attack will be harmless if it's 0.6 of the defense value or lower.")
+    P(TEXT148)
     Height 15 {}
-    P("What happens from now on depends a lot on the victim. Creatures made of flesh, fire or spirit have a normal health counter from which the health loss will be subtracted. Other creatures, such as undead, golems and automatons, have a chance of losing a limb or falling apart based on the magnitude of the loss, but the game doesn't directly track health for them. ")
+    P(TEXT149)
     Height 15 {}
   }
 ))))

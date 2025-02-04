@@ -5,19 +5,19 @@ MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,
   Vertical {
     Horizontal{ViewId(1, {"prisoner"}) Width 10 {} Label(TEXT53)}
     Height 30 {}
-    P("Want to supplement your workforce or convert enemies to fight on your side? You can do that by capturing enemy creatures.")
+    P(TEXT154)
     Height 15 {}
-    P("1. Right click on an enemy and toggle the capture order. You'll notice that the color of its health bar changes to white.")
+    P(TEXT155)
     Height 15 {}
     Position(MIDDLE, Texture("capture1"))
     Height 15 {}
-    P("2. Fight the enemy until it is stunned. Keep in mind that some creatures are resistant to capturing, and are much harder to capture than to simply kill.")
+    P(TEXT156)
     Height 15 {}
-    P("3. Back in real-time mode, you'll find the stunned creature in your immigration list. Click on it to enslave it.")
+    P(TEXT157)
     Height 15 {}
     Position(MIDDLE, Texture("capture2"))
     Height 15 {}
-    P("4. Your prisoner now supplies your worker force. To completely convert it to your side, order its torture by dragging its icon to a torture table. The prisoner has a 50% chance to convert, otherwise it dies.")
+    P(TEXT158)
     Height 15{}
     Position(MIDDLE, Texture("capture3"))
   }

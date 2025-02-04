@@ -5,7 +5,7 @@ MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,
   Vertical {
     Horizontal{ViewId(1, {"leather_boots"}) Width 10 {} Label(TEXT21)}
     Height 30 {}
-    P("Depending on your game's settings, most of your enemies and allies will likely be located away from your home site. ")
-    P("TBF")
+    P(TEXT141)
+    P(TEXT142)
   }
 ))))

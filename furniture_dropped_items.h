@@ -11,7 +11,7 @@ class FurnitureDroppedItems {
   struct Water {
     TString SERIAL(verbSingle);
     TString SERIAL(verbPlural);
-    optional<string> SERIAL(unseenMessage);
+    optional<TString> SERIAL(unseenMessage);
     SERIALIZE_ALL(NAMED(verbSingle), NAMED(verbPlural), NAMED(unseenMessage))
   };
   using DropData = Water;

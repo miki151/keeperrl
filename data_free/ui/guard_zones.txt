@@ -5,19 +5,19 @@ MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,
   Vertical {
     Horizontal{ViewId(1, {"guard_post"}) Width 10 {} Label(TEXT42)}
     Height 30 {}
-    P("Setting up guard zones allows you to place your minions in chosen spots to watch for potential invaders.")
+    P(TEXT150)
     Height 15 {}
-    P("1. Choose one of the three guard area colors, and place it on the map. You should place just one tile for every minion you expect to stand on guard.")
+    P(TEXT151)
     Height 15 {}
     Position(MIDDLE, Texture("guard_zones1"))
     Height 15 {}
     Position(MIDDLE, Texture("guard_zones2"))
     Height 15 {}
-    P("2. Choose the type of minions that will attend this guard area color. It's easiest to select a whole group, such as all goblin warriors or all melee dwarves. Go to one of the minions' menu, select their activity, and enable the chosen guard zone activity for the whole group.")
+    P(TEXT152)
     Height 15 {}
     Position(MIDDLE, Texture("guard_zones3"))
     Height 15 {}
-    P("Now this group's activities include guarding. It works best if the group is much bigger than the number of placed guard posts, as this will allow them to rotate, and peform other activities as well.")
+    P(TEXT153)
     Height 15 {}
   }
 ))))

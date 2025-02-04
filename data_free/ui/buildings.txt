@@ -5,21 +5,21 @@ MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,
   Vertical {
     Horizontal{ViewId(1, {"castle_wall"}) Width 10 {} Label(TEXT3)}
     Height 30 {}
-    P("In addition to laying your fortress under the mountain, you can also construct outdoor buildings. It is possible for buildings to have multiple floors, and there is no limit on how many staircases you can build between the so-called Z-levels.")
+    P(TEXT129)
     Height 15 {}
-    P("1. To start, designate \"building interior\" somewhere outdoors.")
+    P(TEXT130)
     Height 15 {}
     Position(MIDDLE, Texture("buildings1"))
     Height 15 {}
-    P("Once built, this area is considered roofed and you can place all usual constructions and furniture in it. You may also surround it with walls, but it's not required.")
+    P(TEXT131)
     Height 15 {}
-    P("2. Now build \"Up stairs\" somewhere inside your new building, and you will gain access to a new Z-level above the current one. There are several ways to scroll your map to it. Use Ctrl + mouse wheel, or click on the stairs themselves, or use the Z-level menu under the minimap. You can also use the , and . keys or control a minion and walk up manually.")
+    P(TEXT132)
     Height 15 {}
-    P("Note that you can also use the Z-level menu and the Ctrl + mouse wheel shortcut in control mode to have your minion auto-travel between Z-levels.")
+    P(TEXT133)
     Height 15 {}
     Position(MIDDLE, Texture("buildings2"))
     Height 15 {}
-    P("3. Place building interior on your new building floor to build something there. Also notice that the level's topography spans multiple Z-levels, and you can gain access to new resources and other goodies when exploring \"up\".")
+    P(TEXT134)
     Height 15 {}
   }
 ))))

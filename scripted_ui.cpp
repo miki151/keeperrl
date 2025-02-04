@@ -307,7 +307,7 @@ struct Paragraph : ScriptedUIInterface {
 
   string getText(const ScriptedUIData& data, ScriptedContext& context) const {
     if (text)
-      return *text;
+      return context.factory->translate(*text);
     if (auto label = data.getReferenceMaybe<ScriptedUIDataElems::Label>())
       return context.factory->translate(*label);
     else
@@ -331,7 +331,7 @@ struct Paragraph : ScriptedUIInterface {
     return Vec2(width, size * getSize());
   }
 
-  optional<string> SERIAL(text);
+  optional<TString> SERIAL(text);
   int SERIAL(width);
   int SERIAL(size) = Renderer::textSize();
   Color SERIAL(color) = Color::WHITE;
