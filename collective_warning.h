@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "game_time.h"
+#include "t_string.h"
 
 RICH_ENUM(CollectiveWarning,
     DIGGING,
@@ -36,7 +37,7 @@ class CollectiveWarnings {
   void considerWarnings(Collective*);
   bool isWarning(Warning) const;
   void setWarning(Warning, bool state = true);
-  optional<const char*> getNextWarning(LocalTime localTime);
+  optional<TString> getNextWarning(LocalTime localTime);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
@@ -44,7 +45,7 @@ class CollectiveWarnings {
   private:
   void considerWeaponWarning(Collective*);
   void considerTorchesWarning(Collective*);
-  const char*getText(Warning w);
+  TString getText(Warning w);
   EnumSet<Warning> SERIAL(warnings);
   EnumMap<CollectiveWarning, optional<LocalTime>> SERIAL(warningTimes);
   LocalTime SERIAL(lastWarningTime) = LocalTime(100);

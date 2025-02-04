@@ -60,35 +60,34 @@ void CollectiveWarnings::considerTorchesWarning(Collective* col) {
   setWarning(Warning::MORE_LIGHTS, numLit < 0);
 }
 
-const char* CollectiveWarnings::getText(Warning w) {
+TString CollectiveWarnings::getText(Warning w) {
   switch (w) {
-    case Warning::DIGGING: return "Dig into the mountain and start building a dungeon.";
-    case Warning::RESOURCE_STORAGE: return "Storage room for resources is needed.";
-    case Warning::EQUIPMENT_STORAGE: return "Storage room for equipment is needed.";
-    case Warning::LIBRARY: return "Build a library to start research.";
-    case Warning::BEDS: return "You need to build beds for your minions.";
-    case Warning::TRAINING: return "Build a training room for your minions.";
-    case Warning::TRAINING_UPGRADE: return "Training room upgrade needed.";
-    case Warning::NO_HATCHERY: return "You need to build a pigsty.";
-    case Warning::WORKSHOP: return "Build a workshop to produce equipment and traps.";
-    case Warning::NO_WEAPONS: return "You need weapons for your minions.";
-    case Warning::GRAVES: return "You need a graveyard to collect corpses";
-    case Warning::CHESTS: return "You need to build treasure chests.";
-    case Warning::NO_PRISON: return "You need to build a prison.";
-    case Warning::LARGER_PRISON: return "You need a larger prison.";
-    case Warning::TORTURE_ROOM: return "You need to build a torture room.";
-    case Warning::MORE_CHESTS: return "You need more treasure chests.";
-    case Warning::DUNGEON_LEVEL: return "Conquer an enemy tribe to increase your malevolence level.";
-    case Warning::MORE_LIGHTS: return "Place some torches to light up your dungeon.";
-    case Warning::GUARD_POSTS: return "Guard zones have been placed, but the guarding activity is not enabled for any minion.";
+    case Warning::DIGGING: return TStringId("DIGGING_WARNING");
+    case Warning::RESOURCE_STORAGE: return TStringId("RESOURCE_STORAGE_WARNING");
+    case Warning::EQUIPMENT_STORAGE: return TStringId("EQUIPMENT_STORAGE_WARNING");
+    case Warning::LIBRARY: return TStringId("LIBRARY_WARNING");
+    case Warning::BEDS: return TStringId("BEDS_WARNING");
+    case Warning::TRAINING: return TStringId("TRAINING_WARNING");
+    case Warning::TRAINING_UPGRADE: return TStringId("TRAINING_UPGRADE_WARNING");
+    case Warning::NO_HATCHERY: return TStringId("NO_HATCHERY_WARNING");
+    case Warning::WORKSHOP: return TStringId("WORKSHOP_WARNING");
+    case Warning::NO_WEAPONS: return TStringId("NO_WEAPONS_WARNING");
+    case Warning::GRAVES: return TStringId("GRAVES_WARNING");
+    case Warning::CHESTS: return TStringId("CHESTS_WARNING");
+    case Warning::NO_PRISON: return TStringId("NO_PRISON_WARNING");
+    case Warning::LARGER_PRISON: return TStringId("LARGER_PRISON_WARNING");
+    case Warning::TORTURE_ROOM: return TStringId("TORTURE_ROOM_WARNING");
+    case Warning::MORE_CHESTS: return TStringId("MORE_CHESTS_WARNING");
+    case Warning::DUNGEON_LEVEL: return TStringId("DUNGEON_LEVEL_WARNING");
+    case Warning::MORE_LIGHTS: return TStringId("MORE_LIGHTS_WARNING");
+    case Warning::GUARD_POSTS: return TStringId("GUARD_POSTS_WARNING");
   }
-  return "";
 }
 
 const auto anyWarningFrequency = 100_visible;
 const auto warningFrequency = 500_visible;
 
-optional<const char*> CollectiveWarnings::getNextWarning(LocalTime time) {
+optional<TString> CollectiveWarnings::getNextWarning(LocalTime time) {
   if (time > lastWarningTime + anyWarningFrequency)
     for (Warning w : ENUM_ALL(Warning))
       if (isWarning(w) && (!warningTimes[w] || time > *warningTimes[w] + warningFrequency)) {
