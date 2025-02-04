@@ -1548,25 +1548,25 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
       WL(margins, WL(preferredSize, size, std::move(content)), margin));
 }
 
-static string getActionText(ItemAction a) {
+static TString getActionText(ItemAction a) {
   switch (a) {
-    case ItemAction::DROP: return "drop";
-    case ItemAction::DROP_MULTI: return "drop some";
-    case ItemAction::DROP_STEED: return "unassign steed";
-    case ItemAction::GIVE: return "give";
-    case ItemAction::PAY: return "pay for";
-    case ItemAction::EQUIP: return "equip";
-    case ItemAction::THROW: return "throw";
-    case ItemAction::UNEQUIP: return "remove";
-    case ItemAction::APPLY: return "apply";
-    case ItemAction::REPLACE: return "replace";
-    case ItemAction::REPLACE_STEED: return "assign steed";
-    case ItemAction::LOCK: return "lock";
-    case ItemAction::REMOVE: return "remove item";
-    case ItemAction::CHANGE_NUMBER: return "change number";
-    case ItemAction::NAME: return "name";
-    case ItemAction::INTRINSIC_ACTIVATE: return "activate attack";
-    case ItemAction::INTRINSIC_DEACTIVATE: return "deactivate attack";
+    case ItemAction::DROP: return TStringId("DROP_ITEM_ACTION");
+    case ItemAction::DROP_MULTI: return TStringId("DROP_MULTI_ITEM_ACTION");
+    case ItemAction::DROP_STEED: return TStringId("DROP_STEED_ITEM_ACTION");
+    case ItemAction::GIVE: return TStringId("GIVE_ITEM_ACTION");
+    case ItemAction::PAY: return TStringId("PAY_ITEM_ACTION");
+    case ItemAction::EQUIP: return TStringId("EQUIP_ITEM_ACTION");
+    case ItemAction::THROW: return TStringId("THROW_ITEM_ACTION");
+    case ItemAction::UNEQUIP: return TStringId("UNEQUIP_ITEM_ACTION");
+    case ItemAction::APPLY: return TStringId("APPLY_ITEM_ACTION");
+    case ItemAction::REPLACE: return TStringId("REPLACE_ITEM_ACTION");
+    case ItemAction::REPLACE_STEED: return TStringId("REPLACE_STEED_ITEM_ACTION");
+    case ItemAction::LOCK: return TStringId("LOCK_ITEM_ACTION");
+    case ItemAction::REMOVE: return TStringId("REMOVE_ITEM_ACTION");
+    case ItemAction::CHANGE_NUMBER: return TStringId("CHANGE_NUMBER_ITEM_ACTION");
+    case ItemAction::NAME: return TStringId("NAME_ITEM_ACTION");
+    case ItemAction::INTRINSIC_ACTIVATE: return TStringId("INTRINSIC_ACTIVATE_ITEM_ACTION");
+    case ItemAction::INTRINSIC_DEACTIVATE: return TStringId("INTRINSIC_DEACTIVATE_ITEM_ACTION");
   }
 }
 
