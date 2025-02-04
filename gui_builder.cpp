@@ -1549,7 +1549,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info, bool dummy) {
 }
 
 static TString getActionText(ItemAction a) {
-  switch (a) {
+   switch (a) {
     case ItemAction::DROP: return TStringId("DROP_ITEM_ACTION");
     case ItemAction::DROP_MULTI: return TStringId("DROP_MULTI_ITEM_ACTION");
     case ItemAction::DROP_STEED: return TStringId("DROP_STEED_ITEM_ACTION");
@@ -3829,41 +3829,41 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions1, Uniqu
   );
 }
 
-static string getTaskText(MinionActivity option) {
+static TString getTaskText(MinionActivity option) {
   switch (option) {
-    case MinionActivity::IDLE: return "Idle";
-    case MinionActivity::SLEEP: return "Sleeping";
-    case MinionActivity::CONSTRUCTION: return "Construction";
-    case MinionActivity::DIGGING: return "Digging";
-    case MinionActivity::HAULING: return "Hauling";
-    case MinionActivity::WORKING: return "Labour";
-    case MinionActivity::EAT: return "Eating";
-    case MinionActivity::EXPLORE_NOCTURNAL: return "Exploring (night)";
-    case MinionActivity::EXPLORE_CAVES: return "Exploring caves";
-    case MinionActivity::EXPLORE: return "Exploring";
-    case MinionActivity::RITUAL: return "Rituals";
-    case MinionActivity::CROPS: return "Crops";
-    case MinionActivity::TRAIN: return "Training";
-    case MinionActivity::ARCHERY: return "Archery range";
-    case MinionActivity::CRAFT: return "Crafting";
-    case MinionActivity::STUDY: return "Studying";
-    case MinionActivity::POETRY: return "Fine arts";
-    case MinionActivity::MINION_ABUSE: return "Abusing minions";
-    case MinionActivity::COPULATE: return "Copulating";
-    case MinionActivity::SPIDER: return "Spinning webs";
-    case MinionActivity::GUARDING1: return "Guard zone 1";
-    case MinionActivity::GUARDING2: return "Guard zone 2";
-    case MinionActivity::GUARDING3: return "Guard zone 3";
-    case MinionActivity::DISTILLATION: return "Distilling";
-    case MinionActivity::BE_WHIPPED: return "Being whipped";
-    case MinionActivity::BE_TORTURED: return "Being tortured";
-    case MinionActivity::BE_EXECUTED: return "Being executed";
-    case MinionActivity::PHYLACTERY: return "Phylactery";
-    case MinionActivity::PREACHING: return "Holding Mass";
-    case MinionActivity::MASS: return "Attending Mass";
-    case MinionActivity::PRAYER: return "Praying";
-    case MinionActivity::HEARING_CONFESSION: return "Hearing confessions";
-    case MinionActivity::CONFESSION: return "Confessing";
+    case MinionActivity::IDLE: return TStringId("IDLE_MINION_ACTIVITY");
+    case MinionActivity::SLEEP: return TStringId("SLEEP_MINION_ACTIVITY");
+    case MinionActivity::CONSTRUCTION: return TStringId("CONSTRUCTION_MINION_ACTIVITY");
+    case MinionActivity::DIGGING: return TStringId("DIGGING_MINION_ACTIVITY");
+    case MinionActivity::HAULING: return TStringId("HAULING_MINION_ACTIVITY");
+    case MinionActivity::WORKING: return TStringId("WORKING_MINION_ACTIVITY");
+    case MinionActivity::EAT: return TStringId("EAT_MINION_ACTIVITY");
+    case MinionActivity::EXPLORE_NOCTURNAL: return TStringId("EXPLORE_NOCTURNAL_MINION_ACTIVITY");
+    case MinionActivity::EXPLORE_CAVES: return TStringId("EXPLORE_CAVES_MINION_ACTIVITY");
+    case MinionActivity::EXPLORE: return TStringId("EXPLORE_MINION_ACTIVITY");
+    case MinionActivity::RITUAL: return TStringId("RITUAL_MINION_ACTIVITY");
+    case MinionActivity::CROPS: return TStringId("CROPS_MINION_ACTIVITY");
+    case MinionActivity::TRAIN: return TStringId("TRAIN_MINION_ACTIVITY");
+    case MinionActivity::ARCHERY: return TStringId("ARCHERY_MINION_ACTIVITY");
+    case MinionActivity::CRAFT: return TStringId("CRAFT_MINION_ACTIVITY");
+    case MinionActivity::STUDY: return TStringId("STUDY_MINION_ACTIVITY");
+    case MinionActivity::POETRY: return TStringId("POETRY_MINION_ACTIVITY");
+    case MinionActivity::MINION_ABUSE: return TStringId("MINION_ABUSE_MINION_ACTIVITY");
+    case MinionActivity::COPULATE: return TStringId("COPULATE_MINION_ACTIVITY");
+    case MinionActivity::SPIDER: return TStringId("SPIDER_MINION_ACTIVITY");
+    case MinionActivity::GUARDING1: return TStringId("GUARDING1_MINION_ACTIVITY");
+    case MinionActivity::GUARDING2: return TStringId("GUARDING2_MINION_ACTIVITY");
+    case MinionActivity::GUARDING3: return TStringId("GUARDING3_MINION_ACTIVITY");
+    case MinionActivity::DISTILLATION: return TStringId("DISTILLATION_MINION_ACTIVITY");
+    case MinionActivity::BE_WHIPPED: return TStringId("BE_WHIPPED_MINION_ACTIVITY");
+    case MinionActivity::BE_TORTURED: return TStringId("BE_TORTURED_MINION_ACTIVITY");
+    case MinionActivity::BE_EXECUTED: return TStringId("BE_EXECUTED_MINION_ACTIVITY");
+    case MinionActivity::PHYLACTERY: return TStringId("PHYLACTERY_MINION_ACTIVITY");
+    case MinionActivity::PREACHING: return TStringId("PREACHING_MINION_ACTIVITY");
+    case MinionActivity::MASS: return TStringId("MASS_MINION_ACTIVITY");
+    case MinionActivity::PRAYER: return TStringId("PRAYER_MINION_ACTIVITY");
+    case MinionActivity::HEARING_CONFESSION: return TStringId("HEARING_CONFESSION_MINION_ACTIVITY");
+    case MinionActivity::CONFESSION: return TStringId("CONFESSION_MINION_ACTIVITY");
   }
 }
 
