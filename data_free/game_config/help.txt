@@ -1,6 +1,6 @@
-{"prisoners" {"prisoner"} "Capturing prisoners"}
-{"steed" {"horse"} "Using steeds"}
-{"buildings" {"castle_wall"} "Buildings and Z-levels"}
-{"damage" {"sword"} "Damage calculation"}
+{"prisoners" {"prisoner"} HELP_TITLE}
+{"steed" {"horse"} HELP_TITLE1}
+{"buildings" {"castle_wall"} HELP_TITLE2}
+{"damage" {"sword"} HELP_TITLE3}
 {"travelling"}
-{"guard_zones" {"guard_post"} "Guard zones"}
+{"guard_zones" {"guard_post"} HELP_TITLE4}

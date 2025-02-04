@@ -4173,6 +4173,11 @@
   "ENEMIES_SOKOBAN_NAME" "Sokoban"
   "ENEMIES_ADOXIE_FEET_NAME" "Ancient tomb"
   "ENEMIES_WIZARD_TOWER_NAME" "A wizard's tower"
+  "HELP_TITLE" "Capturing prisoners"
+  "HELP_TITLE1" "Using steeds"
+  "HELP_TITLE2" "Buildings and Z-levels"
+  "HELP_TITLE3" "Damage calculation"
+  "HELP_TITLE4" "Guard zones"
   "CAMPAIGN_HELP_TEXT" "Welcome to the campaign mode! The world, which you see below, is made up of smaller maps. You will build your base on one of them. There are hostile and friendly tribes around you. You have to conquer all villains marked as \"main\" to win the game. You can travel to other sites by creating a team and using the travel command.
 
 
