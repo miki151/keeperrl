@@ -4160,6 +4160,19 @@
   "DWARF_SPELL_SCHOOL_NAME" "dwarf"
   "ZOMBIE_MAGE_SPELL_SCHOOL_NAME" "zombie mage"
   "PRAYERS_SPELL_SCHOOL_NAME" "prayers"
+  "TO_BE_SMELTED" "To be smelted:"
+  "IN_PRODUCTION" "In production:"
+  "CONQUER_SOME_VILLAINS" "Conquer some villains to advance."
+  "Z_LEVEL" "Z-level {1}"
+  "GROUND_LEVEL" "Ground"
+  "ENEMIES_MAIN_DUNGEON_NAME" "Adoxie's Temple"
+  "ENEMIES_MAIN_DUNGEON_NAME1" "A Very Hot Place"
+  "ENEMIES_MAIN_DUNGEON_NAME2" "Down Under"
+  "ENEMIES_ADOXIE_VAULT_NAME" "Adoxie's Vault"
+  "ENEMIES_DUNGEON1_NAME" "Black market"
+  "ENEMIES_SOKOBAN_NAME" "Sokoban"
+  "ENEMIES_ADOXIE_FEET_NAME" "Ancient tomb"
+  "ENEMIES_WIZARD_TOWER_NAME" "A wizard's tower"
   "CAMPAIGN_HELP_TEXT" "Welcome to the campaign mode! The world, which you see below, is made up of smaller maps. You will build your base on one of them. There are hostile and friendly tribes around you. You have to conquer all villains marked as \"main\" to win the game. You can travel to other sites by creating a team and using the travel command.
 
 

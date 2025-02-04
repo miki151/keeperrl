@@ -26,6 +26,7 @@
 #include "furniture_layer.h"
 #include "creature_list.h"
 #include "lasting_or_buff.h"
+#include "t_string.h"
 
 class Model;
 class Square;
@@ -163,7 +164,7 @@ class Level : public OwnedObject<Level> {
 
   SERIALIZATION_DECL(Level)
 
-  string SERIAL(name);
+  TString SERIAL(name);
   int SERIAL(depth) = 0;
   bool SERIAL(mainDungeon) = false;
   bool canTranfer = true;

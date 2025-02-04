@@ -39,7 +39,7 @@ struct LevelConnection {
     LevelType SERIAL(levelType);
     EnemyLevelInfo SERIAL(enemy);
     bool SERIAL(isLit) = false;
-    optional<string> SERIAL(name);
+    optional<TString> SERIAL(name);
     bool SERIAL(canTransfer) = true;
     bool SERIAL(aiFollows) = true;
     template <class Archive>

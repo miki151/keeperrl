@@ -1339,7 +1339,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
   auto& info = collectiveInfo.libraryInfo;
   auto& dungeonLevel = collective->getDungeonLevel();
   if (dungeonLevel.numResearchAvailable() == 0)
-    info.warning = "Conquer some villains to advance."_s;
+    info.warning = TString(TStringId("CONQUER_SOME_VILLAINS"));
   info.totalProgress = 100 * dungeonLevel.getNecessaryProgress(dungeonLevel.level);
   info.currentProgress = int(100 * dungeonLevel.progress * dungeonLevel.getNecessaryProgress(dungeonLevel.level));
   auto& technology = collective->getTechnology();
@@ -1556,7 +1556,7 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
             return CollectiveInfo::OptionInfo{option.itemInfo, none, {""_s, 0}}; }),
         getFurnaceQueue(),
         index,
-        "To be smelted:",
+        TStringId("TO_BE_SMELTED"),
         false,
         1,
         factory->attrInfo.at(AttrType("FURNACE")).viewId
@@ -1579,7 +1579,7 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
             return CollectiveInfo::OptionInfo{option.itemInfo, option.creatureInfo, option.maxUpgrades}; }),
         getQueuedWorkshopItems(),
         index,
-        "In production:",
+        TStringId("IN_PRODUCTION"),
         true,
         resourceTabs.empty() ? 0 : workshopInfo.getMinAttrFor(resourceTabs[chosenWorkshop->resourceIndex]),
         factory->attrInfo.at(workshopInfo.attr).viewId

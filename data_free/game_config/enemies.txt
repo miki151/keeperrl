@@ -1130,12 +1130,12 @@ End
       { ExtraEnemy { "DUNGEON2" { 1 } } {40 30} BASIC }
       { ExtraEnemy { "DUNGEON3" { 1 } } {40 30} BASIC }
       { ExtraEnemy { "DUNGEON4" { 1 } } {40 30} BASIC }
-      { MainEnemy {32 22} BASIC "Adoxie's Temple" }
+      { MainEnemy {32 22} BASIC ENEMIES_MAIN_DUNGEON_NAME }
       { ExtraEnemy { "DEATH" { 1 } } {40 30} BASIC none true false }
-      { ExtraEnemy { "HELL" { 1 } } {40 30} DUNGEON "A Very Hot Place" true false }
-      { ExtraEnemy { "SATAN" { 1 } } {32 22} BASIC "A Very Hot Place" true false }
+      { ExtraEnemy { "HELL" { 1 } } {40 30} DUNGEON ENEMIES_MAIN_DUNGEON_NAME1 true false }
+      { ExtraEnemy { "SATAN" { 1 } } {32 22} BASIC ENEMIES_MAIN_DUNGEON_NAME1 true false }
       { ExtraEnemy { "HELL_ESCAPE_FLOOR" { 3 6 }} {4 4} TOWER }
-      { ExtraEnemy { "OUTBACK_ENTRY" { 1 } } {100 100} OUTBACK "Down Under" true }
+      { ExtraEnemy { "OUTBACK_ENTRY" { 1 } } {100 100} OUTBACK ENEMIES_MAIN_DUNGEON_NAME2 true }
     }
   }
 }
@@ -1218,7 +1218,7 @@ End
   levelConnection = {
     topLevel = MainEnemy
     levels = {
-      { ExtraEnemy { "ADOXIE_VAULT_UNDER" {1} } {32 17} BASIC "Adoxie's Vault" }
+      { ExtraEnemy { "ADOXIE_VAULT_UNDER" {1} } {32 17} BASIC ENEMIES_ADOXIE_VAULT_NAME }
     }
   }
 }
@@ -1864,7 +1864,7 @@ End
     topLevel = MainEnemy
     direction = UP
     levels = {
-      { ExtraEnemy {"BLACK_MARKET"} {30 20} BLACK_MARKET "Black market" }
+      { ExtraEnemy {"BLACK_MARKET"} {30 20} BLACK_MARKET ENEMIES_DUNGEON1_NAME }
     }
   }
 }
@@ -2274,7 +2274,7 @@ End
     direction = UP
     topLevel = ExtraEnemy { "SOKOBAN_ENTRY" }
     levels = {
-      {MainEnemy {28 16} SOKOBAN "Sokoban" false true false }
+      {MainEnemy {28 16} SOKOBAN ENEMIES_SOKOBAN_NAME false true false }
     }
   }
   config = {
@@ -2373,7 +2373,7 @@ End
     direction = DOWN
     topLevel = ExtraEnemy { "ADOXIE_FEET_ENTRY" }
     levels = {
-      {MainEnemy {19 19} BASIC "Ancient tomb" false false }
+      {MainEnemy {19 19} BASIC ENEMIES_ADOXIE_FEET_NAME false false }
     }
   }
 }
@@ -2766,7 +2766,7 @@ End
     direction = UP
     topLevel = ExtraEnemy { "WIZARD_TOWER_ENTRY" }
     levels = {
-      { MainEnemy {20 20} BASIC "A wizard's tower" true }
+      { MainEnemy {20 20} BASIC ENEMIES_WIZARD_TOWER_NAME true }
     }
   }
 }

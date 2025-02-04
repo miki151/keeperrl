@@ -299,7 +299,7 @@ class CollectiveInfo {
     vector<OptionInfo> HASH(options);
     vector<QueuedItemInfo> HASH(queued);
     int HASH(index);
-    string HASH(queuedTitle);
+    TString HASH(queuedTitle);
     bool HASH(allowChangeNumber);
     int HASH(minAttrValue);
     ViewId HASH(attr);
@@ -324,7 +324,7 @@ class CollectiveInfo {
     };
     int HASH(currentProgress);
     int HASH(totalProgress);
-    optional<string> HASH(warning);
+    optional<TString> HASH(warning);
     vector<TechInfo> HASH(available);
     vector<TechInfo> HASH(researched);
     HASH_ALL(currentProgress, totalProgress, warning, available, researched)
@@ -440,9 +440,9 @@ class TutorialInfo {
 };
 
 struct CurrentLevelInfo {
-  string HASH(name);
+  TString HASH(name);
   int HASH(levelDepth);
-  vector<string> HASH(zLevels);
+  vector<TString> HASH(zLevels);
   HASH_ALL(name, levelDepth, zLevels)
 };
 

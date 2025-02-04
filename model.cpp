@@ -172,7 +172,7 @@ void Model::addCreature(PCreature c, TimeInterval delay) {
   timeQueue->addCreature(std::move(c), getLocalTime() + delay);
 }
 
-Level* Model::buildLevel(const ContentFactory* factory, LevelBuilder b, PLevelMaker maker, int depth, string name) {
+Level* Model::buildLevel(const ContentFactory* factory, LevelBuilder b, PLevelMaker maker, int depth, TString name) {
   LevelBuilder builder(std::move(b));
   levels.push_back(builder.build(factory, this, maker.get(), Random.getLL()));
   levels.back()->depth = depth;
@@ -182,7 +182,7 @@ Level* Model::buildLevel(const ContentFactory* factory, LevelBuilder b, PLevelMa
 
 Level* Model::buildUpLevel(const ContentFactory* factory, LevelBuilder b, PLevelMaker maker) {
   int depth = -upLevels.size() - 1;
-  auto ret = buildLevel(factory, std::move(b), std::move(maker), depth, "Z-level " + toString(depth));
+  auto ret = buildLevel(factory, std::move(b), std::move(maker), depth, TSentence("Z_LEVEL", toString(depth)));
   ret->below = upLevels.empty() ? mainLevels[0] : upLevels.back();
   ret->below->above = ret;
   ret->mainDungeon = true;
@@ -192,7 +192,8 @@ Level* Model::buildUpLevel(const ContentFactory* factory, LevelBuilder b, PLevel
 
 Level* Model::buildMainLevel(const ContentFactory* factory, LevelBuilder b, PLevelMaker maker) {
   int depth = mainLevels.size();
-  auto ret = buildLevel(factory, std::move(b), std::move(maker), depth, depth == 0 ? "Ground"_s : "Z-level " + toString(depth));
+  auto ret = buildLevel(factory, std::move(b), std::move(maker), depth,
+      depth == 0 ? TStringId("GROUND_LEVEL") : TSentence("Z_LEVEL", toString(depth)));
   ret->mainDungeon = true;
   mainLevels.push_back(ret);
   return ret;
