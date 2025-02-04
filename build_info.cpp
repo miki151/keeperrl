@@ -10,10 +10,10 @@ bool BuildInfo::meetsRequirement(const Collective* col, Requirement req) {
   );
 }
 
-string BuildInfo::getRequirementText(Requirement req) {
+TString BuildInfo::getRequirementText(Requirement req, const ContentFactory* factory) {
   return req.visit(
-      [&](TechId techId) { return "technology: "_s + techId.data();},
-      [&](BuildInfo::DungeonLevel level) { return "at least level " + toString(level); }
+      [&](TechId techId) { return TSentence("TECH_REQUIREMENT", factory->technology.getName(techId));},
+      [&](BuildInfo::DungeonLevel level) { return TSentence("DUNGEON_LEVEL_REQUIREMENT", toString(level)); }
   );
 }
 

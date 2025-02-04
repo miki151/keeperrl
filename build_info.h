@@ -68,7 +68,7 @@ struct BuildInfo {
   using DungeonLevel = int;
   MAKE_VARIANT(Requirement, TechId, DungeonLevel);
 
-  static string getRequirementText(Requirement);
+  static TString getRequirementText(Requirement, const ContentFactory*);
   static bool meetsRequirement(const Collective*, Requirement);
   bool canSelectRectangle() const;
 

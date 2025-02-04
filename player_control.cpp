@@ -885,6 +885,7 @@ vector<Button> PlayerControl::fillButtons() const {
   PROFILE;
   vector<Button> buttons;
   HashMap<CollectiveResourceId, int> resourceCache;
+  auto contentFactory = getGame()->getContentFactory();
   for (auto& button : buildInfo) {
     PROFILE_BLOCK("BUTTON")
     button.type.visit<void>(
@@ -925,7 +926,7 @@ vector<Button> PlayerControl::fillButtons() const {
     for (auto& req : button.requirements) {
       PROFILE_BLOCK("Requirement")
       if (!BuildInfo::meetsRequirement(collective, req)) {
-        unmetReqText.push_back(TSentence("BUILDING_REQUIRES", BuildInfo::getRequirementText(req)));
+        unmetReqText.push_back(BuildInfo::getRequirementText(req, contentFactory));
         buttons.back().state = CollectiveInfo::Button::INACTIVE;
       }
     }
