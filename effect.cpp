@@ -217,7 +217,7 @@ static bool applyToCreature(const Effects::Escape& e, Creature* c, Creature*) {
     }
   }
   if (maxW < 2) {
-    c->message("The spell didn't work.");
+    c->message(TStringId("SPELL_DIDNT_WORK"));
     return false;
   }
   CHECK(!good.empty());
@@ -2298,7 +2298,7 @@ static bool apply(const Effects::Audience& a, Position pos, Creature* attacker) 
       pos.globalMessage(PlayerMessage("The audience has been summoned"_s, MessagePriority::HIGH));
     return true;
   }
-  pos.globalMessage("Nothing happens");
+  pos.globalMessage(TStringId("NOTHING_HAPPENS"));
   return false;
 }
 
@@ -2325,9 +2325,9 @@ static bool applyToCreature(const Effects::SummonMinions& a, Creature* c, Creatu
       success |= tryTeleporting(c->getPosition(), minion, none);
   }
   if (success)
-    c->privateMessage("The s heep have come to the shepard.");
+    c->privateMessage(TStringId("SUMMON_MINIONS_MESSAGE"));
   else
-    c->privateMessage("Nothing happens.");
+    c->privateMessage(TStringId("NOTHING_HAPPENS"));
   return success;
 }
 
@@ -2473,7 +2473,7 @@ static bool applyToCreature(const Effects::Stairs&, Creature* c, Creature* attac
     c->getLevel()->changeLevel(*link, c);
     return true;
   } else {
-    c->message("These stairs don't lead anywhere.");
+    c->message(TStringId("BAD_STAIRS_MESSAGE"));
     return false;
   }
 }

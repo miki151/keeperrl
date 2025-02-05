@@ -70,7 +70,7 @@ static void usePortal(Position pos, Creature* c) {
       }
     }
   }
-  c->privateMessage("The portal is inactive. Create another one to open a connection.");
+  c->privateMessage(TStringId("PORTAL_INACTIVE"));
 }
 
 void FurnitureUsage::handle(FurnitureUsageType type, Position pos, const Furniture* furniture, Creature* c) {

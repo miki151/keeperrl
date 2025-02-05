@@ -19,13 +19,14 @@
 #include "util.h"
 #include "effect.h"
 #include "attr_type.h"
+#include "t_string.h"
 
 class Creature;
 
 class Attack {
   public:
   Attack(Creature* a, AttackLevel l, AttackType t, int s, AttrType d, vector<Effect> e = {},
-      const char* harmlessMessage = "The attack is harmless", bool withSound = true)
+      TString harmlessMessage = TStringId("THE_ATTACK_IS_HARMLESS"), bool withSound = true)
       : attacker(a), level(l), type(t), strength(s), damageType(d), effect(e), harmlessMessage(harmlessMessage),
         withSound(withSound) {}
 
@@ -35,7 +36,7 @@ class Attack {
   int strength;
   AttrType damageType;
   vector<Effect> effect;
-  const char* harmlessMessage;
+  TString harmlessMessage;
   bool withSound;
 };
 

@@ -12,8 +12,6 @@ RICH_ENUM(MessagePriority, NORMAL, HIGH, CRITICAL);
 
 class PlayerMessage : public UniqueEntity<PlayerMessage> {
   public:
-  PlayerMessage(const string&, MessagePriority = MessagePriority::NORMAL);
-  PlayerMessage(const char*, MessagePriority = MessagePriority::NORMAL);
   PlayerMessage(const TString&, MessagePriority = MessagePriority::NORMAL);
   PlayerMessage(const TSentence&, MessagePriority = MessagePriority::NORMAL);
   PlayerMessage(const TStringId&, MessagePriority = MessagePriority::NORMAL);

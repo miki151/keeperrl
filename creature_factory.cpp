@@ -75,7 +75,7 @@ class BoulderController : public Monster {
         health -= c->getBody().getBoulderDamage();
         if (health <= 0) {
           nextPos.globalMessage(TSentence("OBJECT_CRASHES_ON", creature->getName().the(), c->getName().the()));
-          nextPos.unseenMessage("You hear a crash");
+          nextPos.unseenMessage(TStringId("YOU_HEAR_A_CRASH"));
           creature->dieNoReason();
           //c->takeDamage(Attack(creature, AttackLevel::MIDDLE, AttackType::HIT, 1000, AttrType("DAMAGE")));
           return;
@@ -97,7 +97,7 @@ class BoulderController : public Monster {
       action.perform(creature);
     else {
       nextPos.globalMessage(TSentence("OBJECT_CRASHES_ON", creature->getName().the(), nextPos.getName()));
-      nextPos.unseenMessage("You hear a crash");
+      nextPos.unseenMessage(TStringId("YOU_HEAR_A_CRASH"));
       creature->dieNoReason();
       return;
     }
@@ -333,9 +333,9 @@ class KrakenController : public Monster {
   virtual void onKilled(Creature* attacker) override {
     if (attacker) {
       if (father)
-        attacker->secondPerson("You cut the kraken's tentacle");
+        attacker->secondPerson(TStringId("YOU_CUT_TENTACLE"));
       else
-        attacker->secondPerson("You kill the kraken!");
+        attacker->secondPerson(TStringId("YOU_KILL_KRAKEN"));
     }
     for (Creature* c : spawns)
       if (!c->isDead())
@@ -489,7 +489,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
           if (!debtors.contains(c))
             c->secondPerson(TSentence("WELCOME_TO_SHOP", creature->getName().firstOrBare()));
           else {
-            c->secondPerson("\"Pay your debt or... !\"");
+            c->secondPerson(TStringId("PAY_YOUR_DEBT"));
             thiefCount.erase(c);
           }
         }
@@ -499,10 +499,9 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
         for (auto pos : creature->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), 30)))
           if (auto debtor = pos.getCreature())
             if (debtor->getUniqueId() == debtorId) {
-              debtor->privateMessage("\"Come back, you owe me " + toString(debtor->getDebt().getAmountOwed(creature)) +
-                  " gold!\"");
+              debtor->privateMessage(TSentence("YOU_OWE_ME", toString(debtor->getDebt().getAmountOwed(creature))));
               if (++thiefCount.getOrInit(debtor) == 4) {
-                debtor->privateMessage("\"Thief! Thief!\"");
+                debtor->privateMessage(TStringId("THIEF_THIEF"));
                 creature->getTribe()->onItemsStolen(debtor);
                 creature->getGame()->addEvent(EventInfo::ItemStolen{debtor, Position(shopArea.front(), myLevel)});
                 thiefCount.erase(debtor);
@@ -596,12 +595,12 @@ class IllusionController : public DoNothingController {
 
   virtual void onKilled(Creature* attacker) override {
     if (attacker)
-      attacker->message("It was just an illusion!");
+      attacker->message(TStringId("IT_WAS_JUST_AN_ILLUSION"));
   }
 
   virtual void makeMove() override {
     if (*creature->getGlobalTime() >= deathTime) {
-      creature->message("The illusion disappears.");
+      creature->message(TStringId("THE_ILLUSION_DISAPPEARS"));
       creature->dieNoReason();
     } else
       creature->wait().perform(creature);

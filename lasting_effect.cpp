@@ -154,9 +154,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::HALLU:
         if (!c->isAffected(LastingEffect::BLIND))
-          c->privateMessage("The world explodes into colors!");
+          c->privateMessage(TStringId("THE_WORLD_EXPLODES_INTO_COLORS"));
         else
-          c->privateMessage("You feel as if a party has started without you.");
+          c->privateMessage(TStringId("HALLU_WHILE_BLIND_MESSAGE"));
         break;
       case LastingEffect::BLIND:
         c->you(MsgType::ARE, TStringId("BLIND"));
@@ -165,7 +165,7 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         if (!c->isAffected(LastingEffect::BLIND))
           c->you(MsgType::TURN_INVISIBLE);
         else
-          c->privateMessage("You feel like a child again.");
+          c->privateMessage(TStringId("INVISIBLE_WHILE_BLIND_MESSAGE"));
         break;
       case LastingEffect::POISON:
         c->you(MsgType::ARE, TStringId("POISONED"));
@@ -925,7 +925,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
       break;
     case LastingEffect::BAD_BREATH:
       if (Random.roll(50)) {
-        c->getPosition().globalMessage("The smell!");
+        c->getPosition().globalMessage(TStringId("SOMETHING_STINKS_MESSAGE"));
         for (auto pos : c->getPosition().getRectangle(Rectangle::centered(7)))
           if (auto other = pos.getCreature())
             if (Random.roll(5)) {

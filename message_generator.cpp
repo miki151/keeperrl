@@ -56,7 +56,7 @@ static void addThird(const Creature* c, MsgType type, vector<TString> param) {
       case MsgType::TURN_VISIBLE: return TSentence("IS_NO_LONGER_INVISIBLE");
       case MsgType::ENTER_PORTAL: return TSentence("ENTERS_PORTAL");
       case MsgType::BURN:
-        unseenMsg = TSentence("YOU_HEAR_SOMEONE_BURNING");
+        unseenMsg = TSentence("YOU_HEAR_HORRIBLE_SCREAM");
         return TSentence("BURNS_IN", param);
       case MsgType::DROWN:
         unseenMsg = TSentence("YOU_HEAR_SOMEONE_DROWNING");

@@ -128,10 +128,10 @@ void Player::onEvent(const GameEvent& event) {
           Position pos = info.pos;
           Position myPos = creature->getPosition();
           if (pos == myPos)
-            privateMessage("An alarm sounds near you.");
+            privateMessage(TStringId("AN_ALARM_SOUNDS_NEAR_YOU"));
           else if (pos.isSameLevel(myPos))
-            privateMessage("An alarm sounds in the " +
-                getCardinalName(myPos.getDir(pos).getBearing().getCardinalDir()));
+            privateMessage(TSentence("AN_ALARM_SOUNDS_IN_THE",
+                getCardinalName(myPos.getDir(pos).getBearing().getCardinalDir())));
         }
       },
       [&](const FX& info) {
@@ -336,7 +336,7 @@ void Player::payForItemAction(const vector<Item*>& items) {
     return res;
   }();
   if (canPayFor == 0)
-    privateMessage("You don't have enough gold to pay.");
+    privateMessage(TStringId("YOU_DONT_HAVE_ENOUGH_GOLD"));
   else if (canPayFor == items.size() || getView()->yesOrNoPrompt(TSentence("YOU_ONLY_HAVE_ENOUGH_FOR",
       toString(canPayFor), items[0]->getName(canPayFor > 1, creature))))
     tryToPerform(creature->payFor(items.getPrefix(canPayFor)));
@@ -346,7 +346,7 @@ void Player::payForAllItemsAction() {
   if (int totalDebt = creature->getDebt().getTotal(creature)) {
     auto gold = creature->getGold(totalDebt);
     if (gold.size() < totalDebt)
-      privateMessage("You don't have enough gold to pay for everything.");
+      privateMessage(TStringId("YOU_DONT_HAVE_ENOUGH_GOLD_FOR_EVERYTHING"));
     else
       for (Creature* c : creature->getDebt().getCreditors(creature)) {
         auto debt = creature->getDebt().getAmountOwed(c);
@@ -444,7 +444,7 @@ void Player::fireAction() {
 void Player::tryToCast(const Spell* spell, Position target) {
   if (spell->isFriendlyFire(creature, target)) {
     if (creature->isAffected(LastingEffect::PEACEFULNESS)) {
-      creature->privateMessage("You feel that doing this goes against your beliefs.");
+      creature->privateMessage(TStringId("CANT_ATTACK_WHILE_PEACEFUL"));
       return;
     }
     optional<int> res = 0;

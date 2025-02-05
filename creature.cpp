@@ -578,8 +578,8 @@ void Creature::swapPosition(Vec2 direction, bool withExcuseMe) {
   CHECK(direction.length8() == 1);
   Creature* other = NOTNULL(getPosition().plus(direction).getCreature());
   if (withExcuseMe) {
-    privateMessage("Excuse me!");
-    other->privateMessage("Excuse me!");
+    privateMessage(TStringId("EXCUSE_ME"));
+    other->privateMessage(TStringId("EXCUSE_ME"));
   }
   position.swapCreatures(other);
   auto movementInfo = *spendTime();
@@ -1991,7 +1991,7 @@ void Creature::tryToDestroyLastingEffect(LastingEffect effect) {
 
 bool Creature::considerSavingLife(DropType drops, const Creature* attacker) {
   if (drops != DropType::NOTHING && isAffected(LastingEffect::LIFE_SAVED)) {
-    message("But wait!");
+    message(TStringId("BUT_WAIT"));
     verb(TStringId("YOU_ESCAPE_DEATH"), TStringId("ESCAPES_DEATH"));
     if (attacker && attacker->getName().bare() == TStringId("DEATH")) {
       if (auto target = findInaccessiblePos(position))
@@ -2013,7 +2013,7 @@ bool Creature::considerSavingLife(DropType drops, const Creature* attacker) {
 
 bool Creature::considerPhylactery(DropType drops, const Creature* attacker) {
   if (phylactery) {
-    message("But wait!");
+    message(TStringId("BUT_WAIT"));
     verb(TStringId("YOU_ESCAPE_DEATH"), TStringId("ESCAPES_DEATH"));
     heal();
     removeEffect(BuffId("BLEEDING"), false);
@@ -2275,7 +2275,7 @@ CreatureAction Creature::whip(const Position& pos, double animChance) const {
     }
     if (Random.roll(5)) {
       whipped->thirdPerson(TSentence("SCREAMS", whipped->getName().the()));
-      whipped->getPosition().unseenMessage("You hear a horrible scream!");
+      whipped->getPosition().unseenMessage(TStringId("YOU_HEAR_HORRIBLE_SCREAM"));
     }
     if (Random.roll(20))
       whipped->addEffect(BuffId("HIGH_MORALE"), 400_visible);

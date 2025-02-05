@@ -233,7 +233,7 @@ void Item::onHitSquareMessage(Position pos, const Attack& attack, int numItems) 
   if (attributes->fragile) {
     pos.globalMessage(TSentence(numItems > 1 ? "ITEMS_CRASH_ON_THE" : "ITEM_CRASHES_ON_THE", pos.getName(),
         getPluralTheName(numItems)));
-    pos.unseenMessage("You hear a crash");
+    pos.unseenMessage(TStringId("YOU_HEAR_A_CRASH"));
     discarded = true;
   } else
     pos.globalMessage(TSentence(numItems > 1 ? "ITEMS_HIT_THE" : "ITEM_HITS_THE", pos.getName(),

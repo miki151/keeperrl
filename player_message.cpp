@@ -5,9 +5,6 @@
 #include "scripted_ui.h"
 #include "gui_elem.h"
 
-PlayerMessage::PlayerMessage(const string& t, MessagePriority p) : text(makeSentence(std::move(t))), priority(p),
-    freshness(1) {}
-PlayerMessage::PlayerMessage(const char* t, MessagePriority p) : text(makeSentence(t)), priority(p), freshness(1) {}
 PlayerMessage::PlayerMessage(const TString& t, MessagePriority p)
     : localizedText(TSentence("MAKE_SENTENCE", std::move(t))), priority(p),
     freshness(1) {}
