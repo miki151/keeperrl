@@ -189,14 +189,14 @@ class View {
 
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) = 0;
 
-  virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<PlayerInfo>&,
-      const string& cancelText) = 0;
+  virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const TString& title, const vector<PlayerInfo>&,
+      const TString& cancelText) = 0;
 
   //virtual vector<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&) = 0;
 
-  virtual bool creatureInfo(const string& title, bool prompt, const vector<PlayerInfo>&) = 0;
+  virtual bool creatureInfo(const TString& title, bool prompt, const vector<PlayerInfo>&) = 0;
 
-  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, Vec2 current) = 0;
+  virtual optional<Vec2> chooseSite(const TString& message, const Campaign&, Vec2 current) = 0;
 
   virtual void presentWorldmap(const Campaign&, Vec2 current) = 0;
 

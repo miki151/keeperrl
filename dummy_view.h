@@ -39,14 +39,14 @@ class DummyView : public View {
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) override {
     return CampaignActionId::CANCEL;
   }
-  virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string&, const vector<PlayerInfo>&,
-      const string& cancelText) override {
+  virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const TString&, const vector<PlayerInfo>&,
+      const TString& cancelText) override {
     return none;
   }
-  virtual bool creatureInfo(const string& title, bool prompt, const vector<PlayerInfo>&) override {
+  virtual bool creatureInfo(const TString& title, bool prompt, const vector<PlayerInfo>&) override {
     return false;
   }
-  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, Vec2 current) override {
+  virtual optional<Vec2> chooseSite(const TString& message, const Campaign&, Vec2 current) override {
     return none;
   }
   virtual optional<int> chooseAtMouse(const vector<TString>& elems) override {

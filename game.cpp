@@ -558,8 +558,8 @@ void Game::presentWorldmap() {
   view->presentWorldmap(*campaign, baseModel);
 }
 
-Model* Game::chooseSite(const string& message, Model* current) const {
-  if (auto dest = view->chooseSite("Choose destination site:", *campaign, current->position))
+Model* Game::chooseSite(Model* current) const {
+  if (auto dest = view->chooseSite(TStringId("CHOOSE_DESTINATION_SITE"), *campaign, current->position))
     return NOTNULL(models[*dest].get());
   return nullptr;
 }

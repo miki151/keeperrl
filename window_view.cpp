@@ -816,7 +816,7 @@ void WindowView::scriptedUI(ScriptedUIId id, const ScriptedUIData& data, Scripte
   return getBlockingGui(sem, gui.stack(gui.stopMouseMovement(), gui.scripted([&sem]{sem.v();}, id, data, state)));
 }
 
-optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& campaign, Vec2 current) {
+optional<Vec2> WindowView::chooseSite(const TString& message, const Campaign& campaign, Vec2 current) {
   SyncQueue<optional<Vec2>> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawChooseSiteMenu(returnQueue, message, campaign, current));
 }
@@ -831,13 +831,13 @@ CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, CampaignMen
   return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, state));
 }
 
-optional<UniqueEntity<Creature>::Id> WindowView::chooseCreature(const string& title,
-    const vector<PlayerInfo>& creatures, const string& cancelText) {
+optional<UniqueEntity<Creature>::Id> WindowView::chooseCreature(const TString& title,
+    const vector<PlayerInfo>& creatures, const TString& cancelText) {
   SyncQueue<optional<UniqueEntity<Creature>::Id>> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawChooseCreatureMenu(returnQueue, title, creatures, cancelText));
 }
 
-bool WindowView::creatureInfo(const string& title, bool prompt, const vector<PlayerInfo>& creatures) {
+bool WindowView::creatureInfo(const TString& title, bool prompt, const vector<PlayerInfo>& creatures) {
   SyncQueue<bool> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawCreatureInfo(returnQueue, title, prompt, creatures));
 }

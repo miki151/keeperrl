@@ -85,12 +85,12 @@ class WindowView: public View {
   virtual bool isClockStopped() override;
   virtual void continueClock() override;
   virtual void addSound(const Sound&) override;
-  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, Vec2 current) override;
+  virtual optional<Vec2> chooseSite(const TString& message, const Campaign&, Vec2 current) override;
   virtual void presentWorldmap(const Campaign&, Vec2 current) override;
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) override;
-  virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<PlayerInfo>&,
-      const string& cancelText) override;
-  virtual bool creatureInfo(const string& title, bool prompt, const vector<PlayerInfo>&) override;
+  virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const TString& title, const vector<PlayerInfo>&,
+      const TString& cancelText) override;
+  virtual bool creatureInfo(const TString& title, bool prompt, const vector<PlayerInfo>&) override;
   virtual void logMessage(const string&) override;
   virtual void setBugReportSaveCallback(BugReportSaveCallback) override;
   virtual void dungeonScreenshot(Vec2 size) override;

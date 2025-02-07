@@ -54,7 +54,7 @@ class Game : public OwnedObject<Game> {
   ContentFactory* getContentFactory();
   WarlordInfoWithReference getWarlordInfo();
   void exitAction();
-  Model* chooseSite(const string& message, Model* current) const;
+  Model* chooseSite(Model* current) const;
   void presentWorldmap();
   // if destinations are empty then creature is placed on the edge of the map
   void transferCreature(Creature*, Model* to, const vector<Position>& destinations = {});

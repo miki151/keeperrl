@@ -79,7 +79,7 @@ class WarlordController : public Player, public EventListener<WarlordController>
       if (teamInfos.size() == 1)
         newLeader = teamInfos[0].creatureId;
       else while (!newLeader) // none is returned if player pressed ESC, so just ask repeatedly
-        newLeader = getView()->chooseCreature("Choose new team leader:", teamInfos, "");
+        newLeader = getView()->chooseCreature(TStringId("CHOOSE_NEW_TEAM_LEADER"), teamInfos, TString());
       for (auto c : *team)
         if (c->getUniqueId() == *newLeader) {
           setLeader(c);

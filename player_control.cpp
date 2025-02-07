@@ -234,7 +234,8 @@ void PlayerControl::onControlledKilled(Creature* victim) {
     if (team.size() == 1)
       newLeader = team[0].creatureId;
     else if (!team.empty())
-      newLeader = getView()->chooseCreature("Choose new team leader:", team, "Order team back to base");
+      newLeader = getView()->chooseCreature(TStringId("CHOOSE_NEW_TEAM_LEADER"), team,
+          TStringId("ORDER_TEAM_BACK_TO_BASE"));
     if (newLeader) {
       if (Creature* c = getCreature(*newLeader)) {
         getTeams().setLeader(currentTeam, c);
@@ -2926,9 +2927,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
               c->getName().setFirst(*name);
             break;
           case PlayerInfo::Action::CONSUME:
-            if (auto creatureId = getView()->chooseCreature("Choose minion to absorb",
+            if (auto creatureId = getView()->chooseCreature(TStringId("CHOOSE_MINION_TO_ABSORB"),
                 getConsumptionTargets(c).transform(
-                    [&] (const Creature* c) { return PlayerInfo(c, getGame()->getContentFactory());}), "Cancel"))
+                    [&] (const Creature* c) { return PlayerInfo(c, getGame()->getContentFactory());}),
+                TStringId("CANCEL_BUTTON")))
               if (Creature* consumed = getCreature(*creatureId))
                 collective->setTask(c, Task::consume(consumed));
             break;
@@ -3294,8 +3296,9 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
       auto& factory = getGame()->getContentFactory()->getCreatures();
       vector<PCreature> allCreatures = factory.getAllCreatures().transform(
           [this, &factory](CreatureId id){ return factory.fromId(id, getTribeId()); });
-      if (auto id = getView()->chooseCreature("Choose creature to place",
-          allCreatures.transform([&](auto& c) { return PlayerInfo(c.get(), this->getGame()->getContentFactory()); }), "cancel")) {
+      if (auto id = getView()->chooseCreature(TStringId("CHOOSE_CREATURE_TO_PLACE"),
+          allCreatures.transform([&](auto& c) { return PlayerInfo(c.get(), this->getGame()->getContentFactory()); }),
+          TStringId("CANCEL_BUTTON"))) {
         for (auto& c : allCreatures)
           if (c->getUniqueId() == *id) {
             collective->addCreature(std::move(c), position, {MinionTrait::FIGHTER});
@@ -3395,7 +3398,7 @@ void PlayerControl::onSquareClick(Position pos) {
       else
         minions.back().description = TString();
     }
-    if (auto id = getView()->chooseCreature("Assign these quarters to:", minions, "Cancel"))
+    if (auto id = getView()->chooseCreature(TStringId("ASSIGN_QUARTERS_TO"), minions, TStringId("CANCEL_BUTTON")))
       if (auto c = getCreature(*id))
         collective->assignQuarters(c, pos);
   }

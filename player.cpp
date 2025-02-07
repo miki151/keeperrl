@@ -843,7 +843,7 @@ void Player::transferAction() {
   auto view = getView();
   auto game = getGame();
   auto creatures = getTeam();
-  if (auto to = game->chooseSite("Choose destination site:", creatures[0]->getLevel()->getModel())) {
+  if (auto to = game->chooseSite(creatures[0]->getLevel()->getModel())) {
     creatures = creatures.filter([&](const Creature* c) { return c->getPosition().getModel() != to; });
     vector<PlayerInfo> cant;
     vector<PlayerInfo> turnedOff;
@@ -859,9 +859,9 @@ void Player::transferAction() {
         creatures.removeElement(c);
       }
     }
-    if (!cant.empty() && !view->creatureInfo("These minions will be left behind due to sunlight. Continue?", true, cant))
+    if (!cant.empty() && !view->creatureInfo(TStringId("MINIONS_LEFT_BEHIND_SUNLIGHT"), true, cant))
       return;
-    if (!turnedOff.empty() && !view->creatureInfo("These minions will be left behind due to being turned off. Continue?", true, turnedOff))
+    if (!turnedOff.empty() && !view->creatureInfo(TStringId("MINIONS_LEFT_BEHIND_TURNED_OFF"), true, turnedOff))
       return;
     if (!creatures.empty()) {
       for (Creature* c : creatures) {
