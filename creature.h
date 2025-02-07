@@ -305,7 +305,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<AdjectiveInfo> getGoodAdjectives(const ContentFactory*) const;
   vector<AdjectiveInfo> getBadAdjectives(const ContentFactory*) const;
 
-  vector<string> popPersonalEvents();
   void addPersonalEvent(TString);
   struct CombatIntentInfo {
     enum class Type { ATTACK, CHASE, RETREAT } SERIAL(type);

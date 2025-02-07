@@ -101,14 +101,14 @@ class View {
   virtual void reset() = 0;
 
   /** Displays a splash screen in an active loop until \paramname{ready} is set to true in another thread.*/
-  virtual void displaySplash(const ProgressMeter*, const string& text,
+  virtual void displaySplash(const ProgressMeter*, const TString& text,
       function<void()> cancelFun = nullptr) = 0;
 
   virtual void clearSplash() = 0;
 
   virtual void playVideo(const string& path) = 0;
 
-  void doWithSplash(const string& text, int totalProgress,
+  void doWithSplash(const TString& text, int totalProgress,
       function<void(ProgressMeter&)> fun, function<void()> cancelFun = nullptr);
 
   /** Shutdown routine.*/

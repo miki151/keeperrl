@@ -29,7 +29,7 @@ View::View() {
 View::~View() {
 }
 
-void View::doWithSplash(const string& text, int totalProgress,
+void View::doWithSplash(const TString& text, int totalProgress,
     function<void(ProgressMeter&)> fun, function<void()> cancelFun) {
   ProgressMeter meter(1.0 / totalProgress);
   displaySplash(&meter, text, cancelFun);

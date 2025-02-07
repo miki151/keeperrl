@@ -190,7 +190,7 @@ void MainLoop::uploadFile(const FilePath& path, const string& title, const Saved
   FileSharing::CancelFlag cancel;
   optional<string> error;
   optional<string> url;
-  doWithSplash("Uploading "_s + path.getPath() + "...", 1,
+  doWithSplash(TSentence("UPLOADING", string(path.getPath())), 1,
       [&] (ProgressMeter& meter) {
         error = fileSharing->uploadSite(cancel, path, title, getOldInfo(info), meter, url);
       },
@@ -215,7 +215,7 @@ void MainLoop::saveUI(PGame& game, GameSaveType type) {
   function<void()> uploadFun = nullptr;
   if (type == GameSaveType::RETIRED_SITE) {
     int saveTime = game->getMainModel()->getSaveProgressCount();
-    doWithSplash("Retiring site...", saveTime,
+    doWithSplash(TStringId("RETIRING_SITE"), saveTime,
         [&] (ProgressMeter& meter) {
           Level::progressMeter = &meter;
           if (!game->getSavedGameInfo(tileSet->getSpriteMods()).retiredEnemyInfo)
@@ -228,7 +228,7 @@ void MainLoop::saveUI(PGame& game, GameSaveType type) {
         });
   } else {
     int saveTime = game->getSaveProgressCount();
-    doWithSplash(type == GameSaveType::AUTOSAVE ? "Autosaving" : "Saving game...", saveTime,
+    doWithSplash(type == GameSaveType::AUTOSAVE ? TStringId("AUTOSAVING") : TStringId("SAVING_GAME"), saveTime,
         [&] (ProgressMeter& meter) {
         Level::progressMeter = &meter;
         MEASURE(saveGame(game, path), "saving time")});
@@ -251,7 +251,7 @@ enum class MainLoop::ExitCondition {
 
 void MainLoop::bugReportSave(PGame& game, FilePath path) {
   int saveTime = game->getSaveProgressCount();
-  doWithSplash("Saving game...", saveTime,
+  doWithSplash(TStringId("SAVING_GAME"), saveTime,
       [&] (ProgressMeter& meter) {
       Level::progressMeter = &meter;
       MEASURE(saveGame(game, path), "saving time")});
@@ -282,7 +282,7 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
   DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
   Encyclopedia encyclopedia(game->getContentFactory());
   game->initialize(options, highscores, view, fileSharing, &encyclopedia, unlocks, steamAchievements);
-  doWithSplash("Initializing game...", game->getAllModels().size(),
+  doWithSplash(TStringId("INITIALIZING_GAME"), game->getAllModels().size(),
       [&] (ProgressMeter& meter) {
         game->initializeModels(meter);
       });
@@ -375,7 +375,7 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
       vector<FileSharing::SiteInfo> onlineSites;
       optional<string> error;
       FileSharing::CancelFlag cancel;
-      doWithSplash("Fetching list of retired dungeons from the server...", 1,
+      doWithSplash(TStringId("FETCHING_LIST_OF_RETIRED_DUNGEONS"), 1,
           [&] (ProgressMeter& progress) {
             if (auto sites = fileSharing->listSites(cancel, progress))
               onlineSites = *sites;
@@ -623,7 +623,7 @@ vector<ModInfo> MainLoop::getAllMods(const vector<ModInfo>& onlineMods) {
 void MainLoop::downloadMod(ModInfo& mod) {
   optional<string> error;
   FileSharing::CancelFlag cancel;
-  doWithSplash("Downloading mod \"" + mod.name + "\"...", 1,
+  doWithSplash(TSentence("DOWNLOADING", mod.name), 1,
       [&] (ProgressMeter& meter) {
         modsDir.createIfDoesntExist();
         error = fileSharing->downloadMod(cancel, mod.name, mod.versionInfo.steamId, modsDir, meter);
@@ -649,7 +649,7 @@ void MainLoop::uploadMod(ModInfo& mod) {
   }
   FileSharing::CancelFlag cancel;
   optional<string> error;
-  doWithSplash("Uploading mod \"" + mod.name + "\"...", 1,
+  doWithSplash(TSentence("UPLOADING", mod.name), 1,
       [&] (ProgressMeter& meter) {
         error = fileSharing->uploadMod(cancel, mod, modsDir, meter);
         updateLocalModVersion(mod.name, mod.versionInfo);
@@ -683,7 +683,7 @@ vector<ModInfo> MainLoop::getOnlineMods() {
   vector<ModInfo> ret;
   optional<string> error;
   FileSharing::CancelFlag cancel;
-  doWithSplash( "Downloading list of online mods...", 1,
+  doWithSplash(TStringId("FETCHING_LIST_OF_ONLINE_MODS"), 1,
       [&] (ProgressMeter& meter) {
         if (auto mods = fileSharing->getOnlineMods(cancel, meter))
           ret = *mods;
@@ -1049,7 +1049,7 @@ void MainLoop::start(bool tilesPresent) {
   }
 }
 
-void MainLoop::doWithSplash(const string& text, int totalProgress,
+void MainLoop::doWithSplash(const TString& text, int totalProgress,
     function<void(ProgressMeter&)> fun, function<void()> cancelFun) {
   if (useSingleThread()) {
     ProgressMeter meter(1.0 / totalProgress);
@@ -1058,7 +1058,7 @@ void MainLoop::doWithSplash(const string& text, int totalProgress,
     view->doWithSplash(text, totalProgress, std::move(fun), std::move(cancelFun));
 }
 
-void MainLoop::doWithSplash(const string& text, function<void()> fun, function<void()> cancelFun) {
+void MainLoop::doWithSplash(const TString& text, function<void()> fun, function<void()> cancelFun) {
   if (useSingleThread())
     fun();
   else {
@@ -1285,7 +1285,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
   int numSites = setup.campaign.getNumNonEmpty();
   vector<ContentFactory> factories;
   int numRetiredVillains = 0;
-  doWithSplash("Generating map...", numSites,
+  doWithSplash(TStringId("GENERATING_MAP"), numSites,
       [&] (ProgressMeter& meter) {
         for (Vec2 v : sites.getBounds()) {
           if (!sites[v].isEmpty())
@@ -1337,7 +1337,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
 PGame MainLoop::loadGame(const FilePath& file, const string& name) {
   optional<PGame> game;
   if (auto info = loadSavedGameInfo(file))
-    doWithSplash("Loading "_s + name + ".", info->progressCount,
+    doWithSplash(TSentence("LOADING_GAME", name), info->progressCount,
         [&] (ProgressMeter& meter) {
           Level::progressMeter = &meter;
           INFO << "Loading from " << file;
@@ -1350,7 +1350,7 @@ PGame MainLoop::loadGame(const FilePath& file, const string& name) {
 bool MainLoop::downloadGame(const SaveFileInfo& file) {
   FileSharing::CancelFlag cancel;
   optional<string> error;
-  doWithSplash("Downloading " + file.filename + "...", 1,
+  doWithSplash(TSentence("DOWNLOADING", file.filename), 1,
       [&] (ProgressMeter& meter) {
         error = fileSharing->downloadSite(cancel, file, userPath, meter);
       },

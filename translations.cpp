@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "translations.h"
 #include "pretty_archive.h"
+#include "file_path.h"
+#include "pretty_printing.h"
 
 string Translations::get(const string& language, const TString& s) const {
   return s.text.visit(
@@ -71,11 +73,21 @@ string Translations::get(const string& language, const TSentence& s) const {
   }
 }
 
-void Translations::serialize(PrettyInputArchive& ar, const unsigned int version) {
-  HashMap<string, map<PrimaryId<TStringId>, string>> tmp;
-  ar(tmp);
-  for (auto& elem : tmp)
-    strings[elem.first] = convertKeysHash(elem.second);
+optional<string> Translations::addLanguage(string name, FilePath path) {
+  Dictionary dict;
+  auto res = PrettyPrinting::parseObject(dict, {*path.readContents()}, {string(path.getPath())});
+  if (!res)
+    strings.insert(make_pair(std::move(name), std::move(dict)));
+  return res;
+}
+
+void Translations::loadFromDir(DirectoryPath dir) {
+  for (auto file : dir.getFiles())
+    if (file.hasSuffix(".txt")) {
+      auto error = addLanguage(file.changeSuffix(".txt", "").getFileName(), file);
+      if (error)
+        USER_FATAL << *error;
+    }
 }
 
 vector<string> Translations::getLanguages() const {

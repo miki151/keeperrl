@@ -33,6 +33,7 @@ class TribeId;
 struct RetiredModelInfo;
 class Unlocks;
 class SteamAchievements;
+class TString;
 
 class MainLoop {
   public:
@@ -59,10 +60,10 @@ class MainLoop {
   void saveUI(PGame&, GameSaveType type);
   vector<SaveFileInfo> getSaveOptions(const vector<GameSaveType>&);
 
-  void doWithSplash(const string& text, int totalProgress, function<void(ProgressMeter&)> fun,
+  void doWithSplash(const TString& text, int totalProgress, function<void(ProgressMeter&)> fun,
     function<void()> cancelFun = nullptr);
 
-  void doWithSplash(const string& text, function<void()> fun, function<void()> cancelFun = nullptr);
+  void doWithSplash(const TString& text, function<void()> fun, function<void()> cancelFun = nullptr);
 
   PGame prepareCampaign(RandomGen&);
   PGame prepareWarlord(const SaveFileInfo&);

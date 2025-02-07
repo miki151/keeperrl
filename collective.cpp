@@ -1444,7 +1444,7 @@ void Collective::handleSurprise(Position pos) {
             break;
           }
       }
-  pos.globalMessage(TStringId("SURPRISE"));
+  pos.globalMessage(TStringId("SURPRISE_EXCLAMATION"));
 }
 
 void Collective::retire() {

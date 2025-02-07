@@ -55,7 +55,7 @@ class WindowView: public View {
   WindowView(ViewParams);
   virtual void initialize(unique_ptr<fx::FXRenderer>, unique_ptr<FXViewManager>) override;
   virtual void reset() override;
-  virtual void displaySplash(const ProgressMeter*, const string&, function<void()> cancelFun) override;
+  virtual void displaySplash(const ProgressMeter*, const TString&, function<void()> cancelFun) override;
   virtual void clearSplash() override;
   virtual void playVideo(const string& path) override;
 

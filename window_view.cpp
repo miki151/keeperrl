@@ -235,7 +235,7 @@ void WindowView::getSmallSplash(const ProgressMeter* meter, const TString& text,
   }
 }
 
-void WindowView::displaySplash(const ProgressMeter* meter, const string& text, function<void()> cancelFun) {
+void WindowView::displaySplash(const ProgressMeter* meter, const TString& text, function<void()> cancelFun) {
   mapGui->releaseMouseHeld();
   inputQueue.push(UserInputId::RECT_CANCEL);
   splashDone = false;
@@ -998,7 +998,7 @@ bool WindowView::considerBugReportEvent(const Event& event) {
       ProgressMeter meter(1.0);
       optional<string> result;
       FileSharing::CancelFlag cancel;
-      displaySplash(&meter, "Uploading bug report", [&cancel]{ cancel.cancel(); });
+      displaySplash(&meter, TStringId("UPLOADING_BUG_REPORT"), [&cancel]{ cancel.cancel(); });
       thread t([&] {
         result = bugreportSharing->uploadBugReport(cancel, bugreportInfo->text, savefile, screenshot, meter);
         clearSplash();

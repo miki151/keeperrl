@@ -3318,9 +3318,7 @@ string GuiFactory::translate(const TSentence& s) {
 }
 
 void GuiFactory::reloadTranslations() {
-  GameConfig gameConfig({freeDataPath.subdirectory("game_config")});
-  while (auto error = gameConfig.readObject(*translations, GameConfigId::TRANSLATIONS, nullptr))
-    USER_INFO << *error;
+  translations->loadFromDir(freeDataPath.subdirectory("game_config").subdirectory("translations"));
 }
 
 void GuiFactory::propagateScrollEvent(const vector<SGuiElem>& guiElems) {

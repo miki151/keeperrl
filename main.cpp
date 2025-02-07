@@ -452,9 +452,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   showLogoSplash(renderer, freeDataPath.file("images/succubi.png"), splashDone);
   loadThread.join();
   Translations translations;
-  GameConfig gameConfig({freeDataPath.subdirectory("game_config")});
-  if (auto error = gameConfig.readObject(translations, GameConfigId::TRANSLATIONS, nullptr))
-    USER_FATAL << *error;
+  translations.loadFromDir(freeDataPath.subdirectory("game_config").subdirectory("translations"));
   options.setChoices(OptionId::LANGUAGE, translations.getLanguages());
   GuiFactory guiFactory(renderer, &clock, &options, &translations, soundLibrary, freeDataPath);
   TileSet tileSet(paidDataPath.subdirectory("images"), modsDir, freeDataPath.subdirectory("ui"));

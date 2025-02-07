@@ -849,7 +849,7 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
   auto gameId = getGameOrRetiredIdentifier(pos);
   auto boardId = int(combineHash(pos.getCoord(), pos.getLevel()->getUniqueId(), gameId));
   FileSharing::CancelFlag cancel;
-  view->displaySplash(nullptr, "Fetching board contents...", [&] {
+  view->displaySplash(nullptr, TStringId("FETCHING_BOARD_CONTENTS"), [&] {
     cancel.cancel();
   });
   vector<FileSharing::BoardMessage> messages;
