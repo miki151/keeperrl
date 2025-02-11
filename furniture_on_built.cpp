@@ -149,7 +149,7 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
           }
       break;
     case FurnitureOnBuilt::SET_ON_FIRE:
-      pos.globalMessage(PlayerMessage("A tower of flame errupts from the floor!", MessagePriority::HIGH));
+      pos.globalMessage(PlayerMessage(TStringId("FIRE_SPELL_MESSAGE"), MessagePriority::HIGH));
       f->fireDamage(pos, false);
       break;
     case FurnitureOnBuilt::SAINT_STATUE: {

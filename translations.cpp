@@ -112,7 +112,6 @@ string Translations::get(const string& language, const TSentence& s, vector<stri
         } else {
           endArg = getLastLetter(sentence, i + 1);
           string id = sentence.substr(i + 1, endArg - i);
-          std::cout << "Internal id " << id << std::endl;
           argument = TStringId(id.data());
         }
         auto newForms = form;

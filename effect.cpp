@@ -1972,10 +1972,10 @@ static bool applyToCreature(const Effects::DoubleTrouble&, Creature* c, Creature
   auto cRef = Effect::summonCreatures(c->getPosition(), makeVec(std::move(copy)));
   if (!cRef.empty()) {
     cRef[0]->addEffect(LastingEffect::SUMMONED, ttl, false);
-    c->message(::PlayerMessage("Double trouble!", MessagePriority::HIGH));
+    c->message(::PlayerMessage(TStringId("DOUBLE_TROUBLE_MESSAGE"), MessagePriority::HIGH));
     return true;
   } else {
-    c->message(::PlayerMessage("The spell failed!", MessagePriority::HIGH));
+    c->message(::PlayerMessage(TStringId("THE_SPELL_FAILED"), MessagePriority::HIGH));
     return false;
   }
 }
@@ -2295,7 +2295,7 @@ static bool apply(const Effects::Audience& a, Position pos, Creature* attacker) 
           get(attacker->getAttributes().getGender(), TStringId("SIRE"), TStringId("DAME"), TStringId("SIRE"))),
               MessagePriority::HIGH));
     else
-      pos.globalMessage(PlayerMessage("The audience has been summoned"_s, MessagePriority::HIGH));
+      pos.globalMessage(PlayerMessage(TStringId("AUDIENCE_SUMMONED"), MessagePriority::HIGH));
     return true;
   }
   pos.globalMessage(TStringId("NOTHING_HAPPENS"));

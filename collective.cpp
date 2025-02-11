@@ -551,7 +551,7 @@ void Collective::considerRebellion() {
       c->removeEffect(LastingEffect::TIED_UP);
       c->toggleCaptureOrder();
     }
-    control->addMessage(PlayerMessage("Prisoners escaping!", MessagePriority::CRITICAL));
+    control->addMessage(PlayerMessage(TStringId("PRISONERS_ESCAPING"), MessagePriority::CRITICAL));
   }
 }
 
@@ -768,7 +768,7 @@ void Collective::onEvent(const GameEvent& event) {
         static const auto alarmTime = 100_visible;
         if (getTerritory().contains(info.pos)) {
           if (!info.silent)
-            control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(info.pos));
+            control->addMessage(PlayerMessage(TStringId("ALARM_GOES_OFF"), MessagePriority::HIGH).setPosition(info.pos));
           alarmInfo = AlarmInfo {getGlobalTime() + alarmTime, info.pos };
           for (Creature* c : byTrait[MinionTrait::FIGHTER])
             if (c->isAffected(LastingEffect::SLEEP))

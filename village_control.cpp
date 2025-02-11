@@ -123,7 +123,7 @@ void VillageControl::onEvent(const GameEvent& event) {
             && getEnemyCollective()
             && getEnemyCollective()->getCreatures().contains(info.creature)) {
           if (stolenItemCount == 0)
-            info.creature->privateMessage(PlayerMessage("You are going to regret this", MessagePriority::HIGH));
+            info.creature->privateMessage(PlayerMessage(TStringId("YOU_ARE_GOING_TO_REGRET"), MessagePriority::HIGH));
           ++stolenItemCount;
         }
       },
@@ -148,7 +148,7 @@ void VillageControl::onEvent(const GameEvent& event) {
         if (numStolen > 0 && collective->getTerritory().contains(info.creature->getPosition()) &&
             !collective->isConquered() && (!getEnemyCollective()
               || getEnemyCollective()->getCreatures().contains(info.creature))) {
-          info.creature->privateMessage(PlayerMessage("You are going to regret this", MessagePriority::HIGH));
+          info.creature->privateMessage(PlayerMessage(TStringId("YOU_ARE_GOING_TO_REGRET"), MessagePriority::HIGH));
           stolenItemCount += numStolen;
           collective->getTribe()->onItemsStolen(info.creature);
         }

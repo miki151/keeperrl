@@ -2130,7 +2130,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
             collective->addRecordedEvent(TSentence("THE_CONQUERING_OF", name->full));
             addWindowMessage(ViewIdList{name->viewId}, TSentence("TRIBE_OF_IS_DESTROYED", name->full));
           } else
-            addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
+            addMessage(PlayerMessage(TStringId("UNNAMED_TRIBE_DESTROYED"), MessagePriority::CRITICAL));
           collective->getDungeonLevel().onKilledVillain(col->getVillainType());
         }
         for (auto pos : col->getTerritory().getPillagePositions())

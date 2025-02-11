@@ -995,7 +995,7 @@ bool Creature::addPermanentEffect(LastingEffect effect, int count, bool msg, con
     if (!was && attributes->isAffectedPermanently(effect)) {
       LastingEffects::onAffected(this, effect, msg);
       if (msg)
-        message(PlayerMessage("The effect is permanent", MessagePriority::HIGH));
+        message(PlayerMessage(TStringId("EFFECT_IS_PERMANENT"), MessagePriority::HIGH));
       if (auto g = getGame())
         updateViewObject(g->getContentFactory());
       return true;

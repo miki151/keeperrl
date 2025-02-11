@@ -871,9 +871,9 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
         }
       }
       if (isBigDanger)
-        c->privateMessage(PlayerMessage("You sense big danger!", MessagePriority::HIGH));
+        c->privateMessage(PlayerMessage(TStringId("YOU_SENSE_BIG_DANGER"), MessagePriority::HIGH));
       else if (isDanger)
-        c->privateMessage(PlayerMessage("You sense danger!", MessagePriority::HIGH));
+        c->privateMessage(PlayerMessage(TStringId("YOU_SENSE_DANGER"), MessagePriority::HIGH));
       break;
     }
     case LastingEffect::SUNLIGHT_VULNERABLE:

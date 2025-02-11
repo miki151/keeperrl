@@ -1929,7 +1929,7 @@ class DuelTask : public Task {
   virtual MoveInfo getMove(Creature* c) override {
     auto keeper = target->getLeaders()[0];
     if (maxShowTime && *c->getGlobalTime() > *maxShowTime) {
-      target->getControl()->addMessage(PlayerMessage("You are a coward!", MessagePriority::CRITICAL));
+      target->getControl()->addMessage(PlayerMessage(TStringId("YOU_ARE_A_COWARD"), MessagePriority::CRITICAL));
       attacker->getConfig().setConquerCondition(ConquerCondition::KILL_FIGHTERS_AND_LEADER);
       *duelState = DuelState::CANCELLED;
       maxShowTime = none;

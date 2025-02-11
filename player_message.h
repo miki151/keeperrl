@@ -15,6 +15,7 @@ class PlayerMessage : public UniqueEntity<PlayerMessage> {
   PlayerMessage(const TString&, MessagePriority = MessagePriority::NORMAL);
   PlayerMessage(const TSentence&, MessagePriority = MessagePriority::NORMAL);
   PlayerMessage(const TStringId&, MessagePriority = MessagePriority::NORMAL);
+  PlayerMessage(const char*, MessagePriority = MessagePriority::NORMAL) = delete;
 
   static void presentMessages(View*, const vector<PlayerMessage>&);
 
