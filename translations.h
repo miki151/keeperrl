@@ -10,13 +10,21 @@ class FilePath;
 class Translations {
   public:
   void loadFromDir(DirectoryPath);
-  string get(const string& language, const TString&) const;
-  string get(const string& language, const TSentence&) const;
+  string get(const string& language, const TString&, vector<string> form = {}) const;
+  string get(const string& language, const TSentence&, vector<string> form = {}) const;
   vector<string> getLanguages() const;
 
   private:
 
   optional<string> addLanguage(string name, FilePath);
-  using Dictionary = HashMap<TStringId, string>;
+  const vector<string>& getTags(const string& language, const TString&) const;
+  struct TranslationInfo {
+    string primary;
+    vector<string> tags;
+    vector<vector<string>> otherForms;
+    string getBestForm(const vector<string>& form) const;
+    void serialize(PrettyInputArchive&);
+  };
+  using Dictionary = HashMap<TStringId, TranslationInfo>;
   HashMap<string, Dictionary> SERIAL(strings);
 };

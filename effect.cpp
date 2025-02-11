@@ -1399,14 +1399,14 @@ static bool applyToCreature(const Effects::AddBodyPart& p, Creature* c, Creature
 
 static TString getName(const Effects::AddBodyPart& e, const ContentFactory*) {
   if (e.count > 1)
-    return TSentence("EXTRA_BODY_PARTS_EFFECT_NAME", ::getPlural(e.part));
+    return TSentence("EXTRA_BODY_PARTS_EFFECT_NAME", makePlural(::getName(e.part)));
   else
     return TSentence("EXTRA_BODY_PART_EFFECT_NAME", ::getName(e.part));
 }
 
 static TString getDescription(const Effects::AddBodyPart& e, const ContentFactory*) {
   if (e.count > 1)
-    return TSentence("EXTRA_BODY_PARTS_EFFECT_DESCRIPTION", ::getPlural(e.part));
+    return TSentence("EXTRA_BODY_PARTS_EFFECT_DESCRIPTION", makePlural(::getName(e.part)));
   else
     return TSentence("EXTRA_BODY_PART_EFFECT_DESCRIPTION", ::getName(e.part));
 }

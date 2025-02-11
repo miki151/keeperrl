@@ -198,6 +198,10 @@ TString capitalFirst(TString s) {
   return TSentence("CAPITAL_FIRST", std::move(s));
 }
 
+TString makePlural(TString s) {
+  return TSentence("MAKE_PLURAL", std::move(s));
+}
+
 TString combineWithAnd(vector<TString> v) {
   if (v.empty())
     return TString();

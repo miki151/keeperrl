@@ -13,5 +13,4 @@ RICH_ENUM(BodyPart,
 
 class TString;
 extern TString getName(BodyPart);
-extern TString getPlural(BodyPart);
 extern TString getPluralText(BodyPart, int num);

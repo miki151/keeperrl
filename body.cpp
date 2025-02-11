@@ -327,9 +327,9 @@ bool Body::healBodyParts(Creature* creature, int max) {
     if (int count = numInjured(part)) {
       result = true;
       count = min(max, count);
-      creature->you(MsgType::YOUR, count > 1
+      creature->you(MsgType::YOUR, count == 1
           ? TSentence("BODY_PART_IS_IN_BETTER_SHAPE", getName(part))
-          : TSentence("BODY_PARTS_ARE_IN_BETTER_SHAPE", getPlural(part)));
+          : TSentence("BODY_PARTS_ARE_IN_BETTER_SHAPE", makePlural(getName(part))));
       clearInjured(part, count);
       updateEffects(part, count);
       max -= count;
@@ -339,9 +339,9 @@ bool Body::healBodyParts(Creature* creature, int max) {
     if (int count = numLost(part)) {
       result = true;
       count = min(max, count);
-      creature->you(MsgType::YOUR, count > 1
+      creature->you(MsgType::YOUR, count == 1
           ? TSentence("BODY_PART_GROWS_BACK", getName(part))
-          : TSentence("BODY_PARTS_GROW_BACK", getPlural(part)));
+          : TSentence("BODY_PARTS_GROW_BACK", makePlural(getName(part))));
       clearLost(part, count);
       updateEffects(part, count);
       max -= count;
@@ -431,7 +431,7 @@ void Body::consumeBodyParts(Creature* c, Body& other, vector<TString>& adjective
     int cnt = other.bodyParts[part] - bodyParts[part];
     if (cnt > 0) {
       if (cnt > 1) {
-        auto what = getPlural(part);
+        auto what = makePlural(getName(part));
         c->verb(TStringId("YOU_GROW_LIMBS"), TStringId("GROWS_LIMBS"), what);
         c->addPersonalEvent(TSentence("GROWS_LIMBS", c->getName().the(), what));
       } else {

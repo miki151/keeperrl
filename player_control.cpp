@@ -1765,7 +1765,7 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
         if (part.count == 1)
           return TraitInfo{TSentence("EXTRA_BODY_PART", getName(part.part)), false};
         else
-          return TraitInfo{TSentence("EXTRA_BODY_PARTS", toString(part.count), getPlural(part.part)), false};
+          return TraitInfo{TSentence("EXTRA_BODY_PARTS", toString(part.count), makePlural(getName(part.part))), false};
       },
       [&] (const ExtraIntrinsicAttack& a) {
         return TraitInfo{TSentence("CAPITAL_FIRST", a.item.get(factory)->getName()), false};
