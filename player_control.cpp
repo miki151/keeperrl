@@ -3571,7 +3571,7 @@ void PlayerControl::checkKeeperDanger() {
       return;
   for (auto keeper : collective->getLeaders()) {
     auto prompt = [&] (TSentence reason) {
-      reason.params.push_back(collective->getLeaders().size() > 1 ? keeper->getName().a() : TStringId("THE_KEEPER"));
+      reason.params.push_back(collective->getLeaders().size() > 1 ? keeper->getName().a() : keeper->getName().the());
       auto res = getView()->multiChoice(
           TSentence("CAPITAL_FIRST", std::move(reason)),
           {TStringId("TAKE_CONTROL"), TStringId("DISMISS_FOR_200_TURNS"), TStringId("DISMISS_AND_DONT_ASK_AGAIN")});

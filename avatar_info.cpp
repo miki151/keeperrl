@@ -206,7 +206,8 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
         auto& creatureInfo = keeperCreatureInfos[keeperBase].second;
         if (!creatureInfo.noLeader) {
           if (creatureInfo.baseName != TStringId("ADVENTURER")) {
-            keeper->getName().setBare(TStringId("KEEPER"));
+            keeper->getName().setBare(get(keeper->getAttributes().getGender(), TStringId("KEEPER"),
+                TStringId("KEEPER_F"), TStringId("KEEPER")));
             keeper->getName().useFullTitle();
           }
           keeper->getName().setFirst(getKeeperName());
