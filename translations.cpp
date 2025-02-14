@@ -124,8 +124,8 @@ string Translations::get(const string& language, const TSentence& s, vector<stri
             variableLength = 4 + endArg - i;
           } else
           do {
-            int endForm = getLastLetter(sentence, i + 3);
-            newForms.push_back(sentence.substr(i + 3, endForm - i - 2));
+            int endForm = getLastLetter(sentence, i + variableLength);
+            newForms.push_back(sentence.substr(i + variableLength, endForm - i - variableLength + 1));
             variableLength = endForm - i + 2;
           } while (sentence[i + variableLength - 1] == ',');
         }
