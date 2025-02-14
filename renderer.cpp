@@ -15,6 +15,7 @@
 
 #include "stdafx.h"
 #include "dirent.h"
+#include <cuchar>
 #include "extern/lodepng.h"
 
 #include "renderer.h"
@@ -101,74 +102,106 @@ int Renderer::getTextLength(const string& s, int size, FontId font) {
   return getTextSize(s, size, font).x;
 }
 
-static optional<int> getMapFontOffset(char c) {
+static optional<Vec2> getMapFontOffset(char32_t c) {
   switch (c) {
-    case 'A': return 0;
-    case 'B': return 14;
-    case 'C': return 28;
-    case 'D': return 42;
-    case 'E': return 56;
-    case 'F': return 70;
-    case 'G': return 84;
-    case 'H': return 98;
-    case 'I': return 112;
-    case 'J': return 122;
-    case 'K': return 136;
-    case 'L': return 150;
-    case 'M': return 162;
-    case 'N': return 180;
-    case 'O': return 194;
-    case 'P': return 208;
-    case 'Q': return 222;
-    case 'R': return 236;
-    case 'S': return 250;
-    case 'T': return 264;
-    case 'U': return 278;
-    case 'V': return 292;
-    case 'W': return 306;
-    case 'X': return 324;
-    case 'Y': return 338;
-    case 'Z': return 352;
-    case 'a': return 366;
-    case 'b': return 378;
-    case 'c': return 390;
-    case 'd': return 400;
-    case 'e': return 412;
-    case 'f': return 424;
-    case 'g': return 434;
-    case 'h': return 446;
-    case 'i': return 458;
-    case 'j': return 464;
-    case 'k': return 472;
-    case 'l': return 484;
-    case 'm': return 490;
-    case 'n': return 508;
-    case 'o': return 520;
-    case 'p': return 532;
-    case 'q': return 544;
-    case 'r': return 556;
-    case 's': return 566;
-    case 't': return 578;
-    case 'u': return 588;
-    case 'v': return 600;
-    case 'w': return 612;
-    case 'x': return 626;
-    case 'y': return 638;
-    case 'z': return 650;
-    case 'z' + 1: return 660;
+    case U'A': return Vec2(0, 0);
+    case U'B': return Vec2(14, 0);
+    case U'C': return Vec2(28, 0);
+    case U'D': return Vec2(42, 0);
+    case U'E': return Vec2(56, 0);
+    case U'F': return Vec2(70, 0);
+    case U'G': return Vec2(84, 0);
+    case U'H': return Vec2(98, 0);
+    case U'I': return Vec2(112, 0);
+    case U'J': return Vec2(122, 0);
+    case U'K': return Vec2(136, 0);
+    case U'L': return Vec2(150, 0);
+    case U'M': return Vec2(162, 0);
+    case U'N': return Vec2(180, 0);
+    case U'O': return Vec2(194, 0);
+    case U'P': return Vec2(208, 0);
+    case U'Q': return Vec2(222, 0);
+    case U'R': return Vec2(236, 0);
+    case U'S': return Vec2(250, 0);
+    case U'T': return Vec2(264, 0);
+    case U'U': return Vec2(278, 0);
+    case U'V': return Vec2(292, 0);
+    case U'W': return Vec2(306, 0);
+    case U'X': return Vec2(324, 0);
+    case U'Y': return Vec2(338, 0);
+    case U'Z': return Vec2(352, 0);
+    case U'a': return Vec2(366, 0);
+    case U'b': return Vec2(378, 0);
+    case U'c': return Vec2(390, 0);
+    case U'd': return Vec2(400, 0);
+    case U'e': return Vec2(412, 0);
+    case U'f': return Vec2(424, 0);
+    case U'g': return Vec2(434, 0);
+    case U'h': return Vec2(446, 0);
+    case U'i': return Vec2(458, 0);
+    case U'j': return Vec2(464, 0);
+    case U'k': return Vec2(472, 0);
+    case U'l': return Vec2(484, 0);
+    case U'm': return Vec2(490, 0);
+    case U'n': return Vec2(508, 0);
+    case U'o': return Vec2(520, 0);
+    case U'p': return Vec2(532, 0);
+    case U'q': return Vec2(544, 0);
+    case U'r': return Vec2(556, 0);
+    case U's': return Vec2(566, 0);
+    case U't': return Vec2(578, 0);
+    case U'u': return Vec2(588, 0);
+    case U'v': return Vec2(600, 0);
+    case U'w': return Vec2(612, 0);
+    case U'x': return Vec2(626, 0);
+    case U'y': return Vec2(638, 0);
+    case U'z': return Vec2(650, 0);
+    case U'z' + 1: return Vec2(660, 0);
+    case U'Ć': return Vec2(0, 28);
+    case U'Ź': return Vec2(14, 28);
+    case U'Ż': return Vec2(28, 28);
+    case U'Ł': return Vec2(42, 28);
+    case U'Ó': return Vec2(56, 28);
+    case U'Ś': return Vec2(70, 28);
+    case U'ą': return Vec2(366, 28);
+    case U'ć': return Vec2(378, 28);
+    case U'ę': return Vec2(388, 28);
+    case U'ł': return Vec2(400, 28);
+    case U'ń': return Vec2(410, 28);
+    case U'ó': return Vec2(422, 28);
+    case U'ś': return Vec2(434, 28);
+    case U'ż': return Vec2(446, 28);
+    case U'ź': return Vec2(456, 28);
   }
   return none;
 }
 
-static optional<int> getMapFontWidth(char c) {
-  if (c == ' ')
+static optional<int> getMapFontWidth(char32_t c) {
+  if (c == U' ')
     return 8;
   if (c >= 'A' && c <= 'Y')
-    return *getMapFontOffset(c + 1) - *getMapFontOffset(c);
+    return getMapFontOffset(c + 1)->x - getMapFontOffset(c)->x;
   if (c == 'Z')
-    return *getMapFontOffset('a') - *getMapFontOffset(c);
+    return getMapFontOffset('a')->x - getMapFontOffset(c)->x;
   if (c >= 'a' && c <= 'z')
-    return *getMapFontOffset(c + 1) - *getMapFontOffset(c);
+    return getMapFontOffset(c + 1)->x - getMapFontOffset(c)->x;
+  switch (c) {
+     case U'Ć':
+     case U'Ź':
+     case U'Ż':
+     case U'Ł':
+     case U'Ó':
+     case U'Ś': return 14;
+     case U'ą': return 12;
+     case U'ć': return 10;
+     case U'ę': return 12;
+     case U'ł': return 10;
+     case U'ń': return 12;
+     case U'ó': return 12;
+     case U'ś': return 12;
+     case U'ż': return 10;
+     case U'ź': return 10;
+   }
   return none;
 }
 
@@ -204,10 +237,13 @@ int Renderer::getFont(FontId id) {
 void Renderer::drawText(FontId id, int size, Color color, Vec2 pos, const string& s, CenterType center) {
   renderDeferredSprites();
   if (id == FontId::MAP_FONT) {
-    for (auto c : s) {
-      if (auto offset = getMapFontOffset(c))
-        drawSprite(pos, Vec2(*offset, 0), Vec2(*getMapFontWidth(c), 22), *mapFontTexture, none, color);
-      if (auto width = getMapFontWidth(c))
+    std::mbstate_t state{};
+    char32_t c32;
+    for (int i = 0; i < s.size();) {
+      i += std::mbrtoc32(&c32, &s[i], s.size() - i, &state);
+      if (auto offset = getMapFontOffset(c32))
+        drawSprite(pos, *offset, Vec2(*getMapFontWidth(c32), 28), *mapFontTexture, none, color);
+      if (auto width = getMapFontWidth(c32))
         pos.x += *width - 2;
     }
     return;

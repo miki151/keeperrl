@@ -171,6 +171,7 @@ void onException() {
 }
 
 int main(int argc, char* argv[]) {
+  std::setlocale(LC_ALL, "en_US.utf8");
   po::parser flags = getCommandLineFlags();
   if (!flags.parseArgs(argc, argv))
     return -1;
