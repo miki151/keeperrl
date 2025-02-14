@@ -941,7 +941,7 @@ static Color getNextWaveColor(const CollectiveInfo::NextWave& info) {
 SGuiElem GuiBuilder::drawNextWaveOverlay(const CollectiveInfo::NextWave& info) {
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElem(WL(label, capitalFirst(info.attacker)));
-  lines.addElem(WL(label, "Attacking in " + toString(info.numTurns.getVisibleInt()) + " turns!",
+  lines.addElem(WL(label, TSentence("ATTACKING_IN", toString(info.numTurns.getVisibleInt())),
       getNextWaveColor(info)));
   lines.addElemAuto(getVillainDismissHint(none));
   return WL(miniWindow, WL(margins, lines.buildVerticalList(), 15));
@@ -2010,8 +2010,8 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) 
     double totWeight = 0;
     for (auto& item : info.inventory)
       totWeight += item.weight.value_or(0) * item.number;
-    list.addElem(WL(label, "Total weight: " + getWeightString(totWeight)));
-    list.addElem(WL(label, "Capacity: " +  (info.carryLimit ? getWeightString(*info.carryLimit) : "infinite"_s)));
+    list.addElem(WL(label, TSentence("TOTAL_WEIGHT_LABEL", getWeightString(totWeight))));
+    list.addElem(WL(label, TSentence("CAPACITY_LABEL", info.carryLimit ? getWeightString(*info.carryLimit) : "infinite"_s)));
     list.addSpace();
   } else if (withKeys && !!inventoryIndex) {
     inventoryIndex = none;
@@ -2964,10 +2964,10 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
       .addSpace(4)
       .addElemAuto(WL(label, collectiveInfo.avatarLevelInfo.title))
       .buildHorizontalList()));
-  lines.addElem(WL(label, "Level " + toString(collectiveInfo.avatarLevelInfo.level)));
+  lines.addElem(WL(label, TSentence("RESEARCH_LEVEL", toString(collectiveInfo.avatarLevelInfo.level))));
   lines.addElem(WL(stack,
       WL(margins, WL(progressBar, Color::DARK_GREEN.transparency(128), collectiveInfo.avatarLevelInfo.progress), -4, 0, -1, 6),
-      WL(label, "Next level progress: " + toString(info.currentProgress) + "/" + toString(info.totalProgress))
+      WL(label, TSentence("NEXT_LEVEL_PROGRESS", toString(info.currentProgress), toString(info.totalProgress)))
   ));
   //lines.addElem(WL(rightMargin, rightElemMargin, WL(alignment, GuiFactory::Alignment::RIGHT, drawCost(info.resource))));
   if (info.warning)
@@ -3523,7 +3523,7 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
       lines.addElemAuto(drawLyingItemsList(TStringId("LYING_HERE_LABEL"), index->getItemCounts(), 250));
     }
     if (highlighted.tilePos)
-      lines.addElem(WL(label, "Position: " + toString(*highlighted.tilePos)));
+      lines.addElem(WL(label, TSentence("GRID_POSITION", toString(*highlighted.tilePos))));
   }
   if (!lines.isEmpty())
     allElems.push_back(WL(margins, WL(translucentBackgroundWithBorderPassMouse,
@@ -4836,7 +4836,7 @@ pair<GuiFactory::ListBuilder, vector<SGuiElem>> GuiBuilder::drawRetiredGames(Ret
           WL(label, TSentence("DUNGEON_CONQUER_RATE", toString(allGames[i].numWon) + "/" + toString(allGames[i].numTotal)),
               Renderer::smallTextSize(), gui.inactiveText)));
       if (allGames[i].isFriend) {
-        detailsList.addBackElemAuto(WL(label, "By your friend " + allGames[i].author, Renderer::smallTextSize(), Color::PINK));
+        detailsList.addBackElemAuto(WL(label, TSentence("MOD_MADE_BY_STEAM_FRIEND", allGames[i].author), Renderer::smallTextSize(), Color::PINK));
         detailsList.addBackSpace(10);
       }
       if (!detailsList.isEmpty())
