@@ -233,7 +233,7 @@ TString combineWithNewLine(vector<TString> v) {
     return TString();
   if (v.size() == 1)
     return std::move(v[0]);
-  return TSentence("NEW_LINE", std::move(v[0]), combineWithAnd(v.getSuffix(v.size() - 1)));
+  return TSentence("NEW_LINE", std::move(v[0]), combineWithNewLine(v.getSuffix(v.size() - 1)));
 }
 
 TString combineWithOr(vector<TString> v) {

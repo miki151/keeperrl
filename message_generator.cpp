@@ -27,15 +27,15 @@ static void addThird(const Creature* c, MsgType type, vector<TString> param) {
         if (!param.empty())
           return TSentence("FALLS_ASLEEP_IN", param);
         else
-          return TSentence("FALLS_ASLEEP");
+          return TSentence("FALLS_ASLEEP", param);
       case MsgType::WAKE_UP: return TSentence("WAKES_UP", param);
       case MsgType::DIE:
         if (c->isAffected(LastingEffect::FROZEN))
           return TSentence("SHATTERS", param);
         else
           return TSentence("IS_KILLED", concat(param, {c->getAttributes().getDeathDescription(factory)}));
-      case MsgType::TELE_APPEAR: return TSentence("APPEARS");
-      case MsgType::TELE_DISAPPEAR: return TSentence("DISAPPEARS");
+      case MsgType::TELE_APPEAR: return TSentence("APPEARS", param);
+      case MsgType::TELE_DISAPPEAR: return TSentence("DISAPPEARS", param);
       case MsgType::DIE_OF: return TSentence("DIES_OF", param);
       case MsgType::MISS_THROWN_ITEM: return TSentence("ITEM_MISSES", param);
       case MsgType::MISS_THROWN_ITEM_PLURAL: return TSentence("ITEMS_MISS", param);
@@ -44,17 +44,17 @@ static void addThird(const Creature* c, MsgType type, vector<TString> param) {
       case MsgType::ITEM_CRASHES: return TSentence("ITEM_CRASHES_ON", param);
       case MsgType::ITEM_CRASHES_PLURAL: return TSentence("ITEMS_CRASH_ON", param);
       case MsgType::GET_HIT_NODAMAGE: return TSentence("ATTACK_IS_HARMLESS");
-      case MsgType::COLLAPSE: return TSentence("COLLAPSES");
-      case MsgType::TRIGGER_TRAP: return TSentence("TRIGGERS_SOMETHING");
+      case MsgType::COLLAPSE: return TSentence("COLLAPSES", param);
+      case MsgType::TRIGGER_TRAP: return TSentence("TRIGGERS_SOMETHING", param);
       case MsgType::DISARM_TRAP: return TSentence("DISARMS", param);
-      case MsgType::PANIC: return TSentence("PANICS");
-      case MsgType::RAGE: return TSentence("RAGES");
-      case MsgType::CRAWL: return TSentence("IS_CRAWLING");
+      case MsgType::PANIC: return TSentence("PANICS", param);
+      case MsgType::RAGE: return TSentence("RAGES", param);
+      case MsgType::CRAWL: return TSentence("IS_CRAWLING", param);
       case MsgType::STAND_UP: return TSentence("IS_NO_LONGER_CRAWLING",
           concat(param, {TString(his(c->getAttributes().getGender()))}));
-      case MsgType::TURN_INVISIBLE: return TSentence("IS_INVISIBLE");
-      case MsgType::TURN_VISIBLE: return TSentence("IS_NO_LONGER_INVISIBLE");
-      case MsgType::ENTER_PORTAL: return TSentence("ENTERS_PORTAL");
+      case MsgType::TURN_INVISIBLE: return TSentence("IS_INVISIBLE", param);
+      case MsgType::TURN_VISIBLE: return TSentence("IS_NO_LONGER_INVISIBLE", param);
+      case MsgType::ENTER_PORTAL: return TSentence("ENTERS_PORTAL", param);
       case MsgType::BURN:
         unseenMsg = TSentence("YOU_HEAR_HORRIBLE_SCREAM");
         return TSentence("BURNS_IN", param);
@@ -68,7 +68,7 @@ static void addThird(const Creature* c, MsgType type, vector<TString> param) {
       case MsgType::CONSUME: return TSentence("ABSORBS", param);
       case MsgType::BREAK_FREE:
           if (param.empty())
-            return TSentence("BREAKS_FREE");
+            return TSentence("BREAKS_FREE", param);
           else
             return TSentence("BREAKS_FREE_FROM", param);
       default: return none;
@@ -224,7 +224,7 @@ void MessageGenerator::addSecondPerson(const Creature* c, const PlayerMessage& m
 
 TString MessageGenerator::getEnemyName(const Creature* c) {
   if (type == SECOND_PERSON)
-    return "you"_s;
+    return TStringId("YOU_ATTACK_TARGET");
   else
     return c->getName().the();
 }

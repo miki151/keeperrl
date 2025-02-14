@@ -186,13 +186,4 @@ void Translations::TranslationInfo::serialize(PrettyInputArchive& ar) {
       otherForms.back().push_back(std::move(tag));
     } while (ar.eatMaybe(","));
   }
-  if (!otherForms.empty()) {
-    std::cout << primary << std::endl;
-    for (auto& elem : otherForms) {
-      std::cout << elem[0] << ": ";
-      for (int i : Range(1, elem.size()))
-        std::cout << elem[i] << " ";
-      std::cout << "\n";
-    }
-  }
 }

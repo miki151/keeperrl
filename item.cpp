@@ -702,7 +702,7 @@ void Item::getAttackMsg(const Creature* c, TString enemyName) const {
   auto swingMsg = [&] (TStringId verb1, TStringId verb2) {
     if (!weaponInfo.itselfMessage) {
       c->secondPerson(TSentence(verb1, TString(getName()), enemyName));
-      c->thirdPerson(TSentence(verb2, {TSentence(his(c->getAttributes().getGender())), getName(), enemyName}));
+      c->thirdPerson(TSentence(verb2, {c->getName().the(), TSentence(his(c->getAttributes().getGender())), getName(), enemyName}));
     } else {
       c->verb(TStringId("THRUST_YOURSELF"), TStringId("THRUSTS_ITSELF"), TString(enemyName));
     }
