@@ -243,7 +243,7 @@ TString combineWithOr(vector<TString> v) {
     return std::move(v[0]);
   if (v.size() == 2)
     return TSentence("OR", std::move(v[0]), std::move(v[1]));
-  return TSentence("COMMA", std::move(v[0]), combineWithAnd(v.getSuffix(v.size() - 1)));
+  return TSentence("COMMA", std::move(v[0]), combineWithOr(v.getSuffix(v.size() - 1)));
 }
 
 TString combineSentences(TString s1, TString s2) {

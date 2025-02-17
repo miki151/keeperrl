@@ -1100,8 +1100,8 @@ void GuiBuilder::drawAllVillainsMenu(Vec2 pos, const VillageInfo& info) {
   vector<function<void()>> callbacks;
   vector<SGuiElem> tooltips;
   if (info.numMainVillains > 0) {
-    lines.push_back(WL(label, toString(info.numConqueredMainVillains) + "/" + toString(info.numMainVillains) +
-        " main villains conquered"));
+    lines.push_back(WL(label, TSentence("MAIN_VILLAINS_CONQUERED", toString(info.numConqueredMainVillains),
+        toString(info.numMainVillains))));
     callbacks.push_back(nullptr);
     tooltips.push_back(nullptr);
   }
