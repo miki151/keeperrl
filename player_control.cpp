@@ -1912,7 +1912,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
         }
     ));
     if (auto limit = elem->getLimit())
-      infoLines.push_back("Limited to " + toString(*limit) + " creatures");
+      infoLines.push_back(TSentence("LIMITED_TO_N_CREATURES", toString(*limit)));
     for (auto trait : elem->getTraits())
       if (auto desc = getImmigrantDescription(trait))
         infoLines.push_back(*desc);

@@ -96,7 +96,7 @@ End
   adjective = BUFFS_BLEEDING_ADJECTIVE
   tickEffect = Filter Not LastingEffect FROZEN {
     CreatureMessage { BUFFS_BLEEDING_SECONDPERSON BUFFS_BLEEDING_THIRDPERSON HIGH }
-    Bleed 0.03 BUFFS_BLEEDING_PRIORITY
+    Bleed 0.03 BUFFS_BLEEDING_NAME
   }
   consideredBad = true
   canAbsorb = false

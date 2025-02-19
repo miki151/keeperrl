@@ -326,8 +326,8 @@ class GuiBuilder {
   function<void(Rectangle)> getCommandsCallback(const vector<PlayerInfo::CommandInfo>&);
   ScriptedUIState scriptedUIState;
   ScriptedUIData scriptedUIData;
-  string leftClickText();
-  string rightClickText();
+  TStringId leftClickText();
+  TStringId rightClickText();
   bool hasController() const;
 };
 

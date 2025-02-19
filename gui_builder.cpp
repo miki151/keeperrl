@@ -1209,23 +1209,16 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const vector<ImmigrantDataInfo>& imm
         lines.buildVerticalList()));
 }
 
-string GuiBuilder::leftClickText() {
-  return hasController() ? "right trigger" : "left click";
+TStringId GuiBuilder::leftClickText() {
+  return hasController() ? TStringId("IMMIGRATION_HELP_CONTROLLER1") : TStringId("IMMIGRATION_HELP_MOUSE1");
 }
 
-string GuiBuilder::rightClickText() {
-  return hasController() ? "left trigger": "right click";
+TStringId GuiBuilder::rightClickText() {
+  return hasController() ? TStringId("IMMIGRATION_HELP_CONTROLLER2") : TStringId("IMMIGRATION_HELP_MOUSE2");
 }
 
 SGuiElem GuiBuilder::getImmigrationHelpText() {
-  return WL(labelMultiLine,
-      "Welcome to the immigration system! The icons immediately to the left represent "
-      "creatures that would "
-      "like to join your dungeon. " + capitalFirst(leftClickText()) + " accepts, " + rightClickText() + " rejects a candidate. "
-      "Some creatures have requirements that you need to fulfill before "
-      "they can join. Above this text you can examine all possible immigrants, along with their full "
-      "requirements. You can also click on the icons to set automatic acception or rejection.",
-      legendLineHeight);
+  return WL(labelMultiLine, TSentence("IMMIGRATION_HELP", leftClickText(), rightClickText()), legendLineHeight);
 }
 
 SGuiElem GuiBuilder::drawImmigrationHelp(const CollectiveInfo& info) {
@@ -3365,7 +3358,7 @@ SGuiElem GuiBuilder::getClickActions(const ViewObject& object) {
     lines.addSpace(legendLineHeight / 3);
   }
   if (!object.getExtendedActions().isEmpty()) {
-    lines.addElem(WL(label, capitalFirst(rightClickText()) + ":", Color::LIGHT_BLUE));
+    lines.addElem(WL(label, capitalFirst(rightClickText()), Color::LIGHT_BLUE));
     for (auto action : object.getExtendedActions())
       lines.addElem(WL(label, getText(action), Color::LIGHT_GRAY));
     lines.addSpace(legendLineHeight / 3);
