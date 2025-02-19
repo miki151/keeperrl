@@ -854,14 +854,15 @@ string combineSentences(const vector<string>& v) {
 }
 
 string capitalFirst(string s) {
-  if (!s.empty() && islower(s[0]))
-    s[0] = toupper(s[0]);
-  return s;
-}
-
-string noCapitalFirst(string s) {
-  if (!s.empty() && isupper(s[0]))
-    s[0] = tolower(s[0]);
+  if (s.empty())
+    return s;
+  char32_t c32;
+  std::mbstate_t state{};
+  int numBytes = std::mbrtoc32(&c32, s.data(), s.size(), &state);
+  c32 = towupper(c32);
+  char buf[10] = {0};
+  std::c32rtomb(buf, c32, &state);
+  s = string(buf) + s.substr(numBytes);
   return s;
 }
 

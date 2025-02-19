@@ -1359,7 +1359,6 @@ std::ostream& operator<<(std::ostream& d, const Table<T>& container){
 }
 
 string capitalFirst(string s);
-string noCapitalFirst(string s);
 vector<string> makeSentences(string s);
 string makeSentence(string s);
 string combineSentences(const vector<string>&);

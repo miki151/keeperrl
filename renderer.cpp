@@ -15,7 +15,6 @@
 
 #include "stdafx.h"
 #include "dirent.h"
-#include <cuchar>
 #include "extern/lodepng.h"
 
 #include "renderer.h"
