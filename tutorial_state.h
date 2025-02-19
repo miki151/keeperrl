@@ -40,4 +40,5 @@ RICH_ENUM(TutorialState,
   FINISHED
 );
 
-string getMessage(TutorialState, bool controller);
+class TString;
+TString getMessage(TutorialState, bool controller);

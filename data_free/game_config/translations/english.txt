@@ -519,6 +519,7 @@ POP_LIMIT_REACHED "population limit is reached"
 POPULATION_TRIGGER "Population"
 PREGNANT "pregnant!"
 PRESS_TO_UNPAUSE "Press {1} to unpause."
+SPACE_KEY "space"
 PRIORITY_TASK_HIGHLIGHT "Priority task"
 PRISONER "prisoner"
 PRISONER_STATUS_DESCRIPTION "Captured from a hostile tribe"
@@ -1531,6 +1532,7 @@ SCROLL "scroll"
 SKELETON "skeleton"
 SKULL "skull"
 SPELL "spell"
+ABILITY "ability"
 BLIND "blind"
 PLAGUE "plague"
 STOPS_BURNING "{1} stops burning."
@@ -4343,8 +4345,109 @@ TEXT155 "1. Right click on an enemy and toggle the capture order. You'll notice 
 TEXT156 "2. Fight the enemy until it is stunned. Keep in mind that some creatures are resistant to capturing, and are much harder to capture than to simply kill."
 TEXT157 "3. Back in real-time mode, you'll find the stunned creature in your immigration list. Click on it to enslave it."
 TEXT158 "4. Your prisoner now supplies your worker force. To completely convert it to your side, order its torture by dragging its icon to a torture table. The prisoner has a 50% chance to convert, otherwise it dies."
-
 CAMPAIGN_HELP_TEXT "Welcome to the campaign mode! The world, which you see below, is made up of smaller maps. You will build your base on one of them. There are hostile and friendly tribes around you. You have to conquer all villains marked as \"main\" to win the game. You can travel to other sites by creating a team and using the travel command.
 
 
 The highlighted tribes are in your influence zone, which means that you can currently interact with them (trade, recruit, attack or be attacked). As you conquer more enemies, your influence zone will increase."
+TUTORIAL_WELCOME "Welcome to the KeeperRL tutorial!
+
+Together we will work to build a small dungeon, and assemble a military force. Nearby us lies
+a small village inhabited mostly by innocents, which we shall conquer.
+
+This should get you up to speed with the game!"
+TUTORIAL_INTRO "Let's check out some things that you see on the map. The little wizard wearing a red robe is you, the Keeper.
+
+Remember that KeeperRL features perma-death, which means that you can't reload the game after a failure. If your Keeper dies, then the game is over, so be careful!"
+TUTORIAL_INTRO2 "The four little creatures are your imps. They are here to perform your orders. Try hovering the mouse over other things on the map, and notice the hints in the lower right corner."
+TUTORIAL_CUT_TREES "Great things come from small beginnings. Your first task is to gather some wood! {1} Select the \"Dig or cut tree\" order and click on a few trees to order your imps to cut them down.
+
+When you're done, {2}."
+TUTORIAL_CUT_TREES_CONTROLLER "Open the buildings menu using the left trackpad. "
+TUTORIAL_CUT_TREES_KEYBOARD ""
+TUTORIAL_CUT_TREES_CONTROLLER2 "pull the left trigger or press [B] to clear the order"
+TUTORIAL_CUT_TREES_KEYBOARD2 "click the right mouse button or press escape to clear the order"
+TUTORIAL_BUILD_STORAGE "You need to store the wood somewhere before you can use it. Select resource storage and designate it by clicking on the map. If you want to remove it, just click again.
+
+Create at least a 3×3 storage area."
+TUTORIAL_CONTROLS1 "Time to learn a few controls! Try scrolling the map using {1}.
+
+Press {2} to pause and continue the game. You can still give orders and use all controls while the game is paused."
+TUTORIAL_CONTROLS1_CONTROLLER "the right joystick"
+TUTORIAL_CONTROLS1_KEYBOARD "the arrow keys or by right clicking on the map and dragging it"
+TUTORIAL_CONTROLS1_CONTROLLER2 "Y"
+TUTORIAL_CONTROLS1_KEYBOARD2 "space"
+TUTORIAL_CONTROLS2 "Try zooming in and out of the map {1}."
+TUTORIAL_CONTROLS2_CONTROLLER "by pressing [X]"
+TUTORIAL_CONTROLS2_KEYBOARD "using the 'z' key or mouse wheel"
+TUTORIAL_GET_200_WOOD "Cut some more trees until you have gathered at least 200 wood."
+TUTORIAL_DIG_ROOM "Time to strike the earth! Dig out a tunnel and a room, as shown by the yellow highlight."
+TUTORIAL_BUILD_DOOR "Build a door at the entrance to your dungeon. This will slow down potential intruders, as they will need to destroy it before they can enter. Your minions can pass through doors freely, unless you lock a door by clicking on it.
+
+Try locking and unlocking your new door."
+TUTORIAL_BUILD_LIBRARY "The first room that you need to build is a library. This is where the Keeper and other minions will learn spells, and train their spell damage attribute. Place 6 bookcases in the new room as highlighted. Remember that bookcases and other furniture block your minions' movement."
+TUTORIAL_DIG_2_ROOMS "Dig out some more rooms. If the library is blocking your tunnels, use the 'remove construction' order to get it out of the way.
+
+Change the speed of the game {1} if it's taking too long."
+TUTORIAL_DIG_2_ROOMS_CONTROLLER "using the keys L4 and R4"
+TUTORIAL_DIG_2_ROOMS_KEYBOARD "using the keys 1-4 or by clicking in the lower left corner"
+TUTORIAL_ACCEPT_IMMIGRANT "Your dungeon has attracted a goblin warrior. Before your new minion joins you, you must fulfill a few requirements. Hover the mouse over the immigrant icon to see them. Once you are ready, accept the immigrant with a click. Click on the '?' icon immediately to the left to learn more about immigration."
+TUTORIAL_TORCHES "We need to make sure that your minions have good working conditions when studying and training. Place some torches in your rooms to light them up. Hover the mouse over the book shelves and training dummies and look in the lower right corner to check if they have enough light."
+TUTORIAL_FLOORS "Minions are also more efficient if there is a nice floor where they are working. For now you can only afford wooden floors, but they should do.
+
+Make sure you have enough wood!"
+TUTORIAL_BUILD_WORKSHOP "Your minions will need equipment, such as weapons, armor, and consumables, to be more deadly in combat.
+
+Build at least 2 workshop stands in your dungeon. It's best to dig out a dedicated room for them. You will also need a storage area for equipment. Place it somewhere near your workshop."
+TUTORIAL_SCHEDULE_WORKSHOP_ITEMS "Weapons are the most important piece of equipment, because unarmed, your minions have little chance against an enemy. Open the workshop menu by clicking on any of your workshop stands and schedule the production of a club."
+TUTORIAL_ORDER_CRAFTING "To have your item produced, order your goblin to pick up crafting. Click and drag him onto a workshop stand. Pausing the game will make it a bit easier. Also, make sure you have enough wood!
+
+You can check the progress of production when you click on the workshop."
+TUTORIAL_EQUIP_WEAPON "Your minions will automatically pick up weapons and other equipment from the storage, but you can also control it manually. Click on your goblin, and on his weapon slot to assign him the club that he has just produced.
+
+This way you will order him to go and pick it up."
+TUTORIAL_ACCEPT_MORE_IMMIGRANTS "You are ready to grow your military force. Three more goblin warrior immigrants should do.
+
+You can also invite goblin artificers, which don't fight, but are excellent craftsmen."
+TUTORIAL_EQUIP_ALL_FIGHTERS "Craft clubs for all of your warriors, and have them equipped. They will be needed soon."
+TUTORIAL_CREATE_TEAM "Your tiny army is ready! Assemble a team by dragging your warriors onto the [new team] button. You can drag them straight from the map or from the minion menu.
+
+Create a team of 4 goblin warriors."
+TUTORIAL_CONTROL_TEAM "Time to take control over your team. Select the team, and one of the team members as the leader, and click [Control]."
+TUTORIAL_CONTROL_MODE_MOVEMENT "You are now in control of a minion, and the game has become turn-based. Try moving around using {1} or by clicking somewhere on the map. You can scroll the map {2}.
+
+Notice the rest of your team following you."
+TUTORIAL_CONTROL_MODE_MOVEMENT_CONTROLLER "the left joystick and the [A] button"
+TUTORIAL_CONTROL_MODE_MOVEMENT_KEYBOARD "the arrow keys"
+TUTORIAL_CONTROL_MODE_MOVEMENT_CONTROLLER2 "using the right joystick."
+TUTORIAL_CONTROL_MODE_MOVEMENT_KEYBOARD2 "by dragging it with the right mouse button."
+TUTORIAL_FULL_CONTROL "You can take control over all team members in a tactical situation. To do this {1}. Clicking again will go back to controlling only the team leader."
+TUTORIAL_FULL_CONTROL_CONTROLLER "select \"Toggle control mode\" using the left trackpad"
+TUTORIAL_FULL_CONTROL_KEYBOARD "click on the [Control mode] button in the upper left corner or press [G]"
+TUTORIAL_DISCOVER_VILLAGE "It's time to discover the whereabouts of the nearby human village. {1}. The approximate location of the village is marked by a '?'. Take your team there."
+TUTORIAL_DISCOVER_VILLAGE_CONTROLLER "Press the right joystick to open the minimap"
+TUTORIAL_DISCOVER_VILLAGE_KEYBOARD "Click on the minimap in the upper right corner"
+TUTORIAL_KILL_VILLAGE "Your team has arrived at the village. The only right thing to do in this situation is to find and exterminate all inhabitants!
+
+Remember to break into every house by destroying the door."
+TUTORIAL_LOOT_VILLAGE "There is a nice pile of treasure in one of the houses. Pick it all up by entering the tiles containing the loot, and use the \"Lying here:\" menu in the upper left corner."
+TUTORIAL_LEAVE_CONTROL "To relinquish control of your team, {1}."
+TUTORIAL_LEAVE_CONTROL_CONTROLLER "press [Y]"
+TUTORIAL_LEAVE_CONTROL_KEYBOARD "click the [Exit control mode] button in the upper left corner"
+TUTORIAL_SUMMARY1 "You are back in the real-time mode. Your minions will now return to base and resume their normal routine. Once they are back, they will drop all the loot for the imps to take care of."
+TUTORIAL_RESEARCH "You have increased your malevolence level. This is the main meter of your progress in the game and allows you to research new technologies.
+
+{1} and research something."
+TUTORIAL_RESEARCH_CONTROLLER "Open the technology tab using the left trackpad"
+TUTORIAL_RESEARCH_KEYBOARD "Click on the technology tab"
+TUTORIAL_HELP_TAB "KeeperRL features how-to pages for some more advanced features. {1} to see them. They're likely to be useful in your future playthroughs."
+TUTORIAL_HELP_TAB_CONTROLLER "Open the help tab using the left trackpad"
+TUTORIAL_HELP_TAB_KEYBOARD "Click on the help tab icon"
+TUTORIAL_MINIMAP_BUTTONS "As the last objective, familiarize yourself with the two buttons under the minimap in the top-right corner. The first one opens the world map window, which you can use to travel to other sites when in control mode.
+
+The second one centers the map on your Keeper."
+TUTORIAL_SUMMARY2 "Thank you for completing the tutorial! We hope that we have made it a bit easier for you to get into KeeperRL. We would love to hear your comments, so please drop by on the forums on Steam or at keeperrl.com some time!"
+TUTORIAL_FINISHED "You should go and start a new game now, as this one exists only for the purpose of the tutorial.
+
+Press {1} and abandon this game."
+TUTORIAL_FINISHED_CONTROLLER "the menu button"
+TUTORIAL_FINISHED_KEYBOARD "Escape"

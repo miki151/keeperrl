@@ -830,7 +830,7 @@ SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
   auto backButton = WL(setHeight, legendLineHeight, WL(buttonLabel, TStringId("TUTORIAL_GO_BACK"),
       getButtonCallback(UserInputId::TUTORIAL_GO_BACK)));
   SGuiElem warning;
-  warning = WL(label, TSentence("PRESS_TO_UNPAUSE", string(hasController() ? "[Y]" : "[Space]")),
+  warning = WL(label, TSentence("PRESS_TO_UNPAUSE", hasController() ? TString("[Y]"_s) : TStringId("SPACE_KEY")),
       [this]{ return clock->isPaused() ? Color::RED : Color::TRANSPARENT;});
   return WL(preferredSize, 520, 290, WL(stack, WL(darken), WL(rectangleBorder, Color::GRAY),
       WL(margins, WL(stack,
