@@ -74,6 +74,7 @@ struct BuildInfo {
 
   BuildInfoTypes::BuildType SERIAL(type);
   TString SERIAL(name);
+  const TString& getName(const ContentFactory*) const;
   TString SERIAL(groupName);
   TString SERIAL(help);
   optional<Keybinding> SERIAL(key) = none;

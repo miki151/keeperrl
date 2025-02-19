@@ -912,7 +912,7 @@ vector<Button> PlayerControl::fillButtons() const {
           if (!collective->getResourceInfo(elem.cost.id).viewId && availableNow)
             description = combineSentences(std::move(description),
                 TSentence("BUILDINGS_COUNT_AVAILABLE", toString(availableNow)));
-          buttons.push_back(Button{getViewId(button.type), button.name,
+          buttons.push_back(Button{getViewId(button.type), capitalFirst(button.getName(contentFactory)),
               getCostObj(elem.cost),
               description,
               (elem.noCredit && !availableNow) ?

@@ -4,86 +4,86 @@
 
   "structure_without_reinforce"
   {
-    { { Dig CutTree }                                        BUILD_MENU_NAME   BUILD_MENU_GROUPNAME
+    { { Dig CutTree }                                        BUILD_MENU_DIG_OR_CUT_TREE   BUILD_MENU_GROUPNAME
       "" "DIG" {} true DIG_OR_CUT_TREES}
 # If you want you can use "just dig" or "just cut tree" in your mod
 #    { Dig                                                          "Dig"   "Structure" }
 #    { CutTree                                                      "Cut tree"   "Structure" }
-    { Furniture {{ "MOUNTAIN" }             "STONE" 5 }      BUILD_MENU_NAME1         BUILD_MENU_GROUPNAME }
-    { Furniture {{ "MOUNTAIN2" }            "STONE" 10 }     BUILD_MENU_NAME2         BUILD_MENU_GROUPNAME }
+    { Furniture {{ "MOUNTAIN" }             "STONE" 5 }      ""         BUILD_MENU_GROUPNAME }
+    { Furniture {{ "MOUNTAIN2" }            "STONE" 10 }     ""         BUILD_MENU_GROUPNAME }
 
-    { Furniture {{ "PIT" }                        "STONE" 0 }      BUILD_MENU_NAME3         BUILD_MENU_GROUPNAME
+    { Furniture {{ "PIT" }                        "STONE" 0 }      ""         BUILD_MENU_GROUPNAME
       BUILD_MENU_HELP }
 
-    { { FillPit }                                        BUILD_MENU_NAME4   BUILD_MENU_GROUPNAME}
+    { { FillPit }                                        ""   BUILD_MENU_GROUPNAME}
 
-    { Furniture {{ "FILL_UP_WATER_FLOOR" }        "STONE" 5 }     BUILD_MENU_NAME5 BUILD_MENU_GROUPNAME
+    { Furniture {{ "FILL_UP_WATER_FLOOR" }        "STONE" 5 }     "" BUILD_MENU_GROUPNAME
       "" }
 
-    { Furniture {{ "FLOOR" }              }               BUILD_MENU_NAME6 BUILD_MENU_GROUPNAME
+    { Furniture {{ "FLOOR" }              }               "" BUILD_MENU_GROUPNAME
       "" none {} false none true}
 
-    { Furniture {{ "WOOD_WALL" }                  "WOOD" 4 }       BUILD_MENU_NAME7   BUILD_MENU_GROUPNAME
+    { Furniture {{ "WOOD_WALL" }                  "WOOD" 4 }       ""   BUILD_MENU_GROUPNAME
       BUILD_MENU_HELP1 }
 
-    { Furniture {{ "WOOD_PILLAR" }                "WOOD" 2 }       BUILD_MENU_NAME8     BUILD_MENU_GROUPNAME
+    { Furniture {{ "WOOD_PILLAR" }                "WOOD" 2 }       ""     BUILD_MENU_GROUPNAME
       BUILD_MENU_HELP2 }
 
-    { Furniture {{ "CASTLE_WALL" }                "STONE" 5 }      BUILD_MENU_NAME9    BUILD_MENU_GROUPNAME
+    { Furniture {{ "CASTLE_WALL" }                "STONE" 5 }      ""    BUILD_MENU_GROUPNAME
       BUILD_MENU_HELP1 }
 
-    { Furniture {{ "CASTLE_PILLAR" }              "STONE" 2 }      BUILD_MENU_NAME10      BUILD_MENU_GROUPNAME
+    { Furniture {{ "CASTLE_PILLAR" }              "STONE" 2 }      ""      BUILD_MENU_GROUPNAME
       BUILD_MENU_HELP2 }
 
-    { Furniture {{ "BRIDGE" }                     "WOOD" 5 }       BUILD_MENU_NAME11     BUILD_MENU_GROUPNAME
+    { Furniture {{ "BRIDGE" }                     "WOOD" 5 }       ""     BUILD_MENU_GROUPNAME
       BUILD_MENU_HELP3 }
 
-    { Furniture {{ "STONE_BRIDGE" }               "STONE" 5 }      BUILD_MENU_NAME12      BUILD_MENU_GROUPNAME
+    { Furniture {{ "STONE_BRIDGE" }               "STONE" 5 }      ""      BUILD_MENU_GROUPNAME
       BUILD_MENU_HELP4 }
   }
 
   "structure" inherit "structure_without_reinforce" append
   {
-    { Furniture {{ "DUNGEON_WALL" "DUNGEON_WALL2" } "STONE" 3}       BUILD_MENU_NAME13    BUILD_MENU_GROUPNAME
+    { Furniture {{ "DUNGEON_WALL" "DUNGEON_WALL2" } "STONE" 3}       ""    BUILD_MENU_GROUPNAME
       BUILD_MENU_HELP5}
   }
 
   "structure_necro" inherit "structure_without_reinforce" append
   {
-    { Furniture {{ "NECRO_WALL" "NECRO_WALL2" } "STONE" 3}       BUILD_MENU_NAME13    BUILD_MENU_GROUPNAME
+    { Furniture {{ "NECRO_WALL" "NECRO_WALL2" } "STONE" 3}       ""    BUILD_MENU_GROUPNAME
       BUILD_MENU_HELP5}
   }
 
   "structure_dwarf" inherit "structure_without_reinforce" append
   {
-    { Furniture {{ "DWARF_WALL" "DWARF_WALL2" } "STONE" 3}       BUILD_MENU_NAME13    BUILD_MENU_GROUPNAME
+    { Furniture {{ "DWARF_WALL" "DWARF_WALL2" } "STONE" 3}       ""    BUILD_MENU_GROUPNAME
       BUILD_MENU_HELP5}
   }
 
   "structure_white_knight" inherit "structure" append
   {
-    { Furniture {{ "ARCHER_WALL" }                "STONE" 20 }     BUILD_MENU_NAME14  BUILD_MENU_GROUPNAME
+    { Furniture {{ "ARCHER_WALL" }                "STONE" 20 }     ""  BUILD_MENU_GROUPNAME
       BUILD_MENU_HELP6 }
   }
 
 Def Stairs()
   {
-    { Furniture {{ "UP_STAIRS" }                  }              BUILD_MENU_NAME138       BUILD_MENU_GROUPNAME15
+    { Furniture {{ "UP_STAIRS" }                  }              ""       BUILD_MENU_GROUPNAME15
       BUILD_MENU_HELP94 }
 
-    { Furniture {{ "DOWN_STAIRS" }                }              BUILD_MENU_NAME139       BUILD_MENU_GROUPNAME15
+    { Furniture {{ "DOWN_STAIRS" }                }              ""       BUILD_MENU_GROUPNAME15
       BUILD_MENU_HELP95 }
 
-    { Furniture {{ "UP_STAIRS_CASTLE" }   "STONE" 10        }              BUILD_MENU_NAME138       BUILD_MENU_GROUPNAME15
+    { Furniture {{ "UP_STAIRS_CASTLE" }   "STONE" 10        }              ""       BUILD_MENU_GROUPNAME15
       BUILD_MENU_HELP94 }
 
-    { Furniture {{ "DOWN_STAIRS_CASTLE" }  "STONE" 10       }              BUILD_MENU_NAME139       BUILD_MENU_GROUPNAME15
+    { Furniture {{ "DOWN_STAIRS_CASTLE" }  "STONE" 10       }              ""       BUILD_MENU_GROUPNAME15
       BUILD_MENU_HELP95 }
 
-    { Furniture {{ "UP_STAIRS_CARPET" }   "GOLD" 10        }              BUILD_MENU_NAME138       BUILD_MENU_GROUPNAME15
+    { Furniture {{ "UP_STAIRS_CARPET" }   "GOLD" 10        }              ""       BUILD_MENU_GROUPNAME15
       BUILD_MENU_HELP94 }
 
-    { Furniture {{ "DOWN_STAIRS_CARPET" }  "GOLD" 10       }              BUILD_MENU_NAME139       BUILD_MENU_GROUPNAME15
+    { Furniture {{ "DOWN_STAIRS_CARPET" }  "GOLD" 10       }              ""       BUILD_MENU_GROUPNAME15
       BUILD_MENU_HELP95 }
   }
 End
@@ -95,115 +95,115 @@ End
 
   "doors"
   {
-    { Furniture {{ "WOOD_DOOR" }                  "WOOD" 5 }       BUILD_MENU_NAME15       BUILD_MENU_GROUPNAME1
+    { Furniture {{ "WOOD_DOOR" }                  "WOOD" 5 }       ""       BUILD_MENU_GROUPNAME1
       BUILD_MENU_HELP7  "DOORS" {} true BUILD_DOOR}
 
-    { Furniture {{ "IRON_DOOR" }                  "IRON" 5 }       BUILD_MENU_NAME16         BUILD_MENU_GROUPNAME1
+    { Furniture {{ "IRON_DOOR" }                  "IRON" 5 }       ""         BUILD_MENU_GROUPNAME1
       BUILD_MENU_HELP7 }
 
-    { Furniture {{ "ADA_DOOR" }                   "ADA" 5 }        BUILD_MENU_NAME17   BUILD_MENU_GROUPNAME1
+    { Furniture {{ "ADA_DOOR" }                   "ADA" 5 }        ""   BUILD_MENU_GROUPNAME1
       BUILD_MENU_HELP7}
-    { Furniture {{ "WOOD_GATE" }                  "WOOD" 8 }       BUILD_MENU_NAME18       BUILD_MENU_GROUPNAME1
+    { Furniture {{ "WOOD_GATE" }                  "WOOD" 8 }       ""       BUILD_MENU_GROUPNAME1
       BUILD_MENU_HELP7}
-    { Furniture {{ "IRON_GATE" }                  "IRON" 8 }       BUILD_MENU_NAME19         BUILD_MENU_GROUPNAME1
+    { Furniture {{ "IRON_GATE" }                  "IRON" 8 }       ""         BUILD_MENU_GROUPNAME1
       BUILD_MENU_HELP7}
-    { Furniture {{ "ADA_GATE" }                   "ADA" 8 }        BUILD_MENU_NAME20   BUILD_MENU_GROUPNAME1
+    { Furniture {{ "ADA_GATE" }                   "ADA" 8 }        ""   BUILD_MENU_GROUPNAME1
       BUILD_MENU_HELP7}
   }
 
   "floors"
   {
-    { Furniture {{ "FLOOR_WOOD1" }                "WOOD" 2 }       BUILD_MENU_NAME21            BUILD_MENU_GROUPNAME2
+    { Furniture {{ "FLOOR_WOOD1" }                "WOOD" 2 }       ""            BUILD_MENU_GROUPNAME2
         "" "FLOORS" {} true BUILD_FLOOR}
-    { Furniture {{ "FLOOR_WOOD2" }                "WOOD" 2 }       BUILD_MENU_NAME21            BUILD_MENU_GROUPNAME2 }
-    { Furniture {{ "FLOOR_WOOD3" }                "WOOD" 2 }       BUILD_MENU_NAME21            BUILD_MENU_GROUPNAME2 }
-    { Furniture {{ "FLOOR_WOOD4" }                "WOOD" 2 }       BUILD_MENU_NAME21            BUILD_MENU_GROUPNAME2 }
-    { Furniture {{ "FLOOR_WOOD5" }                "WOOD" 2 }       BUILD_MENU_NAME21            BUILD_MENU_GROUPNAME2 }
-    { Furniture {{ "FLOOR_STONE1" }               "STONE" 2 }      BUILD_MENU_NAME22             BUILD_MENU_GROUPNAME2 }
-    { Furniture {{ "FLOOR_STONE2" }               "STONE" 2 }      BUILD_MENU_NAME22             BUILD_MENU_GROUPNAME2 }
-    { Furniture {{ "FLOOR_STONE3" }               "STONE" 2 }      BUILD_MENU_NAME22             BUILD_MENU_GROUPNAME2 }
-    { Furniture {{ "FLOOR_STONE4" }               "STONE" 2 }      BUILD_MENU_NAME22             BUILD_MENU_GROUPNAME2 }
-    { Furniture {{ "FLOOR_STONE5" }               "STONE" 2 }      BUILD_MENU_NAME22             BUILD_MENU_GROUPNAME2 }
-    { Furniture {{ "FLOOR_CARPET1" }              "GOLD" 2 }       BUILD_MENU_NAME23            BUILD_MENU_GROUPNAME2 }
-    { Furniture {{ "FLOOR_CARPET2" }              "GOLD" 2 }       BUILD_MENU_NAME23            BUILD_MENU_GROUPNAME2 }
-    { Furniture {{ "FLOOR_CARPET3" }              "GOLD" 2 }       BUILD_MENU_NAME23            BUILD_MENU_GROUPNAME2 }
-    { Furniture {{ "FLOOR_CARPET4" }              "GOLD" 2 }       BUILD_MENU_NAME23            BUILD_MENU_GROUPNAME2 }
-    { Furniture {{ "FLOOR_CARPET5" }              "GOLD" 2 }       BUILD_MENU_NAME23            BUILD_MENU_GROUPNAME2 }
-    { DestroyLayers {FLOOR}                                    BUILD_MENU_NAME24      BUILD_MENU_GROUPNAME2 }
+    { Furniture {{ "FLOOR_WOOD2" }                "WOOD" 2 }       ""            BUILD_MENU_GROUPNAME2 }
+    { Furniture {{ "FLOOR_WOOD3" }                "WOOD" 2 }       ""            BUILD_MENU_GROUPNAME2 }
+    { Furniture {{ "FLOOR_WOOD4" }                "WOOD" 2 }       ""            BUILD_MENU_GROUPNAME2 }
+    { Furniture {{ "FLOOR_WOOD5" }                "WOOD" 2 }       ""            BUILD_MENU_GROUPNAME2 }
+    { Furniture {{ "FLOOR_STONE1" }               "STONE" 2 }      ""             BUILD_MENU_GROUPNAME2 }
+    { Furniture {{ "FLOOR_STONE2" }               "STONE" 2 }      ""             BUILD_MENU_GROUPNAME2 }
+    { Furniture {{ "FLOOR_STONE3" }               "STONE" 2 }      ""             BUILD_MENU_GROUPNAME2 }
+    { Furniture {{ "FLOOR_STONE4" }               "STONE" 2 }      ""             BUILD_MENU_GROUPNAME2 }
+    { Furniture {{ "FLOOR_STONE5" }               "STONE" 2 }      ""             BUILD_MENU_GROUPNAME2 }
+    { Furniture {{ "FLOOR_CARPET1" }              "GOLD" 2 }       ""            BUILD_MENU_GROUPNAME2 }
+    { Furniture {{ "FLOOR_CARPET2" }              "GOLD" 2 }       ""            BUILD_MENU_GROUPNAME2 }
+    { Furniture {{ "FLOOR_CARPET3" }              "GOLD" 2 }       ""            BUILD_MENU_GROUPNAME2 }
+    { Furniture {{ "FLOOR_CARPET4" }              "GOLD" 2 }       ""            BUILD_MENU_GROUPNAME2 }
+    { Furniture {{ "FLOOR_CARPET5" }              "GOLD" 2 }       ""            BUILD_MENU_GROUPNAME2 }
+    { DestroyLayers {FLOOR}                                    BUILD_MENU_REMOVE_FLOOR      BUILD_MENU_GROUPNAME2 }
   }
 
   "floors_dwarf" inherit "floors" append {} #legacy
 
   "storage"
   {
-    { Zone STORAGE_RESOURCES                                   BUILD_MENU_NAME25         BUILD_MENU_GROUPNAME3
+    { Zone STORAGE_RESOURCES                                   ""         BUILD_MENU_GROUPNAME3
         BUILD_MENU_HELP8 "STORAGE" {} true RESOURCE_STORAGE}
 
-    { Zone STORAGE_EQUIPMENT                                   BUILD_MENU_NAME26         BUILD_MENU_GROUPNAME3
+    { Zone STORAGE_EQUIPMENT                                   ""         BUILD_MENU_GROUPNAME3
         BUILD_MENU_HELP9 none {} false EQUIPMENT_STORAGE }
 
-    { Furniture {{ "TREASURE_CHEST" }             "WOOD" 5  }      BUILD_MENU_NAME27    BUILD_MENU_GROUPNAME3
+    { Furniture {{ "TREASURE_CHEST" }             "WOOD" 5  }      ""    BUILD_MENU_GROUPNAME3
         BUILD_MENU_HELP10 }
 
-    { Furniture {{ "ARMOR_RACK" }                "WOOD" 15  }     BUILD_MENU_NAME28      BUILD_MENU_GROUPNAME3
+    { Furniture {{ "ARMOR_RACK" }                "WOOD" 15  }     ""      BUILD_MENU_GROUPNAME3
         BUILD_MENU_HELP11 }
 
-    { Furniture {{ "WEAPON_RACK" }                "WOOD" 15  }     BUILD_MENU_NAME29      BUILD_MENU_GROUPNAME3
+    { Furniture {{ "WEAPON_RACK" }                "WOOD" 15  }     ""      BUILD_MENU_GROUPNAME3
         BUILD_MENU_HELP12 }
 
-    { Furniture {{ "BOW_RACK" }                "WOOD" 15  }        BUILD_MENU_NAME30      BUILD_MENU_GROUPNAME3
+    { Furniture {{ "BOW_RACK" }                "WOOD" 15  }        ""      BUILD_MENU_GROUPNAME3
         BUILD_MENU_HELP13 }
 
-    { Furniture {{ "SCROLL_STORAGE"}              "WOOD" 15  }      BUILD_MENU_NAME31      BUILD_MENU_GROUPNAME3
+    { Furniture {{ "SCROLL_STORAGE"}              "WOOD" 15  }      ""      BUILD_MENU_GROUPNAME3
         BUILD_MENU_HELP14 }
 
-    { Furniture {{ "POTION_STORAGE"}              "WOOD" 15  }      BUILD_MENU_NAME32      BUILD_MENU_GROUPNAME3
+    { Furniture {{ "POTION_STORAGE"}              "WOOD" 15  }      ""      BUILD_MENU_GROUPNAME3
         BUILD_MENU_HELP15 }
 
-    { Furniture {{ "JEWELLERY_STORAGE"}              "WOOD" 15  }   BUILD_MENU_NAME33      BUILD_MENU_GROUPNAME3
+    { Furniture {{ "JEWELLERY_STORAGE"}              "WOOD" 15  }   ""      BUILD_MENU_GROUPNAME3
         BUILD_MENU_HELP16 }
 
-    { Furniture {{ "BOOK_STORAGE"}              "WOOD" 15  }   BUILD_MENU_NAME34      BUILD_MENU_GROUPNAME3
+    { Furniture {{ "BOOK_STORAGE"}              "WOOD" 15  }   ""      BUILD_MENU_GROUPNAME3
         BUILD_MENU_HELP17 }
 
-    { Furniture {{ "GRAVE" }                      "STONE" 5 }      BUILD_MENU_NAME35             BUILD_MENU_GROUPNAME3
+    { Furniture {{ "GRAVE" }                      "STONE" 5 }      ""             BUILD_MENU_GROUPNAME3
         BUILD_MENU_HELP18}
   }
 
   "automaton_storage"
   {
-    { Furniture {{ "AUTOMATON_STORAGE" }                "WOOD" 15  }     BUILD_MENU_NAME36   BUILD_MENU_GROUPNAME3
+    { Furniture {{ "AUTOMATON_STORAGE" }                "WOOD" 15  }     ""   BUILD_MENU_GROUPNAME3
         BUILD_MENU_HELP19 }
   }
 
   "zones"
   {
-    { Zone QUARTERS                                           BUILD_MENU_NAME37        BUILD_MENU_GROUPNAME4
+    { Zone QUARTERS                                           ""        BUILD_MENU_GROUPNAME4
         BUILD_MENU_HELP20 "QUARTERS" {} true}
 
-    { Zone LEISURE                                             BUILD_MENU_NAME38           BUILD_MENU_GROUPNAME4
+    { Zone LEISURE                                             ""           BUILD_MENU_GROUPNAME4
         BUILD_MENU_HELP21}
 
-    { Zone GUARD1                                               BUILD_MENU_NAME39        BUILD_MENU_GROUPNAME4
+    { Zone GUARD1                                               ""        BUILD_MENU_GROUPNAME4
         BUILD_MENU_HELP22}
 
-    { Zone GUARD2                                               BUILD_MENU_NAME40        BUILD_MENU_GROUPNAME4
+    { Zone GUARD2                                               ""        BUILD_MENU_GROUPNAME4
         BUILD_MENU_HELP22}
 
-    { Zone GUARD3                                               BUILD_MENU_NAME41        BUILD_MENU_GROUPNAME4
+    { Zone GUARD3                                               ""        BUILD_MENU_GROUPNAME4
         BUILD_MENU_HELP22}
    }
 
 Def LIBRARY(SUF1, SUF2)
   "library" + SUF2
   {
-    { Furniture {{ "BOOKCASE_WOOD" + SUF1 }   "WOOD" 15 }                 BUILD_MENU_NAME140   BUILD_MENU_GROUPNAME16
+    { Furniture {{ "BOOKCASE_WOOD" + SUF1 }   "WOOD" 15 }                 ""   BUILD_MENU_GROUPNAME16
         BUILD_MENU_HELP96 "BOOKCASES"     {TechId "sorcery"} true BUILD_LIBRARY }
 
-    { Furniture {{ "BOOKCASE_IRON" + SUF1 }   "IRON" 15 }                 BUILD_MENU_NAME141     BUILD_MENU_GROUPNAME16
+    { Furniture {{ "BOOKCASE_IRON" + SUF1 }   "IRON" 15 }                 ""     BUILD_MENU_GROUPNAME16
         BUILD_MENU_HELP96 none          {TechId "advanced sorcery"} }
 
-    { Furniture {{ "BOOKCASE_GOLD" + SUF1 }   "GOLD" 15 }                 BUILD_MENU_NAME142   BUILD_MENU_GROUPNAME16
+    { Furniture {{ "BOOKCASE_GOLD" + SUF1 }   "GOLD" 15 }                 ""   BUILD_MENU_GROUPNAME16
         BUILD_MENU_HELP96 none           {TechId "master sorcery"}}
   }
 End
@@ -214,118 +214,118 @@ End
 
   "mass"
   {
-    { Furniture {{ "ROSTRUM_WOOD" }       "WOOD" 10 }                      BUILD_MENU_NAME42         BUILD_MENU_GROUPNAME5
+    { Furniture {{ "ROSTRUM_WOOD" }       "WOOD" 10 }                      ""         BUILD_MENU_GROUPNAME5
         BUILD_MENU_HELP23 }
-    { Furniture {{ "ROSTRUM_IRON" }       "IRON" 10 }                      BUILD_MENU_NAME43         BUILD_MENU_GROUPNAME5
+    { Furniture {{ "ROSTRUM_IRON" }       "IRON" 10 }                      ""         BUILD_MENU_GROUPNAME5
         BUILD_MENU_HELP24 }
-    { Furniture {{ "ROSTRUM_GOLD" }       "GOLD" 10 }                      BUILD_MENU_NAME44         BUILD_MENU_GROUPNAME5
+    { Furniture {{ "ROSTRUM_GOLD" }       "GOLD" 10 }                      ""         BUILD_MENU_GROUPNAME5
         BUILD_MENU_HELP25 none { TechId "luxury" } }
-    { Furniture {{ "PEW_WOOD" }           "WOOD" 10 }                      BUILD_MENU_NAME45      BUILD_MENU_GROUPNAME5
+    { Furniture {{ "PEW_WOOD" }           "WOOD" 10 }                      ""      BUILD_MENU_GROUPNAME5
         BUILD_MENU_HELP26 }
-    { Furniture {{ "PEW_IRON" }           "IRON" 10 }                      BUILD_MENU_NAME46      BUILD_MENU_GROUPNAME5
+    { Furniture {{ "PEW_IRON" }           "IRON" 10 }                      ""      BUILD_MENU_GROUPNAME5
         BUILD_MENU_HELP27 }
-    { Furniture {{ "PEW_GOLD" }           "GOLD" 10 }                      BUILD_MENU_NAME47      BUILD_MENU_GROUPNAME5
+    { Furniture {{ "PEW_GOLD" }           "GOLD" 10 }                      ""      BUILD_MENU_GROUPNAME5
         BUILD_MENU_HELP28 none { TechId "luxury" } }
-    { Furniture {{ "PRAYER_BENCH_WOOD" }  "WOOD" 10 }                      BUILD_MENU_NAME48      BUILD_MENU_GROUPNAME5
+    { Furniture {{ "PRAYER_BENCH_WOOD" }  "WOOD" 10 }                      ""      BUILD_MENU_GROUPNAME5
         BUILD_MENU_HELP29 }
-    { Furniture {{ "PRAYER_BENCH_IRON" }  "IRON" 10 }                      BUILD_MENU_NAME49      BUILD_MENU_GROUPNAME5
+    { Furniture {{ "PRAYER_BENCH_IRON" }  "IRON" 10 }                      ""      BUILD_MENU_GROUPNAME5
         BUILD_MENU_HELP29 }
-    { Furniture {{ "PRAYER_BENCH_GOLD" }  "GOLD" 10 }                      BUILD_MENU_NAME50      BUILD_MENU_GROUPNAME5
+    { Furniture {{ "PRAYER_BENCH_GOLD" }  "GOLD" 10 }                      ""      BUILD_MENU_GROUPNAME5
         BUILD_MENU_HELP29 none { TechId "luxury" } }
-    { Furniture {{ "CONFESSIONAL" }  "WOOD" 40 }                           BUILD_MENU_NAME51      BUILD_MENU_GROUPNAME5
+    { Furniture {{ "CONFESSIONAL" }  "WOOD" 40 }                           ""      BUILD_MENU_GROUPNAME5
         BUILD_MENU_HELP30 none { TechId "small temptations"} }
-    { Furniture {{ "LUXURIOUS_CONFESSIONAL" }  "GOLD" 40 }                 BUILD_MENU_NAME52      BUILD_MENU_GROUPNAME5
+    { Furniture {{ "LUXURIOUS_CONFESSIONAL" }  "GOLD" 40 }                 ""      BUILD_MENU_GROUPNAME5
         BUILD_MENU_HELP31 none { TechId "big temptations"} }
   }
 
   "beds"
   {
-    { Furniture {{ "BED1" }       "WOOD" 12 }                      BUILD_MENU_NAME53         BUILD_MENU_GROUPNAME6
+    { Furniture {{ "BED1" }       "WOOD" 12 }                      ""         BUILD_MENU_GROUPNAME6
         BUILD_MENU_HELP32 "BEDS" {} true  BUILD_BED }
 
-    { Furniture {{ "BED2" }       "IRON" 12 }                      BUILD_MENU_NAME54          BUILD_MENU_GROUPNAME6
+    { Furniture {{ "BED2" }       "IRON" 12 }                      ""          BUILD_MENU_GROUPNAME6
         BUILD_MENU_HELP32 }
 
-    { Furniture {{ "BED3" }       "GOLD" 12 }                      BUILD_MENU_NAME55     BUILD_MENU_GROUPNAME6
+    { Furniture {{ "BED3" }       "GOLD" 12 }                      ""     BUILD_MENU_GROUPNAME6
         BUILD_MENU_HELP32}
   }
 
   "dining table"
   {
-    { Furniture {{ "DINING_TABLE" }"WOOD" 5 }                      BUILD_MENU_NAME56      BUILD_MENU_GROUPNAME6
+    { Furniture {{ "DINING_TABLE" }"WOOD" 5 }                      ""      BUILD_MENU_GROUPNAME6
         BUILD_MENU_HELP33 none {}}
-    { Furniture {{ "HAYPILE" }     "WOOD" 5 }                      BUILD_MENU_NAME57          BUILD_MENU_GROUPNAME6
+    { Furniture {{ "HAYPILE" }     "WOOD" 5 }                      ""          BUILD_MENU_GROUPNAME6
         BUILD_MENU_HELP34 none {}}
   }
 
   "stable"
   {
-    { Furniture {{ "STABLE" }     "WOOD" 5 }                      BUILD_MENU_NAME58             BUILD_MENU_GROUPNAME6
+    { Furniture {{ "STABLE" }     "WOOD" 5 }                      ""             BUILD_MENU_GROUPNAME6
       BUILD_MENU_HELP35 none {}}
   }
 
   "coffins"
   {
-    { Furniture {{ "COFFIN1" }    "WOOD" 15 }                      BUILD_MENU_NAME59      BUILD_MENU_GROUPNAME6
+    { Furniture {{ "COFFIN1" }    "WOOD" 15 }                      ""      BUILD_MENU_GROUPNAME6
         BUILD_MENU_HELP36}
 
-    { Furniture {{ "COFFIN2" }    "STONE" 15 }                     BUILD_MENU_NAME60       BUILD_MENU_GROUPNAME6
+    { Furniture {{ "COFFIN2" }    "STONE" 15 }                     ""       BUILD_MENU_GROUPNAME6
         BUILD_MENU_HELP36}
 
-    { Furniture {{ "COFFIN3" }    "GOLD" 15 }                      BUILD_MENU_NAME61  BUILD_MENU_GROUPNAME6
+    { Furniture {{ "COFFIN3" }    "GOLD" 15 }                      ""  BUILD_MENU_GROUPNAME6
         BUILD_MENU_HELP36}
   }
 
   "pigsty"
   {
-    { Furniture {{ "CHICKEN_COOP" }     "WOOD" 5 }                 BUILD_MENU_NAME62      BUILD_MENU_GROUPNAME7
+    { Furniture {{ "CHICKEN_COOP" }     "WOOD" 5 }                 ""      BUILD_MENU_GROUPNAME7
         "" none {TechId "chicken breeding"}}
-    { Furniture {{ "PIGSTY" }     "WOOD" 5 }                       BUILD_MENU_NAME63            BUILD_MENU_GROUPNAME7
+    { Furniture {{ "PIGSTY" }     "WOOD" 5 }                       ""            BUILD_MENU_GROUPNAME7
         "" none {TechId "pig breeding"}}
-    { Furniture {{ "COW_PEN" }     "WOOD" 5 }                      BUILD_MENU_NAME64           BUILD_MENU_GROUPNAME7
+    { Furniture {{ "COW_PEN" }     "WOOD" 5 }                      ""           BUILD_MENU_GROUPNAME7
         "" none {TechId "cow breeding"}}
-    { Furniture {{ "ANIMAL_FENCE" } "WOOD" 1 }                     BUILD_MENU_NAME65      BUILD_MENU_GROUPNAME7
+    { Furniture {{ "ANIMAL_FENCE" } "WOOD" 1 }                     ""      BUILD_MENU_GROUPNAME7
         BUILD_MENU_HELP37 }
   }
 
 
   "training_zombies"
   {
-    { Furniture {{ "TRAINING_WOOD_NECRO" } "WOOD" 12 }                   BUILD_MENU_NAME66      BUILD_MENU_GROUPNAME8
+    { Furniture {{ "TRAINING_WOOD_NECRO" } "WOOD" 12 }                   ""      BUILD_MENU_GROUPNAME8
         BUILD_MENU_HELP38 "TRAINING_DUMMIES" {} true  TRAINING_ROOM}
   }
 
   "training_dummies"
   {
-    { Furniture {{ "TRAINING_WOOD" } "WOOD" 12 }                   BUILD_MENU_NAME66      BUILD_MENU_GROUPNAME8
+    { Furniture {{ "TRAINING_WOOD" } "WOOD" 12 }                   ""      BUILD_MENU_GROUPNAME8
         BUILD_MENU_HELP38 "TRAINING_DUMMIES" {} true  TRAINING_ROOM}
 
-    { Furniture {{ "TRAINING_IRON" } "IRON" 12 }                   BUILD_MENU_NAME67        BUILD_MENU_GROUPNAME8
+    { Furniture {{ "TRAINING_IRON" } "IRON" 12 }                   ""        BUILD_MENU_GROUPNAME8
         BUILD_MENU_HELP38   none { TechId "iron working" } }
 
-    { Furniture {{ "TRAINING_ADA" }  "ADA"  12 }                   BUILD_MENU_NAME68  BUILD_MENU_GROUPNAME8
+    { Furniture {{ "TRAINING_ADA" }  "ADA"  12 }                   ""  BUILD_MENU_GROUPNAME8
         BUILD_MENU_HELP38   none { TechId "iron working" }}
   }
 
   "training" inherit "training_dummies" append
   {
-    { Furniture {{ "ARCHERY_RANGE" } "WOOD" 12 }                   BUILD_MENU_NAME69    BUILD_MENU_GROUPNAME8
+    { Furniture {{ "ARCHERY_RANGE" } "WOOD" 12 }                   ""    BUILD_MENU_GROUPNAME8
         BUILD_MENU_HELP39 none { TechId "archery" }}
   }
 
 Def TRAINING(SUF1, SUF2)
   "training_dummies" + SUF2
   {
-    { Furniture {{ "TRAINING_WOOD" + SUF1 } "WOOD" 12 }                   BUILD_MENU_NAME143      BUILD_MENU_GROUPNAME17
+    { Furniture {{ "TRAINING_WOOD" + SUF1 } "WOOD" 12 }                   ""      BUILD_MENU_GROUPNAME17
         BUILD_MENU_HELP97 "TRAINING_DUMMIES" {} true  TRAINING_ROOM}
-    { Furniture {{ "TRAINING_IRON" + SUF1 } "IRON" 12 }                   BUILD_MENU_NAME144        BUILD_MENU_GROUPNAME17
+    { Furniture {{ "TRAINING_IRON" + SUF1 } "IRON" 12 }                   ""        BUILD_MENU_GROUPNAME17
         BUILD_MENU_HELP97   none { TechId "iron working" } }
-    { Furniture {{ "TRAINING_ADA" + SUF1 }  "ADA"  12 }                   BUILD_MENU_NAME145  BUILD_MENU_GROUPNAME17
+    { Furniture {{ "TRAINING_ADA" + SUF1 }  "ADA"  12 }                   ""  BUILD_MENU_GROUPNAME17
         BUILD_MENU_HELP97   none { TechId "iron working" }}
   }
   "training" + SUF2 inherit "training_dummies" + SUF2 append
   {
-    { Furniture {{ "ARCHERY_RANGE" } "WOOD" 12 }                   BUILD_MENU_NAME146    BUILD_MENU_GROUPNAME17
+    { Furniture {{ "ARCHERY_RANGE" } "WOOD" 12 }                   ""    BUILD_MENU_GROUPNAME17
         BUILD_MENU_HELP98 none { TechId "archery" }}
   }
 End
@@ -336,254 +336,254 @@ TRAINING("_DWARF", "_dwarf")
 
   "crafting"
   {
-    { Furniture {{ "WORKSHOP" }   "WOOD" 15 }                      BUILD_MENU_NAME70          BUILD_MENU_GROUPNAME9
+    { Furniture {{ "WORKSHOP" }   "WOOD" 15 }                      ""          BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP40 "WORKSHOPS" {} true  BUILD_WORKSHOP}
 
-    { Furniture {{ "ENCHANTED_WORKSHOP" }   "WOOD" 15 }                      BUILD_MENU_NAME70          BUILD_MENU_GROUPNAME9
+    { Furniture {{ "ENCHANTED_WORKSHOP" }   "WOOD" 15 }                      ""          BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP41}
 
-    { Furniture {{ "WORKSHOP_TOOL_STAND" }   "WOOD" 5 }                      BUILD_MENU_NAME71     BUILD_MENU_GROUPNAME9
+    { Furniture {{ "WORKSHOP_TOOL_STAND" }   "WOOD" 5 }                      ""     BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP42}
 
-    { Furniture {{ "FORGE"  }      "IRON" 20 }                      BUILD_MENU_NAME72             BUILD_MENU_GROUPNAME9
+    { Furniture {{ "FORGE"  }      "IRON" 20 }                      ""             BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP43    none { TechId "iron working" }}
 
-    { Furniture {{ "LAVA_FORGE" }      "IRON" 20 }               BUILD_MENU_NAME73    BUILD_MENU_GROUPNAME9
+    { Furniture {{ "LAVA_FORGE" }      "IRON" 20 }               ""    BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP44    none { TechId "iron working" }}
 
-    { Furniture {{ "FORGE_QUENCHING_BUCKET" }   "WOOD" 5 }               BUILD_MENU_NAME74     BUILD_MENU_GROUPNAME9
+    { Furniture {{ "FORGE_QUENCHING_BUCKET" }   "WOOD" 5 }               ""     BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP45 none { TechId "iron working" } }
   }
 
   "laboratory"
   {
-    { Furniture {{ "LABORATORY" } "STONE" 10 }                     BUILD_MENU_NAME75        BUILD_MENU_GROUPNAME9
+    { Furniture {{ "LABORATORY" } "STONE" 10 }                     ""        BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP46            none { TechId "alchemy" }}
 
-    { Furniture {{ "ENCHANTED_LABORATORY" } "STONE" 10 }                     BUILD_MENU_NAME76        BUILD_MENU_GROUPNAME9
+    { Furniture {{ "ENCHANTED_LABORATORY" } "STONE" 10 }                     ""        BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP47
                     none { TechId "alchemy" }}
-    { Furniture {{ "MORTAR_AND_PESTLE" }   "STONE" 5 }               BUILD_MENU_NAME77     BUILD_MENU_GROUPNAME9
+    { Furniture {{ "MORTAR_AND_PESTLE" }   "STONE" 5 }               ""     BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP48 none { TechId "alchemy" } }
   }
 
   "embalming"
   {
-    { Furniture {{ "LABORATORY" } "STONE" 10 }                     BUILD_MENU_NAME75        BUILD_MENU_GROUPNAME9
+    { Furniture {{ "LABORATORY" } "STONE" 10 }                     ""        BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP49            none { TechId "embalming" }}
   }
 
   "jeweller_church"
   {
-    { Furniture {{ "JEWELLER" }   "WOOD" 12 }                      BUILD_MENU_NAME78          BUILD_MENU_GROUPNAME9
+    { Furniture {{ "JEWELLER" }   "WOOD" 12 }                      ""          BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP50 none { TechId "luxury" }}
-    { Furniture {{ "JEWELLER_POLISHING_WHEEL" }   "STONE" 5 }      BUILD_MENU_NAME79 BUILD_MENU_GROUPNAME9
+    { Furniture {{ "JEWELLER_POLISHING_WHEEL" }   "STONE" 5 }      "" BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP51 none { TechId "luxury" }}
   }
 
   "jeweller"
   {
-    { Furniture {{ "JEWELLER" }   "WOOD" 12 }                      BUILD_MENU_NAME78          BUILD_MENU_GROUPNAME9
+    { Furniture {{ "JEWELLER" }   "WOOD" 12 }                      ""          BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP50 none { TechId "jewellery" }}
 
-    { Furniture {{ "LAVA_JEWELLER" }   "STONE" 12 }                      BUILD_MENU_NAME80          BUILD_MENU_GROUPNAME9
+    { Furniture {{ "LAVA_JEWELLER" }   "STONE" 12 }                      ""          BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP52 none { TechId "jewellery" }}
-    { Furniture {{ "JEWELLER_POLISHING_WHEEL" }   "STONE" 5 }      BUILD_MENU_NAME81 BUILD_MENU_GROUPNAME9
+    { Furniture {{ "JEWELLER_POLISHING_WHEEL" }   "STONE" 5 }      "" BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP51 none { TechId "jewellery" }}  }
   "poetry"
   {
-    { Furniture {{ "POETRY_TABLE" } "WOOD" 12 }                    BUILD_MENU_NAME82       BUILD_MENU_GROUPNAME9
+    { Furniture {{ "POETRY_TABLE" } "WOOD" 12 }                    ""       BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP53}
   }
   "scriptorium"
   {
-    { Furniture {{ "SCRIPTORIUM" } "WOOD" 12 }                    BUILD_MENU_NAME83       BUILD_MENU_GROUPNAME9
+    { Furniture {{ "SCRIPTORIUM" } "WOOD" 12 }                    ""       BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP54}
-    { Furniture {{ "SCRIPTORIUM_HOLY_TOKEN" }   "WOOD" 5 }               BUILD_MENU_NAME84     BUILD_MENU_GROUPNAME9
+    { Furniture {{ "SCRIPTORIUM_HOLY_TOKEN" }   "WOOD" 5 }               ""     BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP55 }
   }
   "distillery"
   {
-    { Furniture {{ "DISTILLERY" }   "IRON" 30 }                    BUILD_MENU_NAME85       BUILD_MENU_GROUPNAME9
+    { Furniture {{ "DISTILLERY" }   "IRON" 30 }                    ""       BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP56 none { TechId "distillation" }}
   }
   "distillery_church"
   {
-    { Furniture {{ "DISTILLERY" }   "IRON" 30 }                    BUILD_MENU_NAME85       BUILD_MENU_GROUPNAME9
+    { Furniture {{ "DISTILLERY" }   "IRON" 30 }                    ""       BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP56 none { TechId "small temptations" }}
   }
   "morgue"
   {
-    { Furniture {{ "MORGUE_TABLE" } "WOOD" 10 }                     BUILD_MENU_NAME86     BUILD_MENU_GROUPNAME9
+    { Furniture {{ "MORGUE_TABLE" } "WOOD" 10 }                     ""     BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP57                           "WORKSHOPS" { TechId "necromancy" } true }
-    { Furniture {{ "MORGUE_INSTRUMENT_TABLE" } "WOOD" 5 }                     BUILD_MENU_NAME87 BUILD_MENU_GROUPNAME9
+    { Furniture {{ "MORGUE_INSTRUMENT_TABLE" } "WOOD" 5 }                     "" BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP58 none { TechId "necromancy" } }
   }
   "furnace"
   {
-    { Furniture {{ "FURNACE" }      "STONE" 50 }                   BUILD_MENU_NAME88             BUILD_MENU_GROUPNAME9
+    { Furniture {{ "FURNACE" }      "STONE" 50 }                   ""             BUILD_MENU_GROUPNAME9
         BUILD_MENU_HELP59   none { TechId "iron working" }}
   }
   "automatons"
   {
-    { Furniture {{ "AUTOMATON_ENGINE_WOOD" } "WOOD" 50 }                BUILD_MENU_NAME89   BUILD_MENU_GROUPNAME10
+    { Furniture {{ "AUTOMATON_ENGINE_WOOD" } "WOOD" 50 }                ""   BUILD_MENU_GROUPNAME10
         ""            none { TechId "automatons" }}
-    { Furniture {{ "AUTOMATON_ENGINE_IRON" } "IRON" 50 }                BUILD_MENU_NAME90   BUILD_MENU_GROUPNAME10
+    { Furniture {{ "AUTOMATON_ENGINE_IRON" } "IRON" 50 }                ""   BUILD_MENU_GROUPNAME10
         ""            none { TechId "iron working" }}
-    { Furniture {{ "AUTOMATON_ENGINE_ADA" } "ADA" 50 }                BUILD_MENU_NAME91   BUILD_MENU_GROUPNAME10
+    { Furniture {{ "AUTOMATON_ENGINE_ADA" } "ADA" 50 }                ""   BUILD_MENU_GROUPNAME10
         ""            none { TechId "iron working" }}
   }
 
   "prison"
   {
-    { Furniture {{ "PRISON" }        "IRON" 15 }                   BUILD_MENU_NAME147            BUILD_MENU_GROUPNAME18
+    { Furniture {{ "PRISON" }        "IRON" 15 }                   ""            BUILD_MENU_GROUPNAME11
         BUILD_MENU_HELP60 "PRISON" {} true}
 
-    { Furniture {{ "PRISON_BARS" }        "IRON" 5 }               BUILD_MENU_NAME92            BUILD_MENU_GROUPNAME11
+    { Furniture {{ "PRISON_BARS" }        "IRON" 5 }               ""            BUILD_MENU_GROUPNAME11
         BUILD_MENU_HELP61 }
 
-    { Furniture {{ "PRISON_DOOR" }        "IRON" 30 }              BUILD_MENU_NAME93            BUILD_MENU_GROUPNAME11
+    { Furniture {{ "PRISON_DOOR" }        "IRON" 30 }              ""            BUILD_MENU_GROUPNAME11
         BUILD_MENU_HELP61 }
 
-    { Furniture {{ "TORTURE_TABLE" } "IRON" 15 }                   BUILD_MENU_NAME94     BUILD_MENU_GROUPNAME11
+    { Furniture {{ "TORTURE_TABLE" } "IRON" 15 }                   ""     BUILD_MENU_GROUPNAME11
         BUILD_MENU_HELP62}
 
-    { Furniture {{ "GALLOWS" }       "WOOD"  20 }                  BUILD_MENU_NAME95           BUILD_MENU_GROUPNAME11
+    { Furniture {{ "GALLOWS" }       "WOOD"  20 }                  ""           BUILD_MENU_GROUPNAME11
         BUILD_MENU_HELP63}
 
-    { Furniture {{ "BEAST_CAGE" } "WOOD" 8 }                       BUILD_MENU_NAME96        BUILD_MENU_GROUPNAME11
+    { Furniture {{ "BEAST_CAGE" } "WOOD" 8 }                       ""        BUILD_MENU_GROUPNAME11
         BUILD_MENU_HELP64}
   }
 
   "prison_church"
   {
-    { Furniture {{ "PRISON" }        "IRON" 15 }                   BUILD_MENU_NAME147            BUILD_MENU_GROUPNAME18
+    { Furniture {{ "PRISON" }        "IRON" 15 }                   ""            BUILD_MENU_GROUPNAME11
         BUILD_MENU_HELP60 "PRISON" { TechId "slavery" } true}
 
-    { Furniture {{ "PRISON_BARS" }        "IRON" 5 }               BUILD_MENU_NAME92            BUILD_MENU_GROUPNAME11
+    { Furniture {{ "PRISON_BARS" }        "IRON" 5 }               ""            BUILD_MENU_GROUPNAME11
         BUILD_MENU_HELP61 none { TechId "slavery" } }
 
-    { Furniture {{ "PRISON_DOOR" }        "IRON" 30 }              BUILD_MENU_NAME93            BUILD_MENU_GROUPNAME11
+    { Furniture {{ "PRISON_DOOR" }        "IRON" 30 }              ""            BUILD_MENU_GROUPNAME11
         BUILD_MENU_HELP61 none { TechId "slavery" } }
 
-    { Furniture {{ "TORTURE_TABLE" } "IRON" 15 }                   BUILD_MENU_NAME94     BUILD_MENU_GROUPNAME11
+    { Furniture {{ "TORTURE_TABLE" } "IRON" 15 }                   ""     BUILD_MENU_GROUPNAME11
         BUILD_MENU_HELP62
         none { TechId "slavery" }}
 
-    { Furniture {{ "GALLOWS" }       "WOOD"  20 }                  BUILD_MENU_NAME95           BUILD_MENU_GROUPNAME11
+    { Furniture {{ "GALLOWS" }       "WOOD"  20 }                  ""           BUILD_MENU_GROUPNAME11
         BUILD_MENU_HELP63 none { TechId "slavery" }}
   }
 
   "orders"
   {
-    { ClaimTile                                                BUILD_MENU_NAME97        BUILD_MENU_GROUPNAME12
+    { ClaimTile                                                ""        BUILD_MENU_GROUPNAME12
         BUILD_MENU_HELP65 }
 
-    { UnclaimTile                                                BUILD_MENU_NAME98        BUILD_MENU_GROUPNAME12
+    { UnclaimTile                                                ""        BUILD_MENU_GROUPNAME12
         BUILD_MENU_HELP66 }
 
-    { Zone FETCH_ITEMS                                         BUILD_MENU_NAME99       BUILD_MENU_GROUPNAME12
+    { Zone FETCH_ITEMS                                         ""       BUILD_MENU_GROUPNAME12
         BUILD_MENU_HELP67}
 
-    { Zone PERMANENT_FETCH_ITEMS                               BUILD_MENU_NAME100 BUILD_MENU_GROUPNAME12
+    { Zone PERMANENT_FETCH_ITEMS                               "" BUILD_MENU_GROUPNAME12
         BUILD_MENU_HELP68}
 
-    { Dispatch                                                 BUILD_MENU_NAME101   BUILD_MENU_GROUPNAME12
+    { Dispatch                                                 ""   BUILD_MENU_GROUPNAME12
         BUILD_MENU_HELP69 "PRIORITIZE_TASK" }
 
-    { DestroyLayers {MIDDLE}                           BUILD_MENU_NAME102 BUILD_MENU_GROUPNAME12
+    { DestroyLayers {MIDDLE}                           BUILD_MENU_REMOVE_CONSTRUCTION BUILD_MENU_GROUPNAME12
         "" "REMOVE_CONSTRUCTION" {} false REMOVE_CONSTRUCTION }
 
-    { DestroyLayers {FLOOR}                           BUILD_MENU_NAME24 BUILD_MENU_GROUPNAME12}
+    { DestroyLayers {FLOOR}                           BUILD_MENU_REMOVE_FLOOR BUILD_MENU_GROUPNAME12}
 
-    { DestroyLayers {CEILING}                           BUILD_MENU_NAME103 BUILD_MENU_GROUPNAME12
+    { DestroyLayers {CEILING}                           BUILD_MENU_REMOVE_WALL_INSTALLATION BUILD_MENU_GROUPNAME12
         BUILD_MENU_HELP70}
 
-    { ForbidZone                                               BUILD_MENU_NAME104      BUILD_MENU_GROUPNAME12
+    { ForbidZone                                               ""      BUILD_MENU_GROUPNAME12
         BUILD_MENU_HELP71}
   }
 
   "throne"
   {
-    { Furniture { types = { "THRONE" } cost = "GOLD" 500 limit = 1} BUILD_MENU_NAME105 BUILD_MENU_GROUPNAME13 ""  none   {DungeonLevel 10} }
+    { Furniture { types = { "THRONE" } cost = "GOLD" 500 limit = 1} "" BUILD_MENU_GROUPNAME13 ""  none   {DungeonLevel 10} }
   }
 
   "throne_human"
     {
-      { Furniture { types = { "THRONE_HUMAN" } cost = "GOLD" 500 limit = 1} BUILD_MENU_NAME105 BUILD_MENU_GROUPNAME13 ""  none   {DungeonLevel 10} }
+      { Furniture { types = { "THRONE_HUMAN" } cost = "GOLD" 500 limit = 1} "" BUILD_MENU_GROUPNAME13 ""  none   {DungeonLevel 10} }
     }
 
   "phylactery"
   {
-    { Furniture { types = { "PHYLACTERY" } cost = "GOLD" 500} BUILD_MENU_NAME106 BUILD_MENU_GROUPNAME13
+    { Furniture { types = { "PHYLACTERY" } cost = "GOLD" 500} "" BUILD_MENU_GROUPNAME13
         BUILD_MENU_HELP72  none }
   }
 
   "demon_shrine"
   {
-    { Furniture {{ "DEMON_SHRINE" } "GOLD" 30 }                    BUILD_MENU_NAME107      BUILD_MENU_GROUPNAME13
+    { Furniture {{ "DEMON_SHRINE" } "GOLD" 30 }                    ""      BUILD_MENU_GROUPNAME13
         BUILD_MENU_HELP73 none { TechId "demonology" }}
   }
 
   "angel_shrine"
   {
-    { Furniture {{ "ANGEL_SHRINE" } "GOLD" 30 }                    BUILD_MENU_NAME108      BUILD_MENU_GROUPNAME13
+    { Furniture {{ "ANGEL_SHRINE" } "GOLD" 30 }                    ""      BUILD_MENU_GROUPNAME13
         BUILD_MENU_HELP74 none { TechId "worship" }}
   }
 
   "installations_no_heads"
   {
-    { Furniture {{ "BARRICADE" }     "WOOD" 5 }                    BUILD_MENU_NAME109         BUILD_MENU_GROUPNAME13
+    { Furniture {{ "BARRICADE" }     "WOOD" 5 }                    ""         BUILD_MENU_GROUPNAME13
         BUILD_MENU_HELP75 }
 
-    { Furniture {{ "TORCH_N" "TORCH_E" "TORCH_S" "TORCH_W" }}          BUILD_MENU_NAME110             BUILD_MENU_GROUPNAME13
+    { Furniture {{ "TORCH_N" "TORCH_E" "TORCH_S" "TORCH_W" }}          ""             BUILD_MENU_GROUPNAME13
         BUILD_MENU_HELP76 "TORCH" {} false BUILD_TORCH}
 
     { Furniture {{ "CANDELABRUM_N" "CANDELABRUM_E" "CANDELABRUM_S" "CANDELABRUM_W" } "GOLD" 5 }
-        BUILD_MENU_NAME111             BUILD_MENU_GROUPNAME13       BUILD_MENU_HELP76 }
+        ""             BUILD_MENU_GROUPNAME13       BUILD_MENU_HELP76 }
 
-    { Furniture {{ "GROUND_TORCH" }  "WOOD" 10  }                  BUILD_MENU_NAME112    BUILD_MENU_GROUPNAME13
+    { Furniture {{ "GROUND_TORCH" }  "WOOD" 10  }                  ""    BUILD_MENU_GROUPNAME13
         "" none {} false BUILD_TORCH }
 
-    { Furniture {{ "PAINTING_N" "PAINTING_E" "PAINTING_S" "PAINTING_W" }} BUILD_MENU_NAME113   BUILD_MENU_GROUPNAME13
+    { Furniture {{ "PAINTING_N" "PAINTING_E" "PAINTING_S" "PAINTING_W" }} ""   BUILD_MENU_GROUPNAME13
         BUILD_MENU_HELP76}
 
-    { Furniture {{ "KEEPER_BOARD" }  "WOOD" 15 }                   BUILD_MENU_NAME114     BUILD_MENU_GROUPNAME13
+    { Furniture {{ "KEEPER_BOARD" }  "WOOD" 15 }                   ""     BUILD_MENU_GROUPNAME13
         BUILD_MENU_HELP77 }
 
-    { Furniture {{ "FOUNTAIN" }      "STONE" 30 }                  BUILD_MENU_NAME115          BUILD_MENU_GROUPNAME13 }
+    { Furniture {{ "FOUNTAIN" }      "STONE" 30 }                  ""          BUILD_MENU_GROUPNAME13 }
 
-    { Furniture {{ "CORPSE_DISPLAY1" "CORPSE_DISPLAY2" }      "CORPSE" 1 } BUILD_MENU_NAME116  BUILD_MENU_GROUPNAME13 }
+    { Furniture {{ "CORPSE_DISPLAY1" "CORPSE_DISPLAY2" }      "CORPSE" 1 } ""  BUILD_MENU_GROUPNAME13 }
 
-    { Furniture {{ "WHIPPING_POST" } "WOOD"  20 }                  BUILD_MENU_NAME117     BUILD_MENU_GROUPNAME13
+    { Furniture {{ "WHIPPING_POST" } "WOOD"  20 }                  ""     BUILD_MENU_GROUPNAME13
         BUILD_MENU_HELP78 }
   }
 
   "installations" inherit "installations_no_heads" append {
-    { Furniture {{ "IMPALED_HEAD" }  "PRISONER_HEAD" 1 true}       BUILD_MENU_NAME118     BUILD_MENU_GROUPNAME13
+    { Furniture {{ "IMPALED_HEAD" }  "PRISONER_HEAD" 1 true}       ""     BUILD_MENU_GROUPNAME13
         BUILD_MENU_HELP79}
   }
   "minion_statues"
   {
-    { Furniture {{ "MINION_STATUE" }        "GOLD"   50  }                  BUILD_MENU_NAME119     BUILD_MENU_GROUPNAME13 ""}
-    { Furniture {{ "STONE_MINION_STATUE" }  "STONE"  250 }                  BUILD_MENU_NAME120      BUILD_MENU_GROUPNAME13 ""}
+    { Furniture {{ "MINION_STATUE" }        "GOLD"   50  }                  ""     BUILD_MENU_GROUPNAME13 ""}
+    { Furniture {{ "STONE_MINION_STATUE" }  "STONE"  250 }                  ""      BUILD_MENU_GROUPNAME13 ""}
   }
   "saint_statues"
   {
-    { Furniture {{ "SAINT_STATUE" }        "GOLD"   50  }                  BUILD_MENU_NAME121     BUILD_MENU_GROUPNAME13 ""}
-    { Furniture {{ "STONE_SAINT_STATUE" }  "STONE"  250 }                  BUILD_MENU_NAME122      BUILD_MENU_GROUPNAME13 ""}
+    { Furniture {{ "SAINT_STATUE" }        "GOLD"   50  }                  ""     BUILD_MENU_GROUPNAME13 ""}
+    { Furniture {{ "STONE_SAINT_STATUE" }  "STONE"  250 }                  ""      BUILD_MENU_GROUPNAME13 ""}
   }
   "magical_installations"
   {
-    { Furniture {{ "EYEBALL" }              "WOOD"   30 }                   BUILD_MENU_NAME123           BUILD_MENU_GROUPNAME13
+    { Furniture {{ "EYEBALL" }              "WOOD"   30 }                   ""           BUILD_MENU_GROUPNAME13
         BUILD_MENU_HELP80}
 
-    { Furniture {{ "PORTAL" }               "STONE"  60 }                   BUILD_MENU_NAME124            BUILD_MENU_GROUPNAME13
+    { Furniture {{ "PORTAL" }               "STONE"  60 }                   ""            BUILD_MENU_GROUPNAME13
         BUILD_MENU_HELP81}
   }
   "healing_totem"
   {
-    { Furniture {{ "HEALING_TOTEM" }        "GOLD"   60 }                   BUILD_MENU_NAME125     BUILD_MENU_GROUPNAME13
+    { Furniture {{ "HEALING_TOTEM" }        "GOLD"   60 }                   ""     BUILD_MENU_GROUPNAME13
         BUILD_MENU_HELP82}
 #    { Furniture {{ "BLEEDING_TOTEM" }       "GOLD"   60 }                   "Bleeding totem"     "Installations"
 #        "Causes enemies close by to bleed."}
@@ -591,43 +591,43 @@ TRAINING("_DWARF", "_dwarf")
 
   "tutorial"
   {
-    { Furniture {{ "TUTORIAL_ENTRANCE" } }                  BUILD_MENU_NAME126           BUILD_MENU_GROUPNAME13}
+    { Furniture {{ "TUTORIAL_ENTRANCE" } }                  ""           BUILD_MENU_GROUPNAME13}
   }
 
 
   "traps"
   {
-    { Furniture {{ "TERROR_TRAP" }         "WOOD" 20 }  BUILD_MENU_NAME127       BUILD_MENU_GROUPNAME14
+    { Furniture {{ "TERROR_TRAP" }         "WOOD" 20 }  ""       BUILD_MENU_GROUPNAME14
         BUILD_MENU_HELP83 none                  { TechId "traps" }}
 
-    { Furniture {{ "POISON_GAS_TRAP" }     "WOOD" 20 }  BUILD_MENU_NAME128          BUILD_MENU_GROUPNAME14
+    { Furniture {{ "POISON_GAS_TRAP" }     "WOOD" 20 }  ""          BUILD_MENU_GROUPNAME14
         BUILD_MENU_HELP84 none               { TechId "traps" }}
 
-    { Furniture {{ "ALARM_TRAP" }          "WOOD" 20 }  BUILD_MENU_NAME129        BUILD_MENU_GROUPNAME14
+    { Furniture {{ "ALARM_TRAP" }          "WOOD" 20 }  ""        BUILD_MENU_GROUPNAME14
         BUILD_MENU_HELP85 none                              { TechId "traps" }}
 
-    { Furniture {{ "WEB_TRAP" }            "WOOD" 20 }  BUILD_MENU_NAME130          BUILD_MENU_GROUPNAME14
+    { Furniture {{ "WEB_TRAP" }            "WOOD" 20 }  ""          BUILD_MENU_GROUPNAME14
         BUILD_MENU_HELP86 none        { TechId "traps" }}
 
-    { Furniture {{ "SURPRISE_TRAP" }       "WOOD" 20 }  BUILD_MENU_NAME131     BUILD_MENU_GROUPNAME14
+    { Furniture {{ "SURPRISE_TRAP" }       "WOOD" 20 }  ""     BUILD_MENU_GROUPNAME14
         BUILD_MENU_HELP87 none { TechId "traps" }}
-    { Furniture {{ "FIRE_TRAP" }           "WOOD" 20 }  BUILD_MENU_NAME132         BUILD_MENU_GROUPNAME14
+    { Furniture {{ "FIRE_TRAP" }           "WOOD" 20 }  ""         BUILD_MENU_GROUPNAME14
         BUILD_MENU_HELP88 none{ TechId "traps" }}
 
-    { Furniture {{ "BOULDER_TRAP" }        "STONE" 120 }BUILD_MENU_NAME133      BUILD_MENU_GROUPNAME14
+    { Furniture {{ "BOULDER_TRAP" }        "STONE" 120 }""      BUILD_MENU_GROUPNAME14
         BUILD_MENU_HELP89 none { TechId "traps" }}
 
-    { Furniture {{ "BLAST_TRAP" }          "WOOD" 20 }  BUILD_MENU_NAME134        BUILD_MENU_GROUPNAME14
+    { Furniture {{ "BLAST_TRAP" }          "WOOD" 20 }  ""        BUILD_MENU_GROUPNAME14
         BUILD_MENU_HELP90 none { TechId "traps" }}
 
-    { Furniture {{ "GARGOYLE_TRAP" }       "STONE" 20 }  BUILD_MENU_NAME135          BUILD_MENU_GROUPNAME14
+    { Furniture {{ "GARGOYLE_TRAP" }       "STONE" 20 }  ""          BUILD_MENU_GROUPNAME14
         BUILD_MENU_HELP91 none { TechId "traps" }}
   }
 
   "gnome_traps"
   {
-    { Furniture {{ "TRAP_TRIGGER" }        "WOOD" 20 }  BUILD_MENU_NAME136     BUILD_MENU_GROUPNAME14
+    { Furniture {{ "TRAP_TRIGGER" }        "WOOD" 20 }  ""     BUILD_MENU_GROUPNAME14
         BUILD_MENU_HELP92 none                  { TechId "advanced traps" }}
-    { Furniture {{ "DESTROY_WALLS_TRAP" }  "WOOD" 20 }  BUILD_MENU_NAME137     BUILD_MENU_GROUPNAME14
+    { Furniture {{ "DESTROY_WALLS_TRAP" }  "WOOD" 20 }  ""     BUILD_MENU_GROUPNAME14
         BUILD_MENU_HELP93 none        { TechId "advanced traps" }}
   }
