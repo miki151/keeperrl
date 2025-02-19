@@ -73,7 +73,9 @@ struct BuildInfo {
   bool canSelectRectangle() const;
 
   BuildInfoTypes::BuildType SERIAL(type);
-  TString SERIAL(name);
+  private:
+  mutable TString SERIAL(name);
+  public:
   const TString& getName(const ContentFactory*) const;
   TString SERIAL(groupName);
   TString SERIAL(help);

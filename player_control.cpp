@@ -920,7 +920,7 @@ vector<Button> PlayerControl::fillButtons() const {
           },
         [&](const auto&) {
           PROFILE;
-          buttons.push_back({this->getViewId(button.type), button.name, none, ""_s, CollectiveInfo::Button::ACTIVE});
+          buttons.push_back({this->getViewId(button.type), button.getName(contentFactory), none, ""_s, CollectiveInfo::Button::ACTIVE});
         }
     );
     vector<TString> unmetReqText;
@@ -1320,10 +1320,11 @@ void PlayerControl::fillTechUnlocks(CollectiveInfo::LibraryInfo::TechInfo& techI
   for (auto& t2 : technology.getAllowed(tech))
     techInfo.unlocks.push_back({{ViewId("book")}, technology.techs.at(t2).name.value_or(string(t2.data())),
         TStringId("TECHNOLOGY_LABEL")});
+  auto contentFactory = getGame()->getContentFactory();
   for (auto& elem : buildInfo)
     for (auto& r : elem.requirements)
       if (r == tech)
-        techInfo.unlocks.push_back({{getViewId(elem.type)}, elem.name, TStringId("CONSTRUCTIONS_LABEL")});
+        techInfo.unlocks.push_back({{getViewId(elem.type)}, elem.getName(contentFactory), TStringId("CONSTRUCTIONS_LABEL")});
   for (auto& workshop : collective->getWorkshops().types)
     for (auto& option : workshop.second.getOptions())
       if (!option.hideFromTech && option.techId == tech)

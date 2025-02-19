@@ -27,27 +27,27 @@ bool BuildInfo::canSelectRectangle() const {
   );
 }
 
-static const TString* getNameHelper(const BuildInfoTypes::BuildType& type, const ContentFactory* factory) {
-  return type.visit<const TString*>(
-      [&](const BuildInfoTypes::Furniture& f) { return &factory->furniture.getData(f.types[0]).getName(); },
-      [&](const BuildInfoTypes::ClaimTile& e) { static TString ret = TStringId("BUILD_MENU_CLAIM_TILE"); return &ret; },
-      [&](const BuildInfoTypes::UnclaimTile& e) { static TString ret = TStringId("BUILD_MENU_UNCLAIM_TILE"); return &ret; },
-      [&](const BuildInfoTypes::Dig& e) { static TString ret = TStringId("BUILD_MENU_DIG"); return &ret; },
-      [&](const BuildInfoTypes::CutTree& e) { static TString ret = TStringId("BUILD_MENU_CUT_TREE"); return &ret; },
-      [&](const BuildInfoTypes::Dispatch& e) { static TString ret = TStringId("BUILD_MENU_PRIORITIZE"); return &ret; },
-      [&](const BuildInfoTypes::ForbidZone& e) { static TString ret = TStringId("FORBIDDEN_ZONE_HIGHLIGHT"); return &ret; },
-      [&](const BuildInfoTypes::PlaceMinion& e) { static TString ret = TStringId("BUILD_MENU_PLACE_MINION"); return &ret; },
-      [&](const BuildInfoTypes::ImmediateDig& e) { static TString ret = TStringId("BUILD_MENU_IMMEDIATE_DIG"); return &ret; },
-      [&](const BuildInfoTypes::PlaceItem& e) { static TString ret = TStringId("BUILD_MENU_PLACE_ITEM"); return &ret; },
-      [&](const BuildInfoTypes::Zone& e) { static TString ret = *getDescription(getHighlight(e)); return &ret; },
+static TString getNameHelper(const BuildInfoTypes::BuildType& type, const ContentFactory* factory) {
+  return type.visit<TString>(
+      [&](const BuildInfoTypes::Furniture& f) { return factory->furniture.getData(f.types[0]).getName(); },
+      [&](const BuildInfoTypes::ClaimTile& e) { return TStringId("BUILD_MENU_CLAIM_TILE"); },
+      [&](const BuildInfoTypes::UnclaimTile& e) { return TStringId("BUILD_MENU_UNCLAIM_TILE"); },
+      [&](const BuildInfoTypes::Dig& e) { return TStringId("BUILD_MENU_DIG"); },
+      [&](const BuildInfoTypes::CutTree& e) { return TStringId("BUILD_MENU_CUT_TREE"); },
+      [&](const BuildInfoTypes::Dispatch& e) { return TStringId("BUILD_MENU_PRIORITIZE"); },
+      [&](const BuildInfoTypes::ForbidZone& e) { return TStringId("FORBIDDEN_ZONE_HIGHLIGHT"); },
+      [&](const BuildInfoTypes::PlaceMinion& e) { return TStringId("BUILD_MENU_PLACE_MINION"); },
+      [&](const BuildInfoTypes::ImmediateDig& e) { return TStringId("BUILD_MENU_IMMEDIATE_DIG"); },
+      [&](const BuildInfoTypes::PlaceItem& e) { return TStringId("BUILD_MENU_PLACE_ITEM"); },
+      [&](const BuildInfoTypes::Zone& e) { return *getDescription(getHighlight(e)); },
       [&](const BuildInfoTypes::Chain& e) { return getNameHelper(e.front(), factory); },
-      [&](const BuildInfoTypes::DestroyLayers& e) { static TString ret; return &ret; },
-      [&](const BuildInfoTypes::FillPit& e) { static TString ret = TStringId("BUILD_MENU_FILL_PIT"); return &ret; }
+      [&](const BuildInfoTypes::DestroyLayers& e) { return TString("no name"_s); },
+      [&](const BuildInfoTypes::FillPit& e) { return TStringId("BUILD_MENU_FILL_PIT"); }
   );
 }
 
 const TString& BuildInfo::getName(const ContentFactory* factory) const {
-  if (name != TString())
-    return name;
-  return *getNameHelper(type, factory);
+  if (name.empty())
+    name = getNameHelper(type, factory);
+  return name;
 }

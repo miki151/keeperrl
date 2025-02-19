@@ -1746,6 +1746,7 @@ End
 }
 "DOWN_STAIRS" inherit "UP_STAIRS"
 {
+  name = FURNITURE_DOWN_STAIRS_NAME
   viewId = { "down_staircase" }
   onBuilt = DOWN_STAIRS
 }
@@ -1777,10 +1778,10 @@ End
 }
 "DOWN_STAIRS_ADOXIE"
 {
-  name = FURNITURE_DOWN_STAIRS_ADOXIE_NAME
+  name = FURNITURE_DOWN_STAIRS_NAME
   viewId = { "down_staircase" }
   canHideHere = true
-  usageType = UsageEffect FURNITURE_DOWN_STAIRS_ADOXIE_USAGETYPE { Message NORMAL FURNITURE_DOWN_STAIRS_ADOXIE_USAGETYPE1 Stairs }
+  usageType = UsageEffect FURNITURE_UP_STAIRS_USAGETYPE { Message NORMAL FURNITURE_DOWN_STAIRS_ADOXIE_USAGETYPE1 Stairs }
   onBuilt = DOWN_STAIRS
 }
 "INACTIVE_PORTAL"
@@ -1810,7 +1811,7 @@ End
 {
   viewId = { "bridge_stone" }
   fire = 0
-  name = FURNITURE_BRIDGE_NAME
+  name = FURNITURE_BRIDGE_NAME2
 }
 "ROAD"
 {
@@ -2068,7 +2069,7 @@ End
 }
 "HIDDEN_CASTLE_DOOR"
 {
-  name = FURNITURE_HIDDEN_CASTLE_DOOR_NAME
+  name = FURNITURE_CASTLE_PILLAR_NAME1
   viewId = { "castle_wall" }
   blockAllVision = true
   strength = 1
@@ -2590,7 +2591,7 @@ Def Boulder(Id) {
 }
 "FILL_UP_WATER_FLOOR"
 {
-  name = FURNITURE_FILL_UP_WATER_FLOOR_NAME
+  name = FURNITURE_FLOOR_NAME
   viewId = { "floor" }
   layer = GROUND
   canBuildOutsideOfTerritory = true

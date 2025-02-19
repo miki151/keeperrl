@@ -148,8 +148,7 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
       for (auto& requirement : info.requirements)
         if (auto tech = requirement.getReferenceMaybe<TechId>())
           if (!keeperInfo.second.technology.contains(*tech))
-            return "Technology prerequisite \""_s + tech->data() + "\" of build item \"" + info.name.data() + "\" is not available "
-                + " for keeper " + keeperInfo.first;
+            return "Technology prerequisite \""_s + tech->data() + "\" is not available for keeper " + keeperInfo.first;
     WorkshopArray merged;
     for (auto& group : keeperInfo.second.workshopGroups)
       if (!workshopGroups.count(group))

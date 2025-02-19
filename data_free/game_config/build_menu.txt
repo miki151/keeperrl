@@ -15,12 +15,12 @@
     { Furniture {{ "PIT" }                        "STONE" 0 }      ""         BUILD_MENU_GROUPNAME
       BUILD_MENU_HELP }
 
-    { { FillPit }                                        ""   BUILD_MENU_GROUPNAME}
+    { FillPit                                         ""   BUILD_MENU_GROUPNAME}
 
-    { Furniture {{ "FILL_UP_WATER_FLOOR" }        "STONE" 5 }     "" BUILD_MENU_GROUPNAME
+    { Furniture {{ "FILL_UP_WATER_FLOOR" }        "STONE" 5 }     BUILD_MENU_FILL_UP_WATER BUILD_MENU_GROUPNAME
       "" }
 
-    { Furniture {{ "FLOOR" }              }               "" BUILD_MENU_GROUPNAME
+    { Furniture {{ "FLOOR" }              }               BUILD_MENU_BUILDING_INTERIOR BUILD_MENU_GROUPNAME
       "" none {} false none true}
 
     { Furniture {{ "WOOD_WALL" }                  "WOOD" 4 }       ""   BUILD_MENU_GROUPNAME
@@ -44,7 +44,7 @@
 
   "structure" inherit "structure_without_reinforce" append
   {
-    { Furniture {{ "DUNGEON_WALL" "DUNGEON_WALL2" } "STONE" 3}       ""    BUILD_MENU_GROUPNAME
+    { Furniture {{ "DUNGEON_WALL" "DUNGEON_WALL2" } "STONE" 3}       BUILD_MENU_REINFORCE    BUILD_MENU_GROUPNAME
       BUILD_MENU_HELP5}
   }
 
@@ -178,7 +178,7 @@ End
 
   "zones"
   {
-    { Zone QUARTERS                                           ""        BUILD_MENU_GROUPNAME4
+    { Zone QUARTERS                                           BUILD_MENU_QUARTERS        BUILD_MENU_GROUPNAME4
         BUILD_MENU_HELP20 "QUARTERS" {} true}
 
     { Zone LEISURE                                             ""           BUILD_MENU_GROUPNAME4
