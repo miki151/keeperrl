@@ -1097,6 +1097,7 @@ void WindowView::keyboardActionAlways(const SDL_Keysym& key) {
         fxRenderer->loadTextures();
       gui.loadImages();
       gui.reloadTranslations();
+      guiBuilder.clearCache();
       break;
 #endif
     default:

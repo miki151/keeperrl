@@ -59,6 +59,7 @@ class GuiBuilder {
   };
   GuiBuilder(Renderer&, GuiFactory&, Clock*, Options*, Callbacks);
   void reset();
+  void clearCache();
   int getStandardLineHeight() const;
   int getImmigrationBarWidth() const;
   int getItemLineOwnerMargin();
