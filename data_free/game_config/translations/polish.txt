@@ -1259,7 +1259,14 @@ NECK_BODY_PART "szyja"
 FALLS_INTO "{1} wpada do {2:genitive}."
 FALLS_OFF "{1} spada z {2:genitive}."
 FALLS_ON_THE "{1} spada na {2:accusative}."
-FANGS "kły"
+FANGS feminine "kły"
+    "kłów" : genitive
+    "kłami" : instrumental
+    "kły" : accusative
+    "kły" : plural
+    "kłów" : plural,genitive
+    "kłami" : plural,instrumental
+    "kły" : plural,accusative
 FEELS_LIKE_CRACKING_A_JOKE "{1} ma ochotę na żart."
 FEMALE "kobieta"
 FEMALES "kobiety"
@@ -2595,15 +2602,6 @@ CREATURE_ATTRIBUTES_ADOXIE_PRIEST_NAME masculine "wysoki kapłan Adoxiego"
     "wysokimi kapłanami Adoxiego" : plural,instrumental
     "wysokich kapłanów Adoxiego" : plural,accusative
 
-CREATURE_ATTRIBUTES_AIR_ELEMENTAL_ID masculine "pięści"
-    "pięści" : genitive
-    "pięściami" : instrumental
-    "pięści" : accusative
-    "pięści" : plural
-    "pięści" : plural,genitive
-    "pięściami" : plural,instrumental
-    "pięści" : plural,accusative
-
 CREATURE_ATTRIBUTES_AIR_ELEMENTAL_NAME masculine "żywiołak powietrza"
     "żywiołaka powietrza" : genitive
     "żywiołakiem powietrza" : instrumental
@@ -2624,15 +2622,6 @@ CREATURE_ATTRIBUTES_ANGEL_NAME masculine "anioł"
     "aniołami" : plural,instrumental
     "aniołów" : plural,accusative
 
-CREATURE_ATTRIBUTES_ANT_QUEEN_ID feminine "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
-
 CREATURE_ATTRIBUTES_ANT_QUEEN_NAME feminine "królowa mrówek"
     "królowej mrówek" : genitive
     "królową mrówek" : instrumental
@@ -2641,15 +2630,6 @@ CREATURE_ATTRIBUTES_ANT_QUEEN_NAME feminine "królowa mrówek"
     "królowych mrówek" : plural,genitive
     "królowymi mrówek" : plural,instrumental
     "królowych mrówek" : plural,accusative
-
-CREATURE_ATTRIBUTES_ANT_SOLDIER_ID feminine "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
 
 CREATURE_ATTRIBUTES_ANT_SOLDIER_NAME masculine "żołnierz olbrzymiej mrówki"
     "żołnierza olbrzymiej mrówki" : genitive
@@ -2886,15 +2866,6 @@ CREATURE_ATTRIBUTES_BANDIT_NAME masculine "bandyta"
     "bandytami" : plural,instrumental
     "bandytów" : plural,accusative
 
-CREATURE_ATTRIBUTES_BAT_ID pluralMasculine "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
-
 CREATURE_ATTRIBUTES_BAT_NAME masculine "nietoperz"
     "nietoperza" : genitive
     "nietoperzem" : instrumental
@@ -2903,15 +2874,6 @@ CREATURE_ATTRIBUTES_BAT_NAME masculine "nietoperz"
     "nietoperzy" : plural,genitive
     "nietoperzami" : plural,instrumental
     "nietoperze" : plural,accusative
-
-CREATURE_ATTRIBUTES_BLACK_DRAGON_ID pluralMasculine "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
 
 CREATURE_ATTRIBUTES_BLACK_DRAGON_NAME masculine "czarny smok"
     "czarnego smoka" : genitive
@@ -2931,15 +2893,6 @@ CREATURE_ATTRIBUTES_BLACK_DRAGON_STACKNAME masculine "smok"
     "smokami" : plural,instrumental
     "smoki" : plural,accusative
 
-CREATURE_ATTRIBUTES_BLACK_NAGA_ID pluralMasculine "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
-
 CREATURE_ATTRIBUTES_BLACK_NAGA_NAME feminine "czarna naga"
     "czarnej nagi" : genitive
     "czarną nagą" : instrumental
@@ -2957,15 +2910,6 @@ CREATURE_ATTRIBUTES_BOAR_NAME masculine "dzik"
     "dzików" : plural,genitive
     "dzikami" : plural,instrumental
     "dziki" : plural,accusative
-
-CREATURE_ATTRIBUTES_BONE_DRAGON_ID pluralMasculine "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
 
 CREATURE_ATTRIBUTES_BONE_DRAGON_NAME masculine "kościany smok"
     "kościanego smoka" : genitive
@@ -3264,16 +3208,6 @@ CREATURE_ATTRIBUTES_DOG_GROUPNAME masculine "sfora"
     "sforami" : plural,instrumental
     "sfory" : plural,accusative
 
-CREATURE_ATTRIBUTES_DOG_ID neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    ## For plural forms, we can reuse "kły" or "kłów" etc.
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
-
 CREATURE_ATTRIBUTES_DOG_NAME masculine "pies"
     "psa" : genitive
     "psem" : instrumental
@@ -3453,7 +3387,6 @@ CREATURE_ATTRIBUTES_FERAL_CHILD_GROUPNAME feminine "sfora"
     "sforami" : plural,instrumental
     "sfory" : plural,accusative
 
-CREATURE_ATTRIBUTES_FERAL_CHILD_ID1 "kły"
 CREATURE_ATTRIBUTES_FERAL_CHILD_ID "pazury"
 CREATURE_ATTRIBUTES_FERAL_CHILD_NAME masculine "dzikie dziecko"
     "dzikiego dziecka" : genitive
@@ -3464,7 +3397,6 @@ CREATURE_ATTRIBUTES_FERAL_CHILD_NAME masculine "dzikie dziecko"
     "dzikimi dziećmi" : plural,instrumental
     "dzikie dzieci" : plural,accusative
 
-CREATURE_ATTRIBUTES_FIRE_ELEMENTAL_ID "pięści"
 CREATURE_ATTRIBUTES_FIRE_ELEMENTAL_NAME masculine "żywiołak ognia"
     "żywiołaka ognia" : genitive
     "żywiołakiem ognia" : instrumental
@@ -3712,7 +3644,6 @@ CREATURE_ATTRIBUTES_GOBLIN_WORKER_NAME masculine "gobliński robotnik"
     "goblińskimi robotnikami" : plural,instrumental
     "goblińskich robotników" : plural,accusative
 
-CREATURE_ATTRIBUTES_GREEN_DRAGON_ID "kły"
 CREATURE_ATTRIBUTES_GREEN_DRAGON_NAME masculine "zielony smok"
     "zielonego smoka" : genitive
     "zielonym smokiem" : instrumental
@@ -3784,7 +3715,6 @@ CREATURE_ATTRIBUTES_HORSE_PETREACTION "rży"
 CREATURE_ATTRIBUTES_HORSE_SECONDPERSON "masz większe doświadczenie"
 CREATURE_ATTRIBUTES_HORSE_THIRDPERSON "ma większe doświadczenie"
 
-CREATURE_ATTRIBUTES_HYDRA_ID "kły"
 CREATURE_ATTRIBUTES_HYDRA_NAME feminine "hydra"
     "hydry" : genitive
     "hydrą" : instrumental
@@ -3794,7 +3724,6 @@ CREATURE_ATTRIBUTES_HYDRA_NAME feminine "hydra"
     "hydrami" : plural,instrumental
     "hydry" : plural,accusative
 
-CREATURE_ATTRIBUTES_ICE_DEMON_ID "pięści"
 CREATURE_ATTRIBUTES_ICE_DEMON_NAME masculine "lodowy demon"
     "lodowego demona" : genitive
     "lodowym demonem" : instrumental
@@ -3935,15 +3864,6 @@ CREATURE_ATTRIBUTES_KEEPER_MAGE_F_NAME feminine "czarodziejka"
     "czarodziejkami" : plural,instrumental
     "czarodziejki" : plural,accusative
 
-CREATURE_ATTRIBUTES_KIRIN_ID neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
-
 CREATURE_ATTRIBUTES_KIRIN_NAME masculine "ki-rin"
     "ki-rina" : genitive
     "ki-rinem" : instrumental
@@ -4015,15 +3935,6 @@ CREATURE_ATTRIBUTES_KOBOLD_NAME masculine "kobold"
     "koboldami" : plural,instrumental
     "koboldy" : plural,accusative
 
-CREATURE_ATTRIBUTES_LAVA_GOLEM_ID masculine "pięści"
-    "pięści" : genitive
-    "pięściami" : instrumental
-    "pięści" : accusative
-    "pięści" : plural
-    "pięści" : plural,genitive
-    "pięściami" : plural,instrumental
-    "pięści" : plural,accusative
-
 CREATURE_ATTRIBUTES_LAVA_GOLEM_NAME masculine "golem lawy"
     "golema lawy" : genitive
     "golemem lawy" : instrumental
@@ -4035,14 +3946,6 @@ CREATURE_ATTRIBUTES_LAVA_GOLEM_NAME masculine "golem lawy"
 
 CREATURE_ATTRIBUTES_LIZARDMAN_CHATREACTIONFRIENDLY "złorzeczy wszystkim ludziom"
 CREATURE_ATTRIBUTES_LIZARDMAN_CHATREACTIONHOSTILE "\"Giń!\""
-CREATURE_ATTRIBUTES_LIZARDMAN_ID neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
 
 CREATURE_ATTRIBUTES_LIZARDMAN_NAME1 masculine "wódz jaszczuroludzi"
     "wodza jaszczuroludzi" : genitive
@@ -4329,15 +4232,6 @@ CREATURE_ATTRIBUTES_RAVEN_NAME masculine "kruk"
     "krukami" : plural,instrumental
     "kruki" : plural,accusative
 
-CREATURE_ATTRIBUTES_RED_DRAGON_ID neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
-
 CREATURE_ATTRIBUTES_RED_DRAGON_NAME masculine "czerwony smok"
     "czerwonego smoka" : genitive
     "czerwonym smokiem" : instrumental
@@ -4355,15 +4249,6 @@ CREATURE_ATTRIBUTES_RED_DRAGON_STACKNAME masculine "smok"
     "smoków" : plural,genitive
     "smokami" : plural,instrumental
     "smoki" : plural,accusative
-
-CREATURE_ATTRIBUTES_RED_NAGA_ID neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
 
 CREATURE_ATTRIBUTES_RED_NAGA_NAME feminine "czerwona naga"
     "czerwonej nagi" : genitive
@@ -4394,15 +4279,6 @@ CREATURE_ATTRIBUTES_SHAPESHIFTER_NAME masculine "zmiennokształtny"
     "zmiennokształtnych" : plural,genitive
     "zmiennokształtnymi" : plural,instrumental
     "zmiennokształtnych" : plural,accusative
-
-CREATURE_ATTRIBUTES_SHELOB_ID neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
 
 CREATURE_ATTRIBUTES_SHELOB_NAME masculine "olbrzymi pająk"
     "olbrzymiego pająka" : genitive
@@ -4451,15 +4327,6 @@ CREATURE_ATTRIBUTES_SKELETON_WOLF_GROUPNAME neuter "stado"
     "stadami" : plural,instrumental
     "stada" : plural,accusative
 
-CREATURE_ATTRIBUTES_SKELETON_WOLF_ID1 neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
-
 CREATURE_ATTRIBUTES_SKELETON_WOLF_ID neuter "pazury"
     "pazurów" : genitive
     "pazurami" : instrumental
@@ -4478,15 +4345,6 @@ CREATURE_ATTRIBUTES_SKELETON_WOLF_NAME masculine "szkielet wilk"
     "szkieletami wilkami" : plural,instrumental
     "szkieletów wilków" : plural,accusative
 
-CREATURE_ATTRIBUTES_SLASHER_ID1 neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
-
 CREATURE_ATTRIBUTES_SLASHER_ID neuter "pazury"
     "pazurów" : genitive
     "pazurami" : instrumental
@@ -4504,15 +4362,6 @@ CREATURE_ATTRIBUTES_SLASHER_NAME masculine "rozpruwacz"
     "rozpruwaczy" : plural,genitive
     "rozpruwaczami" : plural,instrumental
     "rozpruwaczy" : plural,accusative
-
-CREATURE_ATTRIBUTES_SNAKE_ID neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
 
 CREATURE_ATTRIBUTES_SNAKE_NAME masculine "wąż"
     "węża" : genitive
@@ -4546,15 +4395,6 @@ CREATURE_ATTRIBUTES_SORCERER_NAME masculine "zaklinacz"
 CREATURE_ATTRIBUTES_SPIDER_FOOD_CHATREACTIONFRIENDLY "\"Uwolnij mnie z mego cierpienia, BŁAGAM!\""
 CREATURE_ATTRIBUTES_SPIDER_FOOD_CHATREACTIONHOSTILE "\"Zabij mnie, by zakończyć mękę!\""
 CREATURE_ATTRIBUTES_SPIDER_FOOD_DEATHDESCRIPTION "martwy, uwolniony od niewyobrażalnej agonii"
-
-CREATURE_ATTRIBUTES_SPIDER_ID neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
 
 CREATURE_ATTRIBUTES_SPIDER_NAME masculine "pająk"
     "pająka" : genitive
@@ -4755,14 +4595,6 @@ CREATURE_ATTRIBUTES_UNICORN_PETREACTION "parska"
 
 CREATURE_ATTRIBUTES_VAMPIRE_BRUTE_CHATREACTIONFRIENDLY "\"Niech wszyscy ludzie będą przeklęci!\""
 CREATURE_ATTRIBUTES_VAMPIRE_BRUTE_CHATREACTIONHOSTILE "\"Giń!\""
-CREATURE_ATTRIBUTES_VAMPIRE_BRUTE_ID neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
 
 CREATURE_ATTRIBUTES_VAMPIRE_BRUTE_NAME masculine "wampir brutale"
     "wampira brutala" : genitive
@@ -4777,14 +4609,6 @@ CREATURE_ATTRIBUTES_VAMPIRE_CHATREACTIONFRIENDLY1 "\"Czasem nie można odmówić
 CREATURE_ATTRIBUTES_VAMPIRE_CHATREACTIONFRIENDLY "\"Niech wszyscy ludzie będą przeklęci!\""
 CREATURE_ATTRIBUTES_VAMPIRE_CHATREACTIONHOSTILE1 "\"Czasem nie można odmówić sobie kropelki krwi!\""
 CREATURE_ATTRIBUTES_VAMPIRE_CHATREACTIONHOSTILE "\"Giń!\""
-CREATURE_ATTRIBUTES_VAMPIRE_ID neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
 
 CREATURE_ATTRIBUTES_VAMPIRE_NAME1 masculine "wampir szlachcic"
     "wampira szlachcica" : genitive
@@ -4842,15 +4666,6 @@ CREATURE_ATTRIBUTES_WATER_ELEMENTAL_NAME masculine "żywiołak wody"
     "żywiołakami wody" : plural,instrumental
     "żywiołaków wody" : plural,accusative
 
-CREATURE_ATTRIBUTES_WEREWOLF_ID1 neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
-
 CREATURE_ATTRIBUTES_WEREWOLF_ID neuter "pazury"
     "pazurów" : genitive
     "pazurami" : instrumental
@@ -4869,15 +4684,6 @@ CREATURE_ATTRIBUTES_WEREWOLF_NAME masculine "wilkołak"
     "wilkołakami" : plural,instrumental
     "wilkołaki" : plural,accusative
 
-CREATURE_ATTRIBUTES_WHITE_DRAGON_ID neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
-
 CREATURE_ATTRIBUTES_WHITE_DRAGON_NAME masculine "biały smok"
     "białego smoka" : genitive
     "białym smokiem" : instrumental
@@ -4895,15 +4701,6 @@ CREATURE_ATTRIBUTES_WHITE_DRAGON_STACKNAME masculine "smok"
     "smoków" : plural,genitive
     "smokami" : plural,instrumental
     "smoki" : plural,accusative
-
-CREATURE_ATTRIBUTES_WHITE_NAGA_ID neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
 
 CREATURE_ATTRIBUTES_WHITE_NAGA_NAME feminine "biała naga"
     "białej nagi" : genitive
@@ -4947,15 +4744,6 @@ CREATURE_ATTRIBUTES_WOLF_GROUPNAME neuter "stado"
     "stadami" : plural,instrumental
     "stada" : plural,accusative
 
-CREATURE_ATTRIBUTES_WOLF_ID1 neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
-
 CREATURE_ATTRIBUTES_WOLF_ID neuter "pazury"
     "pazurów" : genitive
     "pazurami" : instrumental
@@ -4994,15 +4782,6 @@ CREATURE_ATTRIBUTES_WRAITH_NAME masculine "upiór"
     "upiorami" : plural,instrumental
     "upiorów" : plural,accusative
 
-CREATURE_ATTRIBUTES_YELLOW_DRAGON_ID neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
-
 CREATURE_ATTRIBUTES_YELLOW_DRAGON_NAME masculine "żółty smok"
     "żółtego smoka" : genitive
     "żółtym smokiem" : instrumental
@@ -5020,15 +4799,6 @@ CREATURE_ATTRIBUTES_YELLOW_DRAGON_STACKNAME masculine "smok"
     "smoków" : plural,genitive
     "smokami" : plural,instrumental
     "smoki" : plural,accusative
-
-CREATURE_ATTRIBUTES_YELLOW_NAGA_ID neuter "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
 
 CREATURE_ATTRIBUTES_YELLOW_NAGA_NAME feminine "żółta naga"
     "żółtej nagi" : genitive
@@ -6990,15 +6760,6 @@ FURNITURE_WORKSHOP_TOOL_STAND_NAME masculine "stojak na narzędzia"
     "stojakami na narzędzia" : plural,instrumental
     "stojaki na narzędzia" : plural,accusative
 
-IMMIGRATION_ID feminine "kły"
-    "kłów" : genitive
-    "kłami" : instrumental
-    "kły" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
-
 ITEM_LISTS_BLACKMARKETCRAFTING_TYPE1 "Zawiera sekrety legendarnej wiedzy kowalskiej"
 ITEM_LISTS_BLACKMARKETCRAFTING_TYPE "mistrzostwo kowalstwa"
 
@@ -8095,15 +7856,6 @@ WORKSHOPS_MENU_ID1 masculine "róg"
     "rogami" : plural,instrumental
     "rogi" : plural,accusative
 
-WORKSHOPS_MENU_ID masculine "kieł"
-    "kła" : genitive
-    "kłem" : instrumental
-    "kieł" : accusative
-    "kły" : plural
-    "kłów" : plural,genitive
-    "kłami" : plural,instrumental
-    "kły" : plural,accusative
-
 WORKSHOPS_MENU_TYPE10 "Trwale przemienia Strażnika w losową istotę."
 WORKSHOPS_MENU_TYPE11 "więcej ognia"
 WORKSHOPS_MENU_TYPE12 "mniejsza premia do obrażeń"
@@ -8295,7 +8047,6 @@ ITEMS_AUTOMATONARMSADA_NAME "adamantynowe ramiona"
 ITEMS_AUTOMATONARMSADOXIUM_NAME "adoxium ramiona"
 ITEMS_AUTOMATONARMSINFERNITE_NAME "infernitowe ramiona"
 ITEMS_AUTOMATONARMSIRON_NAME "żelazne ramiona"
-ITEMS_AUTOMATONARMSWOOD_ID "pięści"
 ITEMS_AUTOMATONARMSWOOD_NAME "drewniane ramiona"
 ITEMS_AUTOMATONARMSWOOD_PREFIX "Zapewniają atak wręcz."
 ITEMS_AUTOMATONCRAFTINGADA_NAME "adamantynowe ramiona rzemieślnicze"

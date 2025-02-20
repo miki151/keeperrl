@@ -704,7 +704,7 @@ End
       type = HumanoidLike LARGE
       material = ICE
       intrinsicAttacks = {
-        ARM {{{ Intrinsic { "fist_attack" } CREATURE_ATTRIBUTES_ICE_DEMON_ID 10 {
+        ARM {{{ Intrinsic { "fist_attack" } FISTS 10 {
             attackType = HIT
             attackMsg = SWING
             meleeAttackAttr = COLD_DAMAGE
@@ -1044,7 +1044,7 @@ End
       type = NonHumanoid LARGE
       weight = 400
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_HYDRA_ID 8 {
+        HEAD {{{ Intrinsic { "bite_attack" } FANGS 8 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.3 Lasting POISON} } }}}
@@ -1086,7 +1086,7 @@ End
       weight = 400
       deathSound = none
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_SHELOB_ID 8 {
+        TORSO {{{ Intrinsic { "bite_attack" } FANGS 8 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.3 Lasting POISON} } }}}
@@ -1117,7 +1117,7 @@ End
         WING 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_GREEN_DRAGON_ID 12 {
+        HEAD {{{ Intrinsic { "bite_attack" } FANGS 12 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.3 Lasting POISON} } }}}
@@ -1163,7 +1163,7 @@ End
         WING 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_KIRIN_ID 12 {
+        HEAD {{{ Intrinsic { "bite_attack" } FANGS 12 {
             attackType = BITE
             attackMsg = BITE
             meleeAttackAttr = SPELL_DAMAGE
@@ -1196,7 +1196,7 @@ End
         ARM 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_RED_NAGA_ID 7 {
+        HEAD {{{ Intrinsic { "bite_attack" } FANGS 7 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.5 Fire{25}} } }}}
@@ -1226,7 +1226,7 @@ End
         WING 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_RED_DRAGON_ID 15 {
+        HEAD {{{ Intrinsic { "bite_attack" } FANGS 15 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.5 Fire{30}} } }}}
@@ -1274,7 +1274,7 @@ End
         ARM 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_BLACK_NAGA_ID 7 {
+        HEAD {{{ Intrinsic { "bite_attack" } FANGS 7 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.5 Lasting BLIND} } }}}
@@ -1303,7 +1303,7 @@ End
         WING 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_BLACK_DRAGON_ID 15 {
+        HEAD {{{ Intrinsic { "bite_attack" } FANGS 15 {
             attackType = BITE
             attackMsg = BITE } }}}
       }
@@ -1353,7 +1353,7 @@ End
         ARM 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_WHITE_NAGA_ID 7 {
+        HEAD {{{ Intrinsic { "bite_attack" } FANGS 7 {
             attackType = BITE
             attackMsg = BITE
             meleeAttackAttr = COLD_DAMAGE
@@ -1384,7 +1384,7 @@ End
         WING 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_WHITE_DRAGON_ID 15 {
+        HEAD {{{ Intrinsic { "bite_attack" } FANGS 15 {
             attackType = BITE
             attackMsg = BITE } }}}
       }
@@ -1430,7 +1430,7 @@ End
         ARM 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_YELLOW_NAGA_ID 7 {
+        HEAD {{{ Intrinsic { "bite_attack" } FANGS 7 {
             attackType = BITE
             attackMsg = BITE
             meleeAttackAttr = ACID_DAMAGE } }}}
@@ -1460,7 +1460,7 @@ End
         WING 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_YELLOW_DRAGON_ID 15 {
+        HEAD {{{ Intrinsic { "bite_attack" } FANGS 15 {
             attackType = BITE
             attackMsg = BITE } }}}
       }
@@ -1507,7 +1507,7 @@ End
         WING 2
       }
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_BONE_DRAGON_ID 15 {
+        HEAD {{{ Intrinsic { "bite_attack" } FANGS 15 {
             attackType = BITE
             attackMsg = BITE } }}}
       }
@@ -2420,7 +2420,7 @@ End
       type = HumanoidLike LARGE
       material = LAVA
       intrinsicAttacks = {
-        ARM {{{ Intrinsic { "fist_attack" } CREATURE_ATTRIBUTES_LAVA_GOLEM_ID 10 {
+        ARM {{{ Intrinsic { "fist_attack" } FISTS 10 {
             attackType = HIT
             attackMsg = SWING
             victimEffect = {0.3 Fire{30}} } }}}
@@ -2746,7 +2746,7 @@ End
       intrinsicAttacks = {
         HEAD {{
           isExtraAttack = true
-          itemType = { Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_VAMPIRE_ID 5 {
+          itemType = { Intrinsic { "bite_attack" } FANGS 5 {
             attackType = BITE
             attackMsg = BITE
             attackerEffect = { RegrowBodyPart 1 }
@@ -2791,7 +2791,7 @@ End
       intrinsicAttacks = {
         HEAD {{
           isExtraAttack = true
-          itemType = { Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_VAMPIRE_BRUTE_ID 5 {
+          itemType = { Intrinsic { "bite_attack" } FANGS 5 {
             attackType = BITE
             attackMsg = BITE
             attackerEffect = { RegrowBodyPart 1 }
@@ -3253,7 +3253,7 @@ End
       intrinsicAttacks = {
         HEAD {{
           isExtraAttack = true
-          itemType = { Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_LIZARDMAN_ID 5 {
+          itemType = { Intrinsic { "bite_attack" } FANGS 5 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.1 Lasting POISON} } }}}
@@ -3917,7 +3917,7 @@ End
       weight = 0.3
       deathSound = none
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_SPIDER_ID 1 {
+        TORSO {{{ Intrinsic { "bite_attack" } FANGS 1 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.1 Lasting POISON} } }}}
@@ -3991,7 +3991,7 @@ End
       }
       deathSound = none
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_ANT_SOLDIER_ID 6 {
+        HEAD {{{ Intrinsic { "bite_attack" } FANGS 6 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.1 Lasting POISON} } }}}
@@ -4019,7 +4019,7 @@ End
       }
       deathSound = none
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_ANT_QUEEN_ID 12 {
+        HEAD {{{ Intrinsic { "bite_attack" } FANGS 12 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {1.0 Lasting POISON} } }}}
@@ -4047,7 +4047,7 @@ End
       }
       deathSound = none
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_SNAKE_ID 1 {
+        HEAD {{{ Intrinsic { "bite_attack" } FANGS 1 {
             attackType = BITE
             attackMsg = BITE
             victimEffect = {0.3 Lasting POISON} } }}}
@@ -4116,7 +4116,7 @@ End
       weight = 35
       intrinsicAttacks = {
         LEG  {{itemType = { Intrinsic { "claws_attack" } CREATURE_ATTRIBUTES_WOLF_ID 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
-        HEAD {{itemType = { Intrinsic { "bite_attack" }  CREATURE_ATTRIBUTES_WOLF_ID1 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
+        HEAD {{itemType = { Intrinsic { "bite_attack" }  FANGS 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
       }
       deathSound = "DOG_DEATH"
       ambientSound = 0.01 {"WOLF_AMBIENT" 0.2}
@@ -4145,7 +4145,7 @@ End
       material = BONE
       intrinsicAttacks = {
         LEG  {{itemType = { Intrinsic { "claws_attack" } CREATURE_ATTRIBUTES_SKELETON_WOLF_ID 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
-        HEAD {{itemType = { Intrinsic { "bite_attack" }  CREATURE_ATTRIBUTES_SKELETON_WOLF_ID1 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
+        HEAD {{itemType = { Intrinsic { "bite_attack" }  FANGS 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
       }
     }
     permanentEffects = {
@@ -4172,7 +4172,7 @@ End
       weight = 35
       intrinsicAttacks = {
         LEG  {{itemType = { Intrinsic { "claws_attack" } CREATURE_ATTRIBUTES_FERAL_CHILD_ID 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
-        HEAD {{itemType = { Intrinsic { "bite_attack" }  CREATURE_ATTRIBUTES_FERAL_CHILD_ID1 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
+        HEAD {{itemType = { Intrinsic { "bite_attack" }  FANGS 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
       }
     }
     maxLevelIncrease = {
@@ -4201,7 +4201,7 @@ End
       type = Humanoid LARGE
       intrinsicAttacks = {
         LEG  {{ itemType = { Intrinsic { "claws_attack" } CREATURE_ATTRIBUTES_WEREWOLF_ID 8 { attackType = HIT attackMsg = CLAW }} isExtraAttack = true }}
-        HEAD {{ itemType = { Intrinsic { "bite_attack" }  CREATURE_ATTRIBUTES_WEREWOLF_ID1 7 { attackType = BITE attackMsg = BITE }} isExtraAttack = true }}
+        HEAD {{ itemType = { Intrinsic { "bite_attack" }  FANGS 7 { attackType = BITE attackMsg = BITE }} isExtraAttack = true }}
       }
     }
     permanentEffects = {
@@ -4229,7 +4229,7 @@ End
     body = {
       type = FourLegged MEDIUM
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" }  CREATURE_ATTRIBUTES_DOG_ID 4 { attackType = BITE attackMsg = BITE } }}}
+        HEAD {{{ Intrinsic { "bite_attack" }  FANGS 4 { attackType = BITE attackMsg = BITE } }}}
       }
       weight = 25
       ambientSound = 0.01 {"DOG_AMBIENT" 0.2}
@@ -4298,7 +4298,7 @@ End
       material = FIRE
       deathSound = none
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "fist_attack" }  CREATURE_ATTRIBUTES_FIRE_ELEMENTAL_ID 5 {
+        TORSO {{{ Intrinsic { "fist_attack" }  FISTS 5 {
             attackType = HIT attackMsg = SWING meleeAttackAttr = FIRE_DAMAGE } }}}
       }
     }
@@ -4322,7 +4322,7 @@ End
       material = SPIRIT
       deathSound = none
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "fist_attack" }  CREATURE_ATTRIBUTES_AIR_ELEMENTAL_ID 5 { attackType = HIT attackMsg = SWING} }}}
+        TORSO {{{ Intrinsic { "fist_attack" }  FISTS 5 { attackType = HIT attackMsg = SWING} }}}
       }
     }
     attr = {
@@ -4443,7 +4443,7 @@ End
       type = Bird SMALL
       weight = 1
       intrinsicAttacks = {
-        HEAD {{{ Intrinsic { "bite_attack" } CREATURE_ATTRIBUTES_BAT_ID 3 { attackType = BITE attackMsg = BITE } }}}
+        HEAD {{{ Intrinsic { "bite_attack" } FANGS 3 { attackType = BITE attackMsg = BITE } }}}
       }
     }
     attr = {
@@ -5223,7 +5223,7 @@ End
       weight = 35
       intrinsicAttacks = {
         LEG  {{itemType = { Intrinsic { "claws_attack" } CREATURE_ATTRIBUTES_SLASHER_ID 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
-        HEAD {{itemType = { Intrinsic { "bite_attack" }  CREATURE_ATTRIBUTES_SLASHER_ID1 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
+        HEAD {{itemType = { Intrinsic { "bite_attack" }  FANGS 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
       }
     }
     permanentEffects = {

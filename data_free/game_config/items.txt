@@ -129,7 +129,7 @@ Def ARMS(Suffix, Color, FullName, ResourceId, Damage, Attr)
         Name FullName
         Description ITEMS_AUTOMATONARMSWOOD_PREFIX
         {
-          AddBodyPart ARM 2 { Intrinsic { "fist_attack" } ITEMS_AUTOMATONARMSWOOD_ID 4 {
+          AddBodyPart ARM 2 { Intrinsic { "fist_attack" } FISTS 4 {
             attackMsg = SWING
             meleeAttackAttr = Attr
           } }

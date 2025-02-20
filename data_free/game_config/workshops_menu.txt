@@ -148,7 +148,7 @@ append {
       {{Potion OneTimeBoost() Name WORKSHOPS_MENU_TYPE4 Permanent PIERCING_VOICE }  20       "GOLD" 100}
       {{Potion OneTimeBoost() Name WORKSHOPS_MENU_TYPE5
           Description WORKSHOPS_MENU_TYPE6
-          AddIntrinsicAttack HEAD { Intrinsic { "bite_attack" } WORKSHOPS_MENU_ID 5 {
+          AddIntrinsicAttack HEAD { Intrinsic { "bite_attack" } FANGS 5 {
           attackType = BITE
           attackMsg = BITE
           victimEffect = {0.2 Lasting POISON} } } }            50       "GOLD" 100}
