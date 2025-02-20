@@ -58,19 +58,19 @@ ALLY_DOESNT_EXIST "Sojusznik nie istnieje"
 A_MINION_BECOMES_PREGNANT "Sługa zachodzi w ciążę"
 AMULET_OF masculine "amulet {1:genitive}"
     "amuletu {1:genitive}" : genitive
-    "amuletem {1:instrumental}" : instrumental
+    "amuletem {1:genitive}" : instrumental
     "amulet {1:genitive}" : accusative
     "amulety {1:genitive}" : plural
     "amuletów {1:genitive}" : plural,genitive
-    "amuletami {1:instrumental}" : plural,instrumental
+    "amuletami {1:genitive}" : plural,instrumental
     "amulety {1:genitive}" : plural,accusative
 AMULETS_OF masculine "amu­lety {1:genitive}"
     "amuletów {1:genitive}" : genitive
-    "amuletami {1:instrumental}" : instrumental
+    "amuletami {1:genitive}" : instrumental
     "amulety {1:genitive}" : accusative
     "amulety {1:genitive}" : plural
     "amuletów {1:genitive}" : plural,genitive
-    "amuletami {1:instrumental}" : plural,instrumental
+    "amuletami {1:genitive}" : plural,instrumental
     "amulety {1:genitive}" : plural,accusative
 ANALYTICS_EFFECT_DESCRIPTION "Wywołuje zdarzenie analityczne (logowanie)"
 ANALYTICS_EFFECT_NAME "zdarzenie analityczne"
@@ -378,7 +378,9 @@ FAILED_TO_LOAD_SAVE "Nie udało się wczytać zapisu :("
 FAILED_TO_LOAD_TUTORIAL "Nie udało się wczytać samouczka :("
 FALLS_APART "{1} rozpada się."
 FALLS_ASLEEP_IN "{1} zasypia na {2:instrumental}."
-FASTER "porusza się szybciej"
+FASTER "szybszy"
+    "szybsza" : feminine
+    "szybsze" : neuter
 FEELS_LIKE_DOING_SOME_WORK "{1} ma ochotę popracować."
 FEELS_LAZY "{1} czuje się leniwy."
 FEELS_LIKE_WORKING_OUT "{1} ma ochotę poćwiczyć."
@@ -730,19 +732,19 @@ RETIRED_SCREENSHOT_TEXT "Twoje lochy zostaną udostępnione w Steam Workshop ze 
 RETIRE_WHEN_READY "Gdy będziesz gotowy, porzuć swoje lochy i udostępnij je w sieci. Inni gracze będą mogli je najeżdżać. Aby to zrobić, wciśnij Escape i wybierz „porzuć”."
 RING_OF masculine "pierścień {1:genitive}"
     "pierścienia {1:genitive}" : genitive
-    "pierścieniem {1:instrumental}" : instrumental
+    "pierścieniem {1:genitive}" : instrumental
     "pierścień {1:genitive}" : accusative
     "pierścienie {1:genitive}" : plural
     "pierścieni {1:genitive}" : plural,genitive
-    "pierścieniami {1:instrumental}" : plural,instrumental
+    "pierścieniami {1:genitive}" : plural,instrumental
     "pierścienie {1:genitive}" : plural,accusative
 RINGS_OF masculine "pierścienie {1:genitive}"
     "pierścieni {1:genitive}" : genitive
-    "pierścieniami {1:instrumental}" : instrumental
+    "pierścieniami {1:genitive}" : instrumental
     "pierścienie {1:genitive}" : accusative
     "pierścienie {1:genitive}" : plural
     "pierścieni {1:genitive}" : plural,genitive
-    "pierścieniami {1:instrumental}" : plural,instrumental
+    "pierścieniami {1:genitive}" : plural,instrumental
     "pierścienie {1:genitive}" : plural,accusative
 SATIATED "nasycony"
 SAVE_AND_EXIT_CONFIRM "Czy chcesz zapisać i wyjść z gry?"
@@ -1048,7 +1050,7 @@ YOUR_BODY_PART_IS_RIPPED_TO_PIECES "Twoja {1} zostaje rozerwana na kawałki!"
 YOUR_BODY_PART_IS "Twoja {1} jest {2}!"
 YOU_REINFORCE_THE_WALL "Wzmacniasz ścianę."
 HE_REINFORCES_THE_WALL "{1} wzmacnia ścianę."
-YOU_REMOVE "Usuwasz {1:accusative}."
+YOU_REMOVE "Zdejmujesz {1:accusative}."
 REMOVES "{1} usuwa {2:accusative}."
 YOUR_EVIL_TRIGGER "Twoje zło"
 YOUR_IDENTITY_IS_UNCOVERED "Twoja tożsamość zostaje odkryta!"
@@ -2136,23 +2138,9 @@ ATTR_INFO_WORKSHOP_HELP "Określa umiejętności pracy w warsztacie."
 ATTR_INFO_WORKSHOP_NAME "warsztat"
 BODY_MATERIALS_ADA_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_ADA_NAME neuter "adamantium"
-    "adamantium" : genitive
-    "adamantium" : instrumental
-    "adamantium" : accusative
-    "adamantium" : plural
-    "adamantium" : plural,genitive
-    "adamantium" : plural,instrumental
-    "adamantium" : plural,accusative
 
 BODY_MATERIALS_ADOXIUM_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_ADOXIUM_NAME neuter "adoxium"
-    "adoxium" : genitive
-    "adoxium" : instrumental
-    "adoxium" : accusative
-    "adoxium" : plural
-    "adoxium" : plural,genitive
-    "adoxium" : plural,instrumental
-    "adoxium" : plural,accusative
 
 BODY_MATERIALS_BONE_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_BONE_NAME feminine "kość"
@@ -5871,23 +5859,23 @@ FURNITURE_MOUNTAIN2_NAME1 neuter "adamantytowa ruda"
     "adamantytowymi rudami" : plural,instrumental
     "adamantytowe rudy" : plural,accusative
 
-FURNITURE_MOUNTAIN2_NAME2 neuter "adoxiumowa ruda"
-    "adoxiumowej rudy" : genitive
-    "adoxiumową rudą" : instrumental
-    "adoxiumową rudę" : accusative
-    "adoxiumowe rudy" : plural
-    "adoxiumowych rud" : plural,genitive
-    "adoxiumowymi rudami" : plural,instrumental
-    "adoxiumowe rudy" : plural,accusative
+FURNITURE_MOUNTAIN2_NAME2 neuter "ruda adoxium"
+    "rudy adoxium" : genitive
+    "rudą adoxium" : instrumental
+    "rudę adoxium" : accusative
+    "rudy adoxium" : plural
+    "rud adoxium" : plural,genitive
+    "rudami adoxium" : plural,instrumental
+    "rudy adoxium" : plural,accusative
 
-FURNITURE_MOUNTAIN2_NAME3 neuter "infernitowa ruda"
-    "infernitowej rudy" : genitive
-    "infernitową rudą" : instrumental
-    "infernitową rudę" : accusative
-    "infernitowe rudy" : plural
-    "infernitowych rud" : plural,genitive
-    "infernitowymi rudami" : plural,instrumental
-    "infernitowe rudy" : plural,accusative
+FURNITURE_MOUNTAIN2_NAME3 neuter "ruda infernitu"
+    "rudy infernitu" : genitive
+    "rudą infernitu" : instrumental
+    "rudę infernitu" : accusative
+    "rudy infernitu" : plural
+    "rud infernitu" : plural,genitive
+    "rudami infernitu" : plural,instrumental
+    "rudy infernitu" : plural,accusative
 
 FURNITURE_MOUNTAIN2_NAME4 neuter "ruda żelaza"
     "rudy żelaza" : genitive
@@ -6712,16 +6700,14 @@ ITEM_LISTS_BLACKMARKETCRAFTING_TYPE "mistrzostwo kowalstwa"
 ITEM_LISTS_BLACKMARKETSCROLLS_TYPE1 "Tworzy wielką chmurę mgły"
 ITEM_LISTS_BLACKMARKETSCROLLS_TYPE "większa mgła"
 
-## For physical items, define them with expansions if they might appear in {1} placeholders:
-## e.g. "pancerz" masculine or "pancerz" might be considered masculine in Polish.
-ITEMS_ADAARMOR_NAME1 masculine "pancerz adoxium"
-    "pancerza adoxium" : genitive
-    "pancerzem adoxium" : instrumental
-    "pancerz adoxium" : accusative
-    "pancerze adoxium" : plural
-    "pancerzy adoxium" : plural,genitive
-    "pancerzami adoxium" : plural,instrumental
-    "pancerze adoxium" : plural,accusative
+ITEMS_ADAARMOR_NAME1 masculine "pancerz z adoxium"
+    "pancerza z adoxium" : genitive
+    "pancerzem z adoxium" : instrumental
+    "pancerz z adoxium" : accusative
+    "pancerze z adoxium" : plural
+    "pancerzy z adoxium" : plural,genitive
+    "pancerzami z adoxium" : plural,instrumental
+    "pancerze z adoxium" : plural,accusative
 
 ITEMS_ADAARMOR_NAME masculine "adamantynowy pancerz"
     "adamantynowego pancerza" : genitive
@@ -6733,164 +6719,554 @@ ITEMS_ADAARMOR_NAME masculine "adamantynowy pancerz"
     "adamantynowe pancerze" : plural,accusative
 
 ITEMS_ADAARMOR_SHORTNAME "pancerz"
-
-ITEMS_ADABATTLEAXE_NAME "topór bojowy z infernitu"
-ITEMS_ADABATTLEAXE_SHORTNAME "infernite"
-
-ITEMS_ADABOOTS_NAME1 "para butów adoxium"
-ITEMS_ADABOOTS_NAME "para butów adamantynowych"
+ITEMS_ADABATTLEAXE_NAME masculine "topór bojowy z infernitu"
+    "topora bojowego z infernitu" : genitive
+    "toporem bojowym z infernitu" : instrumental
+    "topór bojowy z infernitu" : accusative
+    "topory bojowe z infernitu" : plural
+    "toporów bojowych z infernitu" : plural,genitive
+    "toporami bojowymi z infernitu" : plural,instrumental
+    "topory bojowe z infernitu" : plural,accusative
+ITEMS_ADABATTLEAXE_SHORTNAME "z infernitu"
+ITEMS_ADABOOTS_NAME1 feminine "para butów z adoxium"
+    "pary butów z adoxium" : genitive
+    "parą butów z adoxium" : instrumental
+    "parę butów z adoxium" : accusative
+    "pary butów z adoxium" : plural
+    "par butów z adoxium" : plural,genitive
+    "parami butów z adoxium" : plural,instrumental
+    "pary butów z adoxium" : plural,accusative
+ITEMS_ADABOOTS_NAME feminine "para butów adamantynowych"
+    "pary butów adamantynowych" : genitive
+    "parą butów adamantynowych" : instrumental
+    "parę butów adamantynowych" : accusative
+    "pary butów adamantynowych" : plural
+    "par butów adamantynowych" : plural,genitive
+    "parami butów adamantynowych" : plural,instrumental
+    "pary butów adamantynowych" : plural,accusative
 ITEMS_ADABOOTS_SHORTNAME "buty"
-
-ITEMS_ADAGLOVES_NAME1 "para rękawic adoxium"
-ITEMS_ADAGLOVES_NAME "para rękawic adamantynowych"
+ITEMS_ADAGLOVES_NAME1 feminine "para rękawic z adoxium"
+    "pary rękawic z adoxium" : genitive
+    "parą rękawic z adoxium" : instrumental
+    "parę rękawic z adoxium" : accusative
+    "pary rękawic z adoxium" : plural
+    "par rękawic z adoxium" : plural,genitive
+    "parami rękawic z adoxium" : plural,instrumental
+    "pary rękawic z adoxium" : plural,accusative
+ITEMS_ADAGLOVES_NAME feminine "para rękawic adamantynowych"
+    "pary rękawic adamantynowych" : genitive
+    "parą rękawic adamantynowych" : instrumental
+    "parę rękawic adamantynowych" : accusative
+    "pary rękawic adamantynowych" : plural
+    "par rękawic adamantynowych" : plural,genitive
+    "parami rękawic adamantynowych" : plural,instrumental
+    "pary rękawic adamantynowych" : plural,accusative
 ITEMS_ADAGLOVES_SHORTNAME "rękawice"
-
-ITEMS_ADAHELM_NAME1 "hełm adoxium"
-ITEMS_ADAHELM_NAME "hełm adamantynowy"
+ITEMS_ADAHELM_NAME masculine "hełm adamantynowy"
+    "hełmu adamantynowego" : genitive
+    "hełmem adamantynowym" : instrumental
+    "hełm adamantynowy" : accusative
+    "hełmy adamantynowe" : plural
+    "hełmów adamantynowych" : plural,genitive
+    "hełmami adamantynowymi" : plural,instrumental
+    "hełmy adamantynowe" : plural,accusative
+ITEMS_ADAHELM_NAME1 masculine "hełm z adoxium"
+    "hełmu z adoxium" : genitive
+    "hełmem z adoxium" : instrumental
+    "hełm z adoxium" : accusative
+    "hełmy z adoxium" : plural
+    "hełmów z adoxium" : plural,genitive
+    "hełmami z adoxium" : plural,instrumental
+    "hełmy z adoxium" : plural,accusative
 ITEMS_ADAHELM_SHORTNAME "hełm"
-
-ITEMS_ADAORE_NAME "ruda adamantynowa"
-ITEMS_ADASHIELD_NAME "tarcza adamantynowa"
+ITEMS_ADAORE_NAME feminine "ruda adamantynowa"
+    "rudy adamantynowej" : genitive
+    "rudą adamantynową" : instrumental
+    "rudę adamantynową" : accusative
+    "rudy adamantynowe" : plural
+    "rud adamantynowych" : plural,genitive
+    "rudami adamantynowymi" : plural,instrumental
+    "rudy adamantynowe" : plural,accusative
+ITEMS_ADASHIELD_NAME feminine "tarcza adamantynowa"
+    "tarczy adamantynowej" : genitive
+    "tarczą adamantynową" : instrumental
+    "tarczę adamantynową" : accusative
+    "tarcze adamantynowe" : plural
+    "tarcz adamantynowych" : plural,genitive
+    "tarczami adamantynowymi" : plural,instrumental
+    "tarcze adamantynowe" : plural,accusative
 ITEMS_ADASHIELD_SHORTNAME "adamantynowa"
-
-ITEMS_ADASWORD_NAME "miecz infernitowy"
-ITEMS_ADASWORD_SHORTNAME "infernite"
-
-ITEMS_ADAWARHAMMER_NAME "młot bojowy z infernitu"
-ITEMS_ADAWARHAMMER_SHORTNAME "infernite"
-
-ITEMS_ADOXIEAMULET_NAME "amulet Złego Boga Adoxie"
+ITEMS_ADASWORD_NAME masculine "miecz infernitowy"
+    "miecza infernitowego" : genitive
+    "mieczem infernitowym" : instrumental
+    "miecz infernitowy" : accusative
+    "miecze infernitowe" : plural
+    "mieczy infernitowych" : plural,genitive
+    "mieczami infernitowymi" : plural,instrumental
+    "miecze infernitowe" : plural,accusative
+ITEMS_ADASWORD_SHORTNAME "z infernitu"
+ITEMS_ADAWARHAMMER_NAME masculine "młot bojowy z infernitu"
+    "młota bojowego z infernitu" : genitive
+    "młotem bojowym z infernitu" : instrumental
+    "młot bojowy z infernitu" : accusative
+    "młoty bojowe z infernitu" : plural
+    "młotów bojowych z infernitu" : plural,genitive
+    "młotami bojowymi z infernitu" : plural,instrumental
+    "młoty bojowe z infernitu" : plural,accusative
+ITEMS_ADAWARHAMMER_SHORTNAME "z infernitu"
+ITEMS_ADOXIEAMULET_NAME masculine "amulet Złego Boga Adoxie"
+    "amuletu Złego Boga Adoxie" : genitive
+    "amuletem Złego Boga Adoxie" : instrumental
+    "amulet Złego Boga Adoxie" : accusative
+    "amulety Złego Boga Adoxie" : plural
+    "amuletów Złego Boga Adoxie" : plural,genitive
+    "amuletami Złego Boga Adoxie" : plural,instrumental
+    "amulety Złego Boga Adoxie" : plural,accusative
 ITEMS_ADOXIEAMULET_SHORTNAME "Adoxie"
-
-ITEMS_ADOXIEEYE_NAME "oko Adoxie"
+ITEMS_ADOXIEEYE_NAME neuter "oko Adoxie"
+    "oka Adoxie" : genitive
+    "okiem Adoxie" : instrumental
+    "oko Adoxie" : accusative
+    "oczy Adoxie" : plural
+    "oczu Adoxie" : plural,genitive
+    "oczami Adoxie" : plural,instrumental
+    "oczy Adoxie" : plural,accusative
 ITEMS_ADOXIERING_DESCRIPTION "Zwiększa biegłość właściciela w recytowaniu modlitw."
-ITEMS_ADOXIERING_NAME "pierścień Złego Boga Adoxie"
+ITEMS_ADOXIERING_NAME masculine "pierścień Złego Boga Adoxie"
+    "pierścienia Złego Boga Adoxie" : genitive
+    "pierścieniem Złego Boga Adoxie" : instrumental
+    "pierścień Złego Boga Adoxie" : accusative
+    "pierścienie Złego Boga Adoxie" : plural
+    "pierścieni Złego Boga Adoxie" : plural,genitive
+    "pierścieniami Złego Boga Adoxie" : plural,instrumental
+    "pierścienie Złego Boga Adoxie" : plural,accusative
 ITEMS_ADOXIERING_SHORTNAME "Adoxie"
-
 ITEMS_ADOXIESCROLL_APPLYVERB1 "czyta"
 ITEMS_ADOXIESCROLL_APPLYVERB "czytaj"
 ITEMS_ADOXIESCROLL_EFFECT1 "wiadomość"
 ITEMS_ADOXIESCROLL_EFFECT "Tani pamflet religijny"
-ITEMS_ADOXIESCROLL_NAME "pamflet religijny"
-
-ITEMS_ADOXIUMCROZIER_NAME "adoxiumowy pastorał"
-ITEMS_ADOXIUMORE_NAME "ruda adoxium"
-ITEMS_ADOXIUMSTAFF_NAME "adoxiumowa laska"
-
-ITEMS_ARCHWOOD_NAME "gałąź pradrzewa"
-
+ITEMS_ADOXIESCROLL_NAME masculine "pamflet religijny"
+    "pamfletu religijnego" : genitive
+    "pamfletem religijnym" : instrumental
+    "pamflet religijny" : accusative
+    "pamflety religijne" : plural
+    "pamfletów religijnych" : plural,genitive
+    "pamfletami religijnymi" : plural,instrumental
+    "pamflety religijne" : plural,accusative
+ITEMS_ADOXIUMCROZIER_NAME masculine "pastorał z adoxium"
+    "pastorała z adoxium" : genitive
+    "pastorałem z adoxium" : instrumental
+    "pastorał z adoxium" : accusative
+    "pastorały z adoxium" : plural
+    "pastorałów z adoxium" : plural,genitive
+    "pastorałami z adoxium" : plural,instrumental
+    "pastorały z adoxium" : plural,accusative
+ITEMS_ADOXIUMORE_NAME feminine "ruda adoxium"
+    "rudy adoxium" : genitive
+    "rudą adoxium" : instrumental
+    "rudę adoxium" : accusative
+    "rudy adoxium" : plural
+    "rud adoxium" : plural,genitive
+    "rudami adoxium" : plural,instrumental
+    "rudy adoxium" : plural,accusative
+ITEMS_ADOXIUMSTAFF_NAME feminine "laska z adoxium"
+    "laski z adoxium" : genitive
+    "laską z adoxium" : instrumental
+    "laskę z adoxium" : accusative
+    "laski z adoxium" : plural
+    "lasek z adoxium" : plural,genitive
+    "laskami z adoxium" : plural,instrumental
+    "laski z adoxium" : plural,accusative
+ITEMS_ARCHWOOD_NAME feminine "gałąź pradrzewa"
+    "gałęzi pradrzewa" : genitive
+    "gałęzią pradrzewa" : instrumental
+    "gałąź pradrzewa" : accusative
+    "gałęzie pradrzewa" : plural
+    "gałęzi pradrzewa" : plural,genitive
+    "gałęziami pradrzewa" : plural,instrumental
+    "gałęzie pradrzewa" : plural,accusative
 ITEMS_AUTOMATONITEM_APPLYMSGFIRSTPERSON "składasz automat"
 ITEMS_AUTOMATONITEM_APPLYMSGTHIRDPERSON "składa automat"
-ITEMS_AUTOMATONITEM_NAME "automat"
-
+ITEMS_AUTOMATONITEM_NAME masculine "automat"
+    "automatu" : genitive
+    "automatem" : instrumental
+    "automat" : accusative
+    "automaty" : plural
+    "automatów" : plural,genitive
+    "automatami" : plural,instrumental
+    "automaty" : plural,accusative
 ITEMS_BAGOFCANDIES_BLINDNAME "worek"
 ITEMS_BAGOFCANDIES_DESCRIPTION "Naprawdę, po prostu worek cukierków."
-ITEMS_BAGOFCANDIES_NAME "worek cukierków"
+ITEMS_BAGOFCANDIES_NAME masculine "worek cukierków"
+    "worka cukierków" : genitive
+    "workiem cukierków" : instrumental
+    "worek cukierków" : accusative
+    "worki cukierków" : plural
+    "worków cukierków" : plural,genitive
+    "workami cukierków" : plural,instrumental
+    "worki cukierków" : plural,accusative
 ITEMS_BAGOFCANDIES_SHORTNAME "cukierki"
-
-ITEMS_BALROGSWHIP_NAME "ognisty bicz"
-
+ITEMS_BALROGSWHIP_NAME masculine "ognisty bicz"
+    "ognistego bicza" : genitive
+    "ognistym biczem" : instrumental
+    "ognisty bicz" : accusative
+    "ogniste bicze" : plural
+    "ognistych biczów" : plural,genitive
+    "ognistymi biczami" : plural,instrumental
+    "ogniste bicze" : plural,accusative
 ITEMS_BATTLEAXE_NAME1 "adamantynowy topór bojowy"
-ITEMS_BATTLEAXE_NAME "topór bojowy"
+    "adamantynowego topora bojowego" : genitive
+    "adamantynowym toporem bojowym" : instrumental
+    "adamantynowy topór bojowy" : accusative
+    "adamantynowe topory bojowe" : plural
+    "adamantynowych toporów bojowych" : plural,genitive
+    "adamantynowymi toporami bojowymi" : plural,instrumental
+    "adamantynowe topory bojowe" : plural,accusative
+ITEMS_BATTLEAXE_NAME masculine "topór bojowy"
+    "topora bojowego" : genitive
+    "toporem bojowym" : instrumental
+    "topór bojowy" : accusative
+    "topory bojowe" : plural
+    "toporów bojowych" : plural,genitive
+    "toporami bojowymi" : plural,instrumental
+    "topory bojowe" : plural,accusative
 ITEMS_BATTLEAXE_SHORTNAME "adamantynowy"
-
-ITEMS_BISHOPRING_DESCRIPTION "Daje Biskupowi zdolność przywoływania wiernych. Nie może być używany przez innych sługów."
-ITEMS_BISHOPRING_NAME "pierścień biskupi"
+ITEMS_BISHOPRING_DESCRIPTION "Daje Biskupowi zdolność przywoływania wiernych. Nie może być używany przez sługów."
+ITEMS_BISHOPRING_NAME masculine "pierścień biskupi"
+    "pierścienia biskupiego" : genitive
+    "pierścieniem biskupim" : instrumental
+    "pierścień biskupi" : accusative
+    "pierścienie biskupie" : plural
+    "pierścieni biskupich" : plural,genitive
+    "pierścieniami biskupimi" : plural,instrumental
+    "pierścienie biskupie" : plural,accusative
 ITEMS_BISHOPRING_SHORTNAME "biskupi"
-
-ITEMS_BLACKDRAGONSCALES_NAME "czarne smocze łuski"
-
+ITEMS_BLACKDRAGONSCALES_NAME feminine "czarne smocze łuski"
+    "czarnej smoczej łuski" : genitive
+    "czarną smoczą łuską" : instrumental
+    "czarną smoczą łuskę" : accusative
+    "czarne smocze łuski" : plural
+    "czarnych smoczych łusek" : plural,genitive
+    "czarnymi smoczymi łuskami" : plural,instrumental
+    "czarne smocze łuski" : plural,accusative
 ITEMS_BLACKMARKETKEY_APPLYMSGFIRSTPERSON "próbujesz użyć klucza"
 ITEMS_BLACKMARKETKEY_APPLYMSGTHIRDPERSON "próbuje użyć klucza"
 ITEMS_BLACKMARKETKEY_DESCRIPTION "Klucz z dziwnym kryształem."
 ITEMS_BLACKMARKETKEY_EFFECT "Nieznane"
-ITEMS_BLACKMARKETKEY_NAME "klucz"
-
-ITEMS_BONE_NAME "kość"
-
-ITEMS_BOW_NAME1 "srebrny elficki łuk"
-ITEMS_BOW_NAME2 "łuk z pradrzewa"
-ITEMS_BOW_NAME "krótki łuk"
-
-ITEMS_CHAINARMOR_NAME "kolczuga"
+ITEMS_BONE_NAME feminine "kość"
+    "kości" : genitive
+    "kością" : instrumental
+    "kość" : accusative
+    "kości" : plural
+    "kości" : plural,genitive
+    "kośćmi" : plural,instrumental
+    "kości" : plural,accusative
+ITEMS_BLACKMARKETKEY_NAME masculine "klucz"
+    "klucza" : genitive
+    "kluczem" : instrumental
+    "klucz" : accusative
+    "klucze" : plural
+    "kluczy" : plural,genitive
+    "kluczami" : plural,instrumental
+    "klucze" : plural,accusative
+ITEMS_BOW_NAME1 masculine "srebrny elficki łuk"
+    "srebrnego elfickiego łuku" : genitive
+    "srebrnym elfickim łukiem" : instrumental
+    "srebrny elficki łuk" : accusative
+    "srebrne elfickie łuki" : plural
+    "srebrnych elfickich łuków" : plural,genitive
+    "srebrnymi elfickimi łukami" : plural,instrumental
+    "srebrne elfickie łuki" : plural,accusative
+ITEMS_BOW_NAME2 masculine "łuk z pradrzewa"
+    "łuku z pradrzewa" : genitive
+    "łukiem z pradrzewa" : instrumental
+    "łuk z pradrzewa" : accusative
+    "łuki z pradrzewa" : plural
+    "łuków z pradrzewa" : plural,genitive
+    "łukami z pradrzewa" : plural,instrumental
+    "łuki z pradrzewa" : plural,accusative
+ITEMS_BOW_NAME masculine "krótki łuk"
+    "krótkiego łuku" : genitive
+    "krótkim łukiem" : instrumental
+    "krótki łuk" : accusative
+    "krótkie łuki" : plural
+    "krótkich łuków" : plural,genitive
+    "krótkimi łukami" : plural,instrumental
+    "krótkie łuki" : plural,accusative
+ITEMS_CHAINARMOR_NAME feminine "kolczuga"
+    "kolczugi" : genitive
+    "kolczugą" : instrumental
+    "kolczugę" : accusative
+    "kolczugi" : plural
+    "kolczug" : plural,genitive
+    "kolczugami" : plural,instrumental
+    "kolczugi" : plural,accusative
 ITEMS_CHAINARMOR_SHORTNAME "pancerz"
-
-ITEMS_CLUB_NAME "maczuga"
+ITEMS_CLUB_NAME feminine "maczuga"
+    "maczugi" : genitive
     "maczugą" : instrumental
+    "maczugę" : accusative
     "maczugi" : plural
-
+    "maczug" : plural,genitive
+    "maczugami" : plural,instrumental
+    "maczugi" : plural,accusative
 ITEMS_CORNUTHAUM1_EQUIPWARNING "Cornuthaumy są przydatne tylko dla czarodziejów. Kontynuować?"
-ITEMS_CORNUTHAUM1_NAME1 "ozdobny cornuthaum"
-ITEMS_CORNUTHAUM1_NAME2 "wystawny cornuthaum"
-ITEMS_CORNUTHAUM1_NAME "cornuthaum"
-
-ITEMS_CROSSBOW_NAME1 "kusza z pradrzewa"
-ITEMS_CROSSBOW_NAME "kusza"
-
-ITEMS_CYCLOPSBRAIN_NAME "mózg cyklopa"
-
+ITEMS_CORNUTHAUM1_NAME1 masculine "ozdobny cornuthaum"
+    "ozdobnego cornuthauma" : genitive
+    "ozdobnym cornuthaumem" : instrumental
+    "ozdobny cornuthaum" : accusative
+    "ozdobne cornuthaumy" : plural
+    "ozdobnych cornuthaumów" : plural,genitive
+    "ozdobnymi cornuthaumami" : plural,instrumental
+    "ozdobne cornuthaumy" : plural,accusative
+ITEMS_CORNUTHAUM1_NAME2 masculine "wystawny cornuthaum"
+    "wystawnego cornuthauma" : genitive
+    "wystawnym cornuthaumem" : instrumental
+    "wystawny cornuthaum" : accusative
+    "wystawne cornuthaumy" : plural
+    "wystawnych cornuthaumów" : plural,genitive
+    "wystawnymi cornuthaumami" : plural,instrumental
+    "wystawne cornuthaumy" : plural,accusative
+ITEMS_CORNUTHAUM1_NAME masculine "cornuthaum"
+    "cornuthauma" : genitive
+    "cornuthaumem" : instrumental
+    "cornuthaum" : accusative
+    "cornuthaumy" : plural
+    "cornuthaumów" : plural,genitive
+    "cornuthaumami" : plural,instrumental
+    "cornuthaumy" : plural,accusative
+ITEMS_CROSSBOW_NAME1 feminine "kusza z pradrzewa"
+    "kuszy z pradrzewa" : genitive
+    "kuszą z pradrzewa" : instrumental
+    "kuszę z pradrzewa" : accusative
+    "kusze z pradrzewa" : plural
+    "kusz z pradrzewa" : plural,genitive
+    "kuszami z pradrzewa" : plural,instrumental
+    "kusze z pradrzewa" : plural,accusative
+ITEMS_CROSSBOW_NAME feminine "kusza"
+    "kuszy" : genitive
+    "kuszą" : instrumental
+    "kuszę" : accusative
+    "kusze" : plural
+    "kusz" : plural,genitive
+    "kuszami" : plural,instrumental
+    "kusze" : plural,accusative
+ITEMS_CYCLOPSBRAIN_NAME masculine "mózg cyklopa"
+    "mózgu cyklopa" : genitive
+    "mózgiem cyklopa" : instrumental
+    "mózg cyklopa" : accusative
+    "mózgi cyklopa" : plural
+    "mózgów cyklopa" : plural,genitive
+    "mózgami cyklopa" : plural,instrumental
+    "mózgów cyklopa" : plural,accusative
 ITEMS_CYCLOPSSCROLL_APPLYVERB1 "czyta"
 ITEMS_CYCLOPSSCROLL_APPLYVERB "czytaj"
 ITEMS_CYCLOPSSCROLL_EFFECT "?"
-ITEMS_CYCLOPSSCROLL_NAME "dziwny zwój"
-
-ITEMS_CYCLOPSTESTICLES_NAME "jądra cyklopa"
-ITEMS_CYCLOPSTESTICLES_SHORTNAME "cyklop"
-
+ITEMS_CYCLOPSSCROLL_NAME masculine "dziwny zwój"
+    "dziwnego zwoju" : genitive
+    "dziwnym zwojem" : instrumental
+    "dziwny zwój" : accusative
+    "dziwne zwoje" : plural
+    "dziwnych zwojów" : plural,genitive
+    "dziwnymi zwojami" : plural,instrumental
+    "dziwne zwoje" : plural,accusative
+ITEMS_CYCLOPSTESTICLES_NAME neuter "jądra cyklopa"
+    "jąder cyklopa" : genitive
+    "jądrami cyklopa" : instrumental
+    "jądra cyklopa" : accusative
+    "jądra cyklopa" : plural
+    "jąder cyklopa" : plural,genitive
+    "jądrami cyklopa" : plural,instrumental
+    "jądra cyklopa" : plural,accusative
+ITEMS_CYCLOPSTESTICLES_SHORTNAME "cyklopa"
 ITEMS_DEFENSEAMULET_DESCRIPTION "Utwardza twoją skórę i ciało, przez co trudniej cię zranić."
-ITEMS_DEFENSEAMULET_NAME "amulet obrony"
+ITEMS_DEFENSEAMULET_NAME masculine "amulet obrony"
+    "amuletu obrony" : genitive
+    "amuletem obrony" : instrumental
+    "amulet obrony" : accusative
+    "amulety obrony" : plural
+    "amuletów obrony" : plural,genitive
+    "amuletami obrony" : plural,instrumental
+    "amulety obrony" : plural,accusative
 ITEMS_DEFENSEAMULET_SHORTNAME "obrona"
-
-ITEMS_DEVILBOOTS_NAME "para diabelskich butów"
+ITEMS_DEVILBOOTS_NAME feminine "para diabelskich butów"
+    "pary diabelskich butów" : genitive
+    "parą diabelskich butów" : instrumental
+    "parę diabelskich butów" : accusative
+    "pary diabelskich butów" : plural
+    "par diabelskich butów" : plural,genitive
+    "parami diabelskich butów" : plural,instrumental
+    "pary diabelskich butów" : plural,accusative
 ITEMS_DEVILBOOTS_SHORTNAME "diabelskie"
-
-ITEMS_DEVILHOOVES_NAME "diabelskie kopyta"
-ITEMS_DEVILHORNS_NAME "diabelskie rogi"
-
+ITEMS_DEVILHOOVES_NAME neuter "diabelskie kopyta"
+    "diabelskich kopyt" : genitive
+    "diabelskimi kopytami" : instrumental
+    "diabelskie kopyta" : accusative
+    "diabelskie kopyta" : plural
+    "diabelskich kopyt" : plural,genitive
+    "diabelskimi kopytami" : plural,instrumental
+    "diabelskie kopyta" : plural,accusative
+ITEMS_DEVILHORNS_NAME neuter "diabelskie rogi"
+    "diabelskich rogów" : genitive
+    "diabelskimi rogami" : instrumental
+    "diabelskie rogi" : accusative
+    "diabelskie rogi" : plural
+    "diabelskich rogów" : plural,genitive
+    "diabelskimi rogami" : plural,instrumental
+    "diabelskie rogi" : plural,accusative
 ITEMS_DEVOTIONALMEDAL_DESCRIPTION "Przedstawia ważne wydarzenie religijne."
-ITEMS_DEVOTIONALMEDAL_NAME "medal dewocyjny"
-
+ITEMS_DEVOTIONALMEDAL_NAME masculine "medal dewocyjny"
+    "medalu dewocyjnego" : genitive
+    "medalem dewocyjnym" : instrumental
+    "medal dewocyjny" : accusative
+    "medale dewocyjne" : plural
+    "medali dewocyjnych" : plural,genitive
+    "medalami dewocyjnymi" : plural,instrumental
+    "medale dewocyjne" : plural,accusative
 ITEMS_DIVINITYAMULET_DESCRIPTION "Czyni właściciela bardziej świętym i boskim."
-ITEMS_DIVINITYAMULET_NAME "naszyjnik z krucyfiksem"
+ITEMS_DIVINITYAMULET_NAME masculine "naszyjnik z krucyfiksem"
+    "naszyjnika z krucyfiksem" : genitive
+    "naszyjnikiem z krucyfiksem" : instrumental
+    "naszyjnik z krucyfiksem" : accusative
+    "naszyjniki z krucyfiksem" : plural
+    "naszyjników z krucyfiksem" : plural,genitive
+    "naszyjnikami z krucyfiksem" : plural,instrumental
+    "naszyjniki z krucyfiksem" : plural,accusative
 ITEMS_DIVINITYAMULET_SHORTNAME "krucyfiks"
-
-ITEMS_ELVENSWORD_NAME "elfi miecz"
-
-ITEMS_FIRSTAIDKIT_DESCRIPTION "Leczy twoje rany, ale wymaga kilku tur na użycie."
-ITEMS_FIRSTAIDKIT_NAME "apteczka pierwszej pomocy"
-
-ITEMS_GOLDPIECE_NAME "moneta złota"
-
-ITEMS_GREENDRAGONSCALES_NAME "zielone smocze łuski"
-
-ITEMS_HALLOWEENCOSTUME_NAME "kostium halloweenowy"
+ITEMS_ELVENSWORD_NAME masculine "elfi miecz"
+    "elfiego miecza" : genitive
+    "elfim mieczem" : instrumental
+    "elfi miecz" : accusative
+    "elfie miecze" : plural
+    "elfich mieczy" : plural,genitive
+    "elfimi mieczami" : plural,instrumental
+    "elfie miecze" : plural,accusative
+ITEMS_FIRSTAIDKIT_DESCRIPTION "Leczy twoje rany, ale użycie trwa kilka tur."
+ITEMS_FIRSTAIDKIT_NAME feminine "apteczka pierwszej pomocy"
+    "apteczki pierwszej pomocy" : genitive
+    "apteczką pierwszej pomocy" : instrumental
+    "apteczkę pierwszej pomocy" : accusative
+    "apteczki pierwszej pomocy" : plural
+    "apteczek pierwszej pomocy" : plural,genitive
+    "apteczkami pierwszej pomocy" : plural,instrumental
+    "apteczki pierwszej pomocy" : plural,accusative
+ITEMS_GOLDPIECE_NAME feminine "moneta złota"
+    "monety złota" : genitive
+    "monetą złota" : instrumental
+    "monetę złota" : accusative
+    "monety złota" : plural
+    "monet złota" : plural,genitive
+    "monetami złota" : plural,instrumental
+    "monety złota" : plural,accusative
+ITEMS_GREENDRAGONSCALES_NAME feminine "zielone smocze łuski"
+    "zielonych smoczych łusek" : genitive
+    "zielonymi smoczymi łuskami" : instrumental
+    "zielone smocze łuski" : accusative
+    "zielone smocze łuski" : plural
+    "zielonych smoczych łusek" : plural,genitive
+    "zielonymi smoczymi łuskami" : plural,instrumental
+    "zielone smocze łuski" : plural,accusative
+ITEMS_HALLOWEENCOSTUME_NAME masculine "kostium halloweenowy"
+    "kostiumu halloweenowego" : genitive
+    "kostiumem halloweenowym" : instrumental
+    "kostium halloweenowy" : accusative
+    "kostiumy halloweenowe" : plural
+    "kostiumów halloweenowych" : plural,genitive
+    "kostiumami halloweenowymi" : plural,instrumental
+    "kostiumy halloweenowe" : plural,accusative
 ITEMS_HALLOWEENCOSTUME_SHORTNAME "kostium"
-
-ITEMS_HEAVYCLUB_NAME "ciężka maczuga"
-
-ITEMS_HYDRATONGUE_NAME "język hydry"
-
-ITEMS_INFERNITEORE_NAME "ruda infernitu"
-
-ITEMS_INFERNITETRIDENT_NAME "trójząb infernitowy"
-ITEMS_INFERNITETRIDENT_SHORTNAME "infernite"
-
-ITEMS_INVISIBILITYRING_NAME "złoty pierścień"
-
-ITEMS_IRONBOOTS_NAME "para żelaznych butów"
+ITEMS_HEAVYCLUB_NAME feminine "ciężka maczuga"
+    "ciężkiej maczugi" : genitive
+    "ciężką maczugą" : instrumental
+    "ciężką maczugę" : accusative
+    "ciężkie maczugi" : plural
+    "ciężkich maczug" : plural,genitive
+    "ciężkimi maczugami" : plural,instrumental
+    "ciężkie maczugi" : plural,accusative
+ITEMS_HYDRATONGUE_NAME masculine "język hydry"
+    "języka hydry" : genitive
+    "językiem hydry" : instrumental
+    "język hydry" : accusative
+    "języki hydry" : plural
+    "języków hydry" : plural,genitive
+    "językami hydry" : plural,instrumental
+    "języków hydry" : plural,accusative
+ITEMS_INFERNITEORE_NAME feminine "ruda infernitu"
+    "rudy infernitu" : genitive
+    "rudą infernitu" : instrumental
+    "rudę infernitu" : accusative
+    "rudy infernitu" : plural
+    "rud infernitu" : plural,genitive
+    "rudami infernitu" : plural,instrumental
+    "rudy infernitu" : plural,accusative
+ITEMS_INFERNITETRIDENT_NAME masculine "trójząb infernitowy"
+    "trójzębu infernitowego" : genitive
+    "trójzębem infernitowym" : instrumental
+    "trójząb infernitowy" : accusative
+    "trójzęby infernitowe" : plural
+    "trójzębów infernitowych" : plural,genitive
+    "trójzębami infernitowymi" : plural,instrumental
+    "trójzęby infernitowe" : plural,accusative
+ITEMS_INFERNITETRIDENT_SHORTNAME "z infernitu"
+ITEMS_INVISIBILITYRING_NAME masculine "złoty pierścień"
+    "złotego pierścienia" : genitive
+    "złotym pierścieniem" : instrumental
+    "złoty pierścień" : accusative
+    "złote pierścienie" : plural
+    "złotych pierścieni" : plural,genitive
+    "złotymi pierścieniami" : plural,instrumental
+    "złote pierścienie" : plural,accusative
+ITEMS_IRONBOOTS_NAME feminine "para żelaznych butów"
+    "pary żelaznych butów" : genitive
+    "parą żelaznych butów" : instrumental
+    "parę żelaznych butów" : accusative
+    "pary żelaznych butów" : plural
+    "par żelaznych butów" : plural,genitive
+    "parami żelaznych butów" : plural,instrumental
+    "pary żelaznych butów" : plural,accusative
 ITEMS_IRONBOOTS_SHORTNAME "buty"
-
-ITEMS_IRONCROZIER_NAME "żelazny pastorał"
-
-ITEMS_IRONGLOVES_NAME "para żelaznych rękawic"
+ITEMS_IRONCROZIER_NAME masculine "żelazny pastorał"
+    "żelaznego pastorału" : genitive
+    "żelaznym pastorałem" : instrumental
+    "żelazny pastorał" : accusative
+    "żelazne pastorały" : plural
+    "żelaznych pastorałów" : plural,genitive
+    "żelaznymi pastorałami" : plural,instrumental
+    "żelazne pastorały" : plural,accusative
+ITEMS_IRONGLOVES_NAME feminine "para żelaznych rękawic"
+    "pary żelaznych rękawic" : genitive
+    "parą żelaznych rękawic" : instrumental
+    "parę żelaznych rękawic" : accusative
+    "pary żelaznych rękawic" : plural
+    "par żelaznych rękawic" : plural,genitive
+    "parami żelaznych rękawic" : plural,instrumental
+    "pary żelaznych rękawic" : plural,accusative
 ITEMS_IRONGLOVES_SHORTNAME "rękawice"
-
-ITEMS_IRONHELM_NAME "żelazny hełm"
+ITEMS_IRONHELM_NAME masculine "żelazny hełm"
+    "żelaznego hełmu" : genitive
+    "żelaznym hełmem" : instrumental
+    "żelazny hełm" : accusative
+    "żelazne hełmy" : plural
+    "żelaznych hełmów" : plural,genitive
+    "żelaznymi hełmami" : plural,instrumental
+    "żelazne hełmy" : plural,accusative
 ITEMS_IRONHELM_SHORTNAME "hełm"
-
-ITEMS_IRONORE_NAME "ruda żelaza"
-
-ITEMS_IRONSHIELD_NAME "żelazna tarcza"
+ITEMS_IRONORE_NAME feminine "ruda żelaza"
+    "rudy żelaza" : genitive
+    "rudą żelaza" : instrumental
+    "rudę żelaza" : accusative
+    "rudy żelaza" : plural
+    "rud żelaza" : plural,genitive
+    "rudami żelaza" : plural,instrumental
+    "rudy żelaza" : plural,accusative
+ITEMS_IRONSHIELD_NAME feminine "żelazna tarcza"
+    "żelaznej tarczy" : genitive
+    "żelazną tarczą" : instrumental
+    "żelazną tarczę" : accusative
+    "żelazne tarcze" : plural
+    "żelaznych tarcz" : plural,genitive
+    "żelaznymi tarczami" : plural,instrumental
+    "żelazne tarcze" : plural,accusative
 ITEMS_IRONSHIELD_SHORTNAME "żelazo"
 ITEMS_JUMPRING_NAME masculine "pierścień skoku"
     "pierścienia skoku" : genitive
@@ -7990,7 +8366,7 @@ ITEMS_ARCHERHEADADA_NAME "adamantynowa głowa strzelająca strzałami"
 ITEMS_ARCHERHEADIRON_NAME "żelazna głowa strzelająca strzałami"
 ITEMS_ARCHERHEADWOOD_NAME "drewniana głowa strzelająca strzałami"
 ITEMS_AUTOMATONARMSADA_NAME "adamantynowe ramiona"
-ITEMS_AUTOMATONARMSADOXIUM_NAME "adoxium ramiona"
+ITEMS_AUTOMATONARMSADOXIUM_NAME "ramiona z adoxium"
 ITEMS_AUTOMATONARMSINFERNITE_NAME "infernitowe ramiona"
 ITEMS_AUTOMATONARMSIRON_NAME "żelazne ramiona"
 ITEMS_AUTOMATONARMSWOOD_NAME "drewniane ramiona"
@@ -8004,7 +8380,7 @@ ITEMS_AUTOMATONDRILLIRON_NAME "żelazne wiertło"
 ITEMS_AUTOMATONDRILLWOOD_NAME "drewniane wiertło"
 ITEMS_AUTOMATONDRILLWOOD_PREFIX "Wiertło dla automatów. Umożliwia wykonywanie wszystkich prac robotniczych."
 ITEMS_AUTOMATONLEGSADA_NAME "adamantynowe nogi"
-ITEMS_AUTOMATONLEGSADOXIUM_NAME "adoxium nogi"
+ITEMS_AUTOMATONLEGSADOXIUM_NAME "nogi z adoxium"
 ITEMS_AUTOMATONLEGSINFERNITE_NAME "infernitowe nogi"
 ITEMS_AUTOMATONLEGSIRON_NAME "żelazne nogi"
 ITEMS_AUTOMATONLEGSWOOD_NAME "drewniane nogi"
@@ -8024,7 +8400,7 @@ ITEMS_HUMANOIDHEADIRON_NAME "żelazna głowa humanoidalna"
 ITEMS_HUMANOIDHEADWOOD_NAME "drewniana głowa humanoidalna"
 ITEMS_HUMANOIDHEADWOOD_PREFIX "Pozwala używać ekwipunku."
 ITEMS_HUMANOIDHEADWOOD_SHORTNAME "głowa humanoidalna"
-ITEMS_INVISIBILITYHEADADOXIUM_NAME "adoxium głowa niewidzialności"
+ITEMS_INVISIBILITYHEADADOXIUM_NAME "głowa niewidzialności z adoxium"
 ITEMS_OILHEADADA_NAME "adamantynowa głowa plująca olejem"
 ITEMS_OILHEADIRON_NAME "żelazna głowa plująca olejem"
 ITEMS_PRAYERBOOKPROTECTION_EFFECT1 "Brak"
@@ -8038,7 +8414,7 @@ ITEMS_SPELLDAMAGERING3_DESCRIPTION "Zwiększa siłę twoich ataków magicznych, 
 ITEMS_SPELLDAMAGERING3_NAME "pierścień obrażeń magicznych"
 ITEMS_SPELLDAMAGERING3_SHORTNAME "obrażenia magiczne"
 ITEMS_SPIDERRING_NAME "pierścień poskramiania pająków"
-ITEMS_TELEPORTHEADADOXIUM_NAME "adoxium głowa teleportująca"
+ITEMS_TELEPORTHEADADOXIUM_NAME "głowa teleportująca z adoxium"
 ITEMS_ZOMBIESCROLL_EFFECT1 "Odblokowano frakcję Zombie!"
 
 SPELLS_BYPASS_ALLIES_EFFECT1 "Wszystkie ataki dystansowe omijają sojuszników."
@@ -8329,13 +8705,13 @@ FURNITURE_ROSTRUM_WOOD_COLOR40 "\"Adoramus te w timore et amoris sacrate.\""
 FURNITURE_ADOXIE_STATUE_TEMPLE_DESTROYEDEFFECT "Posąg zostaje zniszczony!"
 FURNITURE_ADOXIE_STATUE_TEMPLE_DESTROYEDEFFECT1 "Posąg ożywa!"
 
-FURNITURE_ALTAR_THIRDPERSON3 "Wybuch energii magicznej zostaje uwolniony"
-FURNITURE_ALTAR_AMOUNT "Spadnie na ciebie gniew!"
+FURNITURE_ALTAR_THIRDPERSON3 "Zostaje uwolniona wiązka energii magicznej"
+FURNITURE_ALTAR_AMOUNT "Niech spadnie na ciebie gniew!"
 FURNITURE_BOOKCASE_WOOD_DESTROYEDEFFECT "Półka na książki zostaje zniszczona!"
 FURNITURE_DINING_TABLE_DESTROYEDEFFECT "Stół zostaje zniszczony!"
 FURNITURE_FORGE_DESTROYEDEFFECT "Kuźnia zostaje zniszczona!"
 
-FURNITURE_DOWN_STAIRS_ADOXIE_USAGETYPE1 "Tracisz orientację."
+FURNITURE_DOWN_STAIRS_ADOXIE_USAGETYPE1 "Tracisz orientację w przestrzeni."
 FURNITURE_INACTIVE_PORTAL_USAGETYPE1 "Portal jest nieaktywny."
 FURNITURE_HIDDEN_CASTLE_DOOR_ENTRYTYPE "To była tylko iluzja!"
 FURNITURE_BOULDER_TRAP_TICKTYPE "Głaz zaczyna się toczyć."
