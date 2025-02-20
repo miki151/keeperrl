@@ -3850,7 +3850,7 @@ End
       type = FourLegged LARGE
       weight = 250
       intrinsicAttacks = {
-        LEG {{{ Intrinsic { "claws_attack" } CREATURE_ATTRIBUTES_CAVE_BEAR_ID 10 { attackType = HIT attackMsg = CLAW } }}}
+        LEG {{{ Intrinsic { "claws_attack" } CLAWS 10 { attackType = HIT attackMsg = CLAW } }}}
       }
     }
     permanentEffects = {
@@ -4115,7 +4115,7 @@ End
       type = FourLegged MEDIUM
       weight = 35
       intrinsicAttacks = {
-        LEG  {{itemType = { Intrinsic { "claws_attack" } CREATURE_ATTRIBUTES_WOLF_ID 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
+        LEG  {{itemType = { Intrinsic { "claws_attack" } CLAWS 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
         HEAD {{itemType = { Intrinsic { "bite_attack" }  FANGS 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
       }
       deathSound = "DOG_DEATH"
@@ -4144,7 +4144,7 @@ End
       weight = 35
       material = BONE
       intrinsicAttacks = {
-        LEG  {{itemType = { Intrinsic { "claws_attack" } CREATURE_ATTRIBUTES_SKELETON_WOLF_ID 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
+        LEG  {{itemType = { Intrinsic { "claws_attack" } CLAWS 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
         HEAD {{itemType = { Intrinsic { "bite_attack" }  FANGS 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
       }
     }
@@ -4171,7 +4171,7 @@ End
       type = Humanoid MEDIUM
       weight = 35
       intrinsicAttacks = {
-        LEG  {{itemType = { Intrinsic { "claws_attack" } CREATURE_ATTRIBUTES_FERAL_CHILD_ID 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
+        LEG  {{itemType = { Intrinsic { "claws_attack" } CLAWS 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
         HEAD {{itemType = { Intrinsic { "bite_attack" }  FANGS 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
       }
     }
@@ -4200,7 +4200,7 @@ End
     body = {
       type = Humanoid LARGE
       intrinsicAttacks = {
-        LEG  {{ itemType = { Intrinsic { "claws_attack" } CREATURE_ATTRIBUTES_WEREWOLF_ID 8 { attackType = HIT attackMsg = CLAW }} isExtraAttack = true }}
+        LEG  {{ itemType = { Intrinsic { "claws_attack" } CLAWS 8 { attackType = HIT attackMsg = CLAW }} isExtraAttack = true }}
         HEAD {{ itemType = { Intrinsic { "bite_attack" }  FANGS 7 { attackType = BITE attackMsg = BITE }} isExtraAttack = true }}
       }
     }
@@ -5222,7 +5222,7 @@ End
       material = UNDEAD_FLESH
       weight = 35
       intrinsicAttacks = {
-        LEG  {{itemType = { Intrinsic { "claws_attack" } CREATURE_ATTRIBUTES_SLASHER_ID 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
+        LEG  {{itemType = { Intrinsic { "claws_attack" } CLAWS 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
         HEAD {{itemType = { Intrinsic { "bite_attack" }  FANGS 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
       }
     }

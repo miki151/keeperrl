@@ -2929,15 +2929,6 @@ CREATURE_ATTRIBUTES_BONE_DRAGON_STACKNAME masculine "smok"
     "smokami" : plural,instrumental
     "smoki" : plural,accusative
 
-CREATURE_ATTRIBUTES_CAVE_BEAR_ID pluralFeminine "pazury"
-    "pazurów" : genitive
-    "pazurami" : instrumental
-    "pazury" : accusative
-    "pazury" : plural
-    "pazurów" : plural,genitive
-    "pazurami" : plural,instrumental
-    "pazury" : plural,accusative
-
 CREATURE_ATTRIBUTES_CAVE_BEAR_NAME1 masculine "niedźwiedź polarny"
     "niedźwiedzia polarnego" : genitive
     "niedźwiedziem polarnym" : instrumental
@@ -3387,7 +3378,6 @@ CREATURE_ATTRIBUTES_FERAL_CHILD_GROUPNAME feminine "sfora"
     "sforami" : plural,instrumental
     "sfory" : plural,accusative
 
-CREATURE_ATTRIBUTES_FERAL_CHILD_ID "pazury"
 CREATURE_ATTRIBUTES_FERAL_CHILD_NAME masculine "dzikie dziecko"
     "dzikiego dziecka" : genitive
     "dzikim dzieckiem" : instrumental
@@ -4327,7 +4317,7 @@ CREATURE_ATTRIBUTES_SKELETON_WOLF_GROUPNAME neuter "stado"
     "stadami" : plural,instrumental
     "stada" : plural,accusative
 
-CREATURE_ATTRIBUTES_SKELETON_WOLF_ID neuter "pazury"
+CLAWS neuter "pazury"
     "pazurów" : genitive
     "pazurami" : instrumental
     "pazury" : accusative
@@ -4344,15 +4334,6 @@ CREATURE_ATTRIBUTES_SKELETON_WOLF_NAME masculine "szkielet wilk"
     "szkieletów wilków" : plural,genitive
     "szkieletami wilkami" : plural,instrumental
     "szkieletów wilków" : plural,accusative
-
-CREATURE_ATTRIBUTES_SLASHER_ID neuter "pazury"
-    "pazurów" : genitive
-    "pazurami" : instrumental
-    "pazury" : accusative
-    "pazury" : plural
-    "pazurów" : plural,genitive
-    "pazurami" : plural,instrumental
-    "pazury" : plural,accusative
 
 CREATURE_ATTRIBUTES_SLASHER_NAME masculine "rozpruwacz"
     "rozpruwacza" : genitive
@@ -4666,15 +4647,6 @@ CREATURE_ATTRIBUTES_WATER_ELEMENTAL_NAME masculine "żywiołak wody"
     "żywiołakami wody" : plural,instrumental
     "żywiołaków wody" : plural,accusative
 
-CREATURE_ATTRIBUTES_WEREWOLF_ID neuter "pazury"
-    "pazurów" : genitive
-    "pazurami" : instrumental
-    "pazury" : accusative
-    "pazury" : plural
-    "pazurów" : plural,genitive
-    "pazurami" : plural,instrumental
-    "pazury" : plural,accusative
-
 CREATURE_ATTRIBUTES_WEREWOLF_NAME masculine "wilkołak"
     "wilkołaka" : genitive
     "wilkołakiem" : instrumental
@@ -4743,15 +4715,6 @@ CREATURE_ATTRIBUTES_WOLF_GROUPNAME neuter "stado"
     "stad" : plural,genitive
     "stadami" : plural,instrumental
     "stada" : plural,accusative
-
-CREATURE_ATTRIBUTES_WOLF_ID neuter "pazury"
-    "pazurów" : genitive
-    "pazurami" : instrumental
-    "pazury" : accusative
-    "pazury" : plural
-    "pazurów" : plural,genitive
-    "pazurami" : plural,instrumental
-    "pazury" : plural,accusative
 
 CREATURE_ATTRIBUTES_WOLF_NAME masculine "wilk"
     "wilka" : genitive
