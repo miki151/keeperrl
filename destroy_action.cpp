@@ -10,14 +10,24 @@ SERIALIZATION_CONSTRUCTOR_IMPL(DestroyAction)
 DestroyAction::DestroyAction(Type t) : type(t) {
 }
 
+TStringId DestroyAction::getTaskDescription() const {
+  switch (type) {
+    case Type::CUT: return TStringId("CUT_TREE_TASK");
+    case Type::DIG: return TStringId("DIG_TASK");
+    case Type::FILL: return TStringId("FILL_TASK");
+    default:
+      return TStringId("DESTROY_TASK");
+  }
+}
+
 TStringId DestroyAction::getVerbSecondPerson() const {
   switch (type) {
-  case Type::BASH: return TStringId("YOU_BASH_FURNITURE");
-  case Type::BOULDER: return TStringId("YOU_DESTROY_FURNITURE");
-  case Type::CUT: return TStringId("YOU_CUT_FURNITURE");
-  case Type::HOSTILE_DIG:
-  case Type::DIG: return TStringId("YOU_DIG_INTO_FURNITURE");
-  case Type::FILL: return TStringId("YOU_FILL_FURNITURE");
+    case Type::BASH: return TStringId("YOU_BASH_FURNITURE");
+    case Type::BOULDER: return TStringId("YOU_DESTROY_FURNITURE");
+    case Type::CUT: return TStringId("YOU_CUT_FURNITURE");
+    case Type::HOSTILE_DIG:
+    case Type::DIG: return TStringId("YOU_DIG_INTO_FURNITURE");
+    case Type::FILL: return TStringId("YOU_FILL_FURNITURE");
   }
 }
 

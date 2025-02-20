@@ -172,7 +172,7 @@ class Destruction : public Task {
   public:
   Destruction(WTaskCallback c, Position pos, const Furniture* furniture, DestroyAction action, PositionMatching* m)
       : Task(true), position(pos), callback(c), destroyAction(action),
-        description(action.getVerbSecondPerson(), furniture->getName(), toString(position)),
+        description(action.getTaskDescription(), furniture->getName(), toString(position)),
         furnitureType(furniture->getType()), matching(m) {
     if (matching)
       matching->addTarget(position);
@@ -442,7 +442,7 @@ class ApplySquare : public Task {
   }
 
   virtual TString getDescription() const override {
-    return "Apply square " + (position ? toString(position->first) : "");
+    return TSentence("APPLY_SQUARE_TASK", position ? toString(position->first) : "?"_s);
   }
 
   bool atTarget(Creature* c) {
@@ -733,7 +733,7 @@ class Explore : public Task {
   }
 
   virtual TString getDescription() const override {
-    return "Explore " + toString(position);
+    return TSentence("EXPLORE_TASK", toString(position));
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), position)
@@ -1180,7 +1180,7 @@ class GoTo : public Task {
   }
 
   virtual TString getDescription() const override {
-    return "Go to " + toString(target);
+    return TSentence("GO_TO_TASK", toString(target));
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), target, tryForever)
@@ -1267,7 +1267,7 @@ class StayIn : public Task {
   }
 
   virtual TString getDescription() const override {
-    return "Go to " + toString(currentTarget);
+    return TSentence("GO_TO_TASK", toString(currentTarget));
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), target, currentTarget)
@@ -1479,7 +1479,7 @@ class GoToAndWait : public Task {
   }
 
   virtual TString getDescription() const override {
-    return "Go to and wait " + toString(position);
+    return TSentence("GO_TO_AND_WAIT_TASK", toString(position));
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), position, waitTime, maxTime, timeout)
@@ -1513,7 +1513,7 @@ class WaitTask : public Task {
   }
 
   virtual TString getDescription() const override {
-    return "Wait for " + toString(waitTime) + " turns";
+    return TSentence("WAIT_TASK", toString(waitTime));
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), waitTime, maxTime)
@@ -1710,7 +1710,7 @@ class PickUpItem : public Task {
   }
 
   virtual TString getDescription() const override {
-    return "Pick up item " + toString(position);
+    return TSentence("PICK_UP_ITEM_TASK", toString(position));
   }
 
   virtual bool isBogus() const override {

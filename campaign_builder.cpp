@@ -375,7 +375,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* content
           if (!retired || retired->getNumActive() > 0 || retired->getAllGames().empty() ||
               view->yesOrNoPrompt(TStringId("CONFIRM_NO_RETIRED_DUNGEONS"))) {
             string gameIdentifier;
-            TSentence gameDisplayName;
+            TString gameDisplayName;
             if (avatarInfo.chosenBaseName) {
               auto name = avatarInfo.playerCreature->getName().firstOrBare();
               gameIdentifier = *avatarInfo.chosenBaseName + "_" + campaign.worldName + getNewIdSuffix();

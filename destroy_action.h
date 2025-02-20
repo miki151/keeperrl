@@ -12,6 +12,7 @@ class DestroyAction {
   TStringId getVerbSecondPerson() const;
   TStringId getVerbThirdPerson() const;
   TStringId getIsDestroyed() const;
+  TStringId getTaskDescription() const;
   optional<TStringId> getSoundText() const;
   optional<Sound> getSound() const;
   Type getType() const;
