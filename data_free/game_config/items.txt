@@ -273,7 +273,6 @@ SPELL_HEAD("Adoxium", 220 148 220, ITEMS_TELEPORTHEADADOXIUM_NAME, ADOXIUM, 18, 
     viewId = { "knife" }
     equipedViewId = { "knife_v" }
     name = ITEMS_KNIFE_NAME
-    plural = ITEMS_KNIFE_PLURAL
     itemClass = WEAPON
     equipmentSlot = WEAPON
     weight = 0.3
@@ -294,7 +293,6 @@ SPELL_HEAD("Adoxium", 220 148 220, ITEMS_TELEPORTHEADADOXIUM_NAME, ADOXIUM, 18, 
 "AssassinsKnife" inherit "Knife"
   {
     name = ITEMS_KNIFE_NAME1
-    plural = ITEMS_KNIFE_PLURAL1
     price = 500
     equipedEffect = {AMBUSH_SKILL}
     specialAttr = {
@@ -306,7 +304,6 @@ SPELL_HEAD("Adoxium", 220 148 220, ITEMS_TELEPORTHEADADOXIUM_NAME, ADOXIUM, 18, 
   {
     viewId = { "knife" }
     name = ITEMS_UNICORNHORN_NAME
-    plural = ITEMS_UNICORNHORN_PLURAL
     itemClass = WEAPON
     equipmentSlot = WEAPON
     weight = 0.3
@@ -852,7 +849,6 @@ End
     weight = 1
     ownedEffect = LIGHT_SOURCE
     name = ITEMS_TORCH_NAME
-    plural = ITEMS_TORCH_PLURAL
     price = 2
     storageIds = {"equipment"}
     equipmentGroup = EQUIPMENT_GROUP_LIGHT_EMITTING_EQUIPMENT
@@ -909,7 +905,6 @@ End
     viewId = { "leather_gloves" }
     shortName = ITEMS_LEATHERGLOVES_SHORTNAME
     name = ITEMS_LEATHERGLOVES_NAME
-    plural = ITEMS_LEATHERGLOVES_PLURAL
     itemClass = ARMOR
     equipmentSlot = GLOVES
     weight = 0.3
@@ -926,7 +921,6 @@ End
     viewId = { "iron_gloves" }
     shortName = ITEMS_IRONGLOVES_SHORTNAME
     name = ITEMS_IRONGLOVES_NAME
-    plural = ITEMS_IRONGLOVES_PLURAL
     itemClass = ARMOR
     equipmentSlot = GLOVES
     weight = 1
@@ -948,7 +942,6 @@ End
     viewId = { "ada_gloves" }
     shortName = ITEMS_ADAGLOVES_SHORTNAME
     name = ITEMS_ADAGLOVES_NAME
-    plural = ITEMS_ADAGLOVES_PLURAL
     itemClass = ARMOR
     equipmentSlot = GLOVES
     weight = 0.7
@@ -969,7 +962,6 @@ End
   {
     viewId = { "iron_gloves" ColorId PINK }
     name = ITEMS_ADAGLOVES_NAME1
-    plural = ITEMS_ADAGLOVES_PLURAL1
     price = 250
     craftingCost = "ADOXIUM" 2
     modifiers = {
@@ -1274,7 +1266,6 @@ End
   {
     viewId = { "archwood" }
     name = ITEMS_ARCHWOOD_NAME
-    plural = ITEMS_ARCHWOOD_PLURAL
     itemClass = OTHER
     weight = 15
     price = 200
@@ -1338,7 +1329,6 @@ End
     viewId = { "potion4" }
     shortName = ITEMS_PROPHETSOUP_SHORTNAME
     name = ITEMS_PROPHETSOUP_NAME
-    plural = ITEMS_PROPHETSOUP_PLURAL
     blindName = ITEMS_PROPHETSOUP_BLINDNAME
     applyVerb = ITEMS_PROPHETSOUP_APPLYVERB ITEMS_PROPHETSOUP_APPLYVERB1
     fragile = true
@@ -1360,7 +1350,6 @@ End
     viewId = { "cyclops_helm" }
     shortName = ITEMS_LEATHERHELM_SHORTNAME1
     name = ITEMS_LEATHERHELM_NAME1
-    plural = ITEMS_LEATHERHELM_PLURAL
     modifiers = {
       DEFENSE 5
     }
@@ -1539,7 +1528,6 @@ End
     viewId = { "leather_boots" }
     shortName = ITEMS_LEATHERBOOTS_SHORTNAME
     name = ITEMS_LEATHERBOOTS_NAME
-    plural = ITEMS_LEATHERBOOTS_PLURAL
     itemClass = ARMOR
     equipmentSlot = BOOTS
     weight = 2
@@ -1561,7 +1549,6 @@ End
     viewId = { "iron_boots" }
     shortName = ITEMS_IRONBOOTS_SHORTNAME
     name = ITEMS_IRONBOOTS_NAME
-    plural = ITEMS_IRONBOOTS_PLURAL
     itemClass = ARMOR
     equipmentSlot = BOOTS
     weight = 4
@@ -1584,7 +1571,6 @@ End
     viewId = { "ada_boots" }
     shortName = ITEMS_ADABOOTS_SHORTNAME
     name = ITEMS_ADABOOTS_NAME
-    plural = ITEMS_ADABOOTS_PLURAL
     itemClass = ARMOR
     equipmentSlot = BOOTS
     weight = 3
@@ -1604,7 +1590,6 @@ End
   {
     viewId = { "iron_boots" ColorId PINK }
     name = ITEMS_ADABOOTS_NAME1
-    plural = ITEMS_ADABOOTS_PLURAL1
     price = 500
     craftingCost = "ADOXIUM" 24
     modifiers = {
@@ -1628,7 +1613,6 @@ End
     viewId = { "iron_boots" Rgb 206 58 68 255 }
     shortName = ITEMS_DEVILBOOTS_SHORTNAME
     name = ITEMS_DEVILBOOTS_NAME
-    plural = ITEMS_DEVILBOOTS_PLURAL
     itemClass = ARMOR
     equipmentSlot = BOOTS
     weight = 4
@@ -1656,7 +1640,6 @@ End
     viewId = { "amulet3" }
     shortName = ITEMS_DEFENSEAMULET_SHORTNAME
     name = ITEMS_DEFENSEAMULET_NAME
-    plural = ITEMS_DEFENSEAMULET_PLURAL
     description = ITEMS_DEFENSEAMULET_DESCRIPTION
     equipmentSlot = AMULET
     price = 60
@@ -1779,7 +1762,6 @@ Def DAMAGE_RING(VALUE)
     viewId = { "ring" ColorId BLUE }
     shortName = ITEMS_DAMAGERING3_SHORTNAME
     name = ITEMS_DAMAGERING3_NAME
-    plural = ITEMS_DAMAGERING3_PLURAL
     description = ITEMS_DAMAGERING3_DESCRIPTION
     equipmentSlot = RINGS
     price = 60
@@ -1798,7 +1780,6 @@ Def SPELL_DAMAGE_RING(VALUE)
     viewId = { "ring" ColorId GREEN }
     shortName = ITEMS_SPELLDAMAGERING3_SHORTNAME
     name = ITEMS_SPELLDAMAGERING3_NAME
-    plural = ITEMS_SPELLDAMAGERING3_PLURAL
     description = ITEMS_SPELLDAMAGERING3_DESCRIPTION
     equipmentSlot = RINGS
     price = 60
@@ -1817,7 +1798,6 @@ Def RANGED_DAMAGE_RING(VALUE)
     viewId = { "ring" ColorId YELLOW }
     shortName = ITEMS_RANGEDDAMAGERING3_SHORTNAME
     name = ITEMS_RANGEDDAMAGERING3_NAME
-    plural = ITEMS_RANGEDDAMAGERING3_PLURAL
     description = ITEMS_RANGEDDAMAGERING3_DESCRIPTION
     equipmentSlot = RINGS
     price = 60
@@ -1976,7 +1956,6 @@ End
     viewId = { "potion1" Rgb 0 0 0 0 }
     shortName = ITEMS_MOONSHINE_SHORTNAME
     name = ITEMS_MOONSHINE_NAME
-    plural = ITEMS_MOONSHINE_PLURAL
     blindName = ITEMS_MOONSHINE_BLINDNAME
     applyVerb = ITEMS_MOONSHINE_APPLYVERB ITEMS_MOONSHINE_APPLYVERB1
     fragile = true

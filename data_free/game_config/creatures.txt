@@ -648,7 +648,6 @@ End
     aiType = RANGED
     name = {
       name = CREATURE_ATTRIBUTES_SUCCUBUS_NAME
-      pluralName = CREATURE_ATTRIBUTES_SUCCUBUS_PLURALNAME
     }
     hatedByEffect = HATE_DEMONS
   }
@@ -669,7 +668,6 @@ End
     spells = { "bolster" "rally" }
     name = {
       name = CREATURE_ATTRIBUTES_GALEAM_NAME
-        pluralName = CREATURE_ATTRIBUTES_GALEAM_PLURALNAME
     }
   }
 "CHERUB"
@@ -769,7 +767,6 @@ End
     }
     name = {
       name = CREATURE_ATTRIBUTES_WITCH_NAME
-      pluralName = CREATURE_ATTRIBUTES_WITCH_PLURALNAME
       firstName = "Cornelia"
     }
     aiType = RANGED
@@ -810,7 +807,6 @@ End
     }
     name = {
       name = CREATURE_ATTRIBUTES_WITCHMAN_NAME
-      pluralName = CREATURE_ATTRIBUTES_WITCHMAN_PLURALNAME
       firstNameGen = "FIRST_MALE"
     }
     permanentEffects = {
@@ -850,7 +846,6 @@ End
     }
     name = {
       name = CREATURE_ATTRIBUTES_CYCLOPS_NAME
-      pluralName = CREATURE_ATTRIBUTES_CYCLOPS_PLURALNAME
       firstNameGen = "CYCLOPS"
     }
     maxLevelIncrease = {
@@ -889,8 +884,7 @@ End
       droppedPartUpgrade = IncreaseAttr DEFENSE 5
     }
     name = {
-      name = CREATURE_ATTRIBUTES_CYCLOPS_PLAYER_NAME
-      pluralName = CREATURE_ATTRIBUTES_CYCLOPS_PLAYER_PLURALNAME
+      name = CREATURE_ATTRIBUTES_CYCLOPS_NAME
       firstNameGen = "CYCLOPS"
     }
     maxLevelIncrease = {
@@ -2270,7 +2264,6 @@ End
     }
     name = {
       name = CREATURE_ATTRIBUTES_CHILD_NAME
-      pluralName = CREATURE_ATTRIBUTES_CHILD_PLURALNAME
     }
     hatedByEffect = HATE_HUMANS
     noCopulation = true
@@ -2314,8 +2307,7 @@ End
     chatReactionHostile = CREATURE_ATTRIBUTES_SPIDER_FOOD_CHATREACTIONHOSTILE
     deathDescription = CREATURE_ATTRIBUTES_SPIDER_FOOD_DEATHDESCRIPTION
     name = {
-      name = CREATURE_ATTRIBUTES_SPIDER_FOOD_NAME
-      pluralName = CREATURE_ATTRIBUTES_SPIDER_FOOD_PLURALNAME
+      name = CREATURE_ATTRIBUTES_CHILD_NAME
     }
     hatedByEffect = HATE_HUMANS
   }
@@ -2332,8 +2324,7 @@ End
     chatReactionFriendly = CREATURE_ATTRIBUTES_HALLOWEEN_KID_CHATREACTIONFRIENDLY
     chatReactionHostile = CREATURE_ATTRIBUTES_HALLOWEEN_KID_CHATREACTIONHOSTILE
     name = {
-      name = CREATURE_ATTRIBUTES_HALLOWEEN_KID_NAME
-      pluralName = CREATURE_ATTRIBUTES_HALLOWEEN_KID_PLURALNAME
+      name = CREATURE_ATTRIBUTES_CHILD_NAME
     }
     hatedByEffect = HATE_HUMANS
     inventory = {
@@ -2876,7 +2867,6 @@ End
     }
     name = {
       name = CREATURE_ATTRIBUTES_MUMMY_NAME
-      pluralName = CREATURE_ATTRIBUTES_MUMMY_PLURALNAME
     }
     hatedByEffect = HATE_UNDEAD
   }
@@ -2932,7 +2922,6 @@ End
     }
     name = {
       name = CREATURE_ATTRIBUTES_HARPY_NAME
-      pluralName = CREATURE_ATTRIBUTES_HARPY_PLURALNAME
       firstNameGen = "ORC"
     }
     hatedByEffect = HATE_GREENSKINS
@@ -3114,7 +3103,6 @@ End
     }
     name = {
       name = CREATURE_ATTRIBUTES_DWARF_NAME
-      pluralName = CREATURE_ATTRIBUTES_DWARF_PLURALNAME
       firstNameGen = "DWARF"
     }
     maxLevelIncrease = {
@@ -3199,7 +3187,6 @@ End
     aiType = RANGED
     name = {
       name = CREATURE_ATTRIBUTES_DWARF_FEMALE_NAME
-      pluralName = CREATURE_ATTRIBUTES_DWARF_FEMALE_PLURALNAME
       firstNameGen = "DWARF"
     }
     permanentEffects = {
@@ -3283,7 +3270,6 @@ End
     chatReactionHostile = CREATURE_ATTRIBUTES_LIZARDMAN_CHATREACTIONHOSTILE
     name = {
       name = CREATURE_ATTRIBUTES_LIZARDMAN_NAME
-      pluralName = CREATURE_ATTRIBUTES_LIZARDMAN_PLURALNAME
     }
     inventory = {
       { "LeatherArmor"}
@@ -3337,7 +3323,6 @@ End
     }
     name = {
       name = CREATURE_ATTRIBUTES_ELF_NAME
-      pluralName = CREATURE_ATTRIBUTES_ELF_PLURALNAME
     }
     hatedByEffect = HATE_ELVES
   }
@@ -3394,7 +3379,6 @@ End
     }
     name = {
       name = CREATURE_ATTRIBUTES_ELF_CHILD_NAME
-      pluralName = CREATURE_ATTRIBUTES_ELF_CHILD_PLURALNAME
     }
     hatedByEffect = HATE_ELVES
     noCopulation = true
@@ -3471,7 +3455,6 @@ End
     spells = { "healing" }
     name = {
       name = CREATURE_ATTRIBUTES_DARK_ELF_NAME
-      pluralName = CREATURE_ATTRIBUTES_DARK_ELF_PLURALNAME
     }
     hatedByEffect = HATE_ELVES
   }
@@ -3501,7 +3484,6 @@ End
     }
     name = {
       name = CREATURE_ATTRIBUTES_DARK_ELF_WARRIOR_NAME
-      pluralName = CREATURE_ATTRIBUTES_DARK_ELF_WARRIOR_PLURALNAME
     }
     hatedByEffect = HATE_ELVES
     inventory = {
@@ -3530,7 +3512,6 @@ End
     chatReactionHostile = CREATURE_ATTRIBUTES_DARK_ELF_CHILD_CHATREACTIONHOSTILE
     name = {
       name = CREATURE_ATTRIBUTES_DARK_ELF_CHILD_NAME
-      pluralName = CREATURE_ATTRIBUTES_DARK_ELF_CHILD_PLURALNAME
     }
     hatedByEffect = HATE_ELVES
     noCopulation = true
@@ -3795,7 +3776,6 @@ End
     noChase = true
     name = {
       name = CREATURE_ATTRIBUTES_DEER_NAME
-      pluralName = CREATURE_ATTRIBUTES_DEER_PLURALNAME
     }
   }
 "ELF_LORD_DEER" inherit "DEER"
@@ -3837,7 +3817,6 @@ End
     noChase = true
     name = {
       name = CREATURE_ATTRIBUTES_FOX_NAME
-      pluralName = CREATURE_ATTRIBUTES_FOX_PLURALNAME
     }
   }
 "POLAR_FOX" inherit "FOX"
@@ -3970,7 +3949,6 @@ End
     noChase = true
     name = {
       name = CREATURE_ATTRIBUTES_FLY_NAME
-      pluralName = CREATURE_ATTRIBUTES_FLY_PLURALNAME
     }
   }
 "ANT_WORKER"
@@ -4150,7 +4128,6 @@ End
     }
     name = {
       name = CREATURE_ATTRIBUTES_WOLF_NAME
-      pluralName = CREATURE_ATTRIBUTES_WOLF_PLURALNAME
       firstNameGen = "DOG"
       groupName = CREATURE_ATTRIBUTES_WOLF_GROUPNAME
     }
@@ -4179,7 +4156,6 @@ End
     }
     name = {
       name = CREATURE_ATTRIBUTES_SKELETON_WOLF_NAME
-      pluralName = CREATURE_ATTRIBUTES_SKELETON_WOLF_PLURALNAME
       firstNameGen = "DOG"
       groupName = CREATURE_ATTRIBUTES_SKELETON_WOLF_GROUPNAME
     }
@@ -4209,7 +4185,6 @@ End
     }
     name = {
       name = CREATURE_ATTRIBUTES_FERAL_CHILD_NAME
-      pluralName = CREATURE_ATTRIBUTES_FERAL_CHILD_PLURALNAME
       firstNameGen = "DOG"
       groupName = CREATURE_ATTRIBUTES_FERAL_CHILD_GROUPNAME
     }
@@ -4241,7 +4216,6 @@ End
     }
     name = {
       name = CREATURE_ATTRIBUTES_WEREWOLF_NAME
-      pluralName = CREATURE_ATTRIBUTES_WEREWOLF_PLURALNAME
       firstNameGen = "DOG"
     }
   }
@@ -4600,7 +4574,6 @@ End
     }
     name = {
       name = CREATURE_ATTRIBUTES_ADOXIE_HEAD_NAME
-      pluralName = CREATURE_ATTRIBUTES_ADOXIE_HEAD_PLURALNAME
       fullTitle = true
     }
     chatReactionFriendly = CREATURE_ATTRIBUTES_ADOXIE_HEAD_CHATREACTIONFRIENDLY
@@ -4678,7 +4651,6 @@ End
     }
     name = {
       name = CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_NAME
-      pluralName = CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_PLURALNAME
       fullTitle = true
     }
     deathDescription = CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_DEATHDESCRIPTION
@@ -4689,7 +4661,6 @@ End
     viewId = { "adoxie_foot_right" }
     name = {
       name = CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_NAME1
-      pluralName = CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_PLURALNAME
       fullTitle = true
     }
   }
@@ -4726,7 +4697,6 @@ End
     }
     name = {
       name = CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_NAME2
-      pluralName = CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_PLURALNAME1
       fullTitle = true
     }
   }
@@ -4735,7 +4705,6 @@ End
     viewId = { "adoxie_hand_right" }
     name = {
       name = CREATURE_ATTRIBUTES_ADOXIE_LEFT_HAND_NAME
-      pluralName = CREATURE_ATTRIBUTES_ADOXIE_LEFT_HAND_PLURALNAME
       fullTitle = true
     }
   }

@@ -60,18 +60,18 @@ AMULET_OF masculine "amulet {1:genitive}"
     "amuletu {1:genitive}" : genitive
     "amuletem {1:instrumental}" : instrumental
     "amulet {1:genitive}" : accusative
-    "amu­lety {1:genitive}" : plural
+    "amulety {1:genitive}" : plural
     "amuletów {1:genitive}" : plural,genitive
     "amuletami {1:instrumental}" : plural,instrumental
-    "amu­lety {1:genitive}" : plural,accusative
+    "amulety {1:genitive}" : plural,accusative
 AMULETS_OF masculine "amu­lety {1:genitive}"
     "amuletów {1:genitive}" : genitive
     "amuletami {1:instrumental}" : instrumental
-    "amu­lety {1:genitive}" : accusative
-    "amu­lety {1:genitive}" : plural
+    "amulety {1:genitive}" : accusative
+    "amulety {1:genitive}" : plural
     "amuletów {1:genitive}" : plural,genitive
     "amuletami {1:instrumental}" : plural,instrumental
-    "amu­lety {1:genitive}" : plural,accusative
+    "amulety {1:genitive}" : plural,accusative
 ANALYTICS_EFFECT_DESCRIPTION "Wywołuje zdarzenie analityczne (logowanie)"
 ANALYTICS_EFFECT_NAME "zdarzenie analityczne"
 ANIMAL_PEN_MUST_BE_SEPARATE_HIGHLIGHT "Wybieg dla zwierząt musi być oddzielony od terenu zewnętrznego i od wszystkich schodów za pomocą ogrodzenia dla zwierząt"
@@ -835,7 +835,7 @@ THE_DEATH_OF "śmierć {1:genitive}"
 THEFT_TRIGGER "Kradzież przedmiotu"
 THE_PILLAGING_OF "splądrowanie {1:genitive}"
 THE_PLAYER "gracz"
-THE_SLAYING_OF "zabicie {1:genitive} przez {2}"
+THE_SLAYING_OF "zabicie {1:genitive} przez {2:accusative}"
 THE_SPELL_FAILED "Zaklęcie nie powiodło się."
 THE "ten {1}"
 THE_TORTURING_OF "torturowanie {1:genitive}"
@@ -1961,7 +1961,7 @@ TURNS_SPENT_ATTACKING "{1} tur spędzonych na wyprawach i atakach."
 THANK_YOU_FOR_PLAYING "Dziękujemy za grę w KeeperRL!"
 RETIRED_GAME_RESULT "porzucił grę"
 YOU_KILLED_AND_SCORED "Zabiłeś {1} wrogów i uzyskałeś {2} punktów."
-OF "z {1} {2}"
+OF "{1} z {2:genitive}"
 ITEM_BURNS "{1} płonie w {2}."
 ITEMS_BURN "{1} płoną w {2}."
 ITEM_SINKS "{1} tonie w {2}."
@@ -1975,7 +1975,7 @@ MORE_MASCULINE "bardziej męski"
 MORE_FEMININE "bardziej kobiecy"
 MORE_NEUTER "bardziej nijaki"
 PRISONER_FROM_NAME "{1} (więzień)"
-DEFENSE_BONUS_AGAINST "Zapewnia +{1} do obrony przeciw {2}."
+DEFENSE_BONUS_AGAINST "Zapewnia +{1} do obrony przed {2:plural,instrumental}."
 ALCHEMY_TECH_NAME "alchemia"
 INCENDIARY_ALCHEMY_TECH_NAME "alchemia zapalająca"
 ADVANCED_ALCHEMY_TECH_NAME "zaawansowana alchemia"
@@ -2556,24 +2556,6 @@ CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_NAME2 feminine "Lewa Ręka Adoxiego"
     "Lewymi Rękami Adoxiego" : plural,instrumental
     "Lewe Ręce Adoxiego" : plural,accusative
 
-CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_PLURALNAME1 feminine "Ręce"
-    "Rąk" : genitive
-    "Rękami" : instrumental
-    "Ręce" : accusative
-    "Ręce" : plural
-    "Rąk" : plural,genitive
-    "Rękami" : plural,instrumental
-    "Ręce" : plural,accusative
-
-CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_PLURALNAME feminine "Stopy"
-    "Stóp" : genitive
-    "Stopami" : instrumental
-    "Stopy" : accusative
-    "Stopy" : plural
-    "Stóp" : plural,genitive
-    "Stopami" : plural,instrumental
-    "Stopy" : plural,accusative
-
 CREATURE_ATTRIBUTES_ADOXIE_HEAD_CHATREACTIONFRIENDLY "\"Spójrz na mą wielkość i drżyj, śmiertelniku!\""
 CREATURE_ATTRIBUTES_ADOXIE_HEAD_CHATREACTIONHOSTILE "\"Jak śmiesz przeciwstawić się BOGU!\""
 CREATURE_ATTRIBUTES_ADOXIE_HEAD_DEATHDESCRIPTION "pokonany. Niech nigdy więcej nie powstanie"
@@ -2595,15 +2577,6 @@ CREATURE_ATTRIBUTES_ADOXIE_HEAD_NAME masculine "Zły Bóg Adoxie"
     "Złymi Bogami Adoxiego" : plural,instrumental
     "Złych Bogów Adoxiego" : plural,accusative
 
-CREATURE_ATTRIBUTES_ADOXIE_HEAD_PLURALNAME masculine "bogowie"
-    "bogów" : genitive
-    "bogami" : instrumental
-    "bogów" : accusative
-    "bogowie" : plural
-    "bogów" : plural,genitive
-    "bogami" : plural,instrumental
-    "bogów" : plural,accusative
-
 CREATURE_ATTRIBUTES_ADOXIE_LEFT_HAND_NAME feminine "Prawa Ręka Adoxiego"
     "Prawej Ręki Adoxiego" : genitive
     "Prawą Ręką Adoxiego" : instrumental
@@ -2612,11 +2585,6 @@ CREATURE_ATTRIBUTES_ADOXIE_LEFT_HAND_NAME feminine "Prawa Ręka Adoxiego"
     "Prawych Rąk Adoxiego" : plural,genitive
     "Prawymi Rękami Adoxiego" : plural,instrumental
     "Prawe Ręce Adoxiego" : plural,accusative
-
-CREATURE_ATTRIBUTES_ADOXIE_LEFT_HAND_PLURALNAME feminine "Ręce"
-    "Rąk" : plural,genitive
-    "Rękami" : plural,instrumental
-    "Ręce" : plural,accusative
 
 CREATURE_ATTRIBUTES_ADOXIE_PRIEST_NAME masculine "wysoki kapłan Adoxiego"
     "wysokiego kapłana Adoxiego" : genitive
@@ -3074,10 +3042,6 @@ CREATURE_ATTRIBUTES_CHILD_NAME masculine "dziecko"
     "dziećmi" : plural,instrumental
     "dzieci" : plural,accusative
 
-CREATURE_ATTRIBUTES_CHILD_PLURALNAME "children" ## English UI label,
-## If needed in Polish:
-## "dzieci"
-
 CREATURE_ATTRIBUTES_CLAY_GOLEM_NAME masculine "gliniany golem"
     "glinianego golema" : genitive
     "glinianym golemem" : instrumental
@@ -3117,41 +3081,20 @@ CREATURE_ATTRIBUTES_CYCLOPS_NAME masculine "cyklop"
     "cyklopami" : plural,instrumental
     "cyklopów" : plural,accusative
 
-CREATURE_ATTRIBUTES_CYCLOPS_PLAYER_NAME masculine "cyklop"
-    "cyklopa" : genitive
-    "cyklopem" : instrumental
-    "cyklopa" : accusative
-    "cyklopi" : plural
-    "cyklopów" : plural,genitive
-    "cyklopami" : plural,instrumental
-    "cyklopów" : plural,accusative
-
-CREATURE_ATTRIBUTES_CYCLOPS_PLAYER_PLURALNAME "cyclopes"
-## If needed in Polish: "cyklopi"
-
-CREATURE_ATTRIBUTES_CYCLOPS_PLURALNAME "cyclopes"
-## If needed in Polish: "cyklopi"
-
 CREATURE_ATTRIBUTES_DARK_ELF_CHATREACTIONFRIENDLY "przeklina wszystkich krasnoludów"
 CREATURE_ATTRIBUTES_DARK_ELF_CHATREACTIONHOSTILE "\"Giń!\""
 
 CREATURE_ATTRIBUTES_DARK_ELF_CHILD_CHATREACTIONFRIENDLY "przeklina wszystkich krasnoludów"
 CREATURE_ATTRIBUTES_DARK_ELF_CHILD_CHATREACTIONHOSTILE "\"Giń!\""
 
-CREATURE_ATTRIBUTES_DARK_ELF_CHILD_NAME neuter "dziecko mrocznego elfa"
-    "dziecka mrocznego elfa" : genitive
-    "dzieckiem mrocznego elfa" : instrumental
-    "dziecko mrocznego elfa" : accusative
+CREATURE_ATTRIBUTES_DARK_ELF_CHILD_NAME neuter "dziecko mrocznych elfów"
+    "dziecka mrocznych elfów" : genitive
+    "dzieckiem mrocznych elfów" : instrumental
+    "dziecko mrocznych elfów" : accusative
     "dzieci mrocznych elfów" : plural
     "dzieci mrocznych elfów" : plural,genitive
     "dziećmi mrocznych elfów" : plural,instrumental
     "dzieci mrocznych elfów" : plural,accusative
-
-CREATURE_ATTRIBUTES_DARK_ELF_CHILD_PLURALNAME neuter "dzieci mrocznych elfów"
-    "dzieci mrocznych elfów" : genitive
-    "dziećmi mrocznych elfów" : instrumental
-    "dzieci mrocznych elfów" : accusative
-    ## plural forms repeated
 
 CREATURE_ATTRIBUTES_DARK_ELF_LORD_CHATREACTIONFRIENDLY "przeklina wszystkich krasnoludów"
 CREATURE_ATTRIBUTES_DARK_ELF_LORD_CHATREACTIONHOSTILE "\"Giń!\""
@@ -3174,11 +3117,6 @@ CREATURE_ATTRIBUTES_DARK_ELF_NAME masculine "mroczny elf"
     "mrocznymi elfami" : plural,instrumental
     "mrocznych elfów" : plural,accusative
 
-CREATURE_ATTRIBUTES_DARK_ELF_PLURALNAME masculine "mroczni elfowie"
-    "mrocznych elfów" : genitive
-    "mrocznymi elfami" : instrumental
-    "mrocznych elfów" : accusative
-
 CREATURE_ATTRIBUTES_DARK_ELF_WARRIOR_CHATREACTIONFRIENDLY "przeklina wszystkich krasnoludów"
 CREATURE_ATTRIBUTES_DARK_ELF_WARRIOR_CHATREACTIONHOSTILE "\"Giń!\""
 
@@ -3190,11 +3128,6 @@ CREATURE_ATTRIBUTES_DARK_ELF_WARRIOR_NAME masculine "mroczny elf"
     "mrocznych elfów" : plural,genitive
     "mrocznymi elfami" : plural,instrumental
     "mrocznych elfów" : plural,accusative
-
-CREATURE_ATTRIBUTES_DARK_ELF_WARRIOR_PLURALNAME masculine "mroczni elfowie"
-    "mrocznych elfów" : genitive
-    "mrocznymi elfami" : instrumental
-    "mrocznych elfów" : accusative
 
 CREATURE_ATTRIBUTES_DEATH_CHATREACTIONFRIENDLY "\"ABY ODMIENIĆ LOS W OSTATNIEJ CHWILI, MUSISZ DOPROWADZIĆ SWÓJ LOS DO OSTATNIEJ CHWILI.\""
 CREATURE_ATTRIBUTES_DEATH_CHATREACTIONHOSTILE "\"ABY ODMIENIĆ LOS W OSTATNIEJ CHWILI, MUSISZ DOPROWADZIĆ SWÓJ LOS DO OSTATNIEJ CHWILI.\""
@@ -3226,11 +3159,6 @@ CREATURE_ATTRIBUTES_DEER_NAME neuter "jeleń"
     "jeleniami" : plural,instrumental
     "jelenie" : plural,accusative
     ## English "deer" is often "jeleń" (masculine)# if we interpret it collectively, we can treat it as "sarny" or "daniele." But we'll choose "jeleń."
-
-CREATURE_ATTRIBUTES_DEER_PLURALNAME neuter "jelenie"
-    "jeleni" : genitive
-    "jeleniami" : instrumental
-    "jelenie" : accusative
 
 CREATURE_ATTRIBUTES_DEMON_DWELLER_CHATREACTIONFRIENDLY "\"Uklęknij przed nami!\""
 CREATURE_ATTRIBUTES_DEMON_DWELLER_CHATREACTIONHOSTILE "\"Stań naprzeciw swej śmierci!\""
@@ -3414,11 +3342,6 @@ CREATURE_ATTRIBUTES_DWARF_FEMALE_NAME feminine "krasnoludka"
     "krasnoludkami" : plural,instrumental
     "krasnoludki" : plural,accusative
 
-CREATURE_ATTRIBUTES_DWARF_FEMALE_PLURALNAME feminine "krasnoludki"
-    "krasnoludek" : genitive
-    "krasnoludkami" : instrumental
-    "krasnoludki" : accusative
-
 CREATURE_ATTRIBUTES_DWARF_NAME1 masculine "baron krasnoludów"
     "barona krasnoludów" : genitive
     "baronem krasnoludów" : instrumental
@@ -3445,11 +3368,6 @@ CREATURE_ATTRIBUTES_DWARF_NAME masculine "krasnolud"
     "krasnoludów" : plural,genitive
     "krasnoludami" : plural,instrumental
     "krasnoludów" : plural,accusative
-
-CREATURE_ATTRIBUTES_DWARF_PLURALNAME masculine "krasnoludy"
-    "krasnoludów" : genitive
-    "krasnoludami" : instrumental
-    "krasnoludów" : accusative
 
 CREATURE_ATTRIBUTES_EARTH_ELEMENTAL_NAME masculine "żywiołak ziemi"
     "żywiołaka ziemi" : genitive
@@ -3495,11 +3413,6 @@ CREATURE_ATTRIBUTES_ELF_CHILD_NAME masculine "elfie dziecko"
     "elfimi dziećmi" : plural,instrumental
     "elfie dzieci" : plural,accusative
 
-CREATURE_ATTRIBUTES_ELF_CHILD_PLURALNAME masculine "elfie dzieci"
-    "elfich dzieci" : genitive
-    "elfimi dziećmi" : instrumental
-    "elfie dzieci" : accusative
-
 CREATURE_ATTRIBUTES_ELF_LORD_CHATREACTIONFRIENDLY "przeklina wszystkich krasnoludów"
 CREATURE_ATTRIBUTES_ELF_LORD_CHATREACTIONHOSTILE "\"Giń!\""
 CREATURE_ATTRIBUTES_ELF_LORD_NAME masculine "elfi władca"
@@ -3519,11 +3432,6 @@ CREATURE_ATTRIBUTES_ELF_NAME masculine "elf"
     "elfów" : plural,genitive
     "elfami" : plural,instrumental
     "elfy" : plural,accusative
-
-CREATURE_ATTRIBUTES_ELF_PLURALNAME masculine "elfy"
-    "elfów" : genitive
-    "elfami" : instrumental
-    "elfy" : accusative
 
 CREATURE_ATTRIBUTES_ENT_CHATREACTIONFRIENDLY "przeklina wszystkie lochy"
 CREATURE_ATTRIBUTES_ENT_CHATREACTIONHOSTILE "\"Giń!\""
@@ -3556,11 +3464,6 @@ CREATURE_ATTRIBUTES_FERAL_CHILD_NAME masculine "dzikie dziecko"
     "dzikimi dziećmi" : plural,instrumental
     "dzikie dzieci" : plural,accusative
 
-CREATURE_ATTRIBUTES_FERAL_CHILD_PLURALNAME masculine "dzikie dzieci"
-    "dzikich dzieci" : genitive
-    "dzikimi dziećmi" : instrumental
-    "dzikie dzieci" : accusative
-
 CREATURE_ATTRIBUTES_FIRE_ELEMENTAL_ID "pięści"
 CREATURE_ATTRIBUTES_FIRE_ELEMENTAL_NAME masculine "żywiołak ognia"
     "żywiołaka ognia" : genitive
@@ -3589,11 +3492,6 @@ CREATURE_ATTRIBUTES_FLY_NAME masculine "mucha"
     "muchami" : plural,instrumental
     "muchy" : plural,accusative
 
-CREATURE_ATTRIBUTES_FLY_PLURALNAME masculine "muchy"
-    "much" : genitive
-    "muchami" : instrumental
-    "muchy" : accusative
-
 CREATURE_ATTRIBUTES_FOX_NAME masculine "lis"
     "lisa" : genitive
     "lisem" : instrumental
@@ -3602,11 +3500,6 @@ CREATURE_ATTRIBUTES_FOX_NAME masculine "lis"
     "lisów" : plural,genitive
     "lisami" : plural,instrumental
     "lisy" : plural,accusative
-
-CREATURE_ATTRIBUTES_FOX_PLURALNAME masculine "lisy"
-    "lisów" : genitive
-    "lisami" : instrumental
-    "lisy" : accusative
 
 CREATURE_ATTRIBUTES_FRIAR_NAME masculine "Ojciec O'Blivion"
     "Ojca O'Bliviona" : genitive
@@ -3625,11 +3518,6 @@ CREATURE_ATTRIBUTES_GALEAM_NAME masculine "galeam"
     "galeamów" : plural,genitive
     "galeamami" : plural,instrumental
     "galeamy" : plural,accusative
-
-CREATURE_ATTRIBUTES_GALEAM_PLURALNAME masculine "galeamy"
-    "galeamów" : genitive
-    "galeamami" : instrumental
-    "galeamy" : accusative
 
 CREATURE_ATTRIBUTES_GARGOYLE_NAME masculine "gargulec"
     "gargulca" : genitive
@@ -3845,20 +3733,6 @@ CREATURE_ATTRIBUTES_GREEN_DRAGON_STACKNAME masculine "smok"
 
 CREATURE_ATTRIBUTES_HALLOWEEN_KID_CHATREACTIONFRIENDLY "\"Cukierek albo psikus!\""
 CREATURE_ATTRIBUTES_HALLOWEEN_KID_CHATREACTIONHOSTILE "\"Cukierek albo psikus!\""
-CREATURE_ATTRIBUTES_HALLOWEEN_KID_NAME masculine "dziecko"
-    "dziecka" : genitive
-    "dzieckiem" : instrumental
-    "dziecko" : accusative
-    "dzieci" : plural
-    "dzieci" : plural,accusative
-    "dzieci" : plural,nominative
-    "dziećmi" : plural,instrumental
-    "dzieci" : plural,accusative
-
-CREATURE_ATTRIBUTES_HALLOWEEN_KID_PLURALNAME masculine "dzieci"
-    "dzieci" : genitive
-    "dziećmi" : instrumental
-    "dzieci" : accusative
 
 CREATURE_ATTRIBUTES_HARPY_NAME feminine "harpia"
     "harpii" : genitive
@@ -3868,11 +3742,6 @@ CREATURE_ATTRIBUTES_HARPY_NAME feminine "harpia"
     "harpii" : plural,genitive
     "harpiami" : plural,instrumental
     "harpie" : plural,accusative
-
-CREATURE_ATTRIBUTES_HARPY_PLURALNAME feminine "harpie"
-    "harpii" : genitive
-    "harpiami" : instrumental
-    "harpie" : accusative
 
 CREATURE_ATTRIBUTES_HELICOPTER_NAME neuter "helikopterum"
     "helikopterum" : genitive
@@ -4193,11 +4062,6 @@ CREATURE_ATTRIBUTES_LIZARDMAN_NAME masculine "jaszczurolud"
     "jaszczuroludami" : plural,instrumental
     "jaszczuroludów" : plural,accusative
 
-CREATURE_ATTRIBUTES_LIZARDMAN_PLURALNAME masculine "jaszczuroludzie"
-    "jaszczuroludów" : plural,genitive
-    "jaszczuroludami" : plural,instrumental
-    "jaszczuroludów" : plural,accusative
-
 CREATURE_ATTRIBUTES_LOST_SOUL_CHATREACTIONFRIENDLY "\"Wouuuouuu!!!\""
 CREATURE_ATTRIBUTES_LOST_SOUL_CHATREACTIONHOSTILE "\"Wouuuouuu!!!\""
 CREATURE_ATTRIBUTES_LOST_SOUL_ID neuter "dotyk"
@@ -4232,11 +4096,6 @@ CREATURE_ATTRIBUTES_MUMMY_NAME feminine "mumia"
     "mumią" : instrumental
     "mumię" : accusative
     "mumie" : plural
-    "mumii" : plural,genitive
-    "mumiami" : plural,instrumental
-    "mumie" : plural,accusative
-
-CREATURE_ATTRIBUTES_MUMMY_PLURALNAME feminine "mumie"
     "mumii" : plural,genitive
     "mumiami" : plural,instrumental
     "mumie" : plural,accusative
@@ -4619,11 +4478,6 @@ CREATURE_ATTRIBUTES_SKELETON_WOLF_NAME masculine "szkielet wilk"
     "szkieletami wilkami" : plural,instrumental
     "szkieletów wilków" : plural,accusative
 
-CREATURE_ATTRIBUTES_SKELETON_WOLF_PLURALNAME masculine "szkielety wilki"
-    "szkieletów wilków" : plural,genitive
-    "szkieletami wilkami" : plural,instrumental
-    "szkieletów wilków" : plural,accusative
-
 CREATURE_ATTRIBUTES_SLASHER_ID1 neuter "kły"
     "kłów" : genitive
     "kłami" : instrumental
@@ -4692,19 +4546,6 @@ CREATURE_ATTRIBUTES_SORCERER_NAME masculine "zaklinacz"
 CREATURE_ATTRIBUTES_SPIDER_FOOD_CHATREACTIONFRIENDLY "\"Uwolnij mnie z mego cierpienia, BŁAGAM!\""
 CREATURE_ATTRIBUTES_SPIDER_FOOD_CHATREACTIONHOSTILE "\"Zabij mnie, by zakończyć mękę!\""
 CREATURE_ATTRIBUTES_SPIDER_FOOD_DEATHDESCRIPTION "martwy, uwolniony od niewyobrażalnej agonii"
-CREATURE_ATTRIBUTES_SPIDER_FOOD_NAME neuter "dziecko"
-    "dziecka" : genitive
-    "dzieckiem" : instrumental
-    "dziecko" : accusative
-    "dzieci" : plural
-    "dzieci" : plural,genitive
-    "dziećmi" : plural,instrumental
-    "dzieci" : plural,accusative
-
-CREATURE_ATTRIBUTES_SPIDER_FOOD_PLURALNAME neuter "dzieci"
-    "dzieci" : plural,genitive
-    "dziećmi" : plural,instrumental
-    "dzieci" : plural,accusative
 
 CREATURE_ATTRIBUTES_SPIDER_ID neuter "kły"
     "kłów" : genitive
@@ -4778,11 +4619,6 @@ CREATURE_ATTRIBUTES_SUCCUBUS_NAME feminine "sukkuba"
     "sukkubą" : instrumental
     "sukkubę" : accusative
     "sukkuby" : plural
-    "sukkub" : plural,genitive
-    "sukkubami" : plural,instrumental
-    "sukkuby" : plural,accusative
-
-CREATURE_ATTRIBUTES_SUCCUBUS_PLURALNAME feminine "sukkuby"
     "sukkub" : plural,genitive
     "sukkubami" : plural,instrumental
     "sukkuby" : plural,accusative
@@ -5033,11 +4869,6 @@ CREATURE_ATTRIBUTES_WEREWOLF_NAME masculine "wilkołak"
     "wilkołakami" : plural,instrumental
     "wilkołaki" : plural,accusative
 
-CREATURE_ATTRIBUTES_WEREWOLF_PLURALNAME masculine "wilkołaki"
-    "wilkołaków" : plural,genitive
-    "wilkołakami" : plural,instrumental
-    "wilkołaki" : plural,accusative
-
 CREATURE_ATTRIBUTES_WHITE_DRAGON_ID neuter "kły"
     "kłów" : genitive
     "kłami" : instrumental
@@ -5089,30 +4920,20 @@ CREATURE_ATTRIBUTES_WITCH_CHATREACTIONHOSTILE "\"Giń!\""
 CREATURE_ATTRIBUTES_WITCHMAN_CHATREACTIONFRIENDLY "złorzeczy wszystkim potworom"
 CREATURE_ATTRIBUTES_WITCHMAN_CHATREACTIONHOSTILE "\"Giń!\""
 
-CREATURE_ATTRIBUTES_WITCHMAN_NAME masculine "czarownik"
-    "czarownika" : genitive
-    "czarownikiem" : instrumental
-    "czarownika" : accusative
-    "czarownicy" : plural
-    "czarowników" : plural,genitive
-    "czarownikami" : plural,instrumental
-    "czarowników" : plural,accusative
-
-CREATURE_ATTRIBUTES_WITCHMAN_PLURALNAME masculine "czarownicy"
-    "czarowników" : plural,genitive
-    "czarownikami" : plural,instrumental
-    "czarowników" : plural,accusative
+CREATURE_ATTRIBUTES_WITCHMAN_NAME masculine "wiedźmak"
+    "wiedźmaka" : genitive
+    "wiedźmakiem" : instrumental
+    "wiedźmaka" : accusative
+    "wiedźmaki" : plural
+    "wiedźmaków" : plural,genitive
+    "wiedźmakami" : plural,instrumental
+    "wiedźmaków" : plural,accusative
 
 CREATURE_ATTRIBUTES_WITCH_NAME feminine "wiedźma"
     "wiedźmy" : genitive
     "wiedźmą" : instrumental
     "wiedźmę" : accusative
     "wiedźmy" : plural
-    "wiedźm" : plural,genitive
-    "wiedźmami" : plural,instrumental
-    "wiedźmy" : plural,accusative
-
-CREATURE_ATTRIBUTES_WITCH_PLURALNAME feminine "wiedźmy"
     "wiedźm" : plural,genitive
     "wiedźmami" : plural,instrumental
     "wiedźmy" : plural,accusative
@@ -5149,11 +4970,6 @@ CREATURE_ATTRIBUTES_WOLF_NAME masculine "wilk"
     "wilkiem" : instrumental
     "wilka" : accusative
     "wilki" : plural
-    "wilków" : plural,genitive
-    "wilkami" : plural,instrumental
-    "wilki" : plural,accusative
-
-CREATURE_ATTRIBUTES_WOLF_PLURALNAME masculine "wilki"
     "wilków" : plural,genitive
     "wilkami" : plural,instrumental
     "wilki" : plural,accusative
@@ -7216,14 +7032,10 @@ ITEMS_ADABATTLEAXE_SHORTNAME "infernite"
 
 ITEMS_ADABOOTS_NAME1 "para butów adoxium"
 ITEMS_ADABOOTS_NAME "para butów adamantynowych"
-ITEMS_ADABOOTS_PLURAL1 "pary butów adoxium"
-ITEMS_ADABOOTS_PLURAL "pary butów adamantynowych"
 ITEMS_ADABOOTS_SHORTNAME "buty"
 
 ITEMS_ADAGLOVES_NAME1 "para rękawic adoxium"
 ITEMS_ADAGLOVES_NAME "para rękawic adamantynowych"
-ITEMS_ADAGLOVES_PLURAL1 "pary rękawic adoxium"
-ITEMS_ADAGLOVES_PLURAL "pary rękawic adamantynowych"
 ITEMS_ADAGLOVES_SHORTNAME "rękawice"
 
 ITEMS_ADAHELM_NAME1 "hełm adoxium"
@@ -7258,8 +7070,7 @@ ITEMS_ADOXIUMCROZIER_NAME "adoxiumowy pastorał"
 ITEMS_ADOXIUMORE_NAME "ruda adoxium"
 ITEMS_ADOXIUMSTAFF_NAME "adoxiumowa laska"
 
-ITEMS_ARCHWOOD_NAME "gałąź archwood"
-ITEMS_ARCHWOOD_PLURAL "gałęzie archwood"
+ITEMS_ARCHWOOD_NAME "gałąź pradrzewa"
 
 ITEMS_AUTOMATONITEM_APPLYMSGFIRSTPERSON "składasz automat"
 ITEMS_AUTOMATONITEM_APPLYMSGTHIRDPERSON "składa automat"
@@ -7291,7 +7102,7 @@ ITEMS_BLACKMARKETKEY_NAME "klucz"
 ITEMS_BONE_NAME "kość"
 
 ITEMS_BOW_NAME1 "srebrny elficki łuk"
-ITEMS_BOW_NAME2 "łuk z archwood"
+ITEMS_BOW_NAME2 "łuk z pradrzewa"
 ITEMS_BOW_NAME "krótki łuk"
 
 ITEMS_CHAINARMOR_NAME "kolczuga"
@@ -7306,7 +7117,7 @@ ITEMS_CORNUTHAUM1_NAME1 "ozdobny cornuthaum"
 ITEMS_CORNUTHAUM1_NAME2 "wystawny cornuthaum"
 ITEMS_CORNUTHAUM1_NAME "cornuthaum"
 
-ITEMS_CROSSBOW_NAME1 "kusza z archwood"
+ITEMS_CROSSBOW_NAME1 "kusza z pradrzewa"
 ITEMS_CROSSBOW_NAME "kusza"
 
 ITEMS_CYCLOPSBRAIN_NAME "mózg cyklopa"
@@ -7321,11 +7132,9 @@ ITEMS_CYCLOPSTESTICLES_SHORTNAME "cyklop"
 
 ITEMS_DEFENSEAMULET_DESCRIPTION "Utwardza twoją skórę i ciało, przez co trudniej cię zranić."
 ITEMS_DEFENSEAMULET_NAME "amulet obrony"
-ITEMS_DEFENSEAMULET_PLURAL "amu­lety obrony"
 ITEMS_DEFENSEAMULET_SHORTNAME "obrona"
 
 ITEMS_DEVILBOOTS_NAME "para diabelskich butów"
-ITEMS_DEVILBOOTS_PLURAL "pary diabelskich butów"
 ITEMS_DEVILBOOTS_SHORTNAME "diabelskie"
 
 ITEMS_DEVILHOOVES_NAME "diabelskie kopyta"
@@ -7362,13 +7171,11 @@ ITEMS_INFERNITETRIDENT_SHORTNAME "infernite"
 ITEMS_INVISIBILITYRING_NAME "złoty pierścień"
 
 ITEMS_IRONBOOTS_NAME "para żelaznych butów"
-ITEMS_IRONBOOTS_PLURAL "pary żelaznych butów"
 ITEMS_IRONBOOTS_SHORTNAME "buty"
 
 ITEMS_IRONCROZIER_NAME "żelazny pastorał"
 
 ITEMS_IRONGLOVES_NAME "para żelaznych rękawic"
-ITEMS_IRONGLOVES_PLURAL "pary żelaznych rękawic"
 ITEMS_IRONGLOVES_SHORTNAME "rękawice"
 
 ITEMS_IRONHELM_NAME "żelazny hełm"
@@ -7432,24 +7239,6 @@ ITEMS_KNIFE_NAME masculine "nóż"
     "noża" : genitive
     "nożem" : instrumental
     "nóż" : accusative
-    "noże" : plural
-    "noży" : plural,genitive
-    "nożami" : plural,instrumental
-    "noże" : plural,accusative
-
-ITEMS_KNIFE_PLURAL1 masculine "noże skrytobójcy"
-    "noży skrytobójcy" : genitive
-    "nożami skrytobójcy" : instrumental
-    "noże skrytobójcy" : accusative
-    "noże skrytobójcy" : plural
-    "noży skrytobójcy" : plural,genitive
-    "nożami skrytobójcy" : plural,instrumental
-    "noże skrytobójcy" : plural,accusative
-
-ITEMS_KNIFE_PLURAL masculine "noże"
-    "noży" : genitive
-    "nożami" : instrumental
-    "noże" : accusative
     "noże" : plural
     "noży" : plural,genitive
     "nożami" : plural,instrumental
@@ -7533,15 +7322,6 @@ ITEMS_LEATHERBOOTS_NAME feminine "para skórzanych butów"
     "parami skórzanych butów" : plural,instrumental
     "pary skórzanych butów" : plural,accusative
 
-ITEMS_LEATHERBOOTS_PLURAL feminine "pary skórzanych butów"
-    "par skórzanych butów" : genitive
-    "parami skórzanych butów" : instrumental
-    "pary skórzanych butów" : accusative
-    "pary skórzanych butów" : plural
-    "par skórzanych butów" : plural,genitive
-    "parami skórzanych butów" : plural,instrumental
-    "pary skórzanych butów" : plural,accusative
-
 ITEMS_LEATHERBOOTS_SHORTNAME neuter "buty"
     "butów" : genitive
     "butami" : instrumental
@@ -7555,15 +7335,6 @@ ITEMS_LEATHERGLOVES_NAME feminine "para skórzanych rękawic"
     "pary skórzanych rękawic" : genitive
     "parą skórzanych rękawic" : instrumental
     "parę skórzanych rękawic" : accusative
-    "pary skórzanych rękawic" : plural
-    "par skórzanych rękawic" : plural,genitive
-    "parami skórzanych rękawic" : plural,instrumental
-    "pary skórzanych rękawic" : plural,accusative
-
-ITEMS_LEATHERGLOVES_PLURAL feminine "pary skórzanych rękawic"
-    "par skórzanych rękawic" : genitive
-    "parami skórzanych rękawic" : instrumental
-    "pary skórzanych rękawic" : accusative
     "pary skórzanych rękawic" : plural
     "par skórzanych rękawic" : plural,genitive
     "parami skórzanych rękawic" : plural,instrumental
@@ -7596,17 +7367,6 @@ ITEMS_LEATHERHELM_NAME masculine "skórzany hełm"
     "skórzanymi hełmami" : plural,instrumental
     "skórzane hełmy" : plural,accusative
 
-# # The line says: "ITEMS_LEATHERHELM_PLURAL "cyclops testicles helmet"" 
-# # Possibly a data mismatch: "PLURAL" is the same text? We'll treat it as an alt name:
-ITEMS_LEATHERHELM_PLURAL masculine "hełmy z jąder cyklopa"
-    "hełmów z jąder cyklopa" : genitive
-    "hełmami z jąder cyklopa" : instrumental
-    "hełmy z jąder cyklopa" : accusative
-    "hełmy z jąder cyklopa" : plural
-    "hełmów z jąder cyklopa" : plural,genitive
-    "hełmami z jąder cyklopa" : plural,instrumental
-    "hełmy z jąder cyklopa" : plural,accusative
-
 ITEMS_LEATHERHELM_SHORTNAME1 "cyklop"
 ITEMS_LEATHERHELM_SHORTNAME masculine "hełm"
     "hełmu" : genitive
@@ -7633,32 +7393,16 @@ ITEMS_MOONSHINE_APPLYVERB1 "pije"
 ITEMS_MOONSHINE_APPLYVERB "pić"
 ITEMS_MOONSHINE_BLINDNAME "mikstura"
 ITEMS_MOONSHINE_EFFECT "Zwiększa morale, ale powoduje upicie się sług"
-ITEMS_MOONSHINE_NAME feminine "mikstura księżycowej poświaty"
-    "mikstury księżycowej poświaty" : genitive
-    "miksturą księżycowej poświaty" : instrumental
-    "miksturę księżycowej poświaty" : accusative
-    "mikstury księżycowej poświaty" : plural
-    "mikstur księżycowej poświaty" : plural,genitive
-    "miksturami księżycowej poświaty" : plural,instrumental
-    "mikstury księżycowej poświaty" : plural,accusative
+ITEMS_MOONSHINE_NAME feminine "buteleczka bimbru"
+    "buteleczki bimbru" : genitive
+    "buteleczką bimbru" : instrumental
+    "buteleczkę bimbru" : accusative
+    "buteleczki bimbru" : plural
+    "buteleczek bimbru" : plural,genitive
+    "buteleczkami bimbru" : plural,instrumental
+    "buteleczki bimbru" : plural,accusative
 
-ITEMS_MOONSHINE_PLURAL feminine "mikstury księżycowej poświaty"
-    "mikstur księżycowej poświaty" : genitive
-    "miksturami księżycowej poświaty" : instrumental
-    "mikstury księżycowej poświaty" : accusative
-    "mikstury księżycowej poświaty" : plural
-    "mikstur księżycowej poświaty" : plural,genitive
-    "miksturami księżycowej poświaty" : plural,instrumental
-    "mikstury księżycowej poświaty" : plural,accusative
-
-ITEMS_MOONSHINE_SHORTNAME feminine "księżycowa poświata"
-    "księżycowej poświaty" : genitive
-    "księżycową poświatą" : instrumental
-    "księżycową poświatę" : accusative
-    "księżycowe poświaty" : plural
-    "księżycowych poświat" : plural,genitive
-    "księżycowymi poświatami" : plural,instrumental
-    "księżycowe poświaty" : plural,accusative
+ITEMS_MOONSHINE_SHORTNAME masculine "bimber"
 
 ITEMS_PRAYERBOOKPROTECTION_APPLYVERB1 "czyta"
 ITEMS_PRAYERBOOKPROTECTION_APPLYVERB "czytaj"
@@ -7737,15 +7481,6 @@ ITEMS_PROPHETSOUP_NAME feminine "zupa ze zmumifikowanych szczątków proroka"
     "zup ze zmumifikowanych szczątków proroka" : plural,genitive
     "zupami ze zmumifikowanych szczątków proroka" : plural,instrumental
     "zupy ze zmumifikowanych szczątków proroka" : plural,accusative
-
-ITEMS_PROPHETSOUP_PLURAL feminine "zupy"
-    "zup" : genitive
-    "zupami" : instrumental
-    "zupy" : accusative
-    "zupy" : plural
-    "zup" : plural,genitive
-    "zupami" : plural,instrumental
-    "zupy" : plural,accusative
 
 ITEMS_PROPHETSOUP_SECONDPERSON "masz silne bóle brzucha"
 ITEMS_PROPHETSOUP_SHORTNAME feminine "zupa proroka"
@@ -7877,32 +7612,14 @@ ITEMS_TORCH_NAME feminine "pochodnia"
     "pochodniami" : plural,instrumental
     "pochodnie" : plural,accusative
 
-ITEMS_TORCH_PLURAL feminine "pochodnie"
-    "pochodni" : genitive
-    "pochodniami" : instrumental
-    "pochodnie" : accusative
-    "pochodnie" : plural
-    "pochodni" : plural,genitive
-    "pochodniami" : plural,instrumental
-    "pochodnie" : plural,accusative
-
-ITEMS_UNICORNHORN_NAME neuter "róg"
-    "rogu" : genitive
-    "rogiem" : instrumental
-    "róg" : accusative
-    "rogi" : plural
-    "rogów" : plural,genitive
-    "rogami" : plural,instrumental
-    "rogi" : plural,accusative
-
-ITEMS_UNICORNHORN_PLURAL neuter "rogi"
-    "rogów" : genitive
-    "rogami" : instrumental
-    "rogi" : accusative
-    "rogi" : plural
-    "rogów" : plural,genitive
-    "rogami" : plural,instrumental
-    "rogi" : plural,accusative
+ITEMS_UNICORNHORN_NAME masculine "róg jednorożca"
+    "rogu jednorożca" : genitive
+    "rogiem jednorożca" : instrumental
+    "róg jednorożca" : accusative
+    "rogi jednorożca" : plural
+    "rogów jednorożca" : plural,genitive
+    "rogami jednorożca" : plural,instrumental
+    "rogi jednorożca" : plural,accusative
 
 ITEMS_WARHAMMER_NAME1 masculine "adamantynowy młot bojowy"
     "adamantynowego młota bojowego" : genitive
@@ -8599,7 +8316,6 @@ ITEMS_BATRING_NAME "pierścień poskramiania nietoperzy"
 ITEMS_CYCLOPSSCROLL_EFFECT1 "Odblokowano frakcję Cyklopów!"
 ITEMS_DAMAGERING3_DESCRIPTION "Zwiększa siłę twoich ataków fizycznych, pozwalając zadawać większe obrażenia w walce."
 ITEMS_DAMAGERING3_NAME "pierścień obrażeń"
-ITEMS_DAMAGERING3_PLURAL "pierścienie obrażeń"
 ITEMS_DAMAGERING3_SHORTNAME "obrażenia"
 ITEMS_DRAGONRING_NAME "pierścień poskramiania smoków"
 ITEMS_FIREHEADADA_NAME "adamantynowa głowa ziejąca ogniem"
@@ -8617,14 +8333,12 @@ ITEMS_OILHEADIRON_NAME "żelazna głowa plująca olejem"
 ITEMS_PRAYERBOOKPROTECTION_EFFECT1 "Brak"
 ITEMS_RANGEDDAMAGERING3_DESCRIPTION "Zwiększa precyzję twoich ataków dystansowych, pozwalając zadawać większe obrażenia."
 ITEMS_RANGEDDAMAGERING3_NAME "pierścień obrażeń dystansowych"
-ITEMS_RANGEDDAMAGERING3_PLURAL "pierścienie obrażeń dystansowych"
 ITEMS_RANGEDDAMAGERING3_SHORTNAME "obrażenia dystansowe"
 ITEMS_REPAIRAUTOMATONARMSADA_NAME "adamantynowe ramiona naprawcze"
 ITEMS_REPAIRAUTOMATONARMSIRON_NAME "żelazne ramiona naprawcze"
 ITEMS_REPAIRAUTOMATONARMSIRON_PREFIX "Zapewniają zdolność naprawiania innych automatów."
 ITEMS_SPELLDAMAGERING3_DESCRIPTION "Zwiększa siłę twoich ataków magicznych, pozwalając zadawać większe obrażenia w walce."
 ITEMS_SPELLDAMAGERING3_NAME "pierścień obrażeń magicznych"
-ITEMS_SPELLDAMAGERING3_PLURAL "pierścienie obrażeń magicznych"
 ITEMS_SPELLDAMAGERING3_SHORTNAME "obrażenia magiczne"
 ITEMS_SPIDERRING_NAME "pierścień poskramiania pająków"
 ITEMS_TELEPORTHEADADOXIUM_NAME "adoxium głowa teleportująca"
