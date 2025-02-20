@@ -1259,7 +1259,7 @@ NECK_BODY_PART "szyja"
 FALLS_INTO "{1} wpada do {2:genitive}."
 FALLS_OFF "{1} spada z {2:genitive}."
 FALLS_ON_THE "{1} spada na {2:accusative}."
-FANGS feminine "kły"
+FANGS_ATTACK feminine "kły"
     "kłów" : genitive
     "kłami" : instrumental
     "kły" : accusative
@@ -1270,7 +1270,7 @@ FANGS feminine "kły"
 FEELS_LIKE_CRACKING_A_JOKE "{1} ma ochotę na żart."
 FEMALE "kobieta"
 FEMALES "kobiety"
-FISTS "pięści"
+FISTS_ATTACK "pięści"
     "pięściami" : instrumental
 FLOOR "podłoga"
 FOBIDDEN_ZONE_WARNING "Wejść do strefy zakazanej?"
@@ -3957,7 +3957,7 @@ CREATURE_ATTRIBUTES_LIZARDMAN_NAME masculine "jaszczurolud"
 
 CREATURE_ATTRIBUTES_LOST_SOUL_CHATREACTIONFRIENDLY "\"Wouuuouuu!!!\""
 CREATURE_ATTRIBUTES_LOST_SOUL_CHATREACTIONHOSTILE "\"Wouuuouuu!!!\""
-CREATURE_ATTRIBUTES_LOST_SOUL_ID neuter "dotyk"
+TOUCH_ATTACK neuter "dotyk"
     "dotyku" : genitive
     "dotykiem" : instrumental
     "dotyk" : accusative
@@ -4317,7 +4317,7 @@ CREATURE_ATTRIBUTES_SKELETON_WOLF_GROUPNAME neuter "stado"
     "stadami" : plural,instrumental
     "stada" : plural,accusative
 
-CLAWS neuter "pazury"
+CLAWS_ATTACK neuter "pazury"
     "pazurów" : genitive
     "pazurami" : instrumental
     "pazury" : accusative
@@ -4425,15 +4425,6 @@ CREATURE_ATTRIBUTES_STONE_GOLEM_NAME masculine "kamienny golem"
     "kamiennych golemów" : plural,genitive
     "kamiennymi golemami" : plural,instrumental
     "kamiennych golemów" : plural,accusative
-
-CREATURE_ATTRIBUTES_SUCCUBUS_ID neuter "dotyk"
-    "dotyku" : genitive
-    "dotykiem" : instrumental
-    "dotyk" : accusative
-    "dotyki" : plural
-    "dotyków" : plural,genitive
-    "dotykami" : plural,instrumental
-    "dotyki" : plural,accusative
 
 CREATURE_ATTRIBUTES_SUCCUBUS_NAME feminine "sukkuba"
     "sukkuby" : genitive
@@ -4727,14 +4718,6 @@ CREATURE_ATTRIBUTES_WOLF_NAME masculine "wilk"
 
 CREATURE_ATTRIBUTES_WRAITH_CHATREACTIONFRIENDLY "\"Wouuuouuu!!!\""
 CREATURE_ATTRIBUTES_WRAITH_CHATREACTIONHOSTILE "\"Wouuuouuu!!!\""
-CREATURE_ATTRIBUTES_WRAITH_ID neuter "dotyk"
-    "dotyku" : genitive
-    "dotykiem" : instrumental
-    "dotyk" : accusative
-    "dotyki" : plural
-    "dotyków" : plural,genitive
-    "dotykami" : plural,instrumental
-    "dotyki" : plural,accusative
 
 CREATURE_ATTRIBUTES_WRAITH_NAME masculine "upiór"
     "upiora" : genitive
