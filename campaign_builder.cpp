@@ -379,7 +379,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* content
             if (avatarInfo.chosenBaseName) {
               auto name = avatarInfo.playerCreature->getName().firstOrBare();
               gameIdentifier = *avatarInfo.chosenBaseName + "_" + campaign.worldName + getNewIdSuffix();
-              gameDisplayName = TSentence("CAPITAL_FIRST", TSentence("OF",
+              gameDisplayName = capitalFirst(TSentence("OF",
                   avatarInfo.playerCreature->getName().plural(), *avatarInfo.chosenBaseName));
             } else {
               string name = *avatarInfo.playerCreature->getName().first();

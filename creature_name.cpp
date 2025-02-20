@@ -54,7 +54,7 @@ TString CreatureName::title() const {
     return TSentence("CREATURE_TITLE", TString(*firstName), killTitle ? *killTitle : name);
   else {
     if (killTitle)
-      return TSentence("CREATURE_TITLE", TSentence("CAPITAL_FIRST", bare()), *killTitle);
+      return TSentence("CREATURE_TITLE", capitalFirst(bare()), *killTitle);
     else
       return bare();
   }
@@ -65,7 +65,7 @@ TString CreatureName::aOrTitle() const {
     return TSentence("CREATURE_TITLE", TString(*firstName), killTitle ? *killTitle : name);
   else {
     if (killTitle)
-      return TSentence("CREATURE_TITLE", TSentence("CAPITAL_FIRST", bare()), *killTitle);
+      return TSentence("CREATURE_TITLE", capitalFirst(bare()), *killTitle);
     else
       return bare();
   }
@@ -119,7 +119,7 @@ TString CreatureName::firstOrBare() const {
   if (firstName)
     return TString(*firstName);
   else
-    return TSentence("CAPITAL_FIRST", bare());
+    return capitalFirst(bare());
 }
 
 void CreatureName::useFullTitle(bool b) {
@@ -144,6 +144,6 @@ template<>
 void CreatureName::serialize(PrettyInputArchive& ar1, unsigned) {
   ar1(NAMED(name), OPTION(pluralName), NAMED(stackName), NAMED(firstNameGen), NAMED(firstName), OPTION(groupName), OPTION(fullTitle), endInput());
   if (pluralName.empty())
-    pluralName = TSentence("MAKE_PLURAL", name);
+    pluralName = makePlural(name);
 }
 

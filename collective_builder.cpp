@@ -70,11 +70,11 @@ optional<CollectiveName> CollectiveBuilder::generateName() const {
     auto leader = creatures[0].creature;
     ret.viewId = leader->getViewIdWithWeapon();
     if (locationName && raceName)
-      ret.full = TSentence("CAPITAL_FIRST", TSentence("RACE_OF_LOCATION", *raceName, *locationName));
+      ret.full = capitalFirst(TSentence("RACE_OF_LOCATION", *raceName, *locationName));
     else if (!!leader->getName().first())
       ret.full = leader->getName().title();
     else if (raceName)
-      ret.full = TSentence("CAPITAL_FIRST", *raceName);
+      ret.full = capitalFirst(*raceName);
     else
       ret.full = leader->getName().title();
     if (locationName) {

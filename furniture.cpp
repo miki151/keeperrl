@@ -103,7 +103,7 @@ const TString& Furniture::getName(int count) const {
 
 void Furniture::setName(const TString& n) {
   name = n;
-  viewObject->setDescription(TSentence("CAPITAL_FIRST", name));
+  viewObject->setDescription(capitalFirst(name));
 }
 
 FurnitureType Furniture::getType() const {
@@ -717,7 +717,7 @@ void Furniture::serialize(PrettyInputArchive& ar1, unsigned int v) {
     for (auto& elem : *strength2)
       setDestroyable(elem.first, elem.second);
   if (viewId)
-    viewObject = ViewObject(*viewId, viewLayer.value_or(getViewLayer(layer)), TSentence("CAPITAL_FIRST", getName()));
+    viewObject = ViewObject(*viewId, viewLayer.value_or(getViewLayer(layer)), capitalFirst(getName()));
   if (attachmentDir)
     viewObject->setAttachmentDir(*attachmentDir);
   if (waterDepth)

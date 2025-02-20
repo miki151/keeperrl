@@ -35,7 +35,7 @@ TString PlayerInfo::getFirstName() const {
   if (!firstName.empty())
     return firstName;
   else
-    return TSentence("CAPITAL_FIRST", name);
+    return capitalFirst(name);
 }
 
 ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature* c, const ContentFactory* factory) {
@@ -169,7 +169,7 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory)
   firstName = c->getName().firstOrBare();
   name = c->getName().bare();
   title = c->getName().title();
-  description = TSentence("CAPITAL_FIRST", c->getAttributes().getDescription(contentFactory));
+  description = capitalFirst(c->getAttributes().getDescription(contentFactory));
   viewId = c->getViewIdWithWeapon();
   positionHash = c->getPosition().getHash();
   creatureId = c->getUniqueId();
@@ -225,7 +225,7 @@ vector<AttributeInfo> AttributeInfo::fromCreature(const ContentFactory* contentF
     auto& info = contentFactory->attrInfo.at(attr);
     auto rawAttr = c->getRawAttr(attr, c->getCombatExperience(true, true));
     ret.push_back(AttributeInfo {
-        TSentence("CAPITAL_FIRST", info.name),
+        capitalFirst(info.name),
         info.viewId,
         rawAttr,
         c->getAttrBonus(attr, rawAttr, true),

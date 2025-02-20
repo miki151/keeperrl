@@ -233,7 +233,7 @@ SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, const
       tutorialElem = WL(conditional, WL(tutorialHighlight),
           [=]{ return !wasTutorialClicked(num, *tutorialHighlight); });
     return WL(setHeight, legendLineHeight, WL(stack, makeVec(
-        getHintCallback({TSentence("CAPITAL_FIRST", button.help)}),
+        getHintCallback({capitalFirst(button.help)}),
         WL(button, buttonFun),
         !button.hotkeyOpensGroup && !!button.key
             ? WL(keyHandler, buttonFun, *button.key, true)
@@ -562,7 +562,7 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo, int width) {
   const int space = 55;
   bottomLine.addSpace(space);
   bottomLine.addElem(WL(labelFun, [&info] {
-      return TSentence("MINIONS_HEADER", {TSentence("CAPITAL_FIRST", info.populationString), toString(info.minionCount),
+      return TSentence("MINIONS_HEADER", {capitalFirst(info.populationString), toString(info.minionCount),
         toString(info.minionLimit)}); }), 150);
   bottomLine.addSpace(space);
   bottomLine.addElem(getTurnInfoGui(gameInfo.time), 50);
@@ -792,7 +792,7 @@ SGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
     }
   lines.addElem(
       WL(getListBuilder)
-          .addElemAuto(WL(label, TSentence("CAPITAL_FIRST", info.creature.name)))
+          .addElemAuto(WL(label, capitalFirst(info.creature.name)))
           .addSpace(100)
           .addBackElemAuto(info.cost ? drawCost(*info.cost) : WL(empty))
           .buildHorizontalList());
@@ -881,7 +881,7 @@ SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info, bo
     name  = combineWithCommas({*info.name, name});
   lines.addElem(
       WL(getListBuilder)
-          .addElemAuto(WL(label, TSentence("CAPITAL_FIRST", name)))
+          .addElemAuto(WL(label, capitalFirst(name)))
           .addSpace(100)
           .addElemAuto(drawVillainType(info.type))
           .buildHorizontalList());
@@ -1124,7 +1124,7 @@ void GuiBuilder::drawAllVillainsMenu(Vec2 pos, const VillageInfo& info) {
     auto name = elem.tribeName;
     if (elem.name)
       name  = combineWithCommas({*elem.name, name});
-    auto label = WL(label, TSentence("CAPITAL_FIRST", name), labelColor);
+    auto label = WL(label, capitalFirst(name), labelColor);
     if (elem.isConquered)
       label = WL(stack, std::move(label), WL(crossOutText, Color::RED));
     if (!!elem.action) {
@@ -1342,7 +1342,7 @@ static optional<Color> getIntrinsicStateColor(const ItemInfo& item) {
 }
 
 vector<TString> GuiBuilder::getItemHint(const ItemInfo& item) {
-  vector<TString> out { TSentence("CAPITAL_FIRST", item.fullName)};
+  vector<TString> out { capitalFirst(item.fullName)};
   out.append(item.description);
   if (item.equiped)
     out.push_back(item.representsSteed() ? TStringId("CURRENTLY_RIDING_STEED") : TStringId("ITEM_EQUIPED"));
@@ -1382,7 +1382,7 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   if (item.number > 1)
     line.addElemAuto(WL(rightMargin, 0, WL(label, toString(item.number) + " ", color)));
   else
-    name = TSentence("CAPITAL_FIRST", name);
+    name = capitalFirst(name);
   line.addMiddleElem(WL(label, name, color));
   auto lineElem = line.buildHorizontalList();
   if (renderInBounds)
@@ -1430,7 +1430,7 @@ SGuiElem GuiBuilder::drawImmigrantCreature(const ImmigrantCreatureInfo& creature
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElem(WL(getListBuilder)
       .addElem(WL(viewObject, creature.viewId), 35)
-      .addElemAuto(WL(label, TSentence("CAPITAL_FIRST", creature.name)))
+      .addElemAuto(WL(label, capitalFirst(creature.name)))
       .buildHorizontalList());
   lines.addSpace(legendLineHeight / 2);
   lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(creature.attributes)));
@@ -1746,7 +1746,7 @@ SGuiElem GuiBuilder::getSpellIcon(const SpellInfo& spell, int index, bool active
     ret.push_back(WL(darken));
     ret.push_back(WL(centeredLabel, Renderer::HOR_VER, toString(*spell.timeout)));
   }
-  ret.push_back(getTooltip(concat({TSentence("CAPITAL_FIRST", spell.name)}, spell.help), THIS_LINE + index + creatureId));
+  ret.push_back(getTooltip(concat({capitalFirst(spell.name)}, spell.help), THIS_LINE + index + creatureId));
   if (spell.highlighted)
     ret.push_back(WL(uiHighlight));
   return WL(preferredSize, spellIconSize, WL(stack, std::move(ret)));
@@ -1842,7 +1842,7 @@ SGuiElem GuiBuilder::getExpIncreaseLine(const CreatureExperienceInfo::TrainingIn
   string limit = toString(info.limit);
   line.addElemAuto(WL(label, TSentence("TRAINING_LIMIT_LABEL", limit)));
   vector<TString> tooltip {
-      TSentence("CAPITAL_FIRST", TSentence("TRAINING_TYPE_TOOLTIP", info.name)),
+      capitalFirst(TSentence("TRAINING_TYPE_TOOLTIP", info.name)),
       TSentence("TRAINING_LIMIT_TOOLTIP", limit)};
   if (info.warning)
     tooltip.push_back(*info.warning);
@@ -2284,7 +2284,7 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
 SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minionIndexDummy,
     const optional<TutorialInfo>& tutorial) {
   auto list = WL(getListBuilder, legendLineHeight);
-  list.addElem(WL(label, TSentence("MINIONS_HEADER", {TSentence("CAPITAL_FIRST", info.populationString),
+  list.addElem(WL(label, TSentence("MINIONS_HEADER", {capitalFirst(info.populationString),
         toString(info.minionCount), toString(info.minionLimit)}), Color::WHITE));
   int buttonCnt = 0;
   auto groupChosen = isGroupChosen(info);
@@ -2941,7 +2941,7 @@ SGuiElem GuiBuilder::drawTechUnlocks(const CollectiveInfo::LibraryInfo::TechInfo
     lines.addElem(WL(getListBuilder)
         .addElemAuto(WL(viewObject, info.viewId))
         .addSpace(5)
-        .addElemAuto(WL(label, TSentence("CAPITAL_FIRST", info.name)))
+        .addElemAuto(WL(label, capitalFirst(info.name)))
         .buildHorizontalList());
   }
   return WL(setWidth, width, WL(miniWindow, WL(margins, lines.buildVerticalList(), margin)));
@@ -3057,7 +3057,7 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
           toString(collectiveInfo.avatarLevelInfo.numAvailable)), Color::YELLOW));
     for (int i : All(info.available)) {
       auto& elem = info.available[i];
-      auto line = WL(renderInBounds, WL(label, TSentence("CAPITAL_FIRST", elem.name), elem.active ? Color::WHITE : Color::GRAY));
+      auto line = WL(renderInBounds, WL(label, capitalFirst(elem.name), elem.active ? Color::WHITE : Color::GRAY));
       int myIndex = activeElems.size();
       line = WL(stack,
           WL(conditional, WL(mouseHighlight2, getUnlocksTooltip(elem)),
@@ -3091,7 +3091,7 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
     lines.addElem(WL(label, TStringId("ALREADY_RESEARCHED_LABEL"), Color::YELLOW));
   for (int i : All(info.researched)) {
     auto& elem = info.researched[i];
-    auto line = WL(renderInBounds, WL(label, TSentence("CAPITAL_FIRST", elem.name), Color::GRAY));
+    auto line = WL(renderInBounds, WL(label, capitalFirst(elem.name), Color::GRAY));
     line = WL(stack,
         std::move(line),
         WL(conditional, WL(mouseHighlight2, getUnlocksTooltip(elem)),
@@ -3251,7 +3251,7 @@ SGuiElem GuiBuilder::drawBestiaryOverlay(const vector<PlayerInfo>& creatures, in
 
 SGuiElem GuiBuilder::drawSpellSchoolPage(const SpellSchoolInfo& school) {
   auto list = WL(getListBuilder, legendLineHeight);
-  list.addElem(WL(label, TSentence("CAPITAL_FIRST", school.name)));
+  list.addElem(WL(label, capitalFirst(school.name)));
   list.addSpace(legendLineHeight / 2);
   for (auto& spell : school.spells)
     list.addElem(drawSpellLabel(spell));
@@ -3264,7 +3264,7 @@ SGuiElem GuiBuilder::drawSpellSchoolButtons(const vector<SpellSchoolInfo>& schoo
   for (int i : All(schools)) {
     auto& school = schools[i];
     auto line = WL(getListBuilder);
-    line.addMiddleElem(WL(rightMargin, 5, WL(renderInBounds, WL(label, TSentence("CAPITAL_FIRST", school.name)))));
+    line.addMiddleElem(WL(rightMargin, 5, WL(renderInBounds, WL(label, capitalFirst(school.name)))));
     list.addElem(WL(stack,
           WL(button, [this, i] { spellSchoolIndex = i; }),
           (i == index ? WL(uiHighlightLine) : WL(empty)),
@@ -3944,7 +3944,7 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
         .addBackSpace(10)
         .addBackElem(WL(getListBuilder)
             .addMiddleElem(WL(renderInBounds,
-                WL(label, TSentence("DISABLE_FOR_ALL_GROUP", TSentence("MAKE_PLURAL", minion.groupName)),
+                WL(label, TSentence("DISABLE_FOR_ALL_GROUP", makePlural(minion.groupName)),
                     Renderer::smallTextSize())))
             .addBackElem(glyph3, hasController() ? 35 : 1)
             .buildHorizontalList(),
@@ -3989,7 +3989,7 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
       auto lockCallback2 = [&retAction, task] {
         retAction.lockGroup.toggle(task.task);
       };
-      auto allName = TSentence("MAKE_PLURAL", minion.groupName);
+      auto allName = makePlural(minion.groupName);
       activeElems.push_back(WL(stack,
           WL(conditionalStopKeys, WL(stack,
               WL(uiHighlightLine),
@@ -4070,7 +4070,7 @@ function<void(Rectangle)> GuiBuilder::getAIButtonFun(const PlayerInfo& minion) {
         .addElemAuto(WL(conditional, WL(labelUnicodeHighlight, string(u8"✓"), Color::GREEN),
              WL(labelUnicodeHighlight, string(u8"✓"), Color::LIGHT_GRAY), [&retAction] {
                   return retAction.override;}))
-        .addElemAuto(WL(label, TSentence("COPY_SETTING_TO_GROUP", TSentence("MAKE_PLURAL", minion.groupName))))
+        .addElemAuto(WL(label, TSentence("COPY_SETTING_TO_GROUP", makePlural(minion.groupName))))
         .buildHorizontalList());
     drawMiniMenu(std::move(tasks), std::move(callbacks), {}, bounds.bottomLeft(), 362, true, false, nullptr, &exit);
     this->callbacks.input({UserInputId::AI_TYPE, retAction});
@@ -4097,7 +4097,7 @@ function<void(Rectangle)> GuiBuilder::getEquipmentGroupsFun(const PlayerInfo& mi
     EquipmentGroupAction ret { minion.groupName, {}};
     vector<SGuiElem> lines;
     vector<function<void()>> callbacks;
-    lines.push_back(WL(label, TSentence("SETTING_WILL_APPLY_TO_ALL", TSentence("MAKE_PLURAL", minion.groupName)),
+    lines.push_back(WL(label, TSentence("SETTING_WILL_APPLY_TO_ALL", makePlural(minion.groupName)),
         Renderer::smallTextSize(), Color::LIGHT_GRAY));
     callbacks.push_back(nullptr);
     for (auto& group : minion.equipmentGroups) {

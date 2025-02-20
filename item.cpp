@@ -56,7 +56,7 @@ SERIALIZABLE(Item)
 SERIALIZATION_CONSTRUCTOR_IMPL(Item)
 
 Item::Item(SItemAttributes attr, const ContentFactory* factory)
-    : Renderable(ViewObject(attr->viewId, ViewLayer::ITEM, TSentence("CAPITAL_FIRST", attr->name))),
+    : Renderable(ViewObject(attr->viewId, ViewLayer::ITEM, capitalFirst(attr->name))),
       attributes(attr), fire(attr->burnTime), canEquipCache(!!attributes->equipmentSlot),
       classCache(attributes->itemClass) {
   if (!attributes->prefixes.empty())
@@ -534,7 +534,7 @@ TString Item::getVisibleName(bool getPlural) const {
     if (attributes->plural)
       ret = *attributes->plural;
     else
-      ret = TSentence("MAKE_PLURAL", attributes->name);
+      ret = makePlural(attributes->name);
   }
   if (!attributes->prefixes.empty())
     ret = TSentence("ITEM_PREFIX", std::move(ret), attributes->prefixes.back());

@@ -130,7 +130,7 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
           if (gender == genderIndex && i == keeperBase) {
             data.elems["selected"] = TString("blabla"_s);
             baseDescription = keeperCreatureInfos[i].second.description;
-            genderDescription = TSentence("CAPITAL_FIRST", keeperCreatureInfos[i].second.noLeader
+            genderDescription = capitalFirst(keeperCreatureInfos[i].second.noLeader
                 ? keeper->getName().plural()
                 : keeper->getName().name);
             reloadFirstName = [&keeperName, options, nameOption, newName = getFirstName(keeper, i)] {

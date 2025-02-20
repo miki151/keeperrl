@@ -326,7 +326,7 @@ static ScriptedUIDataElems::Record getCreatureRecord(const ContentFactory* facto
       {"view_id", creature->getViewObject().getViewIdList()},
       {"attack_view_id", ViewIdList{bestAttack.viewId}},
       {"attack_value", TString(toString(bestAttack.value))},
-      {"name", TString(TSentence("CAPITAL_FIRST", creature->getName().aOrTitle()))},
+      {"name", capitalFirst(creature->getName().aOrTitle())},
   }};
 }
 
@@ -688,9 +688,9 @@ static ScriptedUIDataElems::Record getItemRecord(const ContentFactory* factory, 
   TString label = itemStack[0]->getShortName(factory, nullptr, itemStack.size() > 1);
   if (itemStack.size() > 1)
     label = TSentence("MULTIPLE_ITEMS", toString(itemStack.size()), std::move(label));
-  elem.elems["name"] = TString(TSentence("CAPITAL_FIRST", std::move(label)));
+  elem.elems["name"] = capitalFirst(std::move(label));
   auto tooltipElems = ScriptedUIDataElems::List {
-    TString(TSentence("CAPITAL_FIRST", itemStack[0]->getNameAndModifiers(factory)))
+    capitalFirst(itemStack[0]->getNameAndModifiers(factory))
   };
   for (auto& elem : itemStack[0]->getDescription(factory))
     tooltipElems.push_back(elem);
@@ -765,12 +765,12 @@ static ScriptedUIDataElems::Record getSteedItemRecord(const ContentFactory* fact
   elem.elems["view_id"] = steed->getViewObject().getViewIdList();
   if (rider->getFirstCompanion() == steed)
     elem.elems["name"] = TString(TSentence("ITEM_INFO_NAME_COMPANION_STEED",
-        TSentence("CAPITAL_FIRST", steed->getName().bare())));
+        capitalFirst(steed->getName().bare())));
   else
-     elem.elems["name"] = TString(TSentence("CAPITAL_FIRST", steed->getName().bare()));
+     elem.elems["name"] = capitalFirst(steed->getName().bare());
   elem.elems["tooltip"] = ScriptedUIDataElems::List {
-    TString(TSentence("CAPITAL_FIRST", steed->getName().aOrTitle())),
-    TString(TSentence("CAPITAL_FIRST", steed->getAttributes().getDescription(factory)))
+    capitalFirst(steed->getName().aOrTitle()),
+    capitalFirst(steed->getAttributes().getDescription(factory))
   };
   return elem;
 }
@@ -1740,7 +1740,7 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
       },
       [&] (const CompanionInfo& t) {
         return TraitInfo{TSentence("IMMIGRANT_COMPANION",
-          TSentence("CAPITAL_FIRST", factory->getCreatures().getName(t.creatures[0]))), false};
+          capitalFirst(factory->getCreatures().getName(t.creatures[0]))), false};
       },
       [&] (const AttrBonus& t) {
         return TraitInfo{TSentence("IMMIGRANT_ATTR_BONUS", toStringWithSign(t.increase), factory->attrInfo.at(t.attr).name), t.increase <= 0};
@@ -1769,7 +1769,7 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
           return TraitInfo{TSentence("EXTRA_BODY_PARTS", toString(part.count), makePlural(getName(part.part))), false};
       },
       [&] (const ExtraIntrinsicAttack& a) {
-        return TraitInfo{TSentence("CAPITAL_FIRST", a.item.get(factory)->getName()), false};
+        return TraitInfo{capitalFirst(a.item.get(factory)->getName()), false};
       },
       [&] (const OneOfTraits&) -> TraitInfo {
         FATAL << "Can't draw traits alternative";
@@ -3574,7 +3574,7 @@ void PlayerControl::checkKeeperDanger() {
     auto prompt = [&] (TSentence reason) {
       reason.params.push_back(collective->getLeaders().size() > 1 ? keeper->getName().a() : keeper->getName().the());
       auto res = getView()->multiChoice(
-          TSentence("CAPITAL_FIRST", std::move(reason)),
+          capitalFirst(std::move(reason)),
           {TStringId("TAKE_CONTROL"), TStringId("DISMISS_FOR_200_TURNS"), TStringId("DISMISS_AND_DONT_ASK_AGAIN")});
       if (res == 0)
         controlSingle(keeper);
@@ -3741,7 +3741,7 @@ void PlayerControl::considerNewAttacks() {
       getView()->refreshView();
       if (attack.getRansom() && collective->hasResource({ResourceId("GOLD"), *attack.getRansom()})) {
         if (getView()->yesOrNoPrompt(TSentence("DEMAND_GOLD",
-            TSentence("CAPITAL_FIRST", attack.getAttackerName()), toString(attack.getRansom())),
+            capitalFirst(attack.getAttackerName()), toString(attack.getRansom())),
             attack.getAttackerViewId(), true)) {
           collective->takeResource({ResourceId("GOLD"), *attack.getRansom()});
           attacker->onRansomPaid();
@@ -3925,7 +3925,7 @@ CollectiveControl::DuelAnswer PlayerControl::acceptDuel(Creature* attacker) {
   }();
   if (!notified)
     return DuelAnswer::UNKNOWN;
-  if (getView()->yesOrNoPrompt(TSentence("CAPITAL_FIRST", TSentence("CHALLENGES_YOU_TO_A_DUEL", attacker->getName().aOrTitle())))) {
+  if (getView()->yesOrNoPrompt(capitalFirst(TSentence("CHALLENGES_YOU_TO_A_DUEL", attacker->getName().aOrTitle())))) {
     controlSingle(collective->getLeaders()[0]);
     return DuelAnswer::ACCEPT;
   }
