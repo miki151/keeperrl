@@ -1448,6 +1448,7 @@ SGuiElem GuiBuilder::drawImmigrantCreature(const ImmigrantCreatureInfo& creature
   if (!creature.spellSchools.empty())
     lines.addElem(WL(getListBuilder)
         .addElemAuto(WL(label, TStringId("SPELL_SCHOOLS_LABEL"), Color::YELLOW))
+        .addSpace(8)
         .addElemAuto(WL(label, combineWithCommas(creature.spellSchools)))
         .buildHorizontalList());
   return lines.buildVerticalList();
@@ -3189,7 +3190,8 @@ SGuiElem GuiBuilder::drawBestiaryPage(const PlayerInfo& minion) {
     leftLines.addElemAuto(std::move(elem));
   if (!minion.spellSchools.empty()) {
     auto line = WL(getListBuilder)
-        .addElemAuto(WL(label, TStringId("SPELL_SCHOOLS_LABEL"), Color::YELLOW));
+        .addElemAuto(WL(label, TStringId("SPELL_SCHOOLS_LABEL"), Color::YELLOW))
+        .addSpace(8);
     for (auto& school : minion.spellSchools)
       line.addElemAuto(drawSpellSchoolLabel(school));
     leftLines.addElem(line.buildHorizontalList());
@@ -4369,7 +4371,8 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const optional<Tut
     leftLines.addElemAuto(std::move(elem));
   if (!minion.spellSchools.empty()) {
     auto line = WL(getListBuilder)
-        .addElemAuto(WL(label, TStringId("SPELL_SCHOOLS_LABEL"), Color::YELLOW));
+        .addElemAuto(WL(label, TStringId("SPELL_SCHOOLS_LABEL"), Color::YELLOW))
+        .addSpace(8);
     for (int i : All(minion.spellSchools)) {
       if (i > 0)
         line.addElemAuto(WL(label, ", "_s));
