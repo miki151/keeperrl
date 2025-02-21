@@ -36,22 +36,22 @@ ItemType ItemType::legs(int damage) {
 }
 
 ItemType ItemType::claws(int damage) {
-  return ItemType(ItemTypes::Intrinsic{ViewId("claws_attack"), TStringId("CLAWS"), damage,
+  return ItemType(ItemTypes::Intrinsic{ViewId("claws_attack"), TStringId("CLAWS_ATTACK"), damage,
         WeaponInfo{false, AttackType::HIT, AttrType("DAMAGE"), {}, {}, AttackMsg::CLAW}});
 }
 
 ItemType ItemType::beak(int damage) {
-  return ItemType(ItemTypes::Intrinsic{ViewId("beak_attack"), TStringId("BEAK"), damage,
+  return ItemType(ItemTypes::Intrinsic{ViewId("beak_attack"), TStringId("BEAK_ATTACK"), damage,
         WeaponInfo{false, AttackType::HIT, AttrType("DAMAGE"), {}, {}, AttackMsg::BITE}});
 }
 
 ItemType ItemType::fists(int damage) {
-  return ItemType(ItemTypes::Intrinsic{ViewId("fist_attack"), TStringId("FISTS"), damage,
+  return ItemType(ItemTypes::Intrinsic{ViewId("fist_attack"), TStringId("FISTS_ATTACK"), damage,
         WeaponInfo{false, AttackType::HIT, AttrType("DAMAGE"), {}, {}, AttackMsg::SWING}});
 }
 
 static ItemType fangsBase(int damage, vector<ItemPrefixes::VictimEffect> effect) {
-  return ItemType(ItemTypes::Intrinsic{ViewId("bite_attack"), TStringId("FANGS"), damage,
+  return ItemType(ItemTypes::Intrinsic{ViewId("bite_attack"), TStringId("FANGS_ATTACK"), damage,
       WeaponInfo{false, AttackType::BITE, AttrType("DAMAGE"), std::move(effect), {}, AttackMsg::BITE}});
 }
 
