@@ -2580,7 +2580,9 @@ class Tooltip : public GuiElem {
 SGuiElem GuiFactory::tooltip(const vector<TString>& v, milliseconds delayMilli) {
   if (v.empty() || (v.size() == 1 && v[0].empty()))
     return empty();
-  auto tv = v.transform([&](auto& s) { return translate(s); });
+  vector<string> tv;
+  for (auto& elem : v)
+    tv.append(breakText(translate(elem), 500, Renderer::textSize()));
   return SGuiElem(new Tooltip(std::move(tv), stack(background(background1), miniBorder()), clock, delayMilli));
 }
 namespace {
