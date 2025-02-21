@@ -25,6 +25,7 @@ End
           1 "DONKEY_STEED"
           1 "COW"
           1 "PIG"
+          1 "DOG"
           1 "GOAT_STEED"
         }
       }
@@ -344,6 +345,7 @@ End
           2 "DONKEY"
           2 "HORSE"
           2 "COW"
+          2 "DOG"
           2 "PIG"
         }
       }
@@ -438,6 +440,7 @@ End
           2 "CHILD"
           2 "DONKEY"
           2 "COW"
+          1 "DOG"
           2 "PIG"
        }
       }
@@ -2429,6 +2432,7 @@ End
           1 "DONKEY_STEED"
           1 "COW"
           1 "PIG"
+          1 "DOG"
           1 "GOAT_STEED"
         }
       }
@@ -2469,6 +2473,7 @@ End
         count = {5 10},
         all = {
           1 "ESKIMO_CHILD"
+          1 "HUSKY"
         }
       }
     }
@@ -2490,6 +2495,7 @@ End
         count = {5 10},
         all = {
           1 "ESKIMO_CHILD"
+          1 "HUSKY"
         }
       }
     }
