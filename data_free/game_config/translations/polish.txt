@@ -486,6 +486,7 @@ IMMIGRANT_WONT_JOIN_DURING "Imigrant nie dołączy podczas {1}."
 IMPORTANT_TITLE "Ważne!"
 IMPROVES_HELPER "swój"
     "swoją" : feminine
+    "swoje" : neuter
 IMPROVES "{1} poprawia {IMPROVES_HELPER:1} {3} {4:genitive}"
 INCLUDE_SAVE_FILE "Dołącz plik zapisu"
 INCLUDE_SCREENSHOT "Dołącz zrzut ekranu"
@@ -507,7 +508,10 @@ IS_BITTEN_IN_THE_NECK "{1} zostaje ugryziony w szyję!"
 IS_BURNING "{1} płonie!"
 IS_BURNT_BY_THE_SUN "{1} został spalony przez słońce."
 IS_CONVERTED "{1} przechodzi na twoją stronę."
-IS_CRITICALLY_WOUNDED "{1} jest krytycznie ranny!"
+WOUNDED_HELPER "ranny"
+    "ranna" : feminine
+    "ranne" : neuter
+IS_CRITICALLY_WOUNDED "{1} jest krytycznie {WOUNDED_HELPER:1}!"
 IS_CUT_IN_HALF "{1} zostaje przecięty na pół!"
 IS_DESTROYED_BY "{1} zostaje zniszczony przez {2}."
 IS_FLYING "{1} lata!"
@@ -572,7 +576,7 @@ KEY_MODIFIER "{1} + {2}"
 KILLED_BY_SUNLIGHT "zabity przez światło słoneczne"
 KILLED_BY_TORTURE "zabity podczas tortur"
 KILLED_BY "zabity przez {1:accusative}"
-IS_KILLED_BY "{1} zostaje {2} przez {3:accusative}."
+IS_KILLED_BY "{1} zostaje {2:1} przez {3:accusative}."
 YOU_KILLED_BY "Zostajesz {2} przez {1:accusative}."
 KILLED_MEMBERS_TRIGGER "Zabici członkowie plemienia"
 KILL_TASK "Zabij {1:accusative}"
@@ -862,7 +866,7 @@ TRIBES_HAVE_FORMED_ALLIANCE "Plemiona {1:genitive} zawarły sojusz przeciwko tob
 THE_LAST_ALLIANCE_OF "Ostatni sojusz {1:genitive}"
 TRIBE_LEADER_STATUS_DESCRIPTION "Zabicie zatrzyma imigrację"
 TRIBE_LEADER_STATUS "Przywódca plemienia"
-TRIBE_OF_IS_DESTROYED "Plem­ię {1:genitive} zostało zniszczone."
+TRIBE_OF_IS_DESTROYED "Plemię „{1}” zostało zniszczone."
 TRIGGERS_SOMETHING "{1} wywołuje coś."
 TRIGGER_TRAP_EFFECT_DESCRIPTION "Aktywuje pułapkę, jeśli jest obecna."
 TRIGGER_TRAP_EFFECT_NAME "aktywacja pułapki"
@@ -1915,7 +1919,7 @@ YOU_FEEL_THE_PRESENCE_OF_A_MAGICAL_FIELD "Wyczuwasz obecność magicznego pola."
 RENAME_MINION "Zmień imię sługi"
 RECEIVE "Otrzymujesz {1:accusative}."
 RECEIVES "{1} otrzymuje {2:accusative}."
-IS_KILLED "{1} zostaje {2}."
+IS_KILLED "{1} zostaje {2:1}."
 MORE_ADJECTIVE "bardziej {1}"
 NOT "nie {1}"
 PERMANENT_LASTING_DESCRIPTION "{1} na stałe."
@@ -2173,6 +2177,8 @@ BODY_MATERIALS_FIRE_NAME masculine "ogień"
     "ognie" : plural,accusative
 
 BODY_MATERIALS_FLESH_DEATHDESCRIPTION "zabity"
+    "zabita" : feminine
+    "zabite" : neuter
 BODY_MATERIALS_FLESH_NAME neuter "ciało"
     "ciała" : genitive
     "ciałem" : instrumental
@@ -2956,7 +2962,7 @@ CREATURE_ATTRIBUTES_CHICKEN_NAME neuter "kurczak"
 CREATURE_ATTRIBUTES_CHILD_CHATREACTIONFRIENDLY "\"plaaaaay!\""
 CREATURE_ATTRIBUTES_CHILD_CHATREACTIONHOSTILE "\"Heeelp!\""
 
-CREATURE_ATTRIBUTES_CHILD_NAME masculine "dziecko"
+CREATURE_ATTRIBUTES_CHILD_NAME neuter "dziecko"
     "dziecka" : genitive
     "dzieckiem" : instrumental
     "dziecko" : accusative
@@ -3460,7 +3466,7 @@ CREATURE_ATTRIBUTES_GNOME_NAME masculine "gnom"
     "gnomami" : plural,instrumental
     "gnomy" : plural,accusative
 
-CREATURE_ATTRIBUTES_GOAT_NAME masculine "koza"
+CREATURE_ATTRIBUTES_GOAT_NAME feminine "koza"
     "kozy" : genitive
     "koz¹" : instrumental
     "kozę" : accusative
@@ -4033,7 +4039,7 @@ CREATURE_ATTRIBUTES_ORC_NAME masculine "ork"
 
 CREATURE_ATTRIBUTES_PESEANT_CHATREACTIONFRIENDLY "złorzeczy wszystkim lochom"
 CREATURE_ATTRIBUTES_PESEANT_CHATREACTIONHOSTILE "\"Ratunku!\""
-CREATURE_ATTRIBUTES_PESEANT_NAME1 masculine "akolita"
+CREATURE_ATTRIBUTES_ACOLYTE_NAME masculine "akolita"
     "akolity" : genitive
     "akolitą" : instrumental
     "akolitę" : accusative
@@ -4042,7 +4048,16 @@ CREATURE_ATTRIBUTES_PESEANT_NAME1 masculine "akolita"
     "akolitami" : plural,instrumental
     "akolitów" : plural,accusative
 
-CREATURE_ATTRIBUTES_PESEANT_NAME2 masculine "nomada"
+CREATURE_ATTRIBUTES_ACOLYTE_F_NAME feminine "akolitka"
+    "akolitki" : genitive
+    "akolitką" : instrumental
+    "akolitkę" : accusative
+    "akolitki" : plural
+    "akolitek" : plural,genitive
+    "akolitkami" : plural,instrumental
+    "akolitki" : plural,accusative
+
+CREATURE_ATTRIBUTES_NOMAD_NAME masculine "nomada"
     "nomady" : genitive
     "nomadą" : instrumental
     "nomadę" : accusative
@@ -4051,7 +4066,16 @@ CREATURE_ATTRIBUTES_PESEANT_NAME2 masculine "nomada"
     "nomadami" : plural,instrumental
     "nomadów" : plural,accusative
 
-CREATURE_ATTRIBUTES_PESEANT_NAME3 masculine "eskimos"
+CREATURE_ATTRIBUTES_NOMAD_F_NAME feminine "nomadka"
+    "nomadek" : genitive
+    "nomadką" : instrumental
+    "nomadkę" : accusative
+    "nomadki" : plural
+    "nomadek" : plural,genitive
+    "nomadkami" : plural,instrumental
+    "nomadki" : plural,accusative
+
+CREATURE_ATTRIBUTES_ESKIMO_NAME masculine "eskimos"
     "eskimosa" : genitive
     "eskimosem" : instrumental
     "eskimosa" : accusative
@@ -4060,7 +4084,16 @@ CREATURE_ATTRIBUTES_PESEANT_NAME3 masculine "eskimos"
     "eskimosami" : plural,instrumental
     "eskimosów" : plural,accusative
 
-CREATURE_ATTRIBUTES_PESEANT_NAME4 masculine "tubylec"
+CREATURE_ATTRIBUTES_ESKIMO_F_NAME feminine "eskimoska"
+    "eskimoski" : genitive
+    "eskimoską" : instrumental
+    "eskimoskę" : accusative
+    "eskimoski" : plural
+    "eskimosek" : plural,genitive
+    "eskimoskami" : plural,instrumental
+    "eskimoski" : plural,accusative
+
+CREATURE_ATTRIBUTES_NATIVE_NAME masculine "tubylec"
     "tubylca" : genitive
     "tubylcem" : instrumental
     "tubylca" : accusative
@@ -4068,6 +4101,15 @@ CREATURE_ATTRIBUTES_PESEANT_NAME4 masculine "tubylec"
     "tubylców" : plural,genitive
     "tubylcami" : plural,instrumental
     "tubylców" : plural,accusative
+
+CREATURE_ATTRIBUTES_NATIVE_F_NAME feminine "tubylczyni"
+    "tubylczyni" : genitive
+    "tubylczynią" : instrumental
+    "tubylczynię" : accusative
+    "tubylczynie" : plural
+    "tubylczyń" : plural,genitive
+    "tubylczyniami" : plural,instrumental
+    "tubylczynie" : plural,accusative
 
 CREATURE_ATTRIBUTES_PESEANT_NAME masculine "chłop"
     "chłopa" : genitive
@@ -4077,7 +4119,14 @@ CREATURE_ATTRIBUTES_PESEANT_NAME masculine "chłop"
     "chłopów" : plural,genitive
     "chłopami" : plural,instrumental
     "chłopów" : plural,accusative
-
+CREATURE_ATTRIBUTES_PESEANT_F_NAME feminine "chłopka"
+    "chłopki" : genitive
+    "chłopką" : instrumental
+    "chłopkę" : accusative
+    "chłopki" : plural
+    "chłopek" : plural,genitive
+    "chłopkami" : plural,instrumental
+    "chłopek" : plural,accusative
 CREATURE_ATTRIBUTES_PIG_NAME feminine "świnia"
     "świni" : genitive
     "świnią" : instrumental

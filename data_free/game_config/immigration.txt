@@ -31,7 +31,7 @@
 "church_common"
 {
     {
-      ids = { "ACOLYTE" }
+      ids = { "ACOLYTE" "ACOLYTE_F" }
       traits = { WORKER NO_LIMIT NO_EQUIPMENT NO_LEISURE_ZONE }
       keybinding = CREATE_IMP
       noAuto = true
