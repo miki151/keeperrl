@@ -350,7 +350,9 @@ DURING_THE_DAY "za dnia"
 EAT_TASK "Jedz"
 EFFEC_WHEN_EQUIPED "Efekt po wyposażeniu: {1}"
 EIGHT "osiem"
+    "ośmioma" : instrumental
 ELEVEN "jedenaście"
+    "jedenastoma" : instrumental
 ENEMIES "wrogowie"
 ENTANGLED "uwięziony w sieci"
 ENTER_A_NAME_FOR "Podaj imię dla {1}"
@@ -392,9 +394,11 @@ FILLS_FURNITURE "{1} wypełnia {2:accusative}."
 FINISHING_YOU_TRIGGER "Dobijanie ciebie"
 FIRE_SCROLL_DESCRIPTION "Zapala się po przeczytaniu."
 FIVE "pięć"
+    "pięcioma" : instrumental
 FLANKED_HINT "Osaczony: obrona zmniejszona o {1}%."
 FORBIDDEN_ZONE_HIGHLIGHT "Strefa zakazana"
 FOUR "cztery"
+    "czterema" : instrumental
 FREEZES_AND_EXPLODES "{1} zamarza i wybucha!"
 FROZEN "zamarznięty!"
 FULLY_HEALED "całkowicie uleczony"
@@ -627,6 +631,7 @@ MOUNT_BUTTON "Wsiądź"
 MOVE_NOW_ACTION "Przesuń się teraz"
 NEXT_ENEMY_WAVE "następna fala wrogów"
 NINE "dziewięć"
+    "dziewięcioma" : instrumental
 NO_AND_NEVER_ASK "Nie, i nie pytaj ponownie"
 NO_ARMS "bez rąk"
 NO_HEAD "bez głowy"
@@ -729,8 +734,8 @@ RESISTING_THE_ATTACK_OF "opiera się atakowi {1}"
 RESISTS_SWAP_POSITION "{1} stawia opór!"
 RESOURCE_STORAGE_HIGHLIGHT "Magazyn surowców"
 RESTORE_KEYBINDINGS_CONFIRM "Czy na pewno chcesz przywrócić domyślne klawisze?"
-RESTRICT_ALL_EQUIPMENT "Ogranicz całe wyposażenie"
-RESTRICT_GEAR_BUTTON "Ogranicz ekwipunek"
+RESTRICT_ALL_EQUIPMENT "Ogranicz cały ekwipunek"
+RESTRICT_GEAR_BUTTON "Ogranicz ekw."
 RETIRED_DUNGEON_UPLOADED "Twoje porzucone lochy zostały przesłane do Steam Workshop. Otworzyć ich stronę w przeglądarce?"
 RETIRED_SCREENSHOT_TEXT "Twoje lochy zostaną udostępnione w Steam Workshop ze zrzutem ekranu. Wybierz odpowiedni fragment widoku i zatwierdź."
 RETIRE_WHEN_READY "Gdy będziesz gotowy, porzuć swoje lochy i udostępnij je w sieci. Inni gracze będą mogli je najeżdżać. Aby to zrobić, wciśnij Escape i wybierz „porzuć”."
@@ -762,12 +767,14 @@ SET_FURNITURE_ON_FIRE_EFFECT_DESCRIPTION "Podpala obiekty"
 SET_FURNITURE_ON_FIRE_EFFECT_NAME "podpalenie"
     "podpalenia" : genitive
 SEVEN "siedem"
+    "siedmioma" : instrumental
 SHOVE_EFFECT_DESCRIPTION "Odrzuca istotę do tyłu."
 SHOVE_EFFECT_NAME "odepchnięcie"
     "odepchnięcia" : genitive
 SHOW_MESSAGE_HISTORY "Pokaż historię wiadomości"
 SHOW_TASKS "Pokaż zadania"
 SIX "sześć"
+    "sześcioma" : instrumental
 SKELETON_ITEM "szkielet {1:genitive}"
 SKIP_TURN_ACTION "Pomiń turę"
 SLEEP_RESISTANT "odporny na sen"
@@ -834,6 +841,7 @@ TEMPORARY_POLYMORPH_EFFECT_NAME "tymczasowa przemiana"
 PERMANENT_POLYMORPH_EFFECT_NAME "stała przemiana"
     "stałej przemiany" : genitive
 TEN "dziesięć"
+    "dziesięcioma" : instrumental
 THE_ARTICLE "{1}"
 THE_CAPTURING_OF "pojmanie {1:genitive}"
 THE_CONQUERING_OF "podbicie {1:genitive}"
@@ -846,6 +854,7 @@ THE_SPELL_FAILED "Zaklęcie nie powiodło się."
 THE "ten {1}"
 THE_TORTURING_OF "torturowanie {1:genitive}"
 THREE "trzy"
+    "trzema" : instrumental
 THROWN_BACK "odrzucony"
 TIED_UP "skuty"
 TORTURE_TASK "Tortu­ruj {1:accusative}"
@@ -875,6 +884,7 @@ YOU_INVISIBLE "Widzisz przez siebie!"
 IS_INVISIBLE "{1} znika!"
 TUTORIAL_NOT_THERE "Samouczek nie jest jeszcze dostępny"
 TWELVE "dwanaście"
+    "dwunastoma" : instrumental
 TWO "dwa"
     "dwie" : feminine
     "dwoma" : instrumental
@@ -1099,7 +1109,7 @@ AI_TYPE_LABEL "Typ AI"
 ALREADY_RESEARCHED_LABEL "Już zbadano:"
 APPLIES "{1} stosuje {2}."
 ARE_OFFENDED "Czujesz się urażony"
-ASSIGN_GEAR_MINION_BUTTON "Przypisz sprzęt"
+ASSIGN_GEAR_MINION_BUTTON "Przypisz ekw."
 AT_NIGHT "w nocy"
 ATTACK_ON_YOU_IS_HARMLESS "Atak jest nieszkodliwy."
 ATTR_BOOST_DESCRIPTION "Zwiększa {1}."
@@ -1261,9 +1271,9 @@ ENTERS_PORTAL "{1} znika w portalu."
 EQUIPMENT_DESTRUCTION_EFFECT_DESCRIPTION "Niszczy losowy element wyposażenia."
 EQUIPMENT_DESTRUCTION_EFFECT_NAME "zniszczenie ekwipunku"
     "zniszczenia ekwipunku" : genitive
-EQUIPMENT_LABEL "Wyposażenie"
+EQUIPMENT_LABEL "Ekwipunek"
 EQUIPS "{1} wyposaża się w {2:accusative}."
-EXPERIENCE_EXPLANATION "Doświadczenie zwiększa każdy atrybut, który może zostać wytrenowany. Jeśli istota nie ma żadnych trenowalnych atrybutów, domyślnie rosną obrażenia i obrona. Przykładowo, Głupek goblin ma +1 do treningu łucznictwa i +3 do walki wręcz. Mając +2 doświadczenia, zyskuje dodatkowe +2 do obrażeń, obrony i obrażeń dystansowych."
+EXPERIENCE_EXPLANATION "Doświadczenie zwiększa każdy atrybut, który może zostać wytrenowany. Jeśli istota nie ma żadnych trenowalnych atrybutów, domyślnie rosną atak i obrona. Przykładowo, goblin Dumbug ma +1 do treningu łucznictwa i +3 do walki wręcz. Mając +2 doświadczenia, zyskuje dodatkowe +2 do ataku, obrony i celności."
 EXPERIENCE_LABEL "Doświadczenie:"
 EXTRA_INTRINSIC_ATTACK "Dodatkowy wrodzony atak obok dzierżonej broni"
 EYE_BODY_PART "oko"
@@ -2675,14 +2685,14 @@ CREATURE_ATTRIBUTES_ARCHER_PLAYER_NAME masculine "łucznik"
 
 CREATURE_ATTRIBUTES_ARMED_BROTHER_CHATREACTIONFRIENDLY "przeklina wszystkie lochy"
 CREATURE_ATTRIBUTES_ARMED_BROTHER_CHATREACTIONHOSTILE "\"Zgiń!\""
-CREATURE_ATTRIBUTES_ARMED_BROTHER_NAME1 feminine "zakonnica wojowniczka"
-    "zakonnicy wojowniczki" : genitive
-    "zakonnicą wojowniczką" : instrumental
-    "zakonnicę wojowniczkę" : accusative
-    "zakonnice wojowniczki" : plural
-    "zakonnic wojowniczek" : plural,genitive
-    "zakonnicami wojowniczkami" : plural,instrumental
-    "zakonnice wojowniczki" : plural,accusative
+CREATURE_ATTRIBUTES_ARMED_BROTHER_NAME1 feminine "wojownicza zakonnica"
+    "wojowniczej zakonnicy" : genitive
+    "wojowniczą zakonnicą" : instrumental
+    "wojowniczą zakonnicę" : accusative
+    "wojownicze zakonnice" : plural
+    "wojowniczych zakonnic" : plural,genitive
+    "wojowniczymi zakonnicami" : plural,instrumental
+    "wojownicze zakonnice" : plural,accusative
 
 CREATURE_ATTRIBUTES_ARMED_BROTHER_NAME masculine "uzbrojony brat"
     "uzbrojonego brata" : genitive
@@ -9155,7 +9165,7 @@ INTRINSIC_ACTIVATE_ITEM_ACTION "aktywuj atak"
 INTRINSIC_DEACTIVATE_ITEM_ACTION "dezaktywuj atak"
 
 IDLE_MINION_ACTIVITY "Bezczynność"
-SLEEP_MINION_ACTIVITY "Śpi"
+SLEEP_MINION_ACTIVITY "Sen"
 CONSTRUCTION_MINION_ACTIVITY "Budowa"
 DIGGING_MINION_ACTIVITY "Kopanie"
 HAULING_MINION_ACTIVITY "Transport"
@@ -9270,6 +9280,9 @@ CUT_TREE_TASK "Zetnij {1:accusative} w {2}"
 DIG_TASK "Wykop {1:accusative} w {2}"
 FILL_TASK "Wypełnij {1:accusative} w {2}"
 DESTROY_TASK "Zniszcz {1:accusative} w {2}"
+BESTIARY_HELP_BUTTON "Bestiariusz"
+ITEMS_HELP_BUTTON "Przedmioty"
+SPELL_SCHOOLS_HELP_BUTTON "Szkoły magii"
 NEW_LINE "{1}
 {2}"
 TEXT128 "Nie znaleziono strony. Skontaktuj się z autorem moda."

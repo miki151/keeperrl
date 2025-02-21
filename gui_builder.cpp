@@ -452,7 +452,7 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo& info) {
     if (elem.index() < numBuiltinPages && !!elem->viewId && !!elem->title)
       addScriptedButton(*elem);
   lines.addSpace(15);
-  auto addBuiltinButton = [this, &lines, &buttonCnt] (ViewId viewId, string name, BottomWindowId windowId) {
+  auto addBuiltinButton = [this, &lines, &buttonCnt] (ViewId viewId, TStringId name, BottomWindowId windowId) {
     lines.addElem(WL(buttonLabelFocusable,
         WL(getListBuilder)
             .addElemAuto(WL(topMargin, -2, WL(viewObject, viewId)))
@@ -464,9 +464,9 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo& info) {
     ++buttonCnt;
     lines.addSpace(5);
   };
-  addBuiltinButton(ViewId("special_bmbw"), "Bestiary", BESTIARY);
-  addBuiltinButton(ViewId("scroll"), "Items", ITEMS_HELP);
-  addBuiltinButton(ViewId("book"), "Spell schools", SPELL_SCHOOLS);
+  addBuiltinButton(ViewId("special_bmbw"), TStringId("BESTIARY_HELP_BUTTON"), BESTIARY);
+  addBuiltinButton(ViewId("scroll"), TStringId("ITEMS_HELP_BUTTON"), ITEMS_HELP);
+  addBuiltinButton(ViewId("book"), TStringId("SPELL_SCHOOLS_HELP_BUTTON"), SPELL_SCHOOLS);
   lines.addSpace(10);
   for (auto elem : Iter(info.scriptedHelp))
     if (elem.index() >= numBuiltinPages && !!elem->viewId && !!elem->title)
