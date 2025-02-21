@@ -82,7 +82,7 @@ Rectangle WindowView::getMapGuiBounds() const {
 }
 
 int WindowView::getMinimapWidth() const {
-  auto ret = max(149, renderer.getSize().x / 11);
+  auto ret = max(179, renderer.getSize().x / 11);
   if (guiBuilder.isEnlargedMinimap())
     ret *= 3;
   return ret;
