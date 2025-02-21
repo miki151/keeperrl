@@ -37,10 +37,9 @@ class PlayerMessage : public UniqueEntity<PlayerMessage> {
 
   SERIALIZATION_DECL(PlayerMessage);
 
+  TString SERIAL(text);
+  
   private:
-  PlayerMessage(const string& title, const string& text);
-  string SERIAL(text);
-  optional<TString> SERIAL(localizedText);
   MessagePriority SERIAL(priority);
   double SERIAL(freshness);
   optional<string> SERIAL(announcementTitle);

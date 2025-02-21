@@ -89,8 +89,12 @@ string Translations::get(const string& language, const TSentence& s, vector<stri
     form.push_back("plural");
     return get(language, s.params[0], std::move(form));
   }
+  if (s.id == TStringId("FEMININE_SUBJECT")) {
+    form.push_back("feminine");
+    return get(language, s.params[0], std::move(form));
+  }
   if (s.id == TStringId("MAKE_SENTENCE"))
-    return makeSentence(get(language, s.params[0]));
+    return makeSentence(get(language, s.params[0], std::move(form)));
   if (s.id == TStringId("A_ARTICLE")) {
     auto res = get(language, s.params[0], std::move(form));
     if (language == "english")

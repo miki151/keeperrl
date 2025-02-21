@@ -6,7 +6,7 @@
 #include "gui_elem.h"
 
 PlayerMessage::PlayerMessage(const TString& t, MessagePriority p)
-    : localizedText(TSentence("MAKE_SENTENCE", std::move(t))), priority(p),
+    : text(TSentence("MAKE_SENTENCE", std::move(t))), priority(p),
     freshness(1) {}
 
 PlayerMessage::PlayerMessage(const TSentence& s, MessagePriority p) : PlayerMessage(TString(std::move(s)), p) {
@@ -31,11 +31,11 @@ void PlayerMessage::presentMessages(View* view, const vector<PlayerMessage>& mes
 }
 
 string PlayerMessage::getText(View* view) const {
-  return localizedText ? view->translate(*localizedText) : text;
+  return view->translate(text);
 }
 
 string PlayerMessage::getText(GuiFactory* view) const {
-  return localizedText ? view->translate(*localizedText) : text;
+  return view->translate(text);
 }
 
 double PlayerMessage::getFreshness() const {
@@ -79,8 +79,6 @@ int PlayerMessage::getHash() const {
 template <class Archive>
 void PlayerMessage::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(UniqueEntity), text, priority, freshness, announcementTitle, position, creature);
-  if (version >= 1)
-    ar(localizedText);
 }
 
 SERIALIZABLE(PlayerMessage);

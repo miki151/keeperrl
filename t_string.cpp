@@ -1,6 +1,7 @@
 #include "t_string.h"
 #include "pretty_archive.h"
 #include "game_config.h"
+#include "gender.h"
 
 
 TString::TString(string s) : text(std::move(s)) {}
@@ -200,6 +201,12 @@ TString capitalFirst(TString s) {
 
 TString makePlural(TString s) {
   return TSentence("MAKE_PLURAL", std::move(s));
+}
+
+TString setSubjectGender(TString s, Gender gender) {
+  if (gender == Gender::FEMALE)
+    s = TSentence("FEMININE_SUBJECT", std::move(s));
+  return s;
 }
 
 TString combineWithAnd(vector<TString> v) {

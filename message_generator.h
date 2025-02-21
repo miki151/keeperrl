@@ -14,8 +14,8 @@ class MessageGenerator {
   MessageGenerator(Type);
   void add(const Creature*, MsgType, TString);
   void add(const Creature*, MsgType);
-  void addThirdPerson(const Creature*, const PlayerMessage&);
-  void addSecondPerson(const Creature*, const PlayerMessage&);
+  void addThirdPerson(const Creature*, PlayerMessage);
+  void addSecondPerson(const Creature*, PlayerMessage);
   TString getEnemyName(const Creature*);
 
   SERIALIZATION_DECL(MessageGenerator)

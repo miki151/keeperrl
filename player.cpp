@@ -931,7 +931,7 @@ bool Player::isPlayer() const {
   return true;
 }
 
-void Player::privateMessage(const PlayerMessage& message) {
+void Player::privateMessage(PlayerMessage message) {
   if (View* view = getView()) {
 //    if (message.getText().size() < 2)
 //      return;
@@ -939,9 +939,9 @@ void Player::privateMessage(const PlayerMessage& message) {
     auto& messages = messageBuffer->current;
     if (!messages.empty() && messages.back().getFreshness() < 1)
       messages.clear();
-    messages.emplace_back(message);
     if (message.getPriority() == MessagePriority::CRITICAL)
       view->presentText(none, message.getText(view));
+    messages.emplace_back(std::move(message));
   }
 }
 

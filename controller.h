@@ -18,6 +18,7 @@
 #include "enums.h"
 #include "util.h"
 #include "t_string.h"
+#include "player_message.h"
 
 class Creature;
 class MapMemory;
@@ -36,7 +37,7 @@ class Controller : public OwnedObject<Controller> {
 
   virtual MessageGenerator& getMessageGenerator() const = 0;
 
-  virtual void privateMessage(const PlayerMessage& message) {}
+  virtual void privateMessage(PlayerMessage) {}
 
   virtual void onKilled(Creature* attacker) {}
   virtual void onItemsGiven(vector<Item*> items, Creature* from) { }
