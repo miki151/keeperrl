@@ -56,7 +56,7 @@ TString CreatureName::title() const {
     if (killTitle)
       return TSentence("CREATURE_TITLE", capitalFirst(bare()), *killTitle);
     else
-      return bare();
+      return capitalFirst(bare());
   }
 }
 
