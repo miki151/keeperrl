@@ -118,11 +118,11 @@ SERIALIZATION_CONSTRUCTOR_IMPL(PlayerControl)
 using ResourceId = Collective::ResourceId;
 
 const LocalTime hintFrequency = LocalTime(700);
-static vector<string> getHints() {
+static vector<TString> getHints() {
   return {
-    "Morale affects minion productivity and chances of fleeing from battle.",
+    TStringId("MINION_MORALE_HINT"),
  //   "You can turn these hints off in the settings (F2).",
-    "Killing a leader greatly lowers the morale of his tribe and stops immigration.",
+    TStringId("KILLING_LEADER_HINT"),
 //    "Your minions' morale is boosted when they are commanded by the Keeper.",
   };
 }

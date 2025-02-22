@@ -514,8 +514,14 @@ FURNITURE_DISSOLVES "{1} rozpuszcza się."
 FURNITURE_FALLS "{1} przewraca się."
 FURNITURE_FREEZES "{1} zamarza."
 FURNITURE "mebel"
-FURNITURE_IS_DESTROYED "{1} zostaje zniszczony."
-FURNITURE_IS_DUG_OUT "{1} zostaje wykopany."
+FURNITURE_IS_DESTROYED_HELPER "zniszczony"
+    "zniszczona" : feminine
+    "zniszczone" : neuter
+FURNITURE_IS_DESTROYED "{1} zostaje {FURNITURE_IS_DESTROYED_HELPER:1}."
+FURNITURE_IS_DUG_OUT_HELPER "wykopany"
+    "wykopana" : feminine
+    "wykopane" : neuter
+FURNITURE_IS_DUG_OUT "{1} zostaje {FURNITURE_IS_DUG_OUT_HELPER:1}."
 FURNITURE_IS_FILLED "{1} został wypełniony."
 FURNITURE_MELTS "{1} topi się."
 FURNITURE_STOPS_BURNING "{1} przestaje płonąć."
@@ -666,7 +672,7 @@ ITEMS_MISS_YOU "{1} chybiają."
 ITEM_USED_UP "{1} zostaje zużyty."
 ITSELF "siebie"
 JEWELLERY_GROUP "biżuteria"
-JOINS_YOUR_FORCES "{1} dołącza do twoich sił."
+JOINS_YOUR_FORCES "Do twoich sił dołącza {1}."
 KEEPER masculine "Strażnik"
     "Strażnika" : genitive
     "Strażnicy" : plural
@@ -1068,38 +1074,55 @@ WRITE_ON_BOARD_ACTION "Zapisz na tablicy"
 WRITES_A "{1} pisze {2}"
 YES "Tak"
 YOU_ARE_AWARE_OF_DANGER "Jesteś świadomy zagrożenia"
+    "Jesteś świadoma zagrożenia" : feminine
 YOU_ARE_BEING_ATTACKED_BY "Jesteś atakowany przez {1:accusative}."
+    "Jesteś atakowana przez {1:accusative}." : feminine
 YOU_ARE_BITTEN_IN_THE_NECK "Zostajesz ugryziony w szyję!"
+    "Zostajesz ugryziona w szyję!" : feminine
 YOU_ARE_BURNT_BY_THE_SUN "Jesteś palony przez słońce."
+    "Jesteś palona przez słońce." : feminine
 YOU_ARE_CRITICALLY_WOUNDED "Jesteś krytycznie ranny!"
     "Jesteś krytycznie ranna!" : feminine
 YOU_ARE_CUT_IN_HALF "Zostajesz przecięty na pół!"
+    "Zostajesz przecięta na pół!" : feminine
 YOU_ARE_DROWNED_BY "Topi cię {1}!"
 YOU_ARE_FLYING "Latasz!"
 YOU_ARE_MOVING_FASTER_AGAIN "Poruszasz się znowu szybciej."
 YOU_ARE_MOVING_SLOW_AGAIN "Poruszasz się znowu wolniej."
 YOU_ARE_NO_LONGER_AGGRAVATES "Nie drażnisz już wrogów."
 YOU_ARE_NO_LONGER_BLIND "Już nie jesteś ślepy."
-YOU_ARE_NO_LONGER_ENTERTAINER "Nie jesteś już artystą estradowym."
+    "Już nie jesteś ślepa." : feminine
 YOU_ARE_NO_LONGER_FUNNY "Nie jesteś już zabawny."
+    "Nie jesteś już zabawna." : feminine
 YOU_ARE_NO_LONGER_HALLU "Już nie halucynujesz."
 YOU_ARE_NO_LONGER_IMMOBILE "Nie jesteś już unieruchomiony."
 YOU_ARE_NO_LONGER_LOCKED_POSITION "Twoja pozycja nie jest już zablokowana."
 YOU_ARE_NO_LONGER_PLAGUE_RESISTANT "Nie jesteś już odporny na zarazę."
+    "Nie jesteś już odporna na zarazę." : feminine
 YOU_ARE_NO_LONGER_POISON_RESISTANT "Nie jesteś już odporny na truciznę."
+    "Nie jesteś już odporna na truciznę." : feminine
 YOU_ARE_NO_LONGER_POLYMORPHED "Nie jesteś już przemieniony."
+    "Nie jesteś już przemieniona." : feminine
 YOU_ARE_NO_LONGER_RESTED "Nie jesteś już wypoczęty."
+    "Nie jesteś już wypoczęta." : feminine
 YOU_ARE_NO_LONGER_SATIATED "Nie jesteś już nasycony."
+    "Nie jesteś już nasycona." : feminine
 YOU_ARE_NO_LONGER_SLEEP_RESISTANT "Nie jesteś już odporny na sen."
-YOU_ARE_SWARMER "Czujesz chęć atakowania w grupie."
-IS_SWARMER "{1} czuje chęć atakowania w grupie."
+    "Nie jesteś już odporna na sen." : feminine
+YOU_ARE_SWARMER "Czujesz chęć atakowania w roju."
+IS_SWARMER "{1} czuje chęć atakowania w roju."
 YOU_ARE_NO_LONGER_SWARMER "Nie należysz już do roju."
 YOU_ARE_NO_LONGER_VULNERABLE_TO_SUNLIGHT "Nie jesteś już wrażliwy na światło słoneczne."
-YOU_ARE_NOT_HURT "Nie jesteś ranny!"
+    "Nie jesteś już wrażliwa na światło słoneczne." : feminine
+YOU_ARE_NOT_HURT "Nie ponosisz obrażeń!"
 YOU_ARE_RIPPED_TO_PIECES "Zostajesz rozerwany na kawałki!"
+    "Zostajesz rozerwana na kawałki!" : feminine
 YOU_ARE_SHOT_IN_THE "Zostajesz postrzelony w {1}!"
+    "Zostajesz postrzelona w {1}!" : feminine
 YOU_ARE_STABBED_IN_THE "Zostajesz dźgnięty w {1}!"
+    "Zostajesz dźgnięta w {1}!" : feminine
 YOU_ARE_SUCKED_INTO "Zostajesz wessany do {1}!"
+    "Zostajesz wessana do {1}!" : feminine
 YOU_ARE_TURNED_OFF "Zostajesz wyłączony."
 YOU_ARE_TURNED_ON "Zostajesz włączony."
 YOU_ARE_UNABLE_TO_CAST_SPELLS "Nie możesz rzucać żadnych czarów!"
@@ -1110,6 +1133,7 @@ YOU_ARE "Jesteś {1}."
 YOU_ARE_NO_LONGER "Nie jesteś już {1}."
 YOU_BASH_FURNITURE "Uderzasz w {1}."
 YOU_BREAK_FREE "Wyrwałeś się."
+    "Wyrwałaś się." : feminine
 YOU_BUILD "Budujesz {1}."
 YOU_BURNING "Płoniesz!"
 YOU_CANT_BREAK_FREE "Nie możesz się wyrwać!"
@@ -1128,13 +1152,16 @@ YOU_DROP "Upuszczasz {1:accusative}."
 YOU_EAT "Zjadasz {1:accusative}."
 YOU_ENSLAVE "Zniewalasz {1:accusative}."
 YOU_ESCAPE_DEATH "Uniknąłeś śmierci!"
-ESCAPES_DEATH "{1} uniknął śmierci!"
+    "Uniknęłąś śmierci!" : feminine
+
+ESCAPES_DEATH "{1} unika śmierci!"
 YOU_EXECUTE "Dokonujesz egzekucji na {1:accusative}."
-YOU_FALL_APART "Rozpadasz się."
+YOU_FALL_APART "Rozpadasz się na kawałki."
 YOU_FALL_INTO "Wpadasz do {1}!"
-YOU_FEEL_LIKE_CRACKING_A_JOKE "Masz ochotę na żart."
+YOU_FEEL_LIKE_CRACKING_A_JOKE "Masz ochotę żartować."
 YOU_FEEL_LIKE_DOING_SOME_WORK "Masz ochotę popracować."
 YOU_FEEL_LAZY "Czujesz się leniwy."
+    "Czujesz się leniwa." : feminine
 YOU_FEEL_LIKE_WORKING_OUT "Masz ochotę poćwiczyć."
 YOU_FILL_FURNITURE "Wypełniasz {1}."
 YOU_FILL_UP_TUNNEL "Zasypujesz tunel."
@@ -1245,64 +1272,123 @@ BOUND_TO_A_PHYLACTERY "Związany z filakterium"
 BOUND_TO_A_PHYLACTERY_DESCRIPTION "Ta istota odrodzi się przy swoim filakterium po śmierci."
 BREAKS_FREE "{1} się wyrywa!"
 BUFF_AGGRAVATES "drażnienie wrogów"
+    "drażnienia wrogów" : genitive
 BUFF_ARCHER_VISION "widzenie przez strzelnice"
+    "widzenia przez strzelnice" : genitive
 BUFF_BAD_BREATH "nieświeży oddech"
+    "nieświeżego oddechu" : genitive
 BUFF_BLIND "ślepota"
+    "ślepoty" : genitive
 BUFF_CAN_DANCE "taniec"
+    "tańca" : genitive
 BUFF_CAPTURE_RESISTANCE "odporność na pojmanie"
+    "odporności na pojmanie" : genitive
 BUFF_COLLAPSED "upadek"
+    "upadku" : genitive
 BUFF_DARKNESS_SOURCE "źródło ciemności"
+    "źródła ciemności" : genitive
 BUFF_DISAPPEAR_DURING_DAY "nocne życie"
-BUFF_DRUNK "pijany"
+    "nocnego życia" : genitive
+BUFF_DRUNK "upojenie alkoholowe"
+    "upojenia alkoholowego" : genitive
 BUFF_ELF_VISION "elfie widzenie"
+    "elfiego widzenia" : genitive
 BUFF_ENTANGLED "unieruchomienie w sieci"
-BUFF_ENTERTAINER "artysta estradowy"
+    "unieruchomienia w sieci" : genitive
+BUFF_ENTERTAINER "poczucie humoru"
+    "poczucia humoru" : genitive
 BUFF_FAST_CRAFTING "szybkie rzemiosło"
+    "szybkiego rzemiosła" : genitive
 BUFF_FAST_TRAINING "szybki trening"
+    "szybkiego treningu" : genitive
 BUFF_FLYING "unoszenie"
+    "unoszenia" : genitive
 BUFF_FROZEN "zamrożenie"
+    "zamrożenia" : genitive
 BUFF_HALLU "magia"
+    "magii" : genitive
 BUFF_IMMOBILE "unieruchomienie"
+    "unieruchomienia" : genitive
 BUFF_INSANITY "obłęd"
+    "obłędu" : genitive
 BUFF_INVISIBLE "niewidzialność"
+    "niewidzialności" : genitive
 BUFF_LIFE_SAVED "uratowanie życia"
+    "uratowania życia" : genitive
 BUFF_LIGHT_SOURCE "źródło światła"
+    "źródła światła" : genitive
 BUFF_LOCKED_POSITION "zablokowana pozycja"
+    "zablokowanej pozycji" : genitive
 BUFF_MAGIC_CANCELLATION "anulowanie magii"
+    "anulowania magii" : genitive
 BUFF_NIGHT_VISION "widzenie w ciemności"
+    "widzenia w ciemności" : genitive
 BUFF_NO_CARRY_LIMIT "nieskończony udźwig"
-BUFF_NO_FRIENDLY_FIRE "bez ognia sojuszniczego"
+    "nieskończonego udźwigu" : genitive
+BUFF_NO_FRIENDLY_FIRE "bez ognia bratobójczego"
+    "bez ognia bratobójczego" : genitive
 BUFF_OIL "olej"
+    "oleju" : genitive
 BUFF_ON_FIRE "płonięcie"
+    "płonięcia" : genitive
 BUFF_PANIC "panika"
-BUFF_PEACEFULNESS "miłość"
+    "paniki" : genitive
+BUFF_PEACEFULNESS "pacyfizm"
+    "pacyfizmu" : genitive
 BUFF_PLAGUE "zaraza"
+    "zarazy" : genitive
 BUFF_PLAGUE_RESISTANT "odporność na zarazę"
+    "odporności na zarazę" : genitive
 BUFF_POISON "trucizna"
+    "trucizny" : genitive
 BUFF_POISON_RESISTANT "odporność na truciznę"
-BUFF_POLYMORPHED "przemieniony"
+    "odporności na truciznę" : genitive
+BUFF_POLYMORPHED "przemienienie"
+    "przemienienia" : genitive
 BUFF_PREGNANT "ciąża"
+    "ciąży" : genitive
 BUFF_PSYCHIATRY "psychiatria"
+    "psychiatrii" : genitive
 BUFF_RAGE "furia"
+    "furii" : genitive
 BUFF_RESTED "wypoczynek"
+    "wypoczynku" : genitive
 BUFF_RIDER "jeździec"
-BUFF_SATIATED "nasycenie"
+    "jeźdźca" : genitive
+BUFF_SATIATED "najedzenie"
+    "najedzenie" : genitive
 BUFF_SLEEP "sen"
+    "snu" : genitive
 BUFF_SLEEP_RESISTANT "odporność na sen"
+    "odporności na sen" : genitive
 BUFF_SLOW_CRAFTING "powolne rzemiosło"
+    "powolnego rzemiosła" : genitive
 BUFF_SLOWED "spowolnienie"
+    "spowolnienia" : genitive
 BUFF_SLOW_TRAINING "powolny trening"
+    "powolnego treningu" : genitive
 BUFF_SPEED "szybkość"
+    "szybkości" : genitive
 BUFF_SPYING "szpiegowanie"
+    "szpiegowania" : genitive
 BUFF_STEED "wierzchowiec"
+    "wierzchowca" : genitive
 BUFF_STUNNED "oszołomienie"
+    "oszołomienia" : genitive
 BUFF_SUMMONED "czasowe istnienie"
+    "czasowego istnienia" : genitive
 BUFF_SUNLIGHT_VULNERABLE "wrażliwość na słońce"
-BUFF_SWARMER "atak w grupie"
+    "wrażliwości na słońce" : genitive
+BUFF_SWARMER "atak w roju"
+    "ataku w roju" : genitive
 BUFF_TELEPATHY "telepatia"
+    "telepatii" : genitive
 BUFF_TURNED_OFF "wyłączenie"
+    "wyłączenia" : genitive
 BUFF_UNSTABLE "niestabilność psychiczna"
+    "niestabilności psychicznej" : genitive
 BUFF_WARNING "ostrzeżenie"
+    "ostrzeżenia" : genitive
 BUG_REPORT_BUTTON "Zgłoś błąd"
 BURNING_PARENS "(płonie)"
 BURNS_TO_DEATH "{1} spala się na śmierć."
@@ -1417,9 +1503,9 @@ HEAD_BODY_PART feminine "głowa"
     "głowami" : plural, instrumental
 HEALED_BY_RITUALS_HINT "Można uleczyć tylko poprzez rytuały."
 HEART "serce"
-HE_BUILDS "{1} buduje {2}."
+HE_BUILDS "{1} buduje {2:accusative}."
 HE_FILLS_UP_TUNNEL "{1} zasypuje tunel."
-HE_READS "{1} czyta {2}."
+HE_READS "{1} czyta {2:accusative}."
 HERSELF "siebie (ona)"
 HIDES_BEHIND_THE "{1} chowa się za {2:instrumental}."
 HIM "jego"
@@ -1445,8 +1531,8 @@ IMMIGRANTS_LABEL "imigranci"
 INTRINSIC_ATTACKS_LABEL "Wrodzone ataki"
 IS_BLEEDING "{1} krwawi!"
 IS_CAPTURED "{1} zostaje pojmany."
-IS_DROWNED_BY "{1} zostaje utopiony przez {2}."
-IS_EATEN_BY "{1} zostaje pożarty przez {2}."
+IS_DROWNED_BY "{1} zostaje utopiony przez {2:accusative}."
+IS_EATEN_BY "{1} zostaje pożarty przez {2:accusative}."
 IS_EXTINGUISHED "Płomienie {1} zostają ugaszone."
 IS_LESS_AWARE_OF_DANGER "{1} mniej świadomy zagrożenia."
 IS_LESS_PEACEFUL "{1} mniej pokojowy."
@@ -1673,10 +1759,10 @@ YOU_WAKE_UP "Budzisz się!"
 PARENTHESES "({1})"
 SPACE "{1} {2}"
 AND "{1} i {2}"
-BODY_SIZE_AND_MATERIAL_AND_LIMBS "{1} i wykonany z {2:genitive}, z {3:instrumental}."
-    "{1} i wykonana z {2:genitive}, z {3:instrumental}." : feminine
-BODY_SIZE_AND_MATERIAL "{1} i wykonany z {2:genitive}."
-    "{1} i wykonany z {2:genitive}." : feminine
+BODY_SIZE_AND_MATERIAL_AND_LIMBS "{1} i zbudowany z {2:genitive}, z {3:instrumental}."
+    "{1} i zbudowana z {2:genitive}, z {3:instrumental}." : feminine
+BODY_SIZE_AND_MATERIAL "{1} i zbudowany z {2:genitive}."
+    "{1} i zbudowana z {2:genitive}." : feminine
 BUFF_DESC_PREGNANT "To nie sen! To dzieje się naprawdę!"
 BUFF_DESC_SLOWED "Powoduje nienaturalnie wolne poruszanie się."
 BUFF_DESC_SPEED "Daje dodatkowy ruch w każdej turze."
@@ -1877,7 +1963,7 @@ INCREASES_POP_LIMIT_BY_UP_TO "Zwiększa limit {1:genitive} o {2}, maksymalnie do
 IS_ENGAGED_IN_A_FIGHT_WITH "{1} jest zaangażowany w walkę z {2:instrumental}."
 ITEM_INFO_NAME_COMPANION_STEED "{1} (towarzysz)"
 ITEM_WONT_BE_ASSIGNED_BECAUSE_SLOT_LOCKED "{1} nie zostanie przydzielony na stałe, ponieważ slot jest zablokowany."
-JOINS_YOUR_TEAM "{1} dołącza do twojej drużyny."
+JOINS_YOUR_TEAM "Do twojej drużyny dołącza {1}."
 LEGENDARY_CRAFTSMAN_AT "Legendarny rzemieślnik w {1}."
 MISSING_TECHNOLOGY "Wymaga technologii: {1}"
 MULTIPLE_ITEMS "{1} {2}"
@@ -2033,6 +2119,7 @@ ABILITY neuter "umiejętność"
     "umiejętnościami" : plural,instrumental
     "umiejętności" : plural,accusative
 BLIND "ślepy"
+    "ślepa" : feminine
 PLAGUE feminine "zaraza"
     "zarazy" : genitive
     "zarazą" : instrumental
@@ -7980,14 +8067,14 @@ ITEMS_WOODENSTAFF_NAME masculine "drewniany kostur"
     "drewnianymi kosturami" : plural,instrumental
     "drewniane kostury" : plural,accusative
 
-ITEMS_WOODPLANK_NAME feminine "deska drewniana"
-    "deski drewnianej" : genitive
-    "deską drewnianą" : instrumental
-    "deskę drewnianą" : accusative
-    "deski drewniane" : plural
-    "desek drewnianych" : plural,genitive
-    "deskami drewnianymi" : plural,instrumental
-    "deski drewniane" : plural,accusative
+ITEMS_WOODPLANK_NAME feminine "drewniana deska"
+    "drewnianej deski" : genitive
+    "drewnianą deską" : instrumental
+    "drewnianą deskę" : accusative
+    "drewniane deski" : plural
+    "drewnianych desek" : plural,genitive
+    "drewnianymi deskami" : plural,instrumental
+    "drewniane deski" : plural,accusative
 
 ITEMS_YELLOWDRAGONSCALES_NAME neuter "żółte smocze łuski"
     "żółtych smoczych łusek" : genitive
@@ -9393,6 +9480,8 @@ DESTROY_TASK "Zniszcz {1:accusative} w {2}"
 BESTIARY_HELP_BUTTON "Bestiariusz"
 ITEMS_HELP_BUTTON "Przedmioty"
 SPELL_SCHOOLS_HELP_BUTTON "Szkoły magii"
+MINION_MORALE_HINT "Morale wpływa na wydajność sług i szanse ucieczki z pola bitwy."
+KILLING_LEADER_HINT "Zabicie przywódcy bardzo obniża morale jego plemienia oraz wstrzymuje imigrację."
 NEW_LINE "{1}
 {2}"
 TEXT128 "Nie znaleziono strony. Skontaktuj się z autorem moda."

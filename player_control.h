@@ -248,7 +248,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<PlayerMessage> SERIAL(messageHistory);
   vector<CollectiveAttack> SERIAL(newAttacks);
   vector<CollectiveAttack> SERIAL(notifiedAttacks);
-  vector<string> SERIAL(hints);
+  vector<TString> SERIAL(hints);
   optional<PlayerMessage&> findMessage(PlayerMessage::Id);
   SVisibilityMap SERIAL(visibilityMap);
   bool firstRender = true;
