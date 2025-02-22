@@ -1821,7 +1821,7 @@ vector<SGuiElem> GuiBuilder::drawEffectsList(const PlayerInfo& info, bool toolti
   vector<SGuiElem> lines;
   for (int i : All(info.effects)) {
     auto& effect = info.effects[i];
-    auto label = WL(label, effect.name, effect.bad ? Color::RED : Color::WHITE);
+    auto label = WL(label, TSentence("ALL_BUFF_ADJECTIVES_HELPER", effect.name, info.title), effect.bad ? Color::RED : Color::WHITE);
     if (tooltip)
       label = WL(renderInBounds, std::move(label));
     lines.push_back(WL(stack,
@@ -3430,19 +3430,20 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
       for (auto layer : ENUM_ALL_REVERSE(ViewLayer))
         if (index->hasObject(layer)) {
           auto& viewObject = index->getObject(layer);
+          auto& objectName = viewObject.getDescription();
           lines.addElemAuto(WL(getListBuilder)
                 .addElem(WL(viewObject, viewObject.getViewIdList()), 30)
-                .addElemAuto(WL(labelMultiLineWidth, viewObject.getDescription(), legendLineHeight * 2 / 3, 300))
+                .addElemAuto(WL(labelMultiLineWidth, objectName, legendLineHeight * 2 / 3, 300))
                 .buildHorizontalList());
           lines.addSpace(legendLineHeight / 3);
           if (layer == ViewLayer::CREATURE)
             lines.addElemAuto(drawLyingItemsList(TStringId("INVENTORY_LABEL"), index->getEquipmentCounts(), 250));
           if (viewObject.hasModifier(ViewObject::Modifier::HOSTILE))
-            lines.addElem(WL(label, TStringId("HOSTILE_LABEL"), Color::ORANGE));
+            lines.addElem(WL(label, TSentence("HOSTILE_LABEL", objectName), Color::ORANGE));
           for (auto status : viewObject.getCreatureStatus()) {
-            lines.addElem(WL(label, getName(status), getColor(status)));
+            lines.addElem(WL(label, TSentence(getName(status), objectName), getColor(status)));
             if (auto desc = getDescription(status))
-              lines.addElem(WL(label, *desc, getColor(status)));
+              lines.addElem(WL(label, TSentence(*desc, objectName), getColor(status)));
             break;
           }
           if (!disableClickActions)
@@ -3452,12 +3453,16 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
                     WL(setHeight, *actions->getPreferredHeight(), actions), 5, 1, 5, -2)),
                     highlighted.creaturePos.value_or(*highlighted.tileScreenPos) + Vec2(60, 60)));
           if (!viewObject.getBadAdjectives().empty()) {
-            lines.addElemAuto(WL(labelMultiLineWidth, viewObject.getBadAdjectives(), legendLineHeight * 2 / 3, 300,
+            lines.addElemAuto(WL(labelMultiLineWidth,
+                TSentence("ALL_BUFF_ADJECTIVES_HELPER", viewObject.getBadAdjectives(), objectName),
+                legendLineHeight * 2 / 3, 300,
                 Renderer::textSize(), Color::RED, ','));
             lines.addSpace(legendLineHeight / 3);
           }
           if (!viewObject.getGoodAdjectives().empty()) {
-            lines.addElemAuto(WL(labelMultiLineWidth, viewObject.getGoodAdjectives(), legendLineHeight * 2 / 3, 300,
+            lines.addElemAuto(WL(labelMultiLineWidth,
+                TSentence("ALL_BUFF_ADJECTIVES_HELPER", viewObject.getGoodAdjectives(), objectName),
+                legendLineHeight * 2 / 3, 300,
                 Renderer::textSize(), Color::GREEN, ','));
             lines.addSpace(legendLineHeight / 3);
           }

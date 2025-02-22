@@ -161,41 +161,140 @@ BOULDER masculine "głaz"
     "głazy" : plural,accusative
 BREACH_TRIGGER "Naruszenie terytorium"
 BREAK_FREE "Wyrwałeś się."
+ALL_BUFF_ADJECTIVES_HELPER "{1:2}"
 BUFF_ADJECTIVE_AGGRAVATES "Drażni wrogów"
-BUFF_ADJECTIVE_ARCHER_VISION "Może widzieć i strzelać przez strzelnice"
-BUFF_ADJECTIVE_CAN_DANCE "Może tańczyć całą noc"
+BUFF_ADJECTIVE_ARCHER_VISION "Widzi przez strzelnice"
+BUFF_ADJECTIVE_CAN_DANCE "Tańczący całą noc"
+    "Tańcząca całą noc" : feminine
+    "Tańczące całą noc" : neuter
 BUFF_ADJECTIVE_CAPTURE_RESISTANCE "Odporny na pojmanie"
+    "Odporna na pojmanie" : feminine
+    "Odporne na pojmanie" : neuter
 BUFF_ADJECTIVE_DARKNESS_SOURCE "Źródło ciemności"
 BUFF_ADJECTIVE_DRUNK "Pijany"
-BUFF_ADJECTIVE_ELF_VISION "Może widzieć przez drzewa"
-BUFF_ADJECTIVE_ENTERTAINER "Artysta estradowy"
-BUFF_ADJECTIVE_FAST_CRAFTING "Szybki rzemieślnik"
-BUFF_ADJECTIVE_FAST_TRAINING "Szybki uczeń"
+    "Pijana" : feminine
+    "Pijane" : neuter
+BUFF_ADJECTIVE_ELF_VISION "Widzący przez drzewa"
+    "Widząca przez drzewa" : feminine
+    "Widzące przez drzewa" : neuter
+BUFF_ADJECTIVE_ENTERTAINER "Żartowniś"
+    "Żartownisia" : feminine
+BUFF_ADJECTIVE_FAST_CRAFTING "Szybkie rzemiosło"
+BUFF_ADJECTIVE_FAST_TRAINING "Szybki trening"
 BUFF_ADJECTIVE_FLYING "Latający"
-BUFF_ADJECTIVE_HALLU "Halucynuje"
+    "Latająca" : feminine
+    "Latające" : neuter
+BUFF_ADJECTIVE_HALLU "Halucynujący"
+    "Halucynująca" : feminine
+    "Halucynujące" : neuter
 BUFF_ADJECTIVE_INVISIBLE "Niewidzialny"
-BUFF_ADJECTIVE_LIFE_SAVED "Życie zostanie ocalone"
+    "Niewidzialna" : feminine
+    "Niewidzialne" : neuter
+BUFF_ADJECTIVE_LIFE_SAVED "Życie będzie ocalone"
 BUFF_ADJECTIVE_LIGHT_SOURCE "Źródło światła"
-BUFF_ADJECTIVE_LOCKED_POSITION "Zablokowana pozycja"
-BUFF_ADJECTIVE_NIGHT_VISION "Widzenie w ciemnościach"
-BUFF_ADJECTIVE_NO_CARRY_LIMIT "Nieskończona ładowność"
-BUFF_ADJECTIVE_NO_FRIENDLY_FIRE "Brak obrażeń sojuszniczych"
+BUFF_ADJECTIVE_LOCKED_POSITION "Zablokowany"
+    "Zablokowana" : feminine
+    "Zablokowane" : neuter
+BUFF_ADJECTIVE_NIGHT_VISION "Widzący w ciemnościach"
+    "Widząca w ciemnościach" : feminine
+    "Widzące w ciemnościach" : neuter
+BUFF_ADJECTIVE_NO_CARRY_LIMIT "Bez limitu obciążenia"
+BUFF_ADJECTIVE_NO_FRIENDLY_FIRE "Bez bratobójczego ognia"
 BUFF_ADJECTIVE_PLAGUE_RESISTANT "Odporny na zarazę"
+    "Odporna na zarazę" : feminine
+    "Odporne na zarazę" : neuter
 BUFF_ADJECTIVE_POISON_RESISTANT "Odporny na truciznę"
+    "Odporna na truciznę" : feminine
+    "Odporne na truciznę" : neuter
 BUFF_ADJECTIVE_POLYMORPHED "Przemieniony"
-BUFF_ADJECTIVE_PREGNANT "W ciąży"
+    "Przemieniona" : feminine
+    "Przemienione" : neuter
+BUFF_ADJECTIVE_PREGNANT "Ciężarny"
+    "Ciężarna" : feminine
+    "Ciężarne" : neuter
 BUFF_ADJECTIVE_PSYCHIATRY "Psychiatra"
 BUFF_ADJECTIVE_RAGE "Wściekły"
+    "Wściekła" : feminine
+    "Wściekłe" : neuter
 BUFF_ADJECTIVE_RESTED "Wypoczęty"
+    "Wypoczęta" : feminine
+    "Wypoczęte" : neuter
 BUFF_ADJECTIVE_RIDER "Jeździec"
-BUFF_ADJECTIVE_SATIATED "Nasycony"
+BUFF_ADJECTIVE_SATIATED "Najedzony"
+    "Najedzona" : feminine
+    "Najedzone" : neuter
 BUFF_ADJECTIVE_SLEEP_RESISTANT "Odporny na sen"
-BUFF_ADJECTIVE_SPEED "Bonus do szybkości"
+    "Odporna na sen" : feminine
+    "Odporne na sen" : neuter
+BUFF_ADJECTIVE_SPEED "Szybki"
+    "Szybka" : feminine
+    "Szybkie" : neuter
 BUFF_ADJECTIVE_SPYING "Szpieg"
 BUFF_ADJECTIVE_STEED "Wierzchowiec"
-BUFF_ADJECTIVE_SWARMER "Rój"
+BUFF_ADJECTIVE_SWARMER "W roju"
 BUFF_ADJECTIVE_TELEPATHY "Telepatyczny"
-BUFF_ADJECTIVE_WARNING "Ostrzeżony przed niebezpieczeństwem"
+    "Telepatyczna" : feminine
+    "Telepatyczne" : neuter
+BUFF_ADJECTIVE_WARNING "Ostrzeżony"
+    "Ostrzeżona" : feminine
+    "Ostrzeżone" : neuter
+BUFF_ADJECTIVE_PANIC "Spanikowany"
+    "Spanikowana" : feminine
+    "Spanikowane" : neuter
+BUFF_ADJECTIVE_PEACEFULNESS "Pacyfista"
+    "Pacyfistka" : feminine
+BUFF_ADJECTIVE_ENTANGLED "Splątany"
+    "Splątana" : feminine
+    "Splątane" : neuter
+BUFF_ADJECTIVE_TIED_UP "Skrępowany"
+    "Skrępowana" : feminine
+    "Skrępowane" : neuter
+BUFF_ADJECTIVE_IMMOBILE "Unieruchomiony"
+    "Unieruchomiona" : feminine
+    "Unieruchomione" : neuter
+BUFF_ADJECTIVE_SLOWED "Spowolniony"
+    "Spowolniona" : feminine
+    "Spowolnione" : neuter
+BUFF_ADJECTIVE_INSANITY "Obłąkany"
+    "Obłąkana" : feminine
+    "Obłąkane" : neuter
+BUFF_ADJECTIVE_BLIND "Ślepy"
+    "Ślepa" : feminine
+    "Ślepe" : neuter
+BUFF_ADJECTIVE_STUNNED "Nieprzytomny"
+    "Nieprzytomna" : feminine
+    "Nieprzytomne" : neuter
+BUFF_ADJECTIVE_COLLAPSED "Przewrócony"
+    "Przewrócona" : feminine
+    "Przewrócone" : neuter
+BUFF_ADJECTIVE_SUNLIGHT_VULNERABLE "Wrażliwy na światło słoneczne"
+    "Wrażliwa na światło słoneczne" : feminine
+    "Wrażliwe na światło słoneczne" : neuter
+BUFF_ADJECTIVE_SUMMONED "Przyzwany"
+    "Przyzwana" : feminine
+    "Przyzwane" : neuter
+BUFF_ADJECTIVE_SLOW_CRAFTING "Spowolnione rzemiosło"
+BUFF_ADJECTIVE_SLOW_TRAINING "Spowolniony trening"
+BUFF_ADJECTIVE_BAD_BREATH "Śmierdzący oddech"
+BUFF_ADJECTIVE_ON_FIRE "Płonie"
+BUFF_ADJECTIVE_FROZEN "Zamarznięty"
+    "Zamarznięta" : feminine
+    "Zamarznięte" : neuter
+BUFF_ADJECTIVE_MAGIC_CANCELLATION "Anulowany"
+    "Anulowana" : feminine
+    "Anulowane" : neuter
+BUFF_ADJECTIVE_DISAPPEAR_DURING_DAY "Znikający o świcie"
+    "Znikająca o świcie" : feminine
+    "Znikające o świcie" : neuter
+BUFF_ADJECTIVE_UNSTABLE "Niestabilny psychicznie"
+    "Niestabilna psychicznie" : feminine
+    "Niestabilne psychicznie" : neuter
+BUFF_ADJECTIVE_OIL "Pokryty olejem"
+    "Pokryta olejem" : feminine
+    "Pokryte olejem" : neuter
+BUFF_ADJECTIVE_TURNED_OFF "Wyłączony"
+    "Wyłączona" : feminine
+    "Wyłączone" : neuter
 BUILD_FURNITURE_TASK "Zbuduj {1:accusative} w {2}"
 BUILD_MORGUE_HINT "Zbuduj stół w kostnicy, aby tworzyć nieumarłych."
 BURNED_DEATH_REASON "spalony na śmierć"
@@ -387,8 +486,13 @@ FEELS_LIKE_DOING_SOME_WORK "{1} ma ochotę popracować."
 FEELS_LAZY "{1} czuje się leniwy."
 FEELS_LIKE_WORKING_OUT "{1} ma ochotę poćwiczyć."
 FETCHING_ITEMS_HIGHLIGHT "Zbierz przedmioty z pola"
-FIGHTER_STATUS_DESCRIPTION "Musi zostać zabity, aby podbić plemię"
-FIGHTER_STATUS "Wojownik"
+FIGHTER_STATUS_DESCRIPTION_HELPER "Musi zostać zabity, aby podbić plemię"
+    "Musi zostać zabita, aby podbić plemię" : feminine
+    "Musi zostać zabite, aby podbić plemię" : neuter
+FIGHTER_STATUS_DESCRIPTION "{FIGHTER_STATUS_DESCRIPTION_HELPER:1}"
+FIGHTER_STATUS_HELPER "Wojownik"
+    "Wojowniczka" : feminine
+FIGHTER_STATUS "{FIGHTER_STATUS_HELPER:1}"
 FILL_FURNITURE "Wypełniasz {1:accusative}."
 FILLS_FURNITURE "{1} wypełnia {2:accusative}."
 FINISHING_YOU_TRIGGER "Dobijanie ciebie"
@@ -676,7 +780,10 @@ SPACE_KEY "spacja"
     "spację" : accusative
 PRIORITY_TASK_HIGHLIGHT "Zadanie priorytetowe"
 PRISONER "więzień"
-PRISONER_STATUS_DESCRIPTION "Pochwycony z wrogiego plemienia"
+PRISONER_STATUS_DESCRIPTION_HELPER "Pochwycony z wrogiego plemienia"
+    "Pochwycona z wrogiego plemienia" : feminine
+    "Pochwycone z wrogiego plemienia" : neuter
+PRISONER_STATUS_DESCRIPTION "{PRISONER_STATUS_DESCRIPTION_HELPER:1}"
 PRISONER_STATUS "Więzień"
 PRISON_MUST_BE_SEPARATE_HIGHLIGHT "Więzienie musi być oddzielone od zewnątrz i wszystkich schodów za pomocą krat lub drzwi więziennych"
 PRISON_TILE "pole więzienne"
@@ -1326,7 +1433,10 @@ HIS_INTERNAL_ORGANS_ARE_CRUSHED "Organy wewnętrzne {1} zostają zmiażdżone!"
 HIS_INTERNAL_ORGANS_ARE_RIPPED_OUT "Organy wewnętrzne {1} zostają wyrwane!"
 HIS_LIFE_WILL_BE_SAVED "Życie {1} będzie ocalone."
 HIS_SPURS_STOP_SPINNING "Ostrogi {1} przestają się kręcić."
-HOSTILE_LABEL "Wrogi"
+HOSTILE_LABEL_HELPER "Wrogi"
+    "Wroga" : feminine
+    "Wrogie" : neuter
+HOSTILE_LABEL "{HOSTILE_LABEL_HELPER:1}"
 ICE_EFFECT_DESCRIPTION "Zamraża wodę i zadaje obrażenia zimnem."
 ICE_EFFECT_NAME "lód"
     "lodu" : genitive
@@ -2731,23 +2841,23 @@ CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_ADA_NAME masculine "ciężki adamantynowy a
     "ciężkimi adamantynowymi automatami" : plural,instrumental
     "ciężkie adamantynowe automaty" : plural,accusative
 
-CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_ADOXIUM_NAME1 masculine "lekki adoksiowy automat"
-    "lekkiego adoksiowego automatu" : genitive
-    "lekkim adoksiowym automatem" : instrumental
-    "lekki adoksiowy automat" : accusative
-    "lekkie adoksiowe automaty" : plural
-    "lekkich adoksiowych automatów" : plural,genitive
-    "lekkimi adoksiowymi automatami" : plural,instrumental
-    "lekkie adoksiowe automaty" : plural,accusative
+CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_ADOXIUM_NAME1 masculine "lekki automat z adoksium"
+    "lekkiego automatu z adoksium" : genitive
+    "lekkim automatem z adoksium" : instrumental
+    "lekki automat z adoksium" : accusative
+    "lekkie automaty z adoksium" : plural
+    "lekkich automatów z adoksium" : plural,genitive
+    "lekkimi automatami z adoksium" : plural,instrumental
+    "lekkie automaty z adoksium" : plural,accusative
 
-CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_ADOXIUM_NAME masculine "ciężki adoksiowy automat"
-    "ciężkiego adoksiowego automatu" : genitive
-    "ciężkim adoksiowym automatem" : instrumental
-    "ciężki adoksiowy automat" : accusative
-    "ciężkie adoksiowe automaty" : plural
-    "ciężkich adoksiowych automatów" : plural,genitive
-    "ciężkimi adoksiowymi automatami" : plural,instrumental
-    "ciężkie adoksiowe automaty" : plural,accusative
+CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_ADOXIUM_NAME masculine "ciężki automat z adoksium"
+    "ciężkiego automatu z adoksium" : genitive
+    "ciężkim automatem z adoksium" : instrumental
+    "ciężki automat z adoksium" : accusative
+    "ciężkie automaty z adoksium" : plural
+    "ciężkich automatów z adoksium" : plural,genitive
+    "ciężkimi automatami z adoksium" : plural,instrumental
+    "ciężkie automaty z adoksium" : plural,accusative
 
 CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_INFERNITE_NAME1 masculine "lekki infernitowy automat"
     "lekkiego infernitowego automatu" : genitive
@@ -2821,14 +2931,14 @@ CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_WOOD_NAME4 masculine "infernitowy automat"
     "infernitowymi automatami" : plural,instrumental
     "infernitowe automaty" : plural,accusative
 
-CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_WOOD_NAME5 masculine "adoksiowy automat"
-    "adoksiowego automatu" : genitive
-    "adoksiowym automatem" : instrumental
-    "adoksiowy automat" : accusative
-    "adoksiowe automaty" : plural
-    "adoksiowych automatów" : plural,genitive
-    "adoksiowymi automatami" : plural,instrumental
-    "adoksiowe automaty" : plural,accusative
+CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_WOOD_NAME5 masculine "automat z adoksium"
+    "automatu z adoksium" : genitive
+    "automatem z adoksium" : instrumental
+    "automat z adoksium" : accusative
+    "automaty z adoksium" : plural
+    "automatów z adoksium" : plural,genitive
+    "automatami z adoksium" : plural,instrumental
+    "automaty z adoksium" : plural,accusative
 
 CREATURE_ATTRIBUTES_AUTOMATON_CORPUS_WOOD_NAME masculine "drewniany automat"
     "drewnianego automatu" : genitive
@@ -3088,7 +3198,7 @@ CREATURE_ATTRIBUTES_DEATH_ID feminine "kosa"
     "kosami" : plural,instrumental
     "kosy" : plural,accusative
 
-CREATURE_ATTRIBUTES_DEATH_NAME masculine "Śmierć"
+CREATURE_ATTRIBUTES_DEATH_NAME feminine "Śmierć"
     "Śmierci" : genitive
     "Śmiercią" : instrumental
     "Śmierć" : accusative
@@ -3317,14 +3427,14 @@ CREATURE_ATTRIBUTES_EARTH_ELEMENTAL_NAME masculine "żywiołak ziemi"
 
 CREATURE_ATTRIBUTES_ELEMENTALIST_CHATREACTIONFRIENDLY "przeklina wszystkie lochy"
 CREATURE_ATTRIBUTES_ELEMENTALIST_CHATREACTIONHOSTILE "\"Giń!\""
-CREATURE_ATTRIBUTES_ELEMENTALIST_NAME masculine "elementalista"
-    "elementalisty" : genitive
-    "elementalistą" : instrumental
-    "elementalistę" : accusative
-    "elementaliści" : plural
-    "elementalistów" : plural,genitive
-    "elementalistami" : plural,instrumental
-    "elementalistów" : plural,accusative
+CREATURE_ATTRIBUTES_ELEMENTALIST_NAME feminine "elementalistka"
+    "elementalistki" : genitive
+    "elementalistką" : instrumental
+    "elementalistkę" : accusative
+    "elementalistki" : plural
+    "elementalistek" : plural,genitive
+    "elementalistkami" : plural,instrumental
+    "elementalistki" : plural,accusative
 
 CREATURE_ATTRIBUTES_ELF_ARCHER_CHATREACTIONFRIENDLY "przeklina wszystkich krasnoludów"
 CREATURE_ATTRIBUTES_ELF_ARCHER_CHATREACTIONHOSTILE "\"Giń!\""
@@ -3839,7 +3949,7 @@ CREATURE_ATTRIBUTES_KEEPER_MAGE_NAME1 masculine "nekromanta"
     "nekromantami" : plural,instrumental
     "nekromantów" : plural,accusative
 
-CREATURE_ATTRIBUTES_KEEPER_MAGE_F_NAME1 masculine "nekromantka"
+CREATURE_ATTRIBUTES_KEEPER_MAGE_F_NAME1 feminine "nekromantka"
     "nekromantki" : genitive
     "nekromantką" : instrumental
     "nekromantkę" : accusative
