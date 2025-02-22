@@ -400,7 +400,7 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
 }
 
 PGame MainLoop::prepareTutorial(const ContentFactory* contentFactory) {
-  PGame game = loadGame(dataFreePath.file("tutorial.kep"), "tutorial");
+  PGame game = loadGame(dataFreePath.file("tutorial.kep"), TStringId("TUTORIAL"));
   if (game) {
     USER_CHECK(contentFactory->immigrantsData.count("tutorial"));
     Tutorial::createTutorial(*game, contentFactory);
@@ -1334,7 +1334,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
   return ModelTable{std::move(models), std::move(factories), numRetiredVillains};
 }
 
-PGame MainLoop::loadGame(const FilePath& file, const string& name) {
+PGame MainLoop::loadGame(const FilePath& file, const TString& name) {
   optional<PGame> game;
   if (auto info = loadSavedGameInfo(file))
     doWithSplash(TSentence("LOADING_GAME", name), info->progressCount,

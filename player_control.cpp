@@ -3801,7 +3801,7 @@ void PlayerControl::tick() {
     int numHint = time.getDouble() / hintFrequency.getDouble() - 1;
     if (numHint < hints.size() && !hints[numHint].empty()) {
       addMessage(PlayerMessage(hints[numHint], MessagePriority::HIGH));
-      hints[numHint] = "";
+      hints[numHint] = TString();
     }
   }
 }

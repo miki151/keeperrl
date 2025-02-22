@@ -76,7 +76,7 @@ class MainLoop {
   void playMenuMusic();
   ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen&, ContentFactory*);
   ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, ModelBuilder, ContentFactory*);
-  PGame loadGame(const FilePath&, const string& name);
+  PGame loadGame(const FilePath&, const TString& name);
   PGame loadOrNewGame();
   FilePath getSavePath(const PGame&, GameSaveType);
   void eraseSaveFile(const PGame&, GameSaveType);
