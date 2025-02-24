@@ -162,139 +162,139 @@ BOULDER masculine "głaz"
 BREACH_TRIGGER "Naruszenie terytorium"
 BREAK_FREE "Wyrwałeś się."
 ALL_BUFF_ADJECTIVES_HELPER "{1:2}"
-BUFF_ADJECTIVE_AGGRAVATES "Drażni wrogów"
-BUFF_ADJECTIVE_ARCHER_VISION "Widzi przez strzelnice"
-BUFF_ADJECTIVE_CAN_DANCE "Tańczący całą noc"
-    "Tańcząca całą noc" : feminine
-    "Tańczące całą noc" : neuter
-BUFF_ADJECTIVE_CAPTURE_RESISTANCE "Odporny na pojmanie"
-    "Odporna na pojmanie" : feminine
-    "Odporne na pojmanie" : neuter
-BUFF_ADJECTIVE_DARKNESS_SOURCE "Źródło ciemności"
-BUFF_ADJECTIVE_DRUNK "Pijany"
-    "Pijana" : feminine
-    "Pijane" : neuter
-BUFF_ADJECTIVE_ELF_VISION "Widzący przez drzewa"
-    "Widząca przez drzewa" : feminine
-    "Widzące przez drzewa" : neuter
-BUFF_ADJECTIVE_ENTERTAINER "Żartowniś"
-    "Żartownisia" : feminine
-BUFF_ADJECTIVE_FAST_CRAFTING "Szybkie rzemiosło"
-BUFF_ADJECTIVE_FAST_TRAINING "Szybki trening"
-BUFF_ADJECTIVE_FLYING "Latający"
-    "Latająca" : feminine
-    "Latające" : neuter
-BUFF_ADJECTIVE_HALLU "Halucynujący"
-    "Halucynująca" : feminine
-    "Halucynujące" : neuter
-BUFF_ADJECTIVE_INVISIBLE "Niewidzialny"
-    "Niewidzialna" : feminine
-    "Niewidzialne" : neuter
-BUFF_ADJECTIVE_LIFE_SAVED "Życie będzie ocalone"
-BUFF_ADJECTIVE_LIGHT_SOURCE "Źródło światła"
-BUFF_ADJECTIVE_LOCKED_POSITION "Zablokowany"
-    "Zablokowana" : feminine
-    "Zablokowane" : neuter
-BUFF_ADJECTIVE_NIGHT_VISION "Widzący w ciemnościach"
-    "Widząca w ciemnościach" : feminine
-    "Widzące w ciemnościach" : neuter
-BUFF_ADJECTIVE_NO_CARRY_LIMIT "Bez limitu obciążenia"
-BUFF_ADJECTIVE_NO_FRIENDLY_FIRE "Bez bratobójczego ognia"
-BUFF_ADJECTIVE_PLAGUE_RESISTANT "Odporny na zarazę"
-    "Odporna na zarazę" : feminine
-    "Odporne na zarazę" : neuter
-BUFF_ADJECTIVE_POISON_RESISTANT "Odporny na truciznę"
-    "Odporna na truciznę" : feminine
-    "Odporne na truciznę" : neuter
-BUFF_ADJECTIVE_POLYMORPHED "Przemieniony"
-    "Przemieniona" : feminine
-    "Przemienione" : neuter
-BUFF_ADJECTIVE_PREGNANT "Ciężarny"
-    "Ciężarna" : feminine
-    "Ciężarne" : neuter
-BUFF_ADJECTIVE_PSYCHIATRY "Psychiatra"
-BUFF_ADJECTIVE_RAGE "Wściekły"
-    "Wściekła" : feminine
-    "Wściekłe" : neuter
-BUFF_ADJECTIVE_RESTED "Wypoczęty"
-    "Wypoczęta" : feminine
-    "Wypoczęte" : neuter
-BUFF_ADJECTIVE_RIDER "Jeździec"
-BUFF_ADJECTIVE_SATIATED "Najedzony"
-    "Najedzona" : feminine
-    "Najedzone" : neuter
-BUFF_ADJECTIVE_SLEEP_RESISTANT "Odporny na sen"
-    "Odporna na sen" : feminine
-    "Odporne na sen" : neuter
-BUFF_ADJECTIVE_SPEED "Szybki"
-    "Szybka" : feminine
-    "Szybkie" : neuter
-BUFF_ADJECTIVE_SPYING "Szpieg"
-BUFF_ADJECTIVE_STEED "Wierzchowiec"
-BUFF_ADJECTIVE_SWARMER "W roju"
-BUFF_ADJECTIVE_TELEPATHY "Telepatyczny"
-    "Telepatyczna" : feminine
-    "Telepatyczne" : neuter
-BUFF_ADJECTIVE_WARNING "Ostrzeżony"
-    "Ostrzeżona" : feminine
-    "Ostrzeżone" : neuter
-BUFF_ADJECTIVE_PANIC "Spanikowany"
-    "Spanikowana" : feminine
-    "Spanikowane" : neuter
-BUFF_ADJECTIVE_PEACEFULNESS "Pacyfista"
-    "Pacyfistka" : feminine
-BUFF_ADJECTIVE_ENTANGLED "Splątany"
-    "Splątana" : feminine
-    "Splątane" : neuter
-BUFF_ADJECTIVE_TIED_UP "Skrępowany"
-    "Skrępowana" : feminine
-    "Skrępowane" : neuter
-BUFF_ADJECTIVE_IMMOBILE "Unieruchomiony"
-    "Unieruchomiona" : feminine
-    "Unieruchomione" : neuter
-BUFF_ADJECTIVE_SLOWED "Spowolniony"
-    "Spowolniona" : feminine
-    "Spowolnione" : neuter
-BUFF_ADJECTIVE_INSANITY "Obłąkany"
-    "Obłąkana" : feminine
-    "Obłąkane" : neuter
-BUFF_ADJECTIVE_BLIND "Ślepy"
-    "Ślepa" : feminine
-    "Ślepe" : neuter
-BUFF_ADJECTIVE_STUNNED "Nieprzytomny"
-    "Nieprzytomna" : feminine
-    "Nieprzytomne" : neuter
-BUFF_ADJECTIVE_COLLAPSED "Przewrócony"
-    "Przewrócona" : feminine
-    "Przewrócone" : neuter
-BUFF_ADJECTIVE_SUNLIGHT_VULNERABLE "Wrażliwy na światło słoneczne"
-    "Wrażliwa na światło słoneczne" : feminine
-    "Wrażliwe na światło słoneczne" : neuter
-BUFF_ADJECTIVE_SUMMONED "Przyzwany"
-    "Przyzwana" : feminine
-    "Przyzwane" : neuter
-BUFF_ADJECTIVE_SLOW_CRAFTING "Spowolnione rzemiosło"
-BUFF_ADJECTIVE_SLOW_TRAINING "Spowolniony trening"
-BUFF_ADJECTIVE_BAD_BREATH "Śmierdzący oddech"
-BUFF_ADJECTIVE_ON_FIRE "Płonie"
-BUFF_ADJECTIVE_FROZEN "Zamarznięty"
-    "Zamarznięta" : feminine
-    "Zamarznięte" : neuter
-BUFF_ADJECTIVE_MAGIC_CANCELLATION "Anulowany"
-    "Anulowana" : feminine
-    "Anulowane" : neuter
-BUFF_ADJECTIVE_DISAPPEAR_DURING_DAY "Znikający o świcie"
-    "Znikająca o świcie" : feminine
-    "Znikające o świcie" : neuter
-BUFF_ADJECTIVE_UNSTABLE "Niestabilny psychicznie"
-    "Niestabilna psychicznie" : feminine
-    "Niestabilne psychicznie" : neuter
-BUFF_ADJECTIVE_OIL "Pokryty olejem"
-    "Pokryta olejem" : feminine
-    "Pokryte olejem" : neuter
-BUFF_ADJECTIVE_TURNED_OFF "Wyłączony"
-    "Wyłączona" : feminine
-    "Wyłączone" : neuter
+BUFF_ADJECTIVE_AGGRAVATES "drażni wrogów"
+BUFF_ADJECTIVE_ARCHER_VISION "widzi przez strzelnice"
+BUFF_ADJECTIVE_CAN_DANCE "tańczący całą noc"
+    "tańcząca całą noc" : feminine
+    "tańczące całą noc" : neuter
+BUFF_ADJECTIVE_CAPTURE_RESISTANCE "odporny na pojmanie"
+    "odporna na pojmanie" : feminine
+    "odporne na pojmanie" : neuter
+BUFF_ADJECTIVE_DARKNESS_SOURCE "źródło ciemności"
+BUFF_ADJECTIVE_DRUNK "pijany"
+    "pijana" : feminine
+    "pijane" : neuter
+BUFF_ADJECTIVE_ELF_VISION "widzący przez drzewa"
+    "widząca przez drzewa" : feminine
+    "widzące przez drzewa" : neuter
+BUFF_ADJECTIVE_ENTERTAINER "żartowniś"
+    "żartownisia" : feminine
+BUFF_ADJECTIVE_FAST_CRAFTING "szybkie rzemiosło"
+BUFF_ADJECTIVE_FAST_TRAINING "szybki trening"
+BUFF_ADJECTIVE_FLYING "latający"
+    "latająca" : feminine
+    "latające" : neuter
+BUFF_ADJECTIVE_HALLU "halucynujący"
+    "halucynująca" : feminine
+    "halucynujące" : neuter
+BUFF_ADJECTIVE_INVISIBLE "niewidzialny"
+    "niewidzialna" : feminine
+    "niewidzialne" : neuter
+BUFF_ADJECTIVE_LIFE_SAVED "życie będzie ocalone"
+BUFF_ADJECTIVE_LIGHT_SOURCE "źródło światła"
+BUFF_ADJECTIVE_LOCKED_POSITION "zablokowany"
+    "zablokowana" : feminine
+    "zablokowane" : neuter
+BUFF_ADJECTIVE_NIGHT_VISION "widzący w ciemnościach"
+    "widząca w ciemnościach" : feminine
+    "widzące w ciemnościach" : neuter
+BUFF_ADJECTIVE_NO_CARRY_LIMIT "bez limitu obciążenia"
+BUFF_ADJECTIVE_NO_FRIENDLY_FIRE "bez bratobójczego ognia"
+BUFF_ADJECTIVE_PLAGUE_RESISTANT "odporny na zarazę"
+    "odporna na zarazę" : feminine
+    "odporne na zarazę" : neuter
+BUFF_ADJECTIVE_POISON_RESISTANT "odporny na truciznę"
+    "odporna na truciznę" : feminine
+    "odporne na truciznę" : neuter
+BUFF_ADJECTIVE_POLYMORPHED "przemieniony"
+    "przemieniona" : feminine
+    "przemienione" : neuter
+BUFF_ADJECTIVE_PREGNANT "ciężarny"
+    "ciężarna" : feminine
+    "ciężarne" : neuter
+BUFF_ADJECTIVE_PSYCHIATRY "psychiatra"
+BUFF_ADJECTIVE_RAGE "wściekły"
+    "wściekła" : feminine
+    "wściekłe" : neuter
+BUFF_ADJECTIVE_RESTED "wypoczęty"
+    "wypoczęta" : feminine
+    "wypoczęte" : neuter
+BUFF_ADJECTIVE_RIDER "jeździec"
+BUFF_ADJECTIVE_SATIATED "najedzony"
+    "najedzona" : feminine
+    "najedzone" : neuter
+BUFF_ADJECTIVE_SLEEP_RESISTANT "odporny na sen"
+    "odporna na sen" : feminine
+    "odporne na sen" : neuter
+BUFF_ADJECTIVE_SPEED "szybki"
+    "szybka" : feminine
+    "szybkie" : neuter
+BUFF_ADJECTIVE_SPYING "szpieg"
+BUFF_ADJECTIVE_STEED "wierzchowiec"
+BUFF_ADJECTIVE_SWARMER "w roju"
+BUFF_ADJECTIVE_TELEPATHY "telepatyczny"
+    "telepatyczna" : feminine
+    "telepatyczne" : neuter
+BUFF_ADJECTIVE_WARNING "ostrzeżony"
+    "ostrzeżona" : feminine
+    "ostrzeżone" : neuter
+BUFF_ADJECTIVE_PANIC "spanikowany"
+    "spanikowana" : feminine
+    "spanikowane" : neuter
+BUFF_ADJECTIVE_PEACEFULNESS "pacyfista"
+    "pacyfistka" : feminine
+BUFF_ADJECTIVE_ENTANGLED "splątany"
+    "splątana" : feminine
+    "splątane" : neuter
+BUFF_ADJECTIVE_TIED_UP "skrępowany"
+    "skrępowana" : feminine
+    "skrępowane" : neuter
+BUFF_ADJECTIVE_IMMOBILE "unieruchomiony"
+    "unieruchomiona" : feminine
+    "unieruchomione" : neuter
+BUFF_ADJECTIVE_SLOWED "spowolniony"
+    "spowolniona" : feminine
+    "spowolnione" : neuter
+BUFF_ADJECTIVE_INSANITY "obłąkany"
+    "obłąkana" : feminine
+    "obłąkane" : neuter
+BUFF_ADJECTIVE_BLIND "ślepy"
+    "ślepa" : feminine
+    "ślepe" : neuter
+BUFF_ADJECTIVE_STUNNED "nieprzytomny"
+    "nieprzytomna" : feminine
+    "nieprzytomne" : neuter
+BUFF_ADJECTIVE_COLLAPSED "przewrócony"
+    "przewrócona" : feminine
+    "przewrócone" : neuter
+BUFF_ADJECTIVE_SUNLIGHT_VULNERABLE "wrażliwy na światło słoneczne"
+    "wrażliwa na światło słoneczne" : feminine
+    "wrażliwe na światło słoneczne" : neuter
+BUFF_ADJECTIVE_SUMMONED "przyzwany"
+    "przyzwana" : feminine
+    "przyzwane" : neuter
+BUFF_ADJECTIVE_SLOW_CRAFTING "spowolnione rzemiosło"
+BUFF_ADJECTIVE_SLOW_TRAINING "spowolniony trening"
+BUFF_ADJECTIVE_BAD_BREATH "śmierdzący oddech"
+BUFF_ADJECTIVE_ON_FIRE "płonie"
+BUFF_ADJECTIVE_FROZEN "zamarznięty"
+    "zamarznięta" : feminine
+    "zamarznięte" : neuter
+BUFF_ADJECTIVE_MAGIC_CANCELLATION "anulowany"
+    "anulowana" : feminine
+    "anulowane" : neuter
+BUFF_ADJECTIVE_DISAPPEAR_DURING_DAY "znikający o świcie"
+    "znikająca o świcie" : feminine
+    "znikające o świcie" : neuter
+BUFF_ADJECTIVE_UNSTABLE "niestabilny psychicznie"
+    "niestabilna psychicznie" : feminine
+    "niestabilne psychicznie" : neuter
+BUFF_ADJECTIVE_OIL "pokryty olejem"
+    "pokryta olejem" : feminine
+    "pokryte olejem" : neuter
+BUFF_ADJECTIVE_TURNED_OFF "wyłączony"
+    "wyłączona" : feminine
+    "wyłączone" : neuter
 BUILD_FURNITURE_TASK "Zbuduj {1:accusative} w {2}"
 BUILD_MORGUE_HINT "Zbuduj stół w kostnicy, aby tworzyć nieumarłych."
 BURNED_DEATH_REASON "spalony na śmierć"
@@ -505,7 +505,11 @@ FOUR "cztery"
     "czterema" : instrumental
 FREEZES_AND_EXPLODES "{1} zamarza i wybucha!"
 FROZEN "zamarznięty!"
+    "zamarznięty!" : feminine
+    "zamarznięte!" : neuter
 FULLY_HEALED "całkowicie uleczony"
+    "całkowicie uleczona" : feminine
+    "całkowicie uleczone" : neuter
 FURNITURE_BANG "ŁUP!"
 FURNITURE_BURNS_DOWN "{1} spłonęło."
 FURNITURE_CATCHES_FIRE "{1} zaczyna płonąć."
@@ -736,6 +740,8 @@ MINIONS_DISCOVER_LOCATION "Twoi słudzy odkryli nową lokację: {1}."
 MINION_TRAIT_EFFECT_NAME "nadaj cechę: {1}"
 MORE_BUTTON "[więcej]"
 MORE_EXPERIENCED "bardziej doświadczony"
+    "bardziej doświadczona" : feminine
+    "bardziej doświadczone" : neuter
 MOUNT_ACTION "Dosiądź"
 MOUNT_BUTTON "Wsiądź"
 MOVE_NOW_ACTION "Przesuń się teraz"
@@ -941,7 +947,7 @@ SURVIVED "Przetrwał"
 SWAP_POSITION_ACTION "zamień pozycję"
 SWAP_POSITION_EFFECT_DESCRIPTION "Zamienia pozycję z wrogiem."
 SWAP_POSITION_EFFECT_NAME "zamiana pozycji"
-SWING "Zamachujesz się {1:instrumental} na {2:accusative}."
+SWING "Zamachujesz się {1:instrumental} w {2:accusative}."
 SWITCH_LEADER_ACTION "Zmień dowódcę"
 TAKE_CONTROL "Przejmij kontrolę"
 TAKE_ITEMS_EFFECT_DESCRIPTION "Siłą odbiera przedmioty istocie"
@@ -1070,8 +1076,10 @@ WORKSHOP_CHANGE_COUNT_BUTTON "Zmień liczbę przedmiotów"
 WORKSHOP_REMOVE_BUTTON "Usuń"
 WORKSHOP_UPGRADE_BUTTON "Ulepsz"
 WOUNDED "Ranny"
+    "Ranna" : feminine
+    "Ranne" : neuter
 WRITE_ON_BOARD_ACTION "Zapisz na tablicy"
-WRITES_A "{1} pisze {2}"
+WRITES_A "{1} pisze {2:accusative}"
 YES "Tak"
 YOU_ARE_AWARE_OF_DANGER "Jesteś świadomy zagrożenia"
     "Jesteś świadoma zagrożenia" : feminine
@@ -2271,7 +2279,7 @@ ACHIEVEMENTS_MAIN_VILLAIN_ID1 "Twoi wrogowie mają wszelkie powody, by spodziewa
 ACHIEVEMENTS_MAIN_VILLAIN_ID "Pokonano głównego złoczyńcę"
 ACHIEVEMENTS_MINED_ADA_ID "Wydobyto rudę adamantium"
 ACHIEVEMENTS_MINED_ADOXIUM_ID "Wydobyto rudę adoxium"
-ACHIEVEMENTS_MINED_INFERNITE_ID "Wydobyto rudę infernite"
+ACHIEVEMENTS_MINED_INFERNITE_ID "Wydobyto rudę infernit"
 ACHIEVEMENTS_MINED_IRON_ID "Wydobyto rudę żelaza"
 ACHIEVEMENTS_MORTAL_SIN_ID1 "Rozgrzeszyłeś sługę z jego śmiertelnego grzechu"
 ACHIEVEMENTS_MORTAL_SIN_ID "Rozgrzeszono ze śmiertelnego grzechu"
@@ -2425,14 +2433,14 @@ BODY_MATERIALS_ICE_NAME masculine "lód"
     "lody" : plural,accusative
 
 BODY_MATERIALS_INFERNITE_DEATHDESCRIPTION "zniszczony"
-BODY_MATERIALS_INFERNITE_NAME neuter "infernite"
-    "infernite" : genitive
-    "infernite" : instrumental
-    "infernite" : accusative
-    "infernite" : plural
-    "infernite" : plural,genitive
-    "infernite" : plural,instrumental
-    "infernite" : plural,accusative
+BODY_MATERIALS_INFERNITE_NAME neuter "infernit"
+    "infernit" : genitive
+    "infernit" : instrumental
+    "infernit" : accusative
+    "infernit" : plural
+    "infernit" : plural,genitive
+    "infernit" : plural,instrumental
+    "infernit" : plural,accusative
 
 BODY_MATERIALS_IRON_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_IRON_NAME neuter "żelazo"
@@ -2520,24 +2528,39 @@ BUFFS_FIRE_DAMAGE_REMOVEDMESSAGE1 "{1} nie zadaje już obrażeń ogniem."
 BUFFS_FIRE_DAMAGE_REMOVEDMESSAGE "Nie zadajesz już obrażeń ogniem."
 BUFFS_HIGH_MORALE_ADDEDMESSAGE "nastrój się poprawia"
 BUFFS_HIGH_MORALE_ADJECTIVE "szczęśliwy"
+    "szczęśliwa" : feminine
+    "szczęśliwe" : neuter
 BUFFS_HIGH_MORALE_DESCRIPTION "Postacie szybciej się szkolą i wydajniej pracują."
 BUFFS_HIGH_MORALE_NAME "wysokie morale"
 BUFFS_HIGH_MORALE_REMOVEDMESSAGE "nastrój wraca do normy"
-BUFFS_INFERNITE_EFFECT_ADDEDMESSAGE1 "{1} jest palony przez infernite."
+BUFFS_INFERNITE_EFFECT_ADDEDMESSAGE1 "{1} jest palony przez infernit."
 BUFFS_INFERNITE_EFFECT_ADDEDMESSAGE "Pali cię infernite."
-BUFFS_INFERNITE_EFFECT_ADJECTIVE "palony przez infernite"
+BUFFS_INFERNITE_EFFECT_ADJECTIVE "palony przez infernit"
+    "palona przez infernit" : feminine
+    "palone przez infernit" : neuter
 BUFFS_INFERNITE_EFFECT_DESCRIPTION "Istota jest palona przez posiadany przedmiot z infernite."
-BUFFS_INFERNITE_EFFECT_NAME "palenie infernite"
+BUFFS_INFERNITE_EFFECT_NAME "palenie infernit"
 BUFFS_INFERNITE_EFFECT_REMOVEDMESSAGE1 "nie jest już"
-BUFFS_INFERNITE_EFFECT_REMOVEDMESSAGE2 "palony przez infernite"
+BUFFS_INFERNITE_EFFECT_REMOVEDMESSAGE2 "palony przez infernit"
+    "palona przez infernit" : feminine
+    "palone przez infernit" : neuter
 BUFFS_INFERNITE_EFFECT_REMOVEDMESSAGE "nie jesteś już"
-BUFFS_INFERNITE_EFFECT_SECONDPERSON "pali cię infernite"
-BUFFS_INFERNITE_EFFECT_THIRDPERSON "jest palony przez infernite"
-BUFFS_INVULNERABLE_ADDEDMESSAGE "niewrażliwy"
-BUFFS_INVULNERABLE_ADJECTIVE "niewrażliwy"
+BUFFS_INFERNITE_EFFECT_SECONDPERSON "pali cię infernit"
+BUFFS_INFERNITE_EFFECT_THIRDPERSON "jest palony przez infernit"
+    "jest palona przez infernit" : feminine
+    "jest palone przez infernit" : neuter
+BUFFS_INVULNERABLE_ADDEDMESSAGE "odporny na obrażenia"
+    "odporny na obrażenia" : feminine
+    "odporne na obrażenia" : neuter
+BUFFS_INVULNERABLE_ADJECTIVE "odporny na obrażenia"
+    "odporny na obrażenia" : feminine
+    "odporne na obrażenia" : neuter
 BUFFS_INVULNERABLE_DESCRIPTION "Istota jest odporna na wszelkie rodzaje obrażeń."
-BUFFS_INVULNERABLE_NAME "niewrażliwość"
-BUFFS_INVULNERABLE_REMOVEDMESSAGE "nie jest już niewrażliwy"
+BUFFS_INVULNERABLE_NAME "odporność na obrażenia"
+    "odporności na obrażenia" : genitive
+BUFFS_INVULNERABLE_REMOVEDMESSAGE "nie jest już odporny na obrażenia"
+    "nie jest już odporna na obrażenia" : feminine
+    "nie jest już odporne na obrażenia" : neuter
 BUFFS_KINGS_CHARGE_ADDEDMESSAGE1 "{1} wygląda, jakby był gotów umrzeć za swojego króla."
 BUFFS_KINGS_CHARGE_ADDEDMESSAGE "Czujesz gotowość, by umrzeć za swojego króla."
 BUFFS_KINGS_CHARGE_ADJECTIVE "królewski zapał"
@@ -2548,21 +2571,26 @@ BUFFS_KINGS_CHARGE_REMOVEDMESSAGE "Nie czujesz już gotowości, by umrzeć za sw
 BUFFS_LEADERSHIP_ADDEDMESSAGE1 "{1} czuje się odpowiedzialny za drużynę."
 BUFFS_LEADERSHIP_ADDEDMESSAGE "Czujesz, że dowodzisz drużyną."
 BUFFS_LEADERSHIP_ADJECTIVE "lider"
+    "liderka" : feminine
 BUFFS_LEADERSHIP_DESCRIPTION "Doświadczenie bojowe tej istoty zostanie przyznane całej drużynie."
 BUFFS_LEADERSHIP_NAME "dowodzenie"
 BUFFS_LEADERSHIP_REMOVEDMESSAGE1 "{1} czuje, że nie dowodzi już drużyną."
 BUFFS_LEADERSHIP_REMOVEDMESSAGE "Czujesz, że już nie dowodzisz drużyną."
 BUFFS_MORTAL_SINNED_ADJECTIVE "grzesznik śmiertelny"
+    "grzeszniczka śmiertelny" : feminine
 BUFFS_MORTAL_SINNED_DESCRIPTION "Istota popełniła grzech śmiertelny i szuka przebaczenia."
 BUFFS_MORTAL_SINNED_NAME "grzech śmiertelny"
 BUFFS_PREACHING_ADJECTIVE "odprawia Mszę"
 BUFFS_PREACHING_NAME "Odpraw Mszę"
 BUFFS_REGENERATION_ADDEDMESSAGE "regenerujesz się"
 BUFFS_REGENERATION_ADJECTIVE "regenerujący się"
+    "regenerująca się" : feminie
+    "regenerujące się" : neuter
 BUFFS_REGENERATION_DESCRIPTION "Odnawia niewielką ilość zdrowia co turę."
 BUFFS_REGENERATION_NAME "regeneracja"
 BUFFS_REGENERATION_REMOVEDMESSAGE "przestajesz się regenerować"
 BUFFS_SINNED_ADJECTIVE "grzesznik powszedni"
+    "grzeszniczka powszedni" : feminine
 BUFFS_SINNED_DESCRIPTION "Istota popełniła grzech i szuka przebaczenia."
 BUFFS_SINNED_NAME "grzech powszedni"
 BUFFS_SPELL_DAMAGE_ADDEDMESSAGE1 "{1} zadaje obrażenia magiczne."
@@ -2576,6 +2604,7 @@ BUFFS_SUPER_BONUS_ADJECTIVE "niesamowity"
 BUFFS_SUPER_BONUS_DESCRIPTION "Super"
 BUFFS_SUPER_BONUS_NAME "super bonus"
 BUFFS_WELL_FED_ADJECTIVE "dobrze nakarmiony"
+     "dobrze nakarmiona" : feminine
 BUFFS_WELL_FED_DESCRIPTION "Istota jest najedzona i otrzymuje +1 do obrażeń magicznych oraz obrony."
 BUFFS_WELL_FED_NAME "nakarmienie"
 BUFFS_WILL_BANISH_ADJECTIVE "zbrojna pomoc"
@@ -8505,11 +8534,11 @@ IMMUNITY_BUFF_DESCRIPTION "Istota jest całkowicie odporna na ataki typu {1}."
 BUFFS_ACID_IMMUNITY_NAME "kwas"
 BUFFS_ACID_RESISTANT_NAME "kwas"
 BUFFS_ACID_VULNERABILITY_NAME "kwas"
-BUFFS_AMBUSH_SKILL_ADJECTIVE "Zastawiacz pułapek"
+BUFFS_AMBUSH_SKILL_ADJECTIVE "zastawia zasadzki"
 BUFFS_AMBUSH_SKILL_DESCRIPTION "Może się ukryć i zastawić zasadzkę na niczego niepodejrzewających wrogów. Naciśnij 'h', aby się ukryć na odpowiednim polu."
 BUFFS_AMBUSH_SKILL_NAME "zastawianie zasadzek"
 
-BUFFS_BRIDGE_BUILDING_SKILL_ADJECTIVE "Buduje mosty"
+BUFFS_BRIDGE_BUILDING_SKILL_ADJECTIVE "buduje mosty"
 BUFFS_BRIDGE_BUILDING_SKILL_DESCRIPTION "Istota będzie próbować budować mosty podczas podróży."
 BUFFS_BRIDGE_BUILDING_SKILL_NAME "budowanie mostów"
 
@@ -8517,51 +8546,63 @@ BUFFS_COLD_IMMUNITY_NAME "zimno"
 BUFFS_COLD_RESISTANT_NAME "zimno"
 BUFFS_COLD_VULNERABILITY_NAME "zimno"
 
-BUFFS_CONFESSING_SKILL_ADJECTIVE "Spowiednik"
+BUFFS_CONFESSING_SKILL_ADJECTIVE "spowiednik"
+    "spowiedniczka" : feminine
 BUFFS_CONFESSING_SKILL_DESCRIPTION "Może wysłuchiwać spowiedzi."
 BUFFS_CONFESSING_SKILL_NAME "słuchanie spowiedzi"
 
-BUFFS_CONSUMPTION_SKILL_ADJECTIVE "Pochłania"
+BUFFS_CONSUMPTION_SKILL_ADJECTIVE "pochłaniacz"
 BUFFS_CONSUMPTION_SKILL_DESCRIPTION "Może wchłaniać inne istoty i zachowywać ich atrybuty."
 BUFFS_CONSUMPTION_SKILL_NAME "pochłanianie"
 
-BUFFS_COPULATION_SKILL_ADJECTIVE "Kopuluje"
+BUFFS_COPULATION_SKILL_ADJECTIVE "kopuluje"
 BUFFS_COPULATION_SKILL_DESCRIPTION "Może kopulować z innymi istotami i rodzić obrzydliwe potomstwo."
 BUFFS_COPULATION_SKILL_NAME "kopulacja"
 
-BUFFS_CROPS_SKILL_ADJECTIVE "Rolnik"
+BUFFS_CROPS_SKILL_ADJECTIVE "rolnik"
+    "rolniczka" : feminine
 BUFFS_CROPS_SKILL_DESCRIPTION "Może uprawiać ziemię."
 BUFFS_CROPS_SKILL_NAME "rolnictwo"
 
 BUFFS_DAM_BONUS_ADJECTIVE "niebezpieczny"
+    "niebezpieczna" : feminine
+    "niebezpieczne" : neuter
 BUFFS_DEF_BONUS_ADJECTIVE "chroniony"
+    "chroniona" : feminine
+    "chronione" : neuter
 BUFFS_DEMON_RESISTANCE_NAME "demonów"
-BUFFS_DISARM_TRAPS_SKILL_ADJECTIVE "Rozbraja pułapki"
+BUFFS_DISARM_TRAPS_SKILL_ADJECTIVE "rozbraja pułapki"
 BUFFS_DISARM_TRAPS_SKILL_DESCRIPTION "Może unikać pułapek i je rozbrajać."
 BUFFS_DISARM_TRAPS_SKILL_NAME "rozbrajanie pułapek"
 
-BUFFS_DISTILLATION_SKILL_ADJECTIVE "Destylator"
+BUFFS_DISTILLATION_SKILL_ADJECTIVE "destylator"
+    "destylatorka" : feminine
 BUFFS_DISTILLATION_SKILL_DESCRIPTION "Może destylować alkohol."
 BUFFS_DISTILLATION_SKILL_NAME "destylacja"
 
 BUFFS_DIVINE_DIGGING_ADJECTIVE "boski kopacz"
+    "boska kopaczka" : feminine
 BUFFS_DIVINE_DIGGING_NAME "boskie kopanie"
 BUFFS_DIVINE_PROTECTION_ADJECTIVE "chroniony"
+    "chroniona" : feminine
+    "chronione" : neuter
 BUFFS_DIVINE_PROTECTION_NAME "boska ochrona"
 BUFFS_DIVINE_STRENGTH_ADJECTIVE "silny"
+    "silna" : feminine
+    "silne" : neuter
 BUFFS_DIVINE_STRENGTH_NAME "boska siła"
 BUFFS_DRAGON_RESISTANCE_NAME "smoków"
 BUFFS_ELF_RESISTANCE_NAME "elfów"
 
-BUFFS_EXPLORE_CAVES_SKILL_ADJECTIVE "Bada jaskinie"
+BUFFS_EXPLORE_CAVES_SKILL_ADJECTIVE "eksploruje jaskinie"
 BUFFS_EXPLORE_CAVES_SKILL_DESCRIPTION "Może badać jaskinie."
 BUFFS_EXPLORE_CAVES_SKILL_NAME "badanie jaskiń"
 
-BUFFS_EXPLORE_NOCTURNAL_SKILL_ADJECTIVE "Bada nocą"
+BUFFS_EXPLORE_NOCTURNAL_SKILL_ADJECTIVE "eksploruje nocą"
 BUFFS_EXPLORE_NOCTURNAL_SKILL_DESCRIPTION "Może eksplorować otoczenie w nocy."
 BUFFS_EXPLORE_NOCTURNAL_SKILL_NAME "nocna eksploracja"
 
-BUFFS_EXPLORE_SKILL_ADJECTIVE "Eksploruje"
+BUFFS_EXPLORE_SKILL_ADJECTIVE "eksploruje"
 BUFFS_EXPLORE_SKILL_DESCRIPTION "Może eksplorować otoczenie."
 BUFFS_EXPLORE_SKILL_NAME "eksploracja"
 
@@ -8592,7 +8633,8 @@ BUFFS_PREACHING_ID2 "Adoxie wysłuchał twoich modlitw i zsyła swojego sługę.
 BUFFS_PREACHING_ID3 "Adoxie wysłuchał twoich modlitw i zsyła swoje odnóża."
 BUFFS_PREACHING_ID "Twoje modlitwy rozbrzmiewają w nawie, po czym toną w nicości."
 
-BUFFS_PREACHING_SKILL_ADJECTIVE "Kaznodzieja"
+BUFFS_PREACHING_SKILL_ADJECTIVE "kaznodzieja"
+    "kaznodziejka" : feminine
 BUFFS_PREACHING_SKILL_DESCRIPTION "Może odprawiać Mszę."
 BUFFS_PREACHING_SKILL_NAME "kaznodziejstwo"
 
@@ -8600,11 +8642,12 @@ BUFFS_RANGED_IMMUNITY_NAME "walka dystansowa"
 BUFFS_RANGED_RESISTANCE_NAME "walka dystansowa"
 BUFFS_RANGED_VULNERABILITY_NAME "walka dystansowa"
 
-BUFFS_SPIDER_SKILL_ADJECTIVE "Tka pajęcze sieci"
+BUFFS_SPIDER_SKILL_ADJECTIVE "tka pajęcze sieci"
 BUFFS_SPIDER_SKILL_DESCRIPTION "Może tkać pajęcze sieci."
 BUFFS_SPIDER_SKILL_NAME "pajęcze tkactwo"
 
-BUFFS_SWIMMING_SKILL_ADJECTIVE "Pływak"
+BUFFS_SWIMMING_SKILL_ADJECTIVE "pływak"
+    "pływaczka" : feminine
 BUFFS_SWIMMING_SKILL_DESCRIPTION "Może przeprawiać się przez wodę bez topienia się."
 BUFFS_SWIMMING_SKILL_NAME "pływanie"
 
@@ -8689,8 +8732,8 @@ SPELLS_ENNOBLEMENT_EFFECT "nobilitacja"
 
 SPELLS_MAGIC_MISSILE_SECONDPERSON1 "pocisk cię oszczędza"
 SPELLS_MAGIC_MISSILE_SECONDPERSON "trafia cię pocisk"
-SPELLS_MAGIC_MISSILE_THIRDPERSON1 "pocisk oszczędza {1}"
-SPELLS_MAGIC_MISSILE_THIRDPERSON "pocisk trafia {1}"
+SPELLS_MAGIC_MISSILE_THIRDPERSON1 "pocisk omija {1:accusative}"
+SPELLS_MAGIC_MISSILE_THIRDPERSON "pocisk trafia {1:accusative}"
 
 TEXT100 "Czcionka:"
 TEXT101 "Lato autorstwa Łukasza Dziedzica"
@@ -9208,9 +9251,9 @@ BUFFS_PREACHING_ID18 "Sługi otrzymały tymczasową odporność na ataki zielono
 BUFFS_PREACHING_ID19 "Sługi otrzymały zwiększone limity treningu walki wręcz."
 BUFFS_PREACHING_ID20 "Sługi otrzymały zwiększone limity treningu boskości."
 BUFFS_PREACHING_ID21 "Sługi otrzymały aniołów stróżów."
-BUFFS_PREACHING_ID22 "Wasze modlitwy o silniejszą zbrojną pomoc zostały wysłuchane."
-BUFFS_PREACHING_ID23 "Wasze modlitwy o zbrojną pomoc zostały wysłuchane."
-BUFFS_PREACHING_ID24 "Wasze modlitwy o dodatkową siłę roboczą zostały wysłuchane."
+BUFFS_PREACHING_ID22 "Modlitwy o silniejszą zbrojną pomoc zostały wysłuchane."
+BUFFS_PREACHING_ID23 "Modlitwy o zbrojną pomoc zostały wysłuchane."
+BUFFS_PREACHING_ID24 "Modlitwy o dodatkową siłę roboczą zostały wysłuchane."
 
 AUTOMATON_RANGED_HEAD_DESCRIPTION "Zapewnia zdolność „{1}”."
 ITEMS_ARCHERHEADWOOD_PREFIX "strzelanie strzałami"
