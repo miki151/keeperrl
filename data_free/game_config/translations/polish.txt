@@ -2577,7 +2577,7 @@ BUFFS_LEADERSHIP_NAME "dowodzenie"
 BUFFS_LEADERSHIP_REMOVEDMESSAGE1 "{1} czuje, że nie dowodzi już drużyną."
 BUFFS_LEADERSHIP_REMOVEDMESSAGE "Czujesz, że już nie dowodzisz drużyną."
 BUFFS_MORTAL_SINNED_ADJECTIVE "grzesznik śmiertelny"
-    "grzeszniczka śmiertelny" : feminine
+    "grzeszniczka śmiertelna" : feminine
 BUFFS_MORTAL_SINNED_DESCRIPTION "Istota popełniła grzech śmiertelny i szuka przebaczenia."
 BUFFS_MORTAL_SINNED_NAME "grzech śmiertelny"
 BUFFS_PREACHING_ADJECTIVE "odprawia Mszę"
@@ -2590,7 +2590,7 @@ BUFFS_REGENERATION_DESCRIPTION "Odnawia niewielką ilość zdrowia co turę."
 BUFFS_REGENERATION_NAME "regeneracja"
 BUFFS_REGENERATION_REMOVEDMESSAGE "przestajesz się regenerować"
 BUFFS_SINNED_ADJECTIVE "grzesznik powszedni"
-    "grzeszniczka powszedni" : feminine
+    "grzeszniczka powszedna" : feminine
 BUFFS_SINNED_DESCRIPTION "Istota popełniła grzech i szuka przebaczenia."
 BUFFS_SINNED_NAME "grzech powszedni"
 BUFFS_SPELL_DAMAGE_ADDEDMESSAGE1 "{1} zadaje obrażenia magiczne."
