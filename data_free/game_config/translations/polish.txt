@@ -312,7 +312,7 @@ CAGES feminine "klatki"
     "klatek" : plural,genitive
     "klatkami" : plural,instrumental
     "klatki" : plural,accusative
-CAMPAIGN_DIFFICULTY "Trudność"
+CAMPAIGN_DIFFICULTY "Ustawienia trudności"
 CAMPAIGN_HELP_BUTTON "Pomoc"
 CAMPAIGN_VILLAIN_DEFEATED "Pokonany"
 CAMPAIGN_VILLAIN_EXP "Doświadczenie: {1}"
@@ -2170,7 +2170,8 @@ YOUR "{YOUR_HELPER:1} {1}."
 REQUIRES_A "Wymaga {1:accusative}"
 CANT_TRAVEL_WHILE_POISONED "{1} nie może podróżować, będąc zatruty."
 OR "{1} lub {2}"
-KILL_TITLE "{1}, pogromca"
+KILL_TITLE "pogromca {1:genitive}"
+    "pogromcę {1:genitive}" : accusative
 MINION_GROUP "{1} {2}"
 YOU_HAVE_CONQUERED_THIS_LAND "Podbiłeś tę krainę. Zabiłeś {1} wrogów i uzyskałeś {2} punktów. Dziękujemy za grę w KeeperRL!"
 DEATHS "{1} śmierci"
@@ -6267,32 +6268,32 @@ FURNITURE_PAINTING_N_NAME neuter "płótno malarskie"
     "płótnami malarskimi" : plural,instrumental
     "płótna malarskie" : plural,accusative
 
-FURNITURE_PEW_WOOD_NAME1 feminine "żelazna ława kościelna"
-    "żelaznej ławy kościelnej" : genitive
-    "żelazną ławą kościelną" : instrumental
-    "żelazną ławę kościelną" : accusative
-    "żelazne ławy kościelne" : plural
-    "żelaznych ław kościelnych" : plural,genitive
-    "żelaznymi ławami kościelnymi" : plural,instrumental
-    "żelazne ławy kościelne" : plural,accusative
+FURNITURE_PEW_WOOD_NAME1 feminine "żelazna ława"
+    "żelaznej ławy" : genitive
+    "żelazną ławą" : instrumental
+    "żelazną ławę" : accusative
+    "żelazne ławy" : plural
+    "żelaznych ław" : plural,genitive
+    "żelaznymi ławami" : plural,instrumental
+    "żelazne ławy" : plural,accusative
 
-FURNITURE_PEW_WOOD_NAME2 feminine "złota ława kościelna"
-    "złotej ławy kościelnej" : genitive
-    "złotą ławą kościelną" : instrumental
-    "złotą ławę kościelną" : accusative
-    "złote ławy kościelne" : plural
-    "złotych ław kościelnych" : plural,genitive
-    "złotymi ławami kościelnymi" : plural,instrumental
-    "złote ławy kościelne" : plural,accusative
+FURNITURE_PEW_WOOD_NAME2 feminine "złota ława"
+    "złotej ławy" : genitive
+    "złotą ławą" : instrumental
+    "złotą ławę" : accusative
+    "złote ławy" : plural
+    "złotych ław" : plural,genitive
+    "złotymi ławami" : plural,instrumental
+    "złote ławy" : plural,accusative
 
-FURNITURE_PEW_WOOD_NAME feminine "drewniana ława kościelna"
-    "drewnianej ławy kościelnej" : genitive
-    "drewnianą ławą kościelną" : instrumental
-    "drewnianą ławę kościelną" : accusative
-    "drewniane ławy kościelne" : plural
-    "drewnianych ław kościelnych" : plural,genitive
-    "drewnianymi ławami kościelnymi" : plural,instrumental
-    "drewniane ławy kościelne" : plural,accusative
+FURNITURE_PEW_WOOD_NAME feminine "drewniana ława"
+    "drewnianej ławy" : genitive
+    "drewnianą ławą" : instrumental
+    "drewnianą ławę" : accusative
+    "drewniane ławy" : plural
+    "drewnianych ław" : plural,genitive
+    "drewnianymi ławami" : plural,instrumental
+    "drewniane ławy" : plural,accusative
 
 FURNITURE_PEW_WOOD_SECONDPERSON "Zasypiasz na ławie"
 FURNITURE_PEW_WOOD_THIRDPERSON "zasypia na ławie"
@@ -6383,32 +6384,32 @@ FURNITURE_POTION_STORAGE_NAME feminine "półka na mikstury"
     "półkami na mikstury" : plural,instrumental
     "półki na mikstury" : plural,accusative
 
-FURNITURE_PRAYER_BENCH_WOOD_NAME1 feminine "żelazna ława modlitewna"
-    "żelaznej ławy modlitewnej" : genitive
-    "żelazną ławą modlitewną" : instrumental
-    "żelazną ławę modlitewną" : accusative
-    "żelazne ławy modlitewne" : plural
-    "żelaznych ław modlitewnych" : plural,genitive
-    "żelaznymi ławami modlitewnymi" : plural,instrumental
-    "żelazne ławy modlitewne" : plural,accusative
+FURNITURE_PRAYER_BENCH_WOOD_NAME1 masculine "żelazny klęcznik"
+    "żelaznego klęcznika" : genitive
+    "żelaznemu klęcznikowi" : instrumental
+    "żelazny klęcznik" : accusative
+    "żelazne klęczniki" : plural
+    "żelaznych klęczników" : plural,genitive
+    "żelaznym klęcznikowm" : plural,instrumental
+    "żelazne klęczniki" : plural,accusative
 
-FURNITURE_PRAYER_BENCH_WOOD_NAME2 feminine "złota ława modlitewna"
-    "złotej ławy modlitewnej" : genitive
-    "złotą ławą modlitewną" : instrumental
-    "złotą ławę modlitewną" : accusative
-    "złote ławy modlitewne" : plural
-    "złotych ław modlitewnych" : plural,genitive
-    "złotymi ławami modlitewnymi" : plural,instrumental
-    "złote ławy modlitewne" : plural,accusative
+FURNITURE_PRAYER_BENCH_WOOD_NAME2 masculine "złoty klęcznik"
+    "złotego klęcznika" : genitive
+    "złotemu klęcznikowi" : instrumental
+    "złoty klęcznik" : accusative
+    "złote klęczniki" : plural
+    "złotych klęczników" : plural,genitive
+    "złotym klęcznikowm" : plural,instrumental
+    "złote klęczniki" : plural,accusative
 
-FURNITURE_PRAYER_BENCH_WOOD_NAME feminine "drewniana ława modlitewna"
-    "drewnianej ławy modlitewnej" : genitive
-    "drewnianą ławą modlitewną" : instrumental
-    "drewnianą ławę modlitewną" : accusative
-    "drewniane ławy modlitewne" : plural
-    "drewnianych ław modlitewnych" : plural,genitive
-    "drewnianymi ławami modlitewnymi" : plural,instrumental
-    "drewniane ławy modlitewne" : plural,accusative
+FURNITURE_PRAYER_BENCH_WOOD_NAME masculine "drewniany klęcznik"
+    "drewnianego klęcznika" : genitive
+    "drewnianemu klęcznikowi" : instrumental
+    "drewniany klęcznik" : accusative
+    "drewniane klęczniki" : plural
+    "drewnianych klęczników" : plural,genitive
+    "drewnianym klęcznikowm" : plural,instrumental
+    "drewniane klęczniki" : plural,accusative
 
 FURNITURE_PRISON_BARS_NAME neuter "kraty więzienne"
     "krat więziennych" : genitive
@@ -8822,7 +8823,7 @@ TECHNOLOGY_PIG_BREEDING_DESCRIPTION "Zbuduj chlew, by nakarmić sługi."
 TECHNOLOGY_COW_BREEDING_DESCRIPTION "Zbuduj zagrodę dla krów, by nakarmić sługi."
 TECHNOLOGY_IRON_WORKING_DESCRIPTION "Zbuduj kuźnię i wytwarzaj metalową broń oraz pancerze."
 TECHNOLOGY_JEWELLERY_DESCRIPTION "Zbuduj pracownię jubilerską i twórz magiczne pierścienie i amulety."
-TECHNOLOGY_DISTILLATION_DESCRIPTION "Piwo jest dla krasnoludów. Zbuduj gorzelnię i rób bimber z szczurów dla swoich sług."
+TECHNOLOGY_DISTILLATION_DESCRIPTION "Piwo jest dla krasnoludów. Zbuduj gorzelnię i rób bimber ze szczurów dla swoich sług."
 TECHNOLOGY_TWO-HANDED_WEAPONS_DESCRIPTION "Wytwarzaj młoty bojowe i topory wojenne."
 TECHNOLOGY_TRAPS_DESCRIPTION "Wytwarzaj pułapki w warsztacie."
 TECHNOLOGY_ADVANCED_TRAPS_DESCRIPTION "Wytwarzaj bardziej zaawansowane pułapki i mechanizmy."
@@ -9304,7 +9305,7 @@ PRAYERS_SPELL_SCHOOL_NAME "modlitwy"
 TO_BE_SMELTED "Do przetopienia:"
 IN_PRODUCTION "W produkcji:"
 CONQUER_SOME_VILLAINS "Pokonaj kilku wrogów, aby się rozwijać."
-Z_LEVEL "Poziom Z {1}"
+Z_LEVEL "Poziom {1}"
 GROUND_LEVEL "Powierzchnia"
 
 ENEMIES_MAIN_DUNGEON_NAME "Świątynia Adoxie"
