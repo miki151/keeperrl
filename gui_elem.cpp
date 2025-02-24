@@ -688,12 +688,21 @@ static vector<string> breakText(Renderer& renderer, const string& text, int maxW
   for (string line : split(text, {'\n'})) {
     rows.push_back("");
     for (string word : splitIncludeDelim(line, {delim})) {
-      for (string subword : breakWord(renderer, word, maxWidth, size))
-        if (rows.back().empty() || renderer.getTextLength(rows.back() + subword, size) <= maxWidth)
-          rows.back() += subword;
-        else
-          rows.push_back(subword);
-      //trim(rows.back());
+      for (string subword : breakWord(renderer, word, maxWidth, size)) {
+        auto addWord = [&](string& row, string word) {
+          if (row.empty())
+            for (int i : All(word))
+              if (word[i] != ' ') {
+                if (i > 0)
+                  word = word.substr(i);
+                break;
+              }
+          row += std::move(word);
+        };
+        if (!rows.back().empty() && renderer.getTextLength(rows.back() + subword, size) > maxWidth)
+          rows.emplace_back();
+        addWord(rows.back(), subword);
+      }
     }
   }
   return rows;
