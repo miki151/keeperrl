@@ -3454,14 +3454,14 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
                     highlighted.creaturePos.value_or(*highlighted.tileScreenPos) + Vec2(60, 60)));
           if (!viewObject.getBadAdjectives().empty()) {
             lines.addElemAuto(WL(labelMultiLineWidth,
-                TSentence("ALL_BUFF_ADJECTIVES_HELPER", viewObject.getBadAdjectives(), objectName),
+                TSentence("ALL_BUFF_ADJECTIVES_HELPER", capitalFirst(viewObject.getBadAdjectives()), objectName),
                 legendLineHeight * 2 / 3, 300,
                 Renderer::textSize(), Color::RED, ','));
             lines.addSpace(legendLineHeight / 3);
           }
           if (!viewObject.getGoodAdjectives().empty()) {
             lines.addElemAuto(WL(labelMultiLineWidth,
-                TSentence("ALL_BUFF_ADJECTIVES_HELPER", viewObject.getGoodAdjectives(), objectName),
+                TSentence("ALL_BUFF_ADJECTIVES_HELPER", capitalFirst(viewObject.getGoodAdjectives()), objectName),
                 legendLineHeight * 2 / 3, 300,
                 Renderer::textSize(), Color::GREEN, ','));
             lines.addSpace(legendLineHeight / 3);

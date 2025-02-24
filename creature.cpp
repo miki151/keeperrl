@@ -2921,7 +2921,7 @@ vector<AdjectiveInfo> Creature::getLastingEffectAdjectives(const ContentFactory*
           ret[*index].timeout = min(*ret[*index].timeout, (buff.second - *time).getVisibleInt());
       } else {
         added[info.adjective] = ret.size();
-        ret.push_back({ capitalFirst(info.adjective), info.description, none, 1 });
+        ret.push_back({info.adjective, info.description, none, 1 });
         if (time)
           ret.back().timeout = (buff.second - *time).getVisibleInt();
       }
@@ -2932,7 +2932,7 @@ vector<AdjectiveInfo> Creature::getLastingEffectAdjectives(const ContentFactory*
     if (info.hiddenPredicate && info.hiddenPredicate->apply(this, nullptr))
       continue;
     if (info.consideredBad == bad)
-      ret.push_back({ capitalFirst(info.adjective), info.description, none, info.stacks ? buff.second : 1 });
+      ret.push_back({info.adjective, info.description, none, info.stacks ? buff.second : 1 });
   }
   if (time) {
     for (LastingEffect effect : ENUM_ALL(LastingEffect))
