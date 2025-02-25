@@ -3175,6 +3175,10 @@ End
   {
     viewId = { "dwarf_female" }
     gender = FEMALE
+    name = {
+      name = CREATURE_ATTRIBUTES_DWARF_FEMALE_NAME
+      firstNameGen = "DWARF"
+    }
   }
 "DWARF_FIGHTER" inherit "DWARF"
   {

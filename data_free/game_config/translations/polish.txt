@@ -8501,8 +8501,8 @@ WORKSHOPS_MENU_TYPE8 "Sprawia, że ofierze wyrasta para rogów"
 WORKSHOPS_MENU_TYPE9 "przemiana Strażnika"
 WORKSHOPS_MENU_TYPE "masowe szaleństwo"
 
-PROTECTION_FROM "ochrona przed {1}"
-PROTECTED_FROM "chroniony przed {1}"
+PROTECTION_FROM "ochrona przed {1:instrumental}"
+PROTECTED_FROM "chroniony przed {1:instrumental}"
 NO_LONGER_PROTECTED_FROM "nie jest już chroniony przed {1}"
 
 YOU_ACQUIRE_THE_SKILL_OF "Zdobywasz umiejętność {1:accusative}."
@@ -8510,30 +8510,38 @@ ACQUIRES_THE_SKILL_OF "{1} zdobywa umiejętność {2:accusative}."
 YOU_LOSE_THE_SKILL_OF "Tracisz umiejętność {1:accusative}."
 LOSES_THE_SKILL_OF "{1} traci umiejętność {2:accusative}."
 
-HATE_OF "nienawiść do {1}"
+HATE_OF "nienawiść do {1:genitive}"
 HATES_ALL "nienawidzi wszystkich {1:genitive}."
 HATE_DEBUFF_DESCRIPTION "Sprawia, że cel staje się wrogi wobec wszystkich {1:genitive}."
 FULL_OF_HATRED "przepełniony nienawiścią"
 HATRED_IS_GONE "nienawiść przemija"
 
-RESISTANCE_BUFF_NAME "{1} odporność"
-RESISTANT_TO "odporny na {1}"
-NO_LONGER_RESISTANT_TO "nie jest już odporny na {1}"
+RESISTANCE_BUFF_NAME "odporność na {1:accusative}"
+RESISTANT_TO "odporny na {1:accusative}"
+    "odporna na {1:accusative}" : feminine
+    "odporne na {1:accusative}" : neuter
+NO_LONGER_RESISTANT_TO "nie jest już odporny na {1:accusative}"
+    "nie jest już odporna na {1:accusative}" : feminine
+    "nie jest już odporne na {1:accusative}" : neuter
 RESISTANCE_BUFF_DESCRIPTION "Obrona istoty przeciw atakom typu {1} jest zwiększona o 30%."
 
 VULNERABILITY_BUFF_NAME "{1} wrażliwość"
-VULNERABLE_TO "wrażliwy na {1}"
+VULNERABLE_TO "wrażliwy na {1:accusative}"
+    "wrażliwa na {1:accusative}" : feminine
+    "wrażliwe na {1:accusative}" : neuter
 NO_LONGER_VULNERABLE_TO "nie jest już wrażliwy na {1}"
 VULNERABILITY_BUFF_DESCRIPTION "Obrona istoty przeciw atakom typu {1} jest zmniejszona o 23%."
 
-IMMUNITY_BUFF_NAME "{1} odporność całkowita"
-IMMUNE_TO "uodporniony na {1}"
-NO_LONGER_IMMUNE_TO "nie jest już uodporniony na {1}"
+IMMUNITY_BUFF_NAME "całkowita odporność na {1:accusative}"
+IMMUNE_TO "całkowicie odporny na {1:accusative}"
+    "całkowicie odporna na {1:accusative}" : feminine
+    "całkowicie odporne na {1:accusative}" : neuter
+NO_LONGER_IMMUNE_TO "nie jest już całkowicie odporny na {1:accusative}"
+    "nie jest już całkowicie odporna na {1:accusative}" : feminine
+    "nie jest już całkowicie odporne na {1:accusative}" : neuter
 IMMUNITY_BUFF_DESCRIPTION "Istota jest całkowicie odporna na ataki typu {1}."
 
-BUFFS_ACID_IMMUNITY_NAME "kwas"
 BUFFS_ACID_RESISTANT_NAME "kwas"
-BUFFS_ACID_VULNERABILITY_NAME "kwas"
 BUFFS_AMBUSH_SKILL_ADJECTIVE "zastawia zasadzki"
 BUFFS_AMBUSH_SKILL_DESCRIPTION "Może się ukryć i zastawić zasadzkę na niczego niepodejrzewających wrogów. Naciśnij 'h', aby się ukryć na odpowiednim polu."
 BUFFS_AMBUSH_SKILL_NAME "zastawianie zasadzek"
@@ -8542,9 +8550,7 @@ BUFFS_BRIDGE_BUILDING_SKILL_ADJECTIVE "buduje mosty"
 BUFFS_BRIDGE_BUILDING_SKILL_DESCRIPTION "Istota będzie próbować budować mosty podczas podróży."
 BUFFS_BRIDGE_BUILDING_SKILL_NAME "budowanie mostów"
 
-BUFFS_COLD_IMMUNITY_NAME "zimno"
 BUFFS_COLD_RESISTANT_NAME "zimno"
-BUFFS_COLD_VULNERABILITY_NAME "zimno"
 
 BUFFS_CONFESSING_SKILL_ADJECTIVE "spowiednik"
     "spowiedniczka" : feminine
@@ -8606,9 +8612,7 @@ BUFFS_EXPLORE_SKILL_ADJECTIVE "eksploruje"
 BUFFS_EXPLORE_SKILL_DESCRIPTION "Może eksplorować otoczenie."
 BUFFS_EXPLORE_SKILL_NAME "eksploracja"
 
-BUFFS_FIRE_IMMUNITY_NAME "ogień"
 BUFFS_FIRE_RESISTANT_NAME "ogień"
-BUFFS_FIRE_VULNERABILITY_NAME "ogień"
 
 BUFFS_GREENSKIN_RESISTANCE_NAME "zielonoskórych"
 BUFFS_HATE_DEMONS_NAME "demonów"
@@ -8621,12 +8625,10 @@ BUFFS_HATE_LIZARDMEN_NAME "jaszczuroludzi"
 BUFFS_HATE_UNDEAD_NAME "nieumarłych"
 BUFFS_LIZARDMEN_RESISTANCE_NAME "jaszczuroludzi"
 
-BUFFS_MAGIC_IMMUNITY_NAME "magia"
 BUFFS_MAGIC_RESISTANCE_NAME "magia"
-BUFFS_MAGIC_VULNERABILITY_NAME "magia"
-BUFFS_MELEE_IMMUNITY_NAME "walka wręcz"
+    "magię" : accusative
 BUFFS_MELEE_RESISTANCE_NAME "walka wręcz"
-BUFFS_MELEE_VULNERABILITY_NAME "walka wręcz"
+    "walkę wręcz" : accusative
 
 BUFFS_PREACHING_ID1 "Adoxie wysłuchał twoich modlitw i zamienia twoich wrogów w kury."
 BUFFS_PREACHING_ID2 "Adoxie wysłuchał twoich modlitw i zsyła swojego sługę."
@@ -8638,9 +8640,8 @@ BUFFS_PREACHING_SKILL_ADJECTIVE "kaznodzieja"
 BUFFS_PREACHING_SKILL_DESCRIPTION "Może odprawiać Mszę."
 BUFFS_PREACHING_SKILL_NAME "kaznodziejstwo"
 
-BUFFS_RANGED_IMMUNITY_NAME "walka dystansowa"
 BUFFS_RANGED_RESISTANCE_NAME "walka dystansowa"
-BUFFS_RANGED_VULNERABILITY_NAME "walka dystansowa"
+    "walkę dystansową" : accusative
 
 BUFFS_SPIDER_SKILL_ADJECTIVE "tka pajęcze sieci"
 BUFFS_SPIDER_SKILL_DESCRIPTION "Może tkać pajęcze sieci."
