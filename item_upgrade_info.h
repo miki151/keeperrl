@@ -13,11 +13,12 @@ RICH_ENUM(
     AUTOMATONS_LOWER
 );
 
-const char* getItemTypeName(ItemUpgradeType);
-
+class TStringId;
 class ItemPrefix;
 class ContentFactory;
 class TString;
+
+TStringId getItemTypeName(ItemUpgradeType);
 
 struct ItemUpgradeInfo {
   vector<TString> getDescription(const ContentFactory*) const;

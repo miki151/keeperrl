@@ -396,7 +396,7 @@ CREATURES_EXP_LEVEL_BELOW "z poziomem doświadczenia poniżej {1}"
 CREATURES_HOLDING_INGREDIENT "dzierżące {1}"
 CREATURES_MADE_OF_MATERIAL "wykonane z {1}"
 CREATURES_WITH_HEALTH_BETWEEN "z życiem między {1} a {2}"
-CREATURE_TITLE "{1}, {2}"
+CREATURE_TITLE "{2} {1}"
 CURRENTLY_NOT_RIDING_STEED "Obecnie nie dosiadasz wierzchowca."
 CURRENTLY_RIDING_STEED "Obecnie dosiadasz wierzchowca."
 CUTS_FURNITURE "{1} tnie {2:accusative}."
@@ -800,11 +800,11 @@ PRISONER_STATUS "Więzień"
 PRISON_MUST_BE_SEPARATE_HIGHLIGHT "Więzienie musi być oddzielone od zewnątrz i wszystkich schodów za pomocą krat lub drzwi więziennych"
 PRISON_TILE "pole więzienne"
 PRISON_TILES "pola więzienne"
-MINION_PRODUCES "{1} {2} {3}"
+MINION_PRODUCES "{1} {2} {3:accusative}"
 PRODUCES_VERB "wytwarza"
 WRITES_VERB "pisze"
 RAISES_VERB "wskrzesza"
-FORGES_VERB "kuje"
+FORGES_VERB "wykuwa"
 CONCOCTS_VERB "sporządza mikstury"
 PROJECTILES_WONT_HIT_ALLIES "pociski nie trafią sojuszników"
 PROMOTION_TYPE_LABEL "Typ promocji:"
@@ -1414,7 +1414,7 @@ CHATS_WITH "{1} rozmawia z {2:instrumental}."
 CIRCULAR_BLAST_EFFECT_DESCRIPTION "Tworzy okrężny podmuch powietrza, który odrzuca istoty i przedmioty."
 CIRCULAR_BLAST_EFFECT_NAME "okrężny podmuch"
     "okrężnego podmuchu" : genitive
-CLAIMED_FLOOR "Przejęta podłoga"
+CLAIMED_FLOOR "Zajęta podłoga"
 CLAW "Rozszarpujesz {1:accusative} pazurami."
 CLAWS "{1} rozszarpuje {2:accusative} pazurami."
 CLICK_ON_DEBT_BUTTON "Kliknij w dług lub w poszczególne przyciski, aby spłacić."
@@ -1560,7 +1560,7 @@ ITEM_EQUIPED "Wyposażono."
 ITEM_FROM_INGREDIENT "z"
 ITEM_MATERIAL_LABEL "Materiał:"
 ITEM_NOT_EQUIPED "Jeszcze niewyposażony."
-ITEM_REQUIRES_SKILL_LEVEL "Wymaga poziomu umiejętności:"
+ITEM_REQUIRES_SKILL_LEVEL "Wymagany poziom umiejętności:"
 ITEM_REQUIRES_UPGRADES "Nie da się wykonać bez ulepszeń."
 ITEM_UPGRADE_BUTTON "ulepsz"
 JUMP_EFFECT_DESCRIPTION "Wyskocz!"
@@ -2069,6 +2069,14 @@ GLYPH masculine "glif"
     "glifami" : plural,instrumental
     "glify" : plural,accusative
 GLYPH_BLIND "glif"
+UPGRADE_TYPE_GLYPH "glif"
+    "glify" : plural
+UPGRADE_TYPE_BALSAM "balsam"
+    "balsamy" : plural
+UPGRADE_TYPE_BODY_PART "część ciała"
+    "części ciała" : plural
+UPGRADE_TYPE_AUTOMATON_PART "część"
+    "części" : plural
 LEGS feminine "nogi"
     "nóg" : genitive
     "nogami" : instrumental
@@ -2158,7 +2166,7 @@ SPELL_LEVEL "Poziom {1}"
 TRAINING_LIMIT_TOOLTIP "Limit szkolenia tej istoty dla tego typu wynosi {1}."
 TRAINING_TYPE_TOOLTIP "Trening {1:genitive}."
 UNLOCKS_ITEM_TYPE "Odblokowuje {1:accusative}:"
-UPGRADABLE_WITH_UP_TO "Można ulepszyć, dodając do {1} {2}."
+UPGRADABLE_WITH_UP_TO "Można ulepszyć, dodając maksymalnie {1} {2}."
 WORK_EFFICIENCY_MULTIPLIER_HINT "Mnożnik wydajności pracy: {1}"
 WORLD_MAP_OF "Mapa krainy {1}"
 FALLS_ASLEEP "{1} zasypia."
@@ -2176,10 +2184,14 @@ YOUR_HELPER "Twój"
     "Twoje" : neuter
 YOUR "{YOUR_HELPER:1} {1}."
 REQUIRES_A "Wymaga {1:accusative}"
-CANT_TRAVEL_WHILE_POISONED "{1} nie może podróżować, będąc zatruty."
+CANT_TRAVEL_WHILE_POISONED_HELPER "zatrutym"
+    "zatrutą" : feminine
+CANT_TRAVEL_WHILE_POISONED "{1} nie może podróżować, będąc {CANT_TRAVEL_WHILE_POISONED_HELPER:1}."
 OR "{1} lub {2}"
 KILL_TITLE "pogromca {1:genitive}"
     "pogromcę {1:genitive}" : accusative
+    "pogromczyni {1:genitive}" : feminine
+    "pogromczynię {1:genitive}" : accusative,feminine
 MINION_GROUP "{1} {2}"
 YOU_HAVE_CONQUERED_THIS_LAND "Podbiłeś tę krainę. Zabiłeś {1} wrogów i uzyskałeś {2} punktów. Dziękujemy za grę w KeeperRL!"
 DEATHS "{1} śmierci"
@@ -5259,10 +5271,10 @@ FURNITURE_ARCHERY_RANGE_NAME feminine "tarcza strzelecka"
     "tarczami strzeleckimi" : plural,instrumental
     "tarcze strzeleckie" : plural,accusative
 
-FURNITURE_ARMOR_RACK_NAME masculine "stojak na zbroję"
-    "stojaka na zbroję" : genitive
-    "stojakiem na zbroję" : instrumental
-    "stojak na zbroję" : accusative
+FURNITURE_ARMOR_RACK_NAME masculine "stojak na zbroje"
+    "stojaka na zbroje" : genitive
+    "stojakiem na zbroje" : instrumental
+    "stojak na zbroje" : accusative
     "stojaki na zbroje" : plural
     "stojaków na zbroje" : plural,genitive
     "stojakami na zbroje" : plural,instrumental
@@ -8311,15 +8323,15 @@ SPELLS_SHAPESHIFT_EFFECT1 "Zamień się w losowego potwora"
 SPELLS_SHAPESHIFT_EFFECT2 "zmiennokształtny"
 SPELLS_SHAPESHIFT_EFFECT "zmiana kształtu"
 SPELLS_SHOOT_ARROW_EFFECT "wystrzel strzałę"
-SPELLS_SHOOT_ARROW_MESSAGE1 "strzela strzałą"
-SPELLS_SHOOT_ARROW_MESSAGE "strzel strzałą"
+SPELLS_SHOOT_ARROW_MESSAGE1 "{1} strzela z łuku."
+SPELLS_SHOOT_ARROW_MESSAGE "Strzelasz z łuku."
 SPELLS_SHOOT_ARROW_SECONDPERSON1 "strzała cię oszczędza"
 SPELLS_SHOOT_ARROW_SECONDPERSON "strzała cię trafia"
 SPELLS_SHOOT_ARROW_THIRDPERSON1 "został oszczędzony przez strzałę"
 SPELLS_SHOOT_ARROW_THIRDPERSON "został trafiony strzałą"
 SPELLS_SHOOT_BOLT_EFFECT "wystrzel bełt"
-SPELLS_SHOOT_BOLT_MESSAGE1 "strzela bełtem"
-SPELLS_SHOOT_BOLT_MESSAGE "strzel bełtem"
+SPELLS_SHOOT_BOLT_MESSAGE1 "{1} strzela z kuszy."
+SPELLS_SHOOT_BOLT_MESSAGE "Strzelasz z kuszy."
 SPELLS_SHOOT_BOLT_SECONDPERSON1 "bełt cię oszczędza"
 SPELLS_SHOOT_BOLT_SECONDPERSON "bełt cię trafia"
 SPELLS_SHOOT_BOLT_THIRDPERSON1 "został oszczędzony przez bełt"
@@ -8578,12 +8590,12 @@ BUFFS_DEF_BONUS_ADJECTIVE "chroniony"
     "chronione" : neuter
 BUFFS_DEMON_RESISTANCE_NAME "demonów"
 BUFFS_DISARM_TRAPS_SKILL_ADJECTIVE "rozbraja pułapki"
-BUFFS_DISARM_TRAPS_SKILL_DESCRIPTION "Może unikać pułapek i je rozbrajać."
+BUFFS_DISARM_TRAPS_SKILL_DESCRIPTION "Potrafi unikać pułapek i je rozbrajać."
 BUFFS_DISARM_TRAPS_SKILL_NAME "rozbrajanie pułapek"
 
-BUFFS_DISTILLATION_SKILL_ADJECTIVE "destylator"
-    "destylatorka" : feminine
-BUFFS_DISTILLATION_SKILL_DESCRIPTION "Może destylować alkohol."
+BUFFS_DISTILLATION_SKILL_ADJECTIVE "bimbrownik"
+    "bimbrowniczka" : feminine
+BUFFS_DISTILLATION_SKILL_DESCRIPTION "Potrafi destylować alkohol."
 BUFFS_DISTILLATION_SKILL_NAME "destylacja"
 
 BUFFS_DIVINE_DIGGING_ADJECTIVE "boski kopacz"
@@ -9182,7 +9194,7 @@ DISABLE_MOUSE_WHEEL_OPTION_NAME "Wyłącz przewijanie kółkiem myszy"
 DISABLE_CURSOR_OPTION_NAME "Wyłącz ładny kursor"
 ONLINE_OPTION_NAME "Funkcje online"
 GAME_EVENTS_OPTION_NAME "Anonimowe statystyki"
-AUTOSAVE2_OPTION_NAME "Liczba tur między autosejwami"
+AUTOSAVE2_OPTION_NAME "Liczba tur między autozapisem"
 STARTING_RESOURCE_OPTION_NAME "Premia do zasobów"
 START_WITH_NIGHT_OPTION_NAME "Rozpocznij nocą"
 PLAYER_NAME_OPTION_NAME "Imię"
@@ -9213,7 +9225,7 @@ FPS_LIMIT_OPTION_DESCRIPTION "Ogranicza liczbę klatek. Niższa liczba = chłodn
 ZOOM_UI_OPTION_DESCRIPTION "Powiększa interfejs i grafikę. Przydatne na dużych ekranach, gdy elementy są zbyt małe."
 ONLINE_OPTION_DESCRIPTION "Włącz funkcje online, jak dzielenie się lochami i rankingi."
 GAME_EVENTS_OPTION_DESCRIPTION "Włącz wysyłanie anonimowych statystyk do dewelopera."
-AUTOSAVE2_OPTION_DESCRIPTION "Autosejw co X tur. Plik zapisu posłuży do odzyskania stanu w razie awarii."
+AUTOSAVE2_OPTION_DESCRIPTION "Autozapis co X tur. Plik zapisu posłuży do odzyskania stanu w razie awarii."
 ENDLESS_ENEMIES_OPTION_DESCRIPTION "Włącz cykliczne fale wrogów atakujących twoje lochy."
 ENEMY_AGGRESSION_OPTION_DESCRIPTION "Prawdopodobieństwo, że twoje lochy zostaną zaatakowane."
 KEEPER_WARNING_OPTION_DESCRIPTION "Wyświetla okienko, gdy twój Strażnik jest w niebezpieczeństwie."
@@ -9476,7 +9488,7 @@ UPLOADING_BUG_REPORT "Wysyłanie raportu o błędzie"
 FETCHING_BOARD_CONTENTS "Pobieranie zawartości tablicy"
 GENERATING_MAP "Generowanie mapy"
 RETIRING_SITE "Porzucanie lokacji"
-AUTOSAVING "Autosejw"
+AUTOSAVING "Autozapis"
 SAVING_GAME "Zapisywanie gry"
 INITIALIZING_GAME "Inicjowanie gry"
 FETCHING_LIST_OF_RETIRED_DUNGEONS "Pobieranie listy porzuconych lochów z serwera..."

@@ -3178,6 +3178,7 @@ End
     name = {
       name = CREATURE_ATTRIBUTES_DWARF_FEMALE_NAME
       firstNameGen = "DWARF"
+      fullTitle = true
     }
   }
 "DWARF_FIGHTER" inherit "DWARF"

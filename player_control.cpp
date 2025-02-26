@@ -1381,7 +1381,7 @@ struct WorkshopOptionInfo {
   int optionIndex;
   optional<pair<Item*, Position>> ingredient;
   optional<ImmigrantCreatureInfo> creatureInfo;
-  pair<string, int> maxUpgrades;
+  pair<TString, int> maxUpgrades;
 };
 
 static optional<ImmigrantCreatureInfo> getImmigrantCreatureInfo(ContentFactory* factory, const ItemType& type) {
@@ -1461,12 +1461,12 @@ vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions(int resourceIndex) 
               it.ingredient = getItemInfo(getGame()->getContentFactory(), {item}, false, false, false);
               it.description.push_back(TSentence("CRAFTED_FROM", item->getAName()));
               ret.push_back({it, i, make_pair(item, pos), none,
-                  make_pair(!option.upgradeType.empty() ? getItemTypeName(option.upgradeType[0]) : "", option.maxUpgrades)});
+                  make_pair(!option.upgradeType.empty() ? getItemTypeName(option.upgradeType[0]) : TString(), option.maxUpgrades)});
             }
         }
       else
         ret.push_back({itemInfo, i, none, getImmigrantCreatureInfo(getGame()->getContentFactory(), option.type),
-            make_pair(!option.upgradeType.empty() ? getItemTypeName(option.upgradeType[0]) : "", option.maxUpgrades)});
+            make_pair(!option.upgradeType.empty() ? getItemTypeName(option.upgradeType[0]) : TString(), option.maxUpgrades)});
     }
   return ret;
 }
@@ -1509,7 +1509,7 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
     ret.itemInfo.unavailableReason = TStringId("ITEM_REQUIRES_UPGRADES");
   ret.itemInfo.actions = {ItemAction::REMOVE};
   ret.maxUpgrades = !item.item.upgradeType.empty() ? make_pair(getItemTypeName(item.item.upgradeType[0]), item.item.maxUpgrades)
-      : make_pair(""_s, 0);
+      : make_pair(TString(), 0);
   return ret;
 }
 

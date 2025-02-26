@@ -30,19 +30,19 @@ vector<TString> ItemUpgradeInfo::getDescription(const ContentFactory* factory) c
   return ret;
 }
 
-const char* getItemTypeName(ItemUpgradeType type) {
+TStringId getItemTypeName(ItemUpgradeType type) {
   switch (type) {
     case ItemUpgradeType::ARMOR:
     case ItemUpgradeType::WEAPON:
     case ItemUpgradeType::RANGED_WEAPON:
-      return "glyph";
+      return TStringId("UPGRADE_TYPE_GLYPH");
     case ItemUpgradeType::BALSAM:
-      return "balsam";
+      return TStringId("UPGRADE_TYPE_BALSAM");
     case ItemUpgradeType::BODY_PART:
-      return "body part";
+      return TStringId("UPGRADE_TYPE_BODY_PART");
     case ItemUpgradeType::AUTOMATONS_LOWER:
     case ItemUpgradeType::AUTOMATONS_UPPER:
-      return "automaton part";
+      return TStringId("UPGRADE_TYPE_AUTOMATON_PART");
   }
 }
 

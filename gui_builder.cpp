@@ -2705,7 +2705,8 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
       const optional<ImmigrantCreatureInfo>& creatureInfo, int index, pair<TString, int> maxUpgrades) {
     optional<TString> upgradesTip;
     if (maxUpgrades.second > 0 && !maxUpgrades.first.empty())
-      upgradesTip = TString(TSentence("UPGRADABLE_WITH_UP_TO", toString(maxUpgrades.second), maxUpgrades.first));
+      upgradesTip = TString(TSentence("UPGRADABLE_WITH_UP_TO", toString(maxUpgrades.second),
+          maxUpgrades.second > 1 ? makePlural(maxUpgrades.first) : maxUpgrades.first));
     if (creatureInfo) {
       return cache->get(
           [this](const ImmigrantCreatureInfo& creature, const optional<TString>& warning, optional<TString> upgradesTip) {
@@ -4322,9 +4323,10 @@ SGuiElem GuiBuilder::drawKillsLabel(const PlayerInfo& minion) {
 
 SGuiElem GuiBuilder::drawTitleButton(const PlayerInfo& minion) {
   auto titleLine = WL(getListBuilder);
-  titleLine.addElemAuto(WL(label, minion.title));  auto lines = WL(getListBuilder, legendLineHeight);
+  titleLine.addElemAuto(WL(label, capitalFirst(minion.title)));
+  auto lines = WL(getListBuilder, legendLineHeight);
   for (auto& title : minion.killTitles)
-    lines.addElem(WL(label, title));
+    lines.addElem(WL(label, capitalFirst(title)));
   lines.addElem(WL(labelMultiLineWidth,
       TStringId("KILL_TITLES_HINT"), legendLineHeight * 2 / 3, 400, Renderer::smallTextSize(), Color::LIGHT_GRAY));
   if (!minion.killTitles.empty())
