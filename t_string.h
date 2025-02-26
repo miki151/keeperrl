@@ -19,9 +19,9 @@ struct TSentence {
   TSentence(TStringId id, TString param);
   TSentence(TStringId id, TString param1, TString param2);
   TSentence(TStringId id, vector<TString> params);
-  TStringId id;
-  vector<TString> params;
-  bool optionalParams = false;
+  TStringId SERIAL(id);
+  vector<TString> SERIAL(params);
+  bool SERIAL(optionalParams) = false;
 
   int getHash() const;
 

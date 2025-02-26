@@ -181,8 +181,9 @@ void Translations::TranslationInfo::serialize(PrettyInputArchive& ar) {
   }
   ar(primary);
   while (ar.peek()[0] == '\"') {
-    otherForms.push_back({""});
-    ar(otherForms.back()[0]);
+    string SERIAL(form1);
+    ar(form1);
+    otherForms.push_back({std::move(form1)});
     ar.eat(":");
     do {
       auto tag = ar.peek();

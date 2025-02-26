@@ -19,12 +19,12 @@ class Translations {
   optional<string> addLanguage(string name, FilePath);
   const vector<string>& getTags(const string& language, const TString&) const;
   struct TranslationInfo {
-    string primary;
+    string SERIAL(primary);
     vector<string> tags;
     vector<vector<string>> otherForms;
     string getBestForm(const vector<string>& form) const;
     void serialize(PrettyInputArchive&);
   };
   using Dictionary = HashMap<TStringId, TranslationInfo>;
-  HashMap<string, Dictionary> SERIAL(strings);
+  HashMap<string, Dictionary> strings;
 };

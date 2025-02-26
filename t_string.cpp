@@ -10,21 +10,25 @@ TString::TString(TStringId id) : text(TSentence(std::move(id))) {}
 TString::TString() : text(string()) {}
 
 template <typename Archive>
-void TString::serialize(Archive& ar) {
+void TString::serialize(Archive& ar1) {
   if (Archive::is_loading::value) {
     string s;
-    ar(s);
+    ar1(s);
     if (s[0] == 'T' && s[1] == '_') {
       vector<TString> params;
-      ar(params);
+      ar1(params);
       *this = TSentence(s.substr(2).data(), std::move(params));
     } else
       *this = std::move(s);
   } else {
     string out;
     text.visit(
-      [&] (string s) { ar(s); },
-      [&] (TSentence s) { string id = "T_"_s + s.id.data(); ar(id); ar(s.params); }
+      [&] (string s) { ar1(s); },
+      [&] (TSentence s) {
+        string id = "T_"_s + s.id.data();
+        ar1(id);
+        ar1(s.params);
+    }
     );
   }
 }
@@ -116,7 +120,7 @@ template <>
 void TString::serialize(PrettyInputArchive& ar) {
   auto firstChar = ar.peek()[0];
   if (firstChar == '"' || isdigit(firstChar)) {
-    string s;
+    string SERIAL(s);
     ar(s);
     int numPos = 0;
     if (exportStrings && !s.empty()) {
@@ -143,12 +147,12 @@ void TString::serialize(PrettyInputArchive& ar) {
     }
     *this = std::move(s);
   } else {
-    TStringId id;
+    TStringId SERIAL(id);
     vector<TString> params;
     ar(id);
     if (ar.eatMaybe("(")) {
       while (!ar.eatMaybe(")")) {
-        TString s;
+        TString SERIAL(s);
         ar(s);
         params.push_back(std::move(s));
         ar.eatMaybe(",");
@@ -334,6 +338,6 @@ bool TSentence::operator < (const TSentence& s) const {
 }
 
 
-SERIALIZE_DEF(TSentence, id, params)
+SERIALIZE_DEF(TSentence, id, params, optionalParams)
 SERIALIZATION_CONSTRUCTOR_IMPL(TSentence)
 
