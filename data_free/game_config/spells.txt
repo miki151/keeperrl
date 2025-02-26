@@ -635,6 +635,7 @@ End
 }
 
 Def OneTimeAbility(SpellName, SpellDesc, SpellEffect, SpellSymbol)
+SpellName
 {
   effect = AI And{} 0 1 Name SpellName Description SpellDesc {
     SpellEffect
@@ -645,8 +646,19 @@ Def OneTimeAbility(SpellName, SpellDesc, SpellEffect, SpellSymbol)
 }
 End
 
-"ennoblement" OneTimeAbility(SPELLS_ENNOBLEMENT_EFFECT, SPELLS_ENNOBLEMENT_EFFECT1, { SetViewId {"vampire_lord"} SetCreatureName SPELLS_ENNOBLEMENT_ID }, "🧛")
-"bypass allies" OneTimeAbility(SPELLS_BYPASS_ALLIES_EFFECT, SPELLS_BYPASS_ALLIES_EFFECT1, Permanent NO_FRIENDLY_FIRE, "🎯")
+Def OneTimeAbilityNew(SpellName, SpellDesc, SpellEffect, SpellSymbol)
+{
+  effect = AI And{} 0 1 Name SpellName Description SpellDesc {
+    SpellEffect
+    RemoveAbility SpellName
+  }
+  symbol = SpellSymbol
+  cooldown = 1
+}
+End
+
+"ennoblement" OneTimeAbilityNew(SPELLS_ENNOBLEMENT_EFFECT, SPELLS_ENNOBLEMENT_EFFECT1, { SetViewId {"vampire_lord"} SetCreatureName SPELLS_ENNOBLEMENT_ID }, "🧛")
+"bypass allies" OneTimeAbilityNew(SPELLS_BYPASS_ALLIES_EFFECT, SPELLS_BYPASS_ALLIES_EFFECT1, Permanent NO_FRIENDLY_FIRE, "🎯")
 
 
 Def AnyCreature() Health 0 1 End
