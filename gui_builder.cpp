@@ -3956,7 +3956,7 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
                     Renderer::smallTextSize())))
             .addBackElem(glyph3, hasController() ? 35 : 1)
             .buildHorizontalList(),
-            164)
+            234)
         .buildHorizontalList());
     bool exit = false;
     int selected = hasController() ? 0 : -1;
@@ -3997,7 +3997,6 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
       auto lockCallback2 = [&retAction, task] {
         retAction.lockGroup.toggle(task.task);
       };
-      auto allName = makePlural(minion.groupName);
       activeElems.push_back(WL(stack,
           WL(conditionalStopKeys, WL(stack,
               WL(uiHighlightLine),
@@ -4020,11 +4019,11 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
                   lockButton), 37)
               .addBackSpace(51)
               .addBackElemAuto(WL(stack,
-                  getTooltip({TSentence("ACTIVITY_ON_OFF_HINT_FOR_GROUP", allName)}, THIS_LINE + i + 54321,
+                  getTooltip({TSentence("ACTIVITY_ON_OFF_HINT_FOR_GROUP", makePlural(minion.groupName))}, THIS_LINE + i + 54321,
                       milliseconds{700}, true),
                   WL(button, lockCallback2),
                   lockButton2))
-              .addBackSpace(130)
+              .addBackSpace(200)
               .buildHorizontalList()
       ));
       tasks.addElem(activeElems.back());
@@ -4033,7 +4032,7 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
         getMiniMenuScrolling(activeElems, selected),
         tasks.buildVerticalList()
     );
-    drawMiniMenu(std::move(content), exit, bounds.bottomLeft(), 500, true);
+    drawMiniMenu(std::move(content), exit, bounds.bottomLeft(), 600, true);
     callbacks.input({UserInputId::CREATURE_TASK_ACTION, retAction});
   };
 }

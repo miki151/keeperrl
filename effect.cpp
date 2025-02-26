@@ -526,7 +526,7 @@ static TString getName(const Effects::Permanent& e, const ContentFactory* f) {
 }
 
 static TString getDescription(const Effects::Permanent& e, const ContentFactory* f) {
-  return TSentence("PERMANENT_LASTING_DESCRIPTION", getName(e.lastingEffect, f));
+  return TSentence("PERMANENT_LASTING_DESCRIPTION", getDescription(e.lastingEffect, f));
 }
 
 static Color getColor(const Effects::Permanent& e, const ContentFactory* f) {

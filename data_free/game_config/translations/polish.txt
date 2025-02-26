@@ -669,10 +669,10 @@ ITEM_CRASHES_ON_YOU "{1} uderza w ciebie."
 ITEM_HITS_THE "{2} uderza w {1:accusative}"
 ITEM_HITS_YOU "{1} cię uderza."
 ITEM_MAY_HURT_MINION "Ten przedmiot może zranić twojego sługę. Kontynuować?"
-ITEM_MISSES_YOU "{1} chybił."
+ITEM_MISSES_YOU "{1} nie trafił cię."
 ITEMS_CRASH_ON_YOU "{1} uderzają w ciebie."
 ITEMS_HIT_YOU "{1} cię uderzają."
-ITEMS_MISS_YOU "{1} chybiają."
+ITEMS_MISS_YOU "{1} nie trafiają cię."
 ITEM_USED_UP "{1} zostaje zużyty."
 ITSELF "siebie"
 JEWELLERY_GROUP "biżuteria"
@@ -1316,8 +1316,8 @@ BUFF_FLYING "unoszenie"
     "unoszenia" : genitive
 BUFF_FROZEN "zamrożenie"
     "zamrożenia" : genitive
-BUFF_HALLU "magia"
-    "magii" : genitive
+BUFF_HALLU "halucynacje"
+    "halucynogenny" : genitive
 BUFF_IMMOBILE "unieruchomienie"
     "unieruchomienia" : genitive
 BUFF_INSANITY "obłęd"
@@ -2156,11 +2156,12 @@ RECEIVES "{1} otrzymuje {2:accusative}."
 IS_KILLED "{1} zostaje {2:1}."
 MORE_ADJECTIVE "bardziej {1}"
 NOT "nie {1}"
-PERMANENT_LASTING_DESCRIPTION "{1} na stałe."
+PERMANENT_LASTING_DESCRIPTION "{1} Efekt jest permanentny."
 PERMANENT_LASTING_NAME "stały {1}"
-ACTIVITY_ON_OFF_HINT_FOR_GROUP "Kliknij, aby wyłączyć tę aktywność dla wszystkich {1}."
+    "stałego {1}" : genitive
+ACTIVITY_ON_OFF_HINT_FOR_GROUP "Kliknij, aby wyłączyć tę aktywność dla wszystkich {1:genitive}."
 COUNT_ITEM_AVAILABLE "({1} dostępnych)"
-DISABLE_FOR_ALL_GROUP "Wyłącz dla wszystkich {1}."
+DISABLE_FOR_ALL_GROUP "Wyłącz dla wszystkich {1:genitive}."
 DUNGEON_REQUIRED_MODS "Wymaga modów: {1}"
 EXPERIENCE_TYPE "Rodzaj doświadczenia: {1}"
 QUARTERS_LUXURY "Suma luksusu: {1}"
@@ -2175,11 +2176,11 @@ WORLD_MAP_OF "Mapa krainy {1}"
 FALLS_ASLEEP "{1} zasypia."
 IS "{1} jest {2}."
 IS_NO_LONGER "{1} nie jest już {2}."
-ITEM_HITS "{2} uderza w {1}."
-ITEM_MISSES "{2} chybia {1}."
-ITEMS_CRASH "{2} spadają na {1}."
-ITEMS_HIT "{2} uderzają w {1}."
-ITEMS_MISS "{2} chybiają {1}."
+ITEM_HITS "{2} uderza w {1:accusative}."
+ITEM_MISSES "{2} nie trafia {1:accusative}."
+ITEMS_CRASH "{2} spadają na {1:accusative}."
+ITEMS_HIT "{2} uderzają w {1:accusative}."
+ITEMS_MISS "{2} nie trafiają {1:accusative}."
 YOU_DIE "Umierasz!"
 YOU_DIE_OF "Umierasz z powodu {1:genitive}."
 YOUR_HELPER "Twój"
@@ -2220,9 +2221,8 @@ ITEM_SINKS "{1} tonie w {2}."
 ITEMS_SINK "{1} toną w {2}."
 NO_LONGER_SUPER "już nie super"
 SUPER "super"
-YOU_START "Zaczynasz {1}."
-STARTS "{1} zaczyna {2}."
-BLEEDING "krwawić"
+YOU_START_BLEEDING "Zaczynasz krwawić."
+STARTS_BLEEDING "{1} zaczyna krwawić."
 MORE_MASCULINE "bardziej męski"
 MORE_FEMININE "bardziej kobiecy"
 MORE_NEUTER "bardziej nijaki"
@@ -2537,8 +2537,9 @@ BUFFS_BLEEDING_THIRDPERSON "{1} krwawi."
 BUFFS_FIRE_DAMAGE_ADDEDMESSAGE1 "{1} zadaje obrażenia ogniem."
 BUFFS_FIRE_DAMAGE_ADDEDMESSAGE "Zadajesz obrażenia ogniem."
 BUFFS_FIRE_DAMAGE_ADJECTIVE "zadaje obrażenia ogniem"
-BUFFS_FIRE_DAMAGE_DESCRIPTION "Wszystkie obrażenia w walce wręcz zmieniają się w obrażenia od ognia."
+BUFFS_FIRE_DAMAGE_DESCRIPTION "Obrażenia zadawane w walce wręcz zmieniają się w obrażenia od ognia."
 BUFFS_FIRE_DAMAGE_NAME "obrażenia ogniowe"
+    "obrażeń ogniowych" : genitive
 BUFFS_FIRE_DAMAGE_REMOVEDMESSAGE1 "{1} nie zadaje już obrażeń ogniem."
 BUFFS_FIRE_DAMAGE_REMOVEDMESSAGE "Nie zadajesz już obrażeń ogniem."
 BUFFS_HIGH_MORALE_ADDEDMESSAGE "nastrój się poprawia"
@@ -2547,6 +2548,7 @@ BUFFS_HIGH_MORALE_ADJECTIVE "szczęśliwy"
     "szczęśliwe" : neuter
 BUFFS_HIGH_MORALE_DESCRIPTION "Postacie szybciej się szkolą i wydajniej pracują."
 BUFFS_HIGH_MORALE_NAME "wysokie morale"
+    "wysokich morale" : genitive
 BUFFS_HIGH_MORALE_REMOVEDMESSAGE "nastrój wraca do normy"
 BUFFS_INFERNITE_EFFECT_ADDEDMESSAGE1 "{1} jest palony przez infernit."
 BUFFS_INFERNITE_EFFECT_ADDEDMESSAGE "Pali cię infernite."
@@ -2578,7 +2580,9 @@ BUFFS_INVULNERABLE_REMOVEDMESSAGE "nie jest już odporny na obrażenia"
     "nie jest już odporne na obrażenia" : neuter
 BUFFS_KINGS_CHARGE_ADDEDMESSAGE1 "{1} wygląda, jakby był gotów umrzeć za swojego króla."
 BUFFS_KINGS_CHARGE_ADDEDMESSAGE "Czujesz gotowość, by umrzeć za swojego króla."
-BUFFS_KINGS_CHARGE_ADJECTIVE "królewski zapał"
+BUFFS_KINGS_CHARGE_ADJECTIVE "wierny swojemu królowi"
+    "wierna swojemu królowi" : feminine
+    "wierne swojemu królowi" : neuter
 BUFFS_KINGS_CHARGE_DESCRIPTION "Daje +15 do obrażeń"
 BUFFS_KINGS_CHARGE_NAME "zapał króla"
 BUFFS_KINGS_CHARGE_REMOVEDMESSAGE1 "{1} nie wygląda już, jakby był gotów umrzeć za swojego króla."
@@ -2589,12 +2593,14 @@ BUFFS_LEADERSHIP_ADJECTIVE "lider"
     "liderka" : feminine
 BUFFS_LEADERSHIP_DESCRIPTION "Doświadczenie bojowe tej istoty zostanie przyznane całej drużynie."
 BUFFS_LEADERSHIP_NAME "dowodzenie"
+    "dowodzenia" : genitive
 BUFFS_LEADERSHIP_REMOVEDMESSAGE1 "{1} czuje, że nie dowodzi już drużyną."
 BUFFS_LEADERSHIP_REMOVEDMESSAGE "Czujesz, że już nie dowodzisz drużyną."
 BUFFS_MORTAL_SINNED_ADJECTIVE "grzesznik śmiertelny"
     "grzeszniczka śmiertelna" : feminine
 BUFFS_MORTAL_SINNED_DESCRIPTION "Istota popełniła grzech śmiertelny i szuka przebaczenia."
 BUFFS_MORTAL_SINNED_NAME "grzech śmiertelny"
+    "grzechu śmiertelnego" : genitive
 BUFFS_PREACHING_ADJECTIVE "odprawia Mszę"
 BUFFS_PREACHING_NAME "Odpraw Mszę"
 BUFFS_REGENERATION_ADDEDMESSAGE "regenerujesz się"
@@ -2603,16 +2609,19 @@ BUFFS_REGENERATION_ADJECTIVE "regenerujący się"
     "regenerujące się" : neuter
 BUFFS_REGENERATION_DESCRIPTION "Odnawia niewielką ilość zdrowia co turę."
 BUFFS_REGENERATION_NAME "regeneracja"
+    "regeneracji" : genitive
 BUFFS_REGENERATION_REMOVEDMESSAGE "przestajesz się regenerować"
 BUFFS_SINNED_ADJECTIVE "grzesznik powszedni"
     "grzeszniczka powszedna" : feminine
 BUFFS_SINNED_DESCRIPTION "Istota popełniła grzech i szuka przebaczenia."
 BUFFS_SINNED_NAME "grzech powszedni"
+    "grzechu powszedniego" : genitive
 BUFFS_SPELL_DAMAGE_ADDEDMESSAGE1 "{1} zadaje obrażenia magiczne."
 BUFFS_SPELL_DAMAGE_ADDEDMESSAGE "Zadajesz obrażenia magiczne."
 BUFFS_SPELL_DAMAGE_ADJECTIVE "zadaje obrażenia magiczne"
-BUFFS_SPELL_DAMAGE_DESCRIPTION "Wszystkie obrażenia w walce wręcz zmieniają się w obrażenia magiczne."
+BUFFS_SPELL_DAMAGE_DESCRIPTION "Obrażenia zadawane w walce wręcz zmieniają się w obrażenia magiczne."
 BUFFS_SPELL_DAMAGE_NAME "obrażenia magiczne"
+    "obrażeń magicznych" : genitive
 BUFFS_SPELL_DAMAGE_REMOVEDMESSAGE1 "{1} nie zadaje już obrażeń magicznych."
 BUFFS_SPELL_DAMAGE_REMOVEDMESSAGE "Nie zadajesz już obrażeń magicznych."
 BUFFS_SUPER_BONUS_ADJECTIVE "niesamowity"
@@ -2622,6 +2631,7 @@ BUFFS_WELL_FED_ADJECTIVE "dobrze nakarmiony"
      "dobrze nakarmiona" : feminine
 BUFFS_WELL_FED_DESCRIPTION "Istota jest najedzona i otrzymuje +1 do obrażeń magicznych oraz obrony."
 BUFFS_WELL_FED_NAME "nakarmienie"
+    "nakarmienia" : genitive
 BUFFS_WILL_BANISH_ADJECTIVE "zbrojna pomoc"
 BUFFS_WILL_BANISH_DESCRIPTION "Istota została przywołana na ograniczony czas w odpowiedzi na modlitwy."
 BUFFS_WILL_BANISH_NAME "przyzwanie"
@@ -6868,14 +6878,14 @@ FURNITURE_DOWN_STAIRS_NAME plural "schody w dół"
 
 FURNITURE_UP_STAIRS_USAGETYPE "Użyj schodów"
 
-FURNITURE_WATER_NAME1 neuter "zaczarowany staw"
-    "zaczarowanego stawu" : genitive
-    "zaczarowanym stawem" : instrumental
-    "zaczarowany staw" : accusative
-    "zaczarowane stawy" : plural
-    "zaczarowanych stawów" : plural,genitive
-    "zaczarowanymi stawami" : plural,instrumental
-    "zaczarowane stawy" : plural,accusative
+FURNITURE_WATER_NAME1 neuter "zaczarowane źródło"
+    "zaczarowanego źródła" : genitive
+    "zaczarowanym źrodłem" : instrumental
+    "zaczarowane źrodło" : accusative
+    "zaczarowane źrodła" : plural
+    "zaczarowanych źrodeł" : plural,genitive
+    "zaczarowanymi źrodłami" : plural,instrumental
+    "zaczarowane źrodła" : plural,accusative
 
 FURNITURE_WATER_NAME2 neuter "płytka woda"
     "płytkiej wody" : genitive
@@ -8497,7 +8507,6 @@ WORKSHOPS_MENU_TYPE16 "Ograniczone życie, zwiększone obrażenia"
 WORKSHOPS_MENU_TYPE17 "Życie ograniczone do 2000 tur, +10 do obrażeń."
 WORKSHOPS_MENU_TYPE18 "Ograniczone życie, zwiększona obrona"
 WORKSHOPS_MENU_TYPE19 "Życie ograniczone do 2000 tur, +10 do obrony."
-WORKSHOPS_MENU_TYPE1 "żelazne ramiona"
 WORKSHOPS_MENU_TYPE20 "Ograniczone życie, zwiększone obrażenia dystansowe"
 WORKSHOPS_MENU_TYPE21 "Życie ograniczone do 2000 tur, +10 do obrażeń dystansowych."
 WORKSHOPS_MENU_TYPE22 "Ograniczone życie, zwiększona moc zaklęć"
@@ -8506,19 +8515,20 @@ WORKSHOPS_MENU_TYPE24 "większa premia do obrażeń"
 WORKSHOPS_MENU_TYPE25 "większa premia do obrony"
 WORKSHOPS_MENU_TYPE26 "większa premia do obrażeń dystansowych"
 WORKSHOPS_MENU_TYPE27 "większa premia do obrażeń magicznych"
-WORKSHOPS_MENU_TYPE2 "gruba skóra"
-WORKSHOPS_MENU_TYPE3 "stabilna dłoń"
-WORKSHOPS_MENU_TYPE4 "przeszywający głos"
 WORKSHOPS_MENU_TYPE5 "jadowite kły"
+    "jadowitych kłów" : genitive
 WORKSHOPS_MENU_TYPE6 "Sprawia, że ofierze wyrasta para jadowitych kłów"
 WORKSHOPS_MENU_TYPE7 "rogi"
+    "rogów" : genitive
 WORKSHOPS_MENU_TYPE8 "Sprawia, że ofierze wyrasta para rogów"
 WORKSHOPS_MENU_TYPE9 "przemiana Strażnika"
+    "przemiana Strażnika" : genitive
 WORKSHOPS_MENU_TYPE "masowe szaleństwo"
+    "masowego szaleństwa" : genitive
 
 PROTECTION_FROM "ochrona przed {1:instrumental}"
 PROTECTED_FROM "chroniony przed {1:instrumental}"
-NO_LONGER_PROTECTED_FROM "nie jest już chroniony przed {1}"
+NO_LONGER_PROTECTED_FROM "nie jest już chroniony przed {1:instrumental}"
 
 YOU_ACQUIRE_THE_SKILL_OF "Zdobywasz umiejętność {1:accusative}."
 ACQUIRES_THE_SKILL_OF "{1} zdobywa umiejętność {2:accusative}."
@@ -8564,6 +8574,7 @@ BUFFS_AMBUSH_SKILL_NAME "zastawianie zasadzek"
 BUFFS_BRIDGE_BUILDING_SKILL_ADJECTIVE "buduje mosty"
 BUFFS_BRIDGE_BUILDING_SKILL_DESCRIPTION "Istota będzie próbować budować mosty podczas podróży."
 BUFFS_BRIDGE_BUILDING_SKILL_NAME "budowanie mostów"
+    "budowania mostów" : genitive
 
 BUFFS_COLD_RESISTANT_NAME "zimno"
 
@@ -8575,10 +8586,12 @@ BUFFS_CONFESSING_SKILL_NAME "słuchanie spowiedzi"
 BUFFS_CONSUMPTION_SKILL_ADJECTIVE "pochłaniacz"
 BUFFS_CONSUMPTION_SKILL_DESCRIPTION "Może wchłaniać inne istoty i zachowywać ich atrybuty."
 BUFFS_CONSUMPTION_SKILL_NAME "pochłanianie"
+    "pochłaniania" : genitive
 
 BUFFS_COPULATION_SKILL_ADJECTIVE "kopuluje"
 BUFFS_COPULATION_SKILL_DESCRIPTION "Może kopulować z innymi istotami i rodzić obrzydliwe potomstwo."
 BUFFS_COPULATION_SKILL_NAME "kopulacja"
+    "kopulacji" : genitive
 
 BUFFS_CROPS_SKILL_ADJECTIVE "rolnik"
     "rolniczka" : feminine
@@ -8593,39 +8606,45 @@ BUFFS_DEF_BONUS_ADJECTIVE "chroniony"
     "chronione" : neuter
 BUFFS_DEMON_RESISTANCE_NAME "demonów"
 BUFFS_DISARM_TRAPS_SKILL_ADJECTIVE "rozbraja pułapki"
-BUFFS_DISARM_TRAPS_SKILL_DESCRIPTION "Potrafi unikać pułapek i je rozbrajać."
+BUFFS_DISARM_TRAPS_SKILL_DESCRIPTION "Istota potrafi unikać pułapek i je rozbrajać."
 BUFFS_DISARM_TRAPS_SKILL_NAME "rozbrajanie pułapek"
+    "rozbrajania pułapek" : genitive
 
 BUFFS_DISTILLATION_SKILL_ADJECTIVE "bimbrownik"
     "bimbrowniczka" : feminine
 BUFFS_DISTILLATION_SKILL_DESCRIPTION "Potrafi destylować alkohol."
 BUFFS_DISTILLATION_SKILL_NAME "destylacja"
+    "destylacji" : genitive
 
 BUFFS_DIVINE_DIGGING_ADJECTIVE "boski kopacz"
     "boska kopaczka" : feminine
 BUFFS_DIVINE_DIGGING_NAME "boskie kopanie"
+    "boskiego kopania" : genitive
 BUFFS_DIVINE_PROTECTION_ADJECTIVE "chroniony"
     "chroniona" : feminine
     "chronione" : neuter
 BUFFS_DIVINE_PROTECTION_NAME "boska ochrona"
+    "boskiej ochrony" : genitive
 BUFFS_DIVINE_STRENGTH_ADJECTIVE "silny"
     "silna" : feminine
     "silne" : neuter
 BUFFS_DIVINE_STRENGTH_NAME "boska siła"
+    "boskiej siły" : genitive
 BUFFS_DRAGON_RESISTANCE_NAME "smoków"
 BUFFS_ELF_RESISTANCE_NAME "elfów"
 
 BUFFS_EXPLORE_CAVES_SKILL_ADJECTIVE "eksploruje jaskinie"
 BUFFS_EXPLORE_CAVES_SKILL_DESCRIPTION "Może badać jaskinie."
 BUFFS_EXPLORE_CAVES_SKILL_NAME "badanie jaskiń"
-
+    "badania jaskiń" : genitive
 BUFFS_EXPLORE_NOCTURNAL_SKILL_ADJECTIVE "eksploruje nocą"
 BUFFS_EXPLORE_NOCTURNAL_SKILL_DESCRIPTION "Może eksplorować otoczenie w nocy."
 BUFFS_EXPLORE_NOCTURNAL_SKILL_NAME "nocna eksploracja"
-
+    "nocnej eksploracji" : genitive
 BUFFS_EXPLORE_SKILL_ADJECTIVE "eksploruje"
 BUFFS_EXPLORE_SKILL_DESCRIPTION "Może eksplorować otoczenie."
 BUFFS_EXPLORE_SKILL_NAME "eksploracja"
+    "eksploracji" : genitive
 
 BUFFS_FIRE_RESISTANT_NAME "ogień"
 
@@ -8654,6 +8673,7 @@ BUFFS_PREACHING_SKILL_ADJECTIVE "kaznodzieja"
     "kaznodziejka" : feminine
 BUFFS_PREACHING_SKILL_DESCRIPTION "Może odprawiać Mszę."
 BUFFS_PREACHING_SKILL_NAME "kaznodziejstwo"
+    "kaznodziejstwa" : genitive
 
 BUFFS_RANGED_RESISTANCE_NAME "walka dystansowa"
     "walkę dystansową" : accusative
@@ -8666,6 +8686,7 @@ BUFFS_SWIMMING_SKILL_ADJECTIVE "pływak"
     "pływaczka" : feminine
 BUFFS_SWIMMING_SKILL_DESCRIPTION "Może przeprawiać się przez wodę bez topienia się."
 BUFFS_SWIMMING_SKILL_NAME "pływanie"
+    "pływania" : genitive
 
 BUFFS_UNDEAD_RESISTANCE_NAME "nieumarłych"
 
@@ -9145,7 +9166,7 @@ TILE_GAS_TYPES_BLACK_MASS_SMOKE_NAME masculine "gęsty czarny dym"
     "gęstymi czarnymi dymami" : plural,instrumental
     "gęste czarne dymy" : plural,accusative
 
-YOU_RESISTED_THE_ATTACK_OF "Oparłeś się atakowi {1}."
+YOU_RESISTED_THE_ATTACK_OF "Oparłeś się atakowi {1:genitive}."
 
 ENEMY_WAVE_NAME_UNKNOWN "Nieznany"
 EXTERNAL_ENEMIES_NAME "ciekawski bandyta"
@@ -9237,18 +9258,18 @@ SINGLE_THREAD_OPTION_DESCRIPTION "Włącz, jeśli masz problemy z wolnym zapisyw
 UNLOCK_ALL_OPTION_DESCRIPTION "Odblokowuje wszystkich bohaterów i funkcje normalnie odblokowywane przez sekrety w grze."
 EXP_INCREASE_OPTION_DESCRIPTION "Określa wzrost doświadczenia wrogów wraz z oddalaniem się od twojej bazy."
 DPI_AWARE_OPTION_DESCRIPTION "Może pomóc, jeśli gra jest rozmazana. Wymaga ponownego uruchomienia."
-ATTR_BUFF_DESCRIPTION "Zapewnia +{1} do {2}."
-ATTR_DEBUFF_DESCRIPTION "Nakłada -{1} do {2}."
-ATTR_DEBUFF_NAME "{1} osłabienie"
+ATTR_BUFF_DESCRIPTION "Zapewnia +{1} do {2:genitive}."
+ATTR_DEBUFF_DESCRIPTION "Nakłada -{1} do {2:genitive}."
+ATTR_DEBUFF_NAME "osłabienie {1:genitive}"
 
-BUFFS_THICK_SKIN_DESCRIPTION "obrona"
-BUFFS_IRON_ARMS_DESCRIPTION "obrażenia"
 BUFFS_STABLE_HAND_DESCRIPTION "obrażenia dystansowe"
+    "obrażeń dystansowych" : genitive
 BUFFS_PIERCING_VOICE_DESCRIPTION "obrażenia magiczne"
-BUFFS_DIVINE_PROTECTION_DESCRIPTION "obrona"
-BUFFS_DIVINE_STRENGTH_DESCRIPTION "obrażenia"
+    "obrażeń magicznych" : genitive
 BUFFS_DIVINE_DIGGING_DESCRIPTION "kopanie"
+    "kopania" : genitive
 BUFFS_DEF_DEBUFF_NAME "obrona"
+    "obrony" : genitive
 BUFFS_PREACHING_ENDEFFECT "Sługi otrzymały tymczasowy bonus +5 do obrony."
 BUFFS_PREACHING_ID5 "Sługi otrzymały tymczasowy bonus +5 do obrażeń."
 BUFFS_PREACHING_ID6 "Sługi otrzymały tymczasowy bonus +15 do kopania."
@@ -9291,11 +9312,11 @@ ITEMS_AUTOMATONCRAFTINGWOOD_PREFIX1 "rzemiosło"
 ITEMS_REPAIRAUTOMATONARMSIRON_PREFIX1 "naprawa"
 ITEMS_KABOOMHEAD_AMOUNT "kaboom"
 
-PROTECTION_MASS_DESCRIPTION "Msza zostanie odprawiona z intencją ochrony sług przed {1}."
-PROTECTION_MASS_SHORT_NAME "ochrona przed {1}"
-PROTECTION_MASS_NAME "księga liturgiczna ochrony przed {1}"
-PROTECTION_RING_NAME "pierścień ochrony przed {1}"
-PROTECTION_RING_SHORT_NAME "przed {1}"
+PROTECTION_MASS_DESCRIPTION "Msza zostanie odprawiona z intencją ochrony sług przed {1:instrumental}."
+PROTECTION_MASS_SHORT_NAME "ochrona przed {1:instrumental}"
+PROTECTION_MASS_NAME "księga liturgiczna ochrony przed {1:instrumental}"
+PROTECTION_RING_NAME "pierścień ochrony przed {1:instrumental}"
+PROTECTION_RING_SHORT_NAME "przed {1:instrumental}"
 
 ITEMS_UNDEADPROTECTIONRING5_NAME "nieumarłych"
 ITEMS_ELFPROTECTIONRING5_NAME "elfów"
@@ -9313,17 +9334,21 @@ ITEMS_PRAYERBOOKPROTECTION_SHORTNAME19 "elfów"
 ITEMS_PRAYERBOOKPROTECTION_SHORTNAME20 "zielonoskórych"
 ITEMS_PRAYERBOOKPROTECTION_SHORTNAME21 "jaszczuroludzi"
 
-BUFFS_DAM_BONUS_NAME "obrażenia"
-BUFFS_DAM_BONUS_DESCRIPTION "obrażenia"
+BUFFS_DAM_BONUS_NAME "atak"
+    "ataku" : genitive
 BUFFS_DEF_BONUS_NAME "obrona"
-BUFFS_DEF_BONUS_DESCRIPTION "obrona"
+    "obrony" : genitive
 BUFFS_THICK_SKIN_NAME "gruba skóra"
+    "grubej skóry" : genitive
 BUFFS_THICK_SKIN_ADJECTIVE "gruba skóra"
 BUFFS_IRON_ARMS_NAME "żelazne ramiona"
+    "żelaznych ramion" : genitive
 BUFFS_IRON_ARMS_ADJECTIVE "żelazne ramiona"
 BUFFS_STABLE_HAND_NAME "stabilna dłoń"
+    "stabilnej dłoni" : genitive
 BUFFS_STABLE_HAND_ADJECTIVE "stabilna dłoń"
 BUFFS_PIERCING_VOICE_NAME "przeszywający głos"
+    "przeszywającego głosu" : genitive
 BUFFS_PIERCING_VOICE_ADJECTIVE "przeszywający głos"
 
 SPELLS_MAGIC_MISSILE_EFFECT2 "Strzela magicznym pociskiem."

@@ -142,10 +142,10 @@ append {
 
   "ENCHANTED_LABORATORY"
   {
-      {{Potion OneTimeBoost() Name WORKSHOPS_MENU_TYPE1 Permanent IRON_ARMS }      20       "GOLD" 100}
-      {{Potion OneTimeBoost() Name WORKSHOPS_MENU_TYPE2 Permanent THICK_SKIN }     20       "GOLD" 100}
-      {{Potion OneTimeBoost() Name WORKSHOPS_MENU_TYPE3 Permanent STABLE_HAND }    20       "GOLD" 100}
-      {{Potion OneTimeBoost() Name WORKSHOPS_MENU_TYPE4 Permanent PIERCING_VOICE }  20       "GOLD" 100}
+      {{Potion OneTimeBoost() Name BUFFS_IRON_ARMS_NAME Permanent IRON_ARMS }      20       "GOLD" 100}
+      {{Potion OneTimeBoost() Name BUFFS_THICK_SKIN_NAME Permanent THICK_SKIN }     20       "GOLD" 100}
+      {{Potion OneTimeBoost() Name BUFFS_STABLE_HAND_NAME Permanent STABLE_HAND }    20       "GOLD" 100}
+      {{Potion OneTimeBoost() Name BUFFS_PIERCING_VOICE_NAME Permanent PIERCING_VOICE }  20       "GOLD" 100}
       {{Potion OneTimeBoost() Name WORKSHOPS_MENU_TYPE5
           Description WORKSHOPS_MENU_TYPE6
           AddIntrinsicAttack HEAD { Intrinsic { "bite_attack" } FANGS 5 {
