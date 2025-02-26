@@ -172,7 +172,7 @@ class Destruction : public Task {
   public:
   Destruction(WTaskCallback c, Position pos, const Furniture* furniture, DestroyAction action, PositionMatching* m)
       : Task(true), position(pos), callback(c), destroyAction(action),
-        description(action.getTaskDescription(), furniture->getName(), toString(position)),
+        description(TSentence(action.getTaskDescription(), furniture->getName(), toString(position))),
         furnitureType(furniture->getType()), matching(m) {
     if (matching)
       matching->addTarget(position);
@@ -243,7 +243,7 @@ class Destruction : public Task {
   Position SERIAL(position);
   WTaskCallback SERIAL(callback) = nullptr;
   DestroyAction SERIAL(destroyAction);
-  TSentence SERIAL(description);
+  TString SERIAL(description);
   FurnitureType SERIAL(furnitureType);
   PositionMatching* SERIAL(matching) = nullptr;
 };
