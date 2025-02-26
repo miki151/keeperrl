@@ -32,8 +32,7 @@ class CreatureName {
   optional<NameGeneratorId> getNameGenerator() const;
   void setStack(const TString&);
   void setBare(const TString&);
-  void addBarePrefix(const TString&);
-  void addBareSuffix(const TString&);
+  void modifyName(TStringId);
   void useFullTitle(bool = true);
   void setKillTitle(optional<TString>);
   const TString& stack() const;
@@ -54,8 +53,6 @@ class CreatureName {
   TString SERIAL(name);
 
   private:
-  optional<TString> SERIAL(prefix);
-  optional<TString> SERIAL(suffix);
   TString SERIAL(pluralName);
   optional<TString> SERIAL(stackName);
   optional<string> SERIAL(firstName);

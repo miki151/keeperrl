@@ -868,7 +868,7 @@ PCreature CreatureFactory::getSpirit(TribeId tribe, MonsterAIFactory aiFactory) 
   ret->getAttributes().getName().setFirst(none);
   ret->getAttributes().getName().useFullTitle(false);
   ret->modViewObject().setId(orig->getViewObject().id());
-  ret->getName().addBareSuffix(TStringId("SPIRIT"));
+  ret->getName().modifyName(TStringId("SPIRIT_NAME"));
   return ret;
 }
 

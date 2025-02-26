@@ -1147,7 +1147,7 @@ static bool apply(const Effects::ReviveCorpse& effect, Position pos, Creature* a
               auto summoned = Effect::summon(attacker, id, 1, TimeInterval(effect.ttl));
               if (!summoned.empty()) {
                 for (auto& c : summoned) {
-                  c->getName().addBarePrefix(dead->getName().bare());
+//                  c->getName().addBarePrefix(dead->getName().bare());
                   attacker->verb(TStringId("YOU_HAVE_REVIVED"), TStringId("HAS_REVIVED"), c->getName().a());
                 }
                 pos.removeItems({item});

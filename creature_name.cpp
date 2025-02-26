@@ -92,12 +92,8 @@ void CreatureName::setBare(const TString& s) {
   name = s;
 }
 
-void CreatureName::addBarePrefix(const TString& p) {
-  prefix = std::move(p);
-}
-
-void CreatureName::addBareSuffix(const TString& p) {
-  suffix = std::move(p);
+void CreatureName::modifyName(TStringId id) {
+  name = TSentence(std::move(id), std::move(name));
 }
 
 const optional<TString>& CreatureName::stackOnly() const {

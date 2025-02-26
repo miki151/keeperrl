@@ -7,15 +7,15 @@
 #include "intrinsic_attack.h"
 #include "content_factory.h"
 
-optional<string> getExtraBodyPartPrefix(const ExtraBodyPart& part) {
+optional<TStringId> getExtraBodyPartPrefix(const ExtraBodyPart& part) {
   switch (part.part) {
     case BodyPart::HEAD:
       if (part.count == 1)
-        return "two-headed"_s;
+        return TStringId("TWO_HEADED");
       else
-        return "multi-headed"_s;
+        return TStringId("MULTI_HEADED");
     case BodyPart::WING:
-      return "winged"_s;
+      return TStringId("WINGED");
     default:
       return none;
   }
@@ -41,7 +41,7 @@ void applySpecialTrait(GlobalTime globalTime, SpecialTrait trait, Creature* c, c
       [&] (ExtraBodyPart part) {
         c->getAttributes().add(part.part, part.count, factory);
         if (auto prefix = getExtraBodyPartPrefix(part)) {
-          c->getName().addBarePrefix(*prefix);
+          c->getName().modifyName(*prefix);
         }
       },
       [&] (const ExtraIntrinsicAttack& a) {
