@@ -64,7 +64,7 @@ AMULET_OF masculine "amulet {1:genitive}"
     "amuletów {1:genitive}" : plural,genitive
     "amuletami {1:genitive}" : plural,instrumental
     "amulety {1:genitive}" : plural,accusative
-AMULETS_OF masculine "amu­lety {1:genitive}"
+AMULETS_OF masculine "amulety {1:genitive}"
     "amuletów {1:genitive}" : genitive
     "amuletami {1:genitive}" : instrumental
     "amulety {1:genitive}" : accusative
@@ -338,7 +338,8 @@ CHANGE_NAME_EFFECT_NAME "zmień imię"
 CHANGE_SPRITE_EFFECT_DESCRIPTION "Zmienia wygląd (sprite) istoty"
 CHANGE_SPRITE_EFFECT_NAME "zmień wygląd"
 CHAT_ACTION "Porozmawiaj"
-CIVILIAN_STATUS "Cywil"
+CIVILIAN_STATUS "cywil"
+    "cywilka" : feminine
 CLAIM_TILE_EFFECT_DESCRIPTION "Przejmuje to pole jako twoje terytorium"
 CLAIM_TILE_EFFECT_NAME "przejmij pole"
 CLICK_TO "Kliknij, aby {1}"
@@ -394,7 +395,8 @@ CREATURE_REQUIRES_QUARTERS_WITH_LUXURY "Ta istota potrzebuje prywatnego pokoju z
 CREATURES_AFFECTED_BY "pod wpływem {1}"
 CREATURES_EXP_LEVEL_BELOW "z poziomem doświadczenia poniżej {1}"
 CREATURES_HOLDING_INGREDIENT "dzierżące {1}"
-CREATURES_MADE_OF_MATERIAL "wykonane z {1}"
+CREATURES_MADE_OF_MATERIAL "istoty z {1:genitive}"
+    "istotom z {1:genitive}" : plural,dative
 CREATURES_WITH_HEALTH_BETWEEN "z życiem między {1} a {2}"
 CREATURE_TITLE "{2} {1}"
 CURRENTLY_NOT_RIDING_STEED "Obecnie nie dosiadasz wierzchowca."
@@ -595,7 +597,6 @@ IDLE_TASK "Bierny"
 ILLUSION "Iluzja"
 IMMEDIATE_TRIGGER "Natychmiastowy"
 IMMIGRANT_ATTR_BONUS "{1} {2}"
-IMMIGRANT_SPECIAL_ATTR_BONUS "{1} {2} {3}"
 IMMIGRANT_AUTO_ACCEPTED "(Imigrant zostanie przyjęty automatycznie)"
 IMMIGRANT_AUTO_REJECTED "(Imigrant zostanie odrzucony automatycznie)"
 IMMIGRANT_COMPANION "{1} towarzysz"
@@ -755,7 +756,15 @@ NO_LEGS "bez nóg"
 NO_LIMBS "bez kończyn"
 NO_MESSAGES_YET "Brak wiadomości"
 NON_AUTOMATONS "nie-automaty"
-NON_HUMANOIDS "nie-humanoidy"
+NON_HUMANOIDS masculine "nie-humanoid"
+    "nie-humanoida" : genitive
+    "nie-humanoidem" : instrumental
+    "nie-humanoida" : accusative
+    "nie-humanoidy" : plural
+    "nie-humanoidów" : plural,genitive
+    "nie-humanoidami" : plural,instrumental
+    "nie-humanoidom" : plural,dative
+    "nie-humanoidów" : plural,accusative
 NO "Nie"
 NO_RETIRED_DUNGEONS "Nie znaleziono żadnych porzuconych lochów :("
 NO_ROOM_TO_SPAWN "Za mało miejsca, by się pojawić."
@@ -909,7 +918,8 @@ SPECIAL_ATTR_VALUE "{1} {2} {3}"
 SPECIAL_HUMANOID_CHAT_REACTION "Jestem potężnym {1}!"
 SPECIAL_HUMANOID_HOSTILE_CHAT_REACTION "Jestem potężnym {1}. Giń!"
 SPEED_LABEL "szybkość: "
-SPELLCASTERS "czarodzieje"
+SPELLCASTERS "rzucający czary"
+    "rzucającym czary" : dative,plural
 SPELL_COOLDOWN "Czas odnowienia: {1}"
 SPELL_SCHOOLS_LABEL "Szkoły magii:"
 SPIDER_TASK "Zadanie pająka"
@@ -996,7 +1006,10 @@ TREE_CUTTING_TASK_HIGHLIGHT "Zadanie wycinki drzew"
 TRIBES_HAVE_FORMED_ALLIANCE "Plemiona {1:genitive} zawarły sojusz przeciwko tobie."
 THE_LAST_ALLIANCE_OF "Ostatni sojusz {1:genitive}"
 TRIBE_LEADER_STATUS_DESCRIPTION "Zabicie zatrzyma imigrację"
-TRIBE_LEADER_STATUS "Przywódca plemienia"
+TRIBE_LEADER_HELPER "przywódca plemienia"
+    "przywódczyni plemienia" : feminine
+    "przywódcom plemion" : plural,dative
+TRIBE_LEADER_STATUS "{TRIBE_LEADER_HELPER:1}"
 TRIBE_OF_IS_DESTROYED "Plemię „{1}” zostało zniszczone."
 TRIGGERS_SOMETHING "{1} wywołuje coś."
 TRIGGER_TRAP_EFFECT_DESCRIPTION "Aktywuje pułapkę, jeśli jest obecna."
@@ -1627,6 +1640,7 @@ REVIVE_CORPSE_EFFECT_DESCRIPTION "Reanimuje zwłoki jako sługę."
 REVIVE_CORPSE_EFFECT_NAME "wskrzeszenie zwłok"
     "wskrzeszenia zwłok" : genitive
 RIDERS "jeźdźcy"
+    "jeźdźcom" : plural,dative
 RIGHT_CLICK_TO_CLEAR "Prawy przycisk, aby wyczyścić"
 SCREAM "Krzyczysz!"
 SCREAMS "{1} krzyczy!"
@@ -1841,13 +1855,13 @@ OBJECT_CRASHES_ON "{1} spada na {2:accusative}."
 PLURAL_ITEMS_A "{2} {1}"
 PLURAL_ITEMS_THE "{2} {1}"
 REACHES_EXP_LEVEL "{1} osiąga poziom doświadczenia {2}."
-SPECIAL_ATTR_ADJECTIVE "{1} {2} {3}"
+SPECIAL_ATTR_ADJECTIVE "{1} do {2:genitive} {3}"
 TORTURES "{1} torturuje {2:accusative}."
 WHIPS "{1} chłosta {2:accusative}."
 YOU_ARE_TOO_SMALL_TO_PUSH "Jesteś za mały, by popchnąć {1:accusative}!"
 YOU_NEED_TO_HANDS_TO_WIELD "Potrzebujesz dwóch rąk, aby władać {1:instrumental}!"
 CREATURE_GROUP "{1} {2} {3}"
-AGAINST "przeciw {1}"
+AGAINST "przeciw {1:plural,dative}"
 CREATURES_WITH_AT_LEAST_X_KILLS "istoty z co najmniej {1} zabójstwami"
 CREATURES_WITH_ATTR_AT_LEAST "istoty z co najmniej {1} {2}"
 CREATURES_WITH_MAX_TRAINING_LEVEL_BELOW "istoty z maksymalnym poziomem szkolenia poniżej {1}"
@@ -2014,6 +2028,7 @@ HUMANOIDS masculine "humanoid"
     "humanoidy" : plural
     "humanoidów" : plural,genitive
     "humanoidami" : plural,instrumental
+    "humanoidom" : plural,dative
     "humanoidów" : plural,accusative
 FIRE_EFFECT_DESCRIPTION "Podpala!"
 FIRE_EFFECT_NAME "ogień"
@@ -2331,9 +2346,11 @@ ATTR_INFO_DAMAGE_NAME "atak"
 ATTR_INFO_DEFENSE_ADJECTIVE "chroniony"
 ATTR_INFO_DEFENSE_HELP "Wpływa na to, czy i jak bardzo postać zostanie zraniona w walce."
 ATTR_INFO_DEFENSE_NAME "obrona"
+    "obrony" : genitive
 ATTR_INFO_DIGGING_ADJECTIVE "ryjący"
 ATTR_INFO_DIGGING_HELP "Pozwala kopać w ziemi."
 ATTR_INFO_DIGGING_NAME "kopanie"
+    "kopania" : genitive
 ATTR_INFO_DIVINITY_ADJECTIVE "boski"
 ATTR_INFO_DIVINITY_HELP "Określa maksymalny potencjał modlitw postaci."
 ATTR_INFO_DIVINITY_NAME "świętość"
@@ -2347,24 +2364,29 @@ ATTR_INFO_FIRE_DAMAGE_NAME "atak ogniem"
 ATTR_INFO_FORGE_ADJECTIVE "metalowy"
 ATTR_INFO_FORGE_HELP "Określa umiejętności postaci w pracy przy kuźni."
 ATTR_INFO_FORGE_NAME "kowalstwo"
+    "kowalstwa" : genitive
 ATTR_INFO_FURNACE_ADJECTIVE "zawęglony"
 ATTR_INFO_FURNACE_HELP "Określa umiejętności pracy przy piecu hutniczym."
 ATTR_INFO_FURNACE_NAME "piec hutniczy"
+    "pieca hutniczego" : genitive
 ATTR_INFO_JEWELER_ADJECTIVE "złocisty"
 ATTR_INFO_JEWELER_HELP "Określa umiejętności pracy w zakładzie jubilerskim."
 ATTR_INFO_JEWELER_NAME "jubilerstwo"
+    "jubilerstwa" : genitive
 ATTR_INFO_LABORATORY_ADJECTIVE "chemiczny"
 ATTR_INFO_LABORATORY_HELP "Określa umiejętności pracy w laboratorium."
 ATTR_INFO_LABORATORY_NAME "laboratorium"
 ATTR_INFO_MORGUE_ADJECTIVE "zgniły"
 ATTR_INFO_MORGUE_HELP "Określa umiejętności pracy przy stole w kostnicy."
 ATTR_INFO_MORGUE_NAME "kostnica"
+    "kostnicy" : genitive
 ATTR_INFO_MULTI_WEAPON_ADJECTIVE "oburęczny"
 ATTR_INFO_MULTI_WEAPON_HELP "Pozwala używać wielu broni w jednym ataku. Wartość atrybutu definiuje mnożnik obrażeń dla kolejnych ciosów."
 ATTR_INFO_MULTI_WEAPON_NAME "walka wieloma brońmi"
 ATTR_INFO_PARRY_ADJECTIVE "unikowy"
 ATTR_INFO_PARRY_HELP "Zapobiega karze do obrony przy otoczeniu przez wrogów."
 ATTR_INFO_PARRY_NAME "parowanie"
+    "parowania" : genitive
 ATTR_INFO_RANGED_DAMAGE_ADJECTIVE "celny"
 ATTR_INFO_RANGED_DAMAGE_HELP "Podstawowa wartość obrażeń przy atakach dystansowych."
 ATTR_INFO_RANGED_DAMAGE_NAME "celność"
@@ -2376,9 +2398,11 @@ ATTR_INFO_SPELL_DAMAGE_NAME "magia"
 ATTR_INFO_SPELL_SPEED_ADJECTIVE "szybkoręki"
 ATTR_INFO_SPELL_SPEED_HELP "Wpływa na czas odnowienia czarów."
 ATTR_INFO_SPELL_SPEED_NAME "szybkość czarowania"
+    "szybkość czarowania" : genitive
 ATTR_INFO_WORKSHOP_ADJECTIVE "pomysłowy"
 ATTR_INFO_WORKSHOP_HELP "Określa umiejętności pracy w warsztacie."
 ATTR_INFO_WORKSHOP_NAME "warsztat"
+    "warsztat" : genitive
 BODY_MATERIALS_ADA_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_ADA_NAME neuter "adamantium"
 
@@ -2390,30 +2414,18 @@ BODY_MATERIALS_BONE_NAME feminine "kość"
     "kości" : genitive
     "kością" : instrumental
     "kość" : accusative
-    "kości" : plural
-    "kości" : plural,genitive
-    "kośćmi" : plural,instrumental
-    "kości" : plural,accusative
 
 BODY_MATERIALS_CLAY_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_CLAY_NAME feminine "glina"
     "gliny" : genitive
     "gliną" : instrumental
     "glinę" : accusative
-    "gliny" : plural
-    "glin" : plural,genitive
-    "glinami" : plural,instrumental
-    "gliny" : plural,accusative
 
 BODY_MATERIALS_FIRE_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_FIRE_NAME masculine "ogień"
     "ognia" : genitive
     "ogniem" : instrumental
     "ogień" : accusative
-    "ognie" : plural
-    "ogni" : plural,genitive
-    "ogniami" : plural,instrumental
-    "ognie" : plural,accusative
 
 BODY_MATERIALS_FLESH_DEATHDESCRIPTION "zabity"
     "zabita" : feminine
@@ -2422,110 +2434,66 @@ BODY_MATERIALS_FLESH_NAME neuter "ciało"
     "ciała" : genitive
     "ciałem" : instrumental
     "ciało" : accusative
-    "ciała" : plural
-    "ciał" : plural,genitive
-    "ciałami" : plural,instrumental
-    "ciała" : plural,accusative
 
 BODY_MATERIALS_GOLD_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_GOLD_NAME neuter "złoto"
     "złota" : genitive
     "złotem" : instrumental
     "złoto" : accusative
-    "złota" : plural
-    "złot" : plural,genitive
-    "złotami" : plural,instrumental
-    "złota" : plural,accusative
 
 BODY_MATERIALS_ICE_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_ICE_NAME masculine "lód"
     "lodu" : genitive
     "lodem" : instrumental
     "lód" : accusative
-    "lody" : plural
-    "lodów" : plural,genitive
-    "lodami" : plural,instrumental
-    "lody" : plural,accusative
 
 BODY_MATERIALS_INFERNITE_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_INFERNITE_NAME neuter "infernit"
     "infernit" : genitive
     "infernit" : instrumental
     "infernit" : accusative
-    "infernit" : plural
-    "infernit" : plural,genitive
-    "infernit" : plural,instrumental
-    "infernit" : plural,accusative
 
 BODY_MATERIALS_IRON_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_IRON_NAME neuter "żelazo"
     "żelaza" : genitive
     "żelazem" : instrumental
     "żelazo" : accusative
-    "żelaza" : plural
-    "żelaz" : plural,genitive
-    "żelazami" : plural,instrumental
-    "żelaza" : plural,accusative
 
 BODY_MATERIALS_LAVA_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_LAVA_NAME feminine "lava"
     "lawy" : genitive
     "lawą" : instrumental
     "lawę" : accusative
-    "lawy" : plural
-    "law" : plural,genitive
-    "lawami" : plural,instrumental
-    "lawy" : plural,accusative
 
 BODY_MATERIALS_ROCK_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_ROCK_NAME masculine "kamień"
     "kamienia" : genitive
     "kamieniem" : instrumental
     "kamień" : accusative
-    "kamienie" : plural
-    "kamieni" : plural,genitive
-    "kamieniami" : plural,instrumental
-    "kamienie" : plural,accusative
 
 BODY_MATERIALS_SPIRIT_DEATHDESCRIPTION "zabity"
 BODY_MATERIALS_SPIRIT_NAME feminine "ektoplazma"
     "ektoplazmy" : genitive
     "ektoplazmą" : instrumental
     "ektoplazmę" : accusative
-    "ektoplazmy" : plural
-    "ektoplazm" : plural,genitive
-    "ektoplazmami" : plural,instrumental
-    "ektoplazmy" : plural,accusative
 
 BODY_MATERIALS_UNDEAD_FLESH_DEATHDESCRIPTION "zabity"
 BODY_MATERIALS_UNDEAD_FLESH_NAME neuter "gnijące ciało"
     "gnijącego ciała" : genitive
     "gnijącym ciałem" : instrumental
     "gnijące ciało" : accusative
-    "gnijące ciała" : plural
-    "gnijących ciał" : plural,genitive
-    "gnijącymi ciałami" : plural,instrumental
-    "gnijące ciała" : plural,accusative
 
 BODY_MATERIALS_WATER_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_WATER_NAME feminine "woda"
     "wody" : genitive
     "wodą" : instrumental
     "wodę" : accusative
-    "wody" : plural
-    "wód" : plural,genitive
-    "wodami" : plural,instrumental
-    "wody" : plural,accusative
 
 BODY_MATERIALS_WOOD_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_WOOD_NAME neuter "drewno"
     "drewna" : genitive
     "drewnem" : instrumental
     "drewno" : accusative
-    "drewna" : plural
-    "drewn" : plural,genitive
-    "drewnami" : plural,instrumental
-    "drewna" : plural,accusative
 
 BUFFS_BLEEDING_ADJECTIVE "krwawiący"
 BUFFS_BLEEDING_DESCRIPTION "Powoduje stopniową utratę punktów życia."
@@ -8649,14 +8617,30 @@ BUFFS_EXPLORE_SKILL_NAME "eksploracja"
 BUFFS_FIRE_RESISTANT_NAME "ogień"
 
 BUFFS_GREENSKIN_RESISTANCE_NAME "zielonoskórych"
-BUFFS_HATE_DEMONS_NAME "demonów"
-BUFFS_HATE_DRAGONS_NAME "smoków"
-BUFFS_HATE_DWARVES_NAME "krasnoludów"
-BUFFS_HATE_ELVES_NAME "elfów"
-BUFFS_HATE_GREENSKINS_NAME "zielonoskórych"
-BUFFS_HATE_HUMANS_NAME "ludzi"
-BUFFS_HATE_LIZARDMEN_NAME "jaszczuroludzi"
-BUFFS_HATE_UNDEAD_NAME "nieumarłych"
+BUFFS_HATE_DEMONS_NAME "demony"
+    "demonów" : genitive
+    "demonom" : dative
+BUFFS_HATE_DRAGONS_NAME "smoki"
+    "smoków" : genitive
+    "smokom" : dative
+BUFFS_HATE_DWARVES_NAME "krasnoludy"
+    "krasnoludów" : genitive
+    "krasnoludom" : dative
+BUFFS_HATE_ELVES_NAME "elfy"
+    "elfów" : genitive
+    "elfom" : dative
+BUFFS_HATE_GREENSKINS_NAME "zielonoskórzy"
+    "zielonoskórych" : genitive
+    "zielonoskórym" : dative
+BUFFS_HATE_HUMANS_NAME "ludzie"
+    "ludzi" : genitive
+    "ludziom" : dative
+BUFFS_HATE_LIZARDMEN_NAME "jaszczuroludzie"
+    "jaszczuroludzi" : genitive
+    "jaszczuroludziom" : dative
+BUFFS_HATE_UNDEAD_NAME "nieumarli"
+    "nieumarłych" : genitive
+    "nieumarłym" : dative
 BUFFS_LIZARDMEN_RESISTANCE_NAME "jaszczuroludzi"
 
 BUFFS_MAGIC_RESISTANCE_NAME "magia"

@@ -1747,7 +1747,7 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
       },
       [&] (const SpecialAttr& t) {
         return TraitInfo{
-            TSentence("IMMIGRANT_SPECIAL_ATTR_BONUS", {toStringWithSign(t.value), factory->attrInfo.at(t.attr).name,
+            TSentence("SPECIAL_ATTR_ADJECTIVE", {toStringWithSign(t.value), factory->attrInfo.at(t.attr).name,
                 t.predicate.getName(factory)}),
             t.value < 0};
       },
