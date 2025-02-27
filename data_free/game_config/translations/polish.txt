@@ -383,7 +383,7 @@ COVERED_IN_OIL "pokryty olejem!"
 CRAFTED_FROM "Wykonano z {1}"
 CRAFTED_ITEMS_LABEL "produkcja przedmiotów"
     "produkcję przedmiotów" : accusative
-CRAFTING_UPDATE_FOR "Ulepszenie tworzenia dla {1}:"
+CRAFTING_UPDATE_FOR "Ulepszenie przy produkcji {1:plural,genitive}:"
 IS_CRAWLING "{1} czołga się."
 YOU_CRAWLING "Czołgasz się."
 CREATE_FURNITURE_DESCRIPTION "Tworzy {1}"
@@ -392,7 +392,7 @@ CREATE_ITEMS_NAME "twórz przedmioty"
 CREATURE_INVENTORY_TITLE "Ekwipunek:"
 CREATURE_REQUIRES_QUARTERS "Ta istota potrzebuje prywatnego pokoju, aby wykorzystać doświadczenie bojowe."
 CREATURE_REQUIRES_QUARTERS_WITH_LUXURY "Ta istota potrzebuje prywatnego pokoju z luksusem o wartości {1}."
-CREATURES_AFFECTED_BY "pod wpływem {1}"
+CREATURES_AFFECTED_BY "istotom pod wpływem {1:genitive}"
 CREATURES_EXP_LEVEL_BELOW "z poziomem doświadczenia poniżej {1}"
 CREATURES_HOLDING_INGREDIENT "dzierżące {1}"
 CREATURES_MADE_OF_MATERIAL "istoty z {1:genitive}"
@@ -1874,7 +1874,7 @@ BUFF_EFFECT_DESCRIPTION "{1} Trwa {2} tur."
 COMPANION_EFFECT_DESCRIPTION "Zapewnia stałego towarzysza {1:genitive}"
 CUSTOM_AREA_EFFECT_DESCRIPTION "Efekt obszarowy niestandardowy: {1}"
 CUSTOM_AREA_EFFECT_NAME "obszar niestandardowy: {1}"
-DAMAGE_EFFECT_DESCRIPTION "Zadaje {1}"
+DAMAGE_EFFECT_DESCRIPTION "Zadaje obrażenia typu: {1}"
 EMIT_GAS_DESCRIPTION "Wydziela {1:accusative}"
 EXTRA_BODY_PART_EFFECT_DESCRIPTION "Dodaje {1:accusative}"
 EXTRA_BODY_PART_EFFECT_NAME_HELPER "dodatkowego"
@@ -5261,32 +5261,32 @@ FURNITURE_ARMOR_RACK_NAME masculine "stojak na zbroje"
     "stojakami na zbroje" : plural,instrumental
     "stojaki na zbroje" : plural,accusative
 
-FURNITURE_AUTOMATON_ENGINE_ADA_NAME masculine "adamantynowy rdzeń automatu"
-    "adamantynowego rdzenia automatu" : genitive
-    "adamantynowym rdzeniem automatu" : instrumental
-    "adamantynowy rdzeń automatu" : accusative
-    "adamantynowe rdzenie automatu" : plural
-    "adamantynowych rdzeni automatu" : plural,genitive
-    "adamantynowymi rdzeniami automatu" : plural,instrumental
-    "adamantynowe rdzenie automatu" : plural,accusative
+FURNITURE_AUTOMATON_ENGINE_ADA_NAME masculine "adamantynowy silnik"
+    "adamantynowego silnika" : genitive
+    "adamantynowym silnikiem" : instrumental
+    "adamantynowy silnik" : accusative
+    "adamantynowe silniki" : plural
+    "adamantynowych silników" : plural,genitive
+    "adamantynowymi silnikami" : plural,instrumental
+    "adamantynowe silniki" : plural,accusative
 
-FURNITURE_AUTOMATON_ENGINE_IRON_NAME masculine "żelazny rdzeń automatu"
-    "żelaznego rdzenia automatu" : genitive
-    "żelaznym rdzeniem automatu" : instrumental
-    "żelazny rdzeń automatu" : accusative
-    "żelazne rdzenie automatu" : plural
-    "żelaznych rdzeni automatu" : plural,genitive
-    "żelaznymi rdzeniami automatu" : plural,instrumental
-    "żelazne rdzenie automatu" : plural,accusative
+FURNITURE_AUTOMATON_ENGINE_IRON_NAME masculine "żelazny silnik"
+    "żelaznego silnika" : genitive
+    "żelaznym silnikiem" : instrumental
+    "żelazny silnik" : accusative
+    "żelazne silniki" : plural
+    "żelaznych silników" : plural,genitive
+    "żelaznymi silnikami" : plural,instrumental
+    "żelazne silniki" : plural,accusative
 
-FURNITURE_AUTOMATON_ENGINE_WOOD_NAME masculine "drewniany rdzeń automatu"
-    "drewnianego rdzenia automatu" : genitive
-    "drewnianym rdzeniem automatu" : instrumental
-    "drewniany rdzeń automatu" : accusative
-    "drewniane rdzenie automatu" : plural
-    "drewnianych rdzeni automatu" : plural,genitive
-    "drewnianymi rdzeniami automatu" : plural,instrumental
-    "drewniane rdzenie automatu" : plural,accusative
+FURNITURE_AUTOMATON_ENGINE_WOOD_NAME masculine "drewniany silnik"
+    "drewnianego silnika" : genitive
+    "drewnianym silnikiem" : instrumental
+    "drewniany silnik" : accusative
+    "drewniane silniki" : plural
+    "drewnianych silników" : plural,genitive
+    "drewnianymi silnikami" : plural,instrumental
+    "drewniane silniki" : plural,accusative
 
 FURNITURE_AUTOMATON_STORAGE_NAME masculine "skrzynia na automaty"
     "skrzyni na automaty" : genitive
@@ -7437,14 +7437,14 @@ ITEMS_FIRSTAIDKIT_NAME feminine "apteczka pierwszej pomocy"
     "apteczek pierwszej pomocy" : plural,genitive
     "apteczkami pierwszej pomocy" : plural,instrumental
     "apteczki pierwszej pomocy" : plural,accusative
-ITEMS_GOLDPIECE_NAME feminine "moneta złota"
-    "monety złota" : genitive
-    "monetą złota" : instrumental
-    "monetę złota" : accusative
-    "monety złota" : plural
-    "monet złota" : plural,genitive
-    "monetami złota" : plural,instrumental
-    "monety złota" : plural,accusative
+ITEMS_GOLDPIECE_NAME feminine "złota moneta"
+    "złotej monety" : genitive
+    "złotą monetą" : instrumental
+    "złotą monetę" : accusative
+    "złote monety" : plural
+    "złotych monet" : plural,genitive
+    "złotymi monetami" : plural,instrumental
+    "złote monety" : plural,accusative
 ITEMS_GREENDRAGONSCALES_NAME feminine "zielone smocze łuski"
     "zielonych smoczych łusek" : genitive
     "zielonymi smoczymi łuskami" : instrumental
@@ -8262,7 +8262,7 @@ SPELLS_FIRE_TRAP_EFFECT "ognista pułapka"
 SPELLS_FIREWALL_EFFECT "ściana ognia"
 SPELLS_FOG_CLOUD_EFFECT1 "Tworzy chmurę mgły."
 SPELLS_FOG_CLOUD_EFFECT "mgła"
-SPELLS_GHOUL_CORPSE_FEAST_EFFECT1 "Zwiększa obrażenia od czarów i obronę o 1 na 200 tur po uczcie na zwłokach."
+SPELLS_GHOUL_CORPSE_FEAST_EFFECT1 "Zwiększa obrażenia od czarów i obronę o 1 na 200 tur po każdej uczcie na zwłokach."
 SPELLS_GHOUL_CORPSE_FEAST_EFFECT "uczta na zwłokach"
 SPELLS_GHOUL_CORPSE_FEAST_MESSAGE1 "zaczyna ucztować na zwłokach"
 SPELLS_GHOUL_CORPSE_FEAST_MESSAGE "zacznij ucztować na zwłokach"
@@ -8280,7 +8280,7 @@ SPELLS_KINGS_CHARGE_EFFECT1 "Wszyscy sojusznicy w promieniu 10 otrzymują +15 do
 SPELLS_KINGS_CHARGE_EFFECT "szarża króla"
 SPELLS_KINGS_CHARGE_SECONDPERSON "nie jesteś godzien!"
 SPELLS_KINGS_CHARGE_THIRDPERSON "nie jest godzien!"
-SPELLS_LEYAK_ACID_EFFECT "plucie kwasem leyak"
+SPELLS_LEYAK_ACID_EFFECT "plucie kwasem"
 SPELLS_LEYAK_ACID_MESSAGE1 "pluje kwasem!"
 SPELLS_LEYAK_ACID_MESSAGE "pluj kwasem!"
 SPELLS_MAGIC_MISSILE_EFFECT1 "święty pocisk"
@@ -9553,6 +9553,7 @@ MINION_MORALE_HINT "Morale wpływa na wydajność sług i szanse ucieczki z pola
 KILLING_LEADER_HINT "Zabicie przywódcy bardzo obniża morale jego plemienia oraz wstrzymuje imigrację."
 TUTORIAL "samouczek"
     "samouczka" : genitive
+SPELL_RANGE "Zasięg: {1}"
 NEW_LINE "{1}
 {2}"
 TEXT128 "Nie znaleziono strony. Skontaktuj się z autorem moda."

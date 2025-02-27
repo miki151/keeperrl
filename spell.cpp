@@ -60,7 +60,7 @@ vector<TString> Spell::getDescription(const Creature* c, const ContentFactory* f
         : toString(cooldown)))
         };
   if (getRange() > 0)
-    description.push_back("Range: " + toString(getRange()));
+    description.push_back(TSentence("SPELL_RANGE", toString(getRange())));
   return description;
 }
 

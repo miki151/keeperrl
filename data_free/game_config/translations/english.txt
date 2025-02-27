@@ -4156,6 +4156,7 @@ SPELL_SCHOOLS_HELP_BUTTON "Spell schools"
 MINION_MORALE_HINT "Morale affects minion productivity and chances of fleeing from battle."
 KILLING_LEADER_HINT "Killing a leader greatly lowers the morale of his tribe and stops immigration."
 TUTORIAL "tutorial"
+SPELL_RANGE "Range: {1}"
 NEW_LINE "{1}
 {2}"
 TEXT128 "Page not found. Please contact mod author."
