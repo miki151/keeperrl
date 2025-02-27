@@ -690,13 +690,8 @@ static vector<string> breakText(Renderer& renderer, const string& text, int maxW
     for (string word : splitIncludeDelim(line, {delim})) {
       for (string subword : breakWord(renderer, word, maxWidth, size)) {
         auto addWord = [&](string& row, string word) {
-          if (row.empty())
-            for (int i : All(word))
-              if (word[i] != ' ') {
-                if (i > 0)
-                  word = word.substr(i);
-                break;
-              }
+          if (row.empty() && word == string(1, delim))
+            return;
           row += std::move(word);
         };
         if (!rows.back().empty() && renderer.getTextLength(rows.back() + subword, size) > maxWidth)
