@@ -88,7 +88,7 @@ struct EventPoem {
 };
 struct Assembled {
   CreatureId SERIAL(creature);
-  string SERIAL(itemName);
+  TString SERIAL(itemName);
   EnumSet<MinionTrait> SERIAL(traits);
   vector<ItemUpgradeType> SERIAL(upgradeType);
   int SERIAL(maxUpgrades);

@@ -194,7 +194,9 @@ void PlayerControl::loadImmigrationAndWorkshops(ContentFactory* contentFactory,
   WorkshopArray merged;
   for (auto& group : keeperCreatureInfo.workshopGroups)
     for (auto& elem : contentFactory->workshopGroups.at(group))
-      merged[elem.first].append(elem.second);
+      for (auto& workshopItem : elem.second)
+        if (!workshopItem.tech || technology.techs.count(*workshopItem.tech))
+          merged[elem.first].push_back(workshopItem);
   collective->setWorkshops(make_unique<Workshops>(std::move(merged), contentFactory));
   for (auto& workshop : collective->getWorkshops().types)
     for (auto& option : workshop.second.getOptions())
@@ -1297,7 +1299,11 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option, int queuedCo
       c.price = getCostObj(option.cost * queuedCount);
       if (option.techId && !collective->getTechnology().researched.count(*option.techId)) {
         c.unavailable = true;
-        c.unavailableReason = "Requires technology: "_s + option.techId->data();
+        // Work around the fact that some workshop items may require technology that the player doesn't have,
+        // only happens in pre-translation saved games.
+        c.unavailableReason = TSentence("MISSING_TECHNOLOGY", collective->getTechnology().techs.count(*option.techId)
+            ? collective->getTechnology().getName(*option.techId)
+            : TString(string(option.techId->data())));
       }
       c.description = option.description;
       c.tutorialHighlight = tutorial && option.tutorialHighlight &&
