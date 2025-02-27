@@ -4160,6 +4160,7 @@ DRILLING_AUTOMATON_NAME "drilling automaton"
 AUTOMATON_CORPUS_NAME "automaton corpus"
 LIGHT_AUTOMATON_CORPUS_NAME "light automaton corpus"
 HEAVY_AUTOMATON_CORPUS_NAME "heavy automaton corpus"
+PREINSTALLED_PARTS "Preinstalled parts:"
 NEW_LINE "{1}
 {2}"
 TEXT128 "Page not found. Please contact mod author."

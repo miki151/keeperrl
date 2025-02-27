@@ -9555,6 +9555,7 @@ DRILLING_AUTOMATON_NAME "drążący automat"
 AUTOMATON_CORPUS_NAME "korpus automatu"
 LIGHT_AUTOMATON_CORPUS_NAME "lekki korpus automatu"
 HEAVY_AUTOMATON_CORPUS_NAME "ciężki korpus automatu"
+PREINSTALLED_PARTS "Preinstalowane części:"
 NEW_LINE "{1}
 {2}"
 TEXT128 "Nie znaleziono strony. Skontaktuj się z autorem moda."

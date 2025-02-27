@@ -193,7 +193,8 @@ struct ImmigrantCreatureInfo {
     HASH_ALL(expType, limit, attribute)
   };
   vector<TrainingInfo> HASH(trainingLimits);
-  HASH_ALL(name, viewId, attributes, spellSchools, trainingLimits);
+  vector<pair<ViewId, TString>> HASH(preInstalledParts);
+  HASH_ALL(name, viewId, attributes, spellSchools, trainingLimits, preInstalledParts);
 };
 
 ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature*, const ContentFactory*);

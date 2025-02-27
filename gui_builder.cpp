@@ -1451,6 +1451,14 @@ SGuiElem GuiBuilder::drawImmigrantCreature(const ImmigrantCreatureInfo& creature
         .addSpace(8)
         .addElemAuto(WL(label, combineWithCommas(creature.spellSchools)))
         .buildHorizontalList());
+  if (!creature.preInstalledParts.empty()) {
+    lines.addElem(WL(label, TStringId("PREINSTALLED_PARTS"), Color::YELLOW));
+    for (auto& part : creature.preInstalledParts)
+      lines.addElem(WL(getListBuilder)
+          .addElemAuto(WL(viewObject, part.first))
+          .addElemAuto(WL(label, part.second))
+          .buildHorizontalList());
+  }
   return lines.buildVerticalList();
 }
 
