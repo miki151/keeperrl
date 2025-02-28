@@ -99,7 +99,8 @@ ARMOR_DEGRADATION_NAME "degradacja pancerza"
 ARMOR_ENCHANTMENT_DESCRIPTION "Zwiększa skuteczność pancerza"
 ARMOR_ENCHANTMENT_NAME "ulepszenie pancerza"
 ARMOR_UPGRADE_TYPE "pancerz"
-A_SEX_ACT_BETWEEN "Akt seksualny pomiędzy {1:instrumental} i {2:instrumental}"
+A_SEX_ACT_BETWEEN "akt seksualny pomiędzy {1:instrumental} i {2:instrumental}"
+    "akcie seksualnym pomiędzy {1:instrumental} i {2:instrumental}" : instrumental
 ATTACK_ACTION "Atakuj"
 ATTACK_CREATURES_TASK "Zaatakuj kogoś"
 ATTACKER_AFFECTED_BY "atakujący pod wpływem: {1}"
@@ -381,13 +382,13 @@ COPULATES "{1} kopuluje z {2:instrumental}."
 COPY_SETTING_TO_GROUP "Ustaw dla wszystkich {1:genitive}"
 CORPSE_ITEM "zwłoki {1:genitive}"
 COVERED_IN_OIL "pokryty olejem!"
-CRAFTED_FROM "Wykonano z {1}"
+CRAFTED_FROM "Wykonano z {1:genitive}"
 CRAFTED_ITEMS_LABEL "produkcja przedmiotów"
     "produkcję przedmiotów" : accusative
 CRAFTING_UPDATE_FOR "Ulepszenie przy produkcji {1:plural,genitive}:"
 IS_CRAWLING "{1} czołga się."
 YOU_CRAWLING "Czołgasz się."
-CREATE_FURNITURE_DESCRIPTION "Tworzy {1}"
+CREATE_FURNITURE_DESCRIPTION "Tworzy {1:accusative}"
 CREATE_ITEMS_DESCRIPTION "Tworzy przedmioty"
 CREATE_ITEMS_NAME "twórz przedmioty"
 CREATURE_INVENTORY_TITLE "Ekwipunek:"
@@ -395,7 +396,8 @@ CREATURE_REQUIRES_QUARTERS "Ta istota potrzebuje prywatnego pokoju, aby wykorzys
 CREATURE_REQUIRES_QUARTERS_WITH_LUXURY "Ta istota potrzebuje prywatnego pokoju z luksusem o wartości {1}."
 CREATURES_AFFECTED_BY "istotom pod wpływem {1:genitive}"
 CREATURES_EXP_LEVEL_BELOW "z poziomem doświadczenia poniżej {1}"
-CREATURES_HOLDING_INGREDIENT "dzierżące {1}"
+CREATURES_HOLDING_INGREDIENT "istoty posiadające {1}"
+    "istotom posiadającym {1}" : plural,dative
 CREATURES_MADE_OF_MATERIAL "istoty z {1:genitive}"
     "istotom z {1:genitive}" : plural,dative
 CREATURES_WITH_HEALTH_BETWEEN "z życiem między {1} a {2}"
@@ -735,7 +737,7 @@ LUXURY_HINT "Suma luksusu: {1}"
 MAKE_HUMANOID_EFFECT_DESCRIPTION "Zamienia istotę w humanoida"
 MAKE_HUMANOID_EFFECT_NAME "uczłowieczenie"
     "uczłowieczenia" : genitive
-MAKES_A "{1} tworzy {2}"
+MAKES_A "{1} maluje {2}"
 MATERIALIZATION_EFFECT_DESCRIPTION "Całkowicie materializuje ducha."
 MATERIALIZATION_EFFECT_NAME "materializacja"
     "materializacji" : genitive
@@ -786,7 +788,7 @@ INVENTORY_LABEL "Ekwipunek:"
 OUTDOORS_LABEL "Na zewnątrz"
 INDOORS_LABEL "Wewnątrz"
 OWN_TRIBE "własne plemię"
-PAINTING_DEPICTING "obraz przedstawiający {1}"
+PAINTING_DEPICTING "obraz przedstawiający {1:accusative}"
 PANICS "{1} wpada w panikę."
 PEACEFUL "pokojowy"
 PERSISTENT_ITEM_FETCHING_ZONE_HIGHLIGHT "Stała strefa zbierania przedmiotów"
@@ -797,7 +799,7 @@ PLACE_FURNITURE_EFFECT_DESCRIPTION "Tworzy mebel wybranego typu."
 PLACE_FURNITURE_EFFECT_NAME "zbuduj mebel"
 PLANNED_HINT "Zaplanowane"
 PLUS_MINUS_ATTR "{1} {2}"
-POEM_ABOUT "{1} o {2}"
+POEM_ABOUT "{1} o {2:instrumental}"
 POISONED "zatruty"
 POISON_RESISTANT "odporny na truciznę"
 POLYMORPH_INTO_EFFECT_DESCRIPTION "Przemienia w {1:accusative}"
@@ -863,10 +865,11 @@ REQUIRES_TO_TRAIN_FURTHER "Wymaga {1}, aby kontynuować trening."
 REQUIRES_TWO_PRISON_TILES "Wymaga dwóch pól więziennych."
 REQUIRES_UNLOCKING "Wymaga odblokowania"
 REQUIRES_UPGRADES "Przedmiotu nie da się wytworzyć bez zastosowanych ulepszeń."
-REQUIRES_X_MORE "Wymaga jeszcze {1} {2}."
+REQUIRES_X_MORE "Wymaga jeszcze {1} {2:genitive,plural}."
 RESISTANT_TO_CAPTURE "odporny na pojmanie"
 RESISTANT_TO_PLAGUE "odporny na zarazę"
-RESISTING_THE_ATTACK_OF "opiera się atakowi {1}"
+RESISTING_THE_ATTACK_OF "odparcie ataku {1:genitive}"
+    "odparciu ataku {1:genitive}" : instrumental
 RESISTS_SWAP_POSITION "{1} stawia opór!"
 RESOURCE_STORAGE_HIGHLIGHT "Magazyn surowców"
 RESTORE_KEYBINDINGS_CONFIRM "Czy na pewno chcesz przywrócić domyślne klawisze?"
@@ -984,20 +987,29 @@ TEN "dziesięć"
     "dziesięcioma" : instrumental
 THE_ARTICLE "{1}"
 THE_CAPTURING_OF "pojmanie {1:genitive}"
+    "pojmaniu {1:genitive}" : instrumental
 THE_CONQUERING_OF "podbicie {1:genitive}"
+    "podbiciu {1:genitive}" : instrumental
 THE_DEATH_OF "śmierć {1:genitive}"
+    "śmierci {1:genitive}" : instrumental
 THEFT_TRIGGER "Kradzież przedmiotu"
 THE_PILLAGING_OF "splądrowanie {1:genitive}"
+    "splądrowaniu {1:genitive}" : instrumental
 THE_PLAYER "gracz"
 THE_SLAYING_OF "zabicie {1:genitive} przez {2:accusative}"
+    "zabiciu {1:genitive} przez {2:accusative}" : instrumental
+THE_MASSACRE_OF "masakra w {1:genitive}"
+    "masakrę w {1:genitive}" : accusative
+    "masakrze w {1:genitive}" : instrumental
 THE_SPELL_FAILED "Zaklęcie nie powiodło się."
 THE "ten {1}"
 THE_TORTURING_OF "torturowanie {1:genitive}"
+    "torturowaniu {1:genitive}" instrumental
 THREE "trzy"
     "trzema" : instrumental
 THROWN_BACK "odrzucony"
 TIED_UP "skuty"
-TORTURE_TASK "Tortu­ruj {1:accusative}"
+TORTURE_TASK "Torturuj {1:accusative}"
 TORTURE_UNAVAILABLE_HIGHLIGHT "Tortury niedostępne z powodu limitu populacji"
 TRADE_WITH "Handluj z {1:instrumental}"
 TRADING_AVAILABLE "Odkryłeś {1:accusative}! Handel jest teraz dostępny w interfejsie wroga."
@@ -1012,7 +1024,8 @@ TRAINING_LIMIT_LABEL "(limit {1})"
 TRAINING_POTENTIAL_LABEL "Potencjał treningu"
 TREE_CUTTING_TASK_HIGHLIGHT "Zadanie wycinki drzew"
 TRIBES_HAVE_FORMED_ALLIANCE "Plemiona {1:genitive} zawarły sojusz przeciwko tobie."
-THE_LAST_ALLIANCE_OF "Ostatni sojusz {1:genitive}"
+THE_LAST_ALLIANCE_OF "ostatni sojusz {1:genitive}"
+    "ostatnim sojuszu {1:genitive}" : instrumental
 TRIBE_LEADER_STATUS_DESCRIPTION "Zabicie zatrzyma imigrację"
 TRIBE_LEADER_HELPER "przywódca plemienia"
     "przywódczyni plemienia" : feminine
@@ -1286,6 +1299,11 @@ ATTR_LOSS_NAME "utrata {1:genitive}"
 AVAILABLE_WORKSHOP_ITEMS "Dostępne:"
 AVOID_MELEE_AI_NAME "Unikaj walki wręcz"
 BAD_POEM_TYPE "kiepski"
+    "kiepski" : accusative
+    "kiepska" : feminine
+    "kiepską" : feminine,accusative
+    "kiepskie" : neuter
+    "kiepskie" : neuter,accusative
 BANISH_MINION_BUTTON "Wygnaj sługę"
 BEAK_ATTACK "dziób"
 BITE "Gryziesz {1}."
@@ -1525,7 +1543,7 @@ GENDERLESS "bezpłciowy"
 GIVES_ITEMS_TO "{3} dostaje {2:accusative} od {1:genitive}."
 GRANTS_YOU_A_WISH "{1} spełnia twoje życzenie."
 GROUP_TAKES_ONE_POP "Cała grupa zajmuje jeden slot populacji."
-HAIKU "haiku"
+HAIKU neuter "haiku"
 HEAD_BODY_PART feminine "głowa"
     "głowy" : genitive
     "głową" : instrumental
@@ -1596,7 +1614,7 @@ LAUGH "Śmiejesz się."
 LAUGHS "{1} się śmieje."
 LAZY "leniwy"
 LEFT_TRIGGER_TO_CLEAR "Lewy spust, aby wyczyścić"
-LIMERICK "limeryk"
+LIMERICK masculine "limeryk"
 LOCAL_DUNGEONS "Lokalne:"
 LOCATE_MINION_BUTTON "Zlokalizuj"
 LYING_HERE_LABEL "Leży tutaj:"
@@ -1613,6 +1631,11 @@ NO_LONGER_AGGRAVATES_ENEMIES "{1} nie drażni już wrogów."
 NO_QUARTERS_ASSIGNED_YET "Brak przydzielonych kwater"
 NORMAL_GAME_SPEED "normalna"
 OBSCENE "nieprzyzwoity"
+    "nieprzyzwoity" : accusative
+    "nieprzyzwoita" : feminine
+    "nieprzyzwoitą" : feminine,accusative
+    "nieprzyzwoite" : neuter
+    "nieprzyzwoite" : neuter,accusative
 ONE_ITEM_AVAILABLE "(dostępny jeden przedmiot)"
 ONLINE_DUNGEONS "Online:"
 OPEN_WORLD_MAP_HINT "Otwórz mapę świata."
@@ -1655,7 +1678,7 @@ SCROLL_ITEM "zwój"
 SCROLL_TO_KEEPER_HINT "Przewiń do swojej postaci."
 SEARCH_DUNGEONS "Wyszukaj:"
 SET_CURRENT_ACTIVITY_LABEL "Ustaw obecną aktywność"
-SONNET "sonet"
+SONNET masculine "sonet"
 SPECIAL_CRAFTING_INGREDIENT "Specjalny składnik rzemieślniczy"
 SPINE_BODY_PART "kręgosłup"
 SPINS_HIS_SPURS "{1} kręci swoimi ostrogami {2}."
@@ -1702,6 +1725,11 @@ VILLAIN_ATTACKING "atakuje"
 VISUAL_EFFECT_DESCRIPTION "Efekt czysto wizualny."
 VISUAL_EFFECT_NAME "efekt wizualny"
 VULGAR "wulgarny"
+    "wulgarny" : accusative
+    "wulgarna" : feminine
+    "wulgarną" : feminine,accusative
+    "wulgarne" : neuter
+    "wulgarne" : neuter,accusative
 WAIT_HOW_MANY_TURNS "Ile tur chcesz czekać?"
 WALKING_INTO_FIRE_WARNING "Wejście w ogień lub w sąsiadujące pola cię zrani. Kontynuować?"
 WATER_VERY_DEEP_WARNING "Woda jest bardzo głęboka, czy na pewno?"
@@ -2117,7 +2145,7 @@ POEM masculine "wiersz"
     "wierszy" : plural,genitive
     "wierszami" : plural,instrumental
     "wiersze" : plural,accusative
-POEM_WITH_TYPE "{1} {2}"
+POEM_WITH_TYPE "{1:2} {2}"
 SCROLL masculine "zwój"
     "zwoju" : genitive
     "zwojem" : instrumental

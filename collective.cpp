@@ -913,7 +913,7 @@ void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
         if (!team.empty())
           butcher = teams->getLeader(team[0]);
         if (butcher->addButcheringEvent(*victimCollective))
-          addRecordedEvent("the massacre of " + *victimCollective);
+          addRecordedEvent(TSentence("THE_MASSACRE_OF", *victimCollective));
       }
     }
   }
