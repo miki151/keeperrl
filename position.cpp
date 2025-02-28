@@ -695,7 +695,7 @@ bool Position::isClosedOff(MovementType movement) const {
   if (level == topLevel && sectors.getSector(coord) == sectors.getLargest())
     return false;
   for (auto& elem : level->getAllLandingSquares())
-    if (!elem.second.empty() && sectors.same(coord, elem.second[0].getCoord()))
+    if (elem.first != StairKey::keeperSpawn() && !elem.second.empty() && sectors.same(coord, elem.second[0].getCoord()))
       return false;
   return true;
 }

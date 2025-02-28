@@ -2413,6 +2413,7 @@ bool Creature::canCopulateWith(const Creature* c) const {
   return isAffected(BuffId("COPULATION_SKILL")) &&
       c->getBody().canCopulateWith(getGame()->getContentFactory()) &&
       ((c->attributes->getGender() != attributes->getGender()) == (c->getUniqueId().getGenericId() % 4 != 0)) &&
+      !c->getAttributes().noCopulation &&
       c->isAffected(LastingEffect::SLEEP);
 }
 
