@@ -2291,11 +2291,10 @@ static bool apply(const Effects::Audience& a, Position pos, Creature* attacker) 
       wasTeleported |= tryTeleporting(pos, enemy, a.maxDistance);
   if (wasTeleported) {
     if (attacker)
-      attacker->privateMessage(PlayerMessage(TSentence("AUDIENCE_SUMMONED",
-          get(attacker->getAttributes().getGender(), TStringId("SIRE"), TStringId("DAME"), TStringId("SIRE"))),
-              MessagePriority::HIGH));
+      attacker->privateMessage(PlayerMessage(setSubjectGender(TSentence("AUDIENCE_SUMMONED"),
+          attacker->getAttributes().getGender()), MessagePriority::HIGH));
     else
-      pos.globalMessage(PlayerMessage(TStringId("AUDIENCE_SUMMONED"), MessagePriority::HIGH));
+      pos.globalMessage(PlayerMessage(TStringId("AUDIENCE_SUMMONED2"), MessagePriority::HIGH));
     return true;
   }
   pos.globalMessage(TStringId("NOTHING_HAPPENS"));
