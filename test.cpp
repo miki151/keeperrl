@@ -336,17 +336,17 @@ class Test {
     checkEqual(Vec2(3, 3).approxL1(), make_pair(Vec2(1, 1), Vec2(1, 1)));
     checkEqual(Vec2(3, 1).approxL1(), make_pair(Vec2(1, 1), Vec2(1, 0)));
 
-    CHECKEQ(getCardinalName(Vec2(1, 0).getBearing().getCardinalDir()), "east");
-    CHECKEQ(getCardinalName(Vec2(3, 1).getBearing().getCardinalDir()), "east");
-    CHECKEQ(getCardinalName(Vec2(1, 1).getBearing().getCardinalDir()), "south-east");
-    CHECKEQ(getCardinalName(Vec2(2, 1).getBearing().getCardinalDir()), "south-east");
-    CHECKEQ(getCardinalName(Vec2(0, 1).getBearing().getCardinalDir()), "south");
-    CHECKEQ(getCardinalName(Vec2(-1, 3).getBearing().getCardinalDir()), "south");
-    CHECKEQ(getCardinalName(Vec2(-1, 1).getBearing().getCardinalDir()), "south-west");
-    CHECKEQ(getCardinalName(Vec2(-1, 0).getBearing().getCardinalDir()), "west");
-    CHECKEQ(getCardinalName(Vec2(-1, -1).getBearing().getCardinalDir()), "north-west");
-    CHECKEQ(getCardinalName(Vec2(0, -1).getBearing().getCardinalDir()), "north");
-    CHECKEQ(getCardinalName(Vec2(1, -1).getBearing().getCardinalDir()), "north-east");
+    CHECKEQ(getCardinalName(Vec2(1, 0).getBearing().getCardinalDir()), TStringId("EAST"));
+    CHECKEQ(getCardinalName(Vec2(3, 1).getBearing().getCardinalDir()), TStringId("EAST"));
+    CHECKEQ(getCardinalName(Vec2(1, 1).getBearing().getCardinalDir()), TStringId("SOUTH_EAST"));
+    CHECKEQ(getCardinalName(Vec2(2, 1).getBearing().getCardinalDir()), TStringId("SOUTH_EAST"));
+    CHECKEQ(getCardinalName(Vec2(0, 1).getBearing().getCardinalDir()), TStringId("SOUTH"));
+    CHECKEQ(getCardinalName(Vec2(-1, 3).getBearing().getCardinalDir()), TStringId("SOUTH"));
+    CHECKEQ(getCardinalName(Vec2(-1, 1).getBearing().getCardinalDir()), TStringId("SOUTH_WEST"));
+    CHECKEQ(getCardinalName(Vec2(-1, 0).getBearing().getCardinalDir()), TStringId("WEST"));
+    CHECKEQ(getCardinalName(Vec2(-1, -1).getBearing().getCardinalDir()), TStringId("NORTH_WEST"));
+    CHECKEQ(getCardinalName(Vec2(0, -1).getBearing().getCardinalDir()), TStringId("NORTH"));
+    CHECKEQ(getCardinalName(Vec2(1, -1).getBearing().getCardinalDir()), TStringId("NORTH_EAST"));
   }
 
   void testConcat() {

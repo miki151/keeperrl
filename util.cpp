@@ -14,9 +14,10 @@
    If not, see http://www.gnu.org/licenses/ . */
 
 #include "stdafx.h"
+#include <time.h>
 
 #include "util.h"
-#include <time.h>
+#include "t_string.h"
 
 RandomGen::RandomGen() {
   PROFILE;
@@ -48,16 +49,16 @@ std::string operator "" _s(const char* str, size_t) {
   return std::string(str); 
 }
 
-string getCardinalName(Dir d) {
+TStringId getCardinalName(Dir d) {
   switch (d) {
-    case Dir::N: return "north";
-    case Dir::S: return "south";
-    case Dir::E: return "east";
-    case Dir::W: return "west";
-    case Dir::NE: return "north-east";
-    case Dir::NW: return "north-west";
-    case Dir::SE: return "south-east";
-    case Dir::SW: return "south-west";
+    case Dir::N: return TStringId("NORTH");
+    case Dir::S: return TStringId("SOUTH");
+    case Dir::E: return TStringId("EAST");
+    case Dir::W: return TStringId("WEST");
+    case Dir::NE: return TStringId("NORTH_EAST");
+    case Dir::NW: return TStringId("NORTH_WEST");
+    case Dir::SE: return TStringId("SOUTH_EAST");
+    case Dir::SW: return TStringId("SOUTH_WEST");
   }
 }
 

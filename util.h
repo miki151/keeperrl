@@ -133,8 +133,8 @@ string combineWithOr(const vector<string>&);
 
 class Rectangle;
 class RandomGen;
-
-string getCardinalName(Dir d);
+class TStringId;
+TStringId getCardinalName(Dir d);
 
 struct SVec2 {
   short SERIAL(x);

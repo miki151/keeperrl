@@ -513,9 +513,12 @@ FULLY_HEALED "całkowicie uleczony"
     "całkowicie uleczona" : feminine
     "całkowicie uleczone" : neuter
 FURNITURE_BANG "ŁUP!"
-FURNITURE_BURNS_DOWN "{1} spłonęło."
+FURNITURE_BURNS_DOWN_HELPER "spłonął"
+    "spłonęła" : feminine
+    "spłonęło" : neuter
+FURNITURE_BURNS_DOWN "{1} {FURNITURE_BURNS_DOWN_HELPER:1}."
 FURNITURE_CATCHES_FIRE "{1} zaczyna płonąć."
-FURNITURE_CRASH "ŁOMOT!"
+FURNITURE_CRASH "TRACH!"
 FURNITURE_DISSOLVES "{1} rozpuszcza się."
 FURNITURE_FALLS "{1} przewraca się."
 FURNITURE_FREEZES "{1} zamarza."
@@ -680,8 +683,12 @@ JEWELLERY_GROUP "biżuteria"
 JOINS_YOUR_FORCES "Do twoich sił dołącza {1}."
 KEEPER masculine "Strażnik"
     "Strażnika" : genitive
+    "Strażnikiem" : instrumental
+    "Strażnika" : accusative
     "Strażnicy" : plural
     "Strażników" : plural, genitive
+    "Strażnikami" : plural, instrumental
+    "Strażników" : plural, accusative
 KEEPER_F feminine "Strażniczka"
     "Strażniczki" : genitive
     "Strażniczką" : instrumental
@@ -1011,7 +1018,7 @@ TRIBE_LEADER_HELPER "przywódca plemienia"
     "przywódcom plemion" : plural,dative
 TRIBE_LEADER_STATUS "{TRIBE_LEADER_HELPER:1}"
 TRIBE_OF_IS_DESTROYED "Plemię „{1}” zostało zniszczone."
-TRIGGERS_SOMETHING "{1} wywołuje coś."
+TRIGGERS_SOMETHING "{1} aktywuje jakiś mechanizm."
 TRIGGER_TRAP_EFFECT_DESCRIPTION "Aktywuje pułapkę, jeśli jest obecna."
 TRIGGER_TRAP_EFFECT_NAME "aktywacja pułapki"
     "aktywacji pułapki" : genitive
@@ -1155,10 +1162,10 @@ YOU_ARE_WOUNDED "Jesteś ranny!"
     "Jesteś ranna!" : feminine
 YOU_ARE "Jesteś {1}."
 YOU_ARE_NO_LONGER "Nie jesteś już {1}."
-YOU_BASH_FURNITURE "Uderzasz w {1}."
+YOU_BASH_FURNITURE "Uderzasz w {1:accusative}."
 YOU_BREAK_FREE "Wyrwałeś się."
     "Wyrwałaś się." : feminine
-YOU_BUILD "Budujesz {1}."
+YOU_BUILD "Budujesz {1:accusative}."
 YOU_BURNING "Płoniesz!"
 YOU_CANT_BREAK_FREE "Nie możesz się wyrwać!"
 YOU_CANT_HIDE_HERE "Nie możesz się tu ukryć."
@@ -1166,8 +1173,8 @@ YOU_CANT_MOVE_ANYMORE "Nie możesz się dłużej ruszać."
 YOU_CANT_PUSH "Nie możesz popchnąć {1:accusative}."
 YOU_CANT_THROW_ANYTHING "Nie masz nic do rzucenia!"
 YOU_CAST_SPELL "Rzucasz czar"
-YOU_CUT_FURNITURE "Tniesz {1}."
-YOU_DESTROY_FURNITURE "Niszczysz {1}."
+YOU_CUT_FURNITURE "Tniesz {1:accusative}."
+YOU_DESTROY_FURNITURE "Niszczysz {1:accusative}."
 YOU_DEVELOP_ATTACK "Rozwijasz atak {1:genitive}."
 YOU_DIE_OF_POISONING "Umierasz wskutek otrucia."
 YOU_DIG_INTO_FURNITURE "Rozkopujesz {1}."
@@ -1181,7 +1188,7 @@ YOU_ESCAPE_DEATH "Uniknąłeś śmierci!"
 ESCAPES_DEATH "{1} unika śmierci!"
 YOU_EXECUTE "Dokonujesz egzekucji na {1:accusative}."
 YOU_FALL_APART "Rozpadasz się na kawałki."
-YOU_FALL_INTO "Wpadasz do {1}!"
+YOU_FALL_INTO "Wpadasz do {1:genitive}!"
 YOU_FEEL_LIKE_CRACKING_A_JOKE "Masz ochotę żartować."
 YOU_FEEL_LIKE_DOING_SOME_WORK "Masz ochotę popracować."
 YOU_FEEL_LAZY "Czujesz się leniwy."
@@ -1192,11 +1199,11 @@ YOU_FILL_UP_TUNNEL "Zasypujesz tunel."
 YOU_GROW_LIMBS "Wyrastają ci {1}."
 YOU_GROW_LIMB "Wyrasta ci {1}."
 YOU_HAVE_BEEN_AMBUSHED "Zostałeś wciągnięty w zasadzkę!"
-YOU_HAVE_SUMMONED "Przywołałeś {1}."
-HAS_SUMMONED "{1} przywołał {1}."   ## Possibly a small quirk—same var name repeated
+YOU_HAVE_SUMMONED "Przywołałeś {1:accusative}."
+HAS_SUMMONED "{1} przywołał {2:accusative}."
 YOU_HIDE_BEHIND_THE "Ukrywasz się za {1:instrumental}."
 YOU_IMPROVE "Poprawiasz swoje {1} z {2}."
-YOU_LEARN "Uczysz się {1} od {2}."
+YOU_LEARN "Uczysz się {1:genitive} {2:genitive}."
 YOU_LOSE_CONTROL_OF_MINION "Tracisz kontrolę nad sługą."
 YOU_MOUNT "Dosiadasz {1:accusative}."
 MOUNTS "{1} dosiada {2:accusative}."
@@ -1242,16 +1249,16 @@ YOUR_WEAPON_DEGRADES "Twoja {1} ulega degradacji."
 YOUR_WEAPON_IS_IMPROVED "Twoja {1} zostaje ulepszona."
 HIS_WEAPON_DEGRADES "{2} {1:genitive} ulega degradacji."
 HIS_WEAPON_IS_IMPROVED "{2} {1:genitive} zostaje ulepszony."
-YOU_SET_UP "Rozstawiasz {1}."
-HE_SETS_UP "{1} rozstawia {2}."
-YOU_SHEATHE "Chowasz {1} do pochwy."
-SHEATHES "{1} chowa {2} do pochwy."
+YOU_SET_UP "Rozstawiasz {1:accusative}."
+HE_SETS_UP "{1} rozstawia {2:accusative}."
+YOU_SHEATHE "Chowasz {1:accusative} do pochwy."
+SHEATHES "{1} chowa {2:accusative} do pochwy."
 YOU_SOBER_UP "Trzeźwiejesz."
 YOU_SUFFER_PLAGUE "Cierpisz na zarazę."
 YOU_SUFFER_POISONING "Cierpisz na zatrucie."
-YOU_SWAP_POSITION "Zamieniasz się pozycją z {1}."
-SWAPS_POSITION "{1} zamienia się pozycją z {2}."
-YOU_SWITCH_LEVELS_WITH "Zmieniasz poziomy z {1}."
+YOU_SWAP_POSITION "Zamieniasz się pozycją z {1:instrumental}."
+SWAPS_POSITION "{1} zamienia się pozycją z {2:instrumental}."
+YOU_SWITCH_LEVELS_WITH "Zmieniasz poziomy z {1:instrumental}."
 ZERO "zero"
 ABILITIES_LABEL "Zdolności"
 ACID_EFFECT_DESCRIPTION "Powoduje obrażenia kwasem dla skóry i ekwipunku."
@@ -5199,14 +5206,14 @@ FURNITURE_ADVENTURER_CHEST_NAME feminine "skrzynia"
     "skrzyniami" : plural,instrumental
     "skrzynie" : plural,accusative
 
-FURNITURE_ALARM_TRAP_NAME feminine "pułapka alarmowa"
-    "pułapki alarmowej" : genitive
-    "pułapką alarmową" : instrumental
-    "pułapkę alarmową" : accusative
-    "pułapki alarmowe" : plural
-    "pułapek alarmowych" : plural,genitive
-    "pułapkami alarmowymi" : plural,instrumental
-    "pułapki alarmowe" : plural,accusative
+FURNITURE_ALARM_TRAP_NAME feminine "pułapka-alarm"
+    "pułapki-alarm" : genitive
+    "pułapką-alarm" : instrumental
+    "pułapkę-alarm" : accusative
+    "pułapki-alarm" : plural
+    "pułapek-alarm" : plural,genitive
+    "pułapkami-alarm" : plural,instrumental
+    "pułapki-alarm" : plural,accusative
 
 FURNITURE_ALTAR_DES_NAME masculine "zbezczeszczony ołtarz"
     "zbezczeszczonego ołtarza" : genitive
@@ -9465,8 +9472,24 @@ HEARING_CONFESSION_MINION_ACTIVITY "Słuchanie spowiedzi"
 CONFESSION_MINION_ACTIVITY "Spowiedź"
 DUNGEON_LEVEL_REQUIREMENT "Wymaga co najmniej poziomu {1}"
 AN_ALARM_SOUNDS_NEAR_YOU "Słyszysz alarm w pobliżu."
-AN_ALARM_SOUNDS_IN_THE "Słyszysz alarm w {1:locative}." ## If needed. If no locative usage, do direct.
-YOU_DONT_HAVE_ENOUGH_GOLD "Nie masz wystarczająco złota."
+AN_ALARM_SOUNDS_IN_THE "Słyszysz alarm na {1:instrumental}."
+NORTH "północ"
+    "północy" : instrumental
+SOUTH "południe"
+    "południu" : instrumental
+EAST "wschód"
+    "wschodzie" : instrumental
+WEST "zachód"
+    "zachodzie" : instrumental
+NORTH_EAST "północny wschód"
+    "północnym wschodzie" : instrumental
+NORTH_WEST "północny zachód"
+    "północnym zachodzie" : instrumental
+SOUTH_EAST "południowy wschód"
+    "południowym wschodzie" : instrumental
+SOUTH_WEST "południowy zachód"
+    "południowym zachodzie" : instrumental
+Nie masz wystarczająco złota.
 YOU_DONT_HAVE_ENOUGH_GOLD_FOR_EVERYTHING "Nie masz wystarczająco złota, aby za wszystko zapłacić."
 CANT_ATTACK_WHILE_PEACEFUL "Czujesz, że to byłoby sprzeczne z twoimi przekonaniami."
 EXCUSE_ME "Przepraszam!"
