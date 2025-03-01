@@ -10,13 +10,14 @@
 
 #include <curl/curl.h>
 
-#include "steam_ugc.h"
 
 #ifdef USE_STEAMWORKS
-#include "steam_client.h"
-#include "steam_user.h"
-#include "steam_friends.h"
+#  include "steam_ugc.h"
+#  include "steam_client.h"
+#  include "steam_user.h"
+#  include "steam_friends.h"
 #endif
+#include "steam_info.h"
 
 FileSharing::FileSharing(const string& url, const string& modVer, int saveVersion, Options& o, string id)
     : uploadUrl(url), modVersion(modVer), saveVersion(saveVersion), options(o),
