@@ -1304,7 +1304,7 @@ BODY_SIZE_SMALL "mały"
 BONE "kość"
 BOUND_TO_A_PHYLACTERY "Związany z filakterium"
 BOUND_TO_A_PHYLACTERY_DESCRIPTION "Ta istota odrodzi się przy swoim filakterium po śmierci."
-BREAKS_FREE "{1} się wyrywa!"
+BREAKS_FREE "{1} się uwalnia!"
 BUFF_AGGRAVATES "drażnienie wrogów"
     "drażnienia wrogów" : genitive
 BUFF_ARCHER_VISION "widzenie przez strzelnice"
@@ -1448,7 +1448,6 @@ CLICK_TO_ASSIGN_QUARTERS_LABEL "Kliknij, aby przydzielić"
 CLICK_TO_CHOOSE_COUNT "Kliknij, aby wybrać, ile podnieść."
 COMPANION_EFFECT_NAME "towarzysz"
     "towarzysza" : genitive
-CONCENTRATED "skoncentrowany"
 CONSTRUCTIONS_LABEL "konstrukcje"
 CONTRIBUTES_TO_WORK_FORCE "Wspomaga siłę roboczą"
 CONTROL_MINION_TO_COMMAND_TEAM "Przejmij kontrolę nad sługą, aby dowodzić drużyną."
@@ -1629,7 +1628,7 @@ PAUSE_BUTTON "pauza"
 PETS "{1} głaszcze {2:accusative}."
 PHYLACTERY_EFFECT_DESCRIPTION "Ustawia lub wykorzystuje filakterium."
 PHYLACTERY_EFFECT_NAME "filakterium"
-POTION "mikstura"
+POTION feminine "mikstura"
 PROJECTILES_WILL_HIT_ALLIES "pociski trafią sojuszników"
 PROMOTIONS_LABEL "Promocje:"
 PULL_EFFECT_DESCRIPTION "Przyciąga istotę do rzucającego."
@@ -1931,7 +1930,7 @@ ITEM_CATCHES_FIRE "{1} staje w ogniu!"
 ITEM_DISAPPEARS "{1} znika!"
 ITEM_NAMED "o nazwie {1}"
 ITEM_NAME_WITH_SUFFIXES "{1} {2}"
-ITEM_PREFIX "{2} {1}"
+ITEM_PREFIX "{2:1} {1}"
 ITEM_PRICE "({1} złota)"
 ITEM_SUFFIX "{1} {2}"
 ITEM_SUFFIXES "{1}"
@@ -1946,7 +1945,7 @@ BALSAM_OF masculine "balsam {1:genitive}"
     "balsamami {1:instrumental}" : plural,instrumental
     "balsamy {1:genitive}" : plural,accusative
 BODY_PART_OF "{1} {2:genitive}"
-BOOK_OF masculine "księga {1:genitive}"
+BOOK_OF feminine "księga {1:genitive}"
     "księgi {1:genitive}" : genitive
     "księgą {1:instrumental}" : instrumental
     "księgę {1:genitive}" : accusative
@@ -1962,15 +1961,15 @@ MUSHROOM_OF masculine "grzyb {1:genitive}"
     "grzybów {1:genitive}" : plural,genitive
     "grzybami {1:instrumental}" : plural,instrumental
     "grzyby {1:genitive}" : plural,accusative
-POTION_OF masculine "{1}mikstura {2:genitive}"
-    "{1}mikstury {2:genitive}" : genitive
-    "{1}miksturą {2:instrumental}" : instrumental
-    "{1}miksturę {2:genitive}" : accusative
-    "{1}mikstury {2:genitive}" : plural
-    "{1}mikstur {2:genitive}" : plural,genitive
-    "{1}miksturami {2:instrumental}" : plural,instrumental
-    "{1}mikstury {2:genitive}" : plural,accusative
-BREAKS_FREE_FROM "{1} wyrywa się z {2:genitive}."
+POTION_OF feminine "mikstura {1:genitive}"
+    "mikstury {1:genitive}" : genitive
+    "miksturą {1:instrumental}" : instrumental
+    "miksturę {1:genitive}" : accusative
+    "mikstury {1:genitive}" : plural
+    "mikstur {1:genitive}" : plural,genitive
+    "miksturami {1:instrumental}" : plural,instrumental
+    "mikstury {1:genitive}" : plural,accusative
+BREAKS_FREE_FROM "{1} uwalnia się z {2:genitive}."
 CAN_SEE_YOU_HIDING "{1} widzi twoją kryjówkę."
 CUTS_TENTACLE "{1} odcina mackę krakena."
 YOU_BECOME "Stajesz się {1:instrumental}."
@@ -2332,10 +2331,12 @@ ATTR_INFO_ACID_DAMAGE_BODYPARTINJURY "zostaje rozpuszczony"
     "zostaje rozpuszczone" : neuter
 ATTR_INFO_ACID_DAMAGE_HELP "Podstawowa wartość obrażeń przy atakach kwasem."
 ATTR_INFO_ACID_DAMAGE_NAME "atak kwasem"
+    "ataku kwasem" : genitive
 ATTR_INFO_COLD_DAMAGE_ADJECTIVE "lodowaty"
 ATTR_INFO_COLD_DAMAGE_BODYPARTINJURY "zamarza i odłamuje się"
 ATTR_INFO_COLD_DAMAGE_HELP "Podstawowa wartość obrażeń przy atakach zimnem."
 ATTR_INFO_COLD_DAMAGE_NAME "atak zimnem"
+    "ataku zimnem" : genitive
 ATTR_INFO_DAMAGE_ADJECTIVE "groźny"
 ATTR_INFO_DAMAGE_HELP "Podstawowa wartość obrażeń w walce wręcz."
 ATTR_INFO_DAMAGE_NAME "atak"
@@ -2358,6 +2359,7 @@ ATTR_INFO_FIRE_DAMAGE_BODYPARTINJURY "zostaje spalony"
     "zostaje spalone" : neuter
 ATTR_INFO_FIRE_DAMAGE_HELP "Podstawowa wartość obrażeń przy atakach ogniem."
 ATTR_INFO_FIRE_DAMAGE_NAME "atak ogniem"
+    "ataku ogniem" : genitive
 ATTR_INFO_FORGE_ADJECTIVE "metalowy"
 ATTR_INFO_FORGE_HELP "Określa umiejętności postaci w pracy przy kuźni."
 ATTR_INFO_FORGE_NAME "kowalstwo"
@@ -8840,9 +8842,54 @@ EQUIPMENT_GROUP_JEWELLERY "biżuteria"
 EQUIPMENT_GROUP_LIGHT_EMITTING_EQUIPMENT "ekwipunek emitujący światło"
 EQUIPMENT_GROUP_RANGED_WEAPONS "broń dystansowa"
 
-WORKSHOP_INFO_WORKSHOP_PREFIX "zaczarowany"
-WORKSHOP_INFO_FORGE_PREFIX "doskonały"
-
+CONCENTRATED masculine "skoncentrowany"
+    "skoncentrowanego" : genitive
+    "skoncentrowanym" : instrumental
+    "skoncentrowany" : accusative
+    "skoncentrowana" : feminine
+    "skoncentrowanej" : genitive,feminine
+    "skoncentrowaną" : instrumental,feminine
+    "skoncentrowaną" : accusative,feminine
+    "skoncentrowane" : plural
+    "skoncentrowanych" : plural,genitive
+    "skoncentrowanymi" : plural,instrumental
+    "skoncentrowane" : plural,accusative
+    "skoncentrowane" : plural,feminine
+    "skoncentrowanych" : plural,genitive,feminine
+    "skoncentrowanymi" : plural,instrumental,feminine
+    "skoncentrowane" : plural,accusative,feminine
+WORKSHOP_INFO_WORKSHOP_PREFIX masculine "zaczarowany"
+    "zaczarowanego" : genitive
+    "zaczarowanym" : instrumental
+    "zaczarowany" : accusative
+    "zaczarowana" : feminine
+    "zaczarowanej" : genitive,feminine
+    "zaczarowaną" : instrumental,feminine
+    "zaczarowaną" : accusative,feminine
+    "zaczarowane" : plural
+    "zaczarowanych" : plural,genitive
+    "zaczarowanymi" : plural,instrumental
+    "zaczarowane" : plural,accusative
+    "zaczarowane" : plural,feminine
+    "zaczarowanych" : plural,genitive,feminine
+    "zaczarowanymi" : plural,instrumental,feminine
+    "zaczarowane" : plural,accusative,feminine
+WORKSHOP_INFO_FORGE_PREFIX masculine "doskonały"
+    "doskonałego" : genitive
+    "doskonałym" : instrumental
+    "doskonały" : accusative
+    "doskonała" : feminine
+    "doskonałej" : genitive,feminine
+    "doskonałą" : instrumental,feminine
+    "doskonałą" : accusative,feminine
+    "doskonałe" : plural
+    "doskonałych" : plural,genitive
+    "doskonałymi" : plural,instrumental
+    "doskonałe" : plural,accusative
+    "doskonałe" : plural,feminine
+    "doskonałych" : plural,genitive,feminine
+    "doskonałymi" : plural,instrumental,feminine
+    "doskonałe" : plural,accusative,feminine
 POPULATION "populacja"
     "populacji" : genitive
 
@@ -9569,6 +9616,9 @@ AUTOMATON_CORPUS_NAME "korpus automatu"
 LIGHT_AUTOMATON_CORPUS_NAME "lekki korpus automatu"
 HEAVY_AUTOMATON_CORPUS_NAME "ciężki korpus automatu"
 PREINSTALLED_PARTS "Preinstalowane części:"
+CLEAR_ALL_UPGRADES "Usuń wszystkie"
+ADD_TOP_UPGRADES "Dodaj {1} pierwsze"
+USED_SLOTS "Zużyte sloty: {1}/{2}"
 NEW_LINE "{1}
 {2}"
 TEXT128 "Nie znaleziono strony. Skontaktuj się z autorem moda."

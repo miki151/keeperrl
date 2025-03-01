@@ -444,7 +444,9 @@ static SItemAttributes getPotionAttr(const ContentFactory* factory, Effect effec
   return ITATTR(
       i.viewId = ViewId(viewId, effect.getColor(factory));
       i.shortName = effect.getName(factory);
-      i.name =  TSentence("POTION_OF", prefix, *i.shortName);
+      i.name = TSentence("POTION_OF", *i.shortName);
+      if (!prefix.empty())
+        i.prefixes.push_back(std::move(prefix));
       i.blindName = TString(TStringId("POTION"));
       i.applyVerb = make_pair(TStringId("YOU_DRINK"), TStringId("DRINKS"));
       i.fragile = true;

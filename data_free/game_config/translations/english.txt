@@ -1475,8 +1475,8 @@ BOOK_OF "book of {1}"
     "books of {1}" : plural
 MUSHROOM_OF "mushroom of {1}"
     "mushrooms of {1}" : plural
-POTION_OF "{1}potion of {2}"
-    "{1}potions of {2}" : plural
+POTION_OF "potion of {1}"
+    "potions of {1}" : plural
 BREAKS_FREE_FROM "{1} breaks free from {2}."
 CAN_SEE_YOU_HIDING "{1} can see you hiding."
 CUTS_TENTACLE "{1} cuts the kraken's tentacle."
@@ -4150,6 +4150,9 @@ AUTOMATON_CORPUS_NAME "automaton corpus"
 LIGHT_AUTOMATON_CORPUS_NAME "light automaton corpus"
 HEAVY_AUTOMATON_CORPUS_NAME "heavy automaton corpus"
 PREINSTALLED_PARTS "Preinstalled parts:"
+CLEAR_ALL_UPGRADES "Clear all upgrades"
+ADD_TOP_UPGRADES "Add top {1} upgrades"
+USED_SLOTS "Used slots: {1}/{2}"
 NEW_LINE "{1}
 {2}"
 TEXT128 "Page not found. Please contact mod author."

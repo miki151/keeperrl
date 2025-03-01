@@ -2515,11 +2515,11 @@ function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInf
         activeElems.push_back(elem);
         lines.addElem(std::move(elem));
       }
-      auto label = WL(labelFun, [&] {
+      auto label = WL(labelFun, [&]() -> TString {
         if (totalAvailable - totalUsed > 0)
-          return "Add top " + toString((totalAvailable - totalUsed) * cnt) + " upgrades"_s;
+          return TSentence("CLEAR_ALL_UPGRADES", toString((totalAvailable - totalUsed) * cnt));
         else
-          return "Clear all upgrades"_s;
+          return TStringId("CLEAR_ALL_UPGRADES");
       });
       auto action = [&] {
         if (totalAvailable - totalUsed > 0)
@@ -2540,7 +2540,7 @@ function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInf
       lines.addSpace(5);
       auto allButton = WL(getListBuilder)
           .addElem(WL(labelFun, [&totalUsed, &elem] {
-              return "Used slots: " + toString(totalUsed) + "/" + toString(elem.maxUpgrades.second); }), 10)
+              return TSentence("USED_SLOTS", toString(totalUsed), toString(elem.maxUpgrades.second)); }), 10)
           .addBackElemAuto(WL(setWidth, 170,
               WL(buttonLabelFocusable, std::move(label), std::move(action),
                   [&selected, myIndex = activeElems.size()] { return selected == myIndex; }, false)))

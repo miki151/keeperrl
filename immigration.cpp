@@ -125,6 +125,8 @@ optional<TString> Immigration::getMissingRequirement(const ImmigrantRequirement&
               if (required > 0) {
                 auto list = combineWithOr(attraction.types.transform([&](const AttractionType& type) {
                     return AttractionInfo::getAttractionName(contentFactory, type, required); }));
+                if (required > 1)
+                  list = makePlural(std::move(list));
                 if (total > 0)
                   return TString(TSentence("REQUIRES_MORE_ATTRACTIONS", toString(required), std::move(list)));
                 else
