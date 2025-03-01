@@ -156,6 +156,7 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::FROZEN:
       case LastingEffect::PLAGUE_RESISTANT:
       case LastingEffect::OIL:
+      case LastingEffect::RESTED:
       case LastingEffect::DRUNK:
       case LastingEffect::SATIATED:
         c->you(MsgType::ARE, getAdjective(effect));
@@ -185,10 +186,8 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         c->you(MsgType::FALL_ASLEEP);
         break;
       case LastingEffect::INSANITY:
-        c->you(MsgType::BECOME, TStringId("BUFF_ADJECTIVE_INSANITY"));
-        break;
       case LastingEffect::PEACEFULNESS:
-        c->you(MsgType::BECOME, TStringId("BUFF_ADJECTIVE_PEACEFULNESS"));
+        c->you(MsgType::BECOME, getAdjective(effect));
         break;
       case LastingEffect::ELF_VISION:
         c->verb(TStringId("YOU_CAN_SEE_THRU_TREES"), TStringId("CAN_SEE_THRU_TREES"));
@@ -201,9 +200,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::WARNING:
         c->verb(TStringId("YOU_ARE_AWARE_OF_DANGER"), TStringId("IS_AWARE_OF_DANGER"));
-        break;
-      case LastingEffect::RESTED:
-        c->you(MsgType::ARE, TStringId("WELL_RESTED"));
         break;
       case LastingEffect::FAST_TRAINING:
         c->verb(TStringId("YOU_FEEL_LIKE_WORKING_OUT"), TStringId("FEELS_LIKE_WORKING_OUT"));
