@@ -211,9 +211,7 @@ BUFF_ADJECTIVE_POISON_RESISTANT "odporny na truciznę"
 BUFF_ADJECTIVE_POLYMORPHED "przemieniony"
     "przemieniona" : feminine
     "przemienione" : neuter
-BUFF_ADJECTIVE_PREGNANT "ciężarny"
-    "ciężarna" : feminine
-    "ciężarne" : neuter
+BUFF_ADJECTIVE_PREGNANT "w ciąży"
 BUFF_ADJECTIVE_PSYCHIATRY "psychiatra"
 BUFF_ADJECTIVE_RAGE "wściekły"
     "wściekła" : feminine
@@ -225,6 +223,13 @@ BUFF_ADJECTIVE_RIDER "jeździec"
 BUFF_ADJECTIVE_SATIATED "najedzony"
     "najedzona" : feminine
     "najedzone" : neuter
+BUFF_ADJECTIVE_PLAGUE "chory na zarazę"
+    "chora na zarazę" : feminine
+    "chore na zarazę" : neuter
+BUFF_ADJECTIVE_POISON "otruty"
+    "otruta" : feminine
+    "otrute" : neuter
+BUFF_ADJECTIVE_SLEEP "śpi"
 BUFF_ADJECTIVE_SLEEP_RESISTANT "odporny na sen"
     "odporna na sen" : feminine
     "odporne na sen" : neuter
@@ -244,7 +249,9 @@ BUFF_ADJECTIVE_PANIC "spanikowany"
     "spanikowana" : feminine
     "spanikowane" : neuter
 BUFF_ADJECTIVE_PEACEFULNESS "pacyfista"
+    "pacyfistą" : instrumental
     "pacyfistka" : feminine
+    "pacyfistką" : feminine,instrumental
 BUFF_ADJECTIVE_ENTANGLED "splątany"
     "splątana" : feminine
     "splątane" : neuter
@@ -381,7 +388,6 @@ YOU_COPULATE "Współżyjesz z {1:instrumental}."
 COPULATES "{1} kopuluje z {2:instrumental}."
 COPY_SETTING_TO_GROUP "Ustaw dla wszystkich {1:genitive}"
 CORPSE_ITEM "zwłoki {1:genitive}"
-COVERED_IN_OIL "pokryty olejem!"
 CRAFTED_FROM "Wykonano z {1:genitive}"
 CRAFTED_ITEMS_LABEL "produkcja przedmiotów"
     "produkcję przedmiotów" : accusative
@@ -444,7 +450,6 @@ DROP_ITEMS_TASK "Porzuć przedmioty"
 DROWNED_DEATH_REASON "utonął"
 DROWNS_IN "{1} tonie w {2:instrumental}."
 YOU_DROWN "Topisz się w {1}."
-DRUNK "pijany!"
 DUEL_TASK "Pojedynek: {1}"
 DUNGEON_CONQUER_RATE "Wskaźnik podboju: {1}"
 DUNGEON_CONQUER_RATE_TIP "Ile razy te lochy zostały podbite względem liczby ich wczytań."
@@ -458,7 +463,6 @@ EIGHT "osiem"
 ELEVEN "jedenaście"
     "jedenastoma" : instrumental
 ENEMIES "wrogowie"
-ENTANGLED "uwięziony w sieci"
 ENTER_A_NAME_FOR "Podaj imię dla {1:genitive}"
 ENTER_FIRST_NAME "Podaj imię:"
 ENTER_MESSAGE "Wpisz wiadomość"
@@ -509,9 +513,6 @@ FORBIDDEN_ZONE_HIGHLIGHT "Strefa zakazana"
 FOUR "cztery"
     "czterema" : instrumental
 FREEZES_AND_EXPLODES "{1} zamarza i wybucha!"
-FROZEN "zamarznięty!"
-    "zamarznięty!" : feminine
-    "zamarznięte!" : neuter
 FULLY_HEALED "całkowicie uleczony"
     "całkowicie uleczona" : feminine
     "całkowicie uleczone" : neuter
@@ -615,14 +616,12 @@ IMPROVES "{1} poprawia {IMPROVES_HELPER:1} {3} {4:genitive}"
 INCLUDE_SAVE_FILE "Dołącz plik zapisu"
 INCLUDE_SCREENSHOT "Dołącz zrzut ekranu"
 INCREASE_DAMAGE_OR_DEFENSE_BY_ONE "Zwiększ atak lub obronę o 1"
-INFECTED "zarażony zarazą!"
 IN_GAS "w {1:instrumental}"
 INGREDIENT_ON_THE_GROUND "na ziemi {1}"
 INJURED_BODY_PART_HELPER "Zraniony"
     "Zraniona" : feminine
     "Zranione" : neuter
 INJURED_BODY_PART "{INJURED_BODY_PART_HELPER:1} {1}"
-INSANE "obłąkany"
 INSIDE_AN_ANIMAL_PEN "wewnątrz wybiegu dla zwierząt"
 INSUFFICIENT_LIGHT_HIGHLIGHT "Niewystarczające oświetlenie"
 IN_TERRITORY "na terytorium"
@@ -710,7 +709,6 @@ KILLED_MEMBERS_TRIGGER "Zabici członkowie plemienia"
 KILL_TASK "Zabij {1:accusative}"
 KILL_TITLES_HINT "Tytuły są przyznawane za zabijanie przywódców plemion. Mogą zwiększyć atrybuty do wartości bazowej."
 KNIGHT_NAME "rycerz"
-KNOCKED_OUT "znokautowany"
 KRAKEN "kraken"
 KRAKEN_TENTACLE "macka krakena"
 LEARNS "{1} uczy się {2:genitive} „{3}”."
@@ -735,7 +733,7 @@ LUXURY_HINT "Suma luksusu: {1}"
 MAKE_HUMANOID_EFFECT_DESCRIPTION "Zamienia istotę w humanoida"
 MAKE_HUMANOID_EFFECT_NAME "uczłowieczenie"
     "uczłowieczenia" : genitive
-MAKES_A "{1} maluje {2}"
+MAKES_A "{1} maluje {2:accusative}"
 MATERIALIZATION_EFFECT_DESCRIPTION "Całkowicie materializuje ducha."
 MATERIALIZATION_EFFECT_NAME "materializacja"
     "materializacji" : genitive
@@ -788,7 +786,6 @@ INDOORS_LABEL "Wewnątrz"
 OWN_TRIBE "własne plemię"
 PAINTING_DEPICTING "obraz przedstawiający {1:accusative}"
 PANICS "{1} wpada w panikę."
-PEACEFUL "pokojowy"
 PERSISTENT_ITEM_FETCHING_ZONE_HIGHLIGHT "Stała strefa zbierania przedmiotów"
 PET_ACTION "Głaszcz"
 PICK_UP_HOW_MANY "Ile {1} podnieść?"
@@ -798,12 +795,9 @@ PLACE_FURNITURE_EFFECT_NAME "zbuduj mebel"
 PLANNED_HINT "Zaplanowane"
 PLUS_MINUS_ATTR "{1} {2}"
 POEM_ABOUT "{1} o {2:instrumental}"
-POISONED "zatruty"
-POISON_RESISTANT "odporny na truciznę"
 POLYMORPH_INTO_EFFECT_DESCRIPTION "Przemienia w {1:accusative}"
 POP_LIMIT_REACHED "osiągnięto limit populacji"
 POPULATION_TRIGGER "Populacja"
-PREGNANT "w ciąży!"
 PRESS_TO_UNPAUSE "Naciśnij {1:accusative}, aby wznowić."
 SPACE_KEY "spacja"
     "spację" : accusative
@@ -842,30 +836,28 @@ REMOVE_FROM_TEAM_ACTION "Usuń z drużyny"
 REMOVE_FURNITURE_EFFECT_DESCRIPTION "Usuwa {1:accusative}"
 REMOVE_FURNITURE_EFFECT_NAME "usuń mebel"
 REMOVE_MINION_TRAIT_EFFECT_NAME "usuń cechę sługi"
-REMOVE_PERMANENT_LASTING_DESCRIPTION "Usuwa/ulecza z {1} na stałe."
-REMOVE_PERMANENT_LASTING_NAME "usuń stały {1}"
+REMOVE_PERMANENT_LASTING_DESCRIPTION "Usuwa/ulecza z {1:genitive} na stałe."
+REMOVE_PERMANENT_LASTING_NAME "permanentnie usuń {1:accusative}"
 REMOVE_PRISONERS_OR_INCREASE_FORCES "Usuń więźniów lub zwiększ siły zbrojne."
 RENAME_MINION_BUTTON "Zmień imię"
 REQUIRES_ALLY_DISCOVERED "Sojusznik nie został odkryty"
 REQUIRES_ALLY_HAVE_RECRUITS "Sojusznik nie ma obecnie dostępnych rekrutów"
-REQUIRES_CONQUERING "Wymaga podbicia {1}."
+REQUIRES_CONQUERING "Wymaga podbicia {1:genitive}."
 REQUIRES_FURNITURE "Wymaga {1}."
 REQUIRES_KNOCKING_OUT_ENEMY "Wymaga obezwładnienia wrogiej istoty."
-REQUIRES_MORE_ATTRACTIONS "Wymaga jeszcze {1} {2}"
-REQUIRES_ATTRACTIONS "Wymaga {1} {2}"
+REQUIRES_MORE_ATTRACTIONS "Wymaga jeszcze {1} {2:genitive}"
+REQUIRES_ATTRACTIONS "Wymaga {1} {2:genitive}"
 REQUIRES_MORE_LUXURY "Wymaga więcej luksusu w kwaterze: {1} (Razem: {2})"
 REQUIRES_PERSONAL_QUARTERS "Wymaga prywatnej kwatery."
 REQUIRES_PERSONAL_QUARTERS_WITH_LUXURY "Wymaga prywatnej kwatery z luksusem: {1}."
 REQUIRES_PREGNANT_SUCCUBUS "Wymaga ciężarnej sukkuby"
-REQUIRES_RESOURCE "Wymaga {1}"
+REQUIRES_RESOURCE "Wymaga {1:genitive}"
 REQUIRES_TECHNOLOGY "Brak technologii: {1}"
-REQUIRES_TO_TRAIN_FURTHER "Wymaga {1}, aby kontynuować trening."
+REQUIRES_TO_TRAIN_FURTHER "Wymaga {1:genitive}, aby kontynuować trening."
 REQUIRES_TWO_PRISON_TILES "Wymaga dwóch pól więziennych."
 REQUIRES_UNLOCKING "Wymaga odblokowania"
 REQUIRES_UPGRADES "Przedmiotu nie da się wytworzyć bez zastosowanych ulepszeń."
 REQUIRES_X_MORE "Wymaga jeszcze {1} {2:genitive,plural}."
-RESISTANT_TO_CAPTURE "odporny na pojmanie"
-RESISTANT_TO_PLAGUE "odporny na zarazę"
 RESISTING_THE_ATTACK_OF "odparcie ataku {1:genitive}"
     "odparciu ataku {1:genitive}" : instrumental
 RESISTS_SWAP_POSITION "{1} stawia opór!"
@@ -892,7 +884,6 @@ RINGS_OF masculine "pierścienie {1:genitive}"
     "pierścieni {1:genitive}" : plural,genitive
     "pierścieniami {1:genitive}" : plural,instrumental
     "pierścienie {1:genitive}" : plural,accusative
-SATIATED "nasycony"
 SAVE_AND_EXIT_CONFIRM "Czy chcesz zapisać i wyjść z gry?"
 SCROLL_OF_FIRE "zwój ognia"
 SCROLL_OF "zwój {1:genitive}"
@@ -914,8 +905,6 @@ SIX "sześć"
     "sześcioma" : instrumental
 SKELETON_ITEM "szkielet {1:genitive}"
 SKIP_TURN_ACTION "Pomiń turę"
-SLEEP_RESISTANT "odporny na sen"
-SLOWER "porusza się wolniej"
 PAUSED_GAME_SPEED "wstrzymana"
 SLOW_GAME_SPEED "wolna"
 SNARLS "{1} warczy."
@@ -976,7 +965,6 @@ TAKE_ITEMS_EFFECT_DESCRIPTION "Siłą odbiera przedmioty istocie"
 TAKE_ITEMS_EFFECT_NAME "zabierz przedmioty"
 TASKS "Zadania"
 TEAM_TASK "Zadanie drużyny: {1}"
-TELEPATHIC "telepatyczny"
 TEMPORARY_POLYMORPH_EFFECT_NAME "tymczasowa przemiana"
     "tymczasowej przemiany" : genitive
 PERMANENT_POLYMORPH_EFFECT_NAME "stała przemiana"
@@ -1006,7 +994,6 @@ THE_TORTURING_OF "torturowanie {1:genitive}"
 THREE "trzy"
     "trzema" : instrumental
 THROWN_BACK "odrzucony"
-TIED_UP "skuty"
 TORTURE_TASK "Torturuj {1:accusative}"
 TORTURE_UNAVAILABLE_HIGHLIGHT "Tortury niedostępne z powodu limitu populacji"
 TRADE_WITH "Handluj z {1:instrumental}"
@@ -1077,7 +1064,6 @@ VILLAIN_TYPE_MINOR "Poboczny wróg"
 VILLAIN_TYPE_OTHER "Inny"
 VILLAIN_TYPE_PLAYER "Gracz"
 VILLAIN_TYPE_RETIRED "Porzucony loch"
-VULNERABLE_TO_SUNLIGHT "wrażliwy na światło słoneczne"
 VULTURE_LANDS_NEAR "Sęp ląduje w pobliżu {1:genitive}."
 WAKES_UP "{1} budzi się."
 WEAPON_DEGRADATION_DESCRIPTION "Zmniejsza skuteczność broni"
@@ -2186,8 +2172,6 @@ ABILITY neuter "umiejętność"
     "umiejętności" : plural,genitive
     "umiejętnościami" : plural,instrumental
     "umiejętności" : plural,accusative
-BLIND "ślepy"
-    "ślepa" : feminine
 PLAGUE feminine "zaraza"
     "zarazy" : genitive
     "zarazą" : instrumental

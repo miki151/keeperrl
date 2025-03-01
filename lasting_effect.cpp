@@ -141,10 +141,24 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         c->you(MsgType::COLLAPSE);
         break;
       case LastingEffect::PREGNANT:
-        c->you(MsgType::ARE, TStringId("PREGNANT"));
-        break;
+      case LastingEffect::BLIND:
+      case LastingEffect::POISON:
+      case LastingEffect::SLOWED:
       case LastingEffect::STUNNED:
-        c->you(MsgType::ARE, TStringId("KNOCKED_OUT"));
+      case LastingEffect::TIED_UP:
+      case LastingEffect::SLEEP_RESISTANT:
+      case LastingEffect::ENTANGLED:
+      case LastingEffect::POISON_RESISTANT:
+      case LastingEffect::TELEPATHY:
+      case LastingEffect::CAPTURE_RESISTANCE:
+      case LastingEffect::SUNLIGHT_VULNERABLE:
+      case LastingEffect::PLAGUE:
+      case LastingEffect::FROZEN:
+      case LastingEffect::PLAGUE_RESISTANT:
+      case LastingEffect::OIL:
+      case LastingEffect::DRUNK:
+      case LastingEffect::SATIATED:
+        c->you(MsgType::ARE, getAdjective(effect));
         break;
       case LastingEffect::PANIC:
         c->you(MsgType::PANIC);
@@ -158,47 +172,23 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         else
           c->privateMessage(TStringId("HALLU_WHILE_BLIND_MESSAGE"));
         break;
-      case LastingEffect::BLIND:
-        c->you(MsgType::ARE, TStringId("BLIND"));
-        break;
       case LastingEffect::INVISIBLE:
         if (!c->isAffected(LastingEffect::BLIND))
           c->you(MsgType::TURN_INVISIBLE);
         else
           c->privateMessage(TStringId("INVISIBLE_WHILE_BLIND_MESSAGE"));
         break;
-      case LastingEffect::POISON:
-        c->you(MsgType::ARE, TStringId("POISONED"));
-        break;
       case LastingEffect::SPEED:
         c->you(MsgType::ARE, TStringId("FASTER"));
-        break;
-      case LastingEffect::SLOWED:
-        c->you(MsgType::ARE, TStringId("SLOWER"));
-        break;
-      case LastingEffect::SLEEP_RESISTANT:
-        c->you(MsgType::ARE, TStringId("SLEEP_RESISTANT"));
-        break;
-      case LastingEffect::TIED_UP:
-        c->you(MsgType::ARE, TStringId("TIED_UP"));
-        break;
-      case LastingEffect::ENTANGLED:
-        c->you(MsgType::ARE, TStringId("ENTANGLED"));
         break;
       case LastingEffect::SLEEP:
         c->you(MsgType::FALL_ASLEEP);
         break;
-      case LastingEffect::POISON_RESISTANT:
-        c->you(MsgType::ARE, TStringId("POISON_RESISTANT"));
-        break;
       case LastingEffect::INSANITY:
-        c->you(MsgType::BECOME, TStringId("INSANE"));
+        c->you(MsgType::BECOME, TStringId("BUFF_ADJECTIVE_INSANITY"));
         break;
       case LastingEffect::PEACEFULNESS:
-        c->you(MsgType::BECOME, TStringId("PEACEFUL"));
-        break;
-      case LastingEffect::CAPTURE_RESISTANCE:
-        c->you(MsgType::ARE, TStringId("RESISTANT_TO_CAPTURE"));
+        c->you(MsgType::BECOME, TStringId("BUFF_ADJECTIVE_PEACEFULNESS"));
         break;
       case LastingEffect::ELF_VISION:
         c->verb(TStringId("YOU_CAN_SEE_THRU_TREES"), TStringId("CAN_SEE_THRU_TREES"));
@@ -211,15 +201,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::WARNING:
         c->verb(TStringId("YOU_ARE_AWARE_OF_DANGER"), TStringId("IS_AWARE_OF_DANGER"));
-        break;
-      case LastingEffect::TELEPATHY:
-        c->you(MsgType::ARE, TStringId("TELEPATHIC"));
-        break;
-      case LastingEffect::SUNLIGHT_VULNERABLE:
-        c->you(MsgType::ARE, TStringId("VULNERABLE_TO_SUNLIGHT"));
-        break;
-      case LastingEffect::SATIATED:
-        c->you(MsgType::ARE, TStringId("SATIATED"));
         break;
       case LastingEffect::RESTED:
         c->you(MsgType::ARE, TStringId("WELL_RESTED"));
@@ -246,15 +227,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::ON_FIRE:
         c->verb(TStringId("YOU_BURNING"), TStringId("IS_BURNING"));
         break;
-      case LastingEffect::FROZEN:
-        c->you(MsgType::ARE, TStringId("FROZEN"));
-        break;
-      case LastingEffect::PLAGUE:
-        c->you(MsgType::ARE, TStringId("INFECTED"));
-        break;
-      case LastingEffect::PLAGUE_RESISTANT:
-        c->you(MsgType::ARE, TStringId("RESISTANT_TO_PLAGUE"));
-        break;
       case LastingEffect::NO_CARRY_LIMIT:
         c->verb(TStringId("YOUR_CARRY_CAPACITY_INCREASES"), TStringId("HIS_CARRY_CAPACITY_INCREASES"));
         break;
@@ -270,9 +242,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::UNSTABLE:
         c->verb(TStringId("YOU_ARE_MENTALLY_UNSTABLE"), TStringId("IS_MENTALLY_UNSTABLE"));
         break;
-      case LastingEffect::OIL:
-        c->you(MsgType::ARE, TStringId("COVERED_IN_OIL"));
-        break;
       case LastingEffect::SWARMER:
         c->verb(TStringId("YOU_ARE_SWARMER"), TStringId("IS_SWARMER"));
         break;
@@ -281,9 +250,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::TURNED_OFF:
         c->verb(TStringId("YOU_ARE_TURNED_OFF"), TStringId("IS_TURNED_OFF"));
-        break;
-      case LastingEffect::DRUNK:
-        c->you(MsgType::ARE, TStringId("DRUNK"));
         break;
       case LastingEffect::NO_FRIENDLY_FIRE:
         c->you(MsgType::YOUR, TStringId("PROJECTILES_WONT_HIT_ALLIES"));
