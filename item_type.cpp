@@ -404,7 +404,6 @@ SItemAttributes ItemTypes::Ring::getAttributes(const ContentFactory* f) const {
       i.shortName = getName(lastingEffect, f);
       i.equipedEffect.push_back(lastingEffect);
       i.name = TSentence("RING_OF", *i.shortName);
-      i.plural = TString(TSentence("RINGS_OF", *i.shortName));
       i.weight = 0.05;
       i.equipmentSlot = EquipmentSlot::RINGS;
       i.price = 40;
@@ -419,7 +418,6 @@ SItemAttributes ItemTypes::Amulet::getAttributes(const ContentFactory* f) const 
       i.shortName = getName(lastingEffect, f);
       i.equipedEffect.push_back(lastingEffect);
       i.name = TSentence("AMULET_OF", *i.shortName);
-      i.plural = TString(TSentence("AMULETS_OF", *i.shortName));
       i.equipmentSlot = EquipmentSlot::AMULET;
       i.price = 5 * getPrice(lastingEffect, f);
       i.weight = 0.3;
@@ -447,7 +445,6 @@ static SItemAttributes getPotionAttr(const ContentFactory* factory, Effect effec
       i.viewId = ViewId(viewId, effect.getColor(factory));
       i.shortName = effect.getName(factory);
       i.name =  TSentence("POTION_OF", prefix, *i.shortName);
-      i.plural = TString(TSentence("POTIONS_OF", prefix, *i.shortName));
       i.blindName = TString(TStringId("POTION"));
       i.applyVerb = make_pair(TStringId("YOU_DRINK"), TStringId("DRINKS"));
       i.fragile = true;
@@ -513,7 +510,6 @@ SItemAttributes ItemTypes::Mushroom::getAttributes(const ContentFactory* factory
       i.viewId = getMushroomViewId(effect);
       i.shortName = effect.getName(factory);
       i.name = TSentence("MUSHROOM_OF", *i.shortName);
-      i.plural = TString(TSentence("MUSHROOMS_OF", *i.shortName));
       i.blindName = TString(TStringId("MUSHROOM"));
       i.itemClass= ItemClass::FOOD;
       i.weight = 0.1;
@@ -538,7 +534,6 @@ SItemAttributes ItemTypes::Glyph::getAttributes(const ContentFactory* factory) c
       i.viewId = getRuneViewId(*i.shortName);
       i.upgradeInfo = rune;
       i.name = TSentence("GLYPH", *i.shortName);
-      i.plural= TString(TSentence("GLYPHS", *i.shortName));
       i.blindName = TString(TStringId("GLYPH_BLIND"));
       i.itemClass = ItemClass::OTHER;
       i.weight = 0.1;
@@ -561,7 +556,6 @@ SItemAttributes ItemTypes::Balsam::getAttributes(const ContentFactory* factory) 
       i.viewId = getBalsamViewId(*i.shortName);
       i.upgradeInfo = ItemUpgradeInfo LIST(ItemUpgradeType::BALSAM, effect);
       i.name = TSentence("BALSAM_OF", *i.shortName);
-      i.plural= TString(TSentence("BALSAMS_OF", *i.shortName));
       i.blindName = TString(TStringId("BALSAM"));
       i.weight = 0.5;
       i.price = 100;
@@ -575,7 +569,6 @@ SItemAttributes ItemTypes::Scroll::getAttributes(const ContentFactory* factory) 
       i.viewId = ViewId("scroll");
       i.shortName = effect.getName(factory);
       i.name = TSentence("SCROLL_OF", *i.shortName);
-      i.plural= TString(TSentence("SCROLLS_OF", *i.shortName));
       i.blindName = TString(TStringId("SCROLL"));
       i.applyVerb = make_pair(TStringId("YOU_READ"), TStringId("HE_READS"));
       i.weight = 0.1;
@@ -593,7 +586,6 @@ SItemAttributes ItemTypes::FireScroll::getAttributes(const ContentFactory*) cons
   return ITATTR(
       i.viewId = ViewId("scroll");
       i.name = TStringId("SCROLL_OF_FIRE");
-      i.plural = TString(TStringId("SCROLLS_OF_FIRE"));
       i.shortName = TString(TStringId("FIRE"));
       i.description = TString(TStringId("FIRE_SCROLL_DESCRIPTION"));
       i.blindName = TString(TStringId("SCROLL"));
@@ -615,7 +607,6 @@ SItemAttributes ItemTypes::TechBook::getAttributes(const ContentFactory* f) cons
       i.viewId = ViewId("book");
       i.shortName = f->technology.getName(techId);
       i.name = TSentence("BOOK_OF", *i.shortName);
-      i.plural = TString(TSentence("BOOKS_OF", *i.shortName));
       i.weight = 1;
       i.applyTime = 3_visible;
       i.effect = Effect(techId);

@@ -34,7 +34,7 @@ ALL_VILLAINS "All villains"
 ALLY_DOESNT_EXIST "Ally doesn't exist"
 A_MINION_BECOMES_PREGNANT "A minion becomes pregnant"
 AMULET_OF "amulet of {1}"
-AMULETS_OF "amulets of {1}"
+    "amulets of {1}" : plural
 ANALYTICS_EFFECT_DESCRIPTION "Triggers an analytics/logging event"
 ANALYTICS_EFFECT_NAME "analytics"
 ANIMAL_PEN_MUST_BE_SEPARATE_HIGHLIGHT "Animal pen must be separated from the outdoors and from all staircases using an animal fence"
@@ -599,12 +599,12 @@ RETIRED_DUNGEON_UPLOADED "Your retired dungeon has been uploaded to Steam Worksh
 RETIRED_SCREENSHOT_TEXT "Your dungeon will be shared in Steam Workshop with an attached screenshot. Steer the rectangle below to a fitting area of your dungeon and confirm."
 RETIRE_WHEN_READY "When you are ready, retire your dungeon and share it online. Other players will be able to invade it. To do this, press Escape and choose 'retire'."
 RING_OF "ring of {1}"
-RINGS_OF "rings of {1}"
+    "rings of {1}" : plural
 SAVE_AND_EXIT_CONFIRM "Do you want to save and exit the game?"
 SCROLL_OF_FIRE "scroll of fire"
+    "scrolls of fire" : plural
 SCROLL_OF "scroll of {1}"
-SCROLLS_OF_FIRE "scrolls of fire"
-SCROLLS_OF "scrolls of {1}"
+    "scrolls of {1}" : plural
 SET_FLAG_EFFECT_DESCRIPTION "Sets a global flag to either true or false"
 SET_FLAG_EFFECT_NAME "set global flag"
 SET_FURNITURE_ON_FIRE_EFFECT_DESCRIPTION "Sets objects on fire"
@@ -1469,15 +1469,14 @@ ITEM_SUFFIXES "{1}"
 USES_LEFT "{1} ({2} uses left)"
 ITEM_ATTR_IMPROVED_BY "Item attributes are improved by {1}"
 BALSAM_OF "balsam of {1}"
-BALSAMS_OF "balsams of {1}"
+    "balsams of {1}" : plural
 BODY_PART_OF "{1} {2}"
 BOOK_OF "book of {1}"
-BOOKS_OF "books of {1}"
-GLYPHS "glyphs {1}"
+    "books of {1}" : plural
 MUSHROOM_OF "mushroom of {1}"
-MUSHROOMS_OF "mushrooms of {1}"
+    "mushrooms of {1}" : plural
 POTION_OF "{1}potion of {2}"
-POTIONS_OF "{1}potions of {2}"
+    "{1}potions of {2}" : plural
 BREAKS_FREE_FROM "{1} breaks free from {2}."
 CAN_SEE_YOU_HIDING "{1} can see you hiding."
 CUTS_TENTACLE "{1} cuts the kraken's tentacle."
@@ -1531,6 +1530,7 @@ CONSUMABLES "consumables"
 CORPSE "corpse"
 FIRE "fire"
 GLYPH "glyph {1}"
+    "glyphs {1}" : plural
 GLYPH_BLIND "glyph"
 UPGRADE_TYPE_GLYPH "glyph"
 UPGRADE_TYPE_BALSAM "balsam"

@@ -64,14 +64,6 @@ AMULET_OF masculine "amulet {1:genitive}"
     "amuletów {1:genitive}" : plural,genitive
     "amuletami {1:genitive}" : plural,instrumental
     "amulety {1:genitive}" : plural,accusative
-AMULETS_OF masculine "amulety {1:genitive}"
-    "amuletów {1:genitive}" : genitive
-    "amuletami {1:genitive}" : instrumental
-    "amulety {1:genitive}" : accusative
-    "amulety {1:genitive}" : plural
-    "amuletów {1:genitive}" : plural,genitive
-    "amuletami {1:genitive}" : plural,instrumental
-    "amulety {1:genitive}" : plural,accusative
 ANALYTICS_EFFECT_DESCRIPTION "Wywołuje zdarzenie analityczne (logowanie)"
 ANALYTICS_EFFECT_NAME "zdarzenie analityczne"
 ANIMAL_PEN_MUST_BE_SEPARATE_HIGHLIGHT "Wybieg dla zwierząt musi być oddzielony od terenu zewnętrznego i od wszystkich schodów za pomocą ogrodzenia dla zwierząt"
@@ -98,12 +90,13 @@ ARMOR_DEGRADATION_DESCRIPTION "Zmniejsza skuteczność pancerza"
 ARMOR_DEGRADATION_NAME "degradacja pancerza"
 ARMOR_ENCHANTMENT_DESCRIPTION "Zwiększa skuteczność pancerza"
 ARMOR_ENCHANTMENT_NAME "ulepszenie pancerza"
-ARMOR_UPGRADE_TYPE "pancerz"
+ARMOR_UPGRADE_TYPE "zbroja"
+    "zbroi" : genitive
 A_SEX_ACT_BETWEEN "akt seksualny pomiędzy {1:instrumental} i {2:instrumental}"
     "akcie seksualnym pomiędzy {1:instrumental} i {2:instrumental}" : instrumental
 ATTACK_ACTION "Atakuj"
 ATTACK_CREATURES_TASK "Zaatakuj kogoś"
-ATTACKER_AFFECTED_BY "atakujący pod wpływem: {1}"
+ATTACKER_AFFECTED_BY "wpływ na atakującego: {1}"
 ATTACK_IS_HARMLESS "Ten atak jest nieszkodliwy."
 AUDIENCE_EFFECT_DESCRIPTION "Zwołuje wszystkich wojowników broniących terytorium"
 AUDIENCE_EFFECT_NAME "audiencja"
@@ -147,6 +140,7 @@ BLEEDING_EFFECT_DESCRIPTION "Powoduje krwawienie."
 BLEEDING_EFFECT_NAME "krwawienie"
 BLOODY_WATER "zakrwawiona woda"
 BODIES_UPGRADE_TYPE "ciała"
+    "ciał" : genitive
 BODY_PART_GROWS_BACK "{1} odrasta!"
 BODY_PART_IS_IN_BETTER_SHAPE "{1} jest w lepszym stanie"
 BODY_PART_NUMBER "{1:2} {2}"
@@ -824,6 +818,7 @@ PUSH_ACTION "Popchnij"
 RACE_OF_LOCATION "{1} z {2}"
 RAGES "{1} wpada w gniew."
 RANGED_WEAPONS_UPGRADE_TYPE "broń dystansowa"
+    "broni dystansowej" : genitive
 REACHES_TRAINING_LEVEL "{1} osiąga poziom szkolenia {2:genitive} {3}"
 REALLY_ABSORB "Na pewno wchłonąć {1:accusative}?"
 REBELLION_CHANCE_HIGH "wysokie"
@@ -876,19 +871,23 @@ RING_OF masculine "pierścień {1:genitive}"
     "pierścieni {1:genitive}" : plural,genitive
     "pierścieniami {1:genitive}" : plural,instrumental
     "pierścienie {1:genitive}" : plural,accusative
-RINGS_OF masculine "pierścienie {1:genitive}"
-    "pierścieni {1:genitive}" : genitive
-    "pierścieniami {1:genitive}" : instrumental
-    "pierścienie {1:genitive}" : accusative
-    "pierścienie {1:genitive}" : plural
-    "pierścieni {1:genitive}" : plural,genitive
-    "pierścieniami {1:genitive}" : plural,instrumental
-    "pierścienie {1:genitive}" : plural,accusative
 SAVE_AND_EXIT_CONFIRM "Czy chcesz zapisać i wyjść z gry?"
 SCROLL_OF_FIRE "zwój ognia"
+    "zwoju ognia" : genitive
+    "zwojem ognia" : instrumental
+    "zwój ognia" : accusative
+    "zwoje ognia" : plural
+    "zwojów ognia" : plural,genitive
+    "zwojami ognia" : plural,instrumental
+    "zwoje ognia" : plural,accusative
 SCROLL_OF "zwój {1:genitive}"
-SCROLLS_OF_FIRE "zwoje ognia"
-SCROLLS_OF "zwoje {1:genitive}"
+    "zwoju {1:genitive}" : genitive
+    "zwojem {1:genitive}" : instrumental
+    "zwój {1:genitive}" : accusative
+    "zwoje {1:genitive}" : plural
+    "zwojów {1:genitive}" : plural,genitive
+    "zwojami {1:genitive}" : plural,instrumental
+    "zwoje {1:genitive}" : plural,accusative
 SET_FLAG_EFFECT_DESCRIPTION "Ustawia globalną flagę na true albo false"
 SET_FLAG_EFFECT_NAME "ustaw globalną flagę"
 SET_FURNITURE_ON_FIRE_EFFECT_DESCRIPTION "Podpala obiekty"
@@ -1037,6 +1036,7 @@ UI_EFFECT_DESCRIPTION "Wyświetla element interfejsu"
 UI_EFFECT_NAME "interfejs"
 UNDEAD_DAMAGE_EXPLANATION "Istoty nieumarłe nie otrzymują zwykłych obrażeń. Aby je zabić, trzeba je posiekać lub użyć ognia."
 UNDEAD_KINGS_UPGRADE_TYPE "królowie nieumarłych"
+    "królów nieumarłych" : genitive
 UNDEAD "Nieumarły"
 UNLOCK_DOOR_ACTION "Otwórz drzwi"
 UNLOCK_EFFECT_DESCRIPTION "Odblokowuje funkcję w grze"
@@ -1071,6 +1071,7 @@ WEAPON_DEGRADATION_NAME "degradacja broni"
 WEAPON_ENCHANTMENT_DESCRIPTION "Zwiększa skuteczność broni"
 WEAPON_ENCHANTMENT_NAME "ulepszenie broni"
 WEAPONS_UPGRADE_TYPE "broń"
+    "broni" : genitive
 WELCOME_TO_SHOP "Witaj w sklepie {1:genitive}!"
 WHEN_INDOORS "gdy w pomieszczeniu"
 WHEN_IN_TERRITORY "gdy na terytorium"
@@ -1944,10 +1945,6 @@ BALSAM_OF masculine "balsam {1:genitive}"
     "balsamów {1:genitive}" : plural,genitive
     "balsamami {1:instrumental}" : plural,instrumental
     "balsamy {1:genitive}" : plural,accusative
-BALSAMS_OF masculine "balsamy {1:genitive}"
-    "balsamów {1:genitive}" : plural,genitive
-    "balsamami {1:instrumental}" : plural,instrumental
-    "balsamy {1:genitive}" : plural,accusative
 BODY_PART_OF "{1} {2:genitive}"
 BOOK_OF masculine "księga {1:genitive}"
     "księgi {1:genitive}" : genitive
@@ -1957,14 +1954,6 @@ BOOK_OF masculine "księga {1:genitive}"
     "ksiąg {1:genitive}" : plural,genitive
     "księgami {1:instrumental}" : plural,instrumental
     "księgi {1:genitive}" : plural,accusative
-BOOKS_OF masculine "księgi {1:genitive}"
-    "ksiąg {1:genitive}" : plural,genitive
-    "księgami {1:instrumental}" : plural,instrumental
-    "księgi {1:genitive}" : plural,accusative
-GLYPHS masculine "glify {1:genitive}"
-    "glifów {1:genitive}" : plural,genitive
-    "glifami {1:instrumental}" : plural,instrumental
-    "glify {1:genitive}" : plural,accusative
 MUSHROOM_OF masculine "grzyb {1:genitive}"
     "grzyba {1:genitive}" : genitive
     "grzybem {1:instrumental}" : instrumental
@@ -1973,19 +1962,11 @@ MUSHROOM_OF masculine "grzyb {1:genitive}"
     "grzybów {1:genitive}" : plural,genitive
     "grzybami {1:instrumental}" : plural,instrumental
     "grzyby {1:genitive}" : plural,accusative
-MUSHROOMS_OF masculine "grzyby {1:genitive}"
-    "grzybów {1:genitive}" : plural,genitive
-    "grzybami {1:instrumental}" : plural,instrumental
-    "grzyby {1:genitive}" : plural,accusative
 POTION_OF masculine "{1}mikstura {2:genitive}"
     "{1}mikstury {2:genitive}" : genitive
     "{1}miksturą {2:instrumental}" : instrumental
     "{1}miksturę {2:genitive}" : accusative
     "{1}mikstury {2:genitive}" : plural
-    "{1}mikstur {2:genitive}" : plural,genitive
-    "{1}miksturami {2:instrumental}" : plural,instrumental
-    "{1}mikstury {2:genitive}" : plural,accusative
-POTIONS_OF masculine "{1}mikstury {2:genitive}"
     "{1}mikstur {2:genitive}" : plural,genitive
     "{1}miksturami {2:instrumental}" : plural,instrumental
     "{1}mikstury {2:genitive}" : plural,accusative
@@ -2096,15 +2077,14 @@ FIRE neuter "ogień"
     "ogień" : accusative
     "ogniem" : instrumental
     "ogie­nie" : locative
-    ## If needed in plural, "ognie," "ogniów," "ognia­mi," etc.
-GLYPH masculine "glif"
-    "glifu" : genitive
-    "glifem" : instrumental
-    "glif" : accusative
-    "glify" : plural
-    "glifów" : plural,genitive
-    "glifami" : plural,instrumental
-    "glify" : plural,accusative
+GLYPH masculine "glif {1:genitive}"
+    "glifu {1:genitive}" : genitive
+    "glifem {1:genitive}" : instrumental
+    "glif {1:genitive}" : accusative
+    "glify {1:genitive}" : plural
+    "glifów {1:genitive}" : plural,genitive
+    "glifami {1:genitive}" : plural,instrumental
+    "glify {1:genitive}" : plural,accusative
 GLYPH_BLIND "glif"
 UPGRADE_TYPE_GLYPH "glif"
     "glify" : plural
@@ -8080,14 +8060,14 @@ ITEMS_WOODENSHIELD_SHORTNAME masculine "drewniana"
     "drewnianymi" : plural,instrumental
     "drewniane" : plural,accusative
 
-ITEMS_WOODENSTAFF_NAME1 masculine "kostur z drewna arch"
-    "kostura z drewna arch" : genitive
-    "kosturem z drewna arch" : instrumental
-    "kostur z drewna arch" : accusative
-    "kostury z drewna arch" : plural
-    "kosturów z drewna arch" : plural,genitive
-    "kosturami z drewna arch" : plural,instrumental
-    "kostury z drewna arch" : plural,accusative
+ITEMS_WOODENSTAFF_NAME1 masculine "kostur z pradrzewa"
+    "kostura z pradrzewa" : genitive
+    "kosturem z pradrzewa" : instrumental
+    "kostur z pradrzewa" : accusative
+    "kostury z pradrzewa" : plural
+    "kosturów z pradrzewa" : plural,genitive
+    "kosturami z pradrzewa" : plural,instrumental
+    "kostury z pradrzewa" : plural,accusative
 
 ITEMS_WOODENSTAFF_NAME2 masculine "elfi kostur"
     "elfiego kostura" : genitive
