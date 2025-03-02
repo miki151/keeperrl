@@ -7725,8 +7725,6 @@ ITEMS_MAGICLAMP_NAME feminine "lampa oliwna"
     "lampami oliwnymi" : plural,instrumental
     "lampy oliwne" : plural,accusative
 
-ITEMS_MOONSHINE_APPLYVERB1 "pije"
-ITEMS_MOONSHINE_APPLYVERB "pić"
 ITEMS_MOONSHINE_BLINDNAME "mikstura"
 ITEMS_MOONSHINE_EFFECT "Zwiększa morale, ale powoduje upicie się sług"
 ITEMS_MOONSHINE_NAME feminine "buteleczka bimbru"

@@ -1957,7 +1957,7 @@ End
     shortName = ITEMS_MOONSHINE_SHORTNAME
     name = ITEMS_MOONSHINE_NAME
     blindName = ITEMS_MOONSHINE_BLINDNAME
-    applyVerb = ITEMS_MOONSHINE_APPLYVERB ITEMS_MOONSHINE_APPLYVERB1
+    applyVerb = YOU_DRINK DRINKS
     fragile = true
     weight = 0.3
     effect = Description ITEMS_MOONSHINE_EFFECT {
