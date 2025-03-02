@@ -43,7 +43,7 @@ static void addThird(const Creature* c, MsgType type, vector<TString> param) {
       case MsgType::HIT_THROWN_ITEM_PLURAL: return TSentence("ITEMS_HIT", param);
       case MsgType::ITEM_CRASHES: return TSentence("ITEM_CRASHES_ON", param);
       case MsgType::ITEM_CRASHES_PLURAL: return TSentence("ITEMS_CRASH_ON", param);
-      case MsgType::GET_HIT_NODAMAGE: return TSentence("ATTACK_IS_HARMLESS");
+      case MsgType::GET_HIT_NODAMAGE: return TSentence("THE_ATTACK_IS_HARMLESS");
       case MsgType::COLLAPSE: return TSentence("COLLAPSES", param);
       case MsgType::TRIGGER_TRAP: return TSentence("TRIGGERS_SOMETHING", param);
       case MsgType::DISARM_TRAP: return TSentence("DISARMS", param);
@@ -106,7 +106,7 @@ static void addSecond(const Creature* c, MsgType type, vector<TString> param) {
       case MsgType::HIT_THROWN_ITEM_PLURAL: return TSentence("ITEMS_HIT_YOU", param);
       case MsgType::ITEM_CRASHES: return TSentence("ITEM_CRASHES_ON_YOU", param);
       case MsgType::ITEM_CRASHES_PLURAL: return TSentence("ITEMS_CRASH_ON_YOU", param);
-      case MsgType::GET_HIT_NODAMAGE: return TSentence("ATTACK_ON_YOU_IS_HARMLESS");
+      case MsgType::GET_HIT_NODAMAGE: return TSentence("THE_ATTACK_IS_HARMLESS");
       case MsgType::COLLAPSE: return TSentence("YOU_COLLAPSE");
       case MsgType::TRIGGER_TRAP: return TSentence("YOU_TRIGGER_SOMETHING");
       case MsgType::DISARM_TRAP: return TSentence("YOU_DISARM", param);

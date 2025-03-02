@@ -175,9 +175,9 @@ Def YesOrNo() {
       } )))
       Height 35 {}
       Position(MIDDLE, Horizontal {
-        Using "callback" StandardButton(Label(TEXT61))
+        Using "callback" StandardButton(Label(CONFIRM_BUTTON))
         Width 30 {}
-        Using "EXIT" StandardButton(Label(TEXT62))
+        Using "EXIT" StandardButton(Label(CANCEL_BUTTON))
       })
     }
   )

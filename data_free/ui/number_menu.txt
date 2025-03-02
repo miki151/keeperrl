@@ -55,7 +55,7 @@
     Height 10 {}
     Position(MIDDLE, Horizontal {
       Using "confirm" StandardButtonNotFocusable(Horizontal {
-        Label(TEXT13)
+        Label(CONFIRM_BUTTON)
         Width 5 {}
         KeybindingHandler("MENU_SELECT")
         RenderKeybinding("MENU_SELECT", true)
