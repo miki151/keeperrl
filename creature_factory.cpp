@@ -967,7 +967,7 @@ PCreature CreatureFactory::getHumanForTests() {
       c.attr[AttrType("DEFENSE")] = 12;
       c.attr[AttrType("RANGED_DAMAGE")] = 12;
       c.body = Body::humanoid(Body::Size::LARGE);
-      c.name = TString(TStringId("WIZARD"));
+      c.name = TString(TStringId("WHITE_WIZARD"));
       c.viewIdUpgrades = LIST(ViewId("keeper2"), ViewId("keeper3"), ViewId("keeper4"));
       c.name.setFirst("keeper"_s);
       c.name.useFullTitle();
