@@ -1386,7 +1386,7 @@ End
     viewId = { "scroll" }
     weight = 1
     price = 1
-    applyVerb = ITEMS_ADOXIESCROLL_APPLYVERB ITEMS_ADOXIESCROLL_APPLYVERB1
+    applyVerb = YOU_READ HE_READS
     applyPredicate = Not LastingEffect BLIND
     effect = Description ITEMS_ADOXIESCROLL_EFFECT Message NORMAL ITEMS_ADOXIESCROLL_EFFECT3
     storageIds = {"scrolls" "equipment"}
@@ -1413,7 +1413,7 @@ End
     weight = 1
     price = 1
     uses = 1
-    applyVerb = ITEMS_ZOMBIESCROLL_APPLYVERB ITEMS_ZOMBIESCROLL_APPLYVERB1
+    applyVerb = YOU_READ HE_READS
     applyPredicate = Not LastingEffect BLIND
     effect = Description "" Name ITEMS_ZOMBIESCROLL_EFFECT {
       Message NORMAL ITEMS_ZOMBIESCROLL_EFFECT2
@@ -1428,7 +1428,7 @@ End
   {
     name = ITEMS_CYCLOPSSCROLL_NAME
     viewId = { "scroll" }
-    applyVerb = ITEMS_CYCLOPSSCROLL_APPLYVERB ITEMS_CYCLOPSSCROLL_APPLYVERB1
+    applyVerb = YOU_READ HE_READS
     applyPredicate = Not LastingEffect BLIND
     weight = 1
     price = 1
@@ -1977,7 +1977,7 @@ End
     shortName = ITEMS_PRAYERBOOKPROTECTION_SHORTNAME
     name = ITEMS_PRAYERBOOKPROTECTION_NAME
     blindName = ITEMS_PRAYERBOOKPROTECTION_BLINDNAME
-    applyVerb = ITEMS_PRAYERBOOKPROTECTION_APPLYVERB ITEMS_PRAYERBOOKPROTECTION_APPLYVERB1
+    applyVerb = YOU_READ HE_READS
     weight = 2
     description = ITEMS_PRAYERBOOKPROTECTION_DESCRIPTION
     effect = Name ITEMS_PRAYERBOOKPROTECTION_EFFECT Message NORMAL ITEMS_PRAYERBOOKPROTECTION_EFFECT2

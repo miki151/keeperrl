@@ -7098,8 +7098,6 @@ ITEMS_ADOXIERING_NAME masculine "pierścień Złego Boga Adoxie"
     "pierścieniami Złego Boga Adoxie" : plural,instrumental
     "pierścienie Złego Boga Adoxie" : plural,accusative
 ITEMS_ADOXIERING_SHORTNAME "Adoxie"
-ITEMS_ADOXIESCROLL_APPLYVERB1 "czyta"
-ITEMS_ADOXIESCROLL_APPLYVERB "czytaj"
 ITEMS_ADOXIESCROLL_EFFECT1 "wiadomość"
 ITEMS_ADOXIESCROLL_EFFECT "Tani pamflet religijny"
 ITEMS_ADOXIESCROLL_NAME masculine "pamflet religijny"
@@ -7316,8 +7314,6 @@ ITEMS_CYCLOPSBRAIN_NAME masculine "mózg cyklopa"
     "mózgów cyklopa" : plural,genitive
     "mózgami cyklopa" : plural,instrumental
     "mózgów cyklopa" : plural,accusative
-ITEMS_CYCLOPSSCROLL_APPLYVERB1 "czyta"
-ITEMS_CYCLOPSSCROLL_APPLYVERB "czytaj"
 ITEMS_CYCLOPSSCROLL_EFFECT "?"
 ITEMS_CYCLOPSSCROLL_NAME masculine "dziwny zwój"
     "dziwnego zwoju" : genitive
@@ -7744,8 +7740,6 @@ ITEMS_MOONSHINE_NAME feminine "buteleczka bimbru"
 
 ITEMS_MOONSHINE_SHORTNAME masculine "bimber"
 
-ITEMS_PRAYERBOOKPROTECTION_APPLYVERB1 "czyta"
-ITEMS_PRAYERBOOKPROTECTION_APPLYVERB "czytaj"
 ITEMS_PRAYERBOOKPROTECTION_BLINDNAME "księga"
 ITEMS_PRAYERBOOKPROTECTION_DESCRIPTION "Zawiera modlitwy odmawiane podczas mszy."
 ITEMS_PRAYERBOOKPROTECTION_EFFECT "Brak"
@@ -8086,9 +8080,6 @@ ITEMS_ZOMBIEBRAIN_NAME neuter "mózg zombie"
     "mózgów zombie" : plural,genitive
     "mózgami zombie" : plural,instrumental
     "mózgi zombie" : plural,accusative
-
-ITEMS_ZOMBIESCROLL_APPLYVERB1 "czyta"
-ITEMS_ZOMBIESCROLL_APPLYVERB "czytaj"
 ITEMS_ZOMBIESCROLL_EFFECT "?"
 ITEMS_ZOMBIESCROLL_NAME feminine "zgniły zwój"
     "zgniłego zwoju" : genitive
