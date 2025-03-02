@@ -11,13 +11,3 @@ TStringId getName(BedType type) {
     case BedType::STABLE: return TStringId("STABLE");
   }
 }
-
-TStringId getPlural(BedType type) {
-  switch (type) {
-    case BedType::PRISON: return TStringId("PRISON_TILES");
-    case BedType::COFFIN: return TStringId("COFFINS");
-    case BedType::BED: return TStringId("BEDS");
-    case BedType::CAGE: return TStringId("CAGES");
-    case BedType::STABLE: return TStringId("STABLES");
-  }
-}

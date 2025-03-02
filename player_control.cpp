@@ -1707,7 +1707,7 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
       if (prisonSize == 0)
         requirements.push_back(TSentence("REQUIRES_A", getName(prisonBedType)));
       else
-        requirements.push_back(TSentence("REQUIRES_X_MORE", getPlural(prisonBedType), toString(missingSize)));
+        requirements.push_back(TSentence("REQUIRES_X_MORE", makePlural(getName(prisonBedType)), toString(missingSize)));
     }
     if (stack.collective)
       requirements.push_back(TSentence("REQUIRES_CONQUERING", stack.collective->getName()->full));

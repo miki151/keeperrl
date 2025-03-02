@@ -131,10 +131,6 @@ BED neuter "łóżko"
     "łóżek" : plural,genitive
     "łóżkami" : plural,instrumental
     "łóżka" : plural,accusative
-BEDS neuter "łóżka"
-    "łóżek" : genitive
-    "łóżkami" : instrumental
-    "łóżka" : accusative
 BLEEDING_EFFECT_DESCRIPTION "Powoduje krwawienie."
 BLEEDING_EFFECT_NAME "krwawienie"
 BLOODY_WATER "zakrwawiona woda"
@@ -310,10 +306,6 @@ CAGE feminine "klatka"
     "klatek" : plural,genitive
     "klatkami" : plural,instrumental
     "klatki" : plural,accusative
-CAGES feminine "klatki"
-    "klatek" : plural,genitive
-    "klatkami" : plural,instrumental
-    "klatki" : plural,accusative
 CAMPAIGN_DIFFICULTY "Ustawienia trudności"
 CAMPAIGN_HELP_BUTTON "Pomoc"
 CAMPAIGN_VILLAIN_DEFEATED "Pokonany"
@@ -350,10 +342,6 @@ COFFIN feminine "trumna"
     "trumną" : instrumental
     "trumnę" : accusative
     "trumny" : plural
-    "trumien" : plural,genitive
-    "trumnami" : plural,instrumental
-    "trumny" : plural,accusative
-COFFINS feminine "trumny"
     "trumien" : plural,genitive
     "trumnami" : plural,instrumental
     "trumny" : plural,accusative
@@ -801,7 +789,7 @@ PRISONER_STATUS_DESCRIPTION "{PRISONER_STATUS_DESCRIPTION_HELPER:1}"
 PRISONER_STATUS "Więzień"
 PRISON_MUST_BE_SEPARATE_HIGHLIGHT "Więzienie musi być oddzielone od zewnątrz i wszystkich schodów za pomocą krat lub drzwi więziennych"
 PRISON_TILE "pole więzienne"
-PRISON_TILES "pola więzienne"
+    "pola więzienne" : plural
 MINION_PRODUCES "{1} {2} {3:accusative}"
 PRODUCES_VERB "wytwarza"
 WRITES_VERB "pisze"
@@ -922,8 +910,8 @@ TWO_HEADED "dwugłowy {1}"
 MULTI_HEADED "wielogłowy {1}"
 WINGED "skrzydlaty {1}"
 SQUARE_BRACKETS "[{1}]"
-STABLES "stajnie"
 STABLE "stajnia"
+    "stajnie" : plural
 STAIRS_EFFECT_DESCRIPTION "Użyj schodów"
 STAIRS_EFFECT_NAME "schody"
 IS_NO_LONGER_CRAWLING "{1} wraca na swoje {2} nogi."
