@@ -535,7 +535,7 @@ End
   effect = Shove
   range = 1
   cooldown = {15 31}
-  message = SPELLS_SHOVE_MESSAGE SPELLS_SHOVE_MESSAGE1
+  message = USE_ABILITY_MESSAGE USE_ABILITY_MESSAGE1
   type = ABILITY
 }
 "swap positions"
@@ -544,7 +544,7 @@ End
   effect = SwapPosition
   range = 1
   cooldown = {15 31}
-  message = SPELLS_SWAP_POSITIONS_MESSAGE SPELLS_SWAP_POSITIONS_MESSAGE1
+  message = USE_ABILITY_MESSAGE USE_ABILITY_MESSAGE1
 }
 "black dragon blindness"
 {
@@ -755,7 +755,7 @@ Def NoEffect() Unlock "nothing" End
 {
   symbol = "🐤"
   effect = Summon "CHICKEN" 1 15
-  message = SPELLS_SUMMON_CHICKEN_MESSAGE SPELLS_SUMMON_CHICKEN_MESSAGE1
+  message = SPELLS_CLUCK_MESSAGE SPELLS_CLUCK_MESSAGE1
   cooldown = 5
   type = ABILITY
 }
@@ -764,7 +764,7 @@ Def NoEffect() Unlock "nothing" End
   upgrade = "summon chicken"
   symbol = "🐤🐤"
   effect = Name SPELLS_SUMMON_MORE_CHICKENS_EFFECT Summon "CHICKEN" {3 5} 15
-  message = SPELLS_SUMMON_MORE_CHICKENS_MESSAGE SPELLS_SUMMON_MORE_CHICKENS_MESSAGE1
+  message = SPELLS_CLUCK_MESSAGE SPELLS_CLUCK_MESSAGE1
   cooldown = {3 10}
   type = ABILITY
 }
@@ -777,7 +777,7 @@ Def NoEffect() Unlock "nothing" End
     Filter IsPlayer Achievement "polymorphed_into_chicken"
   }
   cooldown = {30 101}
-  message = SPELLS_CHICKENMORPH_MESSAGE SPELLS_CHICKENMORPH_MESSAGE1
+  message = SPELLS_CLUCK_MESSAGE SPELLS_CLUCK_MESSAGE1
   type = ABILITY
 }
 "advanced chickenmorph"
@@ -794,7 +794,7 @@ Def NoEffect() Unlock "nothing" End
   endOnly = true
   range = 5
   cooldown = {30 101}
-  message = SPELLS_ADVANCED_CHICKENMORPH_MESSAGE SPELLS_ADVANCED_CHICKENMORPH_MESSAGE1
+  message = SPELLS_CLUCK_MESSAGE SPELLS_CLUCK_MESSAGE1
   type = ABILITY
 }
 "chickengeddon"
@@ -807,7 +807,7 @@ Def NoEffect() Unlock "nothing" End
       Filter IsPlayer Achievement "polymorphed_into_chicken"
     }
   cooldown = {150 301}
-  message = SPELLS_CHICKENGEDDON_MESSAGE SPELLS_CHICKENGEDDON_MESSAGE1
+  message = SPELLS_CLUCK_MESSAGE SPELLS_CLUCK_MESSAGE1
   type = ABILITY
 }
 "balrogs whip"
@@ -867,7 +867,7 @@ Def NoEffect() Unlock "nothing" End
   fx = {FLAMETHROWER ColorId YELLOW}
   range = 5
   cooldown = {5 10}
-  message = SPELLS_LEYAK_ACID_MESSAGE SPELLS_LEYAK_ACID_MESSAGE1
+  message = SPELLS_ACID_STREAM_MESSAGE SPELLS_ACID_STREAM_MESSAGE1
   type = ABILITY
 }
 "ghoul corpse feast"
