@@ -2794,14 +2794,6 @@ CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_NAME2 feminine "Lewa Ręka Adoxiego"
 CREATURE_ATTRIBUTES_ADOXIE_HEAD_CHATREACTIONFRIENDLY "\"Spójrz na mą wielkość i drżyj, śmiertelniku!\""
 CREATURE_ATTRIBUTES_ADOXIE_HEAD_CHATREACTIONHOSTILE "\"Jak śmiesz przeciwstawić się BOGU!\""
 CREATURE_ATTRIBUTES_ADOXIE_HEAD_DEATHDESCRIPTION "pokonany. Niech nigdy więcej nie powstanie"
-CREATURE_ATTRIBUTES_ADOXIE_HEAD_ID masculine "czar"
-    "czaru" : genitive
-    "czarem" : instrumental
-    "czar" : accusative
-    "czary" : plural
-    "czarów" : plural,genitive
-    "czarami" : plural,instrumental
-    "czary" : plural,accusative
 
 CREATURE_ATTRIBUTES_ADOXIE_HEAD_NAME masculine "Zły Bóg Adoxie"
     "Złego Boga Adoxiego" : genitive
@@ -4659,14 +4651,6 @@ CREATURE_ATTRIBUTES_SPIDER_NAME masculine "pająk"
 
 CREATURE_ATTRIBUTES_SPIRIT_CHATREACTIONFRIENDLY "\"Wouuuouuu!!!\""
 CREATURE_ATTRIBUTES_SPIRIT_CHATREACTIONHOSTILE "\"Wouuuouuu!!!\""
-CREATURE_ATTRIBUTES_SPIRIT_ID neuter "czar"
-    "czaru" : genitive
-    "czarem" : instrumental
-    "czar" : accusative
-    "czary" : plural
-    "czarów" : plural,genitive
-    "czarami" : plural,instrumental
-    "czary" : plural,accusative
 
 CREATURE_ATTRIBUTES_SPIRIT_NAME masculine "duch pradawny"
     "ducha pradawnego" : genitive
@@ -4705,15 +4689,6 @@ CREATURE_ATTRIBUTES_SUCCUBUS_NAME feminine "sukkuba"
     "sukkub" : plural,genitive
     "sukkubami" : plural,instrumental
     "sukkuby" : plural,accusative
-
-CREATURE_ATTRIBUTES_TENGU_ID neuter "czar"
-    "czaru" : genitive
-    "czarem" : instrumental
-    "czar" : accusative
-    "czary" : plural
-    "czarów" : plural,genitive
-    "czarami" : plural,instrumental
-    "czary" : plural,accusative
 
 CREATURE_ATTRIBUTES_TENGU_NAME1 masculine "szaitan"
     "szaitana" : genitive

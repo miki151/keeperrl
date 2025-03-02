@@ -468,7 +468,7 @@ End
       type = NonHumanoid LARGE
       material = SPIRIT
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "fist_attack" } CREATURE_ATTRIBUTES_SPIRIT_ID 1 {
+        TORSO {{{ Intrinsic { "fist_attack" } SPELL 1 {
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}}
       }
     }
@@ -4639,7 +4639,7 @@ End
         TORSO 1
       }
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "fist_attack" } CREATURE_ATTRIBUTES_ADOXIE_HEAD_ID 1 {
+        TORSO {{{ Intrinsic { "fist_attack" } SPELL 1 {
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}}
       }
       material = SPIRIT_WITH_BRAIN
@@ -5302,7 +5302,7 @@ End
       type = HumanoidLike LARGE
       material = SPIRIT
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "fist_attack" } CREATURE_ATTRIBUTES_TENGU_ID 1 {
+        TORSO {{{ Intrinsic { "fist_attack" } SPELL 1 {
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}}
       }
     }
@@ -5399,7 +5399,7 @@ End
     }
     body = append {
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "fist_attack" } CREATURE_ATTRIBUTES_TENGU_ID 1 {
+        TORSO {{{ Intrinsic { "fist_attack" } SPELL 1 {
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL victimEffect = { 1.0 Lasting PLAGUE} } }}}
       }
     }
