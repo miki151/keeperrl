@@ -1330,7 +1330,7 @@ End
     shortName = ITEMS_PROPHETSOUP_SHORTNAME
     name = ITEMS_PROPHETSOUP_NAME
     blindName = ITEMS_PROPHETSOUP_BLINDNAME
-    applyVerb = ITEMS_PROPHETSOUP_APPLYVERB ITEMS_PROPHETSOUP_APPLYVERB1
+    applyVerb = YOU_DRINK DRINKS
     fragile = true
     weight = 0.3
     effect = NoAutoAssign EquipmentType COMBAT_ITEM AI And {} -1 1 AI And {} 0 1

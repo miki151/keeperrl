@@ -7802,8 +7802,6 @@ ITEMS_PROPHETREMAINS_NAME neuter "zmumifikowane szczątki starożytnego proroka 
 
 ITEMS_PROPHETREMAINS_SHORTNAME "prorok Ynnuf Yrewosbe"
 
-ITEMS_PROPHETSOUP_APPLYVERB1 "pije"
-ITEMS_PROPHETSOUP_APPLYVERB "pić"
 ITEMS_PROPHETSOUP_BLINDNAME "zupa"
 ITEMS_PROPHETSOUP_EFFECT1 "Zwiększa bojowe doświadczenie istoty"
 ITEMS_PROPHETSOUP_EFFECT "Zwiększa doświadczenie"
