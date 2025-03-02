@@ -1046,8 +1046,6 @@ VERY_FAST_GAME_SPEED "bardzo szybka"
 VICTIM_AFFECTED_BY "ofiara pod wpływem: {1} (szansa {2})"
 VICTORY "Zwycięstwo"
 VIEW_MESSAGE_BOARD "zobacz {1:accusative}"
-VILLAIN_ACTION_PILLAGE "splądruj"
-VILLAIN_ACTION_TRADE "handluj"
 VILLAIN_CONQUERED "Pokonany"
 VILLAIN_LOCATION_UNKNOWN "Nieznane położenie"
 VILLAIN_OUTSIDE_INFLUENCE_ZONE "Poza strefą wpływów"
@@ -2741,14 +2739,14 @@ CREATURE_ATTRIBUTES_ABOMINATION_PLAYER_NAME masculine "król szkieletów"
     "królami szkieletów" : plural,instrumental
     "królów szkieletów" : plural,accusative
 
-CREATURE_ATTRIBUTES_ADA_GOLEM_NAME masculine "golem adamantynowy"
-    "golema adamantynowego" : genitive
-    "golemem adamantynowym" : instrumental
-    "golema adamantynowego" : accusative
-    "golemy adamantynowe" : plural
-    "golemów adamantynowych" : plural,genitive
-    "golemami adamantynowymi" : plural,instrumental
-    "golemy adamantynowe" : plural,accusative
+CREATURE_ATTRIBUTES_ADA_GOLEM_NAME masculine "adamantynowy golem"
+    "adamantynowego golema" : genitive
+    "adamantynowym golemem" : instrumental
+    "adamantynowego golema" : accusative
+    "adamantynowe golemy" : plural
+    "adamantynowych golemów" : plural,genitive
+    "adamantynowymi golemami" : plural,instrumental
+    "adamantynowe golemy" : plural,accusative
 
 CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_DEATHDESCRIPTION "zniszczona"
 # (Because “foot” = feminine “stopa,” so the death description could read "Stopa... zniszczona.")
@@ -4143,14 +4141,14 @@ CREATURE_ATTRIBUTES_KOBOLD_NAME masculine "kobold"
     "koboldami" : plural,instrumental
     "koboldy" : plural,accusative
 
-CREATURE_ATTRIBUTES_LAVA_GOLEM_NAME masculine "golem lawy"
-    "golema lawy" : genitive
-    "golemem lawy" : instrumental
-    "golema lawy" : accusative
-    "golemy lawy" : plural
-    "golemów lawy" : plural,genitive
-    "golemami lawy" : plural,instrumental
-    "golemy lawy" : plural,accusative
+CREATURE_ATTRIBUTES_LAVA_GOLEM_NAME masculine "golem z lawy"
+    "golema z lawy" : genitive
+    "golemem z lawy" : instrumental
+    "golema z lawy" : accusative
+    "golemy z lawy" : plural
+    "golemów z lawy" : plural,genitive
+    "golemami z lawy" : plural,instrumental
+    "golemy z lawy" : plural,accusative
 
 CREATURE_ATTRIBUTES_LIZARDMAN_CHATREACTIONFRIENDLY "złorzeczy wszystkim ludziom"
 CREATURE_ATTRIBUTES_LIZARDMAN_CHATREACTIONHOSTILE "\"Giń!\""
@@ -5035,7 +5033,7 @@ CREATURE_ATTRIBUTES_ZOMBIE_NAME masculine "zombie"
     "zombie" : plural,instrumental
     "zombie" : plural,accusative
 
-ENEMIES_ADA_GOLEMS_RACE "golemy adamantytowe"
+ENEMIES_ADA_GOLEMS_RACE "adamantytowe golemy"
 ENEMIES_ADOXIE_FEET_ENTRY_RACE "ołtarz Złego Boga Adoxie"
 ENEMIES_ADOXIE_FEET_RACE "ołtarz Złego Boga Adoxie"
 ENEMIES_ANTS_CLOSED_RACE "mrówki"
@@ -6678,25 +6676,7 @@ FURNITURE_THRONE_SECONDPERSON "Siadasz na tronie"
 FURNITURE_THRONE_THIRDPERSON "siada na tronie"
 FURNITURE_THRONE_USAGETYPE "Usiądź na tronie"
 
-FURNITURE_TORCH_E_NAME masculine "kandelabr"
-    "kandelabra" : genitive
-    "kandelabrem" : instrumental
-    "kandelabr" : accusative
-    "kandelabry" : plural
-    "kandelabrów" : plural,genitive
-    "kandelabrami" : plural,instrumental
-    "kandelabry" : plural,accusative
-
-FURNITURE_TORCH_N_NAME1 masculine "kandelabr"
-    "kandelabra" : genitive
-    "kandelabrem" : instrumental
-    "kandelabr" : accusative
-    "kandelabry" : plural
-    "kandelabrów" : plural,genitive
-    "kandelabrami" : plural,instrumental
-    "kandelabry" : plural,accusative
-
-FURNITURE_TORCH_N_NAME masculine "pochodnia"
+FURNITURE_TORCH_NAME masculine "pochodnia"
     "pochodni" : genitive
     "pochodnią" : instrumental
     "pochodnię" : accusative
@@ -6705,16 +6685,7 @@ FURNITURE_TORCH_N_NAME masculine "pochodnia"
     "pochodniami" : plural,instrumental
     "pochodnie" : plural,accusative
 
-FURNITURE_TORCH_S_NAME masculine "kandelabr"
-    "kandelabra" : genitive
-    "kandelabrem" : instrumental
-    "kandelabr" : accusative
-    "kandelabry" : plural
-    "kandelabrów" : plural,genitive
-    "kandelabrami" : plural,instrumental
-    "kandelabry" : plural,accusative
-
-FURNITURE_TORCH_W_NAME masculine "kandelabr"
+ FURNITURE_CANDELABRUM_NAME masculine "kandelabr"
     "kandelabra" : genitive
     "kandelabrem" : instrumental
     "kandelabr" : accusative
@@ -9144,7 +9115,7 @@ EXTERNAL_ENEMIES_NAME2 "patrol mrówek"
 EXTERNAL_ENEMIES_NAME3 "gniazdo jaszczuroludzi"
 EXTERNAL_ENEMIES_NAME4 "szajka bandytów"
 EXTERNAL_ENEMIES_NAME5 "patrol żołnierzy-mrówek"
-EXTERNAL_ENEMIES_NAME6 "gliniany golemy alchemika"
+EXTERNAL_ENEMIES_NAME6 "gliniane golemy alchemika"
 EXTERNAL_ENEMIES_NAME7 "kamienne golemy alchemika"
 EXTERNAL_ENEMIES_NAME8 "armia mrówek"
 EXTERNAL_ENEMIES_NAME9 "grupa entów"

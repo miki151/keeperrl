@@ -1288,7 +1288,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 }
 "TORCH_N"
 {
-  name = FURNITURE_TORCH_N_NAME
+  name = FURNITURE_TORCH_NAME
   viewId = { "torch" }
   lightEmission = 8.2
   layer = CEILING
@@ -1315,25 +1315,25 @@ Def BedHeal() Heal { FLESH 0.005 } End
 }
 "CANDELABRUM_N" inherit "TORCH_N"
 {
-  name = FURNITURE_TORCH_N_NAME1
+  name = FURNITURE_CANDELABRUM_NAME
   viewId = { "candelabrum_ns" }
   luxury = 0.3
 }
 "CANDELABRUM_S" inherit "TORCH_S"
 {
-  name = FURNITURE_TORCH_S_NAME
+  name = FURNITURE_CANDELABRUM_NAME
   viewId = { "candelabrum_ns" }
   luxury = 0.3
 }
 "CANDELABRUM_E" inherit "TORCH_E"
 {
-  name = FURNITURE_TORCH_E_NAME
+  name = FURNITURE_CANDELABRUM_NAME
   viewId = { "candelabrum_e" }
   luxury = 0.3
 }
 "CANDELABRUM_W" inherit "TORCH_W"
 {
-  name = FURNITURE_TORCH_W_NAME
+  name = FURNITURE_CANDELABRUM_NAME
   viewId = { "candelabrum_w" }
   luxury = 0.3
 }
