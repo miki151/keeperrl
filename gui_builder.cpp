@@ -5104,7 +5104,7 @@ SGuiElem GuiBuilder::drawCreatureTooltip(const PlayerInfo& info) {
   ItemCounts counts;
   for (auto& item : info.inventory)
     counts[item.viewId[0]] += item.number;
-  lines.addElemAuto(drawLyingItemsList(TStringId("CREATURE_INVENTORY_TITLE"), counts, 200));
+  lines.addElemAuto(drawLyingItemsList(TStringId("INVENTORY_LABEL"), counts, 200));
   if (info.experienceInfo.combatExperience > 0)
     lines.addElemAuto(drawExperienceInfo(info.experienceInfo));
   return WL(miniWindow, WL(margins, lines.buildVerticalList(), 15));
