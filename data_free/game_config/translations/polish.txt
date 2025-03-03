@@ -2806,7 +2806,7 @@ CREATURE_ATTRIBUTES_AIR_ELEMENTAL_NAME masculine "żywiołak powietrza"
     "żywiołakami powietrza" : plural,instrumental
     "żywiołaków powietrza" : plural,accusative
 
-CREATURE_ATTRIBUTES_ANGEL_CHATREACTIONFRIENDLY "przeklina wszystkie lochy"
+CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS "przeklina wszystkie lochy"
 CREATURE_ATTRIBUTES_ANGEL_CHATREACTIONHOSTILE "\"Zgiń!\""
 CREATURE_ATTRIBUTES_ANGEL_NAME masculine "anioł"
     "anioła" : genitive
@@ -2844,7 +2844,6 @@ CREATURE_ATTRIBUTES_ANT_WORKER_NAME masculine "olbrzymia mrówka"
     "olbrzymimi mrówkami" : plural,instrumental
     "olbrzymie mrówki" : plural,accusative
 
-CREATURE_ATTRIBUTES_ARCHER_CHATREACTIONFRIENDLY "przeklina wszystkie lochy"
 CREATURE_ATTRIBUTES_ARCHER_CHATREACTIONHOSTILE "\"Zgiń!\""
 CREATURE_ATTRIBUTES_ARCHER_NAME masculine "łucznik"
     "łucznika" : genitive
@@ -2855,7 +2854,6 @@ CREATURE_ATTRIBUTES_ARCHER_NAME masculine "łucznik"
     "łucznikami" : plural,instrumental
     "łuczników" : plural,accusative
 
-CREATURE_ATTRIBUTES_ARCHER_PLAYER_CHATREACTIONFRIENDLY "przeklina wszystkie lochy"
 CREATURE_ATTRIBUTES_ARCHER_PLAYER_CHATREACTIONHOSTILE "\"Zgiń!\""
 CREATURE_ATTRIBUTES_ARCHER_PLAYER_NAME masculine "łucznik"
     "łucznika" : genitive
@@ -2866,7 +2864,6 @@ CREATURE_ATTRIBUTES_ARCHER_PLAYER_NAME masculine "łucznik"
     "łucznikami" : plural,instrumental
     "łuczników" : plural,accusative
 
-CREATURE_ATTRIBUTES_ARMED_BROTHER_CHATREACTIONFRIENDLY "przeklina wszystkie lochy"
 CREATURE_ATTRIBUTES_ARMED_BROTHER_CHATREACTIONHOSTILE "\"Zgiń!\""
 CREATURE_ATTRIBUTES_ARMED_BROTHER_NAME1 feminine "wojownicza zakonnica"
     "wojowniczej zakonnicy" : genitive
@@ -3435,7 +3432,6 @@ CREATURE_ATTRIBUTES_DRIAD_NAME feminine "driada"
     "driadami" : plural,instrumental
     "driady" : plural,accusative
 
-CREATURE_ATTRIBUTES_DUKE_CHATREACTIONFRIENDLY "przeklina wszystkie lochy"
 CREATURE_ATTRIBUTES_DUKE_CHATREACTIONHOSTILE "\"Giń!\""
 
 CREATURE_ATTRIBUTES_DUKE_NAME masculine "książę"
@@ -3498,7 +3494,6 @@ CREATURE_ATTRIBUTES_EARTH_ELEMENTAL_NAME masculine "żywiołak ziemi"
     "żywiołakami ziemi" : plural,instrumental
     "żywiołaki ziemi" : plural,accusative
 
-CREATURE_ATTRIBUTES_ELEMENTALIST_CHATREACTIONFRIENDLY "przeklina wszystkie lochy"
 CREATURE_ATTRIBUTES_ELEMENTALIST_CHATREACTIONHOSTILE "\"Giń!\""
 CREATURE_ATTRIBUTES_ELEMENTALIST_NAME feminine "elementalistka"
     "elementalistki" : genitive
@@ -3553,7 +3548,6 @@ CREATURE_ATTRIBUTES_ELF_NAME masculine "elf"
     "elfami" : plural,instrumental
     "elfy" : plural,accusative
 
-CREATURE_ATTRIBUTES_ENT_CHATREACTIONFRIENDLY "przeklina wszystkie lochy"
 CREATURE_ATTRIBUTES_ENT_CHATREACTIONHOSTILE "\"Giń!\""
 CREATURE_ATTRIBUTES_ENT_NAME masculine "duch drzew"
     "ducha drzew" : genitive
@@ -3947,7 +3941,6 @@ CREATURE_ATTRIBUTES_JACKAL_NAME masculine "szakal"
     "szakalami" : plural,instrumental
     "szakale" : plural,accusative
 
-CREATURE_ATTRIBUTES_JESTER_CHATREACTIONFRIENDLY "złorzeczy wszystkim lochom"
 CREATURE_ATTRIBUTES_JESTER_CHATREACTIONHOSTILE "\"Giń!\""
 
 CREATURE_ATTRIBUTES_JESTER_NAME masculine "błazen"
@@ -4059,7 +4052,6 @@ CREATURE_ATTRIBUTES_KIRIN_NAME masculine "ki-rin"
     "ki-riny" : plural,accusative
 
 CREATURE_ATTRIBUTES_KNIGHT_CHATREACTIONFRIENDLY1 "\"Ukradniesz kamyk, a zetnę ci głowę!\""
-CREATURE_ATTRIBUTES_KNIGHT_CHATREACTIONFRIENDLY "złorzeczy wszystkim lochom"
 CREATURE_ATTRIBUTES_KNIGHT_CHATREACTIONHOSTILE "\"Giń!\""
 
 CREATURE_ATTRIBUTES_KNIGHT_NAME1 masculine "rycerz teutoński"
@@ -4098,7 +4090,6 @@ CREATURE_ATTRIBUTES_KNIGHT_NAME masculine "rycerz"
     "rycerzami" : plural,instrumental
     "rycerzy" : plural,accusative
 
-CREATURE_ATTRIBUTES_KNIGHT_PLAYER_CHATREACTIONFRIENDLY "złorzeczy wszystkim lochom"
 CREATURE_ATTRIBUTES_KNIGHT_PLAYER_CHATREACTIONHOSTILE "\"Giń!\""
 CREATURE_ATTRIBUTES_KNIGHT_PLAYER_NAME masculine "rycerz"
     "rycerza" : genitive
@@ -4238,7 +4229,6 @@ CREATURE_ATTRIBUTES_ORC_NAME masculine "ork"
     "orkami" : plural,instrumental
     "orków" : plural,accusative
 
-CREATURE_ATTRIBUTES_PESEANT_CHATREACTIONFRIENDLY "złorzeczy wszystkim lochom"
 CREATURE_ATTRIBUTES_PESEANT_CHATREACTIONHOSTILE "\"Ratunku!\""
 CREATURE_ATTRIBUTES_ACOLYTE_NAME masculine "akolita"
     "akolity" : genitive
@@ -4337,7 +4327,6 @@ CREATURE_ATTRIBUTES_PIG_NAME feminine "świnia"
     "świniami" : plural,instrumental
     "świnie" : plural,accusative
 
-CREATURE_ATTRIBUTES_PRIEST_CHATREACTIONFRIENDLY "złorzeczy wszystkim lochom"
 CREATURE_ATTRIBUTES_PRIEST_CHATREACTIONHOSTILE "\"Giń!\""
 
 CREATURE_ATTRIBUTES_PRIEST_NAME masculine "kapłan"
@@ -4349,7 +4338,6 @@ CREATURE_ATTRIBUTES_PRIEST_NAME masculine "kapłan"
     "kapłanami" : plural,instrumental
     "kapłanów" : plural,accusative
 
-CREATURE_ATTRIBUTES_PRIEST_PLAYER_CHATREACTIONFRIENDLY "złorzeczy wszystkim lochom"
 CREATURE_ATTRIBUTES_PRIEST_PLAYER_CHATREACTIONHOSTILE "\"Giń!\""
 
 CREATURE_ATTRIBUTES_PRIEST_PLAYER_NAME1 masculine "kleryk"
@@ -4370,7 +4358,6 @@ CREATURE_ATTRIBUTES_PRIEST_PLAYER_NAME masculine "kapłan"
     "kapłanami" : plural,instrumental
     "kapłanów" : plural,accusative
 
-CREATURE_ATTRIBUTES_PROSTITUTE_CHATREACTIONFRIENDLY "złorzeczy wszystkim lochom"
 CREATURE_ATTRIBUTES_PROSTITUTE_CHATREACTIONHOSTILE "\"Ratunku!\""
 CREATURE_ATTRIBUTES_PROSTITUTE_COPULATIONCLIENTEFFECT "Sługa popełnił grzech śmiertelny."
 CREATURE_ATTRIBUTES_PROSTITUTE_NAME1 masculine "żigolak"
@@ -4487,7 +4474,6 @@ CREATURE_ATTRIBUTES_RED_NAGA_NAME feminine "czerwona naga"
     "czerwonymi nagami" : plural,instrumental
     "czerwone nagi" : plural,accusative
 
-CREATURE_ATTRIBUTES_SHAMAN_CHATREACTIONFRIENDLY "złorzeczy wszystkim lochom"
 CREATURE_ATTRIBUTES_SHAMAN_CHATREACTIONHOSTILE "\"Giń!\""
 
 CREATURE_ATTRIBUTES_SHAMAN_NAME masculine "szaman"
@@ -4600,7 +4586,6 @@ CREATURE_ATTRIBUTES_SOFT_MONSTER_NAME masculine "miękki potwór"
     "miękkimi potworami" : plural,instrumental
     "miękkich potworów" : plural,accusative
 
-CREATURE_ATTRIBUTES_SORCERER_CHATREACTIONFRIENDLY "złorzeczy wszystkim lochom"
 CREATURE_ATTRIBUTES_SORCERER_CHATREACTIONHOSTILE "\"Giń!\""
 CREATURE_ATTRIBUTES_SORCERER_NAME masculine "zaklinacz"
     "zaklinacza" : genitive
@@ -4636,7 +4621,6 @@ CREATURE_ATTRIBUTES_SPIRIT_NAME masculine "duch pradawny"
     "duchami pradawnymi" : plural,instrumental
     "duchów pradawnych" : plural,accusative
 
-CREATURE_ATTRIBUTES_SQUIRE_PLAYER_CHATREACTIONFRIENDLY "złorzeczy wszystkim lochom"
 CREATURE_ATTRIBUTES_SQUIRE_PLAYER_CHATREACTIONHOSTILE "\"Giń!\""
 CREATURE_ATTRIBUTES_SQUIRE_PLAYER_NAME masculine "giermek"
     "giermka" : genitive
@@ -4830,7 +4814,6 @@ CREATURE_ATTRIBUTES_VULTURE_NAME masculine "sęp"
     "sępami" : plural,instrumental
     "sępy" : plural,accusative
 
-CREATURE_ATTRIBUTES_WARRIOR_CHATREACTIONFRIENDLY "złorzeczy wszystkim lochom"
 CREATURE_ATTRIBUTES_WARRIOR_CHATREACTIONHOSTILE "\"Giń!\""
 CREATURE_ATTRIBUTES_WARRIOR_NAME1 masculine "złodziej"
     "złodzieja" : genitive

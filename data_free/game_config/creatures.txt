@@ -1579,7 +1579,7 @@ End
     maxLevelIncrease = {
       DAMAGE 12
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_KNIGHT_PLAYER_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
     chatReactionHostile = CREATURE_ATTRIBUTES_KNIGHT_PLAYER_CHATREACTIONHOSTILE
     permanentEffects = {
       RIDER 1
@@ -1607,7 +1607,7 @@ End
     maxLevelIncrease = {
       DAMAGE 7
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_SQUIRE_PLAYER_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
     chatReactionHostile = CREATURE_ATTRIBUTES_SQUIRE_PLAYER_CHATREACTIONHOSTILE
     permanentEffects = {
       RIDER 1
@@ -1643,7 +1643,7 @@ End
       DAMAGE 12
       DIVINITY 3
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_ARMED_BROTHER_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
     chatReactionHostile = CREATURE_ATTRIBUTES_ARMED_BROTHER_CHATREACTIONHOSTILE
     spellSchools = { "prayers" }
     name = {
@@ -1676,7 +1676,7 @@ End
     }
     aiType = RANGED
     spells = { "chicken" }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_JESTER_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
     chatReactionHostile = CREATURE_ATTRIBUTES_JESTER_CHATREACTIONHOSTILE
     name = {
       name = CREATURE_ATTRIBUTES_JESTER_NAME
@@ -1699,7 +1699,7 @@ End
       ARCHER_VISION 1
       RIDER 1
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_ARCHER_PLAYER_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
     chatReactionHostile = CREATURE_ATTRIBUTES_ARCHER_PLAYER_CHATREACTIONHOSTILE
     spellSchools = { "archer" }
     maxLevelIncrease = {
@@ -1724,7 +1724,7 @@ End
     body = {
       type = Humanoid LARGE
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_PRIEST_PLAYER_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
     chatReactionHostile = CREATURE_ATTRIBUTES_PRIEST_PLAYER_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       SPELL_DAMAGE 7
@@ -1810,7 +1810,7 @@ End
     type = Humanoid LARGE
   }
   gender = FEMALE
-  chatReactionFriendly = CREATURE_ATTRIBUTES_PROSTITUTE_CHATREACTIONFRIENDLY
+  chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
   chatReactionHostile = CREATURE_ATTRIBUTES_PROSTITUTE_CHATREACTIONHOSTILE
   permanentEffects = {
     COPULATION_SKILL 1
@@ -1847,7 +1847,7 @@ End
     body = {
       type = Humanoid LARGE
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_PESEANT_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
     chatReactionHostile = CREATURE_ATTRIBUTES_PESEANT_CHATREACTIONHOSTILE
     permanentEffects = {
       CROPS_SKILL 1
@@ -1965,7 +1965,7 @@ End
       MELEE_RESISTANCE 1
       RIDER 1
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_KNIGHT_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
     chatReactionHostile = CREATURE_ATTRIBUTES_KNIGHT_CHATREACTIONHOSTILE
     name = {
       name = CREATURE_ATTRIBUTES_KNIGHT_NAME
@@ -2040,7 +2040,7 @@ End
       MELEE_RESISTANCE 1
       RIDER 1
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_DUKE_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
     chatReactionHostile = CREATURE_ATTRIBUTES_DUKE_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       DAMAGE 3
@@ -2077,7 +2077,7 @@ End
       NO_FRIENDLY_FIRE 1
       RIDER 1
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_ARCHER_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
     chatReactionHostile = CREATURE_ATTRIBUTES_ARCHER_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       RANGED_DAMAGE 4
@@ -2112,7 +2112,7 @@ End
       MAGIC_RESISTANCE 1
       NO_FRIENDLY_FIRE 1
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_PRIEST_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
     chatReactionHostile = CREATURE_ATTRIBUTES_PRIEST_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       SPELL_DAMAGE 2
@@ -2160,7 +2160,7 @@ End
     maxLevelIncrease = {
       DAMAGE 5
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_WARRIOR_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
     chatReactionHostile = CREATURE_ATTRIBUTES_WARRIOR_CHATREACTIONHOSTILE
     name = {
       name = CREATURE_ATTRIBUTES_WARRIOR_NAME
@@ -2188,7 +2188,7 @@ End
     permanentEffects = {
       MAGIC_RESISTANCE 1
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_SHAMAN_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
     chatReactionHostile = CREATURE_ATTRIBUTES_SHAMAN_CHATREACTIONHOSTILE
     aiType = RANGED
     companions = {{count = 7 spawnAway = false statsBase = SPELL_DAMAGE summonFreq = 0.05 creatures = { "SPIRIT" }}}
@@ -2260,7 +2260,7 @@ End
       NO_FRIENDLY_FIRE 1
     }
     aiType = RANGED
-    chatReactionFriendly = CREATURE_ATTRIBUTES_SORCERER_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
     chatReactionHostile = CREATURE_ATTRIBUTES_SORCERER_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       SPELL_DAMAGE 2
@@ -4307,7 +4307,7 @@ End
       summonFreq = 0.1
       creatures = { "FIRE_ELEMENTAL" "AIR_ELEMENTAL" "WATER_ELEMENTAL" "EARTH_ELEMENTAL" }
     }}
-    chatReactionFriendly = CREATURE_ATTRIBUTES_ELEMENTALIST_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
     chatReactionHostile = CREATURE_ATTRIBUTES_ELEMENTALIST_CHATREACTIONHOSTILE
     name = {
       name = CREATURE_ATTRIBUTES_ELEMENTALIST_NAME
@@ -4430,7 +4430,7 @@ End
       SLOWED 1
       STEED 1
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_ENT_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
     chatReactionHostile = CREATURE_ATTRIBUTES_ENT_CHATREACTIONHOSTILE
     name = {
       name = CREATURE_ATTRIBUTES_ENT_NAME
@@ -4456,7 +4456,7 @@ End
         WING 2
       }
    }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_ANGEL_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_ALL_DUNGEONS
     chatReactionHostile = CREATURE_ATTRIBUTES_ANGEL_CHATREACTIONHOSTILE
     name = {
       name = CREATURE_ATTRIBUTES_ANGEL_NAME
