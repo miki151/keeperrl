@@ -360,7 +360,7 @@ SItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory* f) con
       i.uses = 1;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
       i.storageIds = LIST(StorageId("scrolls"), StorageId("equipment"));
-      i.equipmentGroup = TString(TStringId("CONSUMABLES"));
+      i.equipmentGroup = TString(TStringId("EQUIPMENT_GROUP_CONSUMABLES"));
   );
 }
 
@@ -458,7 +458,7 @@ static SItemAttributes getPotionAttr(const ContentFactory* factory, Effect effec
       i.uses = 1;
       i.producedStat = StatId::POTION_PRODUCED;
       i.storageIds = LIST(StorageId("potions"), StorageId("equipment"));
-      i.equipmentGroup = TString(TSentence("CONSUMABLES_GROUP"));
+      i.equipmentGroup = TString(TSentence("EQUIPMENT_GROUP_CONSUMABLES"));
   );
 }
 
@@ -519,7 +519,7 @@ SItemAttributes ItemTypes::Mushroom::getAttributes(const ContentFactory* factory
       i.price = i.effect->getPrice(factory);
       i.uses = 1;
       i.storageIds = {StorageId("equipment")};
-      i.equipmentGroup = TString(TSentence("CONSUMABLES_GROUP"));
+      i.equipmentGroup = TString(TSentence("EQUIPMENT_GROUP_CONSUMABLES"));
   );
 }
 
@@ -580,7 +580,7 @@ SItemAttributes ItemTypes::Scroll::getAttributes(const ContentFactory* factory) 
       i.uses = 1;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
       i.storageIds = LIST(StorageId("scrolls"), StorageId("equipment"));
-      i.equipmentGroup = TString(TSentence("CONSUMABLES_GROUP"));
+      i.equipmentGroup = TString(TSentence("EQUIPMENT_GROUP_CONSUMABLES"));
   );
 }
 
@@ -600,7 +600,7 @@ SItemAttributes ItemTypes::FireScroll::getAttributes(const ContentFactory*) cons
       i.effectDescription = false;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
       i.storageIds = {StorageId("equipment")};
-      i.equipmentGroup = TString(TSentence("CONSUMABLES_GROUP"));
+      i.equipmentGroup = TString(TSentence("EQUIPMENT_GROUP_CONSUMABLES"));
   );
 }
 

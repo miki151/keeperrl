@@ -355,7 +355,6 @@ CONFIRM_BANISH "Czy chcesz wygnać {1:accusative} na zawsze? Wygnanie wpłynie n
 CONFIRM_BUTTON "Potwierdź"
 CONFIRM_DISASSEMBLE "Czy chcesz rozebrać {1:accusative} na części?"
 CONFIRM_NO_RETIRED_DUNGEONS "Impy będą smutne, jeśli nie dodasz żadnych porzuconych lochów. Kontynuować?"
-CONSUMABLES_GROUP "przedmioty do spożycia"
 CONSUMABLES_LABEL "Do spożycia"
 CONSUME_ITEM_TASK "Spożyj {1:accusative}"
 YOU_ABSORB "Wchłaniasz {1:accusative}."
@@ -659,7 +658,6 @@ ITEMS_HIT_YOU "{1} cię uderzają."
 ITEMS_MISS_YOU "{1} nie trafiają cię."
 ITEM_USED_UP "{1} zostaje zużyty."
 ITSELF "siebie"
-JEWELLERY_GROUP "biżuteria"
 JOINS_YOUR_FORCES "Do twoich sił dołącza {1}."
 KEEPER masculine "Strażnik"
     "Strażnika" : genitive
@@ -2039,11 +2037,6 @@ BALSAM masculine "balsam"
     "balsamów" : plural,genitive
     "balsamami" : plural,instrumental
     "balsamy" : plural,accusative
-CONSUMABLES neuter "konsylium"
-    "konsylium" : genitive
-    "konsylium" : accusative
-    "konsylium" : instrumental
-    ## Rarely used outside single form, hypothetical example. Adjust as needed or remove if not used.
 CORPSE neuter "zwłoki"
     "zwłok" : genitive
     "zwłoki" : accusative
