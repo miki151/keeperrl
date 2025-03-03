@@ -832,9 +832,9 @@ SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
     tutorialClicks.clear();
     closeOverlayWindowsAndClearButton();
   };
-  auto continueButton = WL(setHeight, legendLineHeight, WL(buttonLabelBlink, TStringId("CONTINUE"),
+  auto continueButton = WL(setHeight, legendLineHeight, WL(buttonLabelBlink, TStringId("CONTINUE_BUTTON"),
       continueCallback));
-  auto backButton = WL(setHeight, legendLineHeight, WL(buttonLabel, TStringId("TUTORIAL_GO_BACK"),
+  auto backButton = WL(setHeight, legendLineHeight, WL(buttonLabel, TStringId("GO_BACK_BUTTON"),
       getButtonCallback(UserInputId::TUTORIAL_GO_BACK)));
   SGuiElem warning;
   warning = WL(label, TSentence("PRESS_TO_UNPAUSE", hasController() ? TString("[Y]"_s) : TStringId("SPACE_KEY")),
