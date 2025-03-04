@@ -22,7 +22,7 @@ class Translations {
     string SERIAL(primary);
     vector<string> tags;
     vector<vector<string>> otherForms;
-    string getBestForm(const vector<string>& form) const;
+    string getBestForm(const string& language, const vector<string>& form) const;
     void serialize(PrettyInputArchive&);
   };
   using Dictionary = HashMap<TStringId, TranslationInfo>;

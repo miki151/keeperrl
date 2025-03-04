@@ -36,7 +36,7 @@ static string addAParticle(const string& s) {
     return string("a ") + s;
 }
 
-string Translations::TranslationInfo::getBestForm(const vector<string>& form) const {
+string Translations::TranslationInfo::getBestForm(const string& language, const vector<string>& form) const {
   if (form.empty())
     return primary;
   string best = primary;
@@ -51,6 +51,8 @@ string Translations::TranslationInfo::getBestForm(const vector<string>& form) co
       numMatches = cnt;
     }
   }
+  if (language == "English" && best == primary && form.contains("plural"))
+    return makePlural(primary);
   return best;
 }
 
@@ -84,8 +86,6 @@ string Translations::get(const string& language, const TSentence& s, vector<stri
   if (s.id == TStringId("CAPITAL_FIRST"))
     return capitalFirst(get(language, s.params[0], std::move(form)));
   if (s.id == TStringId("MAKE_PLURAL")) {
-    if (language == "english")
-      return makePlural(get(language, s.params[0]));
     form.push_back("plural");
     return get(language, s.params[0], std::move(form));
   }
@@ -97,13 +97,13 @@ string Translations::get(const string& language, const TSentence& s, vector<stri
     return makeSentence(get(language, s.params[0], std::move(form)));
   if (s.id == TStringId("A_ARTICLE")) {
     auto res = get(language, s.params[0], std::move(form));
-    if (language == "english")
+    if (language == "English")
       return addAParticle(res);
     else
       return res;
   }
   if (auto elem = getReferenceMaybe(strings.at(language), s.id)) {
-    auto sentence = elem->getBestForm(form);
+    auto sentence = elem->getBestForm(language, form);
     for (int i = 0; i < sentence.size(); ++i)
       if (sentence[i] == '{') {
         TString argument;
@@ -156,7 +156,7 @@ optional<string> Translations::addLanguage(string name, FilePath path) {
   Dictionary dict;
   auto res = PrettyPrinting::parseObject(dict, {*path.readContents()}, {string(path.getPath())});
   if (!res)
-    strings.insert(make_pair(std::move(name), std::move(dict)));
+    strings.insert(make_pair(capitalFirst(std::move(name)), std::move(dict)));
   return res;
 }
 
