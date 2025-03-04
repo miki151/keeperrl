@@ -294,7 +294,7 @@ BUFF_ADJECTIVE_TURNED_OFF "wyłączony"
     "wyłączona" : feminine
     "wyłączone" : neuter
 BUILD_FURNITURE_TASK "Zbuduj {1:accusative} w {2}"
-BUILD_MORGUE_HINT "Zbuduj stół w kostnicy, aby tworzyć nieumarłych."
+BUILD_MORGUE_HINT "Zbuduj stół sekcyjny, aby tworzyć nieumarłych."
 BURNED_DEATH_REASON "spalony na śmierć"
 BURNS_IN "{1} płonie w {2:instrumental}"
 BUTCHER_TITLE "rzeźnik {1:genitive}"
@@ -472,7 +472,7 @@ FASTER "szybszy"
 FEELS_LIKE_DOING_SOME_WORK "{1} ma ochotę popracować."
 FEELS_LAZY "{1} czuje się leniwy."
 FEELS_LIKE_WORKING_OUT "{1} ma ochotę poćwiczyć."
-FETCHING_ITEMS_HIGHLIGHT "Zbierz przedmioty z pola"
+FETCHING_ITEMS_HIGHLIGHT "Zbieranie przedmiotów"
 FIGHTER_STATUS_DESCRIPTION_HELPER "Musi zostać zabity, aby podbić plemię"
     "Musi zostać zabita, aby podbić plemię" : feminine
     "Musi zostać zabite, aby podbić plemię" : neuter
@@ -2374,93 +2374,66 @@ ATTR_INFO_WORKSHOP_ADJECTIVE "pomysłowy"
 ATTR_INFO_WORKSHOP_HELP "Określa umiejętności pracy w warsztacie."
 ATTR_INFO_WORKSHOP_NAME "warsztat"
     "warsztat" : genitive
-BODY_MATERIALS_ADA_DEATHDESCRIPTION "zniszczony"
+BODY_MATERIALS_DESTROYED_DEATHDESCRIPTION "zniszczony"
+    "zniszczona" : feminine
+    "zniszczone" : neuter
 BODY_MATERIALS_ADA_NAME neuter "adamantium"
-
-BODY_MATERIALS_ADOXIUM_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_ADOXIUM_NAME neuter "adoxium"
-
-BODY_MATERIALS_BONE_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_BONE_NAME feminine "kość"
     "kości" : genitive
     "kością" : instrumental
     "kość" : accusative
-
-BODY_MATERIALS_CLAY_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_CLAY_NAME feminine "glina"
     "gliny" : genitive
     "gliną" : instrumental
     "glinę" : accusative
-
-BODY_MATERIALS_FIRE_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_FIRE_NAME masculine "ogień"
     "ognia" : genitive
     "ogniem" : instrumental
     "ogień" : accusative
-
-BODY_MATERIALS_FLESH_DEATHDESCRIPTION "zabity"
+BODY_MATERIALS_KILLED_DEATHDESCRIPTION "zabity"
     "zabita" : feminine
     "zabite" : neuter
 BODY_MATERIALS_FLESH_NAME neuter "ciało"
     "ciała" : genitive
     "ciałem" : instrumental
     "ciało" : accusative
-
-BODY_MATERIALS_GOLD_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_GOLD_NAME neuter "złoto"
     "złota" : genitive
     "złotem" : instrumental
     "złoto" : accusative
-
-BODY_MATERIALS_ICE_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_ICE_NAME masculine "lód"
     "lodu" : genitive
     "lodem" : instrumental
     "lód" : accusative
-
-BODY_MATERIALS_INFERNITE_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_INFERNITE_NAME neuter "infernit"
     "infernit" : genitive
     "infernit" : instrumental
     "infernit" : accusative
-
-BODY_MATERIALS_IRON_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_IRON_NAME neuter "żelazo"
     "żelaza" : genitive
     "żelazem" : instrumental
     "żelazo" : accusative
-
-BODY_MATERIALS_LAVA_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_LAVA_NAME feminine "lava"
     "lawy" : genitive
     "lawą" : instrumental
     "lawę" : accusative
-
-BODY_MATERIALS_ROCK_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_ROCK_NAME masculine "kamień"
     "kamienia" : genitive
     "kamieniem" : instrumental
     "kamień" : accusative
-
-BODY_MATERIALS_SPIRIT_DEATHDESCRIPTION "zabity"
 BODY_MATERIALS_SPIRIT_NAME feminine "ektoplazma"
     "ektoplazmy" : genitive
     "ektoplazmą" : instrumental
     "ektoplazmę" : accusative
-
-BODY_MATERIALS_UNDEAD_FLESH_DEATHDESCRIPTION "zabity"
 BODY_MATERIALS_UNDEAD_FLESH_NAME neuter "gnijące ciało"
     "gnijącego ciała" : genitive
     "gnijącym ciałem" : instrumental
     "gnijące ciało" : accusative
-
-BODY_MATERIALS_WATER_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_WATER_NAME feminine "woda"
     "wody" : genitive
     "wodą" : instrumental
     "wodę" : accusative
-
-BODY_MATERIALS_WOOD_DEATHDESCRIPTION "zniszczony"
 BODY_MATERIALS_WOOD_NAME neuter "drewno"
     "drewna" : genitive
     "drewnem" : instrumental
@@ -5481,14 +5454,14 @@ FURNITURE_CONFESSIONAL_USAGETYPE2 "Sługa staje się bardziej doświadczony"
 FURNITURE_CONFESSIONAL_USAGETYPE3 "Sługa zostaje rozgrzeszony z grzechu śmiertelnego"
 FURNITURE_CONFESSIONAL_USAGETYPE "Wyznaj grzechy"
 
-FURNITURE_CORPSE_DISPLAY1_NAME neuter "makabryczne wystawienie zwłok"
-    "makabrycznego wystawienia zwłok" : genitive
-    "makabrycznym wystawieniem zwłok" : instrumental
-    "makabryczne wystawienie zwłok" : accusative
-    "makabryczne wystawienia zwłok" : plural
-    "makabrycznych wystawień zwłok" : plural,genitive
-    "makabrycznymi wystawieniami zwłok" : plural,instrumental
-    "makabryczne wystawienia zwłok" : plural,accusative
+FURNITURE_CORPSE_DISPLAY1_NAME feminine "makabryczna wystawa"
+    "makabrycznej wystawy" : genitive
+    "makabryczną wystawą" : instrumental
+    "makabryczną wystawę" : accusative
+    "makabryczne wystawy" : plural
+    "makabrycznych wystaw" : plural,genitive
+    "makabrycznymi wystawami" : plural,instrumental
+    "makabryczne wystawy" : plural,accusative
 
 FURNITURE_COW_PEN_NAME feminine "obora"
     "obory" : genitive
@@ -6190,25 +6163,25 @@ FURNITURE_PEW_WOOD_SECONDPERSON "Zasypiasz na ławie"
 FURNITURE_PEW_WOOD_THIRDPERSON "zasypia na ławie"
 FURNITURE_PEW_WOOD_USAGETYPE "Usiądź na ławie"
 
-FURNITURE_PHYLACTERY_NAME1 feminine "aktywna relikwia"
-    "aktywnej relikwii" : genitive
-    "aktywną relikwią" : instrumental
-    "aktywną relikwię" : accusative
-    "aktywne relikwie" : plural
-    "aktywnych relikwii" : plural,genitive
-    "aktywnymi relikwiami" : plural,instrumental
-    "aktywne relikwie" : plural,accusative
+FURNITURE_PHYLACTERY_NAME1 neuter "aktywne filakterium"
+    "aktywnego filakterium" : genitive
+    "aktywnym filakterium" : instrumental
+    "aktywne filakterium" : accusative
+    "aktywne filakteria" : plural
+    "aktywnych filakteriów" : plural,genitive
+    "aktywnymi filakteriami" : plural,instrumental
+    "aktywne filakteria" : plural,accusative
 
-FURNITURE_PHYLACTERY_NAME feminine "relikwia"
-    "relikwii" : genitive
-    "relikwią" : instrumental
-    "relikwię" : accusative
-    "relikwie" : plural
-    "relikwii" : plural,genitive
-    "relikwiami" : plural,instrumental
-    "relikwie" : plural,accusative
+FURNITURE_PHYLACTERY_NAME neuter "filakterium"
+    "filakterium" : genitive
+    "filakterium" : instrumental
+    "filakterium" : accusative
+    "filakteria" : plural
+    "filakteriów" : plural,genitive
+    "filakteriami" : plural,instrumental
+    "filakteria" : plural,accusative
 
-FURNITURE_PHYLACTERY_USAGETYPE "Przenieś duszę do relikwii"
+FURNITURE_PHYLACTERY_USAGETYPE "Przenieś duszę do filakterium"
 
 FURNITURE_PIGSTY_NAME neuter "chlew"
     "chlewu" : genitive

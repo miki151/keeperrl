@@ -1,6 +1,6 @@
 "FLESH" {
   name = BODY_MATERIALS_FLESH_NAME
-  deathDescription = BODY_MATERIALS_FLESH_DEATHDESCRIPTION
+  deathDescription = BODY_MATERIALS_KILLED_DEATHDESCRIPTION
   healthType = FLESH
   hasBrain = true
   canCopulate = true
@@ -9,7 +9,7 @@
 
 "UNDEAD_FLESH" {
   name = BODY_MATERIALS_UNDEAD_FLESH_NAME
-  deathDescription = BODY_MATERIALS_UNDEAD_FLESH_DEATHDESCRIPTION
+  deathDescription = BODY_MATERIALS_KILLED_DEATHDESCRIPTION
   hasBrain = true
   undead = true
   intrinsicallyAffected = { SUNLIGHT_VULNERABLE SWIMMING_SKILL }
@@ -19,7 +19,7 @@
 
 "SPIRIT" {
   name = BODY_MATERIALS_SPIRIT_NAME
-  deathDescription = BODY_MATERIALS_SPIRIT_DEATHDESCRIPTION
+  deathDescription = BODY_MATERIALS_KILLED_DEATHDESCRIPTION
   healthType = SPIRIT
   canLoseBodyParts = false
   intrinsicallyAffected = { ACID_IMMUNITY }
@@ -33,7 +33,7 @@
 
 "FIRE" {
   name = BODY_MATERIALS_FIRE_NAME
-  deathDescription = BODY_MATERIALS_FIRE_DEATHDESCRIPTION
+  deathDescription = BODY_MATERIALS_DESTROYED_DEATHDESCRIPTION
   healthType = SPIRIT
   canLoseBodyParts = false
   intrinsicallyAffected = { ACID_IMMUNITY FIRE_IMMUNITY LIGHT_SOURCE }
@@ -43,7 +43,7 @@
 
 "WATER" {
   name = BODY_MATERIALS_WATER_NAME
-  deathDescription = BODY_MATERIALS_WATER_DEATHDESCRIPTION
+  deathDescription = BODY_MATERIALS_DESTROYED_DEATHDESCRIPTION
   healthType = SPIRIT
   canLoseBodyParts = false
   intrinsicallyAffected = { FIRE_IMMUNITY }
@@ -53,7 +53,7 @@
 "BONE" {
   name = BODY_MATERIALS_BONE_NAME
   undead = true
-  deathDescription = BODY_MATERIALS_BONE_DEATHDESCRIPTION
+  deathDescription = BODY_MATERIALS_DESTROYED_DEATHDESCRIPTION
   intrinsicallyAffected = { SWIMMING_SKILL }
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING }
   bodyPartItem = {"Bone"}
@@ -61,7 +61,7 @@
 
 "ROCK" {
   name = BODY_MATERIALS_ROCK_NAME
-  deathDescription = BODY_MATERIALS_ROCK_DEATHDESCRIPTION
+  deathDescription = BODY_MATERIALS_DESTROYED_DEATHDESCRIPTION
   intrinsicallyAffected = { FIRE_IMMUNITY }
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
   bodyPartItem = {"Rock"}
@@ -69,7 +69,7 @@
 
 "CLAY" {
   name = BODY_MATERIALS_CLAY_NAME
-  deathDescription = BODY_MATERIALS_CLAY_DEATHDESCRIPTION
+  deathDescription = BODY_MATERIALS_DESTROYED_DEATHDESCRIPTION
   intrinsicallyAffected = { FIRE_IMMUNITY }
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
   bodyPartItem = {"Rock"}
@@ -77,7 +77,7 @@
 
 "WOOD" {
   name = BODY_MATERIALS_WOOD_NAME
-  deathDescription = BODY_MATERIALS_WOOD_DEATHDESCRIPTION
+  deathDescription = BODY_MATERIALS_DESTROYED_DEATHDESCRIPTION
   flamable = true
   intrinsicallyAffected = { SWIMMING_SKILL }
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
@@ -86,7 +86,7 @@
 
 "IRON" {
   name = BODY_MATERIALS_IRON_NAME
-  deathDescription = BODY_MATERIALS_IRON_DEATHDESCRIPTION
+  deathDescription = BODY_MATERIALS_DESTROYED_DEATHDESCRIPTION
   intrinsicallyAffected = { FIRE_IMMUNITY }
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
   bodyPartItem = {"IronOre"}
@@ -94,14 +94,14 @@
 
 "LAVA" {
   name = BODY_MATERIALS_LAVA_NAME
-  deathDescription = BODY_MATERIALS_LAVA_DEATHDESCRIPTION
+  deathDescription = BODY_MATERIALS_DESTROYED_DEATHDESCRIPTION
   intrinsicallyAffected = { FIRE_IMMUNITY }
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
 }
 
 "ADA" {
   name = BODY_MATERIALS_ADA_NAME
-  deathDescription = BODY_MATERIALS_ADA_DEATHDESCRIPTION
+  deathDescription = BODY_MATERIALS_DESTROYED_DEATHDESCRIPTION
   intrinsicallyAffected = { FIRE_IMMUNITY }
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
   bodyPartItem = {"AdaOre"}
@@ -109,7 +109,7 @@
 
 "GOLD" {
   name = BODY_MATERIALS_GOLD_NAME
-  deathDescription = BODY_MATERIALS_GOLD_DEATHDESCRIPTION
+  deathDescription = BODY_MATERIALS_DESTROYED_DEATHDESCRIPTION
   intrinsicallyAffected = { FIRE_IMMUNITY }
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
   bodyPartItem = {"GoldPiece"}
@@ -117,14 +117,14 @@
 
 "ICE" {
   name = BODY_MATERIALS_ICE_NAME
-  deathDescription = BODY_MATERIALS_ICE_DEATHDESCRIPTION
+  deathDescription = BODY_MATERIALS_DESTROYED_DEATHDESCRIPTION
   intrinsicallyAffected = { COLD_IMMUNITY }
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
 }
 
 "INFERNITE" {
   name = BODY_MATERIALS_INFERNITE_NAME
-  deathDescription = BODY_MATERIALS_INFERNITE_DEATHDESCRIPTION
+  deathDescription = BODY_MATERIALS_DESTROYED_DEATHDESCRIPTION
   intrinsicallyAffected = { FIRE_IMMUNITY }
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
   bodyPartItem = {"InferniteOre"}
@@ -132,7 +132,7 @@
 
 "ADOXIUM" {
   name = BODY_MATERIALS_ADOXIUM_NAME
-  deathDescription = BODY_MATERIALS_ADOXIUM_DEATHDESCRIPTION
+  deathDescription = BODY_MATERIALS_DESTROYED_DEATHDESCRIPTION
   intrinsicallyAffected = { FIRE_IMMUNITY }
   immuneTo = { POISON PLAGUE LIFE_SAVED BLEEDING SLEEP RESTED SATIATED }
   bodyPartItem = {"AdoxiumOre"}
