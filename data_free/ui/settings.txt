@@ -50,7 +50,7 @@ Def LineHighlight() MarginLeft(-7, MarginRight(-10, NewHighlight())) End
                     Width 120 Height 30 Sliding()
                   Height 25 Horizontal{
                     Using "decrease" StandardButton(Label(TEXT51))
-                    Using "value" Width 55 Position(MIDDLE, Label())
+                    Using "value" MinWidth 65 Position(MIDDLE, Label())
                     Using "increase" StandardButton(Label(TEXT52))
                   }
                 }
