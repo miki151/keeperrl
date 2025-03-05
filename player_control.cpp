@@ -1765,9 +1765,6 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
         else
           return TraitInfo{TSentence("PERMANENT_TRAIT", adj), isConsideredBad(effect.effect, factory)};
       },
-      [&] (WorkshopType type) {
-        return TraitInfo{TSentence("LEGENDARY_CRAFTSMAN_AT", factory->workshopInfo.at(type).name), false};
-      },
       [&] (ExtraBodyPart part) {
         if (part.count == 1)
           return TraitInfo{TSentence("EXTRA_BODY_PART", getName(part.part)), false};
