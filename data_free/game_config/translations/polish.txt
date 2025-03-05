@@ -1284,57 +1284,57 @@ BONE "kość"
 BOUND_TO_A_PHYLACTERY "Związany z filakterium"
 BOUND_TO_A_PHYLACTERY_DESCRIPTION "Ta istota odrodzi się przy swoim filakterium po śmierci."
 BREAKS_FREE "{1} się uwalnia!"
-BUFF_AGGRAVATES "drażnienie wrogów"
+BUFF_AGGRAVATES neuter "drażnienie wrogów"
     "drażnienia wrogów" : genitive
-BUFF_ARCHER_VISION "widzenie przez strzelnice"
+BUFF_ARCHER_VISION neuter "widzenie przez strzelnice"
     "widzenia przez strzelnice" : genitive
 BUFF_BAD_BREATH "nieświeży oddech"
     "nieświeżego oddechu" : genitive
-BUFF_BLIND "ślepota"
+BUFF_BLIND feminine "ślepota"
     "ślepoty" : genitive
 BUFF_CAN_DANCE "taniec"
     "tańca" : genitive
-BUFF_CAPTURE_RESISTANCE "odporność na pojmanie"
+BUFF_CAPTURE_RESISTANCE feminine "odporność na pojmanie"
     "odporności na pojmanie" : genitive
 BUFF_COLLAPSED "upadek"
     "upadku" : genitive
-BUFF_DARKNESS_SOURCE "źródło ciemności"
+BUFF_DARKNESS_SOURCE neuter "źródło ciemności"
     "źródła ciemności" : genitive
-BUFF_DISAPPEAR_DURING_DAY "nocne życie"
+BUFF_DISAPPEAR_DURING_DAY neuter "nocne życie"
     "nocnego życia" : genitive
-BUFF_DRUNK "upojenie alkoholowe"
+BUFF_DRUNK neuter "upojenie alkoholowe"
     "upojenia alkoholowego" : genitive
-BUFF_ELF_VISION "elfie widzenie"
+BUFF_ELF_VISION neuter "elfie widzenie"
     "elfiego widzenia" : genitive
-BUFF_ENTANGLED "unieruchomienie w sieci"
+BUFF_ENTANGLED neuter "unieruchomienie w sieci"
     "unieruchomienia w sieci" : genitive
-BUFF_ENTERTAINER "poczucie humoru"
+BUFF_ENTERTAINER neuter "poczucie humoru"
     "poczucia humoru" : genitive
-BUFF_FAST_CRAFTING "szybkie rzemiosło"
+BUFF_FAST_CRAFTING neuter "szybkie rzemiosło"
     "szybkiego rzemiosła" : genitive
 BUFF_FAST_TRAINING "szybki trening"
     "szybkiego treningu" : genitive
-BUFF_FLYING "unoszenie"
-    "unoszenia" : genitive
-BUFF_FROZEN "zamrożenie"
+BUFF_FLYING neuter "latanie"
+    "latania" : genitive
+BUFF_FROZEN neuter "zamrożenie"
     "zamrożenia" : genitive
-BUFF_HALLU "halucynacje"
+BUFF_HALLU plural "halucynacje"
     "halucynogenny" : genitive
-BUFF_IMMOBILE "unieruchomienie"
+BUFF_IMMOBILE neuter "unieruchomienie"
     "unieruchomienia" : genitive
 BUFF_INSANITY "obłęd"
     "obłędu" : genitive
-BUFF_INVISIBLE "niewidzialność"
+BUFF_INVISIBLE feminine "niewidzialność"
     "niewidzialności" : genitive
-BUFF_LIFE_SAVED "uratowanie życia"
+BUFF_LIFE_SAVE neuter "uratowanie życia"
     "uratowania życia" : genitive
-BUFF_LIGHT_SOURCE "źródło światła"
+BUFF_LIGHT_SOURCE neuter "źródło światła"
     "źródła światła" : genitive
-BUFF_LOCKED_POSITION "zablokowana pozycja"
+BUFF_LOCKED_POSITION feminine "zablokowana pozycja"
     "zablokowanej pozycji" : genitive
-BUFF_MAGIC_CANCELLATION "anulowanie magii"
+BUFF_MAGIC_CANCELLATION neuter "anulowanie magii"
     "anulowania magii" : genitive
-BUFF_NIGHT_VISION "widzenie w ciemności"
+BUFF_NIGHT_VISION neuter "widzenie w ciemności"
     "widzenia w ciemności" : genitive
 BUFF_NO_CARRY_LIMIT "nieskończony udźwig"
     "nieskończonego udźwigu" : genitive
@@ -1342,65 +1342,65 @@ BUFF_NO_FRIENDLY_FIRE "bez ognia bratobójczego"
     "bez ognia bratobójczego" : genitive
 BUFF_OIL "olej"
     "oleju" : genitive
-BUFF_ON_FIRE "płonięcie"
+BUFF_ON_FIRE neuter "płonięcie"
     "płonięcia" : genitive
-BUFF_PANIC "panika"
+BUFF_PANIC feminine "panika"
     "paniki" : genitive
 BUFF_PEACEFULNESS "pacyfizm"
     "pacyfizmu" : genitive
-BUFF_PLAGUE "zaraza"
+BUFF_PLAGUE feminine "zaraza"
     "zarazy" : genitive
-BUFF_PLAGUE_RESISTANT "odporność na zarazę"
+BUFF_PLAGUE_RESISTANT feminine "odporność na zarazę"
     "odporności na zarazę" : genitive
-BUFF_POISON "trucizna"
+BUFF_POISON feminine "trucizna"
     "trucizny" : genitive
 BUFF_POISON_RESISTANT "odporność na truciznę"
     "odporności na truciznę" : genitive
-BUFF_POLYMORPHED "przemienienie"
+BUFF_POLYMORPHED neuter "przemienienie"
     "przemienienia" : genitive
-BUFF_PREGNANT "ciąża"
+BUFF_PREGNANT feminine "ciąża"
     "ciąży" : genitive
-BUFF_PSYCHIATRY "psychiatria"
+BUFF_PSYCHIATRY feminine "psychiatria"
     "psychiatrii" : genitive
-BUFF_RAGE "furia"
+BUFF_RAGE feminine "furia"
     "furii" : genitive
 BUFF_RESTED "wypoczynek"
     "wypoczynku" : genitive
 BUFF_RIDER "jeździec"
     "jeźdźca" : genitive
-BUFF_SATIATED "najedzenie"
+BUFF_SATIATED neuter "najedzenie"
     "najedzenie" : genitive
 BUFF_SLEEP "sen"
     "snu" : genitive
-BUFF_SLEEP_RESISTANT "odporność na sen"
+BUFF_SLEEP_RESISTANT feminine "odporność na sen"
     "odporności na sen" : genitive
-BUFF_SLOW_CRAFTING "powolne rzemiosło"
+BUFF_SLOW_CRAFTING neuter "powolne rzemiosło"
     "powolnego rzemiosła" : genitive
-BUFF_SLOWED "spowolnienie"
+BUFF_SLOWED neuter "spowolnienie"
     "spowolnienia" : genitive
 BUFF_SLOW_TRAINING "powolny trening"
     "powolnego treningu" : genitive
-BUFF_SPEED "szybkość"
+BUFF_SPEED feminine "szybkość"
     "szybkości" : genitive
-BUFF_SPYING "szpiegowanie"
+BUFF_SPYING neuter "szpiegowanie"
     "szpiegowania" : genitive
 BUFF_STEED "wierzchowiec"
     "wierzchowca" : genitive
-BUFF_STUNNED "oszołomienie"
+BUFF_STUNNED neuter "oszołomienie"
     "oszołomienia" : genitive
-BUFF_SUMMONED "czasowe istnienie"
+BUFF_SUMMONED neuter "czasowe istnienie"
     "czasowego istnienia" : genitive
-BUFF_SUNLIGHT_VULNERABLE "wrażliwość na słońce"
+BUFF_SUNLIGHT_VULNERABLE feminine "wrażliwość na słońce"
     "wrażliwości na słońce" : genitive
 BUFF_SWARMER "atak w roju"
     "ataku w roju" : genitive
-BUFF_TELEPATHY "telepatia"
+BUFF_TELEPATHY feminine "telepatia"
     "telepatii" : genitive
-BUFF_TURNED_OFF "wyłączenie"
+BUFF_TURNED_OFF neuter "wyłączenie"
     "wyłączenia" : genitive
-BUFF_UNSTABLE "niestabilność psychiczna"
+BUFF_UNSTABLE feminine "niestabilność psychiczna"
     "niestabilności psychicznej" : genitive
-BUFF_WARNING "ostrzeżenie"
+BUFF_WARNING neuter "ostrzeżenie"
     "ostrzeżenia" : genitive
 BUG_REPORT_BUTTON "Zgłoś błąd"
 BURNING_PARENS "(płonie)"
@@ -2140,8 +2140,15 @@ IS_KILLED "{1} zostaje {2:1}."
 MORE_ADJECTIVE "bardziej {1}"
 NOT "nie {1}"
 PERMANENT_LASTING_DESCRIPTION "{1} Efekt jest permanentny."
-PERMANENT_LASTING_NAME "stały {1}"
-    "stałego {1}" : genitive
+PERMANENT_LASTING_NAME_HELPER "stały"
+    "stałego" : genitive
+    "stała" : feminine
+    "stałej" : feminine,genitive
+    "stałe" : neuter
+    "stałego" : neuter,genitive
+    "stałe" : plural
+    "stałych" : plural,genitive
+PERMANENT_LASTING_NAME "{PERMANENT_LASTING_NAME_HELPER:1} {1}"
 ACTIVITY_ON_OFF_HINT_FOR_GROUP "Kliknij, aby wyłączyć tę aktywność dla wszystkich {1:genitive}."
 COUNT_ITEM_AVAILABLE "({1} dostępnych)"
 DISABLE_FOR_ALL_GROUP "Wyłącz dla wszystkich {1:genitive}."
@@ -2198,10 +2205,10 @@ THANK_YOU_FOR_PLAYING "Dziękujemy za grę w KeeperRL!"
 RETIRED_GAME_RESULT "porzucił grę"
 YOU_KILLED_AND_SCORED "Zabiłeś {1} wrogów i uzyskałeś {2} punktów."
 OF "{1} z {2:genitive}"
-ITEM_BURNS "{1} płonie w {2}."
-ITEMS_BURN "{1} płoną w {2}."
-ITEM_SINKS "{1} tonie w {2}."
-ITEMS_SINK "{1} toną w {2}."
+ITEM_BURNS "{1} płonie w {2:instrumental}."
+ITEMS_BURN "{1} płoną w {2:instrumental}."
+ITEM_SINKS "{1} tonie w {2:instrumental}."
+ITEMS_SINK "{1} toną w {2:instrumental}."
 NO_LONGER_SUPER "już nie super"
 SUPER "super"
 YOU_START_BLEEDING "Zaczynasz krwawić."
@@ -2441,7 +2448,7 @@ BODY_MATERIALS_WOOD_NAME neuter "drewno"
 
 BUFFS_BLEEDING_ADJECTIVE "krwawiący"
 BUFFS_BLEEDING_DESCRIPTION "Powoduje stopniową utratę punktów życia."
-BUFFS_BLEEDING_NAME "krwawienie"
+BUFFS_BLEEDING_NAME neuter "krwawienie"
     "krwawienia" : genitive
 BUFFS_BLEEDING_REMOVEDMESSAGE "krwawienie ustaje"
 BUFFS_BLEEDING_SECONDPERSON "krwawisz"
@@ -2450,7 +2457,7 @@ BUFFS_FIRE_DAMAGE_ADDEDMESSAGE1 "{1} zadaje obrażenia ogniem."
 BUFFS_FIRE_DAMAGE_ADDEDMESSAGE "Zadajesz obrażenia ogniem."
 BUFFS_FIRE_DAMAGE_ADJECTIVE "zadaje obrażenia ogniem"
 BUFFS_FIRE_DAMAGE_DESCRIPTION "Obrażenia zadawane w walce wręcz zmieniają się w obrażenia od ognia."
-BUFFS_FIRE_DAMAGE_NAME "obrażenia ogniowe"
+BUFFS_FIRE_DAMAGE_NAME plural "obrażenia ogniowe"
     "obrażeń ogniowych" : genitive
 BUFFS_FIRE_DAMAGE_REMOVEDMESSAGE1 "{1} nie zadaje już obrażeń ogniem."
 BUFFS_FIRE_DAMAGE_REMOVEDMESSAGE "Nie zadajesz już obrażeń ogniem."
@@ -2459,7 +2466,7 @@ BUFFS_HIGH_MORALE_ADJECTIVE "szczęśliwy"
     "szczęśliwa" : feminine
     "szczęśliwe" : neuter
 BUFFS_HIGH_MORALE_DESCRIPTION "Postacie szybciej się szkolą i wydajniej pracują."
-BUFFS_HIGH_MORALE_NAME "wysokie morale"
+BUFFS_HIGH_MORALE_NAME plural "wysokie morale"
     "wysokich morale" : genitive
 BUFFS_HIGH_MORALE_REMOVEDMESSAGE "nastrój wraca do normy"
 BUFFS_INFERNITE_EFFECT_ADDEDMESSAGE1 "{1} jest palony przez infernit."
@@ -2468,7 +2475,7 @@ BUFFS_INFERNITE_EFFECT_ADJECTIVE "palony przez infernit"
     "palona przez infernit" : feminine
     "palone przez infernit" : neuter
 BUFFS_INFERNITE_EFFECT_DESCRIPTION "Istota jest palona przez posiadany przedmiot z infernite."
-BUFFS_INFERNITE_EFFECT_NAME "palenie infernit"
+BUFFS_INFERNITE_EFFECT_NAME neuter "palenie infernitu"
 BUFFS_INFERNITE_EFFECT_REMOVEDMESSAGE1 "nie jest już"
 BUFFS_INFERNITE_EFFECT_REMOVEDMESSAGE2 "palony przez infernit"
     "palona przez infernit" : feminine
@@ -2485,7 +2492,7 @@ BUFFS_INVULNERABLE_ADJECTIVE "odporny na obrażenia"
     "odporny na obrażenia" : feminine
     "odporne na obrażenia" : neuter
 BUFFS_INVULNERABLE_DESCRIPTION "Istota jest odporna na wszelkie rodzaje obrażeń."
-BUFFS_INVULNERABLE_NAME "odporność na obrażenia"
+BUFFS_INVULNERABLE_NAME feminine "odporność na obrażenia"
     "odporności na obrażenia" : genitive
 BUFFS_INVULNERABLE_REMOVEDMESSAGE "nie jest już odporny na obrażenia"
     "nie jest już odporna na obrażenia" : feminine
@@ -2504,7 +2511,7 @@ BUFFS_LEADERSHIP_ADDEDMESSAGE "Czujesz, że dowodzisz drużyną."
 BUFFS_LEADERSHIP_ADJECTIVE "lider"
     "liderka" : feminine
 BUFFS_LEADERSHIP_DESCRIPTION "Doświadczenie bojowe tej istoty zostanie przyznane całej drużynie."
-BUFFS_LEADERSHIP_NAME "dowodzenie"
+BUFFS_LEADERSHIP_NAME neuter "dowodzenie"
     "dowodzenia" : genitive
 BUFFS_LEADERSHIP_REMOVEDMESSAGE1 "{1} czuje, że nie dowodzi już drużyną."
 BUFFS_LEADERSHIP_REMOVEDMESSAGE "Czujesz, że już nie dowodzisz drużyną."
@@ -2520,7 +2527,7 @@ BUFFS_REGENERATION_ADJECTIVE "regenerujący się"
     "regenerująca się" : feminie
     "regenerujące się" : neuter
 BUFFS_REGENERATION_DESCRIPTION "Odnawia niewielką ilość zdrowia co turę."
-BUFFS_REGENERATION_NAME "regeneracja"
+BUFFS_REGENERATION_NAME feminine "regeneracja"
     "regeneracji" : genitive
 BUFFS_REGENERATION_REMOVEDMESSAGE "przestajesz się regenerować"
 BUFFS_SINNED_ADJECTIVE "grzesznik powszedni"
@@ -2532,7 +2539,7 @@ BUFFS_SPELL_DAMAGE_ADDEDMESSAGE1 "{1} zadaje obrażenia magiczne."
 BUFFS_SPELL_DAMAGE_ADDEDMESSAGE "Zadajesz obrażenia magiczne."
 BUFFS_SPELL_DAMAGE_ADJECTIVE "zadaje obrażenia magiczne"
 BUFFS_SPELL_DAMAGE_DESCRIPTION "Obrażenia zadawane w walce wręcz zmieniają się w obrażenia magiczne."
-BUFFS_SPELL_DAMAGE_NAME "obrażenia magiczne"
+BUFFS_SPELL_DAMAGE_NAME plural "obrażenia magiczne"
     "obrażeń magicznych" : genitive
 BUFFS_SPELL_DAMAGE_REMOVEDMESSAGE1 "{1} nie zadaje już obrażeń magicznych."
 BUFFS_SPELL_DAMAGE_REMOVEDMESSAGE "Nie zadajesz już obrażeń magicznych."
@@ -2542,11 +2549,11 @@ BUFFS_SUPER_BONUS_NAME "super bonus"
 BUFFS_WELL_FED_ADJECTIVE "dobrze nakarmiony"
      "dobrze nakarmiona" : feminine
 BUFFS_WELL_FED_DESCRIPTION "Istota jest najedzona i otrzymuje +1 do obrażeń magicznych oraz obrony."
-BUFFS_WELL_FED_NAME "nakarmienie"
+BUFFS_WELL_FED_NAME neuter "nakarmienie"
     "nakarmienia" : genitive
 BUFFS_WILL_BANISH_ADJECTIVE "zbrojna pomoc"
 BUFFS_WILL_BANISH_DESCRIPTION "Istota została przywołana na ograniczony czas w odpowiedzi na modlitwy."
-BUFFS_WILL_BANISH_NAME "przyzwanie"
+BUFFS_WILL_BANISH_NAME neuter "przyzwanie"
 BUILD_MENU_GROUPNAME10 "Silniki automatów"
 BUILD_MENU_GROUPNAME11 "Więzienie"
 BUILD_MENU_GROUPNAME12 "Rozkazy"
@@ -8297,7 +8304,8 @@ HATE_DEBUFF_DESCRIPTION "Sprawia, że cel staje się wrogi wobec wszystkich {1:g
 FULL_OF_HATRED "przepełniony nienawiścią"
 HATRED_IS_GONE "nienawiść przemija"
 
-RESISTANCE_BUFF_NAME "odporność na {1:accusative}"
+RESISTANCE_BUFF_NAME : feminine "odporność na {1:accusative}"
+    "odporności na {1:accusative}" : genitive
 RESISTANT_TO "odporny na {1:accusative}"
     "odporna na {1:accusative}" : feminine
     "odporne na {1:accusative}" : neuter
@@ -8306,14 +8314,16 @@ NO_LONGER_RESISTANT_TO "nie jest już odporny na {1:accusative}"
     "nie jest już odporne na {1:accusative}" : neuter
 RESISTANCE_BUFF_DESCRIPTION "Obrona istoty przeciw atakom typu {1} jest zwiększona o 30%."
 
-VULNERABILITY_BUFF_NAME "{1} wrażliwość"
+VULNERABILITY_BUFF_NAME feminine "wrażliwość na {1}"
+    "wrażliwości na {1}" : genitive
 VULNERABLE_TO "wrażliwy na {1:accusative}"
     "wrażliwa na {1:accusative}" : feminine
     "wrażliwe na {1:accusative}" : neuter
-NO_LONGER_VULNERABLE_TO "nie jest już wrażliwy na {1}"
+NO_LONGER_VULNERABLE_TO "nie jest już wrażliwy na {1:accusative}"
 VULNERABILITY_BUFF_DESCRIPTION "Obrona istoty przeciw atakom typu {1} jest zmniejszona o 23%."
 
-IMMUNITY_BUFF_NAME "całkowita odporność na {1:accusative}"
+IMMUNITY_BUFF_NAME feminine "całkowita odporność na {1:accusative}"
+    "całkowitej odporność na {1:accusative}" : genitive
 IMMUNE_TO "całkowicie odporny na {1:accusative}"
     "całkowicie odporna na {1:accusative}" : feminine
     "całkowicie odporne na {1:accusative}" : neuter
@@ -9076,7 +9086,7 @@ DPI_AWARE_OPTION_DESCRIPTION "Może pomóc, jeśli gra jest rozmazana. Wymaga po
 ATTR_BUFF_DESCRIPTION "Zapewnia +{1} do {2:genitive}."
 ATTR_DEBUFF_DESCRIPTION "Nakłada -{1} do {2:genitive}."
 ATTR_DEBUFF_NAME "osłabienie {1:genitive}"
-
+    "osłabienia {1:genitive}" : genitive
 BUFFS_STABLE_HAND_DESCRIPTION "obrażenia dystansowe"
     "obrażeń dystansowych" : genitive
 BUFFS_PIERCING_VOICE_DESCRIPTION "obrażenia magiczne"
