@@ -641,14 +641,14 @@ void Player::updateSquareMemory(Position pos) {
 
 bool Player::canTravel() const {
   if (!creature->getPosition().getLevel()->canTranfer) {
-    getView()->presentText(none, TStringId("YOU_DONT_KNOW_HOW_TO_LEAVE"));
+    getView()->presentText(none, TSentence("YOU_DONT_KNOW_HOW_TO_LEAVE", creature->getName().bare()));
     return false;
   }
   auto team = getTeam();
   for (auto& c : team) {
     if (c->isAffected(LastingEffect::POISON)) {
       if (team.size() == 1)
-        getView()->presentText(none, TStringId("YOU_CANT_TRAVEL_WHILE_POISONED"));
+        getView()->presentText(none, TSentence("YOU_CANT_TRAVEL_WHILE_POISONED", creature->getName().bare()));
       else
         getView()->presentText(none, TSentence("CANT_TRAVEL_WHILE_POISONED", c->getName().the()));
       return false;
