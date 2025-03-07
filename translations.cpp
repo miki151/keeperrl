@@ -74,8 +74,11 @@ vector<string> Translations::getTags(const string& language, const TString& s) c
           ret.push_back("plural");
         if (auto elem = getReferenceMaybe(strings.at(language), id.id))
           ret.append(elem->tags);
-        for (auto& param : id.params)
+        for (auto& param : id.params) {
           ret.append(getTags(language, param));
+          if (id.id == "CREATURE_TITLE")
+            break;
+        }
         return ret;
       }
   );
