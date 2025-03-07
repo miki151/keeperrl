@@ -111,7 +111,6 @@ bool SpellMap::contains(const SpellId id) const {
 }
 
 void SpellMap::onExpLevelReached(Creature* c, AttrType type, int level) {
-  auto spellType = type == AttrType("SPELL_DAMAGE") ? TStringId("SPELL") : TStringId("ABILITY");
   if (auto game = c->getGame()) {
     auto factory = game->getContentFactory();
     for (auto& elem : elems) {
@@ -119,6 +118,12 @@ void SpellMap::onExpLevelReached(Creature* c, AttrType type, int level) {
         auto spellName = elem.spell.getName(factory);
         auto upgrade = elem.spell.getUpgrade();
         auto his = ::his(c->getAttributes().getGender());
+        auto spellType = [&] {
+          switch (elem.spell.getType()) {
+            case SpellType::SPELL: return TStringId("SPELL");
+            case SpellType::ABILITY: return TStringId("ABILITY");
+          }
+        }();
         if (upgrade && !!getInfo(*upgrade)) {
           c->addPersonalEvent(TSentence("IMPROVES", { c->getName().a(), his, spellType, spellName}));
           c->secondPerson(TSentence("YOU_IMPROVE", spellType, spellName));
