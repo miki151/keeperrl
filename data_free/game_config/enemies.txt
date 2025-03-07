@@ -2060,7 +2060,6 @@ End
         }
       }
     }
-    race = ENEMIES_SHELOB_RACE
   }
   config = {
    leaderAsFighter = true
@@ -2100,7 +2099,6 @@ End
     inhabitants = {
       leader = { { "YETI" } }
     }
-    race = ENEMIES_YETI_RACE
     tribe = HOSTILE
   }
   config = {
@@ -2115,7 +2113,6 @@ End
     inhabitants = {
       leader = { { "HYDRA" } }
     }
-    race = ENEMIES_HYDRA_RACE
     tribe = HOSTILE
   }
   config = {

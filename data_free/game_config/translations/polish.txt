@@ -553,11 +553,11 @@ HEALING_EFFECT_NAME "uzdrowienie"
 HIDDEN "ukryty"
 HIS "{1:genitive} {2}"
 HIS_BODY_CRUMBLES_TO_DUST "Ciało {1:genitive} rozpada się w proch."
-HIS_BODY_PART_IS_CHOPPED_OFF_HELPER1 "odcięty"
+HIS_BODY_PART_IS_CHOPPED_OFF_HELPER "odcięty"
     "odcięta" : feminine
     "odcięte" : neuter
     "odcięte" : plural
-HIS_BODY_PART_IS_CHOPPED_OFF "{2} {1:genitive} zostaje {HIS_BODY_PART_IS_CHOPPED_OFF_HELPER1:2}!"
+HIS_BODY_PART_IS_CHOPPED_OFF "{2} {1:genitive} zostaje {HIS_BODY_PART_IS_CHOPPED_OFF_HELPER:2}!"
 BITTEN_OFF_HELPER "odgryziony"
     "odgryziona" : feminine
     "odgryzione" : neuter
@@ -1223,7 +1223,7 @@ HIS_ATTR_WANES "{2} {1:genitive} słabnie"
 YOUR_BODY_CRUMBLES_TO_DUST "Twoje ciało rozpada się w proch."
 YOUR_BODY_PART_IS_BITTEN_OFF "{YOUR_HELPER:1} {1} zostaje {BITTEN_OFF_HELPER:1}!"
 YOUR_BODY_PART_IS_BROKEN "{YOUR_HELPER:1} {1} zostaje {BROKEN_HELPER:1}!"
-YOUR_BODY_PART_IS_CHOPPED_OFF "{YOUR_HELPER:1} {1} zostaje {HIS_BODY_PART_IS_CHOPPED_OFF_HELPER1:1}!"
+YOUR_BODY_PART_IS_CHOPPED_OFF "{YOUR_HELPER:1} {1} zostaje {HIS_BODY_PART_IS_CHOPPED_OFF_HELPER:1}!"
 YOUR_BODY_PART_IS_CRUSHED "{YOUR_HELPER:1} {1} zostaje {CRUSHED_HELPER:1}!"
 YOUR_BODY_PART_IS_RIPPED_TO_PIECES "{YOUR_HELPER:1} {1} zostaje {RIPPED_HELPER:1} na kawałki!"
 YOUR_BODY_PART_IS "{YOUR_HELPER:1} {1} jest {2}!"
@@ -1503,7 +1503,7 @@ EXPERIENCE_EXPLANATION "Doświadczenie zwiększa każdy atrybut, który może zo
 EXPERIENCE_LABEL "Doświadczenie:"
 EXTRA_INTRINSIC_ATTACK "Dodatkowy wrodzony atak obok dzierżonej broni"
 EYE_BODY_PART "oko"
-NECK_BODY_PART "szyja"
+NECK_BODY_PART feminine "szyja"
 FALLS_INTO "{1} wpada do {2:genitive}."
 FALLS_OFF "{1} spada z {2:genitive}."
 FALLS_ON_THE "{1} spada na {2:accusative}."
@@ -1620,7 +1620,7 @@ OBSCENE "nieprzyzwoity"
     "nieprzyzwoitą" : feminine,accusative
     "nieprzyzwoite" : neuter
     "nieprzyzwoite" : neuter,accusative
-ONE_ITEM_AVAILABLE "(dostępny jeden przedmiot)"
+ONE_ITEM_AVAILABLE "(jedna dostępna)"
 ONLINE_DUNGEONS "Online:"
 OPEN_WORLD_MAP_HINT "Otwórz mapę świata."
 OTHER_EQUIPMENT_LABEL "Inne"
@@ -1676,6 +1676,7 @@ SWINGS "{1} zamachuje się {3:instrumental} w {4:accusative}."
 TEAMS_LABEL "Drużyny:"
 TECHNOLOGY_LABEL "technologia"
     "technologię" : accusative
+    "technologie" : plural,accusative
 TELEPORT_EFFECT_DESCRIPTION "Teleportuj się w dowolne pobliskie miejsce."
 TELEPORT_EFFECT_NAME "teleportacja"
     "teleportacji" : genitive
@@ -1930,6 +1931,7 @@ ITEM_DISAPPEARS "{1} znika!"
 ITEM_NAMED "o nazwie {1}"
 ITEM_NAME_WITH_SUFFIXES "{1} {2}"
 ITEM_PREFIX "{2:1} {1}"
+ITEM_PREFIX_SHORT "{2:1}"
 ITEM_PRICE "({1} złota)"
 ITEM_SUFFIX "{1} {2}"
 ITEM_SUFFIXES "{1}"
@@ -1943,7 +1945,7 @@ BALSAM_OF masculine "balsam {1:genitive}"
     "balsamów {1:genitive}" : plural,genitive
     "balsamami {1:instrumental}" : plural,instrumental
     "balsamy {1:genitive}" : plural,accusative
-BODY_PART_OF "{1} {2:genitive}"
+BODY_PART_OF "{2} {1:genitive}"
 BOOK_OF feminine "księga {1:genitive}"
     "księgi {1:genitive}" : genitive
     "księgą {1:instrumental}" : instrumental
@@ -2180,7 +2182,7 @@ SETTING_WILL_APPLY_TO_ALL "Zmiana będzie zastosowana do wszystkich {1:plural,ge
 SPELL_LEVEL "Poziom {1}"
 TRAINING_LIMIT_TOOLTIP "Limit szkolenia tej istoty dla tego typu wynosi {1}."
 TRAINING_TYPE_TOOLTIP "Trening {1:genitive}."
-UNLOCKS_ITEM_TYPE "Odblokowuje {1:accusative}:"
+UNLOCKS_ITEM_TYPE "Odblokowuje {1:accusative,plural}:"
 UPGRADABLE_WITH_UP_TO "Można ulepszyć, dodając maksymalnie {1} {2}."
 WORK_EFFICIENCY_MULTIPLIER_HINT "Mnożnik wydajności pracy: {1}"
 WORLD_MAP_OF "Mapa krainy {1}"
@@ -4946,7 +4948,7 @@ ENEMIES_BLACK_RATS_RACE "czarne szczury"
 ENEMIES_CAVE_BEAR_DEN_RACE "niedźwiedź jaskiniowy"
 ENEMIES_CEMETERY_ENTRY_RACE "nieumarli"
 ENEMIES_CEMETERY_RACE "nieumarli"
-ENEMIES_CYCLOPS_RACE "cyklopy"
+ENEMIES_CYCLOPS_RACE "cyklop"
 ENEMIES_DARK_ELF_CAVE_RACE "mroczne elfy"
 ENEMIES_DARK_ELVES_ALLY_RACE "mroczne elfy"
 ENEMIES_DARK_ELVES_ENTRY_RACE "mroczne elfy"
@@ -4969,7 +4971,6 @@ ENEMIES_GOBLINS_Z_LEVEL_RACE "gobliny"
 ENEMIES_GOBLIN_VILLAGE_RACE "zielonoskórzy"
 ENEMIES_GREEN_DRAGON_RACE "smok"
 ENEMIES_HUMAN_COTTAGE_RACE "ludzie"
-ENEMIES_HYDRA_RACE "hydra"
 ENEMIES_KIRIN_RACE "ki-rin"
 ENEMIES_KNIGHTS_RACE "ludzie"
 ENEMIES_KOBOLD_CAVE_RACE "koboldy"
@@ -4985,7 +4986,6 @@ ENEMIES_ORC_CAVE_RACE "orkowie"
 ENEMIES_ORC_VILLAGE_RACE "zielonoskórzy"
 ENEMIES_RED_DRAGON_RACE "smok"
 ENEMIES_RUINS_RACE "ruiny"
-ENEMIES_SHELOB_RACE "olbrzymi pająk"
 ENEMIES_TEMPLE_RACE "ołtarz"
 ENEMIES_TEUTONS_RACE "Rycerze Krzyżaccy"
 ENEMIES_THIEVES_RACE "złodzieje"
@@ -4995,7 +4995,6 @@ ENEMIES_VILLAGE_RACE "ludzie"
 ENEMIES_WARRIORS_RACE "ludzie"
 ENEMIES_WITCH_RACE "wiedźma"
 ENEMIES_WOLF_DEN_RACE "wilki"
-ENEMIES_YETI_RACE "yeti"
 FURNITURE_ADA_DOOR_NAME feminine "adamantynowe drzwi"
     "adamantynowych drzwi" : genitive
     "adamantynowymi drzwiami" : instrumental
@@ -6778,14 +6777,14 @@ FURNITURE_WOOD_GATE_NAME feminine "drewniana brama"
     "drewnianymi bramami" : plural,instrumental
     "drewniane bramy" : plural,accusative
 
-FURNITURE_WOOD_PILLAR_NAME1 masculine "drewniany mur"
-    "drewnianego muru" : genitive
-    "drewnianym murem" : instrumental
-    "drewniany mur" : accusative
-    "drewniane mury" : plural
-    "drewnianych murów" : plural,genitive
-    "drewnianymi murami" : plural,instrumental
-    "drewniane mury" : plural,accusative
+FURNITURE_WOOD_PILLAR_NAME1 feminine "drewniana ściana"
+    "drewnianej ściany" : genitive
+    "drewnianą ścianą" : instrumental
+    "drewnianą ścianę" : accusative
+    "drewniane ściany" : plural
+    "drewnianych ścian" : plural,genitive
+    "drewnianymi ścianami" : plural,instrumental
+    "drewniane ściany" : plural,accusative
 
 FURNITURE_WOOD_PILLAR_NAME masculine "drewniany filar"
     "drewnianego filaru" : genitive
@@ -7877,7 +7876,7 @@ ITEMS_WOODENCROZIER_NAME masculine "drewniany pastorał"
     "drewnianymi pastorałami" : plural,instrumental
     "drewniane pastorały" : plural,accusative
 
-ITEMS_WOODENSHIELD_NAME masculine "drewniana tarcza"
+ITEMS_WOODENSHIELD_NAME feminine "drewniana tarcza"
     "drewnianej tarczy" : genitive
     "drewnianą tarczą" : instrumental
     "drewnianą tarczę" : accusative
@@ -8002,6 +8001,7 @@ RESOURCE_INFO_PRISONER_HEAD_NAME "głowy więźniów"
 RESOURCE_INFO_STONE_NAME "granit"
 RESOURCE_INFO_WOOD_NAME "drewno"
 RESOURCE_INFO_GOLD_NAME "złoto"
+    "złota" : genitive
 
 SPELLS_ACID_STREAM_EFFECT "strumień kwasu"
 SPELLS_ACID_STREAM_MESSAGE1 "{1} pluje kwasem!"
@@ -8319,7 +8319,7 @@ YOU_LOSE_THE_SKILL_OF "Tracisz umiejętność {1:accusative}."
 LOSES_THE_SKILL_OF "{1} traci umiejętność {2:accusative}."
 
 HATE_OF "nienawiść do {1:genitive}"
-HATES_ALL "nienawidzi wszystkich {1:genitive}."
+HATES_ALL "nienawidzi {1:genitive}"
 HATE_DEBUFF_DESCRIPTION "Sprawia, że cel staje się wrogi wobec wszystkich {1:genitive}."
 FULL_OF_HATRED "przepełniony nienawiścią"
 HATRED_IS_GONE "nienawiść przemija"
@@ -9436,6 +9436,8 @@ PREINSTALLED_PARTS "Preinstalowane części:"
 CLEAR_ALL_UPGRADES "Usuń wszystkie"
 ADD_TOP_UPGRADES "Dodaj {1} pierwsze"
 USED_SLOTS "Zużyte sloty: {1}/{2}"
+MATERIALIZATION_LABEL "Materializacja:"
+HEALTH_LABEL "Zdrowie:"
 NEW_LINE "{1}
 {2}"
 TEXT128 "Nie znaleziono strony. Skontaktuj się z autorem moda."

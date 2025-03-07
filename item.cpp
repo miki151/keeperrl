@@ -623,7 +623,7 @@ TString Item::getShortName(const ContentFactory* factory, const Creature* owner,
   if (!attributes->suffixes.empty())
     name = attributes->suffixes.back();
   else if (!attributes->prefixes.empty())
-    name = attributes->prefixes.back();
+    name = TSentence("ITEM_PREFIX_SHORT", attributes->name, attributes->prefixes.back());
   else if (attributes->shortName) {
     name = *attributes->shortName;
     auto suffix = getSuffix();
