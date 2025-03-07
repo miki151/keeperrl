@@ -903,6 +903,8 @@ void Game::considerAllianceAttack() {
   for (auto col : getVillains(VillainType::MAIN)) {
     if (!isVillainActive(col) || !col->getControl()->canPerformAttack())
       return;
+    if (col->getName()->race.empty())
+      continue;
     auto triggers = col->getTriggers(getPlayerCollective());
     if (triggers.empty())
       continue;

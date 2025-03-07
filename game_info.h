@@ -397,7 +397,7 @@ class CollectiveInfo {
 class VillageInfo {
   public:
   struct Village {
-    optional<TString> HASH(name);
+    TString HASH(name);
     TString HASH(tribeName);
     ViewIdList HASH(viewId);
     VillainType HASH(type);

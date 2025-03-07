@@ -876,10 +876,12 @@ static TStringId getVillageActionText(VillageAction action) {
 
 SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info, bool showDismissHint) {
   auto lines = WL(getListBuilder, legendLineHeight);
-  auto name = info.tribeName;
-  if (info.name)
-    name  = combineWithCommas({*info.name, name});
-  lines.addElem(
+  auto name = [&] {
+    if (!info.tribeName.empty())
+      return combineWithCommas({info.name, info.tribeName});
+    return info.name;
+  }();
+ lines.addElem(
       WL(getListBuilder)
           .addElemAuto(WL(label, capitalFirst(name)))
           .addSpace(100)
@@ -1121,9 +1123,11 @@ void GuiBuilder::drawAllVillainsMenu(Vec2 pos, const VillageInfo& info) {
       labelColor = Color::RED;
     else if (!elem.triggers.empty())
       labelColor = Color::ORANGE;
-    auto name = elem.tribeName;
-    if (elem.name)
-      name  = combineWithCommas({*elem.name, name});
+    auto name = [&] {
+      if (!elem.tribeName.empty())
+        return combineWithCommas({elem.name, elem.tribeName});
+      return elem.name;
+    }();
     auto label = WL(label, capitalFirst(name), labelColor);
     if (elem.isConquered)
       label = WL(stack, std::move(label), WL(crossOutText, Color::RED));
@@ -3415,8 +3419,8 @@ static string getLuxuryNumber(double morale) {
 #endif
 }
 
-static const char* getHealthName(bool spirit) {
-  return spirit ? "Materialization:" : "Health:";
+static TStringId getHealthName(bool spirit) {
+  return spirit ? TStringId("MATERIALIZATION_LABEL") : TStringId("HEALTH_LABEL");
 }
 
 SGuiElem GuiBuilder::drawMapHintOverlay() {
@@ -3488,8 +3492,8 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
             lines.addElem(WL(stack,
                   WL(margins, WL(progressBar, MapGui::getHealthBarColor(*health,
                       viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE)).transparency(70), *health), -2, 0, 0, 3),
-                  WL(label, getHealthName(viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE))
-                      + toString((int) (100.0f * *health)) + "%")));
+                  WL(label, TSentence(getHealthName(viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE)),
+                      toString((int) (100.0f * *health)) + "%"))));
           if (auto luxury = viewObject.getAttribute(ViewObjectAttribute::LUXURY))
             lines.addElem(WL(stack,
                   WL(margins, WL(progressBar, Color::GREEN.transparency(70), fabs(*luxury)), -2, 0, 0, 3),

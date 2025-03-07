@@ -86,8 +86,6 @@ optional<CollectiveName> CollectiveBuilder::generateName() const {
       ret.shortened = leader->getName().bare();
     if (raceName)
       ret.race = *raceName;
-    else
-      ret.race = leader->getName().stack();
     return ret;
   } else
     return none;

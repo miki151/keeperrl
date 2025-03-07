@@ -994,7 +994,7 @@ TString PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
 VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const {
   PROFILE;
   VillageInfo::Village info;
-  info.name = col->getName()->shortened;
+  info.name = *col->getName()->shortened;
   info.id = col->getUniqueId();
   info.tribeName = col->getName()->race;
   info.viewId = col->getName()->viewId;
