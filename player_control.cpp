@@ -1366,6 +1366,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
     info.researched.emplace_back();
     auto& techInfo = info.researched.back();
     techInfo.description = technology.techs.at(tech).description;
+    techInfo.name = technology.getName(tech);
     techInfo.id = tech;
     fillTechUnlocks(techInfo);
   }

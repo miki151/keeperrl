@@ -3164,7 +3164,7 @@ SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo::ChosenCreatureInfo
   SGuiElem leftSide = drawMinionButtons(minions, current, chosenCreature.teamId);
   if (chosenCreature.teamId) {
     auto list = WL(getListBuilder, legendLineHeight);
-    list.addElemAuto(
+    list.addElem(
         WL(buttonLabel, TStringId("DISBAND_TEAM_BUTTON"), getButtonCallback({UserInputId::CANCEL_TEAM, *chosenCreature.teamId})));
     list.addElem(WL(labelMultiLine, TStringId("CONTROL_MINION_TO_COMMAND_TEAM"), Renderer::smallTextSize() + 2,
         Renderer::smallTextSize(), Color::LIGHT_GRAY));
