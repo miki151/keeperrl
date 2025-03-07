@@ -510,10 +510,11 @@ FURNITURE_DISSOLVES "{1} rozpuszcza się."
 FURNITURE_FALLS "{1} przewraca się."
 FURNITURE_FREEZES "{1} zamarza."
 FURNITURE "mebel"
-FURNITURE_IS_DESTROYED_HELPER "zniszczony"
-    "zniszczona" : feminine
-    "zniszczone" : neuter
-FURNITURE_IS_DESTROYED "{1} zostaje {FURNITURE_IS_DESTROYED_HELPER:1}."
+FURNITURE_IS_DESTROYED_HELPER "zostaje zniszczony"
+    "zostaje zniszczona" : feminine
+    "zostaje zniszczone" : neuter
+    "zostają zniszczone" : plural
+FURNITURE_IS_DESTROYED "{1} {FURNITURE_IS_DESTROYED_HELPER:1}."
 FURNITURE_IS_DUG_OUT_HELPER "wykopany"
     "wykopana" : feminine
     "wykopane" : neuter
@@ -618,13 +619,16 @@ WOUNDED_HELPER "ranny"
     "ranna" : feminine
     "ranne" : neuter
 IS_CRITICALLY_WOUNDED "{1} jest krytycznie {WOUNDED_HELPER:1}!"
-IS_CUT_IN_HALF "{1} zostaje przecięty na pół!"
+CUT_IN_HALF_HELPER "przecięty"
+    "przecięta" : feminine
+    "przecięte" : neuter
+IS_CUT_IN_HALF "{1} zostaje {CUT_IN_HALF_HELPER:1} na pół!"
 IS_DESTROYED_BY "{1} zostaje zniszczony przez {2:accusative}."
 IS_FLYING "{1} lata!"
 IS_MOVING_FASTER_AGAIN "{1} znów porusza się szybciej."
 IS_MOVING_SLOW_AGAIN "{1} znów porusza się wolniej."
 IS_NO_LONGER_AGGRAVATES "{1} przestaje drażnić wrogów."
-IS_NO_LONGER_BLIND "{1} już nie jest ślepy."
+IS_NO_LONGER_BLIND "{1} już nie jest {BUFF_ADJECTIVE_BLIND:1}."
 IS_NO_LONGER_FUNNY "{1} już nie jest zabawny."
 IS_NO_LONGER_HALLU "{1} przestaje halucynować."
 IS_NO_LONGER_IMMOBILE "{1} przestaje być unieruchomiony."
@@ -634,20 +638,26 @@ IS_NO_LONGER_POISON_RESISTANT "{1} nie jest już odporny na truciznę."
 IS_NO_LONGER_POLYMORPHED "{1} wraca do poprzedniej postaci."
 LESS_UNDERSTANDING "mniej zrozumienia"
 MORE_UNDERSTANDING "więcej zrozumienia"
-IS_NO_LONGER_RESTED "{1} nie jest już wypoczęty."
-IS_NO_LONGER_SATIATED "{1} nie jest już nasycony."
+IS_NO_LONGER_RESTED "{1} nie jest już {BUFF_ADJECTIVE_RESTED:1}."
+IS_NO_LONGER_SATIATED "{1} nie jest już {BUFF_ADJECTIVE_SATIATED:1}."
 IS_NO_LONGER_SLEEP_RESISTANT "{1} nie jest już odporny na sen."
-IS_NO_LONGER_SWARMER "{1} nie jest już w stadzie."
+IS_NO_LONGER_SWARMER "{1} nie jest już w roju."
 IS_NO_LONGER_VULNERABLE_TO_SUNLIGHT "{1} nie jest już wrażliwy na światło słoneczne."
-IS_NOT_HURT "{1} nie jest ranny!"
-IS_RIPPED_TO_PIECES "{1} zostaje rozerwany na kawałki!"
-IS_SHOT_IN_THE "{1} zostaje postrzelony w {2:accusative}!"
-IS_STABBED_IN_THE "{1} zostaje dźgnięty w {2:accusative}!"
+IS_NOT_HURT "{1} nie jest {WOUNDED_HELPER:1}!"
+IS_RIPPED_TO_PIECES "{1} zostaje {RIPPED_HELPER:1} na kawałki!"
+SHOT_HELPER "postrzelony"
+    "postrzelona" : feminine
+    "postrzelona" : neuter
+IS_SHOT_IN_THE "{1} zostaje {SHOT_HELPER:1} w {2:accusative}!"
+STABBED_HELPER "dźgnięty"
+    "dźgnięta" : feminine
+    "dźgnięte" : neuter
+IS_STABBED_IN_THE "{1} zostaje {STABBED_HELPER:1} w {2:accusative}!"
 IS_TURNED_OFF "{1} zostaje wyłączony."
 IS_TURNED_ON "{1} zostaje włączony."
 IS_UNABLE_TO_CAST_SPELLS "{1} nie może rzucać czarów!"
-IS_UNCONCIOUS "{1} jest nieprzytomny."
-IS_WOUNDED "{1} jest ranny!"
+IS_UNCONCIOUS "{1} jest {BUFF_ADJECTIVE_STUNNED:1}."
+IS_WOUNDED "{1} jest {WOUNDED_HELPER:1}!"
 ITEM_COUNT "{2} {1}"
 ITEM_CRASHES_ON_THE "{2} uderza w {1:accusative}"
 ITEMS_CRASH_ON_THE "{2} uderzają w {1:accusative}"
@@ -1131,8 +1141,8 @@ YOU_ARE_NO_LONGER_POLYMORPHED "Nie jesteś już przemieniony."
     "Nie jesteś już przemieniona." : feminine
 YOU_ARE_NO_LONGER_RESTED "Nie jesteś już wypoczęty."
     "Nie jesteś już wypoczęta." : feminine
-YOU_ARE_NO_LONGER_SATIATED "Nie jesteś już nasycony."
-    "Nie jesteś już nasycona." : feminine
+YOU_ARE_NO_LONGER_SATIATED "Nie jesteś już najedzony."
+    "Nie jesteś już najedzona." : feminine
 YOU_ARE_NO_LONGER_SLEEP_RESISTANT "Nie jesteś już odporny na sen."
     "Nie jesteś już odporna na sen." : feminine
 YOU_ARE_SWARMER "Czujesz chęć atakowania w roju."
@@ -2484,14 +2494,16 @@ BUFFS_FIRE_DAMAGE_NAME plural "obrażenia ogniowe"
     "obrażeń ogniowych" : genitive
 BUFFS_FIRE_DAMAGE_REMOVEDMESSAGE1 "{1} nie zadaje już obrażeń ogniem."
 BUFFS_FIRE_DAMAGE_REMOVEDMESSAGE "Nie zadajesz już obrażeń ogniem."
-BUFFS_HIGH_MORALE_ADDEDMESSAGE "nastrój się poprawia"
+BUFFS_HIGH_MORALE_ADDEDMESSAGE "Twój nastrój się poprawia."
+BUFFS_HIGH_MORALE_ADDEDMESSAGE2 "Nastrój {1:genitive} się poprawia."
 BUFFS_HIGH_MORALE_ADJECTIVE "szczęśliwy"
     "szczęśliwa" : feminine
     "szczęśliwe" : neuter
 BUFFS_HIGH_MORALE_DESCRIPTION "Postacie szybciej się szkolą i wydajniej pracują."
 BUFFS_HIGH_MORALE_NAME plural "wysokie morale"
     "wysokich morale" : genitive
-BUFFS_HIGH_MORALE_REMOVEDMESSAGE "nastrój wraca do normy"
+BUFFS_HIGH_MORALE_REMOVEDMESSAGE "Twój nastrój wraca do normy."
+BUFFS_HIGH_MORALE_REMOVEDMESSAGE2 "Nastrój {1:genitive} wraca do normy."
 BUFFS_INFERNITE_EFFECT_ADDEDMESSAGE1 "{1} jest palony przez infernit."
 BUFFS_INFERNITE_EFFECT_ADDEDMESSAGE "Pali cię infernite."
 BUFFS_INFERNITE_EFFECT_ADJECTIVE "palony przez infernit"
@@ -2545,14 +2557,16 @@ BUFFS_MORTAL_SINNED_NAME "grzech śmiertelny"
     "grzechu śmiertelnego" : genitive
 BUFFS_PREACHING_ADJECTIVE "odprawia Mszę"
 BUFFS_PREACHING_NAME "Odpraw Mszę"
-BUFFS_REGENERATION_ADDEDMESSAGE "regenerujesz się"
+BUFFS_REGENERATION_ADDEDMESSAGE "Zaczynasz się regenerować."
+BUFFS_REGENERATION_ADDEDMESSAGE2 "{1} zaczyna się regenerować."
 BUFFS_REGENERATION_ADJECTIVE "regenerujący się"
     "regenerująca się" : feminie
     "regenerujące się" : neuter
 BUFFS_REGENERATION_DESCRIPTION "Odnawia niewielką ilość zdrowia co turę."
 BUFFS_REGENERATION_NAME feminine "regeneracja"
     "regeneracji" : genitive
-BUFFS_REGENERATION_REMOVEDMESSAGE "przestajesz się regenerować"
+BUFFS_REGENERATION_REMOVEDMESSAGE "Przestajesz się regenerować."
+BUFFS_REGENERATION_REMOVEDMESSAGE2 "{1} przestaje się regenerować."
 BUFFS_SINNED_ADJECTIVE "grzesznik powszedni"
     "grzeszniczka powszedna" : feminine
 BUFFS_SINNED_DESCRIPTION "Istota popełniła grzech i szuka przebaczenia."
@@ -2686,7 +2700,7 @@ BUILD_MENU_HELP92 "Uruchamia wszystkie inne pułapki w pobliżu."
 BUILD_MENU_HELP93 "Niszczy wszystkie ściany w promieniu dwóch pól."
 BUILD_MENU_HELP9 "Przechowuje wszelkiego rodzaju ekwipunek dla twoich sług."
 BUILD_MENU_HELP "Wykop dół w ziemi. Zrób to przy wodzie lub lawie, a zostanie zalany."
-BUILD_MENU_PRIORITIZE "Nadaj priorytet zadania"
+BUILD_MENU_PRIORITIZE "Nadaj priorytet zadaniu"
 BUILD_MENU_REMOVE_CONSTRUCTION "Usuń konstrukcję"
 BUILD_MENU_REMOVE_WALL_INSTALLATION "Usuń instalację ścienną"
 BUILD_MENU_PLACE_MINION "Dodaj sługę"
@@ -4901,14 +4915,7 @@ CREATURE_ATTRIBUTES_YELLOW_NAGA_NAME feminine "żółta naga"
     "żółtymi nagami" : plural,instrumental
     "żółte nagi" : plural,accusative
 
-CREATURE_ATTRIBUTES_YETI_NAME masculine "yeti"
-    "yeti" : genitive
-    "yeti" : instrumental
-    "yeti" : accusative
-    "yeti" : plural
-    "yeti" : plural,genitive
-    "yeti" : plural,instrumental
-    "yeti" : plural,accusative
+CREATURE_ATTRIBUTES_YETI_NAME neuter "yeti"
 
 CREATURE_ATTRIBUTES_ZOMBIE_NAME1 masculine "zombie rzemieślnik"
     "zombie rzemieślnika" : genitive
@@ -4928,14 +4935,7 @@ CREATURE_ATTRIBUTES_ZOMBIE_NAME2 masculine "zombie mag"
     "zombie magami" : plural,instrumental
     "zombie magów" : plural,accusative
 
-CREATURE_ATTRIBUTES_ZOMBIE_NAME masculine "zombie"
-    "zombie" : genitive
-    "zombie" : instrumental
-    "zombie" : accusative
-    "zombie" : plural
-    "zombie" : plural,genitive
-    "zombie" : plural,instrumental
-    "zombie" : plural,accusative
+CREATURE_ATTRIBUTES_ZOMBIE_NAME neuter "zombie"
 
 ENEMIES_ADA_GOLEMS_RACE "adamantytowe golemy"
 ENEMIES_ADOXIE_FEET_ENTRY_RACE "ołtarz Złego Boga Adoxie"
@@ -4995,10 +4995,7 @@ ENEMIES_VILLAGE_RACE "ludzie"
 ENEMIES_WARRIORS_RACE "ludzie"
 ENEMIES_WITCH_RACE "wiedźma"
 ENEMIES_WOLF_DEN_RACE "wilki"
-FURNITURE_ADA_DOOR_NAME feminine "adamantynowe drzwi"
-    "adamantynowych drzwi" : genitive
-    "adamantynowymi drzwiami" : instrumental
-    "adamantynowe drzwi" : accusative
+FURNITURE_ADA_DOOR_NAME plural "adamantynowe drzwi"
     "adamantynowe drzwi" : plural
     "adamantynowych drzwi" : plural,genitive
     "adamantynowymi drzwiami" : plural,instrumental
@@ -5839,10 +5836,7 @@ FURNITURE_INACTIVE_PORTAL_NAME masculine "portal"
 
 FURNITURE_INACTIVE_PORTAL_USAGETYPE "Użyj portalu"
 
-FURNITURE_IRON_DOOR_NAME feminine "żelazne drzwi"
-    "żelaznych drzwi" : genitive
-    "żelaznymi drzwiami" : instrumental
-    "żelazne drzwi" : accusative
+FURNITURE_IRON_DOOR_NAME plural "żelazne drzwi"
     "żelazne drzwi" : plural
     "żelaznych drzwi" : plural,genitive
     "żelaznymi drzwiami" : plural,instrumental
@@ -6759,10 +6753,7 @@ FURNITURE_WHIPPING_POST_NAME masculine "słup do chłosty"
     "słupami do chłosty" : plural,instrumental
     "słupy do chłosty" : plural,accusative
 
-FURNITURE_WOOD_DOOR_NAME feminine "drewniane drzwi"
-    "drewnianych drzwi" : genitive
-    "drewnianymi drzwiami" : instrumental
-    "drewniane drzwi" : accusative
+FURNITURE_WOOD_DOOR_NAME plural "drewniane drzwi"
     "drewniane drzwi" : plural
     "drewnianych drzwi" : plural,genitive
     "drewnianymi drzwiami" : plural,instrumental
