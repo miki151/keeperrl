@@ -62,22 +62,21 @@ static int getLastLetter(const string& s, int index) {
   return index;
 }
 
-const vector<string>& Translations::getTags(const string& language, const TString& s) const {
+vector<string> Translations::getTags(const string& language, const TString& s) const {
   static vector<string> empty;
-  return *s.text.visit(
-      [&](const string& s) -> const vector<string>* {
-        return &empty;
+  return s.text.visit(
+      [&](const string& s) -> vector<string> {
+        return {};
       },
-      [&](const TSentence& id) -> const vector<string>* {
+      [&](const TSentence& id) {
+        vector<string> ret;
+        if (id.id == "MAKE_PLURAL")
+          ret.push_back("plural");
         if (auto elem = getReferenceMaybe(strings.at(language), id.id))
-          if (!elem->tags.empty())
-            return &elem->tags;
-        for (auto& param : id.params) {
-          auto& tags = getTags(language, param);
-          if (!tags.empty())
-            return &tags;
-        }
-        return &empty;
+          ret.append(elem->tags);
+        for (auto& param : id.params)
+          ret.append(getTags(language, param));
+        return ret;
       }
   );
 }

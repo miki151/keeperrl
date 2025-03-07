@@ -17,7 +17,7 @@ class Translations {
   private:
 
   optional<string> addLanguage(string name, FilePath);
-  const vector<string>& getTags(const string& language, const TString&) const;
+  vector<string> getTags(const string& language, const TString&) const;
   struct TranslationInfo {
     string SERIAL(primary);
     vector<string> tags;
