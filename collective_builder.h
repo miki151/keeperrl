@@ -36,7 +36,6 @@ class CollectiveBuilder {
   string enemyId;
 
   private:
-  optional<CollectiveName> getCollectiveName();
   Model* model = nullptr;
   Level* level = nullptr;
   struct CreatureInfo {

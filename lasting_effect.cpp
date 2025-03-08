@@ -304,6 +304,8 @@ void LastingEffects::onRemoved(Creature* c, LastingEffect effect, bool msg) {
       if (msg)
         c->you(MsgType::WAKE_UP);
       break;
+    case LastingEffect::STUNNED:
+      break;
     case LastingEffect::ON_FIRE:
       if (msg)
         c->verb(TStringId("YOU_ARE_EXTINGUISHED"), TStringId("IS_EXTINGUISHED"));
