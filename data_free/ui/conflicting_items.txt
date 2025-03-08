@@ -13,7 +13,7 @@
       Position(MIDDLE, Horizontal {
         Using "callback" StandardButton(Label(CONFIRM_BUTTON))
         Width 30 {}
-        Using "EXIT" StandardButton(Label(TEXT2))
+        Using "EXIT" StandardButton(Label(CANCEL_BUTTON))
       })
     }
   )

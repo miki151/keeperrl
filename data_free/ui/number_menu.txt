@@ -62,7 +62,7 @@
       })
       Width 5 {}
       Using "EXIT" StandardButtonNotFocusable(Horizontal {
-        Label(TEXT2)
+        Label(CANCEL_BUTTON)
         Width 5 {}
         KeybindingHandler("EXIT_MENU")
         RenderKeybinding("EXIT_MENU", true)
