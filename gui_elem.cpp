@@ -692,6 +692,9 @@ static vector<string> breakText(Renderer& renderer, const string& text, int maxW
         auto addWord = [&](string& row, string word) {
           if (row.empty() && word == string(1, delim))
             return;
+          if (row.empty())
+            while (!word.empty() && word[0] == ' ')
+              word = word.substr(1);
           row += std::move(word);
         };
         if (!rows.back().empty() && renderer.getTextLength(rows.back() + subword, size) > maxWidth)
