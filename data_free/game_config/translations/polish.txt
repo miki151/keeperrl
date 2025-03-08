@@ -265,9 +265,9 @@ BUFF_ADJECTIVE_INSANITY "obłąkany"
 BUFF_ADJECTIVE_BLIND "ślepy"
     "ślepa" : feminine
     "ślepe" : neuter
-BUFF_ADJECTIVE_STUNNED "nieprzytomny"
-    "nieprzytomna" : feminine
-    "nieprzytomne" : neuter
+BUFF_ADJECTIVE_STUNNED "pojmany"
+    "pojmana" : feminine
+    "pojmay" : neuter
 BUFF_ADJECTIVE_COLLAPSED "przewrócony"
     "przewrócona" : feminine
     "przewrócone" : neuter
@@ -552,7 +552,7 @@ HEALING_EFFECT_DESCRIPTION "Całkowicie przywraca zdrowie."
 HEALING_EFFECT_NAME "uzdrowienie"
     "uzdrowienia" : genitive
 HIDDEN "ukryty"
-HIS "{1:genitive} {2}"
+YOUR_THIRD_PERSON "{1:genitive} {2}"
 HIS_BODY_CRUMBLES_TO_DUST "Ciało {1:genitive} rozpada się w proch."
 HIS_BODY_PART_IS_CHOPPED_OFF_HELPER "odcięty"
     "odcięta" : feminine
@@ -1490,7 +1490,7 @@ DOESNT_LAUGH "{1} nie śmieje się."
 DONE_LABEL "[gotowe]"
 DONT_LAUGH "Nie śmiejesz się."
 DRINKS "{1} pije {2:accusative}."
-DROPS "{1} upuszcza {2:accusative}."
+DROPS "{1} upuszcza {3:accusative}."
 EAT_CORPSE_EFFECT_DESCRIPTION "Istota ucztuje na zwłokach."
 EAT_CORPSE_EFFECT_NAME "zjedz zwłoki"
 EATS "{1} zjada {2:accusative}."
@@ -2044,6 +2044,7 @@ FIRE_EFFECT_NAME "ogień"
     "ognia" : genitive
 HE "on"
 HER "jej"
+HIS "jego"
 IT "to"
 ITS "tego"
 SHE "ona"

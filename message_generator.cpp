@@ -21,7 +21,7 @@ static void addThird(const Creature* c, MsgType type, vector<TString> param) {
     param.push_front(c->getName().the());
     switch (type) {
       case MsgType::ARE: return TSentence("IS", param);
-      case MsgType::YOUR: return TSentence("HIS", param);
+      case MsgType::YOUR: return TSentence("YOUR_THIRD_PERSON", param);
       case MsgType::FALL_ASLEEP:
         unseenMsg = TSentence("YOU_HEAR_SNORING");
         if (!param.empty())
