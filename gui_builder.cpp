@@ -4365,7 +4365,7 @@ SGuiElem GuiBuilder::drawSpellSchoolLabel(const SpellSchoolInfo& school) {
   }
   return WL(stack,
       WL(label, school.name),
-      WL(tooltip2, WL(setWidth, 350, WL(miniWindow, WL(margins, lines.buildVerticalList(), 15))),
+      WL(tooltip2, WL(setWidth, 470, WL(miniWindow, WL(margins, lines.buildVerticalList(), 15))),
           [](const Rectangle& r) { return r.bottomRight(); }));
 }
 
