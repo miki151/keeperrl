@@ -70,14 +70,14 @@ vector<string> Translations::getTags(const string& language, const TString& s) c
       },
       [&](const TSentence& id) {
         vector<string> ret;
+        if (id.id == "KILL_TITLE")
+          return ret; // don't get tags from the killed creature as they break the grammar
         if (id.id == "MAKE_PLURAL")
           ret.push_back("plural");
         if (auto elem = getReferenceMaybe(strings.at(language), id.id))
           ret.append(elem->tags);
         for (auto& param : id.params) {
           ret.append(getTags(language, param));
-          if (id.id == "CREATURE_TITLE")
-            break;
         }
         return ret;
       }
