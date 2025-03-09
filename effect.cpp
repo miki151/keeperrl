@@ -453,7 +453,7 @@ static TString getName(const Effects::SpecialAttr& e, const ContentFactory* f) {
 
 static TString getDescription(const Effects::SpecialAttr& e, const ContentFactory* f) {
   return TSentence(TStringId(get(e, "SPECIAL_ATTR_BOOST_DESCRIPTION", "SPECIAL_ATTR_LOSS_DESCRIPTION")),
-      f->attrInfo.at(e.attr).name, e.predicate.getName(f));
+      {f->attrInfo.at(e.attr).name, toString(e.value), e.predicate.getName(f)});
 }
 
 static const char* get(const Effects::IncreaseMaxLevel& e, const char* inc, const char* dec) {

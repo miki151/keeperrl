@@ -140,6 +140,13 @@ BLEEDING_EFFECT_DESCRIPTION "Powoduje krwawienie."
 BLEEDING_EFFECT_NAME "krwawienie"
     "krwawienia" : genitive
 BLOODY_WATER "zakrwawiona woda"
+    "zakrwawionej wody" : genitive
+    "zakrwawionej wodzie" : locative
+    "zakrwawioną wodę" : accusative
+    "zakrwawione wody" : plural
+    "zakrwawionych wód" : plural,genitive
+    "zakrwawionymi wodami" : plural,instrumental
+    "zakrwawione wody" : plural,accusative
 BODIES_UPGRADE_TYPE "ciała"
     "ciał" : genitive
 BODY_PART_GROWS_BACK "{1} odrasta!"
@@ -372,7 +379,10 @@ COPULATE_TASK "Współżyj z {1:instrumental}"
 YOU_COPULATE "Współżyjesz z {1:instrumental}."
 COPULATES "{1} kopuluje z {2:instrumental}."
 COPY_SETTING_TO_GROUP "Ustaw dla wszystkich {1:genitive}"
-CORPSE_ITEM "zwłoki {1:genitive}"
+CORPSE_ITEM plural "zwłoki {1:genitive}"
+    "zwłok {1:genitive}" : genitive
+    "zwłokami {1:genitive}" : instrumental
+    "zwłoki {1:genitive}" : accusative
 CRAFTED_FROM "Wykonano z {1:genitive}"
 CRAFTED_ITEMS_LABEL "produkcja przedmiotów"
     "produkcję przedmiotów" : accusative
@@ -605,6 +615,9 @@ INGREDIENT_ON_THE_GROUND "na ziemi {1}"
 INJURED_BODY_PART_HELPER "Zraniony"
     "Zraniona" : feminine
     "Zranione" : neuter
+    "Zranione" : plural
+    "Zranione" : plural,feminine
+    "Zranione" : plural,neutral
 INJURED_BODY_PART "{INJURED_BODY_PART_HELPER:1} {1}"
 INSIDE_AN_ANIMAL_PEN "wewnątrz wybiegu dla zwierząt"
 INSUFFICIENT_LIGHT_HIGHLIGHT "Niewystarczające oświetlenie"
@@ -701,8 +714,22 @@ KILLED_MEMBERS_TRIGGER "Zabici członkowie plemienia"
 KILL_TASK "Zabij {1:accusative}"
 KILL_TITLES_HINT "Tytuły są przyznawane za zabijanie przywódców plemion. Mogą zwiększyć atrybuty do wartości bazowej."
 KNIGHT_NAME "rycerz"
-KRAKEN "kraken"
-KRAKEN_TENTACLE "macka krakena"
+KRAKEN masculine "kraken"
+    "krakena" : genitive
+    "krakenem" : instrumental
+    "krakena" : accusative
+    "krakeny" : plural
+    "krakenów" : plural, genitive
+    "krakenami" : plural, instrumental
+    "krakeny" : plural, accusative
+KRAKEN_TENTACLE feminine "macka krakena"
+    "macki krakena" : genitive
+    "macką krakena" : instrumental
+    "mackę krakena" : accusative
+    "macki krakena" : plural
+    "macek krakena" : plural, genitive
+    "mackami krakena" : plural, instrumental
+    "macki krakena" : plural, accusative
 LEARNS "{1} uczy się {2:genitive} „{3}”."
 LEG_BODY_PART feminine "noga"
     "nogi" : genitive
@@ -720,7 +747,13 @@ LOCKED_ITEMS_HINT "Zablokowane przedmioty nie będą automatycznie zamieniane pr
 LOCK_POSITION_BUTTON "Zablokuj pozycję"
 LOCK_POSITION_TOOLTIP "Włączenie zablokuje pozycję automatu przed zamianą miejsc z innymi. W trybie kontroli wciąż możesz go przepchnąć."
 LOOKS_LIKE_A_DANCING_FOOL "{1} wygląda jak tańczący błazen."
-LOST_BODY_PART "Utracono {1:accusative}"
+LOST_BODY_PART_HELPER "Stracony"
+    "Stracona" : feminine
+    "Stracone" : neuter
+    "Stracone" : plural
+    "Stracone" : plural,feminine
+    "Stracone" : plural,neutral
+LOST_BODY_PART "{LOST_BODY_PART_HELPER:1} {1}"
 LUXURY_HINT "Suma luksusu: {1}"
 MAKE_HUMANOID_EFFECT_DESCRIPTION "Zamienia istotę w humanoida"
 MAKE_HUMANOID_EFFECT_NAME "uczłowieczenie"
@@ -1045,7 +1078,9 @@ UI_EFFECT_NAME "interfejs"
 UNDEAD_DAMAGE_EXPLANATION "Istoty nieumarłe nie otrzymują zwykłych obrażeń. Aby je zabić, trzeba je posiekać lub użyć ognia."
 UNDEAD_KINGS_UPGRADE_TYPE "królowie nieumarłych"
     "królów nieumarłych" : genitive
-UNDEAD "Nieumarły"
+UNDEAD "nieumarły"
+    "nieumarła" : feminine
+    "nieumarłe" : neuter
 UNLOCK_DOOR_ACTION "Otwórz drzwi"
 UNLOCK_EFFECT_DESCRIPTION "Odblokowuje funkcję w grze"
 UNLOCK_EFFECT_NAME "odblokuj"
@@ -1153,12 +1188,12 @@ YOU_ARE_NO_LONGER_VULNERABLE_TO_SUNLIGHT "Nie jesteś już wrażliwy na światł
 YOU_ARE_NOT_HURT "Nie ponosisz obrażeń!"
 YOU_ARE_RIPPED_TO_PIECES "Zostajesz rozerwany na kawałki!"
     "Zostajesz rozerwana na kawałki!" : feminine
-YOU_ARE_SHOT_IN_THE "Zostajesz postrzelony w {1}!"
-    "Zostajesz postrzelona w {1}!" : feminine
-YOU_ARE_STABBED_IN_THE "Zostajesz dźgnięty w {1}!"
-    "Zostajesz dźgnięta w {1}!" : feminine
-YOU_ARE_SUCKED_INTO "Zostajesz wessany do {1}!"
-    "Zostajesz wessana do {1}!" : feminine
+YOU_ARE_SHOT_IN_THE "Zostajesz postrzelony w {1:accusative}!"
+    "Zostajesz postrzelona w {1:accusative}!" : feminine
+YOU_ARE_STABBED_IN_THE "Zostajesz dźgnięty w {1:accusative}!"
+    "Zostajesz dźgnięta w {1:accusative}!" : feminine
+YOU_ARE_SUCKED_INTO "Zostajesz wessany do {1:accusative}!"
+    "Zostajesz wessana do {1:accusative}!" : feminine
 YOU_ARE_TURNED_OFF "Zostajesz wyłączony."
 YOU_ARE_TURNED_ON "Zostajesz włączony."
 YOU_ARE_UNABLE_TO_CAST_SPELLS "Nie możesz rzucać żadnych czarów!"
@@ -1984,8 +2019,8 @@ BREAKS_FREE_FROM "{1} uwalnia się z {2:genitive}."
 CAN_SEE_YOU_HIDING "{1} widzi twoją kryjówkę."
 CUTS_TENTACLE "{1} odcina mackę krakena."
 YOU_BECOME "Stajesz się {1:instrumental}."
-YOU_BURN_IN "Płoniesz w {1:instrumental}."
-YOU_DROWN_IN "Topisz się w {1:instrumental}."
+YOU_BURN_IN "Płoniesz w {1:locative}."
+YOU_DROWN_IN "Topisz się w {1:locative}."
 ADDS_TRAINING_LEVELS "Dodaje do {1} poziomów szkolenia {2:genitive}."
 BUILDINGS_COUNT_AVAILABLE "({1} dostępne)"
 CHALLENGES_YOU_TO_A_DUEL "{1} wyzywa cię na pojedynek. Przyjmujesz wyzwanie?"
@@ -2069,14 +2104,10 @@ BALSAM masculine "balsam"
     "balsamów" : plural,genitive
     "balsamami" : plural,instrumental
     "balsamy" : plural,accusative
-CORPSE neuter "zwłoki"
+CORPSE plural "zwłoki"
     "zwłok" : genitive
     "zwłoki" : accusative
     "zwłokami" : instrumental
-    "zwłoki" : plural
-    "zwłok" : plural,genitive
-    "zwłokami" : plural,instrumental
-    "zwłoki" : plural,accusative
 FIRE neuter "ogień"
     "ognia" : genitive
     "ogień" : accusative
@@ -2239,10 +2270,12 @@ THANK_YOU_FOR_PLAYING "Dziękujemy za grę w KeeperRL!"
 RETIRED_GAME_RESULT "porzucił grę"
 YOU_KILLED_AND_SCORED "Zabiłeś {1} wrogów i uzyskałeś {2} punktów."
 OF "{1} z {2:genitive}"
-ITEM_BURNS "{1} płonie w {2:instrumental}."
-ITEMS_BURN "{1} płoną w {2:instrumental}."
-ITEM_SINKS "{1} tonie w {2:instrumental}."
-ITEMS_SINK "{1} toną w {2:instrumental}."
+ITEM_BURNS "{1} płonie w {2:locative}."
+ITEMS_BURN "{1} płoną w {2:locative}."
+ITEM_SINKS_HELPER "tonie"
+    "toną" : plural
+ITEM_SINKS "{1} {ITEM_SINKS_HELPER:1} w {2:locative}."
+ITEMS_SINK "{1} toną w {2:locative}."
 NO_LONGER_SUPER "już nie super"
 SUPER "super"
 YOU_START_BLEEDING "Zaczynasz krwawić."
@@ -2395,6 +2428,7 @@ ATTR_INFO_MORGUE_NAME feminine "kostnica"
 ATTR_INFO_MULTI_WEAPON_ADJECTIVE "oburęczny"
 ATTR_INFO_MULTI_WEAPON_HELP "Pozwala używać wielu broni w jednym ataku. Wartość atrybutu definiuje mnożnik obrażeń dla kolejnych ciosów."
 ATTR_INFO_MULTI_WEAPON_NAME feminine "walka wieloma brońmi"
+    "walki wieloma brońmi" : genitive
 ATTR_INFO_PARRY_ADJECTIVE "unikowy"
 ATTR_INFO_PARRY_HELP "Zapobiega karze do obrony przy otoczeniu przez wrogów."
 ATTR_INFO_PARRY_NAME neuter "parowanie"
@@ -2414,7 +2448,7 @@ ATTR_INFO_SPELL_SPEED_NAME feminine "szybkość czarowania"
 ATTR_INFO_WORKSHOP_ADJECTIVE "pomysłowy"
 ATTR_INFO_WORKSHOP_HELP "Określa umiejętności pracy w warsztacie."
 ATTR_INFO_WORKSHOP_NAME "warsztat"
-    "warsztat" : genitive
+    "warsztatu" : genitive
 BODY_MATERIALS_DESTROYED_DEATHDESCRIPTION "zniszczony"
     "zniszczona" : feminine
     "zniszczone" : neuter
@@ -5948,7 +5982,7 @@ FURNITURE_LOOT_COFFIN_NAME feminine "trumna"
 
 FURNITURE_MAGMA_NAME feminine "magma"
     "magmy" : genitive
-    "magmą" : instrumental
+    "magmie" : locative
     "magmę" : accusative
     "magmy" : plural
     "magm" : plural,genitive
@@ -6684,7 +6718,7 @@ FURNITURE_UP_STAIRS_USAGETYPE "Użyj schodów"
 
 FURNITURE_WATER_NAME1 neuter "zaczarowane źródło"
     "zaczarowanego źródła" : genitive
-    "zaczarowanym źrodłem" : instrumental
+    "zaczarowanym źrodle" : locative
     "zaczarowane źrodło" : accusative
     "zaczarowane źrodła" : plural
     "zaczarowanych źrodeł" : plural,genitive
@@ -6693,7 +6727,7 @@ FURNITURE_WATER_NAME1 neuter "zaczarowane źródło"
 
 FURNITURE_WATER_NAME2 neuter "płytka woda"
     "płytkiej wody" : genitive
-    "płytką wodą" : instrumental
+    "płytkiej wodzie" : locative
     "płytką wodę" : accusative
     "płytkie wody" : plural
     "płytkich wód" : plural,genitive
@@ -6702,7 +6736,7 @@ FURNITURE_WATER_NAME2 neuter "płytka woda"
 
 FURNITURE_WATER_NAME neuter "woda"
     "wody" : genitive
-    "wodą" : instrumental
+    "wodzie" : locative
     "wodę" : accusative
     "wody" : plural
     "wód" : plural,genitive
@@ -7977,14 +8011,10 @@ PROMOTIONS "wojownik wręcz"
 
 RESOURCE_INFO_ADA_NAME "adamantium"
 RESOURCE_INFO_ADOXIUM_NAME "adoksium"
-RESOURCE_INFO_CORPSE_NAME neuter "zwłoki"
+RESOURCE_INFO_CORPSE_NAME plural "zwłoki"
     "zwłok" : genitive
     "zwłokami" : instrumental
     "zwłoki" : accusative
-    "zwłoki" : plural
-    "zwłok" : plural,genitive
-    "zwłokami" : plural,instrumental
-    "zwłoki" : plural,accusative
 
 RESOURCE_INFO_DEMON_PIETY_NAME "rytuały"
 RESOURCE_INFO_INFERNITE_NAME "infernit"
@@ -8274,22 +8304,22 @@ WORKSHOPS_MENU_ID1 masculine "róg"
 
 WORKSHOPS_MENU_TYPE10 "Trwale przemienia Strażnika w losową istotę."
 WORKSHOPS_MENU_TYPE11 "więcej ognia"
-WORKSHOPS_MENU_TYPE12 "mniejsza premia do obrażeń"
-WORKSHOPS_MENU_TYPE13 "mniejsza premia do obrony"
-WORKSHOPS_MENU_TYPE14 "mniejsza premia do obrażeń dystansowych"
-WORKSHOPS_MENU_TYPE15 "mniejsza premia do obrażeń magicznych"
-WORKSHOPS_MENU_TYPE16 "Ograniczone życie, zwiększone obrażenia"
+WORKSHOPS_MENU_TYPE12 "małej premii do obrażeń"
+WORKSHOPS_MENU_TYPE13 "małej premii do obrony"
+WORKSHOPS_MENU_TYPE14 "małej premii do obrażeń dystansowych"
+WORKSHOPS_MENU_TYPE15 "małej premii do obrażeń magicznych"
+WORKSHOPS_MENU_TYPE16 "ograniczonego życia"
 WORKSHOPS_MENU_TYPE17 "Życie ograniczone do 2000 tur, +10 do obrażeń."
-WORKSHOPS_MENU_TYPE18 "Ograniczone życie, zwiększona obrona"
+WORKSHOPS_MENU_TYPE18 "ograniczonego życia, obrony"
 WORKSHOPS_MENU_TYPE19 "Życie ograniczone do 2000 tur, +10 do obrony."
-WORKSHOPS_MENU_TYPE20 "Ograniczone życie, zwiększone obrażenia dystansowe"
+WORKSHOPS_MENU_TYPE20 "ograniczonego życia, obrażeń dystansowych"
 WORKSHOPS_MENU_TYPE21 "Życie ograniczone do 2000 tur, +10 do obrażeń dystansowych."
-WORKSHOPS_MENU_TYPE22 "Ograniczone życie, zwiększona moc zaklęć"
-WORKSHOPS_MENU_TYPE23 "Życie ograniczone do 2000 tur, +10 do obrażeń magicznych."
-WORKSHOPS_MENU_TYPE24 "większa premia do obrażeń"
-WORKSHOPS_MENU_TYPE25 "większa premia do obrony"
-WORKSHOPS_MENU_TYPE26 "większa premia do obrażeń dystansowych"
-WORKSHOPS_MENU_TYPE27 "większa premia do obrażeń magicznych"
+WORKSHOPS_MENU_TYPE22 "ograniczonego życia, magii"
+WORKSHOPS_MENU_TYPE23 "Życie ograniczone do 2000 tur, +10 do magii."
+WORKSHOPS_MENU_TYPE24 "dużej premii do obrażeń"
+WORKSHOPS_MENU_TYPE25 "dużej premii do obrony"
+WORKSHOPS_MENU_TYPE26 "dużej premii do obrażeń dystansowych"
+WORKSHOPS_MENU_TYPE27 "dużej premii do obrażeń magicznych"
 WORKSHOPS_MENU_TYPE5 "jadowite kły"
     "jadowitych kłów" : genitive
 WORKSHOPS_MENU_TYPE6 "Sprawia, że ofierze wyrasta para jadowitych kłów"
@@ -9430,6 +9460,12 @@ ADD_TOP_UPGRADES "Dodaj {1} pierwsze"
 USED_SLOTS "Zużyte sloty: {1}/{2}"
 MATERIALIZATION_LABEL "Materializacja:"
 HEALTH_LABEL "Zdrowie:"
+SPECIAL_ATTR_BOOST_NAME "premia do {1:genitive} {2}"
+    "premii do {1:genitive} {2}" : genitive
+SPECIAL_ATTR_LOSS_NAME "ubytek do {1:genitive} {2}"
+    "ubytku do {1:genitive} {2}" : genitive
+SPECIAL_ATTR_BOOST_DESCRIPTION "Zwiększa {1:accusative} o {2} {3}"
+SPECIAL_ATTR_LOSS_DESCRIPTION "Zmniejsza {1:accusative} o {2} {3}"
 NEW_LINE "{1}
 {2}"
 TEXT128 "Nie znaleziono strony. Skontaktuj się z autorem moda."
