@@ -9,7 +9,9 @@ class FilePath;
 
 class Translations {
   public:
-  void loadFromDir(DirectoryPath);
+  Translations(DirectoryPath vanillaTranslations, DirectoryPath modsDir);
+  void loadFromDir();
+  void setCurrentMods(vector<string>);
   string get(const string& language, const TString&, vector<string> form = {}) const;
   string get(const string& language, const TSentence&, vector<string> form = {}) const;
   vector<string> getLanguages() const;
@@ -27,4 +29,7 @@ class Translations {
   };
   using Dictionary = HashMap<TStringId, TranslationInfo>;
   HashMap<string, Dictionary> strings;
+  DirectoryPath vanillaDir;
+  DirectoryPath modsDir;
+  vector<DirectoryPath> currentDirs;
 };

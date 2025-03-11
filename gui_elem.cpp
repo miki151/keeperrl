@@ -3327,7 +3327,7 @@ string GuiFactory::translate(const TSentence& s) {
 }
 
 void GuiFactory::reloadTranslations() {
-  translations->loadFromDir(freeDataPath.subdirectory("game_config").subdirectory("translations"));
+  translations->loadFromDir();
 }
 
 void GuiFactory::propagateScrollEvent(const vector<SGuiElem>& guiElems) {

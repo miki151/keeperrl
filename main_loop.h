@@ -34,12 +34,13 @@ struct RetiredModelInfo;
 class Unlocks;
 class SteamAchievements;
 class TString;
+class Translations;
 
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& paidDataPath, const DirectoryPath& dataFreePath,
       const DirectoryPath& userPath, const DirectoryPath& modsDir, Options*, Jukebox*, SokobanInput*, TileSet*, Unlocks*,
-      SteamAchievements*, int saveVersion, string modVersion);
+      SteamAchievements*, Translations*, int saveVersion, string modVersion);
 
   void start(bool tilesPresent);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
@@ -132,4 +133,5 @@ class MainLoop {
   bool useSingleThread();
   Unlocks* unlocks;
   SteamAchievements* steamAchievements = nullptr;
+  Translations* translations;
 };

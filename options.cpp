@@ -253,6 +253,16 @@ optional<Range> Options::getLimits(OptionId id) {
 
 void Options::setValue(OptionId id, Value value) {
   readValues();
+  if (hasChoices(id) && value.contains<string>()) {
+    bool found = false;
+    for (int i : All(choices[id]))
+      if (value == choices[id][i]) {
+        value = i;
+        found = true;
+        break;
+      }
+    CHECK(found) << "Option value not found: " << value;
+  }
   (*values)[id] = value;
   if (triggers.count(id))
     triggers.at(id)(*value.getValueMaybe<int>());
@@ -406,7 +416,16 @@ optional<Options::Value> Options::readValue(OptionId id, const vector<string>& i
 }
 
 void Options::setChoices(OptionId id, const vector<string>& v) {
+  if (!hasChoices(id)) {
+    choices[id] = v;
+    return;
+  }
+  auto currentChoice = getValueString(id);
   choices[id] = v;
+  if (!v.contains(currentChoice))
+    setValue(id, 0);
+  else
+    setValue(id, currentChoice);
 }
 
 bool Options::hasChoices(OptionId id) const {

@@ -62,14 +62,16 @@
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
 #include "steam_client.h"
+#include "translations.h"
 #endif
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& paidDataPath,
     const DirectoryPath& freePath, const DirectoryPath& uPath, const DirectoryPath& modsDir, Options* o, Jukebox* j,
-    SokobanInput* soko, TileSet* tileSet, Unlocks* unlocks, SteamAchievements* achievements, int sv, string modVersion)
+    SokobanInput* soko, TileSet* tileSet, Unlocks* unlocks, SteamAchievements* achievements, Translations* translations,
+    int sv, string modVersion)
       : view(v), paidDataPath(paidDataPath), dataFreePath(freePath), userPath(uPath), modsDir(modsDir), options(o),
         jukebox(j), highscores(h), fileSharing(fSharing), sokobanInput(soko), tileSet(tileSet), saveVersion(sv),
-        modVersion(modVersion), unlocks(unlocks), steamAchievements(achievements) {
+        modVersion(modVersion), unlocks(unlocks), steamAchievements(achievements), translations(translations) {
   CHECK(!!unlocks);
 }
 
@@ -725,12 +727,19 @@ void MainLoop::showMods() {
         if (action == "Activate")
           return {[this, &clicked, name = mod.name] {
             options->addVectorStringValue(OptionId::CURRENT_MOD2, name);
+            translations->setCurrentMods(options->getVectorStringValue(OptionId::CURRENT_MOD2));
+            options->setChoices(OptionId::LANGUAGE, translations->getLanguages());
             clicked = true;
             return true;
           }};
         else if (action == "Deactivate")
           return {[this, &clicked, name = mod.name] {
             options->removeVectorStringValue(OptionId::CURRENT_MOD2, name);
+            translations->setCurrentMods(options->getVectorStringValue(OptionId::CURRENT_MOD2));
+            auto currentLang = options->getStringValue(OptionId::LANGUAGE);
+            if (!translations->getLanguages().contains(currentLang))
+              options->setValue(OptionId::LANGUAGE, "English"_s);
+            options->setChoices(OptionId::LANGUAGE, translations->getLanguages());
             clicked = true;
             return true;
           }};

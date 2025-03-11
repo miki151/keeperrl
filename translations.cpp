@@ -157,20 +157,36 @@ string Translations::get(const string& language, const TSentence& s, vector<stri
 optional<string> Translations::addLanguage(string name, FilePath path) {
   Dictionary dict;
   auto res = PrettyPrinting::parseObject(dict, {*path.readContents()}, {string(path.getPath())});
-  if (!res)
-    strings.insert(make_pair(capitalFirst(std::move(name)), std::move(dict)));
+  if (!res) {
+    if (!strings.count(name))
+      strings.insert(make_pair(std::move(name), std::move(dict)));
+    else
+      for (auto& elem : dict)
+        strings[name][elem.first] = std::move(elem.second);
+  }
   return res;
 }
 
-void Translations::loadFromDir(DirectoryPath dir) {
-  strings.clear();
-  for (auto file : dir.getFiles())
-    if (file.hasSuffix(".txt")) {
-      auto error = addLanguage(file.changeSuffix(".txt", "").getFileName(), file);
-      if (error)
-        USER_FATAL << *error;
-    }
+void Translations::setCurrentMods(vector<string> mods) {
+  currentDirs = {vanillaDir};
+  currentDirs.append(mods.transform(
+      [&](const string& name) { return modsDir.subdirectory(name).subdirectory("translations"); }));
+  loadFromDir();
 }
+
+void Translations::loadFromDir() {
+  strings.clear();
+  for (auto dir : currentDirs)
+    for (auto file : dir.getFiles())
+      if (file.hasSuffix(".txt")) {
+        auto error = addLanguage(capitalFirst(file.changeSuffix(".txt", "").getFileName()), file);
+        if (error)
+          USER_INFO << *error;
+      }
+}
+
+Translations::Translations(DirectoryPath vanilla, DirectoryPath mods)
+    : vanillaDir(std::move(vanilla)), modsDir(std::move(mods)) {}
 
 vector<string> Translations::getLanguages() const {
   return getKeys(strings);

@@ -360,14 +360,14 @@ static int keeperMain(po::parser& commandLineFlags) {
   auto allUnlocked = Unlocks::allUnlocked();
   if (commandLineFlags["gen_z_levels"].was_set()) {
     MainLoop loop(nullptr, nullptr, nullptr, paidDataPath, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr,
-        &allUnlocked, nullptr, 0, "");
+        &allUnlocked, nullptr, nullptr, 0, "");
     loop.genZLevels(commandLineFlags["gen_z_levels"].get().string);
     exit(0);
   }
   if (commandLineFlags["layout_name"].was_set()) {
     USER_CHECK(commandLineFlags["layout_size"].was_set()) << "Need to specify layout_size option";
     MainLoop loop(nullptr, nullptr, nullptr, paidDataPath, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr,
-        &allUnlocked, nullptr, 0, "");
+        &allUnlocked, nullptr, nullptr, 0, "");
     generateMapLayout(loop,
         commandLineFlags["layout_name"].get().string,
         freeDataPath.file("glyphs.txt"),
@@ -385,7 +385,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     ofstream output("worldgen_out.txt");
     UserInfoLog.addOutput(DebugOutput::toStream(output));
     MainLoop loop(nullptr, &highscores, &fileSharing, paidDataPath, freeDataPath, userPath, modsDir, &options, nullptr,
-        &sokobanInput, nullptr, &allUnlocked, nullptr, 0, "");
+        &sokobanInput, nullptr, &allUnlocked, nullptr, nullptr, 0, "");
     vector<string> types;
     if (commandLineFlags["worldgen_maps"].was_set())
       types = split(commandLineFlags["worldgen_maps"].get().string, {','});
@@ -394,7 +394,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   auto battleTest = [&] (View* view, TileSet* tileSet) {
     MainLoop loop(view, &highscores, &fileSharing, paidDataPath, freeDataPath, userPath, modsDir, &options, nullptr,
-        &sokobanInput, tileSet,  &allUnlocked, nullptr, 0, "");
+        &sokobanInput, tileSet,  &allUnlocked, nullptr, nullptr, 0, "");
     auto level = commandLineFlags["battle_level"].get().string;
     auto numRounds = commandLineFlags["battle_rounds"].was_set() ? commandLineFlags["battle_rounds"].get().i32 : 1;
     try {
@@ -452,8 +452,8 @@ static int keeperMain(po::parser& commandLineFlags) {
   });
   showLogoSplash(renderer, freeDataPath.file("images/succubi.png"), splashDone);
   loadThread.join();
-  Translations translations;
-  translations.loadFromDir(freeDataPath.subdirectory("game_config").subdirectory("translations"));
+  Translations translations(freeDataPath.subdirectory("game_config").subdirectory("translations"), modsDir);
+  translations.setCurrentMods(options.getVectorStringValue(OptionId::CURRENT_MOD2));
   options.setChoices(OptionId::LANGUAGE, translations.getLanguages());
   GuiFactory guiFactory(renderer, &clock, &options, &translations, soundLibrary, freeDataPath);
   TileSet tileSet(paidDataPath.subdirectory("images"), modsDir, freeDataPath.subdirectory("ui"));
@@ -495,7 +495,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   options.addTrigger(OptionId::MUSIC, [&jukebox](int volume) { jukebox.setCurrentVolume(volume); });
   Unlocks unlocks(&options, userPath.file("unlocks.txt"));
   MainLoop loop(view.get(), &highscores, &fileSharing, paidDataPath, freeDataPath, userPath, modsDir, &options, &jukebox,
-      &sokobanInput, &tileSet, &unlocks, steamAchievements.get(), saveVersion, modVersion);
+      &sokobanInput, &tileSet, &unlocks, steamAchievements.get(), &translations, saveVersion, modVersion);
   try {
     if (audioError)
       USER_INFO << "Failed to initialize audio. The game will be started without sound. " << *audioError;
