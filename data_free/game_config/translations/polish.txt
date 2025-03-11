@@ -335,7 +335,7 @@ CAN_SEE_THRU_TREES "{1} widzi przez drzewa."
 CANT_MOVE_ANYMORE "{1} nie może już się poruszać."
 CASTS_SPELL "{1} rzuca czar"
 CHANCE_EFFECT_DESCRIPTION "{1} (szansa {2}%)"
-CHANCE_OF_PRISONER_ESCAPE "Szansa na ucieczkę więźnia: "
+CHANCE_OF_PRISONER_ESCAPE "Szansa na ucieczkę więźniów: "
 GRANT_ABILITY_EFFECT_DESCRIPTION "Przyznaje zdolność"
 GRANT_ABILITY_EFFECT_NAME "zdolność"
     "zdolności" : genitive
@@ -1925,7 +1925,7 @@ WHIPS "{1} chłosta {2:accusative}."
 YOU_ARE_TOO_SMALL_TO_PUSH "Jesteś za mały, by popchnąć {1:accusative}!"
 YOU_NEED_TO_HANDS_TO_WIELD "Potrzebujesz dwóch rąk, aby władać {1:instrumental}!"
 CREATURE_GROUP "{1} {2} {3}"
-AGAINST "przeciw {1:plural,dative}"
+AGAINST clear_tags "przeciw {1:plural,dative}"
 CREATURES_WITH_AT_LEAST_X_KILLS "istoty z co najmniej {1} zabójstwami"
 CREATURES_WITH_ATTR_AT_LEAST "istoty z co najmniej {1} {2}"
 CREATURES_WITH_MAX_TRAINING_LEVEL_BELOW "istoty z maksymalnym poziomem szkolenia poniżej {1}"
@@ -1945,7 +1945,7 @@ EXTRA_BODY_PART_EFFECT_NAME_HELPER "dodatkowego"
     "dodatkowej" : feminine
 EXTRA_BODY_PART_EFFECT_NAME "{EXTRA_BODY_PART_EFFECT_NAME_HELPER:1} {1:genitive}"
 EXTRA_BODY_PARTS_EFFECT_DESCRIPTION "Dodaje {1:accusative,plural}"
-EXTRA_BODY_PARTS_EFFECT_NAME "dodatkowych {1:plural,genitive}"
+EXTRA_BODY_PARTS_EFFECT_NAME "{1:plural,genitive}"
 FIXED_DAMAGE_EFFECT_DESCRIPTION "Zadaje {2} {1}"
 FIXED_DAMAGE_EFFECT_NAME "{2} {1}"
 INJURE_BODY_PART_EFFECT_DESCRIPTION "Rani {1:accusative}"
@@ -2391,6 +2391,7 @@ ATTR_INFO_DEFENSE_ADJECTIVE "chroniony"
 ATTR_INFO_DEFENSE_HELP "Wpływa na to, czy i jak bardzo postać zostanie zraniona w walce."
 ATTR_INFO_DEFENSE_NAME feminine "obrona"
     "obrony" : genitive
+    "obronę" : accusative
 ATTR_INFO_DIGGING_ADJECTIVE "ryjący"
 ATTR_INFO_DIGGING_HELP "Pozwala kopać w ziemi."
 ATTR_INFO_DIGGING_NAME neuter "kopanie"
@@ -2425,10 +2426,12 @@ ATTR_INFO_MORGUE_ADJECTIVE "zgniły"
 ATTR_INFO_MORGUE_HELP "Określa umiejętności pracy przy stole w kostnicy."
 ATTR_INFO_MORGUE_NAME feminine "kostnica"
     "kostnicy" : genitive
+    "kostnicę" : accusative
 ATTR_INFO_MULTI_WEAPON_ADJECTIVE "oburęczny"
 ATTR_INFO_MULTI_WEAPON_HELP "Pozwala używać wielu broni w jednym ataku. Wartość atrybutu definiuje mnożnik obrażeń dla kolejnych ciosów."
 ATTR_INFO_MULTI_WEAPON_NAME feminine "walka wieloma brońmi"
     "walki wieloma brońmi" : genitive
+    "walkę wieloma brońmi" : accusative
 ATTR_INFO_PARRY_ADJECTIVE "unikowy"
 ATTR_INFO_PARRY_HELP "Zapobiega karze do obrony przy otoczeniu przez wrogów."
 ATTR_INFO_PARRY_NAME neuter "parowanie"
@@ -2441,6 +2444,7 @@ ATTR_INFO_SPELL_DAMAGE_ADJECTIVE "potężny"
 ATTR_INFO_SPELL_DAMAGE_HELP "Podstawowa wartość obrażeń przy atakach magicznych."
 ATTR_INFO_SPELL_DAMAGE_NAME feminine "magia"
   "magii" : genitive
+  "magię" : accusative
 ATTR_INFO_SPELL_SPEED_ADJECTIVE "szybkoręki"
 ATTR_INFO_SPELL_SPEED_HELP "Wpływa na czas odnowienia czarów."
 ATTR_INFO_SPELL_SPEED_NAME feminine "szybkość czarowania"
@@ -4514,22 +4518,22 @@ CREATURE_ATTRIBUTES_SHOPKEEPER_NAME masculine "sklepikarz"
     "sklepikarzami" : plural,instrumental
     "sklepikarzy" : plural,accusative
 
-CREATURE_ATTRIBUTES_SKELETON_ARCHER_NAME masculine "szkielet łucznik"
+CREATURE_ATTRIBUTES_SKELETON_ARCHER_NAME masculine "szkielet łucznika"
     "szkieletu łucznika" : genitive
-    "szkieletem łucznikiem" : instrumental
+    "szkieletem łucznika" : instrumental
     "szkielet łucznika" : accusative
-    "szkielety łucznicy" : plural
+    "szkielety łuczników" : plural
     "szkieletów łuczników" : plural,genitive
-    "szkieletami łucznikami" : plural,instrumental
+    "szkieletami łuczników" : plural,instrumental
     "szkieletów łuczników" : plural,accusative
 
-CREATURE_ATTRIBUTES_SKELETON_WARRIOR_NAME masculine "szkielet wojownik"
+CREATURE_ATTRIBUTES_SKELETON_WARRIOR_NAME masculine "szkielet wojownika"
     "szkieletu wojownika" : genitive
-    "szkieletem wojownikiem" : instrumental
+    "szkieletem wojownika" : instrumental
     "szkielet wojownika" : accusative
-    "szkielety wojownicy" : plural
+    "szkielety wojowników" : plural
     "szkieletów wojowników" : plural,genitive
-    "szkieletami wojownikami" : plural,instrumental
+    "szkieletami wojowników" : plural,instrumental
     "szkieletów wojowników" : plural,accusative
 
 CREATURE_ATTRIBUTES_SKELETON_WOLF_GROUPNAME neuter "stado"
@@ -4550,13 +4554,13 @@ CLAWS_ATTACK neuter "pazury"
     "pazurami" : plural,instrumental
     "pazury" : plural,accusative
 
-CREATURE_ATTRIBUTES_SKELETON_WOLF_NAME masculine "szkielet wilk"
+CREATURE_ATTRIBUTES_SKELETON_WOLF_NAME masculine "szkielet wilka"
     "szkieletu wilka" : genitive
-    "szkieletem wilkiem" : instrumental
+    "szkieletem wilka" : instrumental
     "szkielet wilka" : accusative
-    "szkielety wilki" : plural
+    "szkielety wilków" : plural
     "szkieletów wilków" : plural,genitive
-    "szkieletami wilkami" : plural,instrumental
+    "szkieletami wilków" : plural,instrumental
     "szkieletów wilków" : plural,accusative
 
 CREATURE_ATTRIBUTES_SLASHER_NAME masculine "rozpruwacz"
@@ -6933,14 +6937,14 @@ ITEMS_ADAHELM_NAME1 masculine "hełm z adoxium"
     "hełmami z adoxium" : plural,instrumental
     "hełmy z adoxium" : plural,accusative
 ITEMS_ADAHELM_SHORTNAME "hełm"
-ITEMS_ADAORE_NAME feminine "ruda adamantynowa"
-    "rudy adamantynowej" : genitive
-    "rudą adamantynową" : instrumental
-    "rudę adamantynową" : accusative
-    "rudy adamantynowe" : plural
-    "rud adamantynowych" : plural,genitive
-    "rudami adamantynowymi" : plural,instrumental
-    "rudy adamantynowe" : plural,accusative
+ITEMS_ADAORE_NAME feminine "ruda adamantium"
+    "rudy adamantium" : genitive
+    "rudą adamantium" : instrumental
+    "rudę adamantium" : accusative
+    "rudy adamantium" : plural
+    "rud adamantium" : plural,genitive
+    "rudami adamantium" : plural,instrumental
+    "rudy adamantium" : plural,accusative
 ITEMS_ADASHIELD_NAME feminine "tarcza adamantynowa"
     "tarczy adamantynowej" : genitive
     "tarczą adamantynową" : instrumental
@@ -8670,9 +8674,9 @@ TEXT99 "Sonata"
 WORKSHOPS_MENU_TYPE28 "Uwalnia chmurę mgły"
 WORKSHOPS_MENU_TYPE29 "Uwalnia chmurę trującego gazu"
 
-EQUIPMENT_GROUP_ADAMANTINE_EQUIPMENT "ekwipunek z adamantynu"
+EQUIPMENT_GROUP_ADAMANTINE_EQUIPMENT "ekwipunek z adamantium"
 EQUIPMENT_GROUP_ADOXIUM_EQUIPMENT "ekwipunek z adoxium"
-EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT "artefaktyczny ekwipunek"
+EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT "artefakty"
 EQUIPMENT_GROUP_BASIC_EQUIPMENT "podstawowy ekwipunek"
 EQUIPMENT_GROUP_CONSUMABLES "przedmioty do spożycia"
 EQUIPMENT_GROUP_INFERNITE_EQUIPMENT "ekwipunek z infernitu"
@@ -9255,7 +9259,7 @@ PRAYERS_SPELL_SCHOOL_NAME "modlitwy"
 
 TO_BE_SMELTED "Do przetopienia:"
 IN_PRODUCTION "W produkcji:"
-CONQUER_SOME_VILLAINS "Pokonaj kilku wrogów, aby się rozwijać."
+CONQUER_SOME_VILLAINS "Pokonaj więcej wrogów, aby się rozwijać."
 Z_LEVEL "Poziom {1}"
 GROUND_LEVEL "Powierzchnia"
 

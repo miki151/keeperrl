@@ -120,7 +120,7 @@ string Translations::get(const string& language, const TSentence& s, vector<stri
           string id = sentence.substr(i + 1, endArg - i);
           argument = TStringId(id.data());
         }
-        auto newForms = form;
+        auto newForms = elem->tags.contains("clear_tags") ? vector<string>() : form;
         int variableLength = 3;
         if (sentence[endArg + 1] == ':') {
           if (isdigit(sentence[endArg + 2])) {
