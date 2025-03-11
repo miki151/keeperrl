@@ -1393,7 +1393,7 @@ BUFF_INSANITY "obłęd"
     "obłędu" : genitive
 BUFF_INVISIBLE feminine "niewidzialność"
     "niewidzialności" : genitive
-BUFF_LIFE_SAVE neuter "uratowanie życia"
+BUFF_LIFE_SAVED neuter "uratowanie życia"
     "uratowania życia" : genitive
 BUFF_LIGHT_SOURCE neuter "źródło światła"
     "źródła światła" : genitive
@@ -9365,8 +9365,8 @@ SOUTH_EAST "południowy wschód"
     "południowym wschodzie" : instrumental
 SOUTH_WEST "południowy zachód"
     "południowym zachodzie" : instrumental
-Nie masz wystarczająco złota.
-YOU_DONT_HAVE_ENOUGH_GOLD_FOR_EVERYTHING "Nie masz wystarczająco złota, aby za wszystko zapłacić."
+YOU_DONT_HAVE_ENOUGH_GOLD "Masz za mało złota."
+YOU_DONT_HAVE_ENOUGH_GOLD_FOR_EVERYTHING "Masz za mało złota, aby za wszystko zapłacić."
 CANT_ATTACK_WHILE_PEACEFUL "Czujesz, że to byłoby sprzeczne z twoimi przekonaniami."
 EXCUSE_ME "Przepraszam!"
 BUT_WAIT "Ale zaczekaj!"
