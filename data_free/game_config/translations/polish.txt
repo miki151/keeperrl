@@ -2834,14 +2834,14 @@ CREATURE_ATTRIBUTES_ADOXIE_HEAD_CHATREACTIONHOSTILE "\"Jak śmiesz przeciwstawi�
 CREATURE_ATTRIBUTES_ADOXIE_HEAD_DEATHDESCRIPTION "pokonany. Niech nigdy więcej nie powstanie"
 
 CREATURE_ATTRIBUTES_ADOXIE_HEAD_NAME masculine "Zły Bóg Adoxie"
-    "Złemu Bogu Adoxiego" : dative
-    "Złego Boga Adoxiego" : genitive
-    "Złym Bogiem Adoxiego" : instrumental
-    "Złego Boga Adoxiego" : accusative
-    "Źli Bogowie Adoxiego" : plural
-    "Złych Bogów Adoxiego" : plural,genitive
-    "Złymi Bogami Adoxiego" : plural,instrumental
-    "Złych Bogów Adoxiego" : plural,accusative
+    "Złemu Bogu Adoxie" : dative
+    "Złego Boga Adoxie" : genitive
+    "Złym Bogiem Adoxie" : instrumental
+    "Złego Boga Adoxie" : accusative
+    "Źli Bogowie Adoxie" : plural
+    "Złych Bogów Adoxie" : plural,genitive
+    "Złymi Bogami Adoxie" : plural,instrumental
+    "Złych Bogów Adoxie" : plural,accusative
 
 CREATURE_ATTRIBUTES_ADOXIE_LEFT_HAND_NAME feminine "Prawa Ręka Adoxiego"
     "Prawej Ręce Adoxiego" : dative
@@ -3906,6 +3906,7 @@ CREATURE_ATTRIBUTES_GOBLIN_WARRIOR_NAME1 masculine "gobliński strażnik"
     "goblińskich strażników" : plural,accusative
 
 CREATURE_ATTRIBUTES_GOBLIN_WARRIOR_NAME2 masculine "troll"
+    "trollowi" : dative
     "trolla" : genitive
     "trollem" : instrumental
     "trolla" : accusative
@@ -3915,6 +3916,7 @@ CREATURE_ATTRIBUTES_GOBLIN_WARRIOR_NAME2 masculine "troll"
     "trolle" : plural,accusative
 
 CREATURE_ATTRIBUTES_GOBLIN_WARRIOR_NAME masculine "gobliński wojownik"
+    "goblińskiemu wojownikowi" : dative
     "goblińskiego wojownika" : genitive
     "goblińskim wojownikiem" : instrumental
     "goblińskiego wojownika" : accusative
@@ -3925,6 +3927,7 @@ CREATURE_ATTRIBUTES_GOBLIN_WARRIOR_NAME masculine "gobliński wojownik"
 
 CREATURE_ATTRIBUTES_GOBLIN_WIZARD_CHATREACTIONFRIENDLY "{1} opowiada o czarnej magii"
 CREATURE_ATTRIBUTES_GOBLIN_WIZARD_NAME masculine "gobliński czarodziej"
+    "goblińskiemu czarodziejowi" : dative
     "goblińskiego czarodzieja" : genitive
     "goblińskim czarodziejem" : instrumental
     "goblińskiego czarodzieja" : accusative
@@ -3935,6 +3938,7 @@ CREATURE_ATTRIBUTES_GOBLIN_WIZARD_NAME masculine "gobliński czarodziej"
 
 CREATURE_ATTRIBUTES_GOBLIN_WORKER_CHATREACTIONFRIENDLY "{1} opowiada o kopaniu"
 CREATURE_ATTRIBUTES_GOBLIN_WORKER_NAME masculine "gobliński robotnik"
+    "goblińskiemu robotnikowi" : dative
     "goblińskiego robotnika" : genitive
     "goblińskim robotnikiem" : instrumental
     "goblińskiego robotnika" : accusative
@@ -3944,6 +3948,7 @@ CREATURE_ATTRIBUTES_GOBLIN_WORKER_NAME masculine "gobliński robotnik"
     "goblińskich robotników" : plural,accusative
 
 CREATURE_ATTRIBUTES_GREEN_DRAGON_NAME masculine "zielony smok"
+    "zielonemu smokowi" : dative
     "zielonego smoka" : genitive
     "zielonym smokiem" : instrumental
     "zielonego smoka" : accusative
@@ -3965,6 +3970,7 @@ CREATURE_ATTRIBUTES_HALLOWEEN_KID_CHATREACTIONFRIENDLY "\"Cukierek albo psikus!\
 CREATURE_ATTRIBUTES_HALLOWEEN_KID_CHATREACTIONHOSTILE "\"Cukierek albo psikus!\""
 
 CREATURE_ATTRIBUTES_HARPY_NAME feminine "harpia"
+    "harpii" : dative
     "harpii" : genitive
     "harpią" : instrumental
     "harpię" : accusative
@@ -3974,6 +3980,7 @@ CREATURE_ATTRIBUTES_HARPY_NAME feminine "harpia"
     "harpie" : plural,accusative
 
 CREATURE_ATTRIBUTES_HELICOPTER_NAME neuter "helikopterum"
+    "helikopterum" : dative
     "helikopterum" : genitive
     "helikopterum" : instrumental
     "helikopterum" : accusative
@@ -3983,6 +3990,7 @@ CREATURE_ATTRIBUTES_HELICOPTER_NAME neuter "helikopterum"
     "helikoptery" : plural,accusative
 
 CREATURE_ATTRIBUTES_HORSE_NAME1 masculine "koń bojowy"
+    "bojowemu koniowi" : dative
     "konia bojowego" : genitive
     "koniem bojowym" : instrumental
     "konia bojowego" : accusative
@@ -3992,6 +4000,7 @@ CREATURE_ATTRIBUTES_HORSE_NAME1 masculine "koń bojowy"
     "konie bojowe" : plural,accusative
 
 CREATURE_ATTRIBUTES_HORSE_NAME2 masculine "wielbłąd"
+    "wielbłądowi" : dative
     "wielbłąda" : genitive
     "wielbłądem" : instrumental
     "wielbłąda" : accusative
@@ -4001,6 +4010,7 @@ CREATURE_ATTRIBUTES_HORSE_NAME2 masculine "wielbłąd"
     "wielbłądy" : plural,accusative
 
 CREATURE_ATTRIBUTES_HORSE_NAME masculine "koń"
+    "koniowi" : dative
     "konia" : genitive
     "koniem" : instrumental
     "konia" : accusative
@@ -4015,6 +4025,7 @@ CREATURE_ATTRIBUTES_HORSE_SECONDPERSON "masz większe doświadczenie"
 CREATURE_ATTRIBUTES_HORSE_THIRDPERSON "ma większe doświadczenie"
 
 CREATURE_ATTRIBUTES_HYDRA_NAME feminine "hydra"
+    "hydrze" : dative
     "hydry" : genitive
     "hydrą" : instrumental
     "hydrę" : accusative
@@ -4024,6 +4035,7 @@ CREATURE_ATTRIBUTES_HYDRA_NAME feminine "hydra"
     "hydry" : plural,accusative
 
 CREATURE_ATTRIBUTES_ICE_DEMON_NAME masculine "lodowy demon"
+    "lodowemu demonowi" : dative
     "lodowego demona" : genitive
     "lodowym demonem" : instrumental
     "lodowego demona" : accusative
@@ -4034,6 +4046,7 @@ CREATURE_ATTRIBUTES_ICE_DEMON_NAME masculine "lodowy demon"
 
 CREATURE_ATTRIBUTES_IMP_CHATREACTIONFRIENDLY "{1} opowiada o kopaniu"
 CREATURE_ATTRIBUTES_IMP_NAME masculine "chochlik"
+    "chochlikowi" : dative
     "chochlika" : genitive
     "chochlikiem" : instrumental
     "chochlika" : accusative
@@ -4043,6 +4056,7 @@ CREATURE_ATTRIBUTES_IMP_NAME masculine "chochlik"
     "chochliki" : plural,accusative
 
 CREATURE_ATTRIBUTES_IRON_GOLEM_NAME masculine "żelazny golem"
+    "żelaznemu golemowi" : dative
     "żelaznego golema" : genitive
     "żelaznym golemem" : instrumental
     "żelaznego golema" : accusative
@@ -4052,6 +4066,7 @@ CREATURE_ATTRIBUTES_IRON_GOLEM_NAME masculine "żelazny golem"
     "żelazne golemy" : plural,accusative
 
 CREATURE_ATTRIBUTES_JACKAL_NAME masculine "szakal"
+    "szakalowi" : dative
     "szakala" : genitive
     "szakalem" : instrumental
     "szakala" : accusative
@@ -4061,6 +4076,7 @@ CREATURE_ATTRIBUTES_JACKAL_NAME masculine "szakal"
     "szakale" : plural,accusative
 
 CREATURE_ATTRIBUTES_JESTER_NAME masculine "błazen"
+    "błaznowi" : dative
     "błazna" : genitive
     "błaznem" : instrumental
     "błazna" : accusative
@@ -4070,6 +4086,7 @@ CREATURE_ATTRIBUTES_JESTER_NAME masculine "błazen"
     "błaznów" : plural,accusative
 
 CREATURE_ATTRIBUTES_JUGGERNAUT_NAME masculine "kolos"
+    "kolosowi" : dative
     "kolosa" : genitive
     "kolosem" : instrumental
     "kolosa" : accusative
@@ -4079,6 +4096,7 @@ CREATURE_ATTRIBUTES_JUGGERNAUT_NAME masculine "kolos"
     "kolosy" : plural,accusative
 
 CREATURE_ATTRIBUTES_KANGAROO_NAME masculine "kangur"
+    "kangurowi" : dative
     "kangura" : genitive
     "kangurem" : instrumental
     "kangura" : accusative
@@ -4088,6 +4106,7 @@ CREATURE_ATTRIBUTES_KANGAROO_NAME masculine "kangur"
     "kangury" : plural,accusative
 
 CREATURE_ATTRIBUTES_KEEPER_BISHOP_NAME1 feminine "matka przełożona"
+    "matce przełożonej" : dative
     "matki przełożonej" : genitive
     "matką przełożoną" : instrumental
     "matkę przełożoną" : accusative
@@ -4097,6 +4116,7 @@ CREATURE_ATTRIBUTES_KEEPER_BISHOP_NAME1 feminine "matka przełożona"
     "matki przełożone" : plural,accusative
 
 CREATURE_ATTRIBUTES_KEEPER_BISHOP_NAME masculine "biskup"
+    "biskupowi" : dative
     "biskupa" : genitive
     "biskupem" : instrumental
     "biskupa" : accusative
@@ -4106,6 +4126,7 @@ CREATURE_ATTRIBUTES_KEEPER_BISHOP_NAME masculine "biskup"
     "biskupów" : plural,accusative
 
 CREATURE_ATTRIBUTES_KEEPER_KNIGHT_NAME masculine "rycerz"
+    "rycerzowi" : dative
     "rycerza" : genitive
     "rycerzem" : instrumental
     "rycerza" : accusative
@@ -4115,6 +4136,7 @@ CREATURE_ATTRIBUTES_KEEPER_KNIGHT_NAME masculine "rycerz"
     "rycerzy" : plural,accusative
 
 CREATURE_ATTRIBUTES_KEEPER_KNIGHT_F_NAME feminine "rycerka"
+    "rycerce" : dative
     "rycerki" : genitive
     "rycerką" : instrumental
     "rycerkę" : accusative
@@ -4124,6 +4146,7 @@ CREATURE_ATTRIBUTES_KEEPER_KNIGHT_F_NAME feminine "rycerka"
     "rycerki" : plural,accusative
 
 CREATURE_ATTRIBUTES_KEEPER_MAGE_NAME1 masculine "nekromanta"
+    "nekromancie" : dative
     "nekromanty" : genitive
     "nekromantą" : instrumental
     "nekromantę" : accusative
@@ -4133,6 +4156,7 @@ CREATURE_ATTRIBUTES_KEEPER_MAGE_NAME1 masculine "nekromanta"
     "nekromantów" : plural,accusative
 
 CREATURE_ATTRIBUTES_KEEPER_MAGE_F_NAME1 feminine "nekromantka"
+    "nekromantce" : dative
     "nekromantki" : genitive
     "nekromantką" : instrumental
     "nekromantkę" : accusative
@@ -4142,6 +4166,7 @@ CREATURE_ATTRIBUTES_KEEPER_MAGE_F_NAME1 feminine "nekromantka"
     "nekromantki" : plural,accusative
 
 CREATURE_ATTRIBUTES_KEEPER_MAGE_NAME masculine "czarodziej"
+    "czarodziejowi" : dative
     "czarodzieja" : genitive
     "czarodziejem" : instrumental
     "czarodzieja" : accusative
@@ -4151,6 +4176,7 @@ CREATURE_ATTRIBUTES_KEEPER_MAGE_NAME masculine "czarodziej"
     "czarodziejów" : plural,accusative
 
 CREATURE_ATTRIBUTES_KEEPER_MAGE_F_NAME feminine "czarodziejka"
+    "czarodziejce" : dative
     "czarodziejki" : genitive
     "czarodziejką" : instrumental
     "czarodziejkę" : accusative
@@ -4160,6 +4186,7 @@ CREATURE_ATTRIBUTES_KEEPER_MAGE_F_NAME feminine "czarodziejka"
     "czarodziejki" : plural,accusative
 
 CREATURE_ATTRIBUTES_KIRIN_NAME masculine "ki-rin"
+    "ki-rinowi" : dative
     "ki-rina" : genitive
     "ki-rinem" : instrumental
     "ki-rina" : accusative
@@ -4171,6 +4198,7 @@ CREATURE_ATTRIBUTES_KIRIN_NAME masculine "ki-rin"
 CREATURE_ATTRIBUTES_KNIGHT_CHATREACTIONFRIENDLY1 "\"Ukradniesz kamyk, a zetnę ci głowę!\""
 
 CREATURE_ATTRIBUTES_KNIGHT_NAME1 masculine "rycerz teutoński"
+    "rycerzowi teutońskiemu" : dative
     "rycerza teutońskiego" : genitive
     "rycerzem teutońskim" : instrumental
     "rycerza teutońskiego" : accusative
@@ -4180,6 +4208,7 @@ CREATURE_ATTRIBUTES_KNIGHT_NAME1 masculine "rycerz teutoński"
     "rycerzy teutońskich" : plural,accusative
 
 CREATURE_ATTRIBUTES_KNIGHT_NAME2 masculine "templariusz"
+    "templariuszowi" : dative
     "templariusza" : genitive
     "templariuszem" : instrumental
     "templariusza" : accusative
@@ -4189,6 +4218,7 @@ CREATURE_ATTRIBUTES_KNIGHT_NAME2 masculine "templariusz"
     "templariuszy" : plural,accusative
 
 CREATURE_ATTRIBUTES_KNIGHT_NAME3 masculine "strażnik"
+    "strażnikowi" : dative
     "strażnika" : genitive
     "strażnikiem" : instrumental
     "strażnika" : accusative
@@ -4198,6 +4228,7 @@ CREATURE_ATTRIBUTES_KNIGHT_NAME3 masculine "strażnik"
     "strażników" : plural,accusative
 
 CREATURE_ATTRIBUTES_KNIGHT_NAME masculine "rycerz"
+    "rycerzowi" : dative
     "rycerza" : genitive
     "rycerzem" : instrumental
     "rycerza" : accusative
@@ -4207,6 +4238,7 @@ CREATURE_ATTRIBUTES_KNIGHT_NAME masculine "rycerz"
     "rycerzy" : plural,accusative
 
 CREATURE_ATTRIBUTES_KNIGHT_PLAYER_NAME masculine "rycerz"
+    "rycerzowi" : dative
     "rycerza" : genitive
     "rycerzem" : instrumental
     "rycerza" : accusative
@@ -4217,6 +4249,7 @@ CREATURE_ATTRIBUTES_KNIGHT_PLAYER_NAME masculine "rycerz"
 
 CREATURE_ATTRIBUTES_KOBOLD_CHATREACTIONFRIENDLY "{1} opowiada o kopaniu tuneli"
 CREATURE_ATTRIBUTES_KOBOLD_NAME masculine "kobold"
+    "koboldowi" : dative
     "kobolda" : genitive
     "koboldem" : instrumental
     "kobolda" : accusative
@@ -4226,6 +4259,7 @@ CREATURE_ATTRIBUTES_KOBOLD_NAME masculine "kobold"
     "koboldy" : plural,accusative
 
 CREATURE_ATTRIBUTES_LAVA_GOLEM_NAME masculine "golem z lawy"
+    "golemowi z lawy" : dative
     "golema z lawy" : genitive
     "golemem z lawy" : instrumental
     "golema z lawy" : accusative
@@ -4237,6 +4271,7 @@ CREATURE_ATTRIBUTES_LAVA_GOLEM_NAME masculine "golem z lawy"
 CREATURE_ATTRIBUTES_LIZARDMAN_CHATREACTIONFRIENDLY "{1} złorzeczy wszystkim ludziom"
 
 CREATURE_ATTRIBUTES_LIZARDMAN_NAME1 masculine "wódz jaszczuroludzi"
+    "wodzowi jaszczuroludzi" : dative
     "wodza jaszczuroludzi" : genitive
     "wodzem jaszczuroludzi" : instrumental
     "wodza jaszczuroludzi" : accusative
@@ -4246,6 +4281,7 @@ CREATURE_ATTRIBUTES_LIZARDMAN_NAME1 masculine "wódz jaszczuroludzi"
     "wodzów jaszczuroludzi" : plural,accusative
 
 CREATURE_ATTRIBUTES_LIZARDMAN_NAME masculine "jaszczurolud"
+    "jaszczuroludowi" : dative
     "jaszczuroluda" : genitive
     "jaszczuroludem" : instrumental
     "jaszczuroluda" : accusative
@@ -4266,6 +4302,7 @@ TOUCH_ATTACK neuter "dotyk"
     "dotyki" : plural,accusative
 
 CREATURE_ATTRIBUTES_LOST_SOUL_NAME masculine "duch"
+    "duchowi" : dative
     "ducha" : genitive
     "duchem" : instrumental
     "ducha" : accusative
@@ -4275,6 +4312,7 @@ CREATURE_ATTRIBUTES_LOST_SOUL_NAME masculine "duch"
     "duchy" : plural,accusative
 
 CREATURE_ATTRIBUTES_MINOTAUR_NAME masculine "minotaur"
+    "minotaurowi" : dative
     "minotaura" : genitive
     "minotaurem" : instrumental
     "minotaura" : accusative
@@ -4284,6 +4322,7 @@ CREATURE_ATTRIBUTES_MINOTAUR_NAME masculine "minotaur"
     "minotaury" : plural,accusative
 
 CREATURE_ATTRIBUTES_MUMMY_NAME feminine "mumia"
+    "mumii" : dative
     "mumii" : genitive
     "mumią" : instrumental
     "mumię" : accusative
@@ -4293,6 +4332,7 @@ CREATURE_ATTRIBUTES_MUMMY_NAME feminine "mumia"
     "mumie" : plural,accusative
 
 CREATURE_ATTRIBUTES_OGRE_NAME masculine "ogr"
+    "ogrowi" : dative
     "ogra" : genitive
     "ogrem" : instrumental
     "ogra" : accusative
@@ -4304,6 +4344,7 @@ CREATURE_ATTRIBUTES_OGRE_NAME masculine "ogr"
 CREATURE_ATTRIBUTES_ORC_CHATREACTIONFRIENDLY "{1} złorzeczy wszystkim elfom"
 CREATURE_ATTRIBUTES_ORC_MAGE_CHATREACTIONFRIENDLY "{1} złorzeczy wszystkim elfom"
 CREATURE_ATTRIBUTES_ORC_MAGE_NAME1 masculine "szaman orków"
+    "szamanowi orków" : dative
     "szamana orków" : genitive
     "szamanem orków" : instrumental
     "szamana orków" : accusative
@@ -4313,6 +4354,7 @@ CREATURE_ATTRIBUTES_ORC_MAGE_NAME1 masculine "szaman orków"
     "szamanów orków" : plural,accusative
 
 CREATURE_ATTRIBUTES_ORC_MAGE_NAME2 masculine "uzdrowiciel orków"
+    "uzdrowicielowi orków" : dative
     "uzdrowiciela orków" : genitive
     "uzdrowicielem orków" : instrumental
     "uzdrowiciela orków" : accusative
@@ -4322,6 +4364,7 @@ CREATURE_ATTRIBUTES_ORC_MAGE_NAME2 masculine "uzdrowiciel orków"
     "uzdrowicieli orków" : plural,accusative
 
 CREATURE_ATTRIBUTES_ORC_MAGE_NAME masculine "mag orków"
+    "magowi orków" : dative
     "maga orków" : genitive
     "magiem orków" : instrumental
     "maga orków" : accusative
@@ -4331,6 +4374,7 @@ CREATURE_ATTRIBUTES_ORC_MAGE_NAME masculine "mag orków"
     "magów orków" : plural,accusative
 
 CREATURE_ATTRIBUTES_ORC_NAME masculine "ork"
+    "orkowi" : dative
     "orka" : genitive
     "orkiem" : instrumental
     "orka" : accusative
@@ -4341,6 +4385,7 @@ CREATURE_ATTRIBUTES_ORC_NAME masculine "ork"
 
 CREATURE_ATTRIBUTES_PESEANT_CHATREACTIONHOSTILE "\"Ratunku!\""
 CREATURE_ATTRIBUTES_ACOLYTE_NAME masculine "akolita"
+    "akolicie" : dative
     "akolity" : genitive
     "akolitą" : instrumental
     "akolitę" : accusative
@@ -4350,6 +4395,7 @@ CREATURE_ATTRIBUTES_ACOLYTE_NAME masculine "akolita"
     "akolitów" : plural,accusative
 
 CREATURE_ATTRIBUTES_ACOLYTE_F_NAME feminine "akolitka"
+    "akolitce" : dative
     "akolitki" : genitive
     "akolitką" : instrumental
     "akolitkę" : accusative
@@ -4359,6 +4405,7 @@ CREATURE_ATTRIBUTES_ACOLYTE_F_NAME feminine "akolitka"
     "akolitki" : plural,accusative
 
 CREATURE_ATTRIBUTES_NOMAD_NAME masculine "nomada"
+    "nomadzie" : dative
     "nomady" : genitive
     "nomadą" : instrumental
     "nomadę" : accusative
@@ -4368,6 +4415,7 @@ CREATURE_ATTRIBUTES_NOMAD_NAME masculine "nomada"
     "nomadów" : plural,accusative
 
 CREATURE_ATTRIBUTES_NOMAD_F_NAME feminine "nomadka"
+    "nomadce" : dative
     "nomadek" : genitive
     "nomadką" : instrumental
     "nomadkę" : accusative
@@ -4377,6 +4425,7 @@ CREATURE_ATTRIBUTES_NOMAD_F_NAME feminine "nomadka"
     "nomadki" : plural,accusative
 
 CREATURE_ATTRIBUTES_ESKIMO_NAME masculine "eskimos"
+    "eskimosowi" : dative
     "eskimosa" : genitive
     "eskimosem" : instrumental
     "eskimosa" : accusative
@@ -4386,6 +4435,7 @@ CREATURE_ATTRIBUTES_ESKIMO_NAME masculine "eskimos"
     "eskimosów" : plural,accusative
 
 CREATURE_ATTRIBUTES_ESKIMO_F_NAME feminine "eskimoska"
+    "eskimosce" : dative
     "eskimoski" : genitive
     "eskimoską" : instrumental
     "eskimoskę" : accusative
@@ -4395,6 +4445,7 @@ CREATURE_ATTRIBUTES_ESKIMO_F_NAME feminine "eskimoska"
     "eskimoski" : plural,accusative
 
 CREATURE_ATTRIBUTES_NATIVE_NAME masculine "tubylec"
+    "tubylcowi" : dative
     "tubylca" : genitive
     "tubylcem" : instrumental
     "tubylca" : accusative
@@ -4404,6 +4455,7 @@ CREATURE_ATTRIBUTES_NATIVE_NAME masculine "tubylec"
     "tubylców" : plural,accusative
 
 CREATURE_ATTRIBUTES_NATIVE_F_NAME feminine "tubylczyni"
+    "tubylczyni" : dative
     "tubylczyni" : genitive
     "tubylczynią" : instrumental
     "tubylczynię" : accusative
@@ -4413,6 +4465,7 @@ CREATURE_ATTRIBUTES_NATIVE_F_NAME feminine "tubylczyni"
     "tubylczynie" : plural,accusative
 
 CREATURE_ATTRIBUTES_PESEANT_NAME masculine "chłop"
+    "chłopowi" : dative
     "chłopa" : genitive
     "chłopem" : instrumental
     "chłopa" : accusative
@@ -4421,6 +4474,7 @@ CREATURE_ATTRIBUTES_PESEANT_NAME masculine "chłop"
     "chłopami" : plural,instrumental
     "chłopów" : plural,accusative
 CREATURE_ATTRIBUTES_PESEANT_F_NAME feminine "chłopka"
+    "chłopce" : dative
     "chłopki" : genitive
     "chłopką" : instrumental
     "chłopkę" : accusative
@@ -4429,6 +4483,7 @@ CREATURE_ATTRIBUTES_PESEANT_F_NAME feminine "chłopka"
     "chłopkami" : plural,instrumental
     "chłopek" : plural,accusative
 CREATURE_ATTRIBUTES_PIG_NAME feminine "świnia"
+    "świni" : dative
     "świni" : genitive
     "świnią" : instrumental
     "świnię" : accusative
@@ -4438,6 +4493,7 @@ CREATURE_ATTRIBUTES_PIG_NAME feminine "świnia"
     "świnie" : plural,accusative
 
 CREATURE_ATTRIBUTES_PRIEST_NAME masculine "kapłan"
+    "kapłanowi" : dative
     "kapłana" : genitive
     "kapłanem" : instrumental
     "kapłana" : accusative
@@ -4447,6 +4503,7 @@ CREATURE_ATTRIBUTES_PRIEST_NAME masculine "kapłan"
     "kapłanów" : plural,accusative
 
 CREATURE_ATTRIBUTES_PRIEST_PLAYER_NAME1 masculine "kleryk"
+    "klerykowi" : dative
     "kleryka" : genitive
     "klerykiem" : instrumental
     "kleryka" : accusative
@@ -4456,6 +4513,7 @@ CREATURE_ATTRIBUTES_PRIEST_PLAYER_NAME1 masculine "kleryk"
     "kleryków" : plural,accusative
 
 CREATURE_ATTRIBUTES_PRIEST_PLAYER_NAME masculine "kapłan"
+    "kapłanowi" : dative
     "kapłana" : genitive
     "kapłanem" : instrumental
     "kapłana" : accusative
@@ -4467,6 +4525,7 @@ CREATURE_ATTRIBUTES_PRIEST_PLAYER_NAME masculine "kapłan"
 CREATURE_ATTRIBUTES_PROSTITUTE_CHATREACTIONHOSTILE "\"Ratunku!\""
 CREATURE_ATTRIBUTES_PROSTITUTE_COPULATIONCLIENTEFFECT "Sługa popełnił grzech śmiertelny."
 CREATURE_ATTRIBUTES_PROSTITUTE_NAME1 masculine "żigolak"
+    "żigolakowi" : dative
     "żigolaka" : genitive
     "żigolakiem" : instrumental
     "żigolaka" : accusative
@@ -4476,6 +4535,7 @@ CREATURE_ATTRIBUTES_PROSTITUTE_NAME1 masculine "żigolak"
     "żigolaków" : plural,accusative
 
 CREATURE_ATTRIBUTES_PROSTITUTE_NAME feminine "kurtyzana"
+    "kurtyzanie" : dative
     "kurtyzany" : genitive
     "kurtyzaną" : instrumental
     "kurtyzanę" : accusative
@@ -4487,6 +4547,7 @@ CREATURE_ATTRIBUTES_PROSTITUTE_NAME feminine "kurtyzana"
 CREATURE_ATTRIBUTES_RAT_KING_CHATREACTIONFRIENDLY "{1} opowiada o kanałach"
 CREATURE_ATTRIBUTES_RAT_KING_CHATREACTIONHOSTILE "{1} opowiada o kanałach"
 CREATURE_ATTRIBUTES_RAT_KING_NAME masculine "król szczurów"
+    "królowi szczurów" : dative
     "króla szczurów" : genitive
     "królem szczurów" : instrumental
     "króla szczurów" : accusative
@@ -4498,6 +4559,7 @@ CREATURE_ATTRIBUTES_RAT_KING_NAME masculine "król szczurów"
 CREATURE_ATTRIBUTES_RAT_LADY_CHATREACTIONFRIENDLY "{1} opowiada o kanałach"
 CREATURE_ATTRIBUTES_RAT_LADY_CHATREACTIONHOSTILE "{1} opowiada o kanałach"
 CREATURE_ATTRIBUTES_RAT_LADY_NAME feminine "szczurza kobieta"
+    "szczurzej kobiecie" : dative
     "szczurzej kobiety" : genitive
     "szczurzą kobietą" : instrumental
     "szczurzą kobietę" : accusative
@@ -4507,6 +4569,7 @@ CREATURE_ATTRIBUTES_RAT_LADY_NAME feminine "szczurza kobieta"
     "szczurze kobiety" : plural,accusative
 
 CREATURE_ATTRIBUTES_RAT_NAME1 masculine "czarny szczur"
+    "czarnemu szczurowi" : dative
     "czarnego szczura" : genitive
     "czarnym szczurem" : instrumental
     "czarnego szczura" : accusative
@@ -4516,6 +4579,7 @@ CREATURE_ATTRIBUTES_RAT_NAME1 masculine "czarny szczur"
     "czarne szczury" : plural,accusative
 
 CREATURE_ATTRIBUTES_RAT_NAME masculine "szczur"
+    "szczurowi" : dative
     "szczura" : genitive
     "szczurem" : instrumental
     "szczura" : accusative
@@ -4527,6 +4591,7 @@ CREATURE_ATTRIBUTES_RAT_NAME masculine "szczur"
 CREATURE_ATTRIBUTES_RAT_SOLDIER_CHATREACTIONFRIENDLY "{1} opowiada o kanałach"
 CREATURE_ATTRIBUTES_RAT_SOLDIER_CHATREACTIONHOSTILE "{1} opowiada o kanałach"
 CREATURE_ATTRIBUTES_RAT_SOLDIER_NAME masculine "szczurzy żołnierz"
+    "szczurzemu żołnierzowi" : dative
     "szczurzego żołnierza" : genitive
     "szczurzym żołnierzem" : instrumental
     "szczurzego żołnierza" : accusative
@@ -4545,6 +4610,7 @@ CREATURE_ATTRIBUTES_RAVEN_GROUPNAME masculine "stado"
     "stada" : plural,accusative
 
 CREATURE_ATTRIBUTES_RAVEN_NAME masculine "kruk"
+    "krukowi" : dative
     "kruka" : genitive
     "krukiem" : instrumental
     "kruka" : accusative
@@ -4554,6 +4620,7 @@ CREATURE_ATTRIBUTES_RAVEN_NAME masculine "kruk"
     "kruki" : plural,accusative
 
 CREATURE_ATTRIBUTES_RED_DRAGON_NAME masculine "czerwony smok"
+    "czerwonemu smokowi" : dative
     "czerwonego smoka" : genitive
     "czerwonym smokiem" : instrumental
     "czerwonego smoka" : accusative
@@ -4572,6 +4639,7 @@ CREATURE_ATTRIBUTES_RED_DRAGON_STACKNAME masculine "smok"
     "smoki" : plural,accusative
 
 CREATURE_ATTRIBUTES_RED_NAGA_NAME feminine "czerwona naga"
+    "czerwonej nadze" : dative
     "czerwonej nagi" : genitive
     "czerwoną nagą" : instrumental
     "czerwoną nagę" : accusative
@@ -4581,6 +4649,7 @@ CREATURE_ATTRIBUTES_RED_NAGA_NAME feminine "czerwona naga"
     "czerwone nagi" : plural,accusative
 
 CREATURE_ATTRIBUTES_SHAMAN_NAME masculine "szaman"
+    "szamanowi" : dative
     "szamana" : genitive
     "szamanem" : instrumental
     "szamana" : accusative
@@ -4590,6 +4659,7 @@ CREATURE_ATTRIBUTES_SHAMAN_NAME masculine "szaman"
     "szamanów" : plural,accusative
 
 CREATURE_ATTRIBUTES_SHAPESHIFTER_NAME masculine "zmiennokształtny"
+    "zmiennokształtnemu" : dative
     "zmiennokształtnego" : genitive
     "zmiennokształtnym" : instrumental
     "zmiennokształtnego" : accusative
@@ -4599,6 +4669,7 @@ CREATURE_ATTRIBUTES_SHAPESHIFTER_NAME masculine "zmiennokształtny"
     "zmiennokształtnych" : plural,accusative
 
 CREATURE_ATTRIBUTES_SHELOB_NAME masculine "olbrzymi pająk"
+    "olbrzymiemu pająkowi" : dative
     "olbrzymiego pająka" : genitive
     "olbrzymim pająkiem" : instrumental
     "olbrzymiego pająka" : accusative
@@ -4609,6 +4680,7 @@ CREATURE_ATTRIBUTES_SHELOB_NAME masculine "olbrzymi pająk"
 
 CREATURE_ATTRIBUTES_SHOPKEEPER_CHATREACTIONFRIENDLY "{1} narzeka na wysokie cło importowe"
 CREATURE_ATTRIBUTES_SHOPKEEPER_NAME masculine "sklepikarz"
+    "sklepikarzowi" : dative
     "sklepikarza" : genitive
     "sklepikarzem" : instrumental
     "sklepikarza" : accusative
@@ -4618,6 +4690,7 @@ CREATURE_ATTRIBUTES_SHOPKEEPER_NAME masculine "sklepikarz"
     "sklepikarzy" : plural,accusative
 
 CREATURE_ATTRIBUTES_SKELETON_ARCHER_NAME masculine "szkielet łucznika"
+    "szkieletowi łucznika" : dative
     "szkieletu łucznika" : genitive
     "szkieletem łucznika" : instrumental
     "szkielet łucznika" : accusative
@@ -4627,6 +4700,7 @@ CREATURE_ATTRIBUTES_SKELETON_ARCHER_NAME masculine "szkielet łucznika"
     "szkieletów łuczników" : plural,accusative
 
 CREATURE_ATTRIBUTES_SKELETON_WARRIOR_NAME masculine "szkielet wojownika"
+    "szkieletowi wojownika" : dative
     "szkieletu wojownika" : genitive
     "szkieletem wojownika" : instrumental
     "szkielet wojownika" : accusative
@@ -4654,6 +4728,7 @@ CLAWS_ATTACK neuter "pazury"
     "pazury" : plural,accusative
 
 CREATURE_ATTRIBUTES_SKELETON_WOLF_NAME masculine "szkielet wilka"
+    "szkieletowi wilka" : dative
     "szkieletu wilka" : genitive
     "szkieletem wilka" : instrumental
     "szkielet wilka" : accusative
@@ -4663,6 +4738,7 @@ CREATURE_ATTRIBUTES_SKELETON_WOLF_NAME masculine "szkielet wilka"
     "szkieletów wilków" : plural,accusative
 
 CREATURE_ATTRIBUTES_SLASHER_NAME masculine "rozpruwacz"
+    "rozpruwaczowi" : dative
     "rozpruwacza" : genitive
     "rozpruwaczem" : instrumental
     "rozpruwacza" : accusative
@@ -4672,6 +4748,7 @@ CREATURE_ATTRIBUTES_SLASHER_NAME masculine "rozpruwacz"
     "rozpruwaczy" : plural,accusative
 
 CREATURE_ATTRIBUTES_SNAKE_NAME masculine "wąż"
+    "wężowi" : dative
     "węża" : genitive
     "wężem" : instrumental
     "węża" : accusative
@@ -4681,6 +4758,7 @@ CREATURE_ATTRIBUTES_SNAKE_NAME masculine "wąż"
     "węże" : plural,accusative
 
 CREATURE_ATTRIBUTES_SOFT_MONSTER_NAME masculine "miękki potwór"
+    "miękkiemu potworowi" : dative
     "miękkiego potwora" : genitive
     "miękkim potworem" : instrumental
     "miękkiego potwora" : accusative
@@ -4690,6 +4768,7 @@ CREATURE_ATTRIBUTES_SOFT_MONSTER_NAME masculine "miękki potwór"
     "miękkich potworów" : plural,accusative
 
 CREATURE_ATTRIBUTES_SORCERER_NAME masculine "zaklinacz"
+    "zaklinaczowi" : dative
     "zaklinacza" : genitive
     "zaklinaczem" : instrumental
     "zaklinacza" : accusative
@@ -4703,6 +4782,7 @@ CREATURE_ATTRIBUTES_SPIDER_FOOD_CHATREACTIONHOSTILE "\"Zabij mnie, by zakończy�
 CREATURE_ATTRIBUTES_SPIDER_FOOD_DEATHDESCRIPTION "martwy, uwolniony od niewyobrażalnej agonii"
 
 CREATURE_ATTRIBUTES_SPIDER_NAME masculine "pająk"
+    "pająkowi" : dative
     "pająka" : genitive
     "pająkiem" : instrumental
     "pająka" : accusative
@@ -4715,6 +4795,7 @@ CREATURE_ATTRIBUTES_SPIRIT_CHATREACTIONFRIENDLY "\"Wouuuouuu!!!\""
 CREATURE_ATTRIBUTES_SPIRIT_CHATREACTIONHOSTILE "\"Wouuuouuu!!!\""
 
 CREATURE_ATTRIBUTES_SPIRIT_NAME masculine "duch pradawny"
+    "duchowi pradawnemu" : dative
     "ducha pradawnego" : genitive
     "duchem pradawnym" : instrumental
     "ducha pradawnego" : accusative
@@ -4724,6 +4805,7 @@ CREATURE_ATTRIBUTES_SPIRIT_NAME masculine "duch pradawny"
     "duchów pradawnych" : plural,accusative
 
 CREATURE_ATTRIBUTES_SQUIRE_PLAYER_NAME masculine "giermek"
+    "giermkowi" : dative
     "giermka" : genitive
     "giermkiem" : instrumental
     "giermka" : accusative
@@ -4733,6 +4815,7 @@ CREATURE_ATTRIBUTES_SQUIRE_PLAYER_NAME masculine "giermek"
     "giermków" : plural,accusative
 
 CREATURE_ATTRIBUTES_STONE_GOLEM_NAME masculine "kamienny golem"
+    "kamiennemu golemowi" : dative
     "kamiennego golema" : genitive
     "kamiennym golemem" : instrumental
     "kamiennego golema" : accusative
@@ -4742,6 +4825,7 @@ CREATURE_ATTRIBUTES_STONE_GOLEM_NAME masculine "kamienny golem"
     "kamiennych golemów" : plural,accusative
 
 CREATURE_ATTRIBUTES_SUCCUBUS_NAME feminine "sukkuba"
+    "sukkubie" : dative
     "sukkuby" : genitive
     "sukkubą" : instrumental
     "sukkubę" : accusative
@@ -4751,6 +4835,7 @@ CREATURE_ATTRIBUTES_SUCCUBUS_NAME feminine "sukkuba"
     "sukkuby" : plural,accusative
 
 CREATURE_ATTRIBUTES_TENGU_NAME1 masculine "szaitan"
+    "szaitanowi" : dative
     "szaitana" : genitive
     "szaitanem" : instrumental
     "szaitana" : accusative
@@ -4760,6 +4845,7 @@ CREATURE_ATTRIBUTES_TENGU_NAME1 masculine "szaitan"
     "szaitanów" : plural,accusative
 
 CREATURE_ATTRIBUTES_TENGU_NAME2 feminine "banshee"
+    "banshee" : dative
     "banshee" : genitive
     "banshee" : instrumental
     "banshee" : accusative
@@ -4769,6 +4855,7 @@ CREATURE_ATTRIBUTES_TENGU_NAME2 feminine "banshee"
     "banshee" : plural,accusative
 
 CREATURE_ATTRIBUTES_TENGU_NAME3 masculine "wetala"
+    "wetali" : dative
     "wetali" : genitive
     "wetalą" : instrumental
     "wetalę" : accusative
@@ -4778,6 +4865,7 @@ CREATURE_ATTRIBUTES_TENGU_NAME3 masculine "wetala"
     "wetale" : plural,accusative
 
 CREATURE_ATTRIBUTES_TENGU_NAME4 masculine "leyak"
+    "leyakowi" : dative
     "leyaka" : genitive
     "leyakiem" : instrumental
     "leyaka" : accusative
@@ -4787,6 +4875,7 @@ CREATURE_ATTRIBUTES_TENGU_NAME4 masculine "leyak"
     "leyaków" : plural,accusative
 
 CREATURE_ATTRIBUTES_TENGU_NAME5 masculine "baku"
+    "baku" : dative
     "baku" : genitive
     "baku" : instrumental
     "baku" : accusative
@@ -4796,6 +4885,7 @@ CREATURE_ATTRIBUTES_TENGU_NAME5 masculine "baku"
     "baku" : plural,accusative
 
 CREATURE_ATTRIBUTES_TENGU_NAME6 masculine "rakshasa"
+    "rakshasie" : dative
     "rakshasy" : genitive
     "rakshasą" : instrumental
     "rakshasę" : accusative
@@ -4805,6 +4895,7 @@ CREATURE_ATTRIBUTES_TENGU_NAME6 masculine "rakshasa"
     "rakshasy" : plural,accusative
 
 CREATURE_ATTRIBUTES_TENGU_NAME7 masculine "ghoul"
+    "ghoulowi" : dative
     "ghoula" : genitive
     "ghoulem" : instrumental
     "ghoula" : accusative
@@ -4814,6 +4905,7 @@ CREATURE_ATTRIBUTES_TENGU_NAME7 masculine "ghoul"
     "ghoule" : plural,accusative
 
 CREATURE_ATTRIBUTES_TENGU_NAME8 masculine "suanggi"
+    "suanggi" : dative
     "suanggiego" : genitive
     "suanggim" : instrumental
     "suanggiego" : accusative
@@ -4823,6 +4915,7 @@ CREATURE_ATTRIBUTES_TENGU_NAME8 masculine "suanggi"
     "suanggich" : plural,accusative
 
 CREATURE_ATTRIBUTES_TENGU_NAME masculine "tengu"
+    "tengu" : dative
     "tengu" : genitive
     "tengu" : instrumental
     "tengu" : accusative
@@ -4832,6 +4925,7 @@ CREATURE_ATTRIBUTES_TENGU_NAME masculine "tengu"
     "tengu" : plural,accusative
 
 CREATURE_ATTRIBUTES_TEUTON_NAME masculine "Wielki Mistrz Zakonu Krzyżackiego"
+    "Wielkiemu Mistrzowi Zakonu Krzyżackiego" : dative
     "Wielkiego Mistrza Zakonu Krzyżackiego" : genitive
     "Wielkim Mistrzem Zakonu Krzyżackiego" : instrumental
     "Wielkiego Mistrza Zakonu Krzyżackiego" : accusative
@@ -4841,6 +4935,7 @@ CREATURE_ATTRIBUTES_TEUTON_NAME masculine "Wielki Mistrz Zakonu Krzyżackiego"
     "Wielkich Mistrzów Zakonu Krzyżackiego" : plural,accusative
 
 CREATURE_ATTRIBUTES_THIEF_NAME masculine "przywódca złodziei"
+    "przywódcy złodziei" : dative
     "przywódcy złodziei" : genitive
     "przywódcą złodziei" : instrumental
     "przywódcę złodziei" : accusative
@@ -4861,6 +4956,7 @@ CREATURE_ATTRIBUTES_UNICORN_GROUPNAME neuter "stado"
     "stada" : plural,accusative
 
 CREATURE_ATTRIBUTES_UNICORN_NAME masculine "jednorożec"
+    "jednorożcowi" : dative
     "jednorożca" : genitive
     "jednorożcem" : instrumental
     "jednorożca" : accusative
@@ -4874,6 +4970,7 @@ CREATURE_ATTRIBUTES_UNICORN_PETREACTION "parska"
 CREATURE_ATTRIBUTES_VAMPIRE_BRUTE_CHATREACTIONFRIENDLY "\"Niech wszyscy ludzie będą przeklęci!\""
 
 CREATURE_ATTRIBUTES_VAMPIRE_BRUTE_NAME masculine "wampir brutale"
+    "wampirowi brutale" : dative
     "wampira brutala" : genitive
     "wampirem brutalem" : instrumental
     "wampira brutala" : accusative
@@ -4886,6 +4983,7 @@ CREATURE_ATTRIBUTES_VAMPIRE_CHATREACTIONFRIENDLY1 "\"Czasem nie można odmówić
 CREATURE_ATTRIBUTES_VAMPIRE_CHATREACTIONFRIENDLY "\"Niech wszyscy ludzie będą przeklęci!\""
 
 CREATURE_ATTRIBUTES_VAMPIRE_NAME1 masculine "wampir szlachcic"
+    "wampirowi szlachcicowi" : dative
     "wampira szlachcica" : genitive
     "wampirem szlachcicem" : instrumental
     "wampira szlachcica" : accusative
@@ -4895,6 +4993,7 @@ CREATURE_ATTRIBUTES_VAMPIRE_NAME1 masculine "wampir szlachcic"
     "wampirów szlachciców" : plural,accusative
 
 CREATURE_ATTRIBUTES_VAMPIRE_NAME masculine "wampir wojownik"
+    "wampirowi wojownikowi" : dative
     "wampira wojownika" : genitive
     "wampirem wojownikiem" : instrumental
     "wampira wojownika" : accusative
@@ -4904,6 +5003,7 @@ CREATURE_ATTRIBUTES_VAMPIRE_NAME masculine "wampir wojownik"
     "wampirów wojowników" : plural,accusative
 
 CREATURE_ATTRIBUTES_VULTURE_NAME masculine "sęp"
+    "sępowi" : dative
     "sępa" : genitive
     "sępem" : instrumental
     "sępa" : accusative
@@ -4913,6 +5013,7 @@ CREATURE_ATTRIBUTES_VULTURE_NAME masculine "sęp"
     "sępy" : plural,accusative
 
 CREATURE_ATTRIBUTES_WARRIOR_NAME1 masculine "złodziej"
+    "złodziejowi" : dative
     "złodzieja" : genitive
     "złodziejem" : instrumental
     "złodzieja" : accusative
@@ -4922,6 +5023,7 @@ CREATURE_ATTRIBUTES_WARRIOR_NAME1 masculine "złodziej"
     "złodziei" : plural,accusative
 
 CREATURE_ATTRIBUTES_WARRIOR_NAME masculine "wojownik"
+    "wojownikowi" : dative
     "wojownika" : genitive
     "wojownikiem" : instrumental
     "wojownika" : accusative
@@ -4931,6 +5033,7 @@ CREATURE_ATTRIBUTES_WARRIOR_NAME masculine "wojownik"
     "wojowników" : plural,accusative
 
 CREATURE_ATTRIBUTES_WATER_ELEMENTAL_NAME masculine "żywiołak wody"
+    "żywiołakowi wody" : dative
     "żywiołaka wody" : genitive
     "żywiołakiem wody" : instrumental
     "żywiołaka wody" : accusative
@@ -4940,6 +5043,7 @@ CREATURE_ATTRIBUTES_WATER_ELEMENTAL_NAME masculine "żywiołak wody"
     "żywiołaków wody" : plural,accusative
 
 CREATURE_ATTRIBUTES_WEREWOLF_NAME masculine "wilkołak"
+    "wilkołakowi" : dative
     "wilkołaka" : genitive
     "wilkołakiem" : instrumental
     "wilkołaka" : accusative
@@ -4949,6 +5053,7 @@ CREATURE_ATTRIBUTES_WEREWOLF_NAME masculine "wilkołak"
     "wilkołaki" : plural,accusative
 
 CREATURE_ATTRIBUTES_WHITE_DRAGON_NAME masculine "biały smok"
+    "białemu smokowi" : dative
     "białego smoka" : genitive
     "białym smokiem" : instrumental
     "białego smoka" : accusative
@@ -4967,6 +5072,7 @@ CREATURE_ATTRIBUTES_WHITE_DRAGON_STACKNAME masculine "smok"
     "smoki" : plural,accusative
 
 CREATURE_ATTRIBUTES_WHITE_NAGA_NAME feminine "biała naga"
+    "białej nadze" : dative
     "białej nagi" : genitive
     "białą nagą" : instrumental
     "białą nagę" : accusative
@@ -4979,6 +5085,7 @@ CREATURE_ATTRIBUTES_WITCH_CHATREACTIONFRIENDLY "{1} złorzeczy wszystkim ludziom
 CREATURE_ATTRIBUTES_WITCHMAN_CHATREACTIONFRIENDLY "{1} złorzeczy wszystkim potworom"
 
 CREATURE_ATTRIBUTES_WITCHMAN_NAME masculine "wiedźmak"
+    "wiedźmakowi" : dative
     "wiedźmaka" : genitive
     "wiedźmakiem" : instrumental
     "wiedźmaka" : accusative
@@ -4988,6 +5095,7 @@ CREATURE_ATTRIBUTES_WITCHMAN_NAME masculine "wiedźmak"
     "wiedźmaków" : plural,accusative
 
 CREATURE_ATTRIBUTES_WITCH_NAME feminine "wiedźma"
+    "wiedźmie" : dative
     "wiedźmy" : genitive
     "wiedźmą" : instrumental
     "wiedźmę" : accusative
@@ -5006,6 +5114,7 @@ CREATURE_ATTRIBUTES_WOLF_GROUPNAME neuter "stado"
     "stada" : plural,accusative
 
 CREATURE_ATTRIBUTES_WOLF_NAME masculine "wilk"
+    "wilkowi" : dative
     "wilka" : genitive
     "wilkiem" : instrumental
     "wilka" : accusative
@@ -5018,6 +5127,7 @@ CREATURE_ATTRIBUTES_WRAITH_CHATREACTIONFRIENDLY "\"Wouuuouuu!!!\""
 CREATURE_ATTRIBUTES_WRAITH_CHATREACTIONHOSTILE "\"Wouuuouuu!!!\""
 
 CREATURE_ATTRIBUTES_WRAITH_NAME masculine "upiór"
+    "upirowi" : dative
     "upiora" : genitive
     "upiorem" : instrumental
     "upiora" : accusative
@@ -5027,6 +5137,7 @@ CREATURE_ATTRIBUTES_WRAITH_NAME masculine "upiór"
     "upiorów" : plural,accusative
 
 CREATURE_ATTRIBUTES_YELLOW_DRAGON_NAME masculine "żółty smok"
+    "żółtemu smokowi" : dative
     "żółtego smoka" : genitive
     "żółtym smokiem" : instrumental
     "żółtego smoka" : accusative
@@ -5045,6 +5156,7 @@ CREATURE_ATTRIBUTES_YELLOW_DRAGON_STACKNAME masculine "smok"
     "smoki" : plural,accusative
 
 CREATURE_ATTRIBUTES_YELLOW_NAGA_NAME feminine "żółta naga"
+    "żółtej nadze" : dative
     "żółtej nagi" : genitive
     "żółtą nagą" : instrumental
     "żółtą nagę" : accusative
@@ -5054,8 +5166,10 @@ CREATURE_ATTRIBUTES_YELLOW_NAGA_NAME feminine "żółta naga"
     "żółte nagi" : plural,accusative
 
 CREATURE_ATTRIBUTES_YETI_NAME neuter "yeti"
+    "yeti" : dative
 
 CREATURE_ATTRIBUTES_ZOMBIE_NAME1 masculine "zombie rzemieślnik"
+    "zombiemu rzemieślnikowi" : dative
     "zombie rzemieślnika" : genitive
     "zombie rzemieślnikiem" : instrumental
     "zombie rzemieślnika" : accusative
@@ -5065,6 +5179,7 @@ CREATURE_ATTRIBUTES_ZOMBIE_NAME1 masculine "zombie rzemieślnik"
     "zombie rzemieślników" : plural,accusative
 
 CREATURE_ATTRIBUTES_ZOMBIE_NAME2 masculine "zombie mag"
+    "zombiemu magowi" : dative
     "zombie maga" : genitive
     "zombie magiem" : instrumental
     "zombie maga" : accusative
@@ -5074,6 +5189,7 @@ CREATURE_ATTRIBUTES_ZOMBIE_NAME2 masculine "zombie mag"
     "zombie magów" : plural,accusative
 
 CREATURE_ATTRIBUTES_ZOMBIE_NAME neuter "zombie"
+    "zombie" : dative
 
 ENEMIES_ADA_GOLEMS_RACE "adamantytowe golemy"
 ENEMIES_ADOXIE_FEET_ENTRY_RACE "ołtarz Złego Boga Adoxie"
