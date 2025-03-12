@@ -296,9 +296,9 @@ vector<TString> Item::getDescription(const ContentFactory* factory) const {
   for (auto& effect : getWeaponInfo().victimEffect)
     ret.push_back(TSentence("VICTIM_AFFECTED_BY", effect.effect.getName(factory), toPercentage(effect.chance)));
   for (auto& effect : getWeaponInfo().attackerEffect)
-    ret.push_back(TSentence("VICTIM_AFFECTED_BY", effect.getName(factory)));
+    ret.push_back(TSentence("ATTACKER_AFFECTED_BY", effect.getName(factory)));
   for (auto& effect : attributes->equipedEffect) {
-    ret.push_back(TSentence("EFFEC_WHEN_EQUIPED", ::getName(effect, factory)));
+    ret.push_back(TSentence("EFFECT_WHEN_EQUIPED", ::getName(effect, factory)));
     ret.push_back(::getDescription(effect, factory));
   }
   if (auto& info = attributes->upgradeInfo)
