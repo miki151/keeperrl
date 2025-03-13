@@ -66,6 +66,8 @@ class TString {
   static ostream* exportStrings;
 };
 
+ostream& operator << (ostream&, const TString&);
+
 TString combineWithCommas(vector<TString>);
 TString combineWithAnd(vector<TString>);
 TString combineWithSpace(vector<TString>);

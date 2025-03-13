@@ -149,6 +149,7 @@ static po::parser getCommandLineFlags() {
   flags["new_game"].type(po::string).description("Skip main menu and start a single map game");
   flags["max_turns"].type(po::i32).description("Quit the game after a given max number of turns");
   flags["export_translatable_strings"].type(po::string).description("This experimental option will try to to replace translatable strings in game files with translation ids.");
+  flags["export_translatable_sentences"].type(po::string).description("This experimental option will output every sentence in the game in the pre-translated form.");
 #endif
   return flags;
 }
@@ -452,7 +453,18 @@ static int keeperMain(po::parser& commandLineFlags) {
   });
   showLogoSplash(renderer, freeDataPath.file("images/succubi.png"), splashDone);
   loadThread.join();
-  Translations translations(freeDataPath.subdirectory("game_config").subdirectory("translations"), modsDir);
+  HashMap<TStringId, TString>* sentences = nullptr;
+  optional<string> exportSentencesPath;
+  if (commandLineFlags["export_translatable_sentences"].was_set()) {
+    exportSentencesPath = commandLineFlags["export_translatable_sentences"].get().string;
+    sentences = new HashMap<TStringId, TString>();
+    auto res = PrettyPrinting::parseObject(*sentences,
+        {*FilePath::fromFullPath(*exportSentencesPath).readContents()},
+        {*exportSentencesPath});
+    if (res)
+      USER_FATAL << *res;
+  }
+  Translations translations(freeDataPath.subdirectory("game_config").subdirectory("translations"), modsDir, sentences);
   translations.setCurrentMods(options.getVectorStringValue(OptionId::CURRENT_MOD2));
   options.setChoices(OptionId::LANGUAGE, translations.getLanguages());
   GuiFactory guiFactory(renderer, &clock, &options, &translations, soundLibrary, freeDataPath);
@@ -509,6 +521,11 @@ static int keeperMain(po::parser& commandLineFlags) {
   } catch (GameExitException ex) {
   }
   jukebox.toggle(false);
+  if (commandLineFlags["export_translatable_sentences"].was_set()) {
+    ofstream out(commandLineFlags["export_translatable_sentences"].get().string);
+    for (auto& elem : *sentences)
+      out << elem.first.data() << " " << elem.second << "\n";
+  }
   return 0;
 }
 

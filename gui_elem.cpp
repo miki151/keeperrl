@@ -3322,10 +3322,6 @@ string GuiFactory::translate(const TString& s) {
   return translations->get(options->getStringValue(OptionId::LANGUAGE), s);
 }
 
-string GuiFactory::translate(const TSentence& s) {
-  return translations->get(options->getStringValue(OptionId::LANGUAGE), s);
-}
-
 void GuiFactory::reloadTranslations() {
   translations->loadFromDir();
 }

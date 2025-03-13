@@ -85,6 +85,10 @@ vector<string> Translations::getTags(const string& language, const TString& s) c
 }
 
 string Translations::get(const string& language, const TSentence& s, vector<string> form) const {
+  if (sentences) {
+    if (!s.params.empty() && sentences->insert(make_pair(s.id, s)).second)
+      std::cout << "Inserted " << s.id.data() << " " << s << std::endl;
+  }
   if (s.id == TStringId("CAPITAL_FIRST"))
     return capitalFirst(get(language, s.params[0], std::move(form)));
   if (s.id == TStringId("MAKE_PLURAL")) {
@@ -185,8 +189,8 @@ void Translations::loadFromDir() {
       }
 }
 
-Translations::Translations(DirectoryPath vanilla, DirectoryPath mods)
-    : vanillaDir(std::move(vanilla)), modsDir(std::move(mods)) {}
+Translations::Translations(DirectoryPath vanilla, DirectoryPath mods, HashMap<TStringId, TString>* sentences)
+    : vanillaDir(std::move(vanilla)), modsDir(std::move(mods)), sentences(sentences) {}
 
 vector<string> Translations::getLanguages() const {
   return getKeys(strings);

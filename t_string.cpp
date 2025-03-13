@@ -162,6 +162,25 @@ void TString::serialize(PrettyInputArchive& ar) {
   }
 }
 
+ostream& operator << (ostream& o, const TString& t) {
+  t.text.visit(
+      [&](const string& s) { o << s; },
+      [&](const TSentence& s) {
+        o << s.id.data();
+        if (!s.params.empty()) {
+          o << "(";
+          for (int i : All(s.params)) {
+            if (i > 0)
+              o << ",";
+            o << s.params[i];
+          }
+          o << ")";
+        }
+      }
+  );
+  return o;
+}
+
 template void TString::serialize(InputArchive&);
 template void TString::serialize(OutputArchive&);
 

@@ -81,7 +81,6 @@ class GuiFactory {
   void propagateEvent(const Event&, const vector<SGuiElem>&);
   void propagateScrollEvent(const vector<SGuiElem>&);
   string translate(const TString&);
-  string translate(const TSentence&);
   void reloadTranslations();
 
   static bool isShift(const SDL::SDL_Keysym&);
