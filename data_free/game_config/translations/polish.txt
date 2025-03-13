@@ -589,7 +589,7 @@ RIPPED_HELPER "rozerwany"
     "rozerwana" : feminine
     "rozerwane" : neuter
 HIS_BODY_PART_IS_RIPPED_TO_PIECES "{2} {1:genitive} zostaje {RIPPED_HELPER:2} na kawałki!"
-HIS_BODY_PART_IS "{2} {1:genitive} {1:2}!"
+HIS_BODY_PART_IS "{2} {1:genitive} {3:2}!"
 HIS_IDENTITY_IS_UNCOVERED "{1} został zdemaskowany!"
 HIS_LIFE_WILL_NO_LONGER_BE_SAVED "Życie {1:genitive} nie będzie już chronione."
 HIS_SKULL_IS_SHATTERED "Czaszka {1:genitive} zostaje roztrzaskana!"
@@ -1355,6 +1355,8 @@ BODY_SIZE_SMALL "mały"
     "mała" : feminine
 BONE "kość"
 BOUND_TO_A_PHYLACTERY "Związany z filakterium"
+    "Związana z filakterium" : feminine
+    "Związane z filakterium" : neuter
 BOUND_TO_A_PHYLACTERY_DESCRIPTION "Ta istota odrodzi się przy swoim filakterium po śmierci."
 BREAKS_FREE "{1} się uwalnia!"
 BUFF_AGGRAVATES neuter "drażnienie wrogów"
@@ -9071,7 +9073,7 @@ ITEMS_PRAYERBOOKPROTECTION_EFFECT15 "Msza zostanie odprawiona z intencją zwięk
 ITEMS_PRAYERBOOKPROTECTION_EFFECT16 "Msza zostanie odprawiona z intencją przyzwania anioła stróża dla każdego sługi."
 ITEMS_PRAYERBOOKPROTECTION_EFFECT17 "Msza zostanie odprawiona w imię Złego Boga Adoxie."
 
-SPELLS_DRAGON_GREETING_EFFECT2 "No złodzieju! Czuję twój oddech i twoje powietrze. Słyszę twój oddech. Chodź dalej!"
+SPELLS_DRAGON_GREETING_EFFECT2 "No cóż, złodzieju! Czuję cię nosem, odróżniam twój zapach. Słyszę twój oddech. Chodź no bliżej."
 
 FURNITURE_ROSTRUM_WOOD_ID "\"Munarret te aroleac munirol atcserda, muixan arollev.\""
 FURNITURE_ROSTRUM_WOOD_ID1 "\"Et da sarumalc enrete sixiv ni.\""
