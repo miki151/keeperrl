@@ -25,7 +25,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(ViewObject);
 constexpr float noAttributeValue = -1234;
 
 ViewObject::ViewObject(ViewId id, ViewLayer l, const TString& d)
-    : resource_id(id), viewLayer(l), description(d) {
+    : resource_id(id), viewLayer(l), description(capitalFirst(d)) {
   for (auto a : ENUM_ALL(Attribute))
     attributes[a] = noAttributeValue;
 }
@@ -188,7 +188,7 @@ const optional<ViewObject::CreatureAttributes>& ViewObject::getCreatureAttribute
 }
 
 void ViewObject::setDescription(const TString& s) {
-  description = s;
+  description = capitalFirst(s);
 }
 
 const TString& ViewObject::getDescription() const {
