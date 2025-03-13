@@ -4994,15 +4994,15 @@ CREATURE_ATTRIBUTES_VAMPIRE_BRUTE_NAME masculine "wampir brutale"
 CREATURE_ATTRIBUTES_VAMPIRE_CHATREACTIONFRIENDLY1 "\"Czasem nie można odmówić sobie kropelki krwi!\""
 CREATURE_ATTRIBUTES_VAMPIRE_CHATREACTIONFRIENDLY "\"Niech wszyscy ludzie będą przeklęci!\""
 
-CREATURE_ATTRIBUTES_VAMPIRE_NAME1 masculine "wampir szlachcic"
-    "wampirowi szlachcicowi" : dative
-    "wampira szlachcica" : genitive
-    "wampirem szlachcicem" : instrumental
-    "wampira szlachcica" : accusative
-    "wampiry szlachcice" : plural
-    "wampirów szlachciców" : plural,genitive
-    "wampirami szlachcicami" : plural,instrumental
-    "wampirów szlachciców" : plural,accusative
+CREATURE_ATTRIBUTES_VAMPIRE_NAME1 masculine "wampir szlachetny"
+    "wampirowi szlachetnemu" : dative
+    "wampira szlachetnego" : genitive
+    "wampirem szlachetnym" : instrumental
+    "wampira szlachetnego" : accusative
+    "wampiry szlachetne" : plural
+    "wampirów szlachetnych" : plural,genitive
+    "wampirami szlachetnymi" : plural,instrumental
+    "wampirów szlachetnych" : plural,accusative
 
 CREATURE_ATTRIBUTES_VAMPIRE_NAME masculine "wampir wojownik"
     "wampirowi wojownikowi" : dative
@@ -8269,8 +8269,8 @@ SPELLS_ADVANCED_CHICKENMORPH_EFFECT "zaawansowane kurczakomorfowanie"
 SPELLS_CLUCK_MESSAGE1 "{1} gdacze."
 SPELLS_CLUCK_MESSAGE "Gdaczesz."
 SPELLS_ADVANCED_CURE_POISON_EFFECT "zaawansowane leczenie trucizny"
-SPELLS_ADVANCED_DAMAGE_BONUS_EFFECT "zaawansowany bonus do obrażeń"
-SPELLS_ADVANCED_DEFENSE_BONUS_EFFECT "zaawansowany bonus do obrony"
+SPELLS_ADVANCED_DAMAGE_BONUS_EFFECT "zaawansowana premia do obrażeń"
+SPELLS_ADVANCED_DEFENSE_BONUS_EFFECT "zaawansowana premia do obrony"
 SPELLS_ADVANCED_EARTH_ELEMENTAL_EFFECT "zaawansowany żywiołak ziemi"
 SPELLS_ADVANCED_FIRE_ELEMENTAL_EFFECT "zaawansowany żywiołak ognia"
 SPELLS_ADVANCED_HASTE_EFFECT "zaawansowane przyśpieszenie"
@@ -8316,11 +8316,11 @@ SPELLS_CIRCULAR_BLAST_MESSAGE "Tworzysz podmuch powietrza!"
 SPELLS_CURE_BLINDNESS_EFFECT "ulecz ślepotę"
 SPELLS_CURE_POISON_EFFECT "ulecz truciznę"
 SPELLS_DAMAGE_BONUS_EFFECT1 "modlitwa o siłę"
-SPELLS_DAMAGE_BONUS_EFFECT "bonus do obrażeń"
+SPELLS_DAMAGE_BONUS_EFFECT "premia do obrażeń"
 SPELLS_DAMAGE_BONUS_MESSAGE1 "{1} odmawia modlitwę o siłę."
 SPELLS_DAMAGE_BONUS_MESSAGE "Odmawiasz modlitwę o siłę."
 SPELLS_DEFENSE_BONUS_EFFECT1 "modlitwa o ochronę"
-SPELLS_DEFENSE_BONUS_EFFECT "bonus do obrony"
+SPELLS_DEFENSE_BONUS_EFFECT "premia do obrony"
 SPELLS_DEFENSE_BONUS_MESSAGE1 "{1} odmawia modlitwę o ochronę."
 SPELLS_DEFENSE_BONUS_MESSAGE "Odmawiasz modlitwę o ochronę."
 SPELLS_DIG_EFFECT "kop"
@@ -8361,8 +8361,8 @@ SPELLS_KINGS_CHARGE_THIRDPERSON "nie jest godzien!"
 SPELLS_LEYAK_ACID_EFFECT "plucie kwasem"
 SPELLS_MAGIC_MISSILE_EFFECT1 "święty pocisk"
 SPELLS_MAGIC_MISSILE_EFFECT "magiczny pocisk"
-SPELLS_MASS_DAMAGE_BONUS_EFFECT "masowy bonus do obrażeń"
-SPELLS_MASS_DEFENSE_BONUS_EFFECT "masowy bonus do obrony"
+SPELLS_MASS_DAMAGE_BONUS_EFFECT "masowa premia do obrażeń"
+SPELLS_MASS_DEFENSE_BONUS_EFFECT "masowa premia do obrony"
 SPELLS_METEOR_SHOWER_EFFECT "deszcz meteorów"
 SPELLS_OIL_BREATH_EFFECT "oleisty oddech"
 SPELLS_OIL_BREATH_MESSAGE1 "{1} pluje olejem!"
@@ -9380,9 +9380,9 @@ BUFFS_DIVINE_DIGGING_DESCRIPTION "kopanie"
     "kopania" : genitive
 BUFFS_DEF_DEBUFF_NAME "obrona"
     "obrony" : genitive
-BUFFS_PREACHING_ENDEFFECT "Sługi otrzymały tymczasowy bonus +5 do obrony."
-BUFFS_PREACHING_ID5 "Sługi otrzymały tymczasowy bonus +5 do obrażeń."
-BUFFS_PREACHING_ID6 "Sługi otrzymały tymczasowy bonus +15 do kopania."
+BUFFS_PREACHING_ENDEFFECT "Sługi otrzymały tymczasową premię +5 do obrony."
+BUFFS_PREACHING_ID5 "Sługi otrzymały tymczasową premię +5 do obrażeń."
+BUFFS_PREACHING_ID6 "Sługi otrzymały tymczasową premię +15 do kopania."
 BUFFS_PREACHING_ID7 "Sługi otrzymały tymczasowe przyspieszenie treningu."
 BUFFS_PREACHING_ID8 "Sługi otrzymały tymczasowe przyspieszenie rzemiosła."
 BUFFS_PREACHING_ID9 "Sługi otrzymały tymczasową odporność na ataki dystansowe."
@@ -9614,9 +9614,12 @@ CANT_ATTACK_WHILE_PEACEFUL "Czujesz, że to byłoby sprzeczne z twoimi przekonan
 EXCUSE_ME "Przepraszam!"
 BUT_WAIT "Ale zaczekaj!"
 THE_ATTACK_IS_HARMLESS "Atak jest nieszkodliwy."
-THE_FIRE_IS_HARMLESS "Ogień nie szkodzi {1:dative}."
-THE_COLD_IS_HARMLESS "Zimno nie szkodzi {1:dative}."
-THE_ACID_IS_HARMLESS "Kwas nie szkodzi {1:dative}."
+IS_NOT_HARMED_BY_FIRE "Ogień nie szkodzi {1:dative}."
+IS_NOT_HARMED_BY_COLD "Zimno nie szkodzi {1:dative}."
+IS_NOT_HARMED_BY_ACID "Kwas nie szkodzi {1:dative}."
+YOU_ARE_NOT_HARMED_BY_FIRE "Ogień tobie nie szkodzi."
+YOU_ARE_NOT_HARMED_BY_COLD "Zimno tobie nie szkodzi."
+YOU_ARE_NOT_HARMED_BY_ACID "Kwas tobie nie szkodzi."
 SURPRISE_EXCLAMATION "Niespodzianka!"
 YOU_HEAR_A_CRASH "Słyszysz huk."
 YOU_CUT_TENTACLE "Odcinasz mackę krakena."

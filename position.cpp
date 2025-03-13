@@ -863,7 +863,7 @@ bool Position::fireDamage(int amount, Creature* attacker) const {
       res |= furniture->fireDamage(*this);
   if (Creature* creature = getCreature())
     creature->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), AttackType::HIT, amount,
-        AttrType("FIRE_DAMAGE"), {}, TSentence("THE_FIRE_IS_HARMLESS", creature->getName().the()), false));
+        AttrType("FIRE_DAMAGE"), {}, TStringId("YOU_ARE_NOT_HARMED_BY_FIRE"), TStringId("IS_NOT_HARMED_BY_FIRE"), false));
   for (Item* it : getItems())
     if (Random.chance(0.05 * amount))
       it->fireDamage(*this);
@@ -878,7 +878,7 @@ bool Position::iceDamage(int amount, Creature* attacker) const {
       res |= furniture->iceDamage(*this);
   if (Creature* creature = getCreature())
     creature->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), AttackType::HIT, amount,
-        AttrType("COLD_DAMAGE"), {}, TSentence("THE_COLD_IS_HARMLESS", creature->getName().the())));
+        AttrType("COLD_DAMAGE"), {}, TStringId("YOU_ARE_NOT_HARMED_BY_COLD"), TStringId("IS_NOT_HARMED_BY_COLD")));
   for (Item* it : getItems())
     if (Random.chance(0.05 * amount))
       it->iceDamage(*this);
@@ -893,7 +893,7 @@ bool Position::acidDamage(int amount, Creature* attacker) const {
       res |= furniture->acidDamage(*this);
   if (Creature* creature = getCreature())
     creature->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), AttackType::HIT, amount,
-        AttrType("ACID_DAMAGE"), {}, TSentence("THE_ACID_IS_HARMLESS", creature->getName().the())));
+        AttrType("ACID_DAMAGE"), {}, TStringId("YOU_ARE_NOT_HARMED_BY_ACID"), TStringId("IS_NOT_HARMED_BY_ACID")));
   /*for (Item* it : getItems())
     if (Random.chance(amount))
       it->acidDamage(*this);*/

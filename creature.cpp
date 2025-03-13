@@ -1820,7 +1820,7 @@ bool Creature::takeDamage(const Attack& attack) {
         return true;
     }
   } else
-    message(attack.harmlessMessage);
+    verb(attack.harmlessMessageSecondPerson, attack.harmlessMessageThirdPerson);
   if (auto& effect = factory->attrInfo.at(attack.damageType).onAttackedEffect)
     effect->applyToCreature(this, attack.attacker);
   for (auto& e : attack.effect) {

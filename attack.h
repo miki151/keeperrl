@@ -26,8 +26,11 @@ class Creature;
 class Attack {
   public:
   Attack(Creature* a, AttackLevel l, AttackType t, int s, AttrType d, vector<Effect> e = {},
-      TString harmlessMessage = TStringId("THE_ATTACK_IS_HARMLESS"), bool withSound = true)
-      : attacker(a), level(l), type(t), strength(s), damageType(d), effect(e), harmlessMessage(harmlessMessage),
+      TStringId harmlessMessageSecondPerson = TStringId("THE_ATTACK_IS_HARMLESS"),
+      TStringId harmlessMessageThirdPerson = TStringId("THE_ATTACK_IS_HARMLESS"), bool withSound = true)
+      : attacker(a), level(l), type(t), strength(s), damageType(d), effect(e),
+        harmlessMessageSecondPerson(harmlessMessageSecondPerson),
+        harmlessMessageThirdPerson(harmlessMessageThirdPerson),
         withSound(withSound) {}
 
   Creature* attacker = nullptr;
@@ -36,7 +39,8 @@ class Attack {
   int strength;
   AttrType damageType;
   vector<Effect> effect;
-  TString harmlessMessage;
+  TStringId harmlessMessageSecondPerson;
+  TStringId harmlessMessageThirdPerson;
   bool withSound;
 };
 
