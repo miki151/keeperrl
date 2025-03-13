@@ -2521,7 +2521,7 @@ function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInf
       }
       auto label = WL(labelFun, [&]() -> TString {
         if (totalAvailable - totalUsed > 0)
-          return TSentence("CLEAR_ALL_UPGRADES", toString((totalAvailable - totalUsed) * cnt));
+          return TSentence("ADD_TOP_UPGRADES", toString((totalAvailable - totalUsed) * cnt));
         else
           return TStringId("CLEAR_ALL_UPGRADES");
       });
