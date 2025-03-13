@@ -2941,7 +2941,7 @@ void GuiBuilder::updateWorkshopIndex(const CollectiveInfo::ChosenWorkshopInfo& i
 
 SGuiElem GuiBuilder::drawTechUnlocks(const CollectiveInfo::LibraryInfo::TechInfo& tech) {
   auto lines = WL(getListBuilder, legendLineHeight);
-  const int width = 450;
+  const int width = 550;
   const int margin = 15;
   lines.addElemAuto(WL(labelMultiLineWidth, tech.description, legendLineHeight * 2 / 3, width - 2 * margin));
   lines.addSpace(legendLineHeight);
