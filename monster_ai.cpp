@@ -1044,8 +1044,10 @@ class ByCollective : public Behaviour {
         collective->getTerritory().contains(creature->getPosition()))) {
       const static EnumSet<MinionActivity> healingActivities {MinionActivity::SLEEP};
       auto currentActivity = collective->getCurrentActivity(creature).activity;
-      if (creature->getBody().canHeal(HealthType::FLESH, creature->getGame()->getContentFactory()) &&
-          !creature->isAffected(LastingEffect::POISON) && !healingActivities.contains(currentActivity))
+      auto& body = creature->getBody();
+      bool isWounded = body.canHeal(HealthType::FLESH, creature->getGame()->getContentFactory()) ||
+          (body.getBodyPartHealth() < 1.0 && isOneOf(body.getMaterial(), BodyMaterialId("BONE"), BodyMaterialId("UNDEAD_FLESH")));
+      if (isWounded && !creature->isAffected(LastingEffect::POISON) && !healingActivities.contains(currentActivity))
         for (MinionActivity activity : healingActivities) {
           if (creature->getAttributes().getMinionActivities().isAvailable(collective, creature, activity) &&
               collective->isActivityGood(creature, activity)) {
