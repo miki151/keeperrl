@@ -149,11 +149,15 @@ BLOODY_WATER "zakrwawiona woda"
     "zakrwawione wody" : plural,accusative
 BODIES_UPGRADE_TYPE "ciała"
     "ciał" : genitive
-BODY_PART_GROWS_BACK "{1} odrasta!"
-BODY_PART_IS_IN_BETTER_SHAPE "{1} jest w lepszym stanie"
+GROWS_BACK_HELPER "odrasta"
+    "odrastają" : plural
+HIS_BODY_PART_GROWS_BACK "{2} {1:genitive} {GROWS_BACK_HELPER:2}!"
+BETTER_SHAPE_HELPER "jest"
+    "są" : plural
+HIS_BODY_PART_IS_IN_BETTER_SHAPE "{2} {1:genitive} {BETTER_SHAPE_HELPER:2} w lepszym stanie."
+YOUR_BODY_PART_GROWS_BACK "{YOUR_HELPER:1} {1} {GROWS_BACK_HELPER:1}!"
+YOUR_BODY_PART_IS_IN_BETTER_SHAPE "{YOUR_HELPER:1} {1} jest w lepszym stanie"
 BODY_PART_NUMBER "{1:2} {2}"
-BODY_PARTS_ARE_IN_BETTER_SHAPE "{1} są w lepszym stanie"
-BODY_PARTS_GROW_BACK "{1} odrastają!"
 BOILS_AND_EXPLODES "{1} wrze i wybucha!"
 BOULDER masculine "głaz"
     "głazu" : genitive
@@ -383,7 +387,7 @@ CORPSE_ITEM plural "zwłoki {1:genitive}"
     "zwłok {1:genitive}" : genitive
     "zwłokami {1:genitive}" : instrumental
     "zwłoki {1:genitive}" : accusative
-CRAFTED_FROM "Wykonano z {1:genitive}"
+CRAFTED_FROM "Ze składnika: {1}"
 CRAFTED_ITEMS_LABEL "produkcja przedmiotów"
     "produkcję przedmiotów" : accusative
 CRAFTING_UPDATE_FOR "Ulepszenie przy produkcji {1:plural,genitive}:"
@@ -539,7 +543,7 @@ GAS_RELEASED_UNSEEN "Słyszysz syk."
 GHOST "Duch"
 GIVE_GOLD_TO "Czy przekazać {1} złota dla {2:genitive}?"
 GIVE_HOW_MANY "Ile {1:genitive} przekazać?"
-GIVE_ITEM_TO "Przekazać {1:accusative} dla {2:genitive}?"
+GIVE_ITEM_TO "Przekazać {1:accusative} {2:dative}?"
 GIVE_WHOM "Komu przekazać?"
 GLYPH_LABEL "[{1}]"
 GO_BACK_BUTTON "Wróć"
@@ -814,7 +818,7 @@ PANICS "{1} wpada w panikę."
 PERSISTENT_ITEM_FETCHING_ZONE_HIGHLIGHT "Stała strefa zbierania przedmiotów"
 PET_ACTION "Głaszcz"
 PICK_UP_HOW_MANY "Ile {1:genitive} podnieść?"
-PILLAGE "Spal i złup {1:accusative}"
+PILLAGE "Złup {1:accusative}"
 PLACE_FURNITURE_EFFECT_DESCRIPTION "Tworzy mebel wybranego typu."
 PLACE_FURNITURE_EFFECT_NAME "zbuduj mebel"
 PLANNED_HINT "Zaplanowane"
@@ -1321,8 +1325,9 @@ ARE_OFFENDED "Czujesz się urażony"
 ASSIGN_GEAR_MINION_BUTTON "Przypisz ekw."
 AT_NIGHT "w nocy"
 ATTR_BOOST_DESCRIPTION "Zwiększa {1:accusative} o {2}."
-ATTR_BOOST_NAME "wzrost {1:genitive}"
-    "wzrostu {1:genitive}" : genitive
+ATTR_BOOST_NAME "premia do {1:genitive}"
+    "premii do {1:genitive}" : genitive
+    "premią do {1:genitive}" : instrumental
 ATTRIBUTES_LABEL "Atrybuty"
 ATTR_LOSS_DESCRIPTION "Zmniejsza {1:accusative} o {2}."
 ATTR_LOSS_NAME "utrata {1:genitive}"
@@ -1570,7 +1575,7 @@ FLOOR "podłoga"
 FOBIDDEN_ZONE_WARNING "Wejść do strefy zakazanej?"
 FULLY_MATERIALIZED "całkowicie zmaterializowany"
 GENDERLESS "bezpłciowy"
-GIVES_ITEMS_TO "{3} dostaje {2:accusative} od {1:genitive}."
+GIVES_ITEMS_TO "{1} daje {2:accusative} {3:dative}."
 GRANTS_YOU_A_WISH "{1} spełnia twoje życzenie."
 GROUP_TAKES_ONE_POP "Cała grupa zajmuje jeden slot populacji."
 HAIKU neuter "haiku"
@@ -1628,7 +1633,7 @@ IS_SUCKED_INTO "{1} zostaje wessany do {2:genitive}."
 IS_SUFFERING_FROM_POISONING "{1} cierpi z powodu zatrucia."
 ITEM_BURNING "(płonący)"
 ITEM_EQUIPED "Wyposażono."
-ITEM_FROM_INGREDIENT "z"
+ITEM_FROM_INGREDIENT " z "
 ITEM_MATERIAL_LABEL "Materiał:"
 ITEM_NOT_EQUIPED "Jeszcze niewyposażony."
 ITEM_REQUIRES_SKILL_LEVEL "Wymagany poziom umiejętności:"
@@ -1764,7 +1769,9 @@ VULGAR "wulgarny"
 WAIT_HOW_MANY_TURNS "Ile tur chcesz czekać?"
 WALKING_INTO_FIRE_WARNING "Wejście w ogień lub w sąsiadujące pola cię zrani. Kontynuować?"
 WATER_VERY_DEEP_WARNING "Woda jest bardzo głęboka, czy na pewno?"
-WAVES "{1} macha {IMPROVES_HELPER:3} {3:instrumental} w kierunku {4:genitive}."
+WAVES_HELPER "swoim"
+    "swoją" : feminine
+WAVES "{1} macha {WAVES_HELPER:3} {3:instrumental} w kierunku {4:genitive}."
 WAVE "Machasz {1:instrumental} w kierunku {2:genitive}."
 X_TO_CLEAR ", by zamknąć"
 YES_AND_DONT_ASK_FOR_50_TURNS "Tak, i nie pytaj ponownie przez 50 tur."
@@ -1816,7 +1823,7 @@ YOU_FALL_OFF "Spadasz z {1:genitive}!"
 YOU_FALL_ON_THE "Upadasz na {1:accusative}!"
 YOU_FEEL_LIKE_A_DANCING_FOOL "Czujesz się jak tańczący błazen!"
 YOU_FREAK_OUT "Panikujesz!"
-YOU_GIVE_ITEM_TO "{2} dostaje od ciebie {1:accusative}."
+YOU_GIVE_ITEM_TO "Dajesz {1:accusative} {2:dative}."
 YOU_HAVE_NO_HEALTHY_ARMS "Nie masz sprawnych rąk!"
 YOU_HEAR_A_LOUD_SPLASH "Słyszysz głośny plusk."
 YOU_HEAR_HORRIBLE_SCREAM "Słyszysz przeraźliwy krzyk!"
@@ -1942,9 +1949,13 @@ CUSTOM_AREA_EFFECT_NAME "obszar niestandardowy: {1}"
 DAMAGE_EFFECT_DESCRIPTION "Zadaje obrażenia typu: {1}"
 EMIT_GAS_DESCRIPTION "Wydziela {1:accusative}"
 EXTRA_BODY_PART_EFFECT_DESCRIPTION "Dodaje {1:accusative}"
-EXTRA_BODY_PART_EFFECT_NAME_HELPER "dodatkowego"
-    "dodatkowej" : feminine
-EXTRA_BODY_PART_EFFECT_NAME "{EXTRA_BODY_PART_EFFECT_NAME_HELPER:1} {1:genitive}"
+EXTRA_BODY_PART_EFFECT_NAME_HELPER "dodatkowy"
+    "dodatkowa" : feminine
+    "dodatkowego" : genitive
+    "dodatkowej" : genitive,feminine
+    "dodatkowym" : instrumental
+    "dodatkową" : instrumental,feminine
+EXTRA_BODY_PART_EFFECT_NAME "{EXTRA_BODY_PART_EFFECT_NAME_HELPER:1} {1}"
 EXTRA_BODY_PARTS_EFFECT_DESCRIPTION "Dodaje {1:accusative,plural}"
 EXTRA_BODY_PARTS_EFFECT_NAME "{1:plural,genitive}"
 FIXED_DAMAGE_EFFECT_DESCRIPTION "Zadaje {2} {1}"
@@ -2242,6 +2253,7 @@ YOU_DIE_OF "Umierasz z powodu {1:genitive}."
 YOUR_HELPER "Twój"
     "Twoja" : feminine
     "Twoje" : neuter
+    "Twoje" : plural
 YOUR "{YOUR_HELPER:1} {1}."
 REQUIRES_A "Wymaga {1:accusative}"
 CANT_TRAVEL_WHILE_POISONED_HELPER "zatrutym"
@@ -3194,15 +3206,15 @@ CREATURE_ATTRIBUTES_BOAR_NAME masculine "dzik"
     "dzikami" : plural,instrumental
     "dziki" : plural,accusative
 
-CREATURE_ATTRIBUTES_BONE_DRAGON_NAME masculine "kościany smok"
-    "kościanemu smokowi" : dative
-    "kościanego smoka" : genitive
-    "kościanym smokiem" : instrumental
-    "kościanego smoka" : accusative
-    "kościane smoki" : plural
-    "kościanych smoków" : plural,genitive
-    "kościanymi smokami" : plural,instrumental
-    "kościane smoki" : plural,accusative
+CREATURE_ATTRIBUTES_BONE_DRAGON_NAME masculine "szkielet smoka"
+    "szkieletowi smoka" : dative
+    "szkieletu smoka" : genitive
+    "szkieletem smoka" : instrumental
+    "szkielet smoka" : accusative
+    "szkielety smoków" : plural
+    "szkieletów smoków" : plural,genitive
+    "szkieletami smoków" : plural,instrumental
+    "szkielety smoków" : plural,accusative
 
 CREATURE_ATTRIBUTES_BONE_DRAGON_STACKNAME masculine "smok"
     "smoka" : genitive
@@ -6253,14 +6265,14 @@ FURNITURE_MORTAR_AND_PESTLE_NAME feminine "moździerz i tłuczek"
     "moździerzami i tłuczkami" : plural,instrumental
     "moździerze i tłuczki" : plural,accusative
 
-FURNITURE_MOUNTAIN2_NAME1 neuter "adamantytowa ruda"
-    "adamantytowej rudy" : genitive
-    "adamantytową rudą" : instrumental
-    "adamantytową rudę" : accusative
-    "adamantytowe rudy" : plural
-    "adamantytowych rud" : plural,genitive
-    "adamantytowymi rudami" : plural,instrumental
-    "adamantytowe rudy" : plural,accusative
+FURNITURE_MOUNTAIN2_NAME1 neuter "ruda adamantytu"
+    "rudy adamantytu" : genitive
+    "rudą adamantytu" : instrumental
+    "rudę adamantytu" : accusative
+    "rudy adamantytu" : plural
+    "rud adamantytu" : plural,genitive
+    "rudami adamantytu" : plural,instrumental
+    "rudy adamantytu" : plural,accusative
 
 FURNITURE_MOUNTAIN2_NAME2 neuter "ruda adoxium"
     "rudy adoxium" : genitive
@@ -8522,23 +8534,35 @@ WORKSHOPS_MENU_ID1 masculine "róg"
     "rogi" : plural,accusative
 
 WORKSHOPS_MENU_TYPE10 "Trwale przemienia Strażnika w losową istotę."
-WORKSHOPS_MENU_TYPE11 "więcej ognia"
+WORKSHOPS_MENU_TYPE11 "większego ognia"
 WORKSHOPS_MENU_TYPE12 "małej premii do obrażeń"
+    "małą premią do obrażeń" : instrumental
 WORKSHOPS_MENU_TYPE13 "małej premii do obrony"
+    "małą premią do obrony" : instrumental
 WORKSHOPS_MENU_TYPE14 "małej premii do obrażeń dystansowych"
+    "małą premią do obrażeń dystansowych" : instrumental
 WORKSHOPS_MENU_TYPE15 "małej premii do obrażeń magicznych"
+    "małą premią do obrażeń magicznych" : instrumental
 WORKSHOPS_MENU_TYPE16 "krótkiego życia, zwiększonego ataku"
+    "krótkim życiem" : instrumental
 WORKSHOPS_MENU_TYPE17 "Życie ograniczone do 2000 tur, +10 do obrażeń."
 WORKSHOPS_MENU_TYPE18 "krótkiego życia, zwiększonej obrony"
+    "krótkim życiem" : instrumental
 WORKSHOPS_MENU_TYPE19 "Życie ograniczone do 2000 tur, +10 do obrony."
 WORKSHOPS_MENU_TYPE20 "krótkiego życia, zwiększonych obrażeń dystansowych"
+    "krótkim życiem" : instrumental
 WORKSHOPS_MENU_TYPE21 "Życie ograniczone do 2000 tur, +10 do obrażeń dystansowych."
 WORKSHOPS_MENU_TYPE22 "krótkiego życia, zwiększonej magii"
+    "krótkim życiem" : instrumental
 WORKSHOPS_MENU_TYPE23 "Życie ograniczone do 2000 tur, +10 do magii."
 WORKSHOPS_MENU_TYPE24 "dużej premii do obrażeń"
+    "dużą premią do obrażeń" : instrumental
 WORKSHOPS_MENU_TYPE25 "dużej premii do obrony"
+    "dużą premią do obrony" : instrumental
 WORKSHOPS_MENU_TYPE26 "dużej premii do obrażeń dystansowych"
+    "dużą premią do obrażeń dystansowych" : instrumental
 WORKSHOPS_MENU_TYPE27 "dużej premii do obrażeń magicznych"
+    "dużą premią do obrażeń magicznych" : instrumental
 WORKSHOPS_MENU_TYPE5 "jadowite kły"
     "jadowitych kłów" : genitive
 WORKSHOPS_MENU_TYPE6 "Sprawia, że ofierze wyrasta para jadowitych kłów"
@@ -9191,7 +9215,7 @@ CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME22 "Gnomy"
 CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME2 "Krasnoludy"
 CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME3 "Czerwony smok"
 CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME4 "Biały smok"
-CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME5 "Żywiołak"
+CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME5 "Elementalistka"
 CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME6 "Zielony smok"
 CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME7 "Jaszczuroludzie"
 CAMPAIGN_VILLAINS_EVIL_KEEPER_NAME8 "Wojownicy"
@@ -9590,9 +9614,9 @@ CANT_ATTACK_WHILE_PEACEFUL "Czujesz, że to byłoby sprzeczne z twoimi przekonan
 EXCUSE_ME "Przepraszam!"
 BUT_WAIT "Ale zaczekaj!"
 THE_ATTACK_IS_HARMLESS "Atak jest nieszkodliwy."
-THE_FIRE_IS_HARMLESS "Ten ogień jest nieszkodliwy."
-THE_COLD_IS_HARMLESS "To zimno jest nieszkodliwe."
-THE_ACID_IS_HARMLESS "Ten kwas jest nieszkodliwy."
+THE_FIRE_IS_HARMLESS "Ogień nie szkodzi {1:dative}."
+THE_COLD_IS_HARMLESS "Zimno nie szkodzi {1:dative}."
+THE_ACID_IS_HARMLESS "Kwas nie szkodzi {1:dative}."
 SURPRISE_EXCLAMATION "Niespodzianka!"
 YOU_HEAR_A_CRASH "Słyszysz huk."
 YOU_CUT_TENTACLE "Odcinasz mackę krakena."
