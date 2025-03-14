@@ -57,8 +57,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   TString getTheName(bool plural = false, const Creature* owner = nullptr) const;
   TString getAName(bool plural = false, const Creature* owner = nullptr) const;
   TString getNameAndModifiers(const ContentFactory*, bool plural = false, const Creature* owner = nullptr) const;
-  const optional<TString>& getArtifactName() const;
-  void setArtifactName(const TString&);
+  void setArtifactName(string);
   TString getShortName(const ContentFactory*, const Creature* owner = nullptr, bool plural = false) const;
   TString getPluralName(int count) const;
   TString getPluralTheName(int count) const;

@@ -1006,7 +1006,7 @@ bool WindowView::considerBugReportEvent(const Event& event) {
       refreshView();
       t.join();
       if (result)
-        presentText(TString(TStringId("ERROR")), TSentence("ERROR_SENDING_BUG_REPORT", *result));
+        presentText(TString(TStringId("ERROR")), TSentence("ERROR_SENDING_BUG_REPORT", TString(*result)));
       if (savefile)
         remove(savefile->getPath());
       if (screenshot)
@@ -1111,15 +1111,15 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
   if (debugOptions)
     switch (key.sym) {
       case SDL::SDLK_F10:
-        if (auto input = getText(string("Enter effect"), "", 100))
+        if (auto input = getText(TString("Enter effect"_s), "", 100))
           inputQueue.push({UserInputId::APPLY_EFFECT, *input});
         break;
       case SDL::SDLK_F11:
-        if (auto input = getText(string("Enter item type"), "", 100))
+        if (auto input = getText(TString("Enter item type"_s), "", 100))
           inputQueue.push({UserInputId::CREATE_ITEM, *input});
         break;
       case SDL::SDLK_F12:
-        if (auto input = getText(string("Enter creature id"), "", 100))
+        if (auto input = getText(TString("Enter creature id"_s), "", 100))
           inputQueue.push({UserInputId::SUMMON_ENEMY, *input});
         break;
       case SDL::SDLK_F9:

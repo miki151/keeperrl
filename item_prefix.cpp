@@ -76,7 +76,7 @@ vector<TString> getEffectDescription(const ContentFactory* factory, const ItemPr
         return {TSentence("VICTIM_AFFECTED_BY", e.effect.getName(factory), toPercentage(e.chance))};
       },
       [&](ItemPrefixes::ItemAttrBonus bonus) -> vector<TString> {
-        return {TSentence("PLUS_MINUS_ATTR", "+"_s + toString(bonus.value), factory->attrInfo.at(bonus.attr).name)};
+        return {TSentence("PLUS_MINUS_ATTR", TString("+"_s + toString(bonus.value)), factory->attrInfo.at(bonus.attr).name)};
       },
       [&](const ItemPrefixes::JoinPrefixes& join) -> vector<TString> {
         vector<TString> ret;
@@ -88,7 +88,7 @@ vector<TString> getEffectDescription(const ContentFactory* factory, const ItemPr
         return {TSentence("GRANTS_ABILITY", factory->getCreatures().getSpell(id)->getName(factory))};
       },
       [&](const ItemPrefixes::Scale& e) -> vector<TString> {
-        return {TSentence("ITEM_ATTR_IMPROVED_BY", toString(e.value))};
+        return {TSentence("ITEM_ATTR_IMPROVED_BY", TString(e.value))};
       },
       [&](const SpecialAttr& a) -> vector<TString> {
         return {TSentence("SPECIAL_ATTR_VALUE", {toStringWithSign(a.value), factory->attrInfo.at(a.attr).name,
@@ -140,14 +140,14 @@ TString getGlyphName(const ContentFactory* factory, const ItemPrefix& prefix) {
       [&](const ItemPrefixes::Suffix& a) {
         return ::getGlyphName(factory, *a.prefix);
       },
-      [&](const ItemPrefixes::Scale& a) -> string {
-        return "improvement";
+      [&](const ItemPrefixes::Scale& a) {
+        return TString();
       },
       [&](const auto&) {
         return *::getItemName(factory, prefix);
       },
       [&](ItemPrefixes::ItemAttrBonus bonus) {
-        return TSentence("OF_SUFFIX", TSentence("PLUS_MINUS_ATTR", "+" + toString(bonus.value),
+        return TSentence("OF_SUFFIX", TSentence("PLUS_MINUS_ATTR", TString("+" + toString(bonus.value)),
             factory->attrInfo.at(bonus.attr).name));
       },
       [&](const ItemPrefixes::JoinPrefixes& join) {

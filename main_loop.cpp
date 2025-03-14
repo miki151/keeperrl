@@ -87,10 +87,10 @@ vector<SaveFileInfo> MainLoop::getSaveFiles(const DirectoryPath& path, const str
   return ret;
 }
 
-static string getDateString(time_t t) {
+static TString getDateString(time_t t) {
   char buf[100];
   strftime(buf, sizeof(buf), "%c", std::localtime(&t));
-  return buf;
+  return TString(string(buf));
 }
 
 bool MainLoop::isCompatible(int loadedVersion) {
@@ -192,7 +192,7 @@ void MainLoop::uploadFile(const FilePath& path, const string& title, const Saved
   FileSharing::CancelFlag cancel;
   optional<string> error;
   optional<string> url;
-  doWithSplash(TSentence("UPLOADING", string(path.getPath())), 1,
+  doWithSplash(TSentence("UPLOADING", TString(string(path.getPath()))), 1,
       [&] (ProgressMeter& meter) {
         error = fileSharing->uploadSite(cancel, path, title, getOldInfo(info), meter, url);
       },
@@ -203,7 +203,7 @@ void MainLoop::uploadFile(const FilePath& path, const string& title, const Saved
     if (view->yesOrNoPrompt(TStringId("RETIRED_DUNGEON_UPLOADED")))
       openUrl("https://steamcommunity.com/sharedfiles/filedetails/?id=" + *url);
   if (error && !cancel.flag)
-    view->presentText(TString(TStringId("ERROR_UPLOADING_FILE")), *error);
+    view->presentText(TString(TStringId("ERROR_UPLOADING_FILE")), TString(*error));
 }
 
 FilePath MainLoop::getSavePath(const PGame& game, GameSaveType gameType) {
@@ -388,7 +388,7 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
             cancel.cancel();
           });
       if (error)
-        view->presentText(none, *error);
+        view->presentText(none, TString(*error));
       for (auto& elem : onlineSites)
         if (isCompatible(elem.version))
           ret.addOnline(fromOldInfo(elem.gameInfo), elem.fileInfo, elem.totalGames, elem.wonGames, elem.subscribed,
@@ -625,7 +625,7 @@ vector<ModInfo> MainLoop::getAllMods(const vector<ModInfo>& onlineMods) {
 void MainLoop::downloadMod(ModInfo& mod) {
   optional<string> error;
   FileSharing::CancelFlag cancel;
-  doWithSplash(TSentence("DOWNLOADING", mod.name), 1,
+  doWithSplash(TSentence("DOWNLOADING", TString(mod.name)), 1,
       [&] (ProgressMeter& meter) {
         modsDir.createIfDoesntExist();
         error = fileSharing->downloadMod(cancel, mod.name, mod.versionInfo.steamId, modsDir, meter);
@@ -639,19 +639,19 @@ void MainLoop::downloadMod(ModInfo& mod) {
         cancel.cancel();
       });
   if (error && !cancel.flag)
-    view->presentText(TString(TStringId("ERROR_DOWNLOADING_FILE")), *error);
+    view->presentText(TString(TStringId("ERROR_DOWNLOADING_FILE")), TString(*error));
 }
 
 void MainLoop::uploadMod(ModInfo& mod) {
   auto config = getGameConfig({mod.name});
   ContentFactory f;
   if (auto err = f.readData(&config, {mod.name})) {
-    view->presentText(TString("Mod \"" + mod.name + "\" has errors: "), *err);
+    view->presentText(TString("Mod \"" + mod.name + "\" has errors: "), TString(*err));
     return;
   }
   FileSharing::CancelFlag cancel;
   optional<string> error;
-  doWithSplash(TSentence("UPLOADING", mod.name), 1,
+  doWithSplash(TSentence("UPLOADING", TString(mod.name)), 1,
       [&] (ProgressMeter& meter) {
         error = fileSharing->uploadMod(cancel, mod, modsDir, meter);
         updateLocalModVersion(mod.name, mod.versionInfo);
@@ -660,7 +660,7 @@ void MainLoop::uploadMod(ModInfo& mod) {
         cancel.cancel();
       });
   if (error && !cancel.flag)
-    view->presentText(TString(TStringId("ERROR_UPLOADING_MOD")), *error);
+    view->presentText(TString(TStringId("ERROR_UPLOADING_MOD")), TString(*error));
 }
 
 void MainLoop::createNewMod() {
@@ -697,7 +697,7 @@ vector<ModInfo> MainLoop::getOnlineMods() {
         cancel.cancel();
       });
   if (error && !cancel.flag)
-    view->presentText(none, *error);
+    view->presentText(none, TString(*error));
   return ret;
 }
 
@@ -976,7 +976,7 @@ void MainLoop::launchQuickGame(optional<int> maxTurns, optional<string> keeperNa
         [](const auto& f1, const auto& f2) { return f1.date > f2.date; });
     if (toLoad != files.end()) {
       auto path = userPath.file((*toLoad).filename);
-      game = loadGame(path, "\"" + getNameAndVersion(path)->first + "\"");
+      game = loadGame(path, TString("\"" + getNameAndVersion(path)->first + "\""));
     } else
       return;
   } else {
@@ -1359,7 +1359,7 @@ PGame MainLoop::loadGame(const FilePath& file, const TString& name) {
 bool MainLoop::downloadGame(const SaveFileInfo& file) {
   FileSharing::CancelFlag cancel;
   optional<string> error;
-  doWithSplash(TSentence("DOWNLOADING", file.filename), 1,
+  doWithSplash(TSentence("DOWNLOADING", TString(file.filename)), 1,
       [&] (ProgressMeter& meter) {
         error = fileSharing->downloadSite(cancel, file, userPath, meter);
       },
@@ -1367,7 +1367,7 @@ bool MainLoop::downloadGame(const SaveFileInfo& file) {
         cancel.cancel();
       });
   if (error && !cancel.flag)
-    view->presentText(none, *error);
+    view->presentText(none, TString(*error));
   return !error;
 }
 
@@ -1401,7 +1401,7 @@ PGame MainLoop::loadOrNewGame() {
               auto nameAndVersion = *getNameAndVersion(userPath.file(info.filename));
               auto gameInfo = loadSavedGameInfo(userPath.file(info.filename));
               auto record = ScriptedUIDataElems::Record{{
-                {"label", ScriptedUIData{nameAndVersion.first}},
+                {"label", ScriptedUIData{TString(nameAndVersion.first)}},
                 {"date", ScriptedUIData{getDateString(info.date)}},
                 {"viewIds", ScriptedUIData{gameInfo->minions.transform([](auto minion){ return ScriptedUIData{minion.viewId}; })}},
                 {"erase", ScriptedUIData{ScriptedUIDataElems::Callback{[&eraseGame, info]{
@@ -1441,7 +1441,7 @@ PGame MainLoop::loadOrNewGame() {
     if (auto res = prepareCampaign(Random))
       return res;
   } else if (savedGame) {
-    if (PGame ret = loadGame(userPath.file(savedGame->first.filename), "\"" + savedGame->second + "\"")) {
+    if (PGame ret = loadGame(userPath.file(savedGame->first.filename), TString("\"" + savedGame->second + "\""))) {
       if (eraseSave())
         changeSaveType(userPath.file(savedGame->first.filename), GameSaveType::AUTOSAVE);
       return ret;
@@ -1453,7 +1453,7 @@ PGame MainLoop::loadOrNewGame() {
       return game;
     return loadOrNewGame();
   } else if (eraseGame) {
-    if (view->yesOrNoPrompt("Are you sure you want to erase " + eraseGame->filename + "?"))
+    if (view->yesOrNoPrompt(TSentence("CONFIRM_FILE_ERASE", TString(eraseGame->filename))))
       userPath.file(eraseGame->filename).erase();
     return loadOrNewGame();
   }

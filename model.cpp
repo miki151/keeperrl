@@ -182,7 +182,7 @@ Level* Model::buildLevel(const ContentFactory* factory, LevelBuilder b, PLevelMa
 
 Level* Model::buildUpLevel(const ContentFactory* factory, LevelBuilder b, PLevelMaker maker) {
   int depth = -upLevels.size() - 1;
-  auto ret = buildLevel(factory, std::move(b), std::move(maker), depth, TSentence("Z_LEVEL", toString(depth)));
+  auto ret = buildLevel(factory, std::move(b), std::move(maker), depth, TSentence("Z_LEVEL", TString(depth)));
   ret->below = upLevels.empty() ? mainLevels[0] : upLevels.back();
   ret->below->above = ret;
   ret->mainDungeon = true;
@@ -193,7 +193,7 @@ Level* Model::buildUpLevel(const ContentFactory* factory, LevelBuilder b, PLevel
 Level* Model::buildMainLevel(const ContentFactory* factory, LevelBuilder b, PLevelMaker maker) {
   int depth = mainLevels.size();
   auto ret = buildLevel(factory, std::move(b), std::move(maker), depth,
-      depth == 0 ? TStringId("GROUND_LEVEL") : TSentence("Z_LEVEL", toString(depth)));
+      depth == 0 ? TStringId("GROUND_LEVEL") : TSentence("Z_LEVEL", TString(depth)));
   ret->mainDungeon = true;
   mainLevels.push_back(ret);
   return ret;

@@ -256,7 +256,7 @@ void ModelBuilder::makeExtraLevel(Model* model, LevelConnection& connection, Set
               level.isLit ? 1.0 : 0.0),
           getMaker(level.levelType)(random, settlement, level.levelSize, difficulty),
           depth,
-          level.name.value_or("Z-level " + toString(depth)));
+          level.name.value_or(TSentence("Z_LEVEL", TString(depth))));
       res->canTranfer = level.canTransfer;
       res->aiFollows = level.aiFollows;
       res->mainDungeon = mainDungeon;

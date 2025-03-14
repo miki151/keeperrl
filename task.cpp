@@ -442,7 +442,7 @@ class ApplySquare : public Task {
   }
 
   virtual TString getDescription() const override {
-    return TSentence("APPLY_SQUARE_TASK", position ? toString(position->first) : "?"_s);
+    return TSentence("APPLY_SQUARE_TASK", position ? toString(position->first) : TString("?"_s));
   }
 
   bool atTarget(Creature* c) {
@@ -1267,7 +1267,7 @@ class StayIn : public Task {
   }
 
   virtual TString getDescription() const override {
-    return TSentence("GO_TO_TASK", toString(currentTarget));
+    return TSentence("IDLE_TASK");
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), target, currentTarget)
@@ -1513,7 +1513,7 @@ class WaitTask : public Task {
   }
 
   virtual TString getDescription() const override {
-    return TSentence("WAIT_TASK", toString(waitTime));
+    return TSentence("WAIT_TASK", TString(waitTime));
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), waitTime, maxTime)
@@ -1710,7 +1710,7 @@ class PickUpItem : public Task {
   }
 
   virtual TString getDescription() const override {
-    return TSentence("PICK_UP_ITEM_TASK", toString(position));
+   return TSentence("PICK_UP_ITEM_TASK", toString(position));
   }
 
   virtual bool isBogus() const override {

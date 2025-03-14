@@ -181,11 +181,6 @@ class Position {
   void updateSupportViewId(Furniture*) const;
 };
 
-template <>
-inline string toString(const Position& t) {
-  stringstream ss;
-  ss << toString(t.getCoord());
-  return ss.str();
-}
+TString toString(const Position&);
 
 using PositionSet = HashSet<Position>;

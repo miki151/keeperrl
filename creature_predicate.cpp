@@ -104,7 +104,7 @@ static bool applyToCreature(const CreaturePredicates::Ingredient& e, const Creat
 }
 
 static TString getName(const CreaturePredicates::Ingredient& e, const ContentFactory*) {
-  return TSentence("CREATURES_HOLDING_INGREDIENT", e.name);
+  return TSentence("CREATURES_HOLDING_INGREDIENT", TString(e.name));
 }
 
 static bool applyToCreature(const CreaturePredicates::EquipedIngredient& e, const Creature* victim, const Creature* attacker) {
@@ -116,7 +116,7 @@ static bool applyToCreature(const CreaturePredicates::EquipedIngredient& e, cons
 }
 
 static TString getName(const CreaturePredicates::EquipedIngredient& e, const ContentFactory*) {
-  return TSentence("CREATURES_HOLDING_INGREDIENT", e.name);
+  return TSentence("CREATURES_HOLDING_INGREDIENT", TString(e.name));
 }
 
 
@@ -128,7 +128,7 @@ static bool apply(const CreaturePredicates::OnTheGround& e, Position pos, const 
 }
 
 static TString getName(const CreaturePredicates::OnTheGround& e, const ContentFactory*) {
-  return TSentence("INGREDIENT_ON_THE_GROUND", e.name);
+  return TSentence("INGREDIENT_ON_THE_GROUND", TString(e.name));
 }
 
 static bool applyToCreature(LastingOrBuff e, const Creature* victim, const Creature* attacker) {
@@ -152,7 +152,7 @@ static bool applyToCreature(CreatureId id, const Creature* victim, const Creatur
 }
 
 static TString getName(CreatureId s, const ContentFactory*) {
-  return toLower(s.data());
+  return TString(toLower(s.data()));
 }
 
 static bool apply(const CreaturePredicates::Flag& s, Position pos, const Creature* attacker) {
@@ -160,7 +160,7 @@ static bool apply(const CreaturePredicates::Flag& s, Position pos, const Creatur
 }
 
 static TString getName(const CreaturePredicates::Flag& s, const ContentFactory*) {
-  return s.name;
+  return TString(s.name);
 }
 
 static bool applyToCreature(const CreaturePredicates::CreatureFlag& s, const Creature* victim, const Creature*) {
@@ -168,7 +168,7 @@ static bool applyToCreature(const CreaturePredicates::CreatureFlag& s, const Cre
 }
 
 static TString getName(const CreaturePredicates::CreatureFlag& s, const ContentFactory*) {
-  return s.name;
+  return TString(s.name);
 }
 
 static bool applyToCreature(const Gender& s, const Creature* victim, const Creature*) {
@@ -192,7 +192,7 @@ static bool applyToCreature(const CreaturePredicates::Kills& s, const Creature* 
 }
 
 static TString getName(const CreaturePredicates::Kills& s, const ContentFactory*) {
-  return TSentence("CREATURES_WITH_AT_LEAST_X_KILLS", toString(s.cnt));
+  return TSentence("CREATURES_WITH_AT_LEAST_X_KILLS", TString(s.cnt));
 }
 
 static bool apply(const CreaturePredicates::Unlocked& s, Position pos, const Creature* attacker) {
@@ -200,7 +200,7 @@ static bool apply(const CreaturePredicates::Unlocked& s, Position pos, const Cre
 }
 
 static TString getName(const CreaturePredicates::Unlocked& s, const ContentFactory*) {
-  return s.id;
+  return TString(s.id);
 }
 
 static bool apply(const CreaturePredicates::InTerritory& s, Position pos, const Creature* attacker) {
@@ -292,7 +292,7 @@ static bool apply(CreaturePredicates::Frequency f, Position position, const Crea
 }
 
 static TString getName(const CreaturePredicates::Frequency f, const ContentFactory*) {
-  return TSentence("WITH_FREQUENCY", toString(f.value));
+  return TSentence("WITH_FREQUENCY", TString(f.value));
 }
 
 static bool applyToCreature(CreaturePredicates::PopLimitReached, const Creature* victim, const Creature*) {
@@ -317,7 +317,7 @@ static bool applyToCreature(const CreaturePredicates::Health& p, const Creature*
 }
 
 static TString getName(const CreaturePredicates::Health& p, const ContentFactory*) {
-  return TSentence("CREATURES_WITH_HEALTH_BETWEEN", toString(p.from), toString(p.to));
+  return TSentence("CREATURES_WITH_HEALTH_BETWEEN", TString(p.from), TString(p.to));
 }
 
 static bool apply(CreaturePredicates::Night m, Position pos, const Creature*) {
@@ -338,7 +338,7 @@ static TString getName(const CreaturePredicates::Distance& p, const ContentFacto
     ret += " from " + toString(*p.min);
   if (p.max)
     ret += " up to " + toString(*p.max);
-  return ret;
+  return TString(ret);
 }
 
 static bool apply(const CreaturePredicates::Distance& e, Position pos, const Creature* attacker) {
@@ -352,7 +352,7 @@ static TString getName(const CreaturePredicates::DistanceD& p, const ContentFact
     ret += " from " + toString(*p.min);
   if (p.max)
     ret += " up to " + toString(*p.max);
-  return ret;
+  return TString(ret);
 }
 
 static bool apply(const CreaturePredicates::DistanceD& e, Position pos, const Creature* attacker) {
@@ -388,7 +388,7 @@ static bool applyToCreature(const CreaturePredicates::AttributeAtLeast& a, const
 }
 
 static TString getName(const CreaturePredicates::AttributeAtLeast& a, const ContentFactory* f) {
-  return TSentence("CREATURES_WITH_ATTR_AT_LEAST", toString(a.value), f->attrInfo.at(a.attr).name);
+  return TSentence("CREATURES_WITH_ATTR_AT_LEAST", TString(a.value), f->attrInfo.at(a.attr).name);
 }
 
 static bool applyToCreature(const CreaturePredicates::HasAnyHealth&, const Creature* victim, const Creature* attacker) {
@@ -421,7 +421,7 @@ static bool applyToCreature(const CreaturePredicates::MaxLevelBelow& p, const Cr
 }
 
 static TString getName(const CreaturePredicates::MaxLevelBelow& p, const ContentFactory*) {
-  return TSentence("CREATURES_WITH_MAX_TRAINING_LEVEL_BELOW", toString(p.value));
+  return TSentence("CREATURES_WITH_MAX_TRAINING_LEVEL_BELOW", TString(p.value));
 }
 
 static bool applyToCreature(const CreaturePredicates::ExperienceBelow& p, const Creature* victim, const Creature* attacker) {
@@ -429,7 +429,7 @@ static bool applyToCreature(const CreaturePredicates::ExperienceBelow& p, const 
 }
 
 static TString getName(const CreaturePredicates::ExperienceBelow& p, const ContentFactory*) {
-return TSentence("CREATURES_EXP_LEVEL_BELOW", toString(p.value));
+return TSentence("CREATURES_EXP_LEVEL_BELOW", TString(p.value));
 }
 
 static bool apply(const CreaturePredicates::Translate& m, Position pos, const Creature* attacker) {

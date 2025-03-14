@@ -56,11 +56,11 @@ bool Spell::canTargetSelf() const {
 
 vector<TString> Spell::getDescription(const Creature* c, const ContentFactory* f) const {
     vector<TString> description = {effect->getDescription(f), TSentence("SPELL_COOLDOWN", (c
-        ? toString(c->calculateSpellCooldown(cooldown))
-        : toString(cooldown)))
+        ? TString(c->calculateSpellCooldown(cooldown))
+        : TString(toString(cooldown))))
         };
   if (getRange() > 0)
-    description.push_back(TSentence("SPELL_RANGE", toString(getRange())));
+    description.push_back(TSentence("SPELL_RANGE", TString(getRange())));
   return description;
 }
 

@@ -652,7 +652,7 @@ WarlordInfoWithReference Game::getWarlordInfo() {
 
 void Game::conquered(const TString& title, int numKills, int points) {
   TString text = combineSentences(concat(
-    {TSentence("YOU_HAVE_CONQUERED_THIS_LAND", toString(numKills), toString(points))},
+    {TSentence("YOU_HAVE_CONQUERED_THIS_LAND", TString(numKills), TString(points))},
     statistics->getText()));
   view->presentText(TString(TStringId("VICTORY")), text);
   Highscores::Score score = CONSTRUCT(Highscores::Score,
@@ -674,11 +674,11 @@ void Game::retired(const TString& title, int numKills, int points) {
   int dungeonTurns =
       (getPlayerCollective()->getLocalTime() - initialModelUpdate).getVisibleInt();
   vector<TString> text = {
-    TSentence("YOU_HAVE_SURVIVED", toString(turns), toString(numKills))
+    TSentence("YOU_HAVE_SURVIVED", TString(turns), TString(numKills))
   };
   if (dungeonTurns > 0) {
-    text.push_back(TSentence("TURNS_DEFENDING_THE_BASE", toString(dungeonTurns)));
-    text.push_back(TSentence("TURNS_SPENT_ATTACKING", toString(turns - dungeonTurns)));
+    text.push_back(TSentence("TURNS_DEFENDING_THE_BASE", TString(dungeonTurns)));
+    text.push_back(TSentence("TURNS_SPENT_ATTACKING", TString(turns - dungeonTurns)));
   }
   text.push_back(TStringId("THANK_YOU_FOR_PLAYING"));
   text.append(statistics->getText());
@@ -710,10 +710,10 @@ void Game::gameOver(const Creature* creature, int numKills, int points) {
   if (auto reason = creature->getDeathReason()) {
     text[0] = TSentence("AND_SO_DIES_OF_REASON", creature->getName().title(), *reason);
   }
-  text.push_back(TSentence("YOU_KILLED_AND_SCORED", toString(numKills), toString(points)));
+  text.push_back(TSentence("YOU_KILLED_AND_SCORED", TString(numKills), TString(points)));
   if (dungeonTurns > 0) {
-    text.push_back(TSentence("TURNS_DEFENDING_THE_BASE", toString(dungeonTurns)));
-    text.push_back(TSentence("TURNS_SPENT_ATTACKING", toString(turns - dungeonTurns)));
+    text.push_back(TSentence("TURNS_DEFENDING_THE_BASE", TString(dungeonTurns)));
+    text.push_back(TSentence("TURNS_SPENT_ATTACKING", TString(turns - dungeonTurns)));
   }
   text.append(statistics->getText());
   view->presentTextBelow(TString(TStringId("GAME_OVER")), combineWithNewLine(text));
@@ -801,7 +801,7 @@ SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
       CHECK(retiredInfo->villainType == VillainType::LESSER || retiredInfo->villainType == VillainType::MAIN)
           << EnumInfo<VillainType>::getString(retiredInfo->villainType);
     }
-    auto name = col->getName()->shortened.value_or("???"_s);
+    auto name = col->getName()->shortened.value_or(TString("???"_s));
     return SavedGameInfo{minions, retiredInfo, ""_s, getSaveProgressCount(), std::move(spriteMods)};
   } else {
     vector<Creature*> allCreatures;
@@ -864,7 +864,7 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
   view->refreshView();
   t.join();
   if (error) {
-    view->presentText(none, *error);
+    view->presentText(none, TString(*error));
     return;
   }
   auto data = ScriptedUIDataElems::Record{};

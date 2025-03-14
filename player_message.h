@@ -27,8 +27,9 @@ class PlayerMessage : public UniqueEntity<PlayerMessage> {
 
   bool isClickable() const;
 
-  string getText(View*) const;
-  string getText(GuiFactory*) const;
+  const TString& getText() const;
+  string getTranslatedText(View*) const;
+  string getTranslatedText(GuiFactory*) const;
   MessagePriority getPriority() const;
   double getFreshness() const;
   void setFreshness(double);

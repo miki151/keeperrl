@@ -1837,9 +1837,9 @@ bool Creature::takeDamage(const Attack& attack) {
 TString AdjectiveInfo::getText() const {
   auto ret = TSentence("ADJECTIVE_INFO", name);
   if (timeout)
-    ret.params.push_back("[" + toString(*timeout) + "]");
+    ret.params.push_back(TString("[" + toString(*timeout) + "]"));
   if (count > 1)
-    ret.params.push_back("(x" + toString(count) + ")");
+    ret.params.push_back(TString("(x" + toString(count) + ")"));
   ret.optionalParams = true;
   return ret;
 }

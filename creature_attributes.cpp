@@ -229,9 +229,9 @@ static TString getVerbalReaction(const TString& reaction, const Creature* me) {
   return reaction.text.visit(
     [&](const string& s) -> TString {
       if (s.front() == '\"')
-        return s;
+        return TString(s);
       else
-        return me->getName().the().data() + " "_s + s;
+        return TString(me->getName().the().data() + " "_s + s);
     },
     [&](TSentence s) -> TString {
       s.params.push_back(me->getName().the());
@@ -309,12 +309,9 @@ void consumeAttr(Gender& mine, const Gender& his, vector<TString>& adjectives) {
 
 
 template <typename T>
-void consumeAttr(heap_optional<T>& mine, const heap_optional<T>& his, vector<TString>& adjectives, const string& adj) {
-  if (consumeProb() && !mine && his) {
+void consumeAttr(heap_optional<T>& mine, const heap_optional<T>& his, vector<TString>& adjectives) {
+  if (consumeProb() && !mine && his)
     mine = *his;
-    if (!adj.empty())
-      adjectives.push_back(adj);
-  }
 }
 
 void CreatureAttributes::consumeEffects(Creature* self, const EnumMap<LastingEffect, int>& permanentEffects) {
@@ -334,7 +331,7 @@ void CreatureAttributes::consume(Creature* self, CreatureAttributes& other) {
   for (auto& t: factory->attrInfo)
     consumeAttr(attr[t.first], other.attr[t.first], adjectives,
       TSentence("MORE_ADJECTIVE", t.second.adjective), t.second.absorptionCap);
-  consumeAttr(passiveAttack, other.passiveAttack, adjectives, "");
+  consumeAttr(passiveAttack, other.passiveAttack, adjectives);
   consumeAttr(gender, other.gender, adjectives);
   if (!adjectives.empty()) {
     self->you(MsgType::BECOME, combineWithAnd(adjectives));

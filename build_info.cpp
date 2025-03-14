@@ -16,7 +16,7 @@ bool BuildInfo::meetsRequirement(const Collective* col, Requirement req) {
 TString BuildInfo::getRequirementText(Requirement req, const ContentFactory* factory) {
   return req.visit(
       [&](TechId techId) { return TSentence("MISSING_TECHNOLOGY", factory->technology.getName(techId));},
-      [&](BuildInfo::DungeonLevel level) { return TSentence("DUNGEON_LEVEL_REQUIREMENT", toString(level)); }
+      [&](BuildInfo::DungeonLevel level) { return TSentence("DUNGEON_LEVEL_REQUIREMENT", TString(level)); }
   );
 }
 

@@ -263,7 +263,7 @@ TString CreatureFactory::getName(CreatureId id) const {
   if (auto a = getReferenceMaybe(attributes, id))
     return a->name.bare();
   if (auto p = getReferenceMaybe(getSpecialParams(), id))
-    return getSpeciesName(p->humanoid, p->large, p->living, p->wings);
+    return TString(getSpeciesName(p->humanoid, p->large, p->living, p->wings));
   return TStringId("KNIGHT_NAME");
 }
 
@@ -499,7 +499,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
         for (auto pos : creature->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), 30)))
           if (auto debtor = pos.getCreature())
             if (debtor->getUniqueId() == debtorId) {
-              debtor->privateMessage(TSentence("YOU_OWE_ME", toString(debtor->getDebt().getAmountOwed(creature))));
+              debtor->privateMessage(TSentence("YOU_OWE_ME", TString(debtor->getDebt().getAmountOwed(creature))));
               if (++thiefCount.getOrInit(debtor) == 4) {
                 debtor->privateMessage(TStringId("THIEF_THIEF"));
                 creature->getTribe()->onItemsStolen(debtor);
@@ -745,8 +745,8 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
           c.spellSchools = LIST(SpellSchoolId("mage"));
         }
         if (p.humanoid) {
-          c.chatReactionFriendly = TString(TSentence("SPECIAL_HUMANOID_CHAT_REACTION", name));
-          c.chatReactionFriendly = TString(TSentence("SPECIAL_HUMANOID_HOSTILE_CHAT_REACTION", name));
+          c.chatReactionFriendly = TString(TSentence("SPECIAL_HUMANOID_CHAT_REACTION", TString(name)));
+          c.chatReactionFriendly = TString(TSentence("SPECIAL_HUMANOID_HOSTILE_CHAT_REACTION", TString(name)));
         } else {
           c.chatReactionFriendly = c.chatReactionHostile = c.petReaction = TString(TStringId("SNARLS"));
         }

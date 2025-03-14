@@ -19,7 +19,7 @@ void PlayerMessage::presentMessages(View* view, const vector<PlayerMessage>& mes
   auto list = ScriptedUIDataElems::List {};
   for (int i : All(messages))
     list.push_back(ScriptedUIDataElems::Record {{
-      {EnumInfo<MessagePriority>::getString(messages[i].priority), TString(messages[i].getText(view))}
+      {EnumInfo<MessagePriority>::getString(messages[i].priority), TString(messages[i].getTranslatedText(view))}
     }});
   if (messages.empty())
     list.push_back(ScriptedUIDataElems::Record {{
@@ -30,12 +30,16 @@ void PlayerMessage::presentMessages(View* view, const vector<PlayerMessage>& mes
   view->scriptedUI("message_history", list, state);
 }
 
-string PlayerMessage::getText(View* view) const {
+string PlayerMessage::getTranslatedText(View* view) const {
   return view->translate(text);
 }
 
-string PlayerMessage::getText(GuiFactory* view) const {
+string PlayerMessage::getTranslatedText(GuiFactory* view) const {
   return view->translate(text);
+}
+
+const TString& PlayerMessage::getText() const {
+  return text;
 }
 
 double PlayerMessage::getFreshness() const {

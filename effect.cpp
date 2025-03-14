@@ -362,7 +362,7 @@ static TString getDescription(const Effects::Lasting& e, const ContentFactory* f
   auto duration = !!e.duration
       ? *e.duration
       : LastingEffects::getDuration(*e.lastingEffect.getValueMaybe<LastingEffect>());
-  return TSentence("BUFF_EFFECT_DESCRIPTION", std::move(ret), toString(duration));
+  return TSentence("BUFF_EFFECT_DESCRIPTION", std::move(ret), TString(duration));
 }
 
 static bool applyToCreature(const Effects::RemoveLasting& e, Creature* c, Creature*) {
@@ -402,7 +402,7 @@ static void scale(Effects::IncreaseAttr& e, double value, const ContentFactory* 
 
 static TString getDescription(const Effects::IncreaseAttr& e, const ContentFactory* f) {
   return TSentence(e.get(TStringId("ATTR_BOOST_DESCRIPTION"), TStringId("ATTR_LOSS_DESCRIPTION")),
-      f->attrInfo.at(e.attr).name, toString(abs(e.amount)));
+      f->attrInfo.at(e.attr).name, TString(abs(e.amount)));
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::IncreaseAttr& e, const Creature* victim, bool isEnemy) {
@@ -453,7 +453,7 @@ static TString getName(const Effects::SpecialAttr& e, const ContentFactory* f) {
 
 static TString getDescription(const Effects::SpecialAttr& e, const ContentFactory* f) {
   return TSentence(TStringId(get(e, "SPECIAL_ATTR_BOOST_DESCRIPTION", "SPECIAL_ATTR_LOSS_DESCRIPTION")),
-      {f->attrInfo.at(e.attr).name, toString(e.value), e.predicate.getName(f)});
+      {f->attrInfo.at(e.attr).name, TString(e.value), e.predicate.getName(f)});
 }
 
 static const char* get(const Effects::IncreaseMaxLevel& e, const char* inc, const char* dec) {
@@ -477,7 +477,7 @@ static TString getName(const Effects::IncreaseMaxLevel& e, const ContentFactory*
 
 static TString getDescription(const Effects::IncreaseMaxLevel& e, const ContentFactory* f) {
   return TSentence(TStringId(get(e, "TRAINING_LIMIT_BUFF_DESCRIPTION", "TRAINING_LIMIT_DEBUFF_DESCRIPTION")),
-      f->attrInfo.at(e.type).name, toString(std::fabs(e.value)));
+      f->attrInfo.at(e.type).name, TString(std::fabs(e.value)));
 }
 
 static bool applyToCreature(const Effects::IncreaseLevel& e, Creature* c, Creature*) {
@@ -491,7 +491,7 @@ static TString getName(const Effects::IncreaseLevel& e, const ContentFactory* f)
 
 static TString getDescription(const Effects::IncreaseLevel& e, const ContentFactory* f) {
   return TSentence(TStringId("TRAINING_EFFECT_DESCRIPTION"),
-      f->attrInfo.at(e.type).name, toString(std::fabs(e.value)));
+      f->attrInfo.at(e.type).name, TString(std::fabs(e.value)));
 }
 
 static bool applyToCreature(const Effects::AddCompanion& e, Creature* c, Creature*) {
@@ -692,10 +692,10 @@ static TString getDescription(const Effects::Summon& e, const ContentFactory* f)
   if (e.count.getEnd() > 2) {
     if (e.count.getLength() == 1)
       return TSentence("SUMMON_MULTIPLE_EFFECT_DESCRIPTION", f->getCreatures().getNamePlural(e.creature),
-          toString(e.count.getStart()));
+          TString(e.count.getStart()));
     else
       return TSentence("SUMMON_RANGE_EFFECT_DESCRIPTION", {f->getCreatures().getNamePlural(e.creature),
-          toString(e.count.getStart()), toString(e.count.getEnd() - 1)});
+          TString(e.count.getStart()), TString(e.count.getEnd() - 1)});
   } else
     return TSentence("SUMMON_SINGLE_EFFECT_DESCRIPTION", f->getCreatures().getName(e.creature));
 }
@@ -721,10 +721,10 @@ static TString getDescription(const Effects::SummonEnemy& e, const ContentFactor
   if (e.count.getEnd() > 2) {
     if (e.count.getLength() == 1)
       return TSentence("SUMMON_HOSTILE_MULTIPLE_EFFECT_DESCRIPTION", f->getCreatures().getNamePlural(e.creature),
-          toString(e.count.getStart()));
+          TString(e.count.getStart()));
     else
       return TSentence("SUMMON_HOSTILE_RANGE_EFFECT_DESCRIPTION", {f->getCreatures().getNamePlural(e.creature),
-          toString(e.count.getStart()), toString(e.count.getEnd() - 1)});
+          TString(e.count.getStart()), TString(e.count.getEnd() - 1)});
   } else
     return TSentence("SUMMON_HOSTILE_SINGLE_EFFECT_DESCRIPTION", f->getCreatures().getName(e.creature));
 }
@@ -1337,7 +1337,7 @@ static bool applyToCreature(const Effects::FixedDamage& e, Creature* c, Creature
 }
 
 static TString getName(const Effects::FixedDamage& e, const ContentFactory* f) {
-  return TSentence("FIXED_DAMAGE_EFFECT_NAME", f->attrInfo.at(e.attr).name, toString(e.value));
+  return TSentence("FIXED_DAMAGE_EFFECT_NAME", f->attrInfo.at(e.attr).name, TString(e.value));
 }
 
 static bool isOffensive(const Effects::FixedDamage&) {
@@ -1345,7 +1345,7 @@ static bool isOffensive(const Effects::FixedDamage&) {
 }
 
 static TString getDescription(const Effects::FixedDamage& e, const ContentFactory* f) {
-  return TSentence("FIXED_DAMAGE_EFFECT_DESCRIPTION", f->attrInfo.at(e.attr).name, toString(e.value));
+  return TSentence("FIXED_DAMAGE_EFFECT_DESCRIPTION", f->attrInfo.at(e.attr).name, TString(e.value));
 }
 
 static bool applyToCreature(const Effects::InjureBodyPart& e, Creature* c, Creature* attacker) {
@@ -1459,7 +1459,7 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::RegrowBodyPart&, co
 }
 
 static TString getDescription(const Effects::Area& e, const ContentFactory* factory) {
-  return TSentence("AREA_EFFECT_DESCRIPTION", toString(e.radius), e.effect->getDescription(factory));
+  return TSentence("AREA_EFFECT_DESCRIPTION", TString(e.radius), e.effect->getDescription(factory));
 }
 
 static TString getName(const Effects::Area& e, const ContentFactory* factory) {
@@ -2190,9 +2190,9 @@ static bool isOffensive(const Effects::AnimateItems&) {
 static TString getDescription(const Effects::AnimateItems& e, const ContentFactory*) {
   switch (e.type) {
     case Effects::AnimatedItemType::CORPSE:
-      return TSentence("ANIMATE_CORPSES_EFFECT_DESCRIPTION", toString(e.maxCount));
+      return TSentence("ANIMATE_CORPSES_EFFECT_DESCRIPTION", TString(e.maxCount));
     case Effects::AnimatedItemType::WEAPON:
-      return TSentence("ANIMATE_WEAPONS_EFFECT_DESCRIPTION", toString(e.maxCount));
+      return TSentence("ANIMATE_WEAPONS_EFFECT_DESCRIPTION", TString(e.maxCount));
   }
 }
 

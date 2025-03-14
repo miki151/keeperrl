@@ -128,9 +128,9 @@ optional<TString> Immigration::getMissingRequirement(const ImmigrantRequirement&
                 if (required > 1)
                   list = makePlural(std::move(list));
                 if (total > 0)
-                  return TString(TSentence("REQUIRES_MORE_ATTRACTIONS", toString(required), std::move(list)));
+                  return TString(TSentence("REQUIRES_MORE_ATTRACTIONS", TString(required), std::move(list)));
                 else
-                  return TString(TSentence("REQUIRES_ATTRACTIONS", toString(required), std::move(list)));
+                  return TString(TSentence("REQUIRES_ATTRACTIONS", TString(required), std::move(list)));
               } else
                 return none;
             });
@@ -168,7 +168,7 @@ optional<TString> Immigration::getMissingRequirement(const ImmigrantRequirement&
       },
       [&](const MinTurnRequirement& type) -> optional<TString> {
         if (collective->getGlobalTime() < type.turn)
-          return TString(TSentence("NOT_AVAILABLE_UNTIL_TURN", toString(type.turn)));
+          return TString(TSentence("NOT_AVAILABLE_UNTIL_TURN", TString(type.turn)));
         else
           return none;
       },

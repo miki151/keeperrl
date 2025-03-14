@@ -37,9 +37,6 @@ string toString(const T& t) {
   return ss.str();
 }
 
-string toStringWithSign(int);
-string toPercentage(double);
-
 template <class T>
 string toString(const optional<T>& t) {
   if (t)

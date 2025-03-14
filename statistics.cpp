@@ -46,7 +46,7 @@ vector<TString> Statistics::getText() const {
   vector<TString> ret;
   for (auto id : ENUM_ALL(StatId)) {
     if (int n = count[id])
-      ret.emplace_back(TSentence(getName(id), toString(n)));
+      ret.emplace_back(TSentence(getName(id), TString(n)));
   }
   return ret;
 }

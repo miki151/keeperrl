@@ -132,7 +132,7 @@ vector<vector<Item*>> Item::stackItems(const ContentFactory* f, vector<Item*> it
     function<string(const Item*)> suffix) {
   PROFILE;
   map<TString, vector<Item*>> stacks = groupBy<Item*, TString>(items, [suffix, f](const Item* item) {
-        return TSentence("BLABLA", { item->getNameAndModifiers(f), suffix(item),  toString(item->getViewObject().id().getColor())});
+        return TSentence("BLABLA", { item->getNameAndModifiers(f), TString(suffix(item)),  TString(toString(item->getViewObject().id().getColor()))});
       });
   vector<vector<Item*>> ret;
   for (auto& elem : stacks)
@@ -507,21 +507,21 @@ TString Item::getTheName(bool getPlural, const Creature* owner) const {
 TString Item::getPluralName(int count) const {
   PROFILE;
   if (count > 1)
-    return TSentence("ITEM_COUNT", getName(true), toString(count));
+    return TSentence("ITEM_COUNT", getName(true), TString(count));
   else
     return getName(false);
 }
 
 TString Item::getPluralTheName(int count) const {
   if (count > 1)
-    return TSentence("ITEM_COUNT", getName(true), toString(count));
+    return TSentence("ITEM_COUNT", getName(true), TString(count));
   else
     return getTheName(false);
 }
 
 TString Item::getPluralAName(int count) const {
   if (count > 1)
-    return TSentence("ITEM_COUNT", getName(true), toString(count));
+    return TSentence("ITEM_COUNT", getName(true), TString(count));
   else
     return getAName(false);
 }
@@ -544,19 +544,15 @@ TString Item::getVisibleName(bool getPlural) const {
   return ret;
 }
 
-static string withSign(int a) {
+static TString withSign(int a) {
   if (a >= 0)
-    return "+" + toString(a);
+    return TString("+" + toString(a));
   else
-    return toString(a);
+    return TString(a);
 }
 
-const optional<TString>& Item::getArtifactName() const {
-  return attributes->artifactName;
-}
-
-void Item::setArtifactName(const TString& s) {
-  attributes->artifactName = s;
+void Item::setArtifactName(string s) {
+  attributes->artifactName = TString(s);
 }
 
 TString Item::getSuffix() const {
@@ -609,7 +605,7 @@ TString Item::getModifiers(const ContentFactory* factory, bool shorten) const {
   if (!attrStrings.empty())
     attrString = TSentence("PARENTHESES", std::move(attrString));
   if (attributes->uses > -1 && attributes->displayUses)
-    attrString = TSentence("USES_LEFT", std::move(attrString), toString(attributes->uses));
+    attrString = TSentence("USES_LEFT", std::move(attrString), TString(attributes->uses));
   return attrString;
 }
 

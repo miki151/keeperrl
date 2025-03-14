@@ -42,7 +42,7 @@ vector<TechId> Technology::getNextTechs() const {
 Technology::Technology(map<TechId, Technology::TechDefinition> m) : techs(std::move(m)) {}
 
 TString Technology::getName(TechId id) const {
-  return techs.at(id).name.value_or(string(id.data()));
+  return techs.at(id).name.value_or(TString(string(id.data())));
 }
 
 vector<TechId> Technology::getNextTechs(set<TechId> from) const {

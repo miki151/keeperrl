@@ -821,13 +821,13 @@ Body::DamageResult Body::takeDamage(const Attack& attack, Creature* creature, do
 
 void Body::getBadAdjectives(vector<AdjectiveInfo>& ret) const {
   if (health < 1)
-    ret.push_back({TStringId("WOUNDED"), ""_s});
+    ret.push_back({TStringId("WOUNDED"), TString()});
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (int num = numInjured(part))
-      ret.push_back({TSentence("INJURED_BODY_PART", getPluralText(part, num)), ""_s});
+      ret.push_back({TSentence("INJURED_BODY_PART", getPluralText(part, num)), TString()});
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (int num = numLost(part))
-      ret.push_back({TSentence("LOST_BODY_PART", getPluralText(part, num)), ""_s});
+      ret.push_back({TSentence("LOST_BODY_PART", getPluralText(part, num)), TString()});
 }
 
 BodySize Body::getSize() const {

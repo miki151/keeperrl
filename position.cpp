@@ -47,6 +47,12 @@ int Position::getHash() const {
   return coord.getHash() + int((long long)level);
 }
 
+TString toString(const Position& t) {
+  stringstream ss;
+  ss << toString(t.getCoord());
+  return TString(ss.str());
+}
+
 Vec2 Position::getCoord() const {
   return coord;
 }

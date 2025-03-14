@@ -744,7 +744,7 @@ SGuiElem GuiFactory::labelMultiLineWidth(const TString& ts, int lineHeight, int 
   auto s = translate(ts);
   auto lines = getListBuilder(lineHeight);
   for (auto& line : ::breakText(renderer, s, width, size, delim))
-    lines.addElem(label(line, size, c));
+    lines.addElem(label(TString(line), size, c));
   return lines.buildVerticalList();
 }
 

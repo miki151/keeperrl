@@ -21,8 +21,6 @@ class CampaignBuilder {
   optional<CampaignSetup> prepareCampaign(ContentFactory*, function<optional<RetiredGames>(CampaignType)>,
       CampaignType defaultType, string worldName);
   static CampaignSetup getEmptyCampaign();
-  static CampaignSetup getWarlordCampaign(const vector<RetiredGames::RetiredGame>&,
-      const string& gameName);
 
   private:
   View* view;

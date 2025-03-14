@@ -186,9 +186,8 @@ bool GuiBuilder::clearActiveButton() {
 }
 
 SGuiElem GuiBuilder::drawCost(pair<ViewId, int> cost, Color color) {
-  string costText = toString(cost.second);
   return WL(getListBuilder)
-      .addElemAuto(WL(rightMargin, 5, WL(label, costText, color)))
+      .addElemAuto(WL(rightMargin, 5, WL(label, TString(cost.second), color)))
       .addElem(WL(viewObject, cost.first), 25)
       .buildHorizontalList();
 }
@@ -527,7 +526,7 @@ SGuiElem GuiBuilder::drawResources(const vector<CollectiveInfo::Resource>& numRe
     if ( i >= numResourcesShown)
       res.addElem(WL(label, numResource[i].name), maxMoreName + 20);
     res.addElem(WL(viewObject, numResource[i].viewId), 30);
-    res.addElem(WL(labelFun, [&numResource, i] { return toString<int>(numResource[i].count); },
+    res.addElem(WL(labelFun, [&numResource, i] { return TString(numResource[i].count); },
           [&numResource, i] { return numResource[i].count >= 0 ? Color::WHITE : Color::RED; }), 50);
     auto tutorialHighlight = numResource[i].tutorialHighlight;
     auto tutorialElem = WL(conditional, WL(tutorialHighlight), [tutorialHighlight, tutorial] {
@@ -562,8 +561,8 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo, int width) {
   const int space = 55;
   bottomLine.addSpace(space);
   bottomLine.addElem(WL(labelFun, [&info] {
-      return TSentence("MINIONS_HEADER", {capitalFirst(info.populationString), toString(info.minionCount),
-        toString(info.minionLimit)}); }), 150);
+      return TSentence("MINIONS_HEADER", {capitalFirst(info.populationString), TString(info.minionCount),
+        TString(info.minionLimit)}); }), 150);
   bottomLine.addSpace(space);
   bottomLine.addElem(getTurnInfoGui(gameInfo.time), 50);
   bottomLine.addSpace(space);
@@ -701,16 +700,16 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
     int modifiedSquares = info.modifiedSquares;
     int totalSquares = info.totalSquares;
     bottomLine.addBackElem(WL(stack,
-        WL(labelFun, [=]()->string {
+        WL(labelFun, [=]()->TString {
           switch (counterMode) {
             case CounterMode::NONE:
-              return "";
+              return TString();
             case CounterMode::FPS:
-              return "FPS " + toString(fpsCounter.getFps()) + " / " + toString(upsCounter.getFps());
+              return TString("FPS " + toString(fpsCounter.getFps()) + " / " + toString(upsCounter.getFps()));
             case CounterMode::LAT:
-              return "LAT " + toString(fpsCounter.getMaxLatency()) + "ms / " + toString(upsCounter.getMaxLatency()) + "ms";
+              return TString("LAT " + toString(fpsCounter.getMaxLatency()) + "ms / " + toString(upsCounter.getMaxLatency()) + "ms");
             case CounterMode::SMOD:
-              return "SMOD " + toString(modifiedSquares) + "/" + toString(totalSquares);
+              return TString("SMOD " + toString(modifiedSquares) + "/" + toString(totalSquares));
           }
         }, Color::WHITE),
         WL(button, [=]() { counterMode = (CounterMode) ( ((int) counterMode + 1) % 4); })), 120);
@@ -798,7 +797,7 @@ SGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
           .buildHorizontalList());
   lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(info.creature.attributes)));
   if (info.timeLeft)
-    lines.addElem(WL(label, TSentence("IMMIGRANT_TURNS_LEFT", toString(info.timeLeft))));
+    lines.addElem(WL(label, TSentence("IMMIGRANT_TURNS_LEFT", TString(*info.timeLeft))));
   for (auto& req : info.specialTraits)
     lines.addElem(drawSpecialTrait(req));
   for (auto& req : info.info)
@@ -909,7 +908,7 @@ SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info, bo
       name += " " + toString(t.value);
   #endif*/
       if (addComma)
-        line.addElemAuto(WL(label, string(", ")));
+        line.addElemAuto(WL(label, TString(", "_s)));
       line.addElemAuto(WL(label, name, getTriggerColor(t.value)));
       addComma = true;
     }
@@ -950,7 +949,7 @@ static Color getNextWaveColor(const CollectiveInfo::NextWave& info) {
 SGuiElem GuiBuilder::drawNextWaveOverlay(const CollectiveInfo::NextWave& info) {
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElem(WL(label, capitalFirst(info.attacker)));
-  lines.addElem(WL(label, TSentence("ATTACKING_IN", toString(info.numTurns.getVisibleInt())),
+  lines.addElem(WL(label, TSentence("ATTACKING_IN", TString(info.numTurns)),
       getNextWaveColor(info)));
   lines.addElemAuto(getVillainDismissHint(none));
   return WL(miniWindow, WL(margins, lines.buildVerticalList(), 15));
@@ -1109,8 +1108,8 @@ void GuiBuilder::drawAllVillainsMenu(Vec2 pos, const VillageInfo& info) {
   vector<function<void()>> callbacks;
   vector<SGuiElem> tooltips;
   if (info.numMainVillains > 0) {
-    lines.push_back(WL(label, TSentence("MAIN_VILLAINS_CONQUERED", toString(info.numConqueredMainVillains),
-        toString(info.numMainVillains))));
+    lines.push_back(WL(label, TSentence("MAIN_VILLAINS_CONQUERED", TString(info.numConqueredMainVillains),
+        TString(info.numMainVillains))));
     callbacks.push_back(nullptr);
     tooltips.push_back(nullptr);
   }
@@ -1206,7 +1205,7 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const vector<ImmigrantDataInfo>& imm
         WL(sprite, GuiFactory::TexId::IMMIGRANT_BG, GuiFactory::Alignment::CENTER),
         WL(conditional, makeHighlight(Color(0, 255, 0, 100)), [this] { return bottomWindow == IMMIGRATION_HELP; }),
         WL(button, [this] { toggleBottomWindow(IMMIGRATION_HELP); }),
-        WL(setWidth, elemWidth, WL(topMargin, -2, WL(centerHoriz, WL(label, "?"_s, 32, Color::GREEN))))
+        WL(setWidth, elemWidth, WL(topMargin, -2, WL(centerHoriz, WL(label, TString("?"_s), 32, Color::GREEN))))
     )));
   return WL(setWidth, elemWidth, WL(stack,
         WL(stopMouseMovement),
@@ -1271,22 +1270,22 @@ SGuiElem GuiBuilder::getSunlightInfoGui(const GameSunlightInfo& sunlightInfo) {
           getHintCallback({TStringId("TIME_REMAINING_TILL_NIGHTFALL")}),
           getHintCallback({TStringId("TIME_REMAINING_TILL_DAY")}),
           [&] { return sunlightInfo.description == TStringId("DAY");}),
-      WL(labelFun, [&] { return TSentence("SUNLIGHT_INFO_DESCRIPTION_AND_TIMEOUT", sunlightInfo.description, toString(sunlightInfo.timeRemaining)); },
+      WL(labelFun, [&] { return TSentence("SUNLIGHT_INFO_DESCRIPTION_AND_TIMEOUT", sunlightInfo.description, TString(sunlightInfo.timeRemaining)); },
           [&] { return sunlightInfo.description == TStringId("DAY") ? Color::WHITE : Color::LIGHT_BLUE;}));
 }
 
 SGuiElem GuiBuilder::getTurnInfoGui(const GlobalTime& turn) {
   return WL(stack, getHintCallback({TStringId("CURRENT_TURN")}),
-      WL(labelFun, [&turn] { return "T: " + toString(turn); }, Color::WHITE));
+      WL(labelFun, [&turn] { return TString("T: " + toString(turn)); }, Color::WHITE));
 }
 
 vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const vector<AttributeInfo>& attr) {
   vector<SGuiElem> ret;
   for (auto& elem : attr) {
     auto getValue = [this](const AttributeInfo& elem) {
-      auto attrText = toString(elem.value);
+      auto attrText = TString(elem.value);
       if (elem.bonus != 0)
-        attrText += toStringWithSign(elem.bonus);
+        attrText = combineWithNoSpace(std::move(attrText), toStringWithSign(elem.bonus));
       return WL(stack, getTooltip({elem.name, elem.help}, THIS_LINE),
           WL(horizontalList, makeVec(
               WL(viewObject, elem.viewId),
@@ -1305,7 +1304,7 @@ vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const ViewObject::CreatureAttr
       ret.push_back(
           WL(horizontalList, makeVec(
             WL(viewObject, attr.first),
-            WL(margins, WL(label, toString((int) attr.second)), 0, 2, 0, 0)), 30));
+            WL(margins, WL(label, TString((int) attr.second)), 0, 2, 0, 0)), 30));
   return ret;
 }
 
@@ -1362,7 +1361,7 @@ vector<TString> GuiBuilder::getItemHint(const ItemInfo& item) {
 SGuiElem GuiBuilder::drawBestAttack(const BestAttack& info) {
   return WL(getListBuilder, 30)
       .addElem(WL(viewObject, info.viewId))
-      .addElem(WL(topMargin, 2, WL(label, toString((int) info.value))))
+      .addElem(WL(topMargin, 2, WL(label, TString((int) info.value))))
       .buildHorizontalList();
 }
 
@@ -1383,9 +1382,10 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   if (auto col = getIntrinsicStateColor(item))
     color = *col;
   auto name = item.name;
-  if (item.number > 1)
-    line.addElemAuto(WL(rightMargin, 0, WL(label, toString(item.number) + " ", color)));
-  else
+  if (item.number > 1) {
+    line.addElemAuto(WL(rightMargin, 0, WL(label, TString(item.number), color)));
+    line.addSpace(6);
+  } else
     name = capitalFirst(name);
   line.addMiddleElem(WL(label, name, color));
   auto lineElem = line.buildHorizontalList();
@@ -1400,17 +1400,17 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   line.addBackSpace(5);
   if (item.owner) {
     if (item.owner->second > 1)
-      line.addBackElemAuto(WL(label, toString(item.owner->second)));
+      line.addBackElemAuto(WL(label, TString(item.owner->second)));
     line.addBackElem(WL(viewObject, item.owner->first.viewId), viewObjectWidth);
     line.addBackElem(drawBestAttack(item.owner->first.bestAttack), getItemLineOwnerMargin() - viewObjectWidth);
   }
   if (item.price)
     line.addBackElemAuto(drawCost(*item.price));
   if (item.weight)
-    line.addBackElemAuto(WL(label, "[" + getWeightString(*item.weight * item.number) + "]"));
+    line.addBackElemAuto(WL(label, TString("[" + getWeightString(*item.weight * item.number) + "]")));
   if (onMultiClick && item.number > 1) {
     line.addBackElem(WL(stack,
-        WL(label, "[#]"_s),
+        WL(label, TString("[#]"_s)),
         WL(button, onMultiClick),
         getTooltip({TStringId("CLICK_TO_CHOOSE_COUNT")}, int(item.ids.front().getGenericId()))), 25);
   }
@@ -1446,7 +1446,7 @@ SGuiElem GuiBuilder::drawImmigrantCreature(const ImmigrantCreatureInfo& creature
     lines.addElem(WL(getListBuilder)
         .addElem(WL(topMargin, -3, WL(viewObject, info.attribute)), 22)
         .addSpace(15)
-        .addElemAuto(WL(label, "+" + toString(info.limit)))
+        .addElemAuto(WL(label, TString("+" + toString(info.limit))))
         .buildHorizontalList());
   }
   if (!creature.spellSchools.empty())
@@ -1750,14 +1750,14 @@ SGuiElem GuiBuilder::getSpellIcon(const SpellInfo& spell, int index, bool active
       ), [this, index] { return abilityIndex == index; }));
     } else
       ret.push_back(WL(rectangleBorder, Color::WHITE));
-    ret.push_back(WL(centerHoriz, WL(centerVert, WL(labelUnicode, spell.symbol, Color::WHITE))));
+    ret.push_back(WL(centerHoriz, WL(centerVert, WL(labelUnicode, TString(spell.symbol), Color::WHITE))));
     if (active)
       ret.push_back(WL(button, callback));
   } else {
     ret.push_back(WL(standardButton));
-    ret.push_back(WL(centerHoriz, WL(centerVert, WL(labelUnicode, spell.symbol, Color::GRAY))));
+    ret.push_back(WL(centerHoriz, WL(centerVert, WL(labelUnicode, TString(spell.symbol), Color::GRAY))));
     ret.push_back(WL(darken));
-    ret.push_back(WL(centeredLabel, Renderer::HOR_VER, toString(*spell.timeout)));
+    ret.push_back(WL(centeredLabel, Renderer::HOR_VER, TString(*spell.timeout)));
   }
   ret.push_back(getTooltip(concat({capitalFirst(spell.name)}, spell.help), THIS_LINE + index + creatureId));
   if (spell.highlighted)
@@ -1850,9 +1850,9 @@ SGuiElem GuiBuilder::getExpIncreaseLine(const CreatureExperienceInfo::TrainingIn
   attrIcons.addElem(WL(topMargin, -3, WL(viewObject, info.viewId)), 22);
   line.addElem(attrIcons.buildHorizontalList(), 80);
   if (!infoOnly)
-    line.addElem(WL(label, "+" + toStringRounded(info.level, 0.01),
+    line.addElem(WL(label, TString("+" + toStringRounded(info.level, 0.01)),
         info.warning ? Color::RED : Color::WHITE), 50);
-  string limit = toString(info.limit);
+  auto limit = TString(info.limit);
   line.addElemAuto(WL(label, TSentence("TRAINING_LIMIT_LABEL", limit)));
   vector<TString> tooltip {
       capitalFirst(TSentence("TRAINING_TYPE_TOOLTIP", info.name)),
@@ -1869,11 +1869,11 @@ SGuiElem GuiBuilder::drawExperienceInfo(const CreatureExperienceInfo& info) {
   auto promoLevel = min<double>(info.combatExperienceCap, info.combatExperience);
   auto builder = WL(getListBuilder)
       .addElemAuto(WL(label, TStringId("EXPERIENCE_LABEL"), Color::YELLOW))
-      .addElemAuto(WL(label, " " + toStringRounded(promoLevel, 0.01)));
+      .addElemAuto(WL(label, TString(" " + toStringRounded(promoLevel, 0.01))));
   if (info.teamExperience > 0)
     builder
-        .addElemAuto(WL(label, info.teamExperience > 0 ? " + "_s  : " - "_s))
-        .addElemAuto(WL(label, toStringRounded(info.teamExperience, 0.01)));
+        .addElemAuto(WL(label, TString(info.teamExperience > 0 ? " + "_s  : " - "_s)))
+        .addElemAuto(WL(label, TString(toStringRounded(info.teamExperience, 0.01))));
   lines.addElem(WL(stack,
       builder.buildHorizontalList(),
       getTooltip({TStringId("EXPERIENCE_EXPLANATION")},
@@ -1883,10 +1883,10 @@ SGuiElem GuiBuilder::drawExperienceInfo(const CreatureExperienceInfo& info) {
     lines.addElem(WL(stack,
         WL(getListBuilder)
           .addElemAuto(WL(label, TStringId("UNREALIZED_EXPERIENCE_LABEL"), Color::YELLOW))
-          .addElemAuto(WL(label, toStringRounded(info.combatExperience - promoLevel, 0.01)))
+          .addElemAuto(WL(label, TString(toStringRounded(info.combatExperience - promoLevel, 0.01))))
           .buildHorizontalList(),
         getTooltip({info.requiredLuxury == 0 ? TSentence("CREATURE_REQUIRES_QUARTERS")
-            : TSentence("CREATURE_REQUIRES_QUARTERS_WITH_LUXURY", toString(info.requiredLuxury))},
+            : TSentence("CREATURE_REQUIRES_QUARTERS_WITH_LUXURY", TString(info.requiredLuxury))},
             THIS_LINE)));
   return lines.buildVerticalList();
 }
@@ -2023,8 +2023,9 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) 
     double totWeight = 0;
     for (auto& item : info.inventory)
       totWeight += item.weight.value_or(0) * item.number;
-    list.addElem(WL(label, TSentence("TOTAL_WEIGHT_LABEL", getWeightString(totWeight))));
-    list.addElem(WL(label, TSentence("CAPACITY_LABEL", info.carryLimit ? getWeightString(*info.carryLimit) : "infinite"_s)));
+    list.addElem(WL(label, TSentence("TOTAL_WEIGHT_LABEL", TString(getWeightString(totWeight)))));
+    list.addElem(WL(label, info.carryLimit ? TSentence("CAPACITY_LABEL", TString(getWeightString(*info.carryLimit))) :
+        TStringId("INFINITE_CAPACITY_LABEL")));
     list.addSpace();
   } else if (withKeys && !!inventoryIndex) {
     inventoryIndex = none;
@@ -2087,7 +2088,7 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
       if (member.creatureId == info.creatureId)
         icon = WL(stack,
             std::move(icon),
-            WL(translate, WL(translate, WL(labelUnicode, string(u8"⬆"), Color::WHITE, 14), Vec2(2, -1)),
+            WL(translate, WL(translate, WL(labelUnicode, TString(u8"⬆"_s), Color::WHITE, 14), Vec2(2, -1)),
                 Vec2(6, 30), Vec2(17, 21))
         );
       if (member.isPlayerControlled)
@@ -2191,7 +2192,7 @@ struct CreatureMapElem {
 SGuiElem GuiBuilder::drawMinionAndLevel(ViewIdList viewId, int level, int iconMult) {
   return WL(stack, makeVec(
         WL(viewObject, viewId, iconMult),
-        WL(label, toString(level), 12 * iconMult)));
+        WL(label, TString(level), 12 * iconMult)));
 }
 
 static bool isGroupChosen(const CollectiveInfo& info) {
@@ -2298,13 +2299,13 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
     const optional<TutorialInfo>& tutorial) {
   auto list = WL(getListBuilder, legendLineHeight);
   list.addElem(WL(label, TSentence("MINIONS_HEADER", {capitalFirst(info.populationString),
-        toString(info.minionCount), toString(info.minionLimit)}), Color::WHITE));
+        TString(info.minionCount), TString(info.minionLimit)}), Color::WHITE));
   int buttonCnt = 0;
   auto groupChosen = isGroupChosen(info);
   auto addGroup = [&] (const CollectiveInfo::CreatureGroup& elem) {
     auto line = WL(getListBuilder);
     line.addElem(WL(viewObject, elem.viewId), 40);
-    SGuiElem tmp = WL(label, TSentence("MINION_GROUP", toString(elem.count), elem.name), Color::WHITE);
+    SGuiElem tmp = WL(label, TSentence("MINION_GROUP", TString(elem.count), elem.name), Color::WHITE);
     line.addElem(WL(renderInBounds, std::move(tmp)), 200);
     auto callback = getButtonCallback({UserInputId::CREATURE_GROUP_BUTTON, elem.name});
     auto selectButton = cache->get([this](const TString& group) {
@@ -2314,7 +2315,8 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
         std::move(selectButton),
         WL(dragSource, elem.name,
             [=]{ return WL(getListBuilder, 10)
-                .addElemAuto(WL(label, toString(elem.count) + " "))
+                .addElemAuto(WL(label, TString(elem.count)))
+                .addSpace(6)
                 .addElem(WL(viewObject, elem.viewId)).buildHorizontalList();}),
         WL(button, [this, group = elem.name, viewId = elem.viewId, id = elem.creatureId] {
             callbacks.input(UserInput(UserInputId::CREATURE_DRAG, id));
@@ -2472,14 +2474,13 @@ function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInf
         idLine.addElemAuto(WL(viewObject, upgrade.viewId));
         idLine.addElemAuto(WL(label, upgrade.name, colorFun));
         idLine.addBackElem(WL(labelFun, [&increases, i, upgrade, cnt] {
-            return "(" + toString(upgrade.used * cnt + increases[i]) + "/" + toString(upgrade.used * cnt + upgrade.count) + ")  "; },
+            return TString("(" + toString(upgrade.used * cnt + increases[i]) + "/" + toString(upgrade.used * cnt + upgrade.count) + ")  "); },
             colorFun), 70);
         auto callbackIncrease = [this, &exit, &increases, &totalUsed, i, upgrade, cnt, max = elem.maxUpgrades.second] {
           int toAdd = min(cnt, upgrade.count - increases[i]);
           bool mustSplit = cnt > upgrade.count - increases[i];
           if (toAdd > 0 && totalUsed < max && (!mustSplit ||
-              yesOrNo("Not enough upgrades for the entire batch. Apply only to " +
-                  toString(upgrade.count - increases[i]) + " out of " + toString(cnt) + " items?"))) {
+              yesOrNo(TSentence("NOT_ENOUGH_UPGRADES", TString(upgrade.count - increases[i]), TString(cnt))))) {
             increases[i] += toAdd;
             ++totalUsed;
             if (mustSplit)
@@ -2521,7 +2522,7 @@ function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInf
       }
       auto label = WL(labelFun, [&]() -> TString {
         if (totalAvailable - totalUsed > 0)
-          return TSentence("ADD_TOP_UPGRADES", toString((totalAvailable - totalUsed) * cnt));
+          return TSentence("ADD_TOP_UPGRADES", TString((totalAvailable - totalUsed) * cnt));
         else
           return TStringId("CLEAR_ALL_UPGRADES");
       });
@@ -2544,7 +2545,7 @@ function<void(Rectangle)> GuiBuilder::getItemUpgradeCallback(const CollectiveInf
       lines.addSpace(5);
       auto allButton = WL(getListBuilder)
           .addElem(WL(labelFun, [&totalUsed, &elem] {
-              return TSentence("USED_SLOTS", toString(totalUsed), toString(elem.maxUpgrades.second)); }), 10)
+              return TSentence("USED_SLOTS", TString(totalUsed), TString(elem.maxUpgrades.second)); }), 10)
           .addBackElemAuto(WL(setWidth, 170,
               WL(buttonLabelFocusable, std::move(label), std::move(action),
                   [&selected, myIndex = activeElems.size()] { return selected == myIndex; }, false)))
@@ -2591,7 +2592,7 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
   }
   for (auto& elem : upgrades) {
     if (elem.second > 1)
-      line.addElemAuto(WL(label, toString(elem.second)));
+      line.addElemAuto(WL(label, TString(elem.second)));
     line.addElemAuto(WL(viewObject, elem.first));
   }
   auto button = WL(buttonRect, getItemUpgradeCallback(elem));
@@ -2693,7 +2694,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
   lines.addElem(WL(getListBuilder)
       .addElemAuto(WL(label, TStringId("ITEM_REQUIRES_SKILL_LEVEL")))
       .addElemAuto(WL(viewObject, info.attr))
-      .addElemAuto(WL(label, toString(info.minAttrValue)))
+      .addElemAuto(WL(label, TString(info.minAttrValue)))
       .buildHorizontalList());
   if (info.resourceTabs.size() >= 2) {
     lines.addElem(WL(topMargin, 3, WL(getListBuilder)
@@ -2717,7 +2718,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
       const optional<ImmigrantCreatureInfo>& creatureInfo, int index, pair<TString, int> maxUpgrades) {
     optional<TString> upgradesTip;
     if (maxUpgrades.second > 0 && !maxUpgrades.first.empty())
-      upgradesTip = TString(TSentence("UPGRADABLE_WITH_UP_TO", toString(maxUpgrades.second),
+      upgradesTip = TString(TSentence("UPGRADABLE_WITH_UP_TO", TString(maxUpgrades.second),
           maxUpgrades.second > 1 ? makePlural(maxUpgrades.first) : maxUpgrades.first));
     if (creatureInfo) {
       return cache->get(
@@ -2832,12 +2833,12 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
       line.addBackElem(WL(alignment, GuiFactory::Alignment::RIGHT, drawCost(*elem.itemInfo.price)), 80);
     auto changeCountCallback = getItemCountCallback(elem);
     if (info.allowChangeNumber && !elem.itemInfo.ingredient)
-      line.addBackElemAuto(WL(leftMargin, 7, WL(buttonLabel, string("+/-"), WL(buttonRect, changeCountCallback))));
+      line.addBackElemAuto(WL(leftMargin, 7, WL(buttonLabel, TString("+/-"_s), WL(buttonRect, changeCountCallback))));
     auto removeCallback = getButtonCallback({UserInputId::WORKSHOP_CHANGE_COUNT,
         WorkshopCountInfo{ elem.itemIndex, elem.itemInfo.number, 0 }});
     line.addBackElemAuto(WL(topMargin, 3, WL(leftMargin, 7, WL(stack,
         WL(button, removeCallback),
-        WL(labelUnicodeHighlight, string(u8"✘"), Color::RED)))));
+        WL(labelUnicodeHighlight, TString(u8"✘"_s), Color::RED)))));
     auto tooltip = rawTooltip(elem.itemInfo, elem.paid ? optional<TString>() : elem.itemInfo.unavailableReason,
         queued[i].creatureInfo, i + THIS_LINE, queued[i].maxUpgrades);
     auto guiElem = WL(stack, makeVec(
@@ -2978,10 +2979,10 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
       .addSpace(4)
       .addElemAuto(WL(label, collectiveInfo.avatarLevelInfo.title))
       .buildHorizontalList()));
-  lines.addElem(WL(label, TSentence("RESEARCH_LEVEL", toString(collectiveInfo.avatarLevelInfo.level))));
+  lines.addElem(WL(label, TSentence("RESEARCH_LEVEL", TString(collectiveInfo.avatarLevelInfo.level))));
   lines.addElem(WL(stack,
       WL(margins, WL(progressBar, Color::DARK_GREEN.transparency(128), collectiveInfo.avatarLevelInfo.progress), -4, 0, -1, 6),
-      WL(label, TSentence("NEXT_LEVEL_PROGRESS", toString(info.currentProgress), toString(info.totalProgress)))
+      WL(label, TSentence("NEXT_LEVEL_PROGRESS", TString(info.currentProgress), TString(info.totalProgress)))
   ));
   //lines.addElem(WL(rightMargin, rightElemMargin, WL(alignment, GuiFactory::Alignment::RIGHT, drawCost(info.resource))));
   if (info.warning)
@@ -2992,7 +2993,7 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
     if (collectiveInfo.availablePromotions == 1)
       lines.addElem(WL(label, TStringId("ONE_ITEM_AVAILABLE"), Color::YELLOW));
     else
-      lines.addElem(WL(label, TSentence("COUNT_ITEM_AVAILABLE", toString(collectiveInfo.availablePromotions)), Color::YELLOW));
+      lines.addElem(WL(label, TSentence("COUNT_ITEM_AVAILABLE", TString(collectiveInfo.availablePromotions)), Color::YELLOW));
     vector<SGuiElem> minionLabels;
     int maxWidth = 0;
     for (auto& elem : collectiveInfo.minionPromotions) {
@@ -3068,7 +3069,7 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
       lines.addElem(WL(label, TStringId("ONE_ITEM_AVAILABLE"), Color::YELLOW));
     else
       lines.addElem(WL(label, TSentence("COUNT_ITEM_AVAILABLE",
-          toString(collectiveInfo.avatarLevelInfo.numAvailable)), Color::YELLOW));
+          TString(collectiveInfo.avatarLevelInfo.numAvailable)), Color::YELLOW));
     for (int i : All(info.available)) {
       auto& elem = info.available[i];
       auto line = WL(renderInBounds, WL(label, capitalFirst(elem.name), elem.active ? Color::WHITE : Color::GRAY));
@@ -3411,11 +3412,11 @@ SGuiElem GuiBuilder::drawLyingItemsList(const TString& title, const ItemCounts& 
   return lines.buildVerticalList();
 }
 
-static string getLuxuryNumber(double morale) {
+static TString getLuxuryNumber(double morale) {
 #ifndef RELEASE
-  return toString(morale);
+  return TString(toString(morale));
 #else
-  return toString(round(10.0 * morale) / 10);
+  return TString(toString(round(10.0 * morale) / 10));
 #endif
 }
 
@@ -3482,7 +3483,7 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
           if (viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE))
             lines.addElem(WL(label, TStringId("HEALED_BY_RITUALS_HINT")));
           if (auto value = viewObject.getAttribute(ViewObjectAttribute::FLANKED_MOD)) {
-            lines.addElem(WL(label, TSentence("FLANKED_HINT", toString<int>(100 * (1 - *value))), Color::RED));
+            lines.addElem(WL(label, TSentence("FLANKED_HINT", TString((int)(100 * (1 - *value)))), Color::RED));
             if (viewObject.hasModifier(ViewObject::Modifier::PLAYER))
               lines.addElem(WL(label, TStringId("USE_A_SHIELD_HINT"), Color::RED));
           }
@@ -3493,7 +3494,7 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
                   WL(margins, WL(progressBar, MapGui::getHealthBarColor(*health,
                       viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE)).transparency(70), *health), -2, 0, 0, 3),
                   WL(label, TSentence(getHealthName(viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE)),
-                      toString((int) (100.0f * *health)) + "%"))));
+                      toPercentage(*health)))));
           if (auto luxury = viewObject.getAttribute(ViewObjectAttribute::LUXURY))
             lines.addElem(WL(stack,
                   WL(margins, WL(progressBar, Color::GREEN.transparency(70), fabs(*luxury)), -2, 0, 0, 3),
@@ -3543,7 +3544,7 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
       lines.addElemAuto(drawLyingItemsList(TStringId("LYING_HERE_LABEL"), index->getItemCounts(), 250));
     }
     if (highlighted.tilePos)
-      lines.addElem(WL(label, TSentence("GRID_POSITION", toString(*highlighted.tilePos))));
+      lines.addElem(WL(label, TSentence("GRID_POSITION", TString(toString(*highlighted.tilePos)))));
   }
   if (!lines.isEmpty())
     allElems.push_back(WL(margins, WL(translucentBackgroundWithBorderPassMouse,
@@ -3684,7 +3685,7 @@ static Color getMessageColor(const PlayerMessage& msg) {
 const int messageArrowLength = 15;
 
 static int getMessageLength(Renderer& renderer, GuiFactory* guiFactory, const PlayerMessage& msg) {
-  return renderer.getTextLength(msg.getText(guiFactory)) + (msg.isClickable() ? messageArrowLength : 0);
+  return renderer.getTextLength(msg.getTranslatedText(guiFactory)) + (msg.isClickable() ? messageArrowLength : 0);
 }
 
 static int getNumFitting(Renderer& renderer, GuiFactory* guiFactory, const vector<PlayerMessage>& messages,
@@ -3728,12 +3729,12 @@ static vector<vector<PlayerMessage>> fitMessages(Renderer& renderer, GuiFactory*
   }
   return ret;
 }
-
+/*
 static void cutToFit(Renderer& renderer, string& s, int maxLength) {
   while (!s.empty() && renderer.getTextLength(s) > maxLength)
     s.pop_back();
 }
-
+*/
 SGuiElem GuiBuilder::drawMessages(const vector<PlayerMessage>& messageBuffer, int maxMessageLength) {
   int hMargin = 10;
   int vMargin = 5;
@@ -3744,13 +3745,15 @@ SGuiElem GuiBuilder::drawMessages(const vector<PlayerMessage>& messageBuffer, in
   for (int i : All(messages)) {
     auto line = WL(getListBuilder);
     for (auto& message : messages[i]) {
-      string text = (line.isEmpty() ? "" : " ") + message.getText(&gui);
-      cutToFit(renderer, text, maxMessageLength - 2 * hMargin);
+      if (!line.isEmpty())
+        line.addSpace(6);
+      auto text = message.getText();
+//      cutToFit(renderer, text, maxMessageLength - 2 * hMargin);
       if (message.isClickable()) {
         line.addElemAuto(WL(stack,
               WL(button, getButtonCallback(UserInput(UserInputId::MESSAGE_INFO, message.getUniqueId()))),
               WL(labelHighlight, text, getMessageColor(message))));
-        line.addElemAuto(WL(labelUnicodeHighlight, string(u8"➚"), getMessageColor(message)));
+        line.addElemAuto(WL(labelUnicodeHighlight, TString(u8"➚"_s), getMessageColor(message)));
       } else
       line.addElemAuto(WL(stack,
             WL(button, getButtonCallback(UserInput(UserInputId::MESSAGE_INFO, message.getUniqueId()))),
@@ -3812,7 +3815,7 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions1, Uniqu
     if (teamId)
       line.addElem(WL(leftMargin, -16, WL(stack,
           WL(button, getButtonCallback({UserInputId::REMOVE_FROM_TEAM, TeamCreatureInfo{*teamId, minionId}})),
-          WL(labelUnicodeHighlight, string(u8"✘"), Color::RED))), 1);
+          WL(labelUnicodeHighlight, TString(u8"✘"_s), Color::RED))), 1);
     line.addMiddleElem(WL(rightMargin, 5, WL(renderInBounds, WL(label, minion.getFirstName()))));
     line.addBackElem(drawBestAttack(minion.bestAttack), 52);
     line.addBackSpace(5);
@@ -3996,11 +3999,11 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
                   return 2;
               } else
                 return 0;
-            }, {WL(empty), WL(labelUnicodeHighlight, string(u8"✘"), Color::RED),
-                 WL(labelUnicodeHighlight, string(u8"✓"), Color::GREEN)}));
+            }, {WL(empty), WL(labelUnicodeHighlight, TString(u8"✘"_s), Color::RED),
+                 WL(labelUnicodeHighlight, TString(u8"✓"_s), Color::GREEN)}));
       auto lockButton2 = task.canLock
-            ? WL(rightMargin, 20, WL(conditional, WL(labelUnicodeHighlight, string(u8"✘"), Color::RED),
-                 WL(labelUnicodeHighlight, string(u8"✘"), Color::LIGHT_GRAY), [&retAction, task] {
+            ? WL(rightMargin, 20, WL(conditional, WL(labelUnicodeHighlight, TString(u8"✘"_s), Color::RED),
+                 WL(labelUnicodeHighlight, TString(u8"✘"_s), Color::LIGHT_GRAY), [&retAction, task] {
                       return retAction.lockGroup.contains(task.task) ^ task.lockedForGroup;}))
             : WL(empty);
       auto lockCallback1 = [&retAction, task] {
@@ -4086,8 +4089,8 @@ function<void(Rectangle)> GuiBuilder::getAIButtonFun(const PlayerInfo& minion) {
     }
     callbacks.push_back([&]{ retAction.override = !retAction.override; });
     tasks.push_back(WL(getListBuilder)
-        .addElemAuto(WL(conditional, WL(labelUnicodeHighlight, string(u8"✓"), Color::GREEN),
-             WL(labelUnicodeHighlight, string(u8"✓"), Color::LIGHT_GRAY), [&retAction] {
+        .addElemAuto(WL(conditional, WL(labelUnicodeHighlight, TString(u8"✓"_s), Color::GREEN),
+             WL(labelUnicodeHighlight, TString(u8"✓"_s), Color::LIGHT_GRAY), [&retAction] {
                   return retAction.override;}))
         .addElemAuto(WL(label, TSentence("COPY_SETTING_TO_GROUP", makePlural(minion.groupName))))
         .buildHorizontalList());
@@ -4129,8 +4132,8 @@ function<void(Rectangle)> GuiBuilder::getEquipmentGroupsFun(const PlayerInfo& mi
       lines.push_back(WL(getListBuilder)
           .addElemAuto(WL(viewObject, group.viewId))
           .addElemAuto(WL(label, group.name))
-          .addBackElem(WL(conditional, WL(labelUnicodeHighlight, string(u8"✘"), Color::RED),
-              WL(labelUnicodeHighlight, string(u8"✓"), Color::GREEN),
+          .addBackElem(WL(conditional, WL(labelUnicodeHighlight, TString(u8"✘"_s), Color::RED),
+              WL(labelUnicodeHighlight, TString(u8"✓"_s), Color::GREEN),
               [&ret, group] { return group.locked ^ ret.flip.count(group.name); }), 30)
           .buildHorizontalList()
       );
@@ -4142,11 +4145,11 @@ function<void(Rectangle)> GuiBuilder::getEquipmentGroupsFun(const PlayerInfo& mi
       return false;
     };
     auto restrictButton = WL(getListBuilder)
-        .addElemAuto(WL(labelUnicodeHighlight, string(u8"✘"), Color::RED))
+        .addElemAuto(WL(labelUnicodeHighlight, TString(u8"✘"_s), Color::RED))
         .addElemAuto(WL(label, TStringId("RESTRICT_ALL_EQUIPMENT")))
         .buildHorizontalList();
     auto unrestrictButton = WL(getListBuilder)
-        .addElemAuto(WL(labelUnicodeHighlight, string(u8"✓"), Color::GREEN))
+        .addElemAuto(WL(labelUnicodeHighlight, TString(u8"✓"_s), Color::GREEN))
         .addElemAuto(WL(label, TStringId("UNRESTRICT_ALL_EQUIPMENT")))
         .buildHorizontalList();
     lines.push_back(WL(conditional, restrictButton, unrestrictButton, chooseButton));
@@ -4188,7 +4191,7 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool 
         );
         if (!items[i].ids.empty()) {
           int offset = *labelElem->getPreferredWidth();
-          auto highlight = WL(leftMargin, offset, WL(labelUnicode, string(u8"✘"), Color::RED));
+          auto highlight = WL(leftMargin, offset, WL(labelUnicode, TString(u8"✘"_s), Color::RED));
           if (!items[i].locked)
             highlight = WL(stack, std::move(highlight), WL(leftMargin, -20, WL(viewObject, ViewId("key_highlight"))));
           labelElem = WL(stack, std::move(labelElem),
@@ -4325,7 +4328,7 @@ SGuiElem GuiBuilder::drawKillsLabel(const PlayerInfo& minion) {
     if (!line.isEmpty())
       lines.addElem(line.buildHorizontalList());
     return WL(stack,
-        WL(label, toString(minion.kills.size()) + " kills"),
+        WL(label, TSentence("KILLS_LABEL", TString(minion.kills.size()))),
         WL(tooltip2, WL(miniWindow, WL(margins, lines.buildVerticalList(), 15)), [](Rectangle rect){ return rect.bottomLeft(); })
     );
   } else
@@ -4341,7 +4344,7 @@ SGuiElem GuiBuilder::drawTitleButton(const PlayerInfo& minion) {
   lines.addElem(WL(labelMultiLineWidth,
       TStringId("KILL_TITLES_HINT"), legendLineHeight * 2 / 3, 400, Renderer::smallTextSize(), Color::LIGHT_GRAY));
   if (!minion.killTitles.empty())
-    titleLine.addElemAuto(WL(label, toString("+"), Color::YELLOW));
+    titleLine.addElemAuto(WL(label, TString("+"_s), Color::YELLOW));
   return WL(stack,
       titleLine.buildHorizontalList(),
       minion.killTitles.empty() ? WL(empty) : WL(tooltip2, WL(miniWindow, WL(margins, lines.buildVerticalList(), 15)), [](Rectangle rect){ return rect.bottomLeft(); })
@@ -4353,7 +4356,7 @@ SGuiElem GuiBuilder::drawSpellLabel(const SpellInfo& spell) {
   return WL(getListBuilder)
       .addElemAuto(getSpellIcon(spell, 0, false, 0))
       .addElemAuto(WL(label, spell.name, color))
-      .addBackElemAuto(WL(label, TSentence("SPELL_LEVEL", toString(*spell.level)), color))
+      .addBackElemAuto(WL(label, TSentence("SPELL_LEVEL", TString(*spell.level)), color))
       .buildHorizontalList();
 }
 
@@ -4393,7 +4396,7 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const optional<Tut
         .addSpace(8);
     for (int i : All(minion.spellSchools)) {
       if (i > 0)
-        line.addElemAuto(WL(label, ", "_s));
+        line.addElemAuto(WL(label, TString(", "_s)));
       line.addElemAuto(drawSpellSchoolLabel(minion.spellSchools[i]));
     }
     leftLines.addElem(line.buildHorizontalList());
@@ -4449,7 +4452,7 @@ SGuiElem GuiBuilder::drawTickBox(shared_ptr<bool> value, const TString& title) {
       WL(button, [value]{ *value = !*value; }),
       WL(getListBuilder)
           .addElemAuto(
-              WL(conditional, WL(labelUnicodeHighlight, string(u8"✓"), Color::GREEN), [value] { return *value; }))
+              WL(conditional, WL(labelUnicodeHighlight, TString(u8"✓"_s), Color::GREEN), [value] { return *value; }))
           .addElemAuto(WL(label, title))
           .buildHorizontalList());
 }
@@ -4609,7 +4612,7 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2> initialP
             lines.addElem(WL(label, TStringId("CAMPAIGN_VILLAIN_DEFEATED")));
           auto exp = c.getBaseLevelIncrease(Vec2(x, y));
           if (exp > 0)
-            lines.addElem(WL(label, TSentence("CAMPAIGN_VILLAIN_EXP", toString(exp))));
+            lines.addElem(WL(label, TSentence("CAMPAIGN_VILLAIN_EXP", TString(exp))));
           if (!minions.isEmpty() && !sites[x][y].getDwellingViewId()->contains(ViewId("map_unknown")))
             lines.addElem(minions.buildHorizontalList());
           elem.push_back(WL(margins, WL(tooltip2, WL(miniWindow, WL(margins,
@@ -4725,7 +4728,7 @@ void GuiBuilder::moveCampaignGridPointer(const Campaign& c, int iconSize, Dir di
 SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign, Vec2 current) {
   auto lines = WL(getListBuilder, getStandardLineHeight());
   campaignGridPointer = none;
-  lines.addElem(WL(centerHoriz, WL(label, TSentence("WORLD_MAP_OF",campaign.getWorldName()))));
+  lines.addElem(WL(centerHoriz, WL(label, TSentence("WORLD_MAP_OF", TString(campaign.getWorldName())))));
   lines.addElem(WL(centerHoriz, WL(label, TStringId("TRAVEL_COMMAND_TIP"), Renderer::smallTextSize(), Color::LIGHT_GRAY)));
   lines.addElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, current, nullptr, nullptr)));
   lines.addSpace(legendLineHeight / 2);
@@ -4764,8 +4767,8 @@ SGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
 }
 
 SGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease, bool leftRight) {
-  string plus = leftRight ? ">"  : "+";
-  string minus = leftRight ? "<"  : "-";
+  auto plus = TString(leftRight ? ">"_s  : "+"_s);
+  auto minus = TString(leftRight ? "<"_s  : "-"_s);
   return WL(margins, WL(getListBuilder)
       .addElem(canDecrease
           ? WL(buttonLabel, minus, [callback] { callback(-1); }, false)
@@ -4780,11 +4783,11 @@ SGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncreas
 SGuiElem GuiBuilder::drawBoolOptionElem(OptionId id, string name) {
   auto line = WL(getListBuilder);
   line.addElemAuto(WL(conditional,
-      WL(labelUnicode, string(u8"✓"), Color::GREEN),
-      WL(labelUnicode, string(u8"✘"), Color::RED),
+      WL(labelUnicode, TString(u8"✓"_s), Color::GREEN),
+      WL(labelUnicode, TString(u8"✘"_s), Color::RED),
       [this, id]{ return options->getBoolValue(id); })
   );
-  line.addElemAuto(WL(label, name));
+  line.addElemAuto(WL(label, TString(name)));
   return WL(stack,
       WL(button, [this, id] { options->setValue(id, int(!options->getBoolValue(id))); }),
       line.buildHorizontalList()
@@ -4798,7 +4801,7 @@ SGuiElem GuiBuilder::drawOptionElem(OptionId id, function<void()> onChanged, fun
   int value = options->getIntValue(id);
   auto changeFun = [=] (int v) { options->setValue(id, value + v); onChanged();};
   ret = WL(getListBuilder)
-      .addElem(WL(labelFun, [=]{ return TSentence("OPTION_NAME_AND_VALUE", name, options->getValueString(id)); }), renderer.getTextLength(gui.translate(name)) + 20)
+      .addElem(WL(labelFun, [=]{ return TSentence("OPTION_NAME_AND_VALUE", name, TString(options->getValueString(id))); }), renderer.getTextLength(gui.translate(name)) + 20)
       .addBackElemAuto(drawPlusMinus(changeFun,
           value < limits->getEnd() - 1, value > limits->getStart(), options->hasChoices(id)))
       .buildHorizontalList();
@@ -4832,7 +4835,7 @@ pair<GuiFactory::ListBuilder, vector<SGuiElem>> GuiBuilder::drawRetiredGames(Ret
     if (retired.isActive(i) == displayActive) {
       auto header = WL(getListBuilder);
       bool maxedOut = !displayActive && retired.getNumActive() >= *maxActive;
-      header.addElem(WL(label, allGames[i].gameInfo.name,
+      header.addElem(WL(label, TString(allGames[i].gameInfo.name),
           maxedOut ? Color::LIGHT_GRAY : Color::WHITE), 180);
       for (auto& minion : allGames[i].gameInfo.minions)
         header.addElem(drawMinionAndLevel(minion.viewId, minion.level, 1), 25);
@@ -4854,10 +4857,11 @@ pair<GuiFactory::ListBuilder, vector<SGuiElem>> GuiBuilder::drawRetiredGames(Ret
       if (allGames[i].numTotal > 0)
         detailsList.addElemAuto(WL(stack,
           WL(tooltip, {TStringId("DUNGEON_CONQUER_RATE_TIP")}),
-          WL(label, TSentence("DUNGEON_CONQUER_RATE", toString(allGames[i].numWon) + "/" + toString(allGames[i].numTotal)),
+          WL(label, TSentence("DUNGEON_CONQUER_RATE", TString(allGames[i].numWon), TString(allGames[i].numTotal)),
               Renderer::smallTextSize(), gui.inactiveText)));
       if (allGames[i].isFriend) {
-        detailsList.addBackElemAuto(WL(label, TSentence("MOD_MADE_BY_STEAM_FRIEND", allGames[i].author), Renderer::smallTextSize(), Color::PINK));
+        detailsList.addBackElemAuto(WL(label, TSentence("MOD_MADE_BY_STEAM_FRIEND", TString(allGames[i].author)),
+            Renderer::smallTextSize(), Color::PINK));
         detailsList.addBackSpace(10);
       }
       if (!detailsList.isEmpty())
@@ -4865,8 +4869,8 @@ pair<GuiFactory::ListBuilder, vector<SGuiElem>> GuiBuilder::drawRetiredGames(Ret
       if (!allGames[i].gameInfo.spriteMods.empty()) {
         auto modsList = combine(allGames[i].gameInfo.spriteMods, true);
         lines.addElem(WL(stack,
-            WL(tooltip, {TStringId("DUNGEON_MODS_TIP"), modsList}),
-            WL(renderInBounds, WL(label, TSentence("DUNGEON_REQUIRED_MODS", modsList), Renderer::smallTextSize(), gui.inactiveText))),
+            WL(tooltip, {TStringId("DUNGEON_MODS_TIP"), TString(modsList)}),
+            WL(renderInBounds, WL(label, TSentence("DUNGEON_REQUIRED_MODS", TString(modsList)), Renderer::smallTextSize(), gui.inactiveText))),
             legendLineHeight * 2 / 3);
       }
       lines.addSpace(legendLineHeight / 3);
@@ -4945,7 +4949,7 @@ SGuiElem GuiBuilder::drawRetiredDungeonsButton(SyncQueue<CampaignAction>& queue,
                 .addElemAuto(WL(label, TStringId("SEARCH_DUNGEONS")))
                 .addElem(searchField, 200)
                 .addSpace(10)
-                .addElemAuto(WL(buttonLabelFocusable, "X"_s,
+                .addElemAuto(WL(buttonLabelFocusable, TString("X"_s),
                     [&]{ searchString.clear(); exit = true; clicked = true;},
                     [&focused] { return focused == -1; }))
             .buildHorizontalList())
@@ -5039,7 +5043,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   auto helpFun = [&] { menuState.helpText = !menuState.helpText; };
   centerLines.addElem(WL(centerHoriz,
       WL(buttonLabelFocusable, TStringId("CAMPAIGN_HELP_BUTTON"), helpFun, helpFocusedFun)));
-  lines.addElem(WL(leftMargin, optionMargin, WL(label, TSentence("CAMPAIGN_WORLD_NAME", campaign.getWorldName()))));
+  lines.addElem(WL(leftMargin, optionMargin, WL(label, TSentence("CAMPAIGN_WORLD_NAME", TString(campaign.getWorldName())))));
   lines.addSpace(10);
   lines.addElem(WL(leftMargin, optionMargin, drawRetiredDungeonsButton(queue, campaignOptions, menuState)));
   if (!campaignOptions.options.empty()) {
@@ -5126,7 +5130,7 @@ SGuiElem GuiBuilder::drawCreatureList(const vector<PlayerInfo>& creatures,
     auto icon = WL(stack,
         WL(tooltip2, tooltip, [](auto& r) { return r.bottomLeft(); }),
         WL(margins, WL(stack, WL(viewObject, elem.viewId, zoom),
-          WL(label, toString((int) elem.bestAttack.value), 10 * zoom)), 5, 5, 5, 5));
+          WL(label, TString((int) elem.bestAttack.value), 10 * zoom)), 5, 5, 5, 5));
     if (button) {
       auto tooltipSize = *tooltip->getPreferredSize();
       line.addElemAuto(WL(stack, makeVec(
@@ -5259,7 +5263,7 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
   Color textColor(209, 181, 130);
   auto lines = WL(getListBuilder, legendLineHeight);
   if (auto& info = gameInfo.currentLevel) {
-    auto getButton = [&](bool enabled, string label, UserInput inputId, int margin) {
+    auto getButton = [&](bool enabled, TString label, UserInput inputId, int margin) {
       auto ret = WL(preferredSize, legendLineHeight, legendLineHeight, WL(stack,
           WL(margins, WL(rectangle, Color(56, 36, 0), Color(57, 41, 0)), 2),
           WL(centerHoriz, WL(topMargin, margin, WL(mouseHighlight2,
@@ -5275,13 +5279,13 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
     auto line = WL(getListBuilder);
     if (!info->zLevels.empty())
       line.addElemAuto(WL(stack,
-          getButton(info->levelDepth > 0, u8"⮝", UserInput{UserInputId::SCROLL_STAIRS, -1 }, 3),
+          getButton(info->levelDepth > 0, TString(u8"⮝"_s), UserInput{UserInputId::SCROLL_STAIRS, -1 }, 3),
           WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, -1}), Keybinding("SCROLL_Z_UP"))
       ));
     line.addMiddleElem(WL(topMargin, 3, drawZLevelButton(*info, textColor)));
     if (!info->zLevels.empty())
       line.addBackElemAuto(WL(stack,
-          getButton(info->levelDepth < info->zLevels.size() - 1, u8"⮟", UserInput{UserInputId::SCROLL_STAIRS, 1}, 1),
+          getButton(info->levelDepth < info->zLevels.size() - 1, TString(u8"⮟"_s), UserInput{UserInputId::SCROLL_STAIRS, 1}, 1),
           WL(keyHandler, getButtonCallback(UserInput{UserInputId::SCROLL_STAIRS, 1}), Keybinding("SCROLL_Z_DOWN"))
       ));
     lines.addElem(WL(stack,

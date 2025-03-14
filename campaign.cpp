@@ -145,7 +145,7 @@ optional<TString> Campaign::SiteInfo::getDwellerDescription() const {
         [](const VillainInfo& info) ->TString {
           return TSentence("VILLAIN_NAME_AND_DESCRIPTION", info.name, getName(info.type));
         },
-        [](const RetiredInfo& info) ->TString  { return TSentence("RETIRED_PLAYER_DESCRIPTION", info.gameInfo.name) ;},
+        [](const RetiredInfo& info) ->TString  { return TSentence("RETIRED_PLAYER_DESCRIPTION", TString(info.gameInfo.name)) ;},
         [](const KeeperInfo&) ->TString { return TStringId("PLAYER_SITE_DESCRIPTION"); });
   else
     return none;
@@ -155,7 +155,7 @@ optional<TString> Campaign::SiteInfo::getDwellerName() const {
   if (dweller)
     return dweller->match(
         [](const VillainInfo& info) -> TString { return info.name; },
-        [](const RetiredInfo& info) -> TString { return info.gameInfo.name;},
+        [](const RetiredInfo& info) -> TString { return TString(info.gameInfo.name);},
         [](const KeeperInfo&) -> TString { return TStringId("PLAYER_SITE_NAME"); });
   else
     return none;

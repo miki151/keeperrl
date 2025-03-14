@@ -151,9 +151,9 @@ PlayerControl::~PlayerControl() {
 
 static TString getPopulationIncreaseDescription(const Furniture::PopulationInfo& info, const TString& populationString) {
   if (info.limit)
-    return TSentence("INCREASES_POP_LIMIT_BY_UP_TO", {populationString, toString(info.increase), toString(*info.limit)});
+    return TSentence("INCREASES_POP_LIMIT_BY_UP_TO", {populationString, TString(info.increase), TString(*info.limit)});
   else
-    return TSentence("INCREASES_POP_LIMIT_BY", populationString, toString(info.increase));
+    return TSentence("INCREASES_POP_LIMIT_BY", populationString, TString(info.increase));
 }
 
 void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const KeeperCreatureInfo& keeperCreatureInfo) {
@@ -167,7 +167,7 @@ void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const
         double luxury = factory->furniture.getData(type).getLuxury();
         if (luxury > 0) {
           info.help = TSentence("COMBINE_SENTENCES", std::move(info.help),
-              TSentence("INCREASES_LUXURY_BY", toString(luxury)));
+              TSentence("INCREASES_LUXURY_BY", TString(luxury)));
           break;
         }
       }
@@ -181,7 +181,7 @@ void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const
       auto& maxTraining = factory->furniture.getData(furniture->types[0]).getMaxTraining();
       for (auto& elem : maxTraining)
         info.help = TSentence("COMBINE_SENTENCES", std::move(info.help),
-            TSentence("ADDS_TRAINING_LEVELS", toString(elem.second), factory->attrInfo.at(elem.first).name));
+            TSentence("ADDS_TRAINING_LEVELS", TString(elem.second), factory->attrInfo.at(elem.first).name));
     }
 }
 
@@ -689,7 +689,7 @@ static ScriptedUIDataElems::Record getItemRecord(const ContentFactory* factory, 
   elem.elems["view_id"] = itemStack[0]->getViewObject().getViewIdList();
   TString label = itemStack[0]->getShortName(factory, nullptr, itemStack.size() > 1);
   if (itemStack.size() > 1)
-    label = TSentence("MULTIPLE_ITEMS", toString(itemStack.size()), std::move(label));
+    label = TSentence("MULTIPLE_ITEMS", TString(itemStack.size()), std::move(label));
   elem.elems["name"] = capitalFirst(std::move(label));
   auto tooltipElems = ScriptedUIDataElems::List {
     capitalFirst(itemStack[0]->getNameAndModifiers(factory))
@@ -913,7 +913,7 @@ vector<Button> PlayerControl::fillButtons() const {
           }();
           if (!collective->getResourceInfo(elem.cost.id).viewId && availableNow)
             description = combineSentences(std::move(description),
-                TSentence("BUILDINGS_COUNT_AVAILABLE", toString(availableNow)));
+                TSentence("BUILDINGS_COUNT_AVAILABLE", TString(availableNow)));
           buttons.push_back(Button{getViewId(button.type), capitalFirst(button.getName(contentFactory)),
               getCostObj(elem.cost),
               description,
@@ -922,7 +922,7 @@ vector<Button> PlayerControl::fillButtons() const {
           },
         [&](const auto&) {
           PROFILE;
-          buttons.push_back({this->getViewId(button.type), button.getName(contentFactory), none, ""_s, CollectiveInfo::Button::ACTIVE});
+          buttons.push_back({this->getViewId(button.type), button.getName(contentFactory), none, TString(), CollectiveInfo::Button::ACTIVE});
         }
     );
     vector<TString> unmetReqText;
@@ -1297,7 +1297,7 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
 ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option, int queuedCount) const {
   return CONSTRUCT(ItemInfo,
       c.number = queuedCount;
-      c.name = c.number == 1 ? option.name : TSentence("ITEM_COUNT", option.pluralName, toString(c.number));
+      c.name = c.number == 1 ? option.name : TSentence("ITEM_COUNT", option.pluralName, TString(c.number));
       c.viewId = option.viewId;
       c.price = getCostObj(option.cost * queuedCount);
       if (option.techId && !collective->getTechnology().researched.count(*option.techId)) {
@@ -1327,7 +1327,7 @@ void PlayerControl::fillTechUnlocks(CollectiveInfo::LibraryInfo::TechInfo& techI
   auto tech = techInfo.id;
   auto technology = collective->getTechnology();
   for (auto& t2 : technology.getAllowed(tech))
-    techInfo.unlocks.push_back({{ViewId("book")}, technology.techs.at(t2).name.value_or(string(t2.data())),
+    techInfo.unlocks.push_back({{ViewId("book")}, technology.getName(t2),
         TStringId("TECHNOLOGY_LABEL")});
   auto contentFactory = getGame()->getContentFactory();
   for (auto& elem : buildInfo)
@@ -1445,7 +1445,7 @@ vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getFurnaceQueue() const {
   for (auto& item : collective->getFurnace().getQueued()) {
         auto itemInfo = getItemInfo(getGame()->getContentFactory(), {item.item.get()}, false, false, false);
         itemInfo.price = getCostObj(collective->getFurnace().getRecycledAmount(item.item.get()));
-    ret.push_back(CollectiveInfo::QueuedItemInfo{item.state, true, std::move(itemInfo), none, {}, {""_s, 0}, i});
+    ret.push_back(CollectiveInfo::QueuedItemInfo{item.state, true, std::move(itemInfo), none, {}, {TString(), 0}, i});
     ++i;
   }
   return ret;
@@ -1488,7 +1488,7 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
   CollectiveInfo::QueuedItemInfo ret {item.state,
         item.paid && (!item.item.requiresUpgrades || !item.runes.empty()),
         getWorkshopItem(item.item, cnt), getImmigrantCreatureInfo(contentFactory, item.item.type),
-        {}, {""_s, 0}, itemIndex};
+        {}, {TString(), 0}, itemIndex};
   if (!item.paid)
     ret.itemInfo.description.push_back(TStringId("CANNOT_AFFORD_ITEM"));
   auto addItem = [this, &ret] (const ItemUpgradeInfo& info, const Item* it, bool used) {
@@ -1564,9 +1564,9 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
         {},
         chosenWorkshop->resourceIndex,
-        ""_s,
+        TString(),
         getFurnaceOptions().transform([](auto& option) {
-            return CollectiveInfo::OptionInfo{option.itemInfo, none, {""_s, 0}}; }),
+            return CollectiveInfo::OptionInfo{option.itemInfo, none, {TString(), 0}}; }),
         getFurnaceQueue(),
         index,
         TStringId("TO_BE_SMELTED"),
@@ -1654,13 +1654,13 @@ vector<ImmigrantDataInfo> PlayerControl::getUnrealizedPromotionsImmigrantData() 
   auto getLuxuryString = [](double value) {
     auto ret = toString(round(value * 10) / 10);
     if (ret == "0")
-      return "0.1"_s;
-    return ret;
+      return TString("0.1"_s);
+    return TString(ret);
   };
   for (auto c : getCreatures())
     if (c->getCombatExperience(true, false) < c->getCombatExperience(false, false)) {
       ret.emplace_back();
-      ret.back().requirements.push_back("Creature requires more luxurious quarters to achieve full potential"_s);
+      ret.back().requirements.push_back(TStringId("REQUIRES_MORE_LUXURIOUS_QUARTERS"));
       auto req = getRequiredLuxury(c->getCombatExperience(false, false));
       if (req == 0)
         ret.back().requirements.push_back(TStringId("REQUIRES_PERSONAL_QUARTERS"));
@@ -1711,7 +1711,7 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
       if (prisonSize == 0)
         requirements.push_back(TSentence("REQUIRES_A", getName(prisonBedType)));
       else
-        requirements.push_back(TSentence("REQUIRES_X_MORE", makePlural(getName(prisonBedType)), toString(missingSize)));
+        requirements.push_back(TSentence("REQUIRES_X_MORE", makePlural(getName(prisonBedType)), TString(missingSize)));
     }
     if (stack.collective)
       requirements.push_back(TSentence("REQUIRES_CONQUERING", stack.collective->getName()->full));
@@ -1764,7 +1764,7 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
       [&] (const Lasting& effect) {
         auto adj = getAdjective(effect.effect, factory);
         if (effect.time)
-          return TraitInfo{TSentence("TEMPORARY_TRAIT", adj, toString(*effect.time)),
+          return TraitInfo{TSentence("TEMPORARY_TRAIT", adj, TString(*effect.time)),
               isConsideredBad(effect.effect, factory)};
         else
           return TraitInfo{TSentence("PERMANENT_TRAIT", adj), isConsideredBad(effect.effect, factory)};
@@ -1773,7 +1773,7 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
         if (part.count == 1)
           return TraitInfo{TSentence("EXTRA_BODY_PART", getName(part.part)), false};
         else
-          return TraitInfo{TSentence("EXTRA_BODY_PARTS", toString(part.count), makePlural(getName(part.part))), false};
+          return TraitInfo{TSentence("EXTRA_BODY_PARTS", TString(part.count), makePlural(getName(part.part))), false};
       },
       [&] (const ExtraIntrinsicAttack& a) {
         return TraitInfo{capitalFirst(a.item.get(factory)->getName()), false};
@@ -1818,7 +1818,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
         },
         [&](const RecruitmentInfo& info) {
           auto recruits = info.getAvailableRecruits(collective, candidate.getInfo().getNonRandomId(0));
-          infoLines.push_back(TSentence("RECRUITS_AVAILABLE", toString(recruits.size())));
+          infoLines.push_back(TSentence("RECRUITS_AVAILABLE", TString(recruits.size())));
           c = recruits[0];
         },
         [&](const auto&) {}
@@ -1872,7 +1872,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
         [&](const AttractionInfo& attraction) {
           int required = attraction.amountClaimed;
           if (required > 0)
-            requirements.push_back(TSentence("REQUIRES_ATTRACTIONS", toString(required),
+            requirements.push_back(TSentence("REQUIRES_ATTRACTIONS", TString(required),
                 combineWithOr(attraction.types.transform([&](const AttractionType& type) {
                   return AttractionInfo::getAttractionName(contentFactory, type, required); }))));
         },
@@ -1897,10 +1897,10 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
           auto& resourceInfo = collective->getResourceInfo(cost.base.id);
           if (resourceInfo.viewId)
             costObj = make_pair(*resourceInfo.viewId, (int) cost.base.value);
-          infoLines.push_back(TSentence("COST_DOUBLES_FOR_EVERY", toString(cost.numToDoubleCost),
+          infoLines.push_back(TSentence("COST_DOUBLES_FOR_EVERY", TString(cost.numToDoubleCost),
               c->getName().plural()));
           if (cost.numFree > 0)
-            infoLines.push_back(TSentence("FIRST_X_ARE_FREE", toString(cost.numFree), c->getName().plural()));
+            infoLines.push_back(TSentence("FIRST_X_ARE_FREE", TString(cost.numFree), c->getName().plural()));
         },
         [&](const Pregnancy&) {
           requirements.push_back(TStringId("REQUIRES_PREGNANT_SUCCUBUS"));
@@ -1919,7 +1919,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
         }
     ));
     if (auto limit = elem->getLimit())
-      infoLines.push_back(TSentence("LIMITED_TO_N_CREATURES", toString(*limit)));
+      infoLines.push_back(TSentence("LIMITED_TO_N_CREATURES", TString(*limit)));
     for (auto trait : elem->getTraits())
       if (auto desc = getImmigrantDescription(trait))
         infoLines.push_back(*desc);
@@ -2562,7 +2562,7 @@ void PlayerControl::setChosenTeam(optional<TeamId> team, optional<UniqueEntity<C
   clearChosenInfo();
   chosenTeam = team;
   if (creature)
-    chosenCreature = ChosenCreatureInfo{ *creature, ""_s};
+    chosenCreature = ChosenCreatureInfo{ *creature, TString()};
   else
     chosenCreature = none;
 }
@@ -3206,7 +3206,7 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
       if (auto num = getView()->getNumber(TStringId("ENTER_AMOUNT"), Range(1, 10000), 1))
         if (auto input = getView()->getText(TStringId("ENTER_ITEM_TYPE"), "", 100)) {
           if (auto error = PrettyPrinting::parseObject(item, *input))
-            getView()->presentText(TString("Sorry"_s), "Couldn't parse \"" + *input + "\": " + *error);
+            getView()->presentText(TString("Sorry"_s), TString("Couldn't parse \"" + *input + "\": " + *error));
           else {
             position.dropItems(item.get(*num, getGame()->getContentFactory()));
           }
@@ -3748,7 +3748,7 @@ void PlayerControl::considerNewAttacks() {
       getView()->refreshView();
       if (attack.getRansom() && collective->hasResource({ResourceId("GOLD"), *attack.getRansom()})) {
         if (getView()->yesOrNoPrompt(TSentence("DEMAND_GOLD",
-            capitalFirst(attack.getAttackerName()), toString(attack.getRansom())),
+            capitalFirst(attack.getAttackerName()), TString(*attack.getRansom())),
             attack.getAttackerViewId(), true)) {
           collective->takeResource({ResourceId("GOLD"), *attack.getRansom()});
           attacker->onRansomPaid();

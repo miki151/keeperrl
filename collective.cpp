@@ -484,7 +484,7 @@ void Collective::addNewCreatureMessage(const vector<Creature*>& immigrants) {
   else {
     control->addMessage(PlayerMessage(TSentence("GROUP_JOINS_YOUR_FORCES", {
         immigrants[0]->getName().getGroupName(),
-        toString(immigrants.size()),
+        TString(immigrants.size()),
         immigrants[0]->getName().plural()}))
         .setCreature(immigrants[0]->getUniqueId()));
   }
@@ -913,7 +913,7 @@ void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
         if (!team.empty())
           butcher = teams->getLeader(team[0]);
         if (butcher->addButcheringEvent(*victimCollective))
-          addRecordedEvent(TSentence("THE_MASSACRE_OF", *victimCollective));
+          addRecordedEvent(TSentence("THE_MASSACRE_OF", TString(*victimCollective)));
       }
     }
   }

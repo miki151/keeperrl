@@ -463,7 +463,7 @@ static SItemAttributes getPotionAttr(const ContentFactory* factory, Effect effec
 }
 
 SItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory* factory) const {
-  return getPotionAttr(factory, effect, 1, ""_s, "potion1");
+  return getPotionAttr(factory, effect, 1, TString(), "potion1");
 }
 
 SItemAttributes ItemTypes::Potion2::getAttributes(const ContentFactory* factory) const {

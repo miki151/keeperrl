@@ -50,7 +50,7 @@ ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature* c, const ContentF
     c->getViewObject().getViewIdList(),
     AttributeInfo::fromCreature(factory, c),
     c->getAttributes().getSpellSchools().transform([&](auto id) -> TString {
-      return factory->getCreatures().getSpellSchools().at(id).name.value_or(string(id.data()));
+      return factory->getCreatures().getSpellSchools().at(id).name.value_or(TString(string(id.data())));
     }),
     std::move(limits),
     c->getAttributes().automatonParts.transform([factory](auto& part) {

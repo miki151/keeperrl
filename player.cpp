@@ -185,7 +185,7 @@ void Player::applyItem(vector<Item*> items) {
     for (const Creature* c : creature->getVisibleEnemies())
       if (creature->getPosition().dist8(c->getPosition()).value_or(3) < 3) {
         if (!getView()->yesOrNoPrompt(TSentence("APPLYING_ITEM_TAKES_X_TURNS", items[0]->getAName(),
-            toString(items[0]->getApplyTime()))))
+            TString(items[0]->getApplyTime()))))
           return;
         else
           break;
@@ -338,7 +338,7 @@ void Player::payForItemAction(const vector<Item*>& items) {
   if (canPayFor == 0)
     privateMessage(TStringId("YOU_DONT_HAVE_ENOUGH_GOLD"));
   else if (canPayFor == items.size() || getView()->yesOrNoPrompt(TSentence("YOU_ONLY_HAVE_ENOUGH_FOR",
-      toString(canPayFor), items[0]->getName(canPayFor > 1, creature))))
+      TString(canPayFor), items[0]->getName(canPayFor > 1, creature))))
     tryToPerform(creature->payFor(items.getPrefix(canPayFor)));
 }
 
@@ -350,7 +350,7 @@ void Player::payForAllItemsAction() {
     else
       for (Creature* c : creature->getDebt().getCreditors(creature)) {
         auto debt = creature->getDebt().getAmountOwed(c);
-        if (getView()->yesOrNoPrompt(TSentence("GIVE_GOLD_TO", c->getName().title(), toString(debt))))
+        if (getView()->yesOrNoPrompt(TSentence("GIVE_GOLD_TO", c->getName().title(), TString(debt))))
           tryToPerform(creature->give(c, creature->getGold(debt)));
       }
   }
@@ -611,7 +611,7 @@ vector<Player::CommandInfo> Player::getCommands() const {
     {PlayerInfo::CommandInfo{TStringId("MESSAGE_HISTORY"), Keybinding("MESSAGE_HISTORY"), TStringId("SHOW_MESSAGE_HISTORY"), true},
       [] (Player* player) { player->showHistory(); }, false},
 #ifndef RELEASE
-    {PlayerInfo::CommandInfo{"Wait multiple turns"_s, none, TString(), true},
+    {PlayerInfo::CommandInfo{TStringId("WAIT_MULTIPLE_TURNS"), none, TString(), true},
       [] (Player* player) {
         if (auto num = player->getView()->getNumber(TStringId("WAIT_HOW_MANY_TURNS"), Range(1, 2000), 30))
           for (int i : Range(*num))
@@ -750,7 +750,7 @@ void Player::makeMove() {
         case UserInputId::APPLY_EFFECT: {
           Effect effect;
           if (auto error = PrettyPrinting::parseObject(effect, action.get<string>()))
-            getView()->presentText(none, "Couldn't parse \"" + action.get<string>() + "\": " + *error);
+            getView()->presentText(none, TString("Couldn't parse \"" + action.get<string>() + "\": " + *error));
           else
             effect.apply(creature->getPosition(), creature);
           break;
@@ -758,16 +758,16 @@ void Player::makeMove() {
         case UserInputId::CREATE_ITEM: {
           ItemType item;
           if (auto error = PrettyPrinting::parseObject(item, action.get<string>()))
-            getView()->presentText(none, "Couldn't parse \"" + action.get<string>() + "\": " + *error);
+            getView()->presentText(none, TString("Couldn't parse \"" + action.get<string>() + "\": " + *error));
           else
-            if (auto cnt = getView()->getNumber("Enter number of items"_s, Range(1, 1000), 1))
+            if (auto cnt = getView()->getNumber(TString("Enter number of items"_s), Range(1, 1000), 1))
               creature->take(item/*.setPrefixChance(1)*/.get(*cnt, getGame()->getContentFactory()));
           break;
         }
         case UserInputId::SUMMON_ENEMY: {
           CreatureId id;
           if (auto error = PrettyPrinting::parseObject(id, action.get<string>()))
-            getView()->presentText(none, "Couldn't parse \"" + action.get<string>() + "\": " + *error);
+            getView()->presentText(none, TString("Couldn't parse \"" + action.get<string>() + "\": " + *error));
           else {
             auto factory = CreatureGroup::singleType(TribeId::getMonster(), id);
             Effect::summon(creature->getPosition(), factory, 1, 1000_visible,
@@ -940,7 +940,7 @@ void Player::privateMessage(PlayerMessage message) {
     if (!messages.empty() && messages.back().getFreshness() < 1)
       messages.clear();
     if (message.getPriority() == MessagePriority::CRITICAL)
-      view->presentText(none, message.getText(view));
+      view->presentText(none, message.getText());
     messages.emplace_back(std::move(message));
   }
 }

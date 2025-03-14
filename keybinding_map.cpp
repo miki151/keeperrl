@@ -157,11 +157,11 @@ TString KeybindingMap::getText(SDL::SDL_Keysym sym, string delimiter) {
   }();
   TString ret = keys.at(sym.sym);
   if (sym.mod & SDL::KMOD_LCTRL)
-    ret = TSentence("KEY_MODIFIER", string("Ctrl"), ret);
+    ret = TSentence("KEY_MODIFIER", TString("Ctrl"_s), ret);
   if (sym.mod & SDL::KMOD_LSHIFT)
-    ret = TSentence("KEY_MODIFIER", string("Shift"), ret);
+    ret = TSentence("KEY_MODIFIER", TString("Shift"_s), ret);
   if (sym.mod & SDL::KMOD_LALT)
-    ret = TSentence("KEY_MODIFIER", string("Alt"), ret);
+    ret = TSentence("KEY_MODIFIER", TString("Alt"_s), ret);
   return ret;
 }
 

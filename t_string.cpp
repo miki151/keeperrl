@@ -8,6 +8,9 @@ TString::TString(string s) : text(std::move(s)) {}
 TString::TString(TSentence id) : text(std::move(id)) {}
 TString::TString(TStringId id) : text(TSentence(std::move(id))) {}
 TString::TString() : text(string()) {}
+TString::TString(int i) : TString(toString(i)) {}
+TString::TString(TimeInterval i) : TString(toString(i)) {}
+TString::TString(GlobalTime i) : TString(toString(i)) {}
 
 template <typename Archive>
 void TString::serialize(Archive& ar1) {
@@ -214,7 +217,7 @@ TString toText(int num) {
     case 10: return TStringId("TEN");
     case 11: return TStringId("ELEVEN");
     case 12: return TStringId("TWELVE");
-    default: return toString(num);
+    default: return TString(num);
   }
 }
 
@@ -258,6 +261,10 @@ TString combineWithSpace(vector<TString> v) {
   return TSentence("SPACE", std::move(v[0]), combineWithAnd(v.getSuffix(v.size() - 1)));
 }
 
+TString combineWithNoSpace(TString s1, TString s2) {
+  return TSentence("NO_SPACE", std::move(s1), std::move(s2));
+}
+
 TString combineWithNewLine(vector<TString> v) {
   if (v.empty())
     return TString();
@@ -282,6 +289,14 @@ TString combineSentences(TString s1, TString s2) {
 
 TString combineSentences(vector<TString> v) {
   return combineWithSpace(std::move(v));
+}
+
+TString toPercentage(double v) {
+  return TString(toString<int>(round(v * 100)) + "%");
+}
+
+TString toStringWithSign(int v) {
+  return TString((v > 0 ? "+" : "") + toString(v));
 }
 
 bool TString::operator == (const TString& s) const {

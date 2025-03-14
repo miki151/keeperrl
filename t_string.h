@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "content_id.h"
+#include "game_time.h"
 
 class TStringId : public ContentId<TStringId> {
   public:
@@ -36,7 +37,10 @@ struct TSentence {
 
 class TString {
   public:
-  TString(string);
+  explicit TString(string);
+  explicit TString(int);
+  explicit TString(TimeInterval);
+  explicit TString(GlobalTime);
   TString(TSentence);
   TString(TStringId);
   TString();
@@ -71,6 +75,7 @@ ostream& operator << (ostream&, const TString&);
 TString combineWithCommas(vector<TString>);
 TString combineWithAnd(vector<TString>);
 TString combineWithSpace(vector<TString>);
+TString combineWithNoSpace(TString, TString);
 TString combineWithNewLine(vector<TString>);
 TString combineWithOr(vector<TString>);
 TString combineSentences(TString, TString);
@@ -79,3 +84,5 @@ TString toText(int num);
 TString capitalFirst(TString);
 TString makePlural(TString);
 TString setSubjectGender(TString, Gender);
+TString toPercentage(double);
+TString toStringWithSign(int);

@@ -380,11 +380,11 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* content
               auto name = avatarInfo.playerCreature->getName().firstOrBare();
               gameIdentifier = *avatarInfo.chosenBaseName + "_" + campaign.worldName + getNewIdSuffix();
               gameDisplayName = capitalFirst(TSentence("OF",
-                  avatarInfo.playerCreature->getName().plural(), *avatarInfo.chosenBaseName));
+                  avatarInfo.playerCreature->getName().plural(), TString(*avatarInfo.chosenBaseName)));
             } else {
               string name = *avatarInfo.playerCreature->getName().first();
               gameIdentifier = name + "_" + campaign.worldName + getNewIdSuffix();
-              gameDisplayName = TSentence("OF", name, campaign.worldName);
+              gameDisplayName = TSentence("OF", TString(name), TString(campaign.worldName));
             }
             gameIdentifier = stripFilename(std::move(gameIdentifier));
             auto aggressionLevel = avatarInfo.creatureInfo.enemyAggression
@@ -404,22 +404,4 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* content
 CampaignSetup CampaignBuilder::getEmptyCampaign() {
   Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::QUICK_MAP, "", 1);
   return CampaignSetup{ret, "", TString(), {}, none, EnemyAggressionLevel::MODERATE};
-}
-
-CampaignSetup CampaignBuilder::getWarlordCampaign(const vector<RetiredGames::RetiredGame>& games,
-    const string& gameName) {
-  Campaign ret(Table<Campaign::SiteInfo>(games.size(), 1), CampaignType::QUICK_MAP, "", 1);
-  for (int i : All(games)) {
-    auto site = Campaign::SiteInfo {
-      games[i].gameInfo.getViewId(),
-      {},
-      Campaign::SiteInfo::Dweller(Campaign::RetiredInfo { games[i].gameInfo, games[i].fileInfo }),
-      false
-    };
-    ret.sites[i][0] = std::move(site);
-  }
-  ret.mapZoom = 2;
-  ret.playerPos = Vec2(0, 0);
-  return CampaignSetup{std::move(ret), stripFilename(gameName + getNewIdSuffix()), gameName, {}, none,
-      EnemyAggressionLevel::MODERATE};
 }

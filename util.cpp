@@ -1106,10 +1106,6 @@ string combineWithOr(const vector<string>& elems) {
   return ret;
 }
 
-string toStringWithSign(int v) {
-  return (v > 0 ? "+" : "") + toString(v);
-}
-
 Dir rotate(Dir dir) {
   switch (dir) {
     case Dir::N:
@@ -1164,10 +1160,6 @@ void Vec2Range::serialize(PrettyInputArchive& ar1, const unsigned int) {
 
 string toString(const Range& r) {
   return "[" + toString(r.getStart()) + ", " + toString(r.getEnd()) + "]";
-}
-
-string toPercentage(double v) {
-  return toString<int>(round(v * 100)) + "%";
 }
 
 void openUrl(const string& url) {
