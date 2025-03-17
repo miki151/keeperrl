@@ -383,10 +383,14 @@ COPULATE_TASK "Współżyj z {1:instrumental}"
 YOU_COPULATE "Współżyjesz z {1:instrumental}."
 COPULATES "{1} kopuluje z {2:instrumental}."
 COPY_SETTING_TO_GROUP "Ustaw dla wszystkich {1:genitive}"
-CORPSE_ITEM plural "zwłoki {1:genitive}"
-    "zwłok {1:genitive}" : genitive
-    "zwłokami {1:genitive}" : instrumental
-    "zwłoki {1:genitive}" : accusative
+CORPSE_ITEM neuter "truchło {1:genitive}"
+    "truchła {1:genitive}" : genitive
+    "truchłami {1:genitive}" : instrumental
+    "truchło {1:genitive}" : accusative
+    "truchła {1:genitive}" : plural
+    "trucheł {1:genitive}" : plural,genitive
+    "truchłami {1:genitive}" : plural,instrumental
+    "truchła {1:genitive}" : plural,accusative
 CRAFTED_FROM "Ze składnika: {1}"
 CRAFTED_ITEMS_LABEL "produkcja przedmiotów"
     "produkcję przedmiotów" : accusative
@@ -1738,8 +1742,8 @@ THE_PRESENCE_OF_A_MAGICAL_FIELD "obecność pola magicznego"
 THROWS "{1} rzuca {2:instrumental}."
 THRUST "Wbijasz {1:instrumental} w {2:accusative}."
 THRUSTS "{1} wbija w {4:accusative} {3:accusative}."
-THRUSTS_ITSELF "{1} porywa się na {2:accusative}."
-THRUST_YOURSELF "Szarbiesz się na {1:accusative}."
+THRUSTS_ITSELF "{1} rzuca się na {2:accusative}."
+THRUST_YOURSELF "Rzucasz się na {1:accusative}."
 TIME_REMAINING_TILL_DAY "Pozostały czas do świtu."
 TIME_REMAINING_TILL_NIGHTFALL "Pozostały czas do zmroku."
 SUNLIGHT_INFO_DESCRIPTION_AND_TIMEOUT "{1} [{2}]"
@@ -2047,7 +2051,7 @@ FIRST_X_ARE_FREE "Pierwsze {1} {2} są darmowe."
 INCREASES_LUXURY_BY "Zwiększa luksus o {1}."
 INCREASES_POP_LIMIT_BY "Zwiększa limit {1:genitive} o {2}."
 INCREASES_POP_LIMIT_BY_UP_TO "Zwiększa limit {1:genitive} o {2}, maksymalnie do {3}."
-IS_ENGAGED_IN_A_FIGHT_WITH "{1} jest zaangażowany w walkę z {2:instrumental}."
+IS_ENGAGED_IN_A_FIGHT_WITH "{2} walczy z {1:instrumental}."
 ITEM_INFO_NAME_COMPANION_STEED "{1} (towarzysz)"
 ITEM_WONT_BE_ASSIGNED_BECAUSE_SLOT_LOCKED "{1} nie zostanie przydzielony na stałe, ponieważ slot jest zablokowany."
 JOINS_YOUR_TEAM "Do twojej drużyny dołącza {1}."
@@ -3418,15 +3422,15 @@ CREATURE_ATTRIBUTES_DEMON_DWELLER_GROUPNAME masculine "sfora"
     "sforami" : plural,instrumental
     "sfory" : plural,accusative
 
-CREATURE_ATTRIBUTES_DEMON_DWELLER_NAME masculine "demoniczny lokator"
-    "demonicznemu lokatorowi" : dative
-    "demonicznego lokatora" : genitive
-    "demonicznym lokatorem" : instrumental
-    "demonicznego lokatora" : accusative
-    "demoniczni lokatorzy" : plural
-    "demonicznych lokatorów" : plural,genitive
-    "demonicznymi lokatorami" : plural,instrumental
-    "demonicznych lokatorów" : plural,accusative
+CREATURE_ATTRIBUTES_DEMON_DWELLER_NAME masculine "pomniejszy demon"
+    "pomniejszemu demonowi" : dative
+    "pomniejszego demona" : genitive
+    "pomniejszym demonem" : instrumental
+    "pomniejszego demona" : accusative
+    "pomniejsze demony" : plural
+    "pomniejszych demonów" : plural,genitive
+    "pomniejszymi demonami" : plural,instrumental
+    "pomniejsze demony" : plural,accusative
 
 CREATURE_ATTRIBUTES_DEMON_LORD_CHATREACTIONFRIENDLY "\"Uklęknij przed nami!\""
 CREATURE_ATTRIBUTES_DEMON_LORD_CHATREACTIONHOSTILE "\"Stań naprzeciw swej śmierci!\""
@@ -8110,24 +8114,6 @@ ITEMS_WHITEDRAGONSCALES_NAME neuter "białe smocze łuski"
     "białych smoczych łusek" : plural,genitive
     "białymi smoczymi łuskami" : plural,instrumental
     "białe smocze łuski" : plural,accusative
-
-ITEMS_WIZARDCORPSE_NAME1 neuter "zwłoki gnoma"
-    "zwłok gnoma" : genitive
-    "zwłokami gnoma" : instrumental
-    "zwłoki gnoma" : accusative
-    "zwłoki gnoma" : plural
-    "zwłok gnoma" : plural,genitive
-    "zwłokami gnoma" : plural,instrumental
-    "zwłoki gnoma" : plural,accusative
-
-ITEMS_WIZARDCORPSE_NAME neuter "zwłoki czarodzieja"
-    "zwłok czarodzieja" : genitive
-    "zwłokami czarodzieja" : instrumental
-    "zwłoki czarodzieja" : accusative
-    "zwłoki czarodzieja" : plural
-    "zwłok czarodzieja" : plural,genitive
-    "zwłokami czarodzieja" : plural,instrumental
-    "zwłoki czarodzieja" : plural,accusative
 
 ITEMS_WOODENCROZIER_NAME masculine "drewniany pastorał"
     "drewnianego pastorału" : genitive

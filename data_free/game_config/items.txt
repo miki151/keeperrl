@@ -1924,7 +1924,7 @@ End
 "WizardCorpse"
   {
     viewId = { "bone" }
-    name = ITEMS_WIZARDCORPSE_NAME
+    name = CORPSE_ITEM(CREATURE_ATTRIBUTES_KEEPER_MAGE_NAME)
     itemClass = CORPSE
     price = 0
     weight = 50
@@ -1933,7 +1933,7 @@ End
   }
 "GnomeCorpse" inherit "WizardCorpse"
   {
-    name = ITEMS_WIZARDCORPSE_NAME1
+    name = CORPSE_ITEM(CREATURE_ATTRIBUTES_GNOME_NAME)
   }
 "FrozenRemains" inherit "Skeleton"
   {
