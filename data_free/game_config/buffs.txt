@@ -245,7 +245,7 @@ Def RESISTANCE(Name, Attr)
   adjective = RESISTANT_TO(Name)
   description = RESISTANCE_BUFF_DESCRIPTION(Name)
   addedMessage = ARE RESISTANT_TO(Name)
-  removedMessage = ARE NO_LONGR_RESISTANT_TO(Name)
+  removedMessage = ARE NO_LONGER_RESISTANT_TO(Name)
   color = ColorId SKY_BLUE
   fx = BUFF_SKY_BLUE
   defenseMultiplier = 1.3
