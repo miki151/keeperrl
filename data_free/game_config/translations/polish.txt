@@ -434,7 +434,7 @@ DISAPPEARS "{1} znika!"
 DISAPPEAR_TASK "Zniknij"
 DISARMS "{1} rozbraja {2:accusative}."
 YOU_DISARM "Rozbrajasz {1:accusative}."
-DISASSEMBLE_MINION_BUTTON "Rozbierz na części"
+DISASSEMBLE_MINION_BUTTON "Rozkręć"
 DISASSEMBLES "{1} rozbiera {2:accusative} na części"
 DISASSEMBLE_TASK "Rozbierz {1:accusative} na części"
 DISMISS_AND_DONT_ASK_AGAIN "Odrzuć i nie pytaj ponownie"
@@ -1008,7 +1008,7 @@ SUMMON_MULTIPLE_EFFECT_DESCRIPTION "Przywołuje {1} {2:accusative}"
 SUMMON_RANGE_EFFECT_DESCRIPTION "Przywołuje od {1} do {2} {3:accusative}"
 SUMMON_SINGLE_EFFECT_DESCRIPTION "Przywołuje {1:accusative}"
 SURVIVED "Przetrwał"
-SWAP_POSITION_ACTION "zamień pozycję"
+SWAP_POSITION_ACTION "Zamień pozycję"
 SWAP_POSITION_EFFECT_DESCRIPTION "Zamienia pozycję z wrogiem."
 SWAP_POSITION_EFFECT_NAME "zamiana pozycji"
 SWING "Zamachujesz się {1:instrumental} w {2:accusative}."
@@ -1156,7 +1156,7 @@ WORKSHOP_UPGRADE_BUTTON "Ulepsz"
 WOUNDED "Ranny"
     "Ranna" : feminine
     "Ranne" : neuter
-WRITE_ON_BOARD_ACTION "Zapisz na tablicy"
+WRITE_ON_BOARD_ACTION "Pisz na tablicy"
 WRITES_A "{1} pisze {2:accusative}"
 YES "Tak"
 YOU_ARE_AWARE_OF_DANGER "Jesteś świadomy zagrożenia"
@@ -1212,7 +1212,7 @@ YOU_ARE_SUCKED_INTO "Zostajesz wessany do {1:accusative}!"
 YOU_ARE_TURNED_OFF "Zostajesz wyłączony."
 YOU_ARE_TURNED_ON "Zostajesz włączony."
 YOU_ARE_UNABLE_TO_CAST_SPELLS "Nie możesz rzucać żadnych czarów!"
-YOU_ARE_UNDER_ATTACK_BY "Jesteś pod atakiem {1:genitive}."
+YOU_ARE_UNDER_ATTACK_BY "Jesteś atakowany przez {1:accusative}."
 YOU_ARE_WOUNDED "Jesteś ranny!"
     "Jesteś ranna!" : feminine
 YOU_ARE "Jesteś {1}."
@@ -1238,8 +1238,7 @@ YOU_DROP "Upuszczasz {1:accusative}."
 YOU_EAT "Zjadasz {1:accusative}."
 YOU_ENSLAVE "Zniewalasz {1:accusative}."
 YOU_ESCAPE_DEATH "Uniknąłeś śmierci!"
-    "Uniknęłąś śmierci!" : feminine
-
+    "Uniknęłaś śmierci!" : feminine
 ESCAPES_DEATH "{1} unika śmierci!"
 YOU_EXECUTE "Dokonujesz egzekucji na {1:accusative}."
 YOU_FALL_APART "Rozpadasz się na kawałki."
@@ -2760,8 +2759,8 @@ BUILD_MENU_HELP87 "Teleportuje pobliskie sługi, by rozprawiły się z intruzem.
 BUILD_MENU_HELP88 "Wznieca słup ognia pod intruzem."
 BUILD_MENU_HELP89 "Wysyła ogromny głaz toczący się na wroga."
 BUILD_MENU_HELP8 "Można tu składować drewno, żelazo, granit i adamantium."
-BUILD_MENU_HELP90 "Powoduje podmuch powietrza, który odrzuca wroga o kilka pól."
-BUILD_MENU_HELP91 "Ożywa, gdy wróg się zbliży."
+BUILD_MENU_HELP90 "Tworzy podmuch powietrza, który odrzuca wroga o kilka pól."
+BUILD_MENU_HELP91 "Ożywa, gdy w pobliżu znajduje się wróg."
 BUILD_MENU_HELP92 "Uruchamia wszystkie inne pułapki w pobliżu."
 BUILD_MENU_HELP93 "Niszczy wszystkie ściany w promieniu dwóch pól."
 BUILD_MENU_HELP9 "Przechowuje wszelkiego rodzaju ekwipunek dla twoich sług."
@@ -4013,7 +4012,7 @@ CREATURE_ATTRIBUTES_HELICOPTER_NAME neuter "helikopterum"
     "helikoptera" : plural
     "helikopterów" : plural,genitive
     "helikopterami" : plural,instrumental
-    "helikoptery" : plural,accusative
+    "helikoptera" : plural,accusative
 
 CREATURE_ATTRIBUTES_HORSE_NAME1 masculine "koń bojowy"
     "bojowemu koniowi" : dative
@@ -6575,7 +6574,7 @@ FURNITURE_PRAYER_BENCH_WOOD_NAME masculine "drewniany klęcznik"
     "drewnianym klęcznikowm" : plural,instrumental
     "drewniane klęczniki" : plural,accusative
 
-FURNITURE_PRISON_BARS_NAME neuter "kraty więzienne"
+FURNITURE_PRISON_BARS_NAME plural "kraty więzienne"
     "krat więziennych" : genitive
     "kratami więziennymi" : instrumental
     "kraty więzienne" : accusative
@@ -6584,7 +6583,7 @@ FURNITURE_PRISON_BARS_NAME neuter "kraty więzienne"
     "kratami więziennymi" : plural,instrumental
     "kraty więzienne" : plural,accusative
 
-FURNITURE_PRISON_DOOR_NAME feminine "drzwi więzienne"
+FURNITURE_PRISON_DOOR_NAME plural "drzwi więzienne"
     "drzwi więziennych" : genitive
     "drzwiami więziennymi" : instrumental
     "drzwi więzienne" : accusative
@@ -8767,62 +8766,270 @@ CREATURE_ATTRIBUTES_GOBLIN_KING_DEATHEFFECT "Strażnik Goblinów został odbloko
 ENEMIES_HUMAN_STABLE_RACE "stajnia"
 
 ITEM_LISTS_VILLAGESHOP_TYPE "Uwalnia chmurę mgły"
-ITEMS_ACIDHEADADA_NAME "adamantynowa głowa plująca kwasem"
-ITEMS_ACIDHEADIRON_NAME "żelazna głowa plująca kwasem"
 ITEMS_ADOXIESCROLL_EFFECT2 "Odblokowano poszukiwacza przygód Adoxie!"
-ITEMS_ARCHERHEADADA_NAME "adamantynowa głowa strzelająca strzałami"
-ITEMS_ARCHERHEADIRON_NAME "żelazna głowa strzelająca strzałami"
-ITEMS_ARCHERHEADWOOD_NAME "drewniana głowa strzelająca strzałami"
-ITEMS_AUTOMATONARMSADA_NAME "adamantynowe ramiona"
-ITEMS_AUTOMATONARMSADOXIUM_NAME "ramiona z adoxium"
-ITEMS_AUTOMATONARMSINFERNITE_NAME "infernitowe ramiona"
-ITEMS_AUTOMATONARMSIRON_NAME "żelazne ramiona"
-ITEMS_AUTOMATONARMSWOOD_NAME "drewniane ramiona"
 ITEMS_AUTOMATONARMSWOOD_PREFIX "Zapewniają atak wręcz."
-ITEMS_AUTOMATONCRAFTINGADA_NAME "adamantynowe ramiona rzemieślnicze"
-ITEMS_AUTOMATONCRAFTINGIRON_NAME "żelazne ramiona rzemieślnicze"
-ITEMS_AUTOMATONCRAFTINGWOOD_NAME "drewniane ramiona rzemieślnicze"
 ITEMS_AUTOMATONCRAFTINGWOOD_PREFIX "Zapewniają automatowi zdolność tworzenia."
-ITEMS_AUTOMATONDRILLADA_NAME "adamantynowe wiertło"
-ITEMS_AUTOMATONDRILLIRON_NAME "żelazne wiertło"
-ITEMS_AUTOMATONDRILLWOOD_NAME "drewniane wiertło"
 ITEMS_AUTOMATONDRILLWOOD_PREFIX "Wiertło dla automatów. Umożliwia wykonywanie wszystkich prac robotniczych."
-ITEMS_AUTOMATONLEGSADA_NAME "adamantynowe nogi"
-ITEMS_AUTOMATONLEGSADOXIUM_NAME "nogi z adoxium"
-ITEMS_AUTOMATONLEGSINFERNITE_NAME "infernitowe nogi"
-ITEMS_AUTOMATONLEGSIRON_NAME "żelazne nogi"
-ITEMS_AUTOMATONLEGSWOOD_NAME "drewniane nogi"
 ITEMS_AUTOMATONLEGSWOOD_PREFIX "Zapewniają mobilność. Druga para daje zdolność \"skok\"."
+ITEMS_ACIDHEADADA_NAME feminine "adamantynowa głowa plująca kwasem"
+    "adamantynowej głowy plującej kwasem" : genitive
+    "adamantynową głową plującą kwasem" : instrumental
+    "adamantynową głowę plującą kwasem" : accusative
+    "adamantynowe głowy plujące kwasem" : plural
+    "adamantynowych głów plujących kwasem" : plural,genitive
+    "adamantynowymi głowami plującymi kwasem" : plural,instrumental
+    "adamantynowe głowy plujące kwasem" : plural,accusative
+
+ITEMS_ACIDHEADIRON_NAME feminine "żelazna głowa plująca kwasem"
+    "żelaznej głowy plującej kwasem" : genitive
+    "żelazną głową plującą kwasem" : instrumental
+    "żelazną głowę plującą kwasem" : accusative
+    "żelazne głowy plujące kwasem" : plural
+    "żelaznych głów plujących kwasem" : plural,genitive
+    "żelaznymi głowami plującymi kwasem" : plural,instrumental
+    "żelazne głowy plujące kwasem" : plural,accusative
+
+ITEMS_ARCHERHEADADA_NAME feminine "adamantynowa głowa strzelająca strzałami"
+    "adamantynowej głowy strzelającej strzałami" : genitive
+    "adamantynową głową strzelającą strzałami" : instrumental
+    "adamantynową głowę strzelającą strzałami" : accusative
+    "adamantynowe głowy strzelające strzałami" : plural
+    "adamantynowych głów strzelających strzałami" : plural,genitive
+    "adamantynowymi głowami strzelającymi strzałami" : plural,instrumental
+    "adamantynowe głowy strzelające strzałami" : plural,accusative
+
+ITEMS_ARCHERHEADIRON_NAME feminine "żelazna głowa strzelająca strzałami"
+    "żelaznej głowy strzelającej strzałami" : genitive
+    "żelazną głową strzelającą strzałami" : instrumental
+    "żelazną głowę strzelającą strzałami" : accusative
+    "żelazne głowy strzelające strzałami" : plural
+    "żelaznych głów strzelających strzałami" : plural,genitive
+    "żelaznymi głowami strzelających strzałami" : plural,instrumental
+    "żelazne głowy strzelające strzałami" : plural,accusative
+
+ITEMS_ARCHERHEADWOOD_NAME feminine "drewniana głowa strzelająca strzałami"
+    "drewnianej głowy strzelającej strzałami" : genitive
+    "drewnianą głową strzelającą strzałami" : instrumental
+    "drewnianą głowę strzelającą strzałami" : accusative
+    "drewniane głowy strzelające strzałami" : plural
+    "drewnianych głów strzelających strzałami" : plural,genitive
+    "drewnianymi głowami strzelającymi strzałami" : plural,instrumental
+    "drewniane głowy strzelające strzałami" : plural,accusative
+
+ITEMS_AUTOMATONARMSADA_NAME plural "adamantynowe ramiona"
+    "adamantynowych ramion" : genitive
+    "adamantynowymi ramionami" : instrumental
+    "adamantynowe ramiona" : accusative
+
+ITEMS_AUTOMATONARMSADOXIUM_NAME plural "ramiona z adoxium"
+    "ramion z adoxium" : genitive
+    "ramionami z adoxium" : instrumental
+    "ramiona z adoxium" : accusative
+
+ITEMS_AUTOMATONARMSINFERNITE_NAME plural "infernitowe ramiona"
+    "infernitowych ramion" : genitive
+    "infernitowymi ramionami" : instrumental
+    "infernitowe ramiona" : accusative
+
+ITEMS_AUTOMATONARMSIRON_NAME plural "żelazne ramiona"
+    "żelaznych ramion" : genitive
+    "żelaznymi ramionami" : instrumental
+    "żelazne ramiona" : accusative
+
+ITEMS_AUTOMATONARMSWOOD_NAME plural "drewniane ramiona"
+    "drewnianych ramion" : genitive
+    "drewnianymi ramionami" : instrumental
+    "drewniane ramiona" : accusative
+
+ITEMS_AUTOMATONCRAFTINGADA_NAME plural "adamantynowe ramiona rzemieślnicze"
+    "adamantynowych rzemieślniczych ramion" : genitive
+    "adamantynowymi rzemieślniczymi ramionami" : instrumental
+    "adamantynowe rzemieślnicze ramiona" : accusative
+
+ITEMS_AUTOMATONCRAFTINGIRON_NAME plural "żelazne ramiona rzemieślnicze"
+    "żelaznych rzemieślniczych ramion" : genitive
+    "żelaznymi rzemieślniczymi ramionami" : instrumental
+    "żelazne rzemieślnicze ramiona" : accusative
+
+ITEMS_AUTOMATONCRAFTINGWOOD_NAME plural "drewniane ramiona rzemieślnicze"
+    "drewnianych rzemieślniczych ramion" : genitive
+    "drewnianymi rzemieślniczymi ramionami" : instrumental
+    "drewniane rzemieślnicze ramiona" : accusative
+
+ITEMS_AUTOMATONDRILLADA_NAME neuter "adamantynowe wiertło"
+    "adamantynowych wierteł" : genitive
+    "adamantynowymi wiertłami" : instrumental
+    "adamantynowe wiertła" : accusative
+
+ITEMS_AUTOMATONDRILLIRON_NAME neuter "żelazne wiertło"
+    "żelaznego wiertła" : genitive
+    "żelaznym wiertłem" : instrumental
+    "żelazne wiertło" : accusative
+    "żelazne wiertła" : plural
+    "żelaznych wierteł" : plural,genitive
+    "żelaznymi wiertłami" : plural,instrumental
+    "żelazne wiertła" : plural,accusative
+
+ITEMS_AUTOMATONDRILLWOOD_NAME neuter "drewniane wiertło"
+    "drewnianego wiertła" : genitive
+    "drewnianym wiertłem" : instrumental
+    "drewniane wiertło" : accusative
+    "drewniane wiertła" : plural
+    "drewnianych wierteł" : plural,genitive
+    "drewnianymi wiertłami" : plural,instrumental
+    "drewniane wiertła" : plural,accusative
+
+ITEMS_AUTOMATONLEGSADA_NAME plural "adamantynowe nogi"
+    "adamantynowych nóg" : genitive
+    "adamantynowymi nogami" : instrumental
+    "adamantynowe nogi" : accusative
+
+ITEMS_AUTOMATONLEGSADOXIUM_NAME plural "nogi z adoxium"
+    "nóg z adoxium" : genitive
+    "nogami z adoxium" : instrumental
+    "nogi z adoxium" : accusative
+
+ITEMS_AUTOMATONLEGSINFERNITE_NAME plural "infernitowe nogi"
+    "infernitowych nóg" : genitive
+    "infernitowymi nogami" : instrumental
+    "infernitowe nogi" : accusative
+
+ITEMS_AUTOMATONLEGSIRON_NAME plural "żelazne nogi"
+    "żelaznych nóg" : genitive
+    "żelaznymi nogami" : instrumental
+    "żelazne nogi" : accusative
+
+ITEMS_AUTOMATONLEGSWOOD_NAME plural "drewniane nogi"
+    "drewnianych nóg" : genitive
+    "drewnianymi nogami" : instrumental
+    "drewniane nogi" : accusative
+
+ITEMS_FIREHEADADA_NAME feminine "adamantynowa głowa ziejąca ogniem"
+    "adamantynowej głowy ziejącej ogniem" : genitive
+    "adamantynową głową ziejącą ogniem" : instrumental
+    "adamantynową głowę ziejącą ogniem" : accusative
+    "adamantynowe głowy ziejące ogniem" : plural
+    "adamantynowych głów ziejących ogniem" : plural,genitive
+    "adamantynowymi głowami ziejącymi ogniem" : plural,instrumental
+    "adamantynowe głowy ziejące ogniem" : plural,accusative
+
+ITEMS_FIREHEADINFERNITE_NAME feminine "infernitowa głowa ziejąca ogniem"
+    "infernitowej głowy ziejącej ogniem" : genitive
+    "infernitową głową ziejącą ogniem" : instrumental
+    "infernitową głowę ziejącą ogniem" : accusative
+    "infernitowe głowy ziejące ogniem" : plural
+    "infernitowych głów ziejących ogniem" : plural,genitive
+    "infernitowymi głowami ziejącymi ogniem" : plural,instrumental
+    "infernitowe głowy ziejące ogniem" : plural,accusative
+
+ITEMS_FIREHEADIRON_NAME feminine "żelazna głowa ziejąca ogniem"
+    "żelaznej głowy ziejącej ogniem" : genitive
+    "żelazną głową ziejącą ogniem" : instrumental
+    "żelazną głowę ziejącą ogniem" : accusative
+    "żelazne głowy ziejące ogniem" : plural
+    "żelaznych głów ziejących ogniem" : plural,genitive
+    "żelaznymi głowami ziejącymi ogniem" : plural,instrumental
+    "żelazne głowy ziejące ogniem" : plural,accusative
+
+ITEMS_HUMANOIDHEADADA_NAME feminine "adamantynowa głowa humanoidalna"
+    "adamantynowej głowy humanoidalnej" : genitive
+    "adamantynową głową humanoidalną" : instrumental
+    "adamantynową głowę humanoidalną" : accusative
+    "adamantynowe głowy humanoidalne" : plural
+    "adamantynowych głów humanoidalnych" : plural,genitive
+    "adamantynowymi głowami humanoidalnymi" : plural,instrumental
+    "adamantynowe głowy humanoidalne" : plural,accusative
+
+ITEMS_HUMANOIDHEADIRON_NAME feminine "żelazna głowa humanoidalna"
+    "żelaznej głowy humanoidalnej" : genitive
+    "żelazną głową humanoidalną" : instrumental
+    "żelazną głowę humanoidalną" : accusative
+    "żelazne głowy humanoidalne" : plural
+    "żelaznych głów humanoidalnych" : plural,genitive
+    "żelaznymi głowami humanoidalnymi" : plural,instrumental
+    "żelazne głowy humanoidalne" : plural,accusative
+
+ITEMS_HUMANOIDHEADWOOD_NAME feminine "drewniana głowa humanoidalna"
+    "drewnianej głowy humanoidalnej" : genitive
+    "drewnianą głową humanoidalną" : instrumental
+    "drewnianą głowę humanoidalną" : accusative
+    "drewniane głowy humanoidalne" : plural
+    "drewnianych głów humanoidalnych" : plural,genitive
+    "drewnianymi głowami humanoidalnymi" : plural,instrumental
+    "drewniane głowy humanoidalne" : plural,accusative
+
+ITEMS_HUMANOIDHEADWOOD_SHORTNAME feminine "głowa humanoidalna"
+    "głowy humanoidalnej" : genitive
+    "głową humanoidalną" : instrumental
+    "głowę humanoidalną" : accusative
+    "głowy humanoidalne" : plural
+    "głów humanoidalnych" : plural,genitive
+    "głowami humanoidalnymi" : plural,instrumental
+    "głowy humanoidalne" : plural,accusative
+
+ITEMS_INVISIBILITYHEADADOXIUM_NAME feminine "głowa niewidzialności z adoxium"
+    "głowy niewidzialności z adoxium" : genitive
+    "głową niewidzialności z adoxium" : instrumental
+    "głowę niewidzialności z adoxium" : accusative
+    "głowy niewidzialności z adoxium" : plural
+    "głów niewidzialności z adoxium" : plural,genitive
+    "głowami niewidzialności z adoxium" : plural,instrumental
+    "głowy niewidzialności z adoxium" : plural,accusative
+
+ITEMS_OILHEADADA_NAME feminine "adamantynowa głowa plująca olejem"
+    "adamantynowej głowy plującej olejem" : genitive
+    "adamantynową głową plującą olejem" : instrumental
+    "adamantynową głowę plującą olejem" : accusative
+    "adamantynowe głowy plujące olejem" : plural
+    "adamantynowych głów plujących olejem" : plural,genitive
+    "adamantynowymi głowami plującymi olejem" : plural,instrumental
+    "adamantynowe głowy plujące olejem" : plural,accusative
+
+ITEMS_OILHEADIRON_NAME feminine "żelazna głowa plująca olejem"
+    "żelaznej głowy plującej olejem" : genitive
+    "żelazną głową plującą olejem" : instrumental
+    "żelazną głowę plującą olejem" : accusative
+    "żelazne głowy plujące olejem" : plural
+    "żelaznych głów plujących olejem" : plural,genitive
+    "żelaznymi głowami plującymi olejem" : plural,instrumental
+    "żelazne głowy plujące olejem" : plural,accusative
+
+ITEMS_REPAIRAUTOMATONARMSADA_NAME neuter "adamantynowe ramiona naprawcze"
+    "adamantynowych naprawczych ramion" : genitive
+    "adamantynowymi naprawczymi ramionami" : instrumental
+    "adamantynowe naprawcze ramiona" : accusative
+
+ITEMS_REPAIRAUTOMATONARMSIRON_NAME neuter "żelazne ramiona naprawcze"
+    "żelaznych naprawczych ramion" : genitive
+    "żelaznymi naprawczymi ramionami" : instrumental
+    "żelazne naprawcze ramiona" : accusative
+
+ITEMS_TELEPORTHEADADOXIUM_NAME feminine "głowa teleportująca z adoxium"
+    "głowy teleportującej z adoxium" : genitive
+    "głową teleportującą z adoxium" : instrumental
+    "głowę teleportującą z adoxium" : accusative
+    "głowy teleportujące z adoxium" : plural
+    "głów teleportujących z adoxium" : plural,genitive
+    "głowami teleportującymi z adoxium" : plural,instrumental
+    "głowy teleportujące z adoxium" : plural,accusative
+
 ITEMS_BATRING_NAME "pierścień poskramiania nietoperzy"
 ITEMS_CYCLOPSSCROLL_EFFECT1 "Odblokowano frakcję Cyklopów!"
 ITEMS_DAMAGERING3_DESCRIPTION "Zwiększa siłę twoich ataków fizycznych, pozwalając zadawać większe obrażenia w walce."
 ITEMS_DAMAGERING3_NAME "pierścień obrażeń"
 ITEMS_DAMAGERING3_SHORTNAME "obrażenia"
 ITEMS_DRAGONRING_NAME "pierścień poskramiania smoków"
-ITEMS_FIREHEADADA_NAME "adamantynowa głowa ziejąca ogniem"
-ITEMS_FIREHEADINFERNITE_NAME "infernitowa głowa ziejąca ogniem"
-ITEMS_FIREHEADIRON_NAME "żelazna głowa ziejąca ogniem"
 ITEMS_HORSERING_NAME "pierścień poskramiania koni"
-ITEMS_HUMANOIDHEADADA_NAME "adamantynowa głowa humanoidalna"
-ITEMS_HUMANOIDHEADIRON_NAME "żelazna głowa humanoidalna"
-ITEMS_HUMANOIDHEADWOOD_NAME "drewniana głowa humanoidalna"
 ITEMS_HUMANOIDHEADWOOD_PREFIX "Pozwala używać ekwipunku."
-ITEMS_HUMANOIDHEADWOOD_SHORTNAME "głowa humanoidalna"
-ITEMS_INVISIBILITYHEADADOXIUM_NAME "głowa niewidzialności z adoxium"
-ITEMS_OILHEADADA_NAME "adamantynowa głowa plująca olejem"
-ITEMS_OILHEADIRON_NAME "żelazna głowa plująca olejem"
 ITEMS_PRAYERBOOKPROTECTION_EFFECT1 "Brak"
 ITEMS_RANGEDDAMAGERING3_DESCRIPTION "Zwiększa precyzję twoich ataków dystansowych, pozwalając zadawać większe obrażenia."
 ITEMS_RANGEDDAMAGERING3_NAME "pierścień obrażeń dystansowych"
 ITEMS_RANGEDDAMAGERING3_SHORTNAME "obrażenia dystansowe"
-ITEMS_REPAIRAUTOMATONARMSADA_NAME "adamantynowe ramiona naprawcze"
-ITEMS_REPAIRAUTOMATONARMSIRON_NAME "żelazne ramiona naprawcze"
 ITEMS_REPAIRAUTOMATONARMSIRON_PREFIX "Zapewniają zdolność naprawiania innych automatów."
 ITEMS_SPELLDAMAGERING3_DESCRIPTION "Zwiększa siłę twoich ataków magicznych, pozwalając zadawać większe obrażenia w walce."
 ITEMS_SPELLDAMAGERING3_NAME "pierścień obrażeń magicznych"
 ITEMS_SPELLDAMAGERING3_SHORTNAME "obrażenia magiczne"
 ITEMS_SPIDERRING_NAME "pierścień poskramiania pająków"
-ITEMS_TELEPORTHEADADOXIUM_NAME "głowa teleportująca z adoxium"
 ITEMS_ZOMBIESCROLL_EFFECT1 "Odblokowano frakcję Zombie!"
 
 SPELLS_BYPASS_ALLIES_EFFECT1 "Wszystkie ataki dystansowe omijają sojuszników."
