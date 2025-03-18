@@ -651,7 +651,7 @@ WarlordInfoWithReference Game::getWarlordInfo() {
 }
 
 void Game::conquered(const TString& title, int numKills, int points) {
-  TString text = combineSentences(concat(
+  TString text = combineWithNewLine(concat(
     {TSentence("YOU_HAVE_CONQUERED_THIS_LAND", TString(numKills), TString(points))},
     statistics->getText()));
   view->presentText(TString(TStringId("VICTORY")), text);
