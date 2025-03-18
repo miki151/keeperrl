@@ -297,9 +297,18 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* content
   int numBlocked = 0.6 * size.x * size.y;
   auto retired = genRetired(type);
   View::CampaignMenuState menuState { true, CampaignMenuIndex{CampaignMenuElems::None{}} };
-  options->setChoices(OptionId::ENDLESS_ENEMIES, {"none", "from the start", "after winning"});
-  options->setChoices(OptionId::ENEMY_AGGRESSION, {"none", "moderate", "extreme"});
-  options->setChoices(OptionId::EXP_INCREASE, {"mild", "normal", "extreme"});
+  options->setChoices(OptionId::ENDLESS_ENEMIES, {
+      view->translate(TStringId("ENDLESS_ENEMIES_NONE")),
+      view->translate(TStringId("ENDLESS_ENEMIES_FROM_START")),
+      view->translate(TStringId("ENDLESS_ENEMIES_AFTER_WINNING"))});
+  options->setChoices(OptionId::ENEMY_AGGRESSION, {
+      view->translate(TStringId("ENEMY_AGGRESSION_NONE")),
+      view->translate(TStringId("ENEMY_AGGRESSION_MODERATE")),
+      view->translate(TStringId("ENEMY_AGGRESSION_EXTREME"))});
+  options->setChoices(OptionId::EXP_INCREASE, {
+      view->translate(TStringId("EXP_INCREASE_MILD")),
+      view->translate(TStringId("EXP_INCREASE_NORMAL")),
+      view->translate(TStringId("EXP_INCREASE_EXTREME"))});
   int worldMapIndex = 0;
   auto worldMapId = [&] {
     return contentFactory->worldMaps[worldMapIndex].layout;

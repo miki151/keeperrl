@@ -127,7 +127,6 @@ BANISH_EFFECT_NAME "wygnanie"
     "wygnania" : genitive
 BASHES_FURNITURE "{1} wali w {2:accusative}"
 BECOMES "{1} staje się {2:instrumental}."
-BECOME "Zostajesz {1:instrumental}."
 BED neuter "łóżko"
     "łóżka" : genitive
     "łóżkiem" : instrumental
@@ -313,7 +312,7 @@ BUFF_ADJECTIVE_TURNED_OFF "wyłączony"
 BUILD_FURNITURE_TASK "Zbuduj {1:accusative} w {2}"
 BUILD_MORGUE_HINT "Zbuduj stół sekcyjny, aby tworzyć nieumarłych."
 BURNED_DEATH_REASON "spalony na śmierć"
-BURNS_IN "{1} płonie w {2:instrumental}"
+BURNS_IN "{1} płonie w {2:locative}"
 BUTCHER_TITLE "rzeźnik {1:genitive}"
 CAGE feminine "klatka"
     "klatki" : genitive
@@ -450,7 +449,7 @@ DOUBLE_TROUBLE_EFFECT_NAME "podwójny kłopot"
 DROP_ITEMS_ANYWHERE_TASK "Porzuć przedmioty w dowolnym miejscu"
 DROP_ITEMS_TASK "Zanieś przedmioty"
 DROWNED_DEATH_REASON "utonął"
-DROWNS_IN "{1} tonie w {2:instrumental}."
+DROWNS_IN "{1} tonie w {2:locative}."
 DUEL_TASK "Pojedynek: {1}"
 DUNGEON_CONQUER_RATE "Wskaźnik podboju: {1}/{2}"
 DUNGEON_CONQUER_RATE_TIP "Ile razy te lochy zostały podbite względem liczby ich wczytań."
@@ -560,7 +559,7 @@ GUARD_ZONE1_HIGHLIGHT "Strefa wartowania 1"
 GUARD_ZONE2_HIGHLIGHT "Strefa wartowania 2"
 GUARD_ZONE3_HIGHLIGHT "Strefa wartowania 3"
 HAPPENS_TO_YOU "{1} ciebie."
-HAS_BEEN_CAPTURED_BY_ENEMY "{1} został pojmany przez wroga."
+HAS_BEEN_CAPTURED_BY_ENEMY "{1} zostaje {BUFF_ADJECTIVE_STUNNED:1} przez wroga."
 HAS_GONE_BERSERK "wpada w szał!"
 HAS_REVIVED "{1} wskrzesił {2:accusative}."
 YOU_HAVE_REVIVED "Wskrzesiłeś {1:accusative}."
@@ -601,6 +600,7 @@ HIS_STOMACH_RECEIVES_A_DEADLY_BLOW "Żołądek {1:genitive} otrzymuje śmierteln
 HOME_MAP_BIOME "Biom bazy gracza: {1}"
 HOSTILE_MAGICAL_FIELD_HIGHLIGHT "Wrogie pole magiczne"
 HUMANOID "humanoid"
+    "humanoidem" : instrumental
 IDLE_TASK "Bierny"
 ILLUSION "Iluzja"
 IMMEDIATE_TRIGGER "Natychmiastowy"
@@ -654,11 +654,15 @@ IS_NO_LONGER_FUNNY "{1} już nie jest zabawny."
 IS_NO_LONGER_HALLU "{1} przestaje halucynować."
 IS_NO_LONGER_IMMOBILE "{1} przestaje być unieruchomiony."
 IS_NO_LONGER_LOCKED_POSITION "{1} przestaje mieć zablokowaną pozycję."
-IS_NO_LONGER_PLAGUE_RESISTANT "{1} nie jest już odporny na zarazę."
-IS_NO_LONGER_POISON_RESISTANT "{1} nie jest już odporny na truciznę."
+IS_NO_LONGER_PLAGUE_RESISTANT "{1} nie jest już {BUFF_ADJECTIVE_PLAGUE_RESISTANT:1}."
+IS_NO_LONGER_POISON_RESISTANT "{1} nie jest już {BUFF_ADJECTIVE_POISON_RESISTANT:1}."
 IS_NO_LONGER_POLYMORPHED "{1} wraca do poprzedniej postaci."
-LESS_UNDERSTANDING "mniej zrozumienia"
-MORE_UNDERSTANDING "więcej zrozumienia"
+LESS_UNDERSTANDING "mniej zrozumiały"
+    "mniej zrozumiała" : feminine
+    "mniej zrozumiałe" : neuter
+MORE_UNDERSTANDING "bardziej zrozumiały"
+    "bardziej zrozumiała" : feminine
+    "bardziej zrozumiałe" : neuter
 IS_NO_LONGER_RESTED "{1} nie jest już {BUFF_ADJECTIVE_RESTED:1}."
 IS_NO_LONGER_SATIATED "{1} nie jest już {BUFF_ADJECTIVE_SATIATED:1}."
 IS_NO_LONGER_SLEEP_RESISTANT "{1} nie jest już odporny na sen."
@@ -949,6 +953,7 @@ SLOW_GAME_SPEED "wolna"
 SNARLS "{1} warczy."
 SOBERS_UP "{1} trzeźwieje."
 SOMETHING "coś"
+    "czegoś" : genitive
 SOUND_EFFECT_EFFECT_DESCRIPTION "Wydaje faktyczny dźwięk"
 SOUND_EFFECT_EFFECT_NAME "efekt dźwiękowy"
 SPECIAL_ATTR_VALUE "{1} {2} {3}"
@@ -1100,7 +1105,7 @@ USE_A_SHIELD_HINT "Użyj tarczy!"
 USE_FURNITURE "użyj {1:accusative}"
 VERY_FAST_GAME_SPEED "bardzo szybka"
 VICTIM_AFFECTED_BY "ofiara pod wpływem {1:genitive} (szansa {2})"
-VICTORY "Zwycięstwo"
+VICTORY "Zwycięstwo!"
 VIEW_MESSAGE_BOARD "zobacz {1:accusative}"
 VILLAIN_CONQUERED "Pokonany"
 VILLAIN_LOCATION_UNKNOWN "Nieznane położenie"
@@ -1434,7 +1439,7 @@ BUFF_PLAGUE_RESISTANT feminine "odporność na zarazę"
     "odporności na zarazę" : genitive
 BUFF_POISON feminine "trucizna"
     "trucizny" : genitive
-BUFF_POISON_RESISTANT "odporność na truciznę"
+BUFF_POISON_RESISTANT feminine "odporność na truciznę"
     "odporności na truciznę" : genitive
 BUFF_POLYMORPHED neuter "przemienienie"
     "przemienienia" : genitive
@@ -1642,7 +1647,7 @@ ITEM_BURNING "(płonący)"
 ITEM_EQUIPED "Wyposażono."
 ITEM_FROM_INGREDIENT " z "
 ITEM_MATERIAL_LABEL "Materiał:"
-ITEM_NOT_EQUIPED "Jeszcze niewyposażony."
+ITEM_NOT_EQUIPED "Przedmio jeszcze niewyposażony."
 ITEM_REQUIRES_SKILL_LEVEL "Wymagany poziom umiejętności:"
 ITEM_REQUIRES_UPGRADES "Nie da się wykonać bez ulepszeń."
 ITEM_UPGRADE_BUTTON "ulepsz"
@@ -2226,14 +2231,14 @@ IS_KILLED "{1} zostaje {2:1}."
 MORE_ADJECTIVE "bardziej {1}"
 NOT "nie {1}"
 PERMANENT_LASTING_DESCRIPTION "{1} Efekt jest permanentny."
-PERMANENT_LASTING_NAME_HELPER "stały"
-    "stałego" : genitive
-    "stała" : feminine
-    "stałej" : feminine,genitive
-    "stałe" : neuter
-    "stałego" : neuter,genitive
-    "stałe" : plural
-    "stałych" : plural,genitive
+PERMANENT_LASTING_NAME_HELPER "permanentny"
+    "permanentnego" : genitive
+    "permanentna" : feminine
+    "permanentnej" : feminine,genitive
+    "permanentne" : neuter
+    "permanentnego" : neuter,genitive
+    "permanentne" : plural
+    "permanentnych" : plural,genitive
 PERMANENT_LASTING_NAME "{PERMANENT_LASTING_NAME_HELPER:1} {1}"
 ACTIVITY_ON_OFF_HINT_FOR_GROUP "Kliknij, aby wyłączyć tę aktywność dla wszystkich {1:genitive}."
 COUNT_ITEM_AVAILABLE "({1} dostępnych)"
@@ -3701,7 +3706,7 @@ CREATURE_ATTRIBUTES_FERAL_CHILD_GROUPNAME feminine "sfora"
     "sforami" : plural,instrumental
     "sfory" : plural,accusative
 
-CREATURE_ATTRIBUTES_FERAL_CHILD_NAME masculine "dzikie dziecko"
+CREATURE_ATTRIBUTES_FERAL_CHILD_NAME neuter "dzikie dziecko"
     "dzikiemu dziecku" : dative
     "dzikiego dziecka" : genitive
     "dzikim dzieckiem" : instrumental
@@ -3731,7 +3736,7 @@ CREATURE_ATTRIBUTES_FLYING_CARPET_NAME masculine "latający dywan"
     "latającymi dywanami" : plural,instrumental
     "latające dywany" : plural,accusative
 
-CREATURE_ATTRIBUTES_FLY_NAME masculine "mucha"
+CREATURE_ATTRIBUTES_FLY_NAME feminine "mucha"
     "musze" : dative
     "muchy" : genitive
     "muchą" : instrumental
@@ -9708,6 +9713,15 @@ NOT_ENOUGH_UPGRADES "Zbyt mało ulepszeń dla całej partii. Zastosować do {1} 
 KILLS_LABEL "{1} zabitych"
 CONFIRM_FILE_ERASE "Czy na pewno chcesz skasować {1}?"
 REQUIRES_MORE_LUXURIOUS_QUARTERS "Sługa wymaga bardziej luksusowej kwatery, by osiągnąć pełny potencjał."
+ENDLESS_ENEMIES_NONE "brak"
+ENDLESS_ENEMIES_FROM_START "od początku gry"
+ENDLESS_ENEMIES_AFTER_WINNING "po wygranej"
+ENEMY_AGGRESSION_NONE "brak"
+ENEMY_AGGRESSION_MODERATE "średnia"
+ENEMY_AGGRESSION_EXTREME "ekstremalna"
+EXP_INCREASE_MILD "łagodna"
+EXP_INCREASE_NORMAL "normalna"
+EXP_INCREASE_EXTREME "ekstremalna"
 NEW_LINE "{1}
 {2}"
 TEXT128 "Nie znaleziono strony. Skontaktuj się z autorem moda."

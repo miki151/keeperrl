@@ -4989,7 +4989,7 @@ SGuiElem GuiBuilder::drawCampaignSettingsButton(SyncQueue<CampaignAction>& queue
         WL(keyHandler, [&focused, cnt] { focused = (focused + cnt - 1) % cnt; },
             Keybinding("MENU_UP"), SoundId("MENU_TRAVEL"))
       );
-      drawMiniMenu(std::move(content), exit, rect.bottomLeft(), 444, true);
+      drawMiniMenu(std::move(content), exit, rect.bottomLeft(), 464, true);
       if (!clicked)
         break;
     }
