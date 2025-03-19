@@ -263,8 +263,8 @@ End
   "LAVA_FORGE" inherit "FORGE" append { }
   "LABORATORY"
   {
-      {{Potion Fire{25}} 4 "GOLD" 5}
-      {{Potion Name WORKSHOPS_MENU_TYPE11 Area 1 Fire{20}} 8 "GOLD" 10}
+      {{Potion Fire{25}} 4 "GOLD" 5 "incendiary alchemy"}
+      {{Potion Name WORKSHOPS_MENU_TYPE11 Area 1 Fire{20}} 8 "GOLD" 10 "incendiary alchemy"}
       {{Potion Lasting OIL} 4 "GOLD" 15}
   }
 }
