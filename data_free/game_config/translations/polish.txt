@@ -756,8 +756,8 @@ LEGENDARY_HUMANOID "mityczny humanoid"
 LOCATION_TOO_DANGEROUS_HINT "Zbyt niebezpieczna lokalizacja do budowy"
 LOCK_DOOR_ACTION "Zamknij drzwi"
 LOCKED_ITEMS_HINT "Zablokowane przedmioty nie będą automatycznie zamieniane przez sługę."
-LOCK_POSITION_BUTTON "Zablokuj pozycję"
-LOCK_POSITION_TOOLTIP "Włączenie zablokuje pozycję automatu przed zamianą miejsc z innymi. W trybie kontroli wciąż możesz go przepchnąć."
+LOCK_POSITION_BUTTON "Zablokuj poz."
+LOCK_POSITION_TOOLTIP "Włączenie zablokuje pozycję automatu i uniemożliwi zamianę miejsc z nim. W trybie kontroli wciąż możesz go popychać."
 LOOKS_LIKE_A_DANCING_FOOL "{1} wygląda jak tańczący błazen."
 LOST_BODY_PART_HELPER "Stracony"
     "Stracona" : feminine
@@ -1745,7 +1745,7 @@ TELEPORT_EFFECT_NAME "teleportacja"
 THE_PRESENCE_OF_A_MAGICAL_FIELD "obecność pola magicznego"
 THROWS "{1} rzuca {2:instrumental}."
 THRUST "Wbijasz {1:instrumental} w {2:accusative}."
-THRUSTS "{1} wbija w {4:accusative} {3:accusative}."
+THRUSTS "{1} wbija {3:accusative} w {4:accusative}."
 THRUSTS_ITSELF "{1} rzuca się na {2:accusative}."
 THRUST_YOURSELF "Rzucasz się na {1:accusative}."
 TIME_REMAINING_TILL_DAY "Pozostały czas do świtu."
@@ -8841,17 +8841,17 @@ ITEMS_AUTOMATONARMSWOOD_NAME plural "drewniane ramiona"
     "drewnianymi ramionami" : instrumental
     "drewniane ramiona" : accusative
 
-ITEMS_AUTOMATONCRAFTINGADA_NAME plural "adamantynowe ramiona rzemieślnicze"
+ITEMS_AUTOMATONCRAFTINGADA_NAME plural "adamantynowe rzemieślnicze ramiona"
     "adamantynowych rzemieślniczych ramion" : genitive
     "adamantynowymi rzemieślniczymi ramionami" : instrumental
     "adamantynowe rzemieślnicze ramiona" : accusative
 
-ITEMS_AUTOMATONCRAFTINGIRON_NAME plural "żelazne ramiona rzemieślnicze"
+ITEMS_AUTOMATONCRAFTINGIRON_NAME plural "żelazne rzemieślnicze ramiona"
     "żelaznych rzemieślniczych ramion" : genitive
     "żelaznymi rzemieślniczymi ramionami" : instrumental
     "żelazne rzemieślnicze ramiona" : accusative
 
-ITEMS_AUTOMATONCRAFTINGWOOD_NAME plural "drewniane ramiona rzemieślnicze"
+ITEMS_AUTOMATONCRAFTINGWOOD_NAME plural "drewniane rzemieślniczeramiona"
     "drewnianych rzemieślniczych ramion" : genitive
     "drewnianymi rzemieślniczymi ramionami" : instrumental
     "drewniane rzemieślnicze ramiona" : accusative
@@ -8994,12 +8994,12 @@ ITEMS_OILHEADIRON_NAME feminine "żelazna głowa plująca olejem"
     "żelaznymi głowami plującymi olejem" : plural,instrumental
     "żelazne głowy plujące olejem" : plural,accusative
 
-ITEMS_REPAIRAUTOMATONARMSADA_NAME neuter "adamantynowe ramiona naprawcze"
+ITEMS_REPAIRAUTOMATONARMSADA_NAME neuter "adamantynowe naprawcze ramiona"
     "adamantynowych naprawczych ramion" : genitive
     "adamantynowymi naprawczymi ramionami" : instrumental
     "adamantynowe naprawcze ramiona" : accusative
 
-ITEMS_REPAIRAUTOMATONARMSIRON_NAME neuter "żelazne ramiona naprawcze"
+ITEMS_REPAIRAUTOMATONARMSIRON_NAME neuter "żelazne naprawcze ramiona"
     "żelaznych naprawczych ramion" : genitive
     "żelaznymi naprawczymi ramionami" : instrumental
     "żelazne naprawcze ramiona" : accusative
@@ -9167,6 +9167,10 @@ WORKSHOP_INFO_FORGE_PREFIX masculine "doskonały"
     "doskonałej" : genitive,feminine
     "doskonałą" : instrumental,feminine
     "doskonałą" : accusative,feminine
+    "doskonałe" : neuter
+    "doskonałego" : genitive,neuter
+    "doskonałym" : instrumental,neuter
+    "doskonałe" : accusative,neuter
     "doskonałe" : plural
     "doskonałych" : plural,genitive
     "doskonałymi" : plural,instrumental
@@ -9901,9 +9905,13 @@ TUTORIAL "samouczek"
     "samouczka" : genitive
 SPELL_RANGE "Zasięg: {1}"
 DRILLING_AUTOMATON_NAME "drążący automat"
+    "drążące automaty" : plural
 AUTOMATON_CORPUS_NAME "korpus automatu"
+    "korpusy automatów" : plural
 LIGHT_AUTOMATON_CORPUS_NAME "lekki korpus automatu"
+    "lekkie korpusy automatów" : plural
 HEAVY_AUTOMATON_CORPUS_NAME "ciężki korpus automatu"
+    "ciężkie korpusy automatów" : plural
 PREINSTALLED_PARTS "Preinstalowane części:"
 CLEAR_ALL_UPGRADES "Usuń wszystkie"
 ADD_TOP_UPGRADES "Dodaj {1} pierwsze"
