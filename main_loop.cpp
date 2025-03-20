@@ -136,7 +136,7 @@ void MainLoop::saveGame(PGame& game, const FilePath& path) {
   FilePath tmpPath = path.withSuffix(".tmp");
   {
     CompressedOutput out(tmpPath.getPath());
-    string name = view->translate(game->getGameDisplayName());
+    string name = toString(game->getGameDisplayName());
     SavedGameInfo savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods());
     out.getArchive() << saveVersion << name << savedInfo;
     out.getArchive() << game;
@@ -168,7 +168,7 @@ void MainLoop::saveMainModel(PGame& game, const FilePath& modelPath) {
   FilePath tmpPath = modelPath.withSuffix(".tmp");
   {
     CompressedOutput modelOut(tmpPath.getPath());
-    string name = view->translate(game->getGameDisplayName());
+    string name = toString(game->getGameDisplayName());
     SavedGameInfo savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods());
     modelOut.getArchive() << saveVersion << name << savedInfo;
     RetiredModelInfoWithReference info {
@@ -976,7 +976,7 @@ void MainLoop::launchQuickGame(optional<int> maxTurns, optional<string> keeperNa
         [](const auto& f1, const auto& f2) { return f1.date > f2.date; });
     if (toLoad != files.end()) {
       auto path = userPath.file((*toLoad).filename);
-      game = loadGame(path, TString("\"" + getNameAndVersion(path)->first + "\""));
+      game = loadGame(path, getNameAndVersion(path)->first);
     } else
       return;
   } else {
@@ -1389,7 +1389,7 @@ static void changeSaveType(const FilePath& file, GameSaveType newType) {
 
 PGame MainLoop::loadOrNewGame() {
   auto games = ScriptedUIDataElems::List{};
-  optional<pair<SaveFileInfo, string>> savedGame;
+  optional<pair<SaveFileInfo, TString>> savedGame;
   optional<SaveFileInfo> warlordGame;
   optional<SaveFileInfo> eraseGame;
   auto addGames = [&](GameSaveType type) {
@@ -1401,7 +1401,7 @@ PGame MainLoop::loadOrNewGame() {
               auto nameAndVersion = *getNameAndVersion(userPath.file(info.filename));
               auto gameInfo = loadSavedGameInfo(userPath.file(info.filename));
               auto record = ScriptedUIDataElems::Record{{
-                {"label", ScriptedUIData{TString(nameAndVersion.first)}},
+                {"label", ScriptedUIData{nameAndVersion.first}},
                 {"date", ScriptedUIData{getDateString(info.date)}},
                 {"viewIds", ScriptedUIData{gameInfo->minions.transform([](auto minion){ return ScriptedUIData{minion.viewId}; })}},
                 {"erase", ScriptedUIData{ScriptedUIDataElems::Callback{[&eraseGame, info]{
@@ -1441,7 +1441,7 @@ PGame MainLoop::loadOrNewGame() {
     if (auto res = prepareCampaign(Random))
       return res;
   } else if (savedGame) {
-    if (PGame ret = loadGame(userPath.file(savedGame->first.filename), TString("\"" + savedGame->second + "\""))) {
+    if (PGame ret = loadGame(userPath.file(savedGame->first.filename), savedGame->second)) {
       if (eraseSave())
         changeSaveType(userPath.file(savedGame->first.filename), GameSaveType::AUTOSAVE);
       return ret;
