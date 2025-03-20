@@ -335,7 +335,7 @@ CANNOT_AFFORD_ITEM "Nie stać cię na ten przedmiot"
 CAN_SEE_IN_THE_DARK "{1} widzi w ciemnościach."
 CAN_SEE_THRU_ARROWSLITS "{1} może widzieć i strzelać przez strzelnice."
 CAN_SEE_THRU_TREES "{1} widzi przez drzewa."
-CANT_MOVE_ANYMORE "{1} nie może już się poruszać."
+CANT_MOVE_ANYMORE "{1} nie może się poruszać."
 CASTS_SPELL "{1} rzuca czar"
 CHANCE_EFFECT_DESCRIPTION "{1} (szansa {2}%)"
 CHANCE_OF_PRISONER_ESCAPE "Szansa na ucieczkę więźniów: "
@@ -1225,7 +1225,7 @@ YOU_BUILD "Budujesz {1:accusative}."
 YOU_BURNING "Płoniesz!"
 YOU_CANT_BREAK_FREE "Nie możesz się wyrwać!"
 YOU_CANT_HIDE_HERE "Nie możesz się tu ukryć."
-YOU_CANT_MOVE_ANYMORE "Nie możesz się dłużej ruszać."
+YOU_CANT_MOVE_ANYMORE "Nie możesz się ruszać."
 YOU_CANT_PUSH "Nie możesz popchnąć {1:accusative}."
 YOU_CANT_THROW_ANYTHING "Nie masz nic do rzucenia!"
 YOU_CAST_SPELL "Rzucasz czar"
@@ -1254,8 +1254,8 @@ YOU_FILL_UP_TUNNEL "Zasypujesz tunel."
 YOU_GROW_LIMBS "Wyrastają ci {1}."
 YOU_GROW_LIMB "Wyrasta ci {1}."
 YOU_HAVE_BEEN_AMBUSHED "Zostałeś wciągnięty w zasadzkę!"
-YOU_HAVE_SUMMONED "Przywołałeś {1:accusative}."
-HAS_SUMMONED "{1} przywołał {2:accusative}."
+YOU_HAVE_SUMMONED "Przywołujesz {1:accusative}."
+HAS_SUMMONED "{1} przywołuje {2:accusative}."
 YOU_HIDE_BEHIND_THE "Ukrywasz się za {1:instrumental}."
 YOU_IMPROVE "Poprawiasz {IMPROVES_HELPER:1} {1} {2}."
 YOU_LEARN "Uczysz się {1:genitive} {2:genitive}."
@@ -2550,7 +2550,7 @@ BUFFS_BLEEDING_DESCRIPTION "Powoduje stopniową utratę punktów życia."
 BUFFS_BLEEDING_NAME neuter "krwawienie"
     "krwawienia" : genitive
 BUFFS_BLEEDING_REMOVEDMESSAGE "krwawienie ustaje"
-BUFFS_BLEEDING_SECONDPERSON "krwawisz"
+BUFFS_BLEEDING_SECONDPERSON "Krwawisz."
 BUFFS_BLEEDING_THIRDPERSON "{1} krwawi."
 BUFFS_FIRE_DAMAGE_ADDEDMESSAGE1 "{1} zadaje obrażenia ogniem."
 BUFFS_FIRE_DAMAGE_ADDEDMESSAGE "Zadajesz obrażenia ogniem."
@@ -4040,8 +4040,8 @@ CREATURE_ATTRIBUTES_HORSE_NAME masculine "koń"
 
 CREATURE_ATTRIBUTES_HORSE_PETREACTION1 "warczy"
 CREATURE_ATTRIBUTES_HORSE_PETREACTION "rży"
-CREATURE_ATTRIBUTES_HORSE_SECONDPERSON "masz większe doświadczenie"
-CREATURE_ATTRIBUTES_HORSE_THIRDPERSON "ma większe doświadczenie"
+CREATURE_ATTRIBUTES_HORSE_SECONDPERSON "Masz większe doświadczenie."
+CREATURE_ATTRIBUTES_HORSE_THIRDPERSON "{1} jest {MORE_EXPERIENCED:1}"
 
 CREATURE_ATTRIBUTES_HYDRA_NAME feminine "hydra"
     "hydrze" : dative
@@ -5364,12 +5364,12 @@ FURNITURE_ALTAR_NAME masculine "ołtarz"
     "ołtarzami" : plural,instrumental
     "ołtarze" : plural,accusative
 
-FURNITURE_ALTAR_SECONDPERSON1 "znajdujesz trochę złotych monet w szczelinach"
-FURNITURE_ALTAR_SECONDPERSON2 "znajdujesz w szczelinach glif!"
-FURNITURE_ALTAR_SECONDPERSON "bezczeszczysz ołtarz"
-FURNITURE_ALTAR_THIRDPERSON1 "znajduje trochę złotych monet w szczelinach"
-FURNITURE_ALTAR_THIRDPERSON2 "znajduje w szczelinach glif!"
-FURNITURE_ALTAR_THIRDPERSON "bezczeszcza ołtarz"
+FURNITURE_ALTAR_SECONDPERSON1 "Znajdujesz trochę złotych monet w szczelinach."
+FURNITURE_ALTAR_SECONDPERSON2 "Znajdujesz w szczelinach glif!"
+FURNITURE_ALTAR_SECONDPERSON "Bezcześcisz ołtarz."
+FURNITURE_ALTAR_THIRDPERSON1 "{1} znajduje trochę złotych monet w szczelinach."
+FURNITURE_ALTAR_THIRDPERSON2 "{1} znajduje w szczelinach glif!"
+FURNITURE_ALTAR_THIRDPERSON "{1} bezcześci ołtarz."
 FURNITURE_ALTAR_USAGETYPE "zbezcześć ołtarz"
 
 FURNITURE_ANIMAL_FENCE_NAME feminine "ogrodzenie dla zwierząt"
@@ -5777,9 +5777,9 @@ FURNITURE_CROPS_NAME feminine "pszenica"
     "pszenicami" : plural,instrumental
     "pszenice" : plural,accusative
 
-FURNITURE_CROPS_SECONDPERSON "Skosisz pole"
-FURNITURE_CROPS_THIRDPERSON "{1} kosi pole"
-FURNITURE_CROPS_USAGETYPE "Skoś pszenicę"
+FURNITURE_CROPS_SECONDPERSON "Kosisz pole."
+FURNITURE_CROPS_THIRDPERSON "{1} kosi pole."
+FURNITURE_CROPS_USAGETYPE "Skoś pszenicę"
 
 FURNITURE_DEMON_SHRINE_NAME1 masculine "anielska kapliczka"
     "anielskiej kapliczki" : genitive
@@ -5982,8 +5982,8 @@ FURNITURE_FOUNTAIN_NAME feminine "fontanna"
     "fontannami" : plural,instrumental
     "fontanny" : plural,accusative
 
-FURNITURE_FOUNTAIN_SECONDPERSON "Napij się"
-FURNITURE_FOUNTAIN_THIRDPERSON "pije"
+FURNITURE_FOUNTAIN_SECONDPERSON "Bierzesz łyka."
+FURNITURE_FOUNTAIN_THIRDPERSON "Bierze łyka."
 FURNITURE_FOUNTAIN_USAGETYPE "Napij się z fontanny"
 
 FURNITURE_FURNACE_NAME masculine "piec hutniczy"
@@ -6049,8 +6049,8 @@ FURNITURE_HAYPILE_NAME feminine "sterta siana"
     "stertami siana" : plural,instrumental
     "sterty siana" : plural,accusative
 
-FURNITURE_HAYPILE_SECONDPERSON "Zjesz trochę siana"
-FURNITURE_HAYPILE_THIRDPERSON "je trochę siana"
+FURNITURE_HAYPILE_SECONDPERSON "Zjadasz trochę siana."
+FURNITURE_HAYPILE_THIRDPERSON "{1} zjada trochę siana."
 FURNITURE_HAYPILE_USAGETYPE "Zjedz siano"
 
 FURNITURE_HEALING_TOTEM_NAME1 masculine "krwawiący totem"
@@ -6169,8 +6169,8 @@ FURNITURE_JEWELLER_POLISHING_WHEEL_NAME feminine "szlifierka do biżuterii"
     "szlifierkami do biżuterii" : plural,instrumental
     "szlifierki do biżuterii" : plural,accusative
 
-FURNITURE_JEWELLER_SECONDPERSON "Zjesz parującego świniaka"
-FURNITURE_JEWELLER_THIRDPERSON "je parującego świniaka"
+FURNITURE_JEWELLER_SECONDPERSON "Zjadasz parującego świniaka"
+FURNITURE_JEWELLER_THIRDPERSON "{1} zjada parującego świniaka"
 FURNITURE_JEWELLER_USAGETYPE "Zjedz przy stole jadalnym"
 
 FURNITURE_JEWELLERY_STORAGE_NAME feminine "skrzynia na biżuterię"
@@ -6452,8 +6452,8 @@ FURNITURE_PEW_WOOD_NAME feminine "drewniana ława"
     "drewnianymi ławami" : plural,instrumental
     "drewniane ławy" : plural,accusative
 
-FURNITURE_PEW_WOOD_SECONDPERSON "Zasypiasz na ławie"
-FURNITURE_PEW_WOOD_THIRDPERSON "zasypia na ławie"
+FURNITURE_PEW_WOOD_SECONDPERSON "Zasypiasz na ławie."
+FURNITURE_PEW_WOOD_THIRDPERSON "{1} zasypia na ławie."
 FURNITURE_PEW_WOOD_USAGETYPE "Usiądź na ławie"
 
 FURNITURE_PHYLACTERY_NAME1 neuter "aktywne filakterium"
@@ -6799,10 +6799,15 @@ FURNITURE_TAR_NAME masculine "smoła"
     "smołami" : plural,instrumental
     "smoły" : plural,accusative
 
-FURNITURE_TAR_SECONDPERSON1 "zostajesz spowolniony przez smołę!"
-FURNITURE_TAR_SECONDPERSON "utknąłeś w smole!"
-FURNITURE_TAR_THIRDPERSON1 "zostaje spowolniony przez smołę!"
-FURNITURE_TAR_THIRDPERSON "utknął w smole!"
+FURNITURE_TAR_SECONDPERSON1 "Jesteś {BUFF_ADJECTIVE_SLOWED:1} przez smołę!"
+STUCK_HELPER "Utknąłeś"
+    "Utknęłaś" : feminine
+FURNITURE_TAR_SECONDPERSON "{STUCK_HELPER:1} w smole!"
+FURNITURE_TAR_THIRDPERSON1 "{1} jest {BUFF_ADJECTIVE_SLOWED:1} przez smołę!"
+STUCK_HELPER_THIRD "utknął"
+    "utknęła" : feminine
+    "utknęło" : neuter
+FURNITURE_TAR_THIRDPERSON "{1} {STUCK_HELPER_THIRD:1} w smole!"
 
 FURNITURE_TERMITE_MOUND_NAME masculine "kopiec termitów"
     "kopca termitów" : genitive
@@ -6841,7 +6846,7 @@ FURNITURE_THRONE_NAME masculine "tron"
     "trony" : plural,accusative
 
 FURNITURE_THRONE_SECONDPERSON "Siadasz na tronie"
-FURNITURE_THRONE_THIRDPERSON "siada na tronie"
+FURNITURE_THRONE_THIRDPERSON "{1} siada na tronie."
 FURNITURE_THRONE_USAGETYPE "Usiądź na tronie"
 
 FURNITURE_TORCH_NAME masculine "pochodnia"
@@ -7947,7 +7952,7 @@ ITEMS_PROPHETSOUP_NAME feminine "zupa ze zmumifikowanych szczątków proroka"
     "zupami ze zmumifikowanych szczątków proroka" : plural,instrumental
     "zupy ze zmumifikowanych szczątków proroka" : plural,accusative
 
-ITEMS_PROPHETSOUP_SECONDPERSON "masz silne bóle brzucha"
+ITEMS_PROPHETSOUP_SECONDPERSON "Masz bardzo silne bóle brzucha."
 ITEMS_PROPHETSOUP_SHORTNAME feminine "zupa proroka"
     "zupy proroka" : genitive
     "zupą proroka" : instrumental
@@ -7957,7 +7962,7 @@ ITEMS_PROPHETSOUP_SHORTNAME feminine "zupa proroka"
     "zupami proroka" : plural,instrumental
     "zupy proroka" : plural,accusative
 
-ITEMS_PROPHETSOUP_THIRDPERSON "ma silne bóle brzucha"
+ITEMS_PROPHETSOUP_THIRDPERSON "{1} ma bardzo silne bóle brzucha"
 
 ITEMS_REDDRAGONSCALES_NAME neuter "czerwone smocze łuski"
     "czerwonych smoczych łusek" : genitive
