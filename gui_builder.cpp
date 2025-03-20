@@ -2305,7 +2305,8 @@ SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, optional<int> minio
   auto addGroup = [&] (const CollectiveInfo::CreatureGroup& elem) {
     auto line = WL(getListBuilder);
     line.addElem(WL(viewObject, elem.viewId), 40);
-    SGuiElem tmp = WL(label, TSentence("MINION_GROUP", TString(elem.count), elem.name), Color::WHITE);
+    SGuiElem tmp = WL(label, TSentence("MINION_GROUP", TString(elem.count),
+        elem.count > 1 ? makePlural(elem.name) : elem.name), Color::WHITE);
     line.addElem(WL(renderInBounds, std::move(tmp)), 200);
     auto callback = getButtonCallback({UserInputId::CREATURE_GROUP_BUTTON, elem.name});
     auto selectButton = cache->get([this](const TString& group) {
