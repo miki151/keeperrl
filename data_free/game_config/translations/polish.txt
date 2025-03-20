@@ -699,22 +699,22 @@ ITEMS_MISS_YOU "{1} nie trafiają cię."
 ITEM_USED_UP "{1} zostaje zużyty."
 ITSELF "siebie"
 JOINS_YOUR_FORCES "Do twoich sił dołącza {1}."
-KEEPER masculine "Strażnik"
-    "Strażnika" : genitive
-    "Strażnikiem" : instrumental
-    "Strażnika" : accusative
-    "Strażnicy" : plural
-    "Strażników" : plural, genitive
-    "Strażnikami" : plural, instrumental
-    "Strażników" : plural, accusative
-KEEPER_F feminine "Strażniczka"
-    "Strażniczki" : genitive
-    "Strażniczką" : instrumental
-    "Strażniczkę" : accusative
-    "Strażniczki" : plural
-    "Strażniczek" : plural, genitive
-    "Strażniczkami" : plural, instrumental
-    "Strażniczki" : plural, accusative
+KEEPER masculine "strażnik"
+    "strażnika" : genitive
+    "strażnikiem" : instrumental
+    "strażnika" : accusative
+    "strażnicy" : plural
+    "strażników" : plural, genitive
+    "strażnikami" : plural, instrumental
+    "strażników" : plural, accusative
+KEEPER_F feminine "strażniczka"
+    "strażniczki" : genitive
+    "strażniczką" : instrumental
+    "strażniczkę" : accusative
+    "strażniczki" : plural
+    "strażniczek" : plural, genitive
+    "strażniczkami" : plural, instrumental
+    "strażniczki" : plural, accusative
 KEY_ENTER "[Enter]"
 KEY_MODIFIER "{1} + {2}"
 KILLED_BY_SUNLIGHT "zabity przez światło słoneczne"
@@ -869,6 +869,7 @@ REBELLION_CHANCE_LOW "niskie"
 REBELLION_CHANCE_MEDIUM "średnie"
 REBELLION_RISK "ryzyko buntu"
 RECRUITS_AVAILABLE "Odkryłeś {1:accusative}! Rekruci są teraz dostępni w oknie imigracji."
+N_RECRUITS_AVAILABLE "{1} dostępnych rekrutów."
 REMOVE_DUNGEON "Usuń"
 REMOVE_FROM_TEAM_ACTION "Usuń z drużyny"
 REMOVE_FURNITURE_EFFECT_DESCRIPTION "Usuwa {1:accusative}"
@@ -896,7 +897,7 @@ REQUIRES_TO_TRAIN_FURTHER "Wymaga {1:genitive}, aby kontynuować trening."
 REQUIRES_TWO_PRISON_TILES "Wymaga dwóch pól więziennych."
 REQUIRES_UNLOCKING "Wymaga odblokowania"
 REQUIRES_UPGRADES "Przedmiotu nie da się wytworzyć bez zastosowanych ulepszeń."
-REQUIRES_X_MORE "Wymaga jeszcze {1} {2:genitive,plural}."
+REQUIRES_X_MORE "Wymaga jeszcze {2} {1:genitive,plural}."
 RESISTING_THE_ATTACK_OF "odparcie ataku {1:genitive}"
     "odparciu ataku {1:genitive}" : instrumental
 RESISTS_SWAP_POSITION "{1} stawia opór!"
@@ -2277,7 +2278,7 @@ KILL_TITLE "pogromca {1:genitive}"
     "pogromcę {1:genitive}" : accusative
     "pogromczyni {1:genitive}" : feminine
     "pogromczynię {1:genitive}" : accusative,feminine
-MINION_GROUP "{1} {2}"
+MINION_GROUP "{1}  {2}"
 YOU_HAVE_CONQUERED_THIS_LAND "Podbiłeś tę krainę. Zabiłeś {1} wrogów i uzyskałeś {2} punktów. Dziękujemy za grę w KeeperRL!"
 DEATHS "{1} śmierci"
 COLD_BLOODED_MURDERS "{1} morderstw z zimną krwią"
@@ -2569,22 +2570,15 @@ BUFFS_HIGH_MORALE_NAME plural "wysokie morale"
     "wysokich morale" : genitive
 BUFFS_HIGH_MORALE_REMOVEDMESSAGE "Twój nastrój wraca do normy."
 BUFFS_HIGH_MORALE_REMOVEDMESSAGE2 "Nastrój {1:genitive} wraca do normy."
-BUFFS_INFERNITE_EFFECT_ADDEDMESSAGE1 "{1} jest palony przez infernit."
-BUFFS_INFERNITE_EFFECT_ADDEDMESSAGE "Pali cię infernite."
 BUFFS_INFERNITE_EFFECT_ADJECTIVE "palony przez infernit"
     "palona przez infernit" : feminine
     "palone przez infernit" : neuter
 BUFFS_INFERNITE_EFFECT_DESCRIPTION "Istota jest palona przez posiadany przedmiot z infernite."
 BUFFS_INFERNITE_EFFECT_NAME neuter "palenie infernitu"
-BUFFS_INFERNITE_EFFECT_REMOVEDMESSAGE1 "nie jest już"
-BUFFS_INFERNITE_EFFECT_REMOVEDMESSAGE2 "palony przez infernit"
-    "palona przez infernit" : feminine
-    "palone przez infernit" : neuter
-BUFFS_INFERNITE_EFFECT_REMOVEDMESSAGE "nie jesteś już"
-BUFFS_INFERNITE_EFFECT_SECONDPERSON "pali cię infernit"
-BUFFS_INFERNITE_EFFECT_THIRDPERSON "jest palony przez infernit"
-    "jest palona przez infernit" : feminine
-    "jest palone przez infernit" : neuter
+BUFFS_INFERNITE_EFFECT_REMOVEDMESSAGE1 "{1} nie jest już {BUFFS_INFERNITE_EFFECT_ADJECTIVE:1}"
+BUFFS_INFERNITE_EFFECT_REMOVEDMESSAGE "Nie jesteś już {BUFFS_INFERNITE_EFFECT_ADJECTIVE:1}"
+BUFFS_INFERNITE_EFFECT_SECONDPERSON "Pali cię infernit."
+BUFFS_INFERNITE_EFFECT_THIRDPERSON "{1} jest {BUFFS_INFERNITE_EFFECT_ADJECTIVE:1}."
 BUFFS_INVULNERABLE_ADDEDMESSAGE "odporny na obrażenia"
     "odporny na obrażenia" : feminine
     "odporne na obrażenia" : neuter
@@ -6131,7 +6125,7 @@ FURNITURE_IRON_GATE_NAME feminine "żelazna brama"
     "żelazne bramy" : plural,accusative
 
 FURNITURE_JEWELLER_NAME1 masculine "magmowy stół jubilerski"
-    "magmowego stółu jubilerskiego" : genitive
+    "magmowego stołu jubilerskiego" : genitive
     "magmowegym stołem jubilerskim" : instrumental
     "magmowy stół jubilerski" : accusative
     "magmowe stoły jubilerskie" : plural
@@ -6158,7 +6152,7 @@ FURNITURE_JEWELLER_NAME3 feminine "stół jadalny"
     "stoły jadalne" : plural,accusative
 
 FURNITURE_JEWELLER_NAME masculine "stół jubilerski"
-    "stółu jubilerskiego" : genitive
+    "stołu jubilerskiego" : genitive
     "stołem jubilerskim" : instrumental
     "stół jubilerski" : accusative
     "stoły jubilerskie" : plural
@@ -8351,8 +8345,8 @@ SPELLS_JUMP_MESSAGE1 "{1} skacze."
 SPELLS_JUMP_MESSAGE "Skaczesz."
 SPELLS_KINGS_CHARGE_EFFECT1 "Wszyscy sojusznicy w promieniu 10 otrzymują +15 do obrażeń. Może użyć tylko przywódca plemienia."
 SPELLS_KINGS_CHARGE_EFFECT "szarża króla"
-SPELLS_KINGS_CHARGE_SECONDPERSON "nie jesteś godzien!"
-SPELLS_KINGS_CHARGE_THIRDPERSON "nie jest godzien!"
+SPELLS_KINGS_CHARGE_SECONDPERSON "Nie jesteś godzien!"
+SPELLS_KINGS_CHARGE_THIRDPERSON "{1} nie jest godzien!"
 SPELLS_LEYAK_ACID_EFFECT "plucie kwasem"
 SPELLS_MAGIC_MISSILE_EFFECT1 "święty pocisk"
 SPELLS_MAGIC_MISSILE_EFFECT "magiczny pocisk"
@@ -8377,17 +8371,17 @@ SPELLS_SHAPESHIFT_EFFECT "zmiana kształtu"
 SPELLS_SHOOT_ARROW_EFFECT "wystrzel strzałę"
 SPELLS_SHOOT_ARROW_MESSAGE1 "{1} strzela z łuku."
 SPELLS_SHOOT_ARROW_MESSAGE "Strzelasz z łuku."
-SPELLS_SHOOT_ARROW_SECONDPERSON1 "strzała cię oszczędza"
-SPELLS_SHOOT_ARROW_SECONDPERSON "strzała cię trafia"
-SPELLS_SHOOT_ARROW_THIRDPERSON1 "został oszczędzony przez strzałę"
-SPELLS_SHOOT_ARROW_THIRDPERSON "został trafiony strzałą"
+SPELLS_SHOOT_ARROW_SECONDPERSON1 "Strzała cię mija"
+SPELLS_SHOOT_ARROW_SECONDPERSON "Strzała cię trafia."
+SPELLS_SHOOT_ARROW_THIRDPERSON1 "Strzała mija {1:accusative}."
+SPELLS_SHOOT_ARROW_THIRDPERSON "Strzała trafia {1:accusative}."
 SPELLS_SHOOT_BOLT_EFFECT "wystrzel bełt"
 SPELLS_SHOOT_BOLT_MESSAGE1 "{1} strzela z kuszy."
 SPELLS_SHOOT_BOLT_MESSAGE "Strzelasz z kuszy."
-SPELLS_SHOOT_BOLT_SECONDPERSON1 "bełt cię oszczędza"
-SPELLS_SHOOT_BOLT_SECONDPERSON "bełt cię trafia"
-SPELLS_SHOOT_BOLT_THIRDPERSON1 "został oszczędzony przez bełt"
-SPELLS_SHOOT_BOLT_THIRDPERSON "został trafiony bełtem"
+SPELLS_SHOOT_BOLT_SECONDPERSON1 "Bełt cię mija."
+SPELLS_SHOOT_BOLT_SECONDPERSON "Bełt cię trafia."
+SPELLS_SHOOT_BOLT_THIRDPERSON1 "Bełt mija {1:accusative}"
+SPELLS_SHOOT_BOLT_THIRDPERSON "Bełt trafia {1:accusative}"
 USE_ABILITY_MESSAGE1 "{1} korzysta z umiejętności."
 USE_ABILITY_MESSAGE "Korzystasz z umiejętności."
 SPELLS_SUMMON_MORE_CHICKENS_EFFECT "przyzwij więcej kurczaków"
@@ -9037,10 +9031,10 @@ SPELLS_BYPASS_ALLIES_EFFECT "ominięcie sojuszników"
 SPELLS_ENNOBLEMENT_EFFECT1 "Osiąga status wampirzego lorda."
 SPELLS_ENNOBLEMENT_EFFECT "nobilitacja"
 
-SPELLS_MAGIC_MISSILE_SECONDPERSON1 "pocisk cię oszczędza"
-SPELLS_MAGIC_MISSILE_SECONDPERSON "trafia cię pocisk"
-SPELLS_MAGIC_MISSILE_THIRDPERSON1 "pocisk omija {1:accusative}"
-SPELLS_MAGIC_MISSILE_THIRDPERSON "pocisk trafia {1:accusative}"
+SPELLS_MAGIC_MISSILE_SECONDPERSON1 "Pocisk cię mija."
+SPELLS_MAGIC_MISSILE_SECONDPERSON "Pocisk cię trafia."
+SPELLS_MAGIC_MISSILE_THIRDPERSON1 "Pocisk omija {1:accusative}"
+SPELLS_MAGIC_MISSILE_THIRDPERSON "Pocisk trafia {1:accusative}"
 
 TEXT100 "Czcionka:"
 TEXT101 "Lato autorstwa Łukasza Dziedzica"

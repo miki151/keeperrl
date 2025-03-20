@@ -1818,7 +1818,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
         },
         [&](const RecruitmentInfo& info) {
           auto recruits = info.getAvailableRecruits(collective, candidate.getInfo().getNonRandomId(0));
-          infoLines.push_back(TSentence("RECRUITS_AVAILABLE", TString(recruits.size())));
+          infoLines.push_back(TSentence("N_RECRUITS_AVAILABLE", TString(recruits.size())));
           c = recruits[0];
         },
         [&](const auto&) {}
