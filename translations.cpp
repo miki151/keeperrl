@@ -103,7 +103,7 @@ string Translations::get(const string& language, const TSentence& s, vector<stri
     return makeSentence(get(language, s.params[0], std::move(form)));
   if (s.id == TStringId("A_ARTICLE")) {
     auto res = get(language, s.params[0], std::move(form));
-    if (language == "English")
+    if (language == "English" && !getTags(language, s.params[0]).contains("plural"))
       return addAParticle(res);
     else
       return res;
