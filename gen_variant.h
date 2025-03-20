@@ -115,7 +115,7 @@ struct VARIANT_NAME {
   VARIANT_TYPES_LIST
 #undef X
 #define X(Type, Index) \
-  using Type = Type;
+  using E##Type = Type;
   VARIANT_TYPES_LIST
 #undef X
 };

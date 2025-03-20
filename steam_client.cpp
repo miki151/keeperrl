@@ -1,3 +1,5 @@
+#ifdef USE_STEAMWORKS
+
 #include "steam_internal.h"
 #include "steam_client.h"
 #include "steam_call_result.h"
@@ -124,3 +126,5 @@ string Client::info() {
 }
 }
 #undef FUNC
+
+#endif

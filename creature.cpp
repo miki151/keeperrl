@@ -3080,7 +3080,7 @@ bool Creature::addButcheringEvent(const string& villageName) {
 
 #define CASE(VAR, ELEM, TYPE, ...) \
     case std::remove_reference<decltype(VAR)>::type::TYPE##Tag: {\
-      auto ELEM = event.getReferenceMaybe<std::remove_reference<decltype(VAR)>::type::TYPE>();\
+      auto ELEM = event.getReferenceMaybe<std::remove_reference<decltype(VAR)>::type::E##TYPE>();\
       __VA_ARGS__\
       break;\
     }

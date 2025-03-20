@@ -1,121 +1,156 @@
-cmake_minimum_required (VERSION 2.6)
-project(keeper)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-# set default cxxflags
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-shift-count-overflow -ftemplate-depth=512 -DUSE_STEAMWORKS -I /home/michal/keeperrl/extern/steamworks/public")
-# clang specific cflags
-if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags")
+cmake_minimum_required(VERSION 3.14)
+
+set(BUILD_SHARED_LIBS off)
+set(BUILD_STATIC_LIBS on)
+set(BUILD_CURL_EXE off)
+set(BUILD_LIBCURL_DOCS off)
+
+project(KeeperRL)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED on)
+
+option(ENABLE_STEAMWORKS "Enable steamworks integration" ON)
+option(BUILD_ALSOFT "Build OpenAL-soft from source instead of using regular OpenAL" OFF)
+
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
+if(ENABLE_STEAMWORKS)
+    add_library(steamworks SHARED IMPORTED)
+    if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        set_target_properties(steamworks PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/win64/steam_api64.dll")
+        set_target_properties(steamworks PROPERTIES IMPORTED_IMPLIB "${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/win64/steam_api64.lib")
+        install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/win64/steam_api64.dll" TYPE BIN)
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        set_target_properties(steamworks PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/linux64/libsteam_api.so")
+    endif()
+    target_include_directories(steamworks INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/public")
 endif()
 
-set(STDAFX_H "${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h")
-set(STDAFX_H_GCH "${CMAKE_CURRENT_BINARY_DIR}/stdagx.h.gch")
+include(FetchContent)
 
-# set debug cxxflags
-set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wimplicit-fallthrough -Wno-unused-function")
-#if ((${CMAKE_BUILD_TYPE} MATCHES "Debug") AND (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld -L ${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/linux64/ -L /usr/local/lib -lsteam_api -Wl,-rpath=. -Wl,--gdb-index")
-  #endif()
+set(OGG_LIBRARY ogg)
+set(OGG_INCLUDE_DIR "dummy")
 
-# additional cmake modules directory
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-
-# find required libraries
-find_package(SDL2 REQUIRED)
-find_package(SDL2_image REQUIRED)
-find_package(OpenGL REQUIRED)
-if(APPLE)
-    # assume built-in pthreads on MacOS
-    set(CMAKE_THREAD_LIBS_INIT "-lpthread")
-    set(CMAKE_HAVE_THREADS_LIBRARY 1)
-    set(CMAKE_USE_WIN32_THREADS_INIT 0)
-    set(CMAKE_USE_PTHREADS_INIT 1)
-    set(THREADS_PREFER_PTHREAD_FLAG ON)
+if(BUILD_ALSOFT)
+    FetchContent_Declare(ALSOFT GIT_REPOSITORY https://github.com/kcat/openal-soft GIT_TAG 1.23.1)
+    set(ALSOFT_DECL ALSOFT)
+    set(OPENAL_LIBRARY OpenAL)
+    unset(OPENAL_INCLUDE_DIR CACHE)
 else()
-    find_package(Threads REQUIRED)
+    find_package(OpenAL REQUIRED)
 endif()
-find_package(CURL REQUIRED)
-find_package(ZLIB REQUIRED)
-find_package(OpenAL REQUIRED)
-find_package(Vorbis REQUIRED)
-find_package(Ogg REQUIRED)
-find_package(VorbisFile REQUIRED)
-find_package(THEORA REQUIRED)
+
+FetchContent_Declare(SDL2 GIT_REPOSITORY https://github.com/libsdl-org/SDL GIT_TAG release-2.30.1 EXCLUDE_FROM_ALL)
+FetchContent_Declare(SDL2_image GIT_REPOSITORY https://github.com/libsdl-org/SDL_image GIT_TAG release-2.8.2 EXCLUDE_FROM_ALL)
+FetchContent_Declare(CURL GIT_REPOSITORY https://github.com/curl/curl GIT_TAG curl-8_6_0 EXCLUDE_FROM_ALL)
+FetchContent_Declare(ZLIB GIT_REPOSITORY https://github.com/madler/zlib GIT_TAG v1.3.1 EXCLUDE_FROM_ALL)
+FetchContent_Declare(OGG GIT_REPOSITORY https://github.com/xiph/ogg GIT_TAG v1.3.5 EXCLUDE_FROM_ALL)
+FetchContent_Declare(VORBIS GIT_REPOSITORY https://github.com/xiph/vorbis GIT_TAG v1.3.7 EXCLUDE_FROM_ALL)
+FetchContent_Declare(THEORA GIT_REPOSITORY https://github.com/xiph/theora GIT_TAG v1.2.0alpha1 EXCLUDE_FROM_ALL)
+FetchContent_MakeAvailable(SDL2 SDL2_image CURL ZLIB OGG VORBIS THEORA ${ALSOFT_DECL})
+
+find_package(OpenGL REQUIRED)
+
+add_library(
+    theoradec
+    "${theora_SOURCE_DIR}/lib/apiwrapper.c"
+	"${theora_SOURCE_DIR}/lib/bitpack.c" "${theora_SOURCE_DIR}/lib/dequant.c"
+	"${theora_SOURCE_DIR}/lib/fragment.c" "${theora_SOURCE_DIR}/lib/idct.c"
+	"${theora_SOURCE_DIR}/lib/info.c" "${theora_SOURCE_DIR}/lib/internal.c"
+	"${theora_SOURCE_DIR}/lib/state.c" "${theora_SOURCE_DIR}/lib/quant.c"
+	"${theora_SOURCE_DIR}/lib/decapiwrapper.c" "${theora_SOURCE_DIR}/lib/decinfo.c"
+	"${theora_SOURCE_DIR}/lib/decode.c" "${theora_SOURCE_DIR}/lib/huffdec.c"
+)
+target_link_libraries(theoradec PRIVATE ogg)
+target_include_directories(theoradec PUBLIC ${theora_SOURCE_DIR}/include)
 
 # generate version.h
-file(GLOB GENERATE_VERSION_SH "gen_version.sh")
 set(KEEPER_VERSION_H "${CMAKE_CURRENT_SOURCE_DIR}/version.h")
-add_custom_command(
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/
-    COMMAND ${GENERATE_VERSION_SH}
-    DEPENDS ${GENERATE_VERSION_SH}
-    OUTPUT ${KEEPER_VERSION_H}
-    COMMENT "Generating version.h"
+string(TIMESTAMP BUILD_DATE "%Y-%m-%d")
+execute_process(COMMAND git describe --abbrev=4 --dirty --always OUTPUT_VARIABLE GIT_HASH OUTPUT_STRIP_TRAILING_WHITESPACE)
+configure_file(
+    ${KEEPER_VERSION_H}.in
+    ${KEEPER_VERSION_H}
+    @ONLY
 )
 
-# check member serialization
-# the stamp file is not actually generated, but it doesn't seem to matter
-file(GLOB CHECK_SERIAL_SH "check_serial.sh")
-set(CHECK_SERIAL_STAMP "${CMAKE_CURRENT_SOURCE_DIR}/check_serial.stamp")
-add_custom_command(
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/
-    COMMAND bash ${CHECK_SERIAL_SH}
-    DEPENDS ${CHECK_SERIAL_SH}
-    OUTPUT ${CHECK_SERIAL_STAMP}
-    COMMENT "Checking serialization"
+file(GLOB KEEPER_SOURCES "*.cpp" "extern/*.cpp")
+add_executable(
+    keeper
+    ${KEEPER_SOURCES}
+    ${KEEPER_VERSION_H}
 )
-
-# rules to create `keeper` binary
-file(GLOB SOURCES "*.cpp" "extern/*.cpp")
-add_executable(keeper ${SOURCES} ${KEEPER_VERSION_H} ${CHECK_SERIAL_STAMP})
 target_include_directories(keeper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(keeper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern)
-target_include_directories(keeper PRIVATE ${SDL2_INCLUDE_DIRS})
-target_link_libraries(keeper PRIVATE 
-    ${SDL2_LIBRARIES}
-    ${SDL2_IMAGE_LIBRARY}
-    ${OPENGL_gl_LIBRARY}
-    ${CMAKE_THREAD_LIBS_INIT}
-    ${CURL_LIBRARIES}
-    ${ZLIB_LIBRARIES}
+target_include_directories(keeper PRIVATE ${sdl2_image_SOURCE_DIR}/include ${theora_SOURCE_DIR}/include ${OPENAL_INCLUDE_DIR})
+target_link_libraries(
+    keeper
+    PRIVATE
+    SDL2-static
+    SDL2main
+    SDL2_image
+    libcurl_static
+    zlibstatic
+    ogg
+    vorbis
+    vorbisfile
+    theoradec
+    OpenGL::GL
     ${OPENAL_LIBRARY}
-    ${VORBIS_LIBRARIES}
-    ${OGG_LIBRARIES}
-    ${THEORA_dec_LIBRARY}
-    ${VorbisFile_LIBRARIES}
-    )
-
-# set up definitions
-if ((${CMAKE_BUILD_TYPE} MATCHES "Release"))
-    target_compile_definitions(keeper PRIVATE RELEASE=1)
-else()
-# generate stdafx.h.gch for debug build
-# workaround to unquote the cxxflags
-set(CXX_FLAGS_LIST ${CMAKE_CXX_FLAGS})
-separate_arguments(CXX_FLAGS_LIST)
-add_custom_command(
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/
-    COMMAND ${CMAKE_CXX_COMPILER} ${CXX_FLAGS_LIST} -x c++-header ${STDAFX_H} -MMD -o ${STDAFX_H_GCH}
-    DEPENDS ${STDAFX_H}
-    OUTPUT ${STDAFX_H_GCH}
-    COMMENT "Generating ${STDAFX_H_GCH}"
 )
-if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include-pch ${STDAFX_H_GCH}")
+target_precompile_headers(keeper PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h")
+if(ENABLE_STEAMWORKS)
+    target_link_libraries(keeper PRIVATE steamworks)
+    target_compile_definitions(keeper PRIVATE USE_STEAMWORKS)
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        add_custom_command(
+            TARGET keeper
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+                "${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/win64/steam_api64.dll"
+                "$<TARGET_FILE_DIR:keeper>"
+        )
+    endif()
 endif()
-target_sources(keeper PRIVATE ${STDAFX_H_GCH})
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    target_compile_definitions(keeper PRIVATE WINDOWS $<$<CXX_COMPILER_ID:MSVC>:_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING>)
+    target_compile_options(keeper PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/w>)
+    target_link_libraries(keeper PRIVATE dbghelp)
+    target_sources(keeper PRIVATE keeper.rc)
+
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        set_source_files_properties(
+            content_factory.cpp 
+            player_control.cpp 
+            gui_builder.cpp 
+            pretty_printing.cpp 
+            task.cpp
+            PROPERTIES 
+                COMPILE_FLAGS /bigobj
+        )
+    else()
+        set_source_files_properties(
+            content_factory.cpp 
+            player_control.cpp 
+            gui_builder.cpp 
+            pretty_printing.cpp 
+            task.cpp
+            PROPERTIES 
+                COMPILE_FLAGS -Wa,-mbig-obj
+        )
+    endif()
 endif()
 
-if(ENABLE_LOCAL_USER_DIR)
-    target_compile_definitions(keeper PRIVATE ENABLE_LOCAL_USER_DIR=1)
+if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDbgInfo")
+    target_compile_definitions(keeper PRIVATE RELEASE=1)
 endif()
-if(SANITIZE)
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
-endif()
-if(PROF)
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
-endif()
-if(EASY_PROFILER)
-    target_compile_definitions(keeper PRIVATE EASY_PROFILER=1)
-    target_link_libraries(keeper PRIVATE libeasy_profiler)
-endif()
+
+
+
+
+install(
+    TARGETS keeper
+    RUNTIME
+)

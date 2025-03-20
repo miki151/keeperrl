@@ -178,15 +178,15 @@ void playfile(const char *fname, SDL_Window* screen, Renderer& renderer, float v
         }
     }
     auto screenSize = renderer.getSize();
-    Rectangle targetRect;
+    ::Rectangle targetRect;
     if (screenSize.x * height >= screenSize.y * width) {
       auto newWidth = width * screenSize.y / height;
-      targetRect = Rectangle((screenSize.x - newWidth) / 2, 0, (screenSize.x + newWidth) / 2, screenSize.y);
+      targetRect = ::Rectangle((screenSize.x - newWidth) / 2, 0, (screenSize.x + newWidth) / 2, screenSize.y);
     } else {
       auto newHeight = height * screenSize.x / width;
-      targetRect = Rectangle(0, (screenSize.y - newHeight) / 2, screenSize.x, (screenSize.y + newHeight) / 2);
+      targetRect = ::Rectangle(0, (screenSize.y - newHeight) / 2, screenSize.x, (screenSize.y + newHeight) / 2);
     }
-    renderer.drawImage(targetRect, Rectangle(0, 0, width, height), texture);
+    renderer.drawImage(targetRect, ::Rectangle(0, 0, width, height), texture);
     renderer.drawAndClearBuffer();
   }
 
