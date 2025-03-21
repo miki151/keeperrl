@@ -854,17 +854,74 @@ string combineSentences(const vector<string>& v) {
   return ret;
 }
 
-string capitalFirst(string s) {
-  if (s.empty())
-    return s;
-  char32_t c32;
-  std::mbstate_t state{};
-  int numBytes = std::mbrtoc32(&c32, s.data(), s.size(), &state);
-  c32 = towupper(c32);
-  char buf[10] = {0};
-  std::c32rtomb(buf, c32, &state);
-  s = string(buf) + s.substr(numBytes);
-  return s;
+pair<char32_t, size_t> getUtf8CharAt(const string& utf8Str, size_t index) {
+  CHECK(index < utf8Str.size());
+  unsigned char firstByte = static_cast<unsigned char>(utf8Str[index]);
+  size_t charLen = 0;
+  char32_t ch = 0;
+  if (firstByte <= 0x7F) { // 1-byte (ASCII)
+    ch = firstByte;
+    charLen = 1;
+  } else if ((firstByte & 0xE0) == 0xC0 && index + 1 < utf8Str.size()) { // 2-byte
+    ch = ((firstByte & 0x1F) << 6)
+         | (utf8Str[index + 1] & 0x3F);
+    charLen = 2;
+  } else if ((firstByte & 0xF0) == 0xE0 && index + 2 < utf8Str.size()) { // 3-byte
+    ch = ((firstByte & 0x0F) << 12)
+         | ((utf8Str[index + 1] & 0x3F) << 6)
+         | (utf8Str[index + 2] & 0x3F);
+    charLen = 3;
+  } else if ((firstByte & 0xF8) == 0xF0 && index + 3 < utf8Str.size()) { // 4-byte
+    ch = ((firstByte & 0x07) << 18)
+         | ((utf8Str[index + 1] & 0x3F) << 12)
+         | ((utf8Str[index + 2] & 0x3F) << 6)
+         | (utf8Str[index + 3] & 0x3F);
+    charLen = 4;
+  } else {
+    FATAL << "Invalid UTF-8: " << utf8Str;
+  }
+  return {ch, charLen};
+}
+
+
+string capitalFirst(string utf8Str) {
+  if (utf8Str.empty()) return utf8Str;
+
+  static const std::unordered_map<char32_t, char32_t> hardcodedUppercase = {
+      {U'ą', U'Ą'}, {U'ć', U'Ć'}, {U'ę', U'Ę'}, {U'ł', U'Ł'}, {U'ń', U'Ń'},
+      {U'ó', U'Ó'}, {U'ś', U'Ś'}, {U'ź', U'Ź'}, {U'ż', U'Ż'}
+  };
+
+  auto res = getUtf8CharAt(utf8Str, 0);
+  auto len = res.second;
+  auto ch = res.first;
+  if (len == 0)
+    return utf8Str; // Invalid first char
+  if (hardcodedUppercase.count(ch)) {
+    ch = hardcodedUppercase.at(ch);
+  } else if (ch <= 0x7F) { // English ASCII letters
+    ch = std::toupper(static_cast<unsigned char>(ch));
+  }
+  // Re-encode char32_t back into UTF-8
+  std::string result;
+  if (ch <= 0x7F) {
+    result += static_cast<char>(ch);
+  } else if (ch <= 0x7FF) {
+    result += static_cast<char>(0xC0 | ((ch >> 6) & 0x1F));
+    result += static_cast<char>(0x80 | (ch & 0x3F));
+  } else if (ch <= 0xFFFF) {
+    result += static_cast<char>(0xE0 | ((ch >> 12) & 0x0F));
+    result += static_cast<char>(0x80 | ((ch >> 6) & 0x3F));
+    result += static_cast<char>(0x80 | (ch & 0x3F));
+  } else {
+    result += static_cast<char>(0xF0 | ((ch >> 18) & 0x07));
+    result += static_cast<char>(0x80 | ((ch >> 12) & 0x3F));
+    result += static_cast<char>(0x80 | ((ch >> 6) & 0x3F));
+    result += static_cast<char>(0x80 | (ch & 0x3F));
+  }
+  // Append the remaining original string
+  result += utf8Str.substr(len);
+  return result;
 }
 
 string makeSentence(string s) {

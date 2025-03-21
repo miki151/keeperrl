@@ -236,13 +236,12 @@ int Renderer::getFont(FontId id) {
 void Renderer::drawText(FontId id, int size, Color color, Vec2 pos, const string& s, CenterType center) {
   renderDeferredSprites();
   if (id == FontId::MAP_FONT) {
-    std::mbstate_t state{};
-    char32_t c32;
     for (int i = 0; i < s.size();) {
-      i += std::mbrtoc32(&c32, &s[i], s.size() - i, &state);
-      if (auto offset = getMapFontOffset(c32))
-        drawSprite(pos, *offset, Vec2(*getMapFontWidth(c32), 28), *mapFontTexture, none, color);
-      if (auto width = getMapFontWidth(c32))
+      auto res = getUtf8CharAt(s, i);
+      i += res.second;
+      if (auto offset = getMapFontOffset(res.first))
+        drawSprite(pos, *offset, Vec2(*getMapFontWidth(res.first), 28), *mapFontTexture, none, color);
+      if (auto width = getMapFontWidth(res.first))
         pos.x += *width - 2;
     }
     return;

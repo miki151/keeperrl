@@ -1355,6 +1355,7 @@ std::ostream& operator<<(std::ostream& d, const Table<T>& container){
   return d;
 }
 
+pair<char32_t, size_t> getUtf8CharAt(const string& utf8Str, size_t index);
 string capitalFirst(string s);
 vector<string> makeSentences(string s);
 string makeSentence(string s);
