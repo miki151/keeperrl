@@ -212,7 +212,7 @@ optional<SoundId> CreatureAttributes::getAttackSound(AttackType type, bool damag
 }
 
 TString CreatureAttributes::getDescription(const ContentFactory* factory) const {
-  return setSubjectGender(body->getDescription(factory), gender);
+  return setSubjectGender(body->getDescription(factory), name.name);
 }
 
 void CreatureAttributes::add(BodyPart p, int count, const ContentFactory* factory) {

@@ -1289,7 +1289,7 @@ void Creature::onKilledOrCaptured(Creature* victim) {
     if (victim->getStatus().contains(CreatureStatus::LEADER) && getBody().hasBrain(getGame()->getContentFactory())) {
       auto victimName = victim->getName();
       victimName.setKillTitle(none);
-      TString title = setSubjectGender(TSentence("KILL_TITLE", victimName.name), getAttributes().getGender());
+      TString title = setSubjectGender(TSentence("KILL_TITLE", victimName.name), getName().name);
       if (!killTitles.contains(title)) {
         attributes->getName().setKillTitle(title);
         killTitles.push_back(title);

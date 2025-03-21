@@ -83,6 +83,6 @@ TString combineSentences(vector<TString>);
 TString toText(int num);
 TString capitalFirst(TString);
 TString makePlural(TString);
-TString setSubjectGender(TString, Gender);
+TString setSubjectGender(TString sentence, TString subject);
 TString toPercentage(double);
 TString toStringWithSign(int);

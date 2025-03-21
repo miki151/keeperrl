@@ -2292,7 +2292,7 @@ static bool apply(const Effects::Audience& a, Position pos, Creature* attacker) 
   if (wasTeleported) {
     if (attacker)
       attacker->privateMessage(PlayerMessage(setSubjectGender(TSentence("AUDIENCE_SUMMONED"),
-          attacker->getAttributes().getGender()), MessagePriority::HIGH));
+          attacker->getName().name), MessagePriority::HIGH));
     else
       pos.globalMessage(PlayerMessage(TStringId("AUDIENCE_SUMMONED2"), MessagePriority::HIGH));
     return true;

@@ -229,10 +229,8 @@ TString makePlural(TString s) {
   return TSentence("MAKE_PLURAL", std::move(s));
 }
 
-TString setSubjectGender(TString s, Gender gender) {
-  if (gender == Gender::FEMALE)
-    s = TSentence("FEMININE_SUBJECT", std::move(s));
-  return s;
+TString setSubjectGender(TString s, TString name) {
+  return TSentence("SUBJECT_GENDER", std::move(s), std::move(name));
 }
 
 TString combineWithAnd(vector<TString> v) {

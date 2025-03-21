@@ -133,7 +133,7 @@ static void addSecond(const Creature* c, MsgType type, vector<TString> param) {
     }
   }();
   if (msg)
-    c->message(PlayerMessage(setSubjectGender(*msg, c->getAttributes().getGender()), MessagePriority::HIGH));
+    c->message(PlayerMessage(setSubjectGender(*msg, c->getName().name), MessagePriority::HIGH));
 }
 
 static void addBoulder(const Creature* c, MsgType type, vector<TString> param) {
@@ -219,7 +219,7 @@ void MessageGenerator::addThirdPerson(const Creature* c, PlayerMessage msg) {
 
 void MessageGenerator::addSecondPerson(const Creature* c, PlayerMessage msg) {
   if (type == SECOND_PERSON) {
-    msg.text = setSubjectGender(msg.text, c->getAttributes().getGender());
+    msg.text = setSubjectGender(msg.text, c->getName().name);
     c->message(std::move(msg));
   }
 }
