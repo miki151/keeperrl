@@ -4194,3 +4194,9 @@ IMMIGRATION_HELP_CONTROLLER1 "right trigger"
 IMMIGRATION_HELP_CONTROLLER2 "left trigger"
 IMMIGRATION_HELP_MOUSE1 "left click"
 IMMIGRATION_HELP_MOUSE2 "right click"
+GAME_INTRO "Welcome to KeeperRL v1.2, released on Mar 24th, 2025.
+
+This patch adds localization support to KeeperRL, along with Polish being the first extra language available. More languages will be coming soon.
+
+If this is your first time playing KeeperRL, remember to start with the tutorial!
+"

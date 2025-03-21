@@ -10080,3 +10080,9 @@ IMMIGRATION_HELP_CONTROLLER1 "Prawy spust"
 IMMIGRATION_HELP_CONTROLLER2 "lewy spust"
 IMMIGRATION_HELP_MOUSE1 "Lewy przycisk myszy"
 IMMIGRATION_HELP_MOUSE2 "prawy przycisk myszy"
+GAME_INTRO "Witaj w KeeperRL v1.2, wypuszczonym 24-go marca 2025.
+
+Ta łatka dodaje wsparcie dla tłumaczeń w KeeperRL, razem z polskim jako pierwszym dostępnym językiem. Więcej języków zostanie dodane wkrótce.
+
+Jeżeli pierwszy grasz po raz pierwszy w KeeperRL, pamiętaj by zacząć od samouczka!
+"
