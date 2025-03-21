@@ -189,7 +189,15 @@ Translations::Translations(DirectoryPath vanilla, DirectoryPath mods, HashMap<TS
     : vanillaDir(std::move(vanilla)), modsDir(std::move(mods)), sentences(sentences) {}
 
 vector<string> Translations::getLanguages() const {
-  return getKeys(strings);
+  auto ret = getKeys(strings);
+  sort(ret.begin(), ret.end(), [](const string& l1, const string& l2) {
+    if (l1 == "English")
+      return true;
+    if (l2 == "English")
+      return false;
+    return l1 < l2;
+  });
+  return ret;
 }
 
 void Translations::TranslationInfo::serialize(PrettyInputArchive& ar) {
