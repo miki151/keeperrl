@@ -883,7 +883,7 @@ REMOVE_PRISONERS_OR_INCREASE_FORCES "Usuń więźniów lub zwiększ siły zbrojn
 RENAME_MINION_BUTTON "Zmień imię"
 REQUIRES_ALLY_DISCOVERED "Sojusznik nie został odkryty"
 REQUIRES_ALLY_HAVE_RECRUITS "Sojusznik nie ma obecnie dostępnych rekrutów"
-REQUIRES_CONQUERING "Wymaga podbicia {1:genitive}."
+REQUIRES_CONQUERING "Wymaga podbicia: {1}."
 REQUIRES_FURNITURE "Wymaga {1:genitive}."
 REQUIRES_KNOCKING_OUT_ENEMY "Wymaga obezwładnienia wrogiej istoty."
 REQUIRES_MORE_ATTRACTIONS "Wymaga jeszcze {1} {2:genitive}"
@@ -1000,7 +1000,7 @@ SUMMON_HOSTILE_EFFECT_NAME "przyzwanie wrogiego {1:genitive}"
     "przyzwania wrogiego {1:genitive}" : genitive
 SUMMON_HOSTILE_MULTIPLE_EFFECT_DESCRIPTION "Przywołuje {1} wrogich {2:accusative}"
 SUMMON_HOSTILE_RANGE_EFFECT_DESCRIPTION "Przywołuje od {1} do {2} wrogich {3:accusative}"
-SUMMON_HOSTILE_SINGLE_EFFECT_DESCRIPTION "Przywołuje wrogiego {1:accusative}"
+SUMMON_HOSTILE_SINGLE_EFFECT_DESCRIPTION "Przywołuje wrogi {1:accusative}"
 SUMMON_MINIONS_EFFECT_DESCRIPTION "Przywołuje wszystkich wojowniczych sług."
 SUMMON_MINIONS_EFFECT_NAME "przyzwanie sług"
     "przyzwania sług" : genitive
@@ -1287,7 +1287,7 @@ YOUR_BODY_PART_IS_BROKEN "{YOUR_HELPER:1} {1} zostaje {BROKEN_HELPER:1}!"
 YOUR_BODY_PART_IS_CHOPPED_OFF "{YOUR_HELPER:1} {1} zostaje {HIS_BODY_PART_IS_CHOPPED_OFF_HELPER:1}!"
 YOUR_BODY_PART_IS_CRUSHED "{YOUR_HELPER:1} {1} zostaje {CRUSHED_HELPER:1}!"
 YOUR_BODY_PART_IS_RIPPED_TO_PIECES "{YOUR_HELPER:1} {1} zostaje {RIPPED_HELPER:1} na kawałki!"
-YOUR_BODY_PART_IS "{YOUR_HELPER:1} {1} {2}!"
+YOUR_BODY_PART_IS "{YOUR_HELPER:1} {1} {2:1}!"
 YOU_REINFORCE_THE_WALL "Wzmacniasz ścianę."
 HE_REINFORCES_THE_WALL "{1} wzmacnia ścianę."
 YOU_REMOVE "Zdejmujesz {1:accusative}."
@@ -1424,6 +1424,7 @@ BUFF_NIGHT_VISION neuter "widzenie w ciemności"
     "widzenia w ciemności" : genitive
 BUFF_NO_CARRY_LIMIT "nieskończony udźwig"
     "nieskończonego udźwigu" : genitive
+    "nieskończonym udźwigiem" : instrumental
 BUFF_NO_FRIENDLY_FIRE "bez ognia bratobójczego"
     "bez ognia bratobójczego" : genitive
 BUFF_OIL "olej"
@@ -1568,6 +1569,7 @@ EXPERIENCE_LABEL "Doświadczenie:"
 EXTRA_INTRINSIC_ATTACK "Dodatkowy wrodzony atak obok dzierżonej broni"
 EYE_BODY_PART "oko"
 NECK_BODY_PART feminine "szyja"
+    "szyję" : accusative
 FALLS_INTO "{1} wpada do {2:genitive}."
 FALLS_OFF "{1} spada z {2:genitive}."
 FALLS_ON_THE "{1} spada na {2:accusative}."
@@ -2234,12 +2236,16 @@ NOT "nie {1}"
 PERMANENT_LASTING_DESCRIPTION "{1} Efekt jest permanentny."
 PERMANENT_LASTING_NAME_HELPER "permanentny"
     "permanentnego" : genitive
+    "permanentnym" : instrumental
     "permanentna" : feminine
     "permanentnej" : feminine,genitive
+    "permanentną" : feminine,instrumental
     "permanentne" : neuter
     "permanentnego" : neuter,genitive
+    "permanentnym" : neuter,instrumental
     "permanentne" : plural
     "permanentnych" : plural,genitive
+    "permanentnymi" : plural,instrumental
 PERMANENT_LASTING_NAME "{PERMANENT_LASTING_NAME_HELPER:1} {1}"
 ACTIVITY_ON_OFF_HINT_FOR_GROUP "Kliknij, aby wyłączyć tę aktywność dla wszystkich {1:genitive}."
 COUNT_ITEM_AVAILABLE "({1} dostępnych)"
@@ -9184,8 +9190,10 @@ KEEPER_CREATURES_DESCRIPTION2 "Zbuduj kościół, odprawiaj Msze dla wiernych i 
 KEEPER_CREATURES_DESCRIPTION3 "Twórz hordy nieumarłych z ciał poległych wrogów."
 KEEPER_CREATURES_DESCRIPTION4 "Przejmij środki produkcji i buduj pułapki, automaty oraz inne wynalazki. Zalecane dla zaawansowanych graczy."
 KEEPER_CREATURES_POPULATIONSTRING "automaty"
+    "automatów" : genitive
 KEEPER_CREATURES_DESCRIPTION5 "Graj grupą dwunastu krasnoludów, które możesz wyspecjalizować wedle uznania. Ta frakcja nie ma imigracji, więc kop ostrożnie!"
 KEEPER_CREATURES_POPULATIONSTRING1 "krasnoludy"
+    "krasnolud" : genitive
 KEEPER_CREATURES_DESCRIPTION6 "Graj jako Król goblinów i poszukuj legendarnych goblińskich matek. Ta frakcja została pierwotnie stworzona przez RighteousSinner i SoftMonster dla Bonus Moda."
 KEEPER_CREATURES_DESCRIPTION7 "Smacznego móżdżku!"
 KEEPER_CREATURES_POPULATIONSTRING2 "zombie"
@@ -9629,21 +9637,17 @@ PROTECTION_MASS_NAME "księga liturgiczna ochrony przed {1:instrumental}"
 PROTECTION_RING_NAME "pierścień ochrony przed {1:instrumental}"
 PROTECTION_RING_SHORT_NAME "przed {1:instrumental}"
 
-ITEMS_UNDEADPROTECTIONRING5_NAME "nieumarłych"
-ITEMS_ELFPROTECTIONRING5_NAME "elfów"
-ITEMS_DWARFPROTECTIONRING5_NAME "krasnoludów"
-ITEMS_GREENSKINPROTECTIONRING5_NAME "zielonoskórych"
-ITEMS_UNDEADPROTECTIONRING15_NAME "nieumarłych"
-ITEMS_ELFPROTECTIONRING15_NAME "elfów"
-ITEMS_DWARFPROTECTIONRING15_NAME "krasnoludów"
-ITEMS_GREENSKINPROTECTIONRING15_NAME "krasnoludów"
-ITEMS_DRAGONPROTECTIONRING15_NAME "smoków"
-ITEMS_PRAYERBOOKPROTECTION_SHORTNAME16 "smoków"
-ITEMS_PRAYERBOOKPROTECTION_SHORTNAME17 "demonów"
-ITEMS_PRAYERBOOKPROTECTION_SHORTNAME18 "nieumarłych"
-ITEMS_PRAYERBOOKPROTECTION_SHORTNAME19 "elfów"
-ITEMS_PRAYERBOOKPROTECTION_SHORTNAME20 "zielonoskórych"
-ITEMS_PRAYERBOOKPROTECTION_SHORTNAME21 "jaszczuroludzi"
+ITEMS_UNDEADPROTECTIONRING5_NAME "nieumarłymi"
+ITEMS_ELFPROTECTIONRING5_NAME "elfami"
+ITEMS_DWARFPROTECTIONRING5_NAME "krasnoludami"
+ITEMS_GREENSKINPROTECTIONRING5_NAME "zielonoskórymi"
+ITEMS_DRAGONPROTECTIONRING15_NAME "smokami"
+ITEMS_PRAYERBOOKPROTECTION_SHORTNAME16 "smokami"
+ITEMS_PRAYERBOOKPROTECTION_SHORTNAME17 "demonami"
+ITEMS_PRAYERBOOKPROTECTION_SHORTNAME18 "nieumarłymi"
+ITEMS_PRAYERBOOKPROTECTION_SHORTNAME19 "elfami"
+ITEMS_PRAYERBOOKPROTECTION_SHORTNAME20 "zielonoskórymi"
+ITEMS_PRAYERBOOKPROTECTION_SHORTNAME21 "jaszczuroludźmi"
 
 BUFFS_DAM_BONUS_NAME "atak"
     "ataku" : genitive
