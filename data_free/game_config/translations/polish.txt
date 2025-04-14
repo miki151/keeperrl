@@ -8571,7 +8571,8 @@ WORKSHOPS_MENU_TYPE "masowe szaleństwo"
 
 PROTECTION_FROM "ochrona przed {1:instrumental}"
 PROTECTED_FROM "chroniony przed {1:instrumental}"
-NO_LONGER_PROTECTED_FROM "nie jest już chroniony przed {1:instrumental}"
+    "chroniona przed {1:instrumental}" : feminine
+    "chronione przed {1:instrumental}" : neuter
 
 YOU_ACQUIRE_THE_SKILL_OF "Zdobywasz umiejętność {1:accusative}."
 ACQUIRES_THE_SKILL_OF "{1} zdobywa umiejętność {2:accusative}."
@@ -8589,9 +8590,6 @@ RESISTANCE_BUFF_NAME : feminine "odporność na {1:accusative}"
 RESISTANT_TO "odporny na {1:accusative}"
     "odporna na {1:accusative}" : feminine
     "odporne na {1:accusative}" : neuter
-NO_LONGER_RESISTANT_TO "nie jest już odporny na {1:accusative}"
-    "nie jest już odporna na {1:accusative}" : feminine
-    "nie jest już odporne na {1:accusative}" : neuter
 RESISTANCE_BUFF_DESCRIPTION "Obrona istoty przeciw atakom typu {1} jest zwiększona o 30%."
 
 VULNERABILITY_BUFF_NAME feminine "wrażliwość na {1}"
@@ -8599,7 +8597,6 @@ VULNERABILITY_BUFF_NAME feminine "wrażliwość na {1}"
 VULNERABLE_TO "wrażliwy na {1:accusative}"
     "wrażliwa na {1:accusative}" : feminine
     "wrażliwe na {1:accusative}" : neuter
-NO_LONGER_VULNERABLE_TO "nie jest już wrażliwy na {1:accusative}"
 VULNERABILITY_BUFF_DESCRIPTION "Obrona istoty przeciw atakom typu {1} jest zmniejszona o 23%."
 
 IMMUNITY_BUFF_NAME feminine "całkowita odporność na {1:accusative}"
@@ -8607,9 +8604,6 @@ IMMUNITY_BUFF_NAME feminine "całkowita odporność na {1:accusative}"
 IMMUNE_TO "całkowicie odporny na {1:accusative}"
     "całkowicie odporna na {1:accusative}" : feminine
     "całkowicie odporne na {1:accusative}" : neuter
-NO_LONGER_IMMUNE_TO "nie jest już całkowicie odporny na {1:accusative}"
-    "nie jest już całkowicie odporna na {1:accusative}" : feminine
-    "nie jest już całkowicie odporne na {1:accusative}" : neuter
 IMMUNITY_BUFF_DESCRIPTION "Istota jest całkowicie odporna na ataki typu {1}."
 
 BUFFS_ACID_RESISTANT_NAME "kwas"

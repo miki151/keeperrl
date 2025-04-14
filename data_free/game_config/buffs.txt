@@ -245,7 +245,7 @@ Def RESISTANCE(Name, Attr)
   adjective = RESISTANT_TO(Name)
   description = RESISTANCE_BUFF_DESCRIPTION(Name)
   addedMessage = ARE RESISTANT_TO(Name)
-  removedMessage = ARE NO_LONGER_RESISTANT_TO(Name)
+  removedMessage = ARE_NO_LONGER RESISTANT_TO(Name)
   color = ColorId SKY_BLUE
   fx = BUFF_SKY_BLUE
   defenseMultiplier = 1.3
@@ -267,7 +267,7 @@ Def VULNERABILITY(Name, Attr)
   adjective = VULNERABLE_TO(Name)
   description = VULNERABILITY_BUFF_DESCRIPTION(Name)
   addedMessage = ARE VULNERABLE_TO(Name)
-  removedMessage = ARE NO_LONGER_VULNERABLE_TO(Name)
+  removedMessage = ARE_NO_LONGER VULNERABLE_TO(Name)
   color = ColorId BROWN
   fx = DEBUFF_BROWN
   defenseMultiplier = 0.77
@@ -289,7 +289,7 @@ Def IMMUNITY(Name, Attr)
   adjective = IMMUNE_TO(Name)
   description = IMMUNITY_BUFF_DESCRIPTION(Name)
   addedMessage = ARE IMMUNE_TO(Name)
-  removedMessage = ARE NO_LONGER_IMMUNE_TO(Name)
+  removedMessage = ARE_NO_LONGER IMMUNE_TO(Name)
   color = ColorId WHITE
   fx = BUFF_WHITE
   defenseMultiplier = 1000
@@ -314,7 +314,7 @@ Def SPECIAL_RESISTANCE(Name, Predicate, Value)
   adjective = PROTECTED_FROM(Name)
   description = DEFENSE_BONUS_AGAINST(Value, Name)
   addedMessage = ARE PROTECTED_FROM(Name)
-  removedMessage = ARE NO_LONGER_PROTECTED_FROM(Name)
+  removedMessage = ARE_NO_LONGER PROTECTED_FROM(Name)
   color = ColorId PURPLE
   fx = BUFF_PURPLE
   price = 200

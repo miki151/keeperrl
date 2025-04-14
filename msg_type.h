@@ -17,7 +17,7 @@ RICH_ENUM(
   DIE, //
   TELE_APPEAR,
   TELE_DISAPPEAR,
-  ATTACK_SURPRISE, // deprectated
+  ARE_NO_LONGER, // deprectated
   CAN_SEE_HIDING,
   HIT,
   TOUCH,

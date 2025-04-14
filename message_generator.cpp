@@ -21,6 +21,7 @@ static void addThird(const Creature* c, MsgType type, vector<TString> param) {
     param.push_front(c->getName().the());
     switch (type) {
       case MsgType::ARE: return TSentence("IS", param);
+      case MsgType::ARE_NO_LONGER: return TSentence("IS_NO_LONGER", param);
       case MsgType::YOUR: return TSentence("YOUR_THIRD_PERSON", param);
       case MsgType::FALL_ASLEEP:
         unseenMsg = TSentence("YOU_HEAR_SNORING");
@@ -86,6 +87,7 @@ static void addSecond(const Creature* c, MsgType type, vector<TString> param) {
     auto factory = c->getGame()->getContentFactory();
     switch (type) {
       case MsgType::ARE: return TSentence("YOU_ARE", param);
+      case MsgType::ARE_NO_LONGER: return TSentence("YOU_ARE_NO_LONGER", param);
       case MsgType::YOUR: return TSentence("YOUR", param);
       case MsgType::WAKE_UP: return TSentence("YOU_WAKE_UP");
       case MsgType::FALL_ASLEEP:
