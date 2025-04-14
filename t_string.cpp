@@ -167,7 +167,7 @@ void TString::serialize(PrettyInputArchive& ar) {
 
 ostream& operator << (ostream& o, const TString& t) {
   t.text.visit(
-      [&](const string& s) { o << s; },
+      [&](const string& s) { o << std::quoted(s); },
       [&](const TSentence& s) {
         o << s.id.data();
         if (!s.params.empty()) {

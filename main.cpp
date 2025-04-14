@@ -150,6 +150,7 @@ static po::parser getCommandLineFlags() {
   flags["max_turns"].type(po::i32).description("Quit the game after a given max number of turns");
   flags["export_translatable_strings"].type(po::string).description("This experimental option will try to to replace translatable strings in game files with translation ids.");
   flags["export_translatable_sentences"].type(po::string).description("This experimental option will output every sentence in the game in the pre-translated form.");
+  flags["translate_sentences"].type(po::string).description("Read translatable sentences from given file, translate them using the current language and output to stdout.");
 #endif
   return flags;
 }
@@ -417,6 +418,21 @@ static int keeperMain(po::parser& commandLineFlags) {
   };
   if (commandLineFlags["battle_level"].was_set() && !commandLineFlags["battle_view"].was_set()) {
     battleTest(new DummyView(&clock), nullptr);
+    return 0;
+  }
+  if (commandLineFlags["translate_sentences"].was_set()) {
+    auto path = commandLineFlags["translate_sentences"].get().string;
+    auto sentences = new HashMap<TStringId, TString>();
+    Translations translations(freeDataPath.subdirectory("game_config").subdirectory("translations"), modsDir, sentences);
+    translations.setCurrentMods(options.getVectorStringValue(OptionId::CURRENT_MOD2));
+    options.setChoices(OptionId::LANGUAGE, translations.getLanguages());
+    auto res = PrettyPrinting::parseObject(*sentences, {*FilePath::fromFullPath(path).readContents()}, {path});
+    if (res)
+      USER_FATAL << *res;
+    for (auto& elem : *sentences) {
+      auto res = translations.get(options.getStringValue(OptionId::LANGUAGE), elem.second);
+      std::cout << elem.first.data() << " " << res << std::endl;
+    }
     return 0;
   }
   Renderer renderer(
