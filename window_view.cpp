@@ -1085,24 +1085,23 @@ void WindowView::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
 
 // These commands will run even in blocking gui.
 void WindowView::keyboardActionAlways(const SDL_Keysym& key) {
-  switch (key.sym) {
-#ifndef RELEASE
-    case SDL::SDLK_F8:
-      //renderer.startMonkey();
-      renderer.loadAnimations();
-      renderer.getTileSet().clear();
-      renderer.getTileSet().reload();
-      renderer.getTileSet().loadTextures();
-      if (fxRenderer)
-        fxRenderer->loadTextures();
-      gui.loadImages();
-      gui.reloadTranslations();
-      guiBuilder.clearCache();
-      break;
-#endif
-    default:
-      break;
-  }
+  if (debugOptions)
+    switch (key.sym) {
+      case SDL::SDLK_F8:
+        //renderer.startMonkey();
+        renderer.loadAnimations();
+        renderer.getTileSet().clear();
+        renderer.getTileSet().reload();
+        renderer.getTileSet().loadTextures();
+        if (fxRenderer)
+          fxRenderer->loadTextures();
+        gui.loadImages();
+        gui.reloadTranslations();
+        guiBuilder.clearCache();
+        break;
+      default:
+        break;
+    }
 }
 
 // These commands will run only when the map is in focus (I think)
