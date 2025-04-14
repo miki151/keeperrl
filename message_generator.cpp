@@ -24,7 +24,7 @@ static void addThird(const Creature* c, MsgType type, vector<TString> param) {
       case MsgType::YOUR: return TSentence("YOUR_THIRD_PERSON", param);
       case MsgType::FALL_ASLEEP:
         unseenMsg = TSentence("YOU_HEAR_SNORING");
-        if (!param.empty())
+        if (param.size() > 1)
           return TSentence("FALLS_ASLEEP_IN", param);
         else
           return TSentence("FALLS_ASLEEP", param);
@@ -67,7 +67,7 @@ static void addThird(const Creature* c, MsgType type, vector<TString> param) {
       case MsgType::COPULATE: return TSentence("COPULATES", param);
       case MsgType::CONSUME: return TSentence("ABSORBS", param);
       case MsgType::BREAK_FREE:
-          if (param.empty())
+          if (param.size() == 1)
             return TSentence("BREAKS_FREE", param);
           else
             return TSentence("BREAKS_FREE_FROM", param);

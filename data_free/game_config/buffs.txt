@@ -289,7 +289,7 @@ Def IMMUNITY(Name, Attr)
   adjective = IMMUNE_TO(Name)
   description = IMMUNITY_BUFF_DESCRIPTION(Name)
   addedMessage = ARE IMMUNE_TO(Name)
-  removedMessage = ARE NO_LONGR_IMMUNE_TO(Name)
+  removedMessage = ARE NO_LONGER_IMMUNE_TO(Name)
   color = ColorId WHITE
   fx = BUFF_WHITE
   defenseMultiplier = 1000

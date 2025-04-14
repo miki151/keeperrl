@@ -360,7 +360,7 @@ void Furniture::onConstructedBy(Position pos, Creature* c) {
     if (constructMessage)
       switch (*constructMessage) {
         case ConstructMessage::BUILD:
-          c->verb(TStringId("YOU_BUILD"), TStringId("HE_BUILDS"), getName());
+          c->verb(TStringId("YOU_BUILD"), TStringId("HE_BUILDS"), TSentence("A_ARTICLE", getName()));
           break;
         case ConstructMessage::FILL_UP:
           c->verb(TStringId("YOU_FILL_UP_TUNNEL"), TStringId("HE_FILLS_UP_TUNNEL"));
@@ -369,7 +369,7 @@ void Furniture::onConstructedBy(Position pos, Creature* c) {
           c->verb(TStringId("YOU_REINFORCE_THE_WALL"), TStringId("HE_REINFORCES_THE_WALL"));
           break;
         case ConstructMessage::SET_UP:
-          c->verb(TStringId("YOU_SET_UP"), TStringId("HE_SETS_UP"), getName());
+          c->verb(TStringId("YOU_SET_UP"), TStringId("HE_SETS_UP"), TSentence("A_ARTICLE", getName()));
           break;
       }
   }
