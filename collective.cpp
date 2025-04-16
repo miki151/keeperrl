@@ -1635,7 +1635,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
           if (auto stat = item->getProducedStat())
             getGame()->getStatistics().add(*stat);
           control->addMessage(TSentence("MINION_PRODUCES", {c->getName().a(), workshopInfo.verb, item->getAName()}));
-          if (item->getName() == TStringId("DEVOTIONAL_MEDAL") && !recordedEvents.empty())
+          if (item->getName() == TStringId("ITEMS_DEVOTIONALMEDAL_NAME") && !recordedEvents.empty())
             item->setDescription(TSentence("DEPICTS", Random.choose(recordedEvents)));
           if (auto& minion = item->getAssembledMinion())
             minion->assemble(this, item.get(), pos.first);
