@@ -712,6 +712,7 @@ KEEPER_F feminine "strażniczka"
     "strażniczki" : genitive
     "strażniczką" : instrumental
     "strażniczkę" : accusative
+    "strażniczce" : dative
     "strażniczki" : plural
     "strażniczek" : plural, genitive
     "strażniczkami" : plural, instrumental
@@ -8576,13 +8577,14 @@ WORKSHOPS_MENU_TYPE "masowe szaleństwo"
     "masowego szaleństwa" : genitive
 
 PROTECTION_FROM "ochrona przed {1:instrumental}"
+    "ochrony przed {1:instrumental}" : genitive
 PROTECTED_FROM "chroniony przed {1:instrumental}"
     "chroniona przed {1:instrumental}" : feminine
     "chronione przed {1:instrumental}" : neuter
 
 YOU_ACQUIRE_THE_SKILL_OF "Zdobywasz umiejętność {1:accusative}."
 ACQUIRES_THE_SKILL_OF "{1} zdobywa umiejętność {2:accusative}."
-YOU_LOSE_THE_SKILL_OF "Tracisz umiejętność {1:accusative}."
+YOU_LOSE_THE_SKILL_OF "Tracisz umiejętność {1:genitive}."
 LOSES_THE_SKILL_OF "{1} traci umiejętność {2:accusative}."
 
 HATE_OF "nienawiść do {1:genitive}"
@@ -8616,6 +8618,7 @@ BUFFS_ACID_RESISTANT_NAME "kwas"
 BUFFS_AMBUSH_SKILL_ADJECTIVE "zastawia zasadzki"
 BUFFS_AMBUSH_SKILL_DESCRIPTION "Może się ukryć i zastawić zasadzkę na niczego niepodejrzewających wrogów. Naciśnij 'h', aby się ukryć na odpowiednim polu."
 BUFFS_AMBUSH_SKILL_NAME "zastawianie zasadzek"
+    "zastawiania zasadzek" : genitive
 
 BUFFS_BRIDGE_BUILDING_SKILL_ADJECTIVE "buduje mosty"
 BUFFS_BRIDGE_BUILDING_SKILL_DESCRIPTION "Istota będzie próbować budować mosty podczas podróży."
@@ -8628,6 +8631,7 @@ BUFFS_CONFESSING_SKILL_ADJECTIVE "spowiednik"
     "spowiedniczka" : feminine
 BUFFS_CONFESSING_SKILL_DESCRIPTION "Może wysłuchiwać spowiedzi."
 BUFFS_CONFESSING_SKILL_NAME "słuchanie spowiedzi"
+    "słuchania spowiedzi" : genitive
 
 BUFFS_CONSUMPTION_SKILL_ADJECTIVE "pochłaniacz"
 BUFFS_CONSUMPTION_SKILL_DESCRIPTION "Może wchłaniać inne istoty i zachowywać ich atrybuty."
@@ -8643,6 +8647,7 @@ BUFFS_CROPS_SKILL_ADJECTIVE "rolnik"
     "rolniczka" : feminine
 BUFFS_CROPS_SKILL_DESCRIPTION "Może uprawiać ziemię."
 BUFFS_CROPS_SKILL_NAME "rolnictwo"
+    "rolnictwa" : genitive
 
 BUFFS_DAM_BONUS_ADJECTIVE "niebezpieczny"
     "niebezpieczna" : feminine
@@ -8650,7 +8655,7 @@ BUFFS_DAM_BONUS_ADJECTIVE "niebezpieczny"
 BUFFS_DEF_BONUS_ADJECTIVE "chroniony"
     "chroniona" : feminine
     "chronione" : neuter
-BUFFS_DEMON_RESISTANCE_NAME "demonów"
+BUFFS_DEMON_RESISTANCE_NAME "demonami"
 BUFFS_DISARM_TRAPS_SKILL_ADJECTIVE "rozbraja pułapki"
 BUFFS_DISARM_TRAPS_SKILL_DESCRIPTION "Istota potrafi unikać pułapek i je rozbrajać."
 BUFFS_DISARM_TRAPS_SKILL_NAME "rozbrajanie pułapek"
@@ -8676,8 +8681,8 @@ BUFFS_DIVINE_STRENGTH_ADJECTIVE "silny"
     "silne" : neuter
 BUFFS_DIVINE_STRENGTH_NAME "boska siła"
     "boskiej siły" : genitive
-BUFFS_DRAGON_RESISTANCE_NAME "smoków"
-BUFFS_ELF_RESISTANCE_NAME "elfów"
+BUFFS_DRAGON_RESISTANCE_NAME "smokami"
+BUFFS_ELF_RESISTANCE_NAME "elfami"
 
 BUFFS_EXPLORE_CAVES_SKILL_ADJECTIVE "eksploruje jaskinie"
 BUFFS_EXPLORE_CAVES_SKILL_DESCRIPTION "Może badać jaskinie."
@@ -8694,7 +8699,7 @@ BUFFS_EXPLORE_SKILL_NAME "eksploracja"
 
 BUFFS_FIRE_RESISTANT_NAME "ogień"
 
-BUFFS_GREENSKIN_RESISTANCE_NAME "zielonoskórych"
+BUFFS_GREENSKIN_RESISTANCE_NAME "zielonoskórymi"
 BUFFS_HATE_DEMONS_NAME "demony"
     "demonów" : genitive
     "demonom" : dative
@@ -8719,7 +8724,7 @@ BUFFS_HATE_LIZARDMEN_NAME "jaszczuroludzie"
 BUFFS_HATE_UNDEAD_NAME "nieumarli"
     "nieumarłych" : genitive
     "nieumarłym" : dative
-BUFFS_LIZARDMEN_RESISTANCE_NAME "jaszczuroludzi"
+BUFFS_LIZARDMEN_RESISTANCE_NAME "jaszczuroludźmi"
 
 BUFFS_MAGIC_RESISTANCE_NAME "magia"
     "magię" : accusative
@@ -8743,6 +8748,7 @@ BUFFS_RANGED_RESISTANCE_NAME "walka dystansowa"
 BUFFS_SPIDER_SKILL_ADJECTIVE "tka pajęcze sieci"
 BUFFS_SPIDER_SKILL_DESCRIPTION "Może tkać pajęcze sieci."
 BUFFS_SPIDER_SKILL_NAME "pajęcze tkactwo"
+    "pajęczego tkactwa" : genitive
 
 BUFFS_SWIMMING_SKILL_ADJECTIVE "pływak"
     "pływaczka" : feminine
@@ -8750,7 +8756,7 @@ BUFFS_SWIMMING_SKILL_DESCRIPTION "Może przeprawiać się przez wodę bez topien
 BUFFS_SWIMMING_SKILL_NAME "pływanie"
     "pływania" : genitive
 
-BUFFS_UNDEAD_RESISTANCE_NAME "nieumarłych"
+BUFFS_UNDEAD_RESISTANCE_NAME "nieumarłymi"
 
 BUILD_MENU_GROUPNAME15 "Schody"
 BUILD_MENU_GROUPNAME16 "Biblioteka"
@@ -10032,7 +10038,7 @@ W ten sposób rozkażesz mu pójść i ją podnieść."
 TUTORIAL_ACCEPT_MORE_IMMIGRANTS "Możesz teraz rozwinąć siły zbrojne. Przyjmij trzech kolejnych goblińskich wojowników.
 
 Możesz także zapraszać goblińskich rzemieślników, którzy nie walczą, ale są znakomitymi twórcami."
-TUTORIAL_EQUIP_ALL_FIGHTERS "Wykonaj maczugi dla wszystkich swoich wojowników i każ im je wyposażyć. Wkrótce będą potrzebni!"
+TUTORIAL_EQUIP_ALL_FIGHTERS "Wykonaj maczugi dla wszystkich swoich wojowników i każ im je wyposażyć. Wkrótce będą potrzebne!"
 TUTORIAL_CREATE_TEAM "Twoja mała armia jest gotowa! Zbierz drużynę, przeciągając wojowników na przycisk [nowa drużyna]. Możesz przeciągnąć ich prosto z mapy albo z menu sług.
 
 Stwórz drużynę z 4 goblińskich wojowników."
