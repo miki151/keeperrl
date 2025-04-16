@@ -45,7 +45,6 @@ ANIMATE_WEAPONS_EFFECT_DESCRIPTION "Animates up to {1} weapons from the surround
 ANIMATE_WEAPONS_EFFECT_NAME "animate weapons"
 APPEARS "{1} appears outnowhere!"
 APPLYING_ITEM_TAKES_X_TURNS "Applying {1} takes {2} turns. Are you sure you want to continue?"
-A_PRISONER_IS_CONVERTED "A prisoner is converted to your side"
 ARCHERY_RANGE_TASK "Shoot at the archery range"
 ARM_BODY_PART "arm" "arms" : plural
 ARMOR_DEGRADATION_DESCRIPTION "Decreases armor capability"

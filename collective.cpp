@@ -789,7 +789,7 @@ void Collective::onEvent(const GameEvent& event) {
             if (victim->getUniqueId().getGenericId() % 2 == 0) {
               victim->dieWithReason(TStringId("KILLED_BY_TORTURE"));
             } else {
-              control->addMessage(TStringId("A_PRISONER_IS_CONVERTED"));
+              control->addMessage(TSentence("IS_CONVERTED", victim->getName().a()));
               removeTrait(victim, MinionTrait::PRISONER);
               removeTrait(victim, MinionTrait::WORKER);
               removeTrait(victim, MinionTrait::NO_LIMIT);
