@@ -25,10 +25,7 @@ static void addThird(const Creature* c, MsgType type, vector<TString> param) {
       case MsgType::YOUR: return TSentence("YOUR_THIRD_PERSON", param);
       case MsgType::FALL_ASLEEP:
         unseenMsg = TSentence("YOU_HEAR_SNORING");
-        if (param.size() > 1)
-          return TSentence("FALLS_ASLEEP_IN", param);
-        else
-          return TSentence("FALLS_ASLEEP", param);
+        return TSentence("FALLS_ASLEEP", param);
       case MsgType::WAKE_UP: return TSentence("WAKES_UP", param);
       case MsgType::DIE:
         if (c->isAffected(LastingEffect::FROZEN))
@@ -63,7 +60,7 @@ static void addThird(const Creature* c, MsgType type, vector<TString> param) {
         unseenMsg = TSentence("YOU_HEAR_SOMEONE_DROWNING");
         return TSentence("DROWNS_IN", param);
       case MsgType::KILLED_BY: return TSentence("IS_KILLED_BY",
-          concat(param, {c->getAttributes().getDeathDescription(factory)}));
+          {param[0], c->getAttributes().getDeathDescription(factory), param[1]});
       case MsgType::BECOME: return TSentence("BECOMES", param);
       case MsgType::COPULATE: return TSentence("COPULATES", param);
       case MsgType::CONSUME: return TSentence("ABSORBS", param);
