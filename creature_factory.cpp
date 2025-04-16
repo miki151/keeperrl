@@ -746,7 +746,7 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
         }
         if (p.humanoid) {
           c.chatReactionFriendly = TString(TSentence("SPECIAL_HUMANOID_CHAT_REACTION", TString(name)));
-          c.chatReactionFriendly = TString(TSentence("SPECIAL_HUMANOID_HOSTILE_CHAT_REACTION", TString(name)));
+          c.chatReactionHostile = TString(TSentence("SPECIAL_HUMANOID_HOSTILE_CHAT_REACTION", TString(name)));
         } else {
           c.chatReactionFriendly = c.chatReactionHostile = c.petReaction = TString(TStringId("SNARLS"));
         }
