@@ -1976,8 +1976,8 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info, bool withKeys) 
   }
   if (info.debt > 0) {
     list.addElem(WL(label, TStringId("DEBT_BUTTON"), Color::YELLOW));
-    list.addElem(WL(label, TStringId("CLICK_ON_DEBT_BUTTON"), Renderer::smallTextSize(),
-        Color::LIGHT_GRAY), legendLineHeight * 2 / 3);
+    list.addElemAuto(WL(labelMultiLineWidth, TStringId("CLICK_ON_DEBT_BUTTON"), legendLineHeight * 2 / 3, 300, Renderer::smallTextSize(),
+        Color::LIGHT_GRAY));
     list.addElem(WL(stack,
         drawCost({ViewId("gold"), info.debt}),
         WL(button, getButtonCallback(UserInputId::PAY_DEBT))));
