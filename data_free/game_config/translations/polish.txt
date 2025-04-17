@@ -3270,7 +3270,7 @@ CREATURE_ATTRIBUTES_CHERUB_NAME masculine "cherub"
     "cherubami" : plural,instrumental
     "cheruby" : plural,accusative
 
-CREATURE_ATTRIBUTES_CHICKEN_NAME neuter "kurczak"
+CREATURE_ATTRIBUTES_CHICKEN_NAME masculine "kurczak"
     "kurczakowi" : dative
     "kurczaka" : genitive
     "kurczakiem" : instrumental
@@ -5990,8 +5990,8 @@ FURNITURE_FOUNTAIN_NAME feminine "fontanna"
     "fontannami" : plural,instrumental
     "fontanny" : plural,accusative
 
-FURNITURE_FOUNTAIN_SECONDPERSON "Bierzesz łyka."
-FURNITURE_FOUNTAIN_THIRDPERSON "Bierze łyka."
+FURNITURE_FOUNTAIN_SECONDPERSON "Pijesz z fontanny."
+FURNITURE_FOUNTAIN_THIRDPERSON "{1} pije z fontanny."
 FURNITURE_FOUNTAIN_USAGETYPE "Napij się z fontanny"
 
 FURNITURE_FURNACE_NAME masculine "piec hutniczy"
@@ -9495,32 +9495,82 @@ YOU_RESISTED_THE_ATTACK_OF "Oparłeś się atakowi {1:genitive}."
 
 ENEMY_WAVE_NAME_UNKNOWN "Nieznany"
 EXTERNAL_ENEMIES_NAME "ciekawski bandyta"
-EXTERNAL_ENEMIES_NAME1 "zwiadowca jaszczuroludzi"
-EXTERNAL_ENEMIES_NAME2 "patrol mrówek"
-EXTERNAL_ENEMIES_NAME3 "gniazdo jaszczuroludzi"
-EXTERNAL_ENEMIES_NAME4 "szajka bandytów"
-EXTERNAL_ENEMIES_NAME5 "patrol żołnierzy-mrówek"
-EXTERNAL_ENEMIES_NAME6 "gliniane golemy alchemika"
-EXTERNAL_ENEMIES_NAME7 "kamienne golemy alchemika"
-EXTERNAL_ENEMIES_NAME8 "armia mrówek"
-EXTERNAL_ENEMIES_NAME9 "grupa entów"
-EXTERNAL_ENEMIES_NAME10 "grupa krasnoludów"
-EXTERNAL_ENEMIES_NAME11 "żelazne golemy alchemika"
-EXTERNAL_ENEMIES_NAME12 "plemię krasnoludów"
-EXTERNAL_ENEMIES_NAME13 "patrol łuczników"
-EXTERNAL_ENEMIES_NAME14 "samotny rycerz"
-EXTERNAL_ENEMIES_NAME15 "grupa wojowników"
-EXTERNAL_ENEMIES_NAME16 "armia wojowników"
-EXTERNAL_ENEMIES_NAME17 "armia rycerzy"
-EXTERNAL_ENEMIES_NAME18 "cyklop"
-EXTERNAL_ENEMIES_NAME19 "czarownik-wiedźmiarz"
-EXTERNAL_ENEMIES_NAME20 "minotaur"
-EXTERNAL_ENEMIES_NAME21 "żywiołak"
-EXTERNAL_ENEMIES_NAME22 "zielony smok"
-EXTERNAL_ENEMIES_NAME23 "czerwony smok"
-EXTERNAL_ENEMIES_NAME24 "czarny smok"
-EXTERNAL_ENEMIES_NAME25 "sfora trolli"
+    "ciekawego bandyty" : genitive
 
+EXTERNAL_ENEMIES_NAME1 "zwiadowca jaszczuroludzi"
+    "zwiadowcy jaszczuroludzi" : genitive
+
+EXTERNAL_ENEMIES_NAME2 "patrol mrówek"
+    "patrolu mrówek" : genitive
+
+EXTERNAL_ENEMIES_NAME3 "gniazdo jaszczuroludzi"
+    "gniazda jaszczuroludzi" : genitive
+
+EXTERNAL_ENEMIES_NAME4 "szajka bandytów"
+    "szajki bandytów" : genitive
+
+EXTERNAL_ENEMIES_NAME5 "patrol żołnierzy-mrówek"
+    "patrolu żołnierzy‑mrówek" : genitive
+
+EXTERNAL_ENEMIES_NAME6 "gliniane golemy alchemika"
+    "glinianych golemów alchemika" : genitive
+
+EXTERNAL_ENEMIES_NAME7 "kamienne golemy alchemika"
+    "kamiennych golemów alchemika" : genitive
+
+EXTERNAL_ENEMIES_NAME8 "armia mrówek"
+    "armii mrówek" : genitive
+
+EXTERNAL_ENEMIES_NAME9 "grupa entów"
+    "grupy entów" : genitive
+
+EXTERNAL_ENEMIES_NAME10 "grupa krasnoludów"
+    "grupy krasnoludów" : genitive
+
+EXTERNAL_ENEMIES_NAME11 "żelazne golemy alchemika"
+    "żelaznych golemów alchemika" : genitive
+
+EXTERNAL_ENEMIES_NAME12 "plemię krasnoludów"
+    "plemienia krasnoludów" : genitive
+
+EXTERNAL_ENEMIES_NAME13 "patrol łuczników"
+    "patrolu łuczników" : genitive
+
+EXTERNAL_ENEMIES_NAME14 "samotny rycerz"
+    "samotnego rycerza" : genitive
+
+EXTERNAL_ENEMIES_NAME15 "grupa wojowników"
+    "grupy wojowników" : genitive
+
+EXTERNAL_ENEMIES_NAME16 "armia wojowników"
+    "armii wojowników" : genitive
+
+EXTERNAL_ENEMIES_NAME17 "armia rycerzy"
+    "armii rycerzy" : genitive
+
+EXTERNAL_ENEMIES_NAME18 "cyklop"
+    "cyklopa" : genitive
+
+EXTERNAL_ENEMIES_NAME19 "wiedźmak"
+    "wiedźmaka" : genitive
+
+EXTERNAL_ENEMIES_NAME20 "minotaur"
+    "minotaura" : genitive
+
+EXTERNAL_ENEMIES_NAME21 "żywiołak"
+    "żywiołaka" : genitive
+
+EXTERNAL_ENEMIES_NAME22 "zielony smok"
+    "zielonego smoka" : genitive
+
+EXTERNAL_ENEMIES_NAME23 "czerwony smok"
+    "czerwonego smoka" : genitive
+
+EXTERNAL_ENEMIES_NAME24 "czarny smok"
+    "czarnego smoka" : genitive
+
+EXTERNAL_ENEMIES_NAME25 "sfora trolli"
+    "sfory trolli" : genitive
 BIOMES_GRASSLAND_NAME "łąki"
 BIOMES_GRASSLAND_NAME1 "las"
 BIOMES_GRASSLAND_NAME2 "góry"
