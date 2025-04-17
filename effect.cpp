@@ -1805,7 +1805,8 @@ static bool applyToCreature(const Effects::Polymorph& e, Creature* c, Creature*)
     for (auto& elem : c->specialTraits)
       applySpecialTrait(*c->getGlobalTime(), elem, c, c->getGame()->getContentFactory());
   }
-  c->verb(TStringId("YOU_POLYMORPH_INTO"), TStringId("POLYMORPHS_INTO"), c->getName().a());
+  c->secondPerson(PlayerMessage(TSentence("YOU_POLYMORPH_INTO", c->getName().a()), MessagePriority::HIGH));
+  c->thirdPerson(PlayerMessage(TSentence("POLYMORPHS_INTO", origName, c->getName().a())));
   summonFX(c->getPosition());
   return true;
 }
