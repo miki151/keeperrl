@@ -3078,7 +3078,7 @@ End
     aiType = RANGED
     noChase = true
     cantEquip = true
-    chatReactionFriendly = CREATURE_ATTRIBUTES_IMP_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_DIGGING_CHATREACTION
     chatReactionHostile = CREATURE_ATTRIBUTES_DIE_CHATREACTIONHOSTILE
     permanentEffects = {
       RIDER 1
@@ -4857,7 +4857,7 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_WORKER_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_DIGGING_CHATREACTION
     chatReactionHostile = CREATURE_ATTRIBUTES_DIE_CHATREACTIONHOSTILE
     hatedByEffect = HATE_GREENSKINS
     gender = MALE

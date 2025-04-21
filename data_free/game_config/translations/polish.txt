@@ -3959,7 +3959,6 @@ CREATURE_ATTRIBUTES_GOBLIN_WIZARD_NAME masculine "gobliński czarodziej"
     "goblińskimi czarodziejami" : plural,instrumental
     "goblińskich czarodziejów" : plural,accusative
 
-CREATURE_ATTRIBUTES_GOBLIN_WORKER_CHATREACTIONFRIENDLY "{1} opowiada o kopaniu"
 CREATURE_ATTRIBUTES_GOBLIN_WORKER_NAME masculine "gobliński robotnik"
     "goblińskiemu robotnikowi" : dative
     "goblińskiego robotnika" : genitive
@@ -4067,7 +4066,6 @@ CREATURE_ATTRIBUTES_ICE_DEMON_NAME masculine "lodowy demon"
     "lodowymi demonami" : plural,instrumental
     "lodowych demonów" : plural,accusative
 
-CREATURE_ATTRIBUTES_IMP_CHATREACTIONFRIENDLY "{1} opowiada o kopaniu"
 CREATURE_ATTRIBUTES_IMP_NAME masculine "chochlik"
     "chochlikowi" : dative
     "chochlika" : genitive
