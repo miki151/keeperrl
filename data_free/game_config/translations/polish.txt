@@ -3784,7 +3784,6 @@ CREATURE_ATTRIBUTES_GARGOYLE_NAME masculine "gargulec"
     "gargulcami" : plural,instrumental
     "gargulce" : plural,accusative
 
-CREATURE_ATTRIBUTES_GNOME_CHATREACTIONFRIENDLY "{1} opowiada o kopaniu"
 CREATURE_ATTRIBUTES_GNOME_CHIEF_NAME masculine "wódz gnomów"
     "wodzowi gnomów" : dative
     "wodza gnomów" : genitive
