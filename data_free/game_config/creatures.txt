@@ -1783,7 +1783,7 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_ARTISAN_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CRAFTING_CHATREACTION
     chatReactionHostile = CREATURE_ATTRIBUTES_DIE_CHATREACTIONHOSTILE
     aiType = RANGED
     name = {
@@ -3039,7 +3039,7 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_ARTIFICER_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CRAFTING_CHATREACTION
     chatReactionHostile = CREATURE_ATTRIBUTES_DIE_CHATREACTIONHOSTILE
     permanentEffects = {
       DISARM_TRAPS_SKILL 1

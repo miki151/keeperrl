@@ -2982,7 +2982,6 @@ CREATURE_ATTRIBUTES_ARMED_BROTHER_NAME masculine "uzbrojony brat"
     "uzbrojonymi braćmi" : plural,instrumental
     "uzbrojonych braci" : plural,accusative
 
-CREATURE_ATTRIBUTES_ARTISAN_CHATREACTIONFRIENDLY "{1} opowiada o rzemiośle"
 CREATURE_ATTRIBUTES_ARTISAN_NAME masculine "rzemieślnik"
     "rzemieślnikowi" : dative
     "rzemieślnika" : genitive
@@ -3829,7 +3828,7 @@ CREATURE_ATTRIBUTES_GOBLIN_ARCHER_NAME masculine "gobliński łucznik"
     "goblińskimi łucznikami" : plural,instrumental
     "goblińskich łuczników" : plural,accusative
 
-CREATURE_ATTRIBUTES_GOBLIN_ARTIFICER_CHATREACTIONFRIENDLY "{1} opowiada o rzemiośle"
+CREATURE_ATTRIBUTES_CRAFTING_CHATREACTION "{1} opowiada o rzemiośle"
 CREATURE_ATTRIBUTES_GOBLIN_ARTIFICER_NAME masculine "gobliński rzemieślnik"
     "goblińskiemu rzemieślnikowi" : dative
     "goblińskiego rzemieślnika" : genitive
