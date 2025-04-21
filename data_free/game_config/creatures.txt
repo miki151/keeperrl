@@ -3015,7 +3015,7 @@ End
       type = Humanoid MEDIUM
     }
     aiType = RANGED
-    chatReactionFriendly = CREATURE_ATTRIBUTES_GNOME_CHIEF_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GNOME_CHATREACTIONFRIENDLY
     chatReactionHostile = CREATURE_ATTRIBUTES_DIE_CHATREACTIONHOSTILE
     name = {
       name = CREATURE_ATTRIBUTES_GNOME_CHIEF_NAME
@@ -4833,7 +4833,7 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_KEEPER_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_KING_CHATREACTIONFRIENDLY
     chatReactionHostile = CREATURE_ATTRIBUTES_DIE_CHATREACTIONHOSTILE
     aiType = RANGED
     name = {
@@ -5420,7 +5420,7 @@ End
     body = {
       type = Humanoid LARGE
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_ORC_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_SHAMAN_CHATREACTIONFRIENDLY
     chatReactionHostile = CREATURE_ATTRIBUTES_DIE_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       DAMAGE 7
@@ -5448,7 +5448,7 @@ End
       type = Humanoid LARGE
     }
     aiType = RANGED
-    chatReactionFriendly = CREATURE_ATTRIBUTES_ORC_MAGE_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_GOBLIN_SHAMAN_CHATREACTIONFRIENDLY
     chatReactionHostile = CREATURE_ATTRIBUTES_DIE_CHATREACTIONHOSTILE
     maxLevelIncrease = {
       DAMAGE 4

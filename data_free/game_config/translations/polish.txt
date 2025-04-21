@@ -785,7 +785,7 @@ MORE_EXPERIENCED "bardziej doświadczony"
     "bardziej doświadczone" : neuter
 MOUNT_ACTION "Dosiądź"
 MOUNT_BUTTON "Wsiądź"
-MOVE_NOW_ACTION "Przesuń się teraz"
+MOVE_NOW_ACTION "Rusz się teraz"
 NEXT_ENEMY_WAVE "następna fala wrogów"
 NINE "dziewięć"
     "dziewięcioma" : instrumental
@@ -3788,7 +3788,6 @@ CREATURE_ATTRIBUTES_GARGOYLE_NAME masculine "gargulec"
     "gargulce" : plural,accusative
 
 CREATURE_ATTRIBUTES_GNOME_CHATREACTIONFRIENDLY "{1} opowiada o kopaniu"
-CREATURE_ATTRIBUTES_GNOME_CHIEF_CHATREACTIONFRIENDLY "{1} opowiada o kopaniu"
 CREATURE_ATTRIBUTES_GNOME_CHIEF_NAME masculine "wódz gnomów"
     "wodzowi gnomów" : dative
     "wodza gnomów" : genitive
@@ -3866,7 +3865,6 @@ CREATURE_ATTRIBUTES_GOBLIN_KABOOMER_NAME masculine "gobliński kaboomer"
     "goblińskimi kaboomerami" : plural,instrumental
     "goblińskich kaboomerów" : plural,accusative
 
-CREATURE_ATTRIBUTES_GOBLIN_KEEPER_CHATREACTIONFRIENDLY "{1} opowiada o wystawnych ucztach"
 CREATURE_ATTRIBUTES_GOBLIN_KEEPER_NAME masculine "goblin"
     "goblinowi" : dative
     "goblina" : genitive
@@ -4368,8 +4366,6 @@ CREATURE_ATTRIBUTES_OGRE_NAME masculine "ogr"
     "ogrami" : plural,instrumental
     "ogry" : plural,accusative
 
-CREATURE_ATTRIBUTES_ORC_CHATREACTIONFRIENDLY "{1} złorzeczy wszystkim elfom"
-CREATURE_ATTRIBUTES_ORC_MAGE_CHATREACTIONFRIENDLY "{1} złorzeczy wszystkim elfom"
 CREATURE_ATTRIBUTES_ORC_MAGE_NAME1 masculine "szaman orków"
     "szamanowi orków" : dative
     "szamana orków" : genitive
