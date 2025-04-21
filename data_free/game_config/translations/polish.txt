@@ -3557,8 +3557,6 @@ CREATURE_ATTRIBUTES_DOPPLEGANGER_NAME masculine "sobowtór"
     "sobowtórami" : plural,instrumental
     "sobowtórów" : plural,accusative
 
-CREATURE_ATTRIBUTES_DRIAD_CHATREACTIONFRIENDLY "{1} przeklina wszystkich ludzi"
-
 CREATURE_ATTRIBUTES_DRIAD_NAME feminine "driada"
     "driadzie" : dative
     "driady" : genitive
@@ -4272,7 +4270,7 @@ CREATURE_ATTRIBUTES_KNIGHT_PLAYER_NAME masculine "rycerz"
     "rycerzami" : plural,instrumental
     "rycerzy" : plural,accusative
 
-CREATURE_ATTRIBUTES_KOBOLD_CHATREACTIONFRIENDLY "{1} opowiada o kopaniu tuneli"
+CREATURE_ATTRIBUTES_DIGGING_CHATREACTION "{1} opowiada o kopaniu tuneli"
 CREATURE_ATTRIBUTES_KOBOLD_NAME masculine "kobold"
     "koboldowi" : dative
     "kobolda" : genitive
@@ -4293,7 +4291,7 @@ CREATURE_ATTRIBUTES_LAVA_GOLEM_NAME masculine "golem z lawy"
     "golemami z lawy" : plural,instrumental
     "golemy z lawy" : plural,accusative
 
-CREATURE_ATTRIBUTES_LIZARDMAN_CHATREACTIONFRIENDLY "{1} złorzeczy wszystkim ludziom"
+CREATURE_ATTRIBUTES_CURSES_HUMANS_CHATREACTION "{1} złorzeczy wszystkim ludziom"
 
 CREATURE_ATTRIBUTES_LIZARDMAN_NAME1 masculine "wódz jaszczuroludzi"
     "wodzowi jaszczuroludzi" : dative
@@ -5099,7 +5097,6 @@ CREATURE_ATTRIBUTES_WHITE_NAGA_NAME feminine "biała naga"
     "białymi nagami" : plural,instrumental
     "białe nagi" : plural,accusative
 
-CREATURE_ATTRIBUTES_WITCH_CHATREACTIONFRIENDLY "{1} złorzeczy wszystkim ludziom"
 CREATURE_ATTRIBUTES_WITCHMAN_CHATREACTIONFRIENDLY "{1} złorzeczy wszystkim potworom"
 
 CREATURE_ATTRIBUTES_WITCHMAN_NAME masculine "wiedźmak"
