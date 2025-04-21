@@ -3335,9 +3335,7 @@ CREATURE_ATTRIBUTES_CYCLOPS_NAME masculine "cyklop"
     "cyklopami" : plural,instrumental
     "cyklopów" : plural,accusative
 
-CREATURE_ATTRIBUTES_DARK_ELF_CHATREACTIONFRIENDLY "{1} przeklina wszystkich krasnoludów"
-
-CREATURE_ATTRIBUTES_DARK_ELF_CHILD_CHATREACTIONFRIENDLY "{1} przeklina wszystkich krasnoludów"
+CREATURE_ATTRIBUTES_CURSES_DWARVES_CHATREACTION "{1} przeklina wszystke krasnoludy"
 
 CREATURE_ATTRIBUTES_DARK_ELF_CHILD_NAME neuter "dziecko mrocznych elfów"
     "dziecku mrocznych elfów" : dative
@@ -3348,8 +3346,6 @@ CREATURE_ATTRIBUTES_DARK_ELF_CHILD_NAME neuter "dziecko mrocznych elfów"
     "dzieci mrocznych elfów" : plural,genitive
     "dziećmi mrocznych elfów" : plural,instrumental
     "dzieci mrocznych elfów" : plural,accusative
-
-CREATURE_ATTRIBUTES_DARK_ELF_LORD_CHATREACTIONFRIENDLY "{1} przeklina wszystkich krasnoludów"
 
 CREATURE_ATTRIBUTES_DARK_ELF_LORD_NAME masculine "władca mrocznych elfów"
     "władcy mrocznych elfów" : dative
@@ -3370,8 +3366,6 @@ CREATURE_ATTRIBUTES_DARK_ELF_NAME masculine "mroczny elf"
     "mrocznych elfów" : plural,genitive
     "mrocznymi elfami" : plural,instrumental
     "mrocznych elfów" : plural,accusative
-
-CREATURE_ATTRIBUTES_DARK_ELF_WARRIOR_CHATREACTIONFRIENDLY "{1} przeklina wszystkich krasnoludów"
 
 CREATURE_ATTRIBUTES_DARK_ELF_WARRIOR_NAME masculine "mroczny elf"
     "mrocznemu elfowi" : dative
@@ -3641,7 +3635,6 @@ CREATURE_ATTRIBUTES_ELEMENTALIST_NAME feminine "elementalistka"
     "elementalistkami" : plural,instrumental
     "elementalistki" : plural,accusative
 
-CREATURE_ATTRIBUTES_ELF_ARCHER_CHATREACTIONFRIENDLY "{1} przeklina wszystkich krasnoludów"
 CREATURE_ATTRIBUTES_ELF_ARCHER_NAME masculine "elfi łucznik"
     "elfiemu łucznikowi" : dative
     "elfiego łucznika" : genitive
@@ -3652,8 +3645,6 @@ CREATURE_ATTRIBUTES_ELF_ARCHER_NAME masculine "elfi łucznik"
     "elfimi łucznikami" : plural,instrumental
     "elfich łuczników" : plural,accusative
 
-CREATURE_ATTRIBUTES_ELF_CHATREACTIONFRIENDLY "{1} przeklina wszystkich krasnoludów"
-CREATURE_ATTRIBUTES_ELF_CHILD_CHATREACTIONFRIENDLY "{1} przeklina wszystkich krasnoludów"
 CREATURE_ATTRIBUTES_ELF_CHILD_NAME masculine "elfie dziecko"
     "elfiemu dziecku" : dative
     "elfiego dziecka" : genitive
@@ -3664,7 +3655,6 @@ CREATURE_ATTRIBUTES_ELF_CHILD_NAME masculine "elfie dziecko"
     "elfimi dziećmi" : plural,instrumental
     "elfie dzieci" : plural,accusative
 
-CREATURE_ATTRIBUTES_ELF_LORD_CHATREACTIONFRIENDLY "{1} przeklina wszystkich krasnoludów"
 CREATURE_ATTRIBUTES_ELF_LORD_NAME masculine "elfi władca"
     "elfiemu władcy" : dative
     "elfiego władcy" : genitive

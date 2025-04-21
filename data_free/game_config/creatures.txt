@@ -3344,7 +3344,7 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_ELF_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_DWARVES_CHATREACTION
     chatReactionHostile = CREATURE_ATTRIBUTES_DIE_CHATREACTIONHOSTILE
     spells = { "healing" }
     aiType = RANGED
@@ -3368,7 +3368,7 @@ End
       type = Humanoid MEDIUM
     }
     aiType = RANGED
-    chatReactionFriendly = CREATURE_ATTRIBUTES_ELF_ARCHER_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_DWARVES_CHATREACTION
     chatReactionHostile = CREATURE_ATTRIBUTES_DIE_CHATREACTIONHOSTILE
     permanentEffects = {
       MAGIC_RESISTANCE 1
@@ -3401,7 +3401,7 @@ End
       type = Humanoid SMALL
     }
     aiType = RANGED
-    chatReactionFriendly = CREATURE_ATTRIBUTES_ELF_CHILD_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_DWARVES_CHATREACTION
     chatReactionHostile = CREATURE_ATTRIBUTES_DIE_CHATREACTIONHOSTILE
     permanentEffects = {
       MAGIC_RESISTANCE 1
@@ -3427,7 +3427,7 @@ End
       type = Humanoid MEDIUM
       droppedPartUpgrade = Permanent MAGIC_RESISTANCE
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_ELF_LORD_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_DWARVES_CHATREACTION
     chatReactionHostile = CREATURE_ATTRIBUTES_DIE_CHATREACTIONHOSTILE
     permanentEffects = {
       MAGIC_RESISTANCE 1
@@ -3474,7 +3474,7 @@ End
       type = Humanoid MEDIUM
     }
     aiType = RANGED
-    chatReactionFriendly = CREATURE_ATTRIBUTES_DARK_ELF_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_DWARVES_CHATREACTION
     chatReactionHostile = CREATURE_ATTRIBUTES_DIE_CHATREACTIONHOSTILE
     permanentEffects = {
       MAGIC_RESISTANCE 1
@@ -3500,7 +3500,7 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_DARK_ELF_WARRIOR_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_DWARVES_CHATREACTION
     chatReactionHostile = CREATURE_ATTRIBUTES_DIE_CHATREACTIONHOSTILE
     permanentEffects = {
       MAGIC_RESISTANCE 1
@@ -3538,7 +3538,7 @@ End
       MAGIC_RESISTANCE 1
       NIGHT_VISION 1
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_DARK_ELF_CHILD_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_DWARVES_CHATREACTION
     chatReactionHostile = CREATURE_ATTRIBUTES_DIE_CHATREACTIONHOSTILE
     name = {
       name = CREATURE_ATTRIBUTES_DARK_ELF_CHILD_NAME
@@ -3559,7 +3559,7 @@ End
       type = Humanoid MEDIUM
       droppedPartUpgrade = IncreaseAttr DEFENSE 7
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_DARK_ELF_LORD_CHATREACTIONFRIENDLY
+    chatReactionFriendly = CREATURE_ATTRIBUTES_CURSES_DWARVES_CHATREACTION
     chatReactionHostile = CREATURE_ATTRIBUTES_DIE_CHATREACTIONHOSTILE
     permanentEffects = {
       MAGIC_RESISTANCE 1
