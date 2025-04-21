@@ -3571,7 +3571,7 @@ CREATURE_ATTRIBUTES_DUKE_NAME masculine "książę"
     "książętami" : plural,instrumental
     "książąt" : plural,accusative
 
-CREATURE_ATTRIBUTES_DWARF_CHATREACTIONFRIENDLY "{1} przeklina wszystkie orki"
+CREATURE_ATTRIBUTES_DWARF_CHATREACTIONFRIENDLY "{1} przeklina wszystkie gobliny"
 
 CREATURE_ATTRIBUTES_DWARF_FEMALE_NAME feminine "krasnoludka"
     "krasnoludce" : dative

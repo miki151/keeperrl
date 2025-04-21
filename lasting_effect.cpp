@@ -877,13 +877,13 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
         for (auto other : others)
           if (other != c && !other->isAffected(LastingEffect::SLEEP)) {
             if (hatedGroup && *hatedGroup == other->getAttributes().getHatedByEffect()) {
-              c->verb(TStringId("ARE_OFFENDED"), TStringId("IS_OFFENDED"));
+              other->verb(TStringId("ARE_OFFENDED"), TStringId("IS_OFFENDED"));
               other->addEffect(BuffId("DEF_DEBUFF"), 100_visible);
             } else if (other->getBody().hasBrain(factory)) {
-              c->verb(TStringId("LAUGH"), TStringId("LAUGHS"));
+              other->verb(TStringId("LAUGH"), TStringId("LAUGHS"));
               other->addEffect(BuffId("HIGH_MORALE"), 100_visible);
             } else
-            c->verb(TStringId("DONT_LAUGH"), TStringId("DOESNT_LAUGH"));
+              other->verb(TStringId("DONT_LAUGH"), TStringId("DOESNT_LAUGH"));
           }
       }
       break;
