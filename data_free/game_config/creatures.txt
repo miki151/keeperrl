@@ -398,7 +398,7 @@ End
       type = Humanoid MEDIUM
     }
     chatReactionFriendly = CREATURE_ATTRIBUTES_RAT_SOLDIER_CHATREACTIONFRIENDLY
-    chatReactionHostile = CREATURE_ATTRIBUTES_RAT_SOLDIER_CHATREACTIONHOSTILE
+    chatReactionHostile = CREATURE_ATTRIBUTES_RAT_SOLDIER_CHATREACTIONFRIENDLY
     maxLevelIncrease = {
       DAMAGE 2
     }
@@ -423,8 +423,8 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_RAT_LADY_CHATREACTIONFRIENDLY
-    chatReactionHostile = CREATURE_ATTRIBUTES_RAT_LADY_CHATREACTIONHOSTILE
+    chatReactionFriendly = CREATURE_ATTRIBUTES_RAT_SOLDIER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_RAT_SOLDIER_CHATREACTIONFRIENDLY
     maxLevelIncrease = {
       DAMAGE 1
     }
@@ -442,8 +442,8 @@ End
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = CREATURE_ATTRIBUTES_RAT_KING_CHATREACTIONFRIENDLY
-    chatReactionHostile = CREATURE_ATTRIBUTES_RAT_KING_CHATREACTIONHOSTILE
+    chatReactionFriendly = CREATURE_ATTRIBUTES_RAT_SOLDIER_CHATREACTIONFRIENDLY
+    chatReactionHostile = CREATURE_ATTRIBUTES_RAT_SOLDIER_CHATREACTIONFRIENDLY
     maxLevelIncrease = {
       DAMAGE 3
     }

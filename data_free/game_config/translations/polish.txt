@@ -4571,8 +4571,6 @@ CREATURE_ATTRIBUTES_PROSTITUTE_NAME feminine "kurtyzana"
     "kurtyzanami" : plural,instrumental
     "kurtyzany" : plural,accusative
 
-CREATURE_ATTRIBUTES_RAT_KING_CHATREACTIONFRIENDLY "{1} opowiada o kanałach"
-CREATURE_ATTRIBUTES_RAT_KING_CHATREACTIONHOSTILE "{1} opowiada o kanałach"
 CREATURE_ATTRIBUTES_RAT_KING_NAME masculine "król szczurów"
     "królowi szczurów" : dative
     "króla szczurów" : genitive
@@ -4583,8 +4581,6 @@ CREATURE_ATTRIBUTES_RAT_KING_NAME masculine "król szczurów"
     "królami szczurów" : plural,instrumental
     "królów szczurów" : plural,accusative
 
-CREATURE_ATTRIBUTES_RAT_LADY_CHATREACTIONFRIENDLY "{1} opowiada o kanałach"
-CREATURE_ATTRIBUTES_RAT_LADY_CHATREACTIONHOSTILE "{1} opowiada o kanałach"
 CREATURE_ATTRIBUTES_RAT_LADY_NAME feminine "szczurza kobieta"
     "szczurzej kobiecie" : dative
     "szczurzej kobiety" : genitive
@@ -4616,7 +4612,6 @@ CREATURE_ATTRIBUTES_RAT_NAME masculine "szczur"
     "szczury" : plural,accusative
 
 CREATURE_ATTRIBUTES_RAT_SOLDIER_CHATREACTIONFRIENDLY "{1} opowiada o kanałach"
-CREATURE_ATTRIBUTES_RAT_SOLDIER_CHATREACTIONHOSTILE "{1} opowiada o kanałach"
 CREATURE_ATTRIBUTES_RAT_SOLDIER_NAME masculine "szczurzy żołnierz"
     "szczurzemu żołnierzowi" : dative
     "szczurzego żołnierza" : genitive
