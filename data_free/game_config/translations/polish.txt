@@ -3573,8 +3573,6 @@ CREATURE_ATTRIBUTES_DUKE_NAME masculine "książę"
 
 CREATURE_ATTRIBUTES_DWARF_CHATREACTIONFRIENDLY "{1} przeklina wszystkie orki"
 
-CREATURE_ATTRIBUTES_DWARF_FEMALE_CHATREACTIONFRIENDLY "{1} przeklina wszystkie orki"
-
 CREATURE_ATTRIBUTES_DWARF_FEMALE_NAME feminine "krasnoludka"
     "krasnoludce" : dative
     "krasnoludki" : genitive
