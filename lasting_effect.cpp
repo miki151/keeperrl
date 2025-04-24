@@ -353,8 +353,11 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       break;
     case LastingEffect::ON_FIRE:
       c->getPosition().removeCreatureLight(false);
-      if (factory && c->getBody().burnsIntrinsically(factory))
+      if (factory && c->getBody().burnsIntrinsically(factory)) {
+        // add the message before death otherwise it won't appear.
+        c->verb(TStringId("YOU_BURN_TO_DEATH"), TStringId("BURNS_TO_DEATH"));
         c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
+      }
       break;
     case LastingEffect::SPYING:
       c->setAlternativeViewId(none);
@@ -463,10 +466,7 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         c->verb(TStringId("YOU_CAN_CAST_SPELLS_AGAIN"), TStringId("CAN_CAST_SPELLS_AGAIN"));
         break;
       case LastingEffect::ON_FIRE:
-        if (factory && c->getBody().burnsIntrinsically(factory))
-          c->verb(TStringId("YOU_BURN_TO_DEATH"), TStringId("BURNS_TO_DEATH"));
-        else
-          c->verb(TStringId("YOU_STOP_BURNING"), TStringId("STOPS_BURNING"));
+        c->verb(TStringId("YOU_STOP_BURNING"), TStringId("STOPS_BURNING"));
         break;
       case LastingEffect::FROZEN:
         c->verb(TStringId("YOU_ARE_NO_LONGER_FROZEN"), TStringId("IS_NO_LONGER_FROZEN"));
@@ -893,7 +893,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
         for (auto pos : c->getPosition().getRectangle(Rectangle::centered(7)))
           if (auto other = pos.getCreature())
             if (Random.roll(5)) {
-              c->verb(TStringId("YOU_COVER_YOUR_NOSE"), TStringId("COVERS_HIS_NOSE"), TString(his(other->getAttributes().getGender())));
+              other->verb(TStringId("YOU_COVER_YOUR_NOSE"), TStringId("COVERS_HIS_NOSE"), TString(his(other->getAttributes().getGender())));
               other->addEffect(BuffId("DEF_DEBUFF"), 10_visible);
             }
       }
