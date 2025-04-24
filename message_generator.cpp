@@ -88,10 +88,7 @@ static void addSecond(const Creature* c, MsgType type, vector<TString> param) {
       case MsgType::YOUR: return TSentence("YOUR", param);
       case MsgType::WAKE_UP: return TSentence("YOU_WAKE_UP");
       case MsgType::FALL_ASLEEP:
-        if (!param.empty())
-          return TSentence("YOU_FALL_ASLEEP_IN", param);
-        else
-          return TSentence("YOU_FALL_ASLEEP");
+        return TSentence("YOU_FALL_ASLEEP");
       case MsgType::DIE:
         if (c->isAffected(LastingEffect::FROZEN))
           return TSentence("YOU_SHATTER");

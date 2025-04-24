@@ -492,7 +492,7 @@ TString Body::getDescription(const ContentFactory* factory) const {
   vector<BodyPart> listParts = {BodyPart::ARM, BodyPart::LEG, BodyPart::WING};
   for (BodyPart part : listParts)
     if (int num = numBodyParts(part)) {
-      ret.push_back(getPluralText(part, num));
+      ret.push_back(TSentence("WITH_LIMB", getPluralText(part, num)));
       anyLimbs = true;
     }
   if (xhumanoid) {
@@ -512,10 +512,7 @@ TString Body::getDescription(const ContentFactory* factory) const {
     ret.push_back(TStringId("NO_HEAD"));
   else if (numHeads > 1)
     ret.push_back(getPluralText(BodyPart::HEAD, numHeads));
-  if (ret.empty())
-    return TSentence("BODY_SIZE_AND_MATERIAL", getName(size), factory->bodyMaterials.at(material).name);
-  else
-    return TSentence("BODY_SIZE_AND_MATERIAL_AND_LIMBS", {
+  return TSentence("BODY_SIZE_AND_MATERIAL_AND_LIMBS", {
       getName(size),
       factory->bodyMaterials.at(material).name,
       combineWithAnd(ret)});
