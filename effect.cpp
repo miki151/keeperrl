@@ -1555,7 +1555,8 @@ static TString getDescription(const Effects::Suicide&, const ContentFactory*) {
 
 static bool applyToCreature(const Effects::Wish&, Creature* c, Creature* attacker) {
   c->getController()->grantWish(
-      (attacker ? TSentence("GRANTS_YOU_A_WISH", attacker->getName().the()) : TSentence("YOU_ARE_GRANTED_A_WISH")));
+      (attacker ? capitalFirst(TSentence("GRANTS_YOU_A_WISH", attacker->getName().the()))
+          : TSentence("YOU_ARE_GRANTED_A_WISH")));
   return true;
 }
 
