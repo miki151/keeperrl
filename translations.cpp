@@ -185,7 +185,7 @@ void Translations::loadFromDir() {
       }
 }
 
-Translations::Translations(DirectoryPath vanilla, DirectoryPath mods, HashMap<TStringId, TString>* sentences)
+Translations::Translations(DirectoryPath vanilla, DirectoryPath mods, map<TStringId, TString>* sentences)
     : vanillaDir(std::move(vanilla)), modsDir(std::move(mods)), sentences(sentences) {}
 
 vector<string> Translations::getLanguages() const {

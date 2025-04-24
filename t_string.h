@@ -7,6 +7,7 @@
 class TStringId : public ContentId<TStringId> {
   public:
   using ContentId::ContentId;
+  bool operator < (const TStringId&) const;
 };
 
 class TString;

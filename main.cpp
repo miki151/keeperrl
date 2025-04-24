@@ -422,7 +422,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   if (commandLineFlags["translate_sentences"].was_set()) {
     auto path = commandLineFlags["translate_sentences"].get().string;
-    auto sentences = new HashMap<TStringId, TString>();
+    auto sentences = new map<TStringId, TString>();
     Translations translations(freeDataPath.subdirectory("game_config").subdirectory("translations"), modsDir, sentences);
     translations.setCurrentMods(options.getVectorStringValue(OptionId::CURRENT_MOD2));
     options.setChoices(OptionId::LANGUAGE, translations.getLanguages());
@@ -468,11 +468,11 @@ static int keeperMain(po::parser& commandLineFlags) {
   });
   showLogoSplash(renderer, freeDataPath.file("images/succubi.png"), splashDone);
   loadThread.join();
-  HashMap<TStringId, TString>* sentences = nullptr;
+  map<TStringId, TString>* sentences = nullptr;
   optional<string> exportSentencesPath;
   if (commandLineFlags["export_translatable_sentences"].was_set()) {
     exportSentencesPath = commandLineFlags["export_translatable_sentences"].get().string;
-    sentences = new HashMap<TStringId, TString>();
+    sentences = new map<TStringId, TString>();
     auto res = PrettyPrinting::parseObject(*sentences,
         {*FilePath::fromFullPath(*exportSentencesPath).readContents()},
         {*exportSentencesPath});

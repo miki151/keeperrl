@@ -10,7 +10,7 @@ class FilePath;
 class Translations {
   public:
   Translations(DirectoryPath vanillaTranslations, DirectoryPath modsDir,
-      HashMap<TStringId, TString>* sentences = nullptr);
+      map<TStringId, TString>* sentences = nullptr);
   void loadFromDir();
   void setCurrentMods(vector<string>);
   string get(const string& language, const TString&, vector<string> form = {}) const;
@@ -33,5 +33,5 @@ class Translations {
   DirectoryPath vanillaDir;
   DirectoryPath modsDir;
   vector<DirectoryPath> currentDirs;
-  HashMap<TStringId, TString>* sentences = nullptr;
+  map<TStringId, TString>* sentences = nullptr;
 };

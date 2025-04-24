@@ -3,6 +3,9 @@
 #include "game_config.h"
 #include "gender.h"
 
+bool TStringId::operator < (const TStringId& id) const {
+  return strcmp(data(), id.data()) < 0;
+}
 
 TString::TString(string s) : text(std::move(s)) {}
 TString::TString(TSentence id) : text(std::move(id)) {}
