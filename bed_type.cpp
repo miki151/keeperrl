@@ -7,5 +7,6 @@ const char* getName(BedType type) {
     case BedType::COFFIN: return "coffin";
     case BedType::BED: return "bed";
     case BedType::CAGE: return "cage";
+    case BedType::STABLE: return "stable";
   }
 }

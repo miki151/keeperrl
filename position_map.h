@@ -17,7 +17,7 @@ class PositionMap {
   const T& getOrFail(Position) const;
   void set(Position, const T&);
   void erase(Position);
-  void limitToModel(const WModel);
+  void limitToModel(const Model*);
   bool containsLevel(const Level*) const;
 
   SERIALIZATION_DECL(PositionMap)

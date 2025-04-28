@@ -1270,6 +1270,37 @@ static void addIconEffect(FXManager& mgr, FXName fxName, SVec2 coord) {
   mgr.addDef(fxName, psdef);
 }
 
+static void addPrayerEffect(FXManager& mgr) {
+  EmitterDef edef;
+  edef.strength = 0.0f;
+  edef.direction = 0.0f;
+  edef.directionSpread = 0.0f;
+  edef.frequency = 1.2f;
+  edef.source = FRect(0, -12, 0, -12);
+
+  ParticleDef pdef;
+  pdef.life = 2.0f;
+  pdef.size = 15.0f;
+  pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 1.0, 0.0}, InterpType::cosine};
+
+  pdef.color = FVec3(1.0f);
+  pdef.textureName = TextureName::SPECIAL;
+
+  SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+  ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
+    defaultEmitParticle(ctx, em, pinst);
+    pinst.rot = 0;
+    pinst.texTile = {1, 0};
+  };
+
+  ParticleSystemDef psdef;
+  psdef.subSystems = {ssdef};
+  psdef.isLooped = false;
+  psdef.animLength = 3.0f;
+
+  mgr.addDef(FXName::AUREOLA, psdef);
+}
+
 static void addLoopedLoveEffect(FXManager& mgr) {
   EmitterDef edef;
   edef.strength = 10.0f;
@@ -1694,7 +1725,7 @@ static void addDebuffEffect(FXManager& mgr) {
   mgr.genSnapshots(FXName::DEBUFF, {1.0f, 1.4f, 1.8f}, {}, 1);
 }
 
-static void addGlitteringEffect(FXManager& mgr, FXName name, double life, double animLength, double size) {
+static void addGlitteringEffect(FXManager& mgr, FXName name, double life, double animLength, double size, bool looped) {
   EmitterDef edef;
   edef.source = FRect(-10, -10, 10, 10);
 
@@ -1744,7 +1775,7 @@ static void addGlitteringEffect(FXManager& mgr, FXName name, double life, double
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  psdef.isLooped = true;
+  psdef.isLooped = looped;
   psdef.animLength = animLength;
 
   mgr.addDef(name, psdef);
@@ -1861,11 +1892,13 @@ void FXManager::initializeDefs() {
   addSleepEffect(*this);
   addIconEffect(*this, FXName::LOVE, {2, 1});
   addIconEffect(*this, FXName::MUSIC, {3, 1});
+  addPrayerEffect(*this);
   addLoopedLoveEffect(*this);
   addLichEffect(*this);
   addBlindEffect(*this);
-  addGlitteringEffect(*this, FXName::GLITTERING, 0.5, 1.0, 3.5);
-  addGlitteringEffect(*this, FXName::MAGIC_FIELD, 1.0, 1.0, 2.5);
+  addGlitteringEffect(*this, FXName::GLITTERING, 0.5, 1.0, 3.5, true);
+  addGlitteringEffect(*this, FXName::MAGIC_FIELD, 1.0, 1.0, 2.5, true);
+  addGlitteringEffect(*this, FXName::MASS, 1.0, 1.0, 2.5, false);
   addTeleportEffects(*this);
 
   addLaboratoryEffect(*this);

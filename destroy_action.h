@@ -12,10 +12,11 @@ class DestroyAction {
   const char* getVerbThirdPerson() const;
   const char* getIsDestroyed() const;
   const char* getSoundText() const;
-  Sound getSound() const;
+  optional<Sound> getSound() const;
   Type getType() const;
   bool canDestroyFriendly() const;
   bool canNavigate(const Creature*) const;
+  bool destroyAnimation() const;
   MinionActivity getMinionActivity() const;
   double getDamage(Creature*) const;
 
@@ -30,5 +31,6 @@ RICH_ENUM(DestroyAction::Type,
   BASH,
   CUT,
   DIG,
-  HOSTILE_DIG
+  HOSTILE_DIG,
+  FILL
 );

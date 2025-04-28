@@ -12,6 +12,7 @@ class Clock {
   bool isPaused();
   static milliseconds getRealMillis();
   static microseconds getRealMicros();
+  static bool isChristmas();
 
   private:
   steady_clock::time_point getCurrent();

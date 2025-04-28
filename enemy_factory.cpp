@@ -71,7 +71,7 @@ void EnemyFactory::updateCreateOnBones(EnemyInfo& info) const {
   if (info.createOnBones && random.chance(info.createOnBones->probability)) {
     EnemyInfo enemy = get(random.choose(info.createOnBones->enemies));
     info.levelConnection = enemy.levelConnection;
-    info.biomes = enemy.biomes;
+    info.biome = enemy.biome;
     bool makeRuins = Random.roll(2);
     if (makeRuins) {
       if (auto builtin = info.settlement.type.getReferenceMaybe<MapLayoutTypes::Builtin>())

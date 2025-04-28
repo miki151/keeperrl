@@ -34,6 +34,23 @@ struct AttackerEffect {
   COMPARE_ALL(effect)
 };
 
+struct Scale {
+  double SERIAL(value);
+  COMPARE_ALL(value)
+};
+
+struct Prefix {
+  string SERIAL(value);
+  HeapAllocated<ItemPrefix> SERIAL(prefix);
+  COMPARE_ALL(value, prefix)
+};
+
+struct Suffix {
+  string SERIAL(value);
+  HeapAllocated<ItemPrefix> SERIAL(prefix);
+  COMPARE_ALL(value, prefix)
+};
+
 using AssembledCreatureEffect = Effect;
 using LastingEffect = LastingOrBuff;
 
@@ -45,7 +62,10 @@ using LastingEffect = LastingOrBuff;
   X(JoinPrefixes, 4)\
   X(SpellId, 5)\
   X(SpecialAttr, 6)\
-  X(AssembledCreatureEffect, 7)
+  X(AssembledCreatureEffect, 7)\
+  X(Scale, 8)\
+  X(Prefix, 9)\
+  X(Suffix, 10)\
 
 #define VARIANT_NAME ItemPrefix
 
@@ -66,7 +86,6 @@ class ItemPrefix : public ItemPrefixes::ItemPrefix {
 
 class ItemAttributes;
 extern void applyPrefix(const ContentFactory*, const ItemPrefix&, ItemAttributes&);
-extern void applyPrefixToCreature(const ItemPrefix&, Creature*);
-extern string getItemName(const ContentFactory*, const ItemPrefix&);
+extern optional<string> getItemName(const ContentFactory*, const ItemPrefix&);
 extern string getGlyphName(const ContentFactory*, const ItemPrefix&);
 extern vector<string> getEffectDescription(const ContentFactory*, const ItemPrefix&);

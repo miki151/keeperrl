@@ -1,10 +1,10 @@
-"Welcome to KeeperRL Alpha 36! This patch was released on Feb 17th, 2023.
+"Welcome to KeeperRL v1.1.9! This patch was released on Dec 19th, 2024.
 
-Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
+The latest update adds a little bit of new content and a few Christmas reskins. Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
 
-* Full support for the Steam Deck console.
-* Massive optimizations in gameplay code.
-* Reworked big parts of the UI and added keyboard support to menus.
+* New furniture for all crafting stations to buff your crafting abilities.
+* More floor options, giving you more ways to furnish your dungeons.
+* Added gruesome corpse displays giving your minions some extra luxury.
 
 If this is your first time playing KeeperRL, remember to start with the tutorial!
 "

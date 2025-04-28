@@ -31,6 +31,7 @@
 #include "content_factory.h"
 #include "immigrant_info.h"
 #include "item_types.h"
+#include "creature_attributes.h"
 
 SERIALIZE_DEF(Tutorial, state, entrance)
 
@@ -41,7 +42,12 @@ static bool isTeam(const Collective* collective) {
   return false;
 }
 
-bool Tutorial::canContinue(WConstGame game) const {
+static vector<Creature*> getGoblins(const Collective* collective) {
+  return collective->getCreatures(MinionTrait::FIGHTER)
+      .filter([](Creature* c) { return c->getAttributes().getCreatureId() == CreatureId("GOBLIN_WARRIOR"); });
+}
+
+bool Tutorial::canContinue(const Game* game) const {
   auto collective = game->getPlayerCollective();
   Collective* villain = nullptr;
   for (auto c : game->getCollectives())
@@ -73,7 +79,7 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::DIG_2_ROOMS:
       return getHighlightedSquaresHigh(game).empty();
     case State::ACCEPT_IMMIGRANT:
-      return collective->getCreatures(MinionTrait::FIGHTER).size() >= 1;
+      return getGoblins(collective).size() >= 1;
     case State::TORCHES:
       for (auto furniture : {FurnitureType("BOOKCASE_WOOD"), FurnitureType("TRAINING_WOOD")})
         for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
@@ -95,16 +101,15 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::ORDER_CRAFTING:
       return collective->getNumItems(ItemIndex::WEAPON) >= 2;
     case State::EQUIP_WEAPON:
-      for (auto c : collective->getCreatures(MinionTrait::FIGHTER))
-        if (!collective->hasTrait(c, MinionTrait::LEADER) && !c->getEquipment().getSlotItems(EquipmentSlot::WEAPON).empty())
+      for (auto c : getGoblins(collective))
+        if (!c->getEquipment().getSlotItems(EquipmentSlot::WEAPON).empty())
           return true;
       return false;
     case State::ACCEPT_MORE_IMMIGRANTS:
-      return collective->getCreatures(MinionTrait::FIGHTER).size() >= 4;
+      return getGoblins(collective).size() >= 4;
     case State::EQUIP_ALL_FIGHTERS:
-      for (auto c : collective->getCreatures(MinionTrait::FIGHTER))
-        if (!collective->hasTrait(c, MinionTrait::NO_EQUIPMENT) &&
-            c->getEquipment().getSlotItems(EquipmentSlot::WEAPON).empty())
+      for (auto c : getGoblins(collective))
+        if (c->getEquipment().getSlotItems(EquipmentSlot::WEAPON).empty())
           return false;
       return true;
     case State::CREATE_TEAM:
@@ -138,7 +143,7 @@ bool Tutorial::canContinue(WConstGame game) const {
   }
 }
 
-EnumSet<TutorialHighlight> Tutorial::getHighlights(WConstGame game) const {
+EnumSet<TutorialHighlight> Tutorial::getHighlights(const Game* game) const {
   /*if (canContinue(game))
     return {};*/
   switch (state) {
@@ -190,7 +195,7 @@ bool Tutorial::blockAutoEquipment() const {
   return state <= State::EQUIP_WEAPON;
 }
 
-static void clearDugOutSquares(WConstGame game, vector<Vec2>& highlights) {
+static void clearDugOutSquares(const Game* game, vector<Vec2>& highlights) {
   for (auto elem : Iter(highlights)) {
     if (auto furniture = Position(*elem, game->getPlayerCollective()->getModel()->getGroundLevel())
         .getFurniture(FurnitureLayer::MIDDLE))
@@ -203,7 +208,7 @@ static void clearDugOutSquares(WConstGame game, vector<Vec2>& highlights) {
 static const int corridorLength = 6;
 static const int roomWidth = 5;
 
-vector<Vec2> Tutorial::getHighlightedSquaresHigh(WConstGame game) const {
+vector<Vec2> Tutorial::getHighlightedSquaresHigh(const Game* game) const {
   auto collective = game->getPlayerCollective();
   const Vec2 firstRoom(entrance - Vec2(0, corridorLength + roomWidth / 2));
   switch (state) {
@@ -230,7 +235,7 @@ vector<Vec2> Tutorial::getHighlightedSquaresHigh(WConstGame game) const {
   }
 }
 
-vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
+vector<Vec2> Tutorial::getHighlightedSquaresLow(const Game* game) const {
   auto collective = game->getPlayerCollective();
   switch (state) {
     case State::BUILD_LIBRARY: {
@@ -263,7 +268,7 @@ Tutorial::Tutorial() : state(State::WELCOME) {
 
 }
 
-optional<string> Tutorial::getWarning(WConstGame game) const {
+optional<string> Tutorial::getWarning(const Game* game) const {
   switch (state) {
     case State::CONTROL_TEAM:
     case State::CONTROL_MODE_MOVEMENT:
@@ -280,7 +285,7 @@ optional<string> Tutorial::getWarning(WConstGame game) const {
   }
 }
 
-void Tutorial::refreshInfo(WConstGame game, optional<TutorialInfo>& info) const {
+void Tutorial::refreshInfo(const Game* game, optional<TutorialInfo>& info) const {
   info = TutorialInfo {
       state,
       getWarning(game),
@@ -292,7 +297,7 @@ void Tutorial::refreshInfo(WConstGame game, optional<TutorialInfo>& info) const 
   };
 }
 
-void Tutorial::onNewState(WConstGame game) {
+void Tutorial::onNewState(const Game* game) {
   auto collective = game->getPlayerCollective();
   switch (state) {
     case State::ACCEPT_MORE_IMMIGRANTS:
@@ -304,10 +309,12 @@ void Tutorial::onNewState(WConstGame game) {
   }
 }
 
-void Tutorial::continueTutorial(WConstGame game) {
+void Tutorial::continueTutorial(const Game* game) {
   if (canContinue(game))
     state = (State)((int) state + 1);
   onNewState(game);
+  if (state == TutorialState::FINISHED)
+    game->achieve(AchievementId("tutorial_done"));
 }
 
 void Tutorial::goBack() {
@@ -335,7 +342,7 @@ void Tutorial::createTutorial(Game& game, const ContentFactory* factory) {
   for (auto l : collective->getLeaders())
     collective->setTrait(l, MinionTrait::NO_AUTO_EQUIPMENT);
   collective->getWarnings().disable();
-  collective->init(CollectiveConfig::keeper(50_visible, 10, "population", true, ConquerCondition::KILL_LEADER));
+  collective->init(CollectiveConfig::keeper(50_visible, 10, "population", true, ConquerCondition::KILL_LEADER, true));
   auto immigrants = factory->immigrantsData.at("tutorial");
   CollectiveConfig::addBedRequirementToImmigrants(immigrants, game.getContentFactory());
   collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));

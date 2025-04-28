@@ -54,7 +54,7 @@ int getPrice(const LastingOrBuff& l, const ContentFactory* f) {
 bool addEffect(const LastingOrBuff& l, Creature* c, optional<TimeInterval> duration, bool msg) {
   return l.visit(
     [&](LastingEffect e) {
-      return c->addEffect(e, duration.value_or(LastingEffects::getDuration(c, e)), msg);
+      return c->addEffect(e, duration.value_or(LastingEffects::getDuration(e)), msg);
     },
     [&](BuffId id) {
       return c->addEffect(id, *duration, msg);
@@ -66,7 +66,7 @@ bool addEffect(const LastingOrBuff& l, Creature* c, optional<TimeInterval> durat
     const ContentFactory* factory) {
   return l.visit(
     [&](LastingEffect e) {
-      return c->addEffect(e, duration.value_or(LastingEffects::getDuration(c, e)), time, false);
+      return c->addEffect(e, duration.value_or(LastingEffects::getDuration(e)), time, false);
     },
     [&](BuffId id) {
       return c->addEffect(id, *duration, time, factory, false);

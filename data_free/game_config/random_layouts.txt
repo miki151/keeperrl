@@ -1,7 +1,7 @@
 Def AnyWall() Or(On("wood_wall"), On("castle_wall")) End
 Def AnyFloor() And(Not AnyWall(), Or(On("stone_floor"), On("wood_floor"), On("floor"))) End
 Def AnyDoor() Or(On("wood_door"), On("iron_door"), On("iron_gate"), On("wood_gate")) End
-Def AnyWater() Or(On("lava"), On("water")) End
+Def AnyWater() Or(On("lava"), On("water"), On("underground_water")) End
 
 Def NextTo(Pred)
   Area(1, Pred)
@@ -18,7 +18,7 @@ Def Connector()
     (10, And(On("wood_wall"), Not On("no_dig")), { Remove("wood_wall") Set("clear_middle", "wood_door")}),
     (10, And(On("castle_wall"), Not On("no_dig")), { Remove("castle_wall") Set("clear_middle", "iron_door")}),
     (8, On("lava"), Set("stone_bridge")),
-    (8, On("water"), Set("wood_bridge")),
+    (8, Or(On("water"), On("underground_water")), Set("wood_bridge")),
     (6, And(Not AnyWall(), Not AnyWater(), Not AnyFloor(), Not On("no_dig"), On("room_wall")),
         Filter(And(Chance(0.4), Not NextTo(On("wood_door"))), Reset("wood_door"), Reset("floor"))),
     (4, And(Not AnyWall(), Not AnyFloor(), Or(On("rock"), On("hard_rock")),
@@ -135,6 +135,37 @@ End
 
 "village1" Village1()
 "village2" Village2()
+
+"stable" {
+  Place(
+    (size = {4 7}
+    generator = {
+      Building("wood_wall", "mud_floor")
+      Corners(Set("corner"), 1)
+      Place(1,
+        ({1 2}, Reset("mud_floor", "wood_gate"), 1, And(On("wood_wall"), Not On("corner")))
+        ({2 1}, Reset("mud_floor", "wood_gate"), 1, And(On("wood_wall"), Not On("corner")))
+      )
+      Place({1 1}, Set("haypile"), {3 6} And(Not On("wood_wall"), Not On("wood_gate")))
+    }
+    count = 1
+    minSpacing = 2
+  ),
+  (size = {5 5}
+  generator = {
+    Building("castle_wall", "floor")
+    Corners(Set("corner"), 1)
+    Place({1 1}, Reset("wood_door", "floor"), 1, And(On("castle_wall"), Not On("corner")))
+    Place(
+      ({1 1}, Set("bed"), {3 6} And(Not On("castle_wall"), Not NextTo(On("wood_door")))),
+      ({1 1}, Set("dining_table"), 1 And(Not On("castle_wall"), Not NextTo(On("wood_door"))))
+    )
+  }
+  count = 1
+  minSpacing = 2
+  )
+  )
+}
 
 Def CastleGate1()
   Border(TOP, 1, Position(MIDDLE, {2 1}, Reset("floor", "iron_gate")))
@@ -344,18 +375,27 @@ End
 
 "adoxie_feet_entry" AdoxieFeetEntry()
 
+Def AdoxieFeetUnderRemains(EntrancePos)
+{
+  Reset("stone_floor", "adoxie_feet_trigger")
+  Border(-1, Set("no_dig", "stone_floor","castle_wall"))
+  Inside(-1, Position(EntrancePos, {1 1}, Remove("no_dig", "rock")))
+  Position(MIDDLE, {1 1}, Set("prophet_remains"))
+}
+End
+
 Def AdoxieFeetUnderRoom(EntrancePos)
 {
   Reset("floor", "stockpile", "adoxie_feet_trigger")
-  Border(-1, Set("no_dig"))
+  Border(-1, Set("no_dig", "stone_floor", "castle_wall"))
   Inside(-1, Position(EntrancePos, {1 1}, Remove("no_dig", "rock")))
 }
 End
 
 Def AdoxieFeetUnder() {
   Set("rock")
-  Inside(1, {
-    Position(TOP_CENTER, {3 3}, AdoxieFeetUnderRoom(BOTTOM_CENTER))
+  Inside(2, {
+    Position(TOP_CENTER, {3 3}, AdoxieFeetUnderRemains(BOTTOM_CENTER))
     Position(RIGHT_CENTER,  {3 3}, AdoxieFeetUnderRoom(LEFT_CENTER))
     Position(LEFT_CENTER, {3 3}, AdoxieFeetUnderRoom(RIGHT_CENTER))
     Position(BOTTOM_CENTER,  {1 1}, Reset("floor", "up_stairs0"))
@@ -365,6 +405,30 @@ Def AdoxieFeetUnder() {
 End
 
 "adoxie_feet_under" AdoxieFeetUnder()
+
+Def AdoxieStatueUnderLoot(EntrancePos)
+{
+  Reset("stone_floor")
+  Border(-1, Set("no_dig"))
+  Inside(-1, Position(EntrancePos, {1 1}, Remove("no_dig", "rock")))
+  Position(TOP_STRETCHED, {1 1}, Set("chest"))
+  Position(BOTTOM_STRETCHED, {1 1}, Set("chest"))
+  Position(BOTTOM_RIGHT, {1 1}, {Remove("chest") Set("scroll_chest")})
+  Position(RIGHT_CENTER, {1 1}, Set("trap"))
+}
+End
+
+Def AdoxieStatueUnder() {
+  Set("rock")
+  Inside(2, {
+    Position(RIGHT_CENTER, {3 3}, AdoxieStatueUnderLoot(LEFT_CENTER))
+    Position(BOTTOM_CENTER,  {1 1}, Reset("floor", "up_stairs0"))
+  })
+  Connector()
+}
+End
+
+"adoxie_statue_under" AdoxieStatueUnder()
 
 Def CastleUpStairs() {
   Set("floor")
@@ -492,12 +556,53 @@ Def CottageCellar() {
   Place (
     ({1 1} Set("up_stairs0") 1 FurnitureLoc()),
     ({1 1} Set("knife_chest") 1 FurnitureLoc()),
-    ({1 1} Set("pamphlet_chest") {2 4} FurnitureLoc())
+    #({1 1} Set("pamphlet_chest") {2 4} FurnitureLoc())
   )
 }
 End
 
 "cottage_cellar" CottageCellar()
+
+Def AdventurerStable() {
+  Building("wood_wall", "wood_floor")
+  Corners(Set("no_door"), 1)
+  Place({1 1} Reset("wood_floor", "wood_door") 1 And(On("wood_wall"), Not On("no_door")))
+  Filter(On("wood_floor"), Set("stable"))
+  Place (
+    ({1 1} Set("haypile") 1 FurnitureLoc()),
+    ({1 1} Set("torch") 1 FurnitureLoc()),
+  )
+}
+End
+
+Def AdventurerHut() {
+  Building("wood_wall", "wood_floor")
+  Corners(Set("no_door"), 1)
+  Place({1 1} Reset("wood_floor", "wood_door") 1 And(On("wood_wall"), Not On("no_door")))
+  Place (
+    ({1 1} Set("dining_table") 1 FurnitureLoc()),
+    ({1 1} Set("bed") 1 FurnitureLoc()),
+    ({1 1} Set("torch") 1 FurnitureLoc()),
+    ({1 1} Set("adventurer_chest") 1 FurnitureLoc()),
+  )
+}
+End
+
+"adventurer_house" {
+  Place(
+    (size = {5 5} generator = AdventurerHut() minSpacing = 1),
+    (size = {5 4} generator = AdventurerStable() minSpacing = 1)
+  )
+}
+
+"adoxie_adventurer" {
+    CellularAutomaton(Set("clear_middle", "connect"), 0.75)
+    Inside(2, CellularAutomaton(Set("lava"), 0.75))
+}
+
+"special_tree" {
+  Inside(1, Place({1 1} Set("special_tree")))
+}
 
 Def DungeonContent()
   Place (
@@ -609,7 +714,7 @@ Def AdoxieTemple() {
     )),
     {
       CellularAutomaton(Set("lava"), 0.55)
-      Place( 
+      Place(
         {7 7}
         {
           Inside(1, {
@@ -635,14 +740,14 @@ End
 "dungeon1" Dungeon1()
 "dungeon2" Dungeon2()
 "dungeon3" Dungeon3()
-"dungeon4" Dungeon4("water")
+"dungeon4" Dungeon4("underground_water")
 "dungeon"
   Choose(
     Dungeon1(),
     Dungeon2(),
     Dungeon3(),
     Dungeon4("lava"),
-    Dungeon4("water")
+    Dungeon4("underground_water")
   )
 
 Def ZLevelLakes(Type) {
@@ -654,7 +759,7 @@ Def ZLevelLakes(Type) {
 End
 
 "z_level_lava" ZLevelLakes("lava")
-"z_level_water" ZLevelLakes("water")
+"z_level_water" ZLevelLakes("underground_water")
 
 Def ZLevelMostlyFull(WaterType) {
   Set("hard_rock", "resources")
@@ -667,38 +772,63 @@ Def ZLevelMostlyFull(WaterType) {
 }
 End
 
-Def ZLevelCaverns(WaterType) {
+Def ZLevelCaverns(FloorType, Amount) {
   Set("hard_rock", "resources")
-  Inside(5, CellularAutomaton(Reset("floor"), 0.45))
+  Inside(5, CellularAutomaton(Reset(FloorType), Amount))
 }
 End
 
-#"z_level_caverns" ZLevelCaverns()
+"z_level_caverns" ZLevelCaverns("floor", 0.45)
+"z_level_flooded_caverns" ZLevelCaverns("underground_water", 0.55)
+
+Def MiniWorkshop() {
+  Reset("floor")
+  Position(MIDDLE, {2 2}, Set("workshop"))
+  Place(
+    ({1 1}, Set("gnome_corpse"), {2 5}, Not On("workshop")),
+    ({1 1}, Set("automaton_parts"), {2 5}, Not On("workshop"))
+  )
+}
+End
+
+Def MiniThrone()
+{
+  Reset("floor")
+  Position(TOP_CENTER, {1 1}, Set("broken_throne"))
+  Border(LEFT, 2, Border(RIGHT, 1, Filter(YMod(2, 0), Reset("hard_rock"))))
+  Border(RIGHT, 2, Border(LEFT, 1, Filter(YMod(2, 0), Reset("hard_rock"))))
+  Border(-1, Set("no_dig"))
+  Position(BOTTOM_CENTER, {1 1}, Border(BOTTOM, -1, Remove("no_dig")))
+}
+End
 
 Def ZLevelMiniFeatures(WaterType) {
   ZLevelMostlyFull(WaterType)
-  Inside(5, {
-    Place(2,
-      ({12 12}, MiniGhostSpawner(), 1, On("hard_rock")),
-      ({7 7}, ColumnRoom(), 1, On("hard_rock")),
-      ({5 5}, MiniGargoyleRoom(), 1, On("hard_rock")),
-      ({7 7}, MiniPrison(), 1, On("hard_rock")),
-      ({15 15}, MiniDungeon(), 1, On("hard_rock")),
-      ({15 15}, MiniAntNest(), 1, On("hard_rock")),
-      ({4 4}, { Border(-1, Reset(WaterType)) Reset("hard_rock") Inside(1, Set("ada_chest"))}, 1, On(WaterType)),
-      ({10 10}, {
-        CellularAutomaton(Reset(WaterType), 0.85)
-        Inside(3, FourCorners(Reset("hard_rock")))
-      }, 1, On("hard_rock"))
-    )
-  })
+  Inside(5, Place(2,
+    ({6 6}, MiniWorkshop(), 1, On("hard_rock")),
+    ({7 10}, MiniThrone(), 1, On("hard_rock"))
+    ({12 12}, MiniGhostSpawner(), 1, On("hard_rock")),
+    ({12 12}, EnchantedPool(), 1, On("hard_rock")),
+    ({7 7}, MiniBrokenPrison(), 1, On("hard_rock")),
+    ({7 7}, MiniPrison(), 1, On("hard_rock")),
+    ({7 7}, ColumnRoom(), 1, On("hard_rock")),
+    ({5 5}, MiniGargoyleRoom(), 1, On("hard_rock")),
+    ({15 15}, MiniDungeon(), 1, On("hard_rock")),
+    ({15 15}, MiniAntNest(), 1, On("hard_rock")),
+    ({4 4}, { Border(-1, Reset(WaterType)) Reset("hard_rock") Inside(1, Set("ada_chest"))}, 1, On(WaterType)),
+    ({10 10}, {
+      CellularAutomaton(Reset(WaterType), 0.85)
+      Inside(3, FourCorners(Reset("hard_rock")))
+    }, 1, On("hard_rock"))
+  ))
+  Place({1 1}, Set("bat"), {1 4}, On("floor"))
 }
 End
 
-"z_level_minifeatures" ZLevelMiniFeatures("water")
+"z_level_minifeatures" ZLevelMiniFeatures("underground_water")
 
 Def ZLevelBase(WaterType)
-  Choose(ZLevelMiniFeatures(WaterType), ZLevelCaverns(WaterType))
+  Choose(ZLevelMiniFeatures(WaterType), ZLevelCaverns("floor", 0.45), ZLevelCaverns("underground_water", 0.55))
 End
 
 Def MiniGargoyleRoom() {
@@ -711,6 +841,14 @@ Def MiniGhostSpawner() {
   CellularAutomaton(Reset("floor"), 0.85)
   Inside(2, CellularAutomaton(Set("fog"), 0.85))
   Position(MIDDLE, {1 1}, Reset("ghost_spawn", "fog"))
+}
+End
+
+Def EnchantedPool() {
+  CellularAutomaton(Reset("floor"), 0.85)
+  Inside(3, CellularAutomaton(Reset("enchanted_water"), 0.85))
+  Maybe(0.2, Place({1 1}, Set("enchanted_workshop"), 1, And(Not On("enchanted_water"), NextTo(On("enchanted_water")))))
+  Maybe(0.2, Place({1 1}, Set("enchanted_lab"), 1, And(Not On("enchanted_water"), NextTo(On("enchanted_water")))))
 }
 End
 
@@ -729,7 +867,7 @@ Def MiniDungeon() {
 }
 End
 
-Def MiniPrison() {
+Def MiniBrokenPrison() {
   Reset("floor")
   Border(-1, Set("no_dig"))
   Border(TOP, 3, {
@@ -737,6 +875,18 @@ Def MiniPrison() {
     Border(TOP, -1, Remove("no_dig"))
   })
   Inside(TOP, 4, Place({1 1}, Set("corpse"), {1 4}, On("floor")))
+}
+End
+
+Def MiniPrison() {
+  Reset("floor")
+  Border(-1, Set("no_dig"))
+  Border(TOP, 3, {
+    Border(BOTTOM, 1, Set("prison_bars"))
+    Border(TOP, -1, Remove("no_dig"))
+  })
+  Place({1 1}, Reset("floor", "prison_door"), 1, On("prison_bars"))
+  Inside(TOP, 4, Place({1 1}, Set("elf_archer"), {1 4}, On("floor")))
 }
 End
 
@@ -765,11 +915,17 @@ End
 
 "z_level_full" {
   Set("set_territory") # Even though its an empty level, some code will crash if territory is empty
-  Choose(ZLevelMostlyFull("water"), ZLevelMostlyFull("lava"))
+  Choose(ZLevelMostlyFull("underground_water"), ZLevelMostlyFull("lava"))
+}
+
+"z_level_full_only_water" {
+  Set("set_territory") # Even though its an empty level, some code will crash if territory is empty
+  ZLevelMostlyFull("underground_water")
+  Maybe(0.5, Place({12 12}, EnchantedPool(), 1, On("hard_rock")))
 }
 
 "z_level_vault" {
-  Choose(ZLevelBase("water"), ZLevelBase("lava"))
+  Choose(ZLevelBase("underground_water"), ZLevelBase("lava"))
   Inside(5, Place({4 7}, {
     Reset("floor", "set_territory")
     Margin(TOP, 1, Set("workshop"),
@@ -783,14 +939,29 @@ End
 }
 
 "z_level_cave" {
-  Choose(ZLevelBase("water"), ZLevelBase("lava"))
+  Choose(ZLevelBase("underground_water"), ZLevelBase("lava"))
+  Inside(5, Place({10 10}, CellularAutomaton(Reset("floor", "set_territory"), 0.85), 1, On("hard_rock")))
+  Connector()
+  Filter(Not On("set_territory"), Set("no_territory"))
+}
+
+"z_level_cave_only_water" {
+  Choose(ZLevelBase("underground_water"))
   Inside(5, Place({10 10}, CellularAutomaton(Reset("floor", "set_territory"), 0.85), 1, On("hard_rock")))
   Connector()
   Filter(Not On("set_territory"), Set("no_territory"))
 }
 
 "z_level_dungeon" {
-  Choose(ZLevelBase("water"), ZLevelBase("lava"))
+  Choose(ZLevelBase("underground_water"), {
+    ZLevelBase("lava")
+    Maybe(0.25, Place({1 1},
+      {
+        Inside(-1, Filter(Not On("lava"), Reset("floor")))
+        Position(MIDDLE, {1 1}, Set("lava_forge"))
+      }
+      1, And(Not On("lava"), NextTo(On("lava")))))
+  })
   Inside(5, Place({15 12}, {
     Place(none, Reset("floor", "set_territory"), {3 6}, True, {2 2}, {5 5}, 1)
   }, 1, On("hard_rock")))
@@ -893,18 +1064,17 @@ End
 "zombie_crypt" ZombieCrypt()
 
 Def KrakenPrison() {
-  CellularAutomaton(Reset("water"), 0.65)
-  Position(MIDDLE, {6 6}, {Reset("stone_floor") Border(1, Reset("floor", "castle_wall"))})
-  Place(({1 1} Reset("kraken_water") 10 On("water")))
+  CellularAutomaton(Reset("underground_water"), 0.65)
+  Position(MIDDLE, {6 6}, {Reset("prison") Border(1, Reset("floor", "castle_wall"))})
+  Place(({1 1} Reset("kraken_water") 10 On("underground_water")))
 }
 End
 
 Def KrakenZLevel() {
   Set("hard_rock", "resources")
-  Position(TOP_LEFT, {25 25}, KrakenPrison())
-  Position(MIDDLE, {1 1}, Reset("floor", "up_stairs0"))
-  Filter(On("stone_floor"), Set("set_territory"))
-  Filter(Not On("stone_floor"), Set("no_territory"))
+  Inside(10, Place({25 25}, KrakenPrison(), 1))
+  Filter(On("prison"), Set("set_territory"))
+  Filter(Not On("prison"), Set("no_territory"))
 }
 End
 
@@ -919,6 +1089,14 @@ End
   Inside(5, {
       CellularAutomaton(Reset("water"), 0.65)
       Set("set_territory")
+  })
+  CellularAutomaton(Set("fog"), 0.65)
+}
+
+"fog_ruins" {
+  Position(MIDDLE, {5 5}, {
+    Border(1, Filter(Chance(0.7), Set("ruin_wall")))
+    Set("set_territory")
   })
   CellularAutomaton(Set("fog"), 0.65)
 }
@@ -943,3 +1121,107 @@ End
   Filter(Not On("inside"), Set("no_territory"))
 }
 
+Def Connections(Name, Pred)
+{
+  Inside(TOP, 1, Filter(And(Pred, Not On("set_" + Name), Translate({0 -1}, On("set_" + Name))), Set("map_" + Name + "_n")))
+  Inside(BOTTOM, 1, Filter(And(Pred, Not On("set_" + Name), Translate({0 1}, On("set_" + Name))), Set("map_" + Name + "_s")))
+  Inside(LEFT, 1, Filter(And(Pred, Not On("set_" + Name), Translate({-1 0}, On("set_" + Name))), Set("map_" + Name + "_w")))
+  Inside(RIGHT, 1, Filter(And(Pred, Not On("set_" + Name), Translate({1 0}, On("set_" + Name))), Set("map_" + Name + "_e")))
+  Inside(TOP, 1, Inside(LEFT, 1, Filter(And(Pred, Not On("set_" + Name), Translate({0 -1}, On("set_" + Name)), Translate({-1 0}, On("set_" + Name))),
+      Set("map_" + Name + "_nw"))))
+  Inside(TOP, 1, Inside(RIGHT, 1, Filter(And(Pred, Not On("set_" + Name), Translate({0 -1}, On("set_" + Name)), Translate({1 0}, On("set_" + Name))),
+      Set("map_" + Name + "_ne"))))
+  Inside(BOTTOM, 1, Inside(LEFT, 1, Filter(And(Pred, Not On("set_" + Name), Translate({0 1}, On("set_" + Name)), Translate({-1 0}, On("set_" + Name))),
+      Set("map_" + Name + "_sw"))))
+  Inside(BOTTOM, 1, Inside(RIGHT, 1, Filter(And(Pred, Not On("set_" + Name), Translate({0 1}, On("set_" + Name)), Translate({1 0}, On("set_" + Name))),
+      Set("map_" + Name + "_se"))))
+}
+End
+
+Def BigMountain()
+  And(On("set_mountains"), Not On("big_mountain"))
+End
+
+Def WorldMapFeatures() {
+  Inside(1, Filter(And(Chance(0.1), BigMountain(), Translate({0 -1}, BigMountain()),
+      Translate({-1 0}, BigMountain()), Translate({-1 -1}, BigMountain())),
+      Set("big_mountain")))
+  Filter(On("big_mountain"), Choose(Set("map_mountains_large"), Set("map_mountains_large2"),
+      Set("map_mountains_large3"), Set("map_mountains_large4")))
+  Filter(On("set_mountains"), {Set("MOUNTAIN") {Set("map_mountains_bg1") Choose(Set("map_mountains1"),
+      Set("map_mountains2"), Set("map_mountains3"), Set("map_mountains4"), Set("map_mountains5"))}})
+  Filter(On("set_mountains_snow"), {Set("MOUNTAIN") Choose(Set("map_mountains_snow1"), Set("map_mountains_snow2"),
+      Set("map_mountains_snow3"), Set("map_mountains_snow4"), Set("map_mountains_snow5"))})
+  Filter(On("set_water"), {Choose(0.7 Set("map_water1"), Set("map_water2"), Set("map_water3"), Set("map_water5"))})
+  Filter(On("set_sand"), {Set("DESERT") Choose(0.7 Set("map_sand1"), Set("map_sand2"))})
+  Filter(On("set_grass"), {Set("GRASSLAND") Choose(0.7 Set("map_grass1"), Set("map_grass2"), Set("map_grass3"))})
+  Filter(On("set_snow"), {Set("SNOW") Choose(0.7 Set("map_snow1"), Set("map_snow2"))})
+  Filter(On("set_swamp"), {Set("SWAMP") Choose(0.7 Set("map_swamp1"), Set("map_swamp2"), Set("map_swamp3"), Set("map_swamp4"))})
+End
+
+Def WorldMapConnections() {
+  Connections("mountains", True)
+  Connections("snow", Not On("set_mountains"))
+  Connections("grass", Not Or(On("set_snow"), On("set_mountains")))
+  Connections("swamp", Not Or(On("set_snow"), On("set_mountains"), On("set_grass")))
+  Connections("sand", Not Or(On("set_grass"), On("set_snow"), On("set_mountains"), On("set_swamp")))
+}
+End
+
+Def WorldMapTrees() {
+  NoiseMap(0.85, {
+    (0.0, 0.15, Filter(On("set_grass"), Set("set_tree")))
+  })
+  Filter(On("set_tree"), {Set("FOREST") Choose(Set("map_tree1"), Set("map_tree2"), Set("map_tree3"))})}
+}
+End
+
+"world_map" {
+  NoiseMap(0.65, {
+    (0.8, 1.0, Reset("set_water"))
+    (0.74, 0.8, Reset("set_sand"))
+    (0.2, 0.74, Reset("set_grass"))
+    (0.0, 0.2, Reset("set_mountains"))
+    #(0.0, 0.02, Set("set_lava"))
+  })
+  #Position(MIDDLE, {1 1}, FloodFill(Or(On("sand"), On("grass"), On("water")), Set("save")))
+  #Filter(Not On("save"), Reset("mountain"))
+  #Border(1, Filter(Not On("mountain"), Fail))
+  CellularAutomaton(Filter(Not On("set_mountains"), Reset("set_water")), 0.35)
+  Inside(TOP, 18, Inside(BOTTOM, 18, CellularAutomaton(Set("water_area"), 0.75)))
+  SplitV(0.5,
+    Filter(And(Not On("water_area"), Or(On("set_water"), On("set_sand"))), Reset("set_snow")),
+    Filter(And(Not On("water_area"), Or(On("set_water"), On("set_sand"))), Reset("set_sand"))
+  )
+  Filter(And(On("set_sand"), On("water_area")), Reset("set_swamp"))
+  NoiseMap(0.65, {
+    (0.0, 0.2, Filter(On("set_snow"), Set("set_mountains_snow")))
+  })
+  WorldMapFeatures()
+  WorldMapConnections()
+  WorldMapTrees()
+}
+
+"world_map_test" {
+  NoiseMap(0.65, {
+    (0.8, 1.0, Reset("set_water"))
+    (0.74, 0.8, Reset("set_sand"))
+    (0.2, 0.74, Reset("set_grass"))
+    (0.0, 0.2, Reset("set_mountains"))
+    #(0.0, 0.02, Set("set_lava"))
+  })
+  #Position(MIDDLE, {1 1}, FloodFill(Or(On("sand"), On("grass"), On("water")), Set("save")))
+  #Filter(Not On("save"), Reset("mountain"))
+  #Border(1, Filter(Not On("mountain"), Fail))
+  CellularAutomaton(Filter(Not On("set_mountains"), Reset("set_water")), 0.35)
+  SplitV(0.7, Filter(On("set_sand"), Reset("set_swamp")), Filter(On("set_water"), Reset("set_sand")))
+  SplitV(0.3, Filter(Or(On("set_water"), On("set_sand")), Reset("set_snow")), {})
+  NoiseMap(0.65, {
+    (0.0, 0.2, Filter(On("set_snow"), Set("set_mountains_snow")))
+  })
+  CellularAutomaton(Set("continent"), 0.5)
+  Filter(Not On("continent"), Reset("set_water"))
+  WorldMapFeatures()
+  WorldMapConnections()
+  WorldMapTrees()
+}

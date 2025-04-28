@@ -34,6 +34,7 @@ End
     }
     crops = Crops()
     furniture = "roomFurniture"
+    locationNameGen = TOWN
   }
   config = {
     alwaysMount = true
@@ -58,6 +59,7 @@ End
   config = {
     immigrantInterval = 200
     maxPopulation = 9
+    prisoners = true
   }
   immigrants = {
     {
@@ -76,6 +78,9 @@ End
     }
     tribe = MONSTER
     race = "ki-rin"
+  }
+  config = {
+    prisoners = true
   }
 }
 "ANTS_CLOSED"
@@ -141,7 +146,7 @@ End
     surroundWithResources = 6
   }
 }
-"BLACK_RATS" 
+"BLACK_RATS"
 {
   settlement = {
     type = Builtin ANT_NEST "DUNGEON"
@@ -201,7 +206,7 @@ End
     type = Builtin EMPTY "BRICK"
     tribe = MONSTER
     dontBuildRoad = true
-    shopItems = {{10 15} "corpse" }
+    shopItems = {{10 15} "battle_corpse" }
   }
 }
 "GOBLIN_VILLAGE"
@@ -219,13 +224,14 @@ End
           1 "GOBLIN_WIZARD_VILLAIN"
           1 "GOBLIN_ARCHER_VILLAIN"
           1 "GOBLIN_PRIEST"
+          1 "GOBLIN_ARTIFICER"
           1 "GOBLIN_KABOOMER"
           1 "TROLL_VILLAIN"
         }
         expLevelIncrease = {
-          MELEE 10
-          SPELL 10
-          ARCHERY 10
+          DAMAGE 10
+          SPELL_DAMAGE 10
+          RANGED_DAMAGE 10
         }
       }
     }
@@ -237,13 +243,14 @@ End
   config = {
     immigrantInterval = 300
     maxPopulation = 16
+    prisoners = true
   }
   behaviour = {
     ambushChance = 0.1
     minPopulation = 0
     minTeamSize = 8
-    triggers = {Gold 500}
-    attackBehaviour = StealGold
+    triggers = {Resource "GOLD" 500}
+    attackBehaviour = StealResource "GOLD"
     ransom = 0.5 80
   }
   createOnBones = 0.1 { "DWARVES" "VILLAGE" }
@@ -289,6 +296,7 @@ End
   config = {
     immigrantInterval = 300
     maxPopulation = 16
+    prisoners = true
   }
   behaviour = {
     minPopulation = 0
@@ -350,6 +358,7 @@ End
     spawnGhosts = 4
     ghostProb = 0.1
     alwaysMount = true
+    prisoners = true
   }
 }
 "WARRIORS"
@@ -375,6 +384,7 @@ End
     maxPopulation = 10
     ghostProb = 0.1
     spawnGhosts = 6
+    prisoners = true
   }
   behaviour = {
     ambushChance = 0.1
@@ -439,15 +449,16 @@ End
     furniture = "castleFurniture"
     outsideFeatures = "castleOutside"
   }
-  otherEnemy = "KNIFE_COTTAGE"
   config = {
     immigrantInterval = 300
-    maxPopulation = 26
+    maxPopulation = 36
     ghostProb = 0.1
     spawnGhosts = 6
     alwaysMount = true
+    prisoners = true
   }
   behaviour = {
+    duelChance = 1.0
     minPopulation = 7
     minTeamSize = 10
     ambushChance = 0.05
@@ -516,6 +527,7 @@ End
     ghostProb = 0.1
     spawnGhosts = 6
     leaderAsFighter = true
+    prisoners = true
   }
   behaviour = {
     minPopulation = 0
@@ -542,18 +554,18 @@ End
     }
   }
 }
-"BLACKSMITH"
+Def BLACKSMITH(Tribe, Crafter, Troop1, Troop2)
 {
   settlement = {
     type = RandomLayout { "blacksmith" { 8 12 } "blacksmith"}
-    tribe = HUMAN
+    tribe = Tribe
     inhabitants = {
-      leader = { { "ARTISAN_LEGEN" } }
+      leader = { { Crafter } }
       fighters = {
         count = {2 5}
         all = {
-          1 "KNIGHT"
-          1 "ARCHER"
+          1 Troop1
+          1 Troop2
         }
       }
     }
@@ -568,13 +580,59 @@ End
     }
   }
 }
+End
+"HUMAN_BLACKSMITH" BLACKSMITH(HUMAN, "ARTISAN_VILLAIN", "KNIGHT", "ARCHER")
+"GOBLIN_BLACKSMITH" BLACKSMITH(GREENSKIN, "GOBLIN_ARTIFICER_VILLAIN", "GOBLIN_GUARD_VILLAIN", "GOBLIN_ARCHER_VILLAIN")
+
 "BLACKSMITH_CELLAR"
 {
   settlement = {
     type = RandomLayout { "blacksmith_cellar" { 4 4 } "default"}
     tribe = HUMAN
   }
+  config = {
+    discoverAchievement = "blacksmith_stash"
+  }
 }
+Def STABLE(Tribe, Mount1, Mount2, Creature1, Creature2)
+{
+  settlement = {
+    type = RandomLayout { "stable" { 13 13 } "default"}
+    tribe = Tribe
+    race = "stable"
+    locationNameGen = TOWN
+    inhabitants = {
+      fighters = {
+        count = 2
+        all = {
+          1 Creature1
+          1 Creature2
+        }
+      }
+      civilians = {
+        count = {3 8}
+        all = {
+          1 Mount1
+          1 Mount2
+        }
+      }
+    }
+  }
+  config = {
+    prisoners = true
+  }
+}
+End
+"HUMAN_STABLE" STABLE(HUMAN, "HORSE_CAN_TRAIN", "WARHORSE", "KNIGHT", "PESEANT")
+"THIEF_STABLE" STABLE(HUMAN, "CAMEL", "GOAT", "THIEF", "NOMAD")
+
+"THIEF_STABLE" modify {
+  biome = "DESERT"
+  settlement = append {
+    type = RandomLayout { "stable" { 13 13 } "thief_stable"}
+  }
+}
+
 "GUARD_POST"
 {
   settlement = {
@@ -582,7 +640,7 @@ End
     tribe = HUMAN
     inhabitants = {
       fighters = {
-        baseLevelIncrease = { MELEE -12 ARCHERY -12 }
+        combatExperience = -12
         count = {2 5}
         all = {
           1 "KNIGHT"
@@ -598,6 +656,9 @@ End
         }
       }
     }
+  }
+  config = {
+    prisoners = true
   }
   levelConnection = {
     topLevel = MainEnemy
@@ -620,6 +681,9 @@ End
   settlement = {
     type = RandomLayout { "guard_post_floor3" { 4 4 } "default"}
     tribe = HUMAN
+  }
+  config = {
+    discoverAchievement = "guard_post_stash"
   }
 }
 "COTTAGE_CELLAR"
@@ -644,6 +708,7 @@ End
 }
 "RED_DRAGON"
 {
+  biome = "MOUNTAIN"
   settlement = {
     type = RandomLayout { "lava_cave" { 30 30 } "dragon" }
     inhabitants = {
@@ -660,6 +725,7 @@ End
     leaderAsFighter = true
     ghostProb = 0.03
     spawnGhosts = 1
+    prisoners = true
   }
   behaviour = {
     minPopulation = 0
@@ -696,8 +762,9 @@ End
 }
 "GREEN_DRAGON"
 {
+  biome = "SWAMP"
   settlement = {
-    type = Builtin CAVE "DUNGEON"
+    type = RandomLayout { "fog_ruins" { 20 20 } "default"}
     inhabitants = {
       leader = { { "GREEN_DRAGON" } }
     }
@@ -709,6 +776,7 @@ End
     leaderAsFighter = true
     ghostProb = 0.03
     spawnGhosts = 1
+    prisoners = true
   }
   behaviour = {
     minPopulation = 0
@@ -759,6 +827,7 @@ End
     maxPopulation = 15
     ghostProb = 0.1
     spawnGhosts = 4
+    prisoners = true
   }
   behaviour = {
     minPopulation = 3
@@ -787,6 +856,7 @@ End
 }
 "ELVES"
 {
+  biome = "FOREST"
   settlement = {
     type = Builtin FORREST_VILLAGE "WOOD"
     inhabitants = {
@@ -818,6 +888,7 @@ End
     ghostProb = 0.1
     spawnGhosts = 4
     alwaysMount = true
+    prisoners = true
   }
   behaviour = {
     ambushChance = 0.05
@@ -863,6 +934,7 @@ End
 }
 "ELEMENTALIST"
 {
+  biome = "GRASSLAND"
   settlement = {
     type = Builtin TOWER "BRICK"
     inhabitants = {
@@ -934,6 +1006,20 @@ End
     tribe = MONSTER
   }
 }
+"Z_LEVEL_FULL_ONLY_WATER"
+{
+  settlement = {
+    type = RandomLayout { "z_level_full_only_water" { 80 80 } "default" }
+    tribe = MONSTER
+  }
+}
+"Z_LEVEL_HELL"
+{
+  settlement = {
+    type = RandomLayout { "z_level_full_only_water" { 80 80 } "z_level_hell" }
+    tribe = MONSTER
+  }
+}
 "Z_LEVEL_ZOMBIE"
 {
   settlement = {
@@ -962,6 +1048,9 @@ End
       leader = { { "BLACK_DRAGON" } }
     }
   }
+  config = {
+    prisoners = true
+  }
   createOnBones = 1.0 { "Z_LEVEL_BLACK_DRAGON_DWARVES" }
 }
 "Z_LEVEL_BALROG"
@@ -979,15 +1068,16 @@ End
           1 "GOBLIN_ARCHER_VILLAIN"
         }
         expLevelIncrease = {
-          MELEE 10
-          SPELL 10
-          ARCHERY 10
+          DAMAGE 10
+          SPELL_DAMAGE 10
+          RANGED_DAMAGE 10
         }
       }
     }
   }
   config = {
    leaderAsFighter = true
+   prisoners = true
   }
   behaviour = {
     minPopulation = 0
@@ -1010,6 +1100,7 @@ End
 }
 "MAIN_DUNGEON"
 {
+  biome = "MOUNTAIN"
   settlement = {
     type = RandomLayout { "adoxie_temple" { 30 20 } "adoxie_temple"}
     tribe = MONSTER
@@ -1029,6 +1120,7 @@ End
     immigrantInterval = 500
     maxPopulation = 15
     canEnemyRetire = false
+    prisoners = true
   }
   levelConnection = {
     topLevel = ExtraEnemy {"MAIN_DUNGEON_ENTRY"}
@@ -1097,6 +1189,9 @@ End
     type = Builtin CAVE "NATIVE"
     tribe = BANDIT
   }
+  config = {
+    discoverAchievement = "outback"
+  }
 }
 "DEATH"
 {
@@ -1114,9 +1209,7 @@ End
 "ADOXIE_VAULT"
 {
   settlement = {
-    type = Predefined { "adoxie_vault" "ADOXIE_VAULT" MOUNTAIN } 
-    closeToPlayer = true
-    dontConnectCave = true
+    type = Predefined { "adoxie_vault" "ADOXIE_VAULT" OUTDOOR }
     tribe = MONSTER
   }
   config = {
@@ -1125,29 +1218,20 @@ End
   levelConnection = {
     topLevel = MainEnemy
     levels = {
-      { ExtraEnemy { "ADOXIE_VAULT_UNDER" {1} } {20 20} DUNGEON "Adoxie's Vault" }
+      { ExtraEnemy { "ADOXIE_VAULT_UNDER" {1} } {32 17} BASIC "Adoxie's Vault" }
     }
   }
 }
 "ADOXIE_VAULT_UNDER"
 {
-  discoverable = false
   settlement = {
-    type = Builtin MINETOWN "HELL"
+    type = RandomLayout { "adoxie_statue_under" { 30 15 } "adoxie_statue_under"}
     tribe = MONSTER
-    furniture = "hellFurniture"
-    inhabitants = {
-      fighters = {
-        count = {1}
-        all = {
-          10 "DEVIL_VAULT"
-        }
-      }
-    }
   }
 }
 "WOLF_DEN"
 {
+  biome = "MOUNTAIN"
   settlement = {
     type = Builtin CAVE "DUNGEON"
     inhabitants = {
@@ -1166,7 +1250,7 @@ End
     immigrantInterval = 1000
     maxPopulation = 10
   }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "WOLF" }
       traits = { FIGHTER }
@@ -1198,7 +1282,7 @@ End
     immigrantInterval = 1000
     maxPopulation = 10
   }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "BAT" }
       traits = { FIGHTER }
@@ -1242,9 +1326,10 @@ End
   config = {
     immigrantInterval = 1000
     maxPopulation = 10
+    prisoners = true
   }
   createOnBones = 0.1 { "KOBOLD_CAVE" }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "BANDIT" }
       traits = { FIGHTER }
@@ -1258,13 +1343,14 @@ End
     ambushChance = 0.05
     minPopulation = 0
     minTeamSize = 3
-    triggers = {Gold 500}
-    attackBehaviour = StealGold
+    triggers = {Resource "GOLD" 500}
+    attackBehaviour = StealResource "GOLD"
     ransom = 0.5 80
   }
 }
 "COTTAGE_BANDITS" inherit "NO_AGGRO_BANDITS"
 {
+  biome = "GRASSLAND"
   createOnBones = 1.0 { "HUMAN_COTTAGE" }
 }
 "GOBLIN_CAVE"
@@ -1277,9 +1363,9 @@ End
         count = {4 9}
         all = { 1 "GOBLIN_WARRIOR" }
         expLevelIncrease = {
-          MELEE 5
-          SPELL 5
-          ARCHERY 5
+          DAMAGE 5
+          SPELL_DAMAGE 5
+          RANGED_DAMAGE 5
         }
       }
     }
@@ -1289,17 +1375,18 @@ End
   config = {
     immigrantInterval = 1000
     maxPopulation = 10
+    prisoners = true
   }
   behaviour = {
     ambushChance = 0.1
     minPopulation = 0
     minTeamSize = 3
-    triggers = {Gold 500}
-    attackBehaviour = StealGold
+    triggers = {Resource "GOLD" 500}
+    attackBehaviour = StealResource "GOLD"
     ransom = 0.5 80
   }
   createOnBones = 0.1 { "KOBOLD_CAVE" }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "GOBLIN_WARRIOR" }
       traits = { FIGHTER }
@@ -1313,10 +1400,10 @@ NAME inherit ORIGINAL
   settlement = append {
     inhabitants = append {
       fighters = append {
-        baseLevelIncrease = { INCREASE }
+        combatExperience = INCREASE
       }
       leader = append {
-        baseLevelIncrease = { INCREASE }
+        combatExperience = INCREASE
       }
     }
   }
@@ -1333,14 +1420,17 @@ End
         count = {4 9}
         all = { 1 "GOBLIN_WARRIOR" }
         expLevelIncrease = {
-          MELEE 5
-          SPELL 5
-          ARCHERY 5
+          DAMAGE 5
+          SPELL_DAMAGE 5
+          RANGED_DAMAGE 5
         }
       }
     }
     tribe = BANDIT
     race = "goblins"
+  }
+  config = {
+    prisoners = true
   }
   discoverable = false
   behaviour = {
@@ -1350,50 +1440,21 @@ End
   }
 }
 
-"GOBLINS_Z_LEVEL1" inherit "GOBLINS_Z_LEVEL"
-{
-  settlement = append {
-    inhabitants = append {
-      leader = none
-      fighters = append {
-        baseLevelIncrease = { MELEE -5 }
-      }
-    }
-  }
-}
-
-STRONGER("GOBLINS_Z_LEVEL2", "GOBLINS_Z_LEVEL", MELEE 7)
-STRONGER("GOBLINS_Z_LEVEL3", "GOBLINS_Z_LEVEL", MELEE 15)
-STRONGER("GOBLINS_Z_LEVEL4", "GOBLINS_Z_LEVEL", MELEE 22)
-STRONGER("GOBLINS_Z_LEVEL5", "GOBLINS_Z_LEVEL", MELEE 30)
-
-"GOBLINS_Z_LEVEL6" inherit "GOBLIN_VILLAGE"
-{
-  settlement = append {
-    type = Builtin MINETOWN "DUNGEON"
-    inhabitants = append {
-      leader = none
-      fighters = append {
-        baseLevelIncrease = { MELEE 10 SPELL 10 ARCHERY 10 }
-      }
-    }
-  }
-}
-
 "DARK_ELF_CAVE"
 {
+  biome = "MOUNTAIN"
   settlement = {
     type = Builtin SMALL_MINETOWN "DUNGEON"
     tribe = DARK_ELF
     inhabitants = {
       leader = {
         id = { "DARK_ELF_WARRIOR" }
-        baseLevelIncrease = { MELEE 7 }
+        combatExperience = 7
       }
       fighters = {
         count = {2 5}
         all = { 1 "DARK_ELF_WARRIOR" }
-        baseLevelIncrease = { MELEE 7 }
+        combatExperience = 7
       }
       civilians = {
         count = {2 5}
@@ -1405,6 +1466,9 @@ STRONGER("GOBLINS_Z_LEVEL5", "GOBLINS_Z_LEVEL", MELEE 30)
     outsideFeatures = "dungeonOutside"
     furniture = "roomFurniture"
     surroundWithResources = 6
+  }
+  config = {
+    prisoners = true
   }
   behaviour = {
     minPopulation = 0
@@ -1423,12 +1487,12 @@ STRONGER("GOBLINS_Z_LEVEL5", "GOBLINS_Z_LEVEL", MELEE 30)
     inhabitants = {
       leader = {
         id = { "DARK_ELF_WARRIOR" }
-        baseLevelIncrease = { MELEE 7 }
+        combatExperience = 7
       }
       fighters = {
         count = {2 5}
         all = { 1 "DARK_ELF_WARRIOR" }
-        baseLevelIncrease = { MELEE 7 }
+        combatExperience = 7
       }
       civilians = {
         count = {2 5}
@@ -1436,6 +1500,9 @@ STRONGER("GOBLINS_Z_LEVEL5", "GOBLINS_Z_LEVEL", MELEE 30)
       }
     }
     race = "dark elves"
+  }
+  config = {
+    prisoners = true
   }
   discoverable = false
   behaviour = {
@@ -1445,14 +1512,9 @@ STRONGER("GOBLINS_Z_LEVEL5", "GOBLINS_Z_LEVEL", MELEE 30)
   }
 }
 
-STRONGER("DARK_ELVES_Z_LEVEL1", "DARK_ELVES_Z_LEVEL", MELEE 0)
-STRONGER("DARK_ELVES_Z_LEVEL2", "DARK_ELVES_Z_LEVEL", MELEE 7)
-STRONGER("DARK_ELVES_Z_LEVEL3", "DARK_ELVES_Z_LEVEL", MELEE 15)
-STRONGER("DARK_ELVES_Z_LEVEL4", "DARK_ELVES_Z_LEVEL", MELEE 22)
-STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELVES_Z_LEVEL", MELEE 30)
-
-"DWARF_CAVE"
+"NO_AGGRO_DWARF_CAVE"
 {
+  biome = "MOUNTAIN"
   settlement = {
     type = Builtin SMALL_MINETOWN "DUNGEON"
     tribe = DWARF
@@ -1473,6 +1535,13 @@ STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELVES_Z_LEVEL", MELEE 30)
     furniture = "roomFurniture"
     surroundWithResources = 6
   }
+  config = {
+    prisoners = true
+  }
+}
+
+"DWARF_CAVE" inherit "NO_AGGRO_DWARF_CAVE"
+{
   behaviour = {
     minPopulation = 0
     minTeamSize = 1
@@ -1500,6 +1569,9 @@ STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELVES_Z_LEVEL", MELEE 30)
     }
     race = "dwarves"
   }
+  config = {
+    prisoners = true
+  }
   discoverable = false
   behaviour = {
     minPopulation = 0
@@ -1507,12 +1579,6 @@ STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELVES_Z_LEVEL", MELEE 30)
     attackBehaviour = KillLeader
   }
 }
-
-STRONGER("DWARVES_Z_LEVEL1", "DWARVES_Z_LEVEL", MELEE 0)
-STRONGER("DWARVES_Z_LEVEL2", "DWARVES_Z_LEVEL", MELEE 7)
-STRONGER("DWARVES_Z_LEVEL3", "DWARVES_Z_LEVEL", MELEE 15)
-STRONGER("DWARVES_Z_LEVEL4", "DWARVES_Z_LEVEL", MELEE 22)
-STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 
 "COTTAGE_GOBLINS" inherit "GOBLIN_CAVE"
 {
@@ -1533,10 +1599,13 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     furniture = "roomFurniture"
     outsideFeatures = "villageOutside"
   }
+  config = {
+    prisoners = true
+  }
 }
 "LIZARDMEN"
 {
-  biomes = { "DESERT" }
+  biome = "DESERT"
   settlement = {
     type = Builtin VILLAGE "MUD"
     tribe = LIZARD
@@ -1558,6 +1627,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     maxPopulation = 11
     ghostProb = 0.1
     spawnGhosts = 4
+    prisoners = true
   }
   behaviour = {
     ambushChance = 0.1
@@ -1576,7 +1646,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     attackBehaviour = KillLeader
   }
   createOnBones = 0.1 { "VILLAGE" "ELVES" }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "LIZARDMAN" }
       traits = { FIGHTER }
@@ -1586,6 +1656,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 }
 "DARK_ELVES_ALLY"
 {
+  biome = "MOUNTAIN"
   settlement = {
     type = Builtin MINETOWN "DUNGEON"
     tribe = DARK_ELF
@@ -1612,6 +1683,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
   config = {
     immigrantInterval = 500
     maxPopulation = 15
+    prisoners = true
   }
   levelConnection = {
     topLevel = ExtraEnemy {"DARK_ELVES_ENTRY"}
@@ -1621,7 +1693,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
       { MainEnemy {60 40} MINETOWN }
     }
   }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "DARK_ELF_WARRIOR" }
       traits = { FIGHTER }
@@ -1637,17 +1709,12 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     inhabitants = {
       leader = {
         id = { "DARK_ELF_LORD" }
-        baseLevelIncrease = {
-          MELEE 30
-          SPELL 30
-        }
+        combatExperience = 30
       }
       fighters = {
         count = {6 9}
         all = { 1 "DARK_ELF_WARRIOR" }
-        baseLevelIncrease = {
-          MELEE 30
-        }
+        combatExperience = 30
       }
       civilians = {
         count = {6 9},
@@ -1718,6 +1785,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
       }
     }
   }
+  config = {
+    prisoners = true
+  }
 }
 
 "DUNGEON2" inherit "DUNGEON1"
@@ -1769,6 +1839,10 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
         }
       }
     }
+  }
+  config = {
+    prisoners = true
+    discoverAchievement = "black_market"
   }
   behaviour = {
     minPopulation = 0
@@ -1885,7 +1959,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 }
 "WHITE_DRAGON" inherit "RED_DRAGON"
 {
-  biomes = { "SNOW" }
+  biome = "SNOW"
   settlement = append {
     type = Builtin CAVE "GLACIER"
     inhabitants = {
@@ -1900,6 +1974,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
       { ExtraEnemy { "WHITE_DRAGON_FLOOR" { 2 4 }} {30 20} DUNGEON }
       { MainEnemy {30 20} DUNGEON }
     }
+  }
+  config = {
+    prisoners = true
   }
 }
 "ENTS"
@@ -1924,8 +2001,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     immigrantInterval = 300
     maxPopulation = 10
     alwaysMount = true
+    prisoners = true
   }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "ENT" }
       traits = { FIGHTER }
@@ -1950,8 +2028,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
   config = {
     immigrantInterval = 300
     maxPopulation = 10
+    prisoners = true
   }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "DRIAD" }
       traits = { FIGHTER }
@@ -1961,6 +2040,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 }
 "SHELOB"
 {
+  biome = "MOUNTAIN"
   settlement = {
     type = RandomLayout { "shelob" { 12 12 } "default" CAVE}
     tribe = SHELOB
@@ -1978,6 +2058,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
   }
   config = {
    leaderAsFighter = true
+   prisoners = true
   }
   createOnBones = 0.1 { "DWARF_CAVE" "KOBOLD_CAVE" }
 }
@@ -1996,16 +2077,18 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     leaderAsFighter = true
     spawnGhosts = 1
     ghostProb = 0.03
+    prisoners = true
   }
   behaviour = {
     minPopulation = 0
     minTeamSize = 1
-    triggers = {EnemyPopulation 13 AggravatingMinions}
+    triggers = {EnemyPopulation 13 AggravatingMinions StolenItems}
     attackBehaviour = KillMembers 4
   }
 }
 "YETI"
 {
+  biome = "SNOW"
   settlement = {
     type = Builtin EMPTY "DUNGEON"
     inhabitants = {
@@ -2014,10 +2097,13 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     race = "yeti"
     tribe = HOSTILE
   }
+  config = {
+    prisoners = true
+  }
 }
 "HYDRA"
 {
-  biomes = { "SWAMP" }
+  biome = "SWAMP"
   settlement = {
     type = RandomLayout { "hydra" { 20 20 } "default"}
     inhabitants = {
@@ -2030,6 +2116,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     leaderAsFighter = true
     spawnGhosts = 1
     ghostProb = 0.03
+    prisoners = true
   }
 }
 "KRAKEN"
@@ -2049,6 +2136,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 }
 "CEMETERY"
 {
+  biome = "GRASSLAND"
   settlement = {
     type = RandomLayout { "zombie_crypt" { 25 25 } "default"}
     inhabitants = {
@@ -2106,7 +2194,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     immigrantInterval = 300
     maxPopulation = 10
   }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "GOBLIN_WARRIOR" }
       traits = { FIGHTER }
@@ -2132,8 +2220,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
   config = {
     immigrantInterval = 300
     maxPopulation = 10
+    prisoners = true
   }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "HARPY" }
       traits = { FIGHTER }
@@ -2178,10 +2267,8 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 {
   settlement = {
     type = Builtin CAVE "DUNGEON"
-    inhabitants = {
-      leader = {{ "SPECIAL_HLBN" "SPECIAL_HLBW" "SPECIAL_HLGN" "SPECIAL_HLGW" }}
-    }
     tribe = DARK_KEEPER
+    stockpiles = {{ "sokobanPrize" 1 "CHEST" }}
   }
   levelConnection = {
     direction = UP
@@ -2190,10 +2277,14 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
       {MainEnemy {28 16} SOKOBAN "Sokoban" false true false }
     }
   }
+  config = {
+    discoverAchievement = "sokoban"
+  }
   discoverable = false
 }
 "WITCH"
 {
+  biome = "SWAMP"
   settlement = {
     type = Builtin COTTAGE "WOOD"
     tribe = MONSTER
@@ -2202,6 +2293,33 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     }
     race = "witch"
     furniture = "witchInside"
+  }
+}
+"ARMOR_SHOP"
+{
+  biome = "GRASSLAND"
+  settlement = {
+    type = Builtin COTTAGE "WOOD"
+    tribe = PEACEFUL
+    shopItems = {
+      {15 30} "armory"
+    }
+  }
+}
+"POTION_SHOP" inherit "ARMOR_SHOP"
+{
+  settlement = append {
+    shopItems = {
+      {15 30} "potions"
+    }
+  }
+}
+"JEWELER_SHOP" inherit "ARMOR_SHOP"
+{
+  settlement = append {
+    shopItems = {
+      {15 30} "jeweler"
+    }
   }
 }
 "TEMPLE"
@@ -2225,8 +2343,8 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     race = "altar"
     inhabitants = {
       leader = {
-        id = {"GOBLIN_WIZARD"} 
-        expLevelIncrease = { SPELL 7 }
+        id = {"GOBLIN_WIZARD"}
+        expLevelIncrease = { SPELL_DAMAGE 7 }
       }
     }
     furniture = "templeInside"
@@ -2236,15 +2354,16 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 "ADOXIE_FEET_ENTRY"
 {
   settlement = {
-    type = RandomLayout { "adoxie_feet_entry" { 5 5 } "adoxie_feet"}
+    type = RandomLayout { "adoxie_feet_entry" { 5 5 } "adoxie_feet_entry"}
     tribe = MONSTER
     race = "altar of Evil God Adoxie"
   }
 }
 "ADOXIE_FEET"
 {
+  biome = "DESERT"
   settlement = {
-    type = RandomLayout { "adoxie_feet_under" { 15 15 } "adoxie_feet"}
+    type = RandomLayout { "adoxie_feet_under" { 17 17 } "adoxie_feet"}
     tribe = HUMAN
     race = "altar of Evil God Adoxie"
     stockpiles = {{ "gold" 160 "TREASURE_CHEST" }}
@@ -2254,7 +2373,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     direction = DOWN
     topLevel = ExtraEnemy { "ADOXIE_FEET_ENTRY" }
     levels = {
-      {MainEnemy {17 17} BASIC none true }
+      {MainEnemy {19 19} BASIC "Ancient tomb" false false }
     }
   }
 }
@@ -2289,6 +2408,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 }
 "HUMAN_COTTAGE"
 {
+  biome = "GRASSLAND"
   settlement = {
     type = Builtin COTTAGE "WOOD"
     tribe = HUMAN
@@ -2330,10 +2450,10 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
       { ExtraEnemy { "COTTAGE_CELLAR" {1} } {10 10} BASIC }
     }
   }
- 
 }
 "ESKIMO_COTTAGE" inherit "HUMAN_COTTAGE"
 {
+  biome = "SNOW"
   settlement = append {
     type = Builtin COTTAGE "SNOW"
     crops = none
@@ -2376,6 +2496,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 }
 "NOMAD_COTTAGE" inherit "HUMAN_COTTAGE"
 {
+  biome = "DESERT"
   settlement = append {
     type = Builtin COTTAGE "SANDSTONE_WALL"
     crops = none
@@ -2443,7 +2564,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 }
 "THIEVES"
 {
-  biomes = { "DESERT" }
+  biome = "DESERT"
   settlement = {
     type = Builtin CASTLE2 "SANDSTONE_WALL"
     tribe = HUMAN
@@ -2464,10 +2585,11 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
   }
   config = {
     immigrantInterval = 300
-    maxPopulation = 10
+    maxPopulation = 20
     ghostProb = 0.1
     spawnGhosts = 6
     alwaysMount = true
+    prisoners = true
   }
   behaviour = {
     ambushChance = 0.1
@@ -2507,6 +2629,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 }
 "ELVEN_COTTAGE"
 {
+  biome = "FOREST"
   settlement = {
     type = Builtin FORREST_COTTAGE "WOOD"
     tribe = ELF
@@ -2529,9 +2652,13 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     race = "elves"
     furniture = "roomFurniture"
   }
+  config = {
+    prisoners = true
+  }
 }
 "LIZARDMEN_COTTAGE"
 {
+  biome = "DESERT"
   settlement = {
     type = Builtin FORREST_COTTAGE "WOOD"
     tribe = LIZARD
@@ -2545,6 +2672,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     furniture = "roomFurniture"
   }
   createOnBones = 1.0 { "ELVEN_COTTAGE" }
+  config = {
+    prisoners = true
+  }
 }
 "KOBOLD_CAVE"
 {
@@ -2559,6 +2689,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     }
     race = "kobolds"
     stockpiles = {{ "minerals" 60 }}
+  }
+  config = {
+    prisoners = true
   }
 }
 "RAT_CAVE"
@@ -2582,7 +2715,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
 "RAT_PEOPLE_Z_LEVEL"
 {
   settlement = {
-    type = RandomLayout { "z_level_cave" { 80 80 } "default" }
+    type = RandomLayout { "z_level_cave_only_water" { 80 80 } "default" }
     tribe = MONSTER
     inhabitants = {
       leader = { { "RAT_KING" } }
@@ -2600,6 +2733,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     }
   }
   discoverable = false
+  config = {
+    prisoners = true
+  }
   behaviour = {
     minPopulation = 0
     minTeamSize = 1
@@ -2642,10 +2778,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     inhabitants = {
       leader = {
         id = { "KEEPER_MAGE" }
-        baseLevelIncrease = {
-          MELEE 12
-          SPELL 12
-        }
+        combatExperience = 12
       }
       fighters = {
         count = {12 18}
@@ -2659,9 +2792,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
           1 "HARPY"
         }
         expLevelIncrease = {
-          MELEE 10
-          SPELL 10
-          ARCHERY 6
+          DAMAGE 10
+          SPELL_DAMAGE 10
+          RANGED_DAMAGE 6
         }
       }
       civilians = {
@@ -2682,6 +2815,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
     maxPopulation = 15
     ghostProb = 0.1
     spawnGhosts = 4
+    prisoners = true
   }
   behaviour = {
     minPopulation = 3
@@ -2733,6 +2867,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
   config = {
     immigrantInterval = 300
     maxPopulation = 16
+    prisoners = true
   }
   createOnBones = 0.1 { "DWARVES" "VILLAGE" }
   immigrants = {
@@ -2765,16 +2900,17 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
   config = {
     immigrantInterval = 1000
     maxPopulation = 10
+    prisoners = true
   }
   behaviour = {
     minPopulation = 0
     minTeamSize = 3
-    triggers = {Gold 500}
-    attackBehaviour = StealGold
+    triggers = {Resource "GOLD" 500}
+    attackBehaviour = StealResource "GOLD"
     ransom = 0.5 80
   }
   createOnBones = 0.1 { "KOBOLD_CAVE" }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "ORC" }
       traits = { FIGHTER }
@@ -2804,8 +2940,9 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARVES_Z_LEVEL", MELEE 30)
   config = {
     immigrantInterval = 300
     maxPopulation = 10
+    prisoners = true
   }
-  immigrants = { 
+  immigrants = {
     {
       ids = { "OGRE" }
       traits = { FIGHTER }

@@ -62,7 +62,8 @@ class ShortestPath {
   template <typename EntryFun, typename LengthFun, typename DirectionsFun>
   void init(EntryFun entryFun, LengthFun lengthFun, DirectionsFun directions,
       Vec2 target, optional<Vec2> from, optional<int> limit = none);
-  void reverse(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, function<vector<Vec2>(Vec2)> directions, double mult, Vec2 from, int limit);
+  void reverse(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun,
+      function<vector<Vec2>(Vec2)> directions, double mult, Vec2 from);
   void constructPath(Vec2 start, function<vector<Vec2>(Vec2)> directions, bool reversed = false);
   vector<Vec2> SERIAL(path);
   Vec2 SERIAL(target);
@@ -72,8 +73,8 @@ class ShortestPath {
 
 class LevelShortestPath {
   public:
-  LevelShortestPath(const Creature* creature, Position target, double mult = 0, vector<Vec2>* visited = nullptr);
-  LevelShortestPath(Position from, MovementType, Position target, double mult = 0, vector<Vec2>* visited = nullptr);
+  LevelShortestPath(const Creature* creature, Position target, double mult = 0);
+  LevelShortestPath(Position from, MovementType, Position target, double mult = 0);
   bool isReachable(Position) const;
   Position getNextMove(Position);
   optional<Position> getNextNextMove(Position);
@@ -87,7 +88,7 @@ class LevelShortestPath {
   SERIALIZATION_DECL(LevelShortestPath)
 
   private:
-  static ShortestPath makeShortestPath(Position, MovementType, Position to, double mult, vector<Vec2>* visited);
+  static ShortestPath makeShortestPath(Position, MovementType, Position to, double mult);
   ShortestPath SERIAL(path);
   Level* SERIAL(level) = nullptr;
 };
@@ -98,7 +99,7 @@ class Dijkstra {
       vector<Vec2> directions = Vec2::directions8());
   bool isReachable(Vec2) const;
   double getDist(Vec2) const;
-  using DistanceMap = unordered_map<Vec2, double, CustomHash<Vec2>>;
+  using DistanceMap = HashMap<Vec2, double>;
   const DistanceMap& getAllReachable() const;
 
   private:
@@ -109,9 +110,10 @@ class BfSearch {
   public:
   BfSearch(Rectangle bounds, Vec2 from, function<bool(Vec2)> entryFun, vector<Vec2> directions = Vec2::directions8());
   bool isReachable(Vec2) const;
-  const set<Vec2>& getAllReachable() const;
+  using ReachableSet = HashSet<Vec2>;
+  const ReachableSet& getAllReachable() const;
 
   private:
-  set<Vec2> reachable;
+  ReachableSet reachable;
 };
 

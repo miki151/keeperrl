@@ -8,7 +8,7 @@
   canHideHere = true
   strength = 80
   maxTraining = {
-    MELEE 3
+    DAMAGE 3
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
@@ -23,7 +23,7 @@
   strength = 80
   upgrade = "TRAINING_WOOD"
   maxTraining = {
-    MELEE 7
+    DAMAGE 7
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
@@ -38,7 +38,7 @@
   strength = 80
   upgrade = "TRAINING_IRON"
   maxTraining = {
-    MELEE 99
+    DAMAGE 99
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
@@ -75,6 +75,26 @@ TRAINING("_DWARF", "_dwarf")
   strength = 80
   requiresLight = true
   usageFX = WORKSHOP
+  usageSound = {"WORKSHOP_USAGE" 0.2}
+}
+"ENCHANTED_WORKSHOP" inherit "WORKSHOP"
+{
+  name = "enchanted workshop"
+  viewId = { "enchanted_workshop" }
+  usagePredicate = Not Area 1 Not FurnitureType "ENCHANTED_WATER"
+}
+"WORKSHOP_TOOL_STAND"
+{
+  name = "tool stand"
+  viewId = { "workshop_tool_stand" }
+  blockMovement = true
+  canHideHere = true
+  fire = 50
+  strength = 80
+  workshopSpeedBoost = {
+    1.2 "WORKSHOP"
+    1.2 "ENCHANTED_WORKSHOP"
+  }
 }
 "FORGE"
 {
@@ -87,6 +107,26 @@ TRAINING("_DWARF", "_dwarf")
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   usageFX = FORGE
+  usageSound = {"FORGE_USAGE" 0.2}
+}
+"LAVA_FORGE" inherit "FORGE"
+{
+  name = "magma forge"
+  viewId = { "lava_forge" }
+  usagePredicate = Not Area 1 Not FurnitureType "MAGMA"
+  upgrade = "FORGE"
+}
+"FORGE_QUENCHING_BUCKET"
+{
+  name = "quenching bucket"
+  viewId = { "forge_quenching_bucket" }
+  blockMovement = true
+  canHideHere = true
+  strength = 80
+  workshopSpeedBoost = {
+    1.2 "FORGE"
+    1.2 "LAVA_FORGE"
+  }
 }
 "LABORATORY"
 {
@@ -99,6 +139,28 @@ TRAINING("_DWARF", "_dwarf")
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   usageFX = LABORATORY
+  usageSound = {"LABORATORY_USAGE" 0.2}
+}
+"ENCHANTED_LABORATORY" inherit "LABORATORY"
+{
+  name = "enchanted laboratory"
+  viewId = { "enchanted_cauldron" }
+  usageFX = ENCHANTED_LABORATORY
+  usagePredicate = Not Area 1 Not FurnitureType "ENCHANTED_WATER"
+  upgrade = "LABORATORY"
+}
+"MORTAR_AND_PESTLE"
+{
+  name = "mortar and pestle"
+  viewId = { "mortar_and_pestle" }
+  blockMovement = true
+  canHideHere = true
+  fire = 50
+  strength = 80
+  workshopSpeedBoost = {
+    1.2 "LABORATORY"
+    1.2 "ENCHANTED_LABORATORY"
+  }
 }
 "CAULDRON_TAR"
 {
@@ -122,6 +184,27 @@ TRAINING("_DWARF", "_dwarf")
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   usageFX = JEWELLER
 }
+"LAVA_JEWELLER" inherit "JEWELLER"
+{
+  name = "magma jeweller"
+  viewId = { "lava_jeweller" }
+  usageFX = LAVA_JEWELLER
+  usagePredicate = Not Area 1 Not FurnitureType "MAGMA"
+  upgrade = "JEWELLER"
+  fire = none
+}
+"JEWELLER_POLISHING_WHEEL"
+{
+  name = "jewellery polishing wheel"
+  viewId = { "jeweller_polishing_wheel" }
+  blockMovement = true
+  canHideHere = true
+  strength = 80
+  workshopSpeedBoost = {
+    1.2 "JEWELER"
+    1.2 "LAVA_JEWELER"
+  }
+}
 "MORGUE_TABLE"
 {
   name = "morgue table"
@@ -134,6 +217,17 @@ TRAINING("_DWARF", "_dwarf")
   requiresLight = true
   usageFX = EMBALMENT
 }
+"MORGUE_INSTRUMENT_TABLE"
+{
+  name = "instrument bench"
+  viewId = { "morgue_instrument_table" }
+  blockMovement = true
+  canHideHere = true
+  strength = 80
+  workshopSpeedBoost = {
+    1.2 "MORGUE"
+  }
+}
 "POETRY_TABLE" inherit "JEWELLER"
 {
   name = "poetry table"
@@ -145,8 +239,8 @@ TRAINING("_DWARF", "_dwarf")
   viewId = { "dining_table" }
   name = "dining table"
   usageFX = none
-  diningFurniture = true
-  usageType = UsageEffect "eat from" Filter Humanoid {
+  diningFurniture = DINING_TABLE
+  usageType = UsageEffect "eat from dining table" Filter Humanoid {
     CreatureMessage { "eat a steaming pig" "eats a steaming pig"}
     Lasting SATIATED
   }
@@ -155,14 +249,14 @@ TRAINING("_DWARF", "_dwarf")
 {
   viewId = { "haypile" }
   name = "hay pile"
-  blockMovement = true
+  #blockMovement = true
   usageTime = 5
   canHideHere = true
   fire = 100
   strength = 10
   destroyFX = { DESTROY_FURNITURE Rgb 200 200 0 255 }
-  diningFurniture = true
-  usageType = UsageEffect "eat from" Filter Not Humanoid {
+  diningFurniture = HAYPILE
+  usageType = UsageEffect "eat from hay pile" Filter Not Humanoid {
     CreatureMessage { "eat some hay" "eats some hay"}
     Lasting SATIATED
   }
@@ -175,7 +269,7 @@ TRAINING("_DWARF", "_dwarf")
   usageTime = 5
   canHideHere = true
   strength = 100
-  usageType = UsageEffect "use" {
+  usageType = UsageEffect "use distillery" {
     Chance 0.02 DropItems {"Moonshine"} {1}
     Chance 0.005 SummonEnemy "RAT" {1 4} none
   }
@@ -201,7 +295,7 @@ TRAINING("_DWARF", "_dwarf")
   fire = 70
   strength = 50
   maxTraining = {
-    SPELL 3
+    SPELL_DAMAGE 3
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
@@ -218,7 +312,7 @@ TRAINING("_DWARF", "_dwarf")
   strength = 50
   upgrade = "BOOKCASE_WOOD"
   maxTraining = {
-    SPELL 7
+    SPELL_DAMAGE 7
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
@@ -235,7 +329,7 @@ TRAINING("_DWARF", "_dwarf")
   strength = 50
   upgrade = "BOOKCASE_IRON"
   maxTraining = {
-    SPELL 99
+    SPELL_DAMAGE 99
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
@@ -247,12 +341,264 @@ Def BOOKCASES(SUF1, SUF2)
 End
 BOOKCASES("_NECRO", "_necro")
 BOOKCASES("_HUMAN", "_human")
+
+"SCRIPTORIUM" inherit "POETRY_TABLE"
+{
+  name = "scriptorium"
+  viewId = { "scriptorium" }
+  usageFX = none
+}
+"SCRIPTORIUM_HOLY_TOKEN"
+{
+  name = "holy token"
+  viewId = { "scriptorium_holy_token" }
+  blockMovement = true
+  canHideHere = true
+  strength = 80
+  fire = 30
+  workshopSpeedBoost = {
+    1.2 "SCRIPTORIUM"
+  }
+}
+"ROSTRUM_WOOD"
+{
+  name = "wooden rostrum"
+  viewId = { "rostrum_wood" }
+  canHideHere = true
+  usageType = UsageEffect "hold a Mass" {
+     FirstSuccessful {
+       Filter EquipedIngredient "adoxie_prayer" {
+         SoundEffect { "black_mass" }
+         Area 1 EmitGas "BLACK_MASS_SMOKE" 10
+         ChooseRandom {
+           Message NORMAL "\"Munarret te aroleac munirol atcserda, muixan arollev.\""
+           Message NORMAL "\"Et da sarumalc enrete sixiv ni.\""
+           Message NORMAL "\"Murif te seps ni tnos xirtavel samina artson.\""
+           Message NORMAL "\"Son revus adnecsed aut sutinalleb tu.\""
+           Message NORMAL "\"Murollev te aracnas, arisanno.\""
+           Message NORMAL "\"Maut somadiv non artson sico.\""
+           Message NORMAL "\"Sumignat mueroc ni risnecserp des.\""
+           Message NORMAL "\"Mudnalletne da aireme son sorad.\""
+           Message NORMAL "\"Aut marolg ni xirev iuq, mutnacra saut soratsym.\""
+           Message NORMAL "\"Sumarodual enif enis muimres.\""
+           Message NORMAL "\"Eaut satirev senmo tnacifirolg.\""
+           Message NORMAL "\"Sugluf murallets arpus douq animul ni.\""
+           Message NORMAL "\"Tnedeac marret munarpus douq sinires ni te.\""
+           Message NORMAL "\"Axeresim animod, son eritlacsa.\""
+           Message NORMAL "\"Siroma te satilimuh ni sarocerp.\""
+           Message NORMAL "\"Murolleb aimmus o, artson mecov eratxenoe.\""
+           Message NORMAL "\"Raxelletni sinmo murorepus eauq, merecap sarad.\""
+           Message NORMAL "\"Rutnaval, tnus sairav euq ,artson arortcep.\""
+           Message NORMAL "\"Araved aut mutacirup erivulf ni.\""
+           Message NORMAL "\"Metcnas aitaeb muc mus saxirolnoc son.\""
+           Message NORMAL "\"Sudnetse mauqnun aimul ibu acol ni.\""
+           Message NORMAL "\"Maut marret aneleb te, animod ,maut mulupop erivlas.\""
+           Message NORMAL "\"Amixam arallev o, tacifiralc et aineg sinmo tu.\""
+           Message NORMAL "\"Xirtarenluv arinas, mumrifni aritrof.\""
+           Message NORMAL "\"Muresserp te subiroxe aigufer anod te.\""
+           Message NORMAL "\"Xirtson xaros te soirtarf aranuda.\""
+           Message NORMAL "\"Sumaviv arido te airocsid enis tu.\""
+           Message NORMAL "\"Senmo son repus adnuffe maut xul muraitarg.\""
+           Message NORMAL "\"Etatirev te mutirips ni sumus sutaner tu.\""
+           Message NORMAL "\"Eraviv munrete aut aracap ni.\""
+           Message NORMAL "\"Aneres xap o, et da romalc aut sarutaerc sinmo.\""
+           Message NORMAL "\"Solitsoh musrevda artnoc son erisnefed.\""
+           Message NORMAL "\"Eaiv murev ni mudarg irtson aradiug te.\""
+           Message NORMAL "\"Animod, murtson muxul tis aut aranimul.\""
+           Message NORMAL "\"Sinrete muroivlas aiv tis aut aiv te.\""
+           Message NORMAL "\"Sumaradual et murolleces alleces ni.\""
+           Message NORMAL "\"Siroleac munger ni atcnas te silagna muc.\""
+           Message NORMAL "\"Xinrete aut nemon tis muracideneb.\""
+           Message NORMAL "\"Eidinmo son repus aut aitarg adnecsed te.\""
+           Message NORMAL "\"Eranger atised mauqmun iuq, aimmus aimon ni.\""
+           Message NORMAL "\"Etarcas siroma te eromit ni et sumaroda.\""
+         }
+       }
+       {
+         SoundEffect { "latin_mass" }
+         Area 6 Filter DistanceD none 6 Chance 0.2 Fx { MASS Rgb 100 100 255 100 }
+         ChooseRandom {
+           Message NORMAL "\"Vellora naxium, adrescta lorinum caelora et terranum.\""
+           Message NORMAL "\"In vixis eterne clamuras ad te.\""
+           Message NORMAL "\"Nostra animas levatrix sont in spes et firum.\""
+           Message NORMAL "\"Ut bellanitus tua descenda suver nos.\""
+           Message NORMAL "\"Onnasira, Sancara et Vellorum.\""
+           Message NORMAL "\"Ocis nostra non vidamos tuam.\""
+           Message NORMAL "\"Sed prescensir in coreum tangimus.\""
+           Message NORMAL "\"Daros nos emeria ad entellandum"
+           Message NORMAL "\"Mystaros tuas arcantum, qui verix in gloram tua.\""
+           Message NORMAL "\"Sermium sine fine laudoramus.\""
+           Message NORMAL "\"Glorificant omnes veritas tuae.\""
+           Message NORMAL "\"In lumina quod supra stellarum fulgus.\""
+           Message NORMAL "\"Et in serinis quod supranum terram caedent.\""
+           Message NORMAL "\"Ascaltire nos, Domina miserexa.\""
+           Message NORMAL "\"Precoras in humilitas et amoris.\""
+           Message NORMAL "\"Eonextare vocem nostra, o summia bellorum.\""
+           Message NORMAL "\"Daras pacerem, quae superorum omnis intellexar.\""
+           Message NORMAL "\"Pectrora nostra, que varias sunt, lavantur.\""
+           Message NORMAL "\"In fluvire puricatum tua devara.\""
+           Message NORMAL "\"Nos conlorixas sum cum beatia sanctem.\""
+           Message NORMAL "\"In loca ubi lumia nunquam estendus.\""
+           Message NORMAL "\"Salvire populum tuam, Domina, et belena terram tuam.\""
+           Message NORMAL "\"Ut omnis genia te clarificat, o vellara maxima.\""
+           Message NORMAL "\"Fortira infirmum, sanira vulneratrix.\""
+           Message NORMAL "\"Et dona refugia exoribus et presserum.\""
+           Message NORMAL "\"Adunara fratrios et sorax nostrix.\""
+           Message NORMAL "\"Ut sine discoria et odira vivamus.\""
+           Message NORMAL "\"Gratiarum lux tuam effunda super nos omnes.\""
+           Message NORMAL "\"Ut renatus sumus in spiritum et veritate.\""
+           Message NORMAL "\"In pacara tua eternum vivare.\""
+           Message NORMAL "\"Omnis creaturas tua clamor ad te, o Pax Serena.\""
+           Message NORMAL "\"Defensire nos contra adversum hostilos.\""
+           Message NORMAL "\"Et guidara nostri gradum in verum viae.\""
+           Message NORMAL "\"Luminara tua sit luxum nostrum, Domina.\""
+           Message NORMAL "\"Et via tua sit via salviorum eternis.\""
+           Message NORMAL "\"In secella secellorum te laudaramus.\""
+           Message NORMAL "\"Cum angalis et sancta in regnum caeloris.\""
+           Message NORMAL "\"Benedicarum sit nomen tua eternix.\""
+           Message NORMAL "\"Et descenda gratia tua super nos omnidie.\""
+           Message NORMAL "\"In nomia summia, qui numquam desita regnare.\""
+           Message NORMAL "\"Adoramus te in timore et amoris sacrate.\""
+         }
+       }
+     }
+    Filter Not LastingEffect PREACHING Lasting 200 PREACHING
+  }
+  strength = 5
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+}
+"ROSTRUM_IRON" inherit "ROSTRUM_WOOD"
+{
+  name = "iron rostrum"
+  viewId = { "rostrum_iron" }
+  strength = 20
+  destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+}
+"ROSTRUM_GOLD" inherit "ROSTRUM_WOOD"
+{
+  name = "golden rostrum"
+  viewId = { "rostrum_gold" }
+  strength = 20
+  destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+}
+"PEW_WOOD"
+{
+  name = "wooden pew"
+  viewId = { "pew_wood" }
+  canHideHere = true
+  usageType = UsageEffect "sit on pew" {
+    Filter LastingEffect DRUNK {
+      CreatureMessage { "fall asleep on the pew" "falls asleep on the pew" }
+      Lasting SLEEP
+    }
+  }
+  strength = 5
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+}
+"PEW_IRON" inherit "PEW_WOOD"
+{
+  viewId = { "pew_iron" }
+  name = "iron pew"
+  upgrade = "PEW_WOOD"
+  strength = 20
+  destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+}
+"PEW_GOLD" inherit "PEW_WOOD"
+{
+  viewId = { "pew_gold" }
+  name = "golden pew"
+  upgrade = "PEW_IRON"
+  strength = 20
+  destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+}
+"PRAYER_BENCH_WOOD"
+{
+  name = "wooden prayer bench"
+  viewId = { "prayer_bench_wood" }
+  canHideHere = true
+  usageType = BuiltinUsageId PRAY
+  maxTraining = {
+    DIVINITY 3
+  }
+  strength = 5
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+}
+"PRAYER_BENCH_IRON" inherit "PRAYER_BENCH_WOOD"
+{
+  name = "iron prayer bench"
+  viewId = { "prayer_bench_iron" }
+  upgrade = "PRAYER_BENCH_WOOD"
+  maxTraining = {
+    DIVINITY 7
+  }
+  strength = 15
+  destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+}
+"PRAYER_BENCH_GOLD" inherit "PRAYER_BENCH_WOOD"
+{
+  name = "golden prayer bench"
+  viewId = { "prayer_bench_gold" }
+  upgrade = "PRAYER_BENCH_IRON"
+  maxTraining = {
+    DIVINITY 99
+  }
+  strength = 15
+  destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+}
+"CONFESSIONAL"
+{
+  name = "confessional"
+  viewId = { "confessional" }
+  canHideHere = true
+  usageType = UsageEffect "confess" Filter And {
+    Not FurnitureType "CONFESSIONAL"
+    Not Area 1 Not And {
+      LastingEffect CONFESSING_SKILL
+      FurnitureType "CONFESSIONAL"
+    }
+  } {
+    Filter LastingEffect SINNED {
+      RemoveLasting SINNED
+      CollectiveMessage "A minion is absolved of their venial sins"
+      Filter ExperienceBelow 5 {
+        AddExperience 1
+        CollectiveMessage "A minion is more experienced"
+      }
+    }
+  }
+  strength = 15
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+}
+"LUXURIOUS_CONFESSIONAL" inherit "CONFESSIONAL"
+{
+  name = "luxurious confessional"
+  viewId = { "luxurious_confessional" }
+  usageType = UsageEffect "confess" Filter And {
+    Not FurnitureType "LUXURIOUS_CONFESSIONAL"
+    Not Area 1 Not And {
+      LastingEffect CONFESSING_SKILL
+      FurnitureType "LUXURIOUS_CONFESSIONAL"
+    }
+  } {
+    Filter LastingEffect MORTAL_SINNED {
+      RemovePermanent MORTAL_SINNED
+      Achievement "mortal_sin"
+      CollectiveMessage "A minion is absolved of a mortal sin"
+      Filter ExperienceBelow 20 {
+        AddExperience 3
+        CollectiveMessage "A minion is more experienced"
+      }
+    }
+  }
+  strength = 35
+  destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+}
 "THRONE"
 {
   name = "throne"
   viewId = { "throne" }
   canHideHere = true
-  usageType = UsageEffect "sit on" { CreatureMessage { "sit on the throne" "sits on the throne" } Audience none }
+  usageType = UsageEffect "sit on throne" { CreatureMessage { "sit on the throne" "sits on the throne" } Audience none }
   luxury = 1.0
   strength = 80
   populationIncrease = { 10 none }
@@ -261,6 +607,16 @@ BOOKCASES("_HUMAN", "_human")
 "THRONE_HUMAN" inherit "THRONE"
 {
   viewId = { "throne_human" }
+}
+"BROKEN_THRONE" inherit "THRONE"
+{
+  name = "broken throne"
+  usageType = UsageEffect "sit on throne" {
+    CreatureMessage { "sit on the throne" "sits on the throne" }
+    SummonEnemy "GOBLIN_WARRIOR" {3 5} none
+    RemoveFurniture "BROKEN_THRONE"
+  }
+  populationIncrease = { 0 none }
 }
 "IMPALED_HEAD"
 {
@@ -277,7 +633,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "beast cage"
   viewId = { "beast_cage" }
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  usageType = UsageEffect "sleep in cage" Lasting SLEEP
   tickType = Effect BedHeal()
   canHideHere = true
   fire = 50
@@ -289,7 +645,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "basic bed"
   viewId = { "bed1" }
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  usageType = UsageEffect "sleep in bed" Lasting SLEEP
   tickType = Effect BedHeal()
   canHideHere = true
   fire = 50
@@ -301,7 +657,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "fine bed"
   viewId = { "bed2" }
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  usageType = UsageEffect "sleep in bed" Lasting SLEEP
   tickType = Effect BedHeal()
   canHideHere = true
   fire = 50
@@ -315,7 +671,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "luxurious bed"
   viewId = { "bed3" }
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  usageType = UsageEffect "sleep in bed" Lasting SLEEP
   tickType = Effect BedHeal()
   canHideHere = true
   luxury = 0.7
@@ -342,7 +698,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   canHideHere = true
   strength = 50
   blockMovement = true
-  populationIncrease = { 1 4 }
+  populationIncrease = { 1 8 }
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
 }
 "AUTOMATON_ENGINE_IRON"
@@ -352,7 +708,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   canHideHere = true
   strength = 50
   blockMovement = true
-  populationIncrease = { 1 16 }
+  populationIncrease = { 1 24 }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
 "AUTOMATON_ENGINE_ADA"
@@ -387,7 +743,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "prison tile"
   viewId = { "prison" }
   tickType = Effect BedHeal()
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  usageType = UsageEffect "sleep in prison" Lasting SLEEP
   bedType = PRISON
   layer = FLOOR
 }
@@ -414,6 +770,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
   strength = 80
   requiredSupport = { { { E W } } { { N S } {"prison_door_ns"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+}
+"PRISON_DOOR_LOCKED" inherit "PRISON_DOOR"
+{
+  movementSet = {}
 }
 "ANIMAL_FENCE"
 {
@@ -450,6 +810,18 @@ Def BedHeal() Heal { FLESH 0.005 } End
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   storageIds = {"jewellery"}
+  hidesItems = true
+}
+"BOOK_STORAGE"
+{
+  name = "book shelf"
+  viewId = { "prayer_book_storage" }
+  emptyViewId = { "prayer_book_storage_empty" }
+  canHideHere = true
+  fire = 50
+  strength = 40
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  storageIds = {"books"}
   hidesItems = true
 }
 "ARMOR_RACK"
@@ -520,6 +892,19 @@ Def BedHeal() Heal { FLESH 0.005 } End
   storageIds = {"gold"}
   hidesItems = true
 }
+"ADVENTURER_CHEST"
+{
+  name = "chest"
+  viewId = { "chest" }
+  emptyViewId = { "treasurechest_empty" }
+  canHideHere = true
+  fire = 50
+  luxury = 0.4
+  strength = 40
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  storageIds = {"equipment" "gold"}
+  hidesItems = true
+}
 "EYEBALL"
 {
   name = "eyeball"
@@ -558,7 +943,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   luxury = 1.0
   strength = 200
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
-  usageType = UsageEffect "transfer your soul to" {
+  usageType = UsageEffect "transfer your soul to phylactery" {
     Area 1
     Filter And { FurnitureType "PHYLACTERY" Not Flag "tmp" } {
       PlaceFurniture "PHYLACTERY_ACTIVE"
@@ -595,6 +980,30 @@ Def BedHeal() Heal { FLESH 0.005 } End
   strength = 50
   populationIncrease = { 1 4 }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+}
+"SAINT_STATUE" inherit "MINION_STATUE"
+{
+  onBuilt = SAINT_STATUE
+  viewId = { "saint_statue" }
+}
+"STONE_SAINT_STATUE" inherit "STONE_MINION_STATUE"
+{
+  onBuilt = SAINT_STATUE
+  viewId = { "stone_saint_statue" }
+}
+"CORPSE_DISPLAY1"
+{
+  name = "gruesome corpse display"
+  viewId = { "corpse_display1" }
+  blockMovement = true
+  canHideHere = true
+  luxury = 0.3
+  strength = 10
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+}
+"CORPSE_DISPLAY2" inherit "CORPSE_DISPLAY1"
+{
+  viewId = { "corpse_display2" }
 }
 "ADOXIE_STATUE_TEMPLE"
 {
@@ -692,6 +1101,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
     100 BOULDER
     70 CUT
   }
+  tickType = Effect Chance 0.002 {
+    Filter Night SoundEffect { "OWL_AMBIENT" 0.2 }
+    Filter Not Night SoundEffect { "SONGBIRD_AMBIENT" 0.2 }
+  }
   fire = 100
   itemDrop = {{{{"WoodPlank"} 1 { 8 14 }}}}
   summonedElement = "ENT"
@@ -700,6 +1113,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
 "DECID_TREE" inherit "CANIF_TREE"
 {
   viewId = { "decid_tree" }
+}
+"SPECIAL_TREE" inherit "CANIF_TREE"
+{
+  viewId = { "special_tree" }
 }
 "TREE_SNOW" inherit "CANIF_TREE"
 {
@@ -715,13 +1132,16 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "cactus"
   destroyedRemains = none
   summonedElement = none
+  tickType = none
 }
 "PALM_TREE" inherit "CANIF_TREE"
 {
+  tickType = none
   viewId = { "palm_tree" }
 }
 "GUM_TREE" inherit "CANIF_TREE"
 {
+  tickType = none
   viewId = { "tree_gum" }
 }
 "GIANT_MUSHROOM" inherit "CANIF_TREE"
@@ -729,6 +1149,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "giant_mushroom" }
   name = "giant treeshroom"
   clearFogOfWar = true
+  tickType = none
   blockVision = {}
 }
 "TREE_TRUNK"
@@ -736,11 +1157,13 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "tree trunk"
   viewId = { "tree_trunk" }
   canSilentlyReplace = true
+  removeInstantly = true
 }
 "BURNT_TREE"
 {
   name = "burnt tree"
   viewId = { "burnt_tree" }
+  removeInstantly = true
   canHideHere = true
   strength = 30
 }
@@ -761,24 +1184,29 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "plant"
   viewId = { "swampplant" }
+  canSilentlyReplace = true
+  removeInstantly = true
 }
 "STONES"
 {
   name = "rocks"
   viewId = { "stones" }
   canSilentlyReplace = true
+  removeInstantly = true
 }
 "TERMITE_MOUND"
 {
   name = "termite mound"
   viewId = { "termite_mound" }
   canSilentlyReplace = true
+  removeInstantly = true
 }
 "FLOWER1"
 {
   name = "flower"
   viewId = { "flower1" }
   canSilentlyReplace = true
+  removeInstantly = true
 }
 "FLOWER2" inherit "FLOWER1"
 {
@@ -788,11 +1216,22 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   viewId = { "flower3" }
 }
+"STABLE"
+{
+  name = "stable"
+  viewId = { "mud" }
+  usageType = UsageEffect "sleep in stable" Lasting SLEEP
+  viewLayer = FLOOR_BACKGROUND
+  bedType = STABLE
+  tickType = Effect BedHeal()
+  canBuildOutsideOfTerritory = false
+  layer = FLOOR
+}
 "CROPS"
 {
   name = "wheat"
   viewId = { "swish_wheat" }
-  usageType = UsageEffect "scythe " Chance 0.3 CreatureMessage { "scythe the field" "scythes the field"}
+  usageType = UsageEffect "scythe wheat" Chance 0.3 CreatureMessage { "scythe the field" "scythes the field"}
   usageTime = 3
   layer = FLOOR
   viewLayer = FLOOR
@@ -801,6 +1240,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "chicken coop"
   viewId = { "mud" }
+  viewLayer = FLOOR_BACKGROUND
   tickType = Effect Chance 0.05 Filter
     And {
       IsClosedOffPigsty
@@ -904,6 +1344,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   layer = CEILING
   viewLayer = TORCH1
   attachmentDir = N
+  luxury = 0.3
   requiredSupport = { { { N } } }
 }
 "PAINTING_S" inherit "PAINTING_N"
@@ -939,7 +1380,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "fountain" }
   canHideHere = true
   luxury = 0.7
-  usageType = UsageEffect "drink from"
+  usageType = UsageEffect "drink from fountain"
       {
         CreatureMessage { "take a sip" "takes a sip"}
         ChooseRandom {
@@ -964,7 +1405,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "altar" }
   canHideHere = true
   strength = 80
-  usageType = UsageEffect "desecrate" {
+  usageType = UsageEffect "desecrate altar" {
     CreatureMessage { "desecrate the altar" "desecrates the altar"}
     DestroyWalls BASH
     ChooseRandom {
@@ -1022,11 +1463,11 @@ Def BedHeal() Heal { FLESH 0.005 } End
       {
         CreatureMessage { "find a glyph in the cracks!" "finds a glyph in the cracks!"}
         ChooseRandom {
-          DropItems {Glyph ARMOR ItemAttrBonus DAMAGE 2} {1}
-          DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 2} {1}
-          DropItems {Glyph ARMOR LastingEffect TELEPATHY} {1}
-          DropItems {Glyph WEAPON VictimEffect 0.3 Lasting 50 BLEEDING} {1}
-          DropItems {Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 2} {1}
+          DropItems {Glyph { ARMOR ItemAttrBonus DAMAGE 2}} {1}
+          DropItems {Glyph { ARMOR ItemAttrBonus DEFENSE 2}} {1}
+          DropItems {Glyph { ARMOR LastingEffect TELEPATHY}} {1}
+          DropItems {Glyph { WEAPON VictimEffect 0.3 Lasting 50 BLEEDING}} {1}
+          DropItems {Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 2}} {1}
         }
       }
     }
@@ -1039,14 +1480,44 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "altar_des" }
   canHideHere = true
 }
-"CHEST"
+"CHEST_WITH_ITEMS"
 {
   name = "chest"
   viewId = { "chest" }
   canHideHere = true
-  usageType = BuiltinUsageId CHEST
+  tickType = Effect {
+    DropItemList "chest"
+    PlaceFurniture "CHEST"
+  }
   fire = 50
   strength = 30
+}
+"CHEST"
+{
+  name = "chest"
+  viewId = { "chest" }
+  emptyViewId = { "opened_chest" }
+  canHideHere = true
+  hidesItems = true
+  fire = 50
+  strength = 30
+}
+"REMAINS_TABLE"
+{
+  name = "pedestal"
+  viewId = { "remains_table" }
+  emptyViewId = { "remains_table_empty" }
+  canHideHere = true
+  hidesItems = true
+  strength = 30
+}
+"NONFLAMMABLE_CHEST" inherit "CHEST"
+{
+  fire = none
+}
+"ASSASSIN_CHEST" inherit "CHEST"
+{
+  entryType = Effect Achievement "assassin"
 }
 "BOOKCASE_STAIRS" inherit "BOOKCASE_WOOD"
 {
@@ -1072,119 +1543,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     Analytics "milestone" "forgeStairs"
   }
 }
-"ARMOR_CHEST"
-{
-  name = "chest"
-  viewId = { "chest" }
-  canHideHere = true
-  usageType = UsageEffect "open" {
-    CreatureMessage { "open the chest" "opens the chest"}
-    CreatureMessage { "find some equipment inside" "finds some equipment inside"}
-    ChooseRandom {
-      DropItems {"ChainArmor"} 1
-      DropItems {"IronBoots"} 1
-      DropItems {"IronHelm"} 1
-      DropItems {"LeatherArmor"} 1
-      DropItems {"LeatherBoots"} 1
-      DropItems {"LeatherGloves"} 1
-    }
-    RemoveFurniture "ARMOR_CHEST"
-  }
-  fire = 50
-  strength = 30
-  destroyedRemains = "OPENED_CHEST"
-}
-"PAMPHLET_CHEST" inherit "ARMOR_CHEST"
-{
-  usageType = UsageEffect "open" {
-    CreatureMessage { "open the chest" "opens the chest"}
-    CreatureMessage { "find some pamphlets inside" "finds some pamphlets inside"}
-    DropItems {"AdoxieScroll"} {10 20}
-    RemoveFurniture "PAMPHLET_CHEST"
-  }
-}
-"ZOMBIE_CHEST" inherit "ARMOR_CHEST"
-{
-  usageType = UsageEffect "open" {
-    CreatureMessage { "open the chest" "opens the chest"}
-    CreatureMessage { "find a scroll inside" "finds a scroll inside"}
-    DropItems {"ZombieScroll"} 1
-    RemoveFurniture "ZOMBIE_CHEST"
-  }
-}
-"KNIFE_CHEST" inherit "ARMOR_CHEST"
-{
-  usageType = UsageEffect "open" {
-    CreatureMessage { "open the chest" "opens the chest"}
-    CreatureMessage { "find an item inside" "finds an item inside"}
-    DropItems {"AssassinsKnife"} 1
-    RemoveFurniture "KNIFE_CHEST"
-  }
-}
-"ADA_CHEST" inherit "ARMOR_CHEST"
-{
-  usageType = UsageEffect "open" {
-    CreatureMessage {"open the chest" "opens the chest"}
-    CreatureMessage {"find an item inside" "finds an item inside"}
-    ChooseRandom {
-      DropItems {"AdaSword"} 1
-      DropItems {"AdaBattleAxe"} 1
-      DropItems {"AdaWarHammer"} 1
-      DropItems {"AdaGloves"} 1
-      DropItems {"AdaShield"} 1
-      DropItems {"AdaArmor"} 1
-      DropItems {"AdaHelm"} 1
-      DropItems {"AdaBoots"} 1
-    }
-    Analytics "milestone" "adaChest"
-    RemoveFurniture "ADA_CHEST"
-  }
-}
-"SWARMER_CHEST" inherit "ARMOR_CHEST"
-{
-  usageType = UsageEffect "open" {
-    CreatureMessage { "open the chest" "opens the chest"}
-    CreatureMessage { "find an item inside" "finds an item inside"}
-    DropItems {Potion Permanent SWARMER} 1
-    Analytics "milestone" "swarmerChest"
-    RemoveFurniture "SWARMER_CHEST"
-  }
-}
-"BLACKSMITH_CHEST" inherit "ARMOR_CHEST"
-{
-  usageType = UsageEffect "open" {
-    CreatureMessage { "open the chest" "opens the chest"}
-    CreatureMessage { "find an item inside" "finds an item inside"}
-    ChooseRandom {
-      DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 2} 1
-      DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 3} 1
-      DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 4} 1
-      DropItems {Glyph WEAPON ItemAttrBonus DAMAGE 2} 1
-      DropItems {Glyph WEAPON ItemAttrBonus DAMAGE 3} 1
-      DropItems {Glyph WEAPON ItemAttrBonus DAMAGE 4} 1
-      DropItems {Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 2} 1
-      DropItems {Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3} 1
-      DropItems {Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 4} 1
-    }
-    RemoveFurniture "BLACKSMITH_CHEST"
-  }
-}
-"DRAGON_CHEST" inherit "ARMOR_CHEST"
-{
-  fire = 0
-  usageType = UsageEffect "open" {
-    CreatureMessage { "open the chest" "opens the chest"}
-    CreatureMessage { "find an item inside" "finds an item inside"}
-    ChooseRandom {
-      DropItems {"GoldPiece"} {30 100} 
-      DropItems {PrefixChance 1 {"Sword"}} 1
-      DropItems {PrefixChance 1 {"BattleAxe"}} 1
-      DropItems {PrefixChance 1 {"WarHammer"}} 1
-      DropItems {PrefixChance 1 {"IronStaff"}} 1
-    }
-    RemoveFurniture "DRAGON_CHEST"
-  }
-}
 "OPENED_CHEST"
 {
   name = "opened chest"
@@ -1193,12 +1551,18 @@ Def BedHeal() Heal { FLESH 0.005 } End
   fire = 50
   strength = 30
 }
+Def CoffinHeal(Prob)
+  Filter
+      And { LastingEffect SLEEP Or { BodyMaterial UNDEAD_FLESH BodyMaterial BONE } }
+      Chance Prob RegrowBodyPart 1
+End
 "COFFIN1"
 {
   name = "basic coffin"
   viewId = { "coffin1" }
   canHideHere = true
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  usageType = UsageEffect "sleep in coffin" Lasting SLEEP
+  tickType = Effect CoffinHeal(0.005)
   fire = 50
   strength = 40
   bedType = COFFIN
@@ -1209,7 +1573,8 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "fine coffin"
   viewId = { "coffin2" }
   canHideHere = true
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  usageType = UsageEffect "sleep in coffin" Lasting SLEEP
+  tickType = Effect CoffinHeal(0.0125)
   luxury = 0.3
   fire = 50
   strength = 40
@@ -1222,7 +1587,8 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "luxurious coffin"
   viewId = { "coffin3" }
   canHideHere = true
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  usageType = UsageEffect "sleep in coffin" Lasting SLEEP
+  tickType = Effect CoffinHeal(0.05)
   luxury = 0.7
   fire = 50
   strength = 40
@@ -1234,18 +1600,9 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "coffin"
   viewId = { "coffin1" }
+  emptyViewId = { "opened_coffin" }
   canHideHere = true
-  usageType = BuiltinUsageId COFFIN
-  fire = 50
-  strength = 40
-  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
-}
-"OPENED_COFFIN"
-{
-  name = "opened coffin"
-  viewId = { "opened_coffin" }
-  canHideHere = true
-  usageType = UsageEffect "sleep in" Lasting SLEEP
+  hidesItems = true
   fire = 50
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
@@ -1374,13 +1731,33 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "up_staircase" }
   canHideHere = true
 # xForgetAfterBuilding = true
-  usageType = UsageEffect "use" Stairs
+  usageType = UsageEffect "use stairs" Stairs
   onBuilt = UP_STAIRS
+}
+"UP_STAIRS_CARPET" inherit "UP_STAIRS"
+{
+  viewId = { "up_staircase_carpet" }
+  otherStairs = "DOWN_STAIRS_CARPET"
+}
+"UP_STAIRS_CASTLE" inherit "UP_STAIRS"
+{
+  viewId = { "up_staircase_castle" }
+  otherStairs = "DOWN_STAIRS_CASTLE"
 }
 "DOWN_STAIRS" inherit "UP_STAIRS"
 {
   viewId = { "down_staircase" }
   onBuilt = DOWN_STAIRS
+}
+"DOWN_STAIRS_CARPET" inherit "DOWN_STAIRS"
+{
+  viewId = { "down_staircase_carpet" }
+  otherStairs = "UP_STAIRS_CARPET"
+}
+"DOWN_STAIRS_CASTLE" inherit "DOWN_STAIRS"
+{
+  viewId = { "down_staircase_castle" }
+  otherStairs = "UP_STAIRS_CASTLE"
 }
 "UP_STAIRS_ROCK" inherit "UP_STAIRS"
 {
@@ -1396,21 +1773,21 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "portal"
   canHideHere = true
   constructMessage = none
-  usageType = UsageEffect "use" {Stairs Fx { TELEPORT_OUT }}
+  usageType = UsageEffect "use portal" {Stairs Fx { TELEPORT_OUT }}
 }
 "DOWN_STAIRS_ADOXIE"
 {
   name = "stairs"
   viewId = { "down_staircase" }
   canHideHere = true
-  usageType = UsageEffect "use" { Message NORMAL "You lose your sense of direction" Stairs }
+  usageType = UsageEffect "use stairs" { Message NORMAL "You lose your sense of direction" Stairs }
   onBuilt = DOWN_STAIRS
 }
 "INACTIVE_PORTAL"
 {
   name = "portal"
   viewId = { "inactive_portal" }
-  usageType = UsageEffect "use" Message NORMAL "The portal is inactive."
+  usageType = UsageEffect "use portal" Message NORMAL "The portal is inactive."
 }
 "SOKOBAN_HOLE"
 {
@@ -1431,7 +1808,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 }
 "STONE_BRIDGE" inherit "BRIDGE"
 {
-  viewId = { "bridge" ColorId GRAY }
+  viewId = { "bridge_stone" }
   fire = 0
   name = "bridge"
 }
@@ -1447,7 +1824,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockMovement = true
   blockAllVision = true
   constructMessage = FILL_UP
-  viewLayer = FLOOR_BACKGROUND
+  #viewLayer = FLOOR_BACKGROUND
   wall = true
   xForgetAfterBuilding = true
   strength2 = {
@@ -1497,6 +1874,17 @@ Def BedHeal() Heal { FLESH 0.005 } End
   destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
   tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
 }
+"HELL_MOUNTAIN" inherit "MOUNTAIN2"
+{
+  name = "melted rock"
+  viewId = { "hell_mountain" }
+  lightEmission = 2.2
+  tickType = Effect Chance 0.0005 Filter Not Area 1 Not And { Kills 0 Not CreatureId "LAVA_GOLEM" } {
+    RemoveFurniture "HELL_MOUNTAIN"
+    SummonEnemy "LAVA_GOLEM" {1} none
+  }
+
+}
 "ADAMANTIUM_ORE" inherit "MOUNTAIN2"
 {
   name = "adamantium ore"
@@ -1508,6 +1896,11 @@ Def BedHeal() Heal { FLESH 0.005 } End
     500 DIG
     500 HOSTILE_DIG
   }
+  minedAchievement = "mined_ada"
+}
+"HELL_ADAMANTIUM_ORE" inherit "ADAMANTIUM_ORE"
+{
+  viewId = { "hell_adamantium_ore" }
 }
 "ADOXIUM_ORE" inherit "MOUNTAIN2"
 {
@@ -1520,6 +1913,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
     220 DIG
     200 HOSTILE_DIG
   }
+  minedAchievement = "mined_adoxium"
 }
 "INFERNITE_ORE" inherit "MOUNTAIN2"
 {
@@ -1528,12 +1922,16 @@ Def BedHeal() Heal { FLESH 0.005 } End
   clearFogOfWar = true
   itemDrop = {{{{"InferniteOre"} 1 { 16 28 }}}}
   lightEmission = 4.2
-  tickType = SetFurnitureOnFire
+  tickType = Effect {
+    Area 1 Chance 0.03 SetFurnitureOnFire
+    Chance 0.1 SetFurnitureOnFire
+  }
   strength2 = {
     200 BOULDER
     220 DIG
     200 HOSTILE_DIG
   }
+  minedAchievement = "mined_infernite"
 }
 "IRON_ORE" inherit "MOUNTAIN2"
 {
@@ -1546,6 +1944,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
     220 DIG
     200 HOSTILE_DIG
   }
+  minedAchievement = "mined_iron"
 }
 "STONE" inherit "MOUNTAIN2"
 {
@@ -1559,6 +1958,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
     200 HOSTILE_DIG
   }
 }
+"HELL_STONE" inherit "STONE"
+{
+  viewId = { "hell_stone" }
+}
 "GOLD_ORE" inherit "MOUNTAIN2"
 {
   name = "gold ore"
@@ -1571,6 +1974,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
     200 HOSTILE_DIG
   }
 }
+"HELL_GOLD_ORE" inherit "GOLD_ORE"
+{
+  viewId = { "hell_gold_ore" }
+}
 "DUNGEON_WALL"
 {
   name = "wall"
@@ -1578,7 +1985,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockMovement = true
   blockAllVision = true
   wall = true
-  viewLayer = FLOOR_BACKGROUND
+  #viewLayer = FLOOR_BACKGROUND
   xForgetAfterBuilding = true
   luxury = 0.2
   constructMessage = REINFORCE
@@ -1629,6 +2036,9 @@ Def BedHeal() Heal { FLESH 0.005 } End
   xForgetAfterBuilding = true
   tickType = Pit
   canBuildOutsideOfTerritory = true
+  strength2 = {
+    70 FILL
+  }
 }
 "CASTLE_PILLAR"
 {
@@ -1648,7 +2058,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockMovement = true
   blockAllVision = true
   wall = true
-  viewLayer = FLOOR_BACKGROUND
+  #viewLayer = FLOOR_BACKGROUND
 }
 "ARCHER_WALL" inherit "CASTLE_WALL"
 {
@@ -1662,7 +2072,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "castle_wall" }
   blockAllVision = true
   strength = 1
-  viewLayer = FLOOR_BACKGROUND
+  #viewLayer = FLOOR_BACKGROUND
   entryType = Effect {
       Message NORMAL "It was just an illusion!"
       Fx { TELEPORT_OUT }
@@ -1696,7 +2106,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockMovement = true
   blockAllVision = true
   wall = true
-  viewLayer = FLOOR_BACKGROUND
+  #viewLayer = FLOOR_BACKGROUND
 }
 "MUD_WALL"
 {
@@ -1740,14 +2150,26 @@ Def BedHeal() Heal { FLESH 0.005 } End
 "FLOOR_WOOD1"
 {
   name = "floor"
-  viewId = { "wood_floor2" }
+  viewId = { "wood_floor1" }
   fire = 50
   luxury = 0.1
   layer = FLOOR
 }
 "FLOOR_WOOD2" inherit "FLOOR_WOOD1"
 {
+  viewId = { "wood_floor2" }
+}
+"FLOOR_WOOD3" inherit "FLOOR_WOOD1"
+{
+  viewId = { "wood_floor3" }
+}
+"FLOOR_WOOD4" inherit "FLOOR_WOOD1"
+{
   viewId = { "wood_floor4" }
+}
+"FLOOR_WOOD5" inherit "FLOOR_WOOD1"
+{
+  viewId = { "wood_floor5" }
 }
 "FLOOR_STONE1"
 {
@@ -1763,6 +2185,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
 "FLOOR_STONE3" inherit "FLOOR_STONE1"
 {
   viewId = { "stone_floor3" }
+}
+"FLOOR_STONE4" inherit "FLOOR_STONE1"
+{
+  viewId = { "stone_floor4" }
 }
 "FLOOR_STONE5" inherit "FLOOR_STONE1"
 {
@@ -1786,6 +2212,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
 "FLOOR_CARPET4" inherit "FLOOR_CARPET1"
 {
   viewId = { "carpet_floor4" }
+}
+"FLOOR_CARPET5" inherit "FLOOR_CARPET1"
+{
+  viewId = { "carpet_floor5" }
 }
 "CARPET4_GROUND" inherit "FLOOR_CARPET4"
 {
@@ -1913,7 +2343,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   entryType = Trap { Area 2 DestroyWalls DIG }
   warning = true
   constructMessage = SET_UP
-}   
+}
 "BOULDER_TRAP"
 {
   name = "boulder trap"
@@ -1956,7 +2386,7 @@ Def Boulder(Id) {
   tickType = Trap 1 {
     Def SummonGargoyle() {
       Message HIGH "The gargoyle comes to life!"
-      Summon "GARGOYLE" 1 20
+      SummonEnemy "GARGOYLE" 1 20
     } End
     SummonGargoyle()
     SummonGargoyle()
@@ -1991,6 +2421,7 @@ Def Boulder(Id) {
   layer = CEILING
   constructMessage = none
   tickType = MeteorShower
+  xForgetAfterBuilding = true
 }
 "FIRE_WALL"
 {
@@ -2001,6 +2432,7 @@ Def Boulder(Id) {
   onBuilt = SET_ON_FIRE
   burnsDownMessage = STOPS_BURNING
   hostileSpell = true
+  xForgetAfterBuilding = true
   fire = 10
 }
 "WATER"
@@ -2022,6 +2454,19 @@ Def Boulder(Id) {
     forcibleTraits = { WALK }
   }
   walkIntoFX = { WATER_SPLASH Rgb 82 148 255 255 }
+  walkIntoSound = { "WATER_WALK_INTO" 0.3 }
+}
+"UNDERGROUND_WATER" inherit "WATER"
+{
+  tickType = Effect Chance 0.002 SoundEffect { "UNDERGROUND_WATER_AMBIENT" 0.2 }
+}
+"ENCHANTED_WATER" inherit "WATER"
+{
+  name = "enchanted pool"
+  viewId = { "enchanted_water" }
+  bloodCountdown = none
+  walkIntoFX = { WATER_SPLASH Rgb 255 82 148 255 }
+  tickType = Effect Chance 0.00002 Filter Area 10 Not CreatureId "KRAKEN" SummonEnemy "KRAKEN" 1 none
 }
 "KRAKEN_WATER" inherit "WATER"
 {
@@ -2056,7 +2501,11 @@ Def Boulder(Id) {
   freezeTo = "FLOOR"
   fillPit = "MAGMA"
   canSilentlyReplace = true
-  tickType = SetFurnitureOnFire
+  tickType = Effect Chance 0.1 {
+    Area 1 Chance 0.3 SetFurnitureOnFire
+    SetFurnitureOnFire
+    Chance 0.02 SoundEffect { "LAVA_AMBIENT" 0.2 }
+  }
   movementSet = {
     traits = { FLY }
     forcibleTraits = { WALK }
@@ -2085,6 +2534,10 @@ Def Boulder(Id) {
   viewId = { "sand" }
   layer = GROUND
   walkOverFX = { SAND_DUST Rgb 255 229 178 255 }
+}
+"SAND_FLOOR" inherit "SAND"
+{
+  buildingFloor = true
 }
 "RED_SAND"
 {
@@ -2118,10 +2571,15 @@ Def Boulder(Id) {
   viewId = { "mud" }
   layer = GROUND
 }
+"MUD_FLOOR" inherit "MUD"
+{
+  buildingFloor = true
+}
 "SWAMPGRASS"
 {
   name = "grass"
   viewId = { "swampgrass" }
+  tickType = Effect Chance 0.006 SoundEffect { "FROG_AMBIENT" 0.15 }
   layer = GROUND
 }
 "HILL"
@@ -2137,7 +2595,7 @@ Def Boulder(Id) {
   layer = GROUND
   canBuildOutsideOfTerritory = true
   xForgetAfterBuilding = true
-  builtOver = {"WATER" "SHALLOW_WATER1" "SHALLOW_WATER2" "MAGMA"}
+  builtOver = {"WATER" "SHALLOW_WATER1" "SHALLOW_WATER2" "MAGMA" "UNDERGROUND_WATER"}
 }
 "FLOOR"
 {
@@ -2145,7 +2603,8 @@ Def Boulder(Id) {
   viewId = { "floor" }
   layer = GROUND
   canBuildOutsideOfTerritory = true
-  builtOver = {"HILL" "GRASS" "SAND" "SNOW" "FILL_UP_WATER_FLOOR" "ROOF"}
+  buildingFloor = true
+  builtOver = {"HILL" "GRASS" "SWAMPGRASS" "SAND" "SNOW" "FILL_UP_WATER_FLOOR" "ROOF"}
 }
 "GHOST_SPAWN" inherit "FLOOR"
 {

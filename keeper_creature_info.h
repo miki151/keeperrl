@@ -5,6 +5,8 @@
 #include "name_generator_id.h"
 #include "minion_trait.h"
 #include "cost_info.h"
+#include "villain_group.h"
+#include "keeper_base_info.h"
 
 class SpecialTrait;
 
@@ -32,6 +34,11 @@ struct KeeperCreatureInfo {
   optional<string> SERIAL(unlock);
   vector<CostInfo> SERIAL(credit);
   vector<string> SERIAL(flags);
+  vector<VillainGroup> SERIAL(villainGroups);
+  bool SERIAL(requireQuartersForExp) = true;
+  optional<KeeperBaseInfo> SERIAL(startingBase) = none;
+  string SERIAL(baseName);
+  bool SERIAL(enemyAggression) = true;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);
 };

@@ -4,24 +4,6 @@
   FocusKeysHorizontal()
   Window(Width 700 Height 700 {
     Vertical {
-      Position(MIDDLE,
-        Horizontal {
-          Width 160 {
-            Using "Keeper_set" StandardButton(Label("Keeper"))
-            Using "Keeper_active" StandardButtonActivated(Label("Keeper"))
-          }
-          Width 25 {}
-          Width 160 {
-            Using "Adventurer_set" StandardButton(Label("Adventurer"))
-            Using "Adventurer_active" StandardButtonActivated(Label("Adventurer"))
-          }
-          Width 25 {}
-          Width 160 {
-            Using "Single map_set" StandardButton(Label("Single map"))
-            Using "Single map_active" StandardButtonActivated(Label("Single map"))
-          }
-        }
-      )
       Height 30 {}
       Height 630 Scrolling(MarginRight(10, Using "list" List(VERTICAL,
         Height 30 Horizontal {

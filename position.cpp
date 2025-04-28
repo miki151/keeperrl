@@ -33,6 +33,7 @@
 #include "tile_gas_info.h"
 #include "attack.h"
 #include "attack_level.h"
+#include "zlevel.h"
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {
@@ -54,7 +55,7 @@ Level* Position::getLevel() const {
   return level;
 }
 
-WModel Position::getModel() const {
+Model* Position::getModel() const {
   PROFILE;
   if (isValid())
     return level->getModel();
@@ -62,7 +63,7 @@ WModel Position::getModel() const {
     return nullptr;
 }
 
-WGame Position::getGame() const {
+Game* Position::getGame() const {
   PROFILE;
   if (level)
     return level->getModel()->getGame();
@@ -91,6 +92,11 @@ bool Position::isSameLevel(const Position& p) const {
 bool Position::isSameModel(const Position& p) const {
   PROFILE;
   return isValid() && p.isValid() && getModel() == p.getModel();
+}
+
+int Position::getModelDifficulty() const {
+  auto model = getModel();
+  return model->getGame()->getModelDifficulty(model) + getZLevelCombatExp(model->getMainLevelDepth(level).value_or(0));
 }
 
 bool Position::isSameLevel(const Level* l) const {  PROFILE
@@ -183,6 +189,32 @@ vector<const Furniture*> Position::getFurniture() const {
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = getFurniture(layer))
       ret.push_back(f);
+  return ret;
+}
+
+double Position::getTotalLuxury() const {
+  PROFILE;
+  double ret = 0;
+  for (auto layer : ENUM_ALL(FurnitureLayer))
+    if (auto f = getFurniture(layer))
+      ret += f->getLuxury();
+  return ret;
+}
+
+double Position::getLuxuryEfficiencyMultiplier() const {
+  double ret = getTotalLuxury();
+  for (auto v : neighbors8())
+    ret += v.getTotalLuxury();
+  return min(2.0, 1 + ret / 4);
+}
+
+double Position::getTotalLuxuryPlusWalls() const {
+  PROFILE;
+  double ret = getTotalLuxury();
+  for (auto v : neighbors4())
+    if (auto f = v.getFurniture(FurnitureLayer::MIDDLE))
+      if (f->isWall())
+        ret += f->getLuxury();
   return ret;
 }
 
@@ -393,9 +425,11 @@ optional<FurnitureClickType> Position::getClickType() const {
 
 void Position::addSound(const Sound& sound1) const {
   PROFILE;
-  Sound sound(sound1);
-  sound.setPosition(*this);
-  getGame()->getView()->addSound(sound);
+  if (auto game = getGame()) {
+    Sound sound(sound1);
+    sound.setPosition(*this);
+    game->getView()->addSound(sound);
+  }
 }
 
 string Position::getName() const {
@@ -566,10 +600,15 @@ void Position::dropItems(vector<PItem> v) const {
 }
 
 void Position::addFurniture(PFurniture f) const {
-  if (auto prev = getFurniture(f->getLayer()))
+  auto layer = f->getLayer();
+  if (auto prev = getFurniture(layer))
     removeFurniture(prev, std::move(f));
   else
     addFurnitureImpl(std::move(f));
+  if (layer == FurnitureLayer::GROUND)
+    if (auto f = getFurniture(FurnitureLayer::MIDDLE))
+      if (f->canRemoveInstantly())
+        removeFurniture(f);
 }
 
 void Position::addFurnitureImpl(PFurniture f) const {
@@ -650,12 +689,13 @@ optional<Position> Position::getGroundBelow() const {
 }
 
 bool Position::isClosedOff(MovementType movement) const {
-  auto sectors = level->getSectors(movement);
+  PROFILE;
+  auto& sectors = level->getSectors(movement);
   auto topLevel = getModel()->getGroundLevel();
-  if (level == topLevel && sectors.isSector(coord, sectors.getLargest()))
+  if (level == topLevel && sectors.getSector(coord) == sectors.getLargest())
     return false;
-  for (auto key : level->getAllStairKeys())
-    if (sectors.same(coord, level->getLandingSquares(key)[0].getCoord()))
+  for (auto& elem : level->getAllLandingSquares())
+    if (!elem.second.empty() && sectors.same(coord, elem.second[0].getCoord()))
       return false;
   return true;
 }
@@ -815,14 +855,14 @@ void Position::updateMovementDueToFire() const {
     update(v);
 }
 
-bool Position::fireDamage(int amount) const {
+bool Position::fireDamage(int amount, Creature* attacker) const {
   PROFILE;
   bool res = false;
   for (auto furniture : modFurniture())
     if (Random.chance(0.05 * amount))
       res |= furniture->fireDamage(*this);
   if (Creature* creature = getCreature())
-    creature->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), AttackType::HIT, amount,
+    creature->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), AttackType::HIT, amount,
         AttrType("FIRE_DAMAGE"), {}, "The fire is harmless", false));
   for (Item* it : getItems())
     if (Random.chance(0.05 * amount))
@@ -830,14 +870,14 @@ bool Position::fireDamage(int amount) const {
   return res;
 }
 
-bool Position::iceDamage(int amount) const {
+bool Position::iceDamage(int amount, Creature* attacker) const {
   PROFILE;
   bool res = false;
   for (auto furniture : modFurniture())
     if (Random.chance(0.05 * amount))
       res |= furniture->iceDamage(*this);
   if (Creature* creature = getCreature())
-    creature->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), AttackType::HIT, amount,
+    creature->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), AttackType::HIT, amount,
         AttrType("COLD_DAMAGE"), {}, "The cold is harmless"));
   for (Item* it : getItems())
     if (Random.chance(0.05 * amount))
@@ -845,14 +885,14 @@ bool Position::iceDamage(int amount) const {
   return res;
 }
 
-bool Position::acidDamage(int amount) const {
+bool Position::acidDamage(int amount, Creature* attacker) const {
   PROFILE;
   bool res = false;
   for (auto furniture : modFurniture())
     if (Random.chance(0.05 * amount))
       res |= furniture->acidDamage(*this);
   if (Creature* creature = getCreature())
-    creature->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), AttackType::HIT, amount,
+    creature->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), AttackType::HIT, amount,
         AttrType("ACID_DAMAGE"), {}, "The acid is harmless"));
   /*for (Item* it : getItems())
     if (Random.chance(amount))
@@ -953,7 +993,7 @@ bool Position::isCovered() const {
       return true;
     auto ground = getFurniture(FurnitureLayer::GROUND);
     auto middle = getFurniture(FurnitureLayer::MIDDLE);
-    return (ground && ground->getType() == FurnitureType("FLOOR")) || (middle && middle->isWall());
+    return (ground && ground->isBuildingFloor()) || (middle && middle->isWall());
   } else
     return false;
 }
@@ -994,14 +1034,14 @@ void Position::throwItem(vector<PItem> item, const Attack& attack, int maxDist, 
         item[0]->onHitSquareMessage(pos, attack, item.size());
         trajectory.pop_back();
         getGame()->addEvent(
-            EventInfo::Projectile{none, item[0]->getViewObject().id(), *this, prev, SoundId::SHOOT_BOW});
+            EventInfo::Projectile{none, item[0]->getViewObject().id(), *this, prev, SoundId("SHOOT_BOW")});
         if (!item[0]->isDiscarded())
           prev.dropItems(std::move(item));
         return;
       }
       if (++cnt > maxDist || pos.getCreature() || pos == trajectory.back()) {
         getGame()->addEvent(
-            EventInfo::Projectile{none, item[0]->getViewObject().id(), *this, pos, SoundId::SHOOT_BOW});
+            EventInfo::Projectile{none, item[0]->getViewObject().id(), *this, pos, SoundId("SHOOT_BOW")});
         pos.modSquare()->onItemLands(pos, std::move(item), attack);
         return;
       }
@@ -1054,12 +1094,16 @@ const vector<Position>& Position::getLandingAtNextLevel(StairKey stairKey) {
 
 static bool checkStairConnection(const Position& from, const Position& to, const MovementType& type) {
   PROFILE;
+  if (!from.isValid() || !to.isValid())
+    return false;
+  auto& fromSectors = from.getLevel()->getSectors(type);
+  auto& toSectors = to.getLevel()->getSectors(type);
   for (auto key1 : to.getLevel()->getAllStairKeys()) {
     auto pos1 = to.getLevel()->getLandingSquares(key1)[0];
-    if (to.isConnectedTo(pos1, type))
+    if (toSectors.same(to.getCoord(), pos1.getCoord()))
       for (auto key2 : from.getLevel()->getAllStairKeys()) {
         auto pos2 = from.getLevel()->getLandingSquares(key2)[0];
-        if (from.isConnectedTo(pos2, type) && to.getModel()->areConnected(key1, key2, type))
+        if (fromSectors.same(from.getCoord(), pos2.getCoord()) && to.getModel()->areConnected(key1, key2, type))
           return true;
       }
   }
@@ -1253,7 +1297,7 @@ optional<pair<Position, int>> Position::getStairsTo(Position targetPos, const Mo
     bool includeNeighbors) const {
   PROFILE;
   CHECK(isSameModel(targetPos));
-  unordered_map<StairKey, int, CustomHash<StairKey>> distance;
+  HashMap<StairKey, int> distance;
   using QueueElem = tuple<StairKey, Level*, Level*, int>;
   auto queueCmp = [](auto& elem1, auto& elem2) { return std::get<3>(elem1) > std::get<3>(elem2); };
   priority_queue<QueueElem, vector<QueueElem>, decltype(queueCmp)> q(queueCmp);

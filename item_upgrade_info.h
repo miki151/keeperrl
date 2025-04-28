@@ -22,6 +22,7 @@ struct ItemUpgradeInfo {
   vector<string> getDescription(const ContentFactory*) const;
   ItemUpgradeType SERIAL(type);
   HeapAllocated<ItemPrefix> SERIAL(prefix);
+  optional<pair<string, double>> SERIAL(diminishModifier);
   template <class Archive>
   void serialize(Archive& ar1, const unsigned int);
 };

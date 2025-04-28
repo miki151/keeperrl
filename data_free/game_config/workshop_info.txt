@@ -4,11 +4,29 @@
   attr = "WORKSHOP"
 }
 
+"ENCHANTED_WORKSHOP" inherit "WORKSHOP" {
+  furniture = "ENCHANTED_WORKSHOP"
+  prefix = Prefix "enchanted" Scale 1.5
+  hideFromTech = true
+}
+
 "FORGE" {
   furniture = "FORGE"
   name = "forge"
   verb = "forges"
   attr = "FORGE"
+  minAttr = {
+    IRON 1
+    ADA 50
+    ADOXIUM 80
+    INFERNITE 80
+  }
+}
+
+"LAVA_FORGE" inherit "FORGE" {
+  furniture = "LAVA_FORGE"
+  prefix = Prefix "fine" Scale 1.4
+  hideFromTech = true
 }
 
 "LABORATORY" {
@@ -18,10 +36,22 @@
   attr = "LABORATORY"
 }
 
+"ENCHANTED_LABORATORY" inherit "LABORATORY" {
+  furniture = "ENCHANTED_LABORATORY"
+  name = "enchanted laboratory"
+  hideFromTech = true
+}
+
 "JEWELER" {
   furniture = "JEWELLER"
   name = "jeweler"
   attr = "JEWELER"
+}
+
+"LAVA_JEWELER" inherit "JEWELER"
+{
+  furniture = "LAVA_JEWELLER"
+  hideFromTech = true
 }
 
 "MORGUE" {
@@ -29,4 +59,11 @@
   name = "morgue"
   verb = "raises"
   attr = "MORGUE"
+}
+
+"SCRIPTORIUM" {
+  furniture = "SCRIPTORIUM"
+  name = "scriptorium"
+  verb = "writes"
+  attr = "DIVINITY"
 }

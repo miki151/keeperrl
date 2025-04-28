@@ -7,6 +7,10 @@ bool make(const LayoutGenerators::None&, LayoutCanvas c, RandomGen&) {
   return true;
 }
 
+bool make(const LayoutGenerators::Fail&, LayoutCanvas c, RandomGen&) {
+  return false;
+}
+
 bool make(const LayoutGenerators::Set& g, LayoutCanvas c, RandomGen&) {
   for (auto v : c.area)
     for (auto& token : g.tokens)
@@ -133,6 +137,14 @@ static Rectangle getPosition(LayoutGenerators::PlacementPos pos, Rectangle area,
     case PlacementPos::RIGHT_CENTER:
       return Rectangle(area.right() - size.x, area.middle().y - size.y / 2,
                        area.right(), area.middle().y - size.y / 2 + size.y);
+    case PlacementPos::LEFT_STRETCHED:
+      return Rectangle(area.topLeft(), area.bottomLeft() + Vec2(size.x, 0));
+    case PlacementPos::RIGHT_STRETCHED:
+      return Rectangle(area.topRight() - Vec2(size.x, 0), area.bottomRight());
+    case PlacementPos::TOP_STRETCHED:
+      return Rectangle(area.topLeft(), area.topRight() + Vec2(0, size.y));
+    case PlacementPos::BOTTOM_STRETCHED:
+      return Rectangle(area.bottomLeft() - Vec2(0, size.y), area.bottomRight());
     case PlacementPos::TOP_CENTER:
       return Rectangle(area.middle().x - size.x / 2, area.top(),
                        area.middle().x - size.x / 2 + size.x, area.top() + size.y);
@@ -234,7 +246,7 @@ bool make(const LayoutGenerators::Place& g, LayoutCanvas c, RandomGen& r) {
 bool make(const LayoutGenerators::NoiseMap& g, LayoutCanvas c, RandomGen& r) {
   if (c.area.empty())
     return true;
-  auto map = genNoiseMap(r, c.area, NoiseInit { 1, 1, 1, 1, 0 }, 0.45);
+  auto map = genNoiseMap(r, c.area, NoiseInit { 1, 1, 1, 1, 1 }, g.exponent);
   vector<double> all;
   auto getValue = [&all](double r) {
     int index = max(0, int(r * all.size()));

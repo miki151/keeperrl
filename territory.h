@@ -17,6 +17,7 @@ class Territory {
   const vector<Position>& getStandardExtended() const;
   bool isEmpty() const;
   const optional<Position>& getCentralPoint() const;
+
   IterateVectors<Position> getPillagePositions() const;
 
   template <class Archive>

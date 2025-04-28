@@ -1,0 +1,13 @@
+
+Window(Width 700 Height 700 {
+  BlockEvents
+  ExitButtons()
+  Scrolling(List(VERTICAL, Horizontal {
+    Using "view_id" ViewId()
+    Width 10 {}
+    {
+      Using "name" Label(color = ColorId LIGHT_GRAY)
+      If "unlocked" Using "name" Label(color = ColorId WHITE)
+    }
+  }))
+})

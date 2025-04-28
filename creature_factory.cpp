@@ -44,7 +44,6 @@
 #include "item_type.h"
 #include "item.h"
 #include "furniture.h"
-#include "experience_type.h"
 #include "creature_debt.h"
 #include "effect.h"
 #include "game_event.h"
@@ -198,6 +197,7 @@ CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const char* n
       c.viewId = id;
       c.body = Body::nonHumanoid(Body::Size::LARGE);
       c.body->setDeathSound(none);
+      c.body->setCanBeCaptured(false);
       c.attr[AttrType("DAMAGE")] = 28;
       c.attr[AttrType("DEFENSE")] = 28;
       c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
@@ -452,6 +452,10 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
     CHECK(!area.empty());
   }
 
+  virtual bool dontReplaceInCollective() override {
+    return true;
+  }
+
   vector<Position> getAllShopPositions() const {
     return shopArea.transform([this](Vec2 v){ return Position(v, myLevel); });
   }
@@ -521,7 +525,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
     if (from->getDebt().getAmountOwed(creature) <= 0)
       debtors.erase(from);
   }
-  
+
   void onEvent(const GameEvent& event) {
     using namespace EventInfo;
     event.visit<void>(
@@ -616,7 +620,7 @@ PCreature CreatureFactory::getIllusion(Creature* creature) {
           c.illusionViewObject = creature->getViewObject();
           c.illusionViewObject->setModifier(ViewObject::Modifier::INVISIBLE, false);
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
-          c.body->setDeathSound(SoundId::MISSED_ATTACK);
+          c.body->setDeathSound(SoundId("MISSED_ATTACK"));
           c.attr[AttrType("DAMAGE")] = 20; // just so it's not ignored by creatures
           c.attr[AttrType("DEFENSE")] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
@@ -735,8 +739,8 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
         if (p.humanoid) {
           for (auto& elem : contentFactory->workshopInfo)
             c.attr[elem.second.attr] = Random.get(0, 50);
-          c.maxLevelIncrease[ExperienceType::MELEE] = 10;
-          c.maxLevelIncrease[ExperienceType::SPELL] = 10;
+          c.maxLevelIncrease[AttrType("DAMAGE")] = 10;
+          c.maxLevelIncrease[AttrType("SPELL_DAMAGE")] = 10;
           c.spellSchools = LIST(SpellSchoolId("mage"));
         }
         if (p.humanoid) {
@@ -790,8 +794,11 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     if (auto ret = getValueMaybe(attributes, id)) {
       ret->name.generateFirst(&*nameGenerator);
       return std::move(*ret);
-    } else if (id == "KRAKEN")
-      return getKrakenAttributes(ViewId("kraken_head"), "kraken");
+    } else if (id == "KRAKEN") {
+      auto ret = getKrakenAttributes(ViewId("kraken_head"), "kraken");
+      ret.killedAchievement = AchievementId("killed_kraken");
+      return ret;
+    }
     FATAL << "Unrecognized creature type: \"" << id << "\"";
     fail();
   }();
@@ -838,7 +845,7 @@ SpellMap CreatureFactory::getSpellMap(const CreatureAttributes& attr) {
       spellMap.add(*getSpell(spell.first), school.expType, spell.second);
   }
   for (auto& spell : attr.spells)
-    spellMap.add(*getSpell(spell), ExperienceType::SPELL, 0);
+    spellMap.add(*getSpell(spell), AttrType("SPELL_DAMAGE"), 0);
   return spellMap;
 }
 
@@ -964,8 +971,8 @@ PCreature CreatureFactory::getHumanForTests() {
       c.name.setFirst("keeper"_s);
       c.name.useFullTitle();
       //c.skills.setValue(WorkshopType("LABORATORY"), 0.2);
-      c.maxLevelIncrease[ExperienceType::MELEE] = 7;
-      c.maxLevelIncrease[ExperienceType::SPELL] = 12;
+      c.maxLevelIncrease[AttrType("DAMAGE")] = 7;
+      c.maxLevelIncrease[AttrType("SPELL_DAMAGE")] = 12;
       //c.spells->add(SpellId::HEAL_SELF);
   );
   return get(std::move(attributes), TribeId::getMonster(), Monster::getFactory(MonsterAIFactory::idle()), SpellMap{});

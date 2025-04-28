@@ -114,11 +114,10 @@ struct SettlementInfo {
   bool SERIAL(closeToPlayer) = false;
   bool SERIAL(dontConnectCave) = false;
   bool SERIAL(dontBuildRoad) = false;
-  bool SERIAL(anyPlayerDistance) = false;
   int SERIAL(surroundWithResources) = 0;
   optional<FurnitureType> SERIAL(extraResources);
   optional<CropsInfo> SERIAL(crops);
-  SERIALIZE_ALL(NAMED(type), OPTION(inhabitants), NAMED(corpses), NAMED(locationName), NAMED(locationNameGen), NAMED(tribe), NAMED(race), OPTION(stockpiles), NAMED(lootItem), OPTION(shopItems), OPTION(shopkeeperDead), OPTION(furniture), NAMED(outsideFeatures), OPTION(closeToPlayer), OPTION(dontConnectCave), OPTION(dontBuildRoad), OPTION(anyPlayerDistance), OPTION(surroundWithResources), NAMED(extraResources), NAMED(crops))
+  SERIALIZE_ALL(NAMED(type), OPTION(inhabitants), NAMED(corpses), NAMED(locationName), NAMED(locationNameGen), NAMED(tribe), NAMED(race), OPTION(stockpiles), NAMED(lootItem), OPTION(shopItems), OPTION(shopkeeperDead), OPTION(furniture), NAMED(outsideFeatures), OPTION(closeToPlayer), OPTION(dontConnectCave), OPTION(dontBuildRoad), OPTION(surroundWithResources), NAMED(extraResources), NAMED(crops))
 };
 
 static_assert(std::is_nothrow_move_constructible<SettlementInfo>::value, "T should be noexcept MoveConstructible");

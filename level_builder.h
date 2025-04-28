@@ -23,7 +23,7 @@ class LevelBuilder {
   LevelBuilder(ProgressMeter*, RandomGen&, ContentFactory*, int width, int height,
       bool covered = true, optional<double> defaultLight = none);
   LevelBuilder(RandomGen&, ContentFactory*, int width, int height, bool covered = true);
-  
+
   LevelBuilder(LevelBuilder&&);
   ~LevelBuilder();
 
@@ -38,6 +38,7 @@ class LevelBuilder {
 
   /** Puts items on a given square. If the square is later changed to something else, the items remain.*/
   void putItems(Vec2, vector<PItem> items);
+  bool hasAnyItems(Vec2);
   bool canPutItems(Vec2);
 
   /** Sets the message displayed when the player first enters the level.*/
@@ -45,7 +46,7 @@ class LevelBuilder {
 
   /** Builds the level. The level will keep reference to the model.
       \paramname{surface} tells if this level is on the Earth surface.*/
-  PLevel build(const ContentFactory*, WModel, LevelMaker*, LevelId);
+  PLevel build(const ContentFactory*, Model*, LevelMaker*, LevelId);
 
   /** Checks if the given square has an attribute.*/
   bool hasAttrib(Vec2 pos, SquareAttrib attr);
@@ -97,7 +98,7 @@ class LevelBuilder {
   void addPermanentGas(TileGasType, Vec2);
 
   void setMountainLevel(Vec2, int);
- 
+
   enum Rot { CW0, CW1, CW2, CW3};
 
   void pushMap(Rectangle bounds, Rot);
@@ -107,7 +108,7 @@ class LevelBuilder {
   ContentFactory* getContentFactory() const;
 
   CreatureList wildlife;
-  
+
   private:
   Vec2 transform(Vec2);
   SquareArray squares;

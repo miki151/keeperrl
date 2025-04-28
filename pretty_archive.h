@@ -222,15 +222,21 @@ template <typename T>
 inline void serializeVecImpl(PrettyInputArchive& ar1, vector<T>& v, BracketType bracketType) {
   if (!ar1.eatMaybe("append"))
     v.clear();
-  ar1.openBracket(bracketType);
-  while (!ar1.isCloseBracket(bracketType)) {
+  if (!ar1.isOpenBracket(bracketType)) {
     T t;
     ar1(t);
     v.push_back(std::move(t));
-    if (bracketType == BracketType::ROUND && !ar1.isCloseBracket(bracketType))
-      ar1.eat(",");
+  } else {
+    ar1.openBracket(bracketType);
+    while (!ar1.isCloseBracket(bracketType)) {
+      T t;
+      ar1(t);
+      v.push_back(std::move(t));
+      if (bracketType == BracketType::ROUND && !ar1.isCloseBracket(bracketType))
+        ar1.eat(",");
+    }
+    ar1.closeBracket(bracketType);
   }
-  ar1.closeBracket(bracketType);
 }
 
 template <typename T>

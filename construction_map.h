@@ -59,14 +59,15 @@ class ConstructionMap {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
-  private:
   void checkDebtConsistency();
+
+  private:
   EnumMap<FurnitureLayer, PositionMap<FurnitureInfo>> SERIAL(furniture);
-  unordered_map<FurnitureType, PositionSet, CustomHash<FurnitureType>> SERIAL(furniturePositions);
-  unordered_map<FurnitureType, int, CustomHash<FurnitureType>> SERIAL(unbuiltCounts);
+  HashMap<FurnitureType, PositionSet> SERIAL(furniturePositions);
+  HashMap<FurnitureType, int> SERIAL(unbuiltCounts);
   vector<pair<Position, FurnitureLayer>> SERIAL(allFurniture);
-  unordered_map<CollectiveResourceId, int, CustomHash<CollectiveResourceId>> SERIAL(debt);
+  HashMap<CollectiveResourceId, int> SERIAL(debt);
   void addDebt(const CostInfo&, const char* reason);
-  unordered_map<StorageId, StoragePositions, CustomHash<StorageId>> SERIAL(storagePositions);
+  HashMap<StorageId, StoragePositions> SERIAL(storagePositions);
   StoragePositions SERIAL(allStoragePositions);
 };

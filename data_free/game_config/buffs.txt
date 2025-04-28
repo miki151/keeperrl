@@ -12,12 +12,20 @@
   color = ColorId RED
 }
 
-Def ATTR_BUFF(Attr, Name, Amount, Adjective, Price) {
+"LEADERSHIP" {
+  name = "leadership"
+  adjective = "leader"
+  description = "Creature's combat experience will be granted to the entire team."
+  addedMessage = "feel in command of your" "feels in command of the" "team"
+  removedMessage = "feel like you" "feels like they" "are no longer in command"
+  canWishFor = true
+  color = ColorId PURPLE
+}
+
+Def ATTR_BUFF(Attr, AttrName, Name, Amount, Adjective, Price) {
   name = Name
-  adjective = Name + " bonus"
-  description = "Gives a +" + Amount + " " + Name + " bonus"
-  addedMessage = ARE "more " + Adjective
-  removedMessage = ARE "no longer " + Adjective
+  adjective = Adjective
+  description = "Gives a +" + Amount + " " + AttrName + " bonus."
   startEffect = IncreaseAttr Attr Amount
   endEffect = IncreaseAttr Attr -Amount
   combatConsumable = true
@@ -27,8 +35,45 @@ Def ATTR_BUFF(Attr, Name, Amount, Adjective, Price) {
 }
 End
 
-"DAM_BONUS" ATTR_BUFF(DAMAGE, "damage", 3, "dangerous", 20)
-"DEF_BONUS" ATTR_BUFF(DEFENSE, "defense", 3, "protected", 20)
+"DAM_BONUS" ATTR_BUFF(DAMAGE, "damage", "damage", 3, "dangerous", 20)
+"DEF_BONUS" ATTR_BUFF(DEFENSE, "defense", "defense", 3, "protected", 20)
+
+"THICK_SKIN" ATTR_BUFF(DEFENSE, "defense", "thick skin", 10, "thick skin", 200)
+"IRON_ARMS" ATTR_BUFF(DAMAGE, "damage", "iron arms", 10, "iron arms", 200)
+"STABLE_HAND" ATTR_BUFF(RANGED_DAMAGE, "ranged damage", "stable hand", 10, "stable hand", 200)
+"PIERCING_VOICE" ATTR_BUFF(SPELL_DAMAGE, "spell damage", "piercing voice", 10, "piercing voice", 200)
+
+"DIVINE_PROTECTION" ATTR_BUFF(DEFENSE, "defense", "divine protection", 5, "protected", 400)
+"DIVINE_STRENGTH" ATTR_BUFF(DAMAGE, "damage", "divine strength", 5, "strong", 400)
+"DIVINE_DIGGING" ATTR_BUFF(DIGGING, "digging", "divine digging", 15, "divine digger", 200)
+
+Def ATTR_DEBUFF(Attr, Name, Amount, Price) {
+  name = Name + " debuff"
+  adjective = Name + " debuff"
+  description = "Gives a -" + Amount + " " + Name + " penalty. "
+  startEffect = IncreaseAttr Attr -Amount
+  endEffect = IncreaseAttr Attr Amount
+  combatConsumable = true
+  consideredBad = true
+  fx = DEBUFF_RED
+  color = ColorId RED
+  price = Price
+}
+End
+
+"DEF_DEBUFF" ATTR_DEBUFF(DEFENSE, "defense", 3, 20)
+
+"HIGH_MORALE" {
+  name = "high morale"
+  adjective = "happy"
+  description = "Makes creatures more efficient in training and work"
+  addedMessage = YOUR "spirits are lifted"
+  removedMessage = YOUR "mood goes back to normal"
+  efficiencyMultiplier = 1.3
+  fx = BUFF_BLUE
+  color = ColorId BLUE
+  price = 10
+}
 
 "REGENERATION" {
   name = "regeneration"
@@ -53,6 +98,24 @@ End
     CreatureMessage { "are bleeding" "is bleeding" HIGH }
     Bleed 0.03 "bleeding"
   }
+  consideredBad = true
+  canAbsorb = false
+  price = 2
+  fx = DEBUFF_RED
+  color = ColorId RED
+}
+
+"INFERNITE_EFFECT" {
+  name = "burning infernite"
+  description = "Creature is being burnt by carrying an infernite item."
+  addedMessage = "are being" "is being" "burnt by the infernite"
+  removedMessage = "are no longer being" "is no longer being" "burnt by the infernite"
+  adjective = "being burnt by infernite"
+  tickEffect = Filter And { Not LastingEffect FIRE_RESISTANT Not LastingEffect FIRE_IMMUNITY } {
+    CreatureMessage {"are burnt by the infernite" "is burnt by the infernite"}
+    Bleed 0.01 "infernite"
+  }
+  hiddenPredicate = Or { LastingEffect FIRE_RESISTANT LastingEffect FIRE_IMMUNITY }
   consideredBad = true
   canAbsorb = false
   price = 2
@@ -122,6 +185,8 @@ End
 "EXPLORE_CAVES_SKILL" SKILL("exploring caves", "Explores caves", "Can explore caves.")
 "BRIDGE_BUILDING_SKILL" SKILL("bridge building", "Builds bridges", "Creature will try to build bridges when travelling somewhere.")
 "DISTILLATION_SKILL" SKILL("distillation", "Distiller", "Can distill alcohol.")
+"PREACHING_SKILL" SKILL("preaching", "Preacher", "Can hold a Mass.")
+"CONFESSING_SKILL" SKILL("hearing confession", "Confessor", "Can hear confession.")
 
 "SWIMMING_SKILL" modify {
   inheritsFromSteed = true
@@ -157,6 +222,8 @@ End
 "HATE_ELVES" HATE("elves")
 "HATE_UNDEAD" HATE("undead")
 "HATE_DRAGONS" HATE("dragons")
+"HATE_DEMONS" HATE("demons")
+"HATE_LIZARDMEN" HATE("lizardmen")
 
 "INVULNERABLE" {
   name = "invulnerability"
@@ -226,6 +293,7 @@ Def IMMUNITY(Name, Attr)
   color = ColorId WHITE
   fx = BUFF_WHITE
   defenseMultiplier = 1000
+  price = 200
   defenseMultiplierAttr = Attr
   combatConsumable = true
   canAbsorb = false
@@ -239,3 +307,221 @@ End
 "MELEE_IMMUNITY" IMMUNITY("melee", DAMAGE)
 "MAGIC_IMMUNITY" IMMUNITY("magic", SPELL_DAMAGE)
 "RANGED_IMMUNITY" IMMUNITY("ranged", RANGED_DAMAGE)
+
+Def SPECIAL_RESISTANCE(Name, Predicate, Value)
+{
+  name = "protection from " + Name
+  adjective = "protected from " + Name
+  description = "Grants a +" + Value + " defense bonus against " + Name
+  addedMessage = ARE "protected from " + Name
+  removedMessage = ARE "no longer protected from " + Name
+  color = ColorId PURPLE
+  fx = BUFF_PURPLE
+  price = 200
+  specialAttr = "DEFENSE" Value Predicate
+}
+End
+
+"DRAGON_RESISTANCE" SPECIAL_RESISTANCE("dragons", HatedBy HATE_DRAGONS, 15)
+"DEMON_RESISTANCE" SPECIAL_RESISTANCE("demons", HatedBy HATE_DRAGONS, 15)
+"UNDEAD_RESISTANCE" SPECIAL_RESISTANCE("the undead", HatedBy HATE_UNDEAD, 15)
+"LIZARDMEN_RESISTANCE" SPECIAL_RESISTANCE("lizardmen", HatedBy HATE_LIZARDMEN, 15)
+"ELF_RESISTANCE" SPECIAL_RESISTANCE("elves", HatedBy HATE_ELVES, 15)
+"GREENSKIN_RESISTANCE" SPECIAL_RESISTANCE("greenskins", HatedBy HATE_GREENSKINS, 15)
+
+Def MassMessage(Text)
+  UI "unlock_message" { "message" Label Text "view_id" ViewIdList {{"rostrum_gold"}}}
+End
+
+Def DIVINE_SPELL(EFFECT_NAME1, EFFECT_NAME2, EFFECT_NAME3, MESSAGE) {
+  Area 15 {
+    Filter Or { FurnitureType PEW_WOOD FurnitureType ROSTRUM_WOOD} EFFECT_NAME1
+    Filter Or { FurnitureType PEW_IRON FurnitureType ROSTRUM_IRON} EFFECT_NAME2
+    Filter Or { FurnitureType PEW_GOLD FurnitureType ROSTRUM_GOLD} EFFECT_NAME3
+  }
+  MassMessage(MESSAGE)
+}
+End
+
+Def DIVINE_SPELL(EFFECT_NAME, MESSAGE)
+  DIVINE_SPELL(EFFECT_NAME, EFFECT_NAME, EFFECT_NAME, MESSAGE)
+End
+
+Def DIVINE_EFFECT(LENGTH1, LENGTH2, LENGTH3, EFFECT_NAME, MESSAGE)
+  DIVINE_SPELL(Lasting LENGTH1 EFFECT_NAME, Lasting LENGTH2 EFFECT_NAME, Lasting LENGTH2 EFFECT_NAME, MESSAGE)
+End
+
+"PREACHING" {
+  name = "Hold Mass"
+  adjective = "Holding Mass"
+  description = ""
+  color = ColorId PURPLE
+  endEffect = Filter Or { FurnitureType "ROSTRUM_WOOD" FurnitureType "ROSTRUM_IRON" FurnitureType "ROSTRUM_GOLD" } {
+    SetMinionActivity IDLE
+    FirstSuccessful {
+      Filter EquipedIngredient "protection_prayer" DIVINE_EFFECT(400, 600, 800, "DIVINE_PROTECTION",
+          "Minions have been blessed with a temporary +5 defense bonus.")
+      Filter EquipedIngredient "strength_prayer" DIVINE_EFFECT(400, 600, 800, "DIVINE_STRENGTH",
+          "Minions have been blessed with a temporary +5 damage bonus.")
+      Filter EquipedIngredient "digging_prayer" DIVINE_EFFECT(1200, 1600, 2000, "DIVINE_DIGGING",
+          "Minions have been blessed with a temporary +15 digging bonus.")
+      Filter EquipedIngredient "training_prayer" DIVINE_EFFECT(1200, 1600, 2000, FAST_TRAINING,
+          "Minions have been blessed with temporarily faster training.")
+      Filter EquipedIngredient "crafting_prayer" DIVINE_EFFECT(1200, 1600, 2000, FAST_CRAFTING,
+          "Minions have been blessed with temporarily faster crafting.")
+      Filter EquipedIngredient "ranged_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "RANGED_RESISTANCE",
+          "Minions have been blessed with temporary resistance to ranged attacks.")
+      Filter EquipedIngredient "regeneration_prayer" DIVINE_EFFECT(400, 600, 800, "REGENERATION",
+          "Minions have been blessed with a temporary ability to regenerate wounds.")
+      Filter EquipedIngredient "fire_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "FIRE_RESISTANT",
+          "Minions have been blessed with temporary resistance to fire attacks.")
+      Filter EquipedIngredient "poison_resistance_prayer" DIVINE_EFFECT(400, 600, 800, POISON_RESISTANT,
+          "Minions have been blessed with temporary resistance to poison.")
+      Filter EquipedIngredient "dragon_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "DRAGON_RESISTANCE",
+          "Minions have been blessed with temporary resistance to dragon attacks.")
+      Filter EquipedIngredient "demon_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "DEMON_RESISTANCE",
+          "Minions have been blessed with temporary resistance to demon attacks.")
+      Filter EquipedIngredient "undead_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "UNDEAD_RESISTANCE",
+          "Minions have been blessed with temporary resistance to undead attacks.")
+      Filter EquipedIngredient "lizardmen_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "LIZARDMEN_RESISTANCE",
+          "Minions have been blessed with temporary resistance to lizardmen attacks.")
+      Filter EquipedIngredient "elf_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "ELF_RESISTANCE",
+          "Minions have been blessed with temporary resistance to elf attacks.")
+      Filter EquipedIngredient "greenskin_resistance_prayer" DIVINE_EFFECT(400, 600, 800, "GREENSKIN_RESISTANCE",
+          "Minions have been blessed with temporary resistance to greenskin attacks.")
+      Filter EquipedIngredient "melee_prayer" DIVINE_SPELL(IncreaseMaxLevel "DAMAGE" 1,
+          "Minions have been blessed with increased melee training limits.")
+      Filter EquipedIngredient "divinity_prayer" DIVINE_SPELL(IncreaseMaxLevel "DIVINITY" 1,
+          "Minions have been blessed with increased divinity training limits.")
+      Filter EquipedIngredient "guardian_prayer" DIVINE_SPELL(
+          Filter CreatureStatus FIGHTER Summon "ANGEL" 1 400,
+          Filter CreatureStatus FIGHTER Summon "ANGEL" 1 600,
+          Filter CreatureStatus FIGHTER Summon "ANGEL" 1 800,
+          "Minions have been blessed with guardian angels.")
+      Filter EquipedIngredient "teuton_prayer" {
+        SummonAway "TEMPLAR" 1 1600  {FIGHTER NO_LIMIT}
+        DIVINE_SPELL(
+            Chance 0.3 SummonAway "TEMPLAR" 1 1000 {FIGHTER NO_LIMIT},
+            Chance 0.4 SummonAway "TEMPLAR" 1 1300 {FIGHTER NO_LIMIT},
+            Chance 0.5 SummonAway "TEMPLAR" 1 1600 {FIGHTER NO_LIMIT},
+            "Your prayers for summoning stronger armed help have been answered.")
+      }
+      Filter EquipedIngredient "squire_prayer" {
+        Filter CreatureId "KEEPER_BISHOP" {
+          SummonAway "WARRIOR_NUN" 1 1600 {FIGHTER NO_LIMIT}
+          DIVINE_SPELL(
+              Chance 0.3 SummonAway "WARRIOR_NUN" 1 1000 {FIGHTER NO_LIMIT},
+              Chance 0.4 SummonAway "WARRIOR_NUN" 1 1300 {FIGHTER NO_LIMIT},
+              Chance 0.5 SummonAway "WARRIOR_NUN" 1 1600 {FIGHTER NO_LIMIT},
+              "Your prayers for summoning armed help have been answered.")
+        }
+        Filter CreatureId "MOTHER_SUPERIOR" {
+          SummonAway "ARMED_BROTHER" 1 1600 {FIGHTER NO_LIMIT}
+          DIVINE_SPELL(
+              Chance 0.3 SummonAway "ARMED_BROTHER" 1 1000 {FIGHTER NO_LIMIT},
+              Chance 0.4 SummonAway "ARMED_BROTHER" 1 1300 {FIGHTER NO_LIMIT},
+              Chance 0.5 SummonAway "ARMED_BROTHER" 1 1600 {FIGHTER NO_LIMIT},
+              "Your prayers for summoning armed help have been answered.")
+        }
+      }
+      Filter EquipedIngredient "workers_prayer" {
+        SummonAway "PESEANT_PLAYER" 2  1500 {WORKER NO_LIMIT NO_EQUIPMENT}
+        DIVINE_SPELL(
+            Chance 0.3 SummonAway "PESEANT_PLAYER" 1 1000 {WORKER NO_LIMIT NO_EQUIPMENT},
+            Chance 0.4 SummonAway "PESEANT_PLAYER" 1 1300 {WORKER NO_LIMIT NO_EQUIPMENT},
+            Chance 0.5 SummonAway "PESEANT_PLAYER" 1 1600 {WORKER NO_LIMIT NO_EQUIPMENT},
+            "Your prayers for summoning more workforce have been answered.")
+      }
+      Filter And { Flag "adoxie_dead" EquipedIngredient "adoxie_prayer" } {
+        MassMessage("Your prayers echo through the nave, before sinking like stones into the void.")
+      }
+      Filter And { Not Flag "adoxie_dead" EquipedIngredient "adoxie_prayer" } {
+        Achievement "black_mass"
+        Filter CreatureId "KEEPER_BISHOP" SetViewId {"bishop5"}
+        Filter CreatureId "MOTHER_SUPERIOR" SetViewId {"mother_superior5"}
+        FirstSuccessful {
+          ChainUntilFail {
+            Area 20 Filter And { Enemy Not CreatureStatus CIVILIAN } {
+              Polymorph "CHICKEN" 500
+              PlayerMessage CRITICAL "An ancient, terrible evil reshapes your body and causes you to grow a beak."
+              Filter IsPlayer Achievement "polymorphed_into_chicken"
+            }
+            MassMessage("Adoxie has heard your prayers and turns your enemies into chickens.")
+          }
+          ChainUntilFail {
+            ChooseRandomUntilSuccessful {
+Def TRY_DEMON(NAME)
+  Filter Not Flag NAME + "_summon" {
+    CircularBlast
+    Summon NAME 1 none
+    SetFlag NAME + "_summon" true
+  }
+End
+              TRY_DEMON("TENGU")
+              TRY_DEMON("SHAITAN")
+              TRY_DEMON("BANSHEE")
+              TRY_DEMON("VETALA")
+              TRY_DEMON("LEYAK")
+              TRY_DEMON("BAKU")
+              TRY_DEMON("RAKSHASA")
+              TRY_DEMON("GHOUL")
+              TRY_DEMON("SUANGGI")
+            }
+            MassMessage("Adoxie has heard your prayers and sends his servant.")
+          }
+          {
+            Summon "ADOXIE_FOOT_LEFT" 1 200
+            Summon "ADOXIE_FOOT_RIGHT" 1 200
+            Summon "ADOXIE_LEFT_HAND" 1 200
+            Summon "ADOXIE_HAND_RIGHT" 1 200
+            MassMessage("Adoxie has heard your prayers and sends his extremities.")
+          }
+        }
+      }
+    }
+  }
+}
+
+"SINNED" {
+  name = "venial sin"
+  adjective = "venial sinner"
+  description = "The creature has sinned and is seeking forgiveness."
+  color = ColorId BROWN
+  fx = DEBUFF_BROWN
+  consideredBad = true
+}
+
+"MORTAL_SINNED" {
+  name = "mortal sin"
+  adjective = "mortal sinner"
+  description = "The creature has mortally sinned and is seeking forgiveness."
+  color = ColorId BLACK
+  fx = DEBUFF_BLACK
+  consideredBad = true
+}
+
+"WILL_BANISH" {
+  name = "summon"
+  adjective = "armed help"
+  description = "The creature was sent for a limited time as an answer to prayers."
+  color = ColorId WHITE
+  fx = BUFF_WHITE
+  endEffect = Banish
+}
+
+"WELL_FED" {
+  name = "feeding"
+  adjective = "well fed"
+  description = "The creature is well fed and receives a +1 spell damage and defense bonuses."
+  color = ColorId BROWN
+  fx = BUFF_BROWN
+  startEffect = {
+    IncreaseAttr SPELL_DAMAGE 1
+    IncreaseAttr DEFENSE 1
+  }
+  endEffect = {
+    IncreaseAttr SPELL_DAMAGE -1
+    IncreaseAttr DEFENSE -1
+  }
+  stacks = true
+}

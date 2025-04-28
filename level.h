@@ -55,6 +55,8 @@ class Level : public OwnedObject<Level> {
   static Rectangle getMaxBounds();
   static double getCreatureLightRadius();
 
+  static ProgressMeter* progressMeter;
+
   /** Moves the creature. Updates the creature's position.*/
   void moveCreature(Creature*, Vec2 direction);
 
@@ -84,6 +86,8 @@ class Level : public OwnedObject<Level> {
   const vector<Position>& getLandingSquares(StairKey) const;
   Position getLandingSquare(StairKey, Vec2 travelDir) const;
 
+  using LandingSquares = unordered_map<StairKey, vector<Position>>;
+  const LandingSquares& getAllLandingSquares() const;
   vector<StairKey> getAllStairKeys() const;
   bool hasStairKey(StairKey) const;
 
@@ -101,7 +105,8 @@ class Level : public OwnedObject<Level> {
   vector<Position> getAllLandingPositions() const;
 
   void addTickingSquare(Vec2 pos);
-  void addTickingFurniture(Vec2 pos);
+  void addTickingFurniture(Vec2 pos, FurnitureLayer);
+  void addBurningFurniture(Vec2 pos, FurnitureLayer);
 
   void tick();
 
@@ -123,8 +128,8 @@ class Level : public OwnedObject<Level> {
 
   vector<Creature*> getPlayers() const;
 
-  WModel getModel() const;
-  WGame getGame() const;
+  Model* getModel() const;
+  Game* getGame() const;
 
   void addLightSource(Vec2, double radius);
   void removeLightSource(Vec2, double radius);
@@ -134,6 +139,8 @@ class Level : public OwnedObject<Level> {
   double getLevelGenSunlight(Vec2) const;
 
   void updateSunlightMovement();
+
+  void prepareForRetirement();
 
   int getNumGeneratedSquares() const;
   int getNumTotalSquares() const;
@@ -178,14 +185,15 @@ class Level : public OwnedObject<Level> {
   Table<bool> SERIAL(memoryUpdates);
   Table<bool> renderUpdates = Table<bool>(getMaxBounds(), true);
   Table<bool> SERIAL(unavailable);
-  unordered_map<StairKey, vector<Position>> SERIAL(landingSquares);
+  LandingSquares SERIAL(landingSquares);
   set<Vec2> SERIAL(tickingSquares);
-  set<Vec2> SERIAL(tickingFurniture);
+  HashMap<pair<Vec2, FurnitureLayer>, double> tickingFurniture;
+  HashSet<pair<Vec2, FurnitureLayer>> burningFurniture;
   void placeCreature(Creature*, Vec2 pos);
   void unplaceCreature(Creature*, Vec2 pos);
   vector<Creature*> SERIAL(creatures);
   EntitySet<Creature> SERIAL(creatureIds);
-  WModel SERIAL(model) = nullptr;
+  Model* SERIAL(model) = nullptr;
   mutable HeapAllocated<EnumMap<VisionId, FieldOfView>> SERIAL(fieldOfView);
   Table<double> SERIAL(sunlight);
   Table<bool> SERIAL(covered);
@@ -194,17 +202,17 @@ class Level : public OwnedObject<Level> {
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
   EnumMap<TribeId::KeyType, unique_ptr<EffectsTable>> SERIAL(furnitureEffects);
-  mutable unordered_map<MovementType, Sectors, CustomHash<MovementType>> sectors;
+  mutable HashMap<MovementType, Sectors> sectors;
   Sectors& getSectorsDontCreate(const MovementType&) const;
 
   friend class LevelBuilder;
   struct Private {};
 
-  static PLevel create(SquareArray s, FurnitureArray f, WModel m, Table<double> sun, LevelId id,
+  static PLevel create(SquareArray s, FurnitureArray f, Model* m, Table<double> sun, LevelId id,
       Table<bool> cover, Table<bool> unavailable, const ContentFactory*);
 
   public:
-  Level(Private, SquareArray, FurnitureArray, WModel, Table<double> sunlight, LevelId);
+  Level(Private, SquareArray, FurnitureArray, Model*, Table<double> sunlight, LevelId);
 
   private:
   void addLightSource(Vec2 pos, double radius, int numLight);
@@ -219,4 +227,7 @@ class Level : public OwnedObject<Level> {
   void forEachEffect(Vec2, TribeId, Fun);
   void placeSwarmer(Vec2, Creature*);
   void unplaceSwarmer(Vec2, Creature*);
+  void updateTickingFurniture();
 };
+
+CEREAL_CLASS_VERSION(Level, 1)

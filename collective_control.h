@@ -15,7 +15,7 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
   CollectiveControl(Collective*);
   virtual void update(bool currentlyActive);
   virtual void tick();
-  virtual void onMemberKilled(const Creature* victim, const Creature* killer);
+  virtual void onMemberKilledOrStunned(Creature* victim, const Creature* killer);
   virtual void onOtherKilled(const Creature* victim, const Creature* killer);
   virtual void onMemberAdded(Creature*) {}
   virtual void onConquered(Creature* victim, Creature* killer) {}
@@ -32,6 +32,12 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
   virtual vector<TriggerInfo> getAllTriggers(const Collective* against) const;
   vector<TriggerInfo> getTriggers(const Collective* against) const;
   virtual bool canPerformAttack() const { fail(); }
+  enum class DuelAnswer {
+    ACCEPT,
+    REJECT,
+    UNKNOWN
+  };
+  virtual DuelAnswer acceptDuel(Creature* attacker) { return DuelAnswer::REJECT; }
 
   SERIALIZATION_DECL(CollectiveControl)
 

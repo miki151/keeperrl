@@ -19,9 +19,11 @@ FXInfo getFXInfo(FXVariantName var) {
     case Name::FIRE_SPHERE:
       return {FXName::FIRE_SPHERE};
     case Name::FIRE:
-      return {FXName::FIRE};
+      return {FXName::FIRE, Color::WHITE, .8f};
     case Name::LABORATORY:
       return {FXName::LABORATORY, Color::GREEN};
+    case Name::ENCHANTED_LABORATORY:
+      return {FXName::LABORATORY, Color::PURPLE};
     case Name::PEACEFULNESS:
       return {FXName::LOVE_LOOPED, Color::RED};
     case Name::FORGE:
@@ -30,6 +32,8 @@ FXInfo getFXInfo(FXVariantName var) {
       return {FXName::WORKSHOP};
     case Name::JEWELLER:
       return {FXName::JEWELLER, Color(253, 247, 140)};
+    case Name::LAVA_JEWELLER:
+      return {FXName::JEWELLER, Color(253, 140, 140)};
     case Name::EMBALMENT:
       return {FXName::EMBALMENT};
     case Name::LICH:
@@ -45,6 +49,7 @@ FXInfo getFXInfo(FXVariantName var) {
     case Name::BUFF_GREEN2:  return {FXName::BUFF,   Color(80, 255, 120), 0.0f, FXStackId::buff};
     case Name::BUFF_SKY_BLUE:return {FXName::BUFF,   Color::SKY_BLUE, 0.0f, FXStackId::buff};
     case Name::BUFF_BROWN:   return {FXName::BUFF,   Color::BROWN, 0.0f, FXStackId::buff};
+    case Name::BUFF_BLACK:   return {FXName::BUFF,   Color::BLACK, 0.0f, FXStackId::buff};
     case Name::BUFF_PURPLE:  return {FXName::BUFF,   Color::PURPLE, 0.0f, FXStackId::buff};
 
     case Name::DEBUFF_RED:   return {FXName::DEBUFF, Color(190, 30, 30), 0.0f, FXStackId::debuff};

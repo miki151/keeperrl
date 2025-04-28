@@ -62,7 +62,24 @@ optional<OpenalId> AudioDevice::getFreeSource() {
     return sources.back().getId();
   } else
     return none;
-} 
+}
+
+milliseconds AudioDevice::getDuration(const SoundBuffer& sound) {
+  auto id = sound.getBufferId();
+  ALint sizeInBytes;
+  ALint channels;
+  ALint bits;
+  alGetBufferi(id, AL_SIZE, &sizeInBytes);
+  alGetBufferi(id, AL_CHANNELS, &channels);
+  alGetBufferi(id, AL_BITS, &bits);
+
+  auto lengthInSamples = sizeInBytes * 8 / (channels * bits);
+  ALint frequency;
+
+  alGetBufferi(id, AL_FREQUENCY, &frequency);
+
+  return milliseconds{lengthInSamples / frequency * 1000};
+}
 
 void AudioDevice::play(const SoundBuffer& sound, double volume, double pitch) {
   RecursiveLock lock(mutex);

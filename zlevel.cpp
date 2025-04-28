@@ -12,23 +12,27 @@
 #include "level.h"
 #include "enemy_aggression_level.h"
 
+int getZLevelCombatExp(int depth) {
+  return abs(depth) * 3 / 2;
+}
+
 static EnemyInfo getEnemy(EnemyId id, ContentFactory* contentFactory) {
   auto enemy = EnemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,
       contentFactory->buildingInfo, {}).get(id);
-  enemy.settlement.collective = new CollectiveBuilder(enemy.config, enemy.settlement.tribe);
+  enemy.settlement.collective = new CollectiveBuilder(enemy.config, enemy.settlement.tribe, id.data());
   return enemy;
 }
 
 static double modifyAggression(double value, EnemyAggressionLevel aggressionLevel) {
   switch (aggressionLevel) {
     case EnemyAggressionLevel::NONE: return 0;
-    case EnemyAggressionLevel::MODERATE: return 0.5 * value;
-    case EnemyAggressionLevel::EXTREME: return value;
+    case EnemyAggressionLevel::MODERATE: return value;
+    case EnemyAggressionLevel::EXTREME: return min(1.0, 2 * value);
   }
 }
 
 static LevelMakerResult getLevelMaker(const ZLevelType& levelInfo, ResourceCounts resources, TribeId tribe,
-    ContentFactory* contentFactory, Vec2 size, EnemyAggressionLevel aggressionLevel) {
+    ContentFactory* contentFactory, Vec2 size, EnemyAggressionLevel aggressionLevel, int difficulty) {
   return levelInfo.visit(
       [&](const WaterZLevel& level) {
         return LevelMakerResult{
@@ -45,7 +49,7 @@ static LevelMakerResult getLevelMaker(const ZLevelType& levelInfo, ResourceCount
         }
         return LevelMakerResult{
             LevelMaker::settlementLevel(*contentFactory, Random, enemy.settlement, size,
-                resources, tribe),
+                resources, tribe, level.mountainType, difficulty),
             vector<EnemyInfo>{std::move(enemy)}
         };
       },
@@ -62,7 +66,7 @@ static LevelMakerResult getLevelMaker(const ZLevelType& levelInfo, ResourceCount
           }
         }
         return LevelMakerResult{
-            LevelMaker::getFullZLevel(Random, settlement, resources, size.x, tribe, *contentFactory),
+            LevelMaker::getFullZLevel(Random, settlement, resources, size.x, tribe, *contentFactory, difficulty),
             std::move(enemy)
         };
       });
@@ -75,7 +79,7 @@ LevelMakerResult getLevelMaker(RandomGen& random, ContentFactory* contentFactory
     levels.append(contentFactory->zLevels.at(group));
   auto zLevel = *chooseZLevel(random, levels, depth);
   auto res = *chooseResourceCounts(random, contentFactory->resources, depth);
-  return getLevelMaker(zLevel, res, tribe, contentFactory, size, aggressionLevel);
+  return getLevelMaker(zLevel, res, tribe, contentFactory, size, aggressionLevel, getZLevelCombatExp(depth));
 }
 
 
@@ -88,11 +92,10 @@ LevelMakerResult getUpLevel(RandomGen& random, ContentFactory* contentFactory,
       if (enemyInfo.first.contains(depth) && random.chance(enemyInfo.second.probability))
         for (int it : Range(Random.get(enemyInfo.second.count))) {
           enemies.push_back(getEnemy(enemyInfo.second.id, contentFactory));
-          enemies.back().settlement.collective = new CollectiveBuilder(enemies.back().config,
-              enemies.back().settlement.tribe);
+         enemies.back().settlement.collective = new CollectiveBuilder(enemies.back().config,
+              enemies.back().settlement.tribe, enemyInfo.second.id.data());
         }
   auto res = chooseResourceCounts(random, contentFactory->resources, -depth);
   auto maker = LevelMaker::upLevel(pos, biomeInfo, enemies.transform([](auto e) {return e.settlement; }), res);
-  auto size = pos.getModel()->getGroundLevel()->getBounds().getSize();
   return LevelMakerResult { std::move(maker), std::move(enemies)};
 }

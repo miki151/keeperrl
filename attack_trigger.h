@@ -4,6 +4,7 @@
 #include "furniture_type.h"
 #include "enum_variant.h"
 #include "pretty_archive.h"
+#include "resource_id.h"
 
 struct RoomTrigger {
   FurnitureType SERIAL(type);
@@ -25,9 +26,10 @@ struct EnemyPopulation {
   COMPARE_ALL(value)
 };
 
-struct Gold {
+struct Resource {
+  CollectiveResourceId SERIAL(resource);
   int SERIAL(value);
-  COMPARE_ALL(value)
+  COMPARE_ALL(resource, value)
 };
 
 struct Timer {
@@ -49,7 +51,7 @@ struct NumConquered {
   X(FinishOff, 5)\
   X(Proximity, 6)\
   X(EnemyPopulation, 7)\
-  X(Gold, 8)\
+  X(Resource, 8)\
   X(Timer, 9)\
   X(NumConquered, 10)\
   X(Immediate, 11)\

@@ -32,6 +32,8 @@ void checkOpenglError(const char* file, int line) {
                    << "OpenGL error: " << openglErrorCode(error) << " (" << error << ")";
 }
 
+#ifndef RELEASE
+
 static const char* debugSourceText(GLenum source) {
   switch (source) {
 #define CASE(suffix, text)                                                                                             \
@@ -105,6 +107,7 @@ static void APIENTRY debugOutputCallback(GLenum source, GLenum type, GLuint id, 
            debugSeverityText(severity), id, debugSourceText(source));
   (isSevere ? FatalLog : InfoLog).get() << header << message;
 }
+#endif
 
 bool installOpenglDebugHandler() {
 #ifndef OSX

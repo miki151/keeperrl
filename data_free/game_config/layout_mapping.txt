@@ -10,20 +10,29 @@
   "rock" Place "MOUNTAIN"
   "hard_rock" Place "MOUNTAIN2"
   "water" { ClearFurniture Place "WATER"}
+  "underground_water" { ClearFurniture Place "UNDERGROUND_WATER"}
+  "mud_floor" { ClearFurniture Place "MUD_FLOOR" Flag EMPTY_ROOM}
   "kraken_water" { ClearFurniture Place "KRAKEN_WATER"}
+  "enchanted_water" { ClearFurniture Place "ENCHANTED_WATER"}
+  "enchanted_workshop" { Place "ENCHANTED_WORKSHOP"}
+  "enchanted_lab" { Place "ENCHANTED_LABORATORY"}
   "lava" { ClearFurniture Place "MAGMA"}
   "stockpile" Stockpile 0
   "bed" Place "BED1"
+  "haypile" Place "HAYPILE"
+  "stable" Place "STABLE"
   "wall" Place "WOOD_WALL"
   "wood_wall" Place "WOOD_WALL"
   "castle_wall" Place "CASTLE_WALL"
   "archer_wall" Place "ARCHER_WALL"
+  "ruin_wall" Place "RUIN_WALL"
   "wood_door" Place "WOOD_DOOR"
   "wood_gate" Place "WOOD_GATE"
   "hidden_door" Place "HIDDEN_CASTLE_DOOR"
   "stone_bridge" Place "STONE_BRIDGE"
   "wood_bridge" Place "BRIDGE"
   "treasure_chest" Place "TREASURE_CHEST"
+  "adventurer_chest" Place "ADVENTURER_CHEST"
   "iron_door" Place "IRON_DOOR"
   "iron_gate" Place "IRON_GATE"
   "iron_gate_blocking" Place "IRON_GATE_BLOCKING"
@@ -35,31 +44,45 @@
   "clear_middle" ClearLayer MIDDLE
   "outside_furniture" OutsideFurniture
   "inside_furniture" InsideFurniture
-  "loot_coffin" Place "LOOT_COFFIN"
-  "armor_chest" Place "ARMOR_CHEST"
-  "pamphlet_chest" Place "PAMPHLET_CHEST"
-  "knife_chest" Place "KNIFE_CHEST"
-  "ada_chest" Place "ADA_CHEST"
+  "loot_coffin" { Place "LOOT_COFFIN" Items "chest" Items "corpse" }
+  "armor_chest" { Place "CHEST" Items "armorChest" }
+  "pamphlet_chest" { Place "CHEST" Items "pamphlets" }
+  "knife_chest" { Place "ASSASSIN_CHEST" Items "assassinChest" }
+  "ada_chest" { Place "CHEST" Items "lakeChest" }
   "weapon_rack" Place "WEAPON_RACK"
-  "swarmer_chest" Place "SWARMER_CHEST"
-  "blacksmith_chest" Place "BLACKSMITH_CHEST"
-  "zombie_chest" Place "ZOMBIE_CHEST"
+  "swarmer_chest" { Place "CHEST" Items "swarmerChest" }
+  "blacksmith_chest" { Place "CHEST" Items "blacksmithChest" }
+  "zombie_chest" { Place "CHEST" Items "zombieChest" }
   "torch" Place "GROUND_TORCH"
   "throne" Place "THRONE"
+  "broken_throne" Place "BROKEN_THRONE"
   "forge" Place "FORGE"
+  "lava_forge" Place "LAVA_FORGE"
   "crops" Place "CROPS"
   "scarecrow" Place "SCARECROW"
-  "corpse" Items 1 "corpse"
-  "wizard_corpse" Items 1 "wizard_corpse"
+  "corpse" Items "battle_corpse"
+  "wizard_corpse" Items "wizard_corpse"
+  "gnome_corpse" Items "gnome_corpse"
+  "automaton_parts" Items "automaton_parts"
   "shop0" Shop 0
   "fog" AddGas "FOG"
   "spider_web" Place "SPIDER_WEB"
   "connect" { RemoveFlag NO_DIG Flag CONNECT_CORRIDOR }
-  "prison_bars" Place "PRISON_BARS"
+  "prison_bars" PlaceHostile "PRISON_BARS"
+  "prison_door" PlaceHostile "PRISON_DOOR_LOCKED"
+  "prison" Place "PRISON"
   "ant_worker" HostileCreature "ANT_WORKER"
-  "bat" HostileCreature "BAT"
+  "bat" PeacefulCreature "BAT"
+  "elf_archer" AlliedPrisoner "ELF_ARCHER"
   "ghost_spawn" Place "GHOST_SPAWN"
   "gargoyle" Place "GARGOYLE_TRAP"
+  "workshop" Place "WORKSHOP"
+  "special_tree" Place "SPECIAL_TREE"
+}
+
+"z_level_hell" inherit "default" append {
+  "hard_rock" Place "HELL_MOUNTAIN"
+  "water" { ClearFurniture Place "MAGMA"}
 }
 
 "z_level_vampire_vault" inherit "default" append {
@@ -72,11 +95,19 @@
   "workshop" Place "FORGE"
 }
 
-"adoxie_feet" inherit "default" append {
+"adoxie_feet_entry" inherit "default" append {
   "adoxie_left_foot" Place "ADOXIE_LEFT_FOOT"
   "adoxie_right_foot" Place "ADOXIE_RIGHT_FOOT"
-  "adoxie_feet_trigger" Place "ADOXIE_FEET_TRIGGER"
   "down_stairs0" Stairs DOWN "ADOXIE_FEET_ALTAR" 0
+  "castle_wall" Place "DUNGEON_WALL"
+}
+
+"adoxie_feet" inherit "default" append {
+  "prophet_remains" { Place "REMAINS_TABLE" Items "prophetRemains" }
+  "rock" Place "NECRO_WALL"
+  "castle_wall" Place "NECRO_WALL"
+  "floor" { Place "FLOOR" Place "FLOOR_STONE2" }
+  "adoxie_feet_trigger" Place "ADOXIE_FEET_TRIGGER"
 }
 
 "village" inherit "default" append {
@@ -101,11 +132,23 @@
 }
 
 "dragon" inherit "default" append {
-  "chest" Place "DRAGON_CHEST"
+  "chest" { Place "NONFLAMMABLE_CHEST" Items "dragonChest" }
 }
 
 "z_level_castle" inherit "default" append {
   "castle_wall" Place "DUNGEON_WALL2"
   "archer_wall" Place "DUNGEON_WALL2"
-  "black_dragon_weapon" Items {2 4} "blackDragonWeapons"
+  "black_dragon_weapon" Items "blackDragonWeapons"
+}
+
+"adoxie_statue_under" inherit "default" append {
+  "trap" Place "BOULDER_TRAP"
+  "chest" { Place "CHEST" Items "armorChest" }
+  "scroll_chest" { Place "CHEST" Items "adoxieScroll" }
+}
+
+"thief_stable" inherit "default" append {
+  "mud_floor" { ClearFurniture Place "SAND_FLOOR" Flag EMPTY_ROOM}
+  "wood_wall" Place "SANDSTONE_WALL"
+  "castle_wall" Place "SANDSTONE_WALL"
 }

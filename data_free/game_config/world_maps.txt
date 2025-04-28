@@ -1,0 +1,2 @@
+"Inland" "world_map"
+"Islands" "world_map_test"

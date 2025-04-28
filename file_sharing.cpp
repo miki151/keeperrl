@@ -151,14 +151,6 @@ optional<string> FileSharing::downloadSite(CancelFlag& cancel, const SaveFileInf
   return none;
 }
 
-void FileSharing::uploadHighscores(CancelFlag& cancel, const FilePath& path) {
-  if (options.getBoolValue(OptionId::ONLINE))
-    uploadQueue.push([this, path, &cancel] {
-      uploadContent({UploadedFile{path.getPath(), "fileToUpload"}}, (uploadUrl + "/upload_scores.php").c_str(),
-          getCallbackData(cancel), 5);
-    });
-}
-
 optional<string> FileSharing::uploadBugReport(CancelFlag& cancel, const string& text, optional<FilePath> savefile,
     optional<FilePath> screenshot, ProgressMeter& meter) {
   string params = "description=" + escapeEverything(text);
@@ -246,25 +238,6 @@ void FileSharing::uploadGameEventImpl(const GameEvent& data, int tries) {
     });
 }
 
-string FileSharing::downloadHighscores(CancelFlag& cancel, int version) {
-  string ret;
-  if (options.getBoolValue(OptionId::ONLINE))
-    if(CURL* curl = curl_easy_init()) {
-      curl_easy_setopt(curl, CURLOPT_URL,
-          escapeSpaces(uploadUrl + "/highscores.php?version=" + toString(version)).c_str());
-      curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
-      curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15);
-      curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
-      curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
-      auto callback = getCallbackData(cancel);
-      curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &callback);
-      curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
-      curl_easy_perform(curl);
-      curl_easy_cleanup(curl);
-    }
-  return ret;
-}
-
 void FileSharing::downloadPersonalMessage() {
   uploadQueue.push([this] {
     RecursiveLock lock(personalMessageMutex);
@@ -330,9 +303,9 @@ static optional<FileSharing::SiteInfo> parseSite(const vector<string>& fields) {
     elem.fileInfo.date = fromString<int>(fields[1]);
     elem.version = fromString<int>(fields[2]);
     elem.fileInfo.download = true;
-  } catch (cereal::Exception) {
+  } catch (cereal::Exception&) {
     return none;
-  } catch (ParsingException e) {
+  } catch (ParsingException& e) {
     return none;
   }
   return elem;
@@ -355,7 +328,7 @@ static optional<SiteConquestInfo> parseSiteConquest(const vector<string>& fields
     elem.filename = unescapeEverything(fields[0]);
     elem.wonGames = fromString<int>(fields[1]);
     elem.totalGames = fromString<int>(fields[2]);
-  } catch (cereal::Exception) {
+  } catch (cereal::Exception&) {
     return none;
   } catch (ParsingException e) {
     return none;

@@ -39,10 +39,12 @@
 #include "enemy_aggression_level.h"
 #include "immigrant_info.h"
 #include "item.h"
+#include "team_order.h"
+#include "duel_state.h"
 
 SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl)
 
-SERIALIZE_DEF(VillageControl, SUBCLASS(CollectiveControl), SUBCLASS(EventListener), behaviour, victims, myItems, stolenItemCount, attackSizes, entries, maxEnemyPower)
+SERIALIZE_DEF(VillageControl, SUBCLASS(CollectiveControl), SUBCLASS(EventListener), behaviour, victims, myItems, stolenItemCount, attackSizes, entries, maxEnemyPower, cancelledAttacks)
 REGISTER_TYPE(ListenerTemplate<VillageControl>)
 
 VillageControl::VillageControl(Private, Collective* col, optional<VillageBehaviour> v) : CollectiveControl(col),
@@ -84,7 +86,7 @@ void VillageControl::onOtherKilled(const Creature* victim, const Creature* kille
       victims += 0.15; // small increase for same tribe but different village
 }
 
-void VillageControl::onMemberKilled(const Creature* victim, const Creature* killer) {
+void VillageControl::onMemberKilledOrStunned(Creature* victim, const Creature* killer) {
   if (isEnemy(killer))
     victims += 1;
 }
@@ -173,39 +175,45 @@ void VillageControl::updateAggression(EnemyAggressionLevel level) {
       break;
     case EnemyAggressionLevel::EXTREME:
       if (behaviour && !behaviour->triggers.empty())
-        behaviour->triggers.push_back(Timer{10});
+        behaviour->triggers.push_back(Timer{1000});
       break;
     default:
       break;
   }
 }
 
-void VillageControl::launchAttack(vector<Creature*> attackers) {
-  if (Collective* enemy = getEnemyCollective()) {
-    for (Creature* c : attackers) {
+void VillageControl::launchAttack(vector<Creature*> attackers, bool duel) {
+  auto enemy = getEnemyCollective();
+  for (Creature* c : attackers) {
 //      if (getCollective()->getGame()->canTransferCreature(c, enemy->getLevel()->getModel()))
-      if (c->isAffected(LastingEffect::RIDER))
-        if (auto steed = collective->getSteedOrRider(c))
-          c->forceMount(steed);
-      collective->getGame()->transferCreature(c, enemy->getModel());
-    }
-    optional<int> ransom;
-    int hisGold = enemy->numResource(CollectiveResourceId("GOLD"));
-    if (behaviour->ransom && hisGold >= behaviour->ransom->second)
-      ransom = max<int>(behaviour->ransom->second,
-          (Random.getDouble(behaviour->ransom->first * 0.6, behaviour->ransom->first)) * hisGold);
-    TeamId team = collective->getTeams().create(attackers);
-    collective->getTeams().activate(team);
-    collective->freeTeamMembers(attackers);
-    vector<WConstTask> attackTasks;
-    for (Creature* c : attackers) {
-      auto task = Task::withTeam(collective, team, behaviour->getAttackTask(this));
-      attackTasks.push_back(task.get());
-      collective->setTask(c, std::move(task));
-    }
-    enemy->getControl()->addAttack(CollectiveAttack(std::move(attackTasks), collective, attackers, ransom));
-    attackSizes[team] = attackers.size();
+    if (c->isAffected(LastingEffect::RIDER))
+      if (auto steed = collective->getSteedOrRider(c))
+        c->forceMount(steed);
+    collective->getGame()->transferCreature(c, enemy->getModel());
   }
+  optional<int> ransom;
+  int hisGold = enemy->numResource(CollectiveResourceId("GOLD"));
+  if (!duel && behaviour->ransom && hisGold >= behaviour->ransom->second)
+    ransom = max<int>(behaviour->ransom->second,
+        (Random.getDouble(behaviour->ransom->first * 0.6, behaviour->ransom->first)) * hisGold);
+  TeamId team = collective->getTeams().create(attackers);
+  if (behaviour->isAttackBehaviourNonChasing())
+    collective->getTeams().setTeamOrder(team, TeamOrder::FLEE, true);
+  collective->getTeams().activate(team);
+  collective->freeTeamMembers(attackers);
+  vector<const Task*> attackTasks;
+  shared_ptr<DuelState> duelFlag;
+  if (duel)
+    duelFlag = make_shared<DuelState>(DuelState::INACTIVE);
+  for (Creature* c : attackers) {
+    auto task = Task::withTeam(collective, team, behaviour->getAttackTask(this));
+    if (duelFlag)
+      task = Task::duelTask(enemy, collective, attackers, std::move(task), duelFlag);
+    attackTasks.push_back(task.get());
+    collective->setPriorityTask(c, std::move(task));
+  }
+  enemy->getControl()->addAttack(CollectiveAttack(std::move(attackTasks), collective, attackers, ransom));
+  attackSizes[team] = attackers.size();
 }
 
 bool VillageControl::considerVillainAmbush(const vector<Creature*>& travellers) {
@@ -215,7 +223,7 @@ bool VillageControl::considerVillainAmbush(const vector<Creature*>& travellers) 
     auto attackers = getAttackers();
     if (!attackers.empty()) {
       const int maxDist = 3;
-      unordered_map<Position, int, CustomHash<Position>> distance;
+      HashMap<Position, int> distance;
       queue<Position> q;
       auto add = [&](Position p, int dist) {
         q.push(p);
@@ -289,7 +297,7 @@ void VillageControl::launchAllianceAttack(vector<Collective*> allies) {
     TeamId team = collective->getTeams().create(attackers);
     collective->getTeams().activate(team);
     collective->freeTeamMembers(attackers);
-    vector<WConstTask> attackTasks;
+    vector<const Task*> attackTasks;
     for (Creature* c : attackers) {
       auto task = Task::allianceAttack(allies, enemy, getKillLeaderTask(enemy));
       attackTasks.push_back(task.get());
@@ -301,17 +309,23 @@ void VillageControl::launchAllianceAttack(vector<Collective*> allies) {
 
 void VillageControl::considerCancellingAttack() {
   if (auto enemyCollective = getEnemyCollective())
-    for (auto team : collective->getTeams().getAll()) {
-      vector<Creature*> members = collective->getTeams().getMembers(team);
-      if (members.size() < (attackSizes[team] + 1) / 2 || (members.size() == 1 &&
-            members[0]->getBody().isSeriouslyWounded())) {
-        for (Creature* c : members)
-          collective->freeFromTask(c);
-        collective->getTeams().cancel(team);
-        if (auto& name = collective->getName())
-          enemyCollective->addRecordedEvent("resisting the attack of " + name->full);
+    for (auto team : collective->getTeams().getAll())
+      if (!cancelledAttacks.count(team)) {
+        vector<Creature*> members = collective->getTeams().getMembers(team)
+            .filter([](Creature* c) { return !c->isAffected(LastingEffect::POLYMORPHED); });
+        if (members.size() < (attackSizes[team] + 1) / 2 || (members.size() == 1 &&
+              members[0]->getBody().isSeriouslyWounded())) {
+          for (Creature* c : members)
+            collective->setTask(c, Task::chain(
+                Task::transferTo(collective->getModel()),
+                Task::goTo(Random.choose(collective->getTerritory().getAll()))
+            ));
+          collective->getTeams().setTeamOrder(team, TeamOrder::FLEE, true);
+          if (auto& name = collective->getName())
+            enemyCollective->addRecordedEvent("resisting the attack of " + name->full);
+          cancelledAttacks.insert(team);
+        }
       }
-    }
 }
 
 void VillageControl::onRansomPaid() {
@@ -330,6 +344,8 @@ vector<TriggerInfo> VillageControl::getAllTriggers(const Collective* against) co
 }
 
 bool VillageControl::canPerformAttack() const {
+  if (collective->isConquered())
+    return false;
   // don't attack if player is not in the base site
   if (collective->getGame()->getCurrentModel() != collective->getGame()->getMainModel().get())
     return false;
@@ -380,7 +396,31 @@ vector<Creature*> VillageControl::getAttackers() const {
   return {};
 }
 
-void VillageControl::update(bool) {
+void VillageControl::considerAcceptingPrisoners() {
+  vector<Creature*> captured;
+  for (auto pos : collective->getTerritory().getPillagePositions())
+    if (auto c = pos.getCreature())
+      if (collective->getTribe()->isEnemy(c)) {
+        if (c->isAffected(LastingEffect::STUNNED))
+          captured.push_back(c);
+        else
+          return;
+      }
+  for (auto c : captured)
+    collective->takePrisoner(c);
+}
+
+void VillageControl::update(bool currentlyActive) {
+  if (!currentlyActive)
+    for (auto c : getCreatures())
+      if (collective->getModel() == c->getPosition().getModel() &&
+          !collective->getTerritory().contains(c->getPosition()))
+        for (auto pos : Random.permutation(collective->getTerritory().getAll()))
+          if (pos.canEnter(c)) {
+            c->getPosition().moveCreature(pos);
+            break;
+          }
+  considerAcceptingPrisoners();
   considerCancellingAttack();
   acceptImmigration();
   healAllCreatures();
@@ -397,14 +437,27 @@ void VillageControl::update(bool) {
     return;
   }
   double updateFreq = 0.1;
+  if (currentlyActive && victims > 2 && collective->getEnemyId() == EnemyId("DEMON_DEN"))
+    for (auto c : collective->getCreatures())
+      if (collective->getTerritory().contains(c->getPosition()) && c->getPosition().isClosedOff({MovementTrait::WALK}))
+        for (auto pos : c->getPosition().getLevel()->getAllPositions())
+          if (pos.canEnter(c) && !pos.isClosedOff({MovementTrait::WALK})) {
+            c->getPosition().moveCreature(pos, true);
+            break;
+          }
   if (isEnemy() && canPerformAttack() && Random.chance(updateFreq) && behaviour) {
-    if (Collective* enemy = getEnemyCollective())
-      maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
+    auto enemy = getEnemyCollective();
+    maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
     double prob = behaviour->getAttackProbability(this) / updateFreq;
     if (Random.chance(prob)) {
+      bool duel = !collective->getLeaders().empty() && enemy->getLeaders().size() == 1 &&
+          Random.chance(behaviour->duelChance);
       auto attackers = getAttackers();
-      if (!attackers.empty())
-        launchAttack(attackers);
+      if (!attackers.empty()) {
+        if (duel && !attackers.contains(collective->getLeaders()[0]))
+          attackers.insert(0, collective->getLeaders()[0]);
+        launchAttack(attackers, duel);
+      }
     }
   }
 }

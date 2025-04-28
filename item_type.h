@@ -4,7 +4,6 @@
 #include "corpse_info.h"
 #include "item_class.h"
 
-class ItemAttributes;
 class ContentFactory;
 class ItemTypeVariant;
 
@@ -35,7 +34,7 @@ class ItemType {
 
   PItem get(const ContentFactory*) const;
   vector<PItem> get(int, const ContentFactory*) const;
-  ItemAttributes getAttributes(const ContentFactory*) const;
+  SItemAttributes getAttributes(const ContentFactory*) const;
   ItemType setPrefixChance(double chance)&&;
 
   HeapAllocated<ItemTypeVariant> SERIAL(type);

@@ -25,6 +25,7 @@
 #include "keeper_creature_info.h"
 #include "workshop_type.h"
 #include "resource_id.h"
+#include "bed_type.h"
 
 class Model;
 class Technology;
@@ -72,7 +73,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void leaveControl();
   void teamMemberAction(TeamMemberAction, UniqueEntity<Creature>::Id);
   void toggleControlAllTeamMembers();
-  void onControlledKilled(const Creature* victim);
+  void onControlledKilled(Creature* victim);
   void onSunlightVisibilityChanged();
   void setTutorial(STutorial);
   STutorial getTutorial() const;
@@ -99,7 +100,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<TeamId> getCurrentTeam() const;
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
-  WModel getModel() const;
+  Model* getModel() const;
   void takeScreenshot();
   void addAllianceAttack(vector<Collective*> attackers);
 
@@ -126,12 +127,13 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual vector<vector<Vec2>> getTeamPathTo(TeamId, Vec2) const override;
   virtual vector<Vec2> getHighlightedPathTo(Vec2) const override;
   virtual CreatureView::PlacementInfo canPlaceItem(Vec2, int) const override;
+  optional<QuartersInfo> getQuarters(Vec2) const override;
 
   // from CollectiveControl
   virtual void addAttack(const CollectiveAttack&) override;
   virtual void addMessage(const PlayerMessage&) override;
   virtual void addWindowMessage(ViewIdList, const string&) override;
-  virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
+  virtual void onMemberKilledOrStunned(Creature* victim, const Creature* killer) override;
   virtual void onConquered(Creature* victim, Creature* killer) override;
   virtual void onMemberAdded(Creature*) override;
   virtual void onConstructed(Position, FurnitureType) override;
@@ -139,9 +141,11 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void onClaimedSquare(Position) override;
   virtual void tick() override;
   virtual void update(bool currentlyActive) override;
+  virtual DuelAnswer acceptDuel(Creature* attacker) override;
 
   private:
 
+  bool canAllyJoin(Creature* ally) const;
   Level* getCurrentLevel() const;
   void considerNightfallMessage();
   void considerWarning();
@@ -151,7 +155,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   TribeId getTribeId() const;
   bool canSee(const Creature*) const;
   bool canSee(Position) const;
-  bool isConsideredAttacking(const Creature*, const Collective* enemy);
+  bool isConsideredAttacking(const CollectiveAttack&);
 
   static string getWarningText(CollectiveWarning);
   void updateSquareMemory(Position);
@@ -195,8 +199,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<Creature*> getMinionGroup(const string& groupName) const;
   vector<PlayerInfo> getPlayerInfos(vector<Creature*>) const;
   void sortMinionsForUI(vector<Creature*>&) const;
-  vector<CollectiveInfo::CreatureGroup> getCreatureGroups(vector<Creature*>) const;
-  vector<CollectiveInfo::CreatureGroup> getAutomatonGroups(vector<Creature*>) const;
+  vector<CollectiveInfo::CreatureGroup> getCreatureGroups(const vector<Creature*>&) const;
+  vector<CollectiveInfo::CreatureGroup> getAutomatonGroups(const vector<Creature*>&) const;
   void minionEquipmentAction(const EquipmentActionInfo&);
   void addEquipment(Creature*, EquipmentSlot);
   void addConsumableItem(Creature*);
@@ -210,7 +214,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   ViewObject getTrapObject(FurnitureType, bool built) const;
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
   void onSquareClick(Position);
-  WGame getGame() const;
+  Game* getGame() const;
   View* getView() const;
   PController createMinionController(Creature*);
 
@@ -257,6 +261,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   SMessageBuffer SERIAL(controlModeMessages);
   unordered_set<int> dismissedNextWaves;
   vector<ImmigrantDataInfo> getPrisonerImmigrantData() const;
+  vector<ImmigrantDataInfo> getUnrealizedPromotionsImmigrantData() const;
   vector<ImmigrantDataInfo> getNecromancerImmigrationHelp() const;
   void acceptPrisoner(int index);
   void rejectPrisoner(int index);
@@ -277,7 +282,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void loadBuildingMenu(const ContentFactory*, const KeeperCreatureInfo&);
   Level* currentLevel = nullptr;
   void scrollStairs(int dir);
-  CollectiveInfo::QueuedItemInfo getQueuedItemInfo(const WorkshopQueuedItem&, int cnt, int itemIndex, bool hasLegendarySkill) const;
+  CollectiveInfo::QueuedItemInfo getQueuedItemInfo(const WorkshopQueuedItem&, int cnt, int itemIndex) const;
   vector<pair<Item*, Position>> getItemUpgradesFor(const WorkshopItem&) const;
   void fillDungeonLevel(AvatarLevelInfo&) const;
   void fillResources(CollectiveInfo&) const;
@@ -289,8 +294,21 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   ViewId getViewId(const BuildInfoTypes::BuildType&) const;
   EntityMap<Creature, LocalTime> leaderWoundedTime;
   void handleDestructionOrder(Position position, HighlightType, DestroyAction, bool dryRun);
-  unordered_set<CollectiveResourceId, CustomHash<CollectiveResourceId>> SERIAL(usedResources);
+  HashSet<CollectiveResourceId> SERIAL(usedResources);
   optional<vector<Collective*>> SERIAL(allianceAttack);
   enum class Selection { SELECT, DESELECT, NONE } selection = Selection::NONE;
+  void considerTogglingCaptureOrderOnMinions() const;
+  struct BattleSummary {
+    vector<Creature*> SERIAL(minionsKilled);
+    vector<Creature*> SERIAL(minionsCaptured);
+    vector<Creature*> SERIAL(enemiesKilled);
+    vector<Creature*> SERIAL(enemiesCaptured);
+    SERIALIZE_ALL(minionsKilled, minionsCaptured, enemiesKilled, enemiesCaptured)
+  };
+  BattleSummary SERIAL(battleSummary);
+  void presentAndClearBattleSummary();
+  void presentMinionsFreedMessage(const vector<Creature*>&);
+  void considerSoloAchievement();
+  bool SERIAL(soloKeeper) = true;
+  mutable EnumMap<BedType, optional<int>> prisonSizeCache;
 };
-

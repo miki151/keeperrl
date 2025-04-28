@@ -24,7 +24,7 @@ Color Color::YELLOW(250, 255, 0);
 Color Color::LIGHT_BROWN(210, 150, 0);
 Color Color::ORANGE_BROWN(250, 150, 0);
 Color Color::BROWN(240, 130, 0);
-Color Color::DARK_BROWN(100, 60, 0);
+Color Color::DARK_BROWN(100, 40, 0);
 Color Color::MAIN_MENU_ON(255, 255, 255, 190);
 Color Color::MAIN_MENU_OFF(255, 255, 255, 70);
 Color Color::LIGHT_GRAY(150, 150, 150);
@@ -40,6 +40,7 @@ Color Color::LIGHT_GREEN(100, 255, 100);
 Color Color::DARK_GREEN(0, 150, 0);
 Color Color::RED(255, 0, 0);
 Color Color::LIGHT_RED(255, 100, 100);
+Color Color::DARK_RED(150, 0, 0);
 Color Color::PINK(255, 20, 147);
 Color Color::ORANGE(255, 165, 0);
 Color Color::BLUE(0, 0, 255);
@@ -48,7 +49,6 @@ Color Color::LIGHT_BLUE(100, 100, 255);
 Color Color::SKY_BLUE(0, 191, 255);
 Color Color::PURPLE(160, 32, 240);
 Color Color::VIOLET(120, 0, 255);
-Color Color::TRANSLUCENT_BLACK(0, 0, 0);
 Color Color::TRANSPARENT(0, 0, 0, 0);
 
 Color::Color(unsigned char r, unsigned char g, unsigned char b, unsigned char a) : r(r), g(g), b(b), a(a) {}
@@ -116,6 +116,7 @@ RICH_ENUM(
     DARK_GREEN,
     RED,
     LIGHT_RED,
+    DARK_RED,
     PINK,
     ORANGE,
     BLUE,
@@ -124,7 +125,6 @@ RICH_ENUM(
     SKY_BLUE,
     PURPLE,
     VIOLET,
-    TRANSLUCENT_BLACK,
     TRANSPARENT
 );
 
@@ -171,6 +171,7 @@ void Color::serialize(PrettyInputArchive& ar, unsigned int) {
           MAP_COLOR(DARK_GREEN);
           MAP_COLOR(RED);
           MAP_COLOR(LIGHT_RED);
+          MAP_COLOR(DARK_RED);
           MAP_COLOR(PINK);
           MAP_COLOR(ORANGE);
           MAP_COLOR(BLUE);
@@ -179,7 +180,6 @@ void Color::serialize(PrettyInputArchive& ar, unsigned int) {
           MAP_COLOR(SKY_BLUE);
           MAP_COLOR(PURPLE);
           MAP_COLOR(VIOLET);
-          MAP_COLOR(TRANSLUCENT_BLACK);
           MAP_COLOR(TRANSPARENT);
         }
       }

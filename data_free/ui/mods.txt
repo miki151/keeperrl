@@ -18,12 +18,6 @@ MarginLeft(18, Vertical {
 })
 End
 
-Def SelectButton(Text)
-{
-  KeybindingHandler(MENU_SELECT)
-  StandardButtonNotFocusable(Horizontal{ Label(Text) Width 10 {} RenderKeybinding(MENU_SELECT, true)})
-}
-End
 {
   BlockEvents
   ExitButtons()
@@ -48,9 +42,9 @@ End
         Height 15 {}
         Stretch Using "description" Scrolling(1, MarginRight(30, Paragraph(520)))
         Horizontal {
-          Using "Activate" SelectButton("Activate")
-          Using "Deactivate" SelectButton("Deactivate")
-          Using "Download" SelectButton("Download")
+          Using "Activate" KeybindingButton("Activate", MENU_SELECT)
+          Using "Deactivate" KeybindingButton("Deactivate", MENU_SELECT)
+          Using "Download" KeybindingButton("Download", MENU_SELECT)
           Using "Update" StandardButtonNotFocusable(Label("Update"))
           Using "Upload" StandardButtonNotFocusable(Label("Upload"))
           Using "show_workshop" StandardButtonNotFocusable(Label("Show in Steam Workshop"))

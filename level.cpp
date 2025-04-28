@@ -46,14 +46,23 @@
 #include "known_tiles.h"
 #include "territory.h"
 #include "player_control.h"
+#include "portals.h"
+#include "effect_type.h"
+#include "content_factory.h"
 
 template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
+  if (Archive::is_saving::value)
+    CHECK(!model->serializationLocked);
   ar & SUBCLASS(OwnedObject<Level>);
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
   ar(sunlight, bucketMap, lightAmount, unavailable, swarmMaps, territory);
-  ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates, above, below, mountainLevel);
-  ar(furniture, tickingFurniture, covered, name, depth, wildlife, addedWildlife, mainDungeon);
+  ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates, above, below, mountainLevel, furniture);
+  if (version == 0) {
+    set<Vec2> SERIAL(tickingFurniture);
+    ar(tickingFurniture);
+  }
+  ar(covered, name, depth, wildlife, addedWildlife, mainDungeon);
   vector<pair<TribeId, unique_ptr<EffectsTable>>> SERIAL(tmp);
   for (auto t : ENUM_ALL(TribeId::KeyType))
     if (!!furnitureEffects[t])
@@ -66,8 +75,43 @@ void Level::serialize(Archive& ar, const unsigned int version) {
       table = std::move(elem.second);
     }
   // ar(furnitureEffects)
-  if (Archive::is_loading::value) // some code requires these Sectors to be always initialized
+  if (Archive::is_loading::value) {
+    // some code requires these Sectors to be always initialized
     getSectors({MovementTrait::WALK});
+    updateTickingFurniture();
+  }
+  if (progressMeter)
+    progressMeter->addProgress();
+}
+
+ProgressMeter* Level::progressMeter = nullptr;
+
+static Effects::Chance* getChanceTick(FurnitureTickType& t) {
+  return t.visit<Effects::Chance*>(
+    [&](auto&) { return nullptr;},
+    [&](Effect& effect) {
+      return effect.effect->visit<Effects::Chance*>(
+          [&](Effects::Chance& c) {
+            return &c;
+          },
+          [&](auto&) { return nullptr;}
+      );
+    }
+  );
+}
+
+void Level::updateTickingFurniture() {
+  for (auto v : squares->getBounds())
+    for (auto layer : ENUM_ALL(FurnitureLayer))
+      if (auto f = furniture->getBuilt(layer).getReadonly(v)) {
+        if (auto t = f->getTickType()) {
+          if (auto chance = getChanceTick(*t))
+            furniture->getBuilt(layer).getWritable(v)->tickType = FurnitureTickType(std::move(*chance->effect));
+          tickingFurniture.insert(make_pair(make_pair(v, layer), -1));
+        }
+        if ((f->getFire() && f->getFire()->isBurning()) || f->hasBlood())
+          burningFurniture.insert(make_pair(v, layer));
+      }
 }
 
 SERIALIZABLE(Level);
@@ -84,7 +128,7 @@ static vector<pair<int, CreatureBucketMap>> getSwarmMaps(Vec2 size) {
   );
 }
 
-Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, Table<double> sun, LevelId id)
+Level::Level(Private, SquareArray s, FurnitureArray f, Model* m, Table<double> sun, LevelId id)
     : territory(s.getBounds(), nullptr), squares(std::move(s)), furniture(std::move(f)),
       memoryUpdates(squares->getBounds(), true), model(m),
       sunlight(sun),
@@ -92,9 +136,10 @@ Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, Table<double> s
       swarmMaps(getSwarmMaps(squares->getBounds().getSize())),
       lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
       levelId(id) {
+  updateTickingFurniture();
 }
 
-PLevel Level::create(SquareArray s, FurnitureArray f, WModel m,
+PLevel Level::create(SquareArray s, FurnitureArray f, Model* m,
     Table<double> sun, LevelId id, Table<bool> covered, Table<bool> unavailable, const ContentFactory* factory) {
   auto ret = makeOwner<Level>(Private{}, std::move(s), std::move(f), m, sun, id);
   for (Vec2 pos : ret->squares->getBounds()) {
@@ -102,12 +147,8 @@ PLevel Level::create(SquareArray s, FurnitureArray f, WModel m,
     square->onAddedToLevel(Position(pos, ret.get()));
     if (optional<StairKey> link = square->getLandingLink())
       ret->landingSquares[*link].push_back(Position(pos, ret.get()));
-    for (auto layer : ENUM_ALL(FurnitureLayer)) {
+    for (auto layer : ENUM_ALL(FurnitureLayer))
       ret->furniture->getBuilt(layer).shrinkToFit();
-      if (auto f = ret->furniture->getBuilt(layer).getReadonly(pos))
-        if (f->isTicking())
-          ret->addTickingFurniture(pos);
-    }
   }
   for (VisionId vision : ENUM_ALL(VisionId))
     (*ret->fieldOfView)[vision] = FieldOfView(ret.get(), vision, factory);
@@ -215,11 +256,11 @@ vector<Creature*> Level::getPlayers() const {
   return {};
 }
 
-WModel Level::getModel() const {
+Model* Level::getModel() const {
   return model;
 }
 
-WGame Level::getGame() const {
+Game* Level::getGame() const {
   return model->getGame();
 }
 
@@ -233,8 +274,8 @@ double Level::getLevelGenSunlight(Vec2 pos) const {
 }
 
 const vector<Position>& Level::getLandingSquares(StairKey key) const {
-  if (landingSquares.count(key))
-    return landingSquares.at(key);
+  if (auto res = getReferenceMaybe(landingSquares, key))
+    return *res;
   else {
     static vector<Position> empty;
     return empty;
@@ -243,6 +284,10 @@ const vector<Position>& Level::getLandingSquares(StairKey key) const {
 
 vector<StairKey> Level::getAllStairKeys() const {
   return getKeys(landingSquares);
+}
+
+const Level::LandingSquares& Level::getAllLandingSquares() const {
+  return landingSquares;
 }
 
 bool Level::hasStairKey(StairKey key) const {
@@ -519,7 +564,7 @@ vector<Position> Level::getAllPositions() const {
 vector<Position> Level::getAllLandingPositions() const {
   auto largestSector = getSectors({MovementTrait::WALK}).getLargest();
   return getAllPositions().filter([&](Position pos) {
-    return getSectors({MovementTrait::WALK}).isSector(pos.getCoord(), largestSector);
+    return getSectors({MovementTrait::WALK}).getSector(pos.getCoord()) == largestSector;
   });
 }
 
@@ -527,18 +572,34 @@ void Level::addTickingSquare(Vec2 pos) {
   tickingSquares.insert(pos);
 }
 
-void Level::addTickingFurniture(Vec2 pos) {
-  tickingFurniture.insert(pos);
+void Level::addTickingFurniture(Vec2 pos, FurnitureLayer layer) {
+  tickingFurniture[make_pair(pos, layer)] = 1.0;
+}
+
+void Level::addBurningFurniture(Vec2 pos, FurnitureLayer layer) {
+  burningFurniture.insert(make_pair(pos, layer));
 }
 
 void Level::tick() {
   PROFILE_BLOCK("Level::tick");
   for (Vec2 pos : tickingSquares)
     squares->getWritable(pos)->tick(Position(pos, this));
-  for (Vec2 pos : tickingFurniture)
-    for (auto layer : ENUM_ALL(FurnitureLayer))
-      if (auto f = furniture->getBuilt(layer).getWritable(pos))
-        f->tick(Position(pos, this), layer);
+  auto& furnitureFactory = getGame()->getContentFactory()->furniture;
+  for (auto& elem : tickingFurniture)
+    if (auto f = furniture->getBuilt(elem.first.second).getWritable(elem.first.first)) {
+      auto& chance = elem.second;
+      if (chance <= 0)
+        if (auto tickType = furnitureFactory.getData(f->getType()).tickType)
+          if (auto chanceTick = getChanceTick(*tickType))
+            chance = chanceTick->value;
+      if (chance <= 0)
+        chance = 1;
+      if (Random.chance(chance))
+        f->tick(Position(elem.first.first, this), elem.first.second);
+    }
+  for (auto& elem : burningFurniture)
+    if (auto f = furniture->getBuilt(std::get<1>(elem)).getWritable(std::get<0>(elem)))
+      f->updateFire(Position(std::get<0>(elem), this), std::get<1>(elem));
   addedWildlife = addedWildlife.filter([this, col = getGame()->getPlayerCollective()](Creature* c) {
     return c->getPosition().getLevel() == this && (!col || !col->getCreatures().contains(c)); });
   if (Random.roll(50) && addedWildlife.size() < wildlife.count.getStart()) {
@@ -590,7 +651,7 @@ Sectors& Level::getSectorsDontCreate(const MovementType& movement) const {
 }
 
 static Sectors::ExtraConnections getOrCreateExtraConnections(Rectangle bounds,
-    const unordered_map<MovementType, Sectors, CustomHash<MovementType>>& sectors) {
+    const HashMap<MovementType, Sectors>& sectors) {
   if (sectors.empty())
     return Sectors::ExtraConnections(bounds);
   else
@@ -598,6 +659,7 @@ static Sectors::ExtraConnections getOrCreateExtraConnections(Rectangle bounds,
 }
 
 Sectors& Level::getSectors(const MovementType& movement) const {
+  PROFILE;
   if (auto res = getReferenceMaybe(sectors, movement))
     return *res;
   else {
@@ -607,8 +669,16 @@ Sectors& Level::getSectors(const MovementType& movement) const {
     for (Position pos : getAllPositions())
       if (pos.canNavigateCalc(movement))
         newSectors.add(pos.getCoord());
+    for (auto& portal : model->portals->getMatchedPortals())
+      if (portal.first.getLevel() == this && portal.second.getLevel() == this)
+        newSectors.addExtraConnection(portal.first.getCoord(), portal.second.getCoord());
     return newSectors;
   }
+}
+
+void Level::prepareForRetirement() {
+  for (auto l : ENUM_ALL(FurnitureLayer))
+    furniture->getBuilt(l).clearModified();
 }
 
 void Level::updateSunlightMovement() {
@@ -651,7 +721,9 @@ void Level::setFurniture(Vec2 pos, PFurniture f) {
   auto layer = f->getLayer();
   furniture->eraseConstruction(pos, layer);
   if (f->isTicking())
-    addTickingFurniture(pos);
+    addTickingFurniture(pos, f->getLayer());
+  if ((f->getFire() && f->getFire()->isBurning()) || f->hasBlood())
+    addBurningFurniture(pos, f->getLayer());
   furniture->getBuilt(layer).putElem(pos, std::move(f));
 }
 

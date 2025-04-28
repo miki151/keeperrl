@@ -24,6 +24,9 @@
 #include "automaton_part.h"
 #include "lasting_or_buff.h"
 #include "player_message.h"
+#include "tribe.h"
+#include "achievement_id.h"
+#include "item_list_id.h"
 
 #define SIMPLE_EFFECT(Name) \
   struct Name { \
@@ -85,14 +88,11 @@ struct Summon {
   optional<int> SERIAL(ttl);
   SERIALIZE_ALL(creature, count, ttl)
 };
-struct AssembledMinion {
-  CreatureId SERIAL(creature);
+struct SummonAway : Summon {
   EnumSet<MinionTrait> SERIAL(traits);
-  vector<Effect> SERIAL(effects);
-  SERIALIZE_ALL(NAMED(creature), NAMED(traits), OPTION(effects))
+  SERIALIZE_ALL(SUBCLASS(Summon), traits)
 };
 using AddAutomatonPart = AutomatonPart;
-using ItemPrefix = ::ItemPrefix;
 struct SummonEnemy {
   SummonEnemy(CreatureId id, Range c) : creature(id), count(c) {}
   SummonEnemy() {}
@@ -134,6 +134,10 @@ struct PlaceFurniture {
   FurnitureType SERIAL(furniture);
   SERIALIZE_ALL(furniture)
 };
+struct ModifyFurniture {
+  FurnitureType SERIAL(furniture);
+  SERIALIZE_ALL(furniture)
+};
 struct Damage {
   AttrType SERIAL(attr);
   AttackType SERIAL(attackType);
@@ -151,6 +155,10 @@ struct IncreaseAttr {
   const char* get(const char* ifIncrease, const char* ifDecrease) const;
   SERIALIZE_ALL(attr, amount)
 };
+struct AddExperience {
+  double SERIAL(amount);
+  SERIALIZE_ALL(amount)
+};
 struct InjureBodyPart {
   BodyPart SERIAL(part);
   SERIALIZE_ALL(part)
@@ -164,6 +172,11 @@ struct AddBodyPart {
   int SERIAL(count);
   optional<ItemType> SERIAL(attack);
   SERIALIZE_ALL(part, count, attack)
+};
+struct AddIntrinsicAttack {
+  BodyPart SERIAL(part);
+  ItemType SERIAL(attack);
+  SERIALIZE_ALL(part, attack)
 };
 SIMPLE_EFFECT(MakeHumanoid);
 struct GenericModifierEffect {
@@ -226,7 +239,8 @@ struct ChooseRandom : Chain {
 };
 struct ChainUntilFail : Chain {
 };
-
+struct ChooseRandomUntilSuccessful : Chain {
+};
 struct Message {
   string SERIAL(text);
   MessagePriority SERIAL(priority);
@@ -257,11 +271,9 @@ struct RemoveAbility {
   SERIALIZE_ALL(id)
 };
 using AddSpellSchool = SpellSchoolId;
-struct IncreaseMorale {
-  double SERIAL(amount);
-  SERIALIZE_ALL(amount)
-};
 struct Chance : GenericModifierEffect {
+  Chance() {}
+  Chance(double value, Effect effect) : GenericModifierEffect{std::move(effect)}, value(value) {}
   double SERIAL(value);
   SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
 };
@@ -271,20 +283,14 @@ struct AnimateItems {
   int SERIAL(radius);
   Range SERIAL(time);
   AnimatedItemType SERIAL(type);
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar(maxCount, radius, time);
-    if (version == 0)
-      type = AnimatedItemType::WEAPON;
-    else
-      ar(type);
-  }
+  SERIALIZE_ALL(maxCount, radius, time, type)
 };
 struct DropItems {
   ItemType SERIAL(type);
   Range SERIAL(count);
   SERIALIZE_ALL(type, count)
 };
+using DropItemList = ItemListId;
 struct SoundEffect {
   Sound SERIAL(sound);
   SERIALIZE_ALL(sound)
@@ -398,12 +404,25 @@ struct Price : GenericModifierEffect {
   SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
 };
 struct IncreaseMaxLevel {
-  ExperienceType SERIAL(type);
+  AttrType SERIAL(type);
+  int SERIAL(value);
+  SERIALIZE_ALL(type, value)
+};
+struct IncreaseLevel {
+  AttrType SERIAL(type);
   int SERIAL(value);
   SERIALIZE_ALL(type, value)
 };
 struct ApplyToSteed : GenericModifierEffect {
 };
+struct AllCreatures : GenericModifierEffect {
+};
+using Achievement = AchievementId;
+SIMPLE_EFFECT(SetFurnitureOnFire);
+SIMPLE_EFFECT(ClaimTile);
+SIMPLE_EFFECT(EatCorpse);
+SIMPLE_EFFECT(Banish);
+SIMPLE_EFFECT(SummonMinions);
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
   X(Teleport, 1)\
@@ -433,7 +452,7 @@ struct ApplyToSteed : GenericModifierEffect {
   X(LoseBodyPart, 25)\
   X(RegrowBodyPart, 26)\
   X(AddBodyPart, 27)\
-  X(DestroyWalls, 28)\
+  X(AddIntrinsicAttack, 28)\
   X(Area, 29)\
   X(CustomArea, 30)\
   X(ReviveCorpse, 31)\
@@ -448,10 +467,10 @@ struct ApplyToSteed : GenericModifierEffect {
   X(Chain, 40)\
   X(ChainUntilFail, 41)\
   X(ChooseRandom, 42)\
-  X(IncreaseMorale, 43)\
+  X(AllCreatures, 43)\
   X(Message, 44)\
   X(UnseenMessage, 45)\
-  X(AssembledMinion, 46)\
+  X(AddExperience, 46)\
   X(TriggerTrap, 47)\
   X(AnimateItems, 48)\
   X(MakeHumanoid, 49)\
@@ -460,7 +479,7 @@ struct ApplyToSteed : GenericModifierEffect {
   X(CreatureMessage, 52)\
   X(SoundEffect, 53)\
   X(DropItems, 54)\
-  X(FirstSuccessful, 55)\
+  X(DropItemList, 55)\
   X(PlayerMessage, 56)\
   X(ColorVariant, 57)\
   X(Jump, 58)\
@@ -470,7 +489,7 @@ struct ApplyToSteed : GenericModifierEffect {
   X(Name, 62)\
   X(AI, 63)\
   X(ApplyToSteed, 64)\
-  X(ItemPrefix, 65)\
+  X(FirstSuccessful, 65)\
   X(AddAutomatonPart, 66)\
   X(AddMinionTrait, 67)\
   X(RemoveMinionTrait, 68)\
@@ -498,8 +517,19 @@ struct ApplyToSteed : GenericModifierEffect {
   X(Bleed, 90)\
   X(Price, 91)\
   X(IncreaseMaxLevel, 92)\
-  X(EquipmentType, 93)\
-  X(AddSpellSchool, 94)
+  X(IncreaseLevel, 93)\
+  X(EquipmentType, 94)\
+  X(AddSpellSchool, 95)\
+  X(Achievement, 96)\
+  X(ModifyFurniture, 97)\
+  X(DestroyWalls, 98)\
+  X(SetFurnitureOnFire, 99)\
+  X(ClaimTile, 100)\
+  X(EatCorpse, 101)\
+  X(SummonAway, 102)\
+  X(Banish, 103)\
+  X(ChooseRandomUntilSuccessful, 104)\
+  X(SummonMinions, 105)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
@@ -513,8 +543,6 @@ template <class Archive>
 void serialize(Archive& ar1, EffectType& v);
 
 }
-
-CEREAL_CLASS_VERSION(Effects::AnimateItems, 1)
 
 class EffectType : public Effects::EffectType {
   public:

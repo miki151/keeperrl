@@ -6,6 +6,7 @@
 #include "game_config.h"
 #include "tile_info.h"
 #include "scripted_ui.h"
+#include "clock.h"
 
 void TileSet::addTile(string id, Tile tile) {
   tiles.insert(make_pair(ViewId(id.data()).getInternalId(), std::move(tile)));
@@ -15,14 +16,18 @@ void TileSet::addSymbol(string id, Tile tile) {
   symbols.insert(make_pair(ViewId(id.data()).getInternalId(), std::move(tile)));
 }
 
+Color TileSet::getColor(ViewId id) const {
+  auto symbol = getReferenceMaybe(symbols, id.getInternalId());
+  CHECK(!!symbol) << "No symbol found for : " << id.data();
+  return symbol->color;
+}
+
 Color TileSet::getColor(const ViewObject& object) const {
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE))
     return Color::DARK_GRAY;
   if (object.hasModifier(ViewObject::Modifier::HIDDEN))
     return Color::LIGHT_GRAY;
-  auto symbol = getReferenceMaybe(symbols, object.id().getInternalId());
-  CHECK(!!symbol) << "No symbol found for : " << object.id().data();
-  Color color = symbol->color;
+  auto color = getColor(object.id());
   if (object.hasModifier(ViewObject::Modifier::PLANNED))
     return Color(color.r / 2, color.g / 2, color.b / 2);
   return color;
@@ -147,12 +152,25 @@ Tile TileSet::getExtraBorderTile(const string& prefix) {
     .addExtraBorder({Dir::W}, byName(prefix + "w"));
 }
 
+Tile TileSet::customConnections(const string& spriteName, const vector<TileInfo::Connection>& elems) {
+  auto ret = sprite(spriteName);
+  DirSet allDirs;
+  for (auto& elem : elems) {
+    ret.addConnection(elem.dirs, byName(elem.spriteName));
+    for (auto d : elem.dirs)
+      allDirs.insert(d);
+  }
+  return ret.setConnectionMask(allDirs);
+}
+
 void TileSet::loadModdedTiles(const vector<TileInfo>& tiles, bool useTiles) {
   for (auto& tile : tiles) {
     if (useTiles) {
       auto spriteName = tile.sprite.value_or(tile.viewId.data());
       //USER_CHECK(tileCoords.count(spriteName)) << "Sprite file not found: " << spriteName;
       auto t = [&] {
+        if (!tile.connections.empty())
+          return customConnections(spriteName, tile.connections);
         if (tile.wallConnections)
           return getWallTile(spriteName);
         if (tile.roadConnections)
@@ -272,6 +290,7 @@ void TileSet::reload() {
   spriteMods.clear();
   auto reloadDir = [&] (const DirectoryPath& path, bool overwrite) {
     bool hadTiles = false;
+    hadTiles |= loadTilesFromDir(path.subdirectory("orig8"), Vec2(8, 8), overwrite);
     hadTiles |= loadTilesFromDir(path.subdirectory("orig16"), Vec2(16, 16), overwrite);
     hadTiles |= loadTilesFromDir(path.subdirectory("orig24"), Vec2(24, 24), overwrite);
     hadTiles |= loadTilesFromDir(path.subdirectory("orig30"), Vec2(30, 30), overwrite);
@@ -314,6 +333,16 @@ static int getNumFrames(const vector<FilePath>& files, int tileWidth) {
       firstError = true;
     }
   return ret;
+}
+
+static string getSantaSprite(const string& sprite) {
+  vector<vector<const char*>> viewIds {{ "keeper1", "keeper2", "keeper3", "keeper4", "imp", "special_tree"},
+        {"santa_keeper1", "santa_keeper2", "santa_keeper3", "santa_keeper4", "santa_imp", "xmas_tree" }};
+  for (int column : Range(2))
+    for (int i : All(viewIds[column]))
+      if (sprite == viewIds[column][i])
+        return viewIds[1 - column][i];
+  return sprite;
 }
 
 bool TileSet::loadTilesFromDir(const DirectoryPath& path, Vec2 size, bool overwrite) {
@@ -362,8 +391,11 @@ bool TileSet::loadTilesFromDir(const DirectoryPath& path, Vec2 size, bool overwr
       }
     }
   texturesTmp.push_back({image, addedPositions});
-  for (auto& pos : addedPositions)
-    tileCoords[pos.first].push_back({size, pos.second, nullptr});
+  bool isChristmas = Clock::isChristmas();
+  for (auto& pos : addedPositions) {
+    auto spriteName = isChristmas ? getSantaSprite(pos.first) : pos.first;
+    tileCoords[spriteName].push_back({size, pos.second, nullptr});
+  }
   return true;
 }
 

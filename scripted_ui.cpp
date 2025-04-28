@@ -12,6 +12,7 @@
 #include "steam_input.h"
 #include "keybinding.h"
 #include "keybinding_map.h"
+#include "sound_library.h"
 
 namespace EnumsDetail {
 enum class TextureFlip;
@@ -24,7 +25,7 @@ RICH_ENUM(EnumsDetail::TextureFlip, NONE, FLIP_X, FLIP_Y, FLIP_XY);
 RICH_ENUM(EnumsDetail::PlacementPos, MIDDLE, TOP_STRETCHED, BOTTOM_STRETCHED, LEFT_STRETCHED, RIGHT_STRETCHED,
     TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, LEFT_CENTERED, RIGHT_CENTERED, TOP_CENTERED, BOTTOM_CENTERED,
     MIDDLE_STRETCHED_X, MIDDLE_STRETCHED_Y, MIDDLE_FIT_Y, ENCAPSULATE, SCREEN);
-RICH_ENUM(EnumsDetail::Direction, HORIZONTAL, VERTICAL);
+RICH_ENUM(EnumsDetail::Direction, HORIZONTAL, VERTICAL, HORIZONTAL_FIT);
 RICH_ENUM(EnumsDetail::TextureType, REPEAT, FIT);
 
 bool ScriptedContext::isHighlighted(int elemIndex) const {
@@ -117,13 +118,17 @@ void performAction(const ScriptedUIData& data, ScriptedContext& context, EventCa
 struct Button : ScriptedUIInterface {
   void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
       Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
-    if (id == buttonId && (pos.inRectangle(bounds) == !reverse))
+    if (id == buttonId && (pos.inRectangle(bounds) == !reverse)) {
       performAction(data, context, callback);
+      if (soundId)
+        context.factory->soundLibrary->playSound(*soundId);
+    }
   }
 
   bool SERIAL(reverse);
   MouseButtonId SERIAL(buttonId) = MouseButtonId::LEFT;
-  SERIALIZE_ALL(roundBracket(), OPTION(reverse), OPTION(buttonId))
+  optional<SoundId> SERIAL(soundId);
+  SERIALIZE_ALL(roundBracket(), OPTION(reverse), OPTION(buttonId), OPTION(soundId))
 };
 
 REGISTER_SCRIPTED_UI(Button);
@@ -183,8 +188,13 @@ REGISTER_SCRIPTED_UI(KeyCatcher);
 struct KeybindingHandler : ScriptedUIInterface {
   void onKeypressed(const ScriptedUIData& data, ScriptedContext& context,
       SDL::SDL_Keysym sym, Rectangle, EventCallback& callback) const override {
-    if (context.factory->getKeybindingMap()->matches(key, sym))
+    if (context.factory->getKeybindingMap()->matches(key, sym)) {
       performAction(data, context, callback);
+      if (key == Keybinding("MENU_SELECT"))
+        context.factory->soundLibrary->playSound(SoundId("BUTTON_CLICK"));
+      if (isOneOf(key, Keybinding("MENU_UP"), Keybinding("MENU_DOWN"), Keybinding("MENU_RIGHT"), Keybinding("MENU_LEFT")))
+        context.factory->soundLibrary->playSound(SoundId("MENU_TRAVEL"));
+    }
   }
 
   Keybinding SERIAL(key);
@@ -309,7 +319,15 @@ struct Paragraph : ScriptedUIInterface {
   }
 
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
-    return Vec2(width, size * context.factory->breakText(getText(data), width, size).size());
+    auto text = getText(data);
+    auto getSize = [&] {
+      if (auto elem = getValueMaybe(context.state.paragraphSizeCache, text))
+        return *elem;
+      auto ret = context.factory->breakText(getText(data), width, size).size();
+      context.state.paragraphSizeCache[text] = ret;
+      return ret;
+    };
+    return Vec2(width, size * getSize());
   }
 
   optional<string> SERIAL(text);
@@ -781,8 +799,10 @@ struct Focusable : ScriptedUIInterface {
   void onKeypressed(const ScriptedUIData& data, ScriptedContext& context,
       SDL::SDL_Keysym sym, Rectangle bounds, EventCallback& callback) const override {
     if (context.factory->getKeybindingMap()->matches(Keybinding("MENU_SELECT"), sym) &&
-        context.elemCounter == context.state.highlightedElem)
+        context.elemCounter == context.state.highlightedElem) {
       onClicked(data, context, callback);
+      context.factory->soundLibrary->playSound(SoundId("BUTTON_CLICK"));
+    }
     callback = [&, y = bounds.middle().y, callback, myCounter = context.elemCounter] {
       auto ret = callback ? callback() : false;
       if (context.isHighlighted(myCounter))
@@ -909,24 +929,34 @@ REGISTER_SCRIPTED_UI(MouseOver);
 
 struct List : Container {
   vector<SubElemInfo> getElemBounds(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
-    Vec2 startPos = area.topLeft();
     if (auto list = data.getReferenceMaybe<ScriptedUIDataElems::List>()) {
       vector<SubElemInfo> ret;
       ret.reserve(list->size());
+      Vec2 startPos = area.topLeft();
+      int maxHeight = 0;
       for (auto& dataElem : *list) {
         Rectangle thisArea;
-        Vec2 nextPos;
         if (direction == Direction::HORIZONTAL) {
           auto width = elem->getSize(dataElem, context).x;
           thisArea = Rectangle(startPos, startPos + Vec2(width, area.height()));
-          nextPos = startPos + Vec2(width, 0);
+          startPos = startPos + Vec2(width, 0);
+        }
+        else if (direction == Direction::HORIZONTAL_FIT) {
+          auto size = elem->getSize(dataElem, context);
+          maxHeight = max(maxHeight, size.y);
+          thisArea = Rectangle(startPos, startPos + size);
+          if (startPos.x - area.left() + size.x > maxWidth) {
+            startPos.x = area.left();
+            startPos.y += maxHeight;
+            maxHeight = 0;
+          } else
+            startPos = startPos + Vec2(size.x, 0);
         } else {
           auto height = elem->getSize(dataElem, context).y;
           thisArea = Rectangle(startPos, startPos + Vec2(area.width(), height));
-          nextPos = startPos + Vec2(0, height);
+          startPos = startPos + Vec2(0, height);
         }
         ret.push_back(SubElemInfo{elem, dataElem, thisArea});
-        startPos = nextPos;
       }
       return ret;
     } else
@@ -935,25 +965,61 @@ struct List : Container {
 
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
     if (auto list = data.getReferenceMaybe<ScriptedUIDataElems::List>()) {
-      Vec2 res;
-      for (auto& dataElem : *list) {
-        auto size = elem->getSize(dataElem, context);
-        if (direction == Direction::VERTICAL) {
-          res.y += size.y;
-          res.x = max(res.x, size.x);
-        } else {
-          res.y = max(res.y, size.y);
-          res.x += size.x;
+      switch (direction) {
+        case Direction::VERTICAL: {
+          Vec2 res;
+          for (auto& dataElem : *list) {
+            auto size = elem->getSize(dataElem, context);
+            res.y += size.y;
+            res.x = max(res.x, size.x);
+          }
+          return res;
+        }
+        case Direction::HORIZONTAL_FIT: {
+          int width = 0;
+          int height = 0;
+          int totalHeight = 0;
+          for (auto& dataElem : *list) {
+            auto size = elem->getSize(dataElem, context);
+            if (width + size.x > maxWidth) {
+              totalHeight += height;
+              height = 0;
+              width = 0;
+            } else {
+              width += size.x;
+              height = max(height, size.y);
+            }
+          }
+          return Vec2(maxWidth, totalHeight + height);
+        }
+        case Direction::HORIZONTAL: {
+          Vec2 res;
+          for (auto& dataElem : *list) {
+            auto size = elem->getSize(dataElem, context);
+            res.y = max(res.y, size.y);
+            res.x += size.x;
+          }
+          return res;
         }
       }
-      return res;
     }
     return Vec2(100, 20);
   }
 
   Direction SERIAL(direction);
   ScriptedUI SERIAL(elem);
-  SERIALIZE_ALL(roundBracket(), NAMED(direction), NAMED(elem))
+  int SERIAL(maxWidth) = 0;
+  void serialize(PrettyInputArchive& ar, const unsigned int) {
+    ar.openBracket(BracketType::ROUND);
+    ar(direction);
+    ar.eat(",");
+    if (direction == Direction::HORIZONTAL_FIT) {
+      ar(maxWidth);
+      ar.eat(",");
+    }
+    ar(elem);
+    ar.closeBracket(BracketType::ROUND);
+  }
 };
 
 REGISTER_SCRIPTED_UI(List);
@@ -1207,7 +1273,7 @@ struct Tooltip : Container {
     if (id == MouseButtonId::MOVED) {
       if (pos.inRectangle(bounds) && !time)
         callback = [&, counter = context.tooltipCounter, old = std::move(callback)] {
-          context.state.tooltipTimeouts.insert({counter, Clock::getRealMillis() + milliseconds{500}});
+          context.state.tooltipTimeouts.insert({counter, Clock::getRealMillis() + milliseconds{timeout}});
           return old ? old() : false;
         };
       if (!pos.inRectangle(bounds) && context.state.tooltipTimeouts.count(context.tooltipCounter))
@@ -1222,7 +1288,8 @@ struct Tooltip : Container {
     return {SubElemInfo{elem, data, getTooltipBounds(data, context, area)}};
   }
   ScriptedUI SERIAL(elem);
-  SERIALIZE_ALL(roundBracket(), NAMED(elem))
+  int SERIAL(timeout) = 500;
+  SERIALIZE_ALL(roundBracket(), NAMED(elem), OPTION(timeout))
 };
 
 REGISTER_SCRIPTED_UI(Tooltip);

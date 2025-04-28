@@ -32,7 +32,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::FULLSCREEN, 0},
   {OptionId::VSYNC, 1},
   {OptionId::FPS_LIMIT, 0},
-  {OptionId::ZOOM_UI, 0},
+  {OptionId::ZOOM_UI, 10},
   {OptionId::DISABLE_MOUSE_WHEEL, 0},
   {OptionId::DISABLE_CURSOR, 0},
   {OptionId::ONLINE, 1},
@@ -45,10 +45,11 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::PLAYER_NAME, string("")},
   {OptionId::SETTLEMENT_NAME, string("")},
-  {OptionId::MAIN_VILLAINS, 4},
-  {OptionId::RETIRED_VILLAINS, 1},
-  {OptionId::LESSER_VILLAINS, 3},
-  {OptionId::ALLIES, 2},
+  {OptionId::MAIN_VILLAINS, 12},
+  {OptionId::RETIRED_VILLAINS, 4},
+  {OptionId::LESSER_VILLAINS, 12},
+  {OptionId::MINOR_VILLAINS, 16},
+  {OptionId::ALLIES, 5},
   {OptionId::CURRENT_MOD2, vector<string>()},
   {OptionId::ENDLESS_ENEMIES, 2},
   {OptionId::ENEMY_AGGRESSION, 1},
@@ -56,6 +57,8 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::KEEPER_WARNING_TIMEOUT, 200},
   {OptionId::SINGLE_THREAD, 0},
   {OptionId::UNLOCK_ALL, 0},
+  {OptionId::EXP_INCREASE, 1},
+  {OptionId::DPI_AWARE, 0}
 };
 
 const map<OptionId, string> names {
@@ -85,6 +88,7 @@ const map<OptionId, string> names {
   {OptionId::MAIN_VILLAINS, "Main villains"},
   {OptionId::RETIRED_VILLAINS, "Retired villains"},
   {OptionId::LESSER_VILLAINS, "Lesser villains"},
+  {OptionId::MINOR_VILLAINS, "Minor villains"},
   {OptionId::ALLIES, "Allies"},
   {OptionId::CURRENT_MOD2, "Current mod"},
   {OptionId::ENDLESS_ENEMIES, "Start endless enemy waves"},
@@ -93,6 +97,8 @@ const map<OptionId, string> names {
   {OptionId::KEEPER_WARNING_TIMEOUT, "Keeper danger timeout"},
   {OptionId::SINGLE_THREAD, "Use a single thread for loading operations"},
   {OptionId::UNLOCK_ALL, "Unlock all hidden gameplay features"},
+  {OptionId::EXP_INCREASE, "Enemy difficulty curve"},
+  {OptionId::DPI_AWARE, "Override Windows DPI scaling"},
 };
 
 const map<OptionId, string> hints {
@@ -102,8 +108,8 @@ const map<OptionId, string> hints {
   {OptionId::FULLSCREEN, "Switch between fullscreen and windowed mode."},
   {OptionId::VSYNC, "Limits frame rate to your monitor's refresh rate. Turning off may fix frame rate issues."},
   {OptionId::FPS_LIMIT, "Limits frame rate. Lower framerate keeps GPU cooler."},
-  {OptionId::ZOOM_UI, "All UI and graphics are zoomed in 2x. "
-      "Use you have a large resolution screen and things appear too small."},
+  {OptionId::ZOOM_UI, "All UI and graphics are zoomed in. "
+      "Use if you have a large resolution screen and things appear too small."},
   {OptionId::ONLINE, "Enable online features, like dungeon sharing and highscores."},
   {OptionId::GAME_EVENTS, "Enable sending anonymous statistics to the developer."},
   {OptionId::AUTOSAVE2, "Autosave the game every X number turns. "
@@ -115,6 +121,8 @@ const map<OptionId, string> hints {
   {OptionId::SINGLE_THREAD, "Please try this option if you're experiencing slow saving, loading, or map generation. "
         "Note: this will make the game unresponsive during the operation."},
   {OptionId::UNLOCK_ALL, "Unlocks all player characters and gameplay features that are normally unlocked by finding secrets in the game."},
+  {OptionId::EXP_INCREASE, "Defines the increase in experience for every lesser and main villain as you travel further away from your home site."},
+  {OptionId::DPI_AWARE, "If you find the game blurry, this setting might help. Requires restarting the game. "},
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -141,6 +149,9 @@ const map<OptionSet, vector<OptionId>> optionSets {
 #ifndef RELEASE
       OptionId::KEEP_SAVEFILES,
       OptionId::SHOW_MAP,
+#endif
+#ifdef WINDOWS
+      OptionId::DPI_AWARE
 #endif
   }},
   {OptionSet::KEEPER, {
@@ -258,6 +269,8 @@ static optional<pair<int, int>> getIntRange(OptionId id) {
       return make_pair(0, 100);
     case OptionId::AUTOSAVE2:
       return make_pair(0, 5000);
+    case OptionId::ZOOM_UI:
+      return make_pair(10, 20);
     case OptionId::FPS_LIMIT:
       return make_pair(0, 30);
     case OptionId::KEEPER_WARNING_TIMEOUT:
@@ -280,6 +293,8 @@ static optional<int> getIntInterval(OptionId id) {
       return 500;
     case OptionId::FPS_LIMIT:
       return 5;
+    case OptionId::ZOOM_UI:
+      return 2;
     case OptionId::KEEPER_WARNING_TIMEOUT:
       return 50;
     default:
@@ -303,12 +318,12 @@ static bool isBoolean(OptionId id) {
     case OptionId::STARTING_RESOURCE:
     case OptionId::ONLINE:
     case OptionId::GAME_EVENTS:
-    case OptionId::ZOOM_UI:
     case OptionId::DISABLE_MOUSE_WHEEL:
     case OptionId::DISABLE_CURSOR:
     case OptionId::START_WITH_NIGHT:
     case OptionId::SINGLE_THREAD:
     case OptionId::UNLOCK_ALL:
+    case OptionId::DPI_AWARE:
       return true;
     default:
       return false;
@@ -323,6 +338,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::FULLSCREEN:
     case OptionId::VSYNC:
     case OptionId::KEEPER_WARNING:
+    case OptionId::DPI_AWARE:
       return getOnOff(value);
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:
@@ -333,7 +349,6 @@ string Options::getValueString(OptionId id) {
     case OptionId::STARTING_RESOURCE:
     case OptionId::ONLINE:
     case OptionId::GAME_EVENTS:
-    case OptionId::ZOOM_UI:
     case OptionId::DISABLE_MOUSE_WHEEL:
     case OptionId::DISABLE_CURSOR:
     case OptionId::START_WITH_NIGHT:
@@ -346,11 +361,13 @@ string Options::getValueString(OptionId id) {
     case OptionId::CURRENT_MOD2:
       return combine(*value.getValueMaybe<vector<string>>(), true);
     case OptionId::ENDLESS_ENEMIES:
+    case OptionId::EXP_INCREASE:
     case OptionId::ENEMY_AGGRESSION:
       return choices[id][(*value.getValueMaybe<int>() + choices[id].size()) % choices[id].size()];
     case OptionId::FPS_LIMIT:
     case OptionId::MAIN_VILLAINS:
     case OptionId::LESSER_VILLAINS:
+    case OptionId::MINOR_VILLAINS:
     case OptionId::RETIRED_VILLAINS:
     case OptionId::ALLIES:
       return toString(getIntValue(id));
@@ -360,6 +377,8 @@ string Options::getValueString(OptionId id) {
     case OptionId::AUTOSAVE2:
     case OptionId::KEEPER_WARNING_TIMEOUT:
       return toString(getIntValue(id));
+    case OptionId::ZOOM_UI:
+      return toString(10 * getIntValue(id)) + "%";
   }
 }
 
@@ -409,7 +428,7 @@ void Options::handleIntInterval(OptionId option, ScriptedUIDataElems::Record& da
   auto value = getIntValue(option);
   auto interval = *getIntInterval(option);
   auto range = *getIntRange(option);
-  data.elems.insert({"value", value > 0 ? toString(value) : "off"});
+  data.elems.insert({"value", value > 0 ? getValueString(option) : "off"});
   data.elems.insert({"increase", ScriptedUIDataElems::Callback{
       [this, &wasSet, option, value, interval, range] {
         auto newVal = value + interval;
@@ -475,9 +494,9 @@ static optional<SDL::SDL_Keysym> captureKey(View* view, const string& text) {
 void Options::handle(View* view, const ContentFactory* factory, OptionSet set, int lastIndex) {
   bool keybindingsTab = false;
   auto optionSet = optionSets.at(set);
-  if (!view->zoomUIAvailable())
+/*  if (!view->zoomUIAvailable())
     optionSet.removeElementMaybe(OptionId::ZOOM_UI);
-  ScriptedUIState state;
+*/  ScriptedUIState state;
   while (1) {
     state.sliderState.clear();
     ScriptedUIDataElems::List options;
@@ -561,6 +580,12 @@ void Options::readValues() {
       if (auto val = readValue(optionId, p.getSuffix(p.size() - 1))) {
         if ((optionId == OptionId::SOUND || optionId == OptionId::MUSIC) && *val == 1)
           *val = 100;
+        if (optionId == OptionId::ZOOM_UI) {
+          if (*val == 0)
+            *val = 10;
+          if (*val == 1)
+            *val = 20;
+        }
         (*values)[optionId] = *val;
       }
     }

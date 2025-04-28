@@ -90,9 +90,17 @@ class IndexedVector {
     return std::move(elems);
   }
 
-  SERIALIZE_ALL(elems, indexes)
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar(elems);
+    if (version == 0)
+      ar(indexes);
+    else
+      for (int i : All(elems))
+        indexes.emplace(elems[i]->getUniqueId(), i);
+  }
 
   private:
   vector<T> SERIAL(elems);
-  unordered_map<Id, int, CustomHash<Id>> SERIAL(indexes);
+  HashMap<Id, int> SERIAL(indexes);
 };

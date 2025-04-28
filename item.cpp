@@ -40,36 +40,73 @@
 #include "effect_type.h"
 #include "creature_debt.h"
 
-template <class Archive> 
+template <class Archive>
 void Item::serialize(Archive& ar, const unsigned int version) {
-  ar & SUBCLASS(OwnedObject<Item>) & SUBCLASS(UniqueEntity) & SUBCLASS(Renderable);
-  ar(attributes, discarded, shopkeeper, fire, classCache, canEquipCache, timeout, abilityInfo);
+  ar(SUBCLASS(OwnedObject<Item>), SUBCLASS(UniqueEntity), SUBCLASS(Renderable));
+  if (version == 0) {
+    HeapAllocated<ItemAttributes> SERIAL(attr);
+    ar(attr);
+    attributes = make_shared<ItemAttributes>(std::move(*attr));
+  } else
+    ar(attributes);
+  ar(discarded, shopkeeper, fire, classCache, canEquipCache, timeout, abilityInfo);
 }
 
 SERIALIZABLE(Item)
 SERIALIZATION_CONSTRUCTOR_IMPL(Item)
 
-Item::Item(const ItemAttributes& attr, const ContentFactory* factory)
-    : Renderable(ViewObject(attr.viewId, ViewLayer::ITEM, capitalFirst(attr.name))),
-      attributes(attr), fire(attr.burnTime), canEquipCache(!!attributes->equipmentSlot),
+Item::Item(SItemAttributes attr, const ContentFactory* factory)
+    : Renderable(ViewObject(attr->viewId, ViewLayer::ITEM, capitalFirst(attr->name))),
+      attributes(attr), fire(attr->burnTime), canEquipCache(!!attributes->equipmentSlot),
       classCache(attributes->itemClass) {
   if (!attributes->prefixes.empty())
     modViewObject().setModifier(ViewObject::Modifier::AURA);
   modViewObject().setGenericId(getUniqueId().getGenericId());
-  modViewObject().partIds = attr.partIds;
+  modViewObject().partIds = attributes->partIds;
   updateAbility(factory);
 }
 
+void Item::setAttributes(SItemAttributes a) {
+  attributes = a;
+}
+
 void Item::updateAbility(const ContentFactory* factory) {
+  abilityInfo.clear();
   for (auto id : attributes->equipedAbility)
     abilityInfo.push_back(ItemAbility { *factory->getCreatures().getSpell(id), none, getUniqueId().getGenericId() });
+}
+
+void Item::upgrade(vector<PItem> runes, const ContentFactory* factory) {
+  unordered_map<string, double> multipliers;
+  for (auto& rune : runes)
+    if (auto& upgradeInfo = rune->getUpgradeInfo()) {
+      applyPrefix(*upgradeInfo->prefix, factory);
+      double mult = 1.0;
+      if (auto& d = upgradeInfo->diminishModifier) {
+        if (!multipliers.count(d->first))
+          multipliers[d->first] = 1.0;
+        mult = multipliers[d->first];
+        multipliers[d->first] *= d->second;
+      }
+      for (auto& mod : rune->getModifierValues())
+        addModifier(mod.first, mod.second * mult);
+      for (auto& a : rune->getAbility())
+        attributes->equipedAbility.push_back(a.spell.getId());
+      updateAbility(factory);
+      attributes->equipedEffect.append(rune->attributes->equipedEffect);
+      attributes->equipedCompanion = rune->attributes->equipedCompanion;
+      attributes->weaponInfo.attackerEffect.append(rune->attributes->weaponInfo.attackerEffect);
+      attributes->weaponInfo.victimEffect.append(rune->attributes->weaponInfo.victimEffect);
+      for (auto& elem : rune->attributes->specialAttr)
+        attributes->specialAttr.insert(elem);
+    }
 }
 
 Item::~Item() {
 }
 
 PItem Item::getCopy(const ContentFactory* f) const {
-  auto ret = makeOwner<Item>(*attributes, f);
+  auto ret = makeOwner<Item>(make_shared<ItemAttributes>(*attributes), f);
   ret->getAbility().clear();
   return ret;
 }
@@ -104,20 +141,17 @@ vector<vector<Item*>> Item::stackItems(const ContentFactory* f, vector<Item*> it
 }
 
 void Item::onOwned(Creature* c, bool msg, const ContentFactory* factory) {
-  if (attributes->ownedEffect)
-    addPermanentEffect(*attributes->ownedEffect, c, msg, factory);
+  for (auto& e : attributes->ownedEffect)
+    addPermanentEffect(e, c, msg, factory);
 }
 
 void Item::onDropped(Creature* c, bool msg, const ContentFactory* factory) {
-  if (attributes->ownedEffect)
-    removePermanentEffect(*attributes->ownedEffect, c, msg, factory);
+  for (auto& e : attributes->ownedEffect)
+    removePermanentEffect(e, c, msg, factory);
 }
 
-bool Item::hasEquipedEffect(LastingEffect l) const {
-  for (auto& e : attributes->equipedEffect)
-    if (e == l)
-      return true;
-  return false;
+const vector<LastingOrBuff>& Item::getEquipedEffects() const {
+  return attributes->equipedEffect;
 }
 
 void Item::onEquip(Creature* c, bool msg, const ContentFactory* factory) {
@@ -133,7 +167,7 @@ void Item::onUnequip(Creature* c, bool msg, const ContentFactory* factory) {
   if (attributes->equipedCompanion)
     [&, &companions = c->getAttributes().companions] {
       for (int i : All(companions))
-        if (companions[i] == *attributes->equipedCompanion) {
+        if (companions[i].creatures == attributes->equipedCompanion->creatures) {
           c->removeCompanions(i);
           return;
         }
@@ -166,7 +200,7 @@ void Item::tick(Position position, bool carried) {
   PROFILE_BLOCK("Item::tick");
   if (fire->isBurning()) {
 //    INFO << getName() << " burning ";
-    position.fireDamage(5);
+    position.fireDamage(5, nullptr);
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, min(1.0, double(fire->getBurnState()) / 50));
     fire->tick();
     if (!fire->isBurning()) {
@@ -202,8 +236,8 @@ void Item::onHitSquareMessage(Position pos, const Attack& attack, int numItems) 
     discarded = true;
   } else
     pos.globalMessage(getPluralTheNameAndVerb(numItems, "hits", "hit") + " the " + pos.getName());
-  if (attributes->ownedEffect && *attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
-    pos.fireDamage(1);
+  if (attributes->ownedEffect.contains(LastingEffect::LIGHT_SOURCE))
+    pos.fireDamage(20, attack.attacker);
   if (attributes->effect && effectAppliedWhenThrown())
     attributes->effect->apply(pos, attack.attacker);
 }
@@ -244,6 +278,10 @@ double Item::getWeight() const {
   return attributes->weight;
 }
 
+void Item::setDescription(string s) {
+  attributes->description = std::move(s);
+}
+
 vector<string> Item::getDescription(const ContentFactory* factory) const {
   vector<string> ret;
   if (!attributes->description.empty())
@@ -266,13 +304,13 @@ vector<string> Item::getDescription(const ContentFactory* factory) const {
   for (auto& info : abilityInfo)
     ret.push_back("Grants ability: "_s + info.spell.getName(factory));
   for (auto& elem : attributes->specialAttr)
-    ret.push_back(toStringWithSign(elem.second.first) + " " + factory->attrInfo.at(elem.first).name + " " + 
+    ret.push_back(toStringWithSign(elem.second.first) + " " + factory->attrInfo.at(elem.first).name + " " +
         elem.second.second.getName(factory));
   return ret;
 }
 
 bool Item::hasOwnedEffect(LastingEffect e) const {
-  return attributes->ownedEffect && *attributes->ownedEffect == e;
+  return attributes->ownedEffect.contains(e);
 }
 
 CreaturePredicate Item::getAutoEquipPredicate() const {
@@ -368,7 +406,7 @@ const optional<string>& Item::getIngredientType() const {
 
 void Item::apply(Creature* c, bool noSound) {
   if (attributes->applySound && !noSound)
-    c->addSound(*attributes->applySound);
+    c->getPosition().addSound(*attributes->applySound);
   applySpecial(c);
 }
 
@@ -494,6 +532,8 @@ string Item::getVisibleName(bool getPlural) const {
     else
       ret = attributes->name;
   }
+  if (!attributes->prefixes.empty())
+    ret = attributes->prefixes.back() + " " + ret;
   appendWithSpace(ret, getSuffix());
   return ret;
 }
@@ -515,8 +555,8 @@ void Item::setArtifactName(const string& s) {
 
 string Item::getSuffix() const {
   string artStr;
-  if (!attributes->prefixes.empty())
-    artStr += attributes->prefixes.back();
+  if (!attributes->suffixes.empty())
+    artStr += attributes->suffixes.back();
   if (attributes->artifactName)
     appendWithSpace(artStr, "named " + *attributes->artifactName);
   if (fire->isBurning())
@@ -525,12 +565,17 @@ string Item::getSuffix() const {
 }
 
 string Item::getModifiers(const ContentFactory* factory, bool shorten) const {
-  unordered_set<AttrType, CustomHash<AttrType>> printAttr;
+  HashSet<AttrType> printAttr;
   if (!shorten) {
     for (auto attr : attributes->modifiers)
       printAttr.insert(attr.first);
   } else
     switch (getClass()) {
+      case ItemClass::OTHER:
+        for (auto& attr : attributes->modifiers)
+          if (attr.second > 0)
+            printAttr.insert(attr.first);
+        break;
       case ItemClass::RANGED_WEAPON:
         for (auto& attr : attributes->modifiers)
           if (factory->attrInfo.at(attr.first).isAttackAttr)
@@ -548,12 +593,12 @@ string Item::getModifiers(const ContentFactory* factory, bool shorten) const {
     }
   vector<string> attrStrings;
   for (auto attr : printAttr)
-    attrStrings.push_back(withSign(getValueMaybe(attributes->modifiers, attr).value_or(0)) + 
+    attrStrings.push_back(withSign(getValueMaybe(attributes->modifiers, attr).value_or(0)) +
         (shorten ? "" : " " + factory->attrInfo.at(attr).name));
   string attrString = combine(attrStrings, true);
   if (!attrString.empty())
     attrString = "(" + attrString + ")";
-  if (attributes->uses > -1 && attributes->displayUses) 
+  if (attributes->uses > -1 && attributes->displayUses)
     appendWithSpace(attrString, "(" + toString(attributes->uses) + " uses left)");
   return attrString;
 }
@@ -565,7 +610,9 @@ string Item::getShortName(const ContentFactory* factory, const Creature* owner, 
   if (attributes->artifactName)
     return *attributes->artifactName + " " + getModifiers(factory, true);
   string name;
-  if (!attributes->prefixes.empty())
+  if (!attributes->suffixes.empty())
+    name = attributes->suffixes.back();
+  else if (!attributes->prefixes.empty())
     name = attributes->prefixes.back();
   else if (attributes->shortName) {
     name = *attributes->shortName;
@@ -595,6 +642,10 @@ bool Item::isDiscarded() {
   return discarded;
 }
 
+const optional<AssembledMinion>& Item::getAssembledMinion() const {
+  return attributes->assembledMinion;
+}
+
 const optional<Effect>& Item::getEffect() const {
   return attributes->effect;
 }
@@ -619,7 +670,7 @@ void Item::addModifier(AttrType type, int value) {
   attributes->modifiers[type] += value;
 }
 
-const map<AttrType, int>& Item::getModifierValues() const {
+const HashMap<AttrType, int>& Item::getModifierValues() const {
   return attributes->modifiers;
 }
 
@@ -629,7 +680,7 @@ int Item::getModifier(AttrType type) const {
   return ret;
 }
 
-const map<AttrType, pair<int, CreaturePredicate>>& Item::getSpecialModifiers() const {
+const HashMap<AttrType, pair<int, CreaturePredicate>>& Item::getSpecialModifiers() const {
   return attributes->specialAttr;
 }
 

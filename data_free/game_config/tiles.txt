@@ -10,6 +10,7 @@
 { "ranged_damage_icon" "1" ColorId WHITE }
 { "defense_icon" "1" ColorId WHITE }
 { "parry_icon" "1" ColorId WHITE }
+{ "divinity_icon" "1" ColorId WHITE }
 { viewId = "keeper1" symbol = "@" color = ColorId PURPLE weaponOrigin = {4 13} }
 { viewId = "keeper2" symbol = "@" color = ColorId PURPLE weaponOrigin = {4 13} }
 { viewId = "keeper3" symbol = "@" color = ColorId PURPLE weaponOrigin = {4 12} }
@@ -26,8 +27,22 @@
 { viewId = "keeper_knight_f2" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 15} }
 { viewId = "keeper_knight_f3" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 16} }
 { viewId = "keeper_knight_f4" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 16} }
-{ viewId = "player" symbol = "@" color = ColorId WHITE weaponOrigin = {4 13}   }
-{ viewId = "player_f" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 14}   }
+{ viewId = "bishop1" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {7 19} }
+{ viewId = "bishop2" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {7 19} }
+{ viewId = "bishop3" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {7 19} }
+{ viewId = "bishop4" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {7 19} }
+{ viewId = "bishop5" symbol = "@" color = ColorId PURPLE weaponOrigin = {7 19} }
+{ viewId = "mother_superior1" symbol = "@" color = ColorId LIGHT_GREEN weaponOrigin = {7 19} }
+{ viewId = "mother_superior2" symbol = "@" color = ColorId LIGHT_GREEN weaponOrigin = {7 19} }
+{ viewId = "mother_superior3" symbol = "@" color = ColorId LIGHT_GREEN weaponOrigin = {7 19} }
+{ viewId = "mother_superior4" symbol = "@" color = ColorId LIGHT_GREEN weaponOrigin = {7 19} }
+{ viewId = "mother_superior5" symbol = "@" color = ColorId PURPLE weaponOrigin = {7 19} }
+{ viewId = "acolyte" symbol = "@" color = ColorId LIGHT_BROWN weaponOrigin = {4 13} }
+{ viewId = "acolyte_f" sprite = "acolyte" symbol = "@" color = ColorId LIGHT_BROWN weaponOrigin = {4 13} }
+{ viewId = "armed_brother" symbol = "@" color = ColorId WHITE weaponOrigin = {4 13}   }
+{ viewId = "nun_mage" symbol = "@" color = ColorId WHITE weaponOrigin = {4 13} }
+{ viewId = "squire" symbol = "@" color = ColorId WHITE weaponOrigin = {4 13}   }
+{ viewId = "squire_f" symbol = "@" color = ColorId YELLOW weaponOrigin = {3 14}   }
 { "demon_dweller" "U" ColorId PURPLE }
 { "demon_lord" "U" ColorId YELLOW }
 { viewId = "vampire_warrior" symbol = "V" color = ColorId DARK_GRAY weaponOrigin = {2 12} }
@@ -35,6 +50,15 @@
 { "vampire_brute" "V" ColorId LIGHT_BROWN }
 { "devil" "&" ColorId ORANGE }
 { viewId = "satan" symbol = "&" color = ColorId RED weaponOrigin = {6 23} }
+{ viewId = "tengu" symbol = "&" color = ColorId LIGHT_BLUE }
+{ viewId = "shaitan" symbol = "&" color = ColorId LIGHT_RED }
+{ viewId = "banshee" symbol = "&" color = ColorId LIGHT_BROWN }
+{ viewId = "vetala" symbol = "&" color = ColorId GREEN }
+{ viewId = "leyak" symbol = "&" color = ColorId YELLOW }
+{ viewId = "baku" symbol = "&" color = ColorId WHITE }
+{ viewId = "rakshasa" symbol = "&" color = ColorId ORANGE }
+{ viewId = "ghoul" symbol = "&" color = ColorId LIGHT_GRAY }
+{ viewId = "suanggi" sprite = "sunaggi" symbol = "&" color = ColorId LIGHT_GREEN }
 { "adoxie_foot_left" "u" ColorId PURPLE }
 { "adoxie_foot_right" "u" ColorId PURPLE }
 { "adoxie_hand_right" "u" ColorId PURPLE }
@@ -98,8 +122,8 @@
 { "floor" "." ColorId LIGHT_GRAY }
 { "roof" "=" ColorId LIGHT_RED }
 { "floor_red" "." ColorId LIGHT_RED }
-{ viewId = "bridge" symbol = "_" color = ColorId BROWN
-  southSide = "bridge2" }
+{ viewId = "bridge" symbol = "_" color = ColorId BROWN wallConnections = true }
+{ viewId = "bridge_stone" symbol = "_" color = ColorId DARK_GRAY wallConnections = true }
 { "keeper_floor" "." ColorId WHITE }
 { "wood_floor1" "." ColorId LIGHT_BROWN }
 { "wood_floor2" "." ColorId BROWN }
@@ -134,11 +158,96 @@
 { "flower3" "." ColorId LIGHT_BLUE }
 { viewId = "down_staircase" symbol = "➘" color = ColorId ALMOST_WHITE isSymbolFont = true highlightAbove = true }
 { viewId = "up_staircase" symbol = "➚" color = ColorId ALMOST_WHITE isSymbolFont = true highlightAbove = true }
+{ viewId = "down_staircase_carpet" symbol = "➘" color = ColorId LIGHT_RED isSymbolFont = true highlightAbove = true }
+{ viewId = "up_staircase_carpet" symbol = "➚" color = ColorId LIGHT_RED isSymbolFont = true highlightAbove = true }
+{ viewId = "down_staircase_castle" symbol = "➘" color = ColorId LIGHT_BLUE isSymbolFont = true highlightAbove = true }
+{ viewId = "up_staircase_castle" symbol = "➚" color = ColorId LIGHT_BLUE isSymbolFont = true highlightAbove = true }
 { viewId = "down_staircase_rock" symbol = "➘" color = ColorId YELLOW isSymbolFont = true highlightAbove = true }
 { viewId = "up_staircase_rock" symbol = "➚" color = ColorId YELLOW isSymbolFont = true highlightAbove = true }
-{ "map_mountain1" "^" ColorId DARK_GRAY }
-{ "map_mountain2" "^" ColorId GRAY }
-{ "map_mountain3" "^" ColorId LIGHT_GRAY }
+{ "map_unknown" "?" ColorId GREEN }
+{ "map_fow" " " ColorId BLACK }
+{ "map_grass1" "." ColorId LIGHT_GREEN }
+{ "map_grass2" "." ColorId GREEN }
+{ "map_grass3" "." ColorId GREEN }
+{ "map_grass4" "." ColorId LIGHT_GREEN }
+Def Connections(Name)
+  { Name + "_nw" " " ColorId LIGHT_GREEN }
+  { Name + "_w" " " ColorId LIGHT_GREEN }
+  { Name + "_sw" " " ColorId LIGHT_GREEN }
+  { Name + "_s" " " ColorId LIGHT_GREEN }
+  { Name + "_se" " " ColorId LIGHT_GREEN }
+  { Name + "_e" " " ColorId LIGHT_GREEN }
+  { Name + "_ne" " " ColorId LIGHT_GREEN }
+  { Name + "_n" " " ColorId LIGHT_GREEN }
+End
+Connections("map_grass")
+Connections("map_sand")
+Connections("map_snow")
+Connections("map_mountains")
+Connections("map_swamp")
+{ "map_snow1" "." ColorId WHITE }
+{ "map_snow2" "." ColorId LIGHT_BLUE }
+{ "map_snow3" "." ColorId WHITE }
+{ "map_snow4" "." ColorId LIGHT_BLUE }
+{ "map_water1" "~" ColorId LIGHT_BLUE }
+{ "map_water2" "~" ColorId BLUE }
+{ "map_water3" "~" ColorId LIGHT_BLUE }
+{ "map_water5" "~" ColorId BLUE }
+{ "map_sand1" "." ColorId YELLOW }
+{ "map_sand2" "." ColorId LIGHT_BROWN }
+{ "map_sand3" "." ColorId YELLOW }
+{ "map_sand4" "." ColorId LIGHT_BROWN }
+{ "map_swamp1" "~" ColorId GREEN }
+{ "map_swamp2" "~" ColorId LIGHT_GREEN }
+{ "map_swamp3" "~" ColorId GREEN }
+{ "map_swamp4" "~" ColorId LIGHT_GREEN }
+{ "map_pond1" "o" ColorId BLUE }
+{ "map_tree1" "T" ColorId GREEN }
+{ "map_tree2" "T" ColorId LIGHT_GREEN }
+{ "map_tree3" "T" ColorId GREEN }
+{ "map_mountains1" "^" ColorId LIGHT_GRAY }
+{ "map_mountains2" "^" ColorId GRAY }
+{ "map_mountains3" "^" ColorId LIGHT_GRAY }
+{ "map_mountains4" "^" ColorId GRAY }
+{ "map_mountains5" "^" ColorId GRAY }
+{ "map_mountains_large" "^" ColorId LIGHT_GRAY }
+{ "map_mountains_large2" "^" ColorId GRAY }
+{ "map_mountains_large3" "^" ColorId GRAY }
+{ "map_mountains_large4" "^" ColorId GRAY }
+{ "map_mountains_snow1" "^" ColorId WHITE }
+{ "map_mountains_snow2" "^" ColorId WHITE }
+{ "map_mountains_snow3" "^" ColorId WHITE }
+{ "map_mountains_snow4" "^" ColorId WHITE }
+{ "map_mountains_snow5" "^" ColorId WHITE }
+{ "map_mountains_bg1" "^" ColorId LIGHT_GRAY }
+{ "map_house1" "o" ColorId BLUE }
+{ "map_house2" "o" ColorId BROWN }
+{ "map_house_elf" "o" ColorId LIGHT_GREEN }
+{ "map_shop1" "o" ColorId PINK }
+{ "map_blacksmith1" "o" ColorId LIGHT_GRAY }
+{ "map_stable1" "o" ColorId LIGHT_BROWN }
+{ "map_castle1" "o" ColorId BLUE }
+{ "map_guard_house1" "o" ColorId LIGHT_GRAY }
+{ "map_castle_snow1" "o" ColorId LIGHT_BLUE }
+{ "map_thieves" "o" ColorId LIGHT_BROWN }
+{ "map_warriors" "o" ColorId DARK_BROWN }
+{ "map_house_snow1" "o" ColorId SKY_BLUE }
+{ "map_dungeon1" ">" ColorId GRAY }
+{ "map_dungeon2" ">" ColorId GRAY }
+{ "map_dwarves" ">" ColorId LIGHT_BLUE }
+{ "map_ants" ">" ColorId WHITE }
+{ "map_ents" "@" ColorId LIGHT_BROWN }
+{ "map_hydra" "H" ColorId PURPLE }
+{ "map_dragon" "D" ColorId RED }
+{ "map_green_dragon" "D" ColorId GREEN }
+{ "map_adoxie" ">" ColorId PURPLE }
+{ "map_white_dragon" ">" ColorId GRAY }
+{ "map_tower1" "|" ColorId GRAY }
+{ "map_grave1" "+" ColorId GRAY }
+{ "map_base1" "X" ColorId PINK }
+{ "map_highlight" "_" ColorId WHITE }
+{ "map_cloud" "O" ColorId WHITE }
+{ "waternesw" "~" ColorId LIGHT_BLUE }
 { "dungeon_entrance" "➘" ColorId GRAY }
 { "unknown_monster" "?" ColorId LIGHT_GREEN false "unknown" }
 { "destroy_button" "X" ColorId RED false "remove" }
@@ -157,6 +266,7 @@
 { "ice_demon" "&" ColorId LIGHT_BLUE }
 { "succubus" "&" ColorId RED }
 { "ghost" "&" ColorId WHITE }
+{ "wraith" "&" ColorId LIGHT_GRAY }
 { "shapeshifter" "&" ColorId PINK }
 { "spirit" "&" ColorId YELLOW }
 { "galeam" "c" ColorId LIGHT_BROWN }
@@ -182,6 +292,7 @@
 { "cleric" "@" ColorId WHITE }
 { viewId = "teuton" symbol = "@" color = ColorId ALMOST_WHITE weaponOrigin = {4 16}   }
 { "teuton_boss" "@" ColorId PINK }
+{ viewId = "templar" sprite = "templar1" symbol = "@" color = ColorId ALMOST_WHITE weaponOrigin = {7 16}   }
 { "artisan" "@" ColorId LIGHT_BROWN }
 { "friar" "@" ColorId DARK_BROWN }
 { "black_market_guard" "B" ColorId BROWN }
@@ -202,6 +313,8 @@
 { "archer" "@" ColorId BROWN }
 { "peasant" "@" ColorId GREEN }
 { "peasant_woman" "@" ColorId GREEN }
+{ "prostitute" "@" ColorId PINK }
+{ "gigolo" "@" ColorId PINK }
 { "child" "@" ColorId LIGHT_GREEN }
 { "eskimo" "@" ColorId LIGHT_GRAY }
 { "eskimo_woman" "@" ColorId LIGHT_GRAY }
@@ -225,7 +338,9 @@
 { "automaton_heavy" "A" ColorId DARK_BLUE }
 { "automaton_head" ")" ColorId LIGHT_BROWN }
 { "automaton_fire" ")" ColorId LIGHT_BROWN }
+{ "automaton_oil" ")" ColorId LIGHT_BROWN }
 { "automaton_acid" ")" ColorId LIGHT_BROWN }
+{ "automaton_spell" ")" ColorId LIGHT_BROWN }
 { "automaton_arrow" ")" ColorId LIGHT_BROWN }
 { "automaton_legs" ")" ColorId LIGHT_BROWN }
 { "automaton_arms" ")" ColorId LIGHT_BROWN }
@@ -236,7 +351,9 @@
 { "installed_kaboom_head" ")" ColorId LIGHT_BROWN }
 { "installed_head" ")" ColorId LIGHT_BROWN }
 { "installed_fire" ")" ColorId LIGHT_BROWN }
+{ "installed_oil" ")" ColorId LIGHT_BROWN }
 { "installed_acid" ")" ColorId LIGHT_BROWN }
+{ "installed_spell" ")" ColorId LIGHT_BROWN }
 { "installed_arrow" ")" ColorId LIGHT_BROWN }
 { "installed_legs" ")" ColorId LIGHT_BROWN }
 { "installed_arms" ")" ColorId LIGHT_BROWN }
@@ -318,6 +435,7 @@
 { "bone" "%" ColorId WHITE }
 { "frozen_remains" "%" ColorId LIGHT_GRAY }
 { "dig_icon" "⛏" ColorId LIGHT_GRAY true }
+{ "fill_pit_icon" "⛏" ColorId LIGHT_GRAY true }
 { "sword" ")" ColorId LIGHT_GRAY }
 { viewId = "sword_v" symbol = ")" color = ColorId LIGHT_GRAY weaponOrigin = {10 16} }
 { "infernite_sword" ")" ColorId RED }
@@ -341,15 +459,22 @@
 { "special_battle_axe" ")" ColorId LIGHT_GREEN }
 { "sceptre" ")" ColorId RED }
 { viewId = "sceptre_v" symbol = ")" color = ColorId RED weaponOrigin = {13 13} }
+{ "crozier_wood" ")" ColorId LIGHT_BROWN }
+{ viewId = "crozier_wood_v" symbol = ")" color = ColorId LIGHT_BROWN weaponOrigin = {13 13} }
+{ "crozier_iron" ")" ColorId LIGHT_GRAY }
+{ viewId = "crozier_iron_v" symbol = ")" color = ColorId LIGHT_GRAY weaponOrigin = {13 13} }
+{ "crozier_adoxium" ")" ColorId PINK }
+{ viewId = "crozier_adoxium_v" symbol = ")" color = ColorId PINK weaponOrigin = {13 13} }
 { "bow" ")" ColorId BROWN }
 { "archwood_bow" ")" ColorId LIGHT_BLUE }
 { "elven_bow" ")" ColorId YELLOW false "bow" }
 { "crossbow" ")" ColorId LIGHT_BROWN }
+{ "archwood_crossbow" ")" ColorId LIGHT_RED }
 { "arrow" "/" ColorId BROWN }
 { "wooden_staff" ")" ColorId DARK_BROWN }
 { viewId = "wooden_staff_v" symbol = ")" color = ColorId DARK_BROWN weaponOrigin = {12 13} }
-{ "iron_staff" ")" ColorId ORANGE }
-{ viewId = "iron_staff_v" symbol = ")" color = ColorId ORANGE weaponOrigin = {11 14} }
+{ "archwood_staff" ")" ColorId BLUE }
+{ viewId = "archwood_staff_v" symbol = ")" color = ColorId BLUE weaponOrigin = {11 14} }
 { "adoxium_staff" ")" ColorId PINK }
 { viewId = "adoxium_staff_v" symbol = ")" color = ColorId PINK weaponOrigin = {10 14} }
 { "elven_staff" ")" ColorId WHITE }
@@ -368,18 +493,21 @@
 { "amulet3" "\"" ColorId YELLOW }
 { "amulet4" "\"" ColorId YELLOW }
 { "amulet5" "\"" ColorId YELLOW }
+{ "amulet6" "\"" ColorId WHITE }
 { "ring" "=" ColorId RED }
+{ "devotional_medal" "=" ColorId YELLOW }
+{ "gold_ring" "=" ColorId YELLOW }
+{ "adoxie_ring" "=" ColorId WHITE }
 { "book" "+" ColorId YELLOW }
+{ "adoxie_book" "+" ColorId PURPLE }
 { "hand_torch" "/" ColorId YELLOW }
 { "first_aid" "+" ColorId RED }
 { "lamp" "🜽" ColorId YELLOW true }
 { "trap_item" "+" ColorId YELLOW }
 { "potion1" "!" ColorId LIGHT_RED }
 { "potion2" "!" ColorId BLUE }
-{ "potion3" "!" ColorId YELLOW }
-{ "potion4" "!" ColorId VIOLET }
-{ "potion5" "!" ColorId DARK_BROWN }
-{ "potion6" "!" ColorId LIGHT_GRAY }
+{ "potion3" "!" ColorId DARK_RED }
+{ "potion4" "!" ColorId YELLOW }
 { "glyph" "~" ColorId GREEN }
 { "dragon_scales" "~" ColorId GREEN }
 { "devil_hooves" "~" ColorId RED }
@@ -399,6 +527,8 @@
 { viewId = "automaton_storage_empty" symbol = "=" color = ColorId DARK_GRAY roundShadow = true }
 { viewId = "jewelry_storage" symbol = "=" color = ColorId ORANGE roundShadow = true }
 { viewId = "jewelry_storage_empty" symbol = "=" color = ColorId DARK_GRAY roundShadow = true }
+{ viewId = "prayer_book_storage" symbol = "=" color = ColorId PINK roundShadow = true }
+{ viewId = "prayer_book_storage_empty" symbol = "=" color = ColorId DARK_GRAY roundShadow = true }
 { viewId = "armor_rack" symbol = "=" color = ColorId DARK_BROWN roundShadow = true }
 { viewId = "armor_rack_empty" symbol = "=" color = ColorId DARK_GRAY roundShadow = true }
 { viewId = "weapon_rack" symbol = "=" color = ColorId LIGHT_BROWN roundShadow = true }
@@ -449,8 +579,12 @@
 { viewId = "candelabrum_w" symbol = "*" color = ColorId ORANGE animated = true }
 { viewId = "candelabrum_e" symbol = "*" color = ColorId ORANGE animated = true }
 { "sokoban_hole" "0" ColorId DARK_BLUE }
-{ viewId = "cauldron" symbol = "ω" color = ColorId PURPLE
+{ viewId = "cauldron" symbol = "ω" color = ColorId GREEN
   isSymbolFont = true roundShadow = true }
+{ viewId = "enchanted_cauldron" symbol = "ω" color = ColorId PURPLE
+  isSymbolFont = true roundShadow = true }
+{ viewId = "mortar_and_pestle" symbol = "=" color = ColorId LIGHT_GRAY
+  roundShadow = true }
 { viewId = "cauldron_tar" symbol = "ω" color = ColorId GRAY
   isSymbolFont = true roundShadow = true }
 { "robe" "[" ColorId LIGHT_BROWN }
@@ -513,6 +647,9 @@
 { "leg_attack" "*" ColorId GRAY }
 { "fist_attack" "*" ColorId ORANGE }
 { "item_aura" " " ColorId ORANGE }
+{ "remains_table" "=" ColorId LIGHT_GREEN }
+{ "remains_table_empty" "=" ColorId GRAY }
+{ "prophet_remains" "%" ColorId LIGHT_GREEN}
 { viewId = "storage_equipment" symbol = "." color = ColorId BLUE
   sprite = "dig_mark" spriteColor = Rgb 0 0 255 120 }
 { viewId = "storage_resources" symbol = "." color = ColorId GREEN
@@ -522,6 +659,8 @@
 { viewId = "standing_torch" symbol = "*" color = ColorId YELLOW
   moveUp = true animated = true }
 { viewId = "decid_tree" symbol = "🜍" color = ColorId DARK_GREEN
+  isSymbolFont = true roundShadow = true }
+{ viewId = "special_tree" symbol = "🜍" color = ColorId DARK_GREEN
   isSymbolFont = true roundShadow = true }
 { viewId = "canif_tree" symbol = "♣" color = ColorId DARK_GREEN
   isSymbolFont = true roundShadow = true }
@@ -581,9 +720,13 @@
 
 Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
 
-{ viewId = "minion_statue" symbol = "&" color = ColorId LIGHT_GRAY
+{ viewId = "minion_statue" symbol = "&" color = ColorId YELLOW
   roundShadow = true fx = GoldGlitter() }
 { viewId = "stone_minion_statue" symbol = "&" color = ColorId ALMOST_WHITE
+  roundShadow = true }
+{ viewId = "saint_statue" sprite = "holy_statue1_gold" symbol = "&" color = ColorId YELLOW
+  roundShadow = true fx = GoldGlitter() }
+{ viewId = "stone_saint_statue" sprite = "holy_statue1" symbol = "&" color = ColorId ALMOST_WHITE
   roundShadow = true }
 { viewId = "throne" symbol = "Ω" color = ColorId YELLOW
   isSymbolFont = true roundShadow = true fx = GoldGlitter() }
@@ -595,6 +738,7 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
   roundShadow = true }
 { viewId = "morgue_table" symbol = "=" color = ColorId RED
   roundShadow = true }
+{ viewId = "morgue_instrument_table" symbol = "=" color = ColorId LIGHT_GRAY }
 { viewId = "phylactery" symbol = "⚱️" color = ColorId YELLOW
   isSymbolFont = true roundShadow = true }
 { viewId = "phylactery_active" symbol = "⚱️" color = ColorId PURPLE
@@ -607,6 +751,10 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
   isSymbolFont = true roundShadow = true }
 { viewId = "notice_board" symbol = "|" color = ColorId BROWN
   roundShadow = true }
+{ viewId = "corpse_display1" symbol = "T" color = ColorId RED
+  isSymbolFont = true roundShadow = true }
+{ viewId = "corpse_display2" symbol = "T" color = ColorId RED
+  isSymbolFont = true roundShadow = true }
 Def TRAINING(SUF)
 { viewId = "training_wood" + SUF symbol = "‡" color = ColorId BROWN
   isSymbolFont = true roundShadow = true }
@@ -632,6 +780,50 @@ End
 BOOKCASES("")
 BOOKCASES("_necro")
 BOOKCASES("_human")
+{ viewId = "rostrum_wood" sprite = "rostrum" symbol = "T" color = ColorId LIGHT_BROWN
+  isSymbolFont = true roundShadow = true }
+{ viewId = "rostrum_iron" sprite = "rostrum2" symbol = "T" color = ColorId LIGHT_GRAY
+  isSymbolFont = true roundShadow = true }
+{ viewId = "rostrum_gold" sprite = "rostrum3" symbol = "T" color = ColorId YELLOW
+  isSymbolFont = true roundShadow = true }
+{ viewId = "pew_wood" sprite = "church_pew" symbol = "=" color = ColorId LIGHT_BROWN
+  isSymbolFont = true roundShadow = true
+  connections = {
+    "church_pew_centre" { W E }
+    "church_pew_left" { E }
+    "church_pew_right" { W }
+  }
+}
+{ viewId = "pew_iron" sprite = "church_pew2" symbol = "=" color = ColorId LIGHT_GRAY
+  isSymbolFont = true roundShadow = true
+  connections = {
+    "church_pew_iron_centre" { W E }
+    "church_pew_iron_left" { E }
+    "church_pew_iron_right" { W }
+  }
+}
+{ viewId = "pew_gold" sprite = "church_pew3" symbol = "=" color = ColorId YELLOW
+  isSymbolFont = true roundShadow = true
+  connections = {
+    "church_pew_gold_centre" { W E }
+    "church_pew_gold_left" { E }
+    "church_pew_gold_right" { W }
+  }
+}
+{ viewId = "confessional" symbol = "H" color = ColorId LIGHT_BROWN
+  isSymbolFont = true roundShadow = true }
+{ viewId = "luxurious_confessional" sprite = "confessional2" symbol = "H" color = ColorId YELLOW
+  isSymbolFont = true roundShadow = true }
+{ viewId = "prayer_bench_wood" sprite = "prayer_bench" symbol = "H" color = ColorId LIGHT_BROWN
+  isSymbolFont = true roundShadow = true }
+{ viewId = "prayer_bench_iron" sprite = "prayer_bench2" symbol = "H" color = ColorId LIGHT_GRAY
+  isSymbolFont = true roundShadow = true }
+{ viewId = "prayer_bench_gold" sprite = "prayer_bench3" symbol = "H" color = ColorId YELLOW
+  isSymbolFont = true roundShadow = true }
+{ viewId = "scriptorium" symbol = "&" color = ColorId DARK_BROWN
+  isSymbolFont = true roundShadow = true }
+{ viewId = "scriptorium_holy_token" symbol = "I" color = ColorId LIGHT_BROWN
+  roundShadow = true }
 { viewId = "demon_shrine" symbol = "Ω" color = ColorId PURPLE
   isSymbolFont = true roundShadow = true }
 { viewId = "angel_shrine" symbol = "Ω" color = ColorId WHITE
@@ -640,9 +832,21 @@ BOOKCASES("_human")
   isSymbolFont = true roundShadow = true }
 { viewId = "forge" symbol = "&" color = ColorId LIGHT_BLUE
   roundShadow = true }
+{ viewId = "lava_forge" symbol = "&" color = ColorId LIGHT_RED
+  roundShadow = true }
+{ viewId = "forge_quenching_bucket" symbol = "o" color = ColorId LIGHT_BLUE
+  roundShadow = true }
 { viewId = "workshop" symbol = "&" color = ColorId LIGHT_BROWN
   roundShadow = true }
+{ viewId = "enchanted_workshop" symbol = "&" color = ColorId PURPLE
+  roundShadow = true }
+{ viewId = "workshop_tool_stand" symbol = "=" color = ColorId LIGHT_BROWN
+  roundShadow = true }
 { viewId = "jeweller" symbol = "&" color = ColorId YELLOW
+  roundShadow = true }
+{ viewId = "lava_jeweller" symbol = "&" color = ColorId LIGHT_GRAY
+  roundShadow = true }
+{ viewId = "jeweller_polishing_wheel" symbol = "O" color = ColorId GRAY
   roundShadow = true }
 { viewId = "dining_table" symbol = "&" color = ColorId LIGHT_BLUE
   roundShadow = true }
@@ -652,7 +856,7 @@ BOOKCASES("_human")
   roundShadow = true }
 { viewId = "distillery" symbol = "&" color = ColorId LIGHT_GRAY
   roundShadow = true }
-{ viewId = "furnace" symbol = "&" color = ColorId PINK
+{ viewId = "furnace" symbol = "&" color = ColorId ORANGE
   roundShadow = true fx = {SMOKE} }
 { viewId = "grave" symbol = "☗" color = ColorId GRAY
   isSymbolFont = true roundShadow = true }
@@ -711,18 +915,22 @@ BOOKCASES("_human")
   extraBorders = { "water" "floor" "keeper_floor" "roof" } }
 { viewId = "mud" symbol = "." color = ColorId BROWN
   extraBorders = { "water" "hill" "sand" "floor" "keeper_floor" "roof" } }
-{ viewId = "snow" symbol = "." color = ColorId WHITE }
+{ viewId = "snow" symbol = "." color = ColorId WHITE
+  extraBorders = { "floor" "keeper_floor" "roof" }}
 { viewId = "ice" symbol = "." color = ColorId LIGHT_BLUE waterSides = "water" }
 { viewId = "grass" symbol = "𝃰" color = ColorId GREEN
   isSymbolFont = true canMirror = true
   extraBorders = { "water" "hill" "sand" "mud" "floor" "keeper_floor" "roof" } }
 { viewId = "swampgrass" symbol = "𝃰" color = ColorId DARK_GREEN
-  isSymbolFont = true canMirror = true }
+  isSymbolFont = true canMirror = true
+  extraBorders = { "water" "hill" "sand" "mud" "floor" "keeper_floor" "roof" } }
 { viewId = "hill" symbol = "𝀢" color = ColorId DARK_GREEN
   isSymbolFont = true canMirror = true
   extraBorders = { "water" "sand" "floor" "keeper_floor" "roof" } }
 { viewId = "water" symbol = "~" color = ColorId LIGHT_BLUE
   waterSides = "water" animated = true spriteColor = Rgb 100 130 220 255 }
+{ viewId = "enchanted_water" symbol = "~" color = ColorId PURPLE
+  waterSides = "water" animated = true spriteColor = Rgb 170 100 220 255 }
 { viewId = "tar" symbol = "~" color = ColorId DARK_GRAY
   waterSides = "water" spriteColor = Rgb 50 50 50 255 }
 { viewId = "magma" symbol = "~" color = ColorId RED
@@ -743,6 +951,8 @@ BOOKCASES("_human")
   wallShadow = true mountainSides = "mountain" }
 { viewId = "mountain2" symbol = "#" color = ColorId DARK_GRAY
   wallShadow = true mountainSides = "mountain" }
+{ viewId = "hell_mountain" symbol = "#" color = ColorId DARK_RED
+  wallShadow = true mountainSides = "mountain" }
 { viewId = "dungeon_wall" symbol = "#" color = ColorId LIGHT_GRAY
   sprite = "mountain" wallShadow = true mountainSides = "dungeonwall" }
 { viewId = "dungeon_wall2" symbol = "#" color = ColorId DARK_BLUE
@@ -760,6 +970,9 @@ BOOKCASES("_human")
 { viewId = "gold_ore" symbol = "⁂" color = ColorId YELLOW
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
   background = "mountain2" fx = GoldGlitter() }
+{ viewId = "hell_gold_ore" sprite = "gold_ore" symbol = "⁂" color = ColorId YELLOW
+  isSymbolFont = true wallShadow = true mountainSides = "mountain"
+  background = "hell_mountain" fx = GoldGlitter() }
 { viewId = "gold" symbol = "$" color = ColorId YELLOW fx = GoldGlitter() }
 { viewId = "iron_ore" symbol = "⁂" color = ColorId DARK_BROWN
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
@@ -767,15 +980,21 @@ BOOKCASES("_human")
 { viewId = "stone" symbol = "⁂" color = ColorId LIGHT_GRAY
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
   background = "mountain2" }
+{ viewId = "hell_stone" sprite = "stone" symbol = "⁂" color = ColorId LIGHT_GRAY
+  isSymbolFont = true wallShadow = true mountainSides = "mountain"
+  background = "hell_mountain" }
 { viewId = "adamantium_ore" symbol = "⁂" color = ColorId LIGHT_BLUE
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
   background = "mountain2" fx = { GLITTERING ColorId LIGHT_BLUE } }
+{ viewId = "hell_adamantium_ore" sprite = "adamantium_ore" symbol = "⁂" color = ColorId LIGHT_BLUE
+  isSymbolFont = true wallShadow = true mountainSides = "mountain"
+  background = "hell_mountain" fx = { GLITTERING ColorId LIGHT_BLUE } }
 { viewId = "adoxium_ore" symbol = "⁂" color = ColorId PINK
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
-  background = "mountain2" fx = { GLITTERING ColorId PINK } }
+  background = "hell_mountain" fx = { GLITTERING ColorId PINK } }
 { viewId = "infernite_ore" symbol = "⁂" color = ColorId RED
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
-  background = "mountain2" fx = { GLITTERING ColorId ORANGE } }
+  background = "hell_mountain" fx = { GLITTERING ColorId ORANGE } }
 
 # Legacy tiles, not in vanilla anymore
   { "orc" "o" ColorId DARK_BLUE }

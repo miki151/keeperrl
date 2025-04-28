@@ -6,6 +6,7 @@
 #include "msg_type.h"
 #include "fx_variant_name.h"
 #include "color.h"
+#include "special_attr.h"
 
 struct YouMessage {
   MsgType SERIAL(type);
@@ -40,6 +41,7 @@ struct BuffInfo {
   bool SERIAL(canAbsorb) = true;
   bool SERIAL(canWishFor) = true;
   bool SERIAL(inheritsFromSteed) = false;
+  optional<double> SERIAL(efficiencyMultiplier);
   int SERIAL(price) = 50;
   Color SERIAL(color);
   optional<string> SERIAL(hatedGroupName);
@@ -47,5 +49,10 @@ struct BuffInfo {
   optional<AttrType> SERIAL(defenseMultiplierAttr);
   FXVariantName SERIAL(fx) = FXVariantName::BUFF_RED;
   optional<pair<AttrType, AttrType>> SERIAL(modifyDamageAttr);
-  SERIALIZE_ALL(NAMED(modifyDamageAttr), OPTION(inheritsFromSteed), OPTION(canWishFor), OPTION(canAbsorb), OPTION(combatConsumable), OPTION(fx), OPTION(defenseMultiplier), OPTION(defenseMultiplierAttr), NAMED(hatedGroupName), NAMED(name), OPTION(addedMessage), OPTION(removedMessage), NAMED(startEffect), NAMED(tickEffect), NAMED(endEffect), OPTION(stacks), OPTION(consideredBad), NAMED(description), OPTION(price), NAMED(color), NAMED(adjective))
+  optional<SpecialAttr> SERIAL(specialAttr);
+  optional<CreaturePredicate> SERIAL(hiddenPredicate);
+  template <class Archive>
+  void serialize(Archive& ar1, const unsigned int);
 };
+
+CEREAL_CLASS_VERSION(BuffInfo, 2)

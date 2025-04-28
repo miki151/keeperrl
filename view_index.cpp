@@ -18,6 +18,109 @@
 #include "view_index.h"
 #include "view_object.h"
 
+const char* getDescription(HighlightType type) {
+  switch (type) {
+    case HighlightType::STORAGE_EQUIPMENT:
+      return "Equipment storage";
+    case HighlightType::STORAGE_RESOURCES:
+      return "Resource storage";
+     case HighlightType::LEISURE:
+       return "Minion leisure zone";
+     case HighlightType::FETCH_ITEMS:
+       return "Fetching items";
+     case HighlightType::PERMANENT_FETCH_ITEMS:
+       return "Persistent item fetching zone";
+     case HighlightType::GUARD_ZONE1:
+       return "Guard area 1";
+     case HighlightType::GUARD_ZONE2:
+       return "Guard area 2";
+     case HighlightType::GUARD_ZONE3:
+       return "Guard area 3";
+     case HighlightType::FORBIDDEN_ZONE:
+       return "Forbidden zone";
+     case HighlightType::ALLIED_TOTEM:
+       return "Allied magical field";
+     case HighlightType::HOSTILE_TOTEM:
+       return "Hostile magical field";
+     case HighlightType::CUT_TREE:
+       return "Tree cutting task";
+     case HighlightType::DIG:
+       return "Digging task";
+     case HighlightType::INSUFFICIENT_LIGHT:
+       return "Insufficient light";
+     case HighlightType::PRISON_NOT_CLOSED:
+       return "Prison must be separated from the outdoors and from all staircases using prison bars or prison door";
+     case HighlightType::PIGSTY_NOT_CLOSED:
+       return "Animal pen must be separated from the outdoors and from all staircases using animal fence";
+     case HighlightType::TORTURE_UNAVAILABLE:
+       return "Torture unavailable due to population limit";
+     case HighlightType::PRIORITY_TASK:
+       return "Priority task";
+    default:
+      break;
+  }
+  return nullptr;
+}
+
+ViewId getViewId(HighlightType id, bool active) {
+  switch (id) {
+   case HighlightType::QUARTERS:
+      return ViewId("quarters", Color(255, 20, 147));
+    case HighlightType::LEISURE:
+      return ViewId("quarters", Color(50, 50, 200));
+    case HighlightType::FETCH_ITEMS:
+    case HighlightType::PERMANENT_FETCH_ITEMS:
+      return ViewId("fetch_icon");
+    case HighlightType::STORAGE_EQUIPMENT:
+      return ViewId("storage_equipment");
+    case HighlightType::STORAGE_RESOURCES:
+      return ViewId("storage_resources");
+    case HighlightType::GUARD_ZONE1:
+      return ViewId("guard_zone");
+    case HighlightType::GUARD_ZONE2:
+      return ViewId("guard_zone", Color::PURPLE);
+    case HighlightType::GUARD_ZONE3:
+      return ViewId("guard_zone", Color::SKY_BLUE);
+    case HighlightType::FORBIDDEN_ZONE:
+      return ViewId("dig_mark", Color(255, 0, 0, 120));
+    case HighlightType::ALLIED_TOTEM:
+      return ViewId("magic_field", Color::GREEN);
+    case HighlightType::HOSTILE_TOTEM:
+      return ViewId("magic_field", Color::RED);
+    case HighlightType::CLICKABLE_FURNITURE:
+      return ViewId("dig_mark", Color(255, 255, 0, 120));
+    case HighlightType::CLICKED_FURNITURE:
+      return ViewId("dig_mark", Color(255, 255, 0));
+    case HighlightType::CREATURE_DROP:
+      return ViewId("dig_mark", Color(0, 255, 0));
+    case HighlightType::CUT_TREE:
+      return ViewId("dig_mark", Color::YELLOW.transparency(200));
+    case HighlightType::DIG:
+      return ViewId("dig_mark", Color::YELLOW.transparency(100));
+    case HighlightType::INDOORS:
+      return ViewId("dig_mark2", Color(0, 0, 255, active ? 40 : 0));
+    case HighlightType::INSUFFICIENT_LIGHT:
+      return ViewId("dig_mark2", Color(255, 0, 0, active ? 200 : 0));
+    case HighlightType::MEMORY:
+      return ViewId("tile_below", Color(0, 0, 0, 80));
+    case HighlightType::PRISON_NOT_CLOSED:
+    case HighlightType::PIGSTY_NOT_CLOSED:
+      return ViewId("dig_mark", Color(255, 0, 0));
+    case HighlightType::RECT_SELECTION:
+      return ViewId("dig_mark", Color::YELLOW.transparency(100));
+    case HighlightType::RECT_DESELECTION:
+      return ViewId("dig_mark", Color::RED.transparency(100));
+    case HighlightType::PRIORITY_TASK:
+      return ViewId("dig_mark", Color(0, 255, 0, 200));
+    case HighlightType::TILE_BELOW:
+      return ViewId("tile_below", Color(0, 0, 0, 120));
+    case HighlightType::UNAVAILABLE:
+      return ViewId("dig_mark2", Color(0, 0, 0, 120));
+    case HighlightType::TORTURE_UNAVAILABLE:
+      return ViewId("dig_mark", Color(255, 0, 0));
+  }
+}
+
 SERIALIZE_DEF(ViewIndex, objIndex, highlights, tileGas, objects, anyHighlight, itemCounts, nightAmount)
 
 ViewIndex::ViewIndex() {
@@ -157,5 +260,14 @@ void ViewIndex::mergeFromMemory(const ViewIndex& memory) {
       insert(memory.getObject(ViewLayer::FLOOR));
     if (memory.hasObject(ViewLayer::FLOOR_BACKGROUND))
       insert(memory.getObject(ViewLayer::FLOOR_BACKGROUND));
+  }
+}
+
+void ViewIndex::mergeGroundBelow(const ViewIndex& memory) {
+  if (isEmpty()) {
+    *this = memory;
+    removeObject(ViewLayer::TORCH1);
+    removeObject(ViewLayer::TORCH2);
+    setHighlight(HighlightType::TILE_BELOW);
   }
 }

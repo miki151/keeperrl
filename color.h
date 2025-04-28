@@ -56,6 +56,7 @@ struct Color {
   static Color DARK_GREEN;
   static Color RED;
   static Color LIGHT_RED;
+  static Color DARK_RED;
   static Color PINK;
   static Color ORANGE;
   static Color BLUE;
@@ -64,7 +65,6 @@ struct Color {
   static Color SKY_BLUE;
   static Color PURPLE;
   static Color VIOLET;
-  static Color TRANSLUCENT_BLACK;
   static Color TRANSPARENT;
 
   unsigned char SERIAL(r); // HASH(r)

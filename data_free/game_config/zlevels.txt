@@ -3,16 +3,23 @@
 
 "basic"
 {
-  # This is a filled level that can appear at all depths
+  {
+    type = EnemyZLevel {
+      enemy = "Z_LEVEL_FULL_ONLY_WATER"
+    }
+    minDepth = 0
+    maxDepth = 6
+  }
   {
     type = EnemyZLevel {
       enemy = "Z_LEVEL_FULL"
     }
+    minDepth = 6
+    maxDepth = 22
   }
   {
     type = FullZLevel {
-      # You can optionally add an EnemyId. The player will dig down right into their base.
-      # Warning: some enemies might not work
+      # You can optionally add an EnemyId. Warning: some enemies might not work
       enemy = "BLACK_RATS"
     }
     # Possible depths for this level, inclusive. The first level when you dig down is 1.
@@ -54,6 +61,13 @@
     guarantee = true
   }
   {
+    type = EnemyZLevel {
+      enemy = "Z_LEVEL_HELL"
+      mountainType = "HELL_MOUNTAIN"
+    }
+    minDepth = 24
+  }
+  {
     # A level full of water with some islands
     type = WaterZLevel {
       waterType = "WATER"
@@ -84,7 +98,7 @@ Def LEVEL(NAME, D1, D2, W)
   {
     type = EnemyZLevel {
       enemy = NAME
-      attackChance = 1.0
+      attackChance = 0.5
     }
     minDepth = D1
     maxDepth = D2
@@ -98,17 +112,8 @@ Def LEVEL(NAME, D1, D2) LEVEL(NAME, D1, D2, 1.0) End
 "lawful"
 {
   LEVEL("RAT_PEOPLE_Z_LEVEL", 2, 3)
-  LEVEL("GOBLINS_Z_LEVEL1", 4, 6, 0.5)
-  LEVEL("DARK_ELVES_Z_LEVEL1", 4, 6, 0.5)
-  LEVEL("GOBLINS_Z_LEVEL2", 7, 11, 0.5)
-  LEVEL("DARK_ELVES_Z_LEVEL2", 7, 11, 0.5)
-  LEVEL("GOBLINS_Z_LEVEL3", 12, 16, 0.5)
-  LEVEL("DARK_ELVES_Z_LEVEL3", 12, 16, 0.5)
-  LEVEL("GOBLINS_Z_LEVEL4", 17, 21, 0.5)
-  LEVEL("DARK_ELVES_Z_LEVEL4", 17, 21, 0.5)
-  LEVEL("GOBLINS_Z_LEVEL5", 22, 26, 0.5)
-  LEVEL("DARK_ELVES_Z_LEVEL5", 22, 26, 0.5)
-  LEVEL("GOBLINS_Z_LEVEL6", 27, 1000)
+  LEVEL("GOBLINS_Z_LEVEL", 4, 22, 0.5)
+  LEVEL("DARK_ELVES_Z_LEVEL", 4, 22, 0.5)
   {
     type = EnemyZLevel {
       enemy = "Z_LEVEL_DWARF_VAULT"
@@ -123,11 +128,7 @@ Def LEVEL(NAME, D1, D2) LEVEL(NAME, D1, D2, 1.0) End
 "evil"
 {
   LEVEL("RAT_PEOPLE_Z_LEVEL", 2, 3)
-  LEVEL("DWARVES_Z_LEVEL1", 4, 6)
-  LEVEL("DWARVES_Z_LEVEL2", 7, 11)
-  LEVEL("DWARVES_Z_LEVEL3", 12, 16)
-  LEVEL("DWARVES_Z_LEVEL4", 17, 21)
-  LEVEL("DWARVES_Z_LEVEL5", 22, 26)
+  LEVEL("DWARVES_Z_LEVEL", 4, 22)
   {
     type = EnemyZLevel {
       enemy = "Z_LEVEL_VAMPIRE_VAULT"

@@ -35,6 +35,7 @@
   bodyPartInjury = "is incinerated"
   isAttackAttr = true
   meleeFX = {FIREBALL_SPLASH}
+  onAttackedEffect = Lasting ON_FIRE
   help = "Base damage value of fire attacks."
 }
 
@@ -150,4 +151,14 @@
   adjective = "rotten"
   absorptionCap = 25
   help = "Defines the creature's skill at working at the morgue table."
+}
+
+"DIVINITY" {
+  name = "divinity"
+  viewId = { "divinity_icon" }
+  adjective = "divine"
+  absorptionCap = 25
+  isAttackAttr = true
+  meleeFX = {MAGIC_MISSILE_SPLASH}
+  help = "Caps the creature's praying abilities."
 }

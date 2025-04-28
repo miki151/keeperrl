@@ -7,8 +7,7 @@ RICH_ENUM(ItemIndex,
   MINION_EQUIPMENT,
   RANGED_WEAPON,
   FOR_SALE,
-  RUNE,
-  ASSEMBLED_MINION
+  RUNE
 );
 
 extern const char* getName(ItemIndex, int count = 1);

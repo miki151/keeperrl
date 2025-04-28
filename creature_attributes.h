@@ -24,7 +24,6 @@
 #include "minion_activity_map.h"
 #include "attr_type.h"
 #include "lasting_effect.h"
-#include "experience_type.h"
 #include "game_time.h"
 #include "view_id.h"
 #include "spell_id.h"
@@ -33,6 +32,9 @@
 #include "creature_inventory.h"
 #include "creature_predicate.h"
 #include "ai_type.h"
+#include "achievement_id.h"
+#include "effect_type.h"
+#include "creature_predicate.h"
 
 inline bool isLarger(CreatureSize s1, CreatureSize s2) {
   return int(s1) > int(s2);
@@ -69,6 +71,7 @@ class CreatureAttributes {
   const CreatureName& getName() const;
   CreatureName& getName();
   int getRawAttr(AttrType) const;
+  HashMap<AttrType, int>& getAllAttr();
   void increaseBaseAttr(AttrType, int);
   void setBaseAttr(AttrType, int);
   void setAIType(AIType);
@@ -76,14 +79,12 @@ class CreatureAttributes {
   string getDeathDescription(const ContentFactory*) const;
   void setDeathDescription(string);
   const Gender& getGender() const;
-  double getExpLevel(ExperienceType type) const;
-  const EnumMap<ExperienceType, double>& getExpLevel() const;
-  const EnumMap<ExperienceType, int>& getMaxExpLevel() const;
-  void increaseMaxExpLevel(ExperienceType, int increase);
-  void increaseExpLevel(ExperienceType, double increase);
-  double getCombatExperience() const;
-  bool isTrainingMaxedOut(ExperienceType) const;
-  void increaseBaseExpLevel(ExperienceType type, int increase);
+  double getExpLevel(AttrType) const;
+  const HashMap<AttrType, double>& getExpLevel() const;
+  const HashMap<AttrType, int>& getMaxExpLevel() const;
+  void increaseMaxExpLevel(AttrType, int increase);
+  void increaseExpLevel(AttrType, double increase);
+  bool isTrainingMaxedOut(AttrType) const;
   vector<SpellSchoolId> getSpellSchools() const;
   void addSpellSchool(SpellSchoolId);
   optional<SoundId> getAttackSound(AttackType, bool damage) const;
@@ -100,7 +101,6 @@ class CreatureAttributes {
   bool isAffectedPermanently(LastingEffect) const;
   GlobalTime getTimeOut(LastingEffect) const;
   void copyLastingEffects(const CreatureAttributes&);
-  string getRemainingString(LastingEffect, GlobalTime) const;
   void clearLastingEffect(LastingEffect);
   void addPermanentEffect(LastingEffect, int count);
   void removePermanentEffect(LastingEffect, int count);
@@ -112,7 +112,6 @@ class CreatureAttributes {
   void consume(Creature* self, CreatureAttributes& other);
   const MinionActivityMap& getMinionActivities() const;
   MinionActivityMap& getMinionActivities();
-  bool dontChase() const;
   bool getCanJoinCollective() const;
   void setCanJoinCollective(bool);
   void increaseExpFromCombat(double attackDiff);
@@ -126,21 +125,34 @@ class CreatureAttributes {
   ViewId SERIAL(viewId);
   vector<ViewId> SERIAL(viewIdUpgrades);
   vector<ItemType> SERIAL(automatonParts);
-  map<AttrType, vector<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
+  HashMap<AttrType, vector<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
   heap_optional<Effect> SERIAL(deathEffect);
   heap_optional<Effect> SERIAL(afterKilledSomeone);
+  bool SERIAL(noCopulation) = false;
 
   vector<CompanionInfo> SERIAL(companions);
   optional<string> SERIAL(promotionGroup);
   double SERIAL(promotionCost) = 1.0;
-  int SERIAL(maxPromotions) = 5;
+  int SERIAL(maxPromotions) = 1000;
   vector<BuffId> SERIAL(permanentBuffs);
+  optional<AchievementId> SERIAL(killedAchievement);
+  optional<AchievementId> SERIAL(killedByAchievement);
+  optional<AchievementId> SERIAL(steedAchievement);
+  HashSet<AttrType> SERIAL(fixedAttr);
+  bool SERIAL(grantsExperience) = true;
+  bool SERIAL(noChase) = false;
+  Effect SERIAL(copulationClientEffect) = Effect(Effects::Lasting { 200_visible, BuffId("HIGH_MORALE") });
+  Effect SERIAL(copulationEffect) = Effect(Effects::Filter(CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::PREGNANT)}),
+    Effect(Effects::Chance(0.5, Effect(Effects::Chain{{
+      Effect(Effects::Lasting { 500_visible, LastingEffect::PREGNANT }),
+      Effect(Effects::CollectiveMessage { "A minion becomes pregnant" })
+    }})))));
 
   private:
   void consumeEffects(Creature* self, const EnumMap<LastingEffect, int>&);
   heap_optional<ViewObject> SERIAL(illusionViewObject);
   CreatureName SERIAL(name);
-  map<AttrType, int> SERIAL(attr);
+  HashMap<AttrType, int> SERIAL(attr);
   HeapAllocated<Body> SERIAL(body);
   optional<string> SERIAL(chatReactionFriendly);
   optional<string> SERIAL(chatReactionHostile);
@@ -151,15 +163,14 @@ class CreatureAttributes {
   bool SERIAL(cantEquip) = false;
   AIType SERIAL(aiType) = AIType::MELEE;
   bool SERIAL(boulder) = false;
-  bool SERIAL(noChase) = false;
   bool SERIAL(isSpecial) = false;
   vector<SpellSchoolId> SERIAL(spellSchools);
   vector<SpellId> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   EnumMap<LastingEffect, GlobalTime> SERIAL(lastingEffects);
   MinionActivityMap SERIAL(minionActivities);
-  EnumMap<ExperienceType, double> SERIAL(expLevel);
-  EnumMap<ExperienceType, int> SERIAL(maxLevelIncrease);
+  HashMap<AttrType, double> SERIAL(expLevel);
+  HashMap<AttrType, int> SERIAL(maxLevelIncrease);
   bool SERIAL(noAttackSound) = false;
   optional<CreatureId> SERIAL(creatureId);
   optional<string> SERIAL(deathDescription);
@@ -170,3 +181,5 @@ class CreatureAttributes {
   void initializeLastingEffects();
   CreatureInventory SERIAL(inventory);
 };
+
+CEREAL_CLASS_VERSION(CreatureAttributes, 2)

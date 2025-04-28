@@ -35,8 +35,9 @@
 #include "storage_id.h"
 #include "cost_info.h"
 #include "lasting_or_buff.h"
+#include "assembled_minion.h"
 
-#define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
+#define ITATTR(X) make_shared<ItemAttributes>([&](ItemAttributes& i) { X })
 
 class EnemyCheck;
 
@@ -48,6 +49,8 @@ class ItemAttributes {
   template <class Archive>
   void serializeImpl(Archive& ar, const unsigned int);
   SERIALIZATION_DECL(ItemAttributes)
+
+  void scale(double value, const ContentFactory*);
 
   ViewId SERIAL(viewId);
   optional<ViewId> SERIAL(equipedViewId);
@@ -64,19 +67,20 @@ class ItemAttributes {
   int SERIAL(burnTime) = 0;
   int SERIAL(price) = 0;
   bool SERIAL(noArticle) = false;
-  map<AttrType, int> SERIAL(modifiers);
+  HashMap<AttrType, int> SERIAL(modifiers);
   double SERIAL(variationChance) = 0.2;
   optional<EquipmentSlot> SERIAL(equipmentSlot);
   TimeInterval SERIAL(applyTime) = 1_visible;
   bool SERIAL(fragile) = false;
   optional<Effect> SERIAL(effect);
+  optional<AssembledMinion> SERIAL(assembledMinion);
   int SERIAL(uses) = -1;
   bool SERIAL(usedUpMsg) = false;
   bool SERIAL(displayUses) = false;
   bool SERIAL(effectDescription) = true;
   vector<LastingOrBuff> SERIAL(equipedEffect);
   optional<CompanionInfo> SERIAL(equipedCompanion);
-  optional<LastingOrBuff> SERIAL(ownedEffect);
+  vector<LastingOrBuff> SERIAL(ownedEffect);
   optional<string> SERIAL(applyMsgFirstPerson);
   optional<string> SERIAL(applyMsgThirdPerson);
   pair<string, string> SERIAL(applyVerb) = {"apply", "applies"};
@@ -87,13 +91,14 @@ class ItemAttributes {
   WeaponInfo SERIAL(weaponInfo);
   vector<pair<int, ItemPrefix>> SERIAL(genPrefixes);
   vector<string> SERIAL(prefixes);
+  vector<string> SERIAL(suffixes);
   optional<ItemUpgradeInfo> SERIAL(upgradeInfo);
   int SERIAL(maxUpgrades) = 3;
   vector<ItemUpgradeType> SERIAL(upgradeType);
   optional<string> SERIAL(ingredientType);
   Range SERIAL(wishedCount) = Range(1, 2);
   vector<SpellId> SERIAL(equipedAbility);
-  map<AttrType, pair<int, CreaturePredicate>> SERIAL(specialAttr);
+  HashMap<AttrType, pair<int, CreaturePredicate>> SERIAL(specialAttr);
   vector<StorageId> SERIAL(storageIds);
   optional<Effect> SERIAL(carriedTickEffect);
   CostInfo SERIAL(craftingCost) = CostInfo::noCost();
@@ -104,4 +109,4 @@ class ItemAttributes {
 
 static_assert(std::is_nothrow_move_constructible<ItemAttributes>::value, "T should be noexcept MoveConstructible");
 
-CEREAL_CLASS_VERSION(ItemAttributes, 1)
+CEREAL_CLASS_VERSION(ItemAttributes, 2)

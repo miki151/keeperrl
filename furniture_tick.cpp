@@ -92,20 +92,6 @@ static void handle(const FurnitureTickTypes::Pit, Position position, Furniture* 
           return;
         }
 }
-
-static void handle(const FurnitureTickTypes::SetFurnitureOnFire, Position pos, Furniture* furniture) {
-  auto handle = [] (const Position& pos) {
-    for (auto& f : pos.getFurniture())
-      if (f->getFire())
-        pos.modFurniture(f->getLayer())->fireDamage(pos, true);
-  };
-  for (auto& v : pos.neighbors8())
-    if (Random.roll(30))
-      handle(v);
-  if (Random.roll(10))
-    handle(pos);
-}
-
 static void handle(const Effect& effect, Position pos, Furniture* furniture) {
   effect.apply(pos, furniture->getCreator());
 }

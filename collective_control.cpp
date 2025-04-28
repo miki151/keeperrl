@@ -19,7 +19,7 @@ const vector<Creature*>& CollectiveControl::getCreatures() const {
   return collective->getCreatures();
 }
 
-void CollectiveControl::onMemberKilled(const Creature* victim, const Creature* killer) {
+void CollectiveControl::onMemberKilledOrStunned(Creature* victim, const Creature* killer) {
 }
 
 void CollectiveControl::onOtherKilled(const Creature* victim, const Creature* killer) {

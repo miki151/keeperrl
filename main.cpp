@@ -42,7 +42,6 @@
 #include "audio_device.h"
 #include "sokoban_input.h"
 #include "keybinding_map.h"
-#include "player_role.h"
 #include "campaign_type.h"
 #include "dummy_view.h"
 #include "sound.h"
@@ -58,6 +57,7 @@
 #include "layout_renderer.h"
 #include "unlocks.h"
 #include "steam_input.h"
+#include "steam_achievements.h"
 
 #include "stack_printer.h"
 
@@ -138,12 +138,14 @@ static po::parser getCommandLineFlags() {
   flags["layout_size"].type(po::string).description("Size of the generated map layout");
   flags["layout_name"].type(po::string).description("Name of layout to generate");
   flags["stderr"].description("Log to stderr");
+  flags["console"].description("Attach windows console");
   flags["nolog"].description("No logging");
+  flags["no_crash_reports"].description("Don't intercept game crashes and send crash reports to the developer");
   flags["free_mode"].description("Run in free ascii mode");
   flags["gen_z_levels"].type(po::string).description("Generate and print z-level types for a given keeper");
 #ifndef RELEASE
   flags["quick_game"].description("Skip main menu and load the last save file or start a single map game");
-  flags["new_game"].description("Skip main menu and start a single map game");
+  flags["new_game"].type(po::string).description("Skip main menu and start a single map game");
   flags["max_turns"].type(po::i32).description("Quit the game after a given max number of turns");
 #endif
   return flags;
@@ -167,14 +169,15 @@ void onException() {
 }
 
 int main(int argc, char* argv[]) {
-  initializeMiniDump();
-  std::set_terminate(onException);
-  setInitializedStatics();
-  if (argc > 1)
-    attachConsole();
   po::parser flags = getCommandLineFlags();
   if (!flags.parseArgs(argc, argv))
     return -1;
+  if (!flags["no_crash_reports"].was_set())
+    initializeMiniDump();
+  std::set_terminate(onException);
+  setInitializedStatics();
+  if (flags["console"].was_set())
+    attachConsole();
   return keeperMain(flags);
 }
 
@@ -216,6 +219,13 @@ struct AppConfig {
     } else
       USER_FATAL << "Config value not found: " << key;
     fail();
+  }
+
+  bool is_true(const char* key) {
+    if (auto value = getReferenceMaybe(values, key))
+      if (auto ret = fromStringSafe<int>(*value))
+        return *ret > 0;
+    return false;
   }
 
   private:
@@ -260,12 +270,14 @@ static int keeperMain(po::parser& commandLineFlags) {
     testAll();
     return 0;
   }
+  if (commandLineFlags["new_game"].was_set())
+    USER_CHECK(!commandLineFlags["new_game"].get().string.empty()) << "Please enter keeper name";
   DirectoryPath dataPath([&]() -> string {
     if (commandLineFlags["data_dir"].was_set())
       return commandLineFlags["data_dir"].get().string;
     else
       return DATA_DIR;
-  }());  
+  }());
   auto freeDataPath = dataPath.subdirectory("data_free");
   auto paidDataPath = dataPath.subdirectory("data");
   auto contribDataPath = dataPath.subdirectory("data_contrib");
@@ -295,13 +307,16 @@ static int keeperMain(po::parser& commandLineFlags) {
     maxTurns = commandLineFlags["max_turns"].get().i32;
   Clock clock(!!maxTurns);
   userPath.createIfDoesntExist();
-  auto settingsPath = userPath.file("options.txt");
+  auto settingsPath = userPath.file("options_v1_0.txt");
   auto userKeysPath = userPath.file("keybindings.txt");
+  auto highscoresPath = userPath.file("highscores_v1_0.dat");
   if (commandLineFlags["restore_settings"].was_set()) {
     settingsPath.erase();
     userKeysPath.erase();
+    highscoresPath.erase();
   }
   unique_ptr<MySteamInput> steamInput;
+  unique_ptr<SteamAchievements> steamAchievements;
   #ifdef RELEASE
     AppConfig appConfig(dataPath.file("appconfig.txt"));
   #else
@@ -314,6 +329,7 @@ static int keeperMain(po::parser& commandLineFlags) {
       if (steam::initAPI()) {
         steamClient.emplace();
         steamInput->init();
+        steamAchievements = make_unique<SteamAchievements>();
         INFO << "\n" << steamClient->info();
       }
   #ifdef RELEASE
@@ -324,25 +340,26 @@ static int keeperMain(po::parser& commandLineFlags) {
   #endif
   KeybindingMap keybindingMap(freeDataPath.file("default_keybindings.txt"), userKeysPath);
   Options options(settingsPath, &keybindingMap, steamInput.get());
+  if (options.getBoolValue(OptionId::DPI_AWARE))
+    dpiAwareness();
   Random.init(int(time(nullptr)));
   auto installId = getInstallId(userPath.file("installId.txt"), Random);
   if (steamInput->isRunningOnDeck())
     installId += "_deck";
-  SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
   auto modsDir = userPath.subdirectory(gameConfigSubdir);
   auto allUnlocked = Unlocks::allUnlocked();
   if (commandLineFlags["gen_z_levels"].was_set()) {
     MainLoop loop(nullptr, nullptr, nullptr, paidDataPath, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr,
-        &allUnlocked, 0, "");
+        &allUnlocked, nullptr, 0, "");
     loop.genZLevels(commandLineFlags["gen_z_levels"].get().string);
     exit(0);
   }
   if (commandLineFlags["layout_name"].was_set()) {
     USER_CHECK(commandLineFlags["layout_size"].was_set()) << "Need to specify layout_size option";
     MainLoop loop(nullptr, nullptr, nullptr, paidDataPath, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr,
-        &allUnlocked, 0, "");
+        &allUnlocked, nullptr, 0, "");
     generateMapLayout(loop,
         commandLineFlags["layout_name"].get().string,
         freeDataPath.file("glyphs.txt"),
@@ -355,12 +372,12 @@ static int keeperMain(po::parser& commandLineFlags) {
   const auto modVersion = appConfig.get<string>("mod_version");
   const auto saveVersion = appConfig.get<int>("save_version");
   FileSharing fileSharing(uploadUrl, modVersion, saveVersion, options, installId);
-  Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
+  Highscores highscores(highscoresPath);
   if (commandLineFlags["worldgen_test"].was_set()) {
     ofstream output("worldgen_out.txt");
     UserInfoLog.addOutput(DebugOutput::toStream(output));
     MainLoop loop(nullptr, &highscores, &fileSharing, paidDataPath, freeDataPath, userPath, modsDir, &options, nullptr,
-        &sokobanInput, nullptr, &allUnlocked, 0, "");
+        &sokobanInput, nullptr, &allUnlocked, nullptr, 0, "");
     vector<string> types;
     if (commandLineFlags["worldgen_maps"].was_set())
       types = split(commandLineFlags["worldgen_maps"].get().string, {','});
@@ -369,7 +386,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   auto battleTest = [&] (View* view, TileSet* tileSet) {
     MainLoop loop(view, &highscores, &fileSharing, paidDataPath, freeDataPath, userPath, modsDir, &options, nullptr,
-        &sokobanInput, tileSet,  &allUnlocked, 0, "");
+        &sokobanInput, tileSet,  &allUnlocked, nullptr, 0, "");
     auto level = commandLineFlags["battle_level"].get().string;
     auto numRounds = commandLineFlags["battle_rounds"].was_set() ? commandLineFlags["battle_rounds"].get().i32 : 1;
     try {
@@ -384,7 +401,7 @@ static int keeperMain(po::parser& commandLineFlags) {
         auto enemyId = commandLineFlags["battle_enemy"].get().string;
         auto enemy2Id = commandLineFlags["battle_enemy_two"].get().string;
         if (enemyId == "campaign")
-          loop.campaignBattleText(numRounds, FilePath::fromFullPath(level), EnemyId(enemy2Id.data()), VillainGroup::EVIL_KEEPER);
+          loop.campaignBattleText(numRounds, FilePath::fromFullPath(level), EnemyId(enemy2Id.data()), VillainGroup("EVIL_KEEPER"));
         else
           loop.campaignBattleText(numRounds, FilePath::fromFullPath(level), EnemyId(enemy2Id.data()), EnemyId(enemyId.data()));
       }
@@ -401,7 +418,8 @@ static int keeperMain(po::parser& commandLineFlags) {
       contribDataPath,
       freeDataPath.file("images/mouse_cursor.png"),
       freeDataPath.file("images/mouse_cursor2.png"),
-      freeDataPath.file("images/icon.png"));
+      freeDataPath.file("images/icon.png"),
+      freeDataPath.file("images/map_font2.png"));
   initializeGLExtensions();
 
 #ifndef RELEASE
@@ -411,7 +429,22 @@ static int keeperMain(po::parser& commandLineFlags) {
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserInfoLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   atomic<bool> splashDone { false };
-  GuiFactory guiFactory(renderer, &clock, &options, freeDataPath.subdirectory("images"));
+  SoundLibrary* soundLibrary = nullptr;
+  auto loadThread = makeThread([&] {
+    if (tilesPresent && !audioError) {
+      soundLibrary = new SoundLibrary(audioDevice, paidDataPath.subdirectory("sound"));
+      options.addTrigger(OptionId::SOUND, [&soundLibrary](int volume) {
+        soundLibrary->setVolume(volume);
+        soundLibrary->playSound(SoundId("SPELL_DECEPTION"));
+      });
+      soundLibrary->setVolume(options.getIntValue(OptionId::SOUND));
+    } else
+      soundLibrary = new SoundLibrary();
+    splashDone = true;
+  });
+  showLogoSplash(renderer, freeDataPath.file("images/succubi.png"), splashDone);
+  loadThread.join();
+  GuiFactory guiFactory(renderer, &clock, &options, soundLibrary, freeDataPath.subdirectory("images"));
   TileSet tileSet(paidDataPath.subdirectory("images"), modsDir, freeDataPath.subdirectory("ui"));
   renderer.setTileSet(&tileSet);
   unique_ptr<fx::FXManager> fxManager;
@@ -430,26 +463,12 @@ static int keeperMain(po::parser& commandLineFlags) {
       fxViewManager = make_unique<FXViewManager>(fxManager.get(), fxRenderer.get());
     }
   }
-  auto loadThread = makeThread([&] {
-    if (tilesPresent) {
-      if (!audioError) {
-        soundLibrary = new SoundLibrary(audioDevice, paidDataPath.subdirectory("sound"));
-        options.addTrigger(OptionId::SOUND, [soundLibrary](int volume) {
-          soundLibrary->setVolume(volume);
-          soundLibrary->playSound(SoundId::SPELL_DECEPTION);
-        });
-        soundLibrary->setVolume(options.getIntValue(OptionId::SOUND));
-      }
-    }
-    splashDone = true;
-  });
-  showLogoSplash(renderer, freeDataPath.file("images/succubi.png"), splashDone);
-  loadThread.join();
   FileSharing bugreportSharing("http://retired.keeperrl.com/~bugreports", modVersion, saveVersion, options, installId);
   bugreportSharing.downloadPersonalMessage();
   unique_ptr<View> view;
   view.reset(WindowView::createDefaultView(
-      {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary, &bugreportSharing, userPath, installId}));
+      {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary, &bugreportSharing, userPath, installId,
+          appConfig.is_true("debug_options")}));
 #ifndef RELEASE
   InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
 #endif
@@ -465,14 +484,16 @@ static int keeperMain(po::parser& commandLineFlags) {
   options.addTrigger(OptionId::MUSIC, [&jukebox](int volume) { jukebox.setCurrentVolume(volume); });
   Unlocks unlocks(&options, userPath.file("unlocks.txt"));
   MainLoop loop(view.get(), &highscores, &fileSharing, paidDataPath, freeDataPath, userPath, modsDir, &options, &jukebox,
-      &sokobanInput, &tileSet, &unlocks, saveVersion, modVersion);
+      &sokobanInput, &tileSet, &unlocks, steamAchievements.get(), saveVersion, modVersion);
   try {
     if (audioError)
       USER_INFO << "Failed to initialize audio. The game will be started without sound. " << *audioError;
     if (commandLineFlags["quick_game"].was_set())
-      loop.launchQuickGame(maxTurns, true);
-    if (commandLineFlags["new_game"].was_set())
-      loop.launchQuickGame(maxTurns, false);
+      loop.launchQuickGame(maxTurns, none);
+    if (commandLineFlags["new_game"].was_set()) {
+      USER_CHECK(!commandLineFlags["new_game"].get().string.empty());
+      loop.launchQuickGame(maxTurns, commandLineFlags["new_game"].get().string);
+    }
     loop.start(tilesPresent);
   } catch (GameExitException ex) {
   }

@@ -37,13 +37,14 @@ class Renderer {
   static constexpr int nominalSize = 24;
 
   Renderer(Clock*, MySteamInput*, const string& windowTile, const DirectoryPath& fontPath,
-      const FilePath& cursorPath, const FilePath& clickedCursorPath, const FilePath& iconPath);
+      const FilePath& cursorPath, const FilePath& clickedCursorPath, const FilePath& iconPath,
+      const FilePath& mapFontPath);
   void setFullscreen(bool);
   void setFullscreenMode(int);
   void setVsync(bool);
   void setFpsLimit(int);
-  void setZoom(int);
-  int getZoom();
+  void setZoom(double);
+  double getZoom();
   void enableCustomCursor(bool);
   void initialize();
   bool isFullscreen();
@@ -109,7 +110,7 @@ class Renderer {
   void startMonkey();
   bool isMonkey();
 
-  void playVideo(const string& path, bool withAudio);
+  void playVideo(const string& path, int volume); // volume 0-100
 
   static void putPixel(SDL::SDL_Surface*, Vec2, Color);
   void addTilesDirectory(const DirectoryPath&, Vec2 size);
@@ -122,8 +123,7 @@ class Renderer {
 
   private:
   friend class Texture;
-  optional<Texture> textTexture;
-  optional<Texture> logoTexture;
+  optional<Texture> mapFontTexture;
   Renderer(const Renderer&);
   struct AnimationInfo {
     Texture tex;
@@ -155,7 +155,7 @@ class Renderer {
   int fullscreenMode;
   int fpsLimit = 0;
   uint64_t frameStart = 0;
-  int zoom = 1;
+  double zoom = 1;
   bool cursorEnabled = true;
   void reloadCursors();
   FilePath cursorPath;

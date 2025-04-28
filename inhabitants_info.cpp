@@ -38,10 +38,10 @@ auto InhabitantsInfo::generateCreatures(RandomGen& random, CreatureFactory* fact
 namespace {
 struct LeaderInfo {
   vector<CreatureId> SERIAL(id);
-  EnumMap<ExperienceType, int> SERIAL(baseLevelIncrease);
-  EnumMap<ExperienceType, int> SERIAL(expLevelIncrease);
+  int SERIAL(combatExperience) = 0;
+  HashMap<AttrType, int> SERIAL(expLevelIncrease);
   vector<ItemType> SERIAL(inventory);
-  SERIALIZE_ALL(NAMED(id), OPTION(baseLevelIncrease), OPTION(expLevelIncrease), OPTION(inventory))
+  SERIALIZE_ALL(NAMED(id), OPTION(combatExperience), OPTION(expLevelIncrease), OPTION(inventory))
 };
 }
 
@@ -52,7 +52,7 @@ void InhabitantsInfo::serialize(PrettyInputArchive& ar1, unsigned) {
   if (this->leader.count.contains(1))
     leader = LeaderInfo {
       this->leader.all.transform([](auto& elem) { return elem.second;}),
-      this->leader.baseLevelIncrease,
+      this->leader.combatExperience,
       this->leader.expLevelIncrease,
       this->leader.inventory
     };
@@ -61,7 +61,7 @@ void InhabitantsInfo::serialize(PrettyInputArchive& ar1, unsigned) {
   if (leader)
     this->leader = CreatureList(1, leader->id)
       .increaseExpLevel(leader->expLevelIncrease)
-      .increaseBaseLevel(leader->baseLevelIncrease)
+      .setCombatExperience(leader->combatExperience)
       .addInventory(leader->inventory);
   else
    this->leader = CreatureList();

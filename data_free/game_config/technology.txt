@@ -27,6 +27,17 @@
 "demonology"               { "Build demon shrines and attract demons."                      {"advanced sorcery"}}
 "worship"                  { "Build angel shrines and attract angels."}
 "automatons"               { "Build mechanical creatures that work and fight for you."}
+"automated crafting"       { "Build crafting and repair automaton arms to automate your production and repair." {"automatons"}}
 "advanced automatons"      { "Build advanced mechanical creatures that work and fight for you." {"automatons"}}
 "automaton brains"         { "Build automatons that behave like humanoids."                 {"advanced automatons"}}
 "aerodynamics"             { "Build flying automatons."                                     {"advanced automatons"}}
+"explosives"               { "Build exploding automatons."                                  {"advanced automatons"}}
+"luxury"                   { "Allow your minions to reflect the Lord's glory." }
+"small temptations"        { "Permit a little indulgence to stay closer to the flock."   {}}
+"big temptations"          { "Truly understand temptation to be able to preach against it."   {"small temptations"}}
+"slavery"                  { "Acquire more obedient hands to tend your flock."            {}}
+"dark crafts"              { "Become more familiar with the tools that evil employs."      {"luxury"}}
+"advanced theology"        { "Research more advanced liturgies to ask the Lord for favors." }
+"expert theology"          { "Research extremely advanced liturgies to ask the Lord for favors." {"advanced theology"}}
+"worship of Adoxie"        { "Acknowledge dark powers to strengthen your faith and protect your minions from their influence."
+    {"dark crafts"}}

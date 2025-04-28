@@ -28,5 +28,21 @@ struct TileInfo {
   optional<ViewId> SERIAL(connectionId);
   optional<FXInfo> SERIAL(fx);
   optional<Vec2> SERIAL(weaponOrigin);
-  SERIALIZE_ALL(NAMED(viewId), NAMED(symbol), NAMED(color), OPTION(isSymbolFont), NAMED(sprite), NAMED(spriteColor), OPTION(roundShadow), OPTION(wallShadow), OPTION(wallConnections), NAMED(mountainSides), NAMED(waterSides), NAMED(background), OPTION(roadConnections), OPTION(extraBorders), OPTION(moveUp), OPTION(animated), OPTION(canMirror), NAMED(southSide), NAMED(connectionId), OPTION(highlightAbove), NAMED(fx), NAMED(weaponOrigin))
+  struct Connection {
+    string SERIAL(spriteName);
+    vector<Dir> SERIAL(dirs);
+    SERIALIZE_ALL(spriteName, dirs)
+  };
+  vector<Connection> SERIAL(connections);
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar(NAMED(viewId), NAMED(symbol), NAMED(color), OPTION(isSymbolFont), NAMED(sprite), NAMED(spriteColor));
+    ar(OPTION(roundShadow), OPTION(wallShadow), OPTION(wallConnections), NAMED(mountainSides), NAMED(waterSides));
+    ar(NAMED(background), OPTION(roadConnections), OPTION(extraBorders), OPTION(moveUp), OPTION(animated));
+    ar(OPTION(canMirror), NAMED(southSide), NAMED(connectionId), OPTION(highlightAbove), NAMED(fx), NAMED(weaponOrigin));
+    if (version >= 1)
+      ar(OPTION(connections));
+  }
 };
+
+CEREAL_CLASS_VERSION(TileInfo, 1)

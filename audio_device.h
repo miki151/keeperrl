@@ -61,6 +61,7 @@ class AudioDevice {
   optional<string> initialize();
   ~AudioDevice();
   void play(const SoundBuffer&, double volume, double pitch = 1);
+  milliseconds getDuration(const SoundBuffer&);
 
   private:
   friend SoundStream;

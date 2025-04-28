@@ -25,7 +25,7 @@ class Texture {
   public:
   Texture(const Texture&) = delete;
   Texture(Texture&&) noexcept;
-  Texture& operator=(Texture&&);
+  Texture& operator=(Texture&&) noexcept;
   Texture(const FilePath& path);
   Texture(const FilePath& path, int px, int py, int w, int h);
   Texture(Color, int width, int height);

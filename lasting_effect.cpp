@@ -125,6 +125,10 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
     case LastingEffect::SWARMER:
       c->getPosition().addSwarmer();
       break;
+    case LastingEffect::COLLAPSED:
+      if (c->getSteed())
+        c->tryToDismount();
+      break;
     default:
       break;
   }
@@ -682,6 +686,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::OIL: return "Covered in oil"_bad;
     case LastingEffect::TURNED_OFF: return "Turned off"_bad;
     case LastingEffect::AGGRAVATES: return "Aggravates enemies"_bad;
+    case LastingEffect::LOCKED_POSITION: return "Disabled position swap"_bad;
   }
 }
 
@@ -707,14 +712,15 @@ optional<std::string> LastingEffects::getBadAdjective(LastingEffect effect) {
   return none;
 }
 
-bool LastingEffects::losesControl(const Creature* c) {
-  return c->isAffected(LastingEffect::SLEEP)
-      || c->isAffected(LastingEffect::TURNED_OFF)
-      || c->isAffected(LastingEffect::STUNNED);
+bool LastingEffects::losesControl(const Creature* c, bool homeSite) {
+  return c->isAffected(LastingEffect::TURNED_OFF)
+      || c->isAffected(LastingEffect::STUNNED)
+      || (homeSite && c->isAffected(LastingEffect::SLEEP));
 }
 
 bool LastingEffects::doesntMove(const Creature* c) {
-  return losesControl(c)
+  return losesControl(c, false)
+      || c->isAffected(LastingEffect::SLEEP)
       || c->isAffected(LastingEffect::FROZEN);
 }
 
@@ -746,12 +752,6 @@ bool LastingEffects::inheritsFromSteed(LastingEffect e) {
 }
 
 double LastingEffects::modifyCreatureDefense(const Creature* c, LastingEffect e, double defense, AttrType damageAttr) {
-  auto multiplyFor = [&](AttrType attr, double m) {
-    if (damageAttr == attr)
-      return defense * m;
-    else
-      return defense;
-  };
   double baseMultiplier = 1.3;
   switch (e) {
     case LastingEffect::CAPTURE_RESISTANCE:
@@ -784,6 +784,10 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
   PROFILE_BLOCK("LastingEffects::tick");
   auto factory = c->getGame()->getContentFactory();
   switch (effect) {
+    case LastingEffect::ENTANGLED:
+      if (Random.chance(0.002 * max(15, c->getAttr(AttrType("DAMAGE")))))
+        c->removeEffect(LastingEffect::ENTANGLED);
+      break;
     case LastingEffect::SPYING: {
       Collective* enemy = nullptr;
       optional<ViewId> enemyId;
@@ -815,7 +819,14 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
       break;
     }
     case LastingEffect::ON_FIRE:
-      c->getPosition().fireDamage(5);
+      c->getBody().bleed(c, 0.03);
+      c->secondPerson(PlayerMessage("You are burning alive!", MessagePriority::HIGH));
+      c->thirdPerson(PlayerMessage(c->getName().the() + " is burning alive.", MessagePriority::NORMAL));
+      if (c->getBody().getHealth() <= 0) {
+        c->verb("burn", "burns", "to death");
+        c->dieWithLastAttacker();
+        return true;
+      }
       break;
     case LastingEffect::PLAGUE:
       if (!c->isAffected(LastingEffect::FROZEN)) {
@@ -825,7 +836,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
         for (auto pos : c->getPosition().neighbors8())
           if (auto other = pos.getCreature())
             if (Random.roll(10)) {
-              other->addEffect(LastingEffect::PLAGUE, getDuration(c, LastingEffect::PLAGUE));
+              other->addEffect(LastingEffect::PLAGUE, getDuration(LastingEffect::PLAGUE));
             }
         if (suffers) {
           if (c->getBody().getHealth() > 0.5 || canDie) {
@@ -909,7 +920,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
           if (buff.second.hatedGroupName)
             hateEffects.push_back(buff.first);
         for (auto& buff : hateEffects)
-          if (c->isAffected(buff) || (c->getAttributes().getHatedByEffect() != buff && 
+          if (c->isAffected(buff) || (c->getAttributes().getHatedByEffect() != buff &&
               Random.roll(10 * hateEffects.size()))) {
             hatedGroup = buff;
             break;
@@ -920,20 +931,26 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
         for (auto other : others)
           if (other != c && !other->isAffected(LastingEffect::SLEEP)) {
             if (hatedGroup && *hatedGroup == other->getAttributes().getHatedByEffect()) {
-              other->addMorale(-0.05);
               other->you(MsgType::ARE, "offended");
+              other->addEffect(BuffId("DEF_DEBUFF"), 100_visible);
             } else if (other->getBody().hasBrain(factory)) {
               other->verb("laugh", "laughs");
-              other->addMorale(0.01);
+              other->addEffect(BuffId("HIGH_MORALE"), 100_visible);
             } else
               other->verb("don't", "doesn't", "laugh");
           }
       }
       break;
     case LastingEffect::BAD_BREATH:
-      for (auto pos : c->getPosition().getRectangle(Rectangle::centered(7)))
-        if (auto other = pos.getCreature())
-          other->addMorale(-0.002);
+      if (Random.roll(50)) {
+        c->getPosition().globalMessage("The smell!");
+        for (auto pos : c->getPosition().getRectangle(Rectangle::centered(7)))
+          if (auto other = pos.getCreature())
+            if (Random.roll(5)) {
+              other->verb("cover your", "covers "_s + his(other->getAttributes().getGender()), "nose");
+              other->addEffect(BuffId("DEF_DEBUFF"), 10_visible);
+            }
+      }
       break;
     case LastingEffect::DISAPPEAR_DURING_DAY:
       if (c->getGame()->getSunlightInfo().getState() == SunlightState::DAY)
@@ -1006,6 +1023,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::CAN_DANCE: return "dancing";
     case LastingEffect::STEED: return "mounting";
     case LastingEffect::RIDER: return "riding";
+    case LastingEffect::LOCKED_POSITION: return "disabled position swap";
   }
 }
 
@@ -1060,7 +1078,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::SPYING: return "The creature can infiltrate enemy lines.";
     case LastingEffect::LIFE_SAVED: return "Prevents the death of the creature.";
     case LastingEffect::UNSTABLE: return "Creature may become insane after witnessing the death of an ally.";
-    case LastingEffect::OIL: return "Creature may be set on fire.";
+    case LastingEffect::OIL: return "Creature is covered in oil and may be set on fire.";
     case LastingEffect::SWARMER: return "Grants damage and defense bonus for every other swarmer in vicinity.";
     case LastingEffect::PSYCHIATRY: return "Creature won't be attacked by insane creatures.";
     case LastingEffect::TURNED_OFF: return "Creature requires more automaton engines built.";
@@ -1071,6 +1089,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::CAN_DANCE: return "Can dance all night long.";
     case LastingEffect::STEED: return "Can carry a rider.";
     case LastingEffect::RIDER: return "Can ride a steed.";
+    case LastingEffect::LOCKED_POSITION: return "Creatures can't swap position with this automaton.";
   }
 }
 
@@ -1144,20 +1163,6 @@ int LastingEffects::getPrice(LastingEffect e) {
     default:
       return 24;
   }
-}
-
-double LastingEffects::getMoraleIncrease(const Creature* c, optional<GlobalTime> time) {
-  PROFILE;
-  double ret = 0;
-  if (c->isAffected(LastingEffect::RESTED, time))
-    ret += 0.1;
-  else
-    ret -= 0.1;
-  if (c->isAffected(LastingEffect::SATIATED, time))
-    ret += 0.1;
-  else
-    ret -= 0.1;
-  return ret;
 }
 
 double LastingEffects::getCraftingSpeed(const Creature* c) {
@@ -1357,11 +1362,7 @@ bool LastingEffects::shouldEnemyApply(const Creature* victim, LastingEffect effe
   return ::getAdjective(effect).bad;
 }
 
-static TimeInterval entangledTime(int strength) {
-  return TimeInterval(max(5, 30 - strength / 2));
-}
-
-TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
+TimeInterval LastingEffects::getDuration(LastingEffect e) {
   PROFILE;
   switch (e) {
     case LastingEffect::PLAGUE:
@@ -1378,7 +1379,8 @@ TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
     case LastingEffect::WARNING:
     case LastingEffect::TELEPATHY:
     case LastingEffect::ENTANGLED:
-      return entangledTime(c->getAttr(AttrType("DAMAGE")));
+    case LastingEffect::ON_FIRE:
+      return 30_visible;
     case LastingEffect::HALLU:
     case LastingEffect::SLOWED:
     case LastingEffect::SPEED:

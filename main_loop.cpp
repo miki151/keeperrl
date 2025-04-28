@@ -24,7 +24,6 @@
 #include "save_file_info.h"
 #include "creature.h"
 #include "campaign_builder.h"
-#include "player_role.h"
 #include "campaign_type.h"
 #include "game_save_type.h"
 #include "exit_info.h"
@@ -58,6 +57,7 @@
 #include "unlocks.h"
 #include "scripted_ui_data.h"
 #include "version.h"
+#include "collective.h"
 
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
@@ -66,10 +66,10 @@
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& paidDataPath,
     const DirectoryPath& freePath, const DirectoryPath& uPath, const DirectoryPath& modsDir, Options* o, Jukebox* j,
-    SokobanInput* soko, TileSet* tileSet, Unlocks* unlocks, int sv, string modVersion)
+    SokobanInput* soko, TileSet* tileSet, Unlocks* unlocks, SteamAchievements* achievements, int sv, string modVersion)
       : view(v), paidDataPath(paidDataPath), dataFreePath(freePath), userPath(uPath), modsDir(modsDir), options(o),
         jukebox(j), highscores(h), fileSharing(fSharing), sokobanInput(soko), tileSet(tileSet), saveVersion(sv),
-        modVersion(modVersion), unlocks(unlocks) {
+        modVersion(modVersion), unlocks(unlocks), steamAchievements(achievements) {
   CHECK(!!unlocks);
 }
 
@@ -98,7 +98,6 @@ bool MainLoop::isCompatible(int loadedVersion) {
 static string getSaveSuffix(GameSaveType t) {
   switch (t) {
     case GameSaveType::KEEPER: return ".kep";
-    case GameSaveType::ADVENTURER: return ".adv";
     case GameSaveType::RETIRED_SITE: return ".sit";
     case GameSaveType::RETIRED_CAMPAIGN: return ".cam";
     case GameSaveType::WARLORD: return ".war";
@@ -132,11 +131,16 @@ optional<T> MainLoop::loadFromFile(const FilePath& filename) {
 }
 
 void MainLoop::saveGame(PGame& game, const FilePath& path) {
-  CompressedOutput out(path.getPath());
-  string name = game->getGameDisplayName();
-  SavedGameInfo savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods());
-  out.getArchive() << saveVersion << name << savedInfo;
-  out.getArchive() << game;
+  FilePath tmpPath = path.withSuffix(".tmp");
+  {
+    CompressedOutput out(tmpPath.getPath());
+    string name = game->getGameDisplayName();
+    SavedGameInfo savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods());
+    out.getArchive() << saveVersion << name << savedInfo;
+    out.getArchive() << game;
+  }
+  tmpPath.copyTo(path);
+  tmpPath.erase();
 }
 
 struct RetiredModelInfo {
@@ -158,22 +162,21 @@ optional<RetiredModelInfo> MainLoop::loadRetiredModelFromFile(const FilePath& pa
   return loadFromFile<RetiredModelInfo>(path);
 }
 
-void MainLoop::saveMainModel(PGame& game, const FilePath& modelPath, const FilePath& warlordPath) {
-  CompressedOutput modelOut(modelPath.getPath());
-  string name = game->getGameDisplayName();
-  SavedGameInfo savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods());
-  modelOut.getArchive() << saveVersion << name << savedInfo;
-  RetiredModelInfoWithReference info {
-    game->getMainModel().giveMeSharedPointer(),
-    game->getContentFactory()
-  };
-  modelOut.getArchive() << info;
-  if (!savedInfo.retiredEnemyInfo) {
-    CompressedOutput warlordOut(warlordPath.getPath());
-    auto warlordInfo = game->getWarlordInfo();
-    game->getMainModel()->discardForRetirement();
-    warlordOut.getArchive() << saveVersion << name << savedInfo << warlordInfo;
+void MainLoop::saveMainModel(PGame& game, const FilePath& modelPath) {
+  FilePath tmpPath = modelPath.withSuffix(".tmp");
+  {
+    CompressedOutput modelOut(tmpPath.getPath());
+    string name = game->getGameDisplayName();
+    SavedGameInfo savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods());
+    modelOut.getArchive() << saveVersion << name << savedInfo;
+    RetiredModelInfoWithReference info {
+      game->getMainModel().giveMeSharedPointer(),
+      game->getContentFactory()
+    };
+    modelOut.getArchive() << info;
   }
+  tmpPath.copyTo(modelPath);
+  tmpPath.erase();
 }
 
 int MainLoop::getSaveVersion(const SaveFileInfo& save) {
@@ -215,24 +218,23 @@ void MainLoop::saveUI(PGame& game, GameSaveType type) {
     int saveTime = game->getMainModel()->getSaveProgressCount();
     doWithSplash("Retiring site...", saveTime,
         [&] (ProgressMeter& meter) {
-          Square::progressMeter = &meter;
+          Level::progressMeter = &meter;
           if (!game->getSavedGameInfo(tileSet->getSpriteMods()).retiredEnemyInfo)
             // only upload if it's not a retired enemy
             uploadFun = [this, path, name = game->getGameDisplayName(),
                 savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods())] {
               uploadFile(path, name, savedInfo);
             };
-          auto warlordPath = getSavePath(game, GameSaveType::WARLORD);
-          saveMainModel(game, path, warlordPath);
+          saveMainModel(game, path);
         });
   } else {
     int saveTime = game->getSaveProgressCount();
     doWithSplash(type == GameSaveType::AUTOSAVE ? "Autosaving" : "Saving game...", saveTime,
         [&] (ProgressMeter& meter) {
-        Square::progressMeter = &meter;
+        Level::progressMeter = &meter;
         MEASURE(saveGame(game, path), "saving time")});
   }
-  Square::progressMeter = nullptr;
+  Level::progressMeter = nullptr;
   if (uploadFun)
     uploadFun();
 }
@@ -252,9 +254,9 @@ void MainLoop::bugReportSave(PGame& game, FilePath path) {
   int saveTime = game->getSaveProgressCount();
   doWithSplash("Saving game...", saveTime,
       [&] (ProgressMeter& meter) {
-      Square::progressMeter = &meter;
+      Level::progressMeter = &meter;
       MEASURE(saveGame(game, path), "saving time")});
-  Square::progressMeter = nullptr;
+  Level::progressMeter = nullptr;
 }
 
 template <class T>
@@ -268,7 +270,7 @@ static void dumpMemUsage(const T& elem) {
 }
 
 MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAutoSave,
-    function<optional<ExitCondition>(WGame)> exitCondition, milliseconds stepTimeMilli, optional<int> maxTurns) {
+    function<optional<ExitCondition>(Game*)> exitCondition, milliseconds stepTimeMilli, optional<int> maxTurns) {
   registerModPlaytime(true);
   OnExit on_exit([&]() {
     registerModPlaytime(false);
@@ -280,10 +282,10 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
     view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });
   DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
   Encyclopedia encyclopedia(game->getContentFactory());
-  game->initialize(options, highscores, view, fileSharing, &encyclopedia, unlocks);
-  doWithSplash("Initializing game...", 0,
+  game->initialize(options, highscores, view, fileSharing, &encyclopedia, unlocks, steamAchievements);
+  doWithSplash("Initializing game...", game->getAllModels().size(),
       [&] (ProgressMeter& meter) {
-        game->initializeModels();
+        game->initializeModels(meter);
       });
   Intervalometer meter(stepTimeMilli);
   Intervalometer pausingMeter(stepTimeMilli);
@@ -399,7 +401,7 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
 }
 
 PGame MainLoop::prepareTutorial(const ContentFactory* contentFactory) {
-  PGame game = loadGame(dataFreePath.file("tutorial.kep"));
+  PGame game = loadGame(dataFreePath.file("tutorial.kep"), "tutorial");
   if (game) {
     USER_CHECK(contentFactory->immigrantsData.count("tutorial"));
     Tutorial::createTutorial(*game, contentFactory);
@@ -469,12 +471,11 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
         options->setValue(OptionId::SUGGEST_TUTORIAL, 0);
       }
     }
-    auto avatarChoice = getAvatarInfo(view, contentFactory.keeperCreatures, contentFactory.adventurerCreatures,
-        &contentFactory, *unlocks);
+    auto avatarChoice = getAvatarInfo(view, contentFactory.keeperCreatures, &contentFactory, *unlocks, options);
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
       CampaignBuilder builder(view, random, options, contentFactory.villains, contentFactory.gameIntros, *avatar);
       tileSet->setTilePathsAndReload(getTilePathsForAllMods());
-      if (auto setup = builder.prepareCampaign(&contentFactory, bindMethod(&MainLoop::getRetiredGames, this),
+     if (auto setup = builder.prepareCampaign(&contentFactory, bindMethod(&MainLoop::getRetiredGames, this),
           CampaignType::FREE_PLAY,
           contentFactory.getCreatures().getNameGenerator()->getNext(NameGeneratorId("WORLD")))) {
         auto models = prepareCampaignModels(*setup, *avatar, random, &contentFactory);
@@ -482,7 +483,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
           contentFactory.merge(std::move(f));
         map<string, string> analytics {
           {"retired_villains", toString(models.numRetiredVillains)},
-          {"biome", setup->startingBiome.data()}
+          {"biome", setup->campaign.getBaseBiome().data()}
         };
         return Game::campaignGame(std::move(models.models), *setup, std::move(*avatar), std::move(contentFactory),
             std::move(analytics));
@@ -509,9 +510,24 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
 }
 
 void MainLoop::showCredits() {
-  ScriptedUIState uiState{};
   auto data = ScriptedUIDataElems::Record{};
-  view->scriptedUI("credits", data, uiState);
+  view->scriptedUI("credits", data);
+}
+
+void MainLoop::showAchievements() {
+  auto factory = createContentFactory(false);
+  auto data = ScriptedUIDataElems::List{};
+  for (auto& id : factory.achievementsOrder) {
+    auto& info = factory.achievements.at(id);
+    auto r = ScriptedUIDataElems::Record{};
+    r.elems["name"] = info.name;
+    r.elems["description"] = info.description;
+    r.elems["view_id"] = info.viewId;
+    if (unlocks->isAchieved(id))
+      r.elems["unlocked"] = "blabla"_s;
+    data.push_back(std::move(r));
+  }
+  view->scriptedUI("achievements", data);
 }
 
 const auto modVersionFilename = "version_info";
@@ -736,7 +752,7 @@ void MainLoop::showMods() {
       };
       for (auto& action : mod.actions)
         modInfo.elems[action] = getCallback(action);
-      if (mod.versionInfo.steamId != 0)
+      if (steamAchievements && mod.versionInfo.steamId != 0)
         modInfo.elems["show_workshop"] = ScriptedUIDataElems::Callback {
             [id = mod.versionInfo.steamId] {
               openUrl("https://steamcommunity.com/sharedfiles/filedetails/?id=" + toString(id));
@@ -755,8 +771,10 @@ void MainLoop::showMods() {
         return 2;
     };
     sort(allMods.begin(), allMods.end(), [getState](const ModInfo& m1, const ModInfo& m2) {
-      return std::forward_as_tuple(getState(m1), m1.name)
-           < std::forward_as_tuple(getState(m2), m2.name);
+      int m1up = -m1.upvotes;
+      int m2up = -m2.upvotes;
+      return std::forward_as_tuple(getState(m1), m1up, m1.name)
+           < std::forward_as_tuple(getState(m2), m2up, m2.name);
     });
     auto modLists = vector<ScriptedUIDataElems::List>(4);
     for (int i : All(allMods)) {
@@ -816,7 +834,7 @@ void MainLoop::playMenuMusic() {
 
 void MainLoop::considerGameEventsPrompt() {
   if (options->getIntValue(OptionId::GAME_EVENTS) == 1) {
-    if (view->yesOrNoPrompt("The imps would like to gather statistics while you're playing the game and send them anonymously to the developer. This would be very helpful in designing the game. Do you agree?"))
+    if (view->yesOrNoPrompt("The game would like to gather statistics while you're playing and send them anonymously to the developer. Do you agree?"))
       options->setValue(OptionId::GAME_EVENTS, 2);
     else
       options->setValue(OptionId::GAME_EVENTS, 0);
@@ -900,6 +918,7 @@ GameConfig MainLoop::getGameConfig(const vector<string>& modNames) const {
 ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
   ContentFactory ret;
   auto tryConfig = [&](const vector<string>& modNames) {
+    ret = ContentFactory();
     auto config = getGameConfig(modNames);
     return ret.readData(&config, modNames);
   };
@@ -936,25 +955,34 @@ vector<SaveFileInfo> MainLoop::getSaveOptions(const vector<GameSaveType>& games)
   return ret;
 }
 
-void MainLoop::launchQuickGame(optional<int> maxTurns, bool tryToLoad) {
+void MainLoop::launchQuickGame(optional<int> maxTurns, optional<string> keeperName) {
   PGame game;
   tileSet->clear();
   auto contentFactory = createContentFactory(true);
   if (tileSet)
     tileSet->setTilePaths(contentFactory.tilePaths);
   tileSet->loadTextures();
-  if (tryToLoad) {
-    auto files = getSaveOptions({GameSaveType::AUTOSAVE, GameSaveType::KEEPER, GameSaveType::ADVENTURER});
+  if (!keeperName) {
+    auto files = getSaveOptions({GameSaveType::AUTOSAVE, GameSaveType::KEEPER});
     auto toLoad = std::min_element(files.begin(), files.end(),
         [](const auto& f1, const auto& f2) { return f1.date > f2.date; });
-    if (toLoad != files.end())
-      game = loadGame(userPath.file((*toLoad).filename));
-  }
-  if (!game) {
-    AvatarInfo avatar = getQuickGameAvatar(view, contentFactory.keeperCreatures, &contentFactory.getCreatures());
+    if (toLoad != files.end()) {
+      auto path = userPath.file((*toLoad).filename);
+      game = loadGame(path, "\"" + getNameAndVersion(path)->first + "\"");
+    } else
+      return;
+  } else {
+    auto& keeperCreature = [&] ()-> const KeeperCreatureInfo& {
+      for (auto& elem : contentFactory.keeperCreatures)
+        if (elem.first == keeperName)
+          return elem.second;
+      USER_FATAL << "keeper not found " << *keeperName;
+      fail();
+    }();
+    AvatarInfo avatar = getQuickGameAvatar(view, keeperCreature, &contentFactory.getCreatures());
     CampaignBuilder builder(view, Random, options, contentFactory.villains, contentFactory.gameIntros, avatar);
     auto result = builder.prepareCampaign(&contentFactory, bindMethod(&MainLoop::getRetiredGames, this),
-        CampaignType::QUICK_MAP, "[world]");
+        CampaignType::QUICK_MAP, "Jarnsaxaland");
     auto models = prepareCampaignModels(*result, std::move(avatar), Random, &contentFactory);
     game = Game::campaignGame(std::move(models.models), *result, std::move(avatar), std::move(contentFactory), {});
     dumpMemUsage(game);
@@ -994,6 +1022,11 @@ void MainLoop::start(bool tilesPresent) {
       showCredits();
       return false;
     }};
+    if (!steamAchievements)
+      data.elems["achievements"] = ScriptedUIDataElems::Callback{[this] {
+        showAchievements();
+        return false;
+      }};
     data.elems["quit"] = ScriptedUIDataElems::Callback{[&choice] { choice = 4; return true;}};
     data.elems["version"] = string(BUILD_DATE) + " " + BUILD_VERSION;
     data.elems["install_id"] = fileSharing->getInstallId();
@@ -1041,8 +1074,7 @@ void MainLoop::modelGenTest(int numTries, const vector<string>& types, RandomGen
   auto contentFactory = createContentFactory(false);
   vector<BiomeId> biomes;
   for (auto& elem : contentFactory.biomeInfo)
-    if (elem.second.keeperBiome)
-      biomes.push_back(elem.first);
+    biomes.push_back(elem.first);
   EnemyFactory enemyFactory(Random, contentFactory.getCreatures().getNameGenerator(), contentFactory.enemies,
       contentFactory.buildingInfo, {});
   ModelBuilder(&meter, random, options, sokobanInput, &contentFactory, std::move(enemyFactory))
@@ -1053,26 +1085,9 @@ static CreatureList readAlly(ifstream& input) {
   string ally;
   input >> ally;
   CreatureList ret(100, CreatureId(ally.data()));
-  string levelIncreaseText;
-  input >> levelIncreaseText;
-  EnumMap<ExperienceType, int> levelIncrease;
+  int levelIncrease = 0;
+  input >> levelIncrease;
   vector<ItemType> equipment;
-  for (auto increase : split(levelIncreaseText, {','})) {
-    int amount = fromString<int>(increase.substr(1));
-    switch (increase[0]) {
-      case 'M':
-        levelIncrease[ExperienceType::MELEE] = amount;
-        break;
-      case 'S':
-        levelIncrease[ExperienceType::SPELL] = amount;
-        break;
-      case 'A':
-        levelIncrease[ExperienceType::ARCHERY] = amount;
-        break;
-      default:
-        FATAL << "Can't parse level increase " << increase;
-    }
-  }
   string equipmentText;
   input >> equipmentText;
   for (auto id : split(equipmentText, {','})) {
@@ -1083,7 +1098,7 @@ static CreatureList readAlly(ifstream& input) {
       equipment.push_back(type);
   }
   ret.addInventory(equipment);
-  ret.increaseBaseLevel(levelIncrease);
+  ret.setCombatExperience(levelIncrease);
   return ret;
 }
 
@@ -1185,8 +1200,8 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, vector<Creatur
     auto model = ModelBuilder(&meter, Random, options, sokobanInput,
         &contentFactory, std::move(enemyFactory)).battleModel(levelPath, std::move(allyCopy), enemies);
     auto game = Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory), view);
-    auto exitCondition = [&](WGame game) -> optional<ExitCondition> {
-      unordered_set<TribeId, CustomHash<TribeId>> tribes;
+    auto exitCondition = [&](Game* game) -> optional<ExitCondition> {
+      HashSet<TribeId> tribes;
       for (auto& m : game->getAllModels())
         for (auto c : m->getAllCreatures())
           tribes.insert(c->getTribeId());
@@ -1231,32 +1246,23 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, vector<Creatur
   return numAllies;
 }
 
-PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup, TribeId tribe,
-    TribeAlignment alignment) {
+PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup, const AvatarInfo& avatarInfo) {
   auto ret = [&] {
     switch (setup.campaign.getType()) {
-      case CampaignType::SINGLE_KEEPER:
-        return modelBuilder.singleMapModel(tribe, alignment);
       case CampaignType::QUICK_MAP:
-        return modelBuilder.tutorialModel();
+        return modelBuilder.tutorialModel(avatarInfo.creatureInfo.startingBase);
       default:
-        return modelBuilder.campaignBaseModel(tribe, alignment, setup.startingBiome, setup.externalEnemies);
+        return modelBuilder.campaignBaseModel(avatarInfo, setup.campaign.getBaseBiome(), setup.externalEnemies);
     }
   }();
   return ret;
 }
 
 vector<ExternalEnemy> getExternalEnemiesFor(const AvatarInfo& info, const ContentFactory* contentFactory) {
-  return info.creatureInfo.visit(
-      [&] (const KeeperCreatureInfo& i) {
-        vector<ExternalEnemy> ret;
-        for (auto& g : i.endlessEnemyGroups)
-          ret.append(contentFactory->externalEnemies.at(g));
-        return ret;
-      },
-      [&] (const AdventurerCreatureInfo&) {
-        return vector<ExternalEnemy>();
-      });
+  vector<ExternalEnemy> ret;
+  for (auto& g : info.creatureInfo.endlessEnemyGroups)
+    ret.append(contentFactory->externalEnemies.at(g));
+  return ret;
 }
 
 ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInfo& avatarInfo, RandomGen& random,
@@ -1264,11 +1270,11 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
   EnemyFactory enemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,
       contentFactory->buildingInfo, getExternalEnemiesFor(avatarInfo, contentFactory));
   ModelBuilder modelBuilder(nullptr, random, options, sokobanInput, contentFactory, std::move(enemyFactory));
-  return prepareCampaignModels(setup, avatarInfo.tribeAlignment, std::move(modelBuilder));
+  return prepareCampaignModels(setup, avatarInfo, std::move(modelBuilder), contentFactory);
 }
 
-ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment tribeAlignment,
-    ModelBuilder modelBuilder) {
+ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInfo& avatarInfo,
+    ModelBuilder modelBuilder, ContentFactory* contentFactory) {
   Table<PModel> models(setup.campaign.getSites().getBounds());
   auto& sites = setup.campaign.getSites();
   for (Vec2 v : sites.getBounds())
@@ -1285,11 +1291,13 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment 
         for (Vec2 v : sites.getBounds()) {
           if (!sites[v].isEmpty())
             meter.addProgress();
+          int difficulty = setup.campaign.getBaseLevelIncrease(v);
           if (auto info = sites[v].getKeeper()) {
-            models[v] = getBaseModel(modelBuilder, setup, info->tribe, tribeAlignment);
+            models[v] = getBaseModel(modelBuilder, setup, avatarInfo);
           } else if (auto villain = sites[v].getVillain()) {
-            for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE)))
-              if (isCompatible(getSaveVersion(info)))
+            for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE))) {
+              auto version = getSaveVersion(info);
+              if (isCompatible(version) && version >= 8101)
                 if (auto saved = loadSavedGameInfo(userPath.file(info.filename)))
                   if (auto& retiredInfo = saved->retiredEnemyInfo)
                     if (retiredInfo->enemyId == villain->enemyId)
@@ -1299,15 +1307,25 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment 
                         remove(userPath.file(info.filename).getPath());
                         break;
                       }
+            }
             if (!models[v])
-              models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, tribeAlignment);
+              models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, avatarInfo.tribeAlignment,
+                  *setup.campaign.getSites()[v].biome, difficulty);
+            for (auto c : models[v]->getAllCreatures())
+              c->setCombatExperience(difficulty);
           } else if (auto retired = sites[v].getRetired()) {
             if (auto info = loadRetiredModelFromFile(userPath.file(retired->fileInfo.filename))) {
               models[v] = PModel(std::move(info->model));
+              for (auto col : models[v]->getCollectives())
+                if (col->getVillainType() == VillainType::MAIN)
+                  col->setVillainType(VillainType::RETIRED);
+              if (endsWith(retired->fileInfo.filename, getSaveSuffix(GameSaveType::RETIRED_CAMPAIGN)))
+                for (auto c : models[v]->getAllCreatures())
+                  c->setCombatExperience(50);
               factories.push_back(std::move(info->factory));
             } else {
               failedToLoad = retired->fileInfo.filename;
-              setup.campaign.clearSite(v);
+              setup.campaign.removeDweller(v);
             }
           }
         }
@@ -1317,16 +1335,16 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment 
   return ModelTable{std::move(models), std::move(factories), numRetiredVillains};
 }
 
-PGame MainLoop::loadGame(const FilePath& file) {
+PGame MainLoop::loadGame(const FilePath& file, const string& name) {
   optional<PGame> game;
   if (auto info = loadSavedGameInfo(file))
-    doWithSplash("Loading "_s + file.getPath() + "...", info->progressCount,
+    doWithSplash("Loading "_s + name + ".", info->progressCount,
         [&] (ProgressMeter& meter) {
-          Square::progressMeter = &meter;
+          Level::progressMeter = &meter;
           INFO << "Loading from " << file;
           MEASURE(game = loadFromFile<PGame>(file), "Loading game");
     });
-  Square::progressMeter = nullptr;
+  Level::progressMeter = nullptr;
   return game ? std::move(*game) : nullptr;
 }
 
@@ -1363,7 +1381,7 @@ static void changeSaveType(const FilePath& file, GameSaveType newType) {
 
 PGame MainLoop::loadOrNewGame() {
   auto games = ScriptedUIDataElems::List{};
-  optional<SaveFileInfo> savedGame;
+  optional<pair<SaveFileInfo, string>> savedGame;
   optional<SaveFileInfo> warlordGame;
   optional<SaveFileInfo> eraseGame;
   auto addGames = [&](GameSaveType type) {
@@ -1372,10 +1390,10 @@ PGame MainLoop::loadOrNewGame() {
     if (!files.empty()) {
       append(games, files.transform(
           [&] (const SaveFileInfo& info) {
-              auto nameAndVersion = getNameAndVersion(userPath.file(info.filename));
+              auto nameAndVersion = *getNameAndVersion(userPath.file(info.filename));
               auto gameInfo = loadSavedGameInfo(userPath.file(info.filename));
               auto record = ScriptedUIDataElems::Record{{
-                {"label", ScriptedUIData{nameAndVersion->first}},
+                {"label", ScriptedUIData{nameAndVersion.first}},
                 {"date", ScriptedUIData{getDateString(info.date)}},
                 {"viewIds", ScriptedUIData{gameInfo->minions.transform([](auto minion){ return ScriptedUIData{minion.viewId}; })}},
                 {"erase", ScriptedUIData{ScriptedUIDataElems::Callback{[&eraseGame, info]{
@@ -1389,8 +1407,8 @@ PGame MainLoop::loadOrNewGame() {
                   return true;
                 }}};
               else
-                record.elems["load"] = ScriptedUIData{ScriptedUIDataElems::Callback{[&savedGame, info]{
-                  savedGame = info;
+                record.elems["load"] = ScriptedUIData{ScriptedUIDataElems::Callback{[&savedGame, name = nameAndVersion.first, info]{
+                  savedGame = make_pair(info, name);
                   return true;
                 }}};
               return record;
@@ -1399,7 +1417,6 @@ PGame MainLoop::loadOrNewGame() {
   };
   addGames(GameSaveType::AUTOSAVE);
   addGames(GameSaveType::KEEPER);
-  addGames(GameSaveType::ADVENTURER);
   addGames(GameSaveType::WARLORD);
   auto data = ScriptedUIDataElems::Record{};
   if (games.empty())
@@ -1414,11 +1431,11 @@ PGame MainLoop::loadOrNewGame() {
   view->scriptedUI("load_menu", data, uiState);
   if (newGame) {
     if (auto res = prepareCampaign(Random))
-      return std::move(res);
+      return res;
   } else if (savedGame) {
-    if (PGame ret = loadGame(userPath.file(savedGame->filename))) {
+    if (PGame ret = loadGame(userPath.file(savedGame->first.filename), "\"" + savedGame->second + "\"")) {
       if (eraseSave())
-        changeSaveType(userPath.file(savedGame->filename), GameSaveType::AUTOSAVE);
+        changeSaveType(userPath.file(savedGame->first.filename), GameSaveType::AUTOSAVE);
       return ret;
     } else
       view->presentText("Sorry", "Failed to load the save file :(");
@@ -1443,7 +1460,7 @@ struct WarlordInfo {
 };
 
 PGame MainLoop::prepareWarlord(const SaveFileInfo& fileInfo) {
-  if (auto warlordInfo = loadFromFile<WarlordInfo>(userPath.file(fileInfo.filename))) {
+/*  if (auto warlordInfo = loadFromFile<WarlordInfo>(userPath.file(fileInfo.filename))) {
     ContentFactory contentFactory;
     tileSet->clear();
     // Using a splash screen causes a segfault due to reloading the tileset while scriptedUI is running
@@ -1487,7 +1504,7 @@ PGame MainLoop::prepareWarlord(const SaveFileInfo& fileInfo) {
           std::move(warlordInfo->contentFactory), warlordInfo->gameIdentifier);
     }
   } else
-    view->presentText("Sorry", "Failed to load the warlord file :(");
+    view->presentText("Sorry", "Failed to load the warlord file :(");*/
   return nullptr;
 }
 

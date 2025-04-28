@@ -30,13 +30,12 @@ PCreature CreatureGroup::random(CreatureFactory* creatureFactory, const MonsterA
   } else
     id = Random.choose(creatures, weights);
   PCreature ret = creatureFactory->fromId(id, getTribeFor(id), actorFactory);
-  for (auto exp : ENUM_ALL(ExperienceType))
-    ret->getAttributes().increaseBaseExpLevel(exp, baseLevelIncrease[exp]);
+  ret->setCombatExperience(combatExperience);
   return ret;
 }
 
-CreatureGroup& CreatureGroup::increaseBaseLevel(ExperienceType t, int l) {
-  baseLevelIncrease[t] = l;
+CreatureGroup& CreatureGroup::setCombatExperience(int l) {
+  combatExperience = l;
   return *this;
 }
 

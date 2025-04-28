@@ -45,6 +45,14 @@ int getOtherIndex(int index) {
   return index - index % 2 + (index + 1) % 2;
 }
 
+vector<pair<Position, Position>> Portals::getMatchedPortals() const {
+  vector<pair<Position, Position>> ret;
+  for (int i = 0; i + 1 < matchings.size(); i += 2)
+    if (!!matchings[i] && !!matchings[i + 1])
+      ret.push_back(make_pair(*matchings[i], *matchings[i + 1]));
+  return ret;
+}
+
 optional<Position> Portals::getOtherPortal(Position position) const {
   if (auto index = matchings.findElement(position)) {
     auto otherIndex = getOtherIndex(*index);

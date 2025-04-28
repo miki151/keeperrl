@@ -9,15 +9,14 @@ class Creature;
 
 RICH_ENUM(
   BuiltinUsageId,
-  CHEST,
-  COFFIN,
   KEEPER_BOARD,
   TIE_UP,
   TRAIN,
   ARCHERY_RANGE,
   STUDY,
   PORTAL,
-  DEMON_RITUAL
+  DEMON_RITUAL,
+  PRAY
 );
 
 struct UsageEffect {

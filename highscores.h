@@ -9,13 +9,12 @@ class Options;
 
 class Highscores {
   public:
-  Highscores(const FilePath& localPath, FileSharing&, Options*);
+  Highscores(const FilePath& localPath);
 
   struct Score {
-    static optional<Score> parse(const string& buf);
     bool operator == (const Score&) const;
 
-    SERIALIZE_ALL(gameId, playerName, worldName, gameResult, gameWon, points, turns, campaignType, playerRole, version)
+    SERIALIZE_ALL(gameId, playerName, worldName, gameResult, gameWon, points, turns, campaignType, version)
 
     string SERIAL(gameId);
     string SERIAL(playerName);
@@ -25,26 +24,18 @@ class Highscores {
     int SERIAL(points);
     int SERIAL(turns);
     CampaignType SERIAL(campaignType);
-    PlayerRole SERIAL(playerRole);
     int SERIAL(version);
-    bool isPublic() const;
   };
 
   void present(View*, optional<Score> lastAdded = none) const;
   void add(Score);
-  vector<Score> downloadHighscores(View*) const;
 
   static vector<Score> fromFile(const FilePath&);
 
   private:
-  static vector<Score> fromStream(istream&);
-  static vector<Score> fromSync(FileSharing&);
-  static vector<Score> fromString(const string&);
   static void saveToFile(const vector<Score>&, const FilePath&);
 
   FilePath localPath;
-  FileSharing& fileSharing;
   vector<Score> localScores;
-  Options* options;
 };
 

@@ -44,13 +44,15 @@ static bool isAutoLocked(const Collective* col, const Creature* c, MinionActivit
   }
 }
 
-bool MinionActivityMap::canChooseRandomly(const Creature* c, MinionActivity t) const {
+bool MinionActivityMap::canChooseRandomly(const Collective* collective, const Creature* c, MinionActivity t) const {
   PROFILE;
   switch (t) {
     case MinionActivity::BE_EXECUTED:
     case MinionActivity::BE_WHIPPED:
     case MinionActivity::BE_TORTURED:
       return false;
+    case MinionActivity::PREACHING:
+      return collective->lastMass < collective->getLocalTime() - 1500_visible;
     case MinionActivity::SLEEP:
       return !c->isAffected(LastingEffect::RESTED);
     case MinionActivity::EAT:
@@ -73,19 +75,20 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
   PROFILE;
   if ((isLocked(col, c, t) || col->isActivityGroupLocked(c, t)) && !ignoreTaskLock)
     return false;
-  auto factory = col->getGame()->getContentFactory();
+  auto game = col->getGame();
+  auto factory = game->getContentFactory();
   switch (t) {
     case MinionActivity::IDLE:
       return true;
     case MinionActivity::TRAIN:
-      return !c->getAttributes().isTrainingMaxedOut(ExperienceType::MELEE) &&
+      return !c->getAttributes().isTrainingMaxedOut(AttrType("DAMAGE")) &&
           !col->hasTrait(c, MinionTrait::PRISONER);
     case MinionActivity::STUDY:
       return !col->hasTrait(c, MinionTrait::PRISONER) &&
-          !c->getAttributes().isTrainingMaxedOut(ExperienceType::SPELL);
+          !c->getAttributes().isTrainingMaxedOut(AttrType("SPELL_DAMAGE"));
     case MinionActivity::ARCHERY:
       return !col->hasTrait(c, MinionTrait::PRISONER) &&
-          !c->getAttributes().isTrainingMaxedOut(ExperienceType::ARCHERY) &&
+          !c->getAttributes().isTrainingMaxedOut(AttrType("RANGED_DAMAGE")) &&
           !c->getEquipment().getItems(ItemIndex::RANGED_WEAPON).empty();
     case MinionActivity::BE_WHIPPED:
       return !c->getBody().isImmuneTo(LastingEffect::ENTANGLED, factory) &&
@@ -132,9 +135,24 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
     case MinionActivity::DIGGING:
       return c->getAttr(AttrType("DIGGING")) > 0 && col->hasTrait(c, MinionTrait::WORKER);
     case MinionActivity::MINION_ABUSE:
-      return col->hasTrait(c, MinionTrait::LEADER) && col == col->getGame()->getPlayerCollective();
+      return col->hasTrait(c, MinionTrait::LEADER) && col == game->getPlayerCollective();
     case MinionActivity::DISTILLATION:
       return c->isAffected(BuffId("DISTILLATION_SKILL"));
+    case MinionActivity::PREACHING:
+      return c->isAffected(BuffId("PREACHING_SKILL"));
+    case MinionActivity::MASS: {
+      auto& leaders = col->getLeaders();
+      return !col->hasTrait(c, MinionTrait::PRISONER) && c->getBody().isHumanoid() &&
+          !c->isAffected(BuffId("PREACHING_SKILL")) &&
+          !leaders.empty() && col->getCurrentActivity(leaders[0]).activity == MinionActivity::PREACHING;
+    }
+    case MinionActivity::PRAYER:
+      return !col->hasTrait(c, MinionTrait::PRISONER) &&
+          !c->getAttributes().isTrainingMaxedOut(AttrType("DIVINITY"));
+    case MinionActivity::HEARING_CONFESSION:
+      return c->isAffected(BuffId("CONFESSING_SKILL"));
+    case MinionActivity::CONFESSION:
+      return c->isAffected(BuffId("SINNED")) || c->isAffected(BuffId("MORTAL_SINNED"));
   }
 }
 

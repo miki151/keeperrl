@@ -11,7 +11,7 @@ class ItemList {
   ItemList(vector<ItemType>);
   vector<ItemType> getAllItems() const;
 
-  vector<PItem> random(const ContentFactory*) &;
+  vector<PItem> random(const ContentFactory*, int difficulty) &;
 
   SERIALIZATION_DECL(ItemList)
   ~ItemList();

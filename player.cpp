@@ -78,17 +78,16 @@
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
   ar& SUBCLASS(Controller) & SUBCLASS(EventListener);
-  ar(travelDir, target, displayGreeting, levelMemory, messageBuffer);
-  ar(adventurer, visibilityMap, tutorial, unknownLocations, avatarLevel);
+  ar(travelDir, target, levelMemory, messageBuffer);
+  ar(visibilityMap, tutorial, unknownLocations, avatarLevel);
 }
 
 SERIALIZABLE(Player)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Player)
 
-Player::Player(Creature* c, bool adv, SMapMemory memory, SMessageBuffer buf, SVisibilityMap v, SUnknownLocations loc, STutorial t)
-    : Controller(c), levelMemory(memory), messageBuffer(buf), visibilityMap(v), unknownLocations(loc),
-      adventurer(adv), displayGreeting(adventurer), tutorial(t) {
+Player::Player(Creature* c, SMapMemory memory, SMessageBuffer buf, SVisibilityMap v, SUnknownLocations loc, STutorial t)
+    : Controller(c), levelMemory(memory), messageBuffer(buf), visibilityMap(v), unknownLocations(loc), tutorial(t) {
   visibilityMap->update(c, c->getVisibleTiles());
 }
 
@@ -99,25 +98,21 @@ void Player::onEvent(const GameEvent& event) {
   using namespace EventInfo;
   auto factory = getGame()->getContentFactory();
   event.visit<void>(
-      [&](const CreatureMoved& info) {
-        if (info.creature == creature)
-          visibilityMap->update(creature, creature->getVisibleTiles());
-      },
       [&](const Projectile& info) {
-        if (creature->canSee(info.begin) || creature->canSee(info.end))
+        if (teamCanSeeAndSameLevel(info.begin) || teamCanSeeAndSameLevel(info.end))
           getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId, info.fx);
         if (info.sound)
           getView()->addSound(*info.sound);
       },
       [&](const CreatureKilled& info) {
         auto pos = info.victim->getPosition();
-        if (creature->canSee(pos))
+        if (teamCanSeeAndSameLevel(pos))
           if (auto anim = info.victim->getBody().getDeathAnimation(factory))
             getView()->animation(pos.getCoord(), *anim);
       },
       [&](const CreatureAttacked& info) {
         auto pos = info.victim->getPosition();
-        if (creature->canSee(pos)) {
+        if (teamCanSeeAndSameLevel(pos)) {
           auto dir = info.attacker->getPosition().getDir(pos);
           if (dir.length8() == 1) {
             auto orientation = dir.getCardinalDir();
@@ -139,25 +134,14 @@ void Player::onEvent(const GameEvent& event) {
                 getCardinalName(myPos.getDir(pos).getBearing().getCardinalDir()));
         }
       },
-      [&](const ConqueredEnemy& info) {
-        if (adventurer && info.collective->isDiscoverable() && info.byPlayer) {
-          if (auto& name = info.collective->getName())
-            privateMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
-                  MessagePriority::CRITICAL));
-          else
-            privateMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
-          avatarLevel->onKilledVillain(info.collective->getVillainType());
-          if (avatarLevel->numResearchAvailable() > 0)
-            playerLevelDialog();
-        }
-      },
       [&](const FX& info) {
-        if (creature->canSee(info.position))
-          getView()->animation(FXSpawnInfo(info.fx, info.position.getCoord(), info.direction.value_or(Vec2(0, 0))));
-      },
-      [&](const WonGame&) {
-        if (adventurer)
-          getGame()->conquered(creature->getName().firstOrBare(), creature->getKills().size(), creature->getPoints());
+        if (teamCanSeeAndSameLevel(info.position)) {
+          auto fx = FXSpawnInfo(info.fx, info.position.getCoord(), info.direction.value_or(Vec2(0, 0)));
+          if (info.fx.name == FXName::TELEPORT_IN)
+            deferredAnimations.push_back(std::move(fx));
+          else
+            getView()->animation(std::move(fx));
+        }
       },
       [&](const auto&) {}
   );
@@ -243,7 +227,8 @@ void Player::throwItem(Item* item, optional<Position> target) {
     if (!target)
       return;
   }
-  tryToPerform(creature->throwItem(item, *target, false));
+  tryToPerform(creature->throwItem(item, *target, item->effectAppliedWhenThrown() &&
+      item->getEffect()->shouldAIApply(creature, *target) >= 0));
 }
 
 void Player::handleIntrinsicAttacks(const vector<UniqueEntity<Item>::Id>& itemIds, ItemAction action) {
@@ -266,7 +251,7 @@ void Player::handleIntrinsicAttacks(const vector<UniqueEntity<Item>::Id>& itemId
 
 void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds1, ItemAction action) {
   PROFILE;
-  unordered_set<Item::Id, CustomHash<Item::Id>> itemIds(itemIds1.begin(), itemIds1.end());
+  HashSet<Item::Id> itemIds(itemIds1.begin(), itemIds1.end());
   vector<Item*> items = creature->getEquipment().getItems().filter(
       [&](const Item* it) { return itemIds.count(it->getUniqueId());});
   //CHECK(items.size() == itemIds.size()) << int(items.size()) << " " << int(itemIds.size());
@@ -508,7 +493,8 @@ void Player::sleeping() {
   MEASURE(
       getView()->updateView(this, false),
       "level render time");
-  if (LastingEffects::losesControl(creature))
+  if (LastingEffects::losesControl(creature,
+      creature->getPosition().getModel() == getGame()->getMainModel().get()))
     onLostControl();
   // Pop all queued actions and discard them
   do {
@@ -612,23 +598,6 @@ vector<Player::CommandInfo> Player::getCommands() const {
             [] (Player* player) { player->mountAction(); }, false},
     Player::CommandInfo{PlayerInfo::CommandInfo{"Chat", Keybinding("CHAT"), "Chat with someone.", canChat},
       [] (Player* player) { player->chatAction(); }, false},
-    /*{PlayerInfo::CommandInfo{"Test path-finding", 'C', "Displays calculated path and processed tiles.", true},
-      [] (Player* player) {
-        auto pos = player->getView()->chooseTarget(player->creature->getPosition().getCoord(),
-            TargetType::POSITION, Table<PassableInfo>(), "Choose destination", none).getValueMaybe<Vec2>();
-        if (pos) {
-          Position position(*pos, player->getLevel());
-          vector<Vec2> visited;
-          LevelShortestPath path(player->creature, position, 0, &visited);
-          Table<PassableInfo> result(Rectangle::boundingBox(visited), PassableInfo::UNKNOWN);
-          for (auto& v : visited)
-            result[v] = PassableInfo::PASSABLE;
-          for (auto& v : path.getPath())
-            result[v.getCoord()] = PassableInfo::NON_PASSABLE;
-          player->getView()->chooseTarget(player->creature->getPosition().getCoord(), TargetType::SHOW_ALL, result,
-              "Displaying calculated path and processed tiles", none);
-        }
-      }, false},*/
     {PlayerInfo::CommandInfo{"Hide", Keybinding("HIDE"), "Hide behind or under a terrain feature or piece of furniture.",
         !!creature->hide()},
       [] (Player* player) { player->hideAction(); }, false},
@@ -639,8 +608,6 @@ vector<Player::CommandInfo> Player::getCommands() const {
       [] (Player* player) { auto c = player->creature; player->tryToPerform(c->drop(c->getEquipment().getItems())); }, false},
     {PlayerInfo::CommandInfo{"Message history", Keybinding("MESSAGE_HISTORY"), "Show message history.", true},
       [] (Player* player) { player->showHistory(); }, false},
-    {PlayerInfo::CommandInfo{"Level up", Keybinding("LEVEL_UP"), "Level up your character.", adventurer},
-      [] (Player* player) { player->playerLevelDialog(); }, false},
 #ifndef RELEASE
     {PlayerInfo::CommandInfo{"Wait multiple turns", none, "", true},
       [] (Player* player) {
@@ -684,12 +651,21 @@ bool Player::canTravel() const {
         getView()->presentText("Sorry", c->getName().the() + " can't travel while being poisoned.");
       return false;
     }
+    Creature* attacker = nullptr;
+    auto tryAttacker = [&] (Creature* c) {
+      if (!team.contains(c) && !LastingEffects::doesntMove(c) && c->getPosition().dist8(creature->getPosition()).value_or(10) < 10)
+        attacker = c;
+    };
     if (auto intent = c->getLastCombatIntent())
-      if (intent->time > *creature->getGlobalTime() - 7_visible && intent->isHostile()) {
-        getView()->presentText("Sorry", "You can't travel while being attacked by " +
-            intent->attacker->getName().a() + ".");
-        return false;
-      }
+      if (intent->time > *creature->getGlobalTime() - 7_visible && intent->isHostile())
+        tryAttacker(intent->attacker);
+    if (auto closest = c->getClosestEnemy())
+      if (closest->getPosition().dist8(creature->getPosition()).value_or(4) < 4)
+        tryAttacker(closest);
+    if (attacker) {
+      getView()->presentText("Sorry", "You can't travel while being attacked by " + attacker->getName().a() + ".");
+      return false;
+    }
     for (auto item : c->getEquipment().getItems())
       if (item->getShopkeeper(c)) {
         getView()->presentText("Sorry", "You can't travel while carrying unpaid items.");
@@ -706,16 +682,16 @@ void Player::makeMove() {
   generateHalluIds();
   if (!isSubscribed())
     subscribeTo(getModel());
-  if (adventurer)
-    considerAdventurerMusic();
-  else
-    considerKeeperModeTravelMusic();
+  considerKeeperModeTravelMusic();
   for (Position pos : creature->getVisibleTiles())
     updateSquareMemory(pos);
   MEASURE(
       getView()->updateView(this, false),
       "level render time");
   //}
+  for (auto& elem : deferredAnimations)
+    getView()->animation(std::move(elem));
+  deferredAnimations.clear();
   getView()->refreshView();
   /*if (displayTravelInfo && creature->getPosition().getName() == "road"
       && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
@@ -725,11 +701,6 @@ void Player::makeMove() {
   if (getGame()->getOptions()->getBoolValue(OptionId::CONTROLLER_HINT_TURN_BASED)) {
     getView()->scriptedUI("controller_hint_turn_based", ScriptedUIData{});
     getGame()->getOptions()->setValue(OptionId::CONTROLLER_HINT_TURN_BASED, 0);
-  }
-  if (displayGreeting && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
-    getView()->updateView(this, true);
-    displayGreeting = false;
-    getView()->updateView(this, false);
   }
   UserInput action = getView()->getAction();
   if (target && action.getId() == UserInputId::IDLE)
@@ -824,9 +795,6 @@ void Player::makeMove() {
           if (tutorial)
             tutorial->goBack();
           break;
-        case UserInputId::LEVEL_UP:
-          playerLevelDialog();
-          break;
         case UserInputId::SCROLL_TO_HOME:
           getView()->resetCenter();
           break;
@@ -860,7 +828,8 @@ void Player::makeMove() {
         default:
           return;
       }
-    if (LastingEffects::losesControl(creature)) {
+    if (LastingEffects::losesControl(creature,
+        creature->getPosition().getModel() == getGame()->getMainModel().get())) {
       onLostControl();
       return;
     }
@@ -876,13 +845,22 @@ void Player::transferAction() {
   if (auto to = game->chooseSite("Choose destination site:", creatures[0]->getLevel()->getModel())) {
     creatures = creatures.filter([&](const Creature* c) { return c->getPosition().getModel() != to; });
     vector<PlayerInfo> cant;
+    vector<PlayerInfo> turnedOff;
     auto contentFactory = getGame()->getContentFactory();
-    for (Creature* c : copyOf(creatures))
-      if (!game->canTransferCreature(c, to)) {
+    for (Creature* c : copyOf(creatures)) {
+      if (c->isAffected(LastingEffect::TURNED_OFF)) {
+        turnedOff.push_back(PlayerInfo(c, contentFactory));
+        creatures.removeElement(c);
+      }
+      if (!game->canTransferCreature(c, to) || (c->isAffected(LastingEffect::SUNLIGHT_VULNERABLE) &&
+            game->getSunlightInfo().getState() == SunlightState::DAY)) {
         cant.push_back(PlayerInfo(c, contentFactory));
         creatures.removeElement(c);
       }
+    }
     if (!cant.empty() && !view->creatureInfo("These minions will be left behind due to sunlight. Continue?", true, cant))
+      return;
+    if (!turnedOff.empty() && !view->creatureInfo("These minions will be left behind due to being turned off. Continue?", true, turnedOff))
       return;
     if (!creatures.empty()) {
       for (Creature* c : creatures) {
@@ -922,6 +900,9 @@ static string getForceMovementQuestion(Position pos, const Creature* creature) {
 
 void Player::moveAction(Vec2 dir) {
   auto dirPos = creature->getPosition().plus(dir);
+  if (auto steed = creature->getSteed())
+    if (auto& a = steed->getAttributes().steedAchievement)
+      getGame()->achieve(*a);
   if (tryToPerform(creature->move(dir)))
     return;
   if (auto action = creature->forceMove(dir)) {
@@ -978,7 +959,7 @@ Game* Player::getGame() const {
     return nullptr;
 }
 
-WModel Player::getModel() const {
+Model* Player::getModel() const {
   return creature->getLevel()->getModel();
 }
 
@@ -1062,8 +1043,8 @@ static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
   for (auto& elem : factory->items) {
     ret.push_back(WishedItemInfo {
       ItemType(elem.first),
-      elem.second.name,
-      elem.second.wishedCount
+      elem.second->name,
+      elem.second->wishedCount
     });
   }
   for (auto effect : ENUM_ALL(LastingEffect))
@@ -1147,15 +1128,17 @@ void Player::grantWish(const string& message) {
   }
 }
 
+bool Player::teamCanSeeAndSameLevel(Position pos) const {
+  return pos.isSameLevel(creature->getPosition()) &&
+      (visibilityMap->isVisible(pos) || getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP));
+}
+
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
-  bool canSee = visibilityMap->isVisible(Position(pos, getLevel())) ||
-      getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP);
+  bool canSee = teamCanSeeAndSameLevel(Position(pos, getLevel()));
   Position position = creature->getPosition().withCoord(pos);
   if (auto belowPos = position.getGroundBelow()) {
-    if (auto memIndex = getMemory().getViewIndex(*belowPos)) {
-      index.mergeFromMemory(*memIndex);
-      index.setHighlight(HighlightType::TILE_BELOW);
-    }
+    if (auto memIndex = getMemory().getViewIndex(*belowPos))
+      index.mergeGroundBelow(*memIndex);
     return;
   }
   if (canSee)
@@ -1190,7 +1173,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
         index.getObject(ViewLayer::CREATURE).setModifier(ViewObjectModifier::RIDER);
         auto obj = steed->getViewObjectFor(creature->getTribe());
         obj.getCreatureStatus().intersectWith(getDisplayedOnMinions());
-        obj.setLayer(ViewLayer::TORCH2);
+        obj.setLayer(ViewLayer::STEED);
         index.insert(std::move(obj));
       }
       auto& object = index.getObject(ViewLayer::CREATURE);
@@ -1248,12 +1231,11 @@ void Player::generateHalluIds() {
 void Player::onKilled(Creature* attacker) {
   unsubscribe();
   getView()->updateView(this, false);
-  if (getGame()->getPlayerCreatures().size() == 1 && getView()->yesOrNoPrompt("Display message history?",
+  auto game = getGame();
+  if (game->getPlayerCreatures().size() == 1 && getView()->yesOrNoPrompt("Display message history?",
       ViewIdList{ViewId("grave")}, false,
       "yes_or_no_below"))
     showHistory();
-  if (adventurer)
-    getGame()->gameOver(creature, creature->getKills().size(), "monsters", creature->getPoints());
 }
 
 void Player::onLostControl() {
@@ -1285,48 +1267,6 @@ optional<FurnitureUsageType> Player::getUsableUsageType() const {
 
 vector<TeamMemberAction> Player::getTeamMemberActions(const Creature* member) const {
   return {};
-}
-
-void Player::playerLevelDialog() {
-  ScriptedUIState state;
-  auto data = ScriptedUIDataElems::Record{};
-  int available = avatarLevel->numResearchAvailable();
-  data.elems["heading"] = getPlural("point", available) + " available";
-  auto upgrades = ScriptedUIDataElems::List{};
-  auto factory = getGame()->getContentFactory();
-  bool levelledUp = false;
-  for (auto expType : ENUM_ALL(ExperienceType)) {
-    auto data = ScriptedUIDataElems::Record{};
-    auto icons = ScriptedUIDataElems::List{};
-    vector<string> attrNames;
-    for (auto attr : getAttrIncreases()[expType]) {
-      auto& info = factory->attrInfo.at(attr.first);
-      icons.push_back(ViewIdList{info.viewId});
-      attrNames.push_back(info.name);
-    }
-    data.elems["icons"] = std::move(icons);
-    data.elems["value"] = toString<int>(creature->getAttributes().getExpLevel(expType));
-    auto limit = toString(creature->getAttributes().getMaxExpLevel()[expType]);
-    data.elems["limit"] = limit;
-    data.elems["tooltip"] = ScriptedUIDataElems::List{
-      getName(expType) + " training."_s,
-      "Increases " + combine(attrNames) + ".",
-      "The creature's limit for this type of training is " + limit + "."
-    };
-    if (available > 0)
-      data.elems["callback"] = ScriptedUIDataElems::Callback{ [expType, this, &levelledUp] {
-        creature->increaseExpLevel(expType, 1);
-        ++avatarLevel->consumedLevels;
-        levelledUp = true;
-        return true;
-      }};
-    upgrades.push_back(std::move(data));
-  }
-  data.elems["upgrades"] = std::move(upgrades);
-  data.elems["combat_exp"] = toStringRounded(creature->getCombatExperience(), 0.01);
-  getView()->scriptedUI("adventurer_level", data, state);
-  if (levelledUp)
-    playerLevelDialog();
 }
 
 void Player::fillCurrentLevelInfo(GameInfo& gameInfo) const {
@@ -1482,16 +1422,6 @@ void Player::considerKeeperModeTravelMusic() {
       return;
     }
   getGame()->setCurrentMusic(MusicType::PEACEFUL);
-}
-
-void Player::considerAdventurerMusic() {
-  for (Collective* col : getModel()->getCollectives())
-    if (col->getVillainType() == VillainType::MAIN && !col->isConquered() &&
-        col->getTerritory().contains(creature->getPosition())) {
-      getGame()->setCurrentMusic(MusicType::ADV_BATTLE);
-      return;
-    }
-  getGame()->setCurrentMusic(MusicType::ADV_PEACEFUL);
 }
 
 void Player::scrollStairs(int diff) {

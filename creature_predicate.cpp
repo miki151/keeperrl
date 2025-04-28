@@ -13,6 +13,7 @@
 #include "sectors.h"
 #include "movement_type.h"
 #include "content_factory.h"
+#include "tile_gas_info.h"
 
 namespace Impl {
 static bool applyToCreature(const CreaturePredicates::Enemy&, const Creature* victim, const Creature* attacker) {
@@ -105,6 +106,19 @@ static bool applyToCreature(const CreaturePredicates::Ingredient& e, const Creat
 static string getName(const CreaturePredicates::Ingredient& e, const ContentFactory*) {
   return "holding " + e.name;
 }
+
+static bool applyToCreature(const CreaturePredicates::EquipedIngredient& e, const Creature* victim, const Creature* attacker) {
+  auto& equipment = victim->getEquipment();
+  for (auto& item : equipment.getItems(ItemIndex::RUNE))
+    if (equipment.isEquipped(item) && item->getIngredientType() == e.name)
+      return true;
+  return false;
+}
+
+static string getName(const CreaturePredicates::EquipedIngredient& e, const ContentFactory*) {
+  return "holding " + e.name;
+}
+
 
 static bool apply(const CreaturePredicates::OnTheGround& e, Position pos, const Creature*) {
   for (auto& item : pos.getItems(ItemIndex::RUNE))
@@ -208,6 +222,14 @@ static bool apply(FurnitureType type, Position pos, const Creature* attacker) {
 
 static string getName(FurnitureType, const ContentFactory*) {
   return "furniture";
+}
+
+static bool apply(CreaturePredicates::ContainsGas type, Position pos, const Creature* attacker) {
+  return pos.getGasAmount(type) > 0;
+}
+
+static string getName(CreaturePredicates::ContainsGas type, const ContentFactory* f) {
+  return "in " + f->tileGasTypes.at(type).name;
 }
 
 static bool applyToCreature(BodyMaterialId m, const Creature* victim, const Creature* attacker) {
@@ -334,7 +356,7 @@ static string getName(const CreaturePredicates::DistanceD& p, const ContentFacto
 }
 
 static bool apply(const CreaturePredicates::DistanceD& e, Position pos, const Creature* attacker) {
-  if (!attacker->getPosition().isSameLevel(pos))
+  if (!attacker || !attacker->getPosition().isSameLevel(pos))
     return false;
   auto dist = attacker->getPosition().getCoord().distD(pos.getCoord());
   return dist >= e.min.value_or(-1) && dist <= e.max.value_or(10000);
@@ -367,6 +389,47 @@ static bool applyToCreature(const CreaturePredicates::AttributeAtLeast& a, const
 
 static string getName(const CreaturePredicates::AttributeAtLeast& a, const ContentFactory* f) {
   return "at least " + toString(a.value) + " " + f->attrInfo.at(a.attr).name;
+}
+
+static bool applyToCreature(const CreaturePredicates::HasAnyHealth&, const Creature* victim, const Creature* attacker) {
+  return victim->getBody().hasAnyHealth(victim->getGame()->getContentFactory());
+}
+
+static string getName(const CreaturePredicates::HasAnyHealth&, const ContentFactory*) {
+  return "with health";
+}
+
+static bool applyToCreature(const CreaturePredicates::IsPlayer&, const Creature* victim, const Creature* attacker) {
+  return victim->isPlayer();
+}
+
+static string getName(const CreaturePredicates::IsPlayer&, const ContentFactory*) {
+  return "the player";
+}
+
+static bool apply(const CreaturePredicates::TimeOfDay& t, Position pos, const Creature* attacker) {
+  auto time = pos.getGame()->getSunlightInfo().getTimeSinceDawn();
+  return time.getVisibleInt() < t.max && time.getVisibleInt() >= t.min;
+}
+
+static string getName(const CreaturePredicates::TimeOfDay& m, const ContentFactory* f) {
+  return "during a certain time of day";
+}
+
+static bool applyToCreature(const CreaturePredicates::MaxLevelBelow& p, const Creature* victim, const Creature* attacker) {
+  return getValueMaybe(victim->getAttributes().getMaxExpLevel(), p.type).value_or(0) < p.value;
+}
+
+static string getName(const CreaturePredicates::MaxLevelBelow& p, const ContentFactory*) {
+  return "with max training level below " + toString(p.value);
+}
+
+static bool applyToCreature(const CreaturePredicates::ExperienceBelow& p, const Creature* victim, const Creature* attacker) {
+  return victim->getCombatExperience(false, false) < p.value;
+}
+
+static string getName(const CreaturePredicates::ExperienceBelow& p, const ContentFactory*) {
+  return "with experience level below " + toString(p.value);
 }
 
 static bool apply(const CreaturePredicates::Translate& m, Position pos, const Creature* attacker) {
@@ -429,13 +492,22 @@ static bool apply(const T& t, Position pos, const Creature* attacker) {
 
 }
 
+template <typename T, REQUIRE(Impl::applyToCreature(TVALUE(const T&), TVALUE(const Creature*), TVALUE(const Creature*)))>
+static bool applyToCreature1(const T& t, const Creature* c, const Creature* attacker, int) {
+  return Impl::applyToCreature(t, c, attacker);
+}
+
+template <typename T, REQUIRE(Impl::apply(TVALUE(const T&), TVALUE(Position), TVALUE(const Creature*)))>
+static bool applyToCreature1(const T& t, const Creature* c, const Creature* attacker, double) {
+  return Impl::apply(t, c->getPosition(), attacker);
+}
 
 bool CreaturePredicate::apply(Position pos, const Creature* attacker) const {
   return visit<bool>([&](const auto& p) { return Impl::apply(p, pos, attacker); });
 }
 
-bool CreaturePredicate::apply(Creature* c, const Creature* attacker) const {
-  return apply(c->getPosition(), attacker);
+bool CreaturePredicate::apply(const Creature* c, const Creature* attacker) const {
+  return visit<bool>([&](const auto& p) { return applyToCreature1(p, c, attacker, 1); });
 }
 
 string CreaturePredicate::getName(const ContentFactory* f) const {

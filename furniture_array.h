@@ -32,5 +32,5 @@ class FurnitureArray {
 
   private:
   EnumMap<FurnitureLayer, Array> SERIAL(built);
-  EnumMap<FurnitureLayer, unordered_map<Vec2, Construction, CustomHash<Vec2>>> SERIAL(construction);
+  EnumMap<FurnitureLayer, HashMap<Vec2, Construction>> SERIAL(construction);
 };

@@ -21,7 +21,19 @@
 #include "resource_id.h"
 
 
-SERIALIZE_DEF(Inventory, items, itemsCache, weight, counts)
+template <class Archive>
+void Inventory::serialize(Archive& ar, const unsigned int version) {
+  ar(items);
+  if (version == 0)
+    ar(itemsCache);
+  else if (Archive::is_loading::value) {
+    for (auto& it : items.getElems())
+      itemsCache.insert(it.get());
+  }
+  ar(weight, counts);
+}
+
+SERIALIZABLE(Inventory)
 SERIALIZATION_CONSTRUCTOR_IMPL(Inventory);
 
 void Inventory::addViewId(ViewId id, int count) {

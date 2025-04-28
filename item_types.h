@@ -12,8 +12,9 @@
 #include "minion_trait.h"
 #include "lasting_or_buff.h"
 
+
 #define ITEM_TYPE_INTERFACE\
-  ItemAttributes getAttributes(const ContentFactory*) const
+  SItemAttributes getAttributes(const ContentFactory*) const
 
 #define SIMPLE_ITEM(Name) \
   struct Name : public EmptyStruct<Name> { \
@@ -37,6 +38,11 @@ struct Scroll {
   ITEM_TYPE_INTERFACE;
 };
 struct Potion {
+  Effect SERIAL(effect);
+  SERIALIZE_ALL(effect)
+  ITEM_TYPE_INTERFACE;
+};
+struct Potion2 {
   Effect SERIAL(effect);
   SERIALIZE_ALL(effect)
   ITEM_TYPE_INTERFACE;
@@ -100,7 +106,7 @@ struct PrefixChance {
 #define ITEM_TYPES_LIST\
   X(Scroll, 0)\
   X(Potion, 1)\
-  X(Mushroom, 2)\
+  X(Potion2, 2)\
   X(Amulet, 3)\
   X(Ring, 4)\
   X(TechBook, 5)\
@@ -113,7 +119,8 @@ struct PrefixChance {
   X(Assembled, 12) \
   X(Corpse, 13)\
   X(PrefixChance, 14)\
-  X(Balsam, 15)
+  X(Balsam, 15)\
+  X(Mushroom, 16)\
 
 #define VARIANT_TYPES_LIST ITEM_TYPES_LIST
 #define VARIANT_NAME ItemTypeVariant

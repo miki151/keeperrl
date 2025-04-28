@@ -63,7 +63,8 @@ RICH_ENUM(
   AGGRAVATES,
   CAN_DANCE,
   STEED,
-  RIDER
+  RIDER,
+  LOCKED_POSITION
 );
 
 struct Color;
@@ -90,7 +91,6 @@ class LastingEffects {
   static bool canSee(const Creature*, const Creature*, GlobalTime);
   static bool modifyIsEnemyResult(const Creature*, const Creature*, GlobalTime, bool);
   static int getPrice(LastingEffect);
-  static double getMoraleIncrease(const Creature*, optional<GlobalTime>);
   static double getCraftingSpeed(const Creature*);
   static double getTrainingSpeed(const Creature*);
   static bool canConsume(LastingEffect);
@@ -101,10 +101,10 @@ class LastingEffects {
   static bool obeysFormation(const Creature*, const Creature* against);
   static bool shouldEnemyApply(const Creature* victim, LastingEffect);
   static bool shouldAllyApplyInDanger(const Creature* victim, LastingEffect);
-  static TimeInterval getDuration(const Creature* c, LastingEffect);
+  static TimeInterval getDuration(LastingEffect);
   static void runTests();
   static Color getColor(LastingEffect);
-  static bool losesControl(const Creature*);
+  static bool losesControl(const Creature*, bool homeSite);
   static bool doesntMove(const Creature*);
   static bool restrictedMovement(const Creature*);
   static bool canSwapPosition(const Creature*);

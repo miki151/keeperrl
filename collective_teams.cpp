@@ -83,12 +83,12 @@ TeamId CollectiveTeams::create(vector<Creature*> c) {
   return nextId++;
 }
 
-bool CollectiveTeams::hasTeamOrder(TeamId id, const Creature* c, TeamOrder order) const {
+bool CollectiveTeams::hasTeamOrder(TeamId id, TeamOrder order) const {
   CHECK(exists(id));
   return teamInfo.at(id).teamOrders.count(order);
 }
 
-void CollectiveTeams::setTeamOrder(TeamId id, const Creature* c, TeamOrder order, bool state) {
+void CollectiveTeams::setTeamOrder(TeamId id, TeamOrder order, bool state) {
   CHECK(exists(id));
   if (state) {
     teamInfo.at(id).teamOrders.insert(order);

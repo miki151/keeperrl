@@ -91,5 +91,5 @@ const optional<Position>& Territory::getCentralPoint() const {
 }
 
 IterateVectors<Position> Territory::getPillagePositions() const {
-  return iterateVectors(getAll(), getStandardExtended());
+  return iterateVectors(allSquaresVec, getStandardExtended());
 }

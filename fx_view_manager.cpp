@@ -143,13 +143,14 @@ void FXViewManager::EntityInfo::updateFX(FXViewManager* manager, GenericId gid) 
     }
 }
 
-void FXViewManager::beginFrame(Renderer& renderer, float zoom, float ox, float oy) {
+void FXViewManager::beginFrame(Renderer& renderer, float zoomX, float zoomY, float ox, float oy) {
   for (auto& pair : *entities)
     pair.second.clearVisibility();
 
   auto size = renderer.getSize();
-  m_zoom = zoom;
-  fxRenderer->setView(zoom, ox, oy, size.x, size.y);
+  m_zoomX = zoomX;
+  m_zoomY = zoomY;
+  fxRenderer->setView(zoomX, zoomY, ox, oy, size.x, size.y);
   fxRenderer->prepareOrdered();
 }
 
@@ -212,8 +213,8 @@ void FXViewManager::drawFX(Renderer& renderer, GenericId id, Color color) {
 
   if (num > 0) {
     renderer.renderDeferredSprites();
-    float px = (entity.x) * Renderer::nominalSize * m_zoom;
-    float py = (entity.y) * Renderer::nominalSize * m_zoom;
+    float px = (entity.x) * Renderer::nominalSize * m_zoomX;
+    float py = (entity.y) * Renderer::nominalSize * m_zoomY;
     fxRenderer->drawOrdered(ids, num, px, py, color);
   }
 }

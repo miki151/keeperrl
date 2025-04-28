@@ -62,7 +62,7 @@ CreatureAttributes::CreatureAttributes(CreatureAttributes&&) noexcept = default;
 CreatureAttributes& CreatureAttributes::operator =(const CreatureAttributes&) = default;
 CreatureAttributes& CreatureAttributes::operator =(CreatureAttributes&&) = default;
 
-template <class Archive> 
+template <class Archive>
 void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) {
   ar(NAMED(viewId), NAMED(illusionViewObject), NAMED(name), NAMED(attr), NAMED(chatReactionFriendly));
   ar(NAMED(chatReactionHostile), NAMED(passiveAttack), OPTION(gender), OPTION(viewIdUpgrades), OPTION(promotionCost));
@@ -72,7 +72,14 @@ void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) 
   ar(SKIP(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel), OPTION(inventory));
   ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction));
   ar(OPTION(automatonParts), OPTION(specialAttr), NAMED(deathEffect), NAMED(chatEffect), OPTION(companions));
-  ar(OPTION(maxPromotions), OPTION(afterKilledSomeone), SKIP(permanentBuffs));
+  ar(OPTION(maxPromotions), OPTION(afterKilledSomeone), SKIP(permanentBuffs), OPTION(killedAchievement));
+  ar(OPTION(killedByAchievement), OPTION(steedAchievement), OPTION(fixedAttr), OPTION(grantsExperience));
+  if (version >= 1)
+    ar(OPTION(noCopulation));
+  if (version >= 2) {
+    ar(OPTION(copulationEffect));
+    ar(OPTION(copulationClientEffect));
+  }
   for (auto& a : attr)
     a.second = max(0, a.second);
 }
@@ -108,6 +115,10 @@ void CreatureAttributes::increaseBaseAttr(AttrType type, int v) {
   attr[type] = max(0, attr[type]);
 }
 
+HashMap<AttrType, int>& CreatureAttributes::getAllAttr() {
+  return attr;
+}
+
 void CreatureAttributes::setBaseAttr(AttrType type, int v) {
   attr[type] = max(0, v);
 }
@@ -133,43 +144,40 @@ const Gender& CreatureAttributes::getGender() const {
 }
 
 int CreatureAttributes::getRawAttr(AttrType type) const {
-  int ret = getValueMaybe(attr, type).value_or(0);
-  if (auto expType = getExperienceType(type))
-    ret += expType->second * (int) expLevel[expType->first];
+  int ret = getValueMaybe(attr, type).value_or(0) + getValueMaybe(expLevel, type).value_or(0);
+  if (type == AttrType("DEFENSE")) {
+    int defense = 0;
+    for (auto& elem : expLevel)
+      defense = max(defense, (int) elem.second);
+    ret += defense;
+  }
   return ret;
 }
 
-double CreatureAttributes::getExpLevel(ExperienceType type) const {
-  return expLevel[type];
+double CreatureAttributes::getExpLevel(AttrType type) const {
+  return getValueMaybe(expLevel, type).value_or(0);
 }
 
-const EnumMap<ExperienceType, double>& CreatureAttributes::getExpLevel() const {
+const HashMap<AttrType, double>& CreatureAttributes::getExpLevel() const {
   return expLevel;
 }
 
-const EnumMap<ExperienceType, int>& CreatureAttributes::getMaxExpLevel() const {
+const HashMap<AttrType, int>& CreatureAttributes::getMaxExpLevel() const {
   return maxLevelIncrease;
 }
 
-void CreatureAttributes::increaseMaxExpLevel(ExperienceType type, int increase) {
+void CreatureAttributes::increaseMaxExpLevel(AttrType type, int increase) {
   maxLevelIncrease[type] = max(0, maxLevelIncrease[type] + increase);
   expLevel[type] = min<double>(expLevel[type], maxLevelIncrease[type]);
 }
 
-void CreatureAttributes::increaseExpLevel(ExperienceType type, double increase) {
+void CreatureAttributes::increaseExpLevel(AttrType type, double increase) {
   increase = max(0.0, min(increase, (double) maxLevelIncrease[type] - expLevel[type]));
   expLevel[type] += increase;
 }
 
-bool CreatureAttributes::isTrainingMaxedOut(ExperienceType type) const {
-  return getExpLevel(type) >= maxLevelIncrease[type];
-}
-
-void CreatureAttributes::increaseBaseExpLevel(ExperienceType type, int increase) {
-  for (auto attrType : getAttrIncreases()[type]) {
-    attr[attrType.first] += increase * attrType.second;
-    attr[attrType.first] = max(0, attr[attrType.first]);
-  }
+bool CreatureAttributes::isTrainingMaxedOut(AttrType type) const {
+  return getExpLevel(type) >= getValueMaybe(maxLevelIncrease, type).value_or(0);
 }
 
 vector<SpellSchoolId> CreatureAttributes::getSpellSchools() const {
@@ -192,9 +200,9 @@ optional<SoundId> CreatureAttributes::getAttackSound(AttackType type, bool damag
   if (!noAttackSound)
     switch (type) {
       case AttackType::HIT:
-      case AttackType::CRUSH: return damage ? SoundId::BLUNT_DAMAGE : SoundId::BLUNT_NO_DAMAGE;
+      case AttackType::CRUSH: return damage ? SoundId("BLUNT_DAMAGE") : SoundId("BLUNT_NO_DAMAGE");
       case AttackType::CUT:
-      case AttackType::STAB: return damage ? SoundId::BLADE_DAMAGE : SoundId::BLADE_NO_DAMAGE;
+      case AttackType::STAB: return damage ? SoundId("BLADE_DAMAGE") : SoundId("BLADE_NO_DAMAGE");
       default: return none;
     }
   else
@@ -266,7 +274,7 @@ bool CreatureAttributes::considerTimeout(LastingEffect effect, GlobalTime curren
   }
   return false;
 }
-  
+
 void CreatureAttributes::addLastingEffect(LastingEffect effect, GlobalTime endTime) {
   if (lastingEffects[effect] < endTime)
     lastingEffects[effect] = endTime;
@@ -279,7 +287,7 @@ static bool consumeProb() {
 template <typename T>
 void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj, const int& cap) {
   int hisCapped = (his > cap) ? cap : his;
-  if (consumeProb() && mine < hisCapped) {                    
+  if (consumeProb() && mine < hisCapped) {
     mine = hisCapped;
     if (!adj.empty())
       adjectives.push_back(adj);
@@ -330,10 +338,6 @@ void CreatureAttributes::consume(Creature* self, CreatureAttributes& other) {
   consumeEffects(self, other.permanentEffects);
 }
 
-string CreatureAttributes::getRemainingString(LastingEffect effect, GlobalTime time) const {
-  return "[" + toString(lastingEffects[effect] - time) + "]";
-}
-
 bool CreatureAttributes::isBoulder() const {
   return boulder;
 }
@@ -376,10 +380,6 @@ const MinionActivityMap& CreatureAttributes::getMinionActivities() const {
 
 MinionActivityMap& CreatureAttributes::getMinionActivities() {
   return minionActivities;
-}
-
-bool CreatureAttributes::dontChase() const {
-  return noChase;
 }
 
 bool CreatureAttributes::getCanJoinCollective() const {

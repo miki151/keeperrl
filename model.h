@@ -56,7 +56,6 @@ class Model : public OwnedObject<Model> {
 
   void addCreature(PCreature);
   void addCreature(PCreature, TimeInterval delay);
-  void landHeroPlayer(PCreature);
   void landWarlord(vector<PCreature>);
   bool landCreature(vector<Position> landing, PCreature);
   void addExternalEnemies(ExternalEnemies);
@@ -69,8 +68,8 @@ class Model : public OwnedObject<Model> {
   int getMoveCounter() const;
   void increaseMoveCounter();
 
-  void setGame(WGame);
-  WGame getGame() const;
+  void setGame(Game*);
+  Game* getGame() const;
   void tick(LocalTime);
   vector<Collective*> getCollectives() const;
   vector<Creature*> getAllCreatures() const;
@@ -84,9 +83,6 @@ class Model : public OwnedObject<Model> {
   LevelId getUniqueId() const;
 
   void addCollective(PCollective);
-
-  void addWoodCount(int);
-  int getWoodCount() const;
 
   int getSaveProgressCount() const;
 
@@ -110,10 +106,13 @@ class Model : public OwnedObject<Model> {
   Level* buildMainLevel(const ContentFactory*, LevelBuilder, PLevelMaker);
   Level* buildUpLevel(const ContentFactory*, LevelBuilder, PLevelMaker);
   void calculateStairNavigation();
-  
+
   BiomeId getBiomeId() const;
 
   HeapAllocated<Portals> SERIAL(portals);
+  Vec2 SERIAL(position);
+
+  bool serializationLocked = false;
 
   private:
   struct Private {};
@@ -133,16 +132,14 @@ class Model : public OwnedObject<Model> {
   vector<Level*> SERIAL(upLevels);
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
-  WGame SERIAL(game) = nullptr;
+  Game* SERIAL(game) = nullptr;
   LocalTime SERIAL(lastTick);
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL(currentTime) = 0;
-  int SERIAL(woodCount) = 0;
-  using StairConnections = unordered_map<StairKey, int, CustomHash<StairKey>>;
+  using StairConnections = HashMap<StairKey, int>;
   StairConnections createStairConnections(const MovementType&) const;
-  unordered_map<MovementType, StairConnections, CustomHash<MovementType>> SERIAL(stairNavigation);
-  bool serializationLocked = false;
+  HashMap<MovementType, StairConnections> SERIAL(stairNavigation);
   template <typename>
   friend class EventListener;
   OwnerPointer<EventGenerator> SERIAL(eventGenerator);

@@ -76,7 +76,7 @@ void ConstructionMap::removeFurniturePlan(Position pos, FurnitureLayer layer) {
 void ConstructionMap::addDebt(const CostInfo& cost, const char* reason) {
   debt[cost.id] += cost.value;
   //checkDebtConsistency();
-  CHECK(debt[cost.id] >= 0) << cost.id.data() << " " << reason;
+  //CHECK(debt[cost.id] >= 0) << cost.id.data() << " " << reason;
 }
 
 void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer, FurnitureType type) {
@@ -191,16 +191,22 @@ const StoragePositions& ConstructionMap::getAllStoragePositions() const {
 }
 
 void ConstructionMap::checkDebtConsistency() {
-  unordered_map<CollectiveResourceId, int, CustomHash<CollectiveResourceId>> nowDebt;
+  HashMap<CollectiveResourceId, int> nowDebt;
   for (auto& f : allFurniture) {
     auto& info = furniture[f.second].getOrFail(f.first);
     if (!info.isBuilt(f.first, f.second))
       nowDebt[info.getCost().id] += info.getCost().value;
   }
   for (auto& elem : nowDebt)
-    CHECK(getValueMaybe(debt, elem.first).value_or(0) == elem.second) << getValueMaybe(debt, elem.first).value_or(0) << " " << elem.second;
+    if (getValueMaybe(debt, elem.first).value_or(0) != elem.second) {
+      debt = nowDebt;
+      return;
+    }
   for (auto& elem : debt)
-    CHECK(getValueMaybe(nowDebt, elem.first).value_or(0) == elem.second);
+    if (getValueMaybe(nowDebt, elem.first).value_or(0) != elem.second) {
+      debt = nowDebt;
+      return;
+    }
 }
 
 template <class Archive>

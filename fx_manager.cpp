@@ -54,14 +54,12 @@ void FXManager::simulateStable(double timeDelta, int visibleFps, int simulateFps
   double drawDelta = 1.0 / visibleFps;
   double simulationDelta = 1.0 / simulateFps;
   int numSimSteps = simulateFps / visibleFps;
-  int numSteps = 0;
 
   // TODO: limit number of steps?
   while (timeDelta > drawDelta) {
     for (int n = 0; n < numSimSteps; n++)
       simulate(simulationDelta);
     timeDelta -= drawDelta;
-    numSteps++;
   }
 
   accumFrameTime = timeDelta;
@@ -323,6 +321,10 @@ ParticleSystem FXManager::makeSystem(FXName name, uint spawnTime, InitConfig con
 }
 
 ParticleSystemId FXManager::addSystem(FXName name, InitConfig config) {
+  if (name == FXName::AUREOLA)
+    for (int i : All(systems))
+      if (!systems[i].isDead && systems[i].pos == config.pos && systems[i].defId == FXName::AUREOLA)
+        return ParticleSystemId(i, systems[i].spawnTime);
   for (int n = 0; n < (int)systems.size(); n++)
     if (systems[n].isDead) {
       if (systems[n].spawnTime == spawnClock) {

@@ -11,7 +11,6 @@
 #include "furniture_factory.h"
 #include "furniture.h"
 #include "task_map.h"
-#include "quarters.h"
 #include "zones.h"
 #include "resource_info.h"
 #include "equipment.h"
@@ -121,27 +120,18 @@ optional<MinionActivity> MinionActivities::getActivityFor(const Collective* col,
 template <typename PosType, typename PosFun>
 static vector<PosType> tryInQuarters(vector<PosType> pos, const Collective* collective, const Creature* c, PosFun posFun) {
   PROFILE;
-  auto& quarters = collective->getQuarters();
   auto& zones = collective->getZones();
-  bool hasAnyQuarters = [&] {
-    for (auto& q : quarters.getAllQuarters())
-      if (!zones.getPositions(q.zone).empty())
-        return true;
-    return false;
-  }();
-  if (!hasAnyQuarters)
+  if (zones.getPositions(ZoneId::QUARTERS).empty())
     return pos;
-  auto index = quarters.getAssigned(c->getUniqueId());
+  auto& myQuarters = zones.getQuarters(c->getUniqueId());
   vector<PosType> inQuarters;
-  if (index) {
+  if (!myQuarters.empty()) {
     PROFILE_BLOCK("has quarters");
-    inQuarters = pos.filter([&](auto& pos) {return zones.isZone(posFun(pos), quarters.getAllQuarters()[*index].zone);});
+    inQuarters = pos.filter([&](auto& pos) {return myQuarters.count(posFun(pos));});
   } else {
     PROFILE_BLOCK("no quarters");
-    EnumSet<ZoneId> allZones;
-    for (auto& q : quarters.getAllQuarters())
-      allZones.insert(q.zone);
-    inQuarters = pos.filter([&](auto& pos) { return !zones.isAnyZone(posFun(pos), allZones); });
+    auto& allQuarters = zones.getPositions(ZoneId::QUARTERS);
+    inQuarters = pos.filter([&](auto& pos) { return !allQuarters.count(posFun(pos)); });
   }
   if (!inQuarters.empty())
     return inQuarters;
@@ -180,13 +170,15 @@ vector<pair<Position, FurnitureLayer>> MinionActivities::getAllPositions(const C
     ret = ret.filter([&](auto& pos) { return pos.first.canNavigateToOrNeighbor(c->getPosition(), movement); });
     ret = tryInQuarters(ret, collective, c, [](const pair<Position, FurnitureLayer>& p) -> const Position& { return p.first; });
   }
+  if (c && info.type == MinionActivityInfo::Type::FURNITURE && info.searchType == Task::SearchType::LAZY)
+    ret = ret.filter([&](auto& pos) { return !pos.first.getCreature() || pos.first.getCreature() == c; });
   return ret;
 }
 
 static PTask getDropItemsTask(Collective* collective, const Creature* creature) {
   auto& config = collective->getConfig();
   auto& items = creature->getEquipment().getItems();
-  unordered_map<StorageId, vector<Item*>, CustomHash<StorageId>> itemMap;
+  HashMap<StorageId, vector<Item*>> itemMap;
   for (auto it : items)
     if (!collective->getMinionEquipment().isOwner(it, creature))
       for (auto id : it->getStorageIds())
@@ -224,7 +216,7 @@ MinionActivities::MinionActivities(const ContentFactory* contentFactory) {
     }
 }
 
-WTask MinionActivities::getExisting(Collective* collective, Creature* c, MinionActivity activity) {
+Task* MinionActivities::getExisting(Collective* collective, Creature* c, MinionActivity activity) {
   PROFILE;
   return collective->getTaskMap().getClosestTask(c, activity, false, collective);
 }
@@ -247,8 +239,11 @@ static vector<Position> limitToIndoors(const PositionSet& v) {
 
 const PositionSet& getIdlePositions(const Collective* collective, const Creature* c) {
   auto& candidate = [&] () -> const PositionSet& {
-    if (auto q = collective->getQuarters().getAssigned(c->getUniqueId()))
-      return collective->getZones().getPositions(Quarters::getAllQuarters()[*q].zone);
+    auto& quarters = collective->getZones().getQuarters(c->getUniqueId());
+    if (!quarters.empty())
+      return quarters;
+    if (c->isAffected(LastingEffect::STEED))
+      return collective->getConstructions().getBuiltPositions(FurnitureType("STABLE"));
     if (collective->hasTrait(c, MinionTrait::PRISONER))
       return collective->getConstructions().getBuiltPositions(FurnitureType("PRISON"));
     if (!collective->hasTrait(c, MinionTrait::NO_LEISURE_ZONE))
@@ -270,6 +265,8 @@ PTask MinionActivities::generate(Collective* collective, Creature* c, MinionActi
       if (collective->getDancing().getTarget(c))
         return Task::dance(collective);
       auto& myTerritory = getIdlePositions(collective, c);
+      if (c->isAutomaton() && myTerritory.count(c->getPosition()))
+        return Task::idle();
       if (auto p = collective->getTerritory().getCentralPoint())
         if (p->getLevel()->depth == 0)
           if (!myTerritory.empty() && collective->getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
@@ -304,7 +301,7 @@ PTask MinionActivities::generate(Collective* collective, Creature* c, MinionActi
       PROFILE_BLOCK("Furniture");
       vector<pair<Position, FurnitureLayer>> squares = getAllPositions(collective, c, activity);
       if (!squares.empty())
-        return Task::applySquare(collective, squares, Task::RANDOM_CLOSE, Task::APPLY);
+        return Task::applySquare(collective, squares, info.searchType, Task::APPLY);
       break;
     }
     case MinionActivityInfo::ARCHERY: {
@@ -333,13 +330,34 @@ PTask MinionActivities::generate(Collective* collective, Creature* c, MinionActi
         return Task::copulate(collective, target, 20);
       break;
     }
+    case MinionActivityInfo::CONFESSION: {
+      PROFILE_BLOCK("Confess");
+      PositionSet targets;
+      if (c->isAffected(BuffId("MORTAL_SINNED")))
+        for (auto& pos : collective->getConstructions().getBuiltPositions(FurnitureType("LUXURIOUS_CONFESSIONAL")))
+          if (auto c = pos.getCreature())
+            if (c->isAffected(BuffId("CONFESSING_SKILL")))
+              targets.insert(pos);
+      if (targets.empty() && c->isAffected(BuffId("SINNED")))
+        for (auto& pos : collective->getConstructions().getBuiltPositions(FurnitureType("CONFESSIONAL")))
+          if (auto c = pos.getCreature())
+            if (c->isAffected(BuffId("CONFESSING_SKILL")))
+              targets.insert(pos);
+      if (!targets.empty())
+        return Task::chain(
+            Task::applySquare(collective, targets.transform([](auto pos){ return make_pair(pos, FurnitureLayer::MIDDLE); }),
+                Task::SearchType::CONFESSION, Task::APPLY),
+            Task::wait(10_visible)
+        );
+      break;
+    }
     case MinionActivityInfo::EAT: {
       PROFILE_BLOCK("Eat");
       const auto& hatchery = collective->getConstructions().getBuiltPositions(FurnitureType("PIGSTY"));
       if (!hatchery.empty())
         return Task::eat(tryInQuarters(vector<Position>(hatchery.begin(), hatchery.end()), collective, c));
       break;
-      }
+    }
     case MinionActivityInfo::SPIDER: {
       PROFILE_BLOCK("Spider");
       auto& territory = collective->getTerritory();
@@ -368,8 +386,15 @@ optional<TimeInterval> MinionActivities::getDuration(const Creature* c, MinionAc
       return TimeInterval((int) 30 + Random.get(-10, 10));
     case MinionActivity::RITUAL:
       return 150_visible;
+    case MinionActivity::HEARING_CONFESSION:
+      return 50_visible;
+    case MinionActivity::PREACHING:
+    case MinionActivity::MASS:
+      return 300_visible;
+    case MinionActivity::CONFESSION:
+      return none;
     default:
-      return TimeInterval((int) 500 + 250 * c->getMorale().value_or(0));
+      return TimeInterval(500 + Random.get(Range(0, 250)));
   }
 }
 

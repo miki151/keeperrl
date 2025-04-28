@@ -26,6 +26,7 @@
 #include "item_prefix.h"
 #include "statistics.h"
 #include "lasting_or_buff.h"
+#include "assembled_minion.h"
 
 STRUCT_IMPL(ItemType)
 
@@ -78,7 +79,7 @@ ItemType ItemType::setPrefixChance(double chance)&& {
 
 class FireScrollItem : public Item {
   public:
-  FireScrollItem(const ItemAttributes& attr, const ContentFactory* f) : Item(attr, f) {}
+  FireScrollItem(SItemAttributes attr, const ContentFactory* f) : Item(attr, f) {}
 
   virtual void applySpecial(Creature* c) override {
     fireDamage(c->getPosition());
@@ -105,7 +106,7 @@ class FireScrollItem : public Item {
 
 class Corpse : public Item {
   public:
-  Corpse(const ViewObject& obj2, const ItemAttributes& attr, const string& rottenN,
+  Corpse(const ViewObject& obj2, SItemAttributes attr, const string& rottenN,
       TimeInterval rottingT, CorpseInfo info, bool instantlyRotten, const ContentFactory* f) :
       Item(attr, f),
       object2(obj2),
@@ -164,7 +165,7 @@ class Corpse : public Item {
   CorpseInfo SERIAL(corpseInfo);
 };
 
-static PItem corpse(const ItemAttributes& attr, const string& rottenName, const ContentFactory* f,
+static PItem corpse(SItemAttributes attr, const string& rottenName, const ContentFactory* f,
     bool instantlyRotten, CorpseInfo corpseInfo) {
   const auto rotTime = 300_visible;
   return makeOwner<Corpse>(
@@ -195,7 +196,7 @@ PItem ItemType::severedLimb(const string& creatureName, BodyPart part, double we
 
 }
 
-static ItemAttributes getCorpseAttr(const string& name, ItemClass itemClass, double weight, bool isResource,
+static SItemAttributes getCorpseAttr(const string& name, ItemClass itemClass, double weight, bool isResource,
     optional<string> ingredient) {
   return ITATTR(
     i.viewId = ViewId("body_part");
@@ -218,7 +219,7 @@ PItem ItemType::corpse(const string& name, const string& rottenName, double weig
 
 class PotionItem : public Item {
   public:
-  PotionItem(const ItemAttributes& attr, const ContentFactory* f) : Item(attr, f) {}
+  PotionItem(SItemAttributes attr, const ContentFactory* f) : Item(attr, f) {}
 
   virtual void fireDamage(Position position) override {
     heat += 0.3;
@@ -254,20 +255,20 @@ REGISTER_TYPE(FireScrollItem)
 REGISTER_TYPE(Corpse)
 
 
-ItemAttributes ItemType::getAttributes(const ContentFactory* factory) const {
-  return type->visit<ItemAttributes>([&](const auto& t) { return t.getAttributes(factory); });
+SItemAttributes ItemType::getAttributes(const ContentFactory* factory) const {
+  return type->visit<SItemAttributes>([&](const auto& t) { return t.getAttributes(factory); });
 }
 
 PItem ItemType::get(const ContentFactory* factory) const {
   auto attributes = getAttributes(factory);
-  for (auto& elem : attributes.modifiers) {
+  for (auto& elem : attributes->modifiers) {
     auto var = factory->attrInfo.at(elem.first).modifierVariation;
     auto& mod = elem.second;
-    if (Random.chance(attributes.variationChance) && var > 0)
+    if (Random.chance(attributes->variationChance) && var > 0)
       mod = max(1, mod + Random.get(-var, var + 1));
   }
-  if (attributes.ingredientType)
-    attributes.description = "Special crafting ingredient";
+  if (attributes->ingredientType && attributes->description.empty())
+    attributes->description = "Special crafting ingredient";
   return type->visit<PItem>(
       [&](const ItemTypes::FireScroll&) {
         return makeOwner<FireScrollItem>(std::move(attributes), factory);
@@ -320,11 +321,11 @@ static string getRandomPoem() {
   return Random.choose(makeVec<string>("bad", "obscene", "vulgar")) + " " + getRandomPoemType();
 }
 
-ItemAttributes ItemTypes::Corpse::getAttributes(const ContentFactory*) const {
+SItemAttributes ItemTypes::Corpse::getAttributes(const ContentFactory*) const {
   return getCorpseAttr("corpse", ItemClass::CORPSE, 100, true, none);
 }
 
-ItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory* f) const {
+SItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory* f) const {
   return ITATTR(
       i.viewId = ViewId("scroll");
       i.name = getRandomPoem();
@@ -332,7 +333,7 @@ ItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory* f) const {
       i.weight = 0.1;
       i.applyVerb = make_pair("read", "reads");
       i.effect = Effect(Effects::Area{10,
-          Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::IncreaseMorale{-0.1})))});
+          Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::Lasting{30_visible, BuffId("DEF_DEBUFF")})))});
       i.price = i.effect->getPrice(f);
       i.burnTime = 5;
       i.uses = 1;
@@ -341,7 +342,7 @@ ItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory* f) const {
   );
 }
 
-ItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory* f) const {
+SItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory* f) const {
   return ITATTR(
       i.viewId = ViewId("scroll");
       i.shortName = getRandomPoemType();
@@ -350,7 +351,7 @@ ItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory* f) cons
       i.weight = 0.1;
       i.applyVerb = make_pair("read", "reads");
       i.effect = Effect(Effects::Area{10,
-          Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::IncreaseMorale{-0.1})))});
+          Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::Lasting{30_visible, BuffId("DEF_DEBUFF")})))});
       i.price = i.effect->getPrice(f);
       i.burnTime = 5;
       i.uses = 1;
@@ -360,16 +361,15 @@ ItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory* f) cons
   );
 }
 
-ItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory* factory) const {
+SItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
       auto allIds = factory->getCreatures().getViewId(creature);
       i.viewId = allIds.front();
       i.partIds = allIds.getSubsequence(1);
       i.partIds.append(partIds);
-      i.effect = Effect(Effects::AssembledMinion{creature, traits});
+      i.assembledMinion = AssembledMinion LIST(creature, traits);
       i.name = itemName;
       i.weight = 1;
-      i.price = i.effect->getPrice(factory);
       i.uses = 1;
       i.maxUpgrades = maxUpgrades;
       i.upgradeType = upgradeType;
@@ -377,14 +377,14 @@ ItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory* factory
   );
 }
 
-ItemAttributes ItemTypes::Intrinsic::getAttributes(const ContentFactory* factory) const {
+SItemAttributes ItemTypes::Intrinsic::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
       i.viewId = viewId;
       i.name = name;
       for (auto& effect : weaponInfo.attackerEffect)
-        i.prefixes.push_back("of " + effect.getName(factory));
+        i.suffixes.push_back("of " + effect.getName(factory));
       for (auto& effect : weaponInfo.victimEffect)
-        i.prefixes.push_back("of " + effect.effect.getName(factory));
+        i.suffixes.push_back("of " + effect.effect.getName(factory));
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 0.3;
@@ -395,7 +395,7 @@ ItemAttributes ItemTypes::Intrinsic::getAttributes(const ContentFactory* factory
  );
 }
 
-ItemAttributes ItemTypes::Ring::getAttributes(const ContentFactory* f) const {
+SItemAttributes ItemTypes::Ring::getAttributes(const ContentFactory* f) const {
   return ITATTR(
       i.viewId = ViewId("ring", getColor(lastingEffect, f));
       i.shortName = getName(lastingEffect, f);
@@ -410,7 +410,7 @@ ItemAttributes ItemTypes::Ring::getAttributes(const ContentFactory* f) const {
   );
 }
 
-ItemAttributes ItemTypes::Amulet::getAttributes(const ContentFactory* f) const {
+SItemAttributes ItemTypes::Amulet::getAttributes(const ContentFactory* f) const {
   return ITATTR(
       i.viewId = getAmuletViewId(lastingEffect);
       i.shortName = getName(lastingEffect, f);
@@ -425,27 +425,32 @@ ItemAttributes ItemTypes::Amulet::getAttributes(const ContentFactory* f) const {
   );
 }
 
-ItemAttributes CustomItemId::getAttributes(const ContentFactory* factory) const {
-  if (auto ret = getReferenceMaybe(factory->items, *this))
-    return *ret;
-  else {
+SItemAttributes CustomItemId::getAttributes(const ContentFactory* factory) const {
+  if (auto ret = getReferenceMaybe(factory->items, *this)) {
+    if (!!(*ret)->resourceId)
+      return *ret;
+    else
+      return make_shared<ItemAttributes>(**ret);
+  } else {
     USER_INFO << "Item not found: " << data() << ". Returning a rock.";
     return CustomItemId("Rock").getAttributes(factory);
   }
 }
 
-ItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory* factory) const {
+static SItemAttributes getPotionAttr(const ContentFactory* factory, Effect effect, double scale, const char* prefix,
+    const char* viewId) {
+  effect.scale(scale, factory);
   return ITATTR(
-      i.viewId = ViewId("potion1", effect.getColor(factory));
+      i.viewId = ViewId(viewId, effect.getColor(factory));
       i.shortName = effect.getName(factory);
-      i.name = "potion of " + *i.shortName;
-      i.plural = "potions of " + *i.shortName;
+      i.name = prefix + "potion of "_s + *i.shortName;
+      i.plural = prefix + "potions of "_s + *i.shortName;
       i.blindName = "potion"_s;
       i.applyVerb = make_pair("drink", "drinks");
       i.fragile = true;
       i.weight = 0.3;
       i.effect = effect;
-      i.price = i.effect->getPrice(factory);
+      i.price = i.effect->getPrice(factory) * scale * scale;
       i.burnTime = 1;
       i.effectAppliedWhenThrown = true;
       i.uses = 1;
@@ -455,10 +460,18 @@ ItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory* factory) c
   );
 }
 
-ItemAttributes ItemTypes::PrefixChance::getAttributes(const ContentFactory* factory) const {
+SItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory* factory) const {
+  return getPotionAttr(factory, effect, 1, "", "potion1");
+}
+
+SItemAttributes ItemTypes::Potion2::getAttributes(const ContentFactory* factory) const {
+  return getPotionAttr(factory, effect, 2, "concentrated ", "potion3");
+}
+
+SItemAttributes ItemTypes::PrefixChance::getAttributes(const ContentFactory* factory) const {
   auto attributes = type->getAttributes(factory);
-  if (!attributes.genPrefixes.empty() && Random.chance(chance))
-    applyPrefix(factory, Random.choose(attributes.genPrefixes), attributes);
+  if (!attributes->genPrefixes.empty() && Random.chance(chance))
+    applyPrefix(factory, Random.choose(attributes->genPrefixes), *attributes);
   return attributes;
 }
 
@@ -492,7 +505,7 @@ static ViewId getMushroomViewId(Effect e) {
   );
 }
 
-ItemAttributes ItemTypes::Mushroom::getAttributes(const ContentFactory* factory) const {
+SItemAttributes ItemTypes::Mushroom::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
       i.viewId = getMushroomViewId(effect);
       i.shortName = effect.getName(factory);
@@ -500,7 +513,6 @@ ItemAttributes ItemTypes::Mushroom::getAttributes(const ContentFactory* factory)
       i.blindName = "mushroom"_s;
       i.itemClass= ItemClass::FOOD;
       i.weight = 0.1;
-      i.modifiers[AttrType("DAMAGE")] = -15;
       i.effect = effect;
       i.price = i.effect->getPrice(factory);
       i.uses = 1;
@@ -516,7 +528,7 @@ static ViewId getRuneViewId(const string& name) {
   return ViewId("glyph", colors[(h % colors.size() + colors.size()) % colors.size()]);
 }
 
-ItemAttributes ItemTypes::Glyph::getAttributes(const ContentFactory* factory) const {
+SItemAttributes ItemTypes::Glyph::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
       i.shortName = getGlyphName(factory, *rune.prefix);
       i.viewId = getRuneViewId(*i.shortName);
@@ -539,7 +551,7 @@ static ViewId getBalsamViewId(const string& name) {
   return ViewId("potion2", colors[(h % colors.size() + colors.size()) % colors.size()]);
 }
 
-ItemAttributes ItemTypes::Balsam::getAttributes(const ContentFactory* factory) const {
+SItemAttributes ItemTypes::Balsam::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
       i.shortName = effect.getName(factory);
       i.viewId = getBalsamViewId(*i.shortName);
@@ -554,7 +566,7 @@ ItemAttributes ItemTypes::Balsam::getAttributes(const ContentFactory* factory) c
   );
 }
 
-ItemAttributes ItemTypes::Scroll::getAttributes(const ContentFactory* factory) const {
+SItemAttributes ItemTypes::Scroll::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
       i.viewId = ViewId("scroll");
       i.shortName = effect.getName(factory);
@@ -573,7 +585,7 @@ ItemAttributes ItemTypes::Scroll::getAttributes(const ContentFactory* factory) c
   );
 }
 
-ItemAttributes ItemTypes::FireScroll::getAttributes(const ContentFactory*) const {
+SItemAttributes ItemTypes::FireScroll::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("scroll");
       i.name = "scroll of fire";
@@ -594,7 +606,7 @@ ItemAttributes ItemTypes::FireScroll::getAttributes(const ContentFactory*) const
   );
 }
 
-ItemAttributes ItemTypes::TechBook::getAttributes(const ContentFactory*) const {
+SItemAttributes ItemTypes::TechBook::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("book");
       i.shortName = string(techId.data());

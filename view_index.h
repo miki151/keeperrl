@@ -38,9 +38,7 @@ RICH_ENUM(HighlightType,
   CLICKED_FURNITURE,
   STORAGE_EQUIPMENT,
   STORAGE_RESOURCES,
-  QUARTERS1,
-  QUARTERS2,
-  QUARTERS3,
+  QUARTERS,
   LEISURE,
   INDOORS,
   INSUFFICIENT_LIGHT,
@@ -55,6 +53,9 @@ RICH_ENUM(HighlightType,
   TILE_BELOW
 );
 
+extern const char* getDescription(HighlightType);
+ViewId getViewId(HighlightType, bool active);
+
 class ViewIndex {
   public:
   ViewIndex();
@@ -65,6 +66,7 @@ class ViewIndex {
   ViewObject& getObject(ViewLayer);
   const ViewObject* getTopObject(const vector<ViewLayer>&) const;
   void mergeFromMemory(const ViewIndex& memory);
+  void mergeGroundBelow(const ViewIndex& memory);
   bool isEmpty() const;
   bool noObjects() const;
   bool hasAnyHighlight() const;
@@ -94,7 +96,7 @@ class ViewIndex {
   ItemCounts& modItemCounts();
   ItemCounts& modEquipmentCounts();
 
-  template <class Archive> 
+  template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:

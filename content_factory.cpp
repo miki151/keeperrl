@@ -5,7 +5,6 @@
 #include "creature_inventory.h"
 #include "creature_attributes.h"
 #include "furniture.h"
-#include "player_role.h"
 #include "tribe_alignment.h"
 #include "item.h"
 #include "key_verifier.h"
@@ -27,12 +26,19 @@
 #include "buff_info.h"
 
 template <class Archive>
-void ContentFactory::serialize(Archive& ar, const unsigned int) {
+void ContentFactory::serialize(Archive& ar, const unsigned int version) {
   ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups);
-  ar(immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buffs);
-  ar(buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping);
+  ar(immigrantsData, buildInfo, villains, gameIntros, keeperCreatures, technology);
+  if (version == 0) {
+    map<CustomItemId, ItemAttributes> SERIAL(itemsOld);
+    ar(itemsOld);
+    for (auto& elem : itemsOld)
+      items.emplace(elem.first, make_shared<ItemAttributes>(std::move(elem.second)));
+  } else
+    ar(items);
+  ar(buffs, buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping);
   ar(randomLayouts, tileGasTypes, promotions, dancePositions, equipmentGroups, scriptedHelp, attrInfo, attrOrder);
-  ar(bodyMaterials, keybindings);
+  ar(bodyMaterials, keybindings, worldMaps, achievements, achievementsOrder, buffsModifyingEfficiency);
   creatures.setContentFactory(this);
 }
 
@@ -52,8 +58,8 @@ vector<pair<Key, Value>> convertKeys(const vector<pair<PrimaryId<Key>, Value>>& 
 }
 
 template <typename Key, typename Value>
-unordered_map<Key, Value, CustomHash<Key>> convertKeysHash(const map<PrimaryId<Key>, Value>& m) {
-  unordered_map<Key, Value, CustomHash<Key>> ret;
+HashMap<Key, Value> convertKeysHash(const map<PrimaryId<Key>, Value>& m) {
+  HashMap<Key, Value> ret;
   for (auto& elem : m)
     ret.insert(make_pair(Key(elem.first), std::move(elem.second)));
   return ret;
@@ -133,50 +139,20 @@ static optional<string> checkGroupCounts(const map<string, vector<ImmigrantInfo>
 }
 
 optional<string> ContentFactory::readVillainsTuple(const GameConfig* gameConfig, KeyVerifier* keyVerifier) {
-  if (auto error = gameConfig->readObject(villains, GameConfigId::CAMPAIGN_VILLAINS, keyVerifier))
+  map<PrimaryId<VillainGroup>, vector<Campaign::VillainInfo>> villainsTmp;
+  if (auto error = gameConfig->readObject(villainsTmp, GameConfigId::CAMPAIGN_VILLAINS, keyVerifier))
     return "Error reading campaign villains definition"_s + *error;
-  auto has = [](vector<Campaign::VillainInfo> v, VillainType type) {
-    return std::any_of(v.begin(), v.end(), [type](const auto& elem){ return elem.type == type; });
-  };
-  for (auto villainType : {VillainType::ALLY, VillainType::MAIN, VillainType::LESSER})
-    for (auto role : ENUM_ALL(PlayerRole))
-      for (auto alignment : ENUM_ALL(TribeAlignment)) {
-        auto index = [&] {
-          switch (role) {
-            case PlayerRole::KEEPER:
-              switch (alignment) {
-                case TribeAlignment::EVIL:
-                  return VillainGroup::EVIL_KEEPER;
-                case TribeAlignment::LAWFUL:
-                  return VillainGroup::LAWFUL_KEEPER;
-              }
-            case PlayerRole::ADVENTURER:
-              switch (alignment) {
-                case TribeAlignment::EVIL:
-                  return VillainGroup::EVIL_ADVENTURER;
-                case TribeAlignment::LAWFUL:
-                  return VillainGroup::LAWFUL_ADVENTURER;
-              }
-          }
-        }();
-        if (!has(villains[index], villainType))
-          return "Empty " + EnumInfo<VillainType>::getString(villainType) + " villain list for alignment: "
-                    + EnumInfo<TribeAlignment>::getString(alignment);
-      }
+  villains = convertKeys(villainsTmp);
   return none;
 }
 
 optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, KeyVerifier* keyVerifier) {
   map<string, KeeperCreatureInfo> keeperCreaturesTmp;
-  map<string, AdventurerCreatureInfo> adventurerCreaturesTmp;
-  if (auto error = config->readObject(adventurerCreaturesTmp, GameConfigId::ADVENTURER_CREATURES, keyVerifier))
-    return "Error reading player creature definitions: "_s + *error;
   if (auto error = config->readObject(keeperCreaturesTmp, GameConfigId::KEEPER_CREATURES, keyVerifier))
     return "Error reading player creature definitions: "_s + *error;
   keeperCreatures = vector<pair<string, KeeperCreatureInfo>>(keeperCreaturesTmp.begin(), keeperCreaturesTmp.end());
-  adventurerCreatures = vector<pair<string, AdventurerCreatureInfo>>(adventurerCreaturesTmp.begin(), adventurerCreaturesTmp.end());
-  if (keeperCreatures.empty() || adventurerCreatures.empty())
-    return "Keeper and adventurer lists must each contain at least 1 entry."_s;
+  if (keeperCreatures.empty())
+    return "Keeper list must contain at least 1 entry."_s;
   for (auto& keeperInfo : keeperCreatures) {
     vector<BuildInfo> buildInfoTmp;
     set<string> allDataGroups;
@@ -217,6 +193,13 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
     for (auto elem : keeperInfo.second.endlessEnemyGroups)
       if (!externalEnemies.count(elem))
         return "Undefined endless enemy group: \"" + elem + "\"";
+    HashSet<VillainType> hasVillainTypes;
+    for (auto group : keeperInfo.second.villainGroups)
+      for (auto villain : villains[group])
+        hasVillainTypes.insert(villain.type);
+    for (auto type : {VillainType::ALLY, VillainType::MINOR, VillainType::LESSER, VillainType::MAIN})
+      if (!hasVillainTypes.count(type))
+        return "Keeper " + keeperInfo.first + " has no villains of type " + EnumInfo<VillainType>::getString(type);
   }
   return none;
 }
@@ -225,7 +208,8 @@ optional<string> ContentFactory::readItems(const GameConfig* config, KeyVerifier
   map<PrimaryId<CustomItemId>, ItemAttributes> itemsTmp;
   if (auto res = config->readObject(itemsTmp, GameConfigId::ITEMS, keyVerifier))
     return *res;
-  items = convertKeys(itemsTmp);
+  for (auto& elem : itemsTmp)
+    items.insert(make_pair(CustomItemId(elem.first), make_shared<ItemAttributes>(std::move(elem.second))));
   return none;
 }
 
@@ -334,8 +318,8 @@ optional<string> ContentFactory::readCampaignInfo(const GameConfig* config, KeyV
   for (auto& l : {campaignInfo.maxAllies, campaignInfo.maxMainVillains, campaignInfo.maxLesserVillains})
     if (l < 1 || l > 20)
       return "Campaign villain limits must be between 1 and 20"_s;
-  if (campaignInfo.influenceSize < 1)
-    return "Campaign influence size must be 1 or higher"_s;
+  if (campaignInfo.initialRadius < 2)
+    return "Initial radius must be 2 or higher"_s;
   if (campaignInfo.mapZoom < 1 || campaignInfo.mapZoom > 3)
     return "Campaign map zoom must be between 1 and 3"_s;
   return none;
@@ -375,6 +359,8 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   for (auto& dir : config->dirs)
     if (auto error = readMapLayouts(mapLayouts, keyVerifier, dir.subdirectory("map_layouts")))
       return *error;
+  if (auto error = config->readObject(worldMaps, GameConfigId::WORLD_MAPS, &keyVerifier))
+    return *error;
   if (auto error = config->readObject(workshopGroups, GameConfigId::WORKSHOPS_MENU, &keyVerifier))
     return *error;
   if (auto error = config->readObject(immigrantsData, GameConfigId::IMMIGRATION, &keyVerifier))
@@ -458,6 +444,9 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   if (auto error = config->readObject(buffsTmp, GameConfigId::BUFFS, &keyVerifier))
     return *error;
   buffs = convertKeysHash(buffsTmp);
+  for (auto& b : buffs)
+    if (!!b.second.efficiencyMultiplier)
+      buffsModifyingEfficiency.push_back(b.first);
   map<PrimaryId<BodyMaterialId>, BodyMaterial> materialsTmp;
   if (auto error = config->readObject(materialsTmp, GameConfigId::BODY_MATERIALS, &keyVerifier))
     return *error;
@@ -470,6 +459,13 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   if (auto error = config->readObject(keysTmp, GameConfigId::KEYS, &keyVerifier))
     return *error;
   keybindings = convertKeys(keysTmp);
+  vector<pair<PrimaryId<AchievementId>, AchievementInfo>> achievementsTmp;
+  if (auto error = config->readObject(achievementsTmp, GameConfigId::ACHIEVEMENTS, &keyVerifier))
+    return *error;
+  for (auto& elem : achievementsTmp) {
+    achievementsOrder.push_back(elem.first);
+    achievements.insert(elem);
+  }
   auto errors = keyVerifier.verify();
   if (!errors.empty())
     return errors.front();
@@ -483,10 +479,10 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
     }
   furniture.initializeInfos();
   for (auto& elem : items)
-    if (auto id = elem.second.resourceId) {
+    if (auto id = elem.second->resourceId) {
       auto& info = resourceInfo.at(*id);
       info.itemId = ItemType(elem.first);
-      for (auto storageId : elem.second.storageIds)
+      for (auto storageId : elem.second->storageIds)
         if (!info.storage.contains(storageId))
           info.storage.push_back(storageId);
     }
@@ -511,6 +507,7 @@ void ContentFactory::merge(ContentFactory f) {
   for (auto t : f.attrOrder)
     if (!attrOrder.contains(t))
       attrOrder.push_back(t);
+  worldMaps.append(std::move(f.worldMaps));
 }
 
 CreatureFactory& ContentFactory::getCreatures() {

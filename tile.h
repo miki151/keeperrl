@@ -42,6 +42,8 @@ class Tile {
   bool highlightAbove = false;
 
   Tile addConnection(DirSet, vector<TileCoord>);
+  Tile setConnectionMask(DirSet);
+
   Tile addOption(Dir, vector<TileCoord>);
   Tile setFloorBorders();
 
@@ -60,7 +62,7 @@ class Tile {
   Tile setConnectionId(ViewId);
   optional<TileCoord> getHighlightCoord() const;
 
-  const unordered_set<ViewId, CustomHash<ViewId>>& getExtraBorderIds() const;
+  const HashSet<ViewId>& getExtraBorderIds() const;
   bool hasExtraBorders() const;
   bool hasAnyConnections() const;
   const vector<TileCoord>& getExtraBorderCoord(DirSet) const;
@@ -94,6 +96,6 @@ class Tile {
   bool anyCorners = false;
   optional<FXInfo> fx;
   DirSet connectionsMask = DirSet{Dir::N, Dir::E, Dir::S, Dir::W};
-  unordered_set<ViewId, CustomHash<ViewId>> extraBorderIds;
+  HashSet<ViewId> extraBorderIds;
   optional<ViewId> connectionId;
 };

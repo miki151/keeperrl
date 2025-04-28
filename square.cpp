@@ -41,11 +41,7 @@ void Square::serialize(Archive& ar, const unsigned int version) {
   ar(creature, landingLink, tileGas);
   ar(lastViewer, viewIndex);
   ar(forbiddenTribe);
-  if (progressMeter)
-    progressMeter->addProgress();
 }
-
-ProgressMeter* Square::progressMeter = nullptr;
 
 SERIALIZABLE(Square);
 

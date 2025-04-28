@@ -174,7 +174,7 @@ typename EntityMap<Key, Value>::Iter EntityMap<Key, Value>::end() const {
 }
 
 template <typename Key, typename Value>
-template <class Archive> 
+template <class Archive>
 void EntityMap<Key, Value>::serialize(Archive& ar, const unsigned int version) {
   ar(elems);
 }
@@ -182,21 +182,22 @@ void EntityMap<Key, Value>::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE_TMPL(EntityMap, Creature, double);
 SERIALIZABLE_TMPL(EntityMap, Creature, TimeQueue::ExtendedTime);
 SERIALIZABLE_TMPL(EntityMap, Creature, int);
-SERIALIZABLE_TMPL(EntityMap, Creature, WTask);
+SERIALIZABLE_TMPL(EntityMap, Creature, Task*);
 SERIALIZABLE_TMPL(EntityMap, Creature, Collective::CurrentActivity);
-SERIALIZABLE_TMPL(EntityMap, Creature, unordered_map<AttractionType, int, CustomHash<AttractionType>>);
+SERIALIZABLE_TMPL(EntityMap, Creature, HashMap<AttractionType, int>);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<Position>);
+SERIALIZABLE_TMPL(EntityMap, Creature, PositionSet);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<WeakPointer<Item>>);
 SERIALIZABLE_TMPL(EntityMap, Creature, Creature*);
 SERIALIZABLE_TMPL(EntityMap, Creature, pair<GlobalTime, GlobalTime>);
-SERIALIZABLE_TMPL(EntityMap, Creature, ExperienceType);
 SERIALIZABLE_TMPL(EntityMap, Creature, ZoneId);
 SERIALIZABLE_TMPL(EntityMap, Creature, EnumSet<EquipmentSlot>);
 SERIALIZABLE_TMPL(EntityMap, Creature, LocalTime);
+SERIALIZABLE_TMPL(EntityMap, Creature, EnumSet<MinionTrait>);
 SERIALIZABLE_TMPL(EntityMap, Creature, GlobalTime);
 SERIALIZABLE_TMPL(EntityMap, Task, LocalTime);
 SERIALIZABLE_TMPL(EntityMap, Task, MinionActivity);
-SERIALIZABLE_TMPL(EntityMap, Task, WTask);
+SERIALIZABLE_TMPL(EntityMap, Task, Task*);
 SERIALIZABLE_TMPL(EntityMap, Task, MinionTrait);
 SERIALIZABLE_TMPL(EntityMap, Task, Position);
 SERIALIZABLE_TMPL(EntityMap, Task, CostInfo);

@@ -3,7 +3,7 @@
   symbol = "❤️"
   effect = Heal { FLESH }
   cooldown = {10 31}
-  sound = SPELL_HEALING
+  sound = "SPELL_HEALING"
 }
 "advanced healing"
 {
@@ -13,7 +13,7 @@
   range = 1
   targetSelf = true
   cooldown = {10 31}
-  sound = SPELL_HEALING
+  sound = "SPELL_HEALING"
 }
 "expert healing"
 {
@@ -23,14 +23,14 @@
   targetSelf = true
   range = 4
   cooldown = {10 31}
-  sound = SPELL_HEALING
+  sound = "SPELL_HEALING"
 }
 "group healing"
 {
   symbol = "💕"
   effect = Name "group healing" Area 2 Filter Not Enemy Heal { FLESH }
   cooldown = {25 51}
-  sound = SPELL_HEALING
+  sound = "SPELL_HEALING"
 }
 "heal spirit"
 {
@@ -39,7 +39,7 @@
   range = 1
   targetSelf = true
   cooldown = {10 31}
-  sound = SPELL_HEALING
+  sound = "SPELL_HEALING"
 }
 "advanced heal spirit"
 {
@@ -49,21 +49,21 @@
   targetSelf = true
   range = 4
   cooldown = {10 31}
-  sound = SPELL_HEALING
+  sound = "SPELL_HEALING"
 }
 "heal spirit group"
 {
   symbol = "✴✴"
   effect = Name "heal spirit group" Area 2 Filter Not Enemy Heal { SPIRIT }
   cooldown = {25 51}
-  sound = SPELL_HEALING
+  sound = "SPELL_HEALING"
 }
 "cure poison"
 {
   symbol = "⚕"
   effect = Name "cure poison" RemoveLasting POISON
   cooldown = {25 51}
-  sound = SPELL_CURE_POISON
+  sound = "SPELL_CURE_POISON"
 }
 "advanced cure poison"
 {
@@ -73,7 +73,7 @@
   cooldown = {25 51}
   targetSelf = true
   range = 1
-  sound = SPELL_CURE_POISON
+  sound = "SPELL_CURE_POISON"
 }
 "cure blindness"
 {
@@ -82,7 +82,7 @@
   cooldown = {25 51}
   targetSelf = true
   range = 1
-  sound = SPELL_CURE_POISON
+  sound = "SPELL_CURE_POISON"
 }
 "blindness"
 {
@@ -98,7 +98,7 @@
   cooldown = {50 101}
   targetSelf = true
   range = 1
-  sound = SPELL_CURE_POISON
+  sound = "SPELL_CURE_POISON"
 }
 "poison breath"
 {
@@ -107,7 +107,7 @@
   fx = {FLAMETHROWER ColorId GREEN}
   range = 4
   cooldown = {15 31}
-  sound = SPELL_BLAST
+  sound = "SPELL_BLAST"
   message = "breathe poison!" "breathes poison!"
 }
 "summon flies"
@@ -115,7 +115,7 @@
   symbol = "🐝"
   effect = Summon "FLY" {3 7} 100
   cooldown = {30 61}
-  sound = SPELL_SUMMON_INSECTS
+  sound = "SPELL_SUMMON_INSECTS"
 }
 
 Def TryNoFriendlyFire(EffectHit, EffectPass) {
@@ -152,7 +152,7 @@ End
   fx = {MAGIC_MISSILE}
   range = 4
   cooldown = {5 21}
-  sound = SPELL_BLAST
+  sound = "SPELL_BLAST"
 }
 "advanced magic missile"
 {
@@ -163,7 +163,7 @@ End
   fx = {MAGIC_MISSILE}
   range = 8
   cooldown = {5 21}
-  sound = SPELL_BLAST
+  sound = "SPELL_BLAST"
 }
 "expert magic missile"
 {
@@ -174,14 +174,14 @@ End
   fx = {MAGIC_MISSILE}
   range = 12
   cooldown = {5 21}
-  sound = SPELL_BLAST
+  sound = "SPELL_BLAST"
 }
 "deception"
 {
   symbol = "🎭"
   effect = Deception
   cooldown = {30 61}
-  sound = SPELL_DECEPTION
+  sound = "SPELL_DECEPTION"
 }
 "fog cloud"
 {
@@ -194,7 +194,7 @@ End
   symbol = "🕵️"
   effect = Lasting INVISIBLE
   cooldown = {100 301}
-  sound = SPELL_INVISIBILITY
+  sound = "SPELL_INVISIBILITY"
 }
 "advanced invisibility"
 {
@@ -202,21 +202,28 @@ End
   symbol = "🕵️"
   effect = Name "advanced invisibility" Lasting INVISIBLE
   cooldown = {100 301}
-  sound = SPELL_INVISIBILITY
+  sound = "SPELL_INVISIBILITY"
+}
+"automaton invisibility"
+{
+  symbol = "🕵️"
+  effect = Name "invisibility" Lasting 10 INVISIBLE
+  cooldown = 20
+  sound = "SPELL_INVISIBILITY"
 }
 "escape"
 {
   symbol = "✈️"
   effect = Escape {}
   cooldown = {50 101}
-  sound = SPELL_TELEPORT
+  sound = "SPELL_TELEPORT"
 }
 "blink"
 {
   symbol = "👁️"
   effect = Name "blink" Escape { 2 }
   cooldown = 1
-  sound = SPELL_TELEPORT
+  sound = "SPELL_TELEPORT"
 }
 "teleport"
 {
@@ -225,7 +232,7 @@ End
   range = 3
   cooldown = {50 201}
   endOnly = true
-  sound = SPELL_TELEPORT
+  sound = "SPELL_TELEPORT"
 }
 "advanced teleport"
 {
@@ -235,7 +242,16 @@ End
   range = 8
   cooldown = {50 201}
   endOnly = true
-  sound = SPELL_TELEPORT
+  sound = "SPELL_TELEPORT"
+}
+"automaton teleport"
+{
+  symbol = "🌀"
+  effect = Teleport
+  range = 3
+  cooldown = 10
+  endOnly = true
+  sound = "SPELL_TELEPORT"
 }
 "jump"
 {
@@ -252,7 +268,7 @@ End
   effect = Lasting PANIC
   range = 5
   cooldown = {25 51}
-  sound = SPELL_STR_BONUS
+  sound = "SPELL_STR_BONUS"
 }
 "pacify"
 {
@@ -261,14 +277,14 @@ End
   range = 2
   cooldown = {20 61}
   endOnly = true
-  sound = SPELL_STR_BONUS
+  sound = "SPELL_STR_BONUS"
 }
 "haste"
 {
   symbol = "🏃"
   effect = Lasting SPEED
   cooldown = {30 61}
-  sound = SPELL_SPEED_SELF
+  sound = "SPELL_SPEED_SELF"
 }
 "advanced haste"
 {
@@ -278,14 +294,14 @@ End
   targetSelf = true
   range = 1
   cooldown = {30 61}
-  sound = SPELL_SPEED_SELF
+  sound = "SPELL_SPEED_SELF"
 }
 "warhorse_haste"
 {
   symbol = "🐎"
   effect = Name "gallop" ApplyToSteed Lasting SPEED
   cooldown = 50
-  sound = SPELL_SPEED_SELF
+  sound = "HORSE_GALLOP"
   message = "gallop" "gallops"
 }
 "slow"
@@ -294,7 +310,7 @@ End
   effect = Lasting SLOWED
   range = 3
   cooldown = {30 61}
-  sound = SPELL_SPEED_SELF
+  sound = "SPELL_SPEED_SELF"
 }
 "magic cancellation"
 {
@@ -302,7 +318,7 @@ End
   effect = Lasting MAGIC_CANCELLATION
   range = 2
   cooldown = {50 151}
-  sound = SPELL_STR_BONUS
+  sound = "SPELL_STR_BONUS"
 }
 "directed blast"
 {
@@ -311,7 +327,7 @@ End
   range = 4
   endOnly = true
   cooldown = {5 21}
-  sound = SPELL_BLAST
+  sound = "SPELL_BLAST"
 }
 "pull"
 {
@@ -320,14 +336,14 @@ End
   range = 6
 #    endOnly = true
   cooldown = {5 21}
-  sound = SPELL_BLAST
+  sound = "SPELL_BLAST"
 }
 "circular blast"
 {
   symbol = "💥"
   effect = CircularBlast
   cooldown = {5 21}
-  sound = SPELL_AIR_BLAST
+  sound = "SPELL_AIR_BLAST"
   message = "create an air blast!" "creates an air blast!"
 }
 "defense bonus"
@@ -335,7 +351,7 @@ End
   symbol = "🛡"
   effect = Name "defense bonus" Lasting 40 DEF_BONUS
   cooldown = {30 81}
-  sound = SPELL_DEX_BONUS
+  sound = "SPELL_DEX_BONUS"
 }
 "advanced defense bonus"
 {
@@ -345,7 +361,7 @@ End
   targetSelf = true
   range = 1
   cooldown = {30 81}
-  sound = SPELL_DEX_BONUS
+  sound = "SPELL_DEX_BONUS"
 }
 "mass defense bonus"
 {
@@ -353,14 +369,14 @@ End
   symbol = "🛡"
   effect = Name "mass defense bonus" Area 10 Filter Not Enemy Lasting 40 DEF_BONUS
   cooldown = {30 81}
-  sound = SPELL_DEX_BONUS
+  sound = "SPELL_DEX_BONUS"
 }
 "damage bonus"
 {
   symbol = "💪"
   effect = Name "damage bonus" Lasting 40 DAM_BONUS
   cooldown = {30 81}
-  sound = SPELL_STR_BONUS
+  sound = "SPELL_STR_BONUS"
 }
 "advanced damage bonus"
 {
@@ -370,7 +386,7 @@ End
   targetSelf = true
   range = 1
   cooldown = {30 81}
-  sound = SPELL_STR_BONUS
+  sound = "SPELL_STR_BONUS"
 }
 "mass damage bonus"
 {
@@ -378,42 +394,42 @@ End
   symbol = "💪"
   effect = Name "mass damage bonus" Area 10 Filter Not Enemy Lasting 40 DAM_BONUS
   cooldown = {30 81}
-  sound = SPELL_STR_BONUS
+  sound = "SPELL_STR_BONUS"
 }
 "bolster"
 {
   symbol = "🛡"
   effect = Name "bolster" Area 1 Filter Not Enemy Lasting 40 DEF_BONUS 
   cooldown = {30 81}
-  sound = SPELL_DEX_BONUS
+  sound = "SPELL_DEX_BONUS"
 }
 "rally"
 {
   symbol = "💪"
   effect = Name "rally" Area 1 Filter Not Enemy Lasting 40 DAM_BONUS 
   cooldown = {30 81}
-  sound = SPELL_DEX_BONUS
+  sound = "SPELL_DEX_BONUS"
 }
 "summon element"
 {
   symbol = "👾"
   effect = SummonElement
   cooldown = {30 81}
-  sound = SPELL_SUMMON_SPIRIT
+  sound = "SPELL_SUMMON_SPIRIT"
 }
 "meteor shower"
 {
   symbol = "☄"
   effect = Name "meteor shower" PlaceFurniture "METEOR_SHOWER"
   cooldown = {30 81}
-  sound = SPELL_METEOR_SHOWER
+  sound = "SPELL_METEOR_SHOWER"
 }
 "fire elemental"
 {
   symbol = "👾"
   effect = Name "fire elemental" Summon "FIRE_ELEMENTAL" { 1 2 } 100
   cooldown = {30 81}
-  sound = SPELL_FIRE_SPHERE_PET
+  sound = "SPELL_FIRE_SPHERE_PET"
 }
 "advanced fire elemental"
 {
@@ -421,7 +437,7 @@ End
   symbol = "👾"
   effect = Name "advanced fire elemental" Summon "FIRE_ELEMENTAL" { 2 4 } 100
   cooldown = {30 81}
-  sound = SPELL_FIRE_SPHERE_PET
+  sound = "SPELL_FIRE_SPHERE_PET"
 }
 "fire breath"
 {
@@ -430,8 +446,18 @@ End
   fx = {FLAMETHROWER ColorId LIGHT_RED}
   range = 4
   cooldown = {15 31}
-  sound = SPELL_BLAST
+  sound = "SPELL_BLAST"
   message = "breathe fire!" "breathes fire!"
+}
+"oil breath"
+{
+  symbol = "🛢"
+  effect = Name "oil breath" Lasting OIL
+  fx = {FLAMETHROWER ColorId BLACK}
+  range = 4
+  cooldown = {15 31}
+  sound = "SPELL_BLAST"
+  message = "spit oil!" "spits oil!"
 }
 "firewall"
 {
@@ -440,7 +466,7 @@ End
   endOnly = true
   range = 2
   cooldown = {15 31}
-  sound = SPELL_BLAST
+  sound = "SPELL_BLAST"
 }
 "fire trap"
 {
@@ -450,7 +476,7 @@ End
   endOnly = true
   range = 8
   cooldown = {15 31}
-  sound = SPELL_BLAST
+  sound = "SPELL_BLAST"
 }
 "fireball"
 {
@@ -459,14 +485,14 @@ End
   fx = {FIREBALL}
   range = 4
   cooldown = {15 31}
-  sound = SPELL_FIRE_SPHERE_PET
+  sound = "SPELL_FIRE_SPHERE_PET"
 }
 "earth elemental"
 {
   symbol = "👾"
   effect = Name "earth elemental" Summon "EARTH_ELEMENTAL" 1 100
   cooldown = {30 81}
-  sound = SPELL_FIRE_SPHERE_PET
+  sound = "SPELL_FIRE_SPHERE_PET"
 }
 "advanced earth elemental"
 {
@@ -474,7 +500,7 @@ End
   symbol = "👾"
   effect = Name "advanced earth elemental" Summon "EARTH_ELEMENTAL" { 2 4 } 100
   cooldown = {30 81}
-  sound = SPELL_FIRE_SPHERE_PET
+  sound = "SPELL_FIRE_SPHERE_PET"
 }
 "ice cone"
 {
@@ -483,7 +509,7 @@ End
   fx = {FLAMETHROWER ColorId LIGHT_BLUE}
   range = 4
   cooldown = {15 31}
-  #sound = SPELL_FIRE_SPHERE_PET
+  #sound = "SPELL_FIRE_SPHERE_PET"
 }
 "acid stream"
 {
@@ -576,28 +602,28 @@ End
   symbol = "-."
   effect = Name "adoxie right hand" Summon "ADOXIE_HAND_RIGHT" { 1 } 50
   cooldown = 50
-  sound = SPELL_SUMMON_SPIRIT
+  sound = "SPELL_SUMMON_SPIRIT"
 }
 "adoxie left hand"
 {
   symbol = ".-"
   effect = Name "adoxie left hand" Summon "ADOXIE_LEFT_HAND" { 1 } 50
   cooldown = 50
-  sound = SPELL_SUMMON_SPIRIT
+  sound = "SPELL_SUMMON_SPIRIT"
 }
 "adoxie left foot"
 {
   symbol = "_|"
   effect = Name "adoxie left foot" Summon "ADOXIE_FOOT_LEFT" { 1 } 50
   cooldown = 50
-  sound = SPELL_SUMMON_SPIRIT
+  sound = "SPELL_SUMMON_SPIRIT"
 }
 "adoxie right foot"
 {
   symbol = "|_"
   effect = Name "adoxie right foot" Summon "ADOXIE_FOOT_RIGHT" { 1 } 50
   cooldown = 50
-  sound = SPELL_SUMMON_SPIRIT
+  sound = "SPELL_SUMMON_SPIRIT"
 }
 "dig"
 {
@@ -672,11 +698,11 @@ Def NoEffect() Unlock "nothing" End
 "repair automaton"
 {
   symbol = "🔧"
-  effect = Name "repair automaton" Filter Automaton RegrowBodyPart 10
+  effect = Name "repair automaton" Description "Repairs broken automaton parts" Filter Automaton RegrowBodyPart 10
   range = 1
   targetSelf = true
   cooldown = 15
-  sound = TRAP_ARMING
+  sound = "TRAP_ARMING"
   message = "repair the automaton" "repairs the automaton"
   type = ABILITY
 }
@@ -737,6 +763,7 @@ Def NoEffect() Unlock "nothing" End
   effect = Name "chickenmorph" Description "Turn yourself or someone into a chicken temporarily!" AI Health 0 0.4 0 1 {
     Polymorph "CHICKEN" 10
     Permanent INVULNERABLE
+    Filter IsPlayer Achievement "polymorphed_into_chicken"
   }
   cooldown = {30 101}
   message = "cluck" "clucks"
@@ -750,6 +777,7 @@ Def NoEffect() Unlock "nothing" End
       AI And { Health 0.25 1 Not Enemy } 1 -1 AI And { Not CreatureId "CHICKEN" Enemy } -1 1 {
     Polymorph "CHICKEN" 10
     Permanent INVULNERABLE
+    Filter IsPlayer Achievement "polymorphed_into_chicken"
   }
   targetSelf = true
   endOnly = true
@@ -765,6 +793,7 @@ Def NoEffect() Unlock "nothing" End
     Area 20 {
       Polymorph "CHICKEN" 10
       AI And {} 1 -1 Permanent INVULNERABLE
+      Filter IsPlayer Achievement "polymorphed_into_chicken"
     }
   cooldown = {150 301}
   message = "cluck" "clucks"
@@ -780,7 +809,6 @@ Def NoEffect() Unlock "nothing" End
   endOnly = true
   message = "lash your whip!" "lashes his whip!"
 }
-
 "kings charge"
 {
   symbol = "👑"
@@ -789,5 +817,114 @@ Def NoEffect() Unlock "nothing" End
     Filter Not Attacker CreatureStatus LEADER CreatureMessage { "are not worthy!" "is not worthy!" }
   }
   cooldown = 300
-  sound = SPELL_STR_BONUS
+  sound = "SPELL_STR_BONUS"
+}
+"shaitan insanity"
+{
+  symbol = "😈"
+  effect = Lasting 30 INSANITY
+  cooldown = 5
+}
+"tengu teleport"
+{
+  symbol = "🌀"
+  effect = Teleport
+  range = 10
+  cooldown = 1
+  endOnly = true
+  sound = "SPELL_TELEPORT"
+}
+"banshee scream"
+{
+  symbol = "😱"
+  effect = Area 6 Filter Enemy Damage SPELL_DAMAGE SPELL
+  cooldown = 30
+  message = "let out an ear-piercing scream!" "lets out an ear-piercing scream!"
+  type = ABILITY
+}
+"vetala animate corpses"
+{
+  upgrade = "animate corpses"
+  symbol = "👤"
+  effect = Name "animate corpses" AnimateItems 2 5 {30 50} CORPSE
+  cooldown = {3}
+}
+"leyak acid"
+{
+  symbol = "🜅"
+  effect = Name "acid spit" Area 1 Acid{}
+  fx = {FLAMETHROWER ColorId YELLOW}
+  range = 5
+  cooldown = {5 10}
+  message = "spit acid!" "spits acid!"
+  type = ABILITY
+}
+"ghoul corpse feast"
+{
+  symbol = "👤"
+  effect = Name "feast on a corpse" Description "Increases spell damage and defense by 1 for 200 turns after feasting on a corpse." ChainUntilFail {
+    EatCorpse
+    Lasting 200 WELL_FED
+  }
+  message = "start feasting on corpses" "starts feasting on corpses"
+  cooldown = 1
+  type = ABILITY
+}
+"healing prayer" inherit "healing" {
+  effect = Name "healing prayer" Heal { FLESH }
+  message = "recite a healing prayer" "recites a healing prayer"
+  type = ABILITY
+}
+"strength prayer" inherit "damage bonus" {
+  effect = Name "strength prayer" Lasting 40 DAM_BONUS
+  message = "recite a strength prayer" "recites a strength prayer"
+  type = ABILITY
+}
+"protection prayer" inherit "defense bonus" {
+  effect = Name "protection prayer" Lasting 40 DEF_BONUS
+  message = "recite a protection prayer" "recites a protection prayer"
+  type = ABILITY
+}
+"devout healing prayer" inherit "advanced healing" {
+  effect = Name "devout healing prayer" Heal { FLESH }
+  message = "recite a devout healing prayer" "recites a devout healing prayer"
+  upgrade = "healing prayer"
+  type = ABILITY
+}
+
+Def TryHolyMissile()
+  TryNoFriendlyFire(
+    {
+      CreatureMessage {"are hit by the missile" "is hit by the missile"}
+      Damage DIVINITY SPELL
+    },
+    CreatureMessage {"are spared by the missile" "is spared by the missile"}
+  )
+End
+
+"holy missile" inherit "magic missile"
+{
+  effect = MinDistanceFromStrongEnemy(2) Name "holy missile" Description "Shoots a holy missile"
+      TryHolyMissile()
+  type = ABILITY
+}
+"advanced holy missile" inherit "advanced magic missile"
+{
+  upgrade = "holy missile"
+  effect = MinDistanceFromStrongEnemy(2) Name "advanced holy missile" Description "Shoots a holy missile"
+      TryHolyMissile()
+  type = ABILITY
+}
+"expert holy missile" inherit "expert magic missile"
+{
+  upgrade = "advanced holy missile"
+  effect = MinDistanceFromStrongEnemy(2) Name "expert holy missile" Description "Shoots a holy missile"
+      TryHolyMissile()
+  type = ABILITY
+}
+"bishop audience"
+{
+  symbol = "👑"
+  effect = Name "Summon congregation" Description "Bishop summons his congregation" Filter CreatureStatus LEADER SummonMinions
+  cooldown = {50 101}
 }

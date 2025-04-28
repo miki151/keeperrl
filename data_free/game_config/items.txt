@@ -4,7 +4,7 @@
     name = "automaton"
     applyMsgFirstPerson = "assemble the automaton"
     applyMsgThirdPerson = "assembles an automaton"
-    applySound = TRAP_ARMING
+    applySound = "TRAP_ARMING"
     weight = 30
     applyTime = 3
     uses = 1
@@ -18,92 +18,72 @@ Def HUMANOID_HEAD(Suffix, Color, Adjective, ResourceId, Defense)
     viewId = { "automaton_head" Rgb Color 255 }
     name = Adjective + " humanoid head"
     shortName = "humanoid head"
+    modifiers = {
+      DEFENSE Defense
+    }
     weight = 4
     craftingCost = ResourceId 5
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+    upgradeInfo = { AUTOMATONS_UPPER AssembledCreatureEffect
       Name "an " + Adjective + " humanoid head"
-      Description "Allows using equipment. Adds a +" + Defense + " defense bonus."
+      Description "Allows using equipment."
       {
-        IncreaseAttr DEFENSE Defense
         MakeHumanoid
         AddBodyPart HEAD 1 none
         AddAutomatonPart 2 "humanoid" { "installed_head" Rgb Color 255 }
       }
+    }
     upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 End
-Def ARCHER_HEAD(Suffix, Color, Adjective, ResourceId, Defense, Damage)
-"ArcherHead" + Suffix  
+Def RANGED_HEAD(Suffix, Color, Adjective, ResourceId, Defense, Damage, Spell, SpellShort, SpellLower, SpellId, Attr)
+Spell + "Head" + Suffix
   {
-    viewId = { "automaton_arrow" Rgb Color 255 }
-    name = Adjective + " arrow shooting head"
-    shortName = "arrow shooting"
+    viewId = { "automaton_" + SpellShort Rgb Color 255 }
+    name = Adjective + " " + SpellLower + " head"
+    shortName = SpellLower
+    modifiers = {
+      DEFENSE Defense
+      Attr Damage
+    }
     weight = 4
     craftingCost = ResourceId 5
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name Adjective + " arrow shooting head"
-      Description "Allows shooting arrows. Adds +" + Defense + " defense. Second head adds additional +" + Damage + " ranged damage."
-      {
-        IncreaseAttr RANGED_DAMAGE (Damage * 2)
-        IncreaseAttr DEFENSE Defense
-        AddBodyPart HEAD 1 none
-        FirstSuccessful {
-          GrantAbility "shoot arrow"
-          IncreaseAttr RANGED_DAMAGE -Damage
+    upgradeInfo = {
+      type = AUTOMATONS_UPPER
+      diminishModifier = Spell 0.5
+      prefix = AssembledCreatureEffect
+        Name Adjective + " head"
+        Description "Grants the \"" + SpellId + "\" ability."
+        {
+          AddBodyPart HEAD 1 none
+          GrantAbility SpellId
+          AddAutomatonPart 2 SpellShort { "installed_" + SpellShort Rgb Color 255 }
         }
-        AddAutomatonPart 2 "archer" { "installed_arrow" Rgb Color 255 }
-      }
+    }
     upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 End
-Def FIRE_HEAD(Suffix, Color, Adjective, ResourceId, Defense, Damage)
-"FireHead" + Suffix
+Def SPELL_HEAD(Suffix, Color, Adjective, ResourceId, Defense, ViewId, SpellId, Spell, SpellLower)
+Spell + "Head" + Suffix
   {
-    viewId = { "automaton_fire" Rgb Color 255 }
-    name = Adjective + " fire breathing head"
-    shortName = "fire breathing"
+    viewId = { ViewId Rgb Color 255 }
+    name = Adjective + " " + SpellLower + " head"
+    shortName = SpellLower
+    modifiers = {
+      DEFENSE Defense
+    }
     weight = 4
     craftingCost = ResourceId 5
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name Adjective + " fire breathing head"
-      Description "Grants the \"fire breath\" ability. Adds +" + Defense + " defense. Second head adds additional +" + Damage + " fire damage."
+    upgradeInfo = { AUTOMATONS_UPPER AssembledCreatureEffect
+      Name Adjective + " " + SpellLower + " head"
+      Description "Grants the \"" + SpellLower + "\" ability."
       {
-        IncreaseAttr FIRE_DAMAGE (Damage * 2)
-        IncreaseAttr DEFENSE Defense
         AddBodyPart HEAD 1 none
-        FirstSuccessful {
-          GrantAbility "fire breath"
-          IncreaseAttr FIRE_DAMAGE -Damage
-        }
-        AddAutomatonPart 2 "fire" { "installed_fire" Rgb Color 255 }
+        GrantAbility SpellId
+        AddAutomatonPart 2 SpellLower { "installed_spell" Rgb Color 255 }
       }
-    upgradeType = {ARMOR}
-    storageIds = {"automaton_parts" "equipment"}
-  }
-End
-Def ACID_HEAD(Suffix, Color, Adjective, ResourceId, Defense, Damage)
-"AcidHead" + Suffix
-  {
-    viewId = { "automaton_acid" Rgb Color 255 }
-    name = Adjective + " acid spitting head"
-    shortName = "acid spitting"
-    weight = 4
-    craftingCost = ResourceId 5
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name Adjective + " acid spitting head"
-      Description "Grants the \"acid stream\" ability. Adds +" + Defense + " defense. Second head adds additional +" + Damage + " acid damage."
-      {
-        IncreaseAttr ACID_DAMAGE (Damage * 2)
-        IncreaseAttr DEFENSE Defense
-        AddBodyPart HEAD 1 none
-        FirstSuccessful {
-          GrantAbility "acid stream"
-          IncreaseAttr ACID_DAMAGE -Damage
-        }
-        AddAutomatonPart 2 "acid" { "installed_acid" Rgb Color 255 }
-      }
+    }
     upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
@@ -114,9 +94,12 @@ Def LEGS(Suffix, Color, Adjective, ResourceId, Defense)
     viewId = { "automaton_legs" Rgb Color 255 }
     name = "pair of " + Adjective + " legs"
     shortName = Adjective + " legs"
+    modifiers = {
+      DEFENSE Defense
+    }
     weight = 8
     craftingCost = ResourceId 5
-    upgradeInfo = AUTOMATONS_LOWER AssembledCreatureEffect
+    upgradeInfo = { AUTOMATONS_LOWER AssembledCreatureEffect
       Name Adjective + " legs"
       Description "Adds mobility. Second pair grants the \"jump\" ability."
       {
@@ -127,29 +110,36 @@ Def LEGS(Suffix, Color, Adjective, ResourceId, Defense)
         }
         AddAutomatonPart 0 "" { "installed_legs" Rgb Color 255 }
       }
+    }
     upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 End
-Def ARMS(Suffix, Color, Adjective, ResourceId, Damage, Attr, AttrName)
+Def ARMS(Suffix, Color, Adjective, ResourceId, Damage, Attr)
 "AutomatonArms" + Suffix
   {
     viewId = { "automaton_arms" Rgb Color 255 }
     name = "pair of " + Adjective + " arms"
     shortName = Adjective + " arms"
+    modifiers = {
+      Attr Damage
+    }
     weight = 6
     craftingCost = ResourceId 5
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name Adjective + " arms"
-      Description "Grants a melee attack and a +" + Damage + " " + AttrName + " bonus."
-      {
-        IncreaseAttr Attr Damage
-        AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 {
-          attackMsg = SWING
-          meleeAttackAttr = Attr
-        } }
-        AddAutomatonPart 1 "melee" { "installed_arms" Rgb Color 255 }
-      }
+    upgradeInfo = {
+      type = AUTOMATONS_UPPER
+      diminishModifier = "arms" 0.5
+      prefix = AssembledCreatureEffect
+        Name Adjective + " arms"
+        Description "Grants a melee attack."
+        {
+          AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 {
+            attackMsg = SWING
+            meleeAttackAttr = Attr
+          } }
+          AddAutomatonPart 1 "melee" { "installed_arms" Rgb Color 255 }
+        }
+    }
     upgradeType = {WEAPON}
     storageIds = {"automaton_parts" "equipment"}
   }
@@ -160,17 +150,20 @@ Def DRILL(Suffix, Color, Adjective, ResourceId, Digging)
     viewId = { "automaton_drill" Rgb Color 255 }
     name = Adjective + " drill"
     shortName = Adjective + " drill"
+    modifiers = {
+      DIGGING Digging
+    }
     weight = 6
     craftingCost = ResourceId 5
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+    upgradeInfo = { AUTOMATONS_UPPER AssembledCreatureEffect
       Name "an " + Adjective + " drill"
-      Description "Increases the digging attribute by +" + Digging + "."
+      Description "A drill for automatons. Enables performing all worker tasks."
       {
-        IncreaseAttr DIGGING Digging
         AddMinionTrait WORKER
         AddBodyPart ARM 2 none
         AddAutomatonPart 1 "drill" { "installed_drill" Rgb Color 255 }
       }
+    }
     storageIds = {"automaton_parts" "equipment"}
   }
 End
@@ -179,18 +172,21 @@ Def CRAFTING_ARMS(Suffix, Color, Adjective, ResourceId, Skill)
   {
     viewId = { "automaton_crafting" Rgb Color 255 }
     name = Adjective + " crafting arms"
+    modifiers = {
+      WORKSHOP Skill
+      FORGE Skill
+      LABORATORY Skill
+      JEWELER Skill
+    }
     weight = 6
     craftingCost = ResourceId 5
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
-      Name Adjective + " crafting arms"
-      Description "Increases all crafting attributes by " + Skill + "."
-      {
-        IncreaseAttr "WORKSHOP" Skill
-        IncreaseAttr "FORGE" Skill
-        IncreaseAttr "LABORATORY" Skill
-        IncreaseAttr "JEWELER" Skill
+    upgradeInfo = {
+      type = AUTOMATONS_UPPER
+      prefix = AssembledCreatureEffect
+        Name Adjective + " crafting arms"
+        Description "Grants the automaton the ability to craft."
         AddAutomatonPart 1 "crafting" { "installed_crafting" Rgb Color 255 }
-      }
+    }
     storageIds = {"automaton_parts" "equipment"}
   }
 End
@@ -200,47 +196,57 @@ Def REPAIR_ARMS(Suffix, Color, Adjective, ResourceId, Defense)
     viewId = { "automaton_repair" Rgb Color 255 }
     name = "pair of " + Adjective + " repair arms"
     shortName = "repair arms"
+    modifiers = {
+      DEFENSE Defense
+    }
     weight = 6
     craftingCost = ResourceId 5
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+    upgradeInfo = { AUTOMATONS_UPPER AssembledCreatureEffect
       Name Adjective + " repair arms"
-      Description "Grants the ability to repair other automatons. Adds +" + Defense + " defense."
+      Description "Grants the ability to repair other automatons."
       {
         GrantAbility "repair automaton"
-        IncreaseAttr DEFENSE Defense
         AddBodyPart ARM 2 none
         AddAutomatonPart 1 "repair" { "installed_repair" Rgb Color 255 }
       }
+    }
     storageIds = {"automaton_parts" "equipment"}
   }
 End
 
 HUMANOID_HEAD("Wood", 180 140 55, "wooden", WOOD, 2)
-ARCHER_HEAD("Wood", 180 140 55, "wooden", WOOD, 2, 12)
+RANGED_HEAD("Wood", 180 140 55, "wooden", WOOD, 2, 12, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
 LEGS("Wood", 180 140 55, "wooden", WOOD, 2)
-ARMS("Wood", 180 140 55, "wooden", WOOD, 8, DAMAGE, "melee damage")
+ARMS("Wood", 180 140 55, "wooden", WOOD, 11, DAMAGE)
 DRILL("Wood", 180 140 55, "wooden", WOOD, 10)
 CRAFTING_ARMS("Wood", 180 140 55, "wooden", WOOD, 10)
 HUMANOID_HEAD("Iron", 140 148 148, "iron", IRON, 4)
-ARCHER_HEAD("Iron", 140 148 148, "iron", IRON, 4, 15)
-FIRE_HEAD("Iron", 140 148 148, "iron", IRON, 5, 15)
-ACID_HEAD("Iron", 140 148 148, "iron", IRON, 5, 15)
+RANGED_HEAD("Iron", 140 148 148, "iron", IRON, 4, 15, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
+RANGED_HEAD("Iron", 140 148 148, "iron", IRON, 5, 15, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
+SPELL_HEAD("Iron", 140 148 148, "iron", IRON, 5, "automaton_oil", "oil breath", "Oil", "oil spitting")
+RANGED_HEAD("Iron", 140 148 148, "iron", IRON, 5, 15, "Acid", "acid", "acid spitting", "acid stream", "ACID_DAMAGE")
 LEGS("Iron", 140 148 148, "iron", IRON, 5)
-ARMS("Iron", 140 148 148, "iron", IRON, 12, DAMAGE, "melee damage")
+ARMS("Iron", 140 148 148, "iron", IRON, 16, DAMAGE)
 DRILL("Iron", 140 148 148, "iron", IRON, 15)
-CRAFTING_ARMS("Iron", 140 148 148, "iron", IRON, 15)
+CRAFTING_ARMS("Iron", 140 148 148, "iron", IRON, 17)
 REPAIR_ARMS("Iron", 140 148 148, "iron", IRON, 5)
 HUMANOID_HEAD("Ada", 148 189 189, "admantine", ADA, 6)
-ARCHER_HEAD("Ada", 148 189 189, "adamantine", ADA, 6, 20)
-FIRE_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, 20)
-ACID_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, 20)
+RANGED_HEAD("Ada", 148 189 189, "adamantine", ADA, 6, 20, "Archer", "arrow", "arrow shooting", "shoot arrow", "RANGED_DAMAGE")
+RANGED_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, 20, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
+SPELL_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, "automaton_oil", "oil breath", "Oil", "oil spitting")
+RANGED_HEAD("Ada", 148 189 189, "adamantine", ADA, 8, 20, "Acid", "acid", "acid spitting", "acid stream", "ACID_DAMAGE")
 LEGS("Ada", 148 189 189, "adamantine", ADA, 8)
-ARMS("Ada", 148 189 189, "adamantine", ADA, 18, DAMAGE, "melee damage")
+ARMS("Ada", 148 189 189, "adamantine", ADA, 24, DAMAGE)
 DRILL("Ada", 148 189 189, "adamantine", ADA, 20)
-CRAFTING_ARMS("Ada", 148 189 189, "adamantine", ADA, 25)
+CRAFTING_ARMS("Ada", 148 189 189, "adamantine", ADA, 27)
 REPAIR_ARMS("Ada", 148 189 189, "adamantine", ADA, 8)
-ARMS("Infernite", 220 148 148, "infernite", INFERNITE, 18, FIRE_DAMAGE, "fire damage")
-ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage")
+ARMS("Infernite", 220 148 148, "infernite", INFERNITE, 38, FIRE_DAMAGE)
+ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 38, SPELL_DAMAGE)
+LEGS("Infernite", 220 148 148, "infernite", INFERNITE, 18)
+RANGED_HEAD("Infernite", 220 148 148, "infernite", INFERNITE, 18, 48, "Fire", "fire", "fire breathing", "fire breath", "FIRE_DAMAGE")
+LEGS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18)
+SPELL_HEAD("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, "automaton_spell", "automaton invisibility", "Invisibility", "invisibility")
+SPELL_HEAD("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, "automaton_spell", "automaton teleport", "Teleport", "teleport")
 
 "KaboomHead"
   {
@@ -249,19 +255,21 @@ ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage
     shortName = "kaboom head"
     weight = 4
     craftingCost = IRON 15
-    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+    upgradeInfo = { AUTOMATONS_UPPER AssembledCreatureEffect
       Name "kaboom head"
-      Description "Explodes, destroying the equiped automaton and wounding everything around it with +50 fire damage."
+      Description "Explodes, destroying the equiped automaton and killing the target. Aggravates enemies."
       {
         AddBodyPart HEAD 1 { Intrinsic { "touch_attack" } "self destruct" 1 {
           attackType = HIT
           meleeAttackAttr = FIRE_DAMAGE
           attackMsg = THRUST
           itselfMessage = true
-          attackerEffect = {Suicide DIE}
-          victimEffect = {1.0 CircularBlast 1.0 Area 1 Fire{50}} } }
+          victimEffect = {1.0 Suicide DIE}
+          attackerEffect = {CircularBlast Area 1 Fire{30} Suicide DIE}}}
         AddAutomatonPart 2 "kaboom" { "installed_kaboom_head" }
+        Permanent AGGRAVATES
       }
+    }
     upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
@@ -377,7 +385,7 @@ ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage
     name = "adamantine sword"
     shortName = "adamantine"
     modifiers = {
-      DAMAGE 11
+      DAMAGE 20
     }
     price = 20
     craftingCost = "ADA" 20
@@ -389,11 +397,12 @@ ARMS("Adoxium", 220 148 220, "adoxium", ADOXIUM, 18, SPELL_DAMAGE, "spell damage
     }
     equipmentGroup = "adamantine equipment"
   }
+# Not used anymore, but keep to stop mods from crashing
 Def InferniteEffect()
   Filter And { Not LastingEffect FIRE_RESISTANT Not LastingEffect FIRE_IMMUNITY } {
-    CreatureMessage {"are burnt by the infernite" "is burnt by the infernite"}
-    Bleed 0.01 "infernite"
-  }
+  CreatureMessage {"are burnt by the infernite" "is burnt by the infernite"}
+  Bleed 0.01 "infernite"
+}
 End
 "InferniteSword" inherit "AdaSword"
   {
@@ -401,11 +410,13 @@ End
     equipedViewId = { "infernite_sword_v" }
     name = "infernite sword"
     shortName = "infernite"
+    modifiers = {
+      DAMAGE 30
+    }
     price = 200
     craftingCost = "INFERNITE" 20
-    carriedTickEffect = InferniteEffect()
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
-    ownedEffect = LIGHT_SOURCE
+    ownedEffect = { LIGHT_SOURCE INFERNITE_EFFECT }
     equipedEffect = {FIRE_DAMAGE}
     equipmentGroup = "infernite equipment"
   }
@@ -463,7 +474,7 @@ End
     shortName = "adamantine"
     name = "adamantine battle axe"
     modifiers = {
-      DAMAGE 18
+      DAMAGE 40
     }
     price = 150
     craftingCost = "ADA" 50
@@ -479,11 +490,13 @@ End
     equipedViewId = { "infernite_battle_axe_v" }
     shortName = "infernite"
     name = "infernite battle axe"
+    modifiers = {
+      DAMAGE 60
+    }
     price = 1500
     craftingCost = "INFERNITE" 50
-    carriedTickEffect = InferniteEffect()
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
-    ownedEffect = LIGHT_SOURCE
+    ownedEffect = { LIGHT_SOURCE INFERNITE_EFFECT }
     equipedEffect = {FIRE_DAMAGE}
     equipmentGroup = "infernite equipment"
   }
@@ -517,7 +530,7 @@ End
     equipedViewId = { "war_hammer_v" Rgb 148 189 189 255 }
     name = "adamantine war hammer"
     modifiers = {
-      DAMAGE 15
+      DAMAGE 35
     }
     price = 100
     craftingCost = "ADA" 40
@@ -533,11 +546,13 @@ End
     equipedViewId = { "infernite_war_hammer_v" }
     shortName = "infernite"
     name = "infernite war hammer"
+    modifiers = {
+      DAMAGE 55
+    }
     price = 1000
     craftingCost = "INFERNITE" 40
-    carriedTickEffect = InferniteEffect()
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
-    ownedEffect = LIGHT_SOURCE
+    ownedEffect = { LIGHT_SOURCE INFERNITE_EFFECT }
     equipedEffect = {FIRE_DAMAGE}
     equipmentGroup = "infernite equipment"
   }
@@ -551,7 +566,7 @@ End
     equipmentSlot = WEAPON
     weight = 8
     modifiers = {
-      DAMAGE 25
+      DAMAGE 90
     }
     price = 5000
     weaponInfo = {
@@ -561,7 +576,7 @@ End
     craftingCost = "INFERNITE" 100
     maxUpgrades = 10
     autoEquipPredicate = LastingEffect FIRE_RESISTANT
-    ownedEffect = LIGHT_SOURCE
+    ownedEffect = { LIGHT_SOURCE INFERNITE_EFFECT }
     storageIds = {"weapons" "equipment"}
     equipedEffect = {FIRE_DAMAGE}
     equipmentGroup = "infernite equipment"
@@ -629,16 +644,16 @@ End
     storageIds = {"weapons" "equipment"}
     equipmentGroup = "basic equipment"
   }
-"IronStaff" inherit "WoodenStaff"
+"ArchwoodStaff" inherit "WoodenStaff"
   {
-    viewId = { "iron_staff" }
-    equipedViewId = { "iron_staff_v" }
-    name = "iron staff"
+    viewId = { "archwood_staff" }
+    equipedViewId = { "archwood_staff_v" }
+    name = "archwood staff"
     modifiers = {
-      SPELL_DAMAGE 8
+      SPELL_DAMAGE 24
+      SPELL_SPEED 24
     }
-    price = 60
-    craftingCost = "IRON" 40
+    price = 400
     genPrefixes = {
       1 VictimEffect 1.0 Escape{}
       1 VictimEffect 0.4 DestroyEquipment
@@ -648,18 +663,26 @@ End
       }
     }
     maxUpgrades = 2
-    equipmentGroup = "iron equipment"
+    equipmentGroup = "artifact equipment"
   }
-"AdoxiumStaff" inherit "IronStaff"
+"AdoxiumStaff"
   {
     viewId = { "adoxium_staff" }
     equipedViewId = { "adoxium_staff_v" }
     name = "adoxium staff"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
     modifiers = {
-      SPELL_DAMAGE 13
-      SPELL_SPEED 10
+      SPELL_DAMAGE 33
+      SPELL_SPEED 33
     }
+    weight = 3
     price = 1800
+    weaponInfo = {
+      attackType = SPELL
+      attackMsg = WAVE
+      meleeAttackAttr = SPELL_DAMAGE
+    }
     craftingCost = "ADOXIUM" 40
     genPrefixes = {
       1 VictimEffect 0.2 Lasting INSANITY
@@ -667,6 +690,7 @@ End
       1 VictimEffect 0.5 Fire{20}
     }
     maxUpgrades = 5
+    storageIds = {"weapons" "equipment"}
     equipmentGroup = "adoxium equipment"
   }
 "ElvenStaff" inherit "WoodenStaff"
@@ -687,7 +711,7 @@ End
     equipmentSlot = WEAPON
     weight = 20
     modifiers = {
-      DAMAGE 5
+      DAMAGE 15
     }
     price = 2000
     weaponInfo = {
@@ -696,6 +720,70 @@ End
     equipedAbility = { "kings charge" }
     storageIds = {"weapons" "equipment"}
     equipmentGroup = "artifact equipment"
+  }
+"WoodenCrozier"
+  {
+    viewId = { "crozier_wood" }
+    equipedViewId = { "crozier_wood_v" }
+    name = "wooden crozier"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 10
+    modifiers = {
+      DIVINITY 4
+    }
+    price = 20
+    weaponInfo = {
+      attackType = HIT
+      meleeAttackAttr = DIVINITY
+    }
+    equipedAbility = { "holy missile" }
+    storageIds = {"weapons" "equipment"}
+    equipmentGroup = "basic equipment"
+  }
+"IronCrozier"
+  {
+    viewId = { "crozier_iron" }
+    equipedViewId = { "crozier_iron_v" }
+    name = "iron crozier"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 15
+    modifiers = {
+      DIVINITY 16
+      SPELL_SPEED 16
+    }
+    craftingCost = "IRON" 20
+    price = 70
+    weaponInfo = {
+      attackType = HIT
+      meleeAttackAttr = DIVINITY
+    }
+    equipedAbility = { "advanced holy missile" }
+    storageIds = {"weapons" "equipment"}
+    equipmentGroup = "iron equipment"
+  }
+"AdoxiumCrozier"
+  {
+    viewId = { "crozier_adoxium" }
+    equipedViewId = { "crozier_adoxium_v" }
+    name = "adoxium crozier"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 6
+    modifiers = {
+      DIVINITY 30
+      SPELL_SPEED 30
+    }
+    craftingCost = "ADOXIUM" 40
+    price = 400
+    weaponInfo = {
+      attackType = HIT
+      meleeAttackAttr = DIVINITY
+    }
+    equipedAbility = { "expert holy missile" }
+    storageIds = {"weapons" "equipment"}
+    equipmentGroup = "adoxium equipment"
   }
 "Bow"
   {
@@ -729,10 +817,10 @@ End
   {
     viewId = { "archwood_bow" }
     modifiers = {
-      RANGED_DAMAGE 22
+      RANGED_DAMAGE 25
     }
     name = "archwood bow"
-    maxUpgrades = 2
+    maxUpgrades = 3
     price = 1000
   }
 "Crossbow"
@@ -753,6 +841,16 @@ End
     maxUpgrades = 1
     storageIds = {"bows" "weapons" "equipment"}
     equipmentGroup = "ranged weapons"
+  }
+"ArchwoodCrossbow" inherit "Crossbow"
+  {
+    viewId = { "archwood_crossbow" }
+    modifiers = {
+      RANGED_DAMAGE 32
+    }
+    name = "archwood crossbow"
+    maxUpgrades = 3
+    price = 1000
   }
 "Torch"
   {
@@ -863,7 +961,7 @@ End
     price = 25
     craftingCost = "ADA" 2
     modifiers = {
-      DEFENSE 3
+      DEFENSE 6
     }
     genPrefixes = {
       1 ItemAttrBonus DAMAGE 3
@@ -880,9 +978,11 @@ End
     plural = "pairs of adoxium gloves"
     price = 250
     craftingCost = "ADOXIUM" 2
-    modifiers = append {
+    modifiers = {
+      DEFENSE 10
       SPELL_SPEED 10
     }
+    equipmentGroup = "adoxium equipment"
   }
 "LeatherArmor"
   {
@@ -969,8 +1069,8 @@ End
     price = 50
     craftingCost = "ADA" 24
     modifiers = {
-      PARRY 3
-      DEFENSE 4
+      PARRY 4
+      DEFENSE 8
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
@@ -1006,7 +1106,7 @@ End
     ingredientType = "red_scales"
     storageIds = {"upgrades" "equipment"}
   }
-"RedDragonArmor" inherit "ChainArmor"
+"RedDragonArmor" inherit "LeatherArmor"
   {
     viewId = { "chain_armor" Rgb 156 58 68 255 }
     shortName = "red dragon"
@@ -1014,7 +1114,7 @@ End
     weight = 10
     price = 250
     modifiers = {
-      DEFENSE 10
+      DEFENSE 40
       SPELL_DAMAGE 2
     }
     equipedEffect = {FIRE_RESISTANT}
@@ -1031,7 +1131,7 @@ End
     ingredientType = "black_scales"
     storageIds = {"upgrades" "equipment"}
   }
-"BlackDragonArmor" inherit "ChainArmor"
+"BlackDragonArmor" inherit "LeatherArmor"
   {
     viewId = { "chain_armor" Rgb 80 80 80 255 }
     shortName = "black dragon"
@@ -1039,8 +1139,8 @@ End
     weight = 10
     price = 250
     modifiers = {
-      DEFENSE 15
-      SPELL_DAMAGE 2
+      DEFENSE 40
+      SPELL_DAMAGE 10
     }
     equipedEffect = {DARKNESS_SOURCE TELEPATHY}
     maxUpgrades = 2
@@ -1056,7 +1156,7 @@ End
     ingredientType = "white_scales"
     storageIds = {"upgrades" "equipment"}
   }
-"WhiteDragonArmor" inherit "ChainArmor"
+"WhiteDragonArmor" inherit "LeatherArmor"
   {
     viewId = { "chain_armor" Rgb 254 254 254 255 }
     shortName = "white dragon"
@@ -1064,8 +1164,8 @@ End
     weight = 10
     price = 250
     modifiers = {
-      DEFENSE 7
-      SPELL_DAMAGE 4
+      DEFENSE 40
+      SPELL_DAMAGE 10
     }
     equipedEffect = {COLD_RESISTANT}
     maxUpgrades = 2
@@ -1081,7 +1181,7 @@ End
     ingredientType = "yellow_scales"
     storageIds = {"upgrades" "equipment"}
   }
-"YellowDragonArmor" inherit "ChainArmor"
+"YellowDragonArmor" inherit "LeatherArmor"
   {
     viewId = { "chain_armor" Rgb 254 254 10 255 }
     shortName = "yellow dragon"
@@ -1089,8 +1189,8 @@ End
     weight = 10
     price = 250
     modifiers = {
-      DEFENSE 7
-      SPELL_DAMAGE 4
+      DEFENSE 40
+      SPELL_DAMAGE 10
       ACID_DAMAGE 40
     }
     equipedAbility = {"acid stream"}
@@ -1107,7 +1207,7 @@ End
     ingredientType = "green_scales"
     storageIds = {"upgrades" "equipment"}
   }
-"GreenDragonArmor" inherit "ChainArmor"
+"GreenDragonArmor" inherit "LeatherArmor"
   {
     viewId = { "chain_armor" Rgb 151 162 81 255 }
     shortName = "green dragon"
@@ -1115,8 +1215,8 @@ End
     weight = 10
     price = 250
     modifiers = {
-      DEFENSE 10
-      SPELL_DAMAGE 2
+      DEFENSE 40
+      SPELL_DAMAGE 10
     }
     equipedEffect = {POISON_RESISTANT}
     maxUpgrades = 2
@@ -1133,7 +1233,7 @@ End
     price = 160
     craftingCost = "ADA" 40
     modifiers = {
-      DEFENSE 8
+      DEFENSE 24
     }
     genPrefixes = {
       1 ItemAttrBonus DEFENSE 3
@@ -1148,8 +1248,9 @@ End
     name = "adoxium armor"
     price = 1600
     craftingCost = "ADOXIUM" 40
-    modifiers = append {
-      SPELL_SPEED 25
+    modifiers = {
+      DEFENSE 35
+      SPELL_SPEED 45
     }
     equipmentGroup = "adoxium equipment"
   }
@@ -1227,7 +1328,40 @@ End
     ingredientType = "cyclops_testes"
     storageIds = {"upgrades" "equipment"}
   }
-"CyclopsHelm" inherit "IronHelm"
+"ProphetRemains"
+  {
+    viewId = { "prophet_remains" }
+    shortName = "prophet Ynnuf Yrewosbe"
+    name = "mummified remains of ancient prophet Ynnuf Yrewosbe"
+    itemClass = OTHER
+    weight = 5
+    price = 50
+    ingredientType = "prophet_remains"
+    storageIds = {"upgrades" "equipment"}
+  }
+"ProphetSoup"
+  {
+    viewId = { "potion4" }
+    shortName = "prophet soup"
+    name = "soup made of mummified prophet remains"
+    plural = "soups"
+    blindName = "soup"
+    applyVerb = "drink" "drinks"
+    fragile = true
+    weight = 0.3
+    effect = NoAutoAssign EquipmentType COMBAT_ITEM AI And {} -1 1 AI And {} 0 1
+        Name "Increases experience"
+        Description "Increases creature's combat experience" {
+      AddExperience 20
+      CreatureMessage { "have very bad stomach cramps" "has very bad stomach cramps" }
+    }
+    price = 10
+    burnTime = 1
+    uses = 1
+    producedStat = POTION_PRODUCED
+    storageIds = {"potions" "equipment"}
+  }
+"CyclopsHelm" inherit "LeatherHelm"
   {
     viewId = { "cyclops_helm" }
     shortName = "cyclops"
@@ -1244,7 +1378,7 @@ End
   {
     name = "Adoxie's eye"
     viewId = { "adoxie_eye" }
-    upgradeInfo = ARMOR SpellId "double trouble"
+    upgradeInfo = { ARMOR SpellId "double trouble" }
     weight = 2
     price = 500
     storageIds = {"upgrades" "equipment"}
@@ -1340,7 +1474,7 @@ End
     price = 40
     craftingCost = "ADA" 16
     modifiers = {
-      DEFENSE 4 
+      DEFENSE 6
     }
     genPrefixes = {
       1 LastingEffect TELEPATHY
@@ -1354,11 +1488,12 @@ End
   {
     viewId = { "iron_helm" ColorId PINK }
     name = "adoxium helm"
+    modifiers = {
+      DEFENSE 10
+      SPELL_SPEED 25
+    }
     price = 400
     craftingCost = "ADOXIUM" 16
-    modifiers = append {
-      SPELL_SPEED 15
-    }
     equipmentGroup = "adoxium equipment"
   }
 "Cornuthaum1"
@@ -1462,7 +1597,7 @@ End
     price = 50
     craftingCost = "ADA" 24
     modifiers = {
-      DEFENSE 4
+      DEFENSE 5
     }
     genPrefixes = {
       1 LastingEffect SPEED
@@ -1478,7 +1613,8 @@ End
     plural = "pairs of adoxium boots"
     price = 500
     craftingCost = "ADOXIUM" 24
-    modifiers = append {
+    modifiers = {
+      DEFENSE 10
       SPELL_SPEED 10
     }
     equipmentGroup = "adoxium equipment"
@@ -1504,7 +1640,7 @@ End
     weight = 4
     price = 800
     modifiers = {
-      DEFENSE 5
+      DEFENSE 8
     }
     equipedEffect = {FLYING SPELL_DAMAGE}
     maxUpgrades = 1
@@ -1537,6 +1673,12 @@ End
     storageIds = {"jewellery" "equipment"}
     equipmentGroup = "jewellery"
   }
+"DefenseAmulet10" inherit "DefenseAmulet"
+  {
+    modifiers = {
+      DEFENSE 10
+    }
+  }
 "FirstAidKit"
   {
     viewId = { "first_aid" }
@@ -1568,26 +1710,134 @@ End
     storageIds = {"equipment"}
     equipmentGroup = "light emitting equipment"
   }
-"SpiderRing"
+Def PROTECTION_RING(CreatureType, Predicate, Value)
   {
     viewId = { "ring" ColorId WHITE }
-    name = "ring of spider summoning"
-    shortName = "spider"
-    equipedCompanion = 5 true none 0.01 { "SPIDER" }
+    name = "ring of protection from " + CreatureType
+    shortName = "from " + CreatureType
+    specialAttr = {
+      DEFENSE Value Name "against " + CreatureType Attacker Predicate
+    }
     weight = 0.05
     equipmentSlot = RINGS
-    price = 1
+    price = 60
     storageIds = {"jewellery" "equipment"}
     equipmentGroup = "jewellery"
   }
-"DragonRing" inherit "SpiderRing"
+End
+"UndeadProtectionRing5" PROTECTION_RING("undead", BodyMaterial "UNDEAD_FLESH", 5)
+"ElfProtectionRing5" PROTECTION_RING("elves", HatedBy "HATE_ELVES", 5)
+"DwarfProtectionRing5" PROTECTION_RING("dwarves", HatedBy "HATE_DWARVES", 5)
+"GreenskinProtectionRing5" PROTECTION_RING("dwarves", HatedBy "HATE_GREENSKINS", 5)
+"UndeadProtectionRing15" PROTECTION_RING("undead", BodyMaterial "UNDEAD_FLESH", 15)
+"ElfProtectionRing15" PROTECTION_RING("elves", HatedBy "HATE_ELVES", 15)
+"DwarfProtectionRing15" PROTECTION_RING("dwarves", HatedBy "HATE_DWARVES", 15)
+"GreenskinProtectionRing15" PROTECTION_RING("dwarves", HatedBy "HATE_GREENSKINS", 15)
+"DragonProtectionRing15" PROTECTION_RING("dragons", HatedBy "HATE_DRAGONS", 15)
+"InvisibilityRing"
   {
-    viewId = { "ring" ColorId PURPLE }
-    name = "ring of dragon summoning"
-    shortName = "dragon"
-    equipedCompanion = 1 true none 0.001 { "RED_DRAGON" "WHITE_DRAGON" "YELLOW_DRAGON" "GREEN_DRAGON" }
-    price = 2000
+    viewId = { "gold_ring" }
+    name = "gold ring"
+    equipedCompanion = {count = 9 statsBase = "DEFENSE" summonFreq = 0.4 creatures = { "WRAITH" } hostile = true}
+    equipedEffect = {INVISIBLE}
+    weight = 0.05
+    equipmentSlot = RINGS
+    price = 50
+    autoEquipPredicate = Or {}
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
   }
+"JumpRing"
+  {
+    viewId = { "ring" ColorId PINK }
+    name = "ring of jumping"
+    shortName = "jumping"
+    equipedAbility = {"jump"}
+    weight = 0.05
+    equipmentSlot = RINGS
+    price = 50
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
+Def TAMING_RING(Creature, Count, Name, Price, Freq)
+  {
+    viewId = { "ring" ColorId WHITE }
+    name = "ring of " + Name + " taming"
+    shortName = Name
+    equipedCompanion = {
+      count = Count
+      summonFreq = Freq
+      creatures = { Creature }
+      getsKillCredit = true
+    }
+    weight = 0.05
+    equipmentSlot = RINGS
+    price = Price
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
+End
+"SpiderRing" TAMING_RING("SPIDER", 5, "spider", 1, 0.01)
+"DragonRing" TAMING_RING("RED_DRAGON" "WHITE_DRAGON" "YELLOW_DRAGON" "GREEN_DRAGON", 1, "dragon", 500, 0.001)
+"HorseRing" TAMING_RING("HORSE_CAN_TRAIN", 1, "horse", 100, 0.005)
+"BatRing" TAMING_RING("BAT", 5, "bat", 5, 0.01)
+Def DAMAGE_RING(VALUE)
+  {
+    viewId = { "ring" ColorId BLUE }
+    shortName = "damage"
+    name = "ring of damage"
+    plural = "rings of damage"
+    description = "Increases the force of your physical attacks, making you deal more damage in combat."
+    equipmentSlot = RINGS
+    price = 60
+    modifiers = {
+      DAMAGE VALUE
+    }
+    weight = 0.3
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
+End
+"DamageRing3" DAMAGE_RING(3)
+"DamageRing10" DAMAGE_RING(10)
+Def SPELL_DAMAGE_RING(VALUE)
+  {
+    viewId = { "ring" ColorId GREEN }
+    shortName = "spell damage"
+    name = "ring of spell damage"
+    plural = "rings of spell damage"
+    description = "Increases the force of your spell attacks, making you deal more damage in combat."
+    equipmentSlot = RINGS
+    price = 60
+    modifiers = {
+      SPELL_DAMAGE VALUE
+    }
+    weight = 0.3
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
+End
+"SpellDamageRing3" SPELL_DAMAGE_RING(3)
+"SpellDamageRing10" SPELL_DAMAGE_RING(10)
+Def RANGED_DAMAGE_RING(VALUE)
+  {
+    viewId = { "ring" ColorId YELLOW }
+    shortName = "ranged damage"
+    name = "ring of ranged damage"
+    plural = "rings of ranged damage"
+    description = "Increases the precision of your ranged attacks, making you deal more damage in combat."
+    equipmentSlot = RINGS
+    price = 60
+    modifiers = {
+      RANGED_DAMAGE VALUE
+    }
+    weight = 0.3
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
+End
+"RangedDamageRing3" RANGED_DAMAGE_RING(3)
+"RangedDamageRing10" RANGED_DAMAGE_RING(10)
 "Rock"
   {
     viewId = { "rock" }
@@ -1708,6 +1958,10 @@ End
     resourceId = "CORPSE"
     storageIds = {"corpses"}
   }
+"GnomeCorpse" inherit "WizardCorpse"
+  {
+    name = "gnome corpse"
+  }
 "FrozenRemains" inherit "Skeleton"
   {
     viewId = { "frozen_remains" }
@@ -1734,10 +1988,242 @@ End
     applyVerb = "drink" "drinks"
     fragile = true
     weight = 0.3
-    effect = { IncreaseMorale 0.3 Lasting DRUNK}
+    effect = Description "Increases morale, but makes minions drunk" {
+      Lasting 150 HIGH_MORALE
+      Lasting DRUNK
+      AI And {} -1 0 Filter Not MaxLevelBelow "DIVINITY" 1 Lasting 500 SINNED
+    }
     price = 10
     burnTime = 1
     uses = 1
     producedStat = POTION_PRODUCED
     storageIds = {"potions" "equipment"}
+  }
+"PrayerBookProtection"
+  {
+    viewId = { "book" }
+    shortName = "protection"
+    name = "liturgical book for protection"
+    blindName = "book"
+    applyVerb = "read" "reads"
+    weight = 2
+    description = "Contains prayers to be recited during Mass."
+    effect = Name "None" Message NORMAL "Mass will be held with the intention of protecting minions from attacks."
+    equipmentSlot = PRAYER_BOOK
+    price = 10
+    burnTime = 1
+    ingredientType = "protection_prayer"
+    storageIds = {"books" "equipment"}
+  }
+"PrayerBookStrength" inherit "PrayerBookProtection"
+  {
+    shortName = "strength"
+    name = "liturgical book for strength"
+    ingredientType = "strength_prayer"
+    effect = Name "None" Message NORMAL "Mass will be held with the intention of giving minions strength in battles."
+  }
+"PrayerBookRangedResistance" inherit "PrayerBookProtection"
+  {
+    shortName = "protection from arrows"
+    name = "liturgical book for protection from arrows"
+    ingredientType = "ranged_resistance_prayer"
+    effect = Name "None" Message NORMAL "Mass will be held with the intention of protecting minions from arrows."
+  }
+"PrayerBookDigging" inherit "PrayerBookProtection"
+  {
+    shortName = "digging"
+    name = "liturgical book for digging"
+    ingredientType = "digging_prayer"
+    effect = Name "None" Message NORMAL "Mass will be held with the intention of giving minions more strength in digging."
+  }
+"PrayerBookFastTraining" inherit "PrayerBookProtection"
+  {
+    shortName = "fast training"
+    name = "liturgical book for fast training"
+    ingredientType = "training_prayer"
+    effect = Name "None" Message NORMAL "Mass will be held with the intention of minions training at a faster pace."
+  }
+"PrayerBookFastCrafting" inherit "PrayerBookProtection"
+  {
+    shortName = "fast crafting"
+    name = "liturgical book for fast crafting"
+    ingredientType = "crafting_prayer"
+    effect = Name "None" Message NORMAL "Mass will be held with the intention of minions crafting at a faster pace."
+  }
+"PrayerBookFireResistance" inherit "PrayerBookProtection"
+  {
+    shortName = "protection from fire"
+    name = "liturgical book for protection from fire"
+    ingredientType = "fire_resistance_prayer"
+    effect = Name "None" Message NORMAL "Mass will be held with the intention of protecting minions from fire."
+  }
+"PrayerBookPoisonResistance" inherit "PrayerBookProtection"
+  {
+    shortName = "protection from poison"
+    name = "liturgical book for protection from poison"
+    ingredientType = "poison_resistance_prayer"
+    effect = Name "None" Message NORMAL "Mass will be held with the intention of protecting minions from poison."
+  }
+"PrayerBookRegeneration" inherit "PrayerBookProtection"
+  {
+    shortName = "regeneration"
+    name = "liturgical book for regenerating wounds"
+    ingredientType = "regeneration_prayer"
+    effect = Name "None" Message NORMAL "Mass will be held with the intention of giving minions the ability to regenerate wounds."
+  }
+Def PROTECTION_BOOK(NAME, LOWER, PLURAL)
+"PrayerBook" + NAME + "Resistance" inherit "PrayerBookProtection"
+  {
+    shortName = "protection from " + PLURAL
+    name = "liturgical book for protection from " + PLURAL
+    ingredientType = LOWER + "_resistance_prayer"
+    effect = Name "None" Message NORMAL "Mass will be held with the intention of protecting minions from " + PLURAL + "."
+  }
+End
+PROTECTION_BOOK("Dragon", "dragon", "dragons")
+PROTECTION_BOOK("Demon", "demon", "demons")
+PROTECTION_BOOK("Undead", "undead", "the undead")
+PROTECTION_BOOK("Lizardmen", "lizardmen", "lizardmen")
+PROTECTION_BOOK("Elf", "elf", "elves")
+PROTECTION_BOOK("Greenskin", "greenskin", "greenskins")
+
+"PrayerBookArmedHelpStrong" inherit "PrayerBookProtection"
+  {
+    shortName = "stronger armed help"
+    name = "liturgical book for stronger armed help"
+    ingredientType = "teuton_prayer"
+    effect = Name "None" Message NORMAL "Mass will be held with the intention of summoning stronger armed help."
+  }
+
+"PrayerBookArmedHelp" inherit "PrayerBookProtection"
+  {
+    shortName = "armed help"
+    name = "liturgical book for armed help"
+    ingredientType = "squire_prayer"
+    effect = Name "None" Message NORMAL "Mass will be held with the intention of summoning armed help."
+  }
+
+"PrayerBookWorkers" inherit "PrayerBookProtection"
+  {
+    shortName = "workforce"
+    name = "liturgical book for summoning workforce"
+    ingredientType = "workers_prayer"
+    effect = Name "None" Message NORMAL "Mass will be held with the intention of summoning more workforce."
+  }
+
+"PrayerBookMeleeTraining" inherit "PrayerBookProtection"
+  {
+    shortName = "melee training"
+    name = "liturgical book for melee training potential"
+    ingredientType = "melee_prayer"
+    effect = Name "None" Message NORMAL "Mass will be held with the intention of increasing minions' melee training potential."
+  }
+
+"PrayerBookDivinityTraining" inherit "PrayerBookProtection"
+  {
+    shortName = "divinity training"
+    name = "liturgical book for divinity training potential"
+    ingredientType = "divinity_prayer"
+    effect = Name "None" Message NORMAL "Mass will be held with the intention of increasing minions' divinity training potential."
+  }
+
+"PrayerBookGuardian" inherit "PrayerBookProtection"
+  {
+    shortName = "guardian"
+    name = "liturgical book for a guardian angel"
+    ingredientType = "guardian_prayer"
+    effect = Name "None" Message NORMAL "Mass will be held with the intention of summoning a guardian angel for every minion."
+  }
+"PrayerBookAdoxie" inherit "PrayerBookProtection"
+  {
+    viewId = { "adoxie_book" }
+    shortName = "Adoxie"
+    name = "liturgical book of the Evil God Adoxie"
+    ingredientType = "adoxie_prayer"
+    effect = Name "None" Message NORMAL "Mass will be held in the name of the Evil God Adoxie."
+  }
+"DivinityAmulet"
+  {
+    viewId = { "amulet4" }
+    shortName = "crucifix"
+    name = "crucifix necklace"
+    description = "Makes the owner more holy and divine."
+    equipmentSlot = AMULET
+    price = 60
+    modifiers = {
+      DIVINITY 3
+    }
+    equipedEffect = { "MAGIC_RESISTANCE" }
+    weight = 0.3
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
+"RosaryRing"
+  {
+    viewId = { "ring" ColorId WHITE }
+    shortName = "rosary"
+    name = "rosary ring"
+    description = "Increases the owner's proficiency in reciting prayers."
+    equipmentSlot = RINGS
+    price = 30
+    modifiers = {
+      SPELL_SPEED 5
+    }
+    weight = 0.1
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
+"BishopRing"
+  {
+    viewId = { "ring" ColorId PURPLE }
+    shortName = "bishop"
+    name = "bishop ring"
+    description = "Grants the Bishop the ability to summon his congregation. May not be used by other minions."
+    equipmentSlot = RINGS
+    price = 150
+    equipedAbility = { "bishop audience" }
+    weight = 0.1
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
+"DevotionalMedal"
+  {
+    viewId = { "devotional_medal" }
+    name = "devotional medal"
+    description = "Depicts an important religious event."
+    equipmentSlot = DEVOTIONAL_ITEMS
+    price = 5
+    modifiers = {
+      DIVINITY 1
+    }
+    weight = 0.1
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
+"AdoxieAmulet"
+  {
+    viewId = { "amulet6" }
+    shortName = "Adoxie"
+    name = "amulet of The Evil God Adoxie"
+    equipmentSlot = AMULET
+    price = 600
+    equipedAbility = { "animate corpses" }
+    weight = 0.3
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
+  }
+"AdoxieRing"
+  {
+    viewId = { "adoxie_ring" }
+    shortName = "Adoxie"
+    name = "ring of The Evil God Adoxie"
+    description = "Increases the owner's proficiency in reciting prayers."
+    equipmentSlot = RINGS
+    price = 300
+    modifiers = {
+      SPELL_SPEED 35
+    }
+    weight = 0.1
+    storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
   }

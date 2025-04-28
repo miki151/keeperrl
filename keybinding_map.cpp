@@ -38,7 +38,7 @@ static SDL::SDL_Keycode getEquivalent(SDL::SDL_Keycode key){
 }
 
 optional<SDL::SDL_Keycode> KeybindingMap::getBuiltinMapping(Keybinding key) {
-  static unordered_map<Keybinding, SDL::SDL_Keycode, CustomHash<Keybinding>> bindings {
+  static HashMap<Keybinding, SDL::SDL_Keycode> bindings {
     {Keybinding("MENU_UP"), SDL::SDLK_KP_8},
     {Keybinding("MENU_DOWN"), SDL::SDLK_KP_2},
     {Keybinding("MENU_LEFT"), SDL::SDLK_KP_4},
@@ -48,7 +48,7 @@ optional<SDL::SDL_Keycode> KeybindingMap::getBuiltinMapping(Keybinding key) {
 }
 
 optional<ControllerKey> KeybindingMap::getControllerMapping(Keybinding key) {
-  static unordered_map<Keybinding, ControllerKey, CustomHash<Keybinding>> controllerBindings {
+  static HashMap<Keybinding, ControllerKey> controllerBindings {
       {Keybinding("WAIT"), C_WAIT},
       {Keybinding("CHAT"), C_CHAT},
       {Keybinding("FIRE_PROJECTILE"), C_FIRE_PROJECTILE},
@@ -132,6 +132,12 @@ static const map<string, SDL::SDL_Keycode> keycodes {
   {"KEYPAD9", SDL::SDLK_KP_9},
   {"SPACE", SDL::SDLK_SPACE},
   {"COMMA", SDL::SDLK_COMMA},
+  {"DELETE", SDL::SDLK_DELETE},
+  {"SLASH", SDL::SDLK_SLASH},
+  {"BACKSLASH", SDL::SDLK_BACKSLASH},
+  {"SEMICOLON", SDL::SDLK_SEMICOLON},
+  {"PAGEUP", SDL::SDLK_PAGEUP},
+  {"PAGEDOWN", SDL::SDLK_PAGEDOWN},
   {"PERIOD", SDL::SDLK_PERIOD},
   {"UP", SDL::SDLK_UP},
   {"DOWN", SDL::SDLK_DOWN},

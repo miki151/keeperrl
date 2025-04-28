@@ -36,13 +36,6 @@ struct BiomeEnemyInfo {
   SERIALIZE_ALL(NAMED(id), OPTION(count), OPTION(probability))
 };
 
-struct KeeperBiomeInfo {
-  ViewId SERIAL(viewId);
-  string SERIAL(name);
-  int SERIAL(priority);
-  SERIALIZE_ALL(viewId, name, priority)
-};
-
 struct BiomeInfo {
   optional<FurnitureType> SERIAL(overrideWaterType);
   FurnitureType SERIAL(sandType) = FurnitureType("SAND");
@@ -65,9 +58,10 @@ struct BiomeInfo {
   vector<BiomeEnemyInfo> SERIAL(whiteKeeperBaseEnemies);
   vector<pair<Range, BiomeEnemyInfo>> SERIAL(mountainEnemies);
   optional<MusicType> SERIAL(overrideMusic);
-  optional<KeeperBiomeInfo> SERIAL(keeperBiome);
   int SERIAL(sightRange) = 100;
-  SERIALIZE_ALL(NAMED(overrideWaterType), OPTION(sandType), NAMED(lakes), OPTION(items), OPTION(itemCount), NAMED(mountains), OPTION(forests), OPTION(wildlife), OPTION(darkKeeperEnemies), OPTION(whiteKeeperEnemies), OPTION(darkKeeperBaseEnemies), OPTION(whiteKeeperBaseEnemies), NAMED(overrideMusic), NAMED(keeperBiome), OPTION(sightRange), OPTION(mountainEnemies))
+  ViewId SERIAL(viewId);
+  string SERIAL(name);
+  SERIALIZE_ALL(NAMED(overrideWaterType), OPTION(sandType), NAMED(lakes), OPTION(items), OPTION(itemCount), NAMED(mountains), OPTION(forests), OPTION(wildlife), OPTION(darkKeeperEnemies), OPTION(whiteKeeperEnemies), OPTION(darkKeeperBaseEnemies), OPTION(whiteKeeperBaseEnemies), NAMED(overrideMusic), OPTION(sightRange), OPTION(mountainEnemies), NAMED(viewId), NAMED(name))
 };
 
 static_assert(std::is_nothrow_move_constructible<BiomeInfo>::value, "T should be noexcept MoveConstructible");

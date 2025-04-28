@@ -71,6 +71,11 @@ Tile Tile::setFloorBorders() {
   return *this;
 }
 
+Tile Tile::setConnectionMask(DirSet s) {
+  connectionsMask = s;
+  return *this;
+}
+
 Tile Tile::addConnection(DirSet dirs, vector<TileCoord> coord) {
   connections[dirs] = coord;
   if (dirs & (~connectionsMask))
@@ -106,7 +111,7 @@ Tile Tile::addExtraBorderId(ViewId id) {
   return *this;
 }
 
-const unordered_set<ViewId, CustomHash<ViewId>>& Tile::getExtraBorderIds() const {
+const HashSet<ViewId>& Tile::getExtraBorderIds() const {
   return extraBorderIds;
 }
 

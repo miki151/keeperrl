@@ -46,7 +46,7 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, CreatureFactory* factory, ve
             LocalTime(attackTime),
             enemy.creatures.getViewId(factory)
         });
-        waves.back().enemy.creatures.increaseBaseLevel({{ExperienceType::MELEE, max(0, attackTime / 1000 - 10)}});
+        waves.back().enemy.creatures.setCombatExperience(max(0, attackTime / 1000 - 10));
         break;
       }
     }
@@ -66,8 +66,8 @@ PTask ExternalEnemies::getAttackTask(Collective* enemy, AttackBehaviour behaviou
       [&](KillMembers t) {
         return Task::killFighters(enemy, t.count);
       },
-      [&](StealGold) {
-        return Task::stealFrom(enemy);
+      [&](StealResource r) {
+        return Task::stealFrom(enemy, r);
       },
       [&](CampAndSpawn t) {
         return Task::campAndSpawn(enemy, t, Random.get(3, 7));

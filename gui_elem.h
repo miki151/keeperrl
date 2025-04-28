@@ -30,6 +30,7 @@ class Clock;
 class Options;
 class ScrollPosition;
 class KeybindingMap;
+class SoundLibrary;
 struct ScriptedUI;
 struct ScriptedUIData;
 struct ScriptedUIState;
@@ -67,7 +68,7 @@ class GuiElem {
 
 class GuiFactory {
   public:
-  GuiFactory(Renderer&, Clock*, Options*, const DirectoryPath& freeImages);
+  GuiFactory(Renderer&, Clock*, Options*, SoundLibrary*, const DirectoryPath& freeImages);
   void loadImages();
   ~GuiFactory();
 
@@ -98,11 +99,13 @@ class GuiFactory {
   SGuiElem mouseWheel(function<void(bool)>);
   SGuiElem keyHandler(function<void(SDL::SDL_Keysym)>, bool capture = false);
   SGuiElem keyHandler(function<void()>, Keybinding, bool capture = false);
+  SGuiElem keyHandler(function<void()>, Keybinding, SoundId);  // capture = true here
   SGuiElem keyHandlerBool(function<bool()>, vector<SDL::SDL_Keysym>);
   SGuiElem keyHandlerBool(function<bool()>, Keybinding);
   SGuiElem keyHandler(function<void()>, vector<SDL::SDL_Keysym>, bool capture = false);
   SGuiElem keyHandlerRect(function<void(Rectangle)>, vector<SDL::SDL_Keysym>, bool capture = false);
   SGuiElem keyHandlerRect(function<void(Rectangle)>, Keybinding, bool capture = false);
+  SGuiElem keyHandlerRect(function<void(Rectangle)>, Keybinding, SoundId); // capture = true here
   SGuiElem stack(vector<SGuiElem>);
   SGuiElem stack(SGuiElem, SGuiElem);
   SGuiElem stack(SGuiElem, SGuiElem, SGuiElem);
@@ -218,7 +221,8 @@ class GuiFactory {
     TOP_LEFT,
     TOP_RIGHT,
     BOTTOM_LEFT,
-    BOTTOM_RIGHT
+    BOTTOM_RIGHT,
+    CENTER
   };
   SGuiElem translate(SGuiElem, Vec2 pos, optional<Vec2> size = none, TranslateCorner = TranslateCorner::TOP_LEFT);
   SGuiElem translate(function<Vec2()>, SGuiElem);
@@ -232,8 +236,8 @@ class GuiFactory {
   SGuiElem mouseHighlight(SGuiElem highlight, int myIndex, optional<int>* highlighted);
   SGuiElem mouseHighlight2(SGuiElem highlight, SGuiElem noHighlight = nullptr, bool capture = true);
   static int getHeldInitValue();
-  SGuiElem scrollArea(SGuiElem);
-  SGuiElem scrollable(SGuiElem content, ScrollPosition* scrollPos = nullptr, int* held = nullptr);
+  SGuiElem scrollArea(SGuiElem, pair<double, double>& scrollPos);
+  SGuiElem scrollable(SGuiElem content, ScrollPosition* scrollPos = nullptr, int* held = nullptr, int topMargin = 0);
   SGuiElem getScrollButton();
   SGuiElem conditional2(SGuiElem elem, function<bool(GuiElem*)> cond);
   SGuiElem conditional(SGuiElem elem, function<bool()> cond);
@@ -300,10 +304,6 @@ class GuiFactory {
     BUILDING,
     DEITIES,
     KEEPER,
-    MORALE_1,
-    MORALE_2,
-    MORALE_3,
-    MORALE_4,
     TEAM_BUTTON,
     TEAM_BUTTON_HIGHLIGHT,
     MINIMAP_WORLD1,
@@ -339,6 +339,7 @@ class GuiFactory {
   KeybindingMap* getKeybindingMap();
   MySteamInput* getSteamInput();
   Clock* clock;
+  SoundLibrary* soundLibrary;
 
   private:
 

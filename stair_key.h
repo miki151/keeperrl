@@ -5,7 +5,6 @@
 class StairKey {
   public:
   static StairKey getNew();
-  static StairKey heroSpawn();
   static StairKey keeperSpawn();
   static StairKey transferLanding();
 

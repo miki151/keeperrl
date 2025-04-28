@@ -26,11 +26,7 @@ struct Shop {
   int SERIAL(index);
   SERIALIZE_ALL(index)
 };
-struct Items {
-  Range SERIAL(count);
-  ItemListId SERIAL(id);
-  SERIALIZE_ALL(count, id)
-};
+using Items = ItemListId;
 struct LayoutAction;
 using Chain = vector<LayoutAction>;
 using ClearFurniture = EmptyStruct<struct ClearFurniturTag>;
@@ -38,7 +34,18 @@ using ClearLayer = FurnitureLayer;
 using InsideFurniture = EmptyStruct<struct InsideFurnitureTag>;
 using OutsideFurniture = EmptyStruct<struct OutsideFurnitureTag>;
 using AddGas = TileGasType;
-using HostileCreature = CreatureId;
+struct HostileCreature {
+  CreatureId SERIAL(id);
+  SERIALIZE_ALL(id)
+};
+struct PeacefulCreature {
+  CreatureId SERIAL(id);
+  SERIALIZE_ALL(id)
+};
+struct AlliedPrisoner {
+  CreatureId SERIAL(id);
+  SERIALIZE_ALL(id)
+};
 struct Stockpile {
   int SERIAL(index);
   SERIALIZE_ALL(index)
@@ -63,6 +70,8 @@ struct PlaceHostile {
   X(PlaceHostile, 12)\
   X(AddGas, 13)\
   X(HostileCreature, 14)\
+  X(AlliedPrisoner, 15)\
+  X(PeacefulCreature, 16)\
 
 #define VARIANT_NAME LayoutAction
 

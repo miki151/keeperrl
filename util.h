@@ -460,6 +460,10 @@ class EnumMap {
     return elems == other.elems;
   }
 
+  bool operator != (const EnumMap<T, U>& other) const {
+    return elems != other.elems;
+  }
+
   void clear(U value) {
     for (int i = 0; i < EnumInfo<T>::size; ++i)
       elems[i] = value;
@@ -840,7 +844,7 @@ class RandomGen {
   template <typename T>
   vector<T> permutation(initializer_list<T> vi) {
     vector<T> v(vi);
-    std::random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    std::shuffle(v.begin(), v.end(), generator);
     return v;
   }
 
@@ -848,14 +852,14 @@ class RandomGen {
     vector<int> v;
     for (int i : r)
       v.push_back(i);
-    std::random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    std::shuffle(v.begin(), v.end(), generator);
     return v;
   }
 
   template <typename T>
   vector<T> chooseN(int n, vector<T> v) {
     CHECK(n <= v.size());
-    std::random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    std::shuffle(v.begin(), v.end(), generator);
     return v.getPrefix(n);
   }
 
@@ -991,8 +995,8 @@ class Table {
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
     ar << bounds;
-    for (Vec2 v : bounds)
-      ar << (*this)[v];
+    for (Vec2 vAbs : bounds)
+      ar << mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
   }
 
 #ifdef MEM_USAGE_TEST
@@ -1007,8 +1011,8 @@ class Table {
   void load(Archive& ar, const unsigned int version) {
     ar >> bounds;
     mem.reset(new T[bounds.width() * bounds.height()]);
-    for (Vec2 v : bounds)
-      ar >> (*this)[v];
+    for (Vec2 vAbs : bounds)
+      ar >> mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
   }
 
   SERIALIZATION_CONSTRUCTOR(Table)
@@ -1429,6 +1433,32 @@ class DirSet {
   ContentType content = 0;
 };
 
+template <typename Key, typename Map>
+optional<const typename Map::mapped_type&> getReferenceMaybe(const Map& m, const Key& key) {
+  auto it = m.find(key);
+  if (it != m.end())
+    return it->second;
+  else
+    return none;
+}
+
+template <typename Key, typename Map>
+optional<typename Map::mapped_type&> getReferenceMaybe(Map& m, const Key& key) {
+  auto it = m.find(key);
+  if (it != m.end())
+    return it->second;
+  else
+    return none;
+}
+
+template <typename Map>
+optional<typename Map::mapped_type> getValueMaybe(const Map& m, const typename Map::key_type& key) {
+  auto it = m.find(key);
+  if (it != m.end())
+    return it->second;
+  else
+    return none;
+}
 
 template <typename U, typename V>
 class BiMap {
@@ -1449,15 +1479,17 @@ class BiMap {
   }
 
   void erase(const U& u) {
-    CHECK(m1.count(u));
-    m2.erase(m1.at(u));
-    m1.erase(u);
+    if (auto other = getReferenceMaybe(m1, u)) {
+      m2.erase(*other);
+      m1.erase(u);
+    }
   }
 
   void erase(const V& v) {
-    CHECK(m2.count(v));
-    m1.erase(m2.at(v));
-    m2.erase(v);
+    if (auto other = getReferenceMaybe(m2, v)) {
+      m1.erase(*other);
+      m2.erase(v);
+    }
   }
 
   const V& get(const U& u) const {
@@ -1802,33 +1834,6 @@ class DisjointSets {
   vector<int> father;
   vector<int> size;
 };
-
-template <typename Key, typename Map>
-optional<const typename Map::mapped_type&> getReferenceMaybe(const Map& m, const Key& key) {
-  auto it = m.find(key);
-  if (it != m.end())
-    return it->second;
-  else
-    return none;
-}
-
-template <typename Key, typename Map>
-optional<typename Map::mapped_type&> getReferenceMaybe(Map& m, const Key& key) {
-  auto it = m.find(key);
-  if (it != m.end())
-    return it->second;
-  else
-    return none;
-}
-
-template <typename Map>
-optional<typename Map::mapped_type> getValueMaybe(const Map& m, const typename Map::key_type& key) {
-  auto it = m.find(key);
-  if (it != m.end())
-    return it->second;
-  else
-    return none;
-}
 
 extern int getSize(const string&);
 extern const char* getString(const string&);

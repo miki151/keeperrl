@@ -33,7 +33,12 @@ RICH_ENUM(
     GUARDING1,
     GUARDING2,
     GUARDING3,
-    PHYLACTERY
+    PHYLACTERY,
+    PREACHING,
+    MASS,
+    PRAYER,
+    HEARING_CONFESSION,
+    CONFESSION
 );
 
 class Position;
@@ -42,7 +47,7 @@ class ContentFactory;
 class MinionActivities {
   public:
   MinionActivities(const ContentFactory*);
-  static WTask getExisting(Collective*, Creature*, MinionActivity);
+  static Task* getExisting(Collective*, Creature*, MinionActivity);
   PTask generate(Collective*, Creature*, MinionActivity) const;
   static PTask generateDropTask(Collective*, Creature*, MinionActivity);
   static optional<TimeInterval> getDuration(const Creature*, MinionActivity);
@@ -54,5 +59,5 @@ class MinionActivities {
 
   private:
   EnumMap<MinionActivity, vector<FurnitureType>> SERIAL(allFurniture);
-  unordered_map<FurnitureType, MinionActivity, CustomHash<FurnitureType>> SERIAL(activities);
+  HashMap<FurnitureType, MinionActivity> SERIAL(activities);
 };

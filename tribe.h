@@ -34,7 +34,7 @@ class TribeId {
   static TribeId getDarkElf();
   static TribeId getDwarf();
   static TribeId getGnome();
-  static TribeId getAdventurer();
+  static TribeId getWhiteKeeper();
   static TribeId getBandit();
   static TribeId getHostile();
   static TribeId getShelob();
@@ -99,7 +99,7 @@ class Tribe {
 
   SERIALIZATION_DECL(Tribe)
 
-  typedef unordered_map<TribeId, PTribe, CustomHash<TribeId>> Map;
+  typedef HashMap<TribeId, PTribe> Map;
 
   static Map generateTribes();
 
@@ -128,7 +128,7 @@ RICH_ENUM2(std::uint8_t,
     DARK_ELF,
     DWARF,
     GNOME,
-    ADVENTURER,
+    WHITE_KEEPER,
     BANDIT,
     HOSTILE,
     PEACEFUL,

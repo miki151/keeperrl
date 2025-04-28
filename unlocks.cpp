@@ -37,3 +37,11 @@ void Unlocks::unlock(UnlockId id) {
     write(*path, s);
   }
 }
+
+void Unlocks::achieve(AchievementId id) {
+  unlock("ACH_"_s + id.data());
+}
+
+bool Unlocks::isAchieved(AchievementId id) const {
+  return isUnlocked("ACH_"_s + id.data());
+}

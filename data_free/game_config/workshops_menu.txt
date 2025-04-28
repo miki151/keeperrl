@@ -1,4 +1,4 @@
- 
+
 "basic_without_lab"
 {
   "WORKSHOP"
@@ -10,30 +10,34 @@
       {{"WoodenShield"}          2        "WOOD" 10}
       {{"LeatherGloves"}         1}
       {{"HeavyClub"}             5        "WOOD" 20      "two-handed weapons"}
-      {{"Cornuthaum1"}           5        "GOLD" 0       "sorcery"}
-      {{"Cornuthaum2"}           8        "GOLD" 20      "advanced sorcery"}
-      {{"Cornuthaum3"}           12       "GOLD" 40      "master sorcery"}
-      {item = {"DevilBoots"}       work = 30 cost = "WOOD" 0 requireIngredient = "devil_hooves" }
-      {{"WoodenStaff"}           13       "WOOD" 20      "magical weapons"}
       {{"Torch"}                 2        "WOOD" 4}
-  }
-  
-  "FORGE"
-  {
-      {item = {"Sword"}          work = 10    cost = none   materialTab = true}
-      {item = {"ChainArmor"}     work = 30    cost = none   materialTab = true}
+      {{"WoodenStaff"}           13       "WOOD" 20      "magical weapons"}
+      {{"Cornuthaum1"}           5        none           "sorcery"}
+      {{"Cornuthaum2"}           8        none      "advanced sorcery"}
+      {{"Cornuthaum3"}           12       none      "master sorcery"}
+      {item = {"ArchwoodStaff"}        work = 20  cost = none
+          requireIngredient = "archwood" tech = "magical weapons"}
       {item = {"RedDragonArmor"}   work = 30  cost = none   requireIngredient = "red_scales" }
       {item = {"BlackDragonArmor"} work = 30  cost = none   requireIngredient = "black_scales" }
       {item = {"WhiteDragonArmor"} work = 30  cost = none   requireIngredient = "white_scales" }
       {item = {"GreenDragonArmor"} work = 30  cost = none   requireIngredient = "green_scales" }
       {item = {"YellowDragonArmor"}work = 30  cost = none   requireIngredient = "yellow_scales" }
-      {item = {"IronHelm"}        work = 8    cost = none   materialTab = true}
-      {item = {"IronBoots"}       work = 12   cost = none   materialTab = true}
+      {item = {"DevilBoots"}       work = 30 cost = "WOOD" 0 requireIngredient = "devil_hooves" }
       {item = {"CyclopsHelm"}
-       work = 30 
+       work = 30
        cost = none
        requireIngredient = "cyclops_testes"
       }
+  }
+
+  "ENCHANTED_WORKSHOP" inherit "WORKSHOP" append {}
+
+  "FORGE"
+  {
+      {item = {"Sword"}          work = 10    cost = none   materialTab = true}
+      {item = {"ChainArmor"}     work = 30    cost = none   materialTab = true}
+      {item = {"IronHelm"}        work = 8    cost = none   materialTab = true}
+      {item = {"IronBoots"}       work = 12   cost = none   materialTab = true}
       {item = {"IronGloves"}      work = 3    cost = none   materialTab = true}
       {item = {"IronShield"}      work = 12   cost = none   materialTab = true}
       {item = {"WarHammer"}       work = 16   cost = none   tech = "two-handed weapons"  materialTab = true}
@@ -46,7 +50,6 @@
       {item = {"AdaShield"}       work = 12   cost = none   materialTab = true}
       {item = {"AdaWarHammer"}    work = 20   cost = none   tech = "two-handed weapons"  materialTab = true}
       {item = {"AdaBattleAxe"}    work = 22   cost = none   tech = "two-handed weapons"  materialTab = true}
-      {item = {"IronStaff"}       work = 20   cost = none   tech = "magical weapons"  materialTab = true}
       {item = {"AdoxiumArmor"}    work = 30   cost = none   materialTab = true}
       {item = {"AdoxiumHelm"}     work = 15   cost = none   materialTab = true}
       {item = {"AdoxiumBoots"}    work = 15   cost = none   materialTab = true}
@@ -56,12 +59,16 @@
       {item = {"InferniteWarHammer"}    work = 20   cost = none   tech = "two-handed weapons"  materialTab = true}
       {item = {"InferniteBattleAxe"}    work = 22   cost = none   tech = "two-handed weapons"  materialTab = true}
   }
- 
+
+  "LAVA_FORGE" inherit "FORGE" append
+  {
+  }
+
 Def OneTimeBoost()
   NoAutoAssign EquipmentType COMBAT_ITEM AI And {} -1 1 AI And {} 0 1
 End
 
-Def GasPotion(GasType, Desc) 
+Def GasPotion(GasType, Desc)
   Potion Description Desc Area 1 EmitGas GasType 1
 End
 
@@ -82,6 +89,18 @@ End
       {{Amulet WARNING}                      10       "GOLD" 30}
       {{"DefenseAmulet"}                     10       "GOLD" 40}
       {{Amulet REGENERATION}                 10       "GOLD" 60}
+  }
+
+  "LAVA_JEWELER"
+  {
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 2 }} 10 "GOLD" 15}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 2 }} 10 "GOLD" 15}
+    {{Glyph { WEAPON ItemAttrBonus SPELL_DAMAGE 2 }} 10 "GOLD" 15}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 }} 10 "GOLD" 15}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 8 }} 10 "GOLD" 100}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 8 }} 10 "GOLD" 100}
+    {{Glyph { WEAPON ItemAttrBonus SPELL_DAMAGE 8 }} 10 "GOLD" 100}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 8 }} 10 "GOLD" 100}
   }
 }
 
@@ -111,6 +130,7 @@ append {
       {item = {Potion Lasting PLAGUE} work = 5 cost = "GOLD" 10 requireIngredient = "zombie_brain" }
       {item = {Potion OneTimeBoost() Permanent POISON_RESISTANT} work = 20 cost = "GOLD" 80
           requireIngredient = "hydra_tongue" }
+      {item = {"ProphetSoup"} work = 20 requireIngredient = "prophet_remains" }
       {item = {Potion Name "mass insanity" Area 20 Lasting INSANITY}
           work = 50 cost = "GOLD" 666 requireIngredient = "devil_horns" }
       {{"GoldPiece"}                           1        "IRON" 3      "alchemical conversion"}
@@ -120,6 +140,28 @@ append {
       {{"Rock"}                                1        "GOLD" 1      "alchemical conversion"}
   }
 
+  "ENCHANTED_LABORATORY"
+  {
+      {{Potion OneTimeBoost() Name "iron arms" Permanent IRON_ARMS }      20       "GOLD" 100}
+      {{Potion OneTimeBoost() Name "thick skin" Permanent THICK_SKIN }     20       "GOLD" 100}
+      {{Potion OneTimeBoost() Name "stable hand" Permanent STABLE_HAND }    20       "GOLD" 100}
+      {{Potion OneTimeBoost() Name "piercing voice" Permanent PIERCING_VOICE }  20       "GOLD" 100}
+      {{Potion OneTimeBoost() Name "venomous fangs"
+          Description "Makes the victim grow a pair of venomous fangs"
+          AddIntrinsicAttack HEAD { Intrinsic { "bite_attack" } "fangs" 5 {
+          attackType = BITE
+          attackMsg = BITE
+          victimEffect = {0.2 Lasting POISON} } } }            50       "GOLD" 100}
+      {{Potion OneTimeBoost() Name "horns"
+          Description "Makes the victim grow a pair of horns"
+          AddIntrinsicAttack HEAD { Intrinsic { "horn_attack" } "horns" 5 {
+          attackType = STAB
+          attackMsg = THRUST } } }            50       "GOLD" 100}
+      {{Potion EquipmentType COMBAT_ITEM Name "keeper polymorph"
+          Description "Permanently polymorphs a Keeper into a random creature"
+          Filter CreatureStatus LEADER Polymorph none none}              50       "GOLD" 1000}
+  }
+
 }
 
 "bows"
@@ -127,9 +169,10 @@ append {
   "WORKSHOP"
   {
       {{"Bow"}                   13       "WOOD" 20      "archery"}
-      {item = {"ArchwoodBow"}  work = 30 cost = "WOOD" 20 requireIngredient = "archwood"
-          tech = "archery" }
+      {item = {"ArchwoodBow"}  work = 30 cost = "WOOD" 20 requireIngredient = "archwood" tech = "archery" }
   }
+
+  "ENCHANTED_WORKSHOP" inherit "WORKSHOP" append {}
 }
 
 "crossbows"
@@ -137,20 +180,22 @@ append {
   "WORKSHOP"
   {
       {{"Crossbow"}                   13       "WOOD" 20      "archery"}
+      {item = {"ArchwoodCrossbow"}  work = 30 requireIngredient = "archwood" tech = "archery" }
   }
+
+  "ENCHANTED_WORKSHOP" inherit "WORKSHOP" append {}
 }
 
 Def CORPUS(Id, Name, Resource, Tech, Slots)
-  { item = {Assembled{ Id Name {FIGHTER AUTOMATON}{AUTOMATONS_UPPER AUTOMATONS_LOWER} Slots}}
-    work = 8 cost = Resource tech = Tech applyImmediately = true notArtifact = true materialTab = true
-    requiresUpgrades = true}
+  { item = {Assembled{ Id Name {FIGHTER AUTOMATON NO_LEISURE_ZONE} {AUTOMATONS_UPPER AUTOMATONS_LOWER} Slots}}
+    work = 8 cost = Resource tech = Tech materialTab = true requiresUpgrades = true}
 End
 
 Def WORKER(Id, Color, Resource)
-  { item = {Assembled{Id "drilling automaton" {FIGHTER AUTOMATON}
+  { item = {Assembled{Id "drilling automaton" {FIGHTER AUTOMATON NO_LEISURE_ZONE}
         {AUTOMATONS_UPPER AUTOMATONS_LOWER} 1 { { "installed_legs" Rgb Color 255 }
             { "installed_drill" Rgb Color 255 }}}}
-    work = 8 cost = Resource tech = "automatons" applyImmediately = true notArtifact = true materialTab = true}
+    work = 8 cost = Resource tech = "automatons" materialTab = true}
 End
 
 "gnomes"
@@ -160,54 +205,62 @@ End
       WORKER("AUTOMATON_WORKER_WOOD", 180 140 55, "WOOD" 40)
       CORPUS("AUTOMATON_CORPUS_WOOD", "automaton corpus", "WOOD" 30, "automatons", 3)
       CORPUS("LIGHT_AUTOMATON_CORPUS_WOOD", "light automaton corpus", "WOOD" 20, "automatons", 2)
-      { item = {Assembled{ "HELICOPTER" "helicopterum" {FIGHTER AUTOMATON} 
+      { item = {Assembled{ "HELICOPTER" "helicopterum" {FIGHTER AUTOMATON}
             {AUTOMATONS_UPPER} 1}}
-        work = 8 cost = "WOOD" 10 tech = "aerodynamics" applyImmediately = true notArtifact = true}
+        work = 8 cost = "WOOD" 10 tech = "aerodynamics" }
       {{"AutomatonLegsWood"}       2       "WOOD" 5    "automatons"}
       {{"AutomatonArmsWood"}       2       "WOOD" 5    "automatons"}
       {{"AutomatonDrillWood"}      2       "WOOD" 5    "automatons"}
-      {{"AutomatonCraftingWood"}   2       "WOOD" 5    "advanced automatons"}
+      {{"AutomatonCraftingWood"}   2       "WOOD" 5    "automated crafting"}
       {{"ArcherHeadWood"}          2       "WOOD" 5    "advanced automatons"}
       {{"HumanoidHeadWood"}        2       "WOOD" 5    "automaton brains"}
-  } 
+  }
   "FORGE"
   {
       WORKER("AUTOMATON_WORKER_IRON", 140 148 148, "IRON" 40)
       CORPUS("AUTOMATON_CORPUS_IRON", "automaton corpus", "IRON" 30, "automatons", 3)
-      CORPUS("LIGHT_AUTOMATON_CORPUS_IRON", "light automaton corpus", "IRON" 20, "advanced automatons", 2)
-      CORPUS("HEAVY_AUTOMATON_CORPUS_IRON", "heavy automaton corpus", "IRON" 40, "advanced automatons", 3)
+      CORPUS("LIGHT_AUTOMATON_CORPUS_IRON", "light automaton corpus", "IRON" 20, "automatons", 2)
+      CORPUS("HEAVY_AUTOMATON_CORPUS_IRON", "heavy automaton corpus", "IRON" 40, "automatons", 3)
       { item = {"AutomatonLegsIron"} work = 2 tech = "automatons" materialTab = true}
       { item = {"AutomatonArmsIron"} work = 2 tech = "automatons" materialTab = true}
-      { item = {"RepairAutomatonArmsIron"} work = 2 tech = "advanced automatons" materialTab = true}
+      { item = {"RepairAutomatonArmsIron"} work = 2 tech = "automated crafting" materialTab = true}
       { item = {"AutomatonDrillIron"} work = 2 tech = "automatons" materialTab = true}
-      { item = {"AutomatonCraftingIron"} work = 2 tech = "advanced automatons" materialTab = true}
+      { item = {"AutomatonCraftingIron"} work = 2 tech = "automated crafting" materialTab = true}
       { item = {"ArcherHeadIron"} work = 2 tech = "advanced automatons" materialTab = true}
       { item = {"FireHeadIron"} work = 2 tech ="advanced automatons" materialTab = true}
-      { item = {"AcidHeadIron"} work = 2 tech = "advanced automatons" materialTab = true}
+      { item = {"OilHeadIron"} work = 2 tech ="advanced automatons" materialTab = true}
+#      { item = {"AcidHeadIron"} work = 2 tech = "advanced automatons" materialTab = true}
       { item = {"HumanoidHeadIron"} work = 2 tech = "automaton brains" materialTab = true}
       WORKER("AUTOMATON_WORKER_ADA", 148 189 189, "ADA" 40)
       CORPUS("AUTOMATON_CORPUS_ADA", "automaton corpus", "ADA" 30, "automatons", 3)
-      CORPUS("LIGHT_AUTOMATON_CORPUS_ADA", "light automaton corpus", "ADA" 20, "advanced automatons", 2)
-      CORPUS("HEAVY_AUTOMATON_CORPUS_ADA", "heavy automaton corpus", "ADA" 40, "advanced automatons", 3)
+      CORPUS("LIGHT_AUTOMATON_CORPUS_ADA", "light automaton corpus", "ADA" 20, "automatons", 2)
+      CORPUS("HEAVY_AUTOMATON_CORPUS_ADA", "heavy automaton corpus", "ADA" 40, "automatons", 3)
       { item = {"AutomatonLegsAda"} work = 2 tech = "automatons" materialTab = true}
       { item = {"AutomatonArmsAda"} work = 2 tech = "automatons" materialTab = true}
-      { item = {"RepairAutomatonArmsAda"} work = 2 tech = "advanced automatons" materialTab = true}
+      { item = {"RepairAutomatonArmsAda"} work = 2 tech = "automated crafting" materialTab = true}
       { item = {"AutomatonDrillAda"} work = 2 tech = "automatons" materialTab = true}
-      { item = {"AutomatonCraftingAda"} work = 2 tech = "advanced automatons" materialTab = true}
+      { item = {"AutomatonCraftingAda"} work = 2 tech = "automated crafting" materialTab = true}
       { item = {"ArcherHeadAda"} work = 2 tech = "advanced automatons" materialTab = true}
       { item = {"FireHeadAda"} work = 2 tech = "advanced automatons" materialTab = true}
+      { item = {"OilHeadAda"} work = 2 tech = "advanced automatons" materialTab = true}
       { item = {"AcidHeadAda"} work = 2 tech = "advanced automatons" materialTab = true}
       { item = {"HumanoidHeadAda"} work = 2 tech = "automaton brains" materialTab = true}
       CORPUS("AUTOMATON_CORPUS_INFERNITE", "automaton corpus", "INFERNITE" 30, "automatons", 3)
-      CORPUS("LIGHT_AUTOMATON_CORPUS_INFERNITE", "light automaton corpus", "INFERNITE" 20, "advanced automatons", 2)
-      CORPUS("HEAVY_AUTOMATON_CORPUS_INFERNITE", "heavy automaton corpus", "INFERNITE" 40, "advanced automatons", 3)
+      CORPUS("LIGHT_AUTOMATON_CORPUS_INFERNITE", "light automaton corpus", "INFERNITE" 20, "automatons", 2)
+      CORPUS("HEAVY_AUTOMATON_CORPUS_INFERNITE", "heavy automaton corpus", "INFERNITE" 40, "automatons", 3)
+      { item = {"AutomatonLegsInfernite"} work = 2 tech = "automatons" materialTab = true}
       { item = {"AutomatonArmsInfernite"} work = 2 tech = "automatons" materialTab = true}
+      { item = {"FireHeadInfernite"} work = 2 tech = "automatons" materialTab = true}
       CORPUS("AUTOMATON_CORPUS_ADOXIUM", "automaton corpus", "ADOXIUM" 30, "automatons", 3)
-      CORPUS("LIGHT_AUTOMATON_CORPUS_ADOXIUM", "light automaton corpus", "ADOXIUM" 20, "advanced automatons", 2)
-      CORPUS("HEAVY_AUTOMATON_CORPUS_ADOXIUM", "heavy automaton corpus", "ADOXIUM" 40, "advanced automatons", 3)
+      CORPUS("LIGHT_AUTOMATON_CORPUS_ADOXIUM", "light automaton corpus", "ADOXIUM" 20, "automatons", 2)
+      CORPUS("HEAVY_AUTOMATON_CORPUS_ADOXIUM", "heavy automaton corpus", "ADOXIUM" 40, "automatons", 3)
+      { item = {"AutomatonLegsAdoxium"} work = 2 tech = "automatons" materialTab = true}
       { item = {"AutomatonArmsAdoxium"} work = 2 tech = "automatons" materialTab = true}
-      { item = {"KaboomHead"} work = 3 tech = "advanced automatons" materialTab = true}
-  } 
+      { item = {"KaboomHead"} work = 3 tech = "explosives" materialTab = true}
+      { item = {"InvisibilityHeadAdoxium"} work = 3 tech = "advanced automatons" materialTab = true}
+      { item = {"TeleportHeadAdoxium"} work = 3 tech = "advanced automatons" materialTab = true}
+  }
+  "LAVA_FORGE" inherit "FORGE" append { }
   "LABORATORY"
   {
       {{Potion Fire{25}} 4 "GOLD" 5}
@@ -221,34 +274,34 @@ End
   "MORGUE"
   {
       { item = {Assembled{ "ZOMBIE_WORKER" "zombie worker" {NO_LIMIT FIGHTER WORKER} {BALSAM} 3}}
-        work = 6 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
+        work = 6 cost = "CORPSE" 1 }
       { item = {Assembled{ "ZOMBIE_ARTISAN" "zombie artisan" {NO_LIMIT FIGHTER} {BALSAM} 3 }}
-        work = 12 cost = "CORPSE" 2 applyImmediately = true notArtifact = true}
+        work = 12 cost = "CORPSE" 2 }
       { item = {Assembled{ "ZOMBIE_MAGE" "zombie mage" {NO_LIMIT FIGHTER} {BALSAM} 3 }}
-        work = 16 cost = "CORPSE" 3 applyImmediately = true notArtifact = true}
+        work = 16 cost = "CORPSE" 3 }
       { item = {Assembled{ "SKELETON_WARRIOR" "skeleton warrior" {NO_LIMIT FIGHTER} {BALSAM} 3 }}
-        work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
+        work = 8 cost = "CORPSE" 1 }
       { item = {Assembled{ "SKELETON_ARCHER" "skeleton archer" {NO_LIMIT FIGHTER} {BALSAM} 3 }}
-        work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
+        work = 8 cost = "CORPSE" 1 }
       { item = {Assembled{ "SKELETON_WOLF" "skeleton wolf" {NO_LIMIT FIGHTER} {BALSAM} 1 }}
-        work = 4 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
+        work = 4 cost = "CORPSE" 1 }
       { item = {Assembled{ "VAMPIRE" "vampire warrior" {NO_LIMIT FIGHTER} {BALSAM} 5}}
-        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
+        work = 20 cost = "CORPSE" 4 tech = "advanced necromancy"}
       { item = {Assembled{ "VAMPIRE_BRUTE" "vampire brute" {NO_LIMIT FIGHTER} {BALSAM} 3}}
-        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
+        work = 20 cost = "CORPSE" 4 tech = "advanced necromancy"}
       { item = {Assembled{ "VAMPIRE_LORD_NECRO" "vampire noble" {NO_LIMIT FIGHTER} {BALSAM} 5}}
-        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
+        work = 20 cost = "CORPSE" 4 tech = "advanced necromancy"}
       { item = {Assembled{ "SKELETAL_ABOMINATION_PLAYER" "skeleton king" {NO_LIMIT FIGHTER}
             {BODY_PART} 199}}
-        work = 50 cost = "CORPSE" 8 applyImmediately = true notArtifact = true tech = "master necromancy"}
+        work = 50 cost = "CORPSE" 8 tech = "master necromancy"}
       { item = {Assembled{ "SLASHER" "slasher" {NO_LIMIT FIGHTER} {BALSAM} 3 }}
-        work = 20 cost = "CORPSE" 6 applyImmediately = true notArtifact = true tech = "master necromancy"}
+        work = 20 cost = "CORPSE" 6 tech = "master necromancy"}
       { item = {Assembled{ "JUGGERNAUT" "juggernaut" {NO_LIMIT FIGHTER} {BALSAM} 3 }}
-        work = 20 cost = "CORPSE" 8 applyImmediately = true notArtifact = true tech = "master necromancy"}
+        work = 20 cost = "CORPSE" 8 tech = "master necromancy"}
       { item = {Assembled{ "ABOMINATION_PLAYER" "zombie king" {NO_LIMIT FIGHTER} {BODY_PART} 199}}
-        work = 50 cost = "CORPSE" 8 applyImmediately = true notArtifact = true tech = "master necromancy"}
+        work = 50 cost = "CORPSE" 8 tech = "master necromancy"}
       { item = {Assembled{ "BONE_DRAGON" "bone dragon" {NO_LIMIT FIGHTER} {BALSAM} 7}}
-        work = 100 requireIngredient = "dragon_corpse" applyImmediately = true tech = "master necromancy"}
+        work = 100 requireIngredient = "dragon_corpse" tech = "master necromancy"}
   }
   "LABORATORY"
   {
@@ -259,9 +312,9 @@ End
       {{Balsam Permanent SWARMER}           4 "GOLD" 3 "embalming"}
       {{Balsam Permanent NO_CARRY_LIMIT}    4 "GOLD" 3 "embalming"}
       {{Balsam IncreaseAttr DIGGING        15}                    4 "GOLD" 3 "embalming"}
-      {{Balsam IncreaseMaxLevel MELEE       3}                    4 "GOLD" 3 "embalming"}
-      {{Balsam IncreaseMaxLevel SPELL       3}                    4 "GOLD" 3 "embalming"}
-      {{Balsam IncreaseMaxLevel ARCHERY     3}                    4 "GOLD" 3 "embalming"}
+      {{Balsam IncreaseMaxLevel DAMAGE        3}                  4 "GOLD" 3 "embalming"}
+      {{Balsam IncreaseMaxLevel SPELL_DAMAGE  3}                  4 "GOLD" 3 "embalming"}
+      {{Balsam IncreaseMaxLevel RANGED_DAMAGE 3}                  4 "GOLD" 3 "embalming"}
       {{Balsam Name "lesser damage bonus"        IncreaseAttr DAMAGE        3}   4 "GOLD" 3 "embalming"}
       {{Balsam Name "lesser defense bonus"       IncreaseAttr DEFENSE       3}   4 "GOLD" 3 "embalming"}
       {{Balsam Name "lesser ranged damage bonus" IncreaseAttr RANGED_DAMAGE 3}   4 "GOLD" 3 "embalming"}
@@ -306,6 +359,65 @@ End
       {{Balsam SpecialAttr RANGED_DAMAGE 15 HatedBy HATE_ELVES}    12 "GOLD" 10 "master embalming"}
   }
 }
+
+"church" inherit "basic_without_lab" append {
+  "JEWELER" {
+    {{"DevotionalMedal"}              3        "GOLD" 5}
+    {{"DivinityAmulet"}               10       "GOLD" 20}
+    {{"RosaryRing"}                   10       "GOLD" 20}
+    {{"BishopRing"}                   10       "GOLD" 100}
+    {{"AdoxieAmulet"}                 10       "GOLD" 100  "dark crafts"}
+    {{"AdoxieRing"}                   10       "GOLD" 100  "dark crafts"}
+  }
+}
+
+"scriptorium"
+{
+  "SCRIPTORIUM"
+  {
+    {{"PrayerBookStrength"}            30}
+    {{"PrayerBookFireResistance"}      30}
+    {{"PrayerBookPoisonResistance"}    30}
+    {{"PrayerBookRangedResistance"}    30}
+    {{"PrayerBookArmedHelp"}           30}
+    {{"PrayerBookRegeneration"}        30}
+
+    {{"PrayerBookFastTraining"}        50 "GOLD" 20 "advanced theology"}
+    {{"PrayerBookFastCrafting"}        50 "GOLD" 20 "advanced theology"}
+    {{"PrayerBookDragonResistance"}    50 "GOLD" 20 "advanced theology"}
+    {{"PrayerBookDemonResistance"}     50 "GOLD" 20 "advanced theology"}
+    {{"PrayerBookUndeadResistance"}    50 "GOLD" 20 "advanced theology"}
+    {{"PrayerBookLizardmenResistance"} 50 "GOLD" 20 "advanced theology"}
+    {{"PrayerBookElfResistance"}       50 "GOLD" 20 "advanced theology"}
+    {{"PrayerBookGreenskinResistance"} 50 "GOLD" 20 "advanced theology"}
+
+    {{"PrayerBookArmedHelpStrong"}     100 "GOLD" 100 "expert theology"}
+    {{"PrayerBookGuardian"}            100 "GOLD" 100 "expert theology"}
+    {{"PrayerBookMeleeTraining"}       100 "GOLD" 100 "expert theology"}
+    {{"PrayerBookDivinityTraining"}    100 "GOLD" 100 "expert theology"}
+
+    {{"PrayerBookAdoxie"}              300 "GOLD" 300 "worship of Adoxie"}
+  }
+}
+
+"holy_weapons"
+{
+  "WORKSHOP"
+  {
+      {{"WoodenCrozier"}                   13       "WOOD" 20}
+  }
+
+  "ENCHANTED_WORKSHOP" inherit "WORKSHOP" append {}
+
+  "FORGE"
+  {
+      {item = {"IronCrozier"}      work = 13   cost = none materialTab = true}
+      {item = {"AdoxiumCrozier"}   work = 20   cost = none tech = "dark crafts" materialTab = true}
+  }
+
+  "LAVA_FORGE" inherit "FORGE" append {}
+}
+
 
 # Add more groups here, remember that you need to add your new group to your keeper in keeper_creatures.txt
 

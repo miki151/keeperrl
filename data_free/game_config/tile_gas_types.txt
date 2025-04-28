@@ -26,7 +26,20 @@
   false
   Filter BodyMaterial FLESH {
     Chance 0.2 Lasting PANIC
-    IncreaseMorale -0.1
+    Lasting 10 DEF_DEBUFF
+  }
+}
+
+"BLACK_MASS_SMOKE" {
+  "black smoke"
+  ColorId BLACK
+  0.95
+  0.05
+  false
+  Filter BodyMaterial FLESH {
+    Chance 0.2 Lasting PANIC
+    Chance 0.1 CreatureMessage {"scream in terror" "screams in terror"}
+    #Lasting 10 DEF_DEBUFF
   }
 }
 

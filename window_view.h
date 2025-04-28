@@ -46,6 +46,7 @@ class WindowView: public View {
     FileSharing* bugreportSharing;
     DirectoryPath bugreportDir;
     string installId;
+    bool debugOptions;
   };
   static View* createDefaultView(ViewParams);
   static View* createLoggingView(OutputArchive& of, ViewParams);
@@ -85,8 +86,7 @@ class WindowView: public View {
   virtual void continueClock() override;
   virtual void addSound(const Sound&) override;
   virtual optional<Vec2> chooseSite(const string& message, const Campaign&, Vec2 current) override;
-  virtual void presentWorldmap(const Campaign&) override;
-  virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&) override;
+  virtual void presentWorldmap(const Campaign&, Vec2 current) override;
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) override;
   virtual vector<int> prepareWarlordGame(RetiredGames&, const vector<PlayerInfo>&, int maxTeam, int maxDungeons) override;
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<PlayerInfo>&,
@@ -230,7 +230,7 @@ class WindowView: public View {
   atomic<int> zoomUI;
   void playSounds(const CreatureView*);
   vector<Sound> soundQueue;
-  EnumMap<SoundId, optional<milliseconds>> lastPlayed;
+  HashMap<SoundId, milliseconds> nextPlayed;
   SoundLibrary* soundLibrary;
   deque<string> messageLog;
   void propagateMousePosition(const vector<SGuiElem>&);
@@ -240,6 +240,7 @@ class WindowView: public View {
   FileSharing* bugreportSharing;
   DirectoryPath bugreportDir;
   string installId;
+  bool debugOptions;
   void rebuildMinimapGui();
   fx::FXRenderer* fxRenderer;
   Vec2 getMinimapOrigin() const;

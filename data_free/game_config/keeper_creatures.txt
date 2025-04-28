@@ -3,8 +3,10 @@
 
 "1_dark_mage"
 {
+  baseName = "Classic"
   creatureId = { "KEEPER_MAGE" "KEEPER_MAGE_F" }
   tribeAlignment = EVIL
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {"imps" "dark_keeper"}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion" "humanoid mutation" "beast mutation"
@@ -14,9 +16,10 @@
   }
   zLevelGroups = { "basic" "evil" }
   initialTech = { "sorcery" }
+  startingBase = christmasSpecial dontAddTerritory {4 4} "special_tree"
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "beds"
-      "dining table" "coffins" "pigsty"
+      "dining table" "stable" "coffins" "pigsty"
       "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace"
       "prison" "orders" "throne" "demon_shrine" "installations" "minion_statues" "magical_installations" "healing_totem"
       "traps"
@@ -33,9 +36,11 @@
 }
 "3_white_knight"
 {
+  baseName = "Castle"
   creatureId = { "KEEPER_KNIGHT_WHITE" "KEEPER_KNIGHT_WHITE_F" }
   tribeAlignment = LAWFUL
-  immigrantGroups = {"peseants" "white_keeper"}
+  villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
+  immigrantGroups = {"peseants" "white_keeper" "white_recruits" "white_stables"}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion"
       "chicken breeding" "pig breeding" "cow breeding" "iron working" "jewellery"
@@ -45,17 +50,46 @@
   zLevelGroups = { "basic" "lawful" }
   initialTech = { "archery" }
   buildingGroups = {
-      "structure" "arrowslits" "doors" "floors" "storage" "zones" "library_human" "beds"
-      "dining table" "pigsty" "training_human" "crafting" "laboratory" "jeweller" "poetry" "distillery"
+      "structure_white_knight" "doors" "floors" "storage" "zones" "library_human" "beds"
+      "dining table"  "stable" "pigsty" "training_human" "crafting" "laboratory" "jeweller" "poetry" "distillery"
       "furnace" "prison" "orders" "throne_human" "angel_shrine" "installations"
   }
   workshopGroups = { "basic" "bows" }
   description = "Play as a not-so-evil human race. Recruit knights, priests and angelic beings!"
 }
+"3_zchurch"
+{
+  baseName = "Corrupted church"
+  creatureId = { "KEEPER_BISHOP" }
+  tribeAlignment = LAWFUL
+  villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
+  immigrantGroups = { "bishop" "white_recruits" }
+  technology = {
+      "chicken breeding" "pig breeding" "cow breeding" "iron working"
+      "advanced theology" "expert theology" "luxury" "small temptations" "big temptations" "slavery"
+      "dark crafts" "worship of Adoxie"
+  }
+  zLevelGroups = { "basic" "lawful" }
+  initialTech = { }
+  buildingGroups = {
+      "structure_white_knight" "doors" "floors" "storage" "zones" "mass" "beds"
+      "dining table"  "pigsty" "training_dummies_human" "crafting" "jeweller_church" "distillery_church" "scriptorium"
+      "furnace" "prison_church" "orders" "installations" "saint_statues"
+  }
+  workshopGroups = { "church" "holy_weapons" "scriptorium" }
+  description = "Build a church, hold Masses for your congregation and try not to give in to temptations."
+}
+"3_zmother" inherit "3_zchurch"
+{
+  creatureId = { "MOTHER_SUPERIOR" }
+  immigrantGroups = { "mother" "white_recruits" }
+}
 "4_necromancer"
 {
+  baseName = "Undead"
   creatureId = { "NECROMANCER" "NECROMANCER_F" }
   tribeAlignment = EVIL
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {"necromancer"}
   technology = { "embalming" "advanced embalming" "master embalming" "necromancy"
       "advanced necromancy" "master necromancy" "archery" "sorcery" "advanced sorcery"
@@ -64,7 +98,7 @@
   zLevelGroups = { "basic" "evil" }
   initialTech = { "necromancy" }
   buildingGroups = {
-      "structure_necro" "doors" "floors" "storage" "zones" "library_necro" "beds" "coffins"
+      "structure_necro" "doors" "floors" "storage" "zones" "library_necro" "beds" "stable" "coffins"
       "training_necro" "morgue" "crafting" "embalming" "poetry" "distillery" "furnace" "orders"
       "phylactery" "installations_no_heads" "magical_installations"
   }
@@ -74,22 +108,25 @@
   maxPopulation = 1
   flags = { "abomination_upgrades" }
   prisoners = false
+  requireQuartersForExp = false
 }
 "5_gnomes"
 {
+  baseName = "Automatons"
   creatureId = { "GNOME" }
   tribeAlignment = LAWFUL
+  villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
   immigrantGroups = {"gnomes"}
   technology = {
       "traps" "advanced traps"
-      "automatons" "advanced automatons" "automaton brains" "aerodynamics"
+      "automatons" "advanced automatons" "automated crafting" "automaton brains" "aerodynamics" "explosives"
       "iron working" "alchemy" "incendiary alchemy" "distillation" "two-handed weapons"
   }
   zLevelGroups = { "basic" "lawful" }
   initialTech = { "automatons" }
   baseNameGen = "TOWN"
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "automaton_storage" "zones" "beds" "crafting"
+      "structure" "doors" "floors" "storage" "automaton_storage" "zones" "beds" "dining table" "crafting"
       "laboratory" "distillery" "furnace" "automatons" "orders" "installations" "traps" "gnome_traps"
   }
   workshopGroups = { "gnomes" "basic" "crossbows" }
@@ -99,11 +136,14 @@
   populationString = "automatons"
   noLeader = true
   prisoners = false
+  requireQuartersForExp = false
 }
 "6_dwarves"
 {
+  baseName = "Colony"
   creatureId = { "DWARF_PLAYER" }
   tribeAlignment = LAWFUL
+  villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
   immigrantGroups = {"dwarves"}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion"
@@ -114,7 +154,7 @@
   initialTech = { "iron working" }
   baseNameGen = "TOWN"
   buildingGroups = {
-      "structure_dwarf" "doors" "floors_dwarf" "storage" "zones" "library_human" "beds" "dining table"
+      "structure_dwarf" "doors" "floors" "storage" "zones" "library_human" "beds" "dining table"
       "training_dwarf" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "orders"
       "installations"
   }
@@ -128,8 +168,10 @@
 }
 "7_goblins"
 {
+  baseName = "Greenskins"
   creatureId = { "GOBLIN_KEEPER" }
   tribeAlignment = EVIL
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {"goblins"}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion"
@@ -139,7 +181,7 @@
   zLevelGroups = { "basic" "evil" "goblins" }
   initialTech = { }
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "library" "beds" "dining table" "coffins" 
+      "structure" "doors" "floors" "storage" "zones" "library" "beds" "dining table" "stable" "coffins"
       "pigsty" "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "prison"
       "orders" "throne" "installations" "minion_statues" "traps"
   }
@@ -149,9 +191,11 @@
 }
 "8_zombies"
 {
+  baseName = "Zombies"
   creatureId = { "ZOMBIE_WORKER" }
   specialTraits = { Lasting {SWARMER} }
   tribeAlignment = EVIL
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {"zombies"}
   technology = {}
   initialTech = { }
@@ -173,8 +217,10 @@
 }
 "9_cyclops"
 {
+  baseName = "Hermit"
   creatureId = { "CYCLOPS_PLAYER" }
   tribeAlignment = EVIL
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
   immigrantGroups = {}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion" "iron working" "jewellery"
@@ -195,3 +241,58 @@
   unlock = "cyclops"
 }
 
+"91_dark_mage_adventurer"
+{
+  baseName = "Adventurer"
+  creatureId = { "ADVENTURER_MAGE" "ADVENTURER_MAGE_F" }
+  tribeAlignment = EVIL
+  description = "Roam the land in search of adventures and loot!"
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
+  immigrantGroups = {}
+  technology = {}
+  zLevelGroups = { "basic" }
+  initialTech = { }
+  buildingGroups = {}
+  workshopGroups = {}
+  minionTraits = {LEADER WORKER}
+  maxPopulation = 1
+  startingBase = {12 12} "adventurer_house"
+  prisoners = false
+  requireQuartersForExp = false
+  enemyAggression = false
+}
+
+"92_dark_knight_adventurer" inherit "91_dark_mage_adventurer"
+{
+  creatureId = { "ADVENTURER_KNIGHT" "ADVENTURER_KNIGHT_F" }
+}
+
+"93_white_knight_adventurer" inherit "91_dark_mage_adventurer"
+{
+  creatureId = { "ADVENTURER_KNIGHT_WHITE" "ADVENTURER_KNIGHT_WHITE_F" }
+  villainGroups = { LAWFUL_KEEPER LAWFUL_COTTAGES }
+  tribeAlignment = LAWFUL
+  immigrantGroups = { "white_stables_no_pop" }
+}
+
+"94_adoxie_adventurer"
+{
+  baseName = "Adventurer"
+  creatureId = { "ADOXIE_ADVENTURER" }
+  tribeAlignment = EVIL
+  description = "Play as the Evil God Adoxie, and wipe the floor with silly mortals."
+  villainGroups = { EVIL_KEEPER EVIL_COTTAGES }
+  immigrantGroups = {}
+  technology = {}
+  zLevelGroups = { "basic" }
+  initialTech = { }
+  buildingGroups = {}
+  workshopGroups = {}
+  minionTraits = {LEADER WORKER}
+  maxPopulation = 1
+  startingBase = insideMountain {12 12} "adoxie_adventurer"
+  prisoners = false
+  unlock = "adoxie"
+  requireQuartersForExp = false
+ # enemyAggression = false
+}

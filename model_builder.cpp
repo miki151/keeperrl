@@ -39,6 +39,8 @@
 #include "enemy_id.h"
 #include "biome_id.h"
 #include "zlevel.h"
+#include "avatar_info.h"
+#include "keeper_base_info.h"
 
 using namespace std::chrono;
 
@@ -53,8 +55,9 @@ ModelBuilder::~ModelBuilder() {
 ModelBuilder::LevelMakerMethod ModelBuilder::getMaker(LevelType type) {
   switch (type) {
     case LevelType::BASIC:
-      return [this](RandomGen& random, SettlementInfo info, Vec2 size) {
-        return LevelMaker::settlementLevel(*contentFactory, random, info, size, none, none);
+      return [this](RandomGen& random, SettlementInfo info, Vec2 size, int difficulty) {
+        return LevelMaker::settlementLevel(*contentFactory, random, info, size, none, none, FurnitureType("MOUNTAIN2"),
+            difficulty);
       };
     case LevelType::TOWER:
       return &LevelMaker::towerLevel;
@@ -67,115 +70,20 @@ ModelBuilder::LevelMakerMethod ModelBuilder::getMaker(LevelType type) {
     case LevelType::BLACK_MARKET:
       return &LevelMaker::blackMarket;
     case LevelType::OUTBACK:
-      return [this] (RandomGen& random, SettlementInfo info, Vec2) {
+      return [this] (RandomGen& random, SettlementInfo info, Vec2, int difficulty) {
         auto& biomeInfo = contentFactory->biomeInfo.at(BiomeId("OUTBACK"));
         auto natives = enemyFactory->get(EnemyId("NATIVE_VILLAGE"));
-        natives.settlement.collective = new CollectiveBuilder(natives.config, natives.settlement.tribe);
-        return LevelMaker::topLevel(random, {info, natives.settlement}, 100, none, biomeInfo, ResourceCounts{},
+        natives.settlement.collective = new CollectiveBuilder(natives.config, natives.settlement.tribe, "native village");
+        return LevelMaker::topLevel(random, {info, natives.settlement}, 100, difficulty, none, none, biomeInfo, ResourceCounts{},
             *contentFactory);
       };
     case LevelType::SOKOBAN: {
       Table<char> sokoLevel = sokobanInput->getNext();
-      return [sokoLevel](RandomGen& random, SettlementInfo info, Vec2) {
-        return LevelMaker::sokobanFromFile(random, info, sokoLevel);
+      return [sokoLevel](RandomGen& random, SettlementInfo info, Vec2, int difficulty) {
+        return LevelMaker::sokobanFromFile(random, info, sokoLevel, difficulty);
       };
     }
   }
-}
-
-PModel ModelBuilder::singleMapModel(TribeId keeperTribe, TribeAlignment alignment) {
-  return tryBuilding(10, [&] { return trySingleMapModel(keeperTribe, alignment);}, "single map");
-}
-
-vector<EnemyInfo> ModelBuilder::getSingleMapEnemiesForEvilKeeper(TribeId keeperTribe) {
-  vector<EnemyInfo> enemies;
-  for (int i : Range(random.get(3, 6)))
-    enemies.push_back(enemyFactory->get(EnemyId("HUMAN_COTTAGE")));
-  enemies.push_back(enemyFactory->get(EnemyId("KOBOLD_CAVE")));
-  for (int i : Range(random.get(2, 4)))
-    enemies.push_back(enemyFactory->get(random.choose({EnemyId("BANDITS"), EnemyId("COTTAGE_BANDITS")}, {3, 1})));
-  enemies.push_back(enemyFactory->get(random.choose(EnemyId("GNOMES"), EnemyId("DARK_ELVES_ALLY"))).setVillainType(VillainType::ALLY));
-  enemies.push_back(enemyFactory->get(EnemyId("ANTS_CLOSED")).setVillainType(VillainType::LESSER));
-  enemies.push_back(enemyFactory->get(EnemyId("DWARVES")).setVillainType(VillainType::MAIN));
-  enemies.push_back(enemyFactory->get(EnemyId("KNIGHTS")).setVillainType(VillainType::MAIN));
-  enemies.push_back(enemyFactory->get(EnemyId("ADA_GOLEMS")));
-  enemies.push_back(enemyFactory->get(random.choose(EnemyId("GOBLIN_CAVE_ALLY"), EnemyId("HARPY_CAVE")))
-      .setVillainType(VillainType::ALLY));
-  enemies.push_back(enemyFactory->get(EnemyId("TEMPLE")));
-  for (auto& enemy : random.chooseN(2, {
-        EnemyId("ELEMENTALIST"),
-        EnemyId("WARRIORS"),
-        EnemyId("ELVES"),
-        EnemyId("VILLAGE")}))
-    enemies.push_back(enemyFactory->get(enemy).setVillainType(VillainType::MAIN));
-  for (auto& enemy : random.chooseN(2, {
-        EnemyId("GREEN_DRAGON"),
-        EnemyId("SHELOB"),
-        EnemyId("HYDRA"),
-        EnemyId("RED_DRAGON"),
-        EnemyId("BLACK_DRAGON"),
-        EnemyId("CYCLOPS"),
-        EnemyId("DRIADS"),
-        EnemyId("ENTS")}))
-    enemies.push_back(enemyFactory->get(enemy).setVillainType(VillainType::LESSER));
-  for (auto& enemy : random.chooseN(1, {
-        EnemyId("KRAKEN"),
-        EnemyId("WITCH"),
-        EnemyId("CEMETERY")}))
-    enemies.push_back(enemyFactory->get(enemy));
-  return enemies;
-}
-
-vector<EnemyInfo> ModelBuilder::getSingleMapEnemiesForLawfulKeeper(TribeId keeperTribe) {
-  vector<EnemyInfo> enemies;
-  for (int i : Range(random.get(3, 6)))
-    enemies.push_back(enemyFactory->get(EnemyId("COTTAGE_BANDITS")));
-  enemies.push_back(enemyFactory->get(EnemyId("DARK_ELF_CAVE")));
-  for (int i : Range(random.get(2, 4)))
-    enemies.push_back(enemyFactory->get(random.choose({EnemyId("BANDITS"), EnemyId("COTTAGE_BANDITS")}, {3, 1})));
-  enemies.push_back(enemyFactory->get(EnemyId("GNOMES")).setVillainType(VillainType::ALLY));
-  enemies.push_back(enemyFactory->get(EnemyId("ANTS_CLOSED")).setVillainType(VillainType::LESSER));
-  enemies.push_back(enemyFactory->get(EnemyId("DARK_ELVES_ENEMY")).setVillainType(VillainType::MAIN));
-  enemies.push_back(enemyFactory->get(EnemyId("DEMON_DEN")).setVillainType(VillainType::MAIN));
-  enemies.push_back(enemyFactory->get(EnemyId("ADA_GOLEMS")));
-  enemies.push_back(enemyFactory->get(EnemyId("EVIL_TEMPLE")));
-  for (auto& enemy : random.chooseN(2, {
-        EnemyId("LIZARDMEN"),
-        EnemyId("MINOTAUR"),
-        EnemyId("ORC_VILLAGE"),
-        EnemyId("VILLAGE")}))
-    enemies.push_back(enemyFactory->get(enemy).setVillainType(VillainType::MAIN));
-  for (auto& enemy : random.chooseN(2, {
-        EnemyId("GREEN_DRAGON"),
-        EnemyId("SHELOB"),
-        EnemyId("HYDRA"),
-        EnemyId("RED_DRAGON"),
-        EnemyId("BLACK_DRAGON"),
-        EnemyId("CYCLOPS"),
-        EnemyId("DRIADS"),
-        EnemyId("ENTS")}))
-    enemies.push_back(enemyFactory->get(enemy).setVillainType(VillainType::LESSER));
-  for (auto& enemy : random.chooseN(1, {
-        EnemyId("KRAKEN"),
-        EnemyId("WITCH"),
-        EnemyId("CEMETERY")}))
-    enemies.push_back(enemyFactory->get(enemy));
-  return enemies;
-}
-
-PModel ModelBuilder::trySingleMapModel(TribeId keeperTribe, TribeAlignment alignment) {
-  vector<EnemyInfo> enemyInfo;
-  switch (alignment) {
-    case TribeAlignment::EVIL:
-      enemyInfo = getSingleMapEnemiesForEvilKeeper(keeperTribe);
-      break;
-    case TribeAlignment::LAWFUL:
-      enemyInfo = getSingleMapEnemiesForLawfulKeeper(keeperTribe);
-      break;
-  }
-  for (int i : Range(1, random.get(4)))
-    enemyInfo.push_back(enemyFactory->get(EnemyId("RUINS")));
-  return tryModel(304, enemyInfo, keeperTribe, BiomeId("GRASSLAND"), {});
 }
 
 void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, const vector<BiomeEnemyInfo>& info) {
@@ -185,20 +93,21 @@ void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, const vector<Bio
         enemyInfo.push_back(enemyFactory->get(enemy.id));
 }
 
-PModel ModelBuilder::tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment alignment, BiomeId biome,
+PModel ModelBuilder::tryCampaignBaseModel(TribeAlignment alignment, optional<KeeperBaseInfo> keeperBase, BiomeId biome,
     optional<ExternalEnemiesType> externalEnemiesType) {
   vector<EnemyInfo> enemyInfo;
   auto& biomeInfo = contentFactory->biomeInfo.at(biome);
-  addMapVillains(enemyInfo, alignment == TribeAlignment::EVIL 
+  addMapVillains(enemyInfo, alignment == TribeAlignment::EVIL
       ? biomeInfo.darkKeeperBaseEnemies
       : biomeInfo.whiteKeeperBaseEnemies);
   optional<ExternalEnemies> externalEnemies;
   if (externalEnemiesType)
-    externalEnemies = ExternalEnemies(random, &contentFactory->getCreatures(), enemyFactory->getExternalEnemies(), *externalEnemiesType);
-  return tryModel(114, enemyInfo, keeperTribe, biome, std::move(externalEnemies));
+    externalEnemies = ExternalEnemies(random, &contentFactory->getCreatures(), enemyFactory->getExternalEnemies(),
+        *externalEnemiesType);
+  return tryModel(114, 0, enemyInfo, getPlayerTribeId(alignment), std::move(keeperBase), biome, std::move(externalEnemies));
 }
 
-PModel ModelBuilder::tryTutorialModel() {
+PModel ModelBuilder::tryTutorialModel(optional<KeeperBaseInfo> keeperBase) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId("MOUNTAIN");
   //enemyInfo.push_back(enemyFactory->get(EnemyId("CORPSES")));
@@ -208,50 +117,18 @@ PModel ModelBuilder::tryTutorialModel() {
   //enemyInfo.push_back(enemyFactory->get(EnemyId("ADA_GOLEMS")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("TEMPLE")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("LIZARDMEN")));
-  return tryModel(114, enemyInfo, TribeId::getDarkKeeper(), biome, {});
+  return tryModel(114, 0, enemyInfo, TribeId::getDarkKeeper(), keeperBase, biome, {});
 }
 
-static optional<BiomeId> getBiome(const EnemyInfo& enemy, RandomGen& random) {
-  if (!enemy.biomes.empty())
-    return random.choose(enemy.biomes);
-  return enemy.settlement.type.visit(
-      [&](const MapLayoutTypes::Builtin& type) -> optional<BiomeId> {
-        switch (type.id) {
-          case BuiltinLayoutId::CASTLE2:
-          case BuiltinLayoutId::TOWER:
-          case BuiltinLayoutId::VILLAGE:
-            return BiomeId("GRASSLAND");
-          case BuiltinLayoutId::CAVE:
-          case BuiltinLayoutId::MINETOWN:
-          case BuiltinLayoutId::SMALL_MINETOWN:
-          case BuiltinLayoutId::ANT_NEST:
-          case BuiltinLayoutId::VAULT:
-            return BiomeId("MOUNTAIN");
-          case BuiltinLayoutId::FORREST_COTTAGE:
-          case BuiltinLayoutId::FORREST_VILLAGE:
-          case BuiltinLayoutId::ISLAND_VAULT_DOOR:
-          case BuiltinLayoutId::FOREST:
-            return BiomeId("FOREST");
-          case BuiltinLayoutId::CEMETERY:
-            return random.choose(BiomeId("GRASSLAND"), BiomeId("FOREST"));
-          default: return none;
-        }
-      },
-      [&](const auto&) -> optional<BiomeId> {
-        return BiomeId("GRASSLAND");
-      }
-    );
-}
-
-PModel ModelBuilder::tryCampaignSiteModel(EnemyId enemyId, VillainType type, TribeAlignment alignment) {
+PModel ModelBuilder::tryCampaignSiteModel(EnemyId enemyId, VillainType type, TribeAlignment alignment, BiomeId biomeId,
+    int difficulty) {
   vector<EnemyInfo> enemyInfo { enemyFactory->get(enemyId).setVillainType(type)};
   if (auto id = enemyInfo[0].otherEnemy)
     enemyInfo.push_back(enemyFactory->get(*id));
-  auto biomeId = getBiome(enemyInfo[0], random);
-  CHECK(biomeId) << "Unimplemented enemy in campaign " << enemyId.data();
-  auto& biomeInfo = contentFactory->biomeInfo.at(*biomeId);
-  addMapVillains(enemyInfo, alignment == TribeAlignment::EVIL ? biomeInfo.darkKeeperEnemies : biomeInfo.whiteKeeperEnemies);
-  return tryModel(114, enemyInfo, none, *biomeId, {});
+  auto& biomeInfo = contentFactory->biomeInfo.at(biomeId);
+  if (type != VillainType::MINOR)
+    addMapVillains(enemyInfo, alignment == TribeAlignment::EVIL ? biomeInfo.darkKeeperEnemies : biomeInfo.whiteKeeperEnemies);
+  return tryModel(type == VillainType::MINOR ? 60 : 114, difficulty, enemyInfo, none, none, biomeId, {});
 }
 
 PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, const string& name) {
@@ -268,40 +145,40 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, cons
   return nullptr;
 }
 
-PModel ModelBuilder::campaignBaseModel(TribeId keeperTribe, TribeAlignment alignment, BiomeId biome,
+PModel ModelBuilder::campaignBaseModel(const AvatarInfo& avatarInfo, BiomeId biome,
     optional<ExternalEnemiesType> externalEnemies) {
-  return tryBuilding(20, [=] { return tryCampaignBaseModel(keeperTribe, alignment, biome, externalEnemies); }, "campaign base");
+  return tryBuilding(20, [&] { return tryCampaignBaseModel(avatarInfo.tribeAlignment,
+      avatarInfo.creatureInfo.startingBase, biome, externalEnemies); },
+      "campaign base");
 }
 
-PModel ModelBuilder::tutorialModel() {
-  return tryBuilding(20, [=] { return tryTutorialModel(); }, "tutorial");
+PModel ModelBuilder::tutorialModel(optional<KeeperBaseInfo> keeperBase) {
+  return tryBuilding(20, [=] { return tryTutorialModel(keeperBase); }, "tutorial");
 }
 
-PModel ModelBuilder::campaignSiteModel(EnemyId enemyId, VillainType type, TribeAlignment alignment) {
-  return tryBuilding(20, [&] { return tryCampaignSiteModel(enemyId, type, alignment); }, enemyId.data());
+PModel ModelBuilder::campaignSiteModel(EnemyId enemyId, VillainType type, TribeAlignment alignment, BiomeId biome,
+    int difficulty) {
+  return tryBuilding(20, [&] { return tryCampaignSiteModel(enemyId, type, alignment, biome, difficulty); },
+      enemyId.data());
 }
 
 void ModelBuilder::measureSiteGen(int numTries, vector<string> types, vector<BiomeId> biomes) {
   if (types.empty()) {
-    types = {"single_map", "campaign_base", "tutorial", "zlevels"};
+    types = {"campaign_base", "tutorial", "zlevels"};
     for (auto id : enemyFactory->getAllIds()) {
       auto enemy = enemyFactory->get(id);
-      if (!!getBiome(enemy, random))
+      if (!!enemy.getBiome())
         types.push_back(id.data());
     }
   }
   vector<function<void()>> tasks;
-  auto tribe = TribeId::getDarkKeeper();
   for (auto& type : types) {
-    if (type == "single_map")
-      for (auto alignment : ENUM_ALL(TribeAlignment))
-        tasks.push_back([=] { measureModelGen(type, numTries, [&] { trySingleMapModel(tribe, alignment); }); });
-    else if (type == "campaign_base")
+    if (type == "campaign_base")
       for (auto alignment : ENUM_ALL(TribeAlignment))
         for (auto biome : biomes)
           tasks.push_back([=] { measureModelGen(type + " (" + EnumInfo<TribeAlignment>::getString(alignment) + ", "
               + biome.data() + ")", numTries,
-              [&] { tryCampaignBaseModel(tribe, alignment, biome, none); }); });
+              [&] { tryCampaignBaseModel(alignment, none, biome, none); }); });
     else if (type == "zlevels") {
 //      FATAL << "Fix after adding z level groups";
       for (auto alignment : ENUM_ALL(TribeAlignment))
@@ -310,7 +187,7 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types, vector<Bio
               " (" + EnumInfo<TribeAlignment>::getString(alignment) + ")",
               numTries,
               [&] {
-                auto model = tryCampaignBaseModel(tribe, alignment, BiomeId("GRASSLAND"), none);
+                auto model = tryCampaignBaseModel(alignment, none, BiomeId("GRASSLAND"), none);
                 auto size = model->getGroundLevel()->getBounds().getSize();
                 auto maker = getLevelMaker(Random, contentFactory, {"basic"}, i, TribeId::getDarkKeeper(), size,
                     EnemyAggressionLevel(0));
@@ -319,12 +196,12 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types, vector<Bio
               }); });
     }
     else if (type == "tutorial")
-      tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryTutorialModel(); }); });
+      tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryTutorialModel(none); }); });
     else {
       auto id = EnemyId(type.data());
       for (auto alignment : ENUM_ALL(TribeAlignment))
         tasks.push_back([=] { measureModelGen(type, numTries, [&] {
-            tryCampaignSiteModel(id, VillainType::LESSER, alignment); }); });
+            tryCampaignSiteModel(id, VillainType::LESSER, alignment, Random.choose(biomes), 0); }); });
     }
   }
   for (auto& t : tasks)
@@ -361,8 +238,8 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
     minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numTries;
 }
 
-void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, SettlementInfo& mainSettlement,
-    StairKey upLink, vector<EnemyInfo>& extraEnemies, int depth, bool mainDungeon) {
+void ModelBuilder::makeExtraLevel(Model* model, LevelConnection& connection, SettlementInfo& mainSettlement,
+    StairKey upLink, vector<EnemyInfo>& extraEnemies, int depth, bool mainDungeon, int difficulty) {
   StairKey downLink = StairKey::getNew();
   int direction = connection.direction == LevelConnectionDir::DOWN ? 1 : -1;
   for (int index : All(connection.levels)) {
@@ -377,7 +254,7 @@ void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, Set
           contentFactory,
           LevelBuilder(meter, random, contentFactory, level.levelSize.x, level.levelSize.y, true,
               level.isLit ? 1.0 : 0.0),
-          getMaker(level.levelType)(random, settlement, level.levelSize),
+          getMaker(level.levelType)(random, settlement, level.levelSize, difficulty),
           depth,
           level.name.value_or("Z-level " + toString(depth)));
       res->canTranfer = level.canTransfer;
@@ -390,7 +267,7 @@ void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, Set
     level.enemy.match(
         [&](LevelConnection::ExtraEnemy& e) {
           for (int i : All(e.enemyInfo)) {
-            auto& set = processLevelConnection(model, e.enemyInfo[i], extraEnemies, depth, false);
+            auto& set = processLevelConnection(model, e.enemyInfo[i], extraEnemies, depth, false, difficulty);
             addLevel(set, index == connection.levels.size() - 1 && i == e.enemyInfo.size() - 1);
           }
         },
@@ -402,14 +279,14 @@ void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, Set
 }
 
 SettlementInfo& ModelBuilder::processLevelConnection(Model* model, EnemyInfo& enemyInfo,
-    vector<EnemyInfo>& extraEnemies, int depth, bool mainDungeon) {
+    vector<EnemyInfo>& extraEnemies, int depth, bool mainDungeon, int difficulty) {
   if (!enemyInfo.levelConnection)
     return enemyInfo.settlement;
   auto processExtraEnemy = [&] (LevelConnection::EnemyLevelInfo& enemyInfo) {
     if (auto extra = enemyInfo.getReferenceMaybe<LevelConnection::ExtraEnemy>()) {
       for (auto& enemy : extra->enemyInfo) {
         enemy.settlement.collective =
-            new CollectiveBuilder(enemy.config, enemy.settlement.tribe);
+            new CollectiveBuilder(enemy.config, enemy.settlement.tribe, !!enemy.id ? enemy.id->data() : "unknown");
         extraEnemies.push_back(enemy);
       }
     }
@@ -420,7 +297,7 @@ SettlementInfo& ModelBuilder::processLevelConnection(Model* model, EnemyInfo& en
   StairKey downLink = StairKey::getNew();
   bool goingDown = enemyInfo.levelConnection->direction == LevelConnectionDir::DOWN;
   makeExtraLevel(model, *enemyInfo.levelConnection, enemyInfo.settlement, downLink, extraEnemies,
-      depth + (goingDown ? 1 : -1), mainDungeon);
+      depth + (goingDown ? 1 : -1), mainDungeon, difficulty);
   SettlementInfo* ret = nullptr;
   if (auto extra = enemyInfo.levelConnection->topLevel.getReferenceMaybe<LevelConnection::ExtraEnemy>()) {
     for (auto& enemy : extra->enemyInfo) {
@@ -433,22 +310,23 @@ SettlementInfo& ModelBuilder::processLevelConnection(Model* model, EnemyInfo& en
   return *ret;
 }
 
-PModel ModelBuilder::tryModel(int width, vector<EnemyInfo> enemyInfo, optional<TribeId> keeperTribe, BiomeId biomeId,
+PModel ModelBuilder::tryModel(int width, int difficulty, vector<EnemyInfo> enemyInfo, optional<TribeId> keeperTribe,
+    optional<KeeperBaseInfo> keeperBase, BiomeId biomeId,
     optional<ExternalEnemies> externalEnemies) {
   auto& biomeInfo = contentFactory->biomeInfo.at(biomeId);
   auto model = Model::create(contentFactory, biomeInfo.overrideMusic, biomeId);
   vector<SettlementInfo> topLevelSettlements;
   vector<EnemyInfo> extraEnemies;
   for (auto& elem : enemyInfo) {
-    elem.settlement.collective = new CollectiveBuilder(elem.config, elem.settlement.tribe);
-    topLevelSettlements.push_back(processLevelConnection(model.get(), elem, extraEnemies, 0, true));
+    elem.settlement.collective = new CollectiveBuilder(elem.config, elem.settlement.tribe, !!elem.id ? elem.id->data() : "unknown");
+    topLevelSettlements.push_back(processLevelConnection(model.get(), elem, extraEnemies, 0, true, difficulty));
   }
   append(enemyInfo, extraEnemies);
   model->buildMainLevel(
       contentFactory,
       LevelBuilder(meter, random, contentFactory, width, width, false),
-      LevelMaker::topLevel(random, topLevelSettlements, width, keeperTribe, biomeInfo,
-          *chooseResourceCounts(random, contentFactory->resources, 0), *contentFactory));
+      LevelMaker::topLevel(random, topLevelSettlements, width, difficulty, keeperTribe, std::move(keeperBase),
+          biomeInfo, *chooseResourceCounts(random, contentFactory->resources, 0), *contentFactory));
   model->getGroundLevel()->sightRange = biomeInfo.sightRange;
   model->calculateStairNavigation();
   for (auto& enemy : enemyInfo)

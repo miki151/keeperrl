@@ -11,12 +11,13 @@ class DirectoryPath;
 class SoundLibrary {
   public:
   SoundLibrary(AudioDevice&, const DirectoryPath&);
-  void playSound(const Sound&);
+  SoundLibrary();
+  milliseconds playSound(const Sound&);
   void setVolume(int); // between 1..100
 
   private:
   void addSounds(SoundId, const DirectoryPath&);
-  EnumMap<SoundId, vector<SoundBuffer>> sounds;
+  HashMap<SoundId, vector<SoundBuffer>> sounds;
   double volume;
-  AudioDevice& audioDevice;
+  AudioDevice* audioDevice = nullptr;
 };

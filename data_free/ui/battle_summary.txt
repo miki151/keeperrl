@@ -1,0 +1,14 @@
+
+{
+  ExitButtons()
+  FocusKeysVertical()
+  Window(MarginLeft(10, MarginBottom(10, Width 450 {
+    Vertical {
+      #Label("Battle summary")
+      Using "minions_killed" CreatureList("Minions killed:")
+      Using "minions_captured" CreatureList("Minions captured:")
+      Using "enemies_killed" CreatureList("Enemies killed:")
+      Using "enemies_captured" CreatureList("Enemies captured:")
+    }
+  })))
+}

@@ -17,7 +17,8 @@ struct ItemList::ItemInfo {
   ItemType SERIAL(id);
   double SERIAL(weight) = 1;
   Range SERIAL(count) = Range(1, 2);
-  SERIALIZE_ALL(NAMED(id), OPTION(weight), OPTION(count))
+  int SERIAL(minDifficulty) = 0;
+  SERIALIZE_ALL(NAMED(id), OPTION(weight), OPTION(count), OPTION(minDifficulty))
 };
 
 struct ItemList::MultiItemInfo {
@@ -47,7 +48,7 @@ vector<ItemType> ItemList::getAllItems() const {
   return ret;
 }
 
-vector<PItem> ItemList::random(const ContentFactory* factory) & {
+vector<PItem> ItemList::random(const ContentFactory* factory, int difficulty) & {
   while (!multiItems.empty() && multiItems.back().count == Range::singleElem(0))
     multiItems.pop_back();
   if (!multiItems.empty()) {
@@ -69,9 +70,17 @@ vector<PItem> ItemList::random(const ContentFactory* factory) & {
     unique.pop_back();
     return id.get(cnt, factory);
   }
-  if (items.empty())
+  auto availableItems = [&] {
+    for (auto& it : items)
+      if (it.minDifficulty <= difficulty)
+        return true;
+    return false;
+  };
+  if (!availableItems())
     return {};
-  int index = Random.get(items.transform([](const auto& elem) { return elem.weight; }));
+  int index = Random.get(items.transform([&](const auto& elem) {
+    return elem.minDifficulty <= difficulty ? elem.weight : 0.0;
+  }));
   return items[index].id.get(Random.get(items[index].count), factory);
 }
 

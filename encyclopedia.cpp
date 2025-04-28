@@ -75,6 +75,7 @@ Encyclopedia::~Encyclopedia() {
 }
 
 void Encyclopedia::setKeeperThings(ContentFactory* f, const Technology* t, const Workshops* workshops) {
+  PROFILE;
   technology = t;
   if (items.empty())
     items = getItems(f, workshops);

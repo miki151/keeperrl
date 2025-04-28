@@ -7,7 +7,7 @@
       Position(MIDDLE, MarginLeft(40, MarginRight(40,
           Label("The following assigned items conflict with the chosen item. Remove them from equipment?" ))))
       Height 10 {}
-      Using "items" List(VERTICAL, 
+      Using "items" List(VERTICAL,
         MarginLeft(40, Horizontal{ Using "view_id" ViewId(1) Using "item" Label() }))
       Height 35 {}
       Position(MIDDLE, Horizontal {

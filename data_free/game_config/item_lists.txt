@@ -8,6 +8,8 @@ End
     {{Scroll Escape{}} 5 }
     {{Scroll Enhance ARMOR 1} 5 }
     {{Scroll Enhance WEAPON 1} 5 }
+    {{Scroll Enhance ARMOR 4} 5 1 20 }
+    {{Scroll Enhance WEAPON 4} 5 1 20 }
     {{FireScroll} 5}
     {{"Torch"} 10}
     {{Scroll Summon "FIRE_ELEMENTAL" {1 2} 100} 5 }
@@ -22,12 +24,18 @@ End
     {{Potion Lasting SLOWED} 5 }
     {{Potion Lasting SPEED}5 }
     {{Potion Lasting BLIND} 5 }
-    {{Potion Lasting INVISIBLE} 2 }
+    {{Potion2 Lasting SLEEP} 5 1 25 }
+    {{Potion2 Lasting SLOWED} 5 1 25 }
+    {{Potion2 Lasting SPEED}5 1 25 }
+    {{Potion2 Lasting BLIND} 5 1 25 }
+    {{Potion2 Lasting INVISIBLE} 2 1 25}
     {{Amulet WARNING} 0.5 }
     {{Amulet REGENERATION} 0.5 }
     {{"DefenseAmulet"} 0.5 }
+    {{"DefenseAmulet10"} 0.5 1 25 }
     {{Ring POISON_RESISTANT} 0.5}
     {{Ring FIRE_RESISTANT} 0.5}
+    {{Ring FIRE_IMMUNITY} 0.5 1 25}
   }
   prefixChance = 0.03
 }
@@ -45,14 +53,63 @@ End
     {{"IronHelm"} 1}
     {{"LeatherBoots"} 2}
     {{"LeatherGloves"} 2}
+    {{"IronGloves"} 1}
     {{"IronBoots"} 1}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 3}} 1}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 3}} 1}
+    {{Glyph { WEAPON ItemAttrBonus SPELL_DAMAGE 3}} 1}
+
+    {id = {"AdaArmor"} weight = 4 count = 1 minDifficulty = 25}
+    {{"AdaHelm"} 4 1 25}
+    {{"AdaBoots"} 4 1 25}
+    {{"AdaGloves"} 4 1 25}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 12}} 2 1 25}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 12}} 2 1 25}
+    {{Glyph { WEAPON ItemAttrBonus SPELL_DAMAGE 12}} 2 1 25}
   }
   unique = {
     {"Bow"} {1 2}
   }
   prefixChance = 0.03
 }
-
+"jeweler"
+{
+  items = {
+    {{"DefenseAmulet"} 10}
+    {{"DamageRing3"} 10}
+    {{"SpellDamageRing3"} 10}
+    {{"RangedDamageRing3"} 10}
+    {{"UndeadProtectionRing5"} 10}
+    {{"ElfProtectionRing5"} 10}
+    {{"DwarfProtectionRing5"} 10}
+    {{"GreenskinProtectionRing5"} 10}
+    {{"SpiderRing"} 10}
+    {{"BatRing"} 10}
+    {{"JumpRing"} 10}
+    {{Ring FIRE_RESISTANT} 10}
+    {{Ring COLD_RESISTANT} 10}
+    {{Ring ACID_RESISTANT} 10}
+    {{Ring POISON_RESISTANT} 10}
+    {{Ring DARKNESS_SOURCE} 10 1 15}
+    {{"HorseRing"} 10 1 15}
+    {{Ring FIRE_IMMUNITY} 10 1 15}
+    {{Ring COLD_IMMUNITY} 10 1 15}
+    {{Ring ACID_IMMUNITY} 10 1 15}
+    {{"InvisibilityRing"} 10 1 20}
+    {{"DefenseAmulet10"} 10 1 20}
+    {{"DamageRing10"} 10 1 20}
+    {{"SpellDamageRing10"} 10 1 20}
+    {{"RangedDamageRing10"} 10 1 20}
+    {{"UndeadProtectionRing15"} 10 1 20}
+    {{"ElfProtectionRing15"} 10 1 20}
+    {{"DwarfProtectionRing15"} 10 1 20}
+    {{"GreenskinProtectionRing15"} 10 1 20}
+    {{"DragonProtectionRing15"} 10 1 20}
+    {{"DragonRing"} 5 1 40}
+    {{"Sceptre"} 5 1 40}
+    {{"MagicLamp"} 5 1 40}
+  }
+}
 "gnomeShop" inherit "armory"
 {
   unique = {
@@ -96,22 +153,14 @@ End
     {{Potion Lasting FLYING} 1 }
     {{Potion Lasting SPEED} 1 }
     {{FogPotion()} 2 }
-  }
-}
-
-"scrolls"
-{
-  items = {
-    {{Scroll Escape{}} 1 }
-    {{Scroll Enhance ARMOR 1} 1 }
-    {{Scroll Enhance WEAPON 1} 1 }
-    {{FireScroll} 1 }
-    {{Scroll Summon "FIRE_ELEMENTAL" {1 2} 100} 1 }
-    {{Scroll CircularBlast} 1 }
-    {{Scroll Deception} 1 }
-    {{Scroll Audience none} 1 }
-    {{Scroll Summon "FLY" {3 6} 100} 1 }
-    {{"AdoxieScroll"} 1}
+    {{Potion2 Lasting SLEEP} 1 1 20 }
+    {{Potion2 Lasting SLOWED} 1 1 20 }
+    {{Potion2 Lasting BLIND} 1 1 20 }
+    {{Potion2 Lasting INVISIBLE} 1 1 20 }
+    {{Potion2 Lasting POISON} 1 1 20 }
+    {{Potion2 Lasting POISON_RESISTANT} 1 1 20 }
+    {{Potion2 Lasting FLYING} 1 1 20 }
+    {{Potion2 Lasting SPEED} 1 1 20 }
   }
 }
 
@@ -166,6 +215,11 @@ End
 
 "corpse"
 {
+  items = {{{Corpse} 1}}
+}
+
+"battle_corpse"
+{
   multiItems = {
     {10000} {
       {"BattleAxe"} 0.1
@@ -182,10 +236,31 @@ End
 {
   multiItems = {
     {10000} {
-      {"WizardCorpse"} 1.0
       {"WoodenStaff"} 1.0
       {"Robe"} 1.0
+      {"WizardCorpse"} 1.0
     }
+  }
+}
+
+"gnome_corpse"
+{
+  multiItems = {
+    {10000} {
+      {"LeatherArmor"} 1.0
+      {Potion Fire{25}} 0.3
+      {"GnomeCorpse"} 1.0
+    }
+  }
+}
+
+"automaton_parts"
+{
+  items = {
+    {{"AutomatonLegsWood"} 1}
+    {{"AutomatonArmsWood"} 1}
+    {{"AutomatonDrillWood"} 1}
+    {{"HumanoidHeadWood"} 1}
   }
 }
 
@@ -203,34 +278,34 @@ End
   }
 }
 
-"amulets"
-{
-  items = { 
-    {{Amulet REGENERATION} 1}
-    {{Amulet WARNING} 1}
-    {{"DefenseAmulet"} 1}
-  }
-}
-
 "dungeon"
 {
   items = {
     {{"Knife"} 50 }
     {{"Sword"} 50 }
+    {{"AdaSword"} 50 1 25 }
     {{"BattleAxe"} 10 }
+    {{"AdaBattleAxe"} 10 1 25 }
     {{"WarHammer"} 20 }
+    {{"AdaWarHammer"} 20 1 25 }
     {{"LeatherArmor"} 20 }
-    {{"ChainArmor"} 1 }
+    {{"ChainArmor"} 10 }
+    {{"AdaArmor"} 10 1 25 }
     {{"LeatherHelm"} 20 }
     {{"IronHelm"} 5 }
+    {{"AdaHelm"} 5  1 25}
     {{"LeatherBoots"} 20 }
     {{"IronBoots"} 7 }
+    {{"AdaBoots"} 7 1 25 }
     {{"Torch"} 7 }
     {{"LeatherGloves"} 30 }
+    {{"AdaGloves"} 10 1 25 }
     {{"AdoxieScroll"} 1}
     {{Scroll Escape{}} 30 }
     {{Scroll Enhance ARMOR 1} 30 }
     {{Scroll Enhance WEAPON 1} 30 }
+    {{Scroll Enhance ARMOR 4} 30 1 25 }
+    {{Scroll Enhance WEAPON 4} 30 1 25 }
     {{FireScroll} 30 }
     {{Scroll Summon "FIRE_ELEMENTAL" {1 2} 100} 30 }
     {{Scroll CircularBlast} 5 }
@@ -247,11 +322,21 @@ End
     {{Potion Lasting POISON_RESISTANT} 20 }
     {{Potion Lasting FLYING} 20 }
     {{Potion Lasting SPEED} 50 }
+    {{Potion2 Lasting SLEEP} 50 1 25 }
+    {{Potion2 Lasting SLOWED} 50 1 25 }
+    {{Potion2 Lasting BLIND} 30 1 25 }
+    {{Potion2 Lasting INVISIBLE} 10 1 25 }
+    {{Potion2 Lasting POISON} 20 1 25 }
+    {{Potion2 Lasting POISON_RESISTANT} 20 1 25 }
+    {{Potion2 Lasting FLYING} 20 1 25 }
+    {{Potion2 Lasting SPEED} 50 1 25 }
     {{Amulet WARNING} 3 }
     {{Amulet REGENERATION} 3 }
     {{"DefenseAmulet"} 3 }
+    {{"DefenseAmulet10"} 3 1 25 }
     {{Ring POISON_RESISTANT} 3}
     {{Ring FIRE_RESISTANT} 3}
+    {{Ring FIRE_IMMUNITY} 3 1 25}
   }
   prefixChance = 0.03
 }
@@ -328,13 +413,15 @@ End
     {{Potion Permanent BAD_BREATH} 1 }
     {{Potion Lasting FROZEN} 1 }
     {{Potion Lasting ON_FIRE} 1 }
-    {{Potion Permanent NO_CARRY_LIMIT} 1 }
     {{Potion Lasting BLIND} 1 }
     {{Potion Lasting INVISIBLE} 1 }
     {{Potion Lasting POISON} 1 }
     {{Potion Permanent POISON_RESISTANT} 1 }
     {{Potion Permanent FLYING} 1 }
     {{Potion Lasting SPEED} 1 }
+  }
+  unique = {
+    {Potion NoAutoAssign EquipmentType COMBAT_ITEM AI And {} -1 1 AI And {} 0 1 Permanent NO_CARRY_LIMIT} {1}
   }
 }
 
@@ -349,13 +436,13 @@ End
     {{"GreenDragonScales"} 1}
     {{"YellowDragonScales"} 1}
     {{"WhiteDragonScales"} 1}
-    {{Glyph ARMOR ItemAttrBonus DEFENSE 1} 2}
-    {{Glyph WEAPON ItemAttrBonus DAMAGE 1} 2}
-    {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 1} 2}
-    {{Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 1} 2}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 1}} 2}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 1}} 2}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 1}} 2}
+    {{Glyph { WEAPON ItemAttrBonus SPELL_DAMAGE 1}} 2}
   }
   unique = {
-    {Scroll Name "blacksmithing mastery" Price 800 
+    {Scroll NoAutoAssign EquipmentType COMBAT_ITEM AI And {} -1 1 AI And {} 0 1 Name "blacksmithing mastery" Price 800
       Description "Contains secrets of legendary blacksmithing knowledge"
       IncreaseAttr "FORGE" 50} {1}
   }
@@ -370,4 +457,128 @@ End
     {{"AdoxiumStaff"} 1}
     {{"InferniteBattleAxe"} 1}
   }
+}
+
+"armorChest"
+{
+  items = {
+    {{"ChainArmor"} 1}
+    {{"IronBoots"} 1}
+    {{"IronHelm"} 1}
+    {{"LeatherArmor"} 1}
+    {{"LeatherBoots"} 1}
+    {{"LeatherGloves"} 1}
+    {{"AdaSword"} 1 1 15}
+    {{"AdaBattleAxe"} 1 1 15}
+    {{"AdaWarHammer"} 1 1 15}
+    {{"AdaGloves"} 1 1 15}
+    {{"AdaShield"} 1 1 15}
+    {{"AdaArmor"} 1 1 15}
+    {{"AdaHelm"} 1 1 15}
+    {{"AdaBoots"} 1 1 15}
+    {{"InferniteSword"} 1 1 25}
+    {{"InferniteBattleAxe"} 1 1 25}
+    {{"InferniteWarHammer"} 1 1 25}
+    {{"AdoxiumGloves"} 1 1 25}
+    {{"AdoxiumArmor"} 1 1 25}
+    {{"AdoxiumHelm"} 1 1 25}
+    {{"AdoxiumBoots"} 1 1 25}
+  }
+}
+
+"pamphlets"
+{
+  multiItems = {
+    {10 20} { {"AdoxieScroll"} 1.0 }
+  }
+}
+
+"zombieChest"
+{
+  items = {{{"ZombieScroll"} 1}}
+}
+
+"assassinChest"
+{
+  items = {{{"AssassinsKnife"} 1}}
+}
+
+"lakeChest"
+{
+  items = {
+    {{"AdaSword"} 1}
+    {{"AdaBattleAxe"} 1}
+    {{"AdaWarHammer"} 1}
+    {{"AdaGloves"} 1}
+    {{"AdaShield"} 1}
+    {{"AdaArmor"} 1}
+    {{"AdaHelm"} 1}
+    {{"AdaBoots"} 1}
+    {{"InferniteSword"} 1 1 15}
+    {{"InferniteBattleAxe"} 1 1 15}
+    {{"InferniteWarHammer"} 1 1 15}
+    {{"AdoxiumGloves"} 1 1 15}
+    {{"AdoxiumArmor"} 1 1 15}
+    {{"AdoxiumHelm"} 1 1 15}
+    {{"AdoxiumBoots"} 1 1 15}
+  }
+}
+
+"blacksmithChest"
+{
+  items = {
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 2}} 1}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 3}} 1}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 4}} 1}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 2}} 1}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 3}} 1}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 4}} 1}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 2}} 1}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3}} 1}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 4}} 1}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 10}} 1 1 25}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 12}} 1 1 25}
+    {{Glyph { ARMOR ItemAttrBonus DEFENSE 15}} 1 1 25}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 10}} 1 1 25}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 12}} 1 1 25}
+    {{Glyph { WEAPON ItemAttrBonus DAMAGE 15}} 1 1 25}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 10}} 1 1 25}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 12}} 1 1 25}
+    {{Glyph { RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 15}} 1 1 25}
+  }
+}
+
+"dragonChest"
+{
+  items = {
+    {{"GoldPiece"} 1 {30 100}}
+    {{PrefixChance 1 {"Sword"}} 1}
+    {{PrefixChance 1 {"BattleAxe"}} 1}
+    {{PrefixChance 1 {"WarHammer"}} 1}
+    {{PrefixChance 1 {"ArchwoodStaff"}} 1}
+    {{PrefixChance 1 {"AdaSword"}} 1 1 25}
+    {{PrefixChance 1 {"AdaBattleAxe"}} 1 1 25}
+    {{PrefixChance 1 {"AdaWarHammer"}} 1 1 25}
+    {{PrefixChance 1 {"AdoxiumStaff"}} 1 1 25}
+  }
+}
+
+"swarmerChest"
+{
+  items = {{{Potion Permanent SWARMER} 1}}
+}
+
+"sokobanPrize"
+{
+  items = {{{Ring "LEADERSHIP"} 1}}
+}
+
+"prophetRemains"
+{
+  items = {{{"ProphetRemains"}}}
+}
+
+"adoxieScroll"
+{
+  items = {{{"AdoxieScrollVault"}}}
 }

@@ -42,7 +42,7 @@ Furniture::Furniture() {
 Furniture::~Furniture() {}
 
 template<typename Archive>
-void Furniture::serializeImpl(Archive& ar, const unsigned) {
+void Furniture::serializeImpl(Archive& ar, const unsigned version) {
   ar(OPTION(viewObject), OPTION(removeNonFriendly), OPTION(canBuildOutsideOfTerritory));
   ar(NAMED(name), OPTION(pluralName), OPTION(type), OPTION(movementSet), OPTION(fire), OPTION(burntRemains), OPTION(destroyedRemains));
   ar(OPTION(destroyedInfo), OPTION(itemDrop), OPTION(wall), SKIP(creator), NAMED(createdTime), OPTION(canSilentlyReplace));
@@ -55,6 +55,12 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltInfo), NAMED(dissolveTo));
   ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), NAMED(freezeTo), NAMED(fillPit), NAMED(itemsRemovedEffect));
   ar(OPTION(eyeball), OPTION(storageIds), OPTION(hidesItems), NAMED(emptyViewId), OPTION(diningFurniture));
+  ar(OPTION(usagePredicate), OPTION(minedAchievement), OPTION(removeInstantly), OPTION(buildingFloor), OPTION(usageSound));
+  ar(OPTION(walkIntoSound), OPTION(destroySound));
+  if (version >= 1)
+    ar(NAMED(otherStairs));
+  if (version >= 2)
+    ar(OPTION(workshopSpeedBoost));
 }
 
 template <class Archive>
@@ -139,10 +145,8 @@ const vector<StorageId>& Furniture::getStorageId() const {
 void Furniture::destroy(Position pos, const DestroyAction& action, Creature* destroyedBy) {
   if (!destroyedEffect)
     pos.globalMessage("The " + name + " " + action.getIsDestroyed());
-  auto myLayer = layer;
-  auto myType = type;
   if (itemDrop)
-    pos.dropItems(itemDrop->random(pos.getGame()->getContentFactory()));
+    pos.dropItems(itemDrop->random(pos.getGame()->getContentFactory(), pos.getModelDifficulty()));
   if (destroyFX)
     pos.getGame()->addEvent(EventInfo::FX{pos, *destroyFX});
   auto effect = destroyedEffect;
@@ -152,11 +156,12 @@ void Furniture::destroy(Position pos, const DestroyAction& action, Creature* des
       destroyedBy);
   if (effect)
     effect->apply(pos);
+  if (destroySound)
+    pos.addSound(*destroySound);
 }
 
 void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& action) {
   if (auto& info = destroyedInfo[action.getType()]) {
-    c->addSound(action.getSound());
     double damage = action.getDamage(c);
     info->health -= damage / info->strength;
     updateViewObject();
@@ -165,6 +170,9 @@ void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& a
       pos.getGame()->addEvent(EventInfo::FX{pos, *tryDestroyFX});
     if (info->health <= 0)
       destroy(pos, action, c);
+    else
+      if (auto s = action.getSound())
+        pos.addSound(*s);
   }
 }
 
@@ -184,12 +192,32 @@ bool Furniture::doesHideItems() const {
   return hidesItems;
 }
 
-bool Furniture::isDiningFurniture() const {
+optional<FurnitureType> Furniture::getDiningFurnitureType() const {
   return diningFurniture;
+}
+
+const optional<CreaturePredicate>& Furniture::getUsagePredicate() const {
+  return usagePredicate;
 }
 
 const optional<ViewId>& Furniture::getEmptyViewId() const {
   return emptyViewId;
+}
+
+const optional<AchievementId>& Furniture::getMinedAchievement() const {
+  return minedAchievement;
+}
+
+bool Furniture::canRemoveInstantly() const {
+  return removeInstantly;
+}
+
+bool Furniture::isBuildingFloor() const {
+  return buildingFloor;
+}
+
+optional<FurnitureType> Furniture::getOtherStairs() const {
+  return otherStairs;
 }
 
 optional<ViewId> Furniture::getSupportViewId(Position pos) const {
@@ -212,8 +240,9 @@ const Furniture::SupportInfo* Furniture::getSupportInfo(Position pos) const {
   return nullptr;
 }
 
-void Furniture::tick(Position pos, FurnitureLayer supposedLayer) {
-  PROFILE_BLOCK("Furniture::tick");
+void Furniture::updateFire(Position pos, FurnitureLayer supposedLayer) {
+  PROFILE_BLOCK("Furniture::updateFire");
+  PROFILE_BLOCK(type.data());
   if (fire && fire->isBurning()) {
     {
       auto otherF = pos.getFurniture(layer);
@@ -230,8 +259,8 @@ void Furniture::tick(Position pos, FurnitureLayer supposedLayer) {
       viewObject->setAttribute(ViewObject::Attribute::BURNING, min(1.0, double(burnState) / 50));
     INFO << getName() << " burning ";
     for (Position v : pos.neighbors8())
-      v.fireDamage(burnState / 5);
-    pos.fireDamage(burnState);
+      v.fireDamage(burnState / 5, nullptr);
+    pos.fireDamage(burnState, nullptr);
     fire->tick();
     if (fire->isBurntOut()) {
       switch (burnsDownMessage) {
@@ -244,8 +273,6 @@ void Furniture::tick(Position pos, FurnitureLayer supposedLayer) {
       }
       pos.updateMovementDueToFire();
       pos.removeCreatureLight(false);
-      auto myLayer = layer;
-      auto myType = type;
       pos.removeFurniture(this, burntRemains ?
           pos.getGame()->getContentFactory()->furniture.getFurniture(*burntRemains, getTribe()) : nullptr);
       return;
@@ -253,6 +280,11 @@ void Furniture::tick(Position pos, FurnitureLayer supposedLayer) {
   }
   if (bloodTime && *bloodTime <= pos.getModel()->getLocalTime())
     spreadBlood(pos);
+}
+
+void Furniture::tick(Position pos, FurnitureLayer supposedLayer) {
+  PROFILE_BLOCK("Furniture::tick");
+  PROFILE_BLOCK(type.data());
   if (tickType)
     tickType->handle(pos, this); // this function can delete this
 }
@@ -283,6 +315,8 @@ void Furniture::click(Position pos) const {
 void Furniture::use(Position pos, Creature* c) const {
   if (usageType)
     FurnitureUsage::handle(*usageType, pos, this, c);
+  if (usageSound)
+    pos.addSound(*usageSound);
 }
 
 bool Furniture::canUse(const Creature* c) const {
@@ -428,8 +462,12 @@ void Furniture::onCreatureWalkedOver(Position pos, Vec2 direction) const {
 }
 
 void Furniture::onCreatureWalkedInto(Position pos, Vec2 direction) const {
-  if (walkIntoFX)
-    pos.getGame()->addEvent((EventInfo::FX{pos, *walkIntoFX, direction}));
+  auto game = pos.getGame();
+  if (walkIntoFX) {
+    game->addEvent((EventInfo::FX{pos, *walkIntoFX, direction}));
+  }
+  if (walkIntoSound)
+    pos.addSound(*walkIntoSound);
 }
 
 bool Furniture::onBloodNear(Position pos) {
@@ -437,6 +475,10 @@ bool Furniture::onBloodNear(Position pos) {
     if (--*bloodCountdown == 0)
       return true;
   return false;
+}
+
+bool Furniture::hasBlood() const {
+  return !!bloodTime;
 }
 
 void Furniture::spreadBlood(Position pos) {
@@ -449,13 +491,17 @@ void Furniture::spreadBlood(Position pos) {
       if (auto f = v.getFurniture(layer))
         if (!!f->bloodCountdown) {
           v.modFurniture(layer)->bloodTime = pos.getModel()->getLocalTime() + 1_visible;
-          v.getLevel()->addTickingFurniture(v.getCoord());
+          v.getLevel()->addBurningFurniture(v.getCoord(), layer);
         }
   }
 }
 
-int Furniture::getMaxTraining(ExperienceType t) const {
-  return maxTraining[t];
+int Furniture::getMaxTraining(AttrType t) const {
+  return getValueMaybe(maxTraining, t).value_or(0);
+}
+
+const HashMap<AttrType, int>& Furniture::getMaxTraining() const {
+  return maxTraining;
 }
 
 optional<FurnitureType> Furniture::getUpgrade() const {
@@ -465,6 +511,7 @@ optional<FurnitureType> Furniture::getUpgrade() const {
 optional<FXVariantName> Furniture::getUsageFX() const {
   return usageFX;
 }
+
 
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
   if (droppedItems) {
@@ -481,7 +528,7 @@ optional<FurnitureType> Furniture::getFillPit() const {
   return fillPit;
 }
 
-const LuxuryInfo&Furniture::getLuxuryInfo() const {
+double Furniture::getLuxury() const {
   return luxury;
 }
 
@@ -560,8 +607,8 @@ bool Furniture::acidDamage(Position pos) {
     PFurniture replace = pos.getGame()->getContentFactory()->furniture.getFurniture(*dissolveTo, getTribe());
     pos.removeFurniture(this, std::move(replace));
     return true;
-  } else
-  if (destroyedInfo[DestroyAction::Type::BASH]) {
+  }
+  else if (destroyedInfo[DestroyAction::Type::BASH]) {
     destroy(pos, DestroyAction(DestroyAction::Type::BASH));
     return true;
   }
@@ -576,8 +623,8 @@ bool Furniture::fireDamage(Position pos, bool withMessage) {
       replace = pos.getGame()->getContentFactory()->furniture.getFurniture(*meltInfo->meltTo, getTribe());
     pos.removeFurniture(this, std::move(replace));
     return true;
-  } else
-  if (fire) {
+  }
+  else if (fire) {
     bool burning = fire->isBurning();
     fire->set();
     if (!burning && fire->isBurning()) {
@@ -586,7 +633,7 @@ bool Furniture::fireDamage(Position pos, bool withMessage) {
       if (viewObject)
         viewObject->setAttribute(ViewObject::Attribute::BURNING, 0.3);
       pos.updateMovementDueToFire();
-      pos.getLevel()->addTickingFurniture(pos.getCoord());
+      pos.getLevel()->addBurningFurniture(pos.getCoord(), layer);
       pos.addCreatureLight(false);
       return true;
     }

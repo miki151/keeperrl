@@ -4,6 +4,7 @@
 #include <dbghelp.h>
 #include <cstdio>
 #include "version.h"
+#include "shellscalingapi.h"
 
 int printStacktraceWithGdb() {
   char gdbcmd[512] = {0};
@@ -43,7 +44,7 @@ LONG WINAPI miniDumpFunction2(EXCEPTION_POINTERS *ExceptionInfo) {
 void initializeMiniDump() {
   SetUnhandledExceptionFilter(miniDumpFunction2);
 }
-#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+//#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 
 void attachConsole() {
   if(AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()){
@@ -65,6 +66,10 @@ void setConsoleColor(int col) {
   SetConsoleTextAttribute(handle, col);
 }
 
+void dpiAwareness() {
+  SetProcessDPIAware();
+}
+
 extern "C"
 {
     __declspec( dllexport ) unsigned int NvOptimusEnablement                = 0x00000001;
@@ -77,6 +82,8 @@ void attachConsole() {
 void initializeMiniDump() {
 }
 void setConsoleColor(int) {
+}
+void dpiAwareness() {
 }
 
 #endif

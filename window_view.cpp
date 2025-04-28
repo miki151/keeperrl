@@ -32,7 +32,6 @@
 #include "player_message.h"
 #include "position.h"
 #include "sound_library.h"
-#include "player_role.h"
 #include "file_sharing.h"
 #include "fx_manager.h"
 #include "fx_renderer.h"
@@ -101,14 +100,14 @@ WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(param
         [this](const string& s) { presentText("", s); },
         }), zoomUI(-1),
     soundLibrary(params.soundLibrary), bugreportSharing(params.bugreportSharing), bugreportDir(params.bugreportDir),
-    installId(params.installId) {}
+    installId(params.installId), debugOptions(params.debugOptions) {}
 
 void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FXViewManager> fxViewManager) {
   renderer.setFullscreen(options->getBoolValue(OptionId::FULLSCREEN));
   renderer.setVsync(options->getBoolValue(OptionId::VSYNC));
   renderer.enableCustomCursor(!options->getBoolValue(OptionId::DISABLE_CURSOR));
   renderer.initialize();
-  renderer.setZoom(options->getBoolValue(OptionId::ZOOM_UI) ? 2 : 1);
+  renderer.setZoom(0.1 * options->getIntValue(OptionId::ZOOM_UI));
   renderer.setFpsLimit(options->getIntValue(OptionId::FPS_LIMIT));
   options->addTrigger(OptionId::FULLSCREEN, [this] (int on) {
     renderer.setFullscreen(on);
@@ -121,7 +120,7 @@ void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FX
     renderer.setFpsLimit(fps);
   });
   options->addTrigger(OptionId::DISABLE_CURSOR, [this] (int on) { renderer.enableCustomCursor(!on); });
-  options->addTrigger(OptionId::ZOOM_UI, [this] (int on) { zoomUI = on; });
+  options->addTrigger(OptionId::ZOOM_UI, [this] (int value) { zoomUI = value; });
   renderThreadId = currentThreadId();
   vector<ViewLayer> allLayers;
   for (auto l : ENUM_ALL(ViewLayer))
@@ -237,6 +236,8 @@ void WindowView::getSmallSplash(const ProgressMeter* meter, const string& text, 
 }
 
 void WindowView::displaySplash(const ProgressMeter* meter, const string& text, function<void()> cancelFun) {
+  mapGui->releaseMouseHeld();
+  inputQueue.push(UserInputId::RECT_CANCEL);
   splashDone = false;
   renderDialog.push([=] {
     getSmallSplash(meter, text, cancelFun);
@@ -254,7 +255,7 @@ void WindowView::clearSplash() {
 }
 
 void WindowView::playVideo(const string& path) {
-  renderer.playVideo(path, options->getIntValue(OptionId::SOUND) > 0);
+  renderer.playVideo(path, options->getIntValue(OptionId::SOUND));
 }
 
 void WindowView::resize(int width, int height) {
@@ -308,6 +309,7 @@ void WindowView::rebuildGui() {
   auto getMovement = [this](int x, int y) {
     inputQueue.push(UserInput(UserInputId::MOVE, Vec2(x, y)));
     mapGui->onMouseGone();
+    guiBuilder.mouseGone = true;
   };
   tempGuiElems.push_back(gui.stack(makeVec(
       gui.keyHandler(bindMethod(&WindowView::keyboardAction, this)),
@@ -519,21 +521,22 @@ void WindowView::updateView(CreatureView* view, bool noRefresh) {
   updateMinimap(view);
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     guiBuilder.setGameSpeed(GuiBuilder::GameSpeed::NORMAL);
-  if (soundLibrary)
-    playSounds(view);
+  playSounds(view);
 }
 
 void WindowView::playSounds(const CreatureView* view) {
   Rectangle area = mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds(), mapGui->getScreenPos());
   auto curTime = clock->getRealMillis();
-  const milliseconds soundCooldown {70};
   for (auto& sound : soundQueue) {
-    auto lastTime = lastPlayed[sound.getId()];
-    if ((!lastTime || curTime > *lastTime + soundCooldown) && (!sound.getPosition() ||
+    auto id = toLower(sound.getId());
+    auto nextTime = getValueMaybe(nextPlayed, id);
+    if ((!nextTime || curTime > *nextTime) && (!sound.getPosition() ||
         (sound.getPosition()->isSameLevel(view->getCreatureViewLevel()) &&
          sound.getPosition()->getCoord().inRectangle(area)))) {
-      soundLibrary->playSound(sound);
-      lastPlayed[sound.getId()] = curTime;
+      auto duration = soundLibrary->playSound(sound);
+      if (id == "frog_ambient" || id == "owl_ambient")
+        duration = milliseconds{Random.get(8000, 20000)};
+      nextPlayed[id] = curTime + duration;
     }
   }
   soundQueue.clear();
@@ -595,13 +598,13 @@ static Rectangle getBugReportPos(Renderer& renderer) {
 
 void WindowView::refreshScreen(bool flipBuffer) {
   if (zoomUI > -1) {
-    renderer.setZoom(zoomUI ? 2 : 1);
+    renderer.setZoom(0.1 * zoomUI);
     zoomUI = -1;
   }
   drawMap();
   auto bugReportPos = getBugReportPos(renderer);
-  renderer.drawFilledRectangle(bugReportPos, Color::TRANSPARENT, Color::RED);
-  renderer.drawText(Color::RED, bugReportPos.middle() - Vec2(0, 2), "report bug", Renderer::CenterType::HOR_VER);
+  renderer.drawFilledRectangle(bugReportPos, Color::TRANSPARENT, Color::RED.transparency(50));
+  renderer.drawText(Color::RED.transparency(50), bugReportPos.middle() - Vec2(0, 2), "report bug", Renderer::CenterType::HOR_VER);
   if (flipBuffer)
     renderer.drawAndClearBuffer();
 }
@@ -818,14 +821,9 @@ optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& cam
   return getBlockingGui(returnQueue, guiBuilder.drawChooseSiteMenu(returnQueue, message, campaign, current));
 }
 
-void WindowView::presentWorldmap(const Campaign& campaign) {
+void WindowView::presentWorldmap(const Campaign& campaign, Vec2 current) {
   Semaphore sem;
-  return getBlockingGui(sem, guiBuilder.drawWorldmap(sem, campaign));
-}
-
-variant<View::AvatarChoice, AvatarMenuOption> WindowView::chooseAvatar(const vector<AvatarData>& avatars) {
-  SyncQueue<variant<AvatarChoice, AvatarMenuOption>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawAvatarMenu(returnQueue, avatars), none, false);
+  return getBlockingGui(sem, guiBuilder.drawWorldmap(sem, campaign, current));
 }
 
 CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, CampaignMenuState& state) {
@@ -896,6 +894,8 @@ void WindowView::logMessage(const std::string& message) {
 }
 
 void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> origin) {
+  mapGui->releaseMouseHeld();
+  inputQueue.push(UserInputId::RECT_CANCEL);
   TempClockPause pause(clock);
   bool origOrigin = !!origin;
   if (!origin)
@@ -1086,6 +1086,9 @@ void WindowView::processEvents() {
         if (gameInfo.infoType == GameInfo::InfoType::PLAYER)
           renderer.flushEvents(SDL::SDL_KEYDOWN);
         break;
+      case SDL::SDL_MOUSEMOTION:
+        guiBuilder.mouseGone = false;
+        break;
       case SDL::SDL_MOUSEBUTTONDOWN:
         if (event.button.button == SDL_BUTTON_RIGHT)
           gui.getDragContainer().pop();
@@ -1143,33 +1146,34 @@ void WindowView::keyboardActionAlways(const SDL_Keysym& key) {
 // These commands will run only when the map is in focus (I think)
 void WindowView::keyboardAction(const SDL_Keysym& key) {
   keyboardActionAlways(key);
+  if (debugOptions)
+    switch (key.sym) {
+      case SDL::SDLK_F10:
+        if (auto input = getText("Enter effect", "", 100))
+          inputQueue.push({UserInputId::APPLY_EFFECT, *input});
+        break;
+      case SDL::SDLK_F11:
+        if (auto input = getText("Enter item type", "", 100))
+          inputQueue.push({UserInputId::CREATE_ITEM, *input});
+        break;
+      case SDL::SDLK_F12:
+        if (auto input = getText("Enter creature id", "", 100))
+          inputQueue.push({UserInputId::SUMMON_ENEMY, *input});
+        break;
+      case SDL::SDLK_F9:
+        inputQueue.push(UserInputId::CHEAT_ATTRIBUTES);
+        break;
+      /*case SDL::SDLK_F7:
+        presentList("", vector<string>(messageLog.begin(), messageLog.end()), true);
+        break;
+      case SDL::SDLK_F2:
+        if (!renderer.isMonkey()) {
+          options->handle(this, OptionSet::GENERAL);
+          refreshScreen();
+        }
+        break;*/
+    }
   switch (key.sym) {
-#ifndef RELEASE
-    case SDL::SDLK_F10:
-      if (auto input = getText("Enter effect", "", 100))
-        inputQueue.push({UserInputId::APPLY_EFFECT, *input});
-      break;
-    case SDL::SDLK_F11:
-      if (auto input = getText("Enter item type", "", 100))
-        inputQueue.push({UserInputId::CREATE_ITEM, *input});
-      break;
-    case SDL::SDLK_F12:
-      if (auto input = getText("Enter creature id", "", 100))
-        inputQueue.push({UserInputId::SUMMON_ENEMY, *input});
-      break;
-    case SDL::SDLK_F9:
-      inputQueue.push(UserInputId::CHEAT_ATTRIBUTES);
-      break;
-#endif
-    /*case SDL::SDLK_F7:
-      presentList("", vector<string>(messageLog.begin(), messageLog.end()), true);
-      break;
-    case SDL::SDLK_F2:
-      if (!renderer.isMonkey()) {
-        options->handle(this, OptionSet::GENERAL);
-        refreshScreen();
-      }
-      break;*/
     case C_OPEN_MENU:
     case SDL::SDLK_ESCAPE:
       if (!guiBuilder.clearActiveButton() && !renderer.isMonkey())

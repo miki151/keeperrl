@@ -41,14 +41,12 @@
 #include "furniture.h"
 #include "furniture_factory.h"
 #include "zones.h"
-#include "experience_type.h"
 #include "furniture_usage.h"
 #include "collective_warning.h"
 #include "immigration.h"
 #include "creature_factory.h"
 #include "resource_info.h"
 #include "workshop_item.h"
-#include "quarters.h"
 #include "position_matching.h"
 #include "storage_id.h"
 #include "game_config.h"
@@ -66,29 +64,33 @@
 #include "furnace.h"
 #include "promotion_info.h"
 #include "dancing.h"
+#include "assembled_minion.h"
+#include "creature_experience_info.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
+  if (Archive::is_saving::value)
+    CHECK(!model->serializationLocked);
   ar(SUBCLASS(TaskCallback), SUBCLASS(UniqueEntity<Collective>), SUBCLASS(EventListener));
   ar(creatures, taskMap, tribe, control, byTrait, populationGroups, hadALeader, dancing, lockedEquipmentGroups);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment, groupLockedAcitivities);
   ar(delayedPos, knownTiles, technology, kills, points, currentActivity, recordedEvents, allRecordedEvents);
-  ar(credit, model, immigration, teams, name, minionActivities, attackedByPlayer, furnace);
+  ar(credit, model, immigration, teams, name, minionActivities, attackedByPlayer, furnace, stunnedMinions);
   ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching, steedAssignments);
-  ar(villainType, enemyId, workshops, zones, discoverable, quarters, populationIncrease, dungeonLevel);
+  ar(villainType, enemyId, workshops, zones, discoverable, populationIncrease, dungeonLevel);
 }
 
 SERIALIZABLE(Collective)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Collective)
 
-Collective::Collective(Private, WModel model, TribeId t, const optional<CollectiveName>& n,
+Collective::Collective(Private, Model* model, TribeId t, const optional<CollectiveName>& n,
     const ContentFactory* contentFactory)
     : positionMatching(makeOwner<PositionMatching>()), tribe(t), model(NOTNULL(model)), name(to_heap_optional(n)),
       villainType(VillainType::NONE), minionActivities(contentFactory) {
 }
 
-PCollective Collective::create(WModel model, TribeId tribe, const optional<CollectiveName>& name, bool discoverable,
+PCollective Collective::create(Model* model, TribeId tribe, const optional<CollectiveName>& name, bool discoverable,
     const ContentFactory* contentFactory) {
   auto ret = makeOwner<Collective>(Private {}, model, tribe, name, contentFactory);
   ret->subscribeTo(model);
@@ -166,8 +168,15 @@ void Collective::updateCreatureStatus(Creature* c) {
   c->getStatus().set(CreatureStatus::PRISONER, hasTrait(c, MinionTrait::PRISONER));
 }
 
+void Collective::takePrisoner(Creature* c) {
+  c->removeEffect(LastingEffect::STUNNED);
+  c->unbindPhylactery();
+  addCreature(c, {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
+}
+
 void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
-  CHECK(!creatures.contains(c));
+  CHECK(!c->isDead());
+  CHECK(!creatures.contains(c)) << "Creature already added " << c->identify();
   if (c->getGlobalTime()) { // only do this if creature already exists on the map
     c->addEffect(LastingEffect::RESTED, 500_visible, false);
     c->addEffect(LastingEffect::SATIATED, 500_visible, false);
@@ -194,8 +203,9 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
   updateCreatureStatus(c);
-  for (Item* item : c->getEquipment().getItems())
-    CHECK(minionEquipment->tryToOwn(c, item));
+  if (!traits.contains(MinionTrait::PRISONER))
+    for (Item* item : c->getEquipment().getItems())
+      minionEquipment->tryToOwn(c, item);
   for (auto minion : getCreatures()) {
     c->removePrivateEnemy(minion);
     minion->removePrivateEnemy(c);
@@ -224,7 +234,6 @@ void Collective::banishCreature(Creature* c) {
   if (c->isAutomaton()) {
     taskMap->addTask(Task::disassemble(c), c->getPosition(), MinionActivity::CRAFT);
   } else {
-    decreaseMoraleForBanishing(c);
     vector<Position> exitTiles = territory->getExtended(10, 20);
     vector<PTask> tasks;
     vector<Item*> items = c->getEquipment().getItems();
@@ -291,7 +300,7 @@ const vector<Creature*>& Collective::getLeaders() const {
   return byTrait[MinionTrait::LEADER];
 }
 
-WGame Collective::getGame() const {
+Game* Collective::getGame() const {
   return model->getGame();
 }
 
@@ -307,7 +316,7 @@ Tribe* Collective::getTribe() const {
   return getGame()->getTribe(*tribe);
 }
 
-WModel Collective::getModel() const {
+Model* Collective::getModel() const {
   return model;
 }
 
@@ -354,7 +363,7 @@ bool Collective::isActivityGoodAssumingHaveTasks(Creature* c, MinionActivity act
     return false;
   switch (activity) {
     case MinionActivity::BE_WHIPPED:
-      return c->getMorale().value_or(1) < 0.95;
+      return !c->isAffected(BuffId("HIGH_MORALE"));
     case MinionActivity::CROPS:
     case MinionActivity::EXPLORE:
       return getGame()->getSunlightInfo().getState() == SunlightState::DAY;
@@ -405,6 +414,11 @@ bool Collective::isConquered() const {
   return config->isConquered(this);
 }
 
+void Collective::setPriorityTask(Creature* c, PTask task) {
+  returnResource(taskMap->freeFromTask(c));
+  taskMap->setPriorityTask(taskMap->addTaskFor(std::move(task), c));
+}
+
 void Collective::setTask(Creature* c, PTask task) {
   returnResource(taskMap->freeFromTask(c));
   taskMap->addTaskFor(std::move(task), c);
@@ -426,6 +440,7 @@ void Collective::makeConqueredRetired(Collective* conqueror) {
   auto control = VillageControl::copyOf(this, dynamic_cast<VillageControl*>(conqueror->control.get()));
   control->updateAggression(EnemyAggressionLevel::NONE);
   setControl(std::move(control));
+  getGame()->clearPlayerControl();
   name = conqueror->name;
   config = conqueror->config;
   discoverable = conqueror->discoverable;
@@ -434,8 +449,10 @@ void Collective::makeConqueredRetired(Collective* conqueror) {
   setEnemyId(*conqueror->getEnemyId());
   auto oldCreatures = getCreatures();
   for (auto c : copyOf(conqueror->getCreatures()))
-    addCreature(c, conqueror->getAllTraits(c));
-  for (auto c : creatures)
+    // shopkeepers keep references to their shop positions so hack it by skipping them
+    if (c->getAttributes().getCreatureId() != CreatureId("SHOPKEEPER"))
+      addCreature(c, conqueror->getAllTraits(c));
+  for (auto c : copyOf(creatures)) // creatures might die during transfer so make a copy
     getGame()->transferCreature(c, getModel(), territory->getAll());
   for (auto c : oldCreatures)
     c->dieNoReason();
@@ -474,7 +491,26 @@ static int getKeeperUpgradeLevel(int dungeonLevel) {
   return (dungeonLevel + 1) / 5;
 }
 
+void Collective::updateTeamExperience() {
+  for (auto c : getCreatures())
+    c->setTeamExperience(0, false);
+  for (TeamId team : getTeams().getAllActive()) {
+    double exp = 0;
+    bool leadership = false;
+    for (auto c : getTeams().getMembers(team))
+      if (c->isAffected(BuffId("LEADERSHIP"))) {
+        exp = c->getCombatExperience(true, false);
+        leadership = true;
+        break;
+      } else
+        exp = max(exp, c->getCombatExperience(true, false));
+    for (auto c : getTeams().getMembers(team))
+      c->setTeamExperience(exp, leadership);
+  }
+}
+
 void Collective::update(bool currentlyActive) {
+  updateTeamExperience();
   for (auto leader : getLeaders()) {
     leader->upgradeViewId(getKeeperUpgradeLevel(dungeonLevel.level));
     name->viewId = leader->getViewIdWithWeapon();
@@ -499,7 +535,7 @@ double Collective::getRebellionProbability() const {
 }
 
 void Collective::considerRebellion() {
-  if (Random.chance(getRebellionProbability() / 1000)) {
+  if (getGame()->getPlayerCollective() == this && Random.chance(getRebellionProbability() / 1000)) {
     Position escapeTarget = model->getGroundLevel()->getLandingSquare(StairKey::transferLanding(),
         Random.choose(Vec2::directions8()));
     for (auto c : copyOf(getCreatures(MinionTrait::PRISONER))) {
@@ -562,11 +598,24 @@ void Collective::updateAutomatonEngines() {
   }
 }
 
+bool Collective::minionCanUseQuarters(Creature* c) {
+  return hasTrait(c, MinionTrait::FIGHTER) || hasTrait(c, MinionTrait::LEADER);
+}
+
+void Collective::updateMinionPromotions() {
+  if (!config->minionsRequireQuarters())
+    return;
+  for (auto c : getCreatures())
+    if (minionCanUseQuarters(c))
+      c->setMaxPromotion(getMaxPromotionLevel(zones->getQuartersLuxury(c->getUniqueId()).value_or(-1)));
+}
+
 void Collective::tick() {
   PROFILE_BLOCK("Collective::tick");
   updateBorderTiles();
   considerRebellion();
   updateGuardTasks();
+  updateMinionPromotions();
   dangerLevelCache = none;
   control->tick();
   zones->tick();
@@ -629,15 +678,17 @@ void Collective::autoAssignSteeds() {
       return (leader1 && !leader2) || (leader1 == leader2 &&
           c1->getBestAttack(factory).value > c2->getBestAttack(factory).value); });
   for (auto c : minions) {
-    if (freeSteeds.empty())
-      break;
     auto steed = getSteedOrRider(c);
-    auto bestAvailable = [&]() -> Creature*{
+    auto bestAvailable = [&]() -> Creature* {
       for (int i : All(freeSteeds).reverse())
-        if (c->canMount(freeSteeds[i]))
+        if (c->isSteedGoodSize(freeSteeds[i]))
           return freeSteeds[i];
       return nullptr;
     }();
+    auto companion = c->getFirstCompanion();
+    if (!!companion && c->isSteedGoodSize(companion) && companion->isAffected(LastingEffect::STEED) &&
+        (!bestAvailable || companion->getBestAttack(factory).value > bestAvailable->getBestAttack(factory).value))
+      bestAvailable = companion;
     if (bestAvailable &&
         (!steed || steed->getBestAttack(factory).value < bestAvailable->getBestAttack(factory).value)) {
       setSteed(c, bestAvailable);
@@ -680,23 +731,15 @@ bool Collective::removeTrait(Creature* c, MinionTrait t) {
   return false;
 }
 
-void Collective::addMoraleForKill(const Creature* killer, const Creature* victim) {
-  for (Creature* c : getCreatures(MinionTrait::FIGHTER))
-    c->addMorale(c == killer ? 0.25 : 0.015);
+
+void Collective::addMoraleForKill(Creature* killer, Creature* victim) {
+  killer->addEffect(BuffId("HIGH_MORALE"), 30_visible);
 }
 
-void Collective::decreaseMoraleForKill(const Creature* killer, const Creature* victim) {
-  for (Creature* c : getCreatures(MinionTrait::FIGHTER)) {
-    double change = -0.015;
-    if (hasTrait(victim, MinionTrait::LEADER) && getCreatures(MinionTrait::LEADER).size() == 1)
-      change = -2;
-    c->addMorale(change);
-  }
-}
-
-void Collective::decreaseMoraleForBanishing(const Creature*) {
-  for (Creature* c : getCreatures(MinionTrait::FIGHTER))
-    c->addMorale(-0.05);
+void Collective::decreaseMoraleForKill(Creature* killer, Creature* victim) {
+/*  if (hasTrait(victim, MinionTrait::LEADER))
+    for (Creature* c : getCreatures())
+      c->addPermanentEffect(BuffId("LOW_MORALE"));*/
 }
 
 const optional<Collective::AlarmInfo>& Collective::getAlarmInfo() const {
@@ -704,7 +747,7 @@ const optional<Collective::AlarmInfo>& Collective::getAlarmInfo() const {
 }
 
 bool Collective::needsToBeKilledToConquer(const Creature* c) const {
-  return hasTrait(c, MinionTrait::FIGHTER) || hasTrait(c, MinionTrait::LEADER);
+  return (hasTrait(c, MinionTrait::FIGHTER) && !c->wasDuel()) || hasTrait(c, MinionTrait::LEADER);
 }
 
 bool Collective::creatureConsideredPlayer(Creature* c) const {
@@ -739,7 +782,7 @@ void Collective::onEvent(const GameEvent& event) {
         if (getCreatures().contains(victim)) {
           if (Random.roll(30)) {
             addRecordedEvent("the torturing of " + victim->getName().aOrTitle());
-            if (Random.roll(2)) {
+            if (victim->getUniqueId().getGenericId() % 2 == 0) {
               victim->dieWithReason("killed by torture");
             } else {
               control->addMessage("A prisoner is converted to your side");
@@ -749,6 +792,7 @@ void Collective::onEvent(const GameEvent& event) {
               setTrait(victim, MinionTrait::FIGHTER);
               victim->removeEffect(LastingEffect::TIED_UP);
               setMinionActivity(victim, MinionActivity::IDLE);
+              getGame()->achieve(AchievementId("converted_prisoner"));
             }
           }
         }
@@ -757,6 +801,9 @@ void Collective::onEvent(const GameEvent& event) {
         auto victim = info.victim;
         addRecordedEvent("the capturing of " + victim->getName().aOrTitle());
         if (getCreatures().contains(victim)) {
+          stunnedMinions.set(victim, getAllTraits(info.victim));
+          control->addMessage(PlayerMessage(info.victim->getName().aOrTitle() + " has been captured by the enemy",
+              MessagePriority::HIGH));
           if (info.attacker && creatureConsideredPlayer(info.attacker))
             attackedByPlayer = true;
           bool fighterStunned = needsToBeKilledToConquer(victim);
@@ -764,9 +811,13 @@ void Collective::onEvent(const GameEvent& event) {
           removeTrait(victim, MinionTrait::LEADER);
           control->addMessage(PlayerMessage(victim->getName().a() + " is unconsious.")
               .setPosition(victim->getPosition()));
+          control->onMemberKilledOrStunned(info.victim, info.attacker);
+          for (auto team : teams->getContaining(victim))
+            teams->remove(team, victim);
+          setSteed(victim, nullptr);
+          freeFromTask(victim);
           if (isConquered() && fighterStunned)
             getGame()->addEvent(EventInfo::ConqueredEnemy{this, attackedByPlayer});
-          freeFromTask(victim);
         }
       },
       [&](const TrapDisarmed& info) {
@@ -798,7 +849,7 @@ void Collective::onMinionKilled(Creature* victim, Creature* killer) {
     attackedByPlayer = true;
   auto factory = getGame()->getContentFactory();
   string deathDescription = victim->getAttributes().getDeathDescription(factory);
-  control->onMemberKilled(victim, killer);
+  control->onMemberKilledOrStunned(victim, killer);
   if (hasTrait(victim, MinionTrait::PRISONER) && killer && getCreatures().contains(killer))
     returnResource({ResourceId("PRISONER_HEAD"), 1});
   if (!hasTrait(victim, MinionTrait::FARM_ANIMAL) && !hasTrait(victim, MinionTrait::SUMMONED)) {
@@ -840,11 +891,34 @@ void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
     points += difficulty;
     control->addMessage(PlayerMessage(victim->getName().a() + " is " + deathDescription + " by " + killer->getName().a())
         .setPosition(victim->getPosition()));
+    if (victim->getStatus().contains(CreatureStatus::CIVILIAN)) {
+      auto victimCollective = [&]() -> optional<string> {
+        for (auto col : killer->getPosition().getModel()->getCollectives())
+          if (col->getCreatures().contains(victim))
+            if (auto& name = col->getName())
+              if (name->location)
+                return name->location;
+        return none;
+      }();
+      if (victimCollective) {
+        auto butcher = killer;
+        auto team = teams->getContaining(killer);
+        if (!team.empty())
+          butcher = teams->getLeader(team[0]);
+        if (butcher->addButcheringEvent(*victimCollective))
+          addRecordedEvent("the massacre of " + *victimCollective);
+      }
+    }
   }
 }
 
 double Collective::getEfficiency(const Creature* c) const {
-  return pow(2.0, c->getMorale().value_or(0)) *
+  double fromBuffs = 1.0;
+  auto f = getGame()->getContentFactory();
+  for (auto buff : f->buffsModifyingEfficiency)
+    if (c->isAffected(buff))
+      fromBuffs *= *f->buffs.at(buff).efficiencyMultiplier;
+  return fromBuffs *
       (c->isAffected(LastingEffect::SPEED) ? 1.4 : 1.0) *
       (c->isAffected(LastingEffect::SLOWED) ? (1 / 1.4) : 1.0);
 }
@@ -903,6 +977,7 @@ GlobalTime Collective::getGlobalTime() const {
 }
 
 int Collective::numResource(ResourceId id) const {
+  PROFILE;
   auto& info = getResourceInfo(id);
   int ret = getValueMaybe(credit, id).value_or(0);
   PositionSet visited;
@@ -1053,20 +1128,24 @@ bool Collective::isKnownVillainLocation(const Collective* col) const {
   return knownVillainLocations.contains(col);
 }
 
-WConstTask Collective::getItemTask(const Item* it) const {
+const Task* Collective::getItemTask(const Item* it) const {
   return markedItems.getOrElse(it, nullptr).get();
 }
 
-void Collective::markItem(const Item* it, WConstTask task) {
+void Collective::markItem(const Item* it, const Task* task) {
   CHECK(!getItemTask(it));
   markedItems.set(it, task);
 }
 
 bool Collective::canAddFurniture(Position position, FurnitureType type) const {
-  auto layer = getGame()->getContentFactory()->furniture.getData(type).getLayer();
+  auto& furniture = getGame()->getContentFactory()->furniture.getData(type);
+  if (auto& pred = furniture.getUsagePredicate())
+    if (!pred->apply(position, nullptr))
+      return false;
+  auto layer = furniture.getLayer();
   return knownTiles->isKnown(position)
       && ((position.isCovered() && (territory->contains(position) || canClaimSquare(position))) ||
-          getGame()->getContentFactory()->furniture.getData(type).buildOutsideOfTerritory())
+          furniture.buildOutsideOfTerritory())
       && !getConstructions().containsFurniture(position, layer)
       && position.canConstruct(type);
 }
@@ -1130,7 +1209,9 @@ void Collective::cancelMarkedTask(Position pos) {
 }
 
 void Collective::setPriorityTasks(Position pos) {
-  taskMap->setPriorityTasks(pos);
+  for (Task* t : taskMap->getTasks(pos))
+    taskMap->setPriorityTask(t);
+  pos.setNeedsRenderUpdate(true);
 }
 
 bool Collective::hasPriorityTasks(Position pos) const {
@@ -1138,7 +1219,8 @@ bool Collective::hasPriorityTasks(Position pos) const {
 }
 
 void Collective::setSteed(Creature* rider, Creature* steed) {
-  CHECK(rider != steed);
+  if (!!steed && steed == rider->getFirstCompanion())
+    steed = rider;
   auto setImpl = [this] (Creature* c1, Creature* c2) {
     if (auto current = getSteedOrRider(c1))
       steedAssignments.erase(current);
@@ -1149,12 +1231,15 @@ void Collective::setSteed(Creature* rider, Creature* steed) {
   };
   if (rider)
     setImpl(rider, steed);
-  if (steed)
+  if (steed && steed != rider)
     setImpl(steed, rider);
 }
 
 Creature* Collective::getSteedOrRider(Creature* minion) {
-  return steedAssignments.getMaybe(minion).value_or(nullptr);
+  auto ret = steedAssignments.getMaybe(minion).value_or(nullptr);
+  if (ret == minion)
+    return minion->getFirstCompanion();
+  return ret;
 }
 
 static HighlightType getHighlight(const DestroyAction& action) {
@@ -1194,7 +1279,7 @@ void Collective::recalculateFurniturePopIncrease() {
       for (auto pos : constructions->getBuiltPositions(type))
         if (pos.isClosedOff(MovementType(MovementTrait::WALK).setFarmAnimal()))
           ++count;
-      populationIncrease += factory.getPopulationIncrease(type, count);      
+      populationIncrease += factory.getPopulationIncrease(type, count);
     } else
       populationIncrease += factory.getPopulationIncrease(type, constructions->getBuiltCount(type));
   }
@@ -1210,12 +1295,15 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
   }
   constructions->onConstructed(pos, type);
   control->onConstructed(pos, type);
-  if (WTask task = taskMap->getMarked(pos))
+  if (Task* task = taskMap->getMarked(pos))
     taskMap->removeTask(task);
-  //if (canClaimSquare(pos))
   claimSquare(pos);
+  for (auto v : pos.neighbors8()) // check for furniture as a workaround to not claim the zombie zlevel gate when building a bridge
+    if (v.isCovered() && !v.isUnavailable() && !v.getFurniture(FurnitureLayer::MIDDLE))
+      claimSquare(v);
   recalculateFurniturePopIncrease();
 }
+
 
 void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAction& action) {
   removeUnbuiltFurniture(pos, getGame()->getContentFactory()->furniture.getData(type).getLayer());
@@ -1251,7 +1339,7 @@ void Collective::updateConstructions() {
 
 void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, LocalTime delayTime) {
   PROFILE;
-  unordered_set<Level*, CustomHash<Level*>> levels;
+  HashSet<Level*> levels;
   for (auto& pos : enemyPos1)
     levels.insert(pos.getLevel());
   for (auto& level : levels) {
@@ -1316,7 +1404,7 @@ void Collective::fetchItems(Position pos) {
     return;
   auto items = pos.getItems();
   if (!items.empty()) {
-    unordered_map<StorageId, vector<Item*>, CustomHash<StorageId>> itemMap;
+    HashMap<StorageId, vector<Item*>> itemMap;
     for (auto it : items)
       if (!getItemTask(it))
         for (auto id : it->getStorageIds()) {
@@ -1366,7 +1454,7 @@ CollectiveWarnings& Collective::getWarnings() {
   return *warnings;
 }
 
-const CollectiveConfig& Collective::getConfig() const {
+CollectiveConfig& Collective::getConfig() {
   return *config;
 }
 
@@ -1375,7 +1463,7 @@ bool Collective::addKnownTile(Position pos) {
   if (!knownTiles->isKnown(pos)) {
     pos.setNeedsRenderAndMemoryUpdate(true);
     knownTiles->addTile(pos, getModel());
-    if (WTask task = taskMap->getMarked(pos))
+    if (Task* task = taskMap->getMarked(pos))
       if (task->isBogus())
         taskMap->removeTask(task);
     return true;
@@ -1392,12 +1480,42 @@ void Collective::summonDemon(Creature* c) {
   getGame()->addAnalytics("milestone", "poetryDemon");
 }
 
+bool Collective::usesEfficiency(const Furniture* f) const {
+  if (isOneOf(f->getType(),
+          FurnitureType("POETRY_TABLE"),
+          FurnitureType("PAINTING_N"),
+          FurnitureType("PAINTING_S"),
+          FurnitureType("PAINTING_E"),
+          FurnitureType("PAINTING_W"),
+          FurnitureType("FURNACE")))
+    return true;
+  if (auto usage = f->getUsageType())
+    if (auto id = usage->getReferenceMaybe<BuiltinUsageId>())
+      switch (*id) {
+        case BuiltinUsageId::DEMON_RITUAL:
+        case BuiltinUsageId::TRAIN:
+        case BuiltinUsageId::STUDY:
+        case BuiltinUsageId::ARCHERY_RANGE:
+          return true;
+        default:
+          break;
+      }
+  if (auto workshopType = getGame()->getContentFactory()->getWorkshopType(f->getType()))
+    if (getReferenceMaybe(workshops->types, *workshopType))
+      return true;
+  return false;
+}
+
 void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos) {
   PROFILE;
   auto contentFactory = getGame()->getContentFactory();
   if (auto furniture = pos.first.getFurniture(pos.second)) {
+    if (auto& pred = furniture->getUsagePredicate())
+      if (!pred->apply(pos.first, c))
+        return;
     // Furniture have variable usage time, so just multiply by it to be independent of changes.
-    double efficiency = furniture->getUsageTime().getVisibleDouble() * getEfficiency(c);
+    double efficiency = furniture->getUsageTime().getVisibleDouble() * getEfficiency(c)
+        * pos.first.getLuxuryEfficiencyMultiplier();
     if (furniture->isRequiresLight())
       efficiency *= pos.first.getLightingEfficiency();
     if (furniture->getType() == FurnitureType("WHIPPING_POST"))
@@ -1449,7 +1567,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
       }
     }
     if (auto usage = furniture->getUsageType()) {
-      auto increaseLevel = [&] (ExperienceType exp) {
+      auto increaseLevel = [&] (AttrType exp) {
         double increase = 0.012 * efficiency * LastingEffects::getTrainingSpeed(c);
         if (auto maxLevel = contentFactory->furniture.getData(furniture->getType()).getMaxTraining(exp))
           increase = min(increase, maxLevel - c->getAttributes().getExpLevel(exp));
@@ -1471,13 +1589,16 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
             break;
           }
           case BuiltinUsageId::TRAIN:
-            increaseLevel(ExperienceType::MELEE);
+            increaseLevel(AttrType("DAMAGE"));
             break;
           case BuiltinUsageId::STUDY:
-            increaseLevel(ExperienceType::SPELL);
+            increaseLevel(AttrType("SPELL_DAMAGE"));
             break;
           case BuiltinUsageId::ARCHERY_RANGE:
-            increaseLevel(ExperienceType::ARCHERY);
+            increaseLevel(AttrType("RANGED_DAMAGE"));
+            break;
+          case BuiltinUsageId::PRAY:
+            increaseLevel(AttrType("DIVINITY"));
             break;
           default:
             break;
@@ -1490,40 +1611,42 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
     }
     if (auto workshopType = contentFactory->getWorkshopType(furniture->getType()))
       if (auto workshop = getReferenceMaybe(workshops->types, *workshopType)) {
-        auto craftingSkill = c->getAttr(contentFactory->workshopInfo.at(*workshopType).attr);
-        auto result = workshop->addWork(this, efficiency * double(craftingSkill) * 0.02
-            * LastingEffects::getCraftingSpeed(c),
-            craftingSkill, c->getMorale().value_or(0));
-        if (result.item) {
-          if (result.item->getClass() == ItemClass::WEAPON)
+        auto& workshopInfo = contentFactory->workshopInfo.at(*workshopType);
+        auto craftingSkill = c->getAttr(workshopInfo.attr);
+        double speedBoost = 1.0;
+        for (auto next : pos.first.neighbors8())
+          if (auto f = next.getFurniture(FurnitureLayer::MIDDLE))
+            for (auto& boost : f->workshopSpeedBoost)
+              if (boost.type == *workshopType)
+                speedBoost = max(speedBoost, boost.multiplier);
+        auto item = workshop->addWork(this, efficiency * double(craftingSkill) * 0.02
+            * LastingEffects::getCraftingSpeed(c) * speedBoost, craftingSkill, workshopInfo.prefix);
+        if (item) {
+          if (item->getClass() == ItemClass::WEAPON)
             getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
-          if (result.item->getClass() == ItemClass::ARMOR)
+          if (item->getClass() == ItemClass::ARMOR)
             getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
-          if (auto stat = result.item->getProducedStat())
+          if (auto stat = item->getProducedStat())
             getGame()->getStatistics().add(*stat);
-          control->addMessage(c->getName().a() + " " + contentFactory->workshopInfo.at(*workshopType).verb + " " +
-              result.item->getAName());
-          if (result.wasUpgraded) {
-            control->addMessage(PlayerMessage(c->getName().the() + " is depressed after crafting his masterpiece.", MessagePriority::HIGH));
-            c->addMorale(-2);
-            addRecordedEvent("the crafting of " + result.item->getTheName());
-          }
-          if (result.applyImmediately)
-            result.item->getEffect()->apply(pos.first, c);
+          control->addMessage(c->getName().a() + " " + workshopInfo.verb + " " + item->getAName());
+          if (item->getName() == "devotional medal" && !recordedEvents.empty())
+            item->setDescription("Depicts " + Random.choose(recordedEvents));
+          if (auto& minion = item->getAssembledMinion())
+            minion->assemble(this, item.get(), pos.first);
           else
-            c->getPosition().dropItem(std::move(result.item));
+            c->getPosition().dropItem(std::move(item));
         }
     }
   }
 }
 
-optional<FurnitureType> Collective::getMissingTrainingFurniture(const Creature* c, ExperienceType expType) const {
-  if (c->getAttributes().isTrainingMaxedOut(expType))
+optional<FurnitureType> Collective::getMissingTrainingFurniture(const Creature* c, AttrType attr) const {
+  if (c->getAttributes().isTrainingMaxedOut(attr))
     return none;
   optional<FurnitureType> requiredDummy;
-  for (auto dummyType : getGame()->getContentFactory()->furniture.getTrainingFurniture(expType)) {
-    bool canTrain = getGame()->getContentFactory()->furniture.getData(dummyType).getMaxTraining(expType) >
-        c->getAttributes().getExpLevel(expType);
+  for (auto dummyType : getGame()->getContentFactory()->furniture.getTrainingFurniture(attr)) {
+    bool canTrain = getGame()->getContentFactory()->furniture.getData(dummyType).getMaxTraining(attr) >
+        c->getAttributes().getExpLevel(attr);
     bool hasDummy = getConstructions().getBuiltCount(dummyType) > 0;
     if (canTrain && hasDummy)
       return none;
@@ -1589,17 +1712,9 @@ void Collective::addRecordedEvent(string s) {
 
 void Collective::onCopulated(Creature* who, Creature* with) {
   PROFILE;
-  if (with->getName().bare() == "vampire")
-    control->addMessage(who->getName().a() + " makes love to " + with->getName().a()
-        + " with a monkey on " + his(who->getAttributes().getGender()) + " knee");
-  else
-    control->addMessage(who->getName().a() + " makes love to " + with->getName().a());
-  if (getCreatures().contains(with))
-    with->addMorale(1);
-  if (!who->isAffected(LastingEffect::PREGNANT) && Random.roll(2)) {
-    who->addEffect(LastingEffect::PREGNANT, getConfig().getImmigrantTimeout());
-    control->addMessage(who->getName().a() + " becomes pregnant.");
-  }
+  control->addMessage(who->getName().a() + " makes love to " + with->getName().a());
+  who->getAttributes().copulationClientEffect.apply(with->getPosition(), who);
+  who->getAttributes().copulationEffect.apply(who->getPosition());
   addRecordedEvent("a sex act between " + who->getName().a() + " and " + with->getName().a());
 }
 
@@ -1610,6 +1725,15 @@ MinionEquipment& Collective::getMinionEquipment() {
 const MinionEquipment& Collective::getMinionEquipment() const {
   return *minionEquipment;
 }
+
+void Collective::autoAssignEquipment(Creature* creature) {
+  auto items = getAllItems(ItemIndex::MINION_EQUIPMENT, false).filter([&](auto item) {
+    auto g = item->getEquipmentGroup();
+    return item->getAutoEquipPredicate().apply(creature, nullptr) && (!g || canUseEquipmentGroup(creature, *g));
+  });
+  minionEquipment->autoAssign(creature, items);
+}
+
 
 Workshops& Collective::getWorkshops() {
   return *workshops;
@@ -1624,7 +1748,7 @@ Furnace& Collective::getFurnace() {
 }
 
 const Furnace& Collective::getFurnace() const {
-  return *furnace;  
+  return *furnace;
 }
 
 Dancing& Collective::getDancing() {
@@ -1690,12 +1814,8 @@ void Collective::eraseZone(Position pos, ZoneId id) {
   }
 }
 
-Quarters& Collective::getQuarters() {
-  return *quarters;
-}
-
-const Quarters& Collective::getQuarters() const {
-  return *quarters;
+void Collective::assignQuarters(Creature* c, Position pos) {
+  zones->assignQuarters(c->getUniqueId(), pos);
 }
 
 const TaskMap& Collective::getTaskMap() const {

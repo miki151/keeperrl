@@ -4,7 +4,31 @@
   Using "decrease" Button(buttonId = WHEEL_UP)
   Using "increase" Button(buttonId = WHEEL_DOWN)
   Vertical {
-    Using "title" Label()
+    Horizontal {
+      Using "title" Label()
+      Stretch {}
+      Using "range_dec" StandardButtonNotFocusable(Horizontal {
+        Label("0.1x")
+        Width 5 {}
+        KeybindingHandler("SCROLL_Z_DOWN")
+        RenderKeybinding("SCROLL_Z_DOWN", true)
+      })
+      Using "range_inc" StandardButtonNotFocusable(Horizontal {
+        Label("10x")
+        Width 5 {}
+        KeybindingHandler("SCROLL_Z_UP")
+        RenderKeybinding("SCROLL_Z_UP", true)
+      })
+    }
+    Height 5 {}
+    Horizontal {
+      Stretch {}
+      Label("[")
+      Using "range_begin" Label()
+      Label("-")
+      Using "range_end" Label()
+      Label("]")
+    }
     Height 10 {}
     Horizontal {
       Using "decrease" StandardButtonNotFocusable(Horizontal {

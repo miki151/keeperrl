@@ -22,7 +22,8 @@ struct WaterZLevel {
 struct EnemyZLevel {
   EnemyId SERIAL(enemy);
   double SERIAL(attackChance) = 0;
-  SERIALIZE_ALL(NAMED(enemy), OPTION(attackChance))
+  FurnitureType SERIAL(mountainType) = FurnitureType("MOUNTAIN2");
+  SERIALIZE_ALL(NAMED(enemy), OPTION(attackChance), OPTION(mountainType))
 };
 
 MAKE_VARIANT2(ZLevelType, FullZLevel, WaterZLevel, EnemyZLevel);

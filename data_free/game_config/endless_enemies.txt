@@ -4,7 +4,7 @@
     {
       all = { 1 "BANDIT" }
       count = { 1 }
-      baseLevelIncrease = { MELEE -2 }
+      combatExperience = -2
     }
     KillLeader
     "a curious bandit"
@@ -15,7 +15,7 @@
     {
       all = { 1 "LIZARDMAN" }
       count = { 1 }
-      baseLevelIncrease = { MELEE 1 }
+      combatExperience = 1
     }
     KillLeader
     "a lizardman scout"
@@ -26,7 +26,6 @@
     {
       all = { 1 "ANT_WORKER" }
       count = { 3 5 }
-      baseLevelIncrease = { MELEE -2 }
     }
     KillLeader
     "an ant patrol"
@@ -37,7 +36,7 @@
     {
       all = { 1 "LIZARDMAN" }
       count = { 4 8 }
-      baseLevelIncrease = { MELEE 2 }
+      combatExperience = 2
     }
     KillLeader
     "a nest of lizardmen"
@@ -48,7 +47,7 @@
     {
       all = { 1 "BANDIT" }
       count = { 3 5 }
-      baseLevelIncrease = { MELEE 9 }
+      combatExperience = 9
     }
     KillLeader
     "a gang of bandits"
@@ -69,7 +68,7 @@
     {
       all = { 1 "CLAY_GOLEM" }
       count = { 3 5 }
-      baseLevelIncrease = { MELEE 3 }
+      combatExperience = 3
     }
     KillLeader
     "an alchemist's clay golems"
@@ -80,7 +79,7 @@
     {
       all = { 1 "STONE_GOLEM" }
       count = { 3 5 }
-      baseLevelIncrease = { MELEE 3 }
+      combatExperience = 3
     }
     KillLeader
     "an alchemist's stone golems"
@@ -91,7 +90,7 @@
     {
       all = { 1 "ANT_SOLDIER" }
       count = { 5 8 }
-      baseLevelIncrease = { MELEE 5 }
+      combatExperience = 5
     }
     KillLeader
     "an ant soldier patrol"
@@ -103,7 +102,7 @@
       all = { 1 "ANT_SOLDIER" }
       uniques = { "ANT_QUEEN" }
       count = { 10 15 }
-      baseLevelIncrease = { MELEE 6 }
+      combatExperience = 6
     }
     KillLeader
     "an army of ants"
@@ -114,7 +113,7 @@
     {
       all = { 1 "ENT" }
       count = { 4 8 }
-      baseLevelIncrease = { MELEE 3 }
+      combatExperience = 3
     }
     KillLeader
     "a group of ents"
@@ -135,7 +134,7 @@
     {
       all = { 1 "IRON_GOLEM" }
       count = { 3 5 }
-      baseLevelIncrease = { MELEE 2 }
+      combatExperience = 2
     }
     KillLeader
     "an alchemist's iron golems"
@@ -178,7 +177,7 @@
     {
       all = { 1 "WARRIOR" }
       count = { 4 8 }
-      baseLevelIncrease = { MELEE 6 }
+      combatExperience = 6
     }
     KillLeader
     "a group of warriors"
@@ -190,7 +189,7 @@
       all = { 1 "WARRIOR" }
       uniques = { "SHAMAN" }
       count = { 12 16 }
-      baseLevelIncrease = { MELEE 14 }
+      combatExperience = 14
       inventory = { { Scroll Area 1 DestroyWalls DIG } }
     }
     KillLeader
@@ -207,7 +206,7 @@
       }
       uniques = { "DUKE" }
       count = { 12 16 }
-  #     baseLevelIncrease = { MELEE, 4}
+  #     combatExperience = 4
       inventory = { { Scroll Area 1 DestroyWalls DIG } }
     }
     KillLeader
@@ -229,7 +228,7 @@
     {
       all = { 1 "WITCHMAN" }
       count = { 1 }
-      baseLevelIncrease = { MELEE 20 }
+      combatExperience = 20
     }
     KillLeader
     "a witchman"
@@ -240,7 +239,7 @@
     {
       all = { 1 "MINOTAUR" }
       count = { 1 }
-      baseLevelIncrease = { MELEE 20 }
+      combatExperience = 20
     }
     KillLeader
     "a minotaur"
@@ -269,7 +268,7 @@
     {
       all = { 1 "GREEN_DRAGON" }
       count = { 1 }
-      baseLevelIncrease = { MELEE 10 }
+      combatExperience = 10
     }
     KillLeader
     "a green dragon"
@@ -280,7 +279,7 @@
     {
       all = { 1 "RED_DRAGON" }
       count = { 1 }
-      baseLevelIncrease = { MELEE 18 }
+      combatExperience = 18
     }
     KillLeader
     "a red dragon"
@@ -291,7 +290,7 @@
     {
       all = { 1 "BLACK_DRAGON" }
       count = { 1 }
-      baseLevelIncrease = { MELEE 28 }
+      combatExperience = 28
     }
     KillLeader
     "a black dragon"
@@ -300,24 +299,9 @@
   }
   {
     {
-      all = {
-        1 "ADVENTURER"
-        1 "ADVENTURER_F"
-      }
-      count = { 3 6 }
-      inventory = {{Scroll Area 1 DestroyWalls DIG}}
-      baseLevelIncrease = { MELEE 20 }
-    }
-    KillLeader
-    "a group of adventurers"
-    { 10000 25000 }
-    100
-  }
-  {
-    {
       all = { 1 "TROLL" }
       count = { 3 6 }
-      baseLevelIncrease = { MELEE 25 }
+      combatExperience = 25
     }
     KillLeader
     "a pack of trolls"

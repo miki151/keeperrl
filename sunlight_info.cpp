@@ -63,3 +63,11 @@ TimeInterval SunlightInfo::getTimeRemaining() const {
   return timeRemaining;
 }
 
+TimeInterval SunlightInfo::getTimeSinceDawn() const {
+  switch (state) {
+    case SunlightState::DAY:
+      return dayLength - timeRemaining;
+    case SunlightState::NIGHT:
+      return dayLength + nightLength - timeRemaining;
+  }
+}

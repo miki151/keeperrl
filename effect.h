@@ -53,6 +53,7 @@ class Effect {
   optional<ViewId> getProjectile() const;
   Color getColor(const ContentFactory*) const;
   int getPrice(const ContentFactory*) const;
+  void scale(double, const ContentFactory*);
 
   EffectAIIntent shouldAIApply(const Creature* caster, Position) const;
 
@@ -63,6 +64,7 @@ class Effect {
   static vector<Effect> getWishedForEffects(const ContentFactory*);
   static void enhanceWeapon(Creature*, int mod, const string& msg);
   static void enhanceArmor(Creature*, int mod, const string& msg);
+  static optional<Position> getSummonAwayPosition(Creature*);
 
   HeapAllocated<EffectType> SERIAL(effect);
 };

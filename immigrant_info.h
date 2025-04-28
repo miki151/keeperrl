@@ -12,6 +12,7 @@
 #include "pretty_archive.h"
 #include "sunlight_info.h"
 #include "keybinding.h"
+#include "achievement_id.h"
 
 class ContentFactory;
 struct SpecialTraitInfo;
@@ -27,7 +28,7 @@ struct AttractionInfo {
 
   static string getAttractionName(const ContentFactory*, const AttractionType&, int count);
 
-  int SERIAL(amountClaimed);
+  int SERIAL(amountClaimed) = 0;
   vector<AttractionType> SERIAL(types);
 };
 
@@ -46,11 +47,9 @@ class Game;
 struct RecruitmentInfo {
   vector<EnemyId> SERIAL(enemyId);
   int SERIAL(minPopulation);
-  MinionTrait SERIAL(trait);
-  vector<Collective*> findEnemy(WGame) const;
-  vector<Creature*> getAvailableRecruits(WGame, CreatureId) const;
-  vector<Creature*> getAllRecruits(WGame, CreatureId) const;
-  SERIALIZE_ALL(enemyId, minPopulation, trait)
+  vector<Collective*> findEnemy(Game*) const;
+  vector<Creature*> getAvailableRecruits(Collective*, CreatureId) const;
+  SERIALIZE_ALL(enemyId, minPopulation)
 };
 
 struct TutorialRequirement {
@@ -164,6 +163,7 @@ class ImmigrantInfo {
   };
   vector<RequirementInfo> SERIAL(requirements);
   bool SERIAL(stripEquipment) = true;
+  optional<AchievementId> SERIAL(acceptedAchievement);
 
   private:
 

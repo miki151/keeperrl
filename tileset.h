@@ -29,6 +29,7 @@ class TileSet {
   void loadTextures();
   const Tile& getTile(ViewId id, bool sprite = true) const;
   Color getColor(const ViewObject&) const;
+  Color getColor(ViewId) const;
   const vector<TileCoord>& getTileCoord(const string&) const;
   const vector<string> getSpriteMods() const;
 
@@ -65,6 +66,7 @@ class TileSet {
   Tile getMountainTile(const string& spriteName, const string& prefix);
   Tile getWaterTile(const string& background, const string& prefix);
   Tile getExtraBorderTile(const string& prefix);
+  Tile customConnections(const string& spriteName, const vector<TileInfo::Connection>&);
   Tile symbol(const string& s, Color id, bool symbol = false);
   void loadModdedTiles(const vector<TileInfo>& tiles, bool useTiles);
 };

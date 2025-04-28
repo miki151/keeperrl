@@ -35,6 +35,7 @@
 #include "buff_id.h"
 #include "player_message.h"
 
+class SpecialTrait;
 class Level;
 class Tribe;
 class ViewObject;
@@ -88,6 +89,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const vector<Creature*>& getVisibleCreatures() const;
   bool shouldAIAttack(const Creature* enemy) const;
   bool shouldAIChase(const Creature* enemy) const;
+  bool dontChase() const;
   vector<Position> getVisibleTiles() const;
   void setGlobalTime(GlobalTime);
   void setPosition(Position);
@@ -96,9 +98,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool takeDamage(const Attack&);
   void onAttackedBy(Creature*);
   bool heal(double amount = 1000);
-  /** Morale is in the range [-1:1] **/
-  optional<double> getMorale(const ContentFactory* = nullptr) const;
-  void addMorale(double);
+  void setTeamExperience(double, bool leadershipExp);
   void take(PItem item, const ContentFactory* = nullptr);
   void take(vector<PItem> item);
   const Equipment& getEquipment() const;
@@ -120,7 +120,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const CreatureName& getName() const;
   CreatureName& getName();
   const char* identify() const;
-  int getAttr(AttrType, bool includeWeapon = true) const;
+  int getAttr(AttrType, bool includeWeapon = true, bool includeTeamExp = true) const;
+  int getAttrWithExp(AttrType, int combatExperience, bool includeWeapon = true) const;
   int getSpecialAttr(AttrType, const Creature* against) const;
   int getAttrBonus(AttrType, int rawAttr, bool includeWeapon) const;
 
@@ -161,7 +162,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   MovementType getMovementType() const;
   MovementType getMovementType(Game*) const;
-  MovementType getMovementTypeNotSteed(Game*) const;
+  MovementType getSelfMovementType(Game*, bool amSteed) const;
 
   int getDifficultyPoints() const;
 
@@ -206,7 +207,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void forceMount(Creature* whom);
   void forceDismount(Vec2 dir);
   void tryToDismount();
-  bool canMount(Creature* whom) const;
+  bool isSteedGoodSize(Creature* whom) const;
   vector<string> getSteedSizes() const;
   CreatureAction mount(Creature* whom) const;
   Creature* getSteed() const;
@@ -223,9 +224,10 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void retire();
   void removeGameReferences();
 
-  void increaseExpLevel(ExperienceType, double increase);
+  void increaseExpLevel(AttrType, double increase);
 
   BestAttack getBestAttack(const ContentFactory*) const;
+  BestAttack getBestAttackWithExp(const ContentFactory*, int combatExp) const;
 
   vector<pair<Item*, double>> getRandomWeapons() const;
   int getMaxSimultaneousWeapons() const;
@@ -264,7 +266,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void privateMessage(const PlayerMessage&) const;
   void addFX(const FXInfo&) const;
 
-  WController getController() const;
+  Controller* getController() const;
   void pushController(PController);
   void setController(PController);
   void popController();
@@ -313,11 +315,15 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void addCombatIntent(Creature* attacker, CombatIntentInfo::Type);
   optional<CombatIntentInfo> getLastCombatIntent() const;
   void onKilledOrCaptured(Creature* victim);
+  Creature* getsCreditForKills();
   void updateCombatExperience(Creature* victim);
-  double getCombatExperience() const;
-  int getRawAttr(AttrType) const;
+  double getCombatExperience(bool respectMaxPromotion, bool includeTeamExp) const;
+  double getTeamExperience() const;
+  void setCombatExperience(double);
+  void setMaxPromotion(int level);
+  int getCombatExperienceCap() const;
+  int getRawAttr(AttrType, int combatExp) const;
 
-  void addSound(const Sound&) const;
   void updateViewObject(const ContentFactory*);
   void updateViewObjectFlanking();
   void swapPosition(Vec2 direction, bool withExcuseMe = true);
@@ -328,13 +334,16 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   EnumSet<CreatureStatus>& getStatus();
   const EnumSet<CreatureStatus>& getStatus() const;
-  vector<Creature*> getCompanions() const;
+  vector<Creature*> getCompanions(bool withNoKillCreditOnly = false) const;
+  Creature* getFirstCompanion() const;
   void removeCompanions(int index);
   void toggleCaptureOrder();
   void setCaptureOrder(bool);
   bool isCaptureOrdered() const;
   bool canBeCaptured() const;
   void removePrivateEnemy(const Creature*);
+  void setDuel(TribeId enemyTribe, Creature* opponent, GlobalTime timeout);
+  bool wasDuel() const;
   const vector<AutomatonPart>& getAutomatonParts() const;
   bool isAutomaton() const;
   void addAutomatonPart(AutomatonPart);
@@ -350,6 +359,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void unbindPhylactery();
   void addPromotion(PromotionInfo);
   const vector<PromotionInfo>& getPromotions() const;
+  bool addButcheringEvent(const string& villageName);
 
   void onEvent(const GameEvent&);
 
@@ -360,6 +370,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   };
 
   unordered_set<string> SERIAL(effectFlags);
+  vector<SpecialTrait> SERIAL(specialTraits);
 
   private:
 
@@ -381,7 +392,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<LastStairsNavigation> lastStairsNavigation;
   EntitySet<Creature> SERIAL(knownHiding);
   TribeId SERIAL(tribe);
-  double SERIAL(morale) = 0;
   optional<GlobalTime> SERIAL(deathTime);
   bool SERIAL(hidden) = false;
   Creature* lastAttacker = nullptr;
@@ -393,7 +403,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<PController> SERIAL(controllerStack);
   vector<string> SERIAL(killTitles);
   vector<KillInfo> SERIAL(kills);
-  unordered_set<string> SERIAL(uniqueKills);
   mutable int SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;
   using MoveId = pair<int, LevelId>;
@@ -402,12 +411,12 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   mutable optional<pair<MoveId, vector<Creature*>>> visibleCreatures;
   HeapAllocated<Vision> SERIAL(vision);
   bool forceMovement = false;
+  void setForceMovement(bool value);
   optional<CombatIntentInfo> SERIAL(lastCombatIntent);
   HeapAllocated<CreatureDebt> SERIAL(debt);
   int SERIAL(lastMoveCounter) = 0;
   EnumSet<CreatureStatus> SERIAL(statuses);
   bool SERIAL(capture) = 0;
-  double SERIAL(captureHealth) = 1;
   bool captureDamage(double damage, Creature* attacker);
   mutable Game* gameCache = nullptr;
   optional<GlobalTime> SERIAL(globalTime);
@@ -418,7 +427,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   struct CompanionGroup {
     vector<WeakPointer<Creature>> SERIAL(creatures);
     optional<AttrType> SERIAL(statsBase);
-    SERIALIZE_ALL(creatures, statsBase)
+    bool SERIAL(getsKillCredit);
+    SERIALIZE_ALL(creatures, statsBase, getsKillCredit)
   };
   vector<CompanionGroup> SERIAL(companions);
   void tickCompanions();
@@ -433,16 +443,40 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<PromotionInfo> SERIAL(promotions);
   PCreature SERIAL(steed);
   vector<pair<BuffId, GlobalTime>> SERIAL(buffs);
-  unordered_map<BuffId, int, CustomHash<BuffId>> SERIAL(buffCount);
-  unordered_map<BuffId, int, CustomHash<BuffId>> SERIAL(buffPermanentCount);
+  HashMap<BuffId, int> SERIAL(buffCount);
+  HashMap<BuffId, int> SERIAL(buffPermanentCount);
   vector<AdjectiveInfo> getLastingEffectAdjectives(const ContentFactory*, bool bad) const;
   bool removeBuff(int index, bool msg);
   bool processBuffs();
   double SERIAL(combatExperience) = 0;
+  int SERIAL(maxPromotion) = 10000;
+  double SERIAL(teamExperience) = 0;
+  bool SERIAL(leadershipExp) = false;
+  int SERIAL(highestAttackValueEver) = 0;
+  struct ButcherInfo {
+    string SERIAL(villageName);
+    int SERIAL(kills);
+    SERIALIZE_ALL(villageName, kills)
+  };
+  optional<ButcherInfo> SERIAL(butcherInfo);
   AttrType modifyDamageAttr(AttrType, const ContentFactory*) const;
+  struct DuelInfo {
+    TribeId SERIAL(enemy);
+    Creature::Id SERIAL(opponent);
+    GlobalTime SERIAL(timeout);
+    SERIALIZE_ALL(enemy, opponent, timeout)
+  };
+  optional<DuelInfo> SERIAL(duelInfo);
 };
 
 struct AdjectiveInfo {
   string name;
   string help;
+  optional<int> timeout;
+  int count;
+  string getText() const;
 };
+
+#ifndef PARSE_GAME
+CEREAL_CLASS_VERSION(Creature, 1)
+#endif

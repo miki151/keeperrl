@@ -3,7 +3,6 @@
 #include "furniture_type.h"
 #include "furniture_list.h"
 #include "tribe.h"
-#include "experience_type.h"
 #include "bed_type.h"
 #include "view_object.h"
 
@@ -35,7 +34,7 @@ class FurnitureFactory {
   int getPopulationIncrease(FurnitureType, int numBuilt) const;
   FurnitureList getFurnitureList(FurnitureListId) const;
   FurnitureType getWaterType(double depth) const;
-  const vector<FurnitureType>& getTrainingFurniture(ExperienceType) const;
+  const vector<FurnitureType>& getTrainingFurniture(AttrType) const;
   const vector<FurnitureType>& getFurnitureNeedingLight() const;
   const vector<FurnitureType>& getFurnitureThatIncreasePopulation() const;
   const vector<FurnitureType>& getBedFurniture(BedType) const;
@@ -51,12 +50,12 @@ class FurnitureFactory {
   private:
   map<FurnitureType, unique_ptr<Furniture>> SERIAL(furniture);
   map<FurnitureListId, FurnitureList> SERIAL(furnitureLists);
-  EnumMap<ExperienceType, vector<FurnitureType>> SERIAL(trainingFurniture);
-  unordered_map<FurnitureType, vector<FurnitureType>, CustomHash<FurnitureType>> SERIAL(upgrades);
+  HashMap<AttrType, vector<FurnitureType>> SERIAL(trainingFurniture);
+  HashMap<FurnitureType, vector<FurnitureType>> SERIAL(upgrades);
   vector<FurnitureType> SERIAL(needingLight);
   vector<FurnitureType> SERIAL(increasingPopulation);
   EnumMap<BedType, vector<FurnitureType>> SERIAL(bedFurniture);
-  unordered_map<FurnitureType, ViewObject, CustomHash<FurnitureType>> SERIAL(constructionObjects);
+  HashMap<FurnitureType, ViewObject> SERIAL(constructionObjects);
 };
 
 static_assert(std::is_nothrow_move_constructible<FurnitureFactory>::value, "T should be noexcept MoveConstructible");

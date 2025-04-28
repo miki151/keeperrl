@@ -144,8 +144,7 @@ optional<Vec2> MapGui::getHighlightedTile(Renderer&) {
     return none;
 }
 
-Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
-  bool quartersSelected = activeButton && activeButton->viewId.data() == "quarters"_s;
+Color MapGui::getHighlightColor(Vec2 pos, const ViewIndex& index, HighlightType type) {
   bool buildingSelected = activeButton && activeButton->isBuilding;
   switch (type) {
     case HighlightType::RECT_DESELECTION: return Color::RED.transparency(100);
@@ -155,18 +154,17 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
     case HighlightType::PERMANENT_FETCH_ITEMS: return Color::ORANGE.transparency(100);
     case HighlightType::STORAGE_EQUIPMENT: return Color::BLUE.transparency(100);
     case HighlightType::STORAGE_RESOURCES: return Color::GREEN.transparency(100);
-    case HighlightType::QUARTERS1: return Color::PINK.transparency(quartersSelected ? 70 : 20);
-    case HighlightType::QUARTERS2: return Color::SKY_BLUE.transparency(quartersSelected ? 70 : 20);
-    case HighlightType::QUARTERS3: return Color::ORANGE.transparency(quartersSelected ? 70 : 20);
-    case HighlightType::LEISURE: return Color::DARK_BLUE.transparency(quartersSelected ? 70 : 20);
+    case HighlightType::QUARTERS: return Color::PINK.transparency((!!quarters && quarters->positions.count(pos)) ? 70 : 30);
+    case HighlightType::LEISURE: return Color::DARK_BLUE.transparency(70);
     case HighlightType::RECT_SELECTION: return Color::YELLOW.transparency(100);
     case HighlightType::MEMORY: return Color::BLACK.transparency(80);
     case HighlightType::PRIORITY_TASK: return Color(0, 255, 0, 200);
     case HighlightType::CREATURE_DROP:
-      if (index.hasObject(ViewLayer::FLOOR) && getHighlightedFurniture() == index.getObject(ViewLayer::FLOOR).id())
-        return Color(0, 255, 0);
-      else
-        return Color(0, 255, 0, 120);
+      if (auto mousePos = getMousePos())
+        if (layout->projectOnMap(getBounds(), getScreenPos(), *mousePos) ==
+            layout->projectOnMap(getBounds(), getScreenPos(), pos))
+          return Color(0, 255, 0);
+      return Color(0, 255, 0, 120);
     case HighlightType::CLICKABLE_FURNITURE: return Color(255, 255, 0, 120);
     case HighlightType::CLICKED_FURNITURE: return Color(255, 255, 0);
     case HighlightType::GUARD_ZONE1: return Color(255, 255, 255, 120);
@@ -230,6 +228,10 @@ bool MapGui::onKeyPressed2(SDL_Keysym key) {
   if (keybindings->matches(Keybinding("SCROLL_MAP_RIGHT"), key))
     softScroll(scrollDist, 0);
   return false;
+}
+
+void MapGui::releaseMouseHeld() {
+  mouseHeldPos = none;
 }
 
 bool MapGui::onLeftClick(Vec2 v) {
@@ -492,6 +494,10 @@ bool MapGui::isCreatureHighlighted(UniqueEntity<Creature>::Id creature) {
   return teamHighlight.getMaybe(creature).value_or(0) > 0;
 }
 
+const optional<CreatureView::QuartersInfo>& MapGui::getQuartersInfo() const {
+  return quarters;
+}
+
 bool MapGui::fxesAvailable() const {
   return !!fxRenderer && spriteMode;
 }
@@ -614,7 +620,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       move.y += 11;
     const auto& coord = tile.getSpriteCoord(dirs);
     if (object.hasModifier(ViewObject::Modifier::RIDER)) {
-      auto& steedObject = index.getObject(ViewLayer::TORCH2);
+      auto& steedObject = index.getObject(ViewLayer::STEED);
       const Tile& steedTile = renderer.getTileSet().getTile(steedObject.id(), spriteMode);
       const auto& steedCoord = steedTile.getSpriteCoord(dirs);
       move.y -= (7 + steedCoord[0].size.y - coord[0].size.y) * zoom;
@@ -644,7 +650,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       optional<Color> colorVariant;
       if (!tile.animated)
         colorVariant = object.id().getColor();
-      auto orientation = object.hasModifier(ViewObject::Modifier::STUNNED) ? 
+      auto orientation = object.hasModifier(ViewObject::Modifier::STUNNED) ?
           Renderer::SpriteOrientation(Vec2(0, -1), false) :
           Renderer::SpriteOrientation(false, object.hasModifier(ViewObject::Modifier::FLIPX));
       renderer.drawTile(pos + move, coord, size, color, orientation, colorVariant);
@@ -798,6 +804,14 @@ void MapGui::renderExtraBorders(Renderer& renderer, milliseconds currentTimeReal
                 dirs.insert(v.getCardinalDir());
             Vec2 pos = projectOnScreen(wpos);
             renderer.drawTile(pos, tile.getExtraBorderCoord(dirs), layout->getSquareSize(), color);
+            if (dirs == DirSet{Dir::N, Dir::S}) {
+              renderer.drawTile(pos, tile.getExtraBorderCoord({Dir::N}), layout->getSquareSize(), color);
+              renderer.drawTile(pos, tile.getExtraBorderCoord({Dir::S}), layout->getSquareSize(), color);
+            }
+            if (dirs == DirSet{Dir::W, Dir::E}) {
+              renderer.drawTile(pos, tile.getExtraBorderCoord({Dir::W}), layout->getSquareSize(), color);
+              renderer.drawTile(pos, tile.getExtraBorderCoord({Dir::E}), layout->getSquareSize(), color);
+            }
             break;
           }
       }
@@ -863,9 +877,7 @@ bool MapGui::isRenderedHighlightLow(Renderer& renderer, const ViewIndex& index, 
     case HighlightType::PERMANENT_FETCH_ITEMS:
     case HighlightType::STORAGE_EQUIPMENT:
     case HighlightType::STORAGE_RESOURCES:
-    case HighlightType::QUARTERS1:
-    case HighlightType::QUARTERS2:
-    case HighlightType::QUARTERS3:
+    case HighlightType::QUARTERS:
     case HighlightType::GUARD_ZONE1:
     case HighlightType::GUARD_ZONE2:
     case HighlightType::GUARD_ZONE3:
@@ -909,7 +921,7 @@ void MapGui::fxHighlight(Renderer& renderer, const FXInfo& info1, Vec2 tilePos, 
 };
 
 void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight, Vec2 tilePos) {
-  auto color = blendNightColor(getHighlightColor(index, highlight), index);
+  auto color = blendNightColor(getHighlightColor(pos, index, highlight), index);
   switch (highlight) {
     case HighlightType::MEMORY:
       break;
@@ -922,9 +934,7 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
     case HighlightType::ALLIED_TOTEM:
       fxHighlight(renderer, FXInfo{FXName::MAGIC_FIELD, Color(100, 255, 100)}, tilePos, index);
       break;
-    case HighlightType::QUARTERS1:
-    case HighlightType::QUARTERS2:
-    case HighlightType::QUARTERS3:
+    case HighlightType::QUARTERS:
     case HighlightType::LEISURE:
     case HighlightType::UNAVAILABLE:
       renderTexturedHighlight(renderer, pos, size, color, ViewId("dig_mark2"));
@@ -1065,7 +1075,8 @@ void MapGui::renderFloorObjects(Renderer& renderer, Vec2 size, milliseconds curr
         if (index->hasObject(layer)) {
           auto& obj = index->getObject(layer);
           const Tile& tile = renderer.getTileSet().getTile(obj.id(), spriteMode);
-          if (layer == ViewLayer::FLOOR_BACKGROUND || !tile.moveUp)
+          if (layer == ViewLayer::FLOOR_BACKGROUND ||
+              (tile.getSpriteCoord()[0].size.y <= Renderer::nominalSize && !tile.moveUp))
             drawObjectAbs(renderer, pos, obj, size, Vec2(), wpos, currentTimeReal, *index);
         }
     }
@@ -1133,11 +1144,11 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
             object = &index.getObject(layer);
           if (object) {
             const Tile& tile = renderer.getTileSet().getTile(object->id(), spriteMode);
-            if (layer != ViewLayer::FLOOR || tile.moveUp) {
+            if (layer != ViewLayer::FLOOR || tile.getSpriteCoord()[0].size.y > Renderer::nominalSize || tile.moveUp) {
               Vec2 movement = getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true, wpos);
               drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal, index);
               if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos &&
-                  object->layer() != ViewLayer::CREATURE && object->layer() != ViewLayer::ITEM)
+                !isOneOf(object->layer(), ViewLayer::STEED, ViewLayer::CREATURE, ViewLayer::ITEM))
                 lastHighlighted.object = *object;
               }
           }
@@ -1165,7 +1176,7 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
             object = &index.getObject(layer);
           if (object) {
             Vec2 movement = [&] {
-              if (layer == ViewLayer::TORCH2 && index.hasObject(ViewLayer::CREATURE)) {
+              if (layer == ViewLayer::STEED && index.hasObject(ViewLayer::CREATURE)) {
                 auto& riderObj = index.getObject(ViewLayer::CREATURE);
                 if (riderObj.hasModifier(ViewObject::Modifier::RIDER))
                   return getMovementOffset(riderObj, size, currentTimeGame, currentTimeReal, true, wpos);
@@ -1173,7 +1184,8 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
               return getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true, wpos);
             }();
             drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal, index);
-            if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos && object->layer() != ViewLayer::CREATURE)
+            if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos &&
+                !isOneOf(object->layer(), ViewLayer::CREATURE, ViewLayer::STEED))
               lastHighlighted.object = *object;
           }
         }
@@ -1184,9 +1196,10 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
 void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds currentTimeReal) {
   PROFILE;
   if (fxViewManager) {
-    float zoom = float(layout->getSquareSize().x) / float(Renderer::nominalSize);
+    float zoomX = float(layout->getSquareSize().x) / float(Renderer::nominalSize);
+    float zoomY = float(layout->getSquareSize().y) / float(Renderer::nominalSize);
     auto offset = projectOnScreen(Vec2(0, 0));
-    fxViewManager->beginFrame(renderer, zoom, offset.x, offset.y);
+    fxViewManager->beginFrame(renderer, zoomX, zoomY, offset.x, offset.y);
   }
   renderAndInitFoW(renderer, size);
   if (spriteMode) {
@@ -1293,9 +1306,8 @@ void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, milliseconds c
 }
 
 bool MapGui::onScrollEvent(Vec2 pos, double x, double y, milliseconds timeDiff) {
-  auto time = Clock::getRealMillis();
   if (x != 0.0 || y != 0.0) {
-    double diff = double(timeDiff.count()) / 40;
+    double diff = double(timeDiff.count()) / layout->getSquareSize().x;
     center.x += diff * x;
     center.y -= diff * y;
     softCenter = none;
@@ -1325,12 +1337,7 @@ void MapGui::processScrolling(milliseconds time) {
 }
 
 bool MapGui::isDraggedCreature() const {
-  if (auto draggedContent = guiFactory->getDragContainer().getElement())
-    return draggedContent->visit<bool>(
-        [] (UniqueEntity<Creature>::Id) { return true; },
-        [] (const string& group) { return true; },
-        [] (auto&) { return false; });
-  return false;
+  return !!guiFactory->getDragContainer().getElement();
 }
 
 void MapGui::considerScrollingToCreature() {
@@ -1461,6 +1468,19 @@ double MapGui::getDistanceToEdgeRatio(Vec2 pos) {
   return ret;
 }
 
+void MapGui::updateQuarters(CreatureView* view, Renderer& renderer) {
+  quarters = none;
+  if (auto pos = projectOnMap(renderer.getMousePos())) {
+    quarters = view->getQuarters(*pos);
+    if (quarters) {
+      HashSet<Vec2> translated;
+      for (auto& v : quarters->positions)
+        translated.insert(projectOnScreen(v));
+      quarters->positions = translated;
+    }
+  }
+}
+
 void MapGui::updateShortestPaths(CreatureView* view, Renderer& renderer, Vec2 tileSize, milliseconds curTimeReal) {
   shortestPath.clear();
   permaShortestPath = view->getPermanentPaths();
@@ -1513,6 +1533,7 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
   layout = mapLayout;
   auto currentTimeReal = clock->getRealMillis();
   updateShortestPaths(view, renderer, layout->getSquareSize(), currentTimeReal);
+  updateQuarters(view, renderer);
   // hacky way to detect that we're switching between real-time and turn-based and not between
   // team members in turn-based mode.
   const bool newView = (view->getCenterType() != previousView);
@@ -1528,7 +1549,6 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
           !lastSquareUpdate[pos] || *lastSquareUpdate[pos] < currentTimeReal - milliseconds{1000})
         updateObject(pos, view, renderer, currentTimeReal);
   previousView = view->getCenterType();
-  auto isGroundOrUpperZlevel = [](auto l) { return l->above || l->below; };
   previousLevel = level;
   keyScrolling = view->getCenterType() == CreatureView::CenterType::NONE;
   currentTimeGame = view->getAnimationTime();

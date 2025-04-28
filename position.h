@@ -29,12 +29,13 @@ class Position {
   struct IsValid{};
   Position(Vec2, Level*, IsValid);
   static vector<Position> getAll(Level*, Rectangle);
-  WModel getModel() const;
-  WGame getGame() const;
+  Model* getModel() const;
+  Game* getGame() const;
   optional<int> dist8(const Position&) const;
   bool isSameLevel(const Position&) const;
   bool isSameLevel(const Level*) const;
   bool isSameModel(const Position&) const;
+  int getModelDifficulty() const;
   Vec2 getDir(const Position&) const;
   Creature* getCreature() const;
   void removeCreature();
@@ -93,9 +94,9 @@ class Position {
   bool construct(FurnitureType, TribeId) const;
   bool isActiveConstruction(FurnitureLayer) const;
   bool isBurning() const;
-  bool fireDamage(int amount) const;
-  bool iceDamage(int amount) const;
-  bool acidDamage(int value) const;
+  bool fireDamage(int amount, Creature* attacker) const;
+  bool iceDamage(int amount, Creature* attacker) const;
+  bool acidDamage(int value, Creature* attacker) const;
   bool needsRenderUpdate() const;
   void setNeedsRenderUpdate(bool) const;
   bool needsMemoryUpdate() const;
@@ -145,6 +146,9 @@ class Position {
   const Furniture* getFurniture(FurnitureLayer) const;
   const Furniture* getFurniture(FurnitureType) const;
   vector<const Furniture*> getFurniture() const;
+  double getTotalLuxuryPlusWalls() const;
+  double getTotalLuxury() const;
+  double getLuxuryEfficiencyMultiplier() const;
   Furniture* modFurniture(FurnitureLayer) const;
   Furniture* modFurniture(FurnitureType) const;
   vector<Furniture*> modFurniture() const;
@@ -183,4 +187,4 @@ inline string toString(const Position& t) {
   return ss.str();
 }
 
-using PositionSet = unordered_set<Position, CustomHash<Position>>;
+using PositionSet = HashSet<Position>;

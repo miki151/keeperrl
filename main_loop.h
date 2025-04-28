@@ -3,7 +3,6 @@
 #include "util.h"
 #include "file_sharing.h"
 #include "exit_info.h"
-#include "experience_type.h"
 #include "game_time.h"
 
 class View;
@@ -33,12 +32,13 @@ struct ModDetails;
 class TribeId;
 struct RetiredModelInfo;
 class Unlocks;
+class SteamAchievements;
 
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& paidDataPath, const DirectoryPath& dataFreePath,
       const DirectoryPath& userPath, const DirectoryPath& modsDir, Options*, Jukebox*, SokobanInput*, TileSet*, Unlocks*,
-      int saveVersion, string modVersion);
+      SteamAchievements*, int saveVersion, string modVersion);
 
   void start(bool tilesPresent);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
@@ -47,7 +47,7 @@ class MainLoop {
   void endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, optional<int> numEnemy);
   void campaignBattleText(int numTries, const FilePath& levelPath, EnemyId keeperId, VillainGroup);
   int campaignBattleText(int numTries, const FilePath& levelPath, EnemyId keeperId, EnemyId);
-  void launchQuickGame(optional<int> maxTurns, bool tryToLoad);
+  void launchQuickGame(optional<int> maxTurns, optional<string> keeperName);
   void genZLevels(const string& keeperType);
   ContentFactory createContentFactory(bool vanillaOnly) const;
 
@@ -67,14 +67,15 @@ class MainLoop {
   PGame prepareCampaign(RandomGen&);
   PGame prepareWarlord(const SaveFileInfo&);
   enum class ExitCondition;
-  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (WGame)> = nullptr,
+  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (Game*)> = nullptr,
       milliseconds stepTimeMilli = milliseconds{3}, optional<int> maxTurns = none);
   void showCredits();
+  void showAchievements();
   void showMods();
   void playMenuMusic();
   ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen&, ContentFactory*);
-  ModelTable prepareCampaignModels(CampaignSetup& campaign, TribeAlignment, ModelBuilder);
-  PGame loadGame(const FilePath&);
+  ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, ModelBuilder, ContentFactory*);
+  PGame loadGame(const FilePath&, const string& name);
   PGame loadOrNewGame();
   FilePath getSavePath(const PGame&, GameSaveType);
   void eraseSaveFile(const PGame&, GameSaveType);
@@ -97,14 +98,14 @@ class MainLoop {
   TileSet* tileSet;
   int saveVersion;
   string modVersion;
-  PModel getBaseModel(ModelBuilder&, CampaignSetup&, TribeId, TribeAlignment);
+  PModel getBaseModel(ModelBuilder&, CampaignSetup&, const AvatarInfo&);
   void considerGameEventsPrompt();
   void considerFreeVersionText(bool tilesPresent);
   void eraseAllSavesExcept(const PGame&, optional<GameSaveType>);
   PGame prepareTutorial(const ContentFactory*);
   void bugReportSave(PGame&, FilePath);
   void saveGame(PGame&, const FilePath&);
-  void saveMainModel(PGame&, const FilePath& modelPath, const FilePath& warlordPath);
+  void saveMainModel(PGame&, const FilePath& modelPath);
   TilePaths getTilePathsForAllMods() const;
   vector<string> getCurrentMods() const;
 
@@ -129,4 +130,5 @@ class MainLoop {
   optional<RetiredModelInfo> loadRetiredModelFromFile(const FilePath&);
   bool useSingleThread();
   Unlocks* unlocks;
+  SteamAchievements* steamAchievements = nullptr;
 };

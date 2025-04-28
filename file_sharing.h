@@ -38,7 +38,6 @@ class FileSharing {
 
   typedef map<string, string> GameEvent;
   bool uploadGameEvent(const GameEvent&, bool requireGameEventsPermission = true);
-  void uploadHighscores(CancelFlag&, const FilePath&);
   optional<string> uploadBugReport(CancelFlag&, const string& text, optional<FilePath> savefile,
       optional<FilePath> screenshot, ProgressMeter&);
 
@@ -53,8 +52,6 @@ class FileSharing {
   optional<string> downloadMod(CancelFlag&, const string& name, SteamId, const DirectoryPath& modsDir,
       ProgressMeter&);
   optional<string> uploadMod(CancelFlag&, ModInfo& modInfo, const DirectoryPath& modsDir, ProgressMeter&);
-
-  string downloadHighscores(CancelFlag&, int version);
 
   const string& getPersonalMessage();
   void downloadPersonalMessage();

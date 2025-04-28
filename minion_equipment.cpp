@@ -93,7 +93,7 @@ bool MinionEquipment::canUseItemType(const Creature* c, MinionEquipmentType type
 bool MinionEquipment::needsItem(const Creature* c, const Item* it, bool noLimit) const {
   PROFILE;
   if (optional<MinionEquipmentType> type = getEquipmentType(it)) {
-    if (!canUseItemType(c, *type, it)) 
+    if (!canUseItemType(c, *type, it))
       return false;
     if (!noLimit) {
       auto itemValue = getItemValue(c, it);
@@ -119,6 +119,20 @@ bool MinionEquipment::needsItem(const Creature* c, const Item* it, bool noLimit)
         };
         if (getItemsOwnedBy(c, pred).size() >= limit)
           return false;
+        if (slot == EquipmentSlot::RINGS) {
+          for (auto e : it->getEquipedEffects()) {
+            auto satisfiedEffect = [&] {
+              for (auto other : getItemsOwnedBy(c))
+                if (other != it && other->getEquipedEffects().contains(e))
+                  return true;
+              return false;
+            };
+            if (!satisfiedEffect())
+              return true;
+          }
+          if (!it->getEquipedEffects().empty())
+            return false;
+        }
       }
     }
     return true;
@@ -146,7 +160,7 @@ void MinionEquipment::updateOwners(const vector<Creature*>& creatures) {
       }
   for (auto c : creatures)
     for (auto item : getItemsOwnedBy(c))
-      if (!needsItem(c, item))
+      if (!needsItem(c, item) && !isLocked(c, item->getUniqueId()))
         discard(item);
 }
 
@@ -287,7 +301,7 @@ void MinionEquipment::autoAssign(const Creature* creature, vector<Item*> possibl
         }
         CHECK(tryToOwn(creature, it));
         slots[slot].push_back(it);
-        break;
+        //break;
       }
   }
 }
@@ -298,7 +312,7 @@ int MinionEquipment::getItemValue(const Creature* c, const Item* it) const {
   for (auto& mod : it->getModifierValues()) {
     sum += mod.second;
     if (mod.first == it->getWeaponInfo().meleeAttackAttr)
-      sum += c->getRawAttr(mod.first);
+      sum += c->getRawAttr(mod.first, c->getCombatExperience(true, true));
   }
   return sum;
 }

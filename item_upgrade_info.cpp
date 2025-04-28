@@ -23,6 +23,7 @@ static const char* getTargetName(ItemUpgradeType type) {
 }
 
 vector<string> ItemUpgradeInfo::getDescription(const ContentFactory* factory) const {
+  PROFILE;
   vector<string> ret { "Crafting upgrade for "_s + getTargetName(type) + ":" };
   ret.append(getEffectDescription(factory, *prefix));
   return ret;
@@ -44,7 +45,7 @@ const char* getItemTypeName(ItemUpgradeType type) {
   }
 }
 
-SERIALIZE_DEF(ItemUpgradeInfo, type, prefix)
+SERIALIZE_DEF(ItemUpgradeInfo, NAMED(type), NAMED(prefix), OPTION(diminishModifier))
 
 #include "pretty_archive.h"
 template

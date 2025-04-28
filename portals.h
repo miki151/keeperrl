@@ -10,6 +10,7 @@ class Portals {
   bool registerPortal(Position);
   void removePortal(Position);
   optional<short> getDistanceToNearest(Position) const;
+  vector<pair<Position, Position>> getMatchedPortals() const;
 
   SERIALIZATION_DECL(Portals)
 

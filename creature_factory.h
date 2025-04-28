@@ -17,7 +17,6 @@
 
 #include "util.h"
 #include "tribe.h"
-#include "experience_type.h"
 #include "spell_school.h"
 #include "creature_id.h"
 #include "spell_school_id.h"

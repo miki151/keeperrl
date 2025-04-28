@@ -38,7 +38,7 @@ void Body::serializeImpl(Archive& ar, const unsigned int version) {
   ar(OPTION(xhumanoid), OPTION(size), OPTION(weight), OPTION(bodyParts), OPTION(injuredBodyParts), OPTION(lostBodyParts));
   ar(OPTION(material), OPTION(health), OPTION(minionFood), NAMED(deathSound), OPTION(intrinsicAttacks), OPTION(minPushSize));
   ar(OPTION(noHealth), OPTION(fallsApart), OPTION(drops), OPTION(canCapture), OPTION(xCanPickUpItems), OPTION(droppedPartUpgrade));
-  ar(OPTION(corpseIngredientType), OPTION(canBeRevived), OPTION(overrideDiningFurniture));
+  ar(OPTION(corpseIngredientType), OPTION(canBeRevived), OPTION(overrideDiningFurniture), OPTION(ambientSound));
 }
 
 template <class Archive>
@@ -61,7 +61,7 @@ static int getDefaultIntrinsicDamage(Body::Size size) {
 
 Body::Body(bool humanoid, BodyMaterialId m, Size size) : xhumanoid(humanoid), size(size),
     weight(getDefaultWeight(size)), material(m),
-    deathSound(humanoid ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH),
+    deathSound(humanoid ? SoundId("HUMANOID_DEATH") : SoundId("BEAST_DEATH")),
     minPushSize(Size((int)size + 1)) {
   if (humanoid)
     setHumanoidBodyParts(getDefaultIntrinsicDamage(size));
@@ -256,12 +256,7 @@ int Body::numLost(BodyPart part) const {
 
 bool Body::fallsApartDueToLostBodyParts(const ContentFactory* factory) const {
   if (fallsApart && !hasAnyHealth(factory)) {
-    int ret = 0;
-    for (BodyPart part : ENUM_ALL(BodyPart))
-      ret += injuredBodyParts[part];
-    for (BodyPart part : ENUM_ALL(BodyPart))
-      ret += lostBodyParts[part];
-    return ret >= 4;
+    return getBodyPartHealth() < 0.1;
   } else
     return false;
 }
@@ -274,13 +269,14 @@ int Body::numGood(BodyPart part) const {
   return numBodyParts(part) - numInjured(part);
 }
 
-void Body::clearInjured(BodyPart part) {
-  injuredBodyParts[part] = 0;
+void Body::clearInjured(BodyPart part, int count) {
+  injuredBodyParts[part] = max(0, injuredBodyParts[part] - count);
 }
 
-void Body::clearLost(BodyPart part) {
-  bodyParts[part] += lostBodyParts[part];
-  lostBodyParts[part] = 0;
+void Body::clearLost(BodyPart part, int count) {
+  count = min(lostBodyParts[part], count);
+  bodyParts[part] += count;
+  lostBodyParts[part] -= count;
 }
 
 optional<BodyPart> Body::getAnyGoodBodyPart() const {
@@ -293,32 +289,20 @@ optional<BodyPart> Body::getAnyGoodBodyPart() const {
   return Random.choose(good);
 }
 
-optional<BodyPart> Body::getBodyPart(AttackLevel attack, bool flying, bool collapsed) const {
-  auto best = [&] {
-    if (flying)
-      return Random.choose({BodyPart::TORSO, BodyPart::HEAD, BodyPart::LEG, BodyPart::WING, BodyPart::ARM},
-          {1, 1, 1, 2, 1});
-    switch (attack) {
-      case AttackLevel::HIGH:
-         return BodyPart::HEAD;
-      case AttackLevel::MIDDLE:
-         if (size == Size::SMALL || size == Size::MEDIUM || collapsed)
-           return BodyPart::HEAD;
-         else
-           return Random.choose({BodyPart::TORSO, armOrWing()}, {1, 1});
-      case AttackLevel::LOW:
-         if (size == Size::SMALL || collapsed)
-           return Random.choose({BodyPart::TORSO, armOrWing(), BodyPart::HEAD, BodyPart::LEG}, {1, 1, 1, 1});
-         if (size == Size::MEDIUM)
-           return Random.choose({BodyPart::TORSO, armOrWing(), BodyPart::LEG}, {1, 1, 3});
-         else
-           return BodyPart::LEG;
-    }
-  }();
-  if (numGood(best) > 0)
-    return best;
-  else
-    return getAnyGoodBodyPart();
+optional<BodyPart> Body::getBodyPart(const ContentFactory* factory) const {
+  vector<BodyPart> allowed {BodyPart::LEG, BodyPart::ARM, BodyPart::WING};
+  const auto health = hasAnyHealth(factory) ? getHealth() : getBodyPartHealth();
+  if (health < 0.4 || !factory->bodyMaterials.at(material).losingHeadsMeansDeath)
+    allowed.push_back(BodyPart::HEAD);
+  if (allowed.empty() || health < 0.4)
+    allowed.push_back(BodyPart::TORSO);
+  for (auto part : Random.permutation(allowed))
+    if (numGood(part))
+      return part;
+  for (auto part : Random.permutation<BodyPart>())
+    if (numGood(part))
+      return part;
+  return none;
 }
 
 bool Body::healBodyParts(Creature* creature, int max) {
@@ -342,19 +326,23 @@ bool Body::healBodyParts(Creature* creature, int max) {
   for (BodyPart part : ENUM_ALL(BodyPart)) {
     if (int count = numInjured(part)) {
       result = true;
+      count = min(max, count);
       creature->you(MsgType::YOUR,
           string(getName(part)) + (count > 1 ? "s are" : " is") + " in better shape");
-      clearInjured(part);
+      clearInjured(part, count);
       updateEffects(part, count);
-      if (--max == 0)
+      max -= count;
+      if (max <= 0)
         break;
     }
     if (int count = numLost(part)) {
       result = true;
+      count = min(max, count);
       creature->you(MsgType::YOUR, string(getName(part)) + (count > 1 ? "s grow back!" : " grows back!"));
-      clearLost(part);
+      clearLost(part, count);
       updateEffects(part, count);
-      if (--max == 0)
+      max -= count;
+      if (max <= 0)
         break;
     }
   }
@@ -500,8 +488,6 @@ string Body::getDescription(const ContentFactory* factory) const {
   vector<string> ret;
   bool anyLimbs = false;
   vector<BodyPart> listParts = {BodyPart::ARM, BodyPart::LEG, BodyPart::WING};
-  if (xhumanoid)
-    listParts = {BodyPart::WING};
   for (BodyPart part : listParts)
     if (int num = numBodyParts(part)) {
       ret.push_back(getPluralText(getName(part), num));
@@ -516,8 +502,8 @@ string Body::getDescription(const ContentFactory* factory) const {
       ret.push_back("no arms");
     else if (noLegs)
       ret.push_back("no legs");
-  } else
-  if (!anyLimbs)
+  }
+  else if (!anyLimbs)
     ret.push_back("no limbs");
   auto numHeads = numBodyParts(BodyPart::HEAD);
   if (numHeads == 0)
@@ -596,7 +582,7 @@ vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool ins
 
 void Body::affectPosition(Position position) {
   if (material == BodyMaterialId("FIRE"))
-    position.fireDamage(10);
+    position.fireDamage(10, nullptr);
 }
 
 static void youHit(const Creature* c, BodyPart part, const Attack& attack, const ContentFactory* factory) {
@@ -680,8 +666,7 @@ Body::DamageResult Body::takeDamage(const Attack& attack, Creature* creature, do
   PROFILE;
   bleed(creature, damage);
   auto factory = creature->getGame()->getContentFactory();
-  if (auto part = getBodyPart(attack.level, creature->isAffected(LastingEffect::FLYING),
-      creature->isAffected(LastingEffect::COLLAPSED)))
+  if (auto part = getBodyPart(factory))
     if (isPartDamaged(*part, damage, factory)) {
       youHit(creature, *part, attack, factory);
       if (injureBodyPart(creature, *part,
@@ -746,7 +731,7 @@ double Body::getBodyPartHealth() const {
     gone += injuredBodyParts[part] + lostBodyParts[part];
     total += bodyParts[part] + lostBodyParts[part];
   }
-  return 1 - double(gone) / double(total);
+  return 1 - min<double>(20, gone) / min<double>(20, total);
 }
 
 void Body::updateViewObject(ViewObject& obj, const ContentFactory* factory) const {
@@ -760,13 +745,11 @@ void Body::updateViewObject(ViewObject& obj, const ContentFactory* factory) cons
 }
 
 bool Body::heal(Creature* c, double amount) {
-  INFO << c->getName().the() << " heal";
   if (health < 1) {
     health = min(1., health + amount);
     auto factory = c->getGame()->getContentFactory();
     updateViewObject(c->modViewObject(), factory);
     if (health >= 1) {
-      c->you(MsgType::ARE, hasHealth(HealthType::FLESH, factory) ? "fully healed" : "fully materialized");
       health = 1;
       return true;
     }
@@ -856,7 +839,7 @@ void Body::setCanBeCaptured(bool value) {
 }
 
 bool Body::canBeCaptured(const ContentFactory* factory) const {
-  return !!canCapture ? *canCapture : !isImmuneTo(LastingEffect::TIED_UP, factory);
+  return hasAnyHealth(factory) && (!!canCapture ? *canCapture : !isImmuneTo(LastingEffect::TIED_UP, factory));
 }
 
 bool Body::isUndead(const ContentFactory* factory) const {
@@ -874,12 +857,12 @@ vector<AttackLevel> Body::getAttackLevels() const {
   }
 }
 
-static double getDeathSoundPitch(Body::Size size) {
+double Body::getDeathSoundPitch() const {
   switch (size) {
     case Body::Size::HUGE: return 0.6;
     case Body::Size::LARGE: return 0.9;
-    case Body::Size::MEDIUM: return 1.5;
-    case Body::Size::SMALL: return 3.3;
+    case Body::Size::MEDIUM: return 1.3;
+    case Body::Size::SMALL: return 3.0;
   }
 }
 
@@ -887,7 +870,13 @@ optional<Sound> Body::getDeathSound() const {
   if (!deathSound)
     return none;
   else
-    return Sound(*deathSound).setPitch(getDeathSoundPitch(size));
+    return Sound(*deathSound).setPitch(getDeathSoundPitch());
+}
+
+optional<Sound> Body::rollAmbientSound() const {
+  if (ambientSound && Random.chance(ambientSound->first))
+    return ambientSound->second;
+  return none;
 }
 
 optional<AnimationId> Body::getDeathAnimation(const ContentFactory* factory) const {
@@ -937,23 +926,23 @@ struct BodyTypeReader {
     switch (type) {
       case BodyType::Humanoid:
         body->setHumanoidBodyParts(getDefaultIntrinsicDamage(size));
-        body->setDeathSound(SoundId::HUMANOID_DEATH);
+        body->setDeathSound(SoundId("HUMANOID_DEATH"));
         body->setHumanoid(true);
         break;
       case BodyType::HumanoidLike:
         body->setHumanoidBodyParts(getDefaultIntrinsicDamage(size));
-        body->setDeathSound(SoundId::BEAST_DEATH);
+        body->setDeathSound(SoundId("BEAST_DEATH"));
         break;
       case BodyType::Bird:
         body->setBirdBodyParts(getDefaultIntrinsicDamage(size));
-        body->setDeathSound(SoundId::BEAST_DEATH);
+        body->setDeathSound(SoundId("BEAST_DEATH"));
         break;
       case BodyType::FourLegged:
         body->setHorseBodyParts(getDefaultIntrinsicDamage(size));
-        body->setDeathSound(SoundId::BEAST_DEATH);
+        body->setDeathSound(SoundId("BEAST_DEATH"));
         break;
       default:
-        body->setDeathSound(SoundId::BEAST_DEATH);
+        body->setDeathSound(SoundId("BEAST_DEATH"));
         break;
     }
   }

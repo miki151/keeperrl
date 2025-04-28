@@ -108,7 +108,7 @@ Def StandardButtonNotFocusable(Content) {
   ButtonLayout(BUTTON_BOTTOM, BUTTON_SIDE, BUTTON_CORNER)
   MouseOver ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
   Position(MIDDLE, Margins(10, 5, 10, 8, Content))
-  Button()
+  Button(soundId = "BUTTON_CLICK")
 }
 End
 
@@ -116,7 +116,7 @@ Def StandardButton(Content) {
   ButtonLayout(BUTTON_BOTTOM, BUTTON_SIDE, BUTTON_CORNER)
   Focusable ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
   Position(MIDDLE, Margins(10, 5, 10, 8, Content))
-  Button()
+  Button(soundId = "BUTTON_CLICK")
 }
 End
 
@@ -184,8 +184,34 @@ Def YesOrNo() {
 }
 End
 
+Def KeybindingButton(Text, BindingId)
+{
+  KeybindingHandler(BindingId)
+  StandardButtonNotFocusable(Horizontal{ Label(Text) Width 10 {} RenderKeybinding(BindingId, true)})
+}
+End
+
 Def Sliding() {
   Position(MIDDLE_STRETCHED_X, Height 5 Fill(ColorId GRAY))
   Slider Width 6 Position(MIDDLE_STRETCHED_X, Height 20 Fill(ColorId WHITE))
+}
+End
+
+Def CreatureList(Title)
+Vertical {
+  Label(Title)
+  Height 5 {}
+  List(HORIZONTAL_FIT, 400, {
+    Using "view_id" ViewId()
+    Using "attack_value" Label(size = 14)
+    Tooltip(timeout = 0, elem = MiniWindow(Horizontal {
+      Using "name" Label()
+      Horizontal {
+        Using "attack_view_id" ViewId()
+        Using "attack_value" Label()
+      }
+    }))
+  })
+  Height 5 {}
 }
 End

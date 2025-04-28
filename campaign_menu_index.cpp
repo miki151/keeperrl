@@ -12,9 +12,6 @@ void CampaignMenuIndex::left() {
       [&](ChangeMode) {
         assign(Help{});
       },
-      [&](Biome b) {
-        assign(Help{});
-      },
       [&](RollMap b) {
         assign(Confirm{});
       },
@@ -25,14 +22,11 @@ void CampaignMenuIndex::left() {
   );
 }
 
-void CampaignMenuIndex::right(int numBiomes) {
+void CampaignMenuIndex::right() {
   using namespace CampaignMenuElems;
   visit(
       [&](None) {
         assign(Help{});
-      },
-      [&](Help) {
-        assign(Biome{});
       },
       [&](RetiredDungeons) {
         assign(Help{});
@@ -65,9 +59,6 @@ void CampaignMenuIndex::up() {
       [&](RetiredDungeons) {
         assign(ChangeMode{});
       },
-      [&](Biome) {
-        assign(ChangeMode{});
-      },
       [&](Confirm b) {
         assign(Help{});
       },
@@ -92,9 +83,6 @@ void CampaignMenuIndex::down() {
       },
       [&](ChangeMode) {
         assign(Help{});
-      },
-      [&](Biome) {
-        assign(Confirm{});
       },
       [&](RetiredDungeons) {
         assign(Settings{});

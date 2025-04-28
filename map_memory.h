@@ -26,9 +26,8 @@ class ViewIndex;
 class MapMemory {
   public:
   MapMemory();
-  void addObject(Position, const ViewObject&);
   void update(Position, const ViewIndex&);
-  const unordered_set<Position, CustomHash<Position>>& getUpdated(const Level*) const;
+  const HashSet<Position>& getUpdated(const Level*) const;
   void clearUpdated(const Level*) const;
   void clearSquare(Position pos);
   static const MapMemory& empty();

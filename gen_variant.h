@@ -36,6 +36,17 @@ struct VARIANT_NAME {
       default: fail();
     }
   }
+  template<typename RetType = void, typename... Fs>
+  RetType visit(Fs... fs) {
+    auto f = variant_helpers::LambdaVisitor<Fs...>(fs...);
+    switch (index) {
+#define X(Type, Index)\
+      case Index: return f(elem##Index); break;
+      VARIANT_TYPES_LIST
+#undef X
+      default: fail();
+    }
+  }
   VARIANT_NAME(const VARIANT_NAME& t) noexcept : index(t.index) {
     switch (index) {
 #define X(Type, Index)\

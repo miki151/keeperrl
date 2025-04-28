@@ -65,8 +65,8 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   void setViewId(ViewId);
 
   static PTask construction(WTaskCallback, Position, FurnitureType);
-  static PTask destruction(WTaskCallback, Position, const Furniture*, DestroyAction, WPositionMatching);
-  enum SearchType { LAZY, RANDOM_CLOSE };
+  static PTask destruction(WTaskCallback, Position, const Furniture*, DestroyAction, PositionMatching*);
+  enum SearchType { LAZY, RANDOM_CLOSE, CONFESSION };
   enum ActionType { APPLY, NONE };
   static PTask applySquare(WTaskCallback, vector<pair<Position, FurnitureLayer>>, SearchType, ActionType);
   static constexpr int archeryRangeDistance = 5;
@@ -87,7 +87,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask attackCreatures(vector<Creature*>);
   static PTask campAndSpawn(Collective* target, const CreatureList&, int numAttacks);
   static PTask killFighters(Collective*, int numFighters);
-  static PTask stealFrom(Collective*);
+  static PTask stealFrom(Collective*, CollectiveResourceId);
   static PTask consumeItem(WTaskCallback, vector<Item*> items);
   static PTask copulate(WTaskCallback, Creature* target, int numTurns);
   static PTask consume(Creature* target);
@@ -100,8 +100,9 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask doneWhen(PTask, PTaskPredicate);
   static PTask follow(Creature*);
   static PTask goToTryForever(Position);
-  static PTask transferTo(WModel);
+  static PTask transferTo(Model*);
   static PTask goToAndWait(Position, TimeInterval waitTime);
+  static PTask wait(TimeInterval waitTime);
   static PTask whipping(Position, Creature* whipped);
   static PTask dropItemsAnywhere(vector<Item*>);
   static PTask dropItems(vector<Item*>, vector<Position>);
@@ -114,10 +115,12 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask spider(Position origin, const vector<Position>& posClose);
   static PTask withTeam(Collective*, TeamId, PTask);
   static PTask allianceAttack(vector<Collective*> allies, Collective* enemy, PTask attackTask);
+  static PTask duelTask(Collective* target, Collective* attacker, vector<Creature*> team, PTask attackTask,
+      shared_ptr<DuelState>);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
-  
+
   protected:
   void setDone();
 

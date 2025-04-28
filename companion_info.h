@@ -4,10 +4,12 @@
 #include "attr_type.h"
 
 struct CompanionInfo {
-  int SERIAL(count);
-  vector<CreatureId> SERIAL(creatures);
-  bool SERIAL(spawnAway);
+  int SERIAL(count) = 1;
+  bool SERIAL(spawnAway) = true;
   optional<AttrType> SERIAL(statsBase);
   double SERIAL(summonFreq);
-  COMPARE_ALL(count, spawnAway, statsBase, summonFreq, creatures)
+  vector<CreatureId> SERIAL(creatures);
+  bool SERIAL(hostile) = false;
+  bool SERIAL(getsKillCredit) = false;
+  SERIALIZE_ALL(OPTION(count), OPTION(spawnAway), OPTION(statsBase), NAMED(summonFreq), NAMED(creatures), OPTION(hostile), OPTION(getsKillCredit))
 };

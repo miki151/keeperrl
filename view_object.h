@@ -30,7 +30,7 @@
 #include "view_id.h"
 #include "color.h"
 
-RICH_ENUM(ViewObjectAttribute, HEALTH, WATER_DEPTH, LUXURY, MORALE, FLANKED_MOD, BURNING);
+RICH_ENUM(ViewObjectAttribute, HEALTH, WATER_DEPTH, LUXURY, FLANKED_MOD, BURNING, EFFICIENCY);
 
 class ViewObject {
   public:

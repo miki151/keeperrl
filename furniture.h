@@ -6,9 +6,8 @@
 #include "vision_id.h"
 #include "event_listener.h"
 #include "furniture_layer.h"
-#include "luxury_info.h"
 #include "furniture_type.h"
-#include "experience_type.h"
+#include "attr_type.h"
 #include "bed_type.h"
 #include "fx_info.h"
 #include "view_id.h"
@@ -19,6 +18,10 @@
 #include "furniture_tick.h"
 #include "storage_id.h"
 #include "lasting_or_buff.h"
+#include "creature_predicate.h"
+#include "achievement_id.h"
+#include "sound.h"
+#include "workshop_type.h"
 
 class TribeId;
 class Creature;
@@ -89,6 +92,7 @@ class Furniture {
   bool acidDamage(Position);
   bool iceDamage(Position);
   void tick(Position, FurnitureLayer supposedLayer);
+  void updateFire(Position, FurnitureLayer supposedLayer);
   bool canSeeThru(VisionId) const;
   bool blocksAnyVision() const;
   bool stopsProjectiles(VisionId) const;
@@ -124,10 +128,13 @@ class Furniture {
   void onCreatureWalkedOver(Position, Vec2 direction) const;
   void onCreatureWalkedInto(Position, Vec2 direction) const;
   bool onBloodNear(Position);
+  bool hasBlood() const;
   void spreadBlood(Position);
-  int getMaxTraining(ExperienceType) const;
+  int getMaxTraining(AttrType) const;
+  const HashMap<AttrType, int>& getMaxTraining() const;
   bool hasRequiredSupport(Position) const;
-  bool isDiningFurniture() const;
+  optional<FurnitureType> getDiningFurnitureType() const;
+  const optional<CreaturePredicate>& getUsagePredicate() const;
   optional<ViewId> getSupportViewId(Position) const;
   optional<FurnitureType> getUpgrade() const;
   optional<FXVariantName> getUsageFX() const;
@@ -138,7 +145,7 @@ class Furniture {
   vector<PItem> dropItems(Position, vector<PItem>) const;
   optional<FurnitureType> getDefaultBridge() const;
   optional<FurnitureType> getFillPit() const;
-  const LuxuryInfo& getLuxuryInfo() const;
+  double getLuxury() const;
   struct PopulationInfo {
     double SERIAL(increase);
     optional<int> SERIAL(limit);
@@ -160,6 +167,10 @@ class Furniture {
   const vector<StorageId>& getStorageId() const;
   bool doesHideItems() const;
   const optional<ViewId>& getEmptyViewId() const;
+  const optional<AchievementId>& getMinedAchievement() const;
+  bool canRemoveInstantly() const;
+  bool isBuildingFloor() const;
+  optional<FurnitureType> getOtherStairs() const;
 
   Furniture& setBlocking();
   Furniture& setBlockingEnemies();
@@ -169,6 +180,15 @@ class Furniture {
   SERIALIZATION_DECL(Furniture)
 
   ~Furniture();
+
+  optional<FurnitureTickType> SERIAL(tickType);
+  struct WorkshopBoost {
+    double SERIAL(multiplier);
+    WorkshopType (type);
+    SERIALIZE_ALL(multiplier, type);
+  };
+
+  vector<WorkshopBoost> SERIAL(workshopSpeedBoost);
 
   private:
   heap_optional<ViewObject> SERIAL(viewObject);
@@ -190,7 +210,6 @@ class Furniture {
   EnumSet<VisionId> SERIAL(blockVision);
   optional<FurnitureUsageType> SERIAL(usageType);
   optional<FurnitureClickType> SERIAL(clickType);
-  optional<FurnitureTickType> SERIAL(tickType);
   optional<FurnitureOnBuilt> SERIAL(onBuilt);
   heap_optional<FurnitureEntry> SERIAL(entryType);
   heap_optional<FurnitureDroppedItems> SERIAL(droppedItems);
@@ -211,12 +230,12 @@ class Furniture {
   bool SERIAL(noProjectiles) = false;
   bool SERIAL(clearFogOfWar) = false;
   bool SERIAL(xForgetAfterBuilding) = false;
-  LuxuryInfo SERIAL(luxury);
+  double SERIAL(luxury) = 0;
   void updateViewObject();
   BurnsDownMessage SERIAL(burnsDownMessage) = BurnsDownMessage::BURNS_DOWN;
   template<typename Archive>
   void serializeImpl(Archive&, const unsigned);
-  EnumMap<ExperienceType, int> SERIAL(maxTraining);
+  HashMap<AttrType, int> SERIAL(maxTraining);
   struct SupportInfo {
     vector<Dir> SERIAL(dirs);
     optional<ViewId> SERIAL(viewId);
@@ -236,7 +255,10 @@ class Furniture {
   optional<FXInfo> SERIAL(tryDestroyFX);
   optional<FXInfo> SERIAL(walkOverFX);
   optional<FXInfo> SERIAL(walkIntoFX);
+  optional<Sound> SERIAL(walkIntoSound);
   optional<FXVariantName> SERIAL(usageFX);
+  optional<Sound> SERIAL(usageSound);
+  optional<Sound> SERIAL(destroySound) = Sound(SoundId("REMOVE_CONSTRUCTION"));
   bool SERIAL(hostileSpell) = false;
   optional<FurnitureEffectInfo> SERIAL(lastingEffect);
   optional<FurnitureType> SERIAL(freezeTo);
@@ -254,7 +276,14 @@ class Furniture {
   vector<StorageId> SERIAL(storageIds);
   bool SERIAL(hidesItems) = false;
   optional<ViewId> SERIAL(emptyViewId);
-  bool SERIAL(diningFurniture) = false;
+  optional<FurnitureType> SERIAL(diningFurniture);
+  optional<CreaturePredicate> SERIAL(usagePredicate);
+  optional<AchievementId> SERIAL(minedAchievement);
+  bool SERIAL(removeInstantly) = false;
+  bool SERIAL(buildingFloor) = false;
+  optional<FurnitureType> SERIAL(otherStairs);
 };
 
 static_assert(std::is_nothrow_move_constructible<Furniture>::value, "T should be noexcept MoveConstructible");
+
+CEREAL_CLASS_VERSION(Furniture, 2)

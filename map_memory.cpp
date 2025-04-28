@@ -24,14 +24,6 @@ SERIALIZE_DEF(MapMemory, table)
 
 MapMemory::MapMemory() {}
 
-void MapMemory::addObject(Position pos, const ViewObject& obj) {
-  CHECK(pos.isValid());
-  auto& index = table->getOrInit(pos);
-  index.insert(obj);
-  index.setHighlight(HighlightType::MEMORY);
-  updateUpdated(pos);
-}
-
 optional<ViewIndex&> MapMemory::getViewIndex(Position pos) {
   return table->getReferenceMaybe(pos);
 }
@@ -47,6 +39,8 @@ void MapMemory::update(Position pos, const ViewIndex& index1) {
   if (index.hasObject(ViewLayer::CREATURE) &&
       !index.getObject(ViewLayer::CREATURE).hasModifier(ViewObjectModifier::REMEMBER))
     index.removeObject(ViewLayer::CREATURE);
+  if (index.hasObject(ViewLayer::STEED))
+    index.removeObject(ViewLayer::STEED);
   updateUpdated(pos);
 }
 
@@ -68,7 +62,7 @@ bool MapMemory::containsLevel(Level* l) const {
   return table->containsLevel(l);
 }
 
-const unordered_set<Position, CustomHash<Position>>& MapMemory::getUpdated(const Level* level) const {
+const HashSet<Position>& MapMemory::getUpdated(const Level* level) const {
   return updated[level->getUniqueId()];
 }
 

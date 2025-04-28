@@ -23,6 +23,7 @@
 #include "entity_map.h"
 #include "view_object.h"
 #include "item_counts.h"
+#include "creature_view.h"
 
 class MapMemory;
 class MapLayout;
@@ -72,6 +73,7 @@ class MapGui : public GuiElem {
   void setCenter(Vec2, Level* level);
   void clearCenter();
   void resetScrolling();
+  void releaseMouseHeld();
   bool isCentered() const;
   Vec2 getScreenPos() const;
   optional<Vec2> projectOnMap(Vec2 screenCoord);
@@ -89,6 +91,7 @@ class MapGui : public GuiElem {
     optional<ViewIndex> viewIndex;
   };
   const HighlightedInfo& getLastHighlighted();
+  const optional<CreatureView::QuartersInfo>& getQuartersInfo() const;
   bool isCreatureHighlighted(UniqueEntity<Creature>::Id);
   bool fxesAvailable() const;
 
@@ -145,6 +148,7 @@ class MapGui : public GuiElem {
   vector<vector<Vec2>> shortestPath;
   vector<vector<Vec2>> permaShortestPath;
   vector<PhylacteryInfo> phylacteries;
+  optional<CreatureView::QuartersInfo> quarters;
   struct AnimationInfo {
     PAnimation animation;
     Vec2 position;
@@ -178,7 +182,7 @@ class MapGui : public GuiElem {
     int moveCounter;
   };
   optional<ScreenMovement> screenMovement;
-  Table<unordered_set<ViewId, CustomHash<ViewId>>> connectionMap;
+  Table<HashSet<ViewId>> connectionMap;
   bool keyScrolling = false;
   bool mouseUI = false;
   optional<milliseconds> lastRightClick;
@@ -193,7 +197,7 @@ class MapGui : public GuiElem {
   bool isRenderedHighlight(const ViewIndex&, HighlightType);
   bool isRenderedHighlightLow(Renderer&, const ViewIndex&, HighlightType);
   optional<ViewId> getHighlightedFurniture();
-  Color getHighlightColor(const ViewIndex&, HighlightType);
+  Color getHighlightColor(Vec2, const ViewIndex&, HighlightType);
   void renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight, Vec2 tilePos);
   void renderTileGas(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, Vec2 tilePos);
   void renderTexturedHighlight(Renderer&, Vec2 pos, Vec2 size, Color, ViewId viewId);
@@ -224,6 +228,7 @@ class MapGui : public GuiElem {
   void renderShortestPaths(Renderer&, Vec2 tileSize);
   void renderPhylacteries(Renderer&, Vec2 tileSize, milliseconds currentTimeReal);
   void updateShortestPaths(CreatureView*, Renderer&, Vec2 tileSize, milliseconds curTimeReal);
+  void updateQuarters(CreatureView*, Renderer&);
   bool isDraggedCreature() const;
   void handleJoyScrolling(pair<double, double> dir, milliseconds time);
   Color squareHighlightColor;

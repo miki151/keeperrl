@@ -29,12 +29,10 @@ enum class MsgType;
 enum class BodyPart;
 enum class AttackType;
 enum class AttackLevel;
-enum class ExperienceType;
 enum class ItemClass;
 enum class EquipmentSlot;
 enum class OptionId;
 enum class CampaignType;
-enum class PlayerRole;
 
 enum class MovementTrait;
 enum class CreatureSize;
@@ -72,7 +70,6 @@ enum class LastingEffect;
 enum class ItemIndex;
 
 enum class CollectiveWarning;
-enum class SoundId;
 enum class TutorialHighlight;
 
 enum class MessagePriority;
@@ -100,11 +97,11 @@ enum class LevelType;
 enum class EnemyAggressionLevel;
 enum class MinionEquipmentType;
 enum class UserInputId;
-enum class VillainGroup;
 enum class AIType;
 enum class StatId;
 enum class CollectiveTab;
 enum class ControllerJoy;
+enum class DuelState;
 
 struct TileGasType;
 struct FXInfo;
@@ -126,8 +123,15 @@ class AttrType;
 class BuffId;
 class BodyMaterialId;
 class Keybinding;
+class AchievementId;
+class VillainGroup;
+class RandomLayoutId;
 using EffectAIIntent = int;
 
 using SteamId = unsigned long long;
 using ScriptedUIId = string;
 using UnlockId = string;
+using SoundId = string;
+
+class ItemAttributes;
+using SItemAttributes = shared_ptr<ItemAttributes>;

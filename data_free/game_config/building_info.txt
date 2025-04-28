@@ -61,7 +61,7 @@
     gate = { "WOOD_GATE" 1.0 }
     water = {WATER}
   }
-"MUD" 
+"MUD"
   {
     wall = "MUD_WALL"
     floorInside = "MUD"
@@ -138,7 +138,7 @@
 "ADOXIE_VAULT" inherit "DUNGEON"
   {
     downStairs = {"ADOXIE_STATUE_VAULT"}
-    water = {WATER}
+    wall = "DUNGEON_WALL"
   }
 "HELL"
   {

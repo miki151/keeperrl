@@ -6,9 +6,11 @@
 
 #include "audio_device.h"
 
-SoundLibrary::SoundLibrary(AudioDevice& audio, const DirectoryPath& path) : audioDevice(audio) {
-  for (SoundId id : ENUM_ALL(SoundId))
-    addSounds(id, path.subdirectory(toLower(EnumInfo<SoundId>::getString(id))));
+SoundLibrary::SoundLibrary() {}
+
+SoundLibrary::SoundLibrary(AudioDevice& audio, const DirectoryPath& path) : audioDevice(&audio) {
+  for (auto subdir : path.getSubDirs())
+    addSounds(subdir, path.subdirectory(subdir));
 }
 
 void SoundLibrary::addSounds(SoundId id, const DirectoryPath& path) {
@@ -17,13 +19,16 @@ void SoundLibrary::addSounds(SoundId id, const DirectoryPath& path) {
       sounds[id].emplace_back(file);
 }
 
-void SoundLibrary::playSound(const Sound& s) {
-  if (volume < 0.0001)
-    return;
-  if (int numSounds = sounds[s.getId()].size()) {
-    int ind = Random.get(numSounds);
-    audioDevice.play(sounds[s.getId()][ind], volume, s.getPitch());
-  }
+milliseconds SoundLibrary::playSound(const Sound& s) {
+  if (!audioDevice || volume < 0.0001)
+    return milliseconds{1000};
+  if (auto clips = getReferenceMaybe(sounds, toLower(s.getId()))) {
+    auto& sound = Random.choose(*clips);
+    audioDevice->play(sound, s.getVolume() * volume, s.getPitch());
+    return audioDevice->getDuration(sound);
+  } else
+    USER_INFO << "Sound not found: " << toLower(s.getId());
+  return milliseconds{1000};
 }
 
 void SoundLibrary::setVolume(int v) {

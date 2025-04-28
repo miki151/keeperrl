@@ -24,6 +24,8 @@
 #include "furniture_type.h"
 #include "conquer_condition.h"
 #include "creature_id.h"
+#include "achievement_id.h"
+#include "task.h"
 
 enum class ItemClass;
 
@@ -47,17 +49,20 @@ struct GuardianInfo {
 };
 
 struct MinionActivityInfo {
-  enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY, IDLE, MINION_ABUSE, GUARD1, GUARD2, GUARD3 } type;
+  enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY, IDLE, MINION_ABUSE, GUARD1, GUARD2, GUARD3,
+      CONFESSION } type;
   MinionActivityInfo();
-  MinionActivityInfo(FurnitureType);
+  MinionActivityInfo(FurnitureType, Task::SearchType = Task::SearchType::RANDOM_CLOSE);
   MinionActivityInfo(BuiltinUsageId);
   using UsagePredicate = function<bool(const ContentFactory*, const Collective*, const Creature*, FurnitureType)>;
   using SecondaryPredicate = function<bool(const Furniture*, const Collective*)>;
-  MinionActivityInfo(UsagePredicate, SecondaryPredicate = nullptr);
+  MinionActivityInfo(UsagePredicate, SecondaryPredicate = nullptr,
+      Task::SearchType searchType = Task::SearchType::RANDOM_CLOSE);
   MinionActivityInfo(Type);
   UsagePredicate furniturePredicate =
       [](const ContentFactory*, const Collective*, const Creature*, FurnitureType) { return true; };
   SecondaryPredicate secondaryPredicate;
+  Task::SearchType searchType;
 };
 
 struct FloorInfo {
@@ -70,7 +75,7 @@ struct FloorInfo {
 class CollectiveConfig {
   public:
   static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation, string populationString,
-      bool prisoners, ConquerCondition);
+      bool prisoners, ConquerCondition, bool requireQuartersForExp);
   static CollectiveConfig noImmigrants();
 
   bool isLeaderFighter() const;
@@ -95,10 +100,11 @@ class CollectiveConfig {
   CollectiveConfig& setConquerCondition(ConquerCondition);
   bool canCapturePrisoners() const;
   bool alwaysMountSteeds() const;
+  bool minionsRequireQuarters() const;
 
   static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&, ContentFactory*);
   static BedType getPrisonBedType(const Creature*);
-  
+
   bool hasImmigrantion(bool currentlyActiveModel) const;
   static const MinionActivityInfo& getActivityInfo(MinionActivity);
 
@@ -108,6 +114,8 @@ class CollectiveConfig {
   CollectiveConfig& operator = (CollectiveConfig&&) = default;
   CollectiveConfig& operator = (const CollectiveConfig&) = default;
   ~CollectiveConfig();
+
+  optional<AchievementId> SERIAL(discoverAchievement);
 
   private:
   enum CollectiveType { KEEPER, VILLAGE };
@@ -123,6 +131,7 @@ class CollectiveConfig {
   bool SERIAL(canEnemyRetire) = true;
   ConquerCondition SERIAL(conquerCondition) = ConquerCondition::KILL_FIGHTERS_AND_LEADER;
   string SERIAL(populationString);
-  bool SERIAL(prisoners) = true;
+  bool SERIAL(prisoners) = false;
   bool SERIAL(alwaysMount) = false;
+  bool SERIAL(requireQuartersForExp) = true;
 };

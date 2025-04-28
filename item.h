@@ -27,7 +27,6 @@
 class Level;
 class Attack;
 class Fire;
-class ItemAttributes;
 class Effect;
 struct CorpseInfo;
 class WeaponInfo;
@@ -38,10 +37,14 @@ class ContentFactory;
 struct AutomatonPart;
 struct CreaturePredicate;
 class CostInfo;
+struct AssembledMinion;
+
+using LastingOrBuff = variant<LastingEffect, BuffId>;
 
 class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<Item> {
   public:
-  Item(const ItemAttributes&, const ContentFactory*);
+  Item(SItemAttributes, const ContentFactory*);
+  void setAttributes(SItemAttributes);
   virtual ~Item();
   PItem getCopy(const ContentFactory* f) const;
 
@@ -63,9 +66,11 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
 
   const optional<Effect>& getEffect() const;
+  const optional<AssembledMinion>& getAssembledMinion() const;
   bool effectAppliedWhenThrown() const;
   const optional<CreaturePredicate>& getApplyPredicate() const;
   vector<ItemAbility>& getAbility();
+  void upgrade(vector<PItem>, const ContentFactory*);
 
   ItemClass getClass() const;
   const vector<StorageId>& getStorageIds() const;
@@ -93,8 +98,8 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   bool isConflictingEquipment(const Item*) const;
   void addModifier(AttrType, int value);
   int getModifier(AttrType) const;
-  const map<AttrType, int>& getModifierValues() const;
-  const map<AttrType, pair<int, CreaturePredicate>>& getSpecialModifiers() const;
+  const HashMap<AttrType, int>& getModifierValues() const;
+  const HashMap<AttrType, pair<int, CreaturePredicate>>& getSpecialModifiers() const;
   void tick(Position, bool carried);
   virtual bool canEverTick(bool carried) const;
   void applyPrefix(const ItemPrefix&, const ContentFactory*);
@@ -103,7 +108,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getApplyMsgThirdPerson(const Creature* owner) const;
   string getApplyMsgFirstPerson(const Creature* owner) const;
   optional<StatId> getProducedStat() const;
-  bool hasEquipedEffect(LastingEffect) const;
+  const vector<LastingOrBuff>& getEquipedEffects() const;
   void onEquip(Creature*, bool msg = true, const ContentFactory* = nullptr);
   void onUnequip(Creature*, bool msg = true, const ContentFactory* = nullptr);
   void onOwned(Creature*, bool msg = true, const ContentFactory* factory = nullptr);
@@ -118,6 +123,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   TimeInterval getApplyTime() const;
   double getWeight() const;
   vector<string> getDescription(const ContentFactory*) const;
+  void setDescription(string);
 
   CreaturePredicate getAutoEquipPredicate() const;
   const string& getEquipWarning() const;
@@ -148,7 +154,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getModifiers(const ContentFactory*, bool shorten = false) const;
   string getVisibleName(bool plural) const;
   string getBlindName(bool plural) const;
-  HeapAllocated<ItemAttributes> SERIAL(attributes);
+  SItemAttributes SERIAL(attributes);
   optional<UniqueEntity<Creature>::Id> SERIAL(shopkeeper);
   HeapAllocated<Fire> SERIAL(fire);
   bool SERIAL(canEquipCache);
@@ -158,3 +164,5 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   vector<ItemAbility> SERIAL(abilityInfo);
   void updateAbility(const ContentFactory*);
 };
+
+CEREAL_CLASS_VERSION(Item, 1)

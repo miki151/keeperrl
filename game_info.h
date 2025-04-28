@@ -5,12 +5,10 @@
 #include "village_action.h"
 #include "view_id.h"
 #include "player_message.h"
-#include "experience_type.h"
 #include "entity_set.h"
 #include "immigrant_auto_state.h"
 #include "tutorial_highlight.h"
 #include "hashing.h"
-#include "experience_type.h"
 #include "attr_type.h"
 #include "best_attack.h"
 #include "villain_type.h"
@@ -23,6 +21,7 @@
 #include "tech_id.h"
 #include "scripted_help_info.h"
 #include "keybinding.h"
+#include "player_info_action.h"
 
 class PlayerMessage;
 class SpecialTrait;
@@ -35,8 +34,7 @@ struct CreatureInfo {
   string HASH(name);
   string HASH(stackName);
   BestAttack HASH(bestAttack);
-  optional<double> HASH(morale);
-  HASH_ALL(viewId, uniqueId, name, stackName, bestAttack, morale)
+  HASH_ALL(viewId, uniqueId, name, stackName, bestAttack)
 };
 
 static_assert(std::is_nothrow_move_constructible<CreatureInfo>::value, "T should be noexcept MoveConstructible");
@@ -104,7 +102,7 @@ struct SpellInfo {
 
 struct SpellSchoolInfo {
   string HASH(name);
-  ExperienceType HASH(experienceType);
+  string HASH(experienceType);
   vector<SpellInfo> HASH(spells);
   HASH_ALL(name, experienceType, spells)
 };
@@ -158,7 +156,6 @@ class PlayerInfo {
   AIType HASH(aiType);
   UniqueEntity<Creature>::Id HASH(creatureId);
   int HASH(moveCounter);
-  optional<double> HASH(morale);
   ViewIdList HASH(viewId);
   bool HASH(isPlayerControlled);
   enum ControlMode {
@@ -166,20 +163,11 @@ class PlayerInfo {
     LEADER
   };
   optional<ControlMode> HASH(controlMode);
-  enum Action {
-    CONTROL,
-    RENAME,
-    BANISH,
-    DISASSEMBLE,
-    CONSUME,
-    LOCATE
-  };
+  using Action = PlayerInfoAction;
   optional<EnumSet<TeamOrder>> HASH(teamOrders);
   vector<Action> HASH(actions);
   vector<TeamMemberAction> HASH(teamMemberActions);
   optional<double> HASH(carryLimit);
-  optional<ViewId> HASH(quarters);
-  bool HASH(canAssignQuarters);
   vector<ViewIdList> HASH(kills);
   vector<string> HASH(killTitles);
   bool HASH(canExitControlMode);
@@ -190,7 +178,7 @@ class PlayerInfo {
     HASH_ALL(viewId, name, locked);
   };
   vector<EquipmentGroupInfo> HASH(equipmentGroups);
-  HASH_ALL(attributes, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, spellSchools, kills, killTitles, canExitControlMode, equipmentGroups)
+  HASH_ALL(attributes, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, teamOrders, spellSchools, kills, killTitles, canExitControlMode, equipmentGroups)
 };
 
 struct ImmigrantCreatureInfo {
@@ -199,10 +187,10 @@ struct ImmigrantCreatureInfo {
   vector<AttributeInfo> HASH(attributes);
   vector<string> HASH(spellSchools);
   struct TrainingInfo {
-    ExperienceType HASH(expType);
+    AttrType HASH(expType);
     int HASH(limit);
-    vector<ViewId> HASH(attributes);
-    HASH_ALL(expType, limit, attributes)
+    ViewId HASH(attribute);
+    HASH_ALL(expType, limit, attribute)
   };
   vector<TrainingInfo> HASH(trainingLimits);
   HASH_ALL(name, viewId, attributes, spellSchools, trainingLimits);
@@ -282,14 +270,6 @@ class CollectiveInfo {
   optional<ChosenCreatureInfo> HASH(chosenCreature);
   vector<ImmigrantDataInfo> HASH(immigration);
   vector<ImmigrantDataInfo> HASH(allImmigration);
-  struct WorkshopButton {
-    string HASH(name);
-    ViewId HASH(viewId);
-    bool HASH(active);
-    bool HASH(unavailable);
-    HASH_ALL(name, viewId, active, unavailable)
-  };
-  vector<WorkshopButton> HASH(workshopButtons);
   struct QueuedItemInfo {
     double HASH(productionState);
     bool HASH(paid);
@@ -306,14 +286,13 @@ class CollectiveInfo {
     vector<UpgradeInfo> HASH(upgrades);
     pair<string, int> HASH(maxUpgrades);
     int HASH(itemIndex);
-    bool HASH(notArtifact);
-    HASH_ALL(productionState, paid, itemInfo, creatureInfo, upgrades, maxUpgrades, itemIndex, notArtifact)
+    HASH_ALL(productionState, paid, itemInfo, creatureInfo, upgrades, maxUpgrades, itemIndex)
   };
   struct OptionInfo {
     ItemInfo HASH(itemInfo);
     optional<ImmigrantCreatureInfo> HASH(creatureInfo);
     pair<string, int> HASH(maxUpgrades);
-    HASH_ALL(itemInfo, creatureInfo, maxUpgrades)  
+    HASH_ALL(itemInfo, creatureInfo, maxUpgrades)
   };
   struct ChosenWorkshopInfo {
     vector<ViewId> HASH(resourceTabs);
@@ -324,7 +303,9 @@ class CollectiveInfo {
     int HASH(index);
     string HASH(queuedTitle);
     bool HASH(allowChangeNumber);
-    HASH_ALL(index, options, queued, resourceTabs, chosenTab, tabName, queuedTitle, allowChangeNumber)
+    int HASH(minAttrValue);
+    ViewId HASH(attr);
+    HASH_ALL(index, options, queued, resourceTabs, chosenTab, tabName, queuedTitle, allowChangeNumber, minAttrValue, attr)
   };
   optional<ChosenWorkshopInfo> HASH(chosenWorkshop);
   struct LibraryInfo {
@@ -410,8 +391,7 @@ class CollectiveInfo {
     HIGH,
   };
   optional<RebellionChance> HASH(rebellionChance);
-  vector<ViewId> HASH(allQuarters);
-  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, minionPromotions, availablePromotions, allQuarters, rebellionChance, avatarLevelInfo, populationString)
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, nextWave, chosenWorkshop, immigration, allImmigration, libraryInfo, minionPromotions, availablePromotions, rebellionChance, avatarLevelInfo, populationString)
 };
 
 class VillageInfo {

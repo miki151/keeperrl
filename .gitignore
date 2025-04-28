@@ -1,4 +1,4 @@
-extern/steamworks/
+extern/steamworks
 mods/
 build/
 build_kde/
@@ -9,13 +9,14 @@ obj-*/
 .kdev4/
 *.kdev4
 /*.png
+compile_commands.json
 unlocks.txt
 keybindings.txt
 tmp/
 tmp2/
 find
 gameplay.txt
-highscores.dat
+highscores_v1_0.dat
 libeasy_profiler.so
 parse_game
 *.kep
@@ -32,7 +33,7 @@ sound_wav
 stdafx.h.*
 installid.txt
 installId.txt
-options.txt
+options_v1_0.txt
 sokoban_state.txt
 system_info.txt
 stacktrace.out

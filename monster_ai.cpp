@@ -470,7 +470,7 @@ class Fighter : public Behaviour {
 
   MoveInfo considerBreakingChokePoint(Creature* other) {
   PROFILE;
-    unordered_set<Position, CustomHash<Position>> myNeighbors;
+    HashSet<Position> myNeighbors;
     for (auto pos : creature->getPosition().neighbors8(Random))
       myNeighbors.insert(pos);
     MoveInfo destroyMove = NoMove;
@@ -636,7 +636,7 @@ class Fighter : public Behaviour {
       if (auto move = considerCircularBlast())
         return move;
     if (distance > 1) {
-      if (chase && !other->getAttributes().dontChase() && !isChaseFrozen(other)) {
+      if (chase && !other->dontChase() && !isChaseFrozen(other)) {
         lastSeen = none;
         if (auto action = creature->moveTowards(other->getPosition())) {
           // TODO: instead consider treating a 0-weighted move as NoMove.
@@ -765,7 +765,7 @@ class GuardArea : public Behaviour {
 
   private:
   Level* SERIAL(myLevel) = nullptr;
-  unordered_set<Vec2, CustomHash<Vec2>> SERIAL(area);
+  HashSet<Vec2> SERIAL(area);
 };
 
 class Wait : public Behaviour {
@@ -787,7 +787,8 @@ class Summoned : public GuardTarget {
   }
 
   virtual MoveInfo getMove() override {
-    if (target->isDead() || target->isAffected(LastingEffect::STUNNED)) {
+    if (target->isDead() || target->isAffected(LastingEffect::STUNNED) ||
+        target->getStatus().contains(CreatureStatus::PRISONER)) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
         creature->dieNoReason(Creature::DropType::NOTHING);
       })};
@@ -840,14 +841,16 @@ class ByCollective : public Behaviour {
   MoveInfo getFighterMove() {
     auto& teams = collective->getTeams();
     if (auto currentTeam = getActiveTeam())
-      if (teams.hasTeamOrder(*currentTeam, creature, TeamOrder::FLEE) ||
-          teams.hasTeamOrder(*currentTeam, creature, TeamOrder::STAND_GROUND)) {
+      if (teams.hasTeamOrder(*currentTeam, TeamOrder::FLEE) ||
+          teams.hasTeamOrder(*currentTeam, TeamOrder::STAND_GROUND)) {
         return fighter->getMove(false);
       }
     return fighter->getMove(true);
   }
 
   bool riderShouldDismount(Creature* c) {
+    if (!collective->getCreatures().contains(c->getSteed()) && c->getSteed() != c->getFirstCompanion())
+      return true;
     auto& territory = collective->getTerritory();
     if (!riderNeedsSteed(c)) {
       for (auto v : c->getPosition().neighbors8())
@@ -881,9 +884,11 @@ class ByCollective : public Behaviour {
   MoveInfo followTeamLeader() {
     auto& teams = collective->getTeams();
     if (auto team = getActiveTeam()) {
-      if (!teams.hasTeamOrder(*team, creature, TeamOrder::STAND_GROUND)) {
+      if (!teams.hasTeamOrder(*team, TeamOrder::STAND_GROUND)) {
         const Creature* leader = teams.getLeader(*team);
         if (creature != leader) {
+          if (!creature->getPosition().isSameModel(leader->getPosition()))
+            return NoMove;
           if (leader->getPosition().dist8(creature->getPosition()).value_or(2) > 1 &&
               (leader->getPosition().isSameLevel(creature->getPosition()) || leader->getPosition().getLevel()->aiFollows))
             return MoveInfo{creature->moveTowards(leader->getPosition())}.orWait();
@@ -896,28 +901,32 @@ class ByCollective : public Behaviour {
     return NoMove;
   }
 
+  MoveInfo equipOwnedItems() {
+    auto& minionEquipment = collective->getMinionEquipment();
+    for (Item* it : creature->getEquipment().getItems())
+      if (!creature->getEquipment().isEquipped(it) && minionEquipment.isOwner(it, creature) &&
+          creature->canEquipIfEmptySlot(it)) {
+        for (Item* it : creature->getEquipment().getItems())
+          if (creature->getEquipment().isEquipped(it) && !minionEquipment.isOwner(it, creature))
+            return creature->unequip(it);
+        return creature->equip(it);
+      }
+    return NoMove;
+  }
+
   PTask getEquipmentTask() {
     if (!collective->usesEquipment(creature))
       return nullptr;
-    auto& minionEquipment = collective->getMinionEquipment();
-    if (!collective->hasTrait(creature, MinionTrait::NO_AUTO_EQUIPMENT) && Random.roll(40)) {
-      auto items = collective->getAllItems(ItemIndex::MINION_EQUIPMENT, false).filter([&](auto item) {
-        auto g = item->getEquipmentGroup();
-        return item->getAutoEquipPredicate().apply(creature, nullptr) && (!g || collective->canUseEquipmentGroup(creature, *g));
-      });
-      minionEquipment.autoAssign(creature, items);
-    }
+    if (!collective->hasTrait(creature, MinionTrait::NO_AUTO_EQUIPMENT) && Random.roll(40))
+      collective->autoAssignEquipment(creature);
     vector<PTask> tasks;
-    for (Item* it : creature->getEquipment().getItems())
-      if (!creature->getEquipment().isEquipped(it) && minionEquipment.isOwner(it, creature) &&
-          creature->getEquipment().canEquip(it, creature))
-        tasks.push_back(Task::equipItem(it));
+    auto& minionEquipment = collective->getMinionEquipment();
     {
       PROFILE_BLOCK("tasks assignment");
       for (Position v : collective->getConstructions().getAllStoragePositions()) {
         vector<Item*> consumables;
         for (auto item : v.getItems(ItemIndex::MINION_EQUIPMENT))
-          if (minionEquipment.isOwner(item, creature)) {
+          if (minionEquipment.isOwner(item, creature) && creature->canCarryMoreWeight(item->getWeight())) {
             if (item->canEquip())
               tasks.push_back(Task::pickAndEquipItem(v, item));
             else
@@ -936,7 +945,7 @@ class ByCollective : public Behaviour {
     PROFILE;
     vector<pair<MinionActivity, PTask>> goodTasks;
     for (MinionActivity t : ENUM_ALL(MinionActivity))
-      if (creature->getAttributes().getMinionActivities().canChooseRandomly(creature, t)) {
+      if (creature->getAttributes().getMinionActivities().canChooseRandomly(collective, creature, t)) {
         if (collective->isActivityGoodAssumingHaveTasks(creature, t)) {
           if (MinionActivities::getExisting(collective, creature, t) || t == MinionActivity::IDLE)
             goodTasks.push_back({t, nullptr});
@@ -947,6 +956,8 @@ class ByCollective : public Behaviour {
     if (!goodTasks.empty()) {
       auto ret = Random.choose(std::move(goodTasks));
       collective->setMinionActivity(creature, ret.first);
+      if (ret.first == MinionActivity::PREACHING)
+        collective->lastMass = collective->getLocalTime();
       return std::move(ret);
     }
     return none;
@@ -955,7 +966,7 @@ class ByCollective : public Behaviour {
   EnumMap<MinionActivity, optional<LocalTime>> lastTimeGeneratedActivity;
   optional<LocalTime> lastTimeSetRandomTask;
 
-  WTask getStandardTask() {
+  Task* getStandardTask() {
     PROFILE;
     auto& taskMap = collective->getTaskMap();
     auto current = collective->getCurrentActivity(creature);
@@ -985,7 +996,7 @@ class ByCollective : public Behaviour {
       collective->setMinionActivity(creature, MinionActivity::IDLE);
     if (PTask ret = MinionActivities::generateDropTask(collective, creature, activity))
       return taskMap.addTaskFor(std::move(ret), creature);
-    if (WTask ret = MinionActivities::getExisting(collective, creature, activity)) {
+    if (Task* ret = MinionActivities::getExisting(collective, creature, activity)) {
       taskMap.takeTask(creature, ret);
       return ret;
     }
@@ -1003,7 +1014,7 @@ class ByCollective : public Behaviour {
   }
 
   MoveInfo normalTask() {
-    if (WTask task = collective->getTaskMap().getTask(creature))
+    if (Task* task = collective->getTaskMap().getTask(creature))
       return task->getMove(creature).orWait();
     return NoMove;
   }
@@ -1064,10 +1075,11 @@ class ByCollective : public Behaviour {
       return getFighterMove();
     considerHealingActivity();
     return getFirstGoodMove(
+        bindMethod(&ByCollective::equipOwnedItems, this),
         bindMethod(&ByCollective::getFighterMove, this),
-        bindMethod(&ByCollective::priorityTask, this),
         bindMethod(&ByCollective::steedOrRider, this),
         bindMethod(&ByCollective::followTeamLeader, this),
+        bindMethod(&ByCollective::priorityTask, this),
         bindMethod(&ByCollective::goToAlarm, this),
         bindMethod(&ByCollective::normalTask, this),
         bindMethod(&ByCollective::newEquipmentTask, this),
