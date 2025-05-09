@@ -1335,7 +1335,7 @@ ItemInfo Player::getFurnitureUsageInfo(const TString& question, ViewId viewId) c
   return CONSTRUCT(ItemInfo,
     c.name = question;
     c.fullName = c.name;
-    c.description = {TSentence("CLICK_TO", c.name)};
+//    c.description = {TSentence("CLICK_TO", c.name)};
     c.number = 1;
     c.viewId = {viewId};);
 }
