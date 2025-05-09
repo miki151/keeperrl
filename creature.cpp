@@ -2216,7 +2216,7 @@ CreatureAction Creature::give(Creature* whom, vector<Item*> items) const {
   return CreatureAction(this, [=](Creature* self) {
     for (auto stack : stackItems(items)) {
       verb(TStringId("YOU_GIVE_ITEM_TO"), TStringId("GIVES_ITEMS_TO"),
-          getPluralTheName(stack[0], (int) stack.size()), whom->getName().title());
+          getPluralTheName(stack[0], (int) stack.size()), whom->getName().the());
     }
     whom->takeItems(self->equipment->removeItems(items, self), self);
     self->spendTime();
