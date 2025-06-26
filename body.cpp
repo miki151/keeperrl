@@ -327,8 +327,10 @@ bool Body::healBodyParts(Creature* creature, int max) {
     if (int count = numInjured(part)) {
       result = true;
       count = min(max, count);
+      auto partName = count == 1 ? getName(part) : makePlural(getName(part));
       creature->verb(TStringId("YOUR_BODY_PART_IS_IN_BETTER_SHAPE"), TStringId("HIS_BODY_PART_IS_IN_BETTER_SHAPE"),
-          count == 1 ? getName(part) : makePlural(getName(part)));
+          partName);
+      creature->addPersonalEvent(TSentence("HIS_BODY_PART_IS_IN_BETTER_SHAPE", creature->getName().a(), partName));
       clearInjured(part, count);
       updateEffects(part, count);
       max -= count;
@@ -338,8 +340,9 @@ bool Body::healBodyParts(Creature* creature, int max) {
     if (int count = numLost(part)) {
       result = true;
       count = min(max, count);
-      creature->verb(TStringId("YOUR_BODY_PART_GROWS_BACK"), TStringId("HIS_BODY_PART_GROWS_BACK"),
-          count == 1 ? getName(part) : makePlural(getName(part)));
+      auto partName = count == 1 ? getName(part) : makePlural(getName(part));
+      creature->verb(TStringId("YOUR_BODY_PART_GROWS_BACK"), TStringId("HIS_BODY_PART_GROWS_BACK"), partName);
+      creature->addPersonalEvent(TSentence("HIS_BODY_PART_GROWS_BACK", creature->getName().a(), partName));
       clearLost(part, count);
       updateEffects(part, count);
       max -= count;
