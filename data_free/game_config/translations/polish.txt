@@ -154,7 +154,7 @@ BETTER_SHAPE_HELPER "jest"
     "są" : plural
 HIS_BODY_PART_IS_IN_BETTER_SHAPE "{2} {1:genitive} {BETTER_SHAPE_HELPER:2} w lepszym stanie."
 YOUR_BODY_PART_GROWS_BACK "{YOUR_HELPER:1} {1} {GROWS_BACK_HELPER:1}!"
-YOUR_BODY_PART_IS_IN_BETTER_SHAPE "{YOUR_HELPER:1} {1} jest w lepszym stanie"
+YOUR_BODY_PART_IS_IN_BETTER_SHAPE "{YOUR_HELPER:1} {1} {BETTER_SHAPE_HELPER:1} w lepszym stanie"
 BODY_PART_NUMBER "{1:2} {2}"
 BOILS_AND_EXPLODES "{1} wrze i wybucha!"
 BOULDER masculine "głaz"
@@ -2288,7 +2288,9 @@ YOU_DIE_OF "Umierasz z powodu {1:genitive}."
 YOUR_HELPER "Twój"
     "Twoja" : feminine
     "Twoje" : neuter
-    "Twoje" : plural
+    "Twoje" : plural,feminine
+    "Twoje" : plural,neuter
+    "Twoje" : plural,masculine
 REQUIRES_A "Wymaga {1:genitive}"
 CANT_TRAVEL_WHILE_POISONED_HELPER "zatruty"
     "zatruta" : feminine
