@@ -8851,7 +8851,7 @@ ITEMS_AUTOMATONCRAFTINGIRON_NAME plural "żelazne rzemieślnicze ramiona"
     "żelaznymi rzemieślniczymi ramionami" : instrumental
     "żelazne rzemieślnicze ramiona" : accusative
 
-ITEMS_AUTOMATONCRAFTINGWOOD_NAME plural "drewniane rzemieślniczeramiona"
+ITEMS_AUTOMATONCRAFTINGWOOD_NAME plural "drewniane rzemieślnicze ramiona"
     "drewnianych rzemieślniczych ramion" : genitive
     "drewnianymi rzemieślniczymi ramionami" : instrumental
     "drewniane rzemieślnicze ramiona" : accusative
