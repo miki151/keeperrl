@@ -1598,20 +1598,6 @@ void Creature::dropUnsupportedEquipment() {
   }
 }
 
-void Creature::dropWeapon() {
-  for (auto weapon : equipment->getSlotItems(EquipmentSlot::WEAPON)) {
-    secondPerson(TSentence("YOU_DROP", weapon->getName()));
-    thirdPerson(TSentence("DROPS", {
-            getName().the(),
-            TSentence(his(attributes->getGender())),
-            weapon->getName()
-        }));
-    position.dropItem(equipment->removeItem(weapon, this));
-    break;
-  }
-}
-
-
 CreatureAction Creature::execute(Creature* c, TStringId verbSecond, TStringId verbThird) const {
   if (c->getPosition().dist8(getPosition()).value_or(2) > 1)
     return CreatureAction();

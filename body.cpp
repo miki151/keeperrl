@@ -399,10 +399,6 @@ bool Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
     case BodyPart::LEG:
       creature->addPermanentEffect(LastingEffect::COLLAPSED);
       break;
-    case BodyPart::ARM:
-      // Drop the weapon anyway even if the other arm is still ok.
-      creature->dropWeapon();
-      break;
     case BodyPart::WING:
       creature->removePermanentEffect(LastingEffect::FLYING);
       break;
