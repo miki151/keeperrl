@@ -1603,7 +1603,7 @@ CreatureAction Creature::execute(Creature* c, TStringId verbSecond, TStringId ve
     return CreatureAction();
   return CreatureAction(this, [=] (Creature* self) {
     self->verb(verbSecond, verbThird, c->getName().the());
-    c->dieWithAttacker(self);
+    c->dieNoReason();
   });
 }
 
