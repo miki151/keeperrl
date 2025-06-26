@@ -234,12 +234,9 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   };
   optional<ChosenCreatureInfo> chosenCreature;
   void setChosenCreature(optional<UniqueEntity<Creature>::Id>, TString group);
-  struct ChosenWorkshopInfo {
-    int resourceIndex;
-    WorkshopType type;
-  };
-  optional<ChosenWorkshopInfo> chosenWorkshop;
-  void setChosenWorkshop(optional<ChosenWorkshopInfo>);
+  optional<WorkshopType> chosenWorkshop;
+  int resourceIndex = 0;
+  void setChosenWorkshop(optional<WorkshopType>);
   optional<TeamId> getChosenTeam() const;
   void setChosenTeam(optional<TeamId>, optional<UniqueEntity<Creature>::Id> = none);
   optional<TeamId> chosenTeam;

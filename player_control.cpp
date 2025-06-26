@@ -1453,11 +1453,11 @@ vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getFurnaceQueue() const {
 
 vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions(int resourceIndex) const {
   vector<WorkshopOptionInfo> ret;
-  auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
+  auto& workshop = collective->getWorkshops().types.at(*chosenWorkshop);
   optional<CollectiveResourceId> chosenResource;
   auto resourceTabs = getResourceTabs(workshop);
   if (!resourceTabs.empty())
-    chosenResource = resourceTabs[resourceIndex];
+    chosenResource = resourceTabs[min(resourceIndex, resourceTabs.size() - 1)];
   auto& options = workshop.getOptions();
   for (int i : All(options))
     if (!options[i].materialTab || options[i].cost.id == chosenResource) {
@@ -1537,7 +1537,7 @@ static bool runesEqual(const vector<PItem>& v1, const vector<PItem>& v2) {
 vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getQueuedWorkshopItems() const {
   PROFILE;
   vector<CollectiveInfo::QueuedItemInfo> ret;
-  auto& queued = collective->getWorkshops().types.at(chosenWorkshop->type).getQueued();
+  auto& queued = collective->getWorkshops().types.at(*chosenWorkshop).getQueued();
   for (int i : All(queued)) {
     if (i > 0 && queued[i - 1].indexInWorkshop == queued[i].indexInWorkshop && queued[i - 1].paid == queued[i].paid &&
         runesEqual(queued[i].runes, queued[i - 1].runes))
@@ -1555,15 +1555,15 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
   auto factory = getGame()->getContentFactory();
   for (auto workshopType : collective->getWorkshops().getWorkshopsTypes()) {
     auto& workshopInfo = factory->workshopInfo.at(workshopType);
-    if (!!chosenWorkshop && chosenWorkshop->type == workshopType)
+    if (chosenWorkshop == workshopType)
       index = i;
     ++i;
   }
-  if (!!chosenWorkshop && chosenWorkshop->type == WorkshopType("FURNACE")) {
+  if (chosenWorkshop == WorkshopType("FURNACE")) {
     index = i;
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
         {},
-        chosenWorkshop->resourceIndex,
+        0,
         TString(),
         getFurnaceOptions().transform([](auto& option) {
             return CollectiveInfo::OptionInfo{option.itemInfo, none, {TString(), 0}}; }),
@@ -1576,25 +1576,26 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
     };
   } else
   if (chosenWorkshop) {
-    auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
+    auto& workshop = collective->getWorkshops().types.at(*chosenWorkshop);
     auto resourceTabs = getResourceTabs(workshop);
     auto resourceViewIds = resourceTabs
         .transform([&](auto id) { return collective->getResourceInfo(id).viewId.value_or(ViewId("grave")); });
     TString tabName;
+    int realResourceIndex = min(resourceIndex, resourceTabs.size() - 1);
     if (!resourceTabs.empty())
-      tabName = collective->getResourceInfo(resourceTabs[chosenWorkshop->resourceIndex]).name;
-    auto& workshopInfo = factory->workshopInfo.at(chosenWorkshop->type);
+      tabName = collective->getResourceInfo(resourceTabs[realResourceIndex]).name;
+    auto& workshopInfo = factory->workshopInfo.at(*chosenWorkshop);
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
         resourceViewIds,
-        chosenWorkshop->resourceIndex,
+        realResourceIndex,
         tabName,
-        getWorkshopOptions(chosenWorkshop->resourceIndex).transform([](auto& option) {
+        getWorkshopOptions(realResourceIndex).transform([](auto& option) {
             return CollectiveInfo::OptionInfo{option.itemInfo, option.creatureInfo, option.maxUpgrades}; }),
         getQueuedWorkshopItems(),
         index,
         TStringId("IN_PRODUCTION"),
         true,
-        resourceTabs.empty() ? 0 : workshopInfo.getMinAttrFor(resourceTabs[chosenWorkshop->resourceIndex]),
+        resourceTabs.empty() ? 0 : workshopInfo.getMinAttrFor(resourceTabs[realResourceIndex]),
         factory->attrInfo.at(workshopInfo.attr).viewId
     };
   }
@@ -2361,7 +2362,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
           : getGame()->getContentFactory()->getWorkshopType(furniture->getType());
       if (!!workshopType)
         index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
-      if (chosenWorkshop && chosenWorkshop->type == workshopType)
+      if (chosenWorkshop == workshopType)
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
       if (draggedCreature)
         if (Creature* c = getCreature(*draggedCreature))
@@ -2573,22 +2574,22 @@ void PlayerControl::clearChosenInfo() {
   chosenTeam = none;
 }
 
-void PlayerControl::setChosenWorkshop(optional<ChosenWorkshopInfo> info) {
+void PlayerControl::setChosenWorkshop(optional<WorkshopType> type) {
   auto refreshHighlights = [&] {
     if (chosenWorkshop) {
-      auto furniture = chosenWorkshop->type == WorkshopType("FURNACE")
+      auto furniture = chosenWorkshop == WorkshopType("FURNACE")
           ? FurnitureType("FURNACE")
-          : getGame()->getContentFactory()->workshopInfo.at(chosenWorkshop->type).furniture;
+          : getGame()->getContentFactory()->workshopInfo.at(*chosenWorkshop).furniture;
       for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
         pos.setNeedsRenderUpdate(true);
     }
   };
   refreshHighlights();
-  if (info) {
+  if (type) {
     chosenCreature = none;
     chosenTeam = none;
   }
-  chosenWorkshop = info;
+  chosenWorkshop = type;
   refreshHighlights();
 }
 
@@ -2757,27 +2758,27 @@ void PlayerControl::processInput(View* view, UserInput input) {
         setChosenWorkshop(none);
       else {
         auto type = index == types.size() ? WorkshopType("FURNACE") : types[index];
-        if (chosenWorkshop && chosenWorkshop->type == type)
+        if (chosenWorkshop == type)
           setChosenWorkshop(none);
         else
-          setChosenWorkshop(ChosenWorkshopInfo{0, type});
+          setChosenWorkshop(type);
       }
       break;
     }
     case UserInputId::WORKSHOP_ADD:
       if (chosenWorkshop) {
         int index = input.get<int>();
-        if (chosenWorkshop->type == WorkshopType("FURNACE")) {
+        if (chosenWorkshop == WorkshopType("FURNACE")) {
           auto options = getFurnaceOptions();
           if (index >= 0 && index < options.size())
            collective->getFurnace().queue(options[index].pos.removeItem(options[index].item));
         } else {
-          auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
+          auto& workshop = collective->getWorkshops().types.at(*chosenWorkshop);
           int index = input.get<int>();
-          auto options = getWorkshopOptions(chosenWorkshop->resourceIndex);
+          auto options = getWorkshopOptions(resourceIndex);
           if (index >= 0 && index < options.size()) {
             auto& item = options[index];
-            auto skill = getGame()->getContentFactory()->workshopInfo.at(chosenWorkshop->type)
+            auto skill = getGame()->getContentFactory()->workshopInfo.at(*chosenWorkshop)
                 .getMinAttrFor(workshop.getOptions()[item.optionIndex].cost.id);
             workshop.queue(collective, item.optionIndex, skill);
             if (item.ingredient) {
@@ -2790,13 +2791,13 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::WORKSHOP_TAB:
       if (chosenWorkshop)
-        chosenWorkshop->resourceIndex = input.get<int>();
+        resourceIndex = input.get<int>();
       break;
     case UserInputId::WORKSHOP_UPGRADE: {
       auto& info = input.get<WorkshopUpgradeInfo>();
       auto increases = info.increases;
-      if (chosenWorkshop && chosenWorkshop->type != WorkshopType("FURNACE")) {
-        auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
+      if (chosenWorkshop && *chosenWorkshop != WorkshopType("FURNACE")) {
+        auto& workshop = collective->getWorkshops().types.at(*chosenWorkshop);
         if (info.itemIndex < workshop.getQueued().size()) {
           auto& item = workshop.getQueued()[info.itemIndex];
           vector<pair<TString, ViewId>> allItems;
@@ -2836,14 +2837,14 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::WORKSHOP_CHANGE_COUNT: {
       auto& info = input.get<WorkshopCountInfo>();
       if (chosenWorkshop) {
-        if (chosenWorkshop->type == WorkshopType("FURNACE")) {
+        if (*chosenWorkshop == WorkshopType("FURNACE")) {
           if (info.newCount == 0 && info.itemIndex < collective->getFurnace().getQueued().size()) {
             auto item = collective->getFurnace().unqueue(info.itemIndex);
             auto positions = collective->getStoragePositions(item->getStorageIds()).asVector();
             Random.choose(positions).dropItem(std::move(item));
           }
         } else {
-          auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
+          auto& workshop = collective->getWorkshops().types.at(*chosenWorkshop);
           if (info.itemIndex < workshop.getQueued().size()) {
             for (int i : Range(info.count - info.newCount))
               for (auto& upgrade : workshop.unqueue(collective, info.itemIndex))
@@ -3370,11 +3371,11 @@ void PlayerControl::onSquareClick(Position pos) {
         updateSquareMemory(pos);
       } else
       if (furniture->getType() == FurnitureType("FURNACE"))
-        setChosenWorkshop(ChosenWorkshopInfo{0, WorkshopType("FURNACE")});
+        setChosenWorkshop(WorkshopType("FURNACE"));
       else
       if (auto workshopType = getGame()->getContentFactory()->getWorkshopType(furniture->getType()))
         if (collective->getWorkshops().getWorkshopsTypes().contains(*workshopType))
-          setChosenWorkshop(ChosenWorkshopInfo{0, *workshopType});
+          setChosenWorkshop(*workshopType);
     }
   }
   if (collective->getZones().isZone(pos, ZoneId::QUARTERS)) {
