@@ -1880,11 +1880,10 @@ End
   name = FURNITURE_MOUNTAIN2_NAME
   viewId = { "hell_mountain" }
   lightEmission = 2.2
-  tickType = Effect Chance 0.0005 Filter Not Area 1 Not And { Kills 0 Not CreatureId "LAVA_GOLEM" } {
-    RemoveFurniture "HELL_MOUNTAIN"
-    SummonEnemy "LAVA_GOLEM" {1} none
+  destroyedEffect = {
+    Message NORMAL FURNITURE_IS_DUG_OUT(FURNITURE_MOUNTAIN2_NAME)
+    Chance 0.05 SummonEnemy "LAVA_GOLEM" {1} none
   }
-
 }
 "ADAMANTIUM_ORE" inherit "MOUNTAIN2"
 {
