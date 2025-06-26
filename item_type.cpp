@@ -27,6 +27,7 @@
 #include "statistics.h"
 #include "lasting_or_buff.h"
 #include "assembled_minion.h"
+#include "effect_type.h"
 
 STRUCT_IMPL(ItemType)
 
@@ -552,9 +553,16 @@ static ViewId getBalsamViewId(const TString& name) {
   return ViewId("potion2", colors[(h % colors.size() + colors.size()) % colors.size()]);
 }
 
+static TString getBalsamEffectName(const Effect& effect, const ContentFactory* f) {
+  if (auto e = effect.effect->getReferenceMaybe<EffectType::Permanent>()) {
+    return getName(e->lastingEffect, f);
+  }
+  return effect.getName(f);
+}
+
 SItemAttributes ItemTypes::Balsam::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
-      i.shortName = effect.getName(factory);
+      i.shortName = getBalsamEffectName(effect, factory);
       i.viewId = getBalsamViewId(*i.shortName);
       i.upgradeInfo = ItemUpgradeInfo LIST(ItemUpgradeType::BALSAM, effect);
       i.name = TSentence("BALSAM_OF", *i.shortName);
