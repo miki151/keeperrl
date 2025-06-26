@@ -78,7 +78,7 @@ ANIMATE_WEAPONS_EFFECT_DESCRIPTION "Ożywia do {1} broni w otoczeniu."
 ANIMATE_WEAPONS_EFFECT_NAME "ożywienie broni"
     "ożywienia broni" : genitive
 APPEARS "{1} pojawia się znikąd!"
-APPLYING_ITEM_TAKES_X_TURNS "Użycie {1:genitive} zajmuje {2} tur. Czy na pewno kontynuować?"
+APPLYING_ITEM_TAKES_X_TURNS "Użycie {1:genitive} zajmuje {2} tury. Czy na pewno kontynuować?"
 ARCHERY_RANGE_TASK "Strzelaj na strzelnicy"
 ARM_BODY_PART feminine "ręka"
     "ręki" : genitive
@@ -96,8 +96,8 @@ ARMOR_ENCHANTMENT_NAME "ulepszenie pancerza"
     "ulepszenia pancerza" : genitive
 ARMOR_UPGRADE_TYPE "zbroja"
     "zbroi" : genitive
-A_SEX_ACT_BETWEEN "akt seksualny pomiędzy {1:instrumental} i {2:instrumental}"
-    "akcie seksualnym pomiędzy {1:instrumental} i {2:instrumental}" : instrumental
+A_SEX_ACT_BETWEEN "akt seksualny pomiędzy {1:instrumental} a {2:instrumental}"
+    "akcie seksualnym pomiędzy {1:instrumental} a {2:instrumental}" : instrumental
 ATTACK_ACTION "Atakuj"
 ATTACK_CREATURES_TASK "Zaatakuj kogoś"
 ATTACKER_AFFECTED_BY "wpływ na atakującego: {1}"
@@ -111,7 +111,7 @@ AUTOMATON_PART_EFFECT_DESCRIPTION "Dołącza część automatu do istoty."
 AUTOMATON_PART_EFFECT_NAME "dołącz część automatu"
 AUTOMATONS "automaty"
 AVAILABLE_ITEMS_TITLE "Dostępne przedmioty:"
-AVAILABLE_STEEDS "Dostępne wierzchowce ({1}):"
+AVAILABLE_STEEDS "Dostępne wierzchowce ({1:plural}):"
 BACK_BODY_PART masculine "plecy"
     "pleców" : genitive
     "plecami" : instrumental
@@ -376,7 +376,6 @@ YOU_ABSORB "Wchłaniasz {1:accusative}."
 ABSORBS "{1} wchłania {2:accusative}."
 CONTINUE_BUTTON "Kontynuuj"
 CONTROL_MINION_BUTTON "Kontroluj"
-COPULATEES "{1} współżyje z {2:instrumental}"
 COPULATE_TASK "Współżyj z {1:instrumental}"
 YOU_COPULATE "Współżyjesz z {1:instrumental}."
 COPULATES "{1} kopuluje z {2:instrumental}."
@@ -478,7 +477,7 @@ ESCAPE_EFFECT_DESCRIPTION "Teleportuje się w bezpieczniejsze, pobliskie miejsce
 ESCAPE_EFFECT_NAME "ucieczka"
     "ucieczki" : genitive
 EXCEEDS_POP_LIMIT "Przekracza limit populacji"
-EXECUTES "{1} dokonuje stracenia {2:genitive}"
+EXECUTES "{1} dokonuje egzekucji {2:genitive}"
 EXIT_CONTROL_MODE "Wyjdź z trybu kontroli"
 EXTRA_BODY_PART "Dodatkowa {1}"
 EXTRA_BODY_PARTS "{1} dodatkowe {2:plural}"
@@ -565,7 +564,6 @@ HEALING_EFFECT_DESCRIPTION "Całkowicie przywraca zdrowie."
 HEALING_EFFECT_NAME "uzdrowienie"
     "uzdrowienia" : genitive
 HIDDEN "ukryty"
-YOUR_THIRD_PERSON "{1:genitive} {2}"
 HIS_BODY_CRUMBLES_TO_DUST "Ciało {1:genitive} rozpada się w proch."
 HIS_BODY_PART_IS_CHOPPED_OFF_HELPER "odcięty"
     "odcięta" : feminine
@@ -844,14 +842,21 @@ PRISONER_STATUS_DESCRIPTION "{PRISONER_STATUS_DESCRIPTION_HELPER:1}"
 PRISONER_STATUS "Więzień"
 PRISON_MUST_BE_SEPARATE_HIGHLIGHT "Więzienie musi być oddzielone od zewnątrz i wszystkich schodów za pomocą krat lub drzwi więziennych"
 PRISON_TILE "pole więzienne"
+    "pola więziennego" : genitive
+    "polem więziennym" : instrumental
+    "pole więzienne " : accusative
     "pola więzienne" : plural
+    "pól więziennych" : plural,genitive
+    "polami więziennymi" : plural,instrumental
+    "pola więzienne" : plural,accusative
 MINION_PRODUCES "{1} {2} {3:accusative}"
 PRODUCES_VERB "wytwarza"
 WRITES_VERB "pisze"
 RAISES_VERB "wskrzesza"
 FORGES_VERB "wykuwa"
 CONCOCTS_VERB "sporządza"
-PROJECTILES_WONT_HIT_ALLIES "pociski nie trafią sojuszników"
+YOUR_PROJECTILES_WONT_HIT_ALLIES "Twoje pociski nie trafią sojuszników."
+HIS_PROJECTILES_WONT_HIT_ALLIES "Pociski {1:genitive} nie trafią sojuszników."
 PROMOTION_TYPE_LABEL "Typ promocji:"
 PROXIMITY_TRIGGER "Bliskość"
 PUSH_ACTION "Popchnij"
@@ -964,6 +969,9 @@ SPELL_COOLDOWN "Czas odnowienia: {1}"
 SPELL_SCHOOLS_LABEL "Szkoły magii:"
 SPIDER_TASK "Zadanie pająka"
 SPIRIT_NAME "duch {1:genitive}"
+    "ducha {1:genitive}" : accusative
+    "duchowi {1:genitive}" : dative
+    "duchem {1:genitive}" : instrumental
 TWO_HEADED_HELPER "dwugłowy"
     "dwugłowa" : feminine
     "dwugłowe" : neuter
@@ -978,7 +986,13 @@ WINGED_HELPER "skrzydlaty"
 WINGED "{WINGED_HELPER:1} {1}"
 SQUARE_BRACKETS "[{1}]"
 STABLE "stajnia"
+    "stajni" : genitive
+    "stajnią" : instrumental
+    "stajnię" : accusative
     "stajnie" : plural
+    "stajni" : plural,genitive
+    "stajniami" : plural,instrumental
+    "stajnie" : plural,accusative
 STAIRS_EFFECT_DESCRIPTION "Użyj schodów"
 STAIRS_EFFECT_NAME "schody"
 IS_NO_LONGER_CRAWLING "{1} staje na nogi."
@@ -1002,8 +1016,8 @@ SUMMON_MINIONS_EFFECT_NAME "przyzwanie sług"
     "przyzwania sług" : genitive
 SUMMON_EFFECT_NAME "przyzwanie {1:genitive}"
     "przyzwania {1:genitive}" : genitive
-SUMMON_MULTIPLE_EFFECT_DESCRIPTION "Przywołuje {1} {2:accusative}"
-SUMMON_RANGE_EFFECT_DESCRIPTION "Przywołuje od {1} do {2} {3:accusative}"
+SUMMON_MULTIPLE_EFFECT_DESCRIPTION "Przywołuje {2} {1:accusative}"
+SUMMON_RANGE_EFFECT_DESCRIPTION "Przywołuje od {2} do {3} {1:genitive,plural}"
 SUMMON_SINGLE_EFFECT_DESCRIPTION "Przywołuje {1:accusative}"
 SURVIVED "Przetrwał"
 SWAP_POSITION_ACTION "Zamień pozycję"
@@ -1100,7 +1114,7 @@ UNLOCK_EFFECT_NAME "odblokuj"
 UNNAMED_ATTACKER "bezimienny napastnik"
 USAGE_EFFECT "Efekt użycia: {1}"
 USE_A_SHIELD_HINT "Użyj tarczy!"
-USE_FURNITURE "użyj {1:accusative}"
+USE_FURNITURE "użyj {1:genitive}"
 VERY_FAST_GAME_SPEED "bardzo szybka"
 VICTIM_AFFECTED_BY "ofiara pod wpływem {1:genitive} (szansa {2})"
 VICTORY "Zwycięstwo!"
@@ -1272,7 +1286,7 @@ IMPROVED_HELPER "ulepszony"
     "ulepszone" : neuter
 YOUR_ARMOR_IS_IMPROVED "{YOUR_HELPER:1} {1} zostaje {IMPROVED_HELPER:1}"
 HIS_ARMOR_DEGRADES "{2} {1:genitive} ulega degradacji"
-HIS_ARMOR_IS_IMPROVED "{2} {1:genitive} zostaje {IMPROVED_HELPER:1}"
+HIS_ARMOR_IS_IMPROVED "{2} {1:genitive} zostaje {IMPROVED_HELPER:2}"
 YOUR_ATTR_IMPROVES "{YOUR_HELPER:1} {1} się poprawia."
 YOUR_ATTR_WANES "{YOUR_HELPER:1} {1} słabnie"
 HIS_ATTR_IMPROVES "{2} {1:genitive} się poprawia."
@@ -1354,12 +1368,16 @@ BITES "{1} gryzie {2:accusative}."
 BOARD_MESSAG_TOO_SHORT "Wiadomość jest za krótka."
 BODY_SIZE_HUGE "ogromny"
     "ogromna" : feminine
+    "ogromne" : plural
 BODY_SIZE_LARGE "duży"
     "duża" : feminine
+    "duże" : plural
 BODY_SIZE_MEDIUM "średni"
     "średnia" : feminine
+    "średnie" : plural
 BODY_SIZE_SMALL "mały"
     "mała" : feminine
+    "małe" : plural
 BONE "kość"
 BOUND_TO_A_PHYLACTERY "Związany z filakterium"
     "Związana z filakterium" : feminine
@@ -1628,7 +1646,7 @@ IS_CAPTURED "{1} zostaje pojmany."
 IS_DROWNED_BY "{1} zostaje utopiony przez {2:accusative}."
 IS_EATEN_BY "{1} zostaje pożarty przez {2:accusative}."
 IS_EXTINGUISHED "Płomienie {1:genitive} zostają ugaszone."
-IS_LESS_AWARE_OF_DANGER "{1} mniej świadomy zagrożenia."
+IS_LESS_AWARE_OF_DANGER "{1} jest mniej świadomy zagrożenia."
 IS_LESS_PEACEFUL "{1} nie jest już {BUFF_ADJECTIVE_PEACEFULNESS:1}."
 IS_LESS_RESISTANT_TO_CAPTURING "{1} nie jest już {BUFF_ADJECTIVE_CAPTURE_RESISTANCE:1}."
 IS_MENTALLY_STABLE_AGAIN "{1} już nie jest {BUFF_ADJECTIVE_UNSTABLE:1}."
@@ -1662,7 +1680,7 @@ LEFT_TRIGGER_TO_CLEAR "Lewy spust, aby wyczyścić"
 LIMERICK masculine "limeryk"
 LOCAL_DUNGEONS "Lokalne:"
 LOCATE_MINION_BUTTON "Zlokalizuj"
-LYING_HERE_LABEL "Leży tutaj:"
+LYING_HERE_LABEL "W tym miejscu:"
 MALE "mężczyzna"
 MALES "mężczyźni"
 MELEE_AI_NAME "Walka wręcz"
@@ -1691,7 +1709,8 @@ PETS "{1} głaszcze {2:accusative}."
 PHYLACTERY_EFFECT_DESCRIPTION "Ustawia lub wykorzystuje filakterium."
 PHYLACTERY_EFFECT_NAME "filakterium"
 POTION feminine "mikstura"
-PROJECTILES_WILL_HIT_ALLIES "pociski trafią sojuszników"
+YOUR_PROJECTILES_WILL_HIT_ALLIES plural "Twoje pociski trafią sojuszników."
+HIS_PROJECTILES_WILL_HIT_ALLIES plural "Pociski {1:genitive} trafią sojuszników."
 PROMOTIONS_LABEL "Promocje:"
 PULL_EFFECT_DESCRIPTION "Przyciąga istotę do rzucającego."
 PULL_EFFECT_NAME "przyciągnięcie"
@@ -1743,7 +1762,7 @@ TELEPORT_EFFECT_NAME "teleportacja"
     "teleportacji" : genitive
 THE_PRESENCE_OF_A_MAGICAL_FIELD "obecność pola magicznego"
 THROWS "{1} rzuca {2:instrumental}."
-THRUST "Wbijasz {1:instrumental} w {2:accusative}."
+THRUST "Wbijasz {1:accusative} w {2:accusative}."
 THRUSTS "{1} wbija {3:accusative} w {4:accusative}."
 THRUSTS_ITSELF "{1} rzuca się na {2:accusative}."
 THRUST_YOURSELF "Rzucasz się na {1:accusative}."
@@ -1815,7 +1834,7 @@ YOU_CANT_REMOVE_THIS_ITEM "Nie możesz usunąć tego przedmiotu."
 YOU_CANT_SEE_IN_THE_DARK "Nie widzisz już w ciemnościach!"
 YOU_CANT_SEE_THRU_ARROWSLITS "Nie możesz już widzieć ani strzelać przez strzelnice!"
 YOU_CANT_SEE_THRU_TREES "Nie widzisz już przez drzewa!"
-YOU_CANT_TRAVEL_WHILE_POISONED "Nie możesz podróżować będąc {CANT_TRAVEL_WHILE_POISONED_HELPER:1}!"
+YOU_CANT_TRAVEL_WHILE_POISONED "Nie możesz podróżować, gdy jesteś {CANT_TRAVEL_WHILE_POISONED_HELPER:1}!"
 YOU_CANT_USE_THIS_ITEM "Nie możesz użyć tego przedmiotu."
 YOU_CAPTURED "Zostajesz pojmany!"
 YOU_CHAT_WITH "Rozmawiasz z {1:instrumental}."
@@ -1869,7 +1888,7 @@ NO_SPACE "{1}{2}"
 AND "{1} i {2}"
 BODY_SIZE_AND_MATERIAL_AND_LIMBS "{1} i zbudowany z {2:genitive}, {3:instrumental}."
     "{1} i zbudowana z {2:genitive}, {3:instrumental}." : feminine
-WITH_LIMB "z {1}"
+WITH_LIMB "z {1:instrumental}"
 BUFF_DESC_PREGNANT "To nie sen! To dzieje się naprawdę!"
 BUFF_DESC_SLOWED "Powoduje nienaturalnie wolne poruszanie się."
 BUFF_DESC_SPEED "Daje dodatkowy ruch w każdej turze."
@@ -1978,7 +1997,7 @@ LOSE_BODY_PART_EFFECT_DESCRIPTION "Powoduje utratę {1:genitive}"
 LOSE_BODY_PART_EFFECT_NAME "utrata {1:genitive}"
 REMOVE_ABILITY_EFFECT_DESCRIPTION "Usuwa zdolność: {1}"
 REMOVE_ABILITY_EFFECT_NAME "usunięce zdolności {1}"
-REMOVE_BUFF_DESCRIPTION "Usuwa/ulecza z {1:genitive}"
+REMOVE_BUFF_DESCRIPTION "Usuwa ulecza z {1:genitive}"
 REMOVE_BUFF_NAME "usunięcie {1:genitive}"
     "usunięcia {1:genitive}" : genitive
 SPELL_SCHOOL_EFFECT_DESCRIPTION "Zapewnia szkołę czarów {1}"
@@ -2270,11 +2289,10 @@ YOUR_HELPER "Twój"
     "Twoja" : feminine
     "Twoje" : neuter
     "Twoje" : plural
-YOUR "{YOUR_HELPER:1} {1}."
-REQUIRES_A "Wymaga {1:accusative}"
-CANT_TRAVEL_WHILE_POISONED_HELPER "zatrutym"
-    "zatrutą" : feminine
-CANT_TRAVEL_WHILE_POISONED "{1} nie może podróżować, będąc {CANT_TRAVEL_WHILE_POISONED_HELPER:1}."
+REQUIRES_A "Wymaga {1:genitive}"
+CANT_TRAVEL_WHILE_POISONED_HELPER "zatruty"
+    "zatruta" : feminine
+CANT_TRAVEL_WHILE_POISONED "{1} nie może podróżować, gdy jest {CANT_TRAVEL_WHILE_POISONED_HELPER:1}."
 OR "{1} lub {2}"
 KILL_TITLE "pogromca {1:genitive}"
     "pogromcę {1:genitive}" : accusative
@@ -2315,6 +2333,8 @@ NO_LONGER_SUPER "już nie super"
 SUPER "super"
 YOU_START_BLEEDING "Zaczynasz krwawić."
 STARTS_BLEEDING "{1} zaczyna krwawić."
+YOU_STOP_BLEEDING "Twoje krwawienie ustaje."
+STOPS_BLEEDING "{1} przestaje krwawić."
 MORE_MASCULINE "bardziej męski"
 MORE_FEMININE "bardziej kobiecy"
 MORE_NEUTER "bardziej nijaki"
@@ -2557,7 +2577,6 @@ BUFFS_BLEEDING_ADJECTIVE "krwawiący"
 BUFFS_BLEEDING_DESCRIPTION "Powoduje stopniową utratę punktów życia."
 BUFFS_BLEEDING_NAME neuter "krwawienie"
     "krwawienia" : genitive
-BUFFS_BLEEDING_REMOVEDMESSAGE "krwawienie ustaje"
 BUFFS_BLEEDING_SECONDPERSON "Krwawisz."
 BUFFS_BLEEDING_THIRDPERSON "{1} krwawi."
 BUFFS_FIRE_DAMAGE_ADDEDMESSAGE1 "{1} zadaje obrażenia ogniem."
@@ -2599,14 +2618,14 @@ BUFFS_INVULNERABLE_NAME feminine "odporność na obrażenia"
 BUFFS_INVULNERABLE_REMOVEDMESSAGE "nie jest już odporny na obrażenia"
     "nie jest już odporna na obrażenia" : feminine
     "nie jest już odporne na obrażenia" : neuter
-BUFFS_KINGS_CHARGE_ADDEDMESSAGE1 "{1} wygląda, jakby był gotów umrzeć za swojego króla."
+BUFFS_KINGS_CHARGE_ADDEDMESSAGE1 "{1} wygląda jakby był gotów umrzeć za swojego króla."
 BUFFS_KINGS_CHARGE_ADDEDMESSAGE "Czujesz gotowość, by umrzeć za swojego króla."
 BUFFS_KINGS_CHARGE_ADJECTIVE "wierny swojemu królowi"
     "wierna swojemu królowi" : feminine
     "wierne swojemu królowi" : neuter
 BUFFS_KINGS_CHARGE_DESCRIPTION "Daje +15 do obrażeń"
 BUFFS_KINGS_CHARGE_NAME "zapał króla"
-BUFFS_KINGS_CHARGE_REMOVEDMESSAGE1 "{1} nie wygląda już, jakby był gotów umrzeć za swojego króla."
+BUFFS_KINGS_CHARGE_REMOVEDMESSAGE1 "{1} nie wygląda już jakby był gotów umrzeć za swojego króla."
 BUFFS_KINGS_CHARGE_REMOVEDMESSAGE "Nie czujesz już gotowości, by umrzeć za swojego króla."
 BUFFS_LEADERSHIP_ADDEDMESSAGE1 "{1} czuje się odpowiedzialny za drużynę."
 BUFFS_LEADERSHIP_ADDEDMESSAGE "Czujesz, że dowodzisz drużyną."
@@ -3335,7 +3354,7 @@ CREATURE_ATTRIBUTES_CYCLOPS_NAME masculine "cyklop"
     "cyklopami" : plural,instrumental
     "cyklopów" : plural,accusative
 
-CREATURE_ATTRIBUTES_CURSES_DWARVES_CHATREACTION "{1} przeklina wszystke krasnoludy"
+CREATURE_ATTRIBUTES_CURSES_DWARVES_CHATREACTION "{1} przeklina wszystkie krasnoludy"
 
 CREATURE_ATTRIBUTES_DARK_ELF_CHILD_NAME neuter "dziecko mrocznych elfów"
     "dziecku mrocznych elfów" : dative
@@ -8563,7 +8582,8 @@ HATE_OF "nienawiść do {1:genitive}"
 HATES_ALL "nienawidzi {1:genitive}"
 HATE_DEBUFF_DESCRIPTION "Sprawia, że cel staje się wrogi wobec wszystkich {1:genitive}."
 FULL_OF_HATRED "przepełniony nienawiścią"
-HATRED_IS_GONE feminine "nienawiść przemija"
+YOUR_HATRED_IS_GONE "Twoja nienawiść przemija."
+HIS_HATRED_IS_GONE "Nienawiść {1:genitive} przemija."
 
 RESISTANCE_BUFF_NAME : feminine "odporność na {1:accusative}"
     "odporności na {1:accusative}" : genitive
@@ -9467,82 +9487,108 @@ YOU_RESISTED_THE_ATTACK_OF "Oparłeś się atakowi {1:genitive}."
 
 ENEMY_WAVE_NAME_UNKNOWN "Nieznany"
 EXTERNAL_ENEMIES_NAME "ciekawski bandyta"
-    "ciekawego bandyty" : genitive
+    "ciekawskiego bandyty" : genitive
+    "ciekawskiego bandytę" : accusative
 
 EXTERNAL_ENEMIES_NAME1 "zwiadowca jaszczuroludzi"
     "zwiadowcy jaszczuroludzi" : genitive
+    "zwiadowcę jaszczuroludzi" : accusative
 
 EXTERNAL_ENEMIES_NAME2 "patrol mrówek"
     "patrolu mrówek" : genitive
+    "patrol mrówek" : accusative
 
 EXTERNAL_ENEMIES_NAME3 "gniazdo jaszczuroludzi"
     "gniazda jaszczuroludzi" : genitive
+    "gniazdo jaszczuroludzi" : accusative
 
 EXTERNAL_ENEMIES_NAME4 "szajka bandytów"
     "szajki bandytów" : genitive
+    "szajkę bandytów" : accusative
 
 EXTERNAL_ENEMIES_NAME5 "patrol żołnierzy-mrówek"
-    "patrolu żołnierzy‑mrówek" : genitive
+    "patrolu żołnierzy-mrówek" : genitive
+    "patrol żołnierzy-mrówek" : accusative
 
 EXTERNAL_ENEMIES_NAME6 "gliniane golemy alchemika"
     "glinianych golemów alchemika" : genitive
+    "glinianych golemów alchemika" : accusative
 
 EXTERNAL_ENEMIES_NAME7 "kamienne golemy alchemika"
     "kamiennych golemów alchemika" : genitive
+    "kamiennych golemów alchemika" : accusative
 
 EXTERNAL_ENEMIES_NAME8 "armia mrówek"
     "armii mrówek" : genitive
+    "armię mrówek" : accusative
 
 EXTERNAL_ENEMIES_NAME9 "grupa entów"
     "grupy entów" : genitive
+    "grupę entów" : accusative
 
 EXTERNAL_ENEMIES_NAME10 "grupa krasnoludów"
     "grupy krasnoludów" : genitive
+    "grupę krasnoludów" : accusative
 
 EXTERNAL_ENEMIES_NAME11 "żelazne golemy alchemika"
     "żelaznych golemów alchemika" : genitive
+    "żelaznych golemów alchemika" : accusative
 
 EXTERNAL_ENEMIES_NAME12 "plemię krasnoludów"
     "plemienia krasnoludów" : genitive
+    "plemię krasnoludów" : accusative
 
 EXTERNAL_ENEMIES_NAME13 "patrol łuczników"
     "patrolu łuczników" : genitive
+    "patrol łuczników" : accusative
 
 EXTERNAL_ENEMIES_NAME14 "samotny rycerz"
     "samotnego rycerza" : genitive
+    "samotnego rycerza" : accusative
 
 EXTERNAL_ENEMIES_NAME15 "grupa wojowników"
     "grupy wojowników" : genitive
+    "grupę wojowników" : accusative
 
 EXTERNAL_ENEMIES_NAME16 "armia wojowników"
     "armii wojowników" : genitive
+    "armię wojowników" : accusative
 
 EXTERNAL_ENEMIES_NAME17 "armia rycerzy"
     "armii rycerzy" : genitive
+    "armię rycerzy" : accusative
 
 EXTERNAL_ENEMIES_NAME18 "cyklop"
     "cyklopa" : genitive
+    "cyklopa" : accusative
 
 EXTERNAL_ENEMIES_NAME19 "wiedźmak"
     "wiedźmaka" : genitive
+    "wiedźmaka" : accusative
 
 EXTERNAL_ENEMIES_NAME20 "minotaur"
     "minotaura" : genitive
+    "minotaura" : accusative
 
 EXTERNAL_ENEMIES_NAME21 "żywiołak"
     "żywiołaka" : genitive
+    "żywiołaka" : accusative
 
 EXTERNAL_ENEMIES_NAME22 "zielony smok"
     "zielonego smoka" : genitive
+    "zielonego smoka" : accusative
 
 EXTERNAL_ENEMIES_NAME23 "czerwony smok"
     "czerwonego smoka" : genitive
+    "czerwonego smoka" : accusative
 
 EXTERNAL_ENEMIES_NAME24 "czarny smok"
     "czarnego smoka" : genitive
+    "czarnego smoka" : accusative
 
 EXTERNAL_ENEMIES_NAME25 "sfora trolli"
     "sfory trolli" : genitive
+    "sforę trolli" : accusative
 BIOMES_GRASSLAND_NAME "łąki"
 BIOMES_GRASSLAND_NAME1 "las"
 BIOMES_GRASSLAND_NAME2 "góry"
@@ -9940,7 +9986,7 @@ HEAVY_AUTOMATON_CORPUS_NAME "ciężki korpus automatu"
     "ciężkie korpusy automatów" : plural
 PREINSTALLED_PARTS "Preinstalowane części:"
 CLEAR_ALL_UPGRADES "Usuń wszystkie"
-ADD_TOP_UPGRADES "Dodaj {1} pierwsze"
+ADD_TOP_UPGRADES "Dodaj pierwsze {1}"
 USED_SLOTS "Zużyte sloty: {1}/{2}"
 MATERIALIZATION_LABEL "Materializacja:"
 HEALTH_LABEL "Zdrowie:"

@@ -12,7 +12,7 @@ RICH_ENUM(
   RAGE,
   DIE_OF,
   ARE, // bleeding
-  YOUR, // your head is cut off
+  YOUR, // deprecated
   WAKE_UP,
   DIE, //
   TELE_APPEAR,

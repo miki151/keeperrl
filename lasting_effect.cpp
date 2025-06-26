@@ -248,7 +248,7 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         c->verb(TStringId("YOU_ARE_TURNED_OFF"), TStringId("IS_TURNED_OFF"));
         break;
       case LastingEffect::NO_FRIENDLY_FIRE:
-        c->you(MsgType::YOUR, TStringId("PROJECTILES_WONT_HIT_ALLIES"));
+        c->verb(TStringId("YOUR_PROJECTILES_WONT_HIT_ALLIES"), TStringId("HIS_PROJECTILES_WONT_HIT_ALLIES"));
         break;
       case LastingEffect::AGGRAVATES:
         c->verb(TStringId("YOU_AGGRAVATE_ENEMIES"), TStringId("AGGRAVATES_ENEMIES"));
@@ -501,7 +501,7 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         c->verb(TStringId("YOU_SOBER_UP"), TStringId("SOBERS_UP"));
         break;
       case LastingEffect::NO_FRIENDLY_FIRE:
-        c->you(MsgType::YOUR, TStringId("PROJECTILES_WILL_HIT_ALLIES"));
+        c->verb(TStringId("YOUR_PROJECTILES_WILL_HIT_ALLIES"), TStringId("HIS_PROJECTILES_WILL_HIT_ALLIES"));
         break;
       case LastingEffect::POLYMORPHED:
         c->verb(TStringId("YOU_RETURN_TO_YOUR_PREVIOUS_FORM"), TStringId("RETURNS_TO_YOUR_PREVIOUS_FORM"));

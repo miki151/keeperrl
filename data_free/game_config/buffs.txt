@@ -92,7 +92,7 @@ End
   name = BUFFS_BLEEDING_NAME
   description = BUFFS_BLEEDING_DESCRIPTION
   addedMessage = YOU_START_BLEEDING STARTS_BLEEDING ""
-  removedMessage = YOUR BUFFS_BLEEDING_REMOVEDMESSAGE
+  removedMessage = YOU_STOP_BLEEDING STOPS_BLEEDING ""
   adjective = BUFFS_BLEEDING_ADJECTIVE
   tickEffect = Filter Not LastingEffect FROZEN {
     CreatureMessage { BUFFS_BLEEDING_SECONDPERSON BUFFS_BLEEDING_THIRDPERSON HIGH }
@@ -209,7 +209,7 @@ Def HATE(Name) {
   adjective = HATES_ALL(Name)
   description = HATE_DEBUFF_DESCRIPTION(Name)
   addedMessage = ARE FULL_OF_HATRED
-  removedMessage = YOUR HATRED_IS_GONE
+  removedMessage = YOUR_HATRED_IS_GONE HIS_HATRED_IS_GONE ""
   hatedGroupName = Name
   color = ColorId PINK
   fx = BUFF_PINK
