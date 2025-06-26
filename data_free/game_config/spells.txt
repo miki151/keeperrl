@@ -709,10 +709,11 @@ Def NoEffect() Unlock "nothing" End
 "repair automaton"
 {
   symbol = "🔧"
-  effect = Name SPELLS_REPAIR_AUTOMATON_EFFECT Description SPELLS_REPAIR_AUTOMATON_EFFECT1 Filter Automaton RegrowBodyPart 10
+  effect = Name SPELLS_REPAIR_AUTOMATON_EFFECT Description SPELLS_REPAIR_AUTOMATON_EFFECT1 Filter Automaton
+      RegrowBodyPart 1
   range = 1
   targetSelf = true
-  cooldown = 15
+  cooldown = 10
   sound = "TRAP_ARMING"
   message = SPELLS_REPAIR_AUTOMATON_MESSAGE SPELLS_REPAIR_AUTOMATON_MESSAGE1
   type = ABILITY
