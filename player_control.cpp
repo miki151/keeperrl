@@ -2913,7 +2913,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
       auto info = input.get<PromotionActionInfo>();
       if (Creature* c = getCreature(info.minionId)) {
         auto factory = getGame()->getContentFactory();
-        c->addPromotion(factory->promotions.at(*c->getAttributes().promotionGroup)[info.promotionIndex]);
+        auto& promotion = factory->promotions.at(*c->getAttributes().promotionGroup)[info.promotionIndex];
+        if (promotion.message)
+          addMessage(TSentence(*promotion.message, c->getName().a()));
+        c->addPromotion(promotion);
         collective->getDungeonLevel().consumedPromotions += c->getAttributes().promotionCost;
       }
       break;

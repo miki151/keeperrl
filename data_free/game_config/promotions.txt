@@ -1,5 +1,5 @@
 "dwarf" {
-    PROMOTIONS {"sword"}
+    PROMOTIONS PROMOTION_DWARF_MELEE_MESSAGE {"sword"}
         Description PROMOTIONS_ID
         {
           IncreaseMaxLevel DAMAGE 3
@@ -7,7 +7,7 @@
           Filter Gender FEMALE SetViewId {"dwarf_fighter_f"}
         }
 
-    PROMOTIONS_ID1 {"bow"}
+    PROMOTIONS_ID1 PROMOTION_DWARF_RANGED_MESSAGE {"bow"}
         Description PROMOTIONS_ID2
         {
           Filter Not CreatureFlag "is_archer" IncreaseAttr RANGED_DAMAGE 14
@@ -19,7 +19,7 @@
           Filter Gender FEMALE SetViewId {"dwarf_crossbowman_f"}
         }
 
-    PROMOTIONS_ID3 {"archwood_staff"}
+    PROMOTIONS_ID3 PROMOTION_DWARF_SPELL_MESSAGE {"archwood_staff"}
         Description PROMOTIONS_ID4
         {
           Filter Not CreatureFlag "is_spellcaster" IncreaseAttr SPELL_DAMAGE 14
@@ -30,7 +30,7 @@
           Filter Gender FEMALE SetViewId {"dwarf_mage_f"}
         }
 
-    PROMOTIONS_ID5 {"forge"}
+    PROMOTIONS_ID5 PROMOTION_DWARF_FORGE_MESSAGE {"forge"}
         Description PROMOTIONS_ID6
         {
           IncreaseAttr "WORKSHOP" 8
@@ -62,7 +62,7 @@
 }
 
 "knight" {
-    PROMOTIONS_ID11 { "sword" }
+    PROMOTIONS_ID11 PROMOTION_KNIGHT_MESSAGE { "sword" }
         Description PROMOTIONS_ID12
         Polymorph "KNIGHT_PLAYER" none
 }

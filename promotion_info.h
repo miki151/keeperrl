@@ -8,5 +8,9 @@ struct PromotionInfo {
   Effect SERIAL(applied);
   TString SERIAL(name);
   ViewId SERIAL(viewId);
-  SERIALIZE_ALL(name, viewId, applied)
+  optional<TStringId> SERIAL(message);
+  template <typename Archive>
+  void serialize(Archive&, unsigned int);
 };
+
+CEREAL_CLASS_VERSION(PromotionInfo, 1);
