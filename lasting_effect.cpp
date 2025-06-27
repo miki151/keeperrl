@@ -698,6 +698,19 @@ bool LastingEffects::inheritsFromSteed(LastingEffect e) {
   }
 }
 
+optional<LastingEffect> LastingEffects::restrictedTravel(const Creature* c) {
+  for (auto e : {
+    LastingEffect::POISON,
+    LastingEffect::TIED_UP,
+    LastingEffect::ENTANGLED,
+    LastingEffect::IMMOBILE,
+  }) {
+    if (c->isAffected(e))
+      return e;
+  }
+  return none;
+}
+
 double LastingEffects::modifyCreatureDefense(const Creature* c, LastingEffect e, double defense, AttrType damageAttr) {
   double baseMultiplier = 1.3;
   switch (e) {

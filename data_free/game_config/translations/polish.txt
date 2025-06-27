@@ -1834,7 +1834,7 @@ YOU_CANT_REMOVE_THIS_ITEM "Nie możesz usunąć tego przedmiotu."
 YOU_CANT_SEE_IN_THE_DARK "Nie widzisz już w ciemnościach!"
 YOU_CANT_SEE_THRU_ARROWSLITS "Nie możesz już widzieć ani strzelać przez strzelnice!"
 YOU_CANT_SEE_THRU_TREES "Nie widzisz już przez drzewa!"
-YOU_CANT_TRAVEL_WHILE_POISONED "Nie możesz podróżować, gdy jesteś {CANT_TRAVEL_WHILE_POISONED_HELPER:1}!"
+YOU_CANT_TRAVEL_WHILE "Nie możesz podróżować, gdy jesteś {2:1}!"
 YOU_CANT_USE_THIS_ITEM "Nie możesz użyć tego przedmiotu."
 YOU_CAPTURED "Zostajesz pojmany!"
 YOU_CHAT_WITH "Rozmawiasz z {1:instrumental}."
@@ -2292,9 +2292,7 @@ YOUR_HELPER "Twój"
     "Twoje" : plural,neuter
     "Twoje" : plural,masculine
 REQUIRES_A "Wymaga {1:genitive}"
-CANT_TRAVEL_WHILE_POISONED_HELPER "zatruty"
-    "zatruta" : feminine
-CANT_TRAVEL_WHILE_POISONED "{1} nie może podróżować, gdy jest {CANT_TRAVEL_WHILE_POISONED_HELPER:1}."
+CANT_TRAVEL_WHILE "{1} nie może podróżować, gdy jest {2:1}."
 OR "{1} lub {2}"
 KILL_TITLE "pogromca {1:genitive}"
     "pogromcę {1:genitive}" : accusative

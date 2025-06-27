@@ -110,4 +110,5 @@ class LastingEffects {
   static bool restrictedMovement(const Creature*);
   static bool canSwapPosition(const Creature*);
   static bool inheritsFromSteed(LastingEffect);
+  static optional<LastingEffect> restrictedTravel(const Creature*);
 };

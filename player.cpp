@@ -646,11 +646,10 @@ bool Player::canTravel() const {
   }
   auto team = getTeam();
   for (auto& c : team) {
-    if (c->isAffected(LastingEffect::POISON)) {
-      if (team.size() == 1)
-        getView()->presentText(none, TSentence("YOU_CANT_TRAVEL_WHILE_POISONED", creature->getName().bare()));
-      else
-        getView()->presentText(none, TSentence("CANT_TRAVEL_WHILE_POISONED", c->getName().the()));
+    if (auto e = LastingEffects::restrictedTravel(c)) {
+      getView()->presentText(none, capitalFirst(
+          TSentence(team.size() == 1 ? "YOU_CANT_TRAVEL_WHILE" : "CANT_TRAVEL_WHILE",
+          c->getName().the(), LastingEffects::getAdjective(*e))));
       return false;
     }
     Creature* attacker = nullptr;
