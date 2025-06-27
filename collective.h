@@ -246,6 +246,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   HashMap<TString, HashSet<TString>> SERIAL(lockedEquipmentGroups);
   EntityMap<Creature, EnumSet<MinionTrait>> SERIAL(stunnedMinions);
+  bool SERIAL(attackedByPlayer) = false;
   LocalTime lastMass = -10000_local;
 
   void takePrisoner(Creature*);
@@ -340,7 +341,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   HashSet<TString> SERIAL(allRecordedEvents);
   HashMap<TString, GroupLockedActivities> SERIAL(groupLockedAcitivities);
   EntityMap<Creature, Creature*> SERIAL(steedAssignments);
-  bool SERIAL(attackedByPlayer) = false;
   void updateGuardTasks();
   void updateMinionPromotions();
   void updateAutomatonEngines();

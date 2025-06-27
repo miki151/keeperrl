@@ -1028,7 +1028,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   }
   if ((info.isConquered = col->isConquered())) {
     info.triggers.clear();
-    if (col->getControl()->canPillage(collective))
+    if (col->attackedByPlayer && col->getControl()->canPillage(collective))
       info.action = VillageAction::PILLAGE;
   } else if (!col->getTribe()->isEnemy(collective->getTribe())) {
     if (collective->isKnownVillainLocation(col)) {
