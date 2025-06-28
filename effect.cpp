@@ -145,9 +145,17 @@ static bool enhanceArmor(Creature* c, int mod, TStringId verb1, TStringId verb2)
 }
 
 static bool enhanceWeapon(Creature* c, int mod, TStringId verb1, TStringId verb2) {
-  if (auto item = c->getFirstWeapon()) {
+  auto items = c->getEquipment().getSlotItems(EquipmentSlot::WEAPON);
+  items.append(c->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON));
+  if (!items.empty()) {
+    auto item = Random.choose(items);
     c->verb(verb1, verb2, item->getName());
-    item->addModifier(item->getWeaponInfo().meleeAttackAttr, mod);
+    auto attr = [&] {
+      if (item->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON)
+        return AttrType("RANGED_DAMAGE");
+      return item->getWeaponInfo().meleeAttackAttr;
+    }();
+    item->addModifier(attr, mod);
     return true;
   }
   return false;
