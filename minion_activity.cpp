@@ -380,6 +380,7 @@ optional<TimeInterval> MinionActivities::getDuration(const Creature* c, MinionAc
     case MinionActivity::IDLE:
     case MinionActivity::BE_WHIPPED:
     case MinionActivity::BE_TORTURED:
+    case MinionActivity::CONFESSION:
     case MinionActivity::SLEEP: return none;
     case MinionActivity::EAT:
     case MinionActivity::MINION_ABUSE:
@@ -391,8 +392,6 @@ optional<TimeInterval> MinionActivities::getDuration(const Creature* c, MinionAc
     case MinionActivity::PREACHING:
     case MinionActivity::MASS:
       return 300_visible;
-    case MinionActivity::CONFESSION:
-      return none;
     default:
       return TimeInterval(500 + Random.get(Range(0, 250)));
   }

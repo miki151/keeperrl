@@ -1063,13 +1063,21 @@ void PlayerControl::handleTrading(Collective* ally) {
     for (int i : All(options)) {
       auto& option = options[i];
       auto elem = getItemRecord(factory, option.items);
-      elem.elems["price"] = TString(toString(option.items[0]->getPrice()));
-      if (!option.storage.empty() && option.items[0]->getPrice() <= budget)
-        elem.elems["callback"] = ScriptedUIDataElems::Callback { [option, ally, &budget, &chosen, this] {
+      int price = option.items[0]->getPrice();
+      elem.elems["price"] = TString(toString(price));
+      if (!option.storage.empty() && price <= budget)
+        elem.elems["callback"] = ScriptedUIDataElems::Callback { [option, price, ally, &budget, &chosen, this] {
           CHECK(!option.storage.empty());
-          Random.choose(option.storage.asVector()).dropItem(ally->buyItem(option.items[0]));
-          budget -= option.items[0]->getPrice();
-          collective->takeResource({ResourceId("GOLD"), option.items[0]->getPrice()});
+          int count = 1;
+          if (option.items.size() > 10) {
+            int maxCount = min(budget / price, option.items.size());
+            count = getView()->getNumber(TSentence("BUY_HOW_MANY", makePlural(option.items[0]->getName())), Range(0, maxCount), maxCount).value_or(0);
+          }
+          for (int i : Range(count)) {
+            Random.choose(option.storage.asVector()).dropItem(ally->buyItem(option.items[i]));
+            budget -= price;
+            collective->takeResource({ResourceId("GOLD"), price});
+          }
           chosen = true;
           return true;
         }};
