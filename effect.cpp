@@ -1974,7 +1974,7 @@ static bool applyToCreature(const Effects::DoubleTrouble&, Creature* c, Creature
   PCreature copy = factory->getCreatures().makeCopy(c);
   auto ttl = 50_visible;
   for (auto& item : c->getEquipment().getItems())
-    if (!item->getResourceId() && !item->isDiscarded()) {
+    if (!item->getResourceId() && !item->isDiscarded() && !item->getEffect()) {
       auto itemCopy = item->getCopy(factory);
       itemCopy->setTimeout(c->getGame()->getGlobalTime() + ttl + 10_visible);
       copy->take(std::move(itemCopy), factory);
