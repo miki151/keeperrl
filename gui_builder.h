@@ -195,6 +195,7 @@ class GuiBuilder {
   SGuiElem technologyCache;
   int technologyHash = 0;
   int bestiaryIndex = 0;
+  string bestiarySearchString;
   int spellSchoolIndex = 0;
   MinionPageIndex minionPageIndex;
   optional<int> minionsIndex;
@@ -310,8 +311,8 @@ class GuiBuilder {
   function<void(Rectangle)> getAIButtonFun(const PlayerInfo&);
   SGuiElem drawSpellSchoolLabel(const SpellSchoolInfo&);
   SGuiElem drawResources(const vector<CollectiveInfo::Resource>&, const optional<TutorialInfo>&, int width);
-  SGuiElem drawBestiaryOverlay(const vector<PlayerInfo>&, int index);
-  SGuiElem drawBestiaryButtons(const vector<PlayerInfo>&, int index);
+  SGuiElem drawBestiaryOverlay(const vector<PlayerInfo>&, int index, const string& searchString);
+  SGuiElem drawBestiaryButtons(const vector<PlayerInfo>&, int index, const string& searchString);
   SGuiElem drawBestiaryPage(const PlayerInfo&);
   SGuiElem drawSpellSchoolsOverlay(const vector<SpellSchoolInfo>&, int index);
   SGuiElem drawSpellSchoolButtons(const vector<SpellSchoolInfo>&, int index);

@@ -3222,11 +3222,16 @@ SGuiElem GuiBuilder::drawBestiaryPage(const PlayerInfo& minion) {
       topMargin, GuiFactory::TOP);
 }
 
-SGuiElem GuiBuilder::drawBestiaryButtons(const vector<PlayerInfo>& minions, int index) {
+SGuiElem GuiBuilder::drawBestiaryButtons(const vector<PlayerInfo>& minions, int index, const string& searchString) {
   CHECK(!minions.empty());
   auto list = WL(getListBuilder, legendLineHeight);
   for (int i : All(minions)) {
     auto& minion = minions[i];
+    if (!searchString.empty()) {
+      auto name = gui.translate(minion.name);
+      if (name.find(searchString) == string::npos)
+        continue;
+    }
     auto viewId = minion.viewId;
     auto line = WL(getListBuilder);
     line.addElemAuto(WL(viewObject, viewId));
@@ -3238,14 +3243,32 @@ SGuiElem GuiBuilder::drawBestiaryButtons(const vector<PlayerInfo>& minions, int 
           (i == index ? WL(uiHighlightLine) : WL(empty)),
           line.buildHorizontalList()));
   }
-  return WL(scrollable, gui.margins(list.buildVerticalList(), 0, 5, 10, 0), &minionButtonsScroll, &scrollbarsHeld2);
+  auto searchBox = cache->get([this] {
+    return WL(textField, 15, [this]{ return bestiarySearchString; }, [this](string s) { bestiarySearchString = s;}, []{ return false; });
+  }, 0);
+  return WL(getListBuilder, legendLineHeight)
+      .addElem(
+          WL(getListBuilder)
+              .addElemAuto(WL(label, TStringId("SEARCH_DUNGEONS")))
+              .addElem(std::move(searchBox), 200)
+              .addSpace(10)
+              .addElemAuto(WL(buttonLabelFocusable, TString("X"_s),
+                    [this]{ bestiarySearchString.clear();},
+                    [] { return false; }))
+              .buildHorizontalList()
+      )
+      .addSpace(10)
+      .addMiddleElem(
+          WL(scrollable, gui.margins(list.buildVerticalList(), 0, 5, 10, 0), &minionButtonsScroll, &scrollbarsHeld2)
+      )
+      .buildVerticalList();
 }
 
-SGuiElem GuiBuilder::drawBestiaryOverlay(const vector<PlayerInfo>& creatures, int index) {
+SGuiElem GuiBuilder::drawBestiaryOverlay(const vector<PlayerInfo>& creatures, int index, const string& searchString) {
   int margin = 20;
   int minionListWidth = 330;
   SGuiElem menu;
-  SGuiElem leftSide = drawBestiaryButtons(creatures, index);
+  SGuiElem leftSide = drawBestiaryButtons(creatures, index, searchString);
   menu = WL(stack,
       WL(horizontalList, makeVec(
           WL(margins, std::move(leftSide), 8, 15, 5, 0),
@@ -3648,7 +3671,7 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, const GameInfo& info) {
     if (bestiaryIndex >= info.encyclopedia->bestiary.size())
       bestiaryIndex = 0;
     ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBestiaryOverlay, this), THIS_LINE,
-         info.encyclopedia->bestiary, bestiaryIndex), OverlayInfo::TOP_LEFT});
+         info.encyclopedia->bestiary, bestiaryIndex, bestiarySearchString), OverlayInfo::TOP_LEFT});
   }
   if (bottomWindow == SPELL_SCHOOLS) {
     if (spellSchoolIndex >= info.encyclopedia->spellSchools.size())
