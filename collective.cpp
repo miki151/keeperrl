@@ -1640,7 +1640,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
           if (auto& minion = item->getAssembledMinion())
             minion->assemble(this, item.get(), pos.first);
           else
-            c->getPosition().dropItem(std::move(item));
+            c->getEquipment().addItem(std::move(item), c, contentFactory);
         }
     }
   }
