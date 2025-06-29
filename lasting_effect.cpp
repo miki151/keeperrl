@@ -335,6 +335,7 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
     case LastingEffect::SLEEP:
       c->getAttributes().increaseBaseAttr(AttrType("DEFENSE"), 10);
       c->addEffect(LastingEffect::RESTED, 1000_visible);
+      Effect(EffectType::SetMinionActivity{MinionActivity::IDLE}).applyToCreature(c);
       break;
     case LastingEffect::PLAGUE:
       c->addPermanentEffect(LastingEffect::PLAGUE_RESISTANT);
@@ -395,6 +396,7 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::TIED_UP:
         c->you(MsgType::BREAK_FREE);
+        Effect(EffectType::SetMinionActivity{MinionActivity::IDLE}).applyToCreature(c);
         break;
       case LastingEffect::BLIND:
         c->verb(TStringId("YOU_ARE_NO_LONGER_BLIND"), TStringId("IS_NO_LONGER_BLIND"));

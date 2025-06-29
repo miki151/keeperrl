@@ -1722,6 +1722,7 @@ void Collective::onCopulated(Creature* who, Creature* with) {
   who->getAttributes().copulationClientEffect.apply(with->getPosition(), who);
   who->getAttributes().copulationEffect.apply(who->getPosition());
   addRecordedEvent(TSentence("A_SEX_ACT_BETWEEN", who->getName().a(), with->getName().a()));
+  setMinionActivity(who, MinionActivity::IDLE);
 }
 
 MinionEquipment& Collective::getMinionEquipment() {

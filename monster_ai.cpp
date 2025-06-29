@@ -1029,6 +1029,8 @@ class ByCollective : public Behaviour {
   }
 
   MoveInfo newStandardTask() {
+    if (LastingEffects::restrictedMovement(creature))
+      return NoMove;
     //if (Random.roll(5))
     if (auto t = getStandardTask())
       if (auto move = t->getMove(creature))

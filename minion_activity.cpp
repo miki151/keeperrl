@@ -347,7 +347,8 @@ PTask MinionActivities::generate(Collective* collective, Creature* c, MinionActi
         return Task::chain(
             Task::applySquare(collective, targets.transform([](auto pos){ return make_pair(pos, FurnitureLayer::MIDDLE); }),
                 Task::SearchType::CONFESSION, Task::APPLY),
-            Task::wait(10_visible)
+            Task::wait(10_visible),
+            Task::activitySuccess()
         );
       break;
     }
@@ -381,7 +382,8 @@ optional<TimeInterval> MinionActivities::getDuration(const Creature* c, MinionAc
     case MinionActivity::BE_WHIPPED:
     case MinionActivity::BE_TORTURED:
     case MinionActivity::CONFESSION:
-    case MinionActivity::SLEEP: return none;
+    case MinionActivity::SLEEP:
+      return TimeInterval(100);
     case MinionActivity::EAT:
     case MinionActivity::MINION_ABUSE:
       return TimeInterval((int) 30 + Random.get(-10, 10));

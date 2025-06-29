@@ -1307,6 +1307,30 @@ PTask Task::idle() {
 }
 
 namespace {
+class ActivitySuccess : public Task {
+  public:
+
+  virtual MoveInfo getMove(Creature* c) override {
+    Effect(EffectType::SetMinionActivity{MinionActivity::IDLE}).applyToCreature(c);
+    setDone();
+    return c->wait();
+  }
+
+  virtual TString getDescription() const override {
+    return TStringId("IDLE_TASK");
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task))
+  SERIALIZATION_CONSTRUCTOR(ActivitySuccess);
+};
+
+}
+
+PTask Task::activitySuccess() {
+  return makeOwner<ActivitySuccess>();
+}
+
+namespace {
 class AlwaysDone : public Task {
   public:
   AlwaysDone(PTask t, PTaskPredicate predicate) : task(std::move(t)),
