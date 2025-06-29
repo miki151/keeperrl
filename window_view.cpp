@@ -175,8 +175,17 @@ void WindowView::mapContinuousLeftClickFun(Vec2 pos) {
   auto collectiveTab = guiBuilder.getCollectiveTab();
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::BAND:
-      if (collectiveTab == CollectiveTab::BUILDINGS && activeBuilding)
-          inputQueue.push(UserInput(UserInputId::RECT_SELECTION, BuildingClickInfo{pos, *activeBuilding}));
+      if (collectiveTab == CollectiveTab::BUILDINGS && activeBuilding) {
+        auto t = Clock::getRealMillis();
+        const auto doubleClickInterval = milliseconds {300};
+        if (!lastTileClick || lastTileClick->position != pos || lastTileClick->clickTime < t - doubleClickInterval)
+          lastTileClick = none;
+        inputQueue.push(UserInput(UserInputId::RECT_SELECTION, BuildingClickInfo{pos, *activeBuilding, !!lastTileClick}));
+        lastTileClick = LastTileClickInfo {
+          pos,
+          t
+        };
+      }
       break;
     default:
       break;

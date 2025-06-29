@@ -3052,20 +3052,23 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::RECT_SELECTION: {
       auto& info = input.get<BuildingClickInfo>();
-      if (buildInfo[info.building].canSelectRectangle()) {
+      if (info.doubleClick) {
+        handleSelection(info.pos, buildInfo[info.building], false, true);
+      }
+      else if (buildInfo[info.building].canSelectRectangle()) {
         updateSelectionSquares();
         if (rectSelection) {
           rectSelection->corner2 = info.pos;
         } else {
           rectSelection = CONSTRUCT(SelectionInfo, c.corner1 = c.corner2 = info.pos;);
           selection = Selection::NONE;
-          handleSelection(info.pos, buildInfo[info.building], true);
+          handleSelection(info.pos, buildInfo[info.building], true, false);
           rectSelection->deselect = (selection == Selection::DESELECT);
           selection = Selection::NONE;
         }
         updateSelectionSquares();
       } else
-        handleSelection(info.pos, buildInfo[info.building], false);
+        handleSelection(info.pos, buildInfo[info.building], false, false);
       break;
     }
     case UserInputId::RECT_CONFIRM:
@@ -3078,7 +3081,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           if (rectSelection->corner1.y != box.top())
             w.y = box.top() + box.bottom() - 1 - w.y;
           std::cout << w << endl;
-          handleSelection(w, buildInfo[input.get<BuildingClickInfo>().building], false);
+          handleSelection(w, buildInfo[input.get<BuildingClickInfo>().building], false, false);
         }
       }
       FALLTHROUGH;
@@ -3191,7 +3194,7 @@ void PlayerControl::handleDestructionOrder(Position position, HighlightType high
   }
 }
 
-void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool dryRun) {
+void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool dryRun, bool doubleClick) {
   PROFILE;
   Position position(pos, getCurrentLevel());
   for (auto& req : building.requirements)
@@ -3199,10 +3202,11 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool dr
       return;
   if (position.isUnavailable())
     return;
-  handleSelection(position, building.type, dryRun);
+  handleSelection(position, building.type, dryRun, doubleClick);
 }
 
-void PlayerControl::handleSelection(Position position, const BuildInfoTypes::BuildType& building, bool dryRun) {
+void PlayerControl::handleSelection(Position position, const BuildInfoTypes::BuildType& building, bool dryRun,
+    bool doubleClick) {
   building.visit<void>(
     [&](const BuildInfoTypes::ImmediateDig&) {
       auto furniture = position.modFurniture(FurnitureLayer::MIDDLE);
@@ -3263,10 +3267,28 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
       }
     },
     [&](const BuildInfoTypes::CutTree&) {
-      handleDestructionOrder(position, HighlightType::CUT_TREE, DestroyAction::Type::CUT, dryRun);
+      if (doubleClick) {
+        auto furniture = position.getFurniture(FurnitureLayer::MIDDLE);
+        if (furniture && furniture->isClearFogOfWar() && furniture->canDestroy(DestroyAction::Type::CUT)) {
+          handleDestructionOrder(position, HighlightType::CUT_TREE, DestroyAction::Type::CUT, false);
+          selection = Selection::NONE;
+          bool wasSelected = collective->getTaskMap().getHighlightType(position) == HighlightType::CUT_TREE;
+          addResourceRecursively(position, !wasSelected, HighlightType::CUT_TREE, DestroyAction::Type::CUT);
+        }
+      } else
+        handleDestructionOrder(position, HighlightType::CUT_TREE, DestroyAction::Type::CUT, dryRun);
     },
     [&](const BuildInfoTypes::Dig&) {
-      handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::DIG, dryRun);
+      if (doubleClick) {
+        auto furniture = position.getFurniture(FurnitureLayer::MIDDLE);
+        if (furniture && furniture->isClearFogOfWar() && furniture->canDestroy(DestroyAction::Type::DIG)) {
+          handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::DIG, false);
+          selection = Selection::NONE;
+          bool wasSelected = collective->getTaskMap().getHighlightType(position) == HighlightType::DIG;
+          addResourceRecursively(position, !wasSelected, HighlightType::DIG, DestroyAction::Type::DIG);
+        }
+      } else
+        handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::DIG, dryRun);
     },
     [&](const BuildInfoTypes::FillPit&) {
       if (auto f = position.getFurniture(FurnitureLayer::MIDDLE))
@@ -3276,7 +3298,7 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
     },
     [&](const BuildInfoTypes::Chain& c) {
       for (auto& elem : c)
-        handleSelection(position, elem, dryRun);
+        handleSelection(position, elem, dryRun, doubleClick);
     },
     [&](ZoneId zone) {
       auto& zones = collective->getZones();
@@ -3362,6 +3384,18 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
       }
     }
   );
+}
+
+void PlayerControl::addResourceRecursively(Position pos, bool select,
+    HighlightType highlightType, DestroyAction::Type destroyAction) {
+  bool wasSelected = collective->getTaskMap().getHighlightType(pos) == highlightType;
+  if (wasSelected == select)
+    return;
+  handleDestructionOrder(pos, highlightType, destroyAction, false);
+  auto myType = pos.getFurniture(FurnitureLayer::MIDDLE)->getType();
+  for (auto v : pos.neighbors4())
+    if (v.getFurniture(FurnitureLayer::MIDDLE)->getType() == myType)
+      addResourceRecursively(v, select, highlightType, destroyAction);
 }
 
 void PlayerControl::onSquareClick(Position pos) {

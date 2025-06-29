@@ -123,6 +123,7 @@ struct TeamDropInfo {
 struct BuildingClickInfo {
   Vec2 pos;
   int building;
+  bool doubleClick;
 };
 
 struct TeamCreatureInfo {

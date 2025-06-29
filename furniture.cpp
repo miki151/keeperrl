@@ -718,6 +718,8 @@ void Furniture::serialize(PrettyInputArchive& ar1, unsigned int v) {
       setDestroyable(elem.first, elem.second);
   if (viewId)
     viewObject = ViewObject(*viewId, viewLayer.value_or(getViewLayer(layer)), capitalFirst(getName()));
+  if (clearFogOfWar)
+    viewObject->setModifier(ViewObjectModifier::DOUBLE_CLICK_RESOURCE);
   if (attachmentDir)
     viewObject->setAttachmentDir(*attachmentDir);
   if (waterDepth)

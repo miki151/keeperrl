@@ -168,8 +168,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void commandTeam(TeamId);
   void setScrollPos(Position);
 
-  void handleSelection(Vec2 pos, const BuildInfo&, bool dryRun);
-  void handleSelection(Position, const BuildInfoTypes::BuildType&, bool dryRun);
+  void handleSelection(Vec2 pos, const BuildInfo&, bool dryRun, bool doubleClick);
+  void handleSelection(Position, const BuildInfoTypes::BuildType&, bool dryRun, bool doubleClick);
   vector<CollectiveInfo::Button> fillButtons() const;
   VillageInfo::Village getVillageInfo(const Collective* enemy) const;
   TString getTriggerLabel(const AttackTrigger&) const;
@@ -214,6 +214,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   ViewObject getTrapObject(FurnitureType, bool built) const;
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
   void onSquareClick(Position);
+  void addResourceRecursively(Position, bool select, HighlightType, DestroyAction::Type);
   Game* getGame() const;
   View* getView() const;
   PController createMinionController(Creature*);

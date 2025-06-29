@@ -3473,6 +3473,10 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
                 .addElem(WL(viewObject, viewObject.getViewIdList()), 30)
                 .addElemAuto(WL(labelMultiLineWidth, objectName, legendLineHeight * 2 / 3, 300))
                 .buildHorizontalList());
+          if (viewObject.hasModifier(ViewObject::Modifier::DOUBLE_CLICK_RESOURCE) && activeButton == 0) {
+            lines.addSpace(legendLineHeight / 3);
+            lines.addElem(WL(label, TStringId("RESOURCE_DOUBLE_CLICK_HINT")));
+          }
           lines.addSpace(legendLineHeight / 3);
           if (layer == ViewLayer::CREATURE)
             lines.addElemAuto(drawLyingItemsList(TStringId("INVENTORY_LABEL"), index->getEquipmentCounts(), 250));

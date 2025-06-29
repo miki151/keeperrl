@@ -505,6 +505,7 @@ FIRE_SCROLL_DESCRIPTION "Zapala się po przeczytaniu."
 FIVE "pięć"
     "pięcioma" : instrumental
 FLANKED_HINT "Osaczony: obrona zmniejszona o {1}%."
+RESOURCE_DOUBLE_CLICK_HINT "Podwójne kliknięcie zaznaczy całe złoże."
 FORBIDDEN_ZONE_HIGHLIGHT "Strefa zakazana"
 FOUR "cztery"
     "czterema" : instrumental

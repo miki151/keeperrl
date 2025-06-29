@@ -245,4 +245,9 @@ class WindowView: public View {
   fx::FXRenderer* fxRenderer;
   Vec2 getMinimapOrigin() const;
   int getMinimapWidth() const;
+  struct LastTileClickInfo {
+    Vec2 position;
+    milliseconds clickTime;
+  };
+  optional<LastTileClickInfo> lastTileClick;
 };
