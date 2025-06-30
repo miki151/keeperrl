@@ -435,6 +435,7 @@ Connections("map_swamp")
 { "bone" "%" ColorId WHITE }
 { "frozen_remains" "%" ColorId LIGHT_GRAY }
 { "dig_icon" "⛏" ColorId LIGHT_GRAY true }
+{ "dig_icon_no_claim" "⛏" ColorId LIGHT_GRAY true }
 { "fill_pit_icon" "⛏" ColorId LIGHT_GRAY true }
 { "sword" ")" ColorId LIGHT_GRAY }
 { viewId = "sword_v" symbol = ")" color = ColorId LIGHT_GRAY weaponOrigin = {10 16} }

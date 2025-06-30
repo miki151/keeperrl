@@ -24,6 +24,7 @@ namespace BuildInfoTypes {
   using DestroyLayers = vector<FurnitureLayer>;
   using ImmediateDig = EmptyStruct<struct ImmediateDigTag>;
   using Dig = EmptyStruct<struct DigTag>;
+  using DigNoClaim = EmptyStruct<struct DigNoClaimTag>;
   using CutTree = EmptyStruct<struct CutTreeTag>;
   using FillPit = EmptyStruct<struct FillPitTag>;
   using ClaimTile = EmptyStruct<struct ClaimTileTag>;
@@ -49,7 +50,8 @@ namespace BuildInfoTypes {
     X(PlaceItem, 10)\
     X(Zone, 11)\
     X(Chain, 12)\
-    X(FillPit, 13)
+    X(FillPit, 13)\
+    X(DigNoClaim, 14)
 
   #define VARIANT_NAME BuildType
 

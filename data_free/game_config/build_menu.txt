@@ -6,6 +6,7 @@
   {
     { { Dig CutTree }                                        BUILD_MENU_DIG_OR_CUT_TREE   BUILD_MENU_GROUPNAME
       "" "DIG" {} true DIG_OR_CUT_TREES}
+    { DigNoClaim                                        BUILD_MENU_DIG_NO_CLAIM   BUILD_MENU_GROUPNAME }
 # If you want you can use "just dig" or "just cut tree" in your mod
 #    { Dig                                                          "Dig"   "Structure" }
 #    { CutTree                                                      "Cut tree"   "Structure" }
