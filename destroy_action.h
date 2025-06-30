@@ -4,6 +4,7 @@
 
 class Sound;
 class TStringId;
+class ContentFactory;
 
 class DestroyAction {
   public:
@@ -20,7 +21,7 @@ class DestroyAction {
   bool canNavigate(const Creature*) const;
   bool destroyAnimation() const;
   MinionActivity getMinionActivity() const;
-  double getDamage(Creature*) const;
+  double getDamage(Creature*, const ContentFactory*) const;
 
   SERIALIZATION_DECL(DestroyAction)
 

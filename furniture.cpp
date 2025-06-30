@@ -162,7 +162,7 @@ void Furniture::destroy(Position pos, const DestroyAction& action, Creature* des
 
 void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& action) {
   if (auto& info = destroyedInfo[action.getType()]) {
-    double damage = action.getDamage(c);
+    double damage = action.getDamage(c, pos.getGame()->getContentFactory());
     info->health -= damage / info->strength;
     updateViewObject();
     pos.setNeedsRenderAndMemoryUpdate(true);

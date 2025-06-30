@@ -117,10 +117,11 @@ MinionActivity DestroyAction::getMinionActivity() const {
   }
 }
 
-double DestroyAction::getDamage(Creature* c) const {
+double DestroyAction::getDamage(Creature* c, const ContentFactory* factory) const {
   PROFILE;
   switch (type) {
     case Type::BASH:
+      return max(c->getBestAttack(factory).value, 15);
     case Type::BOULDER:
     case Type::CUT:
       return max(c->getAttr(AttrType("DAMAGE")), 15);
