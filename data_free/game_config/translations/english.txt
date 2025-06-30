@@ -751,7 +751,7 @@ WHEN_OUTDOORS "when outdoors"
 WHEN_POP_LIMIT_REACHED "when population limit is reached"
 WHICH_DIRECTION_THROW "Which direction do you want to throw?"
 WHICH_DIRECTION "Which direction?"
-WILL_BE_REPLACED "Will be replaced for free if killed"
+WILL_BE_REPLACED "Increases population limit by 1. Will be replaced for free if killed"
 WING_BODY_PART "wing" "wings" : plural
 WISH_EFFECT_DESCRIPTION "Gives you one wish."
 WISH_EFFECT_NAME "wish"

@@ -1152,7 +1152,7 @@ WHEN_OUTDOORS "gdy na zewnątrz"
 WHEN_POP_LIMIT_REACHED "gdy osiągnięto limit populacji"
 WHICH_DIRECTION_THROW "W którym kierunku chcesz rzucić?"
 WHICH_DIRECTION "W którym kierunku?"
-WILL_BE_REPLACED "Zostanie zastąpiony bezpłatnie w razie zabicia"
+WILL_BE_REPLACED "Podnosi limit populacji o 1. Zostanie zastąpiony bezpłatnie w razie zabicia"
 WING_BODY_PART neuter "skrzydło"
     "skrzydła" : genitive
     "skrzydłem" : instrumental
