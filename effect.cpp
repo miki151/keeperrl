@@ -1005,7 +1005,9 @@ static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Heal&
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Heal& e, const Creature* victim, bool isEnemy) {
-  if (victim->getBody().canHeal(e.healthType, victim->getGame()->getContentFactory()))
+  auto& body = victim->getBody();
+  if (body.canHeal(e.healthType, victim->getGame()->getContentFactory()) &&
+      (body.getHealth() < 0.5 || isConsideredInDanger(victim)))
     return isEnemy ? -1 : 1;
   return 0;
 }
