@@ -2792,7 +2792,14 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
       guiElem = WL(stack,
           WL(conditional, WL(uiHighlightMouseOver), [this] { return !workshopIndex; }),
           std::move(guiElem),
-          WL(button, getButtonCallback({UserInputId::WORKSHOP_ADD, itemIndex})),
+          WL(button,
+              [this, itemIndex]() {
+                int count = 1;
+                if (renderer.isKeypressed(SDL::SDL_SCANCODE_LSHIFT) || renderer.isKeypressed(SDL::SDL_SCANCODE_RSHIFT))
+                  count = 5;
+                for (int i : Range(count))
+                  callbacks.input({UserInputId::WORKSHOP_ADD, itemIndex});
+              }),
           createTooltip(tooltip, false)
       );
     guiElem = WL(stack,
