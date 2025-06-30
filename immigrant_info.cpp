@@ -156,5 +156,19 @@ vector<Collective*> RecruitmentInfo::findEnemy(Game* game) const {
   return ret;
 }
 
+template <class Archive>
+void RecruitmentInfo::serialize(Archive& ar, const unsigned int version) {
+  ar(enemyId, minPopulation);
+  if (version >= 1)
+    ar(discoverMessage);
+}
+
 #include "pretty_archive.h"
 template void ImmigrantInfo::serialize(PrettyInputArchive&, unsigned);
+
+template <>
+void RecruitmentInfo::serialize(PrettyInputArchive& ar1, const unsigned int) {
+  ar1(enemyId, minPopulation);
+  if (ar1.peek() != "}")
+    ar1(discoverMessage);
+}

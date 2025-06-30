@@ -13,6 +13,7 @@
 #include "sunlight_info.h"
 #include "keybinding.h"
 #include "achievement_id.h"
+#include "t_string.h"
 
 class ContentFactory;
 struct SpecialTraitInfo;
@@ -47,10 +48,14 @@ class Game;
 struct RecruitmentInfo {
   vector<EnemyId> SERIAL(enemyId);
   int SERIAL(minPopulation);
+  TStringId SERIAL(discoverMessage) = TStringId("RECRUITS_AVAILABLE");
   vector<Collective*> findEnemy(Game*) const;
   vector<Creature*> getAvailableRecruits(Collective*, CreatureId) const;
-  SERIALIZE_ALL(enemyId, minPopulation)
+  template <class Archive>
+  void serialize(Archive&, const unsigned int);
 };
+
+CEREAL_CLASS_VERSION(RecruitmentInfo, 1)
 
 struct TutorialRequirement {
   TutorialState SERIAL(state);

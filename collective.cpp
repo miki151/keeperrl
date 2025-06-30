@@ -1123,8 +1123,8 @@ bool Collective::isKnownVillain(const Collective* col) const {
 
 void Collective::addKnownVillainLocation(const Collective* col) {
   knownVillainLocations.insert(col);
-  if (immigration->suppliesRecruits(col))
-    control->addWindowMessage(ViewIdList{col->getName()->viewId}, TSentence("RECRUITS_AVAILABLE", col->getName()->full));
+  if (auto stringId = immigration->suppliesRecruits(col))
+    control->addWindowMessage(ViewIdList{col->getName()->viewId}, TSentence(*stringId, col->getName()->full));
   if (col->hasTradeItems() && !getTribe()->isEnemy(col->getTribe()))
     control->addWindowMessage(ViewIdList{col->getName()->viewId}, TSentence("TRADING_AVAILABLE", col->getName()->full));
 }

@@ -215,14 +215,14 @@ optional<TString> Immigration::getMissingRequirement(const ImmigrantRequirement&
   return requirement.visit<optional<TString>>(visitor);
 }
 
-bool Immigration::suppliesRecruits(const Collective* col) const {
+optional<TStringId> Immigration::suppliesRecruits(const Collective* col) const {
   if (auto enemyId = col->getEnemyId())
     for (auto& info : immigrants)
       for (auto& req : info.requirements)
         if (auto recruitmentInfo = req.type.getReferenceMaybe<RecruitmentInfo>())
           if (recruitmentInfo->enemyId.contains(*enemyId))
-            return true;
-  return false;
+            return recruitmentInfo->discoverMessage;
+  return none;
 }
 
 vector<TString> Immigration::getMissingRequirements(const Group& group) const {

@@ -1095,7 +1095,7 @@ End
 {
   settlement = {
     type = RandomLayout { "kraken_z_level" { 80 80 } "default" }
-    tribe = DARK_KEEPER
+    tribe = GREENSKIN
     inhabitants = {
       fighters = {
         count = {6}

@@ -952,6 +952,14 @@ End
       }
       frequency = 0.5
     }
+    {
+      ids = { "GOBLIN_MATRON" }
+      traits = { FIGHTER }
+      requirements = {
+        { 0.0 RecruitmentInfo { "Z_LEVEL_KRAKENS" } 0 GOBLIN_MATRONS_DISCOVERY_MESSAGE }
+      }
+    }
+
     DarkRecruits()
 }
 "tutorial"
