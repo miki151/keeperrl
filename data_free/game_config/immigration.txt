@@ -188,6 +188,13 @@ Def DarkRecruits()
         { 0.0 RecruitmentInfo { "Z_LEVEL_VAMPIRE_VAULT" } 0 }
       }
     }
+    {
+      ids = { "GOBLIN_WIZARD" }
+      traits = { FIGHTER }
+      requirements = {
+        { 0.0 RecruitmentInfo { "EVIL_TEMPLE" } 0 }
+      }
+    }
 End
 
 "white_recruits"
@@ -205,6 +212,13 @@ End
       requirements = {
         { 0.0 RecruitmentInfo { "HUMAN_BLACKSMITH" } 0 }
         { 1.0 CostInfo "GOLD" 250 }
+      }
+    }
+    {
+      ids = { "PRIEST" }
+      traits = { FIGHTER }
+      requirements = {
+        { 0.0 RecruitmentInfo { "TEMPLE" } 0 }
       }
     }
 }

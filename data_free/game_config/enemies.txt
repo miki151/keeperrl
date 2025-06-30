@@ -2342,7 +2342,7 @@ End
 {
   settlement = {
     type = Builtin TEMPLE "WOOD"
-    tribe = DARK_KEEPER
+    tribe = GREENSKIN
     race = ENEMIES_EVIL_TEMPLE_RACE
     inhabitants = {
       leader = {

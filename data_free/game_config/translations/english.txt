@@ -3193,7 +3193,7 @@ BUFFS_PREACHING_ID "Your prayers echo through the nave, before sinking like ston
 BUFFS_PREACHING_SKILL_ADJECTIVE "preacher"
 BUFFS_PREACHING_SKILL_DESCRIPTION "Can hold a Mass."
 BUFFS_PREACHING_SKILL_NAME "preaching"
-BUFFS_RANGED_RESISTANCE_NAME "ranged"
+BUFFS_RANGED_RESISTANCE_NAME "ranged damage"
 BUFFS_SPIDER_SKILL_ADJECTIVE "weaves spider webs"
 BUFFS_SPIDER_SKILL_DESCRIPTION "Can weave spider webs."
 BUFFS_SPIDER_SKILL_NAME "spider web weaving"
