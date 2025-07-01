@@ -2373,7 +2373,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
           : getGame()->getContentFactory()->getWorkshopType(furniture->getType());
       if (!!workshopType)
         index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
-      if (chosenWorkshop == workshopType)
+      if (chosenWorkshop && chosenWorkshop == workshopType)
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
       if (draggedCreature)
         if (Creature* c = getCreature(*draggedCreature))
