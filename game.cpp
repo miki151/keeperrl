@@ -678,7 +678,8 @@ void Game::retired(const TString& title, int numKills, int points) {
   };
   if (dungeonTurns > 0) {
     text.push_back(TSentence("TURNS_DEFENDING_THE_BASE", TString(dungeonTurns)));
-    text.push_back(TSentence("TURNS_SPENT_ATTACKING", TString(turns - dungeonTurns)));
+    if (turns > dungeonTurns)
+      text.push_back(TSentence("TURNS_SPENT_ATTACKING", TString(turns - dungeonTurns)));
   }
   text.push_back(TStringId("THANK_YOU_FOR_PLAYING"));
   text.append(statistics->getText());
