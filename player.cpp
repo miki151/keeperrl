@@ -636,7 +636,7 @@ void Player::updateSquareMemory(Position pos) {
   pos.getViewIndex(index, creature);
   levelMemory->update(pos, index);
   if (auto belowPos = pos.getGroundBelow())
-    updateSquareMemory(*belowPos);
+    updateSquareMemory(belowPos->first);
 }
 
 bool Player::canTravel() const {
@@ -1132,8 +1132,8 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   bool canSee = teamCanSeeAndSameLevel(Position(pos, getLevel()));
   Position position = creature->getPosition().withCoord(pos);
   if (auto belowPos = position.getGroundBelow()) {
-    if (auto memIndex = getMemory().getViewIndex(*belowPos))
-      index.mergeGroundBelow(*memIndex);
+    if (auto memIndex = getMemory().getViewIndex(belowPos->first))
+      index.mergeGroundBelow(*memIndex, belowPos->second);
     return;
   }
   if (canSee)

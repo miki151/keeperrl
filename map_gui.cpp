@@ -189,9 +189,13 @@ static ViewId getConnectionId(const ViewId& id, const Tile& tile) {
 DirSet MapGui::getConnectionSet(Vec2 tilePos, const ViewId& id, const Tile& tile) {
   DirSet ret;
   int cnt = 0;
+  int myHeight = objects[tilePos]->height;
   for (Vec2 dir : Vec2::directions8()) {
     Vec2 pos = tilePos + dir;
-    if (pos.inRectangle(levelBounds) && connectionMap[pos].count(getConnectionId(id, tile)))
+    if (pos.inRectangle(levelBounds) && (
+        connectionMap[pos].count(getConnectionId(id, tile))
+        || (id == ViewId("roof"))
+    ) && (!!objects[pos] && objects[pos]->height == myHeight))
       ret.insert((Dir) cnt);
     ++cnt;
   }

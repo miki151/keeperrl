@@ -684,12 +684,15 @@ Collective* Position::getCollective() const {
   return level->territory[coord];
 }
 
-optional<Position> Position::getGroundBelow() const {
+optional<pair<Position, int>> Position::getGroundBelow() const {
   if (isUnavailable() && level->below) {
     Position ret(coord, level->below);
-    while (ret.isUnavailable() && ret.level->below)
+    int height = 1;
+    while (ret.isUnavailable() && ret.level->below) {
       ret = Position(coord, ret.level->below);
-    return ret;
+      ++height;
+    }
+    return make_pair(ret, height);
   }
   return none;
 }

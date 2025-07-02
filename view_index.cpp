@@ -262,11 +262,12 @@ void ViewIndex::mergeFromMemory(const ViewIndex& memory) {
   }
 }
 
-void ViewIndex::mergeGroundBelow(const ViewIndex& memory) {
+void ViewIndex::mergeGroundBelow(const ViewIndex& memory, int height) {
   if (isEmpty()) {
     *this = memory;
     removeObject(ViewLayer::TORCH1);
     removeObject(ViewLayer::TORCH2);
+    this->height = height;
     setHighlight(HighlightType::TILE_BELOW);
   }
 }

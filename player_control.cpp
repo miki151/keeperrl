@@ -2344,8 +2344,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (!position.isValid())
     return;
   if (auto belowPos = position.getGroundBelow()) {
-    if (auto memIndex = getMemory().getViewIndex(*belowPos))
-      index.mergeGroundBelow(*memIndex);
+    if (auto memIndex = getMemory().getViewIndex(belowPos->first))
+      index.mergeGroundBelow(*memIndex, belowPos->second);
     return;
   }
   bool canSeePos = canSee(position);
@@ -3608,8 +3608,8 @@ void PlayerControl::addToMemory(Position pos) {
   PROFILE;
   if (!pos.needsMemoryUpdate())
     return;
-  if (auto ground = pos.getGroundBelow())
-    addToMemory(*ground);
+ if (auto ground = pos.getGroundBelow())
+    addToMemory(ground->first);
   pos.setNeedsMemoryUpdate(false);
   ViewIndex index;
   getSquareViewIndex(pos, true, index);

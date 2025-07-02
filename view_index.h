@@ -68,7 +68,7 @@ class ViewIndex {
   ViewObject& getObject(ViewLayer);
   const ViewObject* getTopObject(const vector<ViewLayer>&) const;
   void mergeFromMemory(const ViewIndex& memory);
-  void mergeGroundBelow(const ViewIndex& memory);
+  void mergeGroundBelow(const ViewIndex& memory, int height);
   bool isEmpty() const;
   bool noObjects() const;
   bool hasAnyHighlight() const;
@@ -100,6 +100,8 @@ class ViewIndex {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
+
+  std::uint8_t height = 0;
 
   private:
   heap_optional<pair<ItemCounts, ItemCounts>> SERIAL(itemCounts);

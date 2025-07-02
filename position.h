@@ -164,7 +164,7 @@ class Position {
   void removeFurnitureEffect(TribeId, const FurnitureEffectInfo&) const;
   int countSwarmers() const;
   Collective* getCollective() const;
-  optional<Position> getGroundBelow() const;
+  optional<pair<Position, int>> getGroundBelow() const;
   bool isClosedOff(MovementType) const;
 
   SERIALIZATION_DECL(Position)

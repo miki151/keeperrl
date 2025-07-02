@@ -120,7 +120,7 @@
 { "dwarf_female" "h" ColorId LIGHT_BLUE }
 { viewId = "shopkeeper" symbol = "@" color = ColorId LIGHT_BLUE weaponOrigin = {3 14} }
 { "floor" "." ColorId LIGHT_GRAY }
-{ "roof" "=" ColorId LIGHT_RED }
+{ viewId = "roof" symbol = "=" color = ColorId LIGHT_RED sprite = "rr_roof_base" mountainSides = "rr_roof" }
 { "floor_red" "." ColorId LIGHT_RED }
 { viewId = "bridge" symbol = "_" color = ColorId BROWN wallConnections = true }
 { viewId = "bridge_stone" symbol = "_" color = ColorId DARK_GRAY wallConnections = true }
