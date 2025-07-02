@@ -165,7 +165,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool minionCanUseQuarters(Creature*);
   const Zones& getZones() const;
   void cancelMarkedTask(Position);
-  void orderDestruction(Position pos, const DestroyAction&, bool claimSquare);
+  void orderDestruction(Position pos, const DestroyAction&);
   void installBodyPart(Item*, Creature* target);
   double getDangerLevel() const;
   void setPriorityTasks(Position);

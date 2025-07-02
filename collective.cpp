@@ -1256,15 +1256,13 @@ static HighlightType getHighlight(const DestroyAction& action) {
   }
 }
 
-void Collective::orderDestruction(Position pos, const DestroyAction& action, bool claimSquare) {
+void Collective::orderDestruction(Position pos, const DestroyAction& action) {
   const auto layer = FurnitureLayer::MIDDLE;
   auto f = NOTNULL(pos.getFurniture(layer));
   CHECK(f->canDestroy(action));
-  auto task = Task::destruction(this, pos, f, action,
-      pos.canEnterEmpty({MovementTrait::WALK}) ? nullptr : positionMatching.get());
-  if (claimSquare)
-    task = Task::chain(std::move(task), Task::claimSquare(this, pos));
-  taskMap->markSquare(pos, getHighlight(action), std::move(task), action.getMinionActivity());
+  taskMap->markSquare(pos, getHighlight(action), Task::destruction(this, pos, f, action,
+      pos.canEnterEmpty({MovementTrait::WALK}) ? nullptr : positionMatching.get()),
+      action.getMinionActivity());
 }
 
 bool Collective::isConstructionReachable(Position pos) {
@@ -1317,6 +1315,9 @@ void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAct
   switch (action.getType()) {
     case DestroyAction::Type::CUT:
       zones->setZone(pos, ZoneId::FETCH_ITEMS);
+      break;
+    case DestroyAction::Type::DIG:
+      territory->insert(pos);
       break;
     default:
       break;

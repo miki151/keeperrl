@@ -845,9 +845,6 @@ ViewId PlayerControl::getViewId(const BuildInfoTypes::BuildType& info) const {
       [&](const BuildInfoTypes::Dig&) {
         return ViewId("dig_icon");
       },
-      [&](const BuildInfoTypes::DigNoClaim&) {
-        return ViewId("dig_icon_no_claim");
-      },
       [&](const BuildInfoTypes::CutTree&) {
         return ViewId("dig_icon");
       },
@@ -3176,7 +3173,7 @@ void PlayerControl::updateSelectionSquares() {
 }
 
 void PlayerControl::handleDestructionOrder(Position position, HighlightType highlightType,
-    DestroyAction destructionType, bool dryRun, bool claimSquare) {
+    DestroyAction destructionType, bool dryRun) {
   bool markedToDig = collective->getTaskMap().getHighlightType(position) == highlightType;
   if (markedToDig && selection != Selection::SELECT) {
     if (!dryRun) {
@@ -3189,7 +3186,7 @@ void PlayerControl::handleDestructionOrder(Position position, HighlightType high
     if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE))
       if (furniture->canDestroy(destructionType)) {
         if (!dryRun) {
-          collective->orderDestruction(position, destructionType, claimSquare);
+          collective->orderDestruction(position, destructionType);
           getView()->addSound(SoundId("DIG_MARK"));
         }
         selection = Selection::SELECT;
@@ -3273,43 +3270,31 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
       if (doubleClick) {
         auto furniture = position.getFurniture(FurnitureLayer::MIDDLE);
         if (furniture && furniture->isClearFogOfWar() && furniture->canDestroy(DestroyAction::Type::CUT)) {
-          handleDestructionOrder(position, HighlightType::CUT_TREE, DestroyAction::Type::CUT, false, false);
+          handleDestructionOrder(position, HighlightType::CUT_TREE, DestroyAction::Type::CUT, false);
           selection = Selection::NONE;
           bool wasSelected = collective->getTaskMap().getHighlightType(position) == HighlightType::CUT_TREE;
-          addResourceRecursively(position, !wasSelected, HighlightType::CUT_TREE, DestroyAction::Type::CUT, false);
+          addResourceRecursively(position, !wasSelected, HighlightType::CUT_TREE, DestroyAction::Type::CUT);
         }
       } else
-        handleDestructionOrder(position, HighlightType::CUT_TREE, DestroyAction::Type::CUT, dryRun, false);
+        handleDestructionOrder(position, HighlightType::CUT_TREE, DestroyAction::Type::CUT, dryRun);
     },
     [&](const BuildInfoTypes::Dig&) {
       if (doubleClick) {
         auto furniture = position.getFurniture(FurnitureLayer::MIDDLE);
         if (furniture && furniture->isClearFogOfWar() && furniture->canDestroy(DestroyAction::Type::DIG)) {
-          handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::DIG, false ,true);
+          handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::DIG, false);
           selection = Selection::NONE;
           bool wasSelected = collective->getTaskMap().getHighlightType(position) == HighlightType::DIG;
-          addResourceRecursively(position, !wasSelected, HighlightType::DIG, DestroyAction::Type::DIG, true);
+          addResourceRecursively(position, !wasSelected, HighlightType::DIG, DestroyAction::Type::DIG);
         }
       } else
-        handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::DIG, dryRun, true);
-    },
-    [&](const BuildInfoTypes::DigNoClaim&) {
-      if (doubleClick) {
-        auto furniture = position.getFurniture(FurnitureLayer::MIDDLE);
-        if (furniture && furniture->isClearFogOfWar() && furniture->canDestroy(DestroyAction::Type::DIG)) {
-          handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::DIG, false, false);
-          selection = Selection::NONE;
-          bool wasSelected = collective->getTaskMap().getHighlightType(position) == HighlightType::DIG;
-          addResourceRecursively(position, !wasSelected, HighlightType::DIG, DestroyAction::Type::DIG, false);
-        }
-      } else
-        handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::DIG, dryRun, false);
+        handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::DIG, dryRun);
     },
     [&](const BuildInfoTypes::FillPit&) {
       if (auto f = position.getFurniture(FurnitureLayer::MIDDLE))
         if (auto t = f->getTickType())
           if (t->contains<FurnitureTickTypes::Pit>())
-            handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::FILL, dryRun, false);
+            handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::FILL, dryRun);
     },
     [&](const BuildInfoTypes::Chain& c) {
       for (auto& elem : c)
@@ -3402,15 +3387,15 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
 }
 
 void PlayerControl::addResourceRecursively(Position pos, bool select,
-    HighlightType highlightType, DestroyAction::Type destroyAction, bool claimSquare) {
+    HighlightType highlightType, DestroyAction::Type destroyAction) {
   bool wasSelected = collective->getTaskMap().getHighlightType(pos) == highlightType;
   if (wasSelected == select)
     return;
-  handleDestructionOrder(pos, highlightType, destroyAction, false, claimSquare);
+  handleDestructionOrder(pos, highlightType, destroyAction, false);
   auto myType = pos.getFurniture(FurnitureLayer::MIDDLE)->getType();
   for (auto v : pos.neighbors4())
     if (v.getFurniture(FurnitureLayer::MIDDLE)->getType() == myType)
-      addResourceRecursively(v, select, highlightType, destroyAction, claimSquare);
+      addResourceRecursively(v, select, highlightType, destroyAction);
 }
 
 void PlayerControl::onSquareClick(Position pos) {
@@ -4007,6 +3992,7 @@ void PlayerControl::onDestructed(Position pos, FurnitureType type, const Destroy
       collective->addKnownTile(v);
       updateSquareMemory(v);
     }
+    considerAddingKeeperFloor(pos);
     pos.setNeedsRenderAndMemoryUpdate(true);
   }
   auto game = getGame();

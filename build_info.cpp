@@ -33,7 +33,6 @@ static TString getNameHelper(const BuildInfoTypes::BuildType& type, const Conten
       [&](const BuildInfoTypes::ClaimTile& e) { return TStringId("BUILD_MENU_CLAIM_TILE"); },
       [&](const BuildInfoTypes::UnclaimTile& e) { return TStringId("BUILD_MENU_UNCLAIM_TILE"); },
       [&](const BuildInfoTypes::Dig& e) { return TStringId("BUILD_MENU_DIG"); },
-      [&](const BuildInfoTypes::DigNoClaim& e) { return TStringId("BUILD_MENU_DIG_NO_CLAIM"); },
       [&](const BuildInfoTypes::CutTree& e) { return TStringId("BUILD_MENU_CUT_TREE"); },
       [&](const BuildInfoTypes::Dispatch& e) { return TStringId("BUILD_MENU_PRIORITIZE"); },
       [&](const BuildInfoTypes::ForbidZone& e) { return TStringId("FORBIDDEN_ZONE_HIGHLIGHT"); },

@@ -255,41 +255,6 @@ PTask Task::destruction(WTaskCallback c, Position target, const Furniture* furni
 }
 
 namespace {
-class ClaimSquare : public Task {
-  public:
-  ClaimSquare(Collective* c, Position pos)
-      : Task(true), position(pos), collective(c) {
-  }
-
-  virtual TString getDescription() const override {
-    return TStringId("CLAIM_TERRITORY_TASK");
-  }
-
-  virtual MoveInfo getMove(Creature* c) override {
-    if (c->getPosition().dist8(position).value_or(2) > 1)
-      return c->moveTowards(position);
-
-    return {1.0, c->wait().append([=](Creature* c) {
-      collective->claimSquare(position);
-      setDone();
-    })};
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Task), position, collective)
-  SERIALIZATION_CONSTRUCTOR(ClaimSquare)
-
-  private:
-  Position SERIAL(position);
-  Collective* SERIAL(collective);
-};
-
-}
-
-PTask Task::claimSquare(Collective* col, Position pos) {
-  return makeOwner<ClaimSquare>(col, pos);
-}
-
-namespace {
 
 class EquipItem : public Task {
   public:
@@ -2150,5 +2115,3 @@ REGISTER_TYPE(ArcheryRange)
 REGISTER_TYPE(OutsidePredicate)
 REGISTER_TYPE(AlwaysPredicate)
 REGISTER_TYPE(WaitTask)
-REGISTER_TYPE(ActivitySuccess)
-REGISTER_TYPE(ClaimSquare)

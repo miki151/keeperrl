@@ -214,7 +214,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   ViewObject getTrapObject(FurnitureType, bool built) const;
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
   void onSquareClick(Position);
-  void addResourceRecursively(Position, bool select, HighlightType, DestroyAction::Type, bool claimSquare);
+  void addResourceRecursively(Position, bool select, HighlightType, DestroyAction::Type);
   Game* getGame() const;
   View* getView() const;
   PController createMinionController(Creature*);
@@ -290,7 +290,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<pair<ViewId,int>> getCostObj(const optional<CostInfo>&) const;
   ViewId getViewId(const BuildInfoTypes::BuildType&) const;
   EntityMap<Creature, LocalTime> leaderWoundedTime;
-  void handleDestructionOrder(Position position, HighlightType, DestroyAction, bool dryRun, bool claimSquare);
+  void handleDestructionOrder(Position position, HighlightType, DestroyAction, bool dryRun);
   HashSet<CollectiveResourceId> SERIAL(usedResources);
   optional<vector<Collective*>> SERIAL(allianceAttack);
   enum class Selection { SELECT, DESELECT, NONE } selection = Selection::NONE;

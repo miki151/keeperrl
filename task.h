@@ -108,7 +108,6 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask dropItems(vector<Item*>, vector<Position>);
   static PTask dropItems(vector<Item*>, StorageId, Collective*);
   static PTask activitySuccess();
-  static PTask claimSquare(Collective*, Position);
   struct PickUpAndDrop {
     PTask pickUp;
     PTask drop;
