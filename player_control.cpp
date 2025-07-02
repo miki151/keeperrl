@@ -3394,8 +3394,9 @@ void PlayerControl::addResourceRecursively(Position pos, bool select,
   handleDestructionOrder(pos, highlightType, destroyAction, false);
   auto myType = pos.getFurniture(FurnitureLayer::MIDDLE)->getType();
   for (auto v : pos.neighbors4())
-    if (v.getFurniture(FurnitureLayer::MIDDLE)->getType() == myType)
-      addResourceRecursively(v, select, highlightType, destroyAction);
+    if (auto f = v.getFurniture(FurnitureLayer::MIDDLE))
+      if (f->getType() == myType)
+        addResourceRecursively(v, select, highlightType, destroyAction);
 }
 
 void PlayerControl::onSquareClick(Position pos) {
