@@ -10164,9 +10164,16 @@ IMMIGRATION_HELP_CONTROLLER1 "Prawy spust"
 IMMIGRATION_HELP_CONTROLLER2 "lewy spust"
 IMMIGRATION_HELP_MOUSE1 "Lewy przycisk myszy"
 IMMIGRATION_HELP_MOUSE2 "prawy przycisk myszy"
-GAME_INTRO "Witaj w KeeperRL v1.2, wypuszczonym 24-go marca 2025.
+GAME_INTRO "Witamy w KeeperRL v1.2, wydanym 4 lipca 2025 roku.
 
-Ta łatka dodaje wsparcie dla tłumaczeń w KeeperRL, razem z polskim jako pierwszym dostępnym językiem. Więcej języków zostanie dodane wkrótce.
+Ta aktualizacja wprowadza obsługę lokalizacji w KeeperRL, a pierwszym dodatkowym językiem dostępnym w grze jest język polski. Wkrótce pojawią się kolejne wersje językowe. Poza tym aktualizacja zawiera dziesiątki mniejszych ulepszeń poprawiających komfort gry, między innymi:
 
-Jeżeli pierwszy grasz po raz pierwszy w KeeperRL, pamiętaj by zacząć od samouczka!
+* Podwójne kliknięcie na złożu surowców zaznacza cały obszar do wykopania.
+* Wszystkie nieumarłe stworzenia, w tym wierzchowce, będą spały w trumnach, co pozwoli im leczyć części ciała.
+* Bestiariusz wyposażono teraz w wyszukiwarkę.
+* Shift+kliknięcie w oknie warsztatu powoduje dodanie do kolejki produkcji od razu 5 sztuk przedmiotu.
+
+…i wiele innych!
+
+Jeżeli grasz w KeeperRL po raz pierwszy, pamiętaj, aby zacząć od samouczka!
 "
