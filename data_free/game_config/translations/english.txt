@@ -4064,7 +4064,7 @@ a small village inhabited mostly by innocents, which we shall conquer.
 This should get you up to speed with the game!"
 TUTORIAL_INTRO "Let's check out some things that you see on the map. The little wizard wearing a red robe is you, the Keeper.
 
-Remember that KeeperRL features perma-death, which means that you can't reload the game after a failure. If your Keeper dies, then the game is over, so be careful!"
+Remember that KeeperRL features permadeath, which means that you can't reload the game after a failure. If your Keeper dies, then the game is over, so be careful!"
 TUTORIAL_INTRO2 "The four little creatures are your imps. They are here to perform your orders. Try hovering the mouse over other things on the map, and notice the hints in the lower right corner."
 TUTORIAL_CUT_TREES "Great things come from small beginnings. Your first task is to gather some wood! {1} Select the \"Dig or cut tree\" order and click on a few trees to order your imps to cut them down.
 
@@ -4136,7 +4136,7 @@ TUTORIAL_DISCOVER_VILLAGE_KEYBOARD "Click on the minimap in the upper right corn
 TUTORIAL_KILL_VILLAGE "Your team has arrived at the village. The only right thing to do in this situation is to find and exterminate all inhabitants!
 
 Remember to break into every house by destroying the door."
-TUTORIAL_LOOT_VILLAGE "There is a nice pile of treasure in one of the houses. Pick it all up by entering the tiles containing the loot, and use the \"Lying here:\" menu in the upper left corner."
+TUTORIAL_LOOT_VILLAGE "There is a nice pile of treasure in one of the houses. Pick it all up by entering the tiles containing the loot, and use the \"Located here:\" menu in the upper left corner."
 TUTORIAL_LEAVE_CONTROL "To relinquish control of your team, {1}."
 TUTORIAL_LEAVE_CONTROL_CONTROLLER "press [Y]"
 TUTORIAL_LEAVE_CONTROL_KEYBOARD "click the [Exit control mode] button in the upper left corner"

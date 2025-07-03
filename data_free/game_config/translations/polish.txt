@@ -10065,7 +10065,7 @@ Wspólnie zbudujemy niewielki loch i zbierzemy siły militarne. W pobliżu znajd
 Dzięki temu szybko zaznajomisz się z grą!"
 TUTORIAL_INTRO "Spójrzmy na kilka elementów na mapie. Ten mały czarodziej w czerwonej szacie to ty, Strażnik.
 
-Pamiętaj, że w KeeperRL obowiązuje perma-śmierć. Oznacza to, że nie możesz wczytać gry po niepowodzeniu. Jeśli twój Strażnik zginie, gra się kończy, więc bądź ostrożny!"
+Pamiętaj, że w KeeperRL obowiązuje permanentna śmierć. Oznacza to, że nie możesz wczytać gry po niepowodzeniu. Jeśli twój Strażnik zginie, gra się kończy, więc bądź ostrożny!"
 TUTORIAL_INTRO2 "Te cztery małe stworki to twoje chochliki. Są tutaj, aby wykonywać twoje rozkazy. Spróbuj najechać myszą na inne obiekty na mapie i zwróć uwagę na podpowiedzi w prawym dolnym rogu."
 TUTORIAL_CUT_TREES "Wielkie rzeczy zaczynają się od drobnych początków. Twoje pierwsze zadanie to zebrać trochę drewna! {1} Wybierz polecenie „Kop tunel lub zetnij drzewo” i kliknij na kilka drzew, aby rozkazać chochlikom je ściąć.
 
@@ -10137,10 +10137,10 @@ TUTORIAL_DISCOVER_VILLAGE_KEYBOARD "Kliknij minimapę w prawym górnym rogu"
 TUTORIAL_KILL_VILLAGE "Twoja drużyna dotarła do wioski. Jedynym słusznym krokiem jest odnaleźć i wytępić wszystkich mieszkańców!
 
 Pamiętaj, aby włamywać się do każdego domu, niszcząc drzwi."
-TUTORIAL_LOOT_VILLAGE "W jednym z domów jest niezła sterta skarbów. Podnieś je wszystkie, wchodząc na pola z łupem i korzystając z menu „Leży tutaj:” w lewym górnym rogu."
+TUTORIAL_LOOT_VILLAGE "W jednym z domów jest niezła sterta skarbów. Podnieś je wszystkie, wchodząc na pola z łupem i korzystając z menu „W tym miejscu:” w lewym górnym rogu."
 TUTORIAL_LEAVE_CONTROL "Aby zrezygnować z kontroli nad drużyną, {1}."
 TUTORIAL_LEAVE_CONTROL_CONTROLLER "wciśnij [Y]"
-TUTORIAL_LEAVE_CONTROL_KEYBOARD "kliknij przycisk [Wyjdź z trybu sterowania] w lewym górnym rogu"
+TUTORIAL_LEAVE_CONTROL_KEYBOARD "kliknij przycisk [Wyjdź z trybu kontroli] w lewym górnym rogu"
 TUTORIAL_SUMMARY1 "Powróciłeś do trybu czasu rzeczywistego. Twoje sługi wrócą teraz do bazy i wznowią swoje normalne czynności. Gdy dotrą, wyrzucą cały zebrany łup, którym zajmą się chochliki."
 TUTORIAL_RESEARCH "Podniosłeś swój poziom nikczemności. To główny wskaźnik postępu w grze, pozwalający ci badać nowe technologie.
 
