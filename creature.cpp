@@ -101,10 +101,6 @@ Creature::Creature(const ViewObject& object, TribeId t, CreatureAttributes attr,
   capture = attributes->isInstantPrisoner();
 }
 
-Creature::Creature(TribeId t, CreatureAttributes attr, SpellMap spellMap)
-    : Creature(attr.createViewObject(), t, std::move(attr), std::move(spellMap)) {
-}
-
 Creature::~Creature() {
 }
 

@@ -68,7 +68,6 @@ struct PromotionInfo;
 
 class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedObject<Creature>, public EventListener<Creature> {
   public:
-  Creature(TribeId, CreatureAttributes, SpellMap);
   Creature(const ViewObject&, TribeId, CreatureAttributes, SpellMap);
   virtual ~Creature();
 

@@ -138,7 +138,7 @@ PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
 }
 
 PCreature CreatureFactory::getAnimatedItem(const ContentFactory* factory, PItem item, TribeId tribe, int attrBonus) {
-  auto ret = makeOwner<Creature>(tribe, CATTR(
+  auto attributes = CATTR(
             c.viewId = item->getViewObject().id();
             c.attr[AttrType("DEFENSE")] = item->getModifier(AttrType("DEFENSE")) + attrBonus;
             for (auto& attr : factory->attrInfo)
@@ -153,7 +153,9 @@ PCreature CreatureFactory::getAnimatedItem(const ContentFactory* factory, PItem 
             c.body->addIntrinsicAttack(BodyPart::TORSO, IntrinsicAttack(ItemType(
                 ItemTypes::Intrinsic{item->getViewObject().id(), item->getName(), 0, std::move(weaponInfo)})));
             c.permanentEffects[LastingEffect::FLYING] = 1;
-            ), SpellMap{});
+  );
+  auto viewObject = attributes.createViewObject();
+  auto ret = makeOwner<Creature>(viewObject , tribe, std::move(attributes), SpellMap{});
   ret->setController(Monster::getFactory(MonsterAIFactory::monster()).get(ret.get()));
   ret->take(std::move(item), factory);
   initializeAttributes(none, ret->getAttributes());
@@ -407,8 +409,9 @@ class KrakenController : public Monster {
         Vec2 move = Random.choose(moves);
         ViewId viewId = creature->getPosition().plus(move).canEnter({MovementTrait::SWIM})
           ? ViewId("kraken_water") : ViewId("kraken_land");
-        auto spawn = makeOwner<Creature>(creature->getTribeId(),
-            CreatureFactory::getKrakenAttributes(viewId, TStringId("KRAKEN_TENTACLE")), SpellMap{});
+        auto attributes = CreatureFactory::getKrakenAttributes(viewId, TStringId("KRAKEN_TENTACLE"));
+        auto viewObject = attributes.createViewObject();
+        auto spawn = makeOwner<Creature>(viewObject, creature->getTribeId(), std::move(attributes), SpellMap{});
         spawn->setController(makeOwner<KrakenController>(spawn.get(), getThis().dynamicCast<KrakenController>(),
             length + 1));
         spawns.push_back(spawn.get());
@@ -641,7 +644,8 @@ REGISTER_TYPE(IllusionController)
 REGISTER_TYPE(ListenerTemplate<ShopkeeperController>)
 
 PCreature CreatureFactory::get(CreatureAttributes attr, TribeId tribe, const ControllerFactory& factory, SpellMap spells) {
-  auto ret = makeOwner<Creature>(tribe, std::move(attr), std::move(spells));
+  auto viewObject = attr.createViewObject();
+  auto ret = makeOwner<Creature>(viewObject, tribe, std::move(attr), std::move(spells));
   ret->setController(factory.get(ret.get()));
   return ret;
 }
@@ -934,7 +938,8 @@ PCreature CreatureFactory::fromId(CreatureId id, TribeId t) {
 PCreature CreatureFactory::makeCopy(Creature* c, const MonsterAIFactory& aiFactory) {
   auto attributes = c->getAttributes();
   initializeAttributes(*c->getAttributes().getCreatureId(), attributes);
-  auto ret = makeOwner<Creature>(c->getTribeId(), std::move(attributes), c->getSpellMap());
+  auto viewObject = attributes.createViewObject();
+  auto ret = makeOwner<Creature>(viewObject, c->getTribeId(), std::move(attributes), c->getSpellMap());
   ret->modViewObject() = c->getViewObject();
   ret->setController(Monster::getFactory(aiFactory).get(ret.get()));
   return ret;
