@@ -400,8 +400,8 @@ class KrakenController : public Monster {
       if (creature->getPosition().plus(dirs.first).canEnter(
             {{MovementTrait::WALK, MovementTrait::SWIM}}))
         moves.push_back(dirs.first);
-      if (creature->getPosition().plus(dirs.second).canEnter(
-            {{MovementTrait::WALK, MovementTrait::SWIM}}))
+      if (creature->getPosition().plus(dirs.second).canEnter(MovementType(creature->getFriendlyTribes(), 
+            {MovementTrait::WALK, MovementTrait::SWIM})))
         moves.push_back(dirs.second);
       if (!moves.empty()) {
         Vec2 move = Random.choose(moves);

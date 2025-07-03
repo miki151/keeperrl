@@ -372,12 +372,13 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   unordered_set<string> SERIAL(effectFlags);
   vector<SpecialTrait> SERIAL(specialTraits);
 
+  TribeSet getFriendlyTribes() const;
+
   private:
 
   CreatureAction moveTowards(Position, bool away, NavigationFlags);
   optional<MovementInfo> spendTime(TimeInterval = 1_visible, SpeedModifier = SpeedModifier::NORMAL);
   int canCarry(const vector<Item*>&) const;
-  TribeSet getFriendlyTribes() const;
   void addMovementInfo(MovementInfo);
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
