@@ -2835,6 +2835,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
     function<void(Rectangle)> itemUpgradeCallback;
     if (/*!elem.upgrades.empty() && */elem.maxUpgrades.second > 0) {
       line.addBackElemAuto(WL(leftMargin, 7, drawItemUpgradeButton(elem)));
+      line.addBackSpace(5);
       itemUpgradeCallback = getItemUpgradeCallback(elem);
     }
     if (elem.itemInfo.price)
