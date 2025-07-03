@@ -249,7 +249,7 @@ AvatarInfo getQuickGameAvatar(View* view, const KeeperCreatureInfo& myKeeper,
     ret.playerCreature->getName().setBare(TStringId("KEEPER"));
   ret.playerCreature->getName().setFirst("Jollibrond"_s);
   ret.creatureInfo = std::move(myKeeper);
-  ret.tribeAlignment = TribeAlignment::EVIL;
+  ret.tribeAlignment = myKeeper.tribeAlignment;
   return ret;
 }
 
