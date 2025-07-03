@@ -4729,6 +4729,8 @@ End
       name = CREATURE_ATTRIBUTES_ADOXIE_FOOT_LEFT_NAME2
       fullTitle = true
     }
+    chatReactionFriendly = "\"nothing, why did you think a foot could talk?\""
+    chatReactionHostile = "\"nothing, why did you think a foot could talk?\""
   }
 "ADOXIE_HAND_RIGHT" inherit "ADOXIE_LEFT_HAND"
   {
@@ -4737,6 +4739,8 @@ End
       name = CREATURE_ATTRIBUTES_ADOXIE_LEFT_HAND_NAME
       fullTitle = true
     }
+    chatReactionFriendly = "\"nothing, why did you think a foot could talk?\""
+    chatReactionHostile = "\"nothing, why did you think a foot could talk?\""
   }
 "ADOXIE_PRIEST"
   {

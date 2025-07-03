@@ -542,7 +542,7 @@ static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel,
 
 optional<vector<ModInfo>> FileSharing::getSteamMods(CancelFlag& cancel, ProgressMeter& progress) {
   vector<ModInfo> out;
-  auto infos1 = getSteamItems(cancel.flag, {"Mod"_s, modVersion}, progress);
+  auto infos1 = getSteamItems(cancel.flag, {"Mod"_s}, progress);
   if (!infos1 || cancel.flag)
     return none;
   auto& infos = *infos1;
