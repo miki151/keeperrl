@@ -1877,8 +1877,13 @@ static TString getDescription(const Effects::UI& e, const ContentFactory* f) {
 }
 
 static bool applyToCreature(const Effects::RemoveAbility& e, Creature* c, Creature*) {
-  bool ret = c->getSpellMap().contains(e.id);
-  c->getSpellMap().remove(e.id);
+  auto id = e.id;
+  if (id.data() == "SPELLS_ENNOBLEMENT_EFFECT"_s)
+    id = SpellId("ennoblement");
+  if (id.data() == "SPELLS_BYPASS_ALLIES_EFFECT"_s)
+    id = SpellId("bypass allies");
+  bool ret = c->getSpellMap().contains(id);
+  c->getSpellMap().remove(id);
   return ret;
 }
 
