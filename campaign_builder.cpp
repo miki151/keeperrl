@@ -391,7 +391,8 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(ContentFactory* content
               gameDisplayName = capitalFirst(TSentence("OF",
                   avatarInfo.playerCreature->getName().plural(), TString(*avatarInfo.chosenBaseName)));
             } else {
-              string name = *avatarInfo.playerCreature->getName().first();
+              string name = avatarInfo.playerCreature->getName().first().value_or(
+                  view->translate(avatarInfo.playerCreature->getName().bare()));
               gameIdentifier = name + "_" + campaign.worldName + getNewIdSuffix();
               gameDisplayName = TSentence("OF", TString(name), TString(campaign.worldName));
             }
