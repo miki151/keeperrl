@@ -61,6 +61,7 @@ namespace BuildInfoTypes {
 
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
+  static int globalSaveVersion;
   static PPlayerControl create(Collective* col, vector<TString> introText, TribeAlignment);
   ~PlayerControl() override;
 
