@@ -271,7 +271,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   ViewIdList getMinionGroupViewId(Creature*) const;
   SUnknownLocations SERIAL(unknownLocations);
   optional<LocalTime> lastWarningDismiss;
-  set<pair<UniqueEntity<Collective>::Id, TStringId>> SERIAL(dismissedVillageInfos);
+  set<pair<UniqueEntity<Collective>::Id, TString>> SERIAL(dismissedVillageInfos);
   void considerTransferingLostMinions();
   vector<PItem> retrievePillageItems(Collective*, vector<Item*> items);
   TribeAlignment SERIAL(tribeAlignment);

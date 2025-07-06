@@ -417,7 +417,7 @@ class VillageInfo {
   };
   int HASH(numMainVillains);
   int HASH(numConqueredMainVillains);
-  set<pair<UniqueEntity<Collective>::Id, TStringId>> HASH(dismissedInfos);
+  set<pair<UniqueEntity<Collective>::Id, TString>> HASH(dismissedInfos);
   vector<Village> HASH(villages);
   HASH_ALL(villages, numMainVillains, numConqueredMainVillains, dismissedInfos)
 };
