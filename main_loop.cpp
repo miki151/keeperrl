@@ -58,7 +58,6 @@
 #include "scripted_ui_data.h"
 #include "version.h"
 #include "collective.h"
-#include "player_control.h"
 
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
@@ -1346,16 +1345,13 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
 
 PGame MainLoop::loadGame(const FilePath& file, const TString& name) {
   optional<PGame> game;
-  if (auto info = loadSavedGameInfo(file)) {
-    auto version = getNameAndVersion(file)->second;
-    PlayerControl::globalSaveVersion = version;
+  if (auto info = loadSavedGameInfo(file))
     doWithSplash(TSentence("LOADING_GAME", name), info->progressCount,
         [&] (ProgressMeter& meter) {
           Level::progressMeter = &meter;
           INFO << "Loading from " << file;
           MEASURE(game = loadFromFile<PGame>(file), "Loading game");
     });
-  }
   Level::progressMeter = nullptr;
   return game ? std::move(*game) : nullptr;
 }

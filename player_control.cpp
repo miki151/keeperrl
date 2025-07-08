@@ -102,20 +102,12 @@
 #include "furnace.h"
 #include "promotion_info.h"
 
-int PlayerControl::globalSaveVersion = 0;
-
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
   ar(memory, introText, nextKeeperWarning, tribeAlignment);
   ar(newAttacks, notifiedAttacks, messages, hints, soloKeeper);
-  ar(visibilityMap, unknownLocations);
-  if (globalSaveVersion <= 8108) {
-    set<pair<UniqueEntity<Collective>::Id, string>> s;
-    ar(s);
-  } else
-    ar(dismissedVillageInfos);
-  ar(buildInfo, battleSummary);
+  ar(visibilityMap, unknownLocations, dismissedVillageInfos, buildInfo, battleSummary);
   ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures, usedResources, allianceAttack);
 }
 
