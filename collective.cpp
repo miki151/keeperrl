@@ -1453,6 +1453,9 @@ void Collective::retire() {
   knownVillains.clear();
   discoverable = true;
   config->setConquerCondition(ConquerCondition::KILL_FIGHTERS_AND_LEADER);
+  // Clear non-minions from byTrait to workaround some bug where it contains bogus creatures.
+  for (auto trait : ENUM_ALL(MinionTrait))
+    byTrait[trait] = byTrait[trait].filter([this](Creature* c) { return creatures.contains(c); });
 }
 
 CollectiveWarnings& Collective::getWarnings() {
