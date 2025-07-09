@@ -107,6 +107,7 @@ class LastingEffects {
   static Color getColor(LastingEffect);
   static bool losesControl(const Creature*, bool homeSite);
   static bool doesntMove(const Creature*);
+  static bool cantPerformTasks(const Creature*);
   static bool restrictedMovement(const Creature*);
   static bool canSwapPosition(const Creature*);
   static bool inheritsFromSteed(LastingEffect);

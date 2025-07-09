@@ -1029,7 +1029,7 @@ class ByCollective : public Behaviour {
   }
 
   MoveInfo newStandardTask() {
-    if (LastingEffects::restrictedMovement(creature))
+    if (LastingEffects::cantPerformTasks(creature))
       return NoMove;
     //if (Random.roll(5))
     if (auto t = getStandardTask())
