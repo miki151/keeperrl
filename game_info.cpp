@@ -140,7 +140,11 @@ static vector<ItemInfo> getItemInfos(const Creature* c, const vector<Item*>& ite
   PROFILE;
   map<TString, vector<Item*> > stacks = groupBy<Item*, TString>(items,
       [&] (Item* const& item) {
-          return item->getNameAndModifiers(factory, false, c); });
+          auto ret = item->getNameAndModifiers(factory, false, c);
+          if (c->getEquipment().isEquipped(item))
+            ret = TSentence("BLABLA", std::move(ret));
+          return ret;
+      });
   vector<ItemInfo> ret;
   for (auto elem : stacks)
     ret.push_back(ItemInfo::get(c, elem.second, factory));
