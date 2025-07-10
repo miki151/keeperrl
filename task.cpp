@@ -1656,7 +1656,7 @@ class DropItems : public Task {
   virtual MoveInfo getMove(Creature* c) override {
     if (!target || !c->canNavigateTo(*target) || isBlocked(*target))
       target = chooseTarget(c);
-    if (!target)
+    if (!target || c->isAffected(LastingEffect::IMMOBILE))
       return c->drop(c->getEquipment().getItems().filter(items.containsPredicate())).append(
           [this] (Creature*) {
             setDone();
