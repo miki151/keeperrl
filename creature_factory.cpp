@@ -720,7 +720,7 @@ static vector<BuffId> getResistanceAndVulnerability(RandomGen& random) {
 }
 
 PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParams p, const ControllerFactory& factory) {
-  Body body = Body(p.humanoid, p.living ? BodyMaterialId("FLESH") : BodyMaterialId("SPIRIT"),
+  Body body = Body(p.humanoid, p.living ? BodyMaterialId("FLESH") : BodyMaterialId("SPIRIT_WITH_BRAIN"),
       p.large ? Body::Size::LARGE : Body::Size::MEDIUM);
   if (p.wings)
     body.addWithoutUpdatingPermanentEffects(BodyPart::WING, 2);

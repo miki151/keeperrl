@@ -725,7 +725,7 @@ End
     }
     body = {
       type = NonHumanoid LARGE
-      material = SPIRIT
+      material = SPIRIT_WITH_BRAIN
     }
     permanentEffects = {
       CONSUMPTION_SKILL 1
