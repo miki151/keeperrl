@@ -186,7 +186,7 @@ PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
             c.attr[AttrType("DEFENSE")] = 250;
             c.body = Body::nonHumanoid(BodyMaterialId("ROCK"), Body::Size::HUGE);
             c.body->setDeathSound(none);
-            c.body->setMinPushSize(Body::Size::LARGE);
+            c.body->setMinPushSize(Body::Size::MEDIUM);
             c.permanentEffects[LastingEffect::BLIND] = 1;
             c.boulder = true;
             c.name = TString(TStringId("BOULDER"));
