@@ -15,6 +15,7 @@ class KeybindingMap {
   KeybindingMap(const FilePath& defaults, const FilePath& user);
   bool matches(Keybinding, SDL::SDL_Keysym);
   static TString getText(SDL::SDL_Keysym, string delimiter = " + ");
+  static string getString(SDL::SDL_Keysym);
   static optional<ControllerKey> getControllerMapping(Keybinding);
   static optional<SDL::SDL_Keycode> getBuiltinMapping(Keybinding);
   SGuiElem getGlyph(SGuiElem label, GuiFactory*, Keybinding);

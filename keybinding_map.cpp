@@ -196,13 +196,35 @@ SGuiElem KeybindingMap::getGlyph(SGuiElem label, GuiFactory* f, Keybinding key) 
   return getGlyph(std::move(label), f, getControllerMapping(key), std::move(alternative));
 }
 
+string KeybindingMap::getString(SDL::SDL_Keysym sym) {
+  static unordered_map<SDL::SDL_Keycode, string> keys = [] {
+    unordered_map<SDL::SDL_Keycode, string> ret;
+    for (auto& elem : keycodes)
+      ret[elem.second] = elem.first;
+    return ret;
+  }();
+  string ret = keys.at(sym.sym);
+  if (sym.mod & SDL::KMOD_LCTRL)
+    ret = "ctrl " + ret;
+  if (sym.mod & SDL::KMOD_LSHIFT)
+    ret = "shift " + ret;
+  if (sym.mod & SDL::KMOD_LALT)
+    ret = "alt " + ret;
+  return ret;
+}
+
+static bool equal(SDL::SDL_Keysym s1, SDL::SDL_Keysym s2) {
+  return s1.sym == s2.sym && s1.mod == s2.mod;
+}
+
 void KeybindingMap::save() {
   ofstream out(userPath.getPath());
-  for (auto& elem : bindings) {
+  for (auto& elem : bindings)
+    if (!defaults.count(elem.first) || !equal(defaults.at(elem.first), elem.second)) {
     out << elem.first.data() << " ";
     if (defaults.count(elem.first))
       out << "modify ";
-    out << getText(elem.second, " ").data() << endl;
+    out << getString(elem.second) << endl;
   }
 }
 
