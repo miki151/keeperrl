@@ -914,8 +914,11 @@ void Player::moveAction(Vec2 dir) {
   }
   if (auto other = dirPos.getCreature()) {
     auto actions = getOtherCreatureCommands(other);
-    if (!actions.empty() && actions[0].allowAuto)
+    if (!actions.empty() && actions[0].allowAuto) {
       actions[0].perform(this);
+      return;
+    }
+    tryToPerform(creature->push(other));
     return;
   }
   if (!dirPos.canEnterEmpty(creature))
