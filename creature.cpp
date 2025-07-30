@@ -1975,7 +1975,7 @@ bool Creature::considerSavingLife(DropType drops, const Creature* attacker) {
   if (drops != DropType::NOTHING && isAffected(LastingEffect::LIFE_SAVED)) {
     message(TStringId("BUT_WAIT"));
     verb(TStringId("YOU_ESCAPE_DEATH"), TStringId("ESCAPES_DEATH"));
-    if (attacker && attacker->getName().bare() == TStringId("DEATH")) {
+    if (attacker && attacker->getName().bare() == TStringId("CREATURE_ATTRIBUTES_DEATH_NAME")) {
       if (auto target = findInaccessiblePos(position))
         position.moveCreature(*target, true);
       getGame()->achieve(AchievementId("tricked_death"));
