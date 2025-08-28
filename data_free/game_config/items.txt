@@ -288,7 +288,7 @@ SPELL_HEAD("Adoxium", 220 148 220, ITEMS_TELEPORTHEADADOXIUM_NAME, ADOXIUM, 18, 
       1 VictimEffect 0.1 Lasting POISON
     }
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
+    equipmentGroup = EQUIPMENT_GROUP_BASIC_EQUIPMENT
   }
 "AssassinsKnife" inherit "Knife"
   {
@@ -367,7 +367,7 @@ SPELL_HEAD("Adoxium", 220 148 220, ITEMS_TELEPORTHEADADOXIUM_NAME, ADOXIUM, 18, 
     }
     maxUpgrades = 1
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = EQUIPMENT_GROUP_ADAMANTINE_EQUIPMENT
+    equipmentGroup = EQUIPMENT_GROUP_IRON_EQUIPMENT
   }
 "AdaSword" inherit "Sword"
   {
@@ -456,7 +456,7 @@ End
     }
     maxUpgrades = 1
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = EQUIPMENT_GROUP_ADAMANTINE_EQUIPMENT
+    equipmentGroup = EQUIPMENT_GROUP_IRON_EQUIPMENT
   }
 "AdaBattleAxe" inherit "BattleAxe"
   {
@@ -513,7 +513,7 @@ End
     }
     maxUpgrades = 1
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = EQUIPMENT_GROUP_ADAMANTINE_EQUIPMENT
+    equipmentGroup = EQUIPMENT_GROUP_IRON_EQUIPMENT
   }
 "AdaWarHammer" inherit "WarHammer"
   {
@@ -633,7 +633,7 @@ End
     }
     maxUpgrades = 1
     storageIds = {"weapons" "equipment"}
-    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
+    equipmentGroup = EQUIPMENT_GROUP_BASIC_EQUIPMENT
   }
 "ArchwoodStaff" inherit "WoodenStaff"
   {
@@ -987,7 +987,7 @@ End
     }
     maxUpgrades = 0
     storageIds = {"armor" "equipment"}
-    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
+    equipmentGroup = EQUIPMENT_GROUP_BASIC_EQUIPMENT
   }
 "LeatherHelm"
   {
@@ -1008,7 +1008,7 @@ End
     }
     maxUpgrades = 0
     storageIds = {"armor" "equipment"}
-    equipmentGroup = EQUIPMENT_GROUP_ARTIFACT_EQUIPMENT
+    equipmentGroup = EQUIPMENT_GROUP_BASIC_EQUIPMENT
   }
 "WoodenShield"
   {
