@@ -610,7 +610,7 @@ static ItemInfo getEmptySteedItemInfo(const ContentFactory* factory) {
 static ItemInfo getSteedItemInfo(const ContentFactory* factory, const Creature* rider, const Creature* steed,
     bool currentlyRiding) {
   return CONSTRUCT(ItemInfo,
-    if (rider->getFirstCompanion() == steed)
+    if (rider->getSteedCompanion() == steed)
       c.name = TSentence("ITEM_INFO_NAME_COMPANION_STEED", steed->getName().bare());
     else
       c.name = steed->getName().bare();
@@ -765,7 +765,7 @@ static ScriptedUIDataElems::Record getSteedItemRecord(const ContentFactory* fact
     const Creature* rider) {
   auto elem = ScriptedUIDataElems::Record{};
   elem.elems["view_id"] = steed->getViewObject().getViewIdList();
-  if (rider->getFirstCompanion() == steed)
+  if (rider->getSteedCompanion() == steed)
     elem.elems["name"] = TString(TSentence("ITEM_INFO_NAME_COMPANION_STEED",
         capitalFirst(steed->getName().bare())));
   else
@@ -780,9 +780,8 @@ static ScriptedUIDataElems::Record getSteedItemRecord(const ContentFactory* fact
 Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSteeds) {
   vector<Creature*> availableItems;
   vector<Creature*> usedItems;
-  if (auto c = creature->getFirstCompanion())
-    if (c->isAffected(LastingEffect::STEED))
-      allSteeds.insert(0, c);
+  if (auto c = creature->getSteedCompanion())
+    allSteeds.insert(0, c);
   for (auto item : allSteeds) {
     if (auto owner = collective->getSteedOrRider(item))
       usedItems.push_back(item);

@@ -1548,11 +1548,12 @@ vector<Creature*> Creature::getCompanions(bool withNoKillCreditOnly) const {
   return ret;
 }
 
-Creature* Creature::getFirstCompanion() const {
+Creature* Creature::getSteedCompanion() const {
   for (auto& group : companions)
-    for (auto c : group.creatures)
-      if (!c->isDead())
-        return c.get();
+    for (auto c1 : group.creatures)
+      if (auto c = c1.get())
+        if (!c->isDead() && c->isAffected(LastingEffect::STEED) && isSteedGoodSize(c))
+          return c;
   return nullptr;
 }
 
