@@ -2747,7 +2747,7 @@ static EffectAIIntent shouldAIApply(const DefaultType& m, const Creature* caster
 template <typename T, REQUIRE(shouldAIApplyToCreature(TVALUE(const T&), TVALUE(const Creature*), TVALUE(bool)))>
 static EffectAIIntent shouldAIApply(const T& elem, const Creature* caster, Position pos) {
   auto victim = pos.getCreature();
-  if (victim && !caster->canSee(victim))
+  if (victim && caster != victim && !caster->canSee(victim))
     victim = nullptr;
   if (victim && !victim->isAffected(LastingEffect::STUNNED))
     return shouldAIApplyToCreature(elem, victim, caster->isEnemy(victim));
