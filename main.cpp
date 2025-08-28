@@ -144,13 +144,13 @@ static po::parser getCommandLineFlags() {
   flags["no_crash_reports"].description("Don't intercept game crashes and send crash reports to the developer");
   flags["free_mode"].description("Run in free ascii mode");
   flags["gen_z_levels"].type(po::string).description("Generate and print z-level types for a given keeper");
+  flags["translate_sentences"].type(po::string).description("Read translatable sentences from given file, translate them using the current language and output to stdout.");
 #ifndef RELEASE
   flags["quick_game"].description("Skip main menu and load the last save file or start a single map game");
   flags["new_game"].type(po::string).description("Skip main menu and start a single map game");
   flags["max_turns"].type(po::i32).description("Quit the game after a given max number of turns");
   flags["export_translatable_strings"].type(po::string).description("This experimental option will try to to replace translatable strings in game files with translation ids.");
   flags["export_translatable_sentences"].type(po::string).description("This experimental option will output every sentence in the game in the pre-translated form.");
-  flags["translate_sentences"].type(po::string).description("Read translatable sentences from given file, translate them using the current language and output to stdout.");
 #endif
   return flags;
 }
