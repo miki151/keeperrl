@@ -956,7 +956,7 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
-    equipmentGroup = EQUIPMENT_GROUP_ADOXIUM_EQUIPMENT
+    equipmentGroup = EQUIPMENT_GROUP_ADAMANTINE_EQUIPMENT
   }
 "AdoxiumGloves" inherit "AdaGloves"
   {
@@ -1226,7 +1226,7 @@ End
     }
     maxUpgrades = 4
     storageIds = {"armor" "equipment"}
-    equipmentGroup = EQUIPMENT_GROUP_ADOXIUM_EQUIPMENT
+    equipmentGroup = EQUIPMENT_GROUP_ADAMANTINE_EQUIPMENT
   }
 "AdoxiumArmor" inherit "AdaArmor"
   {
@@ -1465,7 +1465,7 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
-    equipmentGroup = EQUIPMENT_GROUP_ADOXIUM_EQUIPMENT
+    equipmentGroup = EQUIPMENT_GROUP_ADAMANTINE_EQUIPMENT
   }
 "AdoxiumHelm" inherit "AdaHelm"
   {
@@ -1584,7 +1584,7 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
-    equipmentGroup = EQUIPMENT_GROUP_ADOXIUM_EQUIPMENT
+    equipmentGroup = EQUIPMENT_GROUP_ADAMANTINE_EQUIPMENT
   }
 "AdoxiumBoots" inherit "AdaBoots"
   {
