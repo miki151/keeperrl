@@ -101,6 +101,7 @@ class LastingEffects {
   static bool canProlong(LastingEffect);
   static bool obeysFormation(const Creature*, const Creature* against);
   static bool shouldEnemyApply(const Creature* victim, LastingEffect);
+  static bool shouldAllyApplyAtAll(const Creature* victim, LastingEffect);
   static bool shouldAllyApplyInDanger(const Creature* victim, LastingEffect);
   static TimeInterval getDuration(LastingEffect);
   static void runTests();

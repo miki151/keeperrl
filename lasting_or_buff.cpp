@@ -162,6 +162,17 @@ static bool shouldAllyApplyInDanger(const LastingOrBuff& l, const Creature* targ
   );
 }
 
+static bool shouldAllyApplyAtAll(const LastingOrBuff& l, const Creature* target, const ContentFactory* factory) {
+  return l.visit(
+    [&](LastingEffect e) {
+      return LastingEffects::shouldAllyApplyAtAll(target, e);
+    },
+    [&](BuffId id) {
+      return true;
+    }
+  );
+}
+
 static bool shouldEnemyApply(const LastingOrBuff& l, const Creature* target, const ContentFactory* factory) {
   return l.visit(
     [&](LastingEffect e) {
@@ -184,7 +195,7 @@ EffectAIIntent shouldAIApply(const LastingOrBuff& l, bool enemy, const Creature*
       return intent->time > *victim->getGlobalTime() - 5_visible;
     return false;
   }();
-  if (isDanger == shouldAllyApplyInDanger(l, victim, factory))
+  if (shouldAllyApplyAtAll(l, victim, factory) && isDanger == shouldAllyApplyInDanger(l, victim, factory))
     return 1;
   else
     return 0;
