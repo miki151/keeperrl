@@ -8,7 +8,7 @@ Def CheckedBox() {
 }
 End
 
-Def TopButtonWidth() 160 End
+Def TopButtonWidth() 220 End
 
 Def LineHighlight() MarginLeft(-7, MarginRight(-10, NewHighlight())) End
 

@@ -110,18 +110,20 @@ string Translations::get(const string& language, const TSentence& s, vector<stri
       if (sentence[i] == '{') {
         TString argument;
         int endArg;
+        int variableLength;
         if (isdigit(sentence[i + 1])) {
           auto index = sentence[i + 1] - '1';
           endArg = i + 1;
           if (index >= 0 && index < s.params.size())
             argument = s.params[index];
+          variableLength = 3;
         } else {
           endArg = getLastLetter(sentence, i + 1);
           string id = sentence.substr(i + 1, endArg - i);
           argument = TStringId(id.data());
+          variableLength = id.size() + 2;
         }
         auto newForms = elem->tags.contains("clear_tags") ? vector<string>() : form;
-        int variableLength = 3;
         if (sentence[endArg + 1] == ':') {
           if (isdigit(sentence[endArg + 2])) {
             int tagIndex = sentence[endArg + 2] - '1';

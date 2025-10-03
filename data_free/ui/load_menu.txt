@@ -17,7 +17,7 @@ Def SavedGameContent() Vertical {
         })
       }
     }
-    MarginRight(2, Using "erase" Position(BOTTOM_RIGHT, Height 20 Width 45 {
+    MarginRight(2, Using "erase" Position(BOTTOM_RIGHT, Height 20 Width 65 {
         Button()
         StandardButton(Label(TEXT107, 16, Rgb 200 100 100 255))
     }))
