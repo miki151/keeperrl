@@ -714,7 +714,8 @@ void Game::gameOver(const Creature* creature, int numKills, int points) {
   text.push_back(TSentence("YOU_KILLED_AND_SCORED", TString(numKills), TString(points)));
   if (dungeonTurns > 0) {
     text.push_back(TSentence("TURNS_DEFENDING_THE_BASE", TString(dungeonTurns)));
-    text.push_back(TSentence("TURNS_SPENT_ATTACKING", TString(turns - dungeonTurns)));
+    if (turns > dungeonTurns)
+      text.push_back(TSentence("TURNS_SPENT_ATTACKING", TString(turns - dungeonTurns)));
   }
   text.append(statistics->getText());
   view->presentTextBelow(TString(TStringId("GAME_OVER")), combineWithNewLine(text));

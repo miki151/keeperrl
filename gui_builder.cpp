@@ -4083,7 +4083,7 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
         getMiniMenuScrolling(activeElems, selected),
         tasks.buildVerticalList()
     );
-    drawMiniMenu(std::move(content), exit, bounds.bottomLeft(), 600, true);
+    drawMiniMenu(std::move(content), exit, bounds.bottomLeft(), 700, true);
     callbacks.input({UserInputId::CREATURE_TASK_ACTION, retAction});
   };
 }
@@ -5025,7 +5025,7 @@ SGuiElem GuiBuilder::drawCampaignSettingsButton(SyncQueue<CampaignAction>& queue
         WL(keyHandler, [&focused, cnt] { focused = (focused + cnt - 1) % cnt; },
             Keybinding("MENU_UP"), SoundId("MENU_TRAVEL"))
       );
-      drawMiniMenu(std::move(content), exit, rect.bottomLeft(), 464, true);
+      drawMiniMenu(std::move(content), exit, rect.bottomLeft(), 520, true);
       if (!clicked)
         break;
     }

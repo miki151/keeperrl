@@ -430,6 +430,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     if (res)
       USER_FATAL << *res;
     for (auto& elem : *sentences) {
+      std::cerr << "Translating " << elem.first.data() << std::endl;
       auto res = translations.get(options.getStringValue(OptionId::LANGUAGE), elem.second);
       std::cout << elem.first.data() << " " << res << std::endl;
     }
