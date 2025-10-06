@@ -4130,7 +4130,7 @@ function<void(Rectangle)> GuiBuilder::getAIButtonFun(const PlayerInfo& minion) {
                   return retAction.override;}))
         .addElemAuto(WL(label, TSentence("COPY_SETTING_TO_GROUP", makePlural(minion.groupName))))
         .buildHorizontalList());
-    drawMiniMenu(std::move(tasks), std::move(callbacks), {}, bounds.bottomLeft(), 362, true, false, nullptr, &exit);
+    drawMiniMenu(std::move(tasks), std::move(callbacks), {}, bounds.bottomLeft(), 420, true, false, nullptr, &exit);
     this->callbacks.input({UserInputId::AI_TYPE, retAction});
   };
 }
