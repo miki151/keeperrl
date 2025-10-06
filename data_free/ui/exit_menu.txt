@@ -1,13 +1,11 @@
 
 Def IconButton(Id, Text)
-  StandardButton(
     Vertical {
-      ViewId(5, {Id})
+      Height 140 Width 140 StandardButton(ViewId(5, {Id}))
       Height 10 {}
-      Position(MIDDLE, Label(Text))
+      Position(MIDDLE, Height 20 Paragraph(width = 120 text = Text centerLines = true))
       Height 10 {}
     }
-  )
 End
 
 Def IconButtonInactive(Id, Text)
@@ -24,7 +22,7 @@ End
 {
   ExitButtons()
   FocusKeysHorizontal()
-  Window(
+  Window(Vertical {
     Horizontal {
       Using "save" IconButton("portal", TEXT57)
       Width 20 {}
@@ -34,6 +32,8 @@ End
       Using "retire_inactive" IconButtonInactive("throne", TEXT59)
       Width 20 {}
       Using "abandon" IconButton("grave", TEXT60)
+    }
+    Height 20 {}
     }
   )
 }

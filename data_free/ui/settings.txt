@@ -36,7 +36,7 @@ Def LineHighlight() MarginLeft(-7, MarginRight(-10, NewHighlight())) End
         Using "options"
           List(VERTICAL, {
               Using "callbackBool" { Focusable LineHighlight() Button() }
-              Using "tooltip" GetTooltip(Label())
+              Using "tooltip" GetTooltip(Paragraph(800))
               Using "sliderKeys"
                 FocusableKeys LineHighlight()
               Height 35 Horizontal {

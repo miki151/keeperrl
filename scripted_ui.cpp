@@ -315,20 +315,33 @@ struct Paragraph : ScriptedUIInterface {
   }
 
   void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
-    for (auto line : Iter(context.factory->breakText(getText(data, context), width, size)))
-      context.renderer->drawText(font, size, color, area.topLeft() + Vec2(0, line.index() * size), *line);
+    for (auto line : Iter(context.factory->breakText(getText(data, context), width, size))) {
+      if (centerLines) {
+        int width = context.renderer->getTextLength(*line, size, font);
+        context.renderer->drawText(font, size, color, area.topLeft() + Vec2((area.width() - width) / 2, line.index() * getLineHeight()), *line);
+      } else
+        context.renderer->drawText(font, size, color, area.topLeft() + Vec2(0, line.index() * getLineHeight()), *line);
+    }
+  }
+
+  int getLineHeight() const {
+    return size + 5;
   }
 
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
     auto text = getText(data, context);
-    auto getSize = [&] {
-      if (auto elem = getValueMaybe(context.state.paragraphSizeCache, text))
-        return *elem;
-      auto ret = context.factory->breakText(text, width, size).size();
-      context.state.paragraphSizeCache[text] = ret;
+    if (auto elem = getValueMaybe(context.state.paragraphSizeCache, text))
+      return *elem;
+    auto lines = context.factory->breakText(text, width, size);
+    auto maxWidth = [&] {
+      int ret = 0;
+      for (auto& line : lines)
+        ret = max(ret, context.renderer->getTextLength(line, size, font));
       return ret;
-    };
-    return Vec2(width, size * getSize());
+    }();
+    auto ret = Vec2(maxWidth, getLineHeight() * lines.size());
+    context.state.paragraphSizeCache[text] = ret;
+    return ret;
   }
 
   optional<TString> SERIAL(text);
@@ -336,7 +349,8 @@ struct Paragraph : ScriptedUIInterface {
   int SERIAL(size) = Renderer::textSize();
   Color SERIAL(color) = Color::WHITE;
   FontId SERIAL(font) = FontId::TEXT_FONT;
-  SERIALIZE_ALL(roundBracket(), NAMED(width), OPTION(text), OPTION(size), OPTION(color), OPTION(font))
+  bool SERIAL(centerLines) = false;
+  SERIALIZE_ALL(roundBracket(), NAMED(width), OPTION(text), OPTION(size), OPTION(color), OPTION(font), OPTION(centerLines))
 };
 
 REGISTER_SCRIPTED_UI(Paragraph);
