@@ -10042,7 +10042,7 @@ TEXT144 "Po ustaleniu wartości ataku stosujemy specjalne premie, np. niektóre 
 TEXT145 "Ofiara korzysta z atrybutu obrony jako podstawy i podobnie stosuje swoje premie. Następnie mnożymy lub dzielimy ją przez 1,3, jeśli istota jest odporna lub wrażliwa na dany rodzaj ataku (np. odporność na magię podnosi obronę o 30% przeciw atakom magicznym)."
 TEXT146 "Obliczamy też mnożnik osaczenia w zależności od liczby wrogów otaczających ofiarę. Za każdego dodatkowego wroga finalna obrona dzieli się przez 1,07. Przeciwdziała temu atrybut parowania, który podnoszą np. tarcze."
 TEXT147 "Po zestawieniu finalnej wartości ataku i obrony dzielimy je przez siebie i stosujemy krzywą obrażeń, która mówi ostatecznie, ile życia traci ofiara."
-TEXT148 "Jeśli atak jest 2,2 razy wyższy niż obrona, ofiara traci całe życie# jeśli są równe, traci 12% punktów życia# jeśli atak stanowi 0,6 obrony lub mniej, atak jest nieszkodliwy."
+TEXT148 "Jeśli atak jest 2,2 razy wyższy niż obrona, ofiara traci całe życie. Jeśli są równe, traci 12% punktów życia. Jeśli atak stanowi 0,6 obrony lub mniej, atak jest nieszkodliwy."
 TEXT149 "Dalsze skutki zależą od typu ofiary. Istoty z ciałem, ogniem lub duchem mają normalne punkty życia, od których odejmujemy obrażenia. Inne, np. nieumarli, golemy i automaty, ryzykują utratę kończyny lub rozpad w zależności od wielkości obrażeń – nie mają klasycznego licznika życia."
 TEXT150 "Wstawianie stref wartowania pozwala ustawiać twoich sług w wybranych miejscach, aby pilnowali wejść czy korytarzy."
 TEXT151 "1. Wybierz jeden z trzech kolorów stref warty i ustaw go na mapie. Najlepiej jedno pole na jednego sługę, którego chcesz postawić na warcie."
