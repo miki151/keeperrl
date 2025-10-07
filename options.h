@@ -110,7 +110,7 @@ class Options {
   void changeValue(OptionId, const Options::Value&, View*);
   void handleSliding(OptionId, ScriptedUIDataElems::Record&, bool&);
   void handleIntInterval(OptionId, ScriptedUIDataElems::Record&, bool&);
-  void handleStringList(OptionId, ScriptedUIDataElems::Record&, bool&);
+  void handleStringList(OptionId, ScriptedUIDataElems::Record&, View*, bool&);
   void handleBoolean(OptionId, ScriptedUIDataElems::Record&, bool&);
   Value getValue(OptionId);
   void readValues();
