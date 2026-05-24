@@ -462,13 +462,20 @@ static int keeperMain(po::parser& commandLineFlags) {
         soundLibrary->setVolume(volume);
         soundLibrary->playSound(SoundId("SPELL_DECEPTION"));
       });
+      options.addTrigger(OptionId::MUTE_AUDIO_UNFOCUSED, [&soundLibrary](int value) {
+        soundLibrary->setMuteWhenUnfocused(value);
+      });
       soundLibrary->setVolume(options.getIntValue(OptionId::SOUND));
+      soundLibrary->setMuteWhenUnfocused(options.getBoolValue(OptionId::MUTE_AUDIO_UNFOCUSED));
     } else
       soundLibrary = new SoundLibrary();
     splashDone = true;
   });
   showLogoSplash(renderer, freeDataPath.file("images/succubi.png"), splashDone);
   loadThread.join();
+  soundLibrary->setUnfocusedCheck([&renderer] {
+    return !renderer.hasKeyboardFocus();
+  });
   map<TStringId, TString>* sentences = nullptr;
   optional<string> exportSentencesPath;
   if (commandLineFlags["export_translatable_sentences"].was_set()) {
@@ -520,7 +527,12 @@ static int keeperMain(po::parser& commandLineFlags) {
       audioDevice,
       getMusicTracks(paidDataPath.subdirectory("music"), tilesPresent && !audioError),
       getMaxVolume());
+  jukebox.setUnfocusedCheck([&renderer] {
+    return !renderer.hasKeyboardFocus();
+  });
   options.addTrigger(OptionId::MUSIC, [&jukebox](int volume) { jukebox.setCurrentVolume(volume); });
+  options.addTrigger(OptionId::MUTE_AUDIO_UNFOCUSED, [&jukebox](int value) { jukebox.setMuteWhenUnfocused(value); });
+  jukebox.setMuteWhenUnfocused(options.getBoolValue(OptionId::MUTE_AUDIO_UNFOCUSED));
   Unlocks unlocks(&options, userPath.file("unlocks.txt"));
   MainLoop loop(view.get(), &highscores, &fileSharing, paidDataPath, freeDataPath, userPath, modsDir, &options, &jukebox,
       &sokobanInput, &tileSet, &unlocks, steamAchievements.get(), &translations, saveVersion, modVersion);

@@ -49,7 +49,31 @@ void Jukebox::setCurrentVolume(int v) {
   toggle(v > 0);
   currentVolume = double(v) / 100;
   if (stream)
-    stream->setVolume(maxVolume * currentVolume);
+    stream->setVolume(getEffectiveVolume());
+}
+
+void Jukebox::setMuteWhenUnfocused(bool value) {
+  MusicLock lock(musicMutex);
+  muteWhenUnfocused = value;
+  if (stream)
+    stream->setVolume(getEffectiveVolume());
+}
+
+void Jukebox::setUnfocusedCheck(function<bool()> check) {
+  MusicLock lock(musicMutex);
+  unfocusedCheck = std::move(check);
+  if (stream)
+    stream->setVolume(getEffectiveVolume());
+}
+
+bool Jukebox::isUnfocused() const {
+  return unfocusedCheck && unfocusedCheck();
+}
+
+double Jukebox::getEffectiveVolume() const {
+  if (muteWhenUnfocused && isUnfocused())
+    return 0;
+  return maxVolume * currentVolume;
 }
 
 void Jukebox::setCurrent(MusicType c) {
@@ -87,13 +111,15 @@ void Jukebox::setType(MusicType c, bool now) {
 
 void Jukebox::play(int index) {
   stream.reset();
-  stream.reset(new SoundStream(music[current], maxVolume * currentVolume));
+  stream.reset(new SoundStream(music[current], getEffectiveVolume()));
 }
 
 void Jukebox::refresh() {
   MusicLock lock(musicMutex);
   if (!on || !numTracks)
     return;
+  if (current == currentPlaying && stream)
+    stream->setVolume(getEffectiveVolume());
   if (current != currentPlaying) {
     if (!stream || !stream->isPlaying() || stream->getVolume() == 0) {
       currentPlaying = current;

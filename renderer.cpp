@@ -707,6 +707,7 @@ Renderer::Renderer(Clock* clock, MySteamInput* i, const string& title, const Dir
     SDL::SDL_WINDOW_RESIZABLE | SDL::SDL_WINDOW_SHOWN | SDL::SDL_WINDOW_MAXIMIZED | SDL::SDL_WINDOW_OPENGL)) << SDL::SDL_GetError();
   CHECK(SDL::SDL_GL_CreateContext(window)) << SDL::SDL_GetError();
   SDL_SetWindowMinimumSize(window, minResolution.x, minResolution.y);
+  keyboardFocus = SDL::SDL_GetKeyboardFocus() == window;
   SDL::SDL_Event ev;
   while(SDL_PollEvent(&ev)){}
   SDL::SDL_GL_GetDrawableSize(window, &width, &height);
@@ -863,6 +864,10 @@ bool Renderer::isKeypressed(SDL::SDL_Scancode key) {
   return keypressed[key];
 }
 
+bool Renderer::hasKeyboardFocus() const {
+  return keyboardFocus;
+}
+
 void Renderer::updateKeypressed(const Event& ev) {
   if (ev.type == SDL::SDL_KEYDOWN)
     keypressed[ev.key.keysym.scancode] = true;
@@ -870,17 +875,34 @@ void Renderer::updateKeypressed(const Event& ev) {
     keypressed[ev.key.keysym.scancode] = false;
 }
 
+void Renderer::updateKeyboardFocus(const Event& ev) {
+  if (ev.type != SDL::SDL_WINDOWEVENT)
+    return;
+  switch (ev.window.event) {
+    case SDL::SDL_WINDOWEVENT_FOCUS_GAINED:
+      keyboardFocus = true;
+      break;
+    case SDL::SDL_WINDOWEVENT_FOCUS_LOST:
+      keyboardFocus = false;
+      break;
+    default:
+      break;
+  }
+}
+
 bool Renderer::pollEventOrFromQueue(Event& ev) {
   if (!eventQueue.empty()) {
     ev = eventQueue.front();
     eventQueue.pop_front();
     updateKeypressed(ev);
+    updateKeyboardFocus(ev);
     return true;
   } else if (SDL_PollEvent(&ev)) {
     zoomMousePos(ev);
     considerMouseMoveEvent(ev);
     considerMouseCursorAnim(ev);
     updateKeypressed(ev);
+    updateKeyboardFocus(ev);
     return true;
   } else
     return false;
@@ -985,6 +1007,7 @@ void Renderer::waitEvent(Event& ev) {
       zoomMousePos(ev);
       considerMouseMoveEvent(ev);
     }
+    updateKeyboardFocus(ev);
   }
 }
 

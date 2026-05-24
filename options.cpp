@@ -27,6 +27,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::ASCII, 0},
   {OptionId::MUSIC, 100},
   {OptionId::SOUND, 100},
+  {OptionId::MUTE_AUDIO_UNFOCUSED, 0},
   {OptionId::KEEP_SAVEFILES, 0},
   {OptionId::SHOW_MAP, 0},
   {OptionId::FULLSCREEN, 0},
@@ -65,6 +66,7 @@ const EnumMap<OptionId, Options::Value> defaults {
 static TString getName(OptionId id) {
   switch (id) {
     case OptionId::HINTS: return TStringId("HINTS_OPTION_NAME");
+    case OptionId::MUTE_AUDIO_UNFOCUSED: return TStringId("MUTE_AUDIO_UNFOCUSED_OPTION_NAME");
     case OptionId::ASCII: return TStringId("ASCII_OPTION_NAME");
     case OptionId::MUSIC: return TStringId("MUSIC_OPTION_NAME");
     case OptionId::SOUND: return TStringId("SOUND_OPTION_NAME");
@@ -109,6 +111,7 @@ static optional<TStringId> getHint(OptionId id) {
   switch (id) {
     case OptionId::HINTS: return TStringId("HINTS_OPTION_DESCRIPTION");
     case OptionId::ASCII: return TStringId("ASCII_OPTION_DESCRIPTION");
+    case OptionId::MUTE_AUDIO_UNFOCUSED: return TStringId("MUTE_AUDIO_UNFOCUSED_OPTION_DESCRIPTION");
     case OptionId::KEEP_SAVEFILES: return TStringId("KEEP_SAVEFILES_OPTION_DESCRIPTION");
     case OptionId::FULLSCREEN: return TStringId("FULLSCREEN_OPTION_DESCRIPTION");
     case OptionId::VSYNC: return TStringId("VSYNC_OPTION_DESCRIPTION");
@@ -137,6 +140,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::MUSIC,
 #ifndef DISABLE_SFX
       OptionId::SOUND,
+      OptionId::MUTE_AUDIO_UNFOCUSED,
 #endif
       OptionId::FULLSCREEN,
       OptionId::VSYNC,
@@ -321,6 +325,7 @@ static bool isBoolean(OptionId id) {
   switch (id) {
     case OptionId::HINTS:
     case OptionId::ASCII:
+    case OptionId::MUTE_AUDIO_UNFOCUSED:
     case OptionId::FULLSCREEN:
     case OptionId::VSYNC:
     case OptionId::KEEPER_WARNING:
@@ -350,6 +355,7 @@ string Options::getValueString(OptionId id) {
   switch (id) {
     case OptionId::HINTS:
     case OptionId::ASCII:
+    case OptionId::MUTE_AUDIO_UNFOCUSED:
     case OptionId::FULLSCREEN:
     case OptionId::VSYNC:
     case OptionId::KEEPER_WARNING:
