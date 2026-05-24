@@ -30,8 +30,12 @@ class Jukebox {
   void setType(MusicType, bool now);
   void toggle(bool on);
   void setCurrentVolume(int); // between 0..100
+  void setMuteWhenUnfocused(bool);
+  void setUnfocusedCheck(function<bool()>);
 
   private:
+  bool isUnfocused() const;
+  double getEffectiveVolume() const;
   void play(int index);
   void setCurrent(MusicType);
   void continueCurrent();
@@ -51,6 +55,8 @@ class Jukebox {
   int numTracks = 0;
   double maxVolume;
   double currentVolume = 1;
+  bool muteWhenUnfocused = false;
+  function<bool()> unfocusedCheck;
   optional<MusicType> nextType;
   optional<AsyncLoop> refreshLoop;
   AudioDevice& audioDevice;

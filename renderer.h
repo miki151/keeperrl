@@ -103,6 +103,7 @@ class Renderer {
   void waitEvent(Event&);
   Vec2 getMousePos();
   bool isKeypressed(SDL::SDL_Scancode);
+  bool hasKeyboardFocus() const;
 
   void setTopLayer();
   void popLayer();
@@ -185,5 +186,7 @@ class Renderer {
   TileSet* tileSet = nullptr;
   MySteamInput* steamInput = nullptr;
   bool keypressed[SDL::SDL_NUM_SCANCODES] = {0};
+  atomic<bool> keyboardFocus{true};
   void updateKeypressed(const Event&);
+  void updateKeyboardFocus(const Event&);
 };

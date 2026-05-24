@@ -20,7 +20,7 @@ void SoundLibrary::addSounds(SoundId id, const DirectoryPath& path) {
 }
 
 milliseconds SoundLibrary::playSound(const Sound& s) {
-  if (!audioDevice || volume < 0.0001)
+  if (!audioDevice || volume < 0.0001 || (muteWhenUnfocused && isUnfocused()))
     return milliseconds{1000};
   if (auto clips = getReferenceMaybe(sounds, toLower(s.getId()))) {
     auto& sound = Random.choose(*clips);
@@ -33,4 +33,16 @@ milliseconds SoundLibrary::playSound(const Sound& s) {
 
 void SoundLibrary::setVolume(int v) {
   volume = double(v) / 100;
+}
+
+void SoundLibrary::setMuteWhenUnfocused(bool value) {
+  muteWhenUnfocused = value;
+}
+
+void SoundLibrary::setUnfocusedCheck(function<bool()> check) {
+  unfocusedCheck = std::move(check);
+}
+
+bool SoundLibrary::isUnfocused() const {
+  return unfocusedCheck && unfocusedCheck();
 }
