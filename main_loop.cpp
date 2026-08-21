@@ -62,8 +62,8 @@
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
 #include "steam_client.h"
-#include "translations.h"
 #endif
+#include "translations.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& paidDataPath,
     const DirectoryPath& freePath, const DirectoryPath& uPath, const DirectoryPath& modsDir, Options* o, Jukebox* j,

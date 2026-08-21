@@ -822,7 +822,7 @@ int GuiBuilder::getImmigrationBarWidth() const {
 }
 
 bool GuiBuilder::hasController() const {
-  return !gui.getSteamInput()->controllers.empty();
+  return gui.getSteamInput() && !gui.getSteamInput()->controllers.empty();
 }
 
 SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
