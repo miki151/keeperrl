@@ -625,8 +625,9 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const TString& messag
   addReturnDialog<optional<Vec2>>(returnQueue, [=] ()-> optional<Vec2> {
   rebuildGui();
   refreshScreen();
-  renderer.getSteamInput()->setGameActionLayer(MySteamInput::GameActionLayer::TURNED_BASED);
-  bool useController = !gui.getSteamInput()->controllers.empty();
+  if (renderer.getSteamInput())
+    renderer.getSteamInput()->setGameActionLayer(MySteamInput::GameActionLayer::TURNED_BASED);
+  bool useController = gui.getSteamInput() && !gui.getSteamInput()->controllers.empty();
   do {
     Event event;
     if (renderer.getDiscreteJoyPos(ControllerJoy::WALKING) != Vec2(0, 0))
@@ -711,7 +712,7 @@ View::TargetResult WindowView::chooseTarget(Vec2 playerPos, TargetType targetTyp
   refreshScreen();
   guiBuilder.disableClickActions = true;
   optional<Vec2> controllerPos;
-  if (!gui.getSteamInput()->controllers.empty())
+  if (gui.getSteamInput() && !gui.getSteamInput()->controllers.empty())
     controllerPos = playerPos;
   do {
     auto pos = controllerPos ? controllerPos : mapGui->projectOnMap(renderer.getMousePos());

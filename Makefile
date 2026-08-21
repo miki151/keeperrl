@@ -107,7 +107,8 @@ endif
 ifdef STEAMWORKS
 SRCS = $(shell ls -t *.cpp)
 else
-SRCS = $(shell ls -t *.cpp | grep -v steam_.*.cpp)
+SRCS = $(shell ls -t *.cpp | grep -v steam)
+SRCS += steamworks_stubs.cpp
 endif
 SRCS += $(shell ls -t extern/*.cpp)
 

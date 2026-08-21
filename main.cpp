@@ -65,8 +65,8 @@
 #include "steam_base.h"
 #include "steam_client.h"
 #include "steam_user.h"
-#include "translations.h"
 #endif
+#include "translations.h"
 
 #ifndef DATA_DIR
 #define DATA_DIR "."
